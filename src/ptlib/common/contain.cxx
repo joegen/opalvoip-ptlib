@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.131  2003/04/15 07:08:37  robertj
+ * Changed read and write from streams for base array classes so operates in
+ *   the same way for both PIntArray and PArray<int> etc
+ *
  * Revision 1.130  2003/03/31 01:24:23  robertj
  * Added ReadFrom functions for standard container classes such as
  *   PIntArray and PStringList etc
@@ -667,6 +671,33 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 }
 
 
+void PAbstractArray::PrintOn(ostream & strm) const
+{
+  char separator = strm.fill();
+  int width = strm.width();
+  for (PINDEX  i = 0; i < GetSize(); i++) {
+    if (i > 0 && separator != '\0')
+      strm << separator;
+    strm.width(width);
+    PrintElementOn(strm, i);
+  }
+  if (separator == '\n')
+    strm << '\n';
+}
+
+
+void PAbstractArray::ReadFrom(istream & strm)
+{
+  PINDEX i = 0;
+  while (strm.good()) {
+    ReadElementFrom(strm, i);
+    if (!strm.fail())
+      i++;
+  }
+  SetSize(i);
+}
+
+
 PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PAbstractArray::Class()), PInvalidCast);
@@ -799,121 +830,13 @@ BOOL PAbstractArray::Concatenate(const PAbstractArray & array)
 }
 
 
-void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed) const
+void PAbstractArray::PrintElementOn(ostream & /*stream*/, PINDEX /*index*/) const
 {
-  PINDEX line_width = strm.width();
-  if (line_width == 0)
-    line_width = 16/size;
-  strm.width(0);
-
-  PINDEX indent = strm.precision();
-
-  PINDEX val_width;
-  switch (strm.flags()&ios::basefield) {
-    case ios::hex :
-      val_width = size*2;
-      is_signed = FALSE;
-      break;
-    case ios::oct :
-      val_width = ((size*8)+2)/3;
-      is_signed = FALSE;
-      break;
-    default :
-      switch (size) {
-        case 1 :
-          val_width = 3;
-          break;
-        case 2 :
-          val_width = 5;
-          break;
-        default :
-          val_width = 10;
-          break;
-      }
-      if (is_signed)
-        val_width++;
-  }
-
-  long mask = -1;
-  if (size < (PINDEX)sizeof(mask))
-    mask = (1L << (size*8)) - 1;
-
-  PINDEX i = 0;
-  while (i < GetSize()) {
-    if (i > 0)
-      strm << '\n';
-    PINDEX j;
-    for (j = 0; j < indent; j++)
-      strm << ' ';
-    for (j = 0; j < line_width; j++) {
-      if (j == line_width/2)
-        strm << ' ';
-      if (i+j < GetSize()) {
-        strm << setw(val_width);
-        if (is_signed)
-          strm << GetNumberValueAt(i+j);
-        else
-          strm << (DWORD)(GetNumberValueAt(i+j)&mask);
-      }
-      else {
-        PINDEX k;
-        for (k = 0; k < val_width; k++)
-          strm << ' ';
-      }
-      strm << ' ';
-    }
-    if ((strm.flags()&ios::floatfield) != ios::fixed) {
-      strm << "  ";
-      for (j = 0; j < line_width; j++) {
-        if (i+j < GetSize()) {
-          long val = GetNumberValueAt(i+j);
-          if (val >= 0 && val < 256 && isprint(val))
-            strm << (char)val;
-          else
-            strm << '.';
-        }
-      }
-    }
-    i += line_width;
-  }
 }
 
 
-long PAbstractArray::GetNumberValueAt(PINDEX) const
+void PAbstractArray::ReadElementFrom(istream & /*stream*/, PINDEX /*index*/)
 {
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
-}
-
-
-void PAbstractArray::ReadNumbersFrom(istream & strm, BOOL is_signed)
-{
-  PINDEX size = 0;
-  SetSize(size+10);
-
-  while (strm.good()) {
-    if (is_signed) {
-      long num;
-      strm >> num;
-      SetNumberValueAt(size, num);
-    }
-    else {
-      unsigned long unum;
-      strm >> unum;
-      SetNumberValueAt(size, unum);
-    }
-
-    if (++size >= GetSize())
-      SetSize(size+10);
-  }
-
-  SetSize(size);
-}
-
-
-void PAbstractArray::SetNumberValueAt(PINDEX, long)
-{
-  PAssertAlways(PUnimplementedFunction);
 }
 
 
@@ -954,171 +877,70 @@ void PCharArray::ReadFrom(istream &strm)
 }
 
 
-void PShortArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(short), TRUE);
-}
-
-
-long PShortArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((short *)theArray)[idx];
-}
-
-
-void PShortArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, TRUE);
-}
-
-
-void PShortArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((short *)theArray)[idx] = (short)num;
-}
-
-
-void PIntArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(int), TRUE);
-}
-
-
-long PIntArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((int *)theArray)[idx];
-}
-
-
-void PIntArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, TRUE);
-}
-
-
-void PIntArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((int *)theArray)[idx] = (int)num;
-}
-
-
-void PLongArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(long), TRUE);
-}
-
-
-long PLongArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((long *)theArray)[idx];
-}
-
-
-void PLongArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, TRUE);
-}
-
-
-void PLongArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((long *)theArray)[idx] = num;
-}
-
-
 void PBYTEArray::PrintOn(ostream & strm) const
 {
-  PrintNumbersOn(strm, sizeof(BYTE), FALSE);
-}
+  PINDEX line_width = strm.width();
+  if (line_width == 0)
+    line_width = 16;
+  strm.width(0);
 
+  PINDEX indent = strm.precision();
 
-long PBYTEArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((BYTE *)theArray)[idx];
+  PINDEX val_width = ((strm.flags()&ios::basefield) == ios::hex) ? 2 : 3;
+
+  PINDEX i = 0;
+  while (i < GetSize()) {
+    if (i > 0)
+      strm << '\n';
+    PINDEX j;
+    for (j = 0; j < indent; j++)
+      strm << ' ';
+    for (j = 0; j < line_width; j++) {
+      if (j == line_width/2)
+        strm << ' ';
+      if (i+j < GetSize())
+        strm << setw(val_width) << (unsigned)theArray[i+j];
+      else {
+        PINDEX k;
+        for (k = 0; k < val_width; k++)
+          strm << ' ';
+      }
+      strm << ' ';
+    }
+    if ((strm.flags()&ios::floatfield) != ios::fixed) {
+      strm << "  ";
+      for (j = 0; j < line_width; j++) {
+        if (i+j < GetSize()) {
+          unsigned val = theArray[i+j];
+          if (val < 256 && isprint(val))
+            strm << (char)val;
+          else
+            strm << '.';
+        }
+      }
+    }
+    i += line_width;
+  }
 }
 
 
 void PBYTEArray::ReadFrom(istream &strm)
 {
-  ReadNumbersFrom(strm, FALSE);
-}
+  PINDEX size = 0;
+  SetSize(size+100);
 
+  while (strm.good()) {
+    unsigned v;
+    strm >> v;
+    theArray[size] = (BYTE)v;
+    if (!strm.fail()) {
+      size++;
+      if (size >= GetSize())
+        SetSize(size+100);
+    }
+  }
 
-void PBYTEArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((BYTE *)theArray)[idx] = (BYTE)num;
-}
-
-
-void PWORDArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(WORD), FALSE);
-}
-
-
-long PWORDArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((WORD *)theArray)[idx];
-}
-
-
-void PWORDArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, FALSE);
-}
-
-
-void PWORDArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((WORD *)theArray)[idx] = (WORD)num;
-}
-
-
-void PUnsignedArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(unsigned), FALSE);
-}
-
-
-long PUnsignedArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((unsigned *)theArray)[idx];
-}
-
-
-void PUnsignedArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, FALSE);
-}
-
-
-void PUnsignedArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((unsigned *)theArray)[idx] = (unsigned)num;
-}
-
-
-void PDWORDArray::PrintOn(ostream & strm) const
-{
-  PrintNumbersOn(strm, sizeof(DWORD), FALSE);
-}
-
-
-long PDWORDArray::GetNumberValueAt(PINDEX idx) const
-{
-  return ((DWORD *)theArray)[idx];
-}
-
-
-void PDWORDArray::ReadFrom(istream &strm)
-{
-  ReadNumbersFrom(strm, FALSE);
-}
-
-
-void PDWORDArray::SetNumberValueAt(PINDEX idx, long num)
-{
-  ((DWORD *)theArray)[idx] = (DWORD)num;
+  SetSize(size);
 }
 
 
