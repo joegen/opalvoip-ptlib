@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.88  2000/10/09 23:37:17  robertj
+ * Improved PString sprintf functions so no longer limited to 1000 characters, thanks Yuriy Ershov.
+ *
  * Revision 1.87  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -1776,9 +1779,13 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
-  char * p = GetPointer(1000);
-  ::vsprintf(p+strlen(p), fmt, arg);
-  PAssert(strlen(theArray) < 1000, "Single sprintf() too large");
+  PINDEX len = GetLength();
+  PINDEX size = 0;
+  do {
+    size += 1000;
+    PAssert(SetSize(size), POutOfMemory);
+  } while (_vsnprintf(theArray+len, size-len, fmt, arg) == -1);
+
   PAssert(MakeMinimumSize(), POutOfMemory);
   return *this;
 }
