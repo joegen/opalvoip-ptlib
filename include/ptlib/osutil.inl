@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.40 1996/02/15 14:47:33 robertj Exp $
+ * $Id: osutil.inl,v 1.41 1996/02/25 03:02:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.41  1996/02/25 03:02:45  robertj
+ * Added consts to all GetXxxx functions in PConfig.
+ *
  * Revision 1.40  1996/02/15 14:47:33  robertj
  * Fixed bugs in time zone compensation (some in the C library).
  *
@@ -576,40 +579,40 @@ PINLINE void PConfig::DeleteSection()
 PINLINE void PConfig::DeleteKey(const PString & key)
   { DeleteKey(defaultSection, key); }
 
-PINLINE PString PConfig::GetString(const PString & key)
+PINLINE PString PConfig::GetString(const PString & key) const
   { return GetString(defaultSection, key, PString()); }
 
-PINLINE PString PConfig::GetString(const PString & key, const PString & dflt)
+PINLINE PString PConfig::GetString(const PString & key, const PString & dflt) const
   { return GetString(defaultSection, key, dflt); }
 
 PINLINE void PConfig::SetString(const PString & key, const PString & value)
   { SetString(defaultSection, key, value); }
 
-PINLINE BOOL PConfig::GetBoolean(const PString & key, BOOL dflt)
+PINLINE BOOL PConfig::GetBoolean(const PString & key, BOOL dflt) const
   { return GetBoolean(defaultSection, key, dflt); }
 
 PINLINE void PConfig::SetBoolean(const PString & key, BOOL value)
   { SetBoolean(defaultSection, key, value); }
 
-PINLINE long PConfig::GetInteger(const PString & key, long dflt)
+PINLINE long PConfig::GetInteger(const PString & key, long dflt) const
   { return GetInteger(defaultSection, key, dflt); }
 
 PINLINE void PConfig::SetInteger(const PString & key, long value)
   { SetInteger(defaultSection, key, value); }
 
-PINLINE double PConfig::GetReal(const PString & key, double dflt)
+PINLINE double PConfig::GetReal(const PString & key, double dflt) const
   { return GetReal(defaultSection, key, dflt); }
 
 PINLINE void PConfig::SetReal(const PString & key, double value)
   { SetReal(defaultSection, key, value); }
 
-PINLINE PTime PConfig::GetTime(const PString & key)
+PINLINE PTime PConfig::GetTime(const PString & key) const
   { return GetTime(defaultSection, key, PTime(0)); }
 
-PINLINE PTime PConfig::GetTime(const PString & key, const PTime & dflt)
+PINLINE PTime PConfig::GetTime(const PString & key, const PTime & dflt) const
   { return GetTime(defaultSection, key, dflt); }
 
-PINLINE PTime PConfig::GetTime(const PString & section, const PString & key)
+PINLINE PTime PConfig::GetTime(const PString & section, const PString & key) const
   { return GetTime(section, key, PTime(0)); }
 
 PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
