@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.78  2004/08/16 08:49:59  csoutheren
+ * Removed error when compiling with gcc
+ *
  * Revision 1.77  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -2146,13 +2149,13 @@ class PStringArray : public PArray {
     /**
       * Create a PStringArray from an STL container
       */
-    template <class stlContainer>
+    template <typename stlContainer>
     static PStringArray container(
       const stlContainer & vec
     )
     {
       PStringArray list;
-      for (stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
+      for (typename stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
         list.AppendString(PString(*r));
       return list;
     }
@@ -2334,13 +2337,13 @@ PDECLARE_LIST(PStringList, PString);
     /**
       * Create a PStringArray from an STL container
       */
-    template <class stlContainer>
+    template <typename stlContainer>
     static PStringList container(
       const stlContainer & vec
     )
     {
       PStringList list;
-      for (stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
+      for (typename stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
         list.AppendString(PString(*r));
       return list;
     }
