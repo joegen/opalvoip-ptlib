@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.76  2005/03/22 07:29:29  csoutheren
+ * Fixed problem where PStrings sometimes get case into
+ * PIPSocket::Address when outputting to an ostream
+ *
  * Revision 1.75  2005/02/13 23:01:35  csoutheren
  * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
  * address range as RFC1918
@@ -474,6 +478,9 @@ class PIPSocket : public PSocket
 #endif
         } v;
         unsigned version;
+
+      /// need this to avoid intepreting string as addresses
+      friend ostream & operator<<(ostream & s, const PString & str);
 
       /// output IPv6 & IPv4 address as a string to the specified string
       friend ostream & operator<<(ostream & s, const Address & a);
