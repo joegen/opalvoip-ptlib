@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.51 1996/05/23 09:59:04 robertj Exp $
+ * $Id: osutil.inl,v 1.52 1996/09/14 13:09:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.52  1996/09/14 13:09:23  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.51  1996/05/23 09:59:04  robertj
  * Added mutex to timer list.
  *
@@ -367,6 +373,19 @@ PINLINE int PChannel::GetErrorNumber() const
 
 PINLINE void PChannel::AbortCommandString()
   { abortCommandString = TRUE; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIndirectChannel
+
+PINLINE PIndirectChannel::~PIndirectChannel()
+  { Close(); }
+
+PINLINE PChannel * PIndirectChannel::GetReadChannel() const
+  { return readChannel; }
+
+PINLINE PChannel * PIndirectChannel::GetWriteChannel() const
+  { return writeChannel; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
