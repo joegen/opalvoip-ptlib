@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.35  2000/04/29 08:11:06  robertj
+ * Fixed problem with stream output width in PTimeInterval
+ *
  * Revision 1.34  2000/04/29 04:50:16  robertj
  * Added microseconds to string output.
  * Fixed uninitialised microseconds on some constructors.
@@ -168,27 +171,25 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 }
 
 
-void PTimeInterval::PrintOn(ostream & strm) const
+void PTimeInterval::PrintOn(ostream & stream) const
 {
-  PInt64 ms = milliseconds;
+  int width = stream.width();
 
-  if (ms < 0) {
-    strm << '-';
-    ms = -ms;
-  }
-
-  char prevFill = strm.fill();
-  strm.fill('0');
-
-  int precision = strm.precision();
+  int precision = stream.precision();
   if (precision > 3)
     precision = 3;
 
-  int width = strm.width();
-  strm.width(1);
-
   BOOL hadPrevious = FALSE;
   long tmp;
+
+  PStringStream str;
+  str.fill('0');
+
+  PInt64 ms = milliseconds;
+  if (ms < 0) {
+    str << '-';
+    ms = -ms;
+  }
 
   if (precision < 0) {
     precision = -precision;
@@ -196,8 +197,8 @@ void PTimeInterval::PrintOn(ostream & strm) const
       precision = 3;
 
     tmp = (long)(ms/86400000);
-    if (tmp > 0 || width > (precision+9)) {
-      strm << tmp << ':';
+    if (tmp > 0 || width > (precision+10)) {
+      str << tmp << 'd';
       hadPrevious = TRUE;
     }
 
@@ -206,42 +207,42 @@ void PTimeInterval::PrintOn(ostream & strm) const
   else
     tmp = (long)(ms/3600000);
 
-  if (hadPrevious || tmp > 0 || width > (precision+6)) {
+  if (hadPrevious || tmp > 0 || width > (precision+7)) {
     if (hadPrevious)
-      strm.width(2);
-    strm << tmp << ':';
+      str.width(2);
+    str << tmp << ':';
     hadPrevious = TRUE;
   }
 
   tmp = (long)(ms%3600000)/60000;
-  if (hadPrevious || tmp > 0 || width > (precision+3)) {
+  if (hadPrevious || tmp > 0 || width > (precision+4)) {
     if (hadPrevious)
-      strm.width(2);
-    strm << tmp << ':';
+      str.width(2);
+    str << tmp << ':';
     hadPrevious = TRUE;
   }
 
   if (hadPrevious)
-    strm.width(2);
-  strm << (long)(ms%60000)/1000;
+    str.width(2);
+  str << (long)(ms%60000)/1000;
 
   switch (precision) {
     case 1 :
-      strm << '.' << (int)(ms%1000)/100;
+      str << '.' << (int)(ms%1000)/100;
       break;
 
     case 2 :
-      strm << '.' << setw(2) << (int)(ms%1000)/10;
+      str << '.' << setw(2) << (int)(ms%1000)/10;
       break;
 
     case 3 :
-      strm << '.' << setw(3) << (int)(ms%1000);
+      str << '.' << setw(3) << (int)(ms%1000);
 
     default :
       break;
   }
 
-  strm.fill(prevFill);
+  stream << str;
 }
 
 
