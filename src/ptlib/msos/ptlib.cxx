@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.35 1998/05/21 04:27:31 robertj Exp $
+ * $Id: ptlib.cxx,v 1.36 1998/05/26 01:29:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.36  1998/05/26 01:29:53  robertj
+ * Removed assert as this Close() function is now called all the time for Unix reasons.
+ *
  * Revision 1.35  1998/05/21 04:27:31  robertj
  * Compensated for MSC run time library bug.
  *
@@ -299,7 +302,6 @@ BOOL PChannel::Write(const void *, PINDEX)
 
 BOOL PChannel::Close()
 {
-  PAssertAlways(PUnimplementedFunction);
   return FALSE;
 }
 
