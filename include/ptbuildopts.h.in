@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.24  2004/01/30 00:52:58  csoutheren
+ * Moved P_USE_PRAGMA back to the compiler flags as this cannot be
+ * put into a include file due to the way gcc implements vtable closure
+ *
  * Revision 1.23  2004/01/29 13:43:59  csoutheren
  * Moved some preprocessor symbols from the command line to include files
  * Modified to set P_HAS_SEMAPHORES to 0 for Linux kernels >= 2.6
@@ -395,7 +399,6 @@
 #undef	PWLIB_VERSION
 
 // following features migrated from makefile
-#undef	P_USE_PRAGMA
 #undef	P_64BIT
 #undef	PHAS_TEMPLATES
 
