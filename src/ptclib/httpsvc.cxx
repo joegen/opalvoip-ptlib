@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.55  2000/08/04 12:48:25  robertj
+ * Added mechanism by which a service can get at new HTTP connections, eg to add SSL.
+ *
  * Revision 1.54  2000/05/02 02:58:49  robertj
  * Fixed MSVC warning about unused parameters.
  *
@@ -278,7 +281,7 @@ BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, PINDEX stackSize)
     return FALSE;
 
   if (stackSize > 1000)
-    new PHTTPServiceThread(stackSize, *this, *httpListeningSocket, httpNameSpace);
+    new PHTTPServiceThread(stackSize, *this, *httpListeningSocket);
 
   return TRUE;
 }
@@ -395,16 +398,25 @@ BOOL PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PStrin
 }
 
 
+PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
+{
+  PHTTPServer * server = new PHTTPServer(httpNameSpace);
+  if (server->Open(socket))
+    return server;
+
+  delete server;
+  return NULL;
+}
+
+
 //////////////////////////////////////////////////////////////
 
 PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
                                        PHTTPServiceProcess & app,
-                                       PSocket & listeningSocket,
-                                       PHTTPSpace & http)
+                                       PSocket & listeningSocket)
   : PThread(stackSize, AutoDeleteThread),
     process(app),
-    listener(listeningSocket),
-    httpNameSpace(http)
+    listener(listeningSocket)
 {
   myStackSize = stackSize;
   Resume();
@@ -419,25 +431,31 @@ void PHTTPServiceThread::Main()
   }
 
   // get a socket when a client connects
-  PHTTPServer server(httpNameSpace);
-  if (!server.Accept(listener)) {
-    if (server.GetErrorCode() != PChannel::Interrupted)
-      PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
+  PTCPSocket socket;
+  if (!socket.Accept(listener)) {
+    if (socket.GetErrorCode() != PChannel::Interrupted)
+      PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket.GetErrorText());
     if (listener.IsOpen())
-      new PHTTPServiceThread(myStackSize, process, listener, httpNameSpace);
+      new PHTTPServiceThread(myStackSize, process, listener);
     else
       process.httpThreadClosed.Signal();
     return;
   }
 
-  new PHTTPServiceThread(myStackSize, process, listener, httpNameSpace);
+  new PHTTPServiceThread(myStackSize, process, listener);
+
+  PHTTPServer * server = process.CreateHTTPServer(socket);
+  if (server == NULL) {
+    PSYSTEMLOG(Error, "HTTP server creation/open failed.");
+    return;
+  }
 
   // process requests
-  while (server.ProcessCommand())
+  while (server->ProcessCommand())
     ;
 
   // always close after the response has been sent
-  server.Close();
+  delete server;
 
   // if a restart was requested, then do it
   process.CompleteRestartSystem();
