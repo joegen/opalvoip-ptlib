@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.9  1998/11/30 02:50:51  robertj
+ * New directory structure
+ *
  * Revision 1.8  1998/09/23 06:19:36  robertj
  * Added open source copyright license.
  *
@@ -71,7 +74,7 @@
 #pragma interface
 #endif
 
-#include <inetprot.h>
+#include <ptclib/inetprot.h>
 
 class PSocket;
 
