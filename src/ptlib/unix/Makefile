@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.116  2003/10/06 02:30:06  dereksmithies
+# Remove Stun.cxx as it is not in the repositary.
+#
 # Revision 1.115  2003/09/17 08:57:33  csoutheren
 # Moved PSmartPointer and PNotifier into seperate files
 # Added detection for system regex libraries on all platforms
@@ -398,7 +401,7 @@ COMMON_SRC_DIR		= ../common
 VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 
 
-CFLAGS += -DPTRACING=1
+#####CFLAGS += -DPTRACING=1
 
 
 # try and keep the order of modules in reverse order of usage so any
@@ -571,7 +574,6 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
 	$(COMPONENT_SRC_DIR)/dtmf.cxx \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
-	$(COMPONENT_SRC_DIR)/stun.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
