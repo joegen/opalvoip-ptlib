@@ -63,6 +63,7 @@ void MergeSym::Main()
 
     default :
       PError << "usage: MergeSym [ -v ] [ -x deffile[.def] ] libfile[.lib] [ deffile[.def] ]";
+      SetTerminationValue(1);
       return;
   }
 
@@ -71,6 +72,7 @@ void MergeSym::Main()
 
   if (!PFile::Exists(lib_filename)) {
     PError << "MergeSym: library file " << lib_filename << " does not exist.\n";
+    SetTerminationValue(1);
     return;
   }
 
@@ -241,8 +243,10 @@ void MergeSym::Main()
       }
       cout << "\nSymbols merged: " << added << " added, " << removed << " removed.\n";
     }
-    else
+    else {
       PError << "Could not create file " << def_filename << ':' << def.GetErrorText() << endl;
+      SetTerminationValue(1);
+    }
   }
 }
 
