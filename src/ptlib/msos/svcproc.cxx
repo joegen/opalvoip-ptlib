@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.49  1999/01/29 12:20:19  robertj
+ * Changed service process to output trace info to the Win32 debug output.
+ *
  * Revision 1.48  1998/12/04 10:10:45  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -198,6 +201,8 @@
 #include <io.h>
 
 #include <ptlib/svcproc.h>
+#include <ptlib/debstrm.h>
+
 
 #define UWM_SYSTRAY (WM_USER + 1)
 #define ICON_RESID 1
@@ -479,6 +484,9 @@ int PServiceProcess::_main(void * arg)
 #ifdef PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(FALSE);
 #endif
+
+  static PDebugStream debugStream;
+  PSetTraceStream(&debugStream);
 
   hInstance = (HINSTANCE)arg;
 
