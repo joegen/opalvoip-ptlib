@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.25  2004/02/04 02:34:38  csoutheren
+ * Added many new flags to configure to allow disabling of various features
+ * Fixed "swab" detection
+ * Improved detection of long double type
+ *
  * Revision 1.24  2004/01/30 00:52:58  csoutheren
  * Moved P_USE_PRAGMA back to the compiler flags as this cannot be
  * put into a include file due to the way gcc implements vtable closure
@@ -401,6 +406,7 @@
 // following features migrated from makefile
 #undef	P_64BIT
 #undef	PHAS_TEMPLATES
+#undef	PNO_LONG_DOUBLE
 
 #endif // _PT_BUILDOPTS_H
 
