@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.36  1999/02/22 10:48:14  robertj
+ * Fixed delete operator prototypes for MSVC6 and GNU compatibility.
+ *
  * Revision 1.35  1998/12/22 10:24:17  robertj
  * Fixed MSVC warnings caused by changes made in linux PPC support.
  *
@@ -194,6 +197,12 @@ void * operator new(size_t nSize)
 
 
 void operator delete(void * ptr)
+{
+  PMemoryHeap::Deallocate(ptr, NULL);
+}
+
+
+void operator delete[](void * ptr)
 {
   PMemoryHeap::Deallocate(ptr, NULL);
 }
