@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.7  2003/10/03 00:31:39  dereksmithies
+ * Fix previouv fix - so IPV6 address is correctly copied.
+ *
  * Revision 1.6  2003/10/03 00:06:58  dereksmithies
  * Fix typo on IPV6 test. A big thanks to Andrey S Pankov
  *
@@ -161,7 +164,8 @@ static void SetStunAddress(const PIPSocket::Address & ip, WORD port, StunAddress
 #if P_HAS_IPV6
     case 6 :
       addr.addrHdr.family = AF_INET6;
-      addr.addr.v6addr    = ip;
+       for ( PINDEX i = 0; i < ip.GetSize(); i++ )    
+	 addr.addr.v6addr.octet[i] = ip[i];
       break;
 #endif
   }
