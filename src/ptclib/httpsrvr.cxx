@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.37  2001/09/28 00:45:27  robertj
+ * Removed HasKey() as is confusing due to ancestor Contains().
+ *
  * Revision 1.36  2001/06/01 07:28:23  craigs
  * Added handling for binary data in multi-part MIME fields
  *
@@ -1108,10 +1111,10 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   PString str;
 
   // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.HasKey(PHTTP::ProxyConnectionTag);
+  isProxyConnection = mimeInfo.Contains(PHTTP::ProxyConnectionTag);
   if (isProxyConnection)
     str = mimeInfo[PHTTP::ProxyConnectionTag];
-  else if (mimeInfo.HasKey(PHTTP::ConnectionTag))
+  else if (mimeInfo.Contains(PHTTP::ConnectionTag))
     str = mimeInfo[PHTTP::ConnectionTag];
 
   // get any connection options
