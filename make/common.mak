@@ -55,7 +55,7 @@ all:	$(OBJDIR)/$(PROG)_dll
 endif
 
 ifdef BUILDFILES
-OBJS	:= $(OBJS) buildnum.o
+OBJS	:= $(OBJS) $(OBJDIR)/buildnum.o
 endif
 
 $(OBJDIR)/$(PROG):	$(OBJS) $(PTLIB_FILE)
@@ -134,8 +134,8 @@ libdir:
 #
 ######################################################################
 ifdef BUILDFILES
-buildnum.o:	buildnum.c
-	cc -o buildnum.o -c buildnum.c
+$(OBJDIR)/buildnum.o:	buildnum.c
+	cc -o $(OBJDIR)/buildnum.o -c buildnum.c
 
 #ifndef DEBUG
 #buildnum.c:	$(SOURCES) $(BUILDFILES) 
