@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.17 1994/07/17 10:46:06 robertj Exp $
+ * $Id: file.h,v 1.18 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.17  1994/07/17 10:46:06  robertj
+ * Revision 1.18  1994/08/21 23:43:02  robertj
+ * Added "remove on close" feature for temporary files.
+ * Added "force" option to Remove/Rename etc to override write protection.
+ * Added function to set file permissions.
+ *
+ * Revision 1.17  1994/07/17  10:46:06  robertj
  * Moved data to platform dependent files.
  *
  * Revision 1.16  1994/06/25  11:55:15  robertj
@@ -85,7 +90,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
       MustExist = 0,    // File open fails if file does not exist
       Create = 1,       // File is created if it does not exist
       Truncate = 2,     // File is set to zero length if it already exists
-      Exclusive = 4     // File open fails if file already exists
+      Exclusive = 4,    // File open fails if file already exists
+      Temporary = 8     // File is temporary and is to be deleted when closed
     };
 
     PFile(OpenMode mode, int opts = ModeDefault);
@@ -132,22 +138,23 @@ PDECLARE_CONTAINER(PFile, PChannel)
     PINLINE static BOOL Exists(const PString & name);
       // Return TRUE if the file exists.
       
-    BOOL Access(OpenMode mode) const;
+    BOOL Access(OpenMode mode);
     static BOOL Access(const PString & name, OpenMode mode);
       // Return TRUE if the file may be opened in the specified mode
       
-    BOOL Remove();
-    PINLINE static BOOL Remove(const PString & name);
+    BOOL Remove(BOOL force = FALSE);
+    static BOOL Remove(const PString & name, BOOL force = FALSE);
       // Delete the specified file.
       
-    BOOL Rename(const PString & newname);
-    PINLINE static BOOL Rename(const PString & oldname,
-                                                     const PString & newname);
+    BOOL Rename(const PString & newname, BOOL force = FALSE);
+    static BOOL Rename(const PString & oldname,
+                                 const PString & newname, BOOL force = FALSE);
       // Change the specified files name. Note that this object then refers to
       // the new filename.
 
-    BOOL Copy(const PString & newname);
-    static BOOL Copy(const PString & oldname, const PString & newname);
+    BOOL Copy(const PString & newname, BOOL force = FALSE);
+    static BOOL Copy(const PString & oldname,
+                                 const PString & newname, BOOL force = FALSE);
       // Make a copy of the specified file. Note that this object still refers
       // to the original file.
 
@@ -192,15 +199,22 @@ PDECLARE_CONTAINER(PFile, PChannel)
     BOOL IsEndOfFile() const;
       // Return TRUE if at end of file.
       
-    BOOL GetInfo(PFileInfo & info) const;
+    BOOL GetInfo(PFileInfo & info);
     static BOOL GetInfo(const PFilePath & name, PFileInfo & info);
-      // Get information on the specified file
+      // Get information (eg protection, timestamps) on the specified file
+
+    BOOL SetPermissions(int permissions);
+    static BOOL SetPermissions(const PFilePath & name, int permissions);
+      // Set permissions on the specified file
 
 
   protected:
     // Member variables
     PFilePath path;
       // The fully qualified path name for the file.
+
+    BOOL removeOnClose;
+      // File is to be removed when closed.
       
 
 // Class declaration continued in platform specific header file ///////////////
