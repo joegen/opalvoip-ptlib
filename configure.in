@@ -155,20 +155,20 @@ fi
 
 if test "${HAVE_LIBSSL:-unset}" != "unset" ; then
   dnl find headser files
-  AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
-  if test $SSLHDR != 1 ; then
-    AC_CHECK_HEADER(/usr/local/openssl/include/openssl/ssl.h, SSLHDR=1)
-    if test $SSLHDR = 1 ; then
+  AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=yes)
+  if test $SSLHDR != yes ; then
+    AC_CHECK_HEADER(/usr/local/openssl/include/openssl/ssl.h, SSLHDR=yes)
+    if test $SSLHDR = yes ; then
       SSLINCLUDEDIR=/usr/local/openssl/include
     else
-      AC_CHECK_HEADER(/usr/local/ssl/include/openssl/ssl.h, SSLHDR=1)
-      if test $SSLHDR = 1 ; then
+      AC_CHECK_HEADER(/usr/local/ssl/include/openssl/ssl.h, SSLHDR=yes)
+      if test $SSLHDR = yes ; then
         SSLINCLUDEDIR=/usr/local/ssl/include
       fi
     fi
   fi
 
-  if test $SSLHDR != 0 ; then
+  if test $SSLHDR = yes ; then
     AC_SUBST(HAS_OPENSSL, 1)
     AC_DEFINE(P_SSL, 1, "OpenSSL found")
     if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
