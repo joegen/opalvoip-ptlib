@@ -256,7 +256,7 @@ PINDEX CircularBuffer::Drain(char *outbuf, PINDEX len, Boolean lock) {
 
 
    if(done != len && (lock)) /* && Empty() */ {
-      PTRACE(1, "Buffer underrun for Drain " << len << " bytes");
+      PTRACE(3, "Buffer underrun for Drain " << len << " bytes");
    }
 
    // what to do if not as many bytes are available then

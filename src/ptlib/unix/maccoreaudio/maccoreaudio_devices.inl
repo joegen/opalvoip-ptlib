@@ -1,3 +1,18 @@
+/*
+ * And more stuff stolen from Shawn Pai-Hsiang Hsiao
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ * 
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *          
+ */
+ 
 
 /*
  * Returns the number of audio devices found.
@@ -37,6 +52,7 @@ static int CADeviceList(AudioDeviceID **devlist)
   return numDevices;
 }
 
+
 /*
  * Retrieves the name of the device, given its AudioDeviceID
  */
@@ -55,6 +71,7 @@ static PString CADeviceName(AudioDeviceID id)
 
   return (PString(name));
 }
+
 
 /*
  * XXX: don't know what is the best way to decide if a device supports
@@ -83,6 +100,7 @@ static int CADeviceSupportDirection(AudioDeviceID id, bool isInput )
     return (0);
   }
 }
+
 
 static AudioDeviceID GetDeviceID(PString deviceName, bool input){
   int numDevices;
