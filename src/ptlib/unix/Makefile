@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.100  2002/11/22 10:14:07  robertj
+# QNX port, thanks Xiaodan Tang
+#
 # Revision 1.99  2002/11/05 01:43:39  robertj
 # Added missing VxWorks files.
 #
@@ -454,6 +457,10 @@ endif
 
 ifdef HAS_ESD
 SOUND_SOURCE = esdaudio.cxx
+endif
+
+ifeq ($(OSTYPE),QNX)
+SOUND_SOURCE = qsa.cxx
 endif
 
 ifdef HAS_EXPAT

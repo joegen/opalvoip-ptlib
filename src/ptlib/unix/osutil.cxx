@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.76  2002/11/22 10:14:07  robertj
+ * QNX port, thanks Xiaodan Tang
+ *
  * Revision 1.75  2002/11/20 01:55:06  robertj
  * Fixed to follow new semantics of GetPath(), first entry is volume which on
  *   UNix machines is always an empty string. Also collapses consecutive
@@ -261,6 +264,10 @@
 #define random() rand()
 #define srandom(a) srand(a)
 
+#elif defined(P_QNX)
+#include <sys/dcmd_blk.h>
+#include <sys/statvfs.h>
+#define P_USE_STRFTIME
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -392,7 +399,7 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX) || defined (P_QNX)
   return strtoll(theArray, &dummy, base);
 #elif defined(P_VXWORKS) || defined(P_RTEMS)
   return strtol(theArray, &dummy, base);
@@ -404,7 +411,7 @@ PInt64 PString::AsInt64(unsigned base) const
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX) || defined (P_QNX)
   return strtoull(theArray, &dummy, base);
 #elif defined(P_VXWORKS) || defined(P_RTEMS)
   return strtoul(theArray, &dummy, base);
@@ -600,6 +607,18 @@ PString PDirectory::GetVolume() const
 {
   PString volume;
 
+#if defined(P_QNX)
+  int fd;
+  char mounton[257];
+
+  if ((fd = open(operator+("."), O_RDONLY)) != -1) {
+	mounton[256] = 0;
+	devctl(fd, DCMD_FSYS_MOUNTED_ON, mounton, 256, 0);
+	close(fd);
+	volume = strdup(mounton);
+  } 
+
+#else
   struct stat status;
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
@@ -661,11 +680,11 @@ PString PDirectory::GetVolume() const
   return PString::Empty();
 
 #else
-
 #warning Platform requires implemetation of GetVolume()
 
 #endif
   }
+#endif
 
   return volume;
 }
@@ -717,6 +736,18 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bfree*(PInt64)fs.f_bsize;
+  return TRUE;
+
+#elif defined(P_QNX)
+
+  struct statvfs fs;
+
+  if (statvfs(operator+("."), &fs) == -1)
+    return FALSE;
+
+  clusterSize = fs.f_bsize;
+  total = fs.f_blocks*(PInt64)fs.f_bsize;
+  free = fs.f_bavail*(PInt64)fs.f_bsize;
   return TRUE;
 
 #else
@@ -1521,7 +1552,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX)
   time_t t;
   time(&t);
   struct tm  * tm = localtime(&t);
@@ -1546,7 +1577,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
     return str;

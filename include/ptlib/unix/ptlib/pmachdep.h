@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.52  2002/11/22 10:14:07  robertj
+ * QNX port, thanks Xiaodan Tang
+ *
  * Revision 1.51  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -547,6 +550,36 @@ extern "C" {
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define seteuid setuid
 #define HAS_IFREQ
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_QNX)
+
+#if defined(P_PTHREADS)
+#define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+
+#include <pthread.h>
+#include <resolv.h> /* for pthread's h_errno */
+#endif
+
+#include <stdlib.h>
+#include <paths.h>
+#include <errno.h>
+#include <dlfcn.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <strings.h>
+#include <sys/select.h>
+#include <sys/termio.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/tcp.h>
+
+#define HAS_IFREQ
+#define PSETPGRP()  setpgrp()
 
 
 ///////////////////////////////////////////////////////////////////////////////
