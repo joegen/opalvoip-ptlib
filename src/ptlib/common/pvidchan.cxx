@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.15  2003/05/27 04:22:54  dereksmithies
+ * Test grabber size before issuing a grabber resize command.
+ *
  * Revision 1.14  2003/04/14 21:18:41  dereks
  * Formatting change.
  *
@@ -323,8 +326,10 @@ void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)
   PTRACE(6, "PVC\t Set Grabber frame size to " << _width << "x" << _height);
   PWaitAndSignal m(accessMutex);
 
-  if (mpInput != NULL)
-    mpInput->SetFrameSize((unsigned)_width, (unsigned)_height); 
+  if (mpInput != NULL) {
+    if ((GetGrabWidth() != _width) || (GetGrabHeight() != _height))
+      mpInput->SetFrameSize((unsigned)_width, (unsigned)_height);
+  } 
 }
 
 void  PVideoChannel::SetRenderFrameSize(int _width, int _height) 
