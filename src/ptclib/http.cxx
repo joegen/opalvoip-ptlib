@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.66  2002/03/19 23:24:08  robertj
+ * Fixed problems with backward compatibility on parameters processing.
+ *
  * Revision 1.65  2002/03/18 05:02:27  robertj
  * Added functions to set component parts of URL.
  * Fixed output of parameters when more than one ';' involved.
@@ -662,8 +665,12 @@ PString PURL::AsString(UrlFormat fmt) const
       if (!fragment)
         str << "#" << TranslateString(fragment, PathTranslation);
 
-      if (!paramVars.IsEmpty())
-        str << ';' << GetParameters();
+      for (i = 0; i < paramVars.GetSize(); i++) {
+        str << ';' << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
+        PString data = paramVars.GetDataAt(i);
+        if (!data)
+          str << '=' << TranslateString(data, QueryTranslation);
+      }
 
       if (!queryVars.IsEmpty())
         str << '?' << GetQuery();
@@ -748,10 +755,10 @@ PString PURL::GetParameters() const
   for (PINDEX i = 0; i < paramVars.GetSize(); i++) {
     if (i > 0)
       str << ';';
-    str << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
+    str << paramVars.GetKeyAt(i);
     PString data = paramVars.GetDataAt(i);
     if (!data)
-      str << '=' << TranslateString(data, QueryTranslation);
+      str << '=' << data;
   }
 
   return str;
