@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.14  1998/12/04 12:21:14  robertj
+ * FreeBSD support
+ *
  * Revision 1.13  1998/11/05 09:04:16  craigs
  * Changed free to runtime_free
  *
@@ -40,14 +43,22 @@
 #ifndef P_PTHREADS
 
 #ifdef P_LINUX
+#ifdef PPC
+//#define	SET_STACK	context[0].__jmpbuf[0].__misc[2] = (long int)stackTop-16;
+#define	STACK_MULT	4
+#else
 #ifdef JB_SP
 #define	SET_STACK	context[0].__jmpbuf[JB_SP] = (int)stackTop-16;
 #else
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
 #endif
-#define	SETJMP_PROLOG
+#endif
 #include <sys/mman.h>
 #define	USE_MMAP	MAP_ANON | MAP_PRIVATE
+#endif
+
+#ifdef P_FREEBSD
+#define	SET_STACK	context[0]._jb[2] = (int)stackTop-16;
 #endif
 
 #ifdef P_SUN4
@@ -65,16 +76,14 @@
 
 #ifdef P_HPUX
 #define SET_STACK	context[1] = (int)(stackBase+64*2);
-#define	SETJMP_PROLOG
 #endif
 
 #ifdef P_ULTRIX
 #define SET_STACK	context[JB_SP] = (int)(stackTop-16);
-#define	SETJMP_PROLOG
 #endif
 
-#ifndef SET_STACK
-#warning No lightweight thread context switch mechanism defined
+#ifndef	SETJMP_PROLOG
+#define	SETJMP_PROLOG
 #endif
 
 #ifndef STACK_MIN
@@ -95,19 +104,17 @@ void PThread::SwitchContext(PThread * from)
   if (this == from)
     return;
 
-  //
+#ifdef SET_STACK
+
   //  save context for old thread
-  //
   SETJMP_PROLOG
   if (setjmp(from->context) != 0) // Are being reactivated from previous yield
     return;
 
-  //
   //  if starting the current thread, create a context, give it a new stack
   //  and then switch to it.
   //  if we have just switched into a new thread, execute the BeginThread
   //  function
-  //
   if (status == Starting) {
     localThis = this;
     SETJMP_PROLOG
@@ -118,13 +125,16 @@ void PThread::SwitchContext(PThread * from)
     SET_STACK
   }
 
-  /////////////////////////////////////////////////
-  //
   //  switch to the new thread
-  //
-  /////////////////////////////////////////////////
   longjmp(context, TRUE);
   PAssertAlways("Return from longjmp not allowed");
+
+#else
+
+#warning No lightweight thread context switch mechanism defined
+  PAssertAlways("SwitchContext() not implemented");
+
+#endif
 }
 
 
@@ -152,7 +162,7 @@ void PThread::FreeStack()
 #if defined(USE_MMAP)
     munmap(stackBase, stackTop-stackBase+1);
 #else
-    runtime_free(stackBase);
+    free(stackBase);
 #endif
 }
 
