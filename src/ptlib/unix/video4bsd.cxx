@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.21  2004/01/02 23:30:18  rjongbloed
+ * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
+ *
  * Revision 1.20  2002/10/28 19:12:45  rogerh
  * Add svideo input support for Lars Eggert <larse@isi.edu>
  *
@@ -204,19 +207,6 @@ BOOL PVideoInputDevice::Stop()
 BOOL PVideoInputDevice::IsCapturing()
 {
   return IsOpen();
-}
-
-
-PStringList PVideoInputDevice::GetInputDeviceNames()
-{
-  PStringList list;
-
-  list.AppendString("/dev/bktr0");
-  list.AppendString("/dev/bktr1");
-  list.AppendString("/dev/meteor0");
-  list.AppendString("/dev/meteor1");
-
-  return list;
 }
 
 
