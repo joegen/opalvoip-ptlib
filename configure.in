@@ -338,7 +338,15 @@ if test ${HAS_PTHREADS} = yes ; then
 
   AC_CHECK_LIB(pthread, sem_timedwait, HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
   if test ${HAS_SEMAPHORES_XPG6} = yes ; then
-    AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")
+    AC_MSG_CHECKING(if sem_timedwait will compile)
+    AC_TRY_COMPILE([#include <semaphore.h>],
+                    [sem_t *s; const struct timespec * t; sem_timedwait(s, t);], HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
+    if test ${HAS_SEMAPHORES_XPG6} = yes ; then
+      AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
   fi
 fi
 
