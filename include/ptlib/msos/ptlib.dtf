@@ -377,7 +377,6 @@ EXPORTS
     ??1POrdinalKey@@UAE@XZ @356 NONAME ;public: virtual __thiscall POrdinalKey::~POrdinalKey(void)
     ??1POrdinalToString@@UAE@XZ @357 NONAME ;public: virtual __thiscall POrdinalToString::~POrdinalToString(void)
     ??1PPipeChannel@@UAE@XZ @358 NONAME ;public: virtual __thiscall PPipeChannel::~PPipeChannel(void)
-    ??1PPluginDynamic@@UAE@XZ @2683 NONAME ;public: virtual __thiscall PPluginDynamic::~PPluginDynamic(void)
     ??1PPluginManager@@UAE@XZ @2684 NONAME ;public: virtual __thiscall PPluginManager::~PPluginManager(void)
     ??1PPluginService@@UAE@XZ @2685 NONAME ;public: virtual __thiscall PPluginService::~PPluginService(void)
     ??1PProcess@@UAE@XZ @359 NONAME ;public: virtual __thiscall PProcess::~PProcess(void)
@@ -694,7 +693,6 @@ EXPORTS
     ??_7POrdinalToString@@6B@ @705 NONAME ;const  POrdinalToString::`vftable'
     ??_7PPipeChannel@@6Biostream@@@ @706 NONAME ;const  PPipeChannel::`vftable'{for `iostream'}
     ??_7PPipeChannel@@6BPObject@@@ @707 NONAME ;const  PPipeChannel::`vftable'{for `PObject'}
-    ??_7PPluginDynamic@@6B@ @2690 NONAME ;const  PPluginDynamic::`vftable'
     ??_7PPluginManager@@6B@ @2691 NONAME ;const  PPluginManager::`vftable'
     ??_7PPluginService@@6B@ @2692 NONAME ;const  PPluginService::`vftable'
     ??_7PProcess@@6B@ @708 NONAME ;const  PProcess::`vftable'
