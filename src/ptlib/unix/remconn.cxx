@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.17  1998/11/30 21:51:49  robertj
+ * New directory structure.
+ *
  * Revision 1.16  1998/09/24 04:12:15  robertj
  * Added open software license.
  *
@@ -35,8 +38,8 @@
 #pragma implementation "remconn.h"
 
 #include <ptlib.h>
-#include <pipechan.h>
-#include <remconn.h>
+#include <ptlib/pipechan.h>
+#include <ptlib/remconn.h>
 
 #include <stdio.h>
 #include <sys/ioctl.h>
