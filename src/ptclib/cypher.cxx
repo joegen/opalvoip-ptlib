@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.17 1996/11/16 10:50:26 robertj Exp $
+ * $Id: cypher.cxx,v 1.18 1997/07/26 11:35:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.18  1997/07/26 11:35:38  robertj
+ * Fixed bug where illegal data errors were not propagated.
+ *
  * Revision 1.17  1996/11/16 10:50:26  robertj
  * ??
  *
@@ -447,7 +450,8 @@ void PCypher::Encode(const void * data, PINDEX length, PBYTEArray & coded)
 PString PCypher::Decode(const PString & cypher)
 {
   PBYTEArray clearText;
-  Decode(cypher, clearText);
+  if (Decode(cypher, clearText) == 0)
+    return PString();
   return PString((const char *)(const BYTE *)clearText, clearText.GetSize());
 }
 
@@ -455,7 +459,8 @@ PString PCypher::Decode(const PString & cypher)
 BOOL PCypher::Decode(const PString & cypher, PBYTEArray & clear)
 {
   PBYTEArray coded;
-  PBase64::Decode(cypher, coded);
+  if (!PBase64::Decode(cypher, coded))
+    return FALSE;
   return Decode(coded, clear);
 }
 
