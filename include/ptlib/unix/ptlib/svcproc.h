@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.9  1998/11/30 22:07:15  robertj
+ * New directory structure.
+ *
  * Revision 1.8  1998/09/24 04:11:58  robertj
  * Added open software license.
  *
@@ -57,7 +60,7 @@
 
 #pragma interface
 
-#include "../../common/ptlib/svcproc.h"
+#include "../../svcproc.h"
   protected:
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
