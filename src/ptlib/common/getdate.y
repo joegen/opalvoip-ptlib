@@ -1,3 +1,5 @@
+%expect 10
+
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
