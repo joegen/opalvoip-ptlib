@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.34  2001/06/14 02:09:20  robertj
+ * Corrected support for ASN object class type reference constructs
+ *   ie TYPE-IDENTIFIER.&Type encoded as octet string.
+ *
  * Revision 1.33  2001/04/26 08:15:58  robertj
  * Fixed problem with ASN compile of single constraints on enumerations.
  *
@@ -281,7 +285,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 4, ReleaseCode, 1)
+  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 0)
 {
 }
 
@@ -2809,7 +2813,7 @@ ObjectClassFieldType::ObjectClassFieldType(PString * objclass, PString * field)
 
 const char * ObjectClassFieldType::GetAncestorClass() const
 {
-  return "";
+  return "PASN_OctetString";
 }
 
 
@@ -2821,17 +2825,34 @@ void ObjectClassFieldType::PrintOn(ostream & strm) const
 }
 
 
+TypeBase * ObjectClassFieldType::FlattenThisType(const TypeBase & parent)
+{
+  return new DefinedType(this, parent);
+}
+
+
+BOOL ObjectClassFieldType::IsPrimitiveType() const
+{
+  return FALSE;
+}
+
+
 void ObjectClassFieldType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
-  hdr << "//\n"
-         "// " << GetName() << "\n"
-         "//\n"
-         "\n"
-         "typedef ";
+  BeginGenerateCplusplus(hdr, cxx);
+
+  hdr << "    BOOL DecodeSubType(";
   GenerateCplusplusConstraints(PString(), hdr, cxx);
-  hdr << ' ' << GetIdentifier() << ";\n"
-         "\n"
+  hdr << " & obj) { return PASN_OctetString::DecodeSubType(obj); }\n"
+         "    void EncodeSubType(const ";
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
+  hdr << " & obj) { PASN_OctetString::EncodeSubType(obj); } \n"
          "\n";
+
+  cxx << ")\n"
+         "{\n";
+
+  EndGenerateCplusplus(hdr, cxx);
 }
 
 
