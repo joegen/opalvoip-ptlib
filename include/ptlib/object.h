@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.52  1999/08/24 08:15:23  robertj
+ * Added missing operator on smart pointer to return the pointer!
+ *
  * Revision 1.51  1999/08/24 06:54:36  robertj
  * Cleaned up the smart pointer code (macros).
  *
@@ -1823,6 +1826,8 @@ The macro declares in the class the following functions:
       { return (type *)PAssertNULL(object); } \
     type & operator*() const \
       { return *(type *)PAssertNULL(object); } \
+    operator type*() const \
+      { return (type *)object; }
 
 
 
