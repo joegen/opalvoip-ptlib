@@ -77,28 +77,31 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 3. CVS Access
 -------------
 
-There is a public CVS archive available at cvs.sourceforge.net Note that there are
-still some parts of PWLib that are not available, so make sure you use the
-modules provided for check out and do not just try and check out "pwlib" on it's
-own. If you do all you will get is this file.
+There is a public CVS archive available at cvs.sourceforge.net. To avoid
+everyone getting all of the code platforms, we have provided CVS "modules"
+that allow the Windows and Unix source trees to be extracted seperately.
 
+The available modules are:
 
-cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 login 
+	pwlib			This ReadMe.txt file only
+	ptlib_unix		Unix libraries only
+	ptlib_win32		Windows libraries only
+	pwlib_win32		Windows libraries + GUI (needed for OpenPhone)
+	openh323		OpenH323 only
 
-cvs -z9 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co <modulename>
+Note that the ptlib_unix, ptlib_win32 and pwlib_win32 modules all extract 
+subcomponents of the pwlib directory tree using the CVS modules file - they
+are not different directories.
 
+To extract one of these modules, use a command line like the following:
 
-Some of the modules available are:
+        cvs -z3 -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co module
 
-	ptlib_unix
-	pwlib_xlib (does not work, anyone is welcome to fix!)
-	ptlib_win32
-	pwlib_win32
-        openh323
-	contrib
+where "module" is one of the module names specified above.
 
-See the CVS web access for a complete list.
+If you would like see the structure of the CVS, then use the View CVS tool at:
 
+	http://cvs.sourceforge.net/viewcvs.py/openh323/
 
 ================================================================================
 
@@ -1213,7 +1216,10 @@ sure you build the non-DLL Debug and Release versions.
 7.8.2. EXPAT under Windows
 ---------------------------
 The easiest way is to get the one in the OpenH323 CVS. This is guranteed to
-work. Use "cvs -d :pserver:openh323@cvs.openh323.org:/home/cvsroot co external/expat"
+work. Use the following command to do this:
+
+  cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co external/expat
+
 and then use the expat.dsw file to build the Debug and Release libraries.
 
 7.8.3. OpenLDAP under Windows
