@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.65  2004/05/19 22:27:19  csoutheren
+ * Added fix for gcc 2.95
+ *
  * Revision 1.64  2004/05/18 21:49:25  csoutheren
  * Added ability to display trace output from program startup via environment
  * variable or by application creating a PProcessStartup descendant
@@ -807,12 +810,15 @@ class PProcessStartup : public PObject
 
 typedef PGenericFactory<PProcessStartup> PProcessStartupFactory;
 
-template <unsigned level, unsigned options = PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine>
+// using an inline definition rather than a #define crashes gcc 2.95. Go figure
+#define P_DEFAULT_TRACE_OPTIONS	( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
+
+template <unsigned _level, unsigned _options = P_DEFAULT_TRACE_OPTIONS >
 class PTraceLevelSetStartup : public PProcessStartup
 {
   public:
     void OnStartup()
-    { PTrace::Initialise(level, NULL, options); }
+    { PTrace::Initialise(_level, NULL, _options); }
 };
 
 #endif
