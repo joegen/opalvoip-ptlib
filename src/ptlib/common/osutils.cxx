@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.15 1994/07/27 05:58:07 robertj Exp $
+ * $Id: osutils.cxx,v 1.16 1994/08/01 03:39:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.15  1994/07/27 05:58:07  robertj
+ * Revision 1.16  1994/08/01 03:39:42  robertj
+ * Fixed temporary variable problem with GNU C++
+ *
+ * Revision 1.15  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.14  1994/07/25  03:39:22  robertj
@@ -910,8 +913,8 @@ static const char PortOutputFlow[] = "PortOutputFlow";
 
 BOOL PSerialChannel::Open(PConfig & cfg)
 {
-  PString defPort = GetPortNames()[0];
-  return Open(cfg.GetString(PortName, defPort),
+  PStringList ports = GetPortNames();
+  return Open(cfg.GetString(PortName, ports[0]),
               cfg.GetInteger(PortSpeed, 9600),
               (BYTE)cfg.GetInteger(PortDataBits, 8),
               (PSerialChannel::Parity)cfg.GetInteger(PortParity, 1),
