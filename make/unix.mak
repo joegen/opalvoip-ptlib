@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.141  2002/11/02 00:48:58  robertj
+# Changed test for IPv6, old test picked up old versions which are no good.
+#
 # Revision 1.140  2002/11/01 23:55:52  robertj
 # Added automatic inclusion of IPv6 if present in system.
 #
@@ -1389,7 +1392,7 @@ endif
 
 # define IP v6 stuff
 ifndef NO_IPv6
-ifneq (,$(wildcard /$(SYSINCDIR)/netinet/ip6.h))
+ifneq (,$(wildcard /proc/net/if_inet6))
 STDCCFLAGS	+= -DP_HAS_IPV6
 endif
 endif
