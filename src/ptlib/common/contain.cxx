@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.29 1994/12/05 11:19:36 robertj Exp $
+ * $Id: contain.cxx,v 1.30 1994/12/12 10:16:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,14 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.29  1994/12/05 11:19:36  robertj
+ * Revision 1.30  1994/12/12 10:16:27  robertj
+ * Restructuring and documentation of container classes.
+ * Renaming of some macros for declaring container classes.
+ * Added some extra functionality to PString.
+ * Added start to 2 byte characters in PString.
+ * Fixed incorrect overrides in PCaselessString.
+ *
+ * Revision 1.29  1994/12/05  11:19:36  robertj
  * Moved SetMinSize from PAbstractArray to PContainer.
  *
  * Revision 1.28  1994/11/28  12:37:29  robertj
@@ -328,6 +335,34 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef PHAS_UNICODE
+#define PSTRING_COPY(d, s, l) UnicodeCopy((WORD *)(d), (s), (l))
+#define PSTRING_MOVE(d, doff, s, soff, l) \
+            memcpy(((WORD*)(d))+(doff), ((WORD*)(s))+(soff), (l)*sizeof(WORD))
+static void UnicodeCopy(WORD * theArray, char * src, size_t len)
+{
+  while (len-- > 0)
+    *theArray++ = *src++;
+}
+#else
+#define PSTRING_COPY(d, s, l) memcpy((d), (s), (l))
+#define PSTRING_MOVE(d, doff, s, soff, l) memcpy((d)+(doff), (s)+(soff), (l))
+#endif
+
+PString::PString(const char * cstr)
+  : PSTRING_ANCESTOR_CLASS(strlen(PAssertNULL(cstr))+1)
+{
+  PSTRING_COPY(theArray, cstr, GetSize());
+}
+
+
+PString::PString(const char * cstr, PINDEX len)
+  : PSTRING_ANCESTOR_CLASS(len+1)
+{
+  PSTRING_COPY(theArray, PAssertNULL(cstr), len);
+}
+
+
 static int TranslateHex(char x)
 {
   if (x >= 'a')
@@ -386,7 +421,7 @@ PString::PString(ConversionType type, const char * str, ...)
       if (*str != '\0') {
         PINDEX len = *str & 0xff;
         PAssert(SetSize(len+1), POutOfMemory);
-        memcpy(theArray, str+1, len);
+        PSTRING_COPY(theArray, str+1, len);
       }
       break;
 
@@ -394,7 +429,7 @@ PString::PString(ConversionType type, const char * str, ...)
       if (str[0] != '\0' && str[1] != '\0') {
         PINDEX len = str[0] | (str[1] << 8);
         PAssert(SetSize(len+1), POutOfMemory);
-        memcpy(theArray, str+1, len);
+        PSTRING_COPY(theArray, str+2, len);
       }
       break;
 
@@ -516,14 +551,33 @@ PObject::Comparison PString::Compare(const PObject & obj) const
 
 PINDEX PString::HashFunction() const
 {
+#ifdef PHAS_UNICODE
+  return (((WORD*)theArray)[0]+((WORD*)theArray)[1]+((WORD*)theArray)[2])%23;
+#else
   return ((BYTE)theArray[0]+(BYTE)theArray[1]+(BYTE)theArray[2])%23;
+#endif
 }
 
 
 BOOL PString::IsEmpty() const
 {
+#ifdef PHAS_UNICODE
+  return *(WORD*)theArray == '\0';
+#else
   return *theArray == '\0';
+#endif
 }
+
+
+#ifdef PHAS_UNICODE
+PINDEX PString::GetLength() const
+{
+  for (len = 0; len < GetSize(); len++)
+    if (((WORD *)theArray)[len] == 0)
+      break;
+  return len;
+}
+#endif
 
 
 PString PString::operator+(const char * cstr) const
@@ -532,8 +586,8 @@ PString PString::operator+(const char * cstr) const
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   PString str;
   str.SetSize(olen+alen);
-  memcpy(str.theArray, theArray, olen);
-  memcpy(str.theArray+olen, cstr, alen);
+  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  PSTRING_COPY(str.theArray+olen, cstr, alen);
   return str;
 }
 
@@ -543,8 +597,8 @@ PString PString::operator+(char c) const
   PINDEX olen = GetLength();
   PString str;
   str.SetSize(olen+2);
-  memcpy(str.theArray, theArray, olen);
-  str.theArray[olen] = c;
+  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  str.SetAt(olen, c);
   return str;
 }
 
@@ -554,8 +608,22 @@ PString & PString::operator+=(const char * cstr)
   PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   SetSize(olen+alen);
-  memcpy(theArray+olen, cstr, alen);
+  PSTRING_COPY(theArray+olen, cstr, alen);
   return *this;
+}
+
+
+void PString::Insert(const char * cstr, PINDEX pos)
+{
+  register PINDEX slen = GetLength();
+  if (pos >= slen)
+    operator+=(cstr);
+  else {
+    PINDEX clen = strlen(PAssertNULL(cstr));
+    SetSize(slen+clen);
+    PSTRING_MOVE(theArray, pos+clen, theArray, pos, slen-pos);
+    PSTRING_COPY(theArray+pos, cstr, clen);
+  }
 }
 
 
@@ -567,9 +635,9 @@ void PString::Delete(PINDEX start, PINDEX len)
 
   SetSize(GetSize());
   if (start + len > slen)
-    theArray[start] = '\0';
+    SetAt(start, '\0');
   else
-    strcpy(theArray+start, theArray+start+len);
+    PSTRING_MOVE(theArray, start, theArray, start+len, slen-start-len);
   MakeMinimumSize();
 }
 
@@ -638,12 +706,12 @@ PINDEX PString::Find(char ch, PINDEX offset) const
 }
 
 
-PINDEX PString::Find(const PString & str, PINDEX offset) const
+PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
   register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
-  char *cpos = strstr(theArray+offset, str.theArray);
+  char *cpos = strstr(theArray+offset, PAssertNULL(cstr));
   return cpos != NULL ? (int)(cpos - theArray) : P_MAX_INDEX;
 }
 
@@ -654,41 +722,44 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
   if (offset > len)
     offset = len;
 
-  while (theArray[offset] != ch) {
+  char *cpos = theArray + offset;
+  while (*cpos != ch) {
     if (offset == 0)
       return P_MAX_INDEX;
     offset--;
+    cpos--;
   }
 
   return offset;
 }
 
 
-PINDEX PString::FindLast(const PString & str, PINDEX offset) const
+PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
-  char *p1 = strstr(theArray, str.theArray);
-  if (p1 == NULL)
+  PINDEX p1 = Find(cstr);
+  if (p1 == P_MAX_INDEX)
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
   if (offset > len)
     offset = len;
 
-  char *p2;
-  while ((p2 = strstr(p1, str.theArray)) != NULL &&
-                                                (int)(p2 - theArray) < offset)
+  PINDEX p2;
+  while ((p2 = Find(cstr, p1+1)) != P_MAX_INDEX && p2 < offset)
     p1 = p2;
-  return (int)(p1 - theArray);
+
+  return p1;
 }
 
 
-PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
+PINDEX PString::FindOneOf(const char * cstr, PINDEX offset) const
 {
+  PAssertNULL(cstr);
   register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   for (char * cpos = theArray+offset; *cpos != '\0'; cpos++) {
-    if (strchr(str.theArray, *cpos) != NULL)
+    if (strchr(cstr, *cpos) != NULL)
       return (int)(cpos - theArray);
   }
   return P_MAX_INDEX;
@@ -696,7 +767,7 @@ PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
 
 
 PStringArray
-      PString::Tokenise(const PString & separators, BOOL onePerSeparator) const
+        PString::Tokenise(const char * separators, BOOL onePerSeparator) const
 {
   PStringArray tokens;
   
@@ -831,14 +902,22 @@ double PString::AsReal() const
 }
 
 
-PString PString::ToPascal() const
+PBYTEArray PString::ToPascal() const
 {
   PINDEX len = GetLength();
   PAssert(len < 256, "Cannot convert to PASCAL string");
-  char buf[256];
-  buf[0] = (char)len;
+  BYTE buf[256];
+  buf[0] = (BYTE)len;
+#ifdef PHAS_UNICODE
+  WORD * ptr = (WORD *)theArray;
+  while (len > 0) {
+    buf[len] = (BYTE)(*ptr < 256 ? *ptr : 255);
+    len--;
+  }
+#else
   memcpy(&buf[1], theArray, len);
-  return PString(buf, len+1);
+#endif
+  return PBYTEArray(buf, len+1);
 }
 
 
@@ -941,6 +1020,7 @@ PINDEX PCaselessString::Find(char ch, PINDEX offset) const
   register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
+
   char *cpos = theArray+offset;
   int chu = toupper(ch);
   while (toupper(*cpos) != chu) {
@@ -951,35 +1031,68 @@ PINDEX PCaselessString::Find(char ch, PINDEX offset) const
 }
 
 
-PINDEX PCaselessString::Find(const char *cstr, PINDEX offset) const
+PINDEX PCaselessString::Find(const char * cstr, PINDEX offset) const
 {
-  PString str(cstr);
-  return ToUpper().Find(str.ToUpper(), offset);
-}
+  PAssertNULL(cstr);
+  register PINDEX len = GetLength();
+  if (offset > len)
+    offset = len;
 
-
-PINDEX PCaselessString::FindLast(char ch) const
-{
-  char *cpos = theArray+GetLength()-1;
-  int chu = toupper(ch);
-  while (toupper(*cpos) != chu) {
-    if (--cpos == theArray)
-      return P_MAX_INDEX;
+  const char *cpos = theArray+offset;
+  while (*cpos != '\0') {
+    const char * cptr = cstr;
+    while (toupper(*cptr) == toupper(*cpos)) {
+      cptr++;
+      if (*cptr == '\0')
+        return (int)(cpos - theArray);
+    }
+    cpos++;
   }
-  return (int)(cpos - theArray);
+  return P_MAX_INDEX;
 }
 
 
-PINDEX PCaselessString::FindLast(const char *cstr) const
+PINDEX PCaselessString::FindLast(char ch, PINDEX offset) const
 {
-  PString str(cstr);
-  return ToUpper().FindLast(str.ToUpper());
+  PINDEX len = GetLength();
+  if (offset > len)
+    offset = len;
+
+  int chu = toupper(ch);
+  char *cpos = theArray + offset;
+  while (toupper(*cpos) != chu) {
+    if (offset == 0)
+      return P_MAX_INDEX;
+    offset--;
+    cpos--;
+  }
+
+  return offset;
 }
+
+
+PINDEX PCaselessString::FindOneOf(const char * cset, PINDEX offset) const
+{
+  PAssertNULL(cset);
+  register PINDEX len = GetLength();
+  if (offset > len)
+    offset = len;
+  for (char * cpos = theArray+offset; *cpos != '\0'; cpos++) {
+    const char * setptr = cset;
+    while (*setptr != '\0') {
+      if (toupper(*setptr) == toupper(*cpos))
+        return (int)(cpos - theArray);
+      setptr++;
+    }
+  }
+  return P_MAX_INDEX;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int PStringStreamBuffer::overflow(int c)
+int PStringStream::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
     int gpos = gptr() - eback();
@@ -996,13 +1109,13 @@ int PStringStreamBuffer::overflow(int c)
 }
 
 
-int PStringStreamBuffer::underflow()
+int PStringStream::Buffer::underflow()
 {
   return gptr() >= egptr() ? EOF : *gptr();
 }
 
 
-int PStringStreamBuffer::sync()
+int PStringStream::Buffer::sync()
 {
   char * base = string->GetPointer();
   char * end = base + string->GetLength();
@@ -1012,7 +1125,7 @@ int PStringStreamBuffer::sync()
 }
 
 
-streampos PStringStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
+streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
 {
   int len = string->GetLength();
   int gpos = gptr() - eback();
@@ -1071,21 +1184,21 @@ streampos PStringStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int mod
 
 PStringStream::PStringStream()
 {
-  init(PNEW PStringStreamBuffer(this));
+  init(PNEW PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const PString & str)
   : PString(str)
 {
-  init(PNEW PStringStreamBuffer(this));
+  init(PNEW PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const char * cstr)
   : PString(cstr)
 {
-  init(PNEW PStringStreamBuffer(this));
+  init(PNEW PStringStream::Buffer(this));
 }
 
 
@@ -1099,7 +1212,7 @@ PStringStream & PStringStream::operator=(const PString & str)
 
 PStringStream::~PStringStream()
 {
-  delete (PStringStreamBuffer *)rdbuf();
+  delete (PStringStream::Buffer *)rdbuf();
   init(NULL);
 }
 
