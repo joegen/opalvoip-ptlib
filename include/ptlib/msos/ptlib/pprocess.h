@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ * $Id: pprocess.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Prevent WinMain in pure MSDOS versions.
+ *
+ * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
  *
  */
@@ -23,8 +26,11 @@
   private:
     PThread * currentThread;
 
-  friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
   friend class PThread;
+
+#ifdef _WINDOWS
+  friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+#endif
 };
 
 
