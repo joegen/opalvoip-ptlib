@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.40  1999/08/22 12:13:43  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.39  1999/05/28 14:01:22  robertj
  * Added initialisers to string containers (list, sorted list and set).
  *
@@ -212,12 +215,12 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
     /**Construct an empty string. This will have one character in it which is
        the '\0' character.
      */
-    PString();
+    PINLINE PString();
 
     /**Create a new reference to the specified string. The string memory is not
        copied, only the pointer to the data.
      */
-    PString(
+    PINLINE PString(
       const PString & str  /// String to create new reference to.
     );
 
@@ -470,7 +473,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
        @return
        length of the null terminated string.
      */
-    PINDEX GetLength() const;
+    PINLINE PINDEX GetLength() const;
 
     /**Determine if the string is NOT empty. This is semantically identical
        to executing !IsEmpty() on the string.

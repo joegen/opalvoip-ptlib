@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.24  1999/08/22 12:13:43  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.23  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -121,7 +124,7 @@ class POrdinalKey : public PObject
   //@{
     /** Create a new key for ordinal index values.
      */
-    POrdinalKey(
+    PINLINE POrdinalKey(
       PINDEX newKey   /// Ordinal index value to use as a key.
     );
   //@}
@@ -163,7 +166,7 @@ class POrdinalKey : public PObject
   //@{
     /** Operator so that a POrdinalKey can be used as a PINDEX value.
      */
-    operator PINDEX() const;
+    PINLINE operator PINDEX() const;
   //@}
 
   private:
@@ -237,7 +240,7 @@ class PHashTable : public PCollection
        @return
        TRUE if the object value is in the set.
      */
-    BOOL AbstractContains(
+    PINLINE BOOL AbstractContains(
       const PObject & key   /// Key to look for in the set.
     ) const;
 
@@ -330,7 +333,7 @@ class PAbstractSet : public PHashTable
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
-    PAbstractSet();
+    PINLINE PAbstractSet();
   //@}
 
   /**@name Overrides from class PCollection */
@@ -672,7 +675,7 @@ class PAbstractDictionary : public PHashTable
        Note that by default, objects placed into the dictionary will be deleted
        when removed or when all references to the dictionary are destroyed.
      */
-    PAbstractDictionary();
+    PINLINE PAbstractDictionary();
   //@}
 
   /**@name Overrides from class PObject */
@@ -838,7 +841,7 @@ class PAbstractDictionary : public PHashTable
   //@}
 
   protected:
-    PAbstractDictionary(int dummy, const PAbstractDictionary * c);
+    PINLINE PAbstractDictionary(int dummy, const PAbstractDictionary * c);
 
   private:
     virtual PINDEX Append(

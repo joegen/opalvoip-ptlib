@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.71  1999/08/22 12:13:43  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.70  1999/07/06 04:45:59  robertj
  * Fixed being able to case an unsigned to a PTimeInterval.
  * Improved resolution of PTimer::Tick() to be millisecond accurate.
@@ -499,9 +502,6 @@ PINLINE PDirectory::PDirectory(const PString & pathname)
 
 PINLINE void PDirectory::DestroyContents()
   { Close(); PFilePathString::DestroyContents(); }
-
-PINLINE void PDirectory::CloneContents(const PDirectory * d)
-  { CopyContents(*d); }
 
 PINLINE BOOL PDirectory::Exists() const
   { return Exists(*this); }
