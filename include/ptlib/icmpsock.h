@@ -1,5 +1,5 @@
 /*
- * $Id: icmpsock.h,v 1.3 1996/09/14 13:09:19 robertj Exp $
+ * $Id: icmpsock.h,v 1.4 1996/11/04 03:57:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.4  1996/11/04 03:57:16  robertj
+ * Rewrite of ping for Win32 support.
+ *
  * Revision 1.3  1996/09/14 13:09:19  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -69,30 +72,14 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
      */
 
 
-    BOOL WritePing(
-      const PString & host,   // Host to send ping.
-      PingInfo & info         // Information on the ping and reply.
-    );
-    /* Send an ECHO_REPLY message to the specified host.
-
-       <H2>Returns:</H2>
-       FALSE if host not found or no response.
-     */
-
-    BOOL ReadPing(
-      PingInfo & info         // Information on the ping and reply.
-    );
-    /* Receive an ECHO_REPLY message from the host.
-
-       <H2>Returns:</H2>
-       FALSE if an error occurred.
-     */
-
-
-
   protected:
+    const char * GetProtocolName() const;
     virtual BOOL OpenSocket();
-    virtual const char * GetProtocolName() const;
 
 
 // Class declaration continued in platform specific header file ///////////////
+
+
+
+
+
