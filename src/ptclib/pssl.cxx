@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.18 2001/02/16 07:13:41 robertj Exp $
+ * $Id: pssl.cxx,v 1.19 2001/05/09 07:00:22 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.19  2001/05/09 07:00:22  robertj
+ * Removed clearing of lock callbacks in context destructor, should not!
+ *
  * Revision 1.18  2001/02/16 07:13:41  robertj
  * Fixed bug in PSSLChannel error detection, thinks a zero byte write is error.
  *
@@ -426,7 +429,6 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 
 PSSLContext::~PSSLContext()
 {
-  CRYPTO_set_locking_callback(NULL);
   SSL_CTX_free(context);
 }
 
