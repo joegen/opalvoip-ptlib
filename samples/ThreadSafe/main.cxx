@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2003/10/27 22:12:56  dereksmithies
+ * Add more good changes to get Compare method work. Thanks to Gene Small
+ *
  * Revision 1.4  2003/10/13 23:38:31  dereksmithies
  * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
  *
@@ -57,10 +60,11 @@ PObject::Comparison TestObject::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(Class()), PInvalidCast);
   unsigned othervalue = ((const TestObject &)obj).value;
+      
   if (value < othervalue)
     return LessThan;
   if (value > othervalue)
-    return GreaterThan;
+    return GreaterThan; 
   return EqualTo;
 }
 
@@ -156,16 +160,17 @@ void ThreadSafe::Test1(PArgList & args)
     Sleep(5000);
   }
 
-  Test1Output();
+  Test1OutputEnd();
   sorted.RemoveAll();
   unsorted.RemoveAll();
   sparse.RemoveAll();
-  Test1Output();
+  Test1OutputEnd();
 }
 
 
 void ThreadSafe::Test1Output()
 {
+  PSafePtr<TestObject> ptr;
   sorted.DeleteObjectsToBeRemoved();
   unsorted.DeleteObjectsToBeRemoved();
   sparse.DeleteObjectsToBeRemoved();
@@ -175,14 +180,39 @@ void ThreadSafe::Test1Output()
        << ", Unsorted=" << unsorted.GetSize()
        << ", Sorted=" << sorted.GetSize()
        << ", Dictionary=" << sparse.GetSize()
-       << ", Objects=";
+       << ", Objects:";
+
 
   mutexObjects.Wait();
-  cout << currentObjects << '/' << totalObjects;
+  cout << currentObjects << '/' << totalObjects << endl;
   mutexObjects.Signal();
-
-  cout << endl;
+  
 }
+
+void ThreadSafe::Test1OutputEnd()
+{
+  PSafePtr<TestObject> ptr;
+
+  Test1Output();
+
+  cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Unsorted:" << endl;
+  for (ptr = unsorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+    cout << *ptr << endl;
+    }
+    
+  cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Sorted:" << endl;
+  for (ptr = sorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+    cout << *ptr << endl;
+    }
+
+  cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Sparse:" << endl;
+  for (ptr = sparse.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+    cout << *ptr << endl;
+    }
+
+
+}
+
 
 
 void ThreadSafe::Test1Thread(PThread &, INT duration)
@@ -193,7 +223,7 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
   PTimer timeout = duration;
 
   while (timeout.IsRunning()) {
-    switch (random%15) {
+    switch (random%17) {
       case 0 :
         if (random%(unsorted.GetSize()+1) == 0) 	
           unsorted.Append(new TestObject(*this, random));
@@ -270,6 +300,27 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
         for (ptr = sparse.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
+
+
+      case 15 :
+        if ( unsorted.GetSize() > 0 ) {
+	        PSafePtr<TestObject> ptr2 = unsorted.GetWithLock(unsorted.GetSize() - 1, PSafeReadOnly);
+	  
+	        if ( ptr2 != NULL )
+            ptr2 = unsorted.FindWithLock(*ptr2, PSafeReadOnly);
+	        }
+		
+        break;
+
+      case 16 :
+        if ( sorted.GetSize() > 0 ) {
+	        PSafePtr<TestObject> ptr2 = unsorted.GetWithLock(sorted.GetSize() - 1, PSafeReference);
+		
+	        if ( ptr2 != NULL )
+            ptr2 = sorted.FindWithLock(*ptr2, PSafeReference);
+		      }
+        break;
+
     }
     Sleep(random%500);
   }

@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.6  2003/10/27 22:12:56  dereksmithies
+ * Add more good changes to get Compare method work. Thanks to Gene Small
+ *
  * Revision 1.5  2003/10/13 23:38:31  dereksmithies
  * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
  *
@@ -46,10 +49,6 @@ class TestObject : public PSafeObject
     unsigned value;
 };
 
-PLIST(TestList, TestObject);
-PSORTED_LIST(TestSortedList, TestObject);
-PDICTIONARY(TestDict, POrdinalKey, TestObject);
-
 
 class ThreadSafe : public PProcess
 {
@@ -65,6 +64,7 @@ class ThreadSafe : public PProcess
 
     void Test1(PArgList & args);
     void Test1Output();
+    void Test1OutputEnd();
     PDECLARE_NOTIFIER(PThread, ThreadSafe, Test1Thread);
 
     void Test2(PArgList & args);
@@ -76,7 +76,7 @@ class ThreadSafe : public PProcess
     PDECLARE_NOTIFIER(PThread, ThreadSafe, Test3Thread2);
 
     PSafeList<TestObject> unsorted;
-    PSafeList<TestObject> sorted;
+    PSafeSortedList<TestObject> sorted;
     PSafeDictionary<POrdinalKey, TestObject> sparse;
 
     PINDEX        threadCount;
