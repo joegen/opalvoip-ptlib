@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.14  1998/11/30 22:06:30  robertj
+ * New directory structure.
+ *
  * Revision 1.13  1998/09/24 04:11:20  robertj
  * Added open software license.
  *
@@ -69,10 +72,10 @@
 
 #pragma interface
 
-#include <pmachdep.h>
-#include <mutex.h>
+#include <ptlib/pmachdep.h>
+#include <ptlib/mutex.h>
 
-#include "../../common/ptlib/channel.h"
+#include "../../channel.h"
 
 #ifdef P_PTHREADS
   protected:
