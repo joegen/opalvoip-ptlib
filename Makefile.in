@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.15  2003/12/12 06:40:47  rogerhardiman
+# get plugins to install on FreeBSD
+#
 # Revision 1.14  2003/11/25 09:51:11  dsandras
 # Fixed make install on Linux.
 #
@@ -197,7 +200,9 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib
+	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	mkdir -p $(DESTDIR)$(LIBDIR)
+	mkdir -p $(DESTDIR)$(LIBDIR)/pwlib
 	chmod a+r lib/*@SHAREDLIBEXT@*
 	cp -f  lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)/
 	(cd $(DESTDIR)$(LIBDIR) ; \
@@ -220,13 +225,12 @@ install:
 	ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ###	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
-	cp -rf plugins/pwlib/ $(DESTDIR)$(LIBDIR)
+	cp -rf plugins/pwlib         $(DESTDIR)$(LIBDIR)
 	cp -rf include/ptclib        $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib.h       $(DESTDIR)$(PREFIX)/include/
 	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
-	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	cp -rf make/*.mak    $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	cp make/ptlib-config $(DESTDIR)$(PREFIX)/bin/
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/CVS/
