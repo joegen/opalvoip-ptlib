@@ -519,7 +519,7 @@ typedef int PDIMENSION;
     virtual const char * GetWinClsName() const;
       // Return the MS-Windows class name string as required by CreateWindow().
 
-    virtual DWORD GetStyle() const = 0;
+    virtual DWORD GetStyle() const;
       // Return the MS-Windows style codes as required by CreateWindow().
 
     virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -895,11 +895,6 @@ typedef int PDIMENSION;
 // PToolBar
 
 #include "../../common/toolbar.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetStyle() const;
-      // Return the MS-Windows style for CreateWindow().
-
 };
 
 
