@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.13  2001/10/15 07:27:38  rogerh
+ * Add support for reading WAV fils containing G.723.1 audio data.
+ *
  * Revision 1.12  2001/09/29 07:41:42  rogerh
  * Add fix from Patrick Koorevaar <pkoorevaar@hotmail.com>
  *
@@ -275,6 +278,7 @@ off_t PWAVFile::GetDataLength()
 #define WAV_LABEL_RIFF "RIFF"
 #define WAV_LABEL_WAVE "WAVE"
 #define WAV_LABEL_FMT_ "fmt "
+#define WAV_LABEL_FACT "fact"
 #define WAV_LABEL_DATA "data"
 
 // Because it is possible to process a file that we just created, or a
@@ -285,7 +289,8 @@ off_t PWAVFile::GetDataLength()
 BOOL PWAVFile::ProcessHeader() {
 
   // Process the header information
-  // This comes in 3 chunks, RIFF, FORMAT and DATA.
+  // This comes in 3 or 4 chunks, either RIFF, FORMAT and DATA
+  // or RIFF, FORMAT, FACT and DATA.
 
   if (IsOpen() == FALSE) {
     PTRACE(1,"Not Open");
@@ -324,7 +329,8 @@ BOOL PWAVFile::ProcessHeader() {
   // Read the FORMAT chunk.
   char    label_fmt[4];     // fmt_ in ascii
   PInt32l len_format;       // length of format chunk
-  PInt16l format;           // Format 0x01 = PCM
+  PInt16l format;           // Format 0x01 = PCM, 0x42 = Microsoft G.723.1
+			    //        0x111 = VivoActive G.723.1
   PInt16l num_channels;     // Channels 0x01 = mono, 0x02 = stereo
   PInt32l samples_per_sec;  // Sample Rate in Hz
   PInt32l bytes_per_sec;    // Bytes Per Second
@@ -342,9 +348,9 @@ BOOL PWAVFile::ProcessHeader() {
 
   int size_format_chunk = (int)len_format + 8;
 
-  // The spec allows for extra bytes between the FORMAT and DATA chunks.
+  // The spec allows for extra bytes at the end of the FORMAT chunk
   // Use the len_format field from FORMAT to determine where to move to
-  // in the file to find the DATA chunk.
+  // in the file to find the start of the next chunk.
   if (PFile::SetPosition(size_riff_chunk+size_format_chunk) == FALSE) {
     PTRACE(1,"Cannot reset position");
     return (FALSE);
@@ -355,6 +361,38 @@ BOOL PWAVFile::ProcessHeader() {
     PTRACE(1,"Not FMT");
     return (FALSE);
   }
+
+
+  // Peek at the title of the next chunk and then restore the file pointer.
+  int position = PFile::GetPosition();
+  char    chunk_title[4];
+  RETURN_ON_READ_FAILURE(PFile::Read(chunk_title,4), 4);
+  PFile::SetPosition(position);
+
+
+  // Read the FACT chunk (optional)
+  int size_fact_chunk = 0;
+
+  if (strncmp(chunk_title, WAV_LABEL_FACT, 4)==0) {
+    char    label_fact[4];  // ascii fact
+    PInt32l len_fact;       // length of fact
+
+    RETURN_ON_READ_FAILURE(PFile::Read(label_fact,4), 4);
+    RETURN_ON_READ_FAILURE(PFile::Read(&len_fact,4), 4);
+    size_fact_chunk = (int)len_fact + 8;
+
+    // The spec allows for extra bytes in the FACT chunk which contain
+    // information relating to the format of the audio. This is mainly
+    // used when the WAV file contains compressed audio instead of PCM audio.
+    // Use the len_fact field from FACT to determine where to move to
+    // in the file to find the start of the next chunk.
+    if (PFile::SetPosition(size_riff_chunk+size_format_chunk
+			   +size_fact_chunk) == FALSE) {
+      PTRACE(1,"Cannot reset position");
+      return (FALSE);
+    }
+  }
+
 
   // Read the DATA chunk.
   char    label_data[4];  // ascii data
@@ -373,7 +411,8 @@ BOOL PWAVFile::ProcessHeader() {
   numChannels   = num_channels;
   sampleRate    = samples_per_sec;
   bitsPerSample = bits_per_sample;
-  lenHeader     = size_riff_chunk+size_format_chunk+size_data_chunk;
+  lenHeader     = size_riff_chunk + size_format_chunk
+		  + size_fact_chunk + size_data_chunk;
   lenData       = data_len;
 
   return (TRUE);
