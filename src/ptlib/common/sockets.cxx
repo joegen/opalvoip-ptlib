@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.103  2000/06/26 11:17:21  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.102  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -339,16 +342,20 @@
  *
  */
 
+#ifdef __NUCLEUS_PLUS__
+#include <ConfigurationClass.h>
+#endif
+
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
 #include <ctype.h>
 
-#if defined(_WIN32) || defined(WINDOWS)
+#if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__)
 static PWinSock dummyForWinSock; // Assure winsock is initialised
 #endif
 
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)) || defined(__NUCLEUS_PLUS__)
 #define REENTRANT_BUFFER_LEN 1024
 #endif
 
@@ -544,7 +551,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
     int retry = 3;
     do {
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || (defined(__NUCLEUS_PLUS__) ) )
       // this function should really be a static on PIPSocket, but this would
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
@@ -665,7 +672,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
     int retry = 3;
     do {
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || ( defined(__NUCLEUS_PLUS__) ) )
       // this function should really be a static on PIPSocket, but this would
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
@@ -799,7 +806,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#ifndef __BEOS__
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -811,7 +818,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#ifndef __BEOS__
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -829,6 +836,12 @@ WORD PSocket::GetPortByService(const PString & serviceName) const
 
 WORD PSocket::GetPortByService(const char * protocol, const PString & service)
 {
+#ifdef __NUCLEUS_PLUS__
+  if(!strcmp(protocol,"tcp") && service.AsInteger()>0) return service.AsInteger();
+  PAssertAlways
+  ("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
+  return 0;
+#else
   PINDEX space = service.FindOneOf(" \t\r\n");
   struct servent * serv = ::getservbyname(service(0, space-1), protocol);
   if (serv != NULL)
@@ -846,6 +859,7 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
     return 0;
 
   return (WORD)portNum;
+#endif
 }
 
 
@@ -857,7 +871,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#ifndef __BEOS__
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
@@ -1095,7 +1109,7 @@ void PIPSocket::ClearNameCache()
   pHostByAddr().mutex.Wait();
   pHostByName().RemoveAll();
   pHostByAddr().RemoveAll();
-#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
+#if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__) // Kludge to avoid strange NT bug
   static PTimeInterval delay = GetConfigTime("NT Bug Delay", 0);
   if (delay != 0) {
     ::Sleep(delay.GetInterval());
@@ -1365,7 +1379,16 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
     sin.sin_addr.s_addr = bindAddr;
     sin.sin_port        = htons(port);       // set the port
 
+#ifdef __NUCLEUS_NET__
+    int bind_result;
+    if (port == 0)
+      bind_result = ::bindzero(os_handle, (struct sockaddr*)&sin, sizeof(sin));
+    else
+      bind_result = ::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin));
+    if (ConvertOSError(bind_result)) {
+#else
     if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
+#endif
       socklen_t size = sizeof(sin);
       if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
         port = ntohs(sin.sin_port);
@@ -1401,6 +1424,24 @@ PIPSocket::Address::Address(const PString & dotNotation)
 {
   operator=(dotNotation);
 }
+
+
+#ifdef __NUCLEUS_NET__
+PIPSocket::Address::Address(const struct id_struct & addr)
+{
+  operator=(addr);
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(const struct id_struct & addr)
+{
+  s_addr = (((unsigned long)addr.is_ip_addrs[0])<<24) +
+           (((unsigned long)addr.is_ip_addrs[1])<<16) +
+           (((unsigned long)addr.is_ip_addrs[2])<<8) +
+           (((unsigned long)addr.is_ip_addrs[3]));
+  return *this;
+}
+#endif
 
 
 PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
@@ -1468,6 +1509,24 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
   return s;
 }
 
+#ifdef __NUCLEUS_NET__
+BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
+{
+    InterfaceEntry *IE;
+    list<IPInterface>::iterator i;
+    for(i=Route4Configuration->Getm_IPInterfaceList().begin();
+            i!=Route4Configuration->Getm_IPInterfaceList().end();
+            i++)
+    {
+        char ma[6];
+        for(int j=0; j<6; j++) ma[j]=(*i).Getm_macaddr(j);
+        IE = new InterfaceEntry((*i).Getm_name().c_str(), (*i).Getm_ipaddr(), ma );
+        if(!IE) return false;
+        table.Append(IE);
+    }
+    return true;
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
@@ -1584,7 +1643,13 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 
 BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 {
+#ifdef __NUCLEUS_NET__
+  PAssertAlways("WriteOutOfBand unavailable on Nucleus Plus");
+  //int count = NU_Send(os_handle, (char *)buf, len, 0);
+  int count = ::send(os_handle, (const char *)buf, len, 0);
+#else
   int count = ::send(os_handle, (const char *)buf, len, MSG_OOB);
+#endif
   if (count < 0) {
     lastWriteCount = 0;
     return ConvertOSError(count);

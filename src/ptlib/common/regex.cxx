@@ -79,6 +79,10 @@ char *malloc ();
 char *realloc ();
 #endif
 
+#ifdef __NUCLEUS_PLUS__
+#define REGEX_MALLOC malloc
+#endif
+
 /* Define the syntax stuff for \<, \>, etc.  */
 
 /* This must be nonzero for the wordchar and notwordchar pattern
