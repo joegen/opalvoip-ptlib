@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.14 1996/03/10 13:15:24 robertj Exp $
+ * $Id: http.cxx,v 1.15 1996/03/11 10:29:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.15  1996/03/11 10:29:50  robertj
+ * Fixed bug in help image HTML.
+ *
  * Revision 1.14  1996/03/10 13:15:24  robertj
  * Redesign to make resources thread safe.
  *
@@ -1315,7 +1318,7 @@ void PHTTPField::SetHelp(const PString & hotLinkURL,
                          const PString & imageText)
 {
   help = "<A HREF=\"" + hotLinkURL + "\"><IMG SRC=\"" +
-              imageURL + "\" ALT=\"" + imageText + " ALIGN=absmiddle></A>\r\n";
+             imageURL + "\" ALT=\"" + imageText + "\" ALIGN=absmiddle></A>\r\n";
 }
 
 
