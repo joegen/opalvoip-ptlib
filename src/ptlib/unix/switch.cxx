@@ -1,12 +1,11 @@
 #include <ptlib.h>
 
-#define	STACK_MIN	10240
-#define	STACK_MULT	5
 
 #ifdef P_LINUX
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
 #define	SETJMP_PROLOG
 #include <sys/mman.h>
+#define	USE_MMAP	MAP_ANON | MAP_PRIVATE
 #endif
 
 #ifdef P_SUN4
@@ -17,6 +16,9 @@
 #ifdef P_SOLARIS
 #define	SETJMP_PROLOG	__asm__ ("ta 3"); 
 #define SET_STACK	context[1] = ((int)stackTop-1024) & ~7;
+#define	STACK_MULT	15
+//#define	USE_MMAP	MAP_PRIVATE | MAP_NORESERVE
+#include <sys/mman.h>
 #endif
 
 #ifdef P_HPUX
@@ -31,6 +33,14 @@
 
 #ifndef SET_STACK
 #warning No lightweight thread context switch mechanism defined
+#endif
+
+#ifndef STACK_MIN
+#define	STACK_MIN	10240
+#endif
+
+#ifndef	STACK_MULT
+#define	STACK_MULT	5
 #endif
 
 static PThread * localThis;
@@ -80,11 +90,11 @@ void PThread::AllocateStack(PINDEX stackProtoSize)
 {
   int stackSize = PMAX(STACK_MIN, STACK_MULT*stackProtoSize);
 
-#if defined(P_LINUX)
+#if defined(USE_MMAP)
   stackBase = (char *)mmap(0,
                            stackSize,
                            PROT_READ | PROT_WRITE,
-                           MAP_ANON | MAP_PRIVATE,
+			   USE_MMAP,
                            -1, 0);
   PAssert(stackBase != (char *)-1, "Cannot allocate virtual stack for thread");
 #else
@@ -92,5 +102,15 @@ void PThread::AllocateStack(PINDEX stackProtoSize)
   PAssert(stackBase != NULL, "Cannot allocate stack for thread");
 #endif
   stackTop  = stackBase + stackSize-1;
+}
+
+void PThread::FreeStack()
+{
+  if (stackBase != NULL)
+#if defined(USE_MMAP)
+    munmap(stackBase, stackTop-stackBase+1);
+#else
+    free(stackBase);
+#endif
 }
 
