@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.15  2002/01/23 04:26:36  craigs
+ * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
+ * use of default copy constructors for objects containing instances of
+ * these classes
+ *
  * Revision 1.14  2001/09/20 05:38:25  robertj
  * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
  * Also prevented semaphore from being created if subclass does not use it.
@@ -91,16 +96,27 @@
 #ifdef _PSEMAPHORE_PLATFORM_INCLUDE
 #undef _PSEMAPHORE_PLATFORM_INCLUDE
 
+  public:
+    unsigned GetInitial() const { return initialVar; }
+    unsigned GetMaxCount() const     { return maxCountVar; }
+
+  protected:
+    unsigned initialVar;
+    unsigned maxCountVar;
+
 #if defined(P_MAC_MPTHREADS)
   protected:
     MPSemaphoreID semId;
 #elif defined(P_PTHREADS)
 
-  protected:
     enum PXClass { PXSemaphore, PXMutex, PXSyncPoint } pxClass;
+    PXClass GetSemClass() const { return pxClass; }
+
+  protected:
     PSemaphore(PXClass);
     pthread_mutex_t mutex;
     pthread_cond_t  condVar;
+    
 #ifdef P_HAS_SEMAPHORES
     sem_t semId;
 #else

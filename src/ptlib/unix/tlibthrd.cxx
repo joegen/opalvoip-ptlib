@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.80  2002/01/23 04:26:36  craigs
+ * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
+ * use of default copy constructors for objects containing instances of
+ * these classes
+ *
  * Revision 1.79  2002/01/10 06:36:58  robertj
  * Fixed possible resource leak under Solaris, thanks Joegen Baclor
  *
@@ -891,16 +896,24 @@ void PThread::PXAbortBlock() const
 PSemaphore::PSemaphore(PXClass pxc)
 {
   pxClass = pxc;
-  mutex = MutexInitialiser;
+  mutex   = MutexInitialiser;
   condVar = CondInitialiser;
+
+  // these should never be used, as this constructor is
+  // only used for PMutex and PSyncPoint and they have their
+  // own copy constructors
+  initialVar = maxCountVar = 0;
 }
 
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
   pxClass = PXSemaphore;
-  mutex = MutexInitialiser;
+  mutex   = MutexInitialiser;
   condVar = CondInitialiser;
+
+  initialVar  = initial;
+  maxCountVar = maxCount;
 
 #ifdef P_HAS_SEMAPHORES
   PAssertOS(sem_init(&semId, 0, initial) == 0);
@@ -915,6 +928,27 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 #endif
 }
 
+PSemaphore::PSemaphore(const PSemaphore & sem)
+{
+  pxClass = sem.GetSemClass();
+  mutex   = MutexInitialiser;
+  condVar = CondInitialiser;
+
+  initialVar  = sem.GetInitial();
+  maxCountVar = sem.GetMaxCount();
+
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(sem_init(&semId, 0, initialVar) == 0);
+#else
+  PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
+  if (initialVar > maxCountVar)
+    initialVar = maxCountVar;
+
+  currentCount = initialVar;
+  maximumCount = maxCountVar;
+  queuedLocks  = 0;
+#endif
+}
 
 PSemaphore::~PSemaphore()
 {
@@ -1065,6 +1099,19 @@ PMutex::PMutex()
 #endif
 }
 
+PMutex::PMutex(const PMutex & /*mut*/)
+  : PSemaphore(PXMutex)
+{
+#ifdef P_HAS_RECURSIVE_MUTEX
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+  pthread_mutex_init(&mutex, &attr);
+#else
+  ownerThreadId = (pthread_t)-1;
+  lockCount = 0;
+#endif
+}
 
 void PMutex::Wait()
 {
@@ -1172,6 +1219,11 @@ PSyncPoint::PSyncPoint()
   signalCount = 0;
 }
 
+PSyncPoint::PSyncPoint(const PSyncPoint &)
+  : PSemaphore(PXSyncPoint)
+{
+  signalCount = 0;
+}
 
 void PSyncPoint::Wait()
 {
