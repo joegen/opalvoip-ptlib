@@ -410,6 +410,7 @@ default_openssl=yes
 default_expat=yes
 default_sdl=yes
 default_sasl=yes
+default_plugins=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -418,6 +419,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_expat=no
   default_sdl=no
   default_sasl=no
+  default_plugins=yes
 fi
 
 
@@ -646,13 +648,16 @@ dnl MSWIN Plugin Support,,P_HAS_PLUGINS
 plugins="no"
 AC_MSG_CHECKING(if plugins support needs to be compiled)
 AC_ARG_ENABLE(plugins,
-       [  --enable-plugins        enable plugins' support in PWLIB],
-       plugins=$enableval)
+       [  --enable-plugins        enable plugin support in PWLIB])
+if test "${enable_plugins}z" = "z" ; then
+  enable_plugins=default_plugins
+fi
+
 v4l2="no"
 AC_ARG_ENABLE(v4l2, [  --enable-v4l2           enable V4L2 video support],,enable_v4l2=no)
 
-HAS_PLUGINS=0
-if test "${plugins}" = "no" ; then
+HAS_PLUGINS=
+if test "${enable_plugins}" = "no" ; then
   AC_MSG_RESULT(no)
 elif test "${P_DYNALINK:-unset}" = "unset" ; then
   AC_MSG_RESULT(plugins disabled as dlopen not available)
