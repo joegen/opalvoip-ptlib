@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.152  2001/01/24 18:27:44  yurik
+ * Added if !#defined WinCE when asm code used. Asm can't be used under WCE
+ *
  * Revision 1.151  2001/01/02 07:47:44  robertj
  * Fixed very narrow race condition in timers (destroyed while in OnTimeout()).
  *
@@ -1466,7 +1469,7 @@ PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
     cerr << "Catastrophic failure, PProcess::Current() = NULL!!\n";
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
     __asm int 3;
 #endif
     _exit(1);
