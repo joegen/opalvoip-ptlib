@@ -3020,3 +3020,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
+    ?GetErrorText@PIndirectChannel@@UBE?AVPString@@XZ @3405 NONAME ;public: virtual class PString  __thiscall PIndirectChannel::GetErrorText(void)const 
