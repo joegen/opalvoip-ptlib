@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.17 1994/08/04 12:57:10 robertj Exp $
+ * $Id: osutils.cxx,v 1.18 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.17  1994/08/04 12:57:10  robertj
+ * Revision 1.18  1994/08/21 23:43:02  robertj
+ * Moved meta-string transmitter from PModem to PChannel.
+ * Added SuspendBlock state to cooperative multi-threading to fix logic fault.
+ * Added "force" option to Remove/Rename etc to override write protection.
+ * Added common entry point to convert OS error to PChannel error.
+ *
+ * Revision 1.17  1994/08/04  12:57:10  robertj
  * Changed CheckBlock() to better name.
  * Moved timer porcessing so is done at every Yield().
  *
@@ -232,13 +238,13 @@ PString PTime::AsString(TimeFormat format) const
       dsep = GetDateSeparator();
       switch (GetDateOrder()) {
         case MonthDayYear :
-          fmt = "MM" + dsep + "dd" + dsep + "yy";
+          fmt += "MM" + dsep + "dd" + dsep + "yy";
           break;
         case DayMonthYear :
-          fmt = "dd" + dsep + "MM" + dsep + "yy";
+          fmt += "dd" + dsep + "MM" + dsep + "yy";
           break;
         case YearMonthDay :
-          fmt = "yy" + dsep + "MM" + dsep + "dd";
+          fmt += "yy" + dsep + "MM" + dsep + "dd";
       }
       break;
 
@@ -441,8 +447,10 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
     return FALSE;
   }
 
-  if (oneshot)
+  if (oneshot) {
+    operator=(PTimeInterval(0));
     state = Stopped;
+  }
   else {
     operator=(resetTime);
     if (resetTime < minTimeLeft)
@@ -578,20 +586,20 @@ PChannel::PChannel()
   osError = 0;
   lastError = NoError;
   lastReadCount = lastWriteCount = 0;
-  init(new PChannelStreamBuffer(this));
+  init(PNEW PChannelStreamBuffer(this));
   Construct();
 }
 
 
 void PChannel::DestroyContents()
 {
-  delete rdbuf();
+  delete (PChannelStreamBuffer *)rdbuf();
   init(NULL);
 }
 
 void PChannel::CloneContents(const PChannel *)
 {
-  init(new PChannelStreamBuffer(this));
+  init(PNEW PChannelStreamBuffer(this));
 }
 
 void PChannel::CopyContents(const PChannel & c)
@@ -660,6 +668,203 @@ void PChannel::OnWriteComplete(void *, PINDEX)
 }
 
 
+enum {
+  NextCharEndOfString = -1,
+  NextCharDelay = -2,
+  NextCharSend = -3,
+  NextCharWait = -4
+};
+
+
+static int HexDigit(char c)
+{
+  if (!isxdigit(c))
+    return 0;
+
+  int hex = c - '0';
+  if (hex < 10)
+    return hex;
+
+  hex -= 'A' - '9' - 1;
+  if (hex < 16)
+    return hex;
+
+  return hex - ('a' - 'A');
+}
+
+
+static int GetNextChar(const PString & command,
+                                    PINDEX & pos, PTimeInterval * time = NULL)
+{
+  int temp;
+
+  if (command[pos] == '\0')
+    return NextCharEndOfString;
+
+  if (command[pos] != '\\')
+    return command[pos++];
+
+  switch (command[++pos]) {
+    case '\0' :
+      return NextCharEndOfString;
+
+    case 'a' : // alert (ascii value 7)
+      pos++;
+      return 7;
+
+    case 'b' : // backspace (ascii value 8)
+      pos++;
+      return 8;
+
+    case 'f' : // formfeed (ascii value 12)
+      pos++;
+      return 12;
+
+    case 'n' : // newline (ascii value 10)
+      pos++;
+      return 10;
+
+    case 'r' : // return (ascii value 13)
+      pos++;
+      return 13;
+
+    case 't' : // horizontal tab (ascii value 9)
+      pos++;
+      return 9;
+
+    case 'v' : // vertical tab (ascii value 11)
+      pos++;
+      return 11;
+
+    case 'x' : // followed by hh  where nn is hex number (ascii value 0xhh)
+      if (isxdigit(command[++pos])) {
+        temp = HexDigit(command[pos++]);
+        if (isxdigit(command[pos]))
+          temp += HexDigit(command[pos++]);
+        return temp;
+      }
+      return command[pos];
+
+    case 's' :
+      pos++;
+      return NextCharSend;
+
+    case 'd' : // ns  delay for n seconds/milliseconds
+    case 'w' :
+      temp = command[pos] == 'd' ? NextCharDelay : NextCharWait;
+      long milliseconds = 0;
+      while (isdigit(command[++pos]))
+        milliseconds = milliseconds*10 + command[pos] - '0';
+      if (milliseconds <= 0)
+        milliseconds = 1;
+      if (command[pos] == 'm')
+        pos++;
+      else {
+        milliseconds *= 1000;
+        if (command[pos] == 's')
+          pos++;
+      }
+      if (time != NULL)
+        *time = milliseconds;
+      return temp;
+  }
+
+  if (command[pos] < '0' || command[pos] > '7')
+    return command[pos++];
+
+  // octal number
+  temp = command[pos++] - '0';
+  if (command[pos] < '0' || command[pos] > '7')
+    return temp;
+
+  temp += command[pos++] - '0';
+  if (command[pos] < '0' || command[pos] > '7')
+    return temp;
+
+  temp += command[pos++] - '0';
+  return temp;
+}
+
+
+static BOOL ReceiveString(int nextChar,
+                            const PString & reply, PINDEX & pos, PINDEX start)
+{
+  if (nextChar != GetNextChar(reply, pos)) {
+    pos = start;
+    return FALSE;
+  }
+
+  PINDEX dummyPos = pos;
+  return GetNextChar(reply, dummyPos) < 0;
+}
+
+
+static int ReadCharWithTimeout(PChannel & channel, PTimeInterval & timeout)
+{
+  channel.SetReadTimeout(timeout);
+  PTimeInterval startTick = PTimer::Tick();
+  int c;
+  if ((c = channel.ReadChar()) < 0) // Timeout or aborted
+    return -1;
+  timeout -= PTimer::Tick() - startTick;
+  return c;
+}
+
+
+BOOL PChannel::SendCommandString(const PString & command)
+{
+  abortCommandString = FALSE;
+
+  int nextChar = NextCharSend;
+  PINDEX sendPosition = 0;
+  PTimeInterval timeout;
+  SetWriteTimeout(10000);
+
+  while (!abortCommandString) { // not aborted
+    nextChar = GetNextChar(command, sendPosition, &timeout);
+    switch (nextChar) {
+      default :
+        if (!WriteChar(nextChar))
+          return FALSE;
+        break;
+
+      case NextCharEndOfString :
+        return TRUE;  // Success!!
+
+      case NextCharSend :
+        break;
+
+      case NextCharDelay : // Delay in send
+        PThread::Current()->Sleep(timeout);
+        break;
+
+      case NextCharWait : // Wait for reply
+        PINDEX receivePosition = sendPosition;
+        if (GetNextChar(command, receivePosition) < 0) {
+          SetReadTimeout(timeout);
+          while (ReadChar() >= 0)
+            if (abortCommandString) // aborted
+              return FALSE;
+        }
+        else {
+          receivePosition = sendPosition;
+          do {
+            if (abortCommandString) // aborted
+              return FALSE;
+            if ((nextChar = ReadCharWithTimeout(*this, timeout)) < 0)
+              return FALSE;
+          } while (!ReceiveString(nextChar,
+                                     command, receivePosition, sendPosition));
+          nextChar = GetNextChar(command, receivePosition);
+          sendPosition = receivePosition;
+        }
+    }
+  }
+
+  return FALSE;
+}
+
+
 #endif
 
 
@@ -684,11 +889,11 @@ istream & PDirectory::ReadFrom(istream & strm)
 
 #if defined(_PFILE)
 
-BOOL PFile::Rename(const PString & newname)
+BOOL PFile::Rename(const PString & newname, BOOL force)
 {
   Close();
 
-  if (!Rename(path, newname))
+  if (!ConvertOSError(Rename(path, newname, force) ? 0 : -1))
     return FALSE;
   path = newname;
   return TRUE;
@@ -729,6 +934,10 @@ BOOL PFile::Close()
   }
 
   os_handle = -1;
+
+  if (removeOnClose)
+    Remove();
+
   return ok;
 }
 
@@ -814,13 +1023,13 @@ BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
 }
 
 
-BOOL PFile::Copy(const PString & oldname, const PString & newname)
+BOOL PFile::Copy(const PString & oldname, const PString & newname, BOOL force)
 {
   PFile oldfile(oldname, ReadOnly);
   if (!oldfile.IsOpen())
     return FALSE;
 
-  PFile newfile(newname, WriteOnly, Create|Truncate);
+  PFile newfile(newname, WriteOnly, Create|Truncate|(force ? 0 : Exclusive));
   if (!newfile.IsOpen())
     return FALSE;
 
@@ -1029,200 +1238,6 @@ void PModem::SaveSettings(PConfig & cfg)
 }
 
 
-static int HexDigit(char c)
-{
-  if (!isxdigit(c))
-    return 0;
-
-  int hex = c - '0';
-  if (hex < 10)
-    return hex;
-
-  hex -= 'A' - '9' - 1;
-  if (hex < 16)
-    return hex;
-
-  return hex - ('a' - 'A');
-}
-
-
-enum {
-  NextCharEndOfString = -1,
-  NextCharDelay = -2,
-  NextCharSend = -3,
-  NextCharWait = -4
-};
-
-static int GetNextChar(const PString & command,
-                                    PINDEX & pos, PTimeInterval * time = NULL)
-{
-  int temp;
-
-  if (command[pos] == '\0')
-    return NextCharEndOfString;
-
-  if (command[pos] != '\\')
-    return command[pos++];
-
-  switch (command[++pos]) {
-    case '\0' :
-      return NextCharEndOfString;
-
-    case 'a' : // alert (ascii value 7)
-      pos++;
-      return 7;
-
-    case 'b' : // backspace (ascii value 8)
-      pos++;
-      return 8;
-
-    case 'f' : // formfeed (ascii value 12)
-      pos++;
-      return 12;
-
-    case 'n' : // newline (ascii value 10)
-      pos++;
-      return 10;
-
-    case 'r' : // return (ascii value 13)
-      pos++;
-      return 13;
-
-    case 't' : // horizontal tab (ascii value 9)
-      pos++;
-      return 9;
-
-    case 'v' : // vertical tab (ascii value 11)
-      pos++;
-      return 11;
-
-    case 'x' : // followed by hh  where nn is hex number (ascii value 0xhh)
-      if (isxdigit(command[++pos])) {
-        temp = HexDigit(command[pos++]);
-        if (isxdigit(command[pos]))
-          temp += HexDigit(command[pos++]);
-        return temp;
-      }
-      return command[pos];
-
-    case 's' :
-      pos++;
-      return NextCharSend;
-
-    case 'd' : // ns  delay for n seconds/milliseconds
-    case 'w' :
-      temp = command[pos] == 'd' ? NextCharDelay : NextCharWait;
-      long milliseconds = 0;
-      while (isdigit(command[++pos]))
-        milliseconds = milliseconds*10 + command[pos] - '0';
-      if (milliseconds <= 0)
-        milliseconds = 1;
-      if (command[pos] == 'm')
-        pos++;
-      else {
-        milliseconds *= 1000;
-        if (command[pos] == 's')
-          pos++;
-      }
-      if (time != NULL)
-        *time = milliseconds;
-      return temp;
-  }
-
-  if (command[pos] < '0' || command[pos] > '7')
-    return command[pos++];
-
-  // octal number
-  temp = command[pos++] - '0';
-  if (command[pos] < '0' || command[pos] > '7')
-    return temp;
-
-  temp += command[pos++] - '0';
-  if (command[pos] < '0' || command[pos] > '7')
-    return temp;
-
-  temp += command[pos++] - '0';
-  return temp;
-}
-
-
-static BOOL ReceiveString(int nextChar,
-                            const PString & reply, PINDEX & pos, PINDEX start)
-{
-  if (nextChar != GetNextChar(reply, pos)) {
-    pos = start;
-    return FALSE;
-  }
-
-  PINDEX dummyPos = pos;
-  return GetNextChar(reply, dummyPos) < 0;
-}
-
-
-static int ReadCharWithTimeout(PModem & modem, PTimeInterval & timeout)
-{
-  modem.SetReadTimeout(timeout);
-  PTimeInterval startTick = PTimer::Tick();
-  int c;
-  if ((c = modem.ReadChar()) < 0) // Timeout or aborted
-    return FALSE;
-  timeout -= PTimer::Tick() - startTick;
-  return c;
-}
-
-
-BOOL PModem::SendString(const PString & command)
-{
-  int nextChar = NextCharSend;
-  PINDEX sendPosition = 0;
-  PTimeInterval timeout;
-  SetWriteTimeout(10000);
-
-  while (!CanRead()) { // not aborted
-    nextChar = GetNextChar(command, sendPosition, &timeout);
-    switch (nextChar) {
-      default :
-        if (!WriteChar(nextChar))
-          return FALSE;
-        break;
-
-      case NextCharEndOfString :
-        return TRUE;  // Success!!
-
-      case NextCharSend :
-        break;
-
-      case NextCharDelay : // Delay in send
-        PThread::Current()->Sleep(timeout);
-        break;
-
-      case NextCharWait : // Wait for reply
-        PINDEX receivePosition = sendPosition;
-        if (GetNextChar(command, receivePosition) < 0) {
-          SetReadTimeout(timeout);
-          while (ReadChar() >= 0)
-            if (CanRead()) // aborted
-              return FALSE;
-        }
-        else {
-          receivePosition = sendPosition;
-          do {
-            if (CanRead()) // aborted
-              return FALSE;
-            if ((nextChar = ReadCharWithTimeout(*this, timeout)) < 0)
-              return FALSE;
-          } while (!ReceiveString(nextChar,
-                                     command, receivePosition, sendPosition));
-          nextChar = GetNextChar(command, receivePosition);
-          sendPosition = receivePosition;
-        }
-    }
-  }
-
-  return FALSE;
-}
-
-
 BOOL PModem::CanInitialise() const
 {
   switch (status) {
@@ -1245,7 +1260,7 @@ BOOL PModem::Initialise()
 {
   if (CanInitialise()) {
     status = Initialising;
-    if (SendString(initCmd)) {
+    if (SendCommandString(initCmd)) {
       status = Initialised;
       return TRUE;
     }
@@ -1278,7 +1293,7 @@ BOOL PModem::Deinitialise()
 {
   if (CanDeinitialise()) {
     status = Deinitialising;
-    if (SendString(deinitCmd)) {
+    if (SendCommandString(deinitCmd)) {
       status = Uninitialised;
       return TRUE;
     }
@@ -1316,7 +1331,7 @@ BOOL PModem::Dial(const PString & number)
     return FALSE;
 
   status = Dialling;
-  if (!SendString(preDialCmd + "\\s" + number + postDialCmd)) {
+  if (!SendCommandString(preDialCmd + "\\s" + number + postDialCmd)) {
     status = DialFailed;
     return FALSE;
   }
@@ -1376,7 +1391,7 @@ BOOL PModem::HangUp()
 {
   if (CanHangUp()) {
     status = HangingUp;
-    if (SendString(hangUpCmd)) {
+    if (SendCommandString(hangUpCmd)) {
       status = Initialised;
       return TRUE;
     }
@@ -1411,7 +1426,7 @@ BOOL PModem::SendUser(const PString & str)
   if (CanSendUser()) {
     Status oldStatus = status;
     status = SendingUserCommand;
-    if (SendString(str)) {
+    if (SendCommandString(str)) {
       status = oldStatus;
       return TRUE;
     }
@@ -1756,9 +1771,19 @@ void PThread::Suspend(BOOL susp)
         status = Suspended;
       break;
 
+    case Blocked :
+      if (IsSuspended())
+        status = SuspendedBlock;
+      break;
+
     case Suspended :
       if (!IsSuspended())
         status = Waiting;
+      break;
+
+    case SuspendedBlock :
+      if (!IsSuspended())
+        status = Blocked;
       break;
 
     default :
@@ -1807,8 +1832,9 @@ void PThread::Yield()
 {
   // Determine the next thread to schedule
   PProcess * process = PProcess::Current();
-  process->GetTimerList()->Process();
   PThread * current = process->currentThread;
+  if (current == process)
+    process->GetTimerList()->Process();
   if (current->status == Running) {
     if (current->basePriority != HighestPriority && current->link != current)
       current->status = Waiting;
@@ -1851,10 +1877,7 @@ void PThread::Yield()
       case Blocked :
         if (thread->IsNoLongerBlocked()) {
           thread->ClearBlock();
-          if (thread->IsSuspended())
-            thread->status = Suspended;
-          else
-            next = thread;
+          next = thread;
         }
         break;
 
