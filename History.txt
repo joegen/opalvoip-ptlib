@@ -1,0 +1,49 @@
+Portable Windows Library Modification History
+=============================================
+
+
+Release 1.05
+------------
+
+	Changed build to allow for 64 bit processors (Alpha port).
+
+	Minor changes to support egcs compiler.
+
+	Added SIGHUP and SIGWINCH handlers to increase and decrease the log
+	level respectively in a service (daemon) application.
+
+Release 1.04
+------------
+
+	Large numbers of changes to support automated documentation system
+	doc++.
+
+	Utilised full grammar parsing for dates.
+
+	Simultaneous MSVC 6 and MSVC 5 compatibility.
+
+	Improved trace facility adding trace levels and #define to remove all
+	trace code.
+
+	Various BeOS port modifications.
+
+	Fixed bug in IP access control lists compatibility with unix
+	hosts.allow and hosts.deny files.
+
+	Added support for UDP in SOCKS 5 classes.
+
+	Added [] operator PIPSocket::Address to get the bytes out of an IP
+	address.
+
+	Fixed ability to have PMEMORY_CHECK on/off on both debug/release
+	versions.
+
+	Sound driver interface implementation to Linux OSS specification.
+
+
+Release 1.03
+------------
+
+Very slack in not producing histories for earlier versions.
+
+------------------------------------------------------------------------------
