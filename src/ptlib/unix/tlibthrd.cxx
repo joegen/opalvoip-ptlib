@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.32  2000/01/20 08:20:57  robertj
+ * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
+ *
  * Revision 1.31  1999/11/18 14:02:57  craigs
  * Fixed problem with houskeeping thread termination
  *
@@ -215,7 +218,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_FREEBSD)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
@@ -379,7 +382,7 @@ void * PThread::PX_ThreadStart(void * arg)
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_FREEBSD)
   int sig;
   sigwait(&waitSignals, &sig);
 #else
@@ -513,7 +516,7 @@ void PThread::Suspend(BOOL susp)
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_FREEBSD)
           int sig;
           sigwait(&waitSignals, &sig);
 #else
@@ -656,7 +659,7 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#ifdef P_LINUX
+#if defined (P_LINUX) || (P_FREEBSD)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else
