@@ -9,6 +9,11 @@ void PProcess::Construct()
   ioBlocks[2].AllowDeleteObjects(FALSE);
 }
 
+
+PProcess::~PProcess()
+{
+}
+
 void PProcess::PXAbortIOBlock(int fd) 
 {
   for (PINDEX i = 0; i < 3 ; i++) {
