@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.9 1996/08/09 12:16:09 craigs Exp $
+ * $Id: socket.h,v 1.10 1996/11/03 04:36:25 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.10  1996/11/03 04:36:25  craigs
+ * Added Read override to avoid problem with recv/read
+ *
  * Revision 1.9  1996/08/09 12:16:09  craigs
  * *** empty log message ***
  *
@@ -53,6 +56,7 @@
 
 #include "../../common/ptlib/socket.h"
   public:
+    BOOL Read(void * ptr, PINDEX len);
     ~PSocket();
 };
 
