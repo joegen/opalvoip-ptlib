@@ -1,11 +1,17 @@
 /*
- * $Id: httpsvc.cxx,v 1.6 1996/08/25 09:39:00 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.7 1996/09/14 13:09:33 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.7  1996/09/14 13:09:33  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.6  1996/08/25 09:39:00  robertj
  * Prevented registration if no user etc entered.
  *
@@ -108,18 +114,18 @@ void PHTTPServiceProcess::CompleteRestartSystem()
 void PHTTPServiceThread::Main()
 {
   // get a socket when a client connects
-  PHTTPSocket socket(listener, httpSpace);
-  if (!socket.IsOpen())
+  PHTTPServer server(httpSpace);
+  if (!server.Accept(listener))
     return;
 
   PNEW PHTTPServiceThread(process, listener, httpSpace);
 
   // process requests
-  while (socket.ProcessCommand())
+  while (server.ProcessCommand())
     ;
 
   // always close after the response has been sent
-  socket.Close();
+  server.Close();
 
   // if a restart was requested, then do it
   process.CompleteRestartSystem();
@@ -147,13 +153,13 @@ PConfigPage::PConfigPage(PHTTPServiceProcess & app,
 }
 
 
-BOOL PConfigPage::OnPOST(PHTTPSocket & socket,
+BOOL PConfigPage::OnPOST(PHTTPServer & server,
                          const PURL & url,
                          const PMIMEInfo & info,
                          const PStringToString & data,
                          const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPConfig::OnPOST(socket, url, info, data, connectInfo);
+  PHTTPConfig::OnPOST(server, url, info, data, connectInfo);
   return FALSE;    // Make sure we break any persistent connections
 }
 
@@ -163,7 +169,7 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                        PHTML & reply)
 {
   BOOL retval = PHTTPConfig::Post(request, data, reply);
-  if (request.code == PHTTPSocket::OK)
+  if (request.code == PHTTP::OK)
     process.BeginRestartSystem();
   return retval;
 }
@@ -303,7 +309,7 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
     reply << "Your registration information contains at least one empty "
               "parameter. Please fill in all fields and try again."
           << PHTML::Body();
-    request.code = PHTTPSocket::InternalServerError;
+    request.code = PHTTP::InternalServerError;
     return FALSE;
   }
 
@@ -327,7 +333,7 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
 
   reply = "Registration Error";
   reply << "The entered security key is invalid." << PHTML::Body();
-  request.code = PHTTPSocket::InternalServerError;
+  request.code = PHTTP::InternalServerError;
   return FALSE;
 }
 
