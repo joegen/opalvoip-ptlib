@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.120  2002/02/25 19:51:18  dereks
+# Update Firewire test routine. Thanks Ryutaroh
+#
 # Revision 1.119  2002/02/25 16:23:16  rogerh
 # Test for GCC 3 in unix.mak and not it common.mak so -DGCC3 can be set
 #
@@ -599,9 +602,20 @@ endif # PROG
 endif # P_SHAREDLIB
 
 ifdef TRY_1394DC
-ENDLDLIBS	+= -lraw1394 -ldc1394_control
-STDCCFLAGS	+= -DTRY_1394DC
+ifneq (,$(wildcard /usr/include/libdc1394/dc1394_control.h))
+ifneq (,$(shell grep dma_device_file /usr/include/libdc1394/dc1394_control.h))
+ENDLDLIBS      += -lraw1394 -ldc1394_control
+STDCCFLAGS     += -DTRY_1394DC
+TRY_1394DC     =  1
+else
+$(warning "Libdc1394 is installed but its version is older than required. The 1394 camera module will not be compiled.")
+TRY_1394DC     =
 endif
+else
+$(error "TRY_1394DC is defined but /usr/include/libdc1394/dc1394_control.h does not exist.")
+endif
+endif
+
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
