@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.cxx,v 1.3 1996/08/08 10:08:48 robertj Exp $
+ * $Id: telnet.cxx,v 1.4 1997/07/14 11:47:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.4  1997/07/14 11:47:18  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.3  1996/08/08 10:08:48  robertj
  * Directory structure changes for common files.
  *
@@ -195,7 +198,7 @@ BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
 
 static PString GetTELNETOptionName(PINDEX code)
 {
-  static const char * name[] = {
+  static const char * const name[] = {
     "TransmitBinary",
     "EchoOption",
     "ReconnectOption",
