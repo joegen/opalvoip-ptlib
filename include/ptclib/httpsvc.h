@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.34  2001/02/20 02:32:41  robertj
+ * Added PServiceMacro version that can do substitutions on blocks of HTML.
+ *
  * Revision 1.33  2001/02/15 01:12:15  robertj
  * Moved some often repeated HTTP service code into PHTTPServiceProcess.
  *
@@ -428,12 +431,17 @@ class PServiceHTML : public PHTML
 class PServiceMacro : public PObject
 {
   public:
-    PServiceMacro(const char * name);
-    PServiceMacro(const PCaselessString & name);
+    PServiceMacro(const char * name, BOOL isBlock);
+    PServiceMacro(const PCaselessString & name, BOOL isBlock);
     Comparison Compare(const PObject & obj) const;
-    virtual PString Translate(PHTTPRequest & request, const PString & args) const;
+    virtual PString Translate(
+      PHTTPRequest & request,
+      const PString & args,
+      const PString & block
+    ) const;
   protected:
     const char * macroName;
+    BOOL isMacroBlock;
     PServiceMacro * link;
     static PServiceMacro * list;
   friend class PServiceMacros_list;
@@ -445,11 +453,22 @@ class PServiceMacro : public PObject
 #define PCREATE_SERVICE_MACRO(name, request, args) \
   class PServiceMacro_##name : public PServiceMacro { \
     public: \
-      PServiceMacro_##name() : PServiceMacro(#name) { } \
-      PString Translate(PHTTPRequest & request, const PString & args) const; \
+      PServiceMacro_##name() : PServiceMacro(#name, FALSE) { } \
+      PString Translate(PHTTPRequest &, const PString &, const PString &) const; \
   }; \
   static const PServiceMacro_##name serviceMacro_##name; \
-  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args) const
+  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args, const PString &) const
+
+
+
+#define PCREATE_SERVICE_MACRO_BLOCK(name, request, args, block) \
+  class PServiceMacro_##name : public PServiceMacro { \
+    public: \
+      PServiceMacro_##name() : PServiceMacro(#name, TRUE) { } \
+      PString Translate(PHTTPRequest &, const PString &, const PString &) const; \
+  }; \
+  static const PServiceMacro_##name serviceMacro_##name; \
+  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args, const PString & block) const
 
 
 
