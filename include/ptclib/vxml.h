@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.6  2002/07/17 06:08:43  craigs
+ * Added additional "sayas" classes
+ *
  * Revision 1.5  2002/07/10 13:14:55  craigs
  * Moved some VXML classes from Opal back into PTCLib
  *
@@ -235,7 +238,12 @@ class PVXMLSession : public PObject
       Literal,
       Digits,
       Number,
-      Currency
+      Currency,
+      Time,
+      Date,
+      Phone,
+      IPAddress,
+      Duration
     };
 
     PVXMLSession();
