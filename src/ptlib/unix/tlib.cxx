@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.24  1997/04/22 10:57:53  craigs
+ * Removed DLL functions and added call the FreeStack
+ *
  * Revision 1.23  1997/02/23 03:06:00  craigs
  * Changed for PProcess::Current reference
  *
@@ -70,7 +73,6 @@
 #pragma implementation "args.h"
 #pragma implementation "pprocess.h"
 #pragma implementation "thread.h"
-#pragma implementation "dynalink.h"
 #pragma implementation "semaphor.h"
 
 #include "ptlib.h"
@@ -91,7 +93,6 @@
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
-
 
 #include "uerror.h"
 
@@ -254,18 +255,15 @@ PThread::PThread()
 PThread::~PThread()
 {
   // can never destruct ourselves, unless we are the system process
-  PAssert(this == (PThread *)&PProcess::Current(), "Thread attempted suicide!");
+  PAssert(this == (PThread *)&PProcess::Current() ||
+          this != PThread::Current(),
+          "Thread attempted suicide!");
 
   // call the terminate function so overloads work properly
   Terminate();
 
   // now we can terminate
-  if (stackBase != NULL)
-#if defined(P_LINUX)
-    munmap(stackBase, stackTop-stackBase+1);
-#else
-    free(stackBase);
-#endif
+  FreeStack();
 }
 
 void PThread::ClearBlock()
@@ -582,55 +580,6 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout)
   status     = BlockedIO;
   Yield();
   return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PDynaLink
-
-PDynaLink::PDynaLink()
-{
-  PAssertAlways(PUnimplementedFunction);
-}
-
-
-PDynaLink::PDynaLink(const PString &)
-{
-  PAssertAlways(PUnimplementedFunction);
-}
-
-
-PDynaLink::~PDynaLink()
-{
-}
-
-
-BOOL PDynaLink::Open(const PString &)
-{
-  PAssertAlways(PUnimplementedFunction);
-  return FALSE;
-}
-
-
-void PDynaLink::Close()
-{
-}
-
-
-BOOL PDynaLink::IsLoaded() const
-{
-  return FALSE;
-}
-
-
-BOOL PDynaLink::GetFunction(PINDEX, Function &)
-{
-  return FALSE;
-}
-
-
-BOOL PDynaLink::GetFunction(const PString &, Function &)
-{
-  return FALSE;
 }
 
 void PXSignalHandler(int sig)
