@@ -69,7 +69,7 @@ own. If you do all you will get is this file.
 
 The modules available are:
 	ptlib_unix
-	pwlib_xwin
+	pwlib_xlib
 	ptlib_win32
 	pwlib_win32
 
@@ -88,18 +88,22 @@ For Windows.
 	and add to the Lib Files path and the Executable Files path the
 	following:
 		C:\PWLib\Lib
+        Also make sure this directory is in your PATH environment variable.
+
 2.	Open the pwlib.dsw file in the pwlib top directory. If you have the
 	minimum library it will come up with several requests to find .dsp
 	files, just cancel past these.
+
 3.	Note you will need bison and flex to compile the system. You can get 
 	a copy from http://www.openh323.org/bin/flexbison.zip, follow the 
 	instructions included in that package and put the executables 
 	somewhere in your path.
-4.	Build the target MergeSym, in release mode.
-5.	Build the target ASNParser, in release mode.
-6.	Build the target PWRC, in release mode (if have full version).
-7.	Build the pwtest target, (if have full version). 
-8.	That it, you are now on your own!
+
+4.	Use the Batch Build command and build the "ASNParser - Win32 Release",
+        "pwtest - Win32 Release" and "pwtest - Win32 Debug" targets. make sure
+        all other targets are not checked.
+
+5.	That it, you are now on your own!
 
 
 For unix.
@@ -107,6 +111,10 @@ For unix.
 1.	If you have not put pwlib it into your home directory (~/pwlib) then
 	you will have to defined the environment variable PWLIBDIR to point to
 	the correct directory.
+        Also make sure you have added the $PWLIBDIR/lib directory to your 
+        LD_LIBRARY_PATH environment variable if you intend to use shared 
+        libraries (the default).
+
 2.	Build the debug and release versions of the PWLib library as follows:
 		cd ~/pwlib
 		make both
@@ -114,10 +122,12 @@ For unix.
 	compile, most unix systems have these. WARNING: there is a bug in most 
 	of the bison.simple files. See below for details.
 
-	If you are getting errors during the compile, then it is likely your
-	platform is not supported, or you have incorrectly set the OSTYPE and
-	MACHTYPE variables.
+	If you are getting huge numbers of errors during the compile, then it 
+        is likely your platform is not supported, or you have incorrectly set 
+        the OSTYPE and MACHTYPE variables.
+
 3.	That's all there is to it, you are now on your own!
+
 
 
 Bison problem under Unix
