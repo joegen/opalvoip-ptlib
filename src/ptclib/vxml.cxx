@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.6  2002/07/17 06:08:23  craigs
+ * Added additional "sayas" classes
+ *
  * Revision 1.5  2002/07/10 13:15:20  craigs
  * Moved some VXML classes from Opal back into PTCLib
  * Fixed various race conditions
@@ -414,14 +417,34 @@ void PVXMLFormItem::SayAs(const PString & className, const PString & text)
 {
   if (!text.IsEmpty()) {
     PVXMLSession::TextType type = PVXMLSession::Literal;
+
     if (className *= "digits")
       type = PVXMLSession::Digits;
+
     else if (className *= "literal")
       type = PVXMLSession::Literal;
+
     else if (className *= "number")
       type = PVXMLSession::Number;
+
     else if (className *= "currency")
       type = PVXMLSession::Currency;
+
+    else if (className *= "time")
+      type = PVXMLSession::Time;
+
+    else if (className *= "date")
+      type = PVXMLSession::Date;
+
+    else if (className *= "phone")
+      type = PVXMLSession::Phone;
+
+    else if (className *= "ipaddress")
+      type = PVXMLSession::IPAddress;
+
+    else if (className *= "duration")
+      type = PVXMLSession::Duration;
+
     vxml.PlayText(text, type);
   }
 }
