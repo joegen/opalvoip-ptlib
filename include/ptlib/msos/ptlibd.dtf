@@ -2495,6 +2495,7 @@ EXPORTS
     ?GetObjectsIndex@PArrayObjects@@UBEHPBVPObject@@@Z @1542 NONAME ;public: virtual int __thiscall PArrayObjects::GetObjectsIndex(class PObject const *)const 
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAJ@Z @4176 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,long &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVAddress@PIPSocket@@@Z @4178 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,class PIPSocket::Address &)
+    ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVPString@@@Z @4632 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,class PString &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVPWin32AsnAny@@@Z @4183 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,class PWin32AsnAny &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@PAXIPAI@Z @4179 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,void *,unsigned int,unsigned int *)
     ?GetOption@PSocket@@QAEHHAAHH@Z @3094 NONAME ;public: int __thiscall PSocket::GetOption(int,int &,int)
