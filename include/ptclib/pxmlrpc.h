@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.19  2003/04/15 07:08:36  robertj
+ * Changed read and write from streams for base array classes so operates in
+ *   the same way for both PIntArray and PArray<int> etc
+ *
  * Revision 1.18  2003/04/15 03:00:41  robertj
  * Added array support to XML/RPC
  * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
@@ -452,12 +456,12 @@ class PXMLRPCStructBase : public PObject {
         PXMLRPC_ARRAY(base, arraytype, basetype, variable, "string")
 
 #define PXMLRPC_ARRAY_INTEGER(base, type, variable) \
-        PXMLRPC_ARRAY_CUSTOM(base, PBaseArray<type>, type, variable, "int", PXMLRPCArrayBase, \
+        PXMLRPC_ARRAY_CUSTOM(base, PScalarArray<type>, type, variable, "int", PXMLRPCArrayBase, \
                     PString ToString(PINDEX i) const { return PString(instance[i]); } \
                     void FromString(PINDEX i, const PString & str) { instance[i] = (type)str.AsInteger(); })
 
 #define PXMLRPC_ARRAY_DOUBLE(base, type, variable) \
-        PXMLRPC_ARRAY_CUSTOM(base, PBaseArray<type>, type, variable, "double", PXMLRPCArrayBase, \
+        PXMLRPC_ARRAY_CUSTOM(base, PScalarArray<type>, type, variable, "double", PXMLRPCArrayBase, \
                     PString ToString(PINDEX i) const { return psprintf("%f", instance[i]); } \
                     void FromString(PINDEX i, const PString & str) { instance[i] = (type)str.AsReal(); })
 
