@@ -954,11 +954,17 @@ PARRAY(PPointArray, PPoint);
       // notify function code. This returns -1 if the windows message is to be
       // ignored.
 
+    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+      // Event handler for this interactor. Translates MS-Windows messages into
+      // virtual member function calls.
 
-  public:
+
     // New functions for class
     virtual BOOL IsOwnerDraw() const;
       // Return TRUE if is to handle owner draw messages
+
+      
+    friend class PInteractor;
 };
 
 
