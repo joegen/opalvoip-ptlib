@@ -808,7 +808,10 @@ int main(int argc,char **argv){}]],SSLHDR=1)
         AC_MSG_RESULT(yes)
         SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
         P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-        P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+        if test ${OSTYPE} = linux ; then
+          dnl Linux static libs
+          P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+        fi
       else
         AC_MSG_RESULT(no)
       fi
@@ -848,7 +851,10 @@ int main(int argc,char **argv){}]])
             SSLINCLUDEDIR="${openssl_dir}/include"
             SSLLIBDIR="${openssl_dir}/lib"
             P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-            P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+            if test ${OSTYPE} = linux ; then
+              dnl Linux static libs
+              P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+            fi
             break
           else
             AC_MSG_RESULT(no)
