@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.51  2001/09/28 00:44:15  robertj
+ * Added SetInteger() function to set numeric MIME fields.
+ *
  * Revision 1.50  2001/09/11 03:27:46  robertj
  * Improved error processing on high level protocol failures, usually
  *   caused by unexpected shut down of a socket.
@@ -783,6 +786,12 @@ long PMIMEInfo::GetInteger(const PString & key, long dflt) const
   if (GetAt(PCaselessString(key)) == NULL)
     return dflt;
   return operator[](key).AsInteger();
+}
+
+
+void PMIMEInfo::SetInteger(const PCaselessString & key, long value)
+{
+  SetAt(key, PString(PString::Unsigned, value));
 }
 
 
