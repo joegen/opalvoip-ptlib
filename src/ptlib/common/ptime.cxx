@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.42  2002/12/10 04:45:41  robertj
+ * Added support in PTime for ISO 8601 format.
+ *
  * Revision 1.41  2002/02/15 03:56:09  yurik
  * Warnings removed during compilation, patch courtesy of Jehan Bing, jehan@bravobrava.com
  *
@@ -405,9 +408,15 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 
 
 PString PTime::AsString(TimeFormat format, int zone) const
-{
-  if (format == RFC1123)
-    return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
+{ 
+  switch (format) {
+    case RFC1123 :
+      return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
+    case ShortISO8601 :
+      return AsString("yyyyMMddThhmmssZ");
+    case LongISO8601 :
+      return AsString("yyyy-MM-dd T hh:mm:ss Z");
+  }
 
   PString fmt, dsep;
 
@@ -607,15 +616,20 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       case 'z' :
-        while (*++format == 'z')
-          ;
-        if (zone == 0)
-          str << "GMT";
+      case 'Z' :
+        if (zone == 0) {
+          if (*format == 'Z')
+            str << 'Z';
+          else
+            str << "GMT";
+        }
         else {
           str << (zone < 0 ? '-' : '+');
           zone = PABS(zone);
           str << setw(2) << (zone/60) << setw(2) << (zone%60);
         }
+        while (toupper(*++format) == 'z')
+          ;
         break;
 
       case 'u' :
