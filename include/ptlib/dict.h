@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.25  1999/11/30 00:22:54  robertj
+ * Updated documentation for doc++
+ *
  * Revision 1.24  1999/08/22 12:13:43  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -291,7 +294,10 @@ class PHashTable : public PCollection
         Element * prev;
     };
 
-    PDECLARE_BASEARRAY(Table, Element *) /*{*/
+    PDECLARE_BASEARRAY(Table, Element *)
+#ifdef DOC_PLUS_PLUS
+    {
+#endif
       public:
         virtual ~Table() { Destruct(); }
         virtual void DestroyContents();
