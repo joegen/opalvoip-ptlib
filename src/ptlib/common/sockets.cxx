@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.69 1998/03/20 03:18:21 robertj Exp $
+ * $Id: sockets.cxx,v 1.70 1998/05/07 05:20:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.70  1998/05/07 05:20:25  robertj
+ * Fixed DNS lookup so only works around bug in old Win95 and not OSR2
+ *
  * Revision 1.69  1998/03/20 03:18:21  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -775,8 +778,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #else
     struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    static BOOL isWin95 = PProcess::GetOSName() == "95";
-    if (isWin95 && host_info != NULL && host_info->h_addr_list[0] != NULL)
+    extern P_IsOldWin95();
+    if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
 #endif
 #endif
