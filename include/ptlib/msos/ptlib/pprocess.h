@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.4 1994/07/27 06:00:10 robertj Exp $
+ * $Id: pprocess.h,v 1.5 1995/03/12 04:59:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.4  1994/07/27 06:00:10  robertj
+ * Revision 1.5  1995/03/12 04:59:57  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.4  1994/07/27  06:00:10  robertj
  * Backup
  *
  * Revision 1.3  1994/07/21  12:35:18  robertj
@@ -25,11 +29,12 @@
 
 #ifndef _PPROCESS
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
 #include "../../common/process.h"
-#ifdef _WINDOWS
+#if defined(_WINDOWS) || defined(_WIN32)
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #endif
 };
@@ -40,15 +45,10 @@
 extern PProcess * PSTATIC PProcessInstance;
 
 inline PProcess::PProcess()
-  {
-    PProcessInstance = this;
-  }
+  { PProcessInstance = this; }
 
 inline PProcess * PProcess::Current()
-  {
-    return PProcessInstance;
-  }
-
+  { return PProcessInstance; }
 
 #endif
 
