@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.4 1996/02/25 02:52:46 robertj Exp $
+ * $Id: cypher.h,v 1.5 1996/03/16 04:36:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.5  1996/03/16 04:36:43  robertj
+ * Redesign of secure config to accommodate expiry dates and option values passed in security key code.
+ *
  * Revision 1.4  1996/02/25 02:52:46  robertj
  * Further secure config development.
  *
@@ -161,14 +164,14 @@ PDECLARE_CLASS(PCypher, PObject)
      */
 
     PString Decode(
-      const PString & cypher   // Cypher text string to be decoded.
+      const PString & cypher   // Base64 Cypher text string to be decoded.
     );
     BOOL Decode(
-      const PString & cypher,  // Cypher text string to be decoded.
+      const PString & cypher,  // Base64 Cypher text string to be decoded.
       PBYTEArray & clear       // Clear text binary data decoded.
     );
     PINDEX Decode(
-      const PString & cypher,  // Cypher text string to be decoded.
+      const PString & cypher,  // Base64 Cypher text string to be decoded.
       void * data,             // Clear text binary data decoded.
       PINDEX length            // Maximum number of bytes of data decoded.
     );
@@ -247,7 +250,7 @@ PDECLARE_CLASS(PTEACypher, PCypher)
 
     PTEACypher();
     PTEACypher(
-      const Key keyData  // Key for the encryption/decryption algorithm.
+      const BYTE * keyData  // Key for the encryption/decryption algorithm.
     );
     /* Create a new TEA encryption object instance. The parameterless version
        automatically generates a new, random, key.
@@ -255,7 +258,7 @@ PDECLARE_CLASS(PTEACypher, PCypher)
 
 
     void SetKey(
-      const Key newKey    // Variable to take the key used by cypher.
+      const BYTE * newKey    // Variable to take the key used by cypher.
     );
     // Set the key used by this encryption method.
 
@@ -303,56 +306,70 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
   public:
     PSecureConfig(
-      const PStringArray  & securedKeys, // List of secured keys.
+      const PTEACypher::Key productKey,     // Key to decrypt validation code.
+      const PStringArray  & securedKeys,    // List of secured keys.
       Source src = Application        // Standard source for the configuration.
     );
     PSecureConfig(
+      const PTEACypher::Key productKey,     // Key to decrypt validation code.
       const char * const * securedKeyArray, // List of secured keys.
-      PINDEX count,                      // Number of secured keys in list.
-      Source src = Application        // Standard source for the configuration.
-    );
-    PSecureConfig(
-      const PStringArray  & securedKeys, // List of secured keys.
-      const PString & securedSection,  // Section for secured key values
-      Source src = Application        // Standard source for the configuration.
-    );
-    PSecureConfig(
-      const char * const * securedKeyArray,  // List of secured keys.
-      PINDEX count,                       // Number of secured keys in list.
-      const PString & securedSection,  // Section for secured key values
+      PINDEX count,                         // Number of secured keys in list.
       Source src = Application        // Standard source for the configuration.
     );
     /* Create a secured configuration. The default section for the
-       configuration keys is "Secured Options".
+       configuration keys is "Secured Options", the default security key is
+       "Validation" and the defualt prefix string is "Pending:".
+
+       The user can descend from this class and change any of the member
+       variable for the names of keys or the configuration file section.
      */
 
 
   // New functions for class
-    const PStringArray & GetSecuredKeys() const { return securedKey; }
+    const PStringArray & GetSecuredKeys() const { return securedKeys; }
     /* Get the list of secured keys in the configuration file section.
 
        <H2>Returns:</H2>
        Array of  strings for the secured keys.
      */
 
-    BOOL SetValidation();
-    BOOL SetValidation(
-      const PString & validationKey    // Key to store validation.
-    );
-    /* Set the configuration file key with an encoded validation of all of the
-       values attached to the keys specified in the constructor.
+    const PString & GetSecurityKey() const { return securityKey; }
+    /* Get the security keys name in the configuration file section.
 
        <H2>Returns:</H2>
-       TRUE if secure key values are valid.
+       String for the security values key.
      */
 
-    void UnsetValidation();
-    void UnsetValidation(
-      const PString & validationKey    // Key to store validation.
-    );
-    /* Set the configuration file key with an encoded validation of all of the
-       values attached to the keys specified in the constructor.
+    const PString & GetExpiryDateKey() const { return expiryDateKey; }
+    /* Get the expiry date keys name in the configuration file section.
+
+       <H2>Returns:</H2>
+       String for the expiry date values key.
      */
+
+    const PString & GetOptionBitsKey() const { return optionBitsKey; }
+    /* Get the Option Bits keys name in the configuration file section.
+
+       <H2>Returns:</H2>
+       String for the Option Bits values key.
+     */
+
+    const PString & GetPendingPrefix() const { return pendingPrefix; }
+    /* Get the pending prefix name in the configuration file section.
+
+       <H2>Returns:</H2>
+       String for the pending prefix.
+     */
+
+    void GetProductKey(
+      PTEACypher::Key productKey  // Variable to receive the product key.
+    ) const;
+    /* Get the pending prefix name in the configuration file section.
+
+       <H2>Returns:</H2>
+       String for the pending prefix.
+     */
+
 
     enum ValidationState {
       Defaults,
@@ -361,9 +378,6 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
       Invalid
     };
     ValidationState GetValidation() const;
-    ValidationState GetValidation(
-      const PString & validationKey    // Key validation stored in.
-    ) const;
     /* Check the current values attached to the keys specified in the
        constructor against an encoded validation key.
 
@@ -371,21 +385,24 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
        State of the validation keys.
      */
 
-    enum DigestType {
-      PendingKeys,
-      SecuredKeys
-    };
-
-    PString CalculateDigest(DigestType keyType) const;
-    /* Calculate the MD5 digest for all of the secured keys data in the
-       configuration file.
+    BOOL ValidatePending();
+    /* Validate a pending secured option list for the product. All secured
+       keys with the <CODE>pendingPrefix</CODE> name will be checked against
+       the value of the field <CODE>securityKey</CODE>. If they match then
+       they are copied to the secured variables.
 
        <H2>Returns:</H2>
-       Base64 string for MD5 encoding of data.
+       TRUE if secure key values are valid.
      */
 
-    PString CalculateValidation(DigestType keyType) const;
-    /* Calculate the validation string for the secured keys data in the
+    void ResetPending();
+    /* "Unvalidate" a security configuration going back to a pending state,
+       usually used after an <CODE>Invalid</CODE> response was recieved from
+       the <A>GetValidation()</A> function.
+     */
+
+    PString CalculatePendingDigest() const;
+    /* Calculate the MD5 digest for all of the pending secured keys data in the
        configuration file.
 
        <H2>Returns:</H2>
@@ -394,7 +411,12 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
 
   protected:
-    PStringArray securedKey;
+    PTEACypher::Key productKey;
+    PStringArray    securedKeys;
+    PString         securityKey;
+    PString         expiryDateKey;
+    PString         optionBitsKey;
+    PString         pendingPrefix;
 };
 
 
