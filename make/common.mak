@@ -48,7 +48,11 @@ CLEAN_FILES	:= $(CLEAN_FILES) core
 
 ifdef	PROG
 
+ifndef	SHAREDLIB
 all:	$(OBJDIR)/$(PROG)
+else
+all:	$(OBJDIR)/$(PROG)_dll
+endif
 
 ifdef BUILDFILES
 OBJS	:= $(OBJS) buildnum.o
@@ -57,12 +61,16 @@ endif
 $(OBJDIR)/$(PROG):	$(OBJS) $(PTLIB_FILE)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG) $(LDLIBS)
 
+$(OBJDIR)/$(PROG)_dll:	$(OBJS) $(PTLIB_FILE)
+	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG)_dll $(LDLIBS)
+
 ifdef GUI
 $(OBJDIR)/$(PROG):	$(PWLIB_FILE)
+
+$(OBJDIR)/$(PROG)_dll:	$(PWLIB_FILE)
 endif
 
-
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG)
+CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG) $(OBJDIR)/$(PROG)_dll
 
 # ifdef PROG
 endif
