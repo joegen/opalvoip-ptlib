@@ -45,8 +45,6 @@ PDECLARE_CLASS(PXConfigSection, PCaselessString)
     PXConfigSectionList list;
 };
 
-PLIST(PXConfig, PXConfigSection);
-
 #define	new PNEW
 
 static BOOL ReadConfigFile (PFilePath & filename, PXConfig & config)
