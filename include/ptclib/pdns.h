@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.7  2004/05/31 12:49:47  csoutheren
+ * Added handling of unknown DNS types
+ *
  * Revision 1.6  2004/05/28 06:50:42  csoutheren
  * Reorganised DNS functions to use templates, and exposed more internals to allow new DNS lookup types to be added
  *
@@ -80,13 +83,13 @@
 // on non-Window systems
 //
 
-#define	DNS_STATUS		          int
-#define	DNS_TYPE_SRV		        T_SRV
-#define	DNS_TYPE_MX		          T_MX
-#define	DNS_TYPE_A		          T_A
-#define	DNS_TYPE_NAPTR		      T_NAPTR
-#define	DnsFreeRecordList	      0
-#define	DNS_QUERY_STANDARD	    0
+#define	DNS_STATUS		int
+#define	DNS_TYPE_SRV		T_SRV
+#define	DNS_TYPE_MX		T_MX
+#define	DNS_TYPE_A		T_A
+#define	DNS_TYPE_NAPTR		T_NAPTR
+#define	DnsFreeRecordList	0
+#define	DNS_QUERY_STANDARD	0
 #define	DNS_QUERY_BYPASS_CACHE	0
 
 typedef struct _DnsAData {
@@ -103,20 +106,24 @@ typedef struct {
 } DNS_PTR_DATA;
 
 typedef struct _DnsSRVData {
-  public:
-    char   pNameTarget[MAXDNAME];
-    WORD   wPriority;
-    WORD   wWeight;
-    WORD   wPort;
+  char   pNameTarget[MAXDNAME];
+  WORD   wPriority;
+  WORD   wWeight;
+  WORD   wPort;
 } DNS_SRV_DATA;
+
+typedef struct _DnsNULLData {
+  DWORD  dwByteCount;
+  char   data[1];
+} DNS_NULL_DATA;
 
 typedef struct _DnsRecordFlags
 {
-    unsigned   Section     : 2;
-    unsigned   Delete      : 1;
-    unsigned   CharSet     : 2;
-    unsigned   Unused      : 3;
-    unsigned   Reserved    : 24;
+  unsigned   Section     : 2;
+  unsigned   Delete      : 1;
+  unsigned   CharSet     : 2;
+  unsigned   Unused      : 3;
+  unsigned   Reserved    : 24;
 } DNS_RECORD_FLAGS;
 
 typedef enum _DnsSection
@@ -141,10 +148,11 @@ class DnsRecord {
     } Flags;
 
     union {
-      DNS_A_DATA   A;
-      DNS_MX_DATA  MX;
-      DNS_PTR_DATA NS;
-      DNS_SRV_DATA SRV;
+      DNS_A_DATA     A;
+      DNS_MX_DATA    MX;
+      DNS_PTR_DATA   NS;
+      DNS_SRV_DATA   SRV;
+      DNS_NULL_DATA  Null;
     } Data;
 };
 
