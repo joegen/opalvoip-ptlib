@@ -1,6 +1,6 @@
 
 /*
- * $Id: uicmp.cxx,v 1.5 1998/01/26 07:27:09 robertj Exp $
+ * $Id: uicmp.cxx,v 1.6 1998/08/26 01:45:56 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.6  1998/08/26 01:45:56  craigs
+ * Fixed error in IPHdr
+ *
  * Revision 1.5  1998/01/26 07:27:09  robertj
  * Added part support for extra ping info. Still needs TTL for traceroute.
  *
@@ -71,7 +74,7 @@ typedef struct {
 typedef struct {
   BYTE verIhl;
   BYTE typeOfService;
-  BYTE totalLength;
+  WORD totalLength;
   WORD identification;
   WORD fragOff;
   BYTE timeToLive;
