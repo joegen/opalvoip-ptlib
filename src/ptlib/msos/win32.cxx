@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.112  2001/09/11 03:27:46  robertj
+ * Improved error processing on high level protocol failures, usually
+ *   caused by unexpected shut down of a socket.
+ *
  * Revision 1.111  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -856,8 +860,9 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     if (lastError == NoError)
       return PString();
 
-    static int const errors[Miscellaneous+1] = {
-      0, ENOENT, EEXIST, ENOSPC, EACCES, 1000, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR, 1001
+    static int const errors[NumNormalisedErrors] = {
+      0, ENOENT, EEXIST, ENOSPC, EACCES, EBUSY, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR,
+      WSAEMSGSIZE|PWIN32ErrorFlag, EIO, 0x1000000|PWIN32ErrorFlag
     };
     osError = errors[lastError];
   }
@@ -894,7 +899,7 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     { WSAETIMEDOUT,             "Timed out" },
     { WSAEMSGSIZE,              "Message larger than buffer" },
     { WSAEWOULDBLOCK,           "Would block" },
-    { 0x1000000,                "Unexpected error in protocol" }
+    { 0x1000000,                "High level protocol failure" }
   };
 
   for (PINDEX i = 0; i < PARRAYSIZE(win32_errlist); i++)
