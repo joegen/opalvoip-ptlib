@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.29 2001/12/06 04:06:03 robertj Exp $
+ * $Id: pssl.cxx,v 1.30 2001/12/13 09:15:41 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.30  2001/12/13 09:15:41  robertj
+ * Added function to get private key as ray DER binary data or as base64 string.
+ *
  * Revision 1.29  2001/12/06 04:06:03  robertj
  * Removed "Win32 SSL xxx" build configurations in favour of system
  *   environment variables to select optional libraries.
@@ -316,6 +319,25 @@ BOOL PSSLPrivateKey::Create(unsigned modulus,
   EVP_PKEY_free(key);
   key = NULL;
   return FALSE;
+}
+
+
+PBYTEArray PSSLPrivateKey::GetData() const
+{
+  PBYTEArray data;
+
+  if (key != NULL) {
+    BYTE * keyPtr = data.GetPointer(i2d_PrivateKey(key, NULL));
+    i2d_PrivateKey(key, &keyPtr);
+  }
+
+  return data;
+}
+
+
+PString PSSLPrivateKey::AsString() const
+{
+  return PBase64::Encode(GetData());
 }
 
 
