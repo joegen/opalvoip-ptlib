@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.10 1996/05/30 11:48:28 robertj Exp $
+ * $Id: assert.cxx,v 1.11 1996/07/27 04:08:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.11  1996/07/27 04:08:13  robertj
+ * Changed SystemLog to be stream based rather than printf based.
+ *
  * Revision 1.10  1996/05/30 11:48:28  robertj
  * Fixed press a key to continue to only require one key.
  *
@@ -97,10 +100,10 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
   if (PProcess::Current()->IsDescendant(PServiceProcess::Class()) &&
                               !((PServiceProcess*)PProcess::Current())->debugMode) {
-    ((PServiceProcess*)PProcess::Current())->SystemLog(
-              PServiceProcess::LogFatal,
-              "Assertion fail in file %s, line %u %s - code = %lu",
-              file, line, msg != NULL ? msg : "", err);
+    char buf[50];
+    sprintf(buf, "Assertion fail in file %s, line %u %s - code = %lu",
+                 file, line, msg != NULL ? msg : "", err);
+    PSystemLog::Output(PSystemLog::Fatal, buf);
     _exit(100);
   }
 
