@@ -358,7 +358,7 @@ EXPORTS
     ??0HouseKeepingThread@PProcess@@QAE@XZ @40 NONAME
     ??0Info@PAbstractList@@QAE@XZ @4602 NONAME
     ??0Info@PAbstractSortedList@@QAE@XZ @7363 NONAME
-    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @42 NONAME
+    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@100@Z @7374 NONAME
     ??0iterator@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@PAPAVPPluginModuleManager@@@Z @5964 NONAME
     ??0iterator@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAE@PAVPString@@@Z @5965 NONAME
     ??0iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@@2@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@@2@$0A@@std@@@2@@Z @6498 NONAME
@@ -4602,6 +4602,11 @@ EXPORTS
     ?Host2Net@PSocket@@SAGG@Z @5290 NONAME
     ?ICMP@@3VPICMPDLL@@A @1747 NONAME
     ?IllegalArgumentIndex@PArgList@@UBEXH@Z @1748 NONAME
+    ?IN6_IS_ADDR_LINKLOCAL@@YAHPBUin6_addr@@@Z @7369 NONAME
+    ?IN6_IS_ADDR_LOOPBACK@@YAHPBUin6_addr@@@Z @7370 NONAME
+    ?IN6_IS_ADDR_SITELOCAL@@YAHPBUin6_addr@@@Z @7371 NONAME
+    ?IN6_IS_ADDR_V4COMPAT@@YAHPBUin6_addr@@@Z @7372 NONAME
+    ?IN6_IS_ADDR_V4MAPPED@@YAHPBUin6_addr@@@Z @7373 NONAME
     ?in@?$_Iosb@H@std@@2W4_Openmode@12@B @5291 NONAME
     ?Include@PStringSet@@QAEXABVPString@@@Z @5292 NONAME
     ?Init@PWin32SnmpLibrary@@AAEHKPAPAXPAUAsnObjectIdentifier@@@Z @6427 NONAME
