@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.11  1998/11/30 22:06:35  robertj
+ * New directory structure.
+ *
  * Revision 1.10  1998/11/03 10:56:33  robertj
  * Removed unused extern for PErrorStream
  *
@@ -93,6 +96,6 @@ typedef int		      INT;
 //  include common declarations
 //
 
-#include "../../common/ptlib/contain.h"
+#include "../../contain.h"
 
 #endif
