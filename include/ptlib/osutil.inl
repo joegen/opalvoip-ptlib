@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.30 1995/07/31 12:15:44 robertj Exp $
+ * $Id: osutil.inl,v 1.31 1995/08/12 22:30:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.31  1995/08/12 22:30:05  robertj
+ * Work around for  GNU bug: can't have private copy constructor with multiple inheritance.
+ *
  * Revision 1.30  1995/07/31 12:15:44  robertj
  * Removed PContainer from PChannel ancestor.
  *
@@ -268,8 +271,11 @@ PINLINE PChannelStreamBuffer &
           PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
   { channel = sbuf.channel; return *this; }
 
-PINLINE BOOL PChannel::SetSize(PINDEX newSize)
-  { return newSize == 1; }
+PINLINE PChannel::PChannel(const PChannel &)
+  { PAssertAlways("Cannot copy channels"); }
+
+PINLINE PChannel & PChannel::operator=(const PChannel &)
+  { PAssertAlways("Cannot assign channels"); return *this; }
 
 PINLINE void PChannel::SetReadTimeout(PTimeInterval time)
   { readTimeout = time; }
