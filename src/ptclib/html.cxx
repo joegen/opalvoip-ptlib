@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.11 1996/06/01 04:18:45 robertj Exp $
+ * $Id: html.cxx,v 1.12 1996/06/28 13:08:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.12  1996/06/28 13:08:55  robertj
+ * Changed PHTML class so can create html fragments.
+ * Fixed nesting problem in tables.
+ *
  * Revision 1.11  1996/06/01 04:18:45  robertj
  * Fixed bug in RadioButton, having 2 VALUE fields
  *
@@ -61,15 +65,32 @@
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
 
-PHTML::PHTML()
+PHTML::PHTML(ElementInSet initialState)
 {
   memset(elementSet, 0, sizeof(elementSet));
+  tableNestLevel = 0;
+  initialElement = initialState;
+  switch (initialState) {
+    case NumElementsInSet :
+      break;
+    case InBody :
+      Set(InBody);
+      break;
+    case InForm :
+      Set(InBody);
+      Set(InForm);
+      break;
+    default :
+      PAssertAlways(PInvalidParameter);
+  }
 }
 
 
 PHTML::PHTML(const char * cstr)
 {
   memset(elementSet, 0, sizeof(elementSet));
+  tableNestLevel = 0;
+  initialElement = NumElementsInSet;
   *this << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
 }
 
@@ -77,6 +98,8 @@ PHTML::PHTML(const char * cstr)
 PHTML::PHTML(const PString & str)
 {
   memset(elementSet, 0, sizeof(elementSet));
+  tableNestLevel = 0;
+  initialElement = NumElementsInSet;
   *this << Title(str) << Body() << Heading(1) << str << Heading(1);
 }
 
@@ -84,6 +107,10 @@ PHTML::PHTML(const PString & str)
 PHTML::~PHTML()
 {
 #ifndef NDEBUG
+  if (initialElement != NumElementsInSet) {
+    Clr(initialElement);
+    Clr(InBody);
+  }
   for (PINDEX i = 0; i < PARRAYSIZE(elementSet); i++)
     PAssert(elementSet[i] == 0, psprintf("Failed to close element %u", i));
 #endif
@@ -562,22 +589,45 @@ void PHTML::DefinitionItem::Output(PHTML & html) const
 }
 
 
-PHTML::Table::Table(const char * attr)
+PHTML::TableStart::TableStart(const char * attr)
   : Element("TABLE", attr, InTable, InBody, BothCRLF)
 {
   borderFlag = FALSE;
 }
 
-PHTML::Table::Table(BorderCodes border, const char * attr)
+PHTML::TableStart::TableStart(BorderCodes border, const char * attr)
   : Element("TABLE", attr, InTable, InBody, BothCRLF)
 {
   borderFlag = border == Border;
 }
 
-void PHTML::Table::AddAttr(PHTML & html) const
+void PHTML::TableStart::Output(PHTML & html) const
+{
+  if (html.tableNestLevel > 0)
+    html.Clr(InTable);
+  Element::Output(html);
+}
+
+void PHTML::TableStart::AddAttr(PHTML & html) const
 {
   if (borderFlag)
     html << " BORDER";
+  html.tableNestLevel++;
+}
+
+
+PHTML::TableEnd::TableEnd()
+  : Element("TABLE", "", InTable, InBody, OpenCRLF)
+{
+}
+
+void PHTML::TableEnd::Output(PHTML & html) const
+{
+  PAssert(html.tableNestLevel > 0, "Table nesting error");
+  Element::Output(html);
+  html.tableNestLevel--;
+  if (html.tableNestLevel > 0)
+    html.Set(InTable);
 }
 
 
