@@ -1,13 +1,35 @@
 /*
- * $Id: pstring.h,v 1.34 1998/01/26 00:33:46 robertj Exp $
+ * pstring.h
+ *
+ * Character string class.
  *
  * Portable Windows Library
  *
- * Container Classes Interface Declarations
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 by Robert Jongbloed and Craig Southeren
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.35  1998/09/23 06:21:12  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.34  1998/01/26 00:33:46  robertj
  * Added FindRegEx function to PString that returns position and length.
  * Added Execute() functions to PRegularExpression that take PINDEX references instead of PIntArrays.
