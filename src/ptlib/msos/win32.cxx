@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.39 1996/11/04 03:36:31 robertj Exp $
+ * $Id: win32.cxx,v 1.40 1996/11/16 10:52:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.40  1996/11/16 10:52:48  robertj
+ * Fixed bug in PPipeChannel test for open channel, win95 support.
+ * Put time back to C function as run time library bug fixed now.
+ *
  * Revision 1.39  1996/11/04 03:36:31  robertj
  * Added extra error message for UDP packet truncated.
  *
@@ -169,17 +173,7 @@
 
 PTime::PTime()
 {
-  struct tm t;
-  SYSTEMTIME st;
-  GetLocalTime(&st);
-  t.tm_sec   = st.wSecond;
-  t.tm_min   = st.wMinute;
-  t.tm_hour  = st.wHour;
-  t.tm_mday  = st.wDay;
-  t.tm_mon   = st.wMonth-1;
-  t.tm_year  = st.wYear-1900;
-  t.tm_isdst = IsDaylightSavings();
-  theTime = mktime(&t);
+  time(&theTime);
 }
 
 
@@ -588,6 +582,12 @@ void PPipeChannel::Construct(const PString & subProgram,
 PPipeChannel::~PPipeChannel()
 {
   Close();
+}
+
+
+BOOL PPipeChannel::IsOpen() const
+{
+  return os_handle != (int)INVALID_HANDLE_VALUE;
 }
 
 
