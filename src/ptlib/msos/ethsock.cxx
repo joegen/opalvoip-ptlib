@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.29  2001/10/04 05:59:41  robertj
+ * Plugged numerous memory leaks.
+ *
  * Revision 1.28  2001/10/03 03:12:21  robertj
  * Changed to use only a single instance of SNMP library to avoid memory leak.
  *
@@ -185,10 +188,13 @@ class PWin32AsnAny : public AsnAny
 {
   public:
     PWin32AsnAny();
-    PWin32AsnAny(const AsnAny & any)  { memcpy(this, &any, sizeof(*this)); }
-    ~PWin32AsnAny();
+    ~PWin32AsnAny() { MemFree(); }
     BOOL GetInteger(AsnInteger & i);
     BOOL GetIpAddress(PIPSocket::Address & addr);
+    void MemFree();
+  private:
+    PWin32AsnAny(const PWin32AsnAny &) { }
+    PWin32AsnAny & operator=(const PWin32AsnAny &) { return *this; }
 };
 
 
@@ -199,11 +205,10 @@ class PWin32AsnOid : public AsnObjectIdentifier
   public:
     PWin32AsnOid();
     PWin32AsnOid(const char * str);
-    PWin32AsnOid(const AsnObjectIdentifier & oid);
     PWin32AsnOid(const PWin32AsnOid & oid)              { SnmpUtilOidCpy(this, (AsnObjectIdentifier *)&oid); }
-    void Free()                                         { SnmpUtilOidFree(this); }
+    ~PWin32AsnOid()                                     { SnmpUtilOidFree(this); }
     PWin32AsnOid & operator=(const AsnObjectIdentifier&);
-    PWin32AsnOid & operator=(const PWin32AsnOid & oid)  { SnmpUtilOidCpy(this, (AsnObjectIdentifier *)&oid); return *this; }
+    PWin32AsnOid & operator=(const PWin32AsnOid & oid)  { SnmpUtilOidFree(this); SnmpUtilOidCpy(this, (AsnObjectIdentifier *)&oid); return *this; }
     PWin32AsnOid & operator+=(const PWin32AsnOid & oid) { SnmpUtilOidAppend(this, (AsnObjectIdentifier *)&oid); return *this; }
     UINT & operator[](int idx)                          { return ids[idx]; }
     UINT   operator[](int idx) const                    { return ids[idx]; }
@@ -235,9 +240,9 @@ class PWin32SnmpLibrary
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
     BOOL GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
     BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len = NULL);
-    BOOL GetOid(AsnObjectIdentifier & oid, AsnAny & value);
+    BOOL GetOid(AsnObjectIdentifier & oid, PWin32AsnAny & value)     { return QueryOid(SNMP_PDU_GET, oid, value); }
 
-    BOOL GetNextOid(AsnObjectIdentifier & oid, AsnAny & value);
+    BOOL GetNextOid(AsnObjectIdentifier & oid, PWin32AsnAny & value) { return QueryOid(SNMP_PDU_GETNEXT, oid, value); }
 
     PString GetInterfaceName(int ifNum);
     PString GetInterfaceName(PIPSocket::Address ipAddr);
@@ -247,6 +252,7 @@ class PWin32SnmpLibrary
   private:
     BOOL (WINAPI *Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
     BOOL (WINAPI *Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
+    BOOL QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value);
 };
 
 
@@ -434,7 +440,7 @@ PWin32AsnAny::PWin32AsnAny()
 }
 
 
-PWin32AsnAny::~PWin32AsnAny()
+void PWin32AsnAny::MemFree()
 {
   switch (asnType) {
     case ASN_OCTETSTRING :
@@ -460,6 +466,8 @@ PWin32AsnAny::~PWin32AsnAny()
       break;
 #endif
   }
+
+  asnType = ASN_INTEGER;
 }
 
 
@@ -491,13 +499,6 @@ PWin32AsnOid::PWin32AsnOid()
 {
   ids = NULL;
   idLength = 0;
-}
-
-
-PWin32AsnOid::PWin32AsnOid(const AsnObjectIdentifier & oid)
-{
-  ids = oid.ids;
-  idLength = oid.idLength;
 }
 
 
@@ -610,54 +611,33 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT val
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnAny & value)
+BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value)
 {
   if (!IsLoaded())
     return FALSE;
 
-  RFC1157VarBind var;
-  var.name = oid;
-  var.value = value;
-
-  RFC1157VarBindList vars;
-  vars.len = 1;
-  vars.list = &var;
-
-  AsnInteger status, error;
-  if (!Query(SNMP_PDU_GET, &vars, &status, &error))
-    return FALSE;
-
-  if (status != SNMP_ERRORSTATUS_NOERROR)
-    return FALSE;
-
-  value = var.value;
-  oid = var.name;
-  return TRUE;
-}
-
-
-BOOL PWin32SnmpLibrary::GetNextOid(AsnObjectIdentifier & oid, AsnAny & value)
-{
-  if (!IsLoaded())
-    return FALSE;
-
-  SnmpVarBind var;
-  var.name = oid;
-  var.value = value;
+  value.MemFree();
 
   SnmpVarBindList vars;
   vars.len = 1;
-  vars.list = &var;
+  vars.list = (SnmpVarBind*)SnmpUtilMemAlloc(sizeof(SnmpVarBind));
+
+  vars.list->name = oid;
+  vars.list->value = value;
 
   AsnInteger status, error;
-  if (!Query(SNMP_PDU_GETNEXT, &vars, &status, &error))
+  if (!Query(cmd, &vars, &status, &error))
     return FALSE;
 
   if (status != SNMP_ERRORSTATUS_NOERROR)
     return FALSE;
 
-  value = var.value;
-  oid = var.name;
+  (AsnAny&)value = vars.list->value; // Use cast so does simple copy
+  oid = vars.list->name;
+
+  if (vars.list != NULL)
+    SnmpUtilMemFree(vars.list);
+
   return TRUE;
 }
 
@@ -692,6 +672,7 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
 
   return GetInterfaceName(gwAddr);
 }
+
 
 PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
 {
@@ -1730,11 +1711,7 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
 BOOL PIPSocket::GetGatewayAddress(Address & addr)
 {
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
-  if (!PWin32SnmpLibrary::Current().GetOid(gatewayOid, addr))
-    return FALSE;
-
-  gatewayOid.Free();
-  return TRUE;
+  return PWin32SnmpLibrary::Current().GetOid(gatewayOid, addr);
 }
 
 
@@ -1746,8 +1723,6 @@ PString PIPSocket::GetGatewayInterface()
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
   if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
     return PString();
-
-  gatewayOid.Free();
 
   return snmp.GetInterfaceName(ifNum);
 }
@@ -1809,8 +1784,6 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
     idx++;
   }
-
-  oid.Free();
 
   for (idx = 0; idx < table.GetSize(); idx++)
     table[idx].interfaceName = snmp.GetInterfaceName(ifNum[idx]);
@@ -1874,5 +1847,6 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 
   return TRUE;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
