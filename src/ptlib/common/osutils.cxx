@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.110  1998/11/01 04:56:53  robertj
+ * Added BOOl return value to Parse() to indicate there are parameters available.
+ *
  * Revision 1.109  1998/10/31 14:02:20  robertj
  * Removed StartImmediate capability as causes race condition in preemptive version.
  *
@@ -1587,7 +1590,7 @@ void PArgList::SetArgs(const PStringArray & theArgs)
 }
 
 
-void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
+BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
   PAssertNULL(spec);
 
@@ -1660,6 +1663,8 @@ void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 
     arg++;
   }
+
+  return param > 0;
 }
 
 
