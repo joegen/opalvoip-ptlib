@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.22  2003/03/17 08:02:54  robertj
+ * Combined to the separate incoming and outgoing substream classes into
+ *   a single class to make it easier to produce codec aware descendents.
+ * Added G.729 substream class.
+ *
  * Revision 1.21  2002/11/08 03:38:34  craigs
  * Fixed problem with G.723.1 files
  *
@@ -108,9 +113,11 @@
 #include <ptclib/ptts.h>
 #include <ptclib/url.h>
 
+
 class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
+
 
 class PVXMLGrammar : public PObject
 {
@@ -137,6 +144,7 @@ class PVXMLGrammar : public PObject
     GrammarState state;
 };
 
+
 //////////////////////////////////////////////////////////////////
 
 class PVXMLMenuGrammar : public PVXMLGrammar
@@ -145,6 +153,7 @@ class PVXMLMenuGrammar : public PVXMLGrammar
   public:
     PVXMLMenuGrammar(PXMLElement * field);
 };
+
 
 //////////////////////////////////////////////////////////////////
 
@@ -162,6 +171,7 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
     PString terminators;
 };
 
+
 //////////////////////////////////////////////////////////////////
 
 class PVXMLCacheItem : public PURL
@@ -178,12 +188,13 @@ class PVXMLCacheItem : public PURL
     BOOL ok;
 };
 
+
 PLIST(PVXMLCache, PVXMLCacheItem);
+
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLIncomingChannel;
-class PVXMLOutgoingChannel;
+class PVXMLChannel;
 
 class PVXMLSession : public PIndirectChannel
 {
@@ -199,12 +210,17 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL LoadFile(const PFilePath & file);
     virtual BOOL LoadURL(const PURL & url);
     virtual BOOL LoadVXML(const PString & xml);
+    virtual BOOL IsLoaded() const { return loaded; }
 
-    virtual BOOL Open(BOOL isPCM);
+    virtual BOOL Open(BOOL isPCM); // For backward compatibility FALSE=G.723.1
+    virtual BOOL Open(
+      PVXMLChannel * in,
+      PVXMLChannel * out
+    );
     virtual BOOL Close();
 
-    PVXMLIncomingChannel * GetIncomingChannel() const { return incomingChannel; }
-    PVXMLOutgoingChannel * GetOutgoingChannel() const { return outgoingChannel; }
+    PVXMLChannel * GetIncomingChannel() const { return incomingChannel; }
+    PVXMLChannel * GetOutgoingChannel() const { return outgoingChannel; }
 
     BOOL Execute();
 
@@ -279,14 +295,15 @@ class PVXMLSession : public PIndirectChannel
     PThread * vxmlThread;
     BOOL forceEnd;
 
-    PVXMLIncomingChannel * incomingChannel;
-    PVXMLOutgoingChannel * outgoingChannel;
+    PVXMLChannel * incomingChannel;
+    PVXMLChannel * outgoingChannel;
+
     PTextToSpeech * textToSpeech;
     BOOL autoDeleteTextToSpeech;
 
     PXMLElement * currentForm;
     PXMLElement * currentField;
-	  PXMLObject  * currentNode;
+    PXMLObject  * currentNode;
 
     static PMutex cacheMutex;
     static PDirectory cacheDir;
@@ -294,9 +311,8 @@ class PVXMLSession : public PIndirectChannel
     static PINDEX cacheCount;
 };
 
-//////////////////////////////////////////////////////////////////
 
-class PVXMLOutgoingChannel;
+//////////////////////////////////////////////////////////////////
 
 class PVXMLQueueItem : public PObject
 {
@@ -306,7 +322,7 @@ class PVXMLQueueItem : public PObject
       : repeat(_repeat), delay(_delay)
       { }
 
-    virtual void Play(PVXMLOutgoingChannel & outgoingChannel) = 0;
+    virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
     virtual void OnStart() { }
     virtual void OnStop() { }
@@ -314,6 +330,7 @@ class PVXMLQueueItem : public PObject
     PINDEX repeat;
     PINDEX delay;
 };
+
 
 //////////////////////////////////////////////////////////////////
 
@@ -325,11 +342,12 @@ class PVXMLQueueDataItem : public PVXMLQueueItem
       : PVXMLQueueItem(repeat, delay), data(_data)
     { }
 
-    void Play(PVXMLOutgoingChannel & outgoingChannel);
+    void Play(PVXMLChannel & outgoingChannel);
 
   protected:
     PBYTEArray data;
 };
+
 
 class PVXMLQueueFilenameItem : public PVXMLQueueItem
 {
@@ -339,7 +357,7 @@ class PVXMLQueueFilenameItem : public PVXMLQueueItem
       : PVXMLQueueItem(repeat, delay), fn(_fn), autoDelete(_autoDelete)
     { }
 
-    void Play(PVXMLOutgoingChannel & outgoingChannel);
+    void Play(PVXMLChannel & outgoingChannel);
 
     void OnStop() 
     { if (autoDelete) PFile::Remove(fn); }
@@ -349,6 +367,7 @@ class PVXMLQueueFilenameItem : public PVXMLQueueItem
     BOOL autoDelete;
 };
 
+
 class PVXMLQueueURLItem : public PVXMLQueueItem
 {
   PCLASSINFO(PVXMLQueueURLItem, PObject);
@@ -357,7 +376,7 @@ class PVXMLQueueURLItem : public PVXMLQueueItem
       : PVXMLQueueItem(repeat, delay), url(_url)
     { }
 
-    void Play(PVXMLOutgoingChannel & outgoingChannel);
+    void Play(PVXMLChannel & outgoingChannel);
 
   protected:
     PURL url;
@@ -366,62 +385,74 @@ class PVXMLQueueURLItem : public PVXMLQueueItem
 
 PQUEUE(PVXMLQueue, PVXMLQueueItem);
 
+
 //////////////////////////////////////////////////////////////////
 
 class PVXMLChannel : public PIndirectChannel
 {
   PCLASSINFO(PVXMLChannel, PIndirectChannel);
   public:
-    PVXMLChannel(PVXMLSession & _vxml, BOOL _isRead)
-      : vxml(_vxml), isRead(_isRead) { closed = FALSE; }
-
-    BOOL Close();
-
-    BOOL IsOpen() const;
-
-    // new functions
-    virtual void DelayFrame(PINDEX msecs) = 0;
-    virtual unsigned GetWavFileType() const = 0;
-    virtual BOOL IsMediaPCM() const = 0;
-    virtual PString AdjustFn(const PString & fn) { return fn; }
-
-  protected:
-    PVXMLSession & vxml;
-    BOOL isRead;
-    PMutex channelMutex;
-    PAdaptiveDelay delay;
-    BOOL closed;
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLOutgoingChannel : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLOutgoingChannel, PVXMLChannel);
-
-  public:
-    PVXMLOutgoingChannel(PVXMLSession & vxml);
+    PVXMLChannel(
+      PVXMLSession & _vxml,
+      BOOL incoming,
+      const PString & fmtName,
+      PINDEX frameBytes,
+      unsigned frameTime,
+      unsigned wavFileType,
+      const PString & wavFilePrefix
+    );
+    ~PVXMLChannel();
 
     // overrides from PIndirectChannel
+    virtual BOOL IsOpen() const;
+    virtual BOOL Close();
     virtual BOOL Read(void * buffer, PINDEX amount);
+    virtual BOOL Write(const void * buf, PINDEX len);
 
     // new functions
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
+
+    const PString & GetFormatName() const { return formatName; }
+    unsigned GetWavFileType() const { return wavFileType; }
+    virtual PString AdjustWavFilename(const PString & fn);
+
+    // Incoming channel functions
+    virtual BOOL WriteFrame(const void * buf, PINDEX len) = 0;
+
+    BOOL StartRecording(const PFilePath & fn);
+    BOOL EndRecording();
+    BOOL IsRecording() const { return wavFile != NULL; }
+
+    // Outgoing channel functions
+    virtual BOOL ReadFrame(PINDEX amount) = 0;
+    virtual void CreateSilenceFrame(PINDEX amount) = 0;
+
     virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
 
-    virtual void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem);
+    virtual void QueueItem(PVXMLQueueItem * newItem);
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
   protected:
-    // new functions
-    virtual BOOL ReadFrame(PINDEX amount)= 0;
-    virtual void CreateSilenceFrame(PINDEX amount) = 0;
-    virtual BOOL IsWAVFileValid(PWAVFile & chan) = 0;
+    PVXMLSession & vxml;
+    BOOL isIncoming;
+    PString formatName;
+    PINDEX frameBytes;
+    unsigned frameTime;
+    unsigned wavFileType;
+    PString wavFilePrefix;
 
+    PMutex channelMutex;
+    PAdaptiveDelay delay;
+    BOOL closed;
+
+    // Incoming call variables
+    PWAVFile * wavFile;
+
+    // Outgoing call variables
     PMutex queueMutex;
     PVXMLQueue playQueue;
     BOOL playing;
@@ -434,116 +465,51 @@ class PVXMLOutgoingChannel : public PVXMLChannel
     PTimer delayTimer;
 };
 
-class PVXMLOutgoingChannelPCM : public PVXMLOutgoingChannel
-{
-  PCLASSINFO(PVXMLOutgoingChannelPCM, PVXMLOutgoingChannel);
-
-  public:
-    PVXMLOutgoingChannelPCM(PVXMLSession & vxml);
-
-    unsigned GetWavFileType() const
-     { return PWAVFile::PCM_WavFile; }
-
-    BOOL IsMediaPCM() const
-      { return TRUE; }
-
-  protected:
-    // overrides from PVXMLOutgoingChannel
-    void DelayFrame(PINDEX len);
-    BOOL IsWAVFileValid(PWAVFile & chan);
-    BOOL ReadFrame(PINDEX amount);
-    void CreateSilenceFrame(PINDEX amount);
-};
-
-class PVXMLOutgoingChannelG7231 : public PVXMLOutgoingChannel
-{
-  PCLASSINFO(PVXMLOutgoingChannelG7231, PVXMLOutgoingChannel);
-  public:
-    PVXMLOutgoingChannelG7231(PVXMLSession & vxml);
-
-    unsigned GetWavFileType() const
-      { return PWAVFile::fmt_VivoG7231; }
-
-    BOOL IsMediaPCM() const
-      { return FALSE; }
-
-    PString AdjustFn(const PString & fn);
-
-  protected:
-    // overrides from PVXMLOutgoingChannel
-    void DelayFrame(PINDEX len);
-    BOOL IsWAVFileValid(PWAVFile & chan);
-    BOOL ReadFrame(PINDEX amount);
-    void CreateSilenceFrame(PINDEX amount);
-};
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLIncomingChannel : public PVXMLChannel
+class PVXMLChannelPCM : public PVXMLChannel
 {
-  PCLASSINFO(PVXMLIncomingChannel, PVXMLChannel)
+  PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
 
   public:
-    PVXMLIncomingChannel(PVXMLSession & vxml);
-    ~PVXMLIncomingChannel();
-
-    // overrides from PIndirectChannel
-    BOOL Write(const void * buf, PINDEX len);
-
-    // new functions
-    virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
-    BOOL StartRecording(const PFilePath & fn);
-    BOOL EndRecording();
-    BOOL IsRecording() const { return wavFile != NULL; }
-
-    virtual unsigned GetWavFileType() const = 0;
-    virtual BOOL IsMediaPCM() const = 0;
+    PVXMLChannelPCM(PVXMLSession & vxml, BOOL incoming);
 
   protected:
-    // new functions
-    virtual BOOL WriteFrame(const void * buf, PINDEX len) = 0;
-    PWAVFile * wavFile;
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(PINDEX amount);
+    virtual void CreateSilenceFrame(PINDEX amount);
 };
 
 
-class PVXMLIncomingChannelPCM : public PVXMLIncomingChannel
+class PVXMLChannelG7231 : public PVXMLChannel
 {
-  PCLASSINFO(PVXMLIncomingChannelPCM, PVXMLIncomingChannel)
-
+  PCLASSINFO(PVXMLChannelG7231, PVXMLChannel);
   public:
-    PVXMLIncomingChannelPCM(PVXMLSession & vxml);
+    PVXMLChannelG7231(PVXMLSession & vxml, BOOL incoming);
 
-    unsigned GetWavFileType() const
-      { return PWAVFile::PCM_WavFile; }
-
-    BOOL IsMediaPCM() const
-      { return TRUE; }
-
-  protected:
-    // overrides from PVXMLIncomingChannel
-    void DelayFrame(PINDEX len);
-    BOOL WriteFrame(const void * buf, PINDEX len);
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(PINDEX amount);
+    virtual void CreateSilenceFrame(PINDEX amount);
 };
 
-class PVXMLIncomingChannelG7231 : public PVXMLIncomingChannel
+
+class PVXMLChannelG729 : public PVXMLChannel
 {
-  PCLASSINFO(PVXMLIncomingChannelG7231, PVXMLIncomingChannel);
-
+  PCLASSINFO(PVXMLChannelG729, PVXMLChannel);
   public:
-    PVXMLIncomingChannelG7231(PVXMLSession & vxml);
+    PVXMLChannelG729(PVXMLSession & vxml, BOOL incoming);
 
-    unsigned GetWavFileType() const
-      { return PWAVFile::fmt_MSG7231; }
-
-    BOOL IsMediaPCM() const
-      { return FALSE; }
-
-    PString AdjustFn(const PString & fn);
-
-  protected:
-    // overrides from PVXMLIncomingChannel
-    void DelayFrame(PINDEX len);
-    BOOL WriteFrame(const void * buf, PINDEX len);
+    // overrides from PVXMLChannel
+    virtual BOOL WriteFrame(const void * buf, PINDEX len);
+    virtual BOOL ReadFrame(PINDEX amount);
+    virtual void CreateSilenceFrame(PINDEX amount);
 };
+
 
 #endif
+
+
+// End of file ////////////////////////////////////////////////////////////////
