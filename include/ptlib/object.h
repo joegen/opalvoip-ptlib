@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.1 1994/10/30 12:01:37 robertj Exp $
+ * $Id: object.h,v 1.2 1994/11/03 09:25:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.1  1994/10/30 12:01:37  robertj
+ * Revision 1.2  1994/11/03 09:25:30  robertj
+ * Made notifier destination object not to be descendent of PObject.
+ *
+ * Revision 1.1  1994/10/30  12:01:37  robertj
  * Initial revision
  *
  */
@@ -443,10 +446,10 @@ template <class cls> class Wrap : public Wrapper {
 
 PDECLARE_CLASS(PNotifierFunction, PObject)
   public:
-    PNotifierFunction(PObject * obj) { object = obj; }
+    PNotifierFunction(void * obj) { object = obj; }
     virtual void Call(PObject & notifier, PInteger extra) const = 0;
   protected:
-    PObject * object;
+    void * object;
 };
 
 
