@@ -2131,6 +2131,7 @@ EXPORTS
     ?PrintNumbersOn@PAbstractArray@@IBEXAAVostream@@HH@Z @1507 NONAME ;protected: void __thiscall PAbstractArray::PrintNumbersOn(class ostream &,int,int)const 
     ?PrintOn@InterfaceEntry@PIPSocket@@UBEXAAVostream@@@Z @2599 NONAME ;public: virtual void __thiscall PIPSocket::InterfaceEntry::PrintOn(class ostream &)const 
     ?PrintOn@PAbstractDictionary@@UBEXAAVostream@@@Z @1508 NONAME ;public: virtual void __thiscall PAbstractDictionary::PrintOn(class ostream &)const 
+    ?PrintOn@PArgList@@UBEXAAVostream@@@Z @3151 NONAME ;public: virtual void __thiscall PArgList::PrintOn(class ostream &)const 
     ?PrintOn@PBYTEArray@@UBEXAAVostream@@@Z @1509 NONAME ;public: virtual void __thiscall PBYTEArray::PrintOn(class ostream &)const 
     ?PrintOn@PCharArray@@UBEXAAVostream@@@Z @1510 NONAME ;public: virtual void __thiscall PCharArray::PrintOn(class ostream &)const 
     ?PrintOn@PCollection@@UBEXAAVostream@@@Z @1511 NONAME ;public: virtual void __thiscall PCollection::PrintOn(class ostream &)const 
@@ -2194,6 +2195,7 @@ EXPORTS
     ?ReadChar@PChannel@@UAEHXZ @1550 NONAME ;public: virtual int __thiscall PChannel::ReadChar(void)
     ?ReadCharWithTimeout@PChannel@@IAEHAAVPTimeInterval@@@Z @1551 NONAME ;protected: int __thiscall PChannel::ReadCharWithTimeout(class PTimeInterval &)
     ?ReadComplete@PWin32PacketBuffer@@QAEHAAVPWin32PacketDriver@@@Z @1943 NONAME ;public: int __thiscall PWin32PacketBuffer::ReadComplete(class PWin32PacketDriver &)
+    ?ReadFrom@PArgList@@UAEXAAVistream@@@Z @3152 NONAME ;public: virtual void __thiscall PArgList::ReadFrom(class istream &)
     ?ReadFrom@PIPDatagramSocket@@UAEHPAXHAAVAddress@PIPSocket@@AAG@Z @1552 NONAME ;public: virtual int __thiscall PIPDatagramSocket::ReadFrom(void *,int,class PIPSocket::Address &,unsigned short &)
     ?ReadFrom@PIPXSocket@@UAEHPAXHAAVAddress@1@AAG@Z @1553 NONAME ;public: virtual int __thiscall PIPXSocket::ReadFrom(void *,int,class PIPXSocket::Address &,unsigned short &)
     ?ReadFrom@PObject@@UAEXAAVistream@@@Z @1554 NONAME ;public: virtual void __thiscall PObject::ReadFrom(class istream &)
