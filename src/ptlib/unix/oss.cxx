@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.2  1999/05/22 12:49:05  craigs
+ * Finished implementation for Linux OSS interface
+ *
  * Revision 1.1  1999/02/25 03:45:00  robertj
  * Sound driver implementation changes for various unix platforms.
  *
@@ -149,7 +152,7 @@ BOOL PSoundChannel::Open(const PString & device,
 {
   Close();
 
-  if (!ConvertOSError(os_handle = ::open(device, dir == Player ? O_RDONLY : O_WRONLY)))
+  if (!ConvertOSError(os_handle = ::open(device, (dir != Player) ? O_RDONLY : O_WRONLY)))
     return FALSE;
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
@@ -160,20 +163,32 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
+  return TRUE;
+
   Abort();
 
+  // must always set paramaters in the following order:
+  //   sample format (number of bits)
+  //   number of channels (mon/stereo)
+  //   speed (sampling rate)
+
+  int arg, val;
+
+  PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
+  arg = val = (bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
+  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val))
+    return FALSE;
+
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
-  int arg = numChannels == 2;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)))
+  arg = val = (numChannels == 2) ? 1 : 0;
+  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val))
     return FALSE;
 
-  PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
-  arg = bitsPerSample == 16 ? AFMT_S16_LE : AFMT_S8;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)))
+  arg = val = sampleRate;
+  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val))
     return FALSE;
 
-  arg = sampleRate;
-  return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg));
+  return TRUE;
 }
 
 
