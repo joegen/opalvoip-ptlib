@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.cxx,v $
+ * Revision 1.18  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.17  1998/11/30 04:51:51  robertj
  * New directory structure
  *
@@ -155,26 +160,10 @@ PHTML::~PHTML()
 }
 
 
-PHTML & PHTML::operator=(const char * cstr)
+void PHTML::AssignContents(const PContainer & cont)
 {
-  PStringStream::operator=("");
+  PStringStream::AssignContents(cont);
   memset(elementSet, 0, sizeof(elementSet));
-  if (cstr != NULL && *cstr != '\0')
-    *this << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
-  return *this;
-}
-
-
-PHTML & PHTML::operator=(const PString & str)
-{
-  return operator=((const char *)str);
-}
-
-
-PHTML & PHTML::operator=(const PHTML &)
-{
-  PAssertAlways(PLogicError);
-  return *this;
 }
 
 

@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.92  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.91  2000/12/29 07:36:57  craigs
  * Fixed problem with Tokenise function returning NULL entries in array
  *
@@ -390,20 +395,20 @@ PContainer::PContainer(const PContainer & cont)
 }
 
 
-PContainer & PContainer::operator=(const PContainer & cont)
+void PContainer::AssignContents(const PContainer & cont)
 {
-  if (reference != cont.reference) {
-    if (!IsUnique())
-      reference->count--;
-    else {
-      DestroyContents();
-      delete reference;
-    }
-  
-    reference = PAssertNULL(cont.reference);
-    reference->count++;
+  if (reference == cont.reference)
+    return;
+
+  if (!IsUnique())
+    reference->count--;
+  else {
+    DestroyContents();
+    delete reference;
   }
-  return *this;
+
+  reference = PAssertNULL(cont.reference);
+  reference->count++;
 }
 
 
@@ -1036,22 +1041,6 @@ PString::PString(ConversionType type, double value, unsigned places)
     default :
       PAssertAlways(PInvalidParameter);
   }
-}
-
-
-PString & PString::operator=(const char * cstr)
-{
-  PString pstr(cstr);
-  PCharArray::operator=(pstr);
-  return *this;
-}
-
-
-PString & PString::operator=(char ch)
-{
-  PString pstr(ch);
-  PCharArray::operator=(pstr);
-  return *this;
 }
 
 
@@ -1975,26 +1964,17 @@ PStringStream::PStringStream(const char * cstr)
 }
 
 
-PStringStream & PStringStream::operator=(const char * cstr)
-{
-  PString::operator=(cstr);
-  flush();
-  return *this;
-}
-
-
-PStringStream & PStringStream::operator=(const PString & str)
-{
-  PString::operator=(str);
-  flush();
-  return *this;
-}
-
-
 PStringStream::~PStringStream()
 {
   delete (PStringStream::Buffer *)rdbuf();
   init(NULL);
+}
+
+
+void PStringStream::AssignContents(const PContainer & cont)
+{
+  PString::AssignContents(cont);
+  flush();
 }
 
 
