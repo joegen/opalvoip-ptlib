@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.8  2000/04/06 20:18:57  craigs
+# Removed local install target
+#
 # Revision 1.7  2000/01/22 22:39:58  robertj
 # Added missing license and log messages comment.
 #
@@ -44,10 +47,6 @@ CLEAN_FILES	= asn_grammar.cxx asn_grammar.h asn_grammar.output asn_lex.cxx
 
 
 include $(PWLIBDIR)/make/ptlib.mak
-
-install: obj_$(PLATFORM_TYPE)_r/$(PROG)
-	-mkdir $(PWLIBDIR)/bin
-	install obj_$(PLATFORM_TYPE)_r/$(PROG) $(PWLIBDIR)/bin
 
 asn_grammar.cxx: asn_grammar.y
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
