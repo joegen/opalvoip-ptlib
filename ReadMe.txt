@@ -12,6 +12,7 @@ Contents
 	5.	Using PWLib
 	6.	Platform Specific Issues
 	7.	Conclusion
+        8.      Licensing
 
 
 
@@ -362,6 +363,57 @@ it and use it all the time, and we don't want to get into any religious wars of
 this class library over that one.
 
 Look for more port-related info on http://www.dogsbone.com/ce
+
+
+
+8. Licensing                 
+------------
+
+The bulk of this library is licensed under the MPL (Mozilla Public License)
+version 1.0. In simple terms this license allows you to use the library for 
+any purpose, commercial or otherwise, provided the library is kept in tact
+as a separate entity and any changes made to the library are made publicly
+available under the same (MPL) license. It is important to realise that that 
+refers to changes to the library and not your application that is merely 
+linked to the library.
+
+Note that due to a restriction in the GPL, any application you write that 
+uses anything another than GPL, eg our library with MPL, is technically in
+breach of the GPL license. However, it should be noted that MPL does not
+care about the license of the final application, and as only the author of
+the GPL application is in breach of his own license and is unlikely to sue
+themselves for that breach, in practice there is no problem with a GPL 
+application using an MPL or any other commercial library.
+
+
+The random number generator is based on code originally by Bob Jenkins.
+
+
+Portions of this library are from the REGEX library and is under the
+following license:
+
+Copyright 1992, 1993, 1994, 1997 Henry Spencer.  All rights reserved.
+This software is not subject to any license of the American Telephone
+and Telegraph Company or of the Regents of the University of California.
+
+Permission is granted to anyone to use this software for any purpose on
+any computer system, and to alter it and redistribute it, subject
+to the following restrictions:
+
+1. The author is not responsible for the consequences of use of this
+   software, no matter how awful, even if they arise from flaws in it.
+
+2. The origin of this software must not be misrepresented, either by
+   explicit claim or by omission.  Since few users ever read sources,
+   credits must appear in the documentation.
+
+3. Altered versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.  Since few users
+   ever read sources, credits must appear in the documentation.
+
+4. This notice may not be removed or altered.
+
+
 
 ================================================================================
 Equivalence Pty. Ltd.
