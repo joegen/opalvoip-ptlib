@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.2 1996/08/03 12:08:19 craigs Exp $
+ * $Id: semaphor.h,v 1.3 1998/01/03 23:06:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.3  1998/01/03 23:06:32  craigs
+ * Added PThread support
+ *
  * Revision 1.2  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -21,6 +24,19 @@
 #pragma interface
 
 #include "../../common/ptlib/semaphor.h"
+#ifdef P_PTHREADS
+  protected:
+    pthread_mutex_t mutex;
+    pthread_cond_t  condVar;
+    unsigned currentCount;
+    unsigned maximumCount;
+    unsigned queuedLocks;
+#else
+    PQUEUE(ThreadQueue, PThread);
+    ThreadQueue waitQueue;
+#endif
+friend void SemaSignal(PSemaphore & sema, BOOL PX_enableDebugOutput);
+friend void SemaWait(PSemaphore & sema, BOOL PX_enableDebugOutput);
 };
 
 #endif
