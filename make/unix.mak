@@ -10,12 +10,12 @@ SOURCES		:= $(strip $(SOURCES))
 ###############################################################################
 #
 # Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR #-DPHAS_TEMPLATES
+STDCCFLAGS	:= $(STDCCFLAGS) -486 -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR #-DPHAS_TEMPLATES
 ####################################################
 
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
-# Sun 4x, using gcc 2.6.2
+# SunOs 4.1.x on Sun 4x, using gcc 2.6.3
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
 
 
@@ -40,7 +40,7 @@ CPLUS		= g++
 #
 endif
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -Wall -m486
+STDCCFLAGS	:= $(STDCCFLAGS) -Wall 
 #STDCCFLAGS      := $(STDCCFLAGS) -fomit-frame-pointer
 #STDCCFLAGS      := $(STDCCFLAGS) -fno-default-inline
 
