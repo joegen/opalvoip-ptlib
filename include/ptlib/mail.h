@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.3 1995/06/17 00:42:22 robertj Exp $
+ * $Id: mail.h,v 1.4 1995/07/02 01:19:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.4  1995/07/02 01:19:46  robertj
+ * Change GetMessageBidy to return BOOL and have body string as
+ *   parameter, due to slight change in semantics for large bodies.
+ *
  * Revision 1.3  1995/06/17 00:42:22  robertj
  * Added mail reading interface.
  * Changed name to simply PMail
@@ -124,13 +128,11 @@ PDECLARE_CLASS(PMail, PObject)
       PString  originatorName;    // Full name of message originator.
       PString  originatorAddress; // Return address of message originator.
       PTime    received;          // Time message received.
-      unsigned attachments;       // Number of attachment files.
     };
 
     BOOL GetMessageHeader(
       const PString & id,      // Identifier of message to get header.
-      Header & hdrInfo,        // Header info for the message.
-      BOOL markAsRead = FALSE  // Mark the message as read
+      Header & hdrInfo         // Header info for the message.
     );
     /* Get the header information for a message.
 
@@ -138,23 +140,31 @@ PDECLARE_CLASS(PMail, PObject)
        TRUE if header information was successfully obtained.
      */
 
-    PString GetMessageBody(
+    BOOL GetMessageBody(
       const PString & id,      // Identifier of message to get body.
-      BOOL markAsRead = FALSE  // Mark the message as read
+      PString & body,          // Body text of mail message.
+      BOOL markAsRead = FALSE  // Mark the message as read.
     );
-    /* Get the body text for a message.
+    /* Get the body text for a message into the <CODE>body</CODE> string
+       parameter.
 
-       Note that to tell between an error getting the message body and simply
-       having an empty message body the <A>GetErrorCode()</A> function must
-       be used.
+       Note that if the body text for the mail message is very large, the
+       function will return FALSE. To tell between an error getting the message
+       body and having a large message body the <A>GetErrorCode()</A> function
+       must be used.
+
+       To get a large message body, the <A>GetMessageAttachments()</A> should
+       be used with the <CODE>includeBody</CODE> parameter set to TRUE so that
+       the message body is placed into a disk file.
 
        <H2>Returns:</H2>
-       The body text was successfully or an empty string if an error occurred.
+       TRUE if the body text was retrieved, FALSE if the body was too large or
+       some other error occurred.
      */
 
     BOOL GetMessageAttachments(
       const PString & id,       // Identifier of message to get attachments.
-      PStringArray & filenames, // Body text for message.
+      PStringArray & filenames, // File names for each attachment.
       BOOL includeBody = FALSE, // Include the message body as first attachment
       BOOL markAsRead = FALSE   // Mark the message as read
     );
