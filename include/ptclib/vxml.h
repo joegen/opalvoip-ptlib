@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.34  2004/08/09 11:10:34  csoutheren
+ * Changed SetTextToSpeech to return ptr to new engine
+ *
  * Revision 1.33  2004/07/26 00:40:41  csoutheren
  * Fixed thread starvation problem under Linux by splitting channelMutex
  * into seperate read and write mutexes
@@ -305,8 +308,9 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     { finishWhenEmpty = v; }
 
     // new functions
-    void SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
-    void SetTextToSpeech(const PString & ttsName);
+    PTextToSpeech * SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
+    PTextToSpeech * SetTextToSpeech(const PString & ttsName);
+    PTextToSpeech * GetTextToSpeech() { return textToSpeech; }
 
     virtual BOOL Load(const PString & source);
     virtual BOOL LoadFile(const PFilePath & file);
