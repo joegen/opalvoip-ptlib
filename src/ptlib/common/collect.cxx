@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.35 1998/03/25 12:58:41 robertj Exp $
+ * $Id: collect.cxx,v 1.36 1998/03/26 11:19:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.36  1998/03/26 11:19:50  robertj
+ * Fix bug with unsigned PINDEX in array SetSize.
+ *
  * Revision 1.35  1998/03/25 12:58:41  robertj
  * Fixed memory leak if resize PArray
  *
@@ -205,8 +208,9 @@ PINDEX PArrayObjects::GetSize() const
 
 BOOL PArrayObjects::SetSize(PINDEX newSize)
 {
-  if (reference->deleteObjects) {
-    for (PINDEX i = theArray->GetSize()-1; i > newSize; i--) {
+  PINDEX sz = theArray->GetSize();
+  if (reference->deleteObjects && sz > 0) {
+    for (PINDEX i = sz-1; i > newSize; i--) {
       PObject * obj = theArray->GetAt(i);
       if (obj != NULL)
         delete obj;
