@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.9  1999/03/09 08:52:25  robertj
+ * Changes caused by documentation frenzy.
+ *
  * Revision 1.8  1998/11/30 22:06:53  robertj
  * New directory structure.
  *
@@ -70,7 +73,7 @@
 
 #define P_MAX_PATH    (_POSIX_PATH_MAX)
 
-#define	PFILE_PATH_STRING	PString
+typedef PString PFilePathString;
 
 #include "../../pdirect.h"
   protected:
