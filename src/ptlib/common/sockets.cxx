@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.153  2003/04/03 08:43:23  robertj
+ * Added IPv4 mapping into IPv6, thanks Sebastien Josset
+ *
  * Revision 1.152  2003/03/26 05:36:38  robertj
  * More IPv6 support (INADDR_ANY handling), thanks Sébastien Josset
  *
@@ -1635,10 +1638,14 @@ BOOL PIPSocket::GetLocalAddress(Address & addr)
   return GetLocalAddress(addr, dummy);
 }
 
+
+
+
 BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
 #if P_HAS_IPV6
-
+  Address   addrv4;
+  Address   peerv4;
   Psockaddr sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
@@ -1647,6 +1654,16 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
   addr = sa.GetIP();
   portNum = sa.GetPort();
 
+  // If the remote host is an IPv4 only host and our interface if an IPv4/IPv6 mapped
+  // Then return an IPv4 address instead of an IPv6
+  if (GetPeerAddress(peerv4)) {
+    if ((peerv4.GetVersion()==4)||(peerv4.IsV4Mapped())) {
+      if (addr.IsV4Mapped()) {
+        addr = Address(addr[12], addr[13], addr[14], addr[15]);
+      }
+    }
+  }
+  
 #else
 
   sockaddr_in address;
@@ -1928,8 +1945,6 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
 }
 
 
-
-
 const PIPSocket::Address & PIPSocket::Address::GetLoopback()
 {
   return loopback4;
@@ -1937,10 +1952,25 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback()
 
 
 #if P_HAS_IPV6
+
+/// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
+BOOL PIPSocket::Address::IsV4Mapped() const
+{
+  if (version != 6) { return FALSE; }
+
+  return (
+         (v.six.s6_addr[0]==0) &&(v.six.s6_addr[1]==0) &&(v.six.s6_addr[2]==0) &&(v.six.s6_addr[3]==0)
+      && (v.six.s6_addr[4]==0) &&(v.six.s6_addr[5]==0) &&(v.six.s6_addr[6]==0) &&(v.six.s6_addr[7]==0)
+      && (v.six.s6_addr[8]==0) &&(v.six.s6_addr[9]==0) &&(v.six.s6_addr[10]==0xFF) &&(v.six.s6_addr[11]==0xFF)
+        );
+}
+
+
 const PIPSocket::Address & PIPSocket::Address::GetLoopback6()
 {
   return loopback6;
 }
+
 
 const PIPSocket::Address & PIPSocket::Address::GetAny6()
 {
@@ -2439,7 +2469,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   PINDEX size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
     return FALSE;
-
+    
 #else
 
   sockaddr_in address;
@@ -2451,6 +2481,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 #endif
 
   port = ((PIPSocket &)socket).GetPort();
+  
   return TRUE;
 }
 
