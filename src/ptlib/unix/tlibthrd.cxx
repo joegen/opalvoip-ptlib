@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.77  2001/10/03 05:11:50  robertj
+ * Fixed PSyncPoint wait with timeout when have pending signals.
+ *
  * Revision 1.76  2001/09/27 23:50:03  craigs
  * Fixed typo in PSemaphone destructor
  *
@@ -1185,16 +1188,14 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
   int err = 0;
   while (signalCount == 0) {
     err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
-    if (err == 0) {
-      signalCount--;
-      break;
-    }
-
-    if (err == ETIMEDOUT)
+    if (err == 0 || err == ETIMEDOUT)
       break;
 
     PAssertOS(err == EINTR && errno == EINTR);
   }
+
+  if (err == 0)
+    signalCount--;
 
   PAssertOS(pthread_mutex_unlock(&mutex) == 0);
 
