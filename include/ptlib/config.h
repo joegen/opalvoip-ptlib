@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.27  2005/01/26 05:37:44  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.26  2004/01/06 21:16:38  csoutheren
  * Added "virtual" keyword to methods to allow descendant classes.
  * Thanks to Cristian Bullokles for pointing out this issue
@@ -115,6 +118,9 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include "ptbuildopts.h"
+#ifdef P_CONFIG_FILE
 
 class PXConfig;
 
@@ -590,6 +596,8 @@ class PConfig : public PObject
 #include "unix/ptlib/config.h"
 #endif
 };
+
+#endif // P_CONFIG_FILE
 
 #endif
 
