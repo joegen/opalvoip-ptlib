@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.3  2000/07/30 03:54:28  robertj
+ * Added more colour formats to video device enum.
+ *
  * Revision 1.2  2000/07/26 06:13:25  robertj
  * Added missing pragma implementation for GNU headers.
  *
@@ -53,12 +56,23 @@ PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
 }
 
 
-static int colourFormatTab[PVideoInputDevice::NumColourFormats][2] = {
-  { VIDEO_PALETTE_GREY,   1 },
-  { VIDEO_PALETTE_RGB24,  3 },
-  { VIDEO_PALETTE_RGB32,  4 },
-  { VIDEO_PALETTE_YUV422, 2 },
-  { VIDEO_PALETTE_RGB565, 2 }
+static struct {
+  int palette;
+  int bitsPerPixel;
+} colourFormatTab[PVideoInputDevice::NumColourFormats] = {
+  { VIDEO_PALETTE_GREY,    8 },
+  { VIDEO_PALETTE_RGB32,   32 },
+  { VIDEO_PALETTE_RGB24,   24 },
+  { VIDEO_PALETTE_RGB565,  16 },
+  { VIDEO_PALETTE_RGB555,  16 },
+  { VIDEO_PALETTE_YUV422,  16 },
+  { VIDEO_PALETTE_YUV422P, 16 },
+  { VIDEO_PALETTE_YUV411,  12 },
+  { VIDEO_PALETTE_YUV411P, 12 },
+  { VIDEO_PALETTE_YUV420,  12 },
+  { VIDEO_PALETTE_YUV420P, 12 },
+  { 0,  0 },
+  { VIDEO_PALETTE_YUV410P, 10 }
 };
 
 
@@ -90,7 +104,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
         // set colour format
         PINDEX i;
         for (i = 0; i < NumVideoFormats; i++)
-          if (colourFormatTab[i][0] == pictureInfo.palette)
+          if (colourFormatTab[i].palette == pictureInfo.palette)
             break;
         if (i < NumVideoFormats)
           return SetColourFormat((ColourFormat)i);
@@ -219,17 +233,14 @@ BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
     return FALSE;
 
   // set colour format
-  pictureInfo.palette = colourFormatTab[newFormat][0];
+  pictureInfo.palette = colourFormatTab[newFormat].palette;
 
   // set the information
   if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0)
     return FALSE;
 
   // set the new information
-  pixelSize      = colourFormatTab[newFormat][1];
-  videoFrameSize = frameWidth * frameHeight * pixelSize;
-
-  return TRUE;
+  return SetFrameSize(frameWidth, frameHeight);
 }
 
 
@@ -265,7 +276,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 
   ClearMapping();
 
-  videoFrameSize = frameWidth * frameHeight * pixelSize;
+  videoFrameSize = frameWidth * frameHeight * colourFormatTab[colourFormat].bitsPerPixel / 8;
 
   return TRUE;
 }
@@ -293,13 +304,13 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
         canMap = 1;
 
         frameBuffer[0].frame  = 0;
-        frameBuffer[0].format = colourFormatTab[colourFormat][0];
+        frameBuffer[0].format = colourFormatTab[colourFormat].palette;
         frameBuffer[0].width  = frameWidth;
         frameBuffer[0].height = frameHeight;
         ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[0]);
 
         frameBuffer[1].frame  = 1;
-        frameBuffer[1].format = colourFormatTab[colourFormat][0];
+        frameBuffer[1].format = colourFormatTab[colourFormat].palette;
         frameBuffer[1].width  = frameWidth;
         frameBuffer[1].height = frameHeight;
         ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[1]);

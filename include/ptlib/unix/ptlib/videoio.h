@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.2  2000/07/30 03:54:28  robertj
+ * Added more colour formats to video device enum.
+ *
  * Revision 1.1  2000/07/26 02:40:29  robertj
  * Added video I/O devices.
  *
@@ -50,7 +53,6 @@
     int    videoFd;
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
-    int    pixelSize;
     BYTE * videoBuffer;
     PINDEX videoFrameSize;
     int    currentFrame;
