@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.24  1999/02/22 13:26:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.23  1999/02/06 05:49:44  robertj
  * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
  *
@@ -227,19 +230,14 @@ struct servent * getservbyname(const char *, const char *);
 
 #include <errno.h>
 #include <termios.h>
-#include <sys/fcntl.h>
 #include <sys/socket.h>
-#include <signal.h>
-#include <netdb.h>
-#define PSETPGRP()  setpgrp()
 
-typedef int socklen_t; 
-// Dunno about PPC. We should have both x86 and PPC same
-
-#define	INADDR_NONE	-1
-
-#include "bdefs.h"
-
+#define SOCK_RAW 3 // raw-protocol interface, not suported in R4
+#define PF_INET AF_INET
+typedef int socklen_t;
+#define INADDR_NONE INADDR_BROADCAST
+#define wait3(s, o, r) waitpid(-1, s, o)
+#define PSETPGRP()  setpgrp(0,0)
 
 #else
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.7  1999/02/22 13:26:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.6  1998/11/30 22:06:49  robertj
  * New directory structure.
  *
@@ -51,8 +54,10 @@
 
 #pragma interface
 
+#ifndef __BEOS__
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
