@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.17  2002/11/26 05:53:57  craigs
+ * Added ability to auto-reload from URL
+ *
  * Revision 1.16  2002/11/21 08:09:04  craigs
  * Changed to not overwrite XML data if load fails
  *
@@ -75,6 +78,16 @@ class PXML : public PObject
     BOOL IsDirty() const;
 
     BOOL Load(const PString & data, int options = -1);
+
+    BOOL StartAutoReloadURL(const PURL & url, 
+                            const PTimeInterval & timeout, 
+                            const PTimeInterval & refreshTime,
+                            int _options = -1);
+    BOOL StopAutoReloadURL();
+    PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
+    BOOL AutoLoadURL();
+    virtual void OnAutoLoad(BOOL /*ok*/) { }
+
     BOOL LoadURL(const PURL & url);
     BOOL LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
     BOOL LoadFile(const PFilePath & fn, int options = -1);
@@ -108,6 +121,9 @@ class PXML : public PObject
 
     PMutex & GetMutex() { return rootMutex; }
 
+    PDECLARE_NOTIFIER(PTimer,  PXML, AutoReloadTimeout);
+    PDECLARE_NOTIFIER(PThread, PXML, AutoReloadThread);
+
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
     virtual void EndElement(const char * name);
@@ -135,6 +151,12 @@ class PXML : public PObject
     PFilePath loadFilename;
     PString version, encoding;
     int standAlone;
+
+    PTimer autoLoadTimer;
+    PURL autoloadURL;
+    PTimeInterval autoLoadWaitTime;
+    PMutex autoLoadMutex;
+    PString autoLoadError;
 
     // these are only used whilst loading
     PXMLElement * loadingRootElement;
