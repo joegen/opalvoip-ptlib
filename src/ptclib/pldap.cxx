@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.5  2003/04/07 11:59:52  robertj
+ * Fixed search function returning an error if can't find anything for filter.
+ *
  * Revision 1.4  2003/04/01 07:05:16  robertj
  * Added ability to specify host:port in opening an LDAP server
  *
@@ -440,6 +443,7 @@ PLDAPSession::SearchContext::SearchContext()
 {
   result = NULL;
   message = NULL;
+  found = FALSE;
   completed = FALSE;
 }
 
@@ -494,6 +498,8 @@ BOOL PLDAPSession::Search(SearchContext & context,
     return GetNextSearchResult(context);
 
   errorNumber = ldap_result2error(ldapContext, context.result, TRUE);
+  if (errorNumber == 0)
+    errorNumber = LDAP_OTHER;
   return FALSE;
 }
 
@@ -697,11 +703,14 @@ BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
     if (context.message != NULL) {
       switch (ldap_msgtype(context.message)) {
         case LDAP_RES_SEARCH_ENTRY :
+          context.found = TRUE;
           errorNumber = LDAP_SUCCESS;
           return TRUE;
 
         case LDAP_RES_SEARCH_RESULT :
-          errorNumber = ldap_result2error(ldapContext, context.result, FALSE);
+          errorNumber = ldap_result2error(ldapContext, context.message, FALSE);
+          if (errorNumber == 0 && !context.found)
+            errorNumber = LDAP_NO_RESULTS_RETURNED;
           context.completed = TRUE;
           return FALSE;
       }
@@ -711,6 +720,9 @@ BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
     ldap_msgfree(context.result);
   } while (ldap_result(ldapContext, context.msgid, LDAP_MSG_ONE, tval, &context.result) > 0);
 
+  errorNumber = ldap_result2error(ldapContext, context.result, FALSE);
+  if (errorNumber == 0)
+    errorNumber = LDAP_OTHER;
   return FALSE;
 }
 
