@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.29 1997/03/18 21:26:46 robertj Exp $
+ * $Id: inetprot.cxx,v 1.30 1997/03/28 13:04:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.30  1997/03/28 13:04:37  robertj
+ * Fixed bug for multiple fields in MIME headers, especially cookies.
+ *
  * Revision 1.29  1997/03/18 21:26:46  robertj
  * Fixed stream write of MIME putting double CR's in text files..
  *
@@ -565,6 +568,8 @@ void PMIMEInfo::ReadFrom(istream &strm)
     if (colonPos != P_MAX_INDEX) {
       PCaselessString fieldName  = line.Left(colonPos).Trim();
       PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+      if (Contains(fieldName))
+        fieldValue = (*this)[fieldName] + ", " + fieldValue;
       SetAt(fieldName, fieldValue);
     }
   }
@@ -582,6 +587,8 @@ BOOL PMIMEInfo::Read(PInternetProtocol & socket)
     if (colonPos != P_MAX_INDEX) {
       PCaselessString fieldName  = line.Left(colonPos).Trim();
       PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+      if (Contains(fieldName))
+        fieldValue = (*this)[fieldName] + ", " + fieldValue;
       SetAt(fieldName, fieldValue);
     }
   }
