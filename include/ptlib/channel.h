@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.2 1994/06/25 11:55:15 robertj Exp $
+ * $Id: channel.h,v 1.3 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Revision 1.3  1994/07/02 03:03:49  robertj
+ * Changed to allow for platform dependent part.
+ *
+ * Revision 1.2  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.1  1994/04/20  12:17:44  robertj
@@ -17,7 +20,6 @@
  */
 
 
-#ifndef _PCHANNEL
 #define _PCHANNEL
 
 
@@ -211,7 +213,6 @@ PCLASS PChannel : public PContainer, public iostream {
   private:
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
-};
 
 
-#endif
+// Class declaration continued in platform specific header file ///////////////
