@@ -141,6 +141,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.7  2002/05/30 22:49:35  dereks
+ * correct implementation of GetInputDeviceNames().
+ *
  * Revision 1.6  2002/03/04 01:21:31  dereks
  * Add frame rate support to Firewire camera. Thanks Ryutaroh Matsumoto.
  *
@@ -440,14 +443,15 @@ BOOL PVideoInput1394DcDevice::IsCapturing()
   return is_capturing;
 }
 
-PStringList PVideoInput1394DcDevice::GetDeviceNames()
+PStringList PVideoInput1394DcDevice::GetInputDeviceNames()
 {
   PStringList list;
+
   if (PFile::Exists("/dev/raw1394"))
     list.AppendString("/dev/raw1394");
   if (PFile::Exists("/dev/video1394/0"))
     // DEVFS naming scheme
-    for(int i=0; ; i++) {
+    for (int i=0; ; i++) {
       PString devname = PString("/dev/video1394/") + PString(i);
       if (PFile::Exists(devname))
 	list.AppendString(devname);
