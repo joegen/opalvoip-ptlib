@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.7  1998/11/24 09:38:16  robertj
+ * FreeBSD port.
+ *
  * Revision 1.6  1998/11/10 12:59:05  robertj
  * Fixed strange problems with readdir_r usage.
  *
@@ -71,7 +74,6 @@
     DIR           * directory;
     PFileInfo     * entryInfo;
     struct dirent * entryBuffer;
-    struct dirent * entry;
 };
 
 #endif
