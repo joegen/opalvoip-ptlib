@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.34  2002/06/05 12:29:16  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.33  2002/04/21 22:02:35  dereks
  * Tidy up test for existance of video devices. Thanks Guilhem Tardy.
  *
@@ -827,7 +830,7 @@ BOOL PVideoInputDevice::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesRetur
       }      
     }
 
-    if ((unsigned) ret != frameBytes) {
+    if ((PINDEX)ret != frameBytes) {
       PTRACE(1,"PVideoInputDevice::NormalReadProcess() returned a short read");
       // Not a completely fatal. Maybe it should return FALSE instead of a partial
       // image though?
