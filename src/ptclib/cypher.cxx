@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.3 1996/01/28 14:14:12 robertj Exp $
+ * $Id: cypher.cxx,v 1.4 1996/02/15 14:43:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.4  1996/02/15 14:43:28  robertj
+ * Allowed no secured config data at all to be "valid". All vars will then be guarenteed to default.
+ *
  * Revision 1.3  1996/01/28 14:14:12  robertj
  * Further implementation of secure config.
  *
@@ -580,7 +583,15 @@ void PSecureConfig::SetValidation(const char * validationKey)
 
 BOOL PSecureConfig::IsValid(const char * validationKey)
 {
-  return GetString(validationKey) == CalculateValidation();
+  PString key = GetString(validationKey);
+  if (!key.IsEmpty())
+    return key == CalculateValidation();
+
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
+    if (!GetString(securedKey[i]).IsEmpty())
+      return FALSE;
+
+  return TRUE;
 }
 
 
