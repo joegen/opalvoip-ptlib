@@ -21,9 +21,13 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.26  2004/04/21 00:29:56  csoutheren
+ * Added SASL authentication to PPOP3Client and PSMTPClient
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.25  2004/04/03 06:54:25  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -110,7 +114,9 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/inetmail.h>
-
+#if P_SASL
+#include <ptclib/psasl.h>
+#endif
 
 static const PString CRLF = "\r\n";
 static const PString CRLFdotCRLF = "\r\n.\r\n";
@@ -122,7 +128,8 @@ static const PString CRLFdotCRLF = "\r\n.\r\n";
 static char const * const SMTPCommands[PSMTP::NumCommands] = {
   "HELO", "EHLO", "QUIT", "HELP", "NOOP",
   "TURN", "RSET", "VRFY", "EXPN", "RCPT",
-  "MAIL", "SEND", "SAML", "SOML", "DATA"
+  "MAIL", "SEND", "SAML", "SOML", "DATA",
+  "AUTH"
 };
 
 
@@ -167,6 +174,94 @@ BOOL PSMTPClient::Close()
     ok = ExecuteCommand(QUIT, "")/100 == 2 && ok;
   }
   return PInternetProtocol::Close() && ok;
+}
+
+
+BOOL PSMTPClient::LogIn(const PString & username,
+                        const PString & password)
+{
+#if P_SASL
+  PString localHost;
+  PIPSocket * socket = GetSocket();
+  if (socket != NULL) {
+    localHost = socket->GetLocalHostName();
+  }
+
+  if ((!haveHello && ExecuteCommand(EHLO, localHost)/100 != 2) ||
+      (haveHello && !extendedHello))
+      return TRUE; // EHLO not supported, therefore AUTH not supported
+
+  haveHello = extendedHello = TRUE;
+
+  PStringArray caps = lastResponseInfo.Lines();
+  PStringArray serverMechs;
+  PINDEX i, max;
+
+  for (i = 0, max = caps.GetSize() ; i < max ; i++)
+    if (caps[i].Left(5) == "AUTH ") {
+      serverMechs = caps[i].Mid(5).Tokenise(" ", FALSE);
+      break;
+    }
+
+  if (serverMechs.GetSize() == 0)
+    return TRUE; // No mechanisms, no login
+
+  PSASLClient auth("smtp", username, username, password);
+  PStringSet ourMechs;
+
+  if (!auth.Init("", ourMechs))
+    return FALSE;
+
+  PString mech;
+
+  for (i = 0, max = serverMechs.GetSize() ; i < max ; i++)
+    if (ourMechs.Contains(serverMechs[i])) {
+      mech = serverMechs[i];
+      break;
+    }
+
+  if (mech.IsEmpty())
+    return TRUE;  // No mechanism in common
+
+  PString output;
+
+  // Ok, let's go...
+  if (!auth.Start(mech, output))
+    return FALSE;
+
+  if (!output.IsEmpty())
+    mech = mech + " " + output;
+
+  if (ExecuteCommand(AUTH, mech) <= 0)
+    return FALSE;
+
+  PSASLClient::PSASLResult result;
+  int response;
+
+  do {
+    response = lastResponseCode/100;
+
+    if (response == 2)
+      break;
+    else if (response != 3)
+      return FALSE;
+
+    result = auth.Negotiate(lastResponseInfo, output);
+      
+    if (result == PSASLClient::Fail)
+      return FALSE;
+
+    if (!output.IsEmpty()) {
+      WriteLine(output);
+      if (!ReadResponse())
+        return FALSE;
+    }
+  } while (result == PSASLClient::Continue);
+  auth.End();
+
+#endif
+
+  return TRUE;
 }
 
 
@@ -775,7 +870,8 @@ BOOL PSMTPServer::HandleMessage(PCharArray &, BOOL, BOOL)
 
 static char const * const POP3Commands[PPOP3::NumCommands] = {
   "USER", "PASS", "QUIT", "RSET", "NOOP", "STAT",
-  "LIST", "RETR", "DELE", "APOP", "TOP",  "UIDL"
+  "LIST", "RETR", "DELE", "APOP", "TOP",  "UIDL",
+  "AUTH"
 };
 
 
@@ -817,7 +913,16 @@ PPOP3Client::~PPOP3Client()
 
 BOOL PPOP3Client::OnOpen()
 {
-  return ReadResponse() && lastResponseCode > 0;
+  if (!ReadResponse() || lastResponseCode <= 0)
+    return FALSE;
+
+  // APOP login command supported?
+  PINDEX i = lastResponseInfo.FindRegEx("<.*@.*>");
+
+  if (i != P_MAX_INDEX)
+    apopBanner = lastResponseInfo.Mid(i);
+
+  return TRUE;
 }
 
 
@@ -832,13 +937,91 @@ BOOL PPOP3Client::Close()
 }
 
 
-BOOL PPOP3Client::LogIn(const PString & username, const PString & password)
+BOOL PPOP3Client::LogIn(const PString & username, const PString & password, int options)
 {
-  if (ExecuteCommand(USER, username) <= 0)
-    return FALSE;
+#if P_SASL
+  PString mech;
+  PSASLClient auth("pop", username, username, password);
 
-  if (ExecuteCommand(PASS, password) <= 0)
-    return FALSE;
+  if ((options & UseSASL) && ExecuteCommand(AUTH, "") > 0) {
+    PStringSet serverMechs;
+    while (ReadLine(mech) && mech[0] != '.')
+      serverMechs.Include(mech);
+
+    mech = PString::Empty();
+    PStringSet ourMechs;
+
+    if (auth.Init("", ourMechs)) {
+
+      if (!(options & AllowClearTextSASL)) {
+        ourMechs.Exclude("PLAIN");
+        ourMechs.Exclude("LOGIN");
+      }
+
+      for (PINDEX i = 0, max = serverMechs.GetSize() ; i < max ; i++)
+        if (ourMechs.Contains(serverMechs.GetKeyAt(i))) {
+          mech = serverMechs.GetKeyAt(i);
+          break;
+        }
+    }
+  }
+
+  PString output;
+
+  if ((options & UseSASL) && !mech.IsEmpty() && auth.Start(mech, output)) {
+
+    if (ExecuteCommand(AUTH, mech) <= 0)
+      return FALSE;
+
+    PSASLClient::PSASLResult result;
+
+    do {
+      result = auth.Negotiate(lastResponseInfo, output);
+      
+      if (result == PSASLClient::Fail)
+        return FALSE;
+
+      if (!output.IsEmpty()) {
+        WriteLine(output);
+        if (!ReadResponse() || !lastResponseCode)
+          return FALSE;
+      }
+    } while (result == PSASLClient::Continue);
+    auth.End();
+  }
+  else {
+#endif
+
+    if (!apopBanner.IsEmpty()) { // let's try with APOP
+
+      PMessageDigest::Result bin_digest;
+      PMessageDigest5::Encode(apopBanner + password, bin_digest);
+      PString digest;
+
+      const BYTE * data = bin_digest.GetPointer();
+
+      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i += 4)
+        digest.sprintf("%04x", *((unsigned *)&(data[i])));
+
+      if (ExecuteCommand(APOP, username + " " + digest) > 0)
+        return loggedIn = TRUE;
+    }
+
+    // No SASL and APOP didn't work for us
+    // If we really have to, we'll go with the plain old USER/PASS scheme
+
+    if (!(options & AllowUserPass))
+      return FALSE;
+
+    if (ExecuteCommand(USER, username) <= 0)
+      return FALSE;
+
+    if (ExecuteCommand(PASS, password) <= 0)
+      return FALSE;
+
+#if P_SASL
+  }
+#endif
 
   loggedIn = TRUE;
   return TRUE;
