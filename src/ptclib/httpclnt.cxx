@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.27  2001/10/30 07:02:28  robertj
+ * Fixed problem with bad servers causing endless loops in client.
+ *
  * Revision 1.26  2001/10/03 00:26:34  robertj
  * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
  *
@@ -288,7 +291,10 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
   if (persist)
     outMIME.SetAt(ConnectionTag, KeepAliveTag);
 
-  while (AssureConnect(url, outMIME)) {
+  for (PINDEX retry = 0; retry < 3; retry++) {
+    if (!AssureConnect(url, outMIME))
+      break;
+
     if (!WriteCommand(cmdName, url.AsString(PURL::URIOnly), outMIME, dataBody)) {
       lastResponseCode = -1;
       lastResponseInfo = GetErrorText(LastWriteError);
@@ -352,8 +358,6 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
 
 BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
-  BOOL bad = TRUE;
-
   PString http = ReadString(7);
   if (!http) {
     UnRead(http);
@@ -370,23 +374,19 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       ReadString(2);
 
     if (PHTTP::ReadResponse())
-      bad = FALSE;
+      if (replyMIME.Read(*this))
+        return TRUE;
   }
 
-
-  if (bad) {
-    lastResponseCode = -1;
-    if (GetErrorCode(LastReadError) != NoError)
-      lastResponseInfo = GetErrorText(LastReadError);
-    else
-      lastResponseInfo = "Remote shutdown";
-    return FALSE;
+  lastResponseCode = -1;
+  if (GetErrorCode(LastReadError) != NoError)
+    lastResponseInfo = GetErrorText(LastReadError);
+  else {
+    lastResponseInfo = "Premature shutdown";
+    SetErrorValues(ProtocolFailure, 0, LastReadError);
   }
 
-  if (replyMIME.Read(*this))
-    return TRUE;
-
-  return GetErrorCode(LastReadError) == NoError;
+  return FALSE;
 }
 
 
