@@ -24,14 +24,19 @@
 #pragma implementation "array.h"
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
+#pragma implementation "channel.h"
 
-#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <termio.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
-
 #include <time.h>
 #include <sys/time.h>
 
@@ -45,7 +50,7 @@
 
 #include <ctype.h>
 
-#include "ptlib.h"
+#include <ptlib.h>
 
 #if ! defined (P_USE_INLINES)
 
@@ -61,6 +66,7 @@ extern "C" void gettimeofday(struct timeval * tv, struct timezone * tz);
 extern "C" char *mktemp(char *);
 #endif
 
+#define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 static PString CanonicaliseDirectory (const PString & path)
 
@@ -204,6 +210,12 @@ BOOL PDirectory::Next()
   return TRUE;
 }
 
+BOOL PDirectory::GetInfo(PFileInfo & info) const
+{
+  info = *entryInfo;
+  return TRUE;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // PFile
@@ -259,7 +271,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
 
   removeOnClose = opt & Temporary;
 
-  return ConvertOSError(os_handle = open(path, oflags, S_IREAD|S_IWRITE));
+  return ConvertOSError(os_handle = open(path, oflags, DEFAULT_FILE_MODE));
 }
 
 
@@ -327,12 +339,20 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 
 {
-  struct stat s;
 
-  if (stat(name, &s) != 0) {
+  struct stat s;
+  if (lstat(name, &s) != 0) {
     status.type = PFileInfo::UnknownFileType;
     return TRUE;
   }
+
+  status.type = (PFileInfo::FileTypes)0;
+
+  if (S_ISLNK(s.st_mode)) {
+    status.type = PFileInfo::SymbolicLink;
+    if (stat(name, &s) != 0) 
+      return TRUE;
+  } 
 
   status.created     = s.st_ctime;
   status.modified    = s.st_mtime;
@@ -340,32 +360,26 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   status.size        = s.st_size;
   status.permissions = s.st_mode & PFileInfo::AllPermissions;
 
-  switch (s.st_mode & S_IFMT) {
-    case S_IFLNK :
-      status.type = PFileInfo::SymbolicLink;
-      break;
-    case S_IFREG :
-      status.type = PFileInfo::RegularFile;
-      break;
-    case S_IFDIR :
-      status.type = PFileInfo::SubDirectory;
-      break;
-    case S_IFIFO :
-      status.type = PFileInfo::Fifo;
-      break;
-    case S_IFCHR :
-      status.type = PFileInfo::CharDevice;
-      break;
-    case S_IFBLK :
-      status.type = PFileInfo::BlockDevice;
-      break;
-    case S_IFSOCK :
-      status.type = PFileInfo::SocketDevice;
-      break;
-    default:
-      status.type = PFileInfo::UnknownFileType;
-      break;
-  }
+  if (S_ISREG(s.st_mode))
+    status.type = PFileInfo::RegularFile;
+
+  else if (S_ISDIR(s.st_mode))
+    status.type = PFileInfo::SubDirectory;
+
+  else if (S_ISFIFO(s.st_mode))
+    status.type = PFileInfo::Fifo;
+
+  else if (S_ISCHR(s.st_mode))
+    status.type = PFileInfo::CharDevice;
+
+  else if (S_ISBLK(s.st_mode))
+    status.type = PFileInfo::BlockDevice;
+
+  else if (S_ISSOCK(s.st_mode))
+    status.type = PFileInfo::SocketDevice;
+
+  if (status.type == 0)
+    status.type = PFileInfo::UnknownFileType;
 
   return TRUE;
 }
@@ -376,18 +390,23 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 {
   mode_t mode = 0;
 
+    mode |= S_IROTH;
+    mode |= S_IRGRP;
+
   if (permissions & PFileInfo::WorldExecute)
     mode |= S_IXOTH;
   if (permissions & PFileInfo::WorldWrite)
     mode |= S_IWOTH;
   if (permissions & PFileInfo::WorldRead)
     mode |= S_IROTH;
+
   if (permissions & PFileInfo::GroupExecute)
     mode |= S_IXGRP;
   if (permissions & PFileInfo::GroupWrite)
     mode |= S_IWGRP;
   if (permissions & PFileInfo::GroupRead)
     mode |= S_IRGRP;
+
   if (permissions & PFileInfo::UserExecute)
     mode |= S_IXUSR;
   if (permissions & PFileInfo::UserWrite)
@@ -396,13 +415,6 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
     mode |= S_IRUSR;
 
   return chmod ((const char *)name, mode) == 0;
-}
-
-void PFile::CopyContents(const PFile & f)
-{
-  path      = f.path;
-  os_handle = f.os_handle;
-  osError   = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -643,5 +655,127 @@ PString PTime::GetMonthName(PTime::Months month, BOOL abbreviated)
                        PString(_time_info->full_month[(int)month-1]);
 #endif
 }
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// PChannel
+//
+
+BOOL PChannel::SetIOBlock (BOOL isRead)
+{
+  PTimeInterval timeout = isRead ? readTimeout : writeTimeout;
+  if (timeout != PMaxTimeInterval) 
+    return PThread::Current()->PXBlockOnIO(os_handle, isRead, timeout);
+  else
+    return PThread::Current()->PXBlockOnIO(os_handle, isRead);
+}
+
+
+BOOL PChannel::Read(void * buf, PINDEX len)
+{
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
+  if (!SetIOBlock(TRUE)) 
+    lastError = Timeout;
+  else if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
+    return lastReadCount > 0;
+
+  lastReadCount = 0;
+  return FALSE;
+}
+
+
+BOOL PChannel::Write(const void * buf, PINDEX len)
+{
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
+  if (!SetIOBlock(FALSE))
+    lastError = Timeout;
+  else if (ConvertOSError(lastWriteCount = ::write(os_handle, buf, len)))
+    return lastWriteCount >= len;
+
+  lastWriteCount = 0;
+  return FALSE;
+}
+
+BOOL PChannel::Close()
+{
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  } else {
+    os_handle = -1;
+    return ConvertOSError(::close(os_handle));
+  }
+}
+
+PString PChannel::GetErrorText() const
+{
+  return strerror(osError);
+#if 0
+#ifdef P_HPUX9
+  if (osError > 0 && osError < sys_nerr)
+    return sys_errlist[osError];
+#else
+  if (osError > 0 && osError < _sys_nerr)
+    return _sys_errlist[osError];
+#endif
+  else
+    return PString();
+#endif
+}
+
+BOOL PChannel::ConvertOSError(int err)
+
+{
+  osError = (err >= 0) ? 0 : errno;
+
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+      return TRUE;
+
+    case EEXIST:
+      lastError = FileExists;
+      break;
+    case EISDIR:
+    case EROFS:
+      lastError = AccessDenied;
+      break;
+    case ETXTBSY:
+      lastError = DeviceInUse;
+      break;
+    case EFAULT:
+    case ELOOP:
+      lastError = BadParameter;
+      break;
+    case ENOENT :
+    case ENAMETOOLONG:
+    case ENOTDIR:
+      lastError = NotFound;
+      break;
+    case EMFILE:
+    case ENFILE:
+    case ENOMEM :
+      lastError = NoMemory;
+      break;
+    case ENOSPC:
+      lastError = DiskFull;
+      break;
+    default :
+      lastError = Miscellaneous;
+      break;
+  }
+  return FALSE;
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
