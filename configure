@@ -848,6 +848,7 @@ Optional Features:
   --enable-internalregex  force internal regex library
   --enable-plugins        enable plugins' support in PWLIB
   --disable-resolver      disable DNS resolver support in PWLIB
+  --disable-sasl          disable OpenLDAP support in PWLIB
   --disable-openldap      disable OpenLDAP support in PWLIB
   --disable-openssl       disable OpenSSL support in PWLIB
   --disable-expat         disable XML support in PWLIB
@@ -4500,6 +4501,17 @@ fi
 
 
 
+# Check whether --enable-sasl or --disable-sasl was given.
+if test "${enable_sasl+set}" = set; then
+  enableval="$enable_sasl"
+  sasl=$enableval
+fi;
+
+if test "$sasl" = "no" ; then
+  { echo "$as_me:$LINENO: SASL disabled" >&5
+echo "$as_me: SASL disabled" >&6;}
+else
+
 echo "$as_me:$LINENO: checking for sasl_version in -lsasl2" >&5
 echo $ECHO_N "checking for sasl_version in -lsasl2... $ECHO_C" >&6
 if test "${ac_cv_lib_sasl2_sasl_version+set}" = set; then
@@ -4694,10 +4706,7 @@ echo "${ECHO_T}no" >&6
   fi
 fi
 
-if test "${SASL_INCLUDED}x" = "x" ; then
-  { echo "$as_me:$LINENO: OpenLDAP disabled as SASL is not available" >&5
-echo "$as_me: OpenLDAP disabled as SASL is not available" >&6;}
-elif test "${HAS_SASL2}x" != "x" ; then
+if test "${HAS_SASL2}x" != "x" ; then
   HAS_SASL2=1
   ENDLDLIBS="$ENDLDLIBS -lsasl2"
   cat >>confdefs.h <<\_ACEOF
@@ -4719,6 +4728,7 @@ else
   HAS_SASL=0
 fi
 
+fi
 
 
 # Check whether --enable-openldap or --disable-openldap was given.
@@ -4734,9 +4744,6 @@ if test "$openldap" = "no" ; then
 #define P_LDAP 0
 _ACEOF
 
-elif test "${SASL_INCLUDED}x" = "x" ; then
-  { echo "$as_me:$LINENO: OpenLDAP disabled as SASL is not available" >&5
-echo "$as_me: OpenLDAP disabled as SASL is not available" >&6;}
 else
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
 
