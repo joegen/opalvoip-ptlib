@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.8 1994/11/28 12:31:40 robertj Exp $
+ * $Id: channel.h,v 1.9 1994/12/21 11:52:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.8  1994/11/28 12:31:40  robertj
+ * Revision 1.9  1994/12/21 11:52:48  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.8  1994/11/28  12:31:40  robertj
  * Documentation.
  *
  * Revision 1.7  1994/08/23  11:32:52  robertj
@@ -92,6 +95,18 @@ PCLASS PChannel : public PContainer, public iostream {
    enables access to the I/O channel it represents. The Read() and Write()
    functions would then be overridden to the platform and I/O specific
    mechanisms required.
+
+   The general model for a channel is that the channel accepts and/or supplies
+   a stream of bytes. The access to the stream of bytes is via a set of
+   functions that allow certain types of transfer. These include direct
+   transfers, buffered transfers (via iostream) or asynchronous transfers.
+
+   The model also has the fundamental state of the channel being $I$open$I$ or
+   $I$closed$I$. A channel instance that is closed contains sufficient
+   information to describe the channel but does not allocate or lock any
+   system resources. An open channel allocates or locks the particular system
+   resource. The act of opening a channel is a key event that may fail. In this
+   case the channel remains closed and error values are set.
  */
 
   public:
@@ -140,15 +155,16 @@ PCLASS PChannel : public PContainer, public iostream {
       PINDEX len    // Maximum number of bytes to read into the buffer.
     );
     /* Low level read from the channel. This function may block until the
-        requested number of characters were read or the read timeout was
-        reached.
+       requested number of characters were read or the read timeout was
+       reached. The GetLastReadCount() function returns the actual number
+       of bytes read.
 
-        The GetErrorCode() function should be consulted after Read() returns
-        FALSE to determine what caused the failure.
+       The GetErrorCode() function should be consulted after Read() returns
+       FALSE to determine what caused the failure.
 
-        Returns: TRUE indicates that at least one character was read from the
-                 channel. FALSE means no bytes were read due to timeout or
-                 some other I/O error.
+       Returns: TRUE indicates that at least one character was read from the
+                channel. FALSE means no bytes were read due to timeout or
+                some other I/O error.
      */
 
     PINDEX GetLastReadCount() const;
@@ -229,7 +245,11 @@ PCLASS PChannel : public PContainer, public iostream {
     );
     /* Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
-       reached.
+       reached. The GetLastWriteCount() function returns the actual number
+       of bytes written.
+
+       The GetErrorCode() function should be consulted after Write() returns
+       FALSE to determine what caused the failure.
 
        Returns TRUE if at least len bytes were written to the channel.
      */
