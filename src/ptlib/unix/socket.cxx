@@ -4,8 +4,6 @@
 #pragma implementation "ipsock.h"
 #pragma implementation "udpsock.h"
 #pragma implementation "tcpsock.h"
-#pragma implementation "telnet.h"
-#pragma implementation "appsock.h"
 
 #include <ptlib.h>
 #include <sockets.h>
@@ -20,19 +18,102 @@
 
 PSocket::~PSocket()
 {
-  _Close();
+  os_close();
 }
 
-int PSocket::_Close()
+int PSocket::os_close()
 {
   int status;
-  if (os_handle >= 0)
-    status = close(os_handle);
-  else 
+  if (os_handle >= 0) {
+    PProcess::Current()->PXAbortIOBlock(os_handle);
+    ::shutdown(os_handle, 2);
+    DWORD cmd = 0;
+    ::ioctl(os_handle, FIONBIO, &cmd);
+    status = ::close(os_handle);
+  } else 
     status = 0;
+
   os_handle = -1;
   return status;
 }
+
+int PSocket::os_socket(int af, int type, int protocol)
+{
+  // attempt to create a socket
+  int handle;
+  if ((handle = ::socket(af, type, protocol)) >= 0) {
+
+    // make the socket non-blocking
+    DWORD cmd = 1;
+    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
+        !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
+      ::close(handle);
+      return -1;
+    }
+  }
+  return handle;
+}
+
+int PSocket::os_connect(struct sockaddr * addr, int size)
+{
+  int val = ::connect(os_handle, addr, size);
+
+  if (val == 0)
+    return 0;
+
+  if (errno != EINPROGRESS)
+    return -1;
+
+  // because we have to know whether the except or write bit gets set, we
+  // have to a full-blown select
+  fd_set rfd, wfd, efd;
+  FD_ZERO(&rfd); FD_ZERO(&wfd); FD_ZERO(&efd);
+  FD_SET(os_handle, &wfd);
+  FD_SET(os_handle, &efd);
+  PIntArray osHandles(2);
+  osHandles[0] = os_handle;
+  osHandles[1] = 2+4;
+
+  val = PThread::Current()->PXBlockOnIO(os_handle+1,
+                                            rfd, wfd, efd,
+                                            PMaxTimeInterval,
+	 		                    osHandles);
+  if (val < 0)
+    return -1;
+  if (val == 0 || FD_ISSET(os_handle, &efd)) {
+    errno = ECONNREFUSED;
+    return -1;
+  }
+  return 0;
+}
+
+
+int PSocket::os_accept(int sock, struct sockaddr * addr, int * size)
+{
+  if (!PXSetIOBlock(PXAcceptBlock, sock)) {
+    errno = EINTR;
+    return -1;
+  }
+
+  int new_fd = ::accept(sock, addr, size);
+  return new_fd;
+}
+
+int PSocket::os_select(int maxHandle,
+                   fd_set & readBits,
+                   fd_set & writeBits,
+                   fd_set & exceptionBits,
+          const PIntArray & osHandles,
+      const PTimeInterval & timeout)
+{
+  return PThread::Current()->PXBlockOnIO(maxHandle,
+                                         readBits,
+                                         writeBits,
+                                         exceptionBits,
+                                         timeout,
+					 osHandles);
+}
+                     
 
 PIPSocket::Address::operator DWORD() const
 {
@@ -72,12 +153,15 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 //
 //  PTCPSocket
 //
-BOOL PTCPSocket::Read(void * buf, PINDEX len)
+BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 
 {
-  if (!PXSetIOBlock(PXReadBlock)) {
+  lastReadCount = 0;
+
+  // wait until select indicates there is data to read, or until
+  // a timeout occurs
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
     lastError     = Timeout;
-    lastReadCount = 0;
     return FALSE;
   }
 
@@ -87,8 +171,8 @@ BOOL PTCPSocket::Read(void * buf, PINDEX len)
   while ((ooblen = ::recv(os_handle, buffer, sizeof(buffer), MSG_OOB)) > 0) 
     OnOutOfBand(buffer, ooblen);
 
-  // attempt to read non-out of band data
-  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
+    // attempt to read non-out of band data
+  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, maxLen)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -106,7 +190,7 @@ BOOL PUDPSocket::ReadFrom(
       Address & addr, // Address from which the datagram was received.
       WORD & port)     // Port from which the datagram was received.
 {
-  if (!PXSetIOBlock(PXReadBlock)) {
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
     lastError     = Timeout;
     lastReadCount = 0;
     return FALSE;
@@ -138,7 +222,7 @@ virtual BOOL PUDPSocket::WriteTo(
       const Address & addr, // Address to which the datagram is sent.
       WORD port)          // Port to which the datagram is sent.
 {
-  if (!PXSetIOBlock(PXWriteBlock)) {
+  if (!PXSetIOBlock(PXWriteBlock, writeTimeout)) {
     lastError     = Timeout;
     lastWriteCount = 0;
     return FALSE;
@@ -146,7 +230,7 @@ virtual BOOL PUDPSocket::WriteTo(
 
   // attempt to read data
   struct sockaddr_in rec_addr;
-  int    addr_len;
+  int    addr_len = sizeof(rec_addr);
 
   rec_addr.sin_addr = addr;
   rec_addr.sin_port = port;
@@ -158,29 +242,4 @@ virtual BOOL PUDPSocket::WriteTo(
 
   lastWriteCount = 0;
   return FALSE;
-}
-
-
-BOOL PTCPSocket::Accept(PSocket & socket)
-{
-  // ensure the socket we are accpeting on is open
-  PAssert(socket.GetHandle() >= 0, "Accept on closed socket");
-
-  // attempt to create a socket
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  int size = sizeof(address);
-
-  // set up a blocked I/O call
-  if (!PXSetIOBlock(PXAcceptBlock, socket.GetHandle())) {
-    lastError     = Timeout;
-    return FALSE;
-  }
-
-  if (!ConvertOSError(os_handle = ::accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size))) 
-    return FALSE;
-
-  port = ::ntohs(address.sin_port);
-  return TRUE;
 }
