@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.54  2001/11/26 03:07:13  robertj
+ * Fixed decode of extendable constrained integer types.
+ *
  * Revision 1.53  2001/09/14 05:26:11  robertj
  * Fixed problem with assigning a PASN_Choice to itself, thanks Chih-Wei Huang
  *
@@ -517,7 +520,7 @@ BOOL PPER_Stream::BooleanDecode(PASN_Boolean & value)
   if (IsAtEnd())
     return FALSE;
 
-  // X.931 Section 11
+  // X.691 Section 11
   value = (BOOL)SingleBitDecode();
   return TRUE;
 }
@@ -525,7 +528,7 @@ BOOL PPER_Stream::BooleanDecode(PASN_Boolean & value)
 
 void PPER_Stream::BooleanEncode(const PASN_Boolean & value)
 {
-  // X.931 Section 11
+  // X.691 Section 11
   SingleBitEncode((BOOL)value);
 }
 
@@ -694,18 +697,28 @@ void PPER_Stream::IntegerEncode(const PASN_Integer & value)
 
 BOOL PASN_Integer::DecodePER(PPER_Stream & strm)
 {
-  // X.931 Sections 12
+  // X.691 Sections 12
 
-  if ((extendable && strm.SingleBitDecode()) || constraint != FixedConstraint) { //  12.1
-    unsigned len;
-    if (strm.LengthDecode(0, INT_MAX, len) != 0)
-      return FALSE;
-    return strm.MultiBitDecode(len*8, value);
+  switch (constraint) {
+    case FixedConstraint : // 12.2.1 & 12.2.2
+      break;
+
+    case ExtendableConstraint :
+      if (!strm.SingleBitDecode()) //  12.1
+        break;
+      // Fall into default case for unconstrained or partially constrained
+
+    default : // 12.2.6
+      unsigned len;
+      if (strm.LengthDecode(0, INT_MAX, len) != 0)
+        return FALSE;
+      return strm.MultiBitDecode(len*8, value);
   }
 
-  if ((unsigned)lowerLimit != upperLimit)  // 12.2.1
-    return strm.UnsignedDecode(lowerLimit, upperLimit, value) == 0; // 12.2.2 which devolves to 10.5
+  if ((unsigned)lowerLimit != upperLimit)  // 12.2.2
+    return strm.UnsignedDecode(lowerLimit, upperLimit, value) == 0; // which devolves to 10.5
 
+  // 12.2.1
   value = lowerLimit;
   return TRUE;
 }
@@ -713,7 +726,7 @@ BOOL PASN_Integer::DecodePER(PPER_Stream & strm)
 
 void PASN_Integer::EncodePER(PPER_Stream & strm) const
 {
-  // X.931 Sections 12
+  // X.691 Sections 12
 
   if (ConstraintEncode(strm, (int)value)) { //  12.1
     PINDEX nBytes;
