@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.6  2004/08/04 10:26:39  csoutheren
+ * Changed service to be case insignificant
+ *
  * Revision 1.5  2004/08/03 13:37:45  csoutheren
  * Added ability to set ENUM search path from environment variable
  *
@@ -176,7 +179,7 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::GetNext(const char * service)
       currentPos++;
       lastOrder   = record.order;
       if (record.order == lastOrder) {
-        if (service == NULL || record.service == service) {
+        if ((service == NULL) || (record.service *= service)) {
           orderLocked = TRUE;
           return &record;
         }
