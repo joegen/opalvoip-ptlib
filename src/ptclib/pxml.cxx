@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.40  2004/10/12 23:28:08  csoutheren
+ * Fixed problem with bogus DOCTYPE being output
+ *
  * Revision 1.39  2004/04/21 00:35:02  csoutheren
  * Added a stream parser for protocols like XMPP where each child of the root is to be considered a separate document/message.
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -700,7 +703,8 @@ void PXML::PrintOn(ostream & strm) const
     strm << endl;
 
   if (rootElement != NULL) {
-    strm << "<!DOCTYPE " << rootElement->GetName() << '>';
+    if (!docType.IsEmpty())
+      strm << "<!DOCTYPE " << docType << '>';
     if (newLine)
       strm << endl;
     rootElement->Output(strm, *this, 2);
