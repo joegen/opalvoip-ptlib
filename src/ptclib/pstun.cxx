@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.3  2003/02/04 05:55:04  craigs
+ * Added socket pair function
+ *
  * Revision 1.2  2003/02/04 05:06:24  craigs
  * Added new functions
  *
@@ -160,7 +163,7 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
     port = portBase + (PRandom::Number() % (portEnd - portBase));
 
   StunAddress vSockAddr;
-  int fd = stunOpenSocket(vStunAddr, &vSockAddr);
+  int fd = stunOpenSocket(vStunAddr, &vSockAddr, port);
 
   if (fd < 0)
     return FALSE;
@@ -176,7 +179,34 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
 BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2)
 {
- return FALSE;
+  if (natType == UnknownNat) 
+    GetNatType();
+
+  if (!stunPossible)
+    return FALSE;
+
+  StunAddress vStunAddr;
+  vStunAddr.addrHdr.family = PF_INET;
+  vStunAddr.addrHdr.port   = serverPort; 
+  vStunAddr.addr.v4addr    = ntohl(serverAddress);
+
+  int port = 0;
+  if (portBase != 0 && portEnd != 0)
+    port = portBase + (PRandom::Number() % (portEnd - portBase));
+
+  StunAddress vSockAddr;
+  int fd1, fd2;
+
+  if (!stunOpenSocketPair(vStunAddr, &vSockAddr, &fd1, &fd2, port))
+    return FALSE;
+
+  socket1 = new PSTUNUDPSocket(fd1, 
+                               PIPSocket::Address(htonl(vSockAddr.addr.v4addr)),
+                               vSockAddr.addrHdr.port);
+  socket2 = new PSTUNUDPSocket(fd2, 
+                               PIPSocket::Address(htonl(vSockAddr.addr.v4addr)),
+                               (WORD)(vSockAddr.addrHdr.port+1));
+  return TRUE;
 }
 
 ////////////////////////////////////////////////////////////////
