@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.7 1994/03/07 07:47:00 robertj Exp $
+ * $Id: osutils.cxx,v 1.8 1994/04/01 14:05:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.7  1994/03/07 07:47:00  robertj
+ * Revision 1.8  1994/04/01 14:05:06  robertj
+ * Text file streams
+ *
+ * Revision 1.7  1994/03/07  07:47:00  robertj
  * Major upgrade
  *
  * Revision 1.6  1994/01/03  04:42:23  robertj
@@ -283,6 +286,7 @@ BOOL PFile::Close()
   if (os_handle < 0)
     return FALSE;
 
+  FlushStreams();
   BOOL ok = close(os_handle) == 0;
   os_errno = ok ? 0 : errno;
   os_handle = -1;
@@ -292,6 +296,7 @@ BOOL PFile::Close()
 
 BOOL PFile::Read(void * buffer, size_t amount)
 {
+  FlushStreams();
   BOOL ok = read(GetHandle(), (char *)buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
@@ -300,19 +305,40 @@ BOOL PFile::Read(void * buffer, size_t amount)
 
 BOOL PFile::Write(const void * buffer, size_t amount)
 {
+  FlushStreams();
   BOOL ok = write(GetHandle(), (char *)buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
 }
 
 
-off_t PFile::GetLength()
+int PFile::ReadChar()
 {
-  off_t pos = GetPosition();
-  SetPosition(0,End);
-  off_t len = GetPosition();
-  SetPosition(pos);
+  char c;
+  return Read(&c, 1) ? c : -1;
+}
+      
+
+off_t PFile::GetLength() const
+{
+  off_t pos = lseek(GetHandle(), 0, SEEK_CUR);
+  lseek(GetHandle(), 0, SEEK_END);
+  off_t len = lseek(GetHandle(), 0, SEEK_CUR);
+  lseek(GetHandle(), pos, SEEK_SET);
   return len;
+}
+
+
+BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
+{
+  FlushStreams();
+  return lseek(GetHandle(), pos, origin) == pos;
+}
+
+
+BOOL PFile::FlushStreams()
+{
+  return TRUE;
 }
 
 
@@ -350,6 +376,163 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PTextFileStreamBuffer PTextInFile PTextOutFile
+
+#if defined(_PTEXTFILEIO)
+
+PTextFileStreamBuffer::PTextFileStreamBuffer(PTextFile * textFile)
+  : file(PAssertNULL(textFile))
+{
+  setb(buffer, &buffer[sizeof(buffer)-1]);
+  unbuffered(FALSE);
+}
+
+
+int PTextFileStreamBuffer::overflow(int c)
+{
+  int bufSize = out_waiting();
+  if (bufSize != 0) {
+    setp(pbase(), epptr());
+    if (!file->Write(pbase(), bufSize))
+      return EOF;
+  }
+
+  if (c != EOF)
+    if (!file->Write(&c, 1))
+      return EOF;
+
+  return 0;
+}
+
+
+int PTextFileStreamBuffer::underflow()
+{
+  if (gptr() != egptr())
+    return *gptr();
+
+  PINDEX toRead = egptr() - eback();
+  off_t left = file->GetLength() - file->GetPosition();
+  if (left >= toRead)
+    setg(eback(), eback(), egptr());
+  else
+    setg(eback(), egptr()-left, egptr());
+
+  return file->Read(gptr(), toRead) ? *gptr() : EOF;
+}
+
+
+int PTextFileStreamBuffer::sync()
+{
+  if (overflow() == EOF)
+    return EOF;
+
+  int inAvail = in_avail();
+  if (inAvail != 0) {
+    setg(eback(), eback(), egptr());
+    file->SetPosition(-inAvail, PFile::Current);
+  }
+
+  return 0;
+}
+
+
+streampos PTextFileStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
+{
+  sync();
+  file->SetPosition(off, (PFile::FilePositionOrigin)dir);
+  return file->GetPosition();
+}
+
+
+PTextInFile::PTextInFile()
+  : PTextFile()
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+
+PTextInFile::PTextInFile(const PString & name)
+  : PTextFile(name)
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+
+void PTextInFile::DestroyContents()
+{
+  PTextFile::DestroyContents();
+  delete rdbuf();
+  init(NULL);
+}
+
+void PTextInFile::CloneContents(const PTextInFile *)
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+void PTextInFile::CopyContents(const PTextInFile & c)
+{
+  init(c.rdbuf());
+  ((PTextFileStreamBuffer*)rdbuf())->file = this;
+}
+
+
+BOOL PTextInFile::FlushStreams()
+{
+  return rdbuf()->sync() != EOF;
+}
+
+
+PTextOutFile::PTextOutFile()
+  : PTextFile()
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+
+PTextOutFile::PTextOutFile(const PString & name)
+  : PTextFile(name)
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+
+PTextOutFile::PTextOutFile(const PString & name, int opts)
+  : PTextFile(name, WriteOnly, opts)
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+
+void PTextOutFile::DestroyContents()
+{
+  PTextFile::DestroyContents();
+  delete rdbuf();
+  init(NULL);
+}
+
+void PTextOutFile::CloneContents(const PTextOutFile *)
+{
+  init(new PTextFileStreamBuffer(this));
+}
+
+void PTextOutFile::CopyContents(const PTextOutFile & c)
+{
+  init(c.rdbuf());
+  ((PTextFileStreamBuffer*)rdbuf())->file = this;
+}
+
+
+BOOL PTextOutFile::FlushStreams()
+{
+  return rdbuf()->sync() != EOF;
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
 #if defined(_PARGLIST)
@@ -379,6 +562,7 @@ PArgList::PArgList(int theArgc, char ** theArgv, const char * theArgumentSpec)
 
 PArgList::~PArgList()
 {
+  free(argumentSpec);
   free(optionCount);
   free(argumentList);
 }
@@ -525,6 +709,14 @@ void PArgList::MissingArgument(char option) const
 // PTextApplication
 
 #if defined(_PTEXTAPPLICATION)
+
+PTextApplication::~PTextApplication()
+{
+#ifdef PMEMORY_CHECK
+  extern void PDumpMemoryLeaks();
+  PDumpMemoryLeaks();
+#endif
+}
 
 PObject::Comparison PTextApplication::Compare(const PObject & obj) const
 {
