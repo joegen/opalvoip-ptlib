@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.3  1998/11/30 02:52:00  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/23 06:21:34  robertj
  * Added open source copyright license.
  *
@@ -42,7 +45,7 @@
 #pragma interface
 #endif
 
-#include <semaphor.h>
+#include <ptlib/semaphor.h>
 
 
 PDECLARE_CLASS(PSyncPoint, PSemaphore)
