@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.3  2002/05/06 00:44:45  robertj
+ * Made the lock/unlock read only const so can be used in const functions.
+ *
  * Revision 1.2  2002/05/01 04:48:05  robertj
  * GNU compatibility.
  *
@@ -72,24 +75,26 @@ void PSafeObject::SafeDereference()
 }
 
 
-BOOL PSafeObject::LockReadOnly()
+BOOL PSafeObject::LockReadOnly() const
 {
-  safetyMutex.Wait();
+  PSafeObject * non_const_this = (PSafeObject *)this;
+
+  non_const_this->safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
-    safetyMutex.Signal();
+    non_const_this->safetyMutex.Signal();
     return FALSE;
   }
 
-  safetyMutex.Signal();
-  safeInUseFlag.StartRead();
+  non_const_this->safetyMutex.Signal();
+  non_const_this->safeInUseFlag.StartRead();
   return TRUE;
 }
 
 
-void PSafeObject::UnlockReadOnly()
+void PSafeObject::UnlockReadOnly() const
 {
-  safeInUseFlag.EndRead();
+  ((PSafeObject *)this)->safeInUseFlag.EndRead();
 }
 
 

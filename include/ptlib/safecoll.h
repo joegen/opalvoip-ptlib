@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.2  2002/05/06 00:44:45  robertj
+ * Made the lock/unlock read only const so can be used in const functions.
+ *
  * Revision 1.1  2002/05/01 04:16:43  robertj
  * Added thread safe collection classes.
  *
@@ -154,7 +157,7 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    BOOL LockReadOnly();
+    BOOL LockReadOnly() const;
 
     /**Release the read only lock on an object.
        Unlock the read only mutex that a thread had obtained. Multiple threads
@@ -166,7 +169,7 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to automatically
        manage the reference counting and unlocking of objects.
       */
-    void UnlockReadOnly();
+    void UnlockReadOnly() const;
 
     /**Lock the object for Read/Write access.
        This will lock the object in read/write mode. Multiple threads may lock
