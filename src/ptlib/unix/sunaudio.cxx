@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
+ * Revision 1.4  1999/09/03 02:01:34  robertj
+ * Added missing functions so will at least link
+ *
  * Revision 1.3  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
  *
@@ -161,6 +164,12 @@ BOOL PSoundChannel::Open(const PString & device,
 }
 
 
+BOOL PSoundChannel::Close()
+{
+  return PChannel::Close();
+}
+
+
 BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
@@ -183,6 +192,12 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
   return TRUE;
+}
+
+
+BOOL PSoundChannel::Write(const void * buffer, PINDEX length)
+{
+  return PChannel::Write(buffer, length);
 }
 
 
@@ -212,6 +227,12 @@ BOOL PSoundChannel::HasPlayCompleted()
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
+}
+
+
+BOOL PSoundChannel::Read(void * buffer, PINDEX length)
+{
+  return PChannel::Read(buffer, length);
 }
 
 
