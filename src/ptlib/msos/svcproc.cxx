@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.38 1998/03/29 06:16:53 robertj Exp $
+ * $Id: svcproc.cxx,v 1.39 1998/04/01 01:52:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.39  1998/04/01 01:52:53  robertj
+ * Fixed problem with NoAutoDelete threads.
+ *
  * Revision 1.38  1998/03/29 06:16:53  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -507,12 +510,12 @@ int PServiceProcess::_main()
     DestroyWindow(controlWindow);
 
   // Set thread ID for process to this thread
-  threadMutex.Wait();
+  activeThreadMutex.Wait();
   activeThreads.SetAt(threadId, NULL);
   threadId = GetCurrentThreadId();
   threadHandle = GetCurrentThread();
   activeThreads.SetAt(threadId, this);
-  threadMutex.Signal();
+  activeThreadMutex.Signal();
   OnStop();
 
   return GetTerminationValue();
@@ -900,11 +903,11 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 
 void PServiceProcess::ThreadEntry()
 {
-  threadMutex.Wait();
+  activeThreadMutex.Wait();
   threadId = GetCurrentThreadId();
   threadHandle = GetCurrentThread();
   activeThreads.SetAt(threadId, this);
-  threadMutex.Signal();
+  activeThreadMutex.Signal();
 
   SetTerminationValue(1);
   if (OnStart()) {
