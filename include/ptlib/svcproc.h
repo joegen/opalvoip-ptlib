@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.1 1995/12/23 03:47:25 robertj Exp $
+ * $Id: svcproc.h,v 1.2 1996/07/27 04:10:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.2  1996/07/27 04:10:06  robertj
+ * Changed SystemLog to be stream based rather than printf based.
+ *
  * Revision 1.1  1995/12/23 03:47:25  robertj
  * Initial revision
  *
@@ -27,6 +30,53 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
+
+PCLASS PSystemLog : public PObject, public iostream {
+  PCLASSINFO(PSystemLog, PObject)
+
+  public:
+    enum Level {
+      Fatal,   // Log a fatal error
+      Error,   // Log a non-fatal error
+      Warning, // Log a warning
+      Info,    // Log general debug trace information
+      NumLogLevels
+    };
+    // Type of log message.
+
+    PSystemLog(Level level)
+      { logLevel = level; init(new PSystemLog::Buffer(this)); }
+
+    ~PSystemLog()
+      { flush(); }
+    // Destroy the string stream, deleting the stream buffer
+
+    static void Output(
+      Level level,      // Log level for this log message.
+      const char * msg  // Message to be logged
+    );
+    /* Log an error into the system log.
+     */
+
+
+  private:
+    PSystemLog(const PSystemLog &) { }
+    PSystemLog & operator=(const PSystemLog &) { return *this; }
+
+    PCLASS Buffer : public streambuf {
+      public:
+        Buffer(PSystemLog * l) { log = l; }
+        virtual int overflow(int=EOF);
+        virtual int underflow();
+        virtual int sync();
+      private:
+        PString string;
+        PSystemLog * log;
+    };
+    friend class Buffer;
+
+    Level logLevel;
+};
 
 
 PDECLARE_CLASS(PServiceProcess, PProcess)
@@ -55,29 +105,8 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
      */
 
 
-    enum SystemLogLevel {
-      LogFatal,   // Log a fatal error
-      LogError,   // Log a non-fatal error
-      LogWarning, // Log a warning
-      LogInfo,    // Log general debug trace information
-      NumLogLevels
-    };
-    // Type of log message.
-
-    void SystemLog(
-      SystemLogLevel level, // Log level for this log message.
-      const char * cmsg,    // Message to log.
-      ...                   // Optional printf style parameters.
-    );
-    void SystemLog(
-      SystemLogLevel level, // Log level for this log message.
-      const PString & msg   // Message to log.
-    );
-    /* Log an error into the system log.
-     */
-
     void SetLogLevel(
-      SystemLogLevel level  // New log level
+      PSystemLog::Level level  // New log level
     ) { currentLogLevel = level; }
     /* Set the level at which errors are logged. Only messages higher than or
        equal to the specified level will be logged.
@@ -89,7 +118,7 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
        messages to be displayed.
      */
 
-    SystemLogLevel GetLogLevel() const { return currentLogLevel; }
+    PSystemLog::Level GetLogLevel() const { return currentLogLevel; }
     /* Get the current level for logging.
 
        <H2>Returns:</H2>
@@ -139,8 +168,10 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
 
   // Member variables
-    BOOL           debugMode;
-    SystemLogLevel currentLogLevel;
+    BOOL debugMode;
+    PSystemLog::Level currentLogLevel;
+
+    friend void PSystemLog::Output(PSystemLog::Level, const char *);
 
 
 // Class declaration continued in platform specific header file ///////////////
