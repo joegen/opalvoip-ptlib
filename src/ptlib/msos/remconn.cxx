@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.7 1996/10/31 12:39:53 robertj Exp $
+ * $Id: remconn.cxx,v 1.8 1996/11/04 03:37:23 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.8  1996/11/04 03:37:23  robertj
+ * Added more debugging for remote drop outs.
+ *
  * Revision 1.7  1996/10/31 12:39:53  robertj
  * Added RCS keywords.
  *
@@ -205,21 +208,26 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
       case ERROR_PORT_NOT_AVAILABLE :
         return PortInUse;
     }
+    return GeneralFailure;
   }
-  else {
-    RASCONNSTATUS status;
-    status.dwSize = sizeof(status);
-    if (Ras.GetConnectStatus(rasConnection, &status) == 0) {
-      switch (status.rasconnstate) {
-        case RASCS_Connected :
-          return Connected;
-        case RASCS_Disconnected :
-          return Idle;
-      }
-      return InProgress;
-    }
+
+  RASCONNSTATUS status;
+  status.dwSize = sizeof(status);
+  DWORD err = Ras.GetConnectStatus(rasConnection, &status);
+  if (err != 0) {
+    char msg[100];
+    sprintf(msg, "RAS Connection Lost: error %ld", err);
+    PAssertAlways(msg);
+    return ConnectionLost;
   }
-  return GeneralFailure;
+
+  switch (status.rasconnstate) {
+    case RASCS_Connected :
+      return Connected;
+    case RASCS_Disconnected :
+      return Idle;
+  }
+  return InProgress;
 }
 
 
