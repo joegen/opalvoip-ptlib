@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.11 1995/03/18 06:27:50 robertj Exp $
+ * $Id: telnet.h,v 1.12 1995/04/01 08:32:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
+ * Revision 1.12  1995/04/01 08:32:10  robertj
+ * Finally got a working TELNET.
+ *
  * Revision 1.11  1995/03/18 06:27:50  robertj
  * Rewrite of telnet socket protocol according to RFC1143.
  *
@@ -115,7 +118,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        function is used.
 
        <H2>Returns:</H2>
-       TRUE if the checnnel was successfully opened.
+       TRUE if the channel was successfully opened.
      */
 
 
@@ -155,7 +158,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     };
     // Defined telnet commands codes
 
-    void SendCommand(
+    BOOL SendCommand(
       Command cmd,  // Command code to send
       int opt = 0  // Option for command code.
     );
@@ -175,6 +178,9 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        Synchronises the TELNET streams, inserts the data mark into outgoing
        data stream and sends an out of band data to the remote to flush all
        data in the stream up until the syncronisation command.
+
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
      */
 
 
@@ -227,30 +233,56 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     virtual BOOL SendDo(
       BYTE option    // Option to DO
     );
-    // Send DO request.
+    /* Send DO request.
+
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
+     */
 
     virtual BOOL SendDont(
       BYTE option    // Option to DONT
     );
-    // Send DONT command.
+    /* Send DONT command.
+
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
+     */
 
     virtual BOOL SendWill(
       BYTE option    // Option to WILL
     );
-    // Send WILL request.
+    /* Send WILL request.
+
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
+     */
 
     virtual BOOL SendWont(
       BYTE option    // Option to WONT
     );
-    // Send WONT command.
+    /* Send WONT command.
 
-    void SendSubOption(
-      BYTE code,       // Suboptions option code.
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
+     */
+
+    enum SubOptionCodes {
+      SubOptionIs       = 0,  // Sub-option is...
+      SubOptionSend     = 1,  // Request to send option.
+    };
+    // Codes for sub option negotiation.
+
+    BOOL SendSubOption(
+      BYTE code,          // Suboptions option code.
       const BYTE * info,  // Information to send.
-      PINDEX len          // Length of information.
+      PINDEX len,         // Length of information.
+      int subCode = -1    // Suboptions sub-code, -1 indicates no sub-code.
     );
-    // Send a sub-option with the information given.
+    /* Send a sub-option with the information given.
 
+       <H2>Returns:</H2>
+       TRUE if the command was successfully sent.
+     */
 
     void SetOurOption(
       BYTE code,          // Option to check.
@@ -354,12 +386,6 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        standard TELNET class. All others are ignored.
      */
 
-    enum {
-      SubOptionIs       = 0,  // Sub-option is...
-      SubOptionSend     = 1,  // Request to send option.
-    };
-    // Codes for sub option negotiation.
-
     virtual void OnSubOption(
       BYTE code,          // Option code for sub-option data.
       const BYTE * info,  // Extra information being sent in the sub-option.
@@ -429,6 +455,8 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     // Storage for sub-negotiated options
 
     unsigned synchronising;
+
+    BOOL StartSend(const char * which, BYTE code);
 };
 
 
