@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.5 1995/01/02 12:16:22 robertj Exp $
+ * $Id: socket.h,v 1.6 1995/03/12 05:00:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.5  1995/01/02 12:16:22  robertj
+ * Revision 1.6  1995/03/12 05:00:01  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.5  1995/01/02  12:16:22  robertj
  * Moved constructor to platform dependent code.
  *
  * Revision 1.4  1994/12/12  10:10:17  robertj
@@ -31,7 +35,7 @@
 #ifndef _PSOCKET
 
 
-#if defined(_WINDOWS) && defined(PHAS_WINSOCK)
+#if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 #include <winsock.h>
 #define P_HAS_BERKELEY_SOCKETS
 #endif
