@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.85  2002/01/22 03:55:32  craigs
+# Moved PWavFile to PTCLib
+#
 # Revision 1.84  2001/12/06 05:39:05  craigs
 # Added support for PXML component library
 #
@@ -427,6 +430,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/inetmail.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/telnet.cxx \
+	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
 	$(SSL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
@@ -444,7 +448,6 @@ SOURCES	= \
 	pipechan.cxx \
 	serchan.cxx \
 	$(COMMON_SRC_DIR)/sfile.cxx \
-	$(COMMON_SRC_DIR)/pwavfile.cxx \
 	channel.cxx \
 	osutil.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
