@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.26  2000/03/04 07:48:15  robertj
+ * Fixed problem with window not appearing when assert on GUI based win32 apps.
+ *
  * Revision 1.25  1999/02/16 08:10:33  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -126,6 +129,7 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
     // Signal to the timer thread that a change was made.
 
     virtual BOOL IsServiceProcess() const;
+    virtual BOOL IsGUIProcess() const;
 
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
