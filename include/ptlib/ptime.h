@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.33  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.32  2002/12/10 04:45:14  robertj
  * Added support in PTime for ISO 8601 format.
  *
@@ -126,6 +130,7 @@
  *
  */
 
+#ifndef _PTIME
 #define _PTIME
 
 #ifdef P_USE_PRAGMA
@@ -653,8 +658,13 @@ class PTime : public PObject
 
 
 // Include platform dependent part of class
-#include <ptlib/ptime.h>
+#ifdef _WIN32
+#include "win32/ptlib/ptime.h"
+#else
+#include "unix/ptlib/ptime.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.40  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.39  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -156,14 +160,14 @@
  *
  */
 
-
+#ifndef _PCHANNEL
 #define _PCHANNEL
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-
+#include <ptlib/mutex.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // I/O Channels
@@ -788,8 +792,14 @@ class PChannel : public PObject, public iostream {
 
 
 // Include platform dependent part of class
-#include <ptlib/channel.h>
+#ifdef _WIN32
+#include "win32/ptlib/channel.h"
+#else
+#include "unix/ptlib/channel.h"
+#endif
+
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.17  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.16  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -82,7 +86,7 @@
  *
  */
 
-
+#ifndef _PSEMAPHORE
 #define _PSEMAPHORE
 
 #ifdef P_USE_PRAGMA
@@ -222,23 +226,18 @@ class PSemaphore : public PObject
     virtual BOOL WillBlock() const;
   //@}
 
-#ifndef P_PLATFORM_HAS_THREADS
-  protected:
-    unsigned currentCount;
-    unsigned maximumCount;
-    PTimer   timeout;
-    PQUEUE(BlockedThreadsQueue, PThread);
-    BlockedThreadsQueue blockedThreads;
-    friend void PThread::Yield();
-#endif
-
   private:
     PSemaphore & operator=(const PSemaphore &) { return *this; }
 
 
 // Include platform dependent part of class
-#include <ptlib/semaphor.h>
+#ifdef _WIN32
+#include "win32/ptlib/semaphor.h"
+#else
+#include "unix/ptlib/semaphor.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

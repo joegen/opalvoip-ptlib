@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.13  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.12  2003/05/14 00:42:32  rjongbloed
  * Added missing virtual keyword to PDynaLink functions.
  *
@@ -67,6 +71,7 @@
  *
  */
 
+#ifndef _PDYNALINK
 #define _PDYNALINK
 
 #if !defined(__BEOS__) && !defined(P_VXWORKS) && !defined(P_RTEMS)
@@ -74,7 +79,6 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
 
 /**A dynamic link library. This allows the loading at run time of code
    modules for use by an application.
@@ -171,10 +175,15 @@ class PDynaLink : public PObject
 
 
 // Include platform dependent part of class
-#include <ptlib/dynalink.h>
+#ifdef _WIN32
+#include "win32/ptlib/dynalink.h"
+#else
+#include "unix/ptlib/dynalink.h"
+#endif
 };
 
 #endif // !defined(__BEOS__) && !defined(P_VXWORKS)
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

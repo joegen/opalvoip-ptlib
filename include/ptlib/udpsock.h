@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.20  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.19  2002/10/08 12:41:51  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -88,6 +92,7 @@
  *
  */
 
+#ifndef _PUDPSOCKET
 #define _PUDPSOCKET
 
 #ifdef P_USE_PRAGMA
@@ -191,8 +196,14 @@ class PUDPSocket : public PIPDatagramSocket
 
 
 // Include platform dependent part of class
-#include <ptlib/udpsock.h>
+#ifdef _WIN32
+#include "win32/ptlib/udpsock.h"
+#else
+#include "unix/ptlib/udpsock.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

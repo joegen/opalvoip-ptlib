@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.9  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.8  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -57,7 +61,7 @@
  *
  */
 
-
+#ifndef _PMUTEX
 #define _PMUTEX
 
 #ifdef P_USE_PRAGMA
@@ -100,8 +104,13 @@ class PMutex : public PSemaphore
     PMutex(const PMutex & mutex);
 
 // Include platform dependent part of class
-#include <ptlib/mutex.h>
+#ifdef _WIN32
+#include "win32/ptlib/mutex.h"
+#else
+#include "unix/ptlib/mutex.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
