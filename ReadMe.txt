@@ -72,7 +72,7 @@ own. If you do all you will get is this file.
 
 The modules available are:
 	ptlib_unix
-	pwlib_xlib
+	pwlib_xlib (does not work, anyone is welcome to fix!)
 	ptlib_win32
 	pwlib_win32
 
@@ -92,6 +92,18 @@ For Windows.
 	following:
 		C:\PWLib\Lib
         Also make sure this directory is in your PATH environment variable.
+
+1a.     If you have OpenSSL installed and compiled on your system then you
+        can define the following environment variables to get SSL support:
+                OPENSSLFLAG=1
+                OPENSSLDIR=c:\somewhere\openssl
+                OPENSSLLIBS=ssleay32.lib libeay32.lib
+
+1b.     If you have EXPAT installed and compiled on your system then you
+        can define the following environment variables to get XML support:
+                EXPATFLAG=1
+                EXPATDIR=c:\somewhere\expat
+                EXPATLIBS=expat.lib
 
 2.	Open the pwlib.dsw file in the pwlib top directory. If you have the
 	minimum library it will come up with several requests to find .dsp
