@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.38  2001/04/23 04:40:14  robertj
+ * Added ASN standard types GeneralizedTime and UTCTime
+ *
  * Revision 1.37  2001/04/12 03:26:59  robertj
  * Fixed PASN_Boolean cosntructor to be compatible with usage in ASN parser.
  * Changed all PASN_xxx types so constructor can take real type as only
@@ -2462,6 +2465,91 @@ BOOL PPER_Stream::BMPStringDecode(PASN_BMPString & value)
 void PPER_Stream::BMPStringEncode(const PASN_BMPString & value)
 {
   value.EncodePER(*this);
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
+PASN_GeneralisedTime & PASN_GeneralisedTime::operator=(const PTime & time)
+{
+  value = time.AsString("yyyyMMddhhmmss.uz");
+  value.Replace("GMT", "Z");
+  return *this;
+}
+
+
+PTime PASN_GeneralisedTime::GetValue() const
+{
+  int year = value(0,3).AsInteger();
+  int month = value(4,5).AsInteger();
+  int day = value(6,7).AsInteger();
+  int hour = value(8,9).AsInteger();
+  int minute = value(10,11).AsInteger();
+  int seconds = 0;
+  int zonePos = 12;
+
+  if (isdigit(value[12])) {
+    seconds = value(12,13).AsInteger();
+    if (value[14] != '.')
+      zonePos = 14;
+    else {
+      zonePos = 15;
+      while (isdigit(value[zonePos]))
+        zonePos++;
+    }
+  }
+
+  int zone = PTime::Local;
+  switch (value[zonePos]) {
+    case 'Z' :
+      zone = PTime::UTC;
+      break;
+    case '+' :
+    case '-' :
+      zone = value(zonePos+1,zonePos+2).AsInteger()*60 +
+             value(zonePos+3,zonePos+4).AsInteger();
+  }
+
+  return PTime(seconds, minute, hour, day, month, year, zone);
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
+PASN_UniversalTime & PASN_UniversalTime::operator=(const PTime & time)
+{
+  value = time.AsString("yyMMddhhmmssz");
+  value.Replace("GMT", "Z");
+  return *this;
+}
+
+
+PTime PASN_UniversalTime::GetValue() const
+{
+  int year = value(0,1).AsInteger();
+  if (year < 36)
+    year += 2000;
+  else
+    year += 1900;
+
+  int month = value(2,3).AsInteger();
+  int day = value(4,5).AsInteger();
+  int hour = value(6,7).AsInteger();
+  int minute = value(8,9).AsInteger();
+  int seconds = 0;
+  int zonePos = 10;
+
+  if (isdigit(value[10])) {
+    seconds = value(10,11).AsInteger();
+    zonePos = 12;
+  }
+
+  int zone = PTime::UTC;
+  if (value[zonePos] != 'Z')
+    zone = value(zonePos+1,zonePos+2).AsInteger()*60 +
+           value(zonePos+3,zonePos+4).AsInteger();
+
+  return PTime(seconds, minute, hour, day, month, year, zone);
 }
 
 

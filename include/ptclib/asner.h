@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.19  2001/04/23 04:40:14  robertj
+ * Added ASN standard types GeneralizedTime and UTCTime
+ *
  * Revision 1.18  2001/04/12 03:25:22  robertj
  * Fixed PASN_Boolean cosntructor to be compatible with usage in ASN parser.
  * Changed all PASN_xxx types so constructor can take real type as only
@@ -149,6 +152,7 @@ class PASN_Object : public PObject
       UniversalIA5String,
       UniversalUTCTime,
       UniversalGeneralisedTime,
+      UniversalGeneralizedTime = UniversalGeneralisedTime,
       UniversalGraphicString,
       UniversalVisibleString,
       UniversalGeneralString,
@@ -612,6 +616,40 @@ class PASN_BMPString : public PASN_ConstrainedObject
     WORD firstChar, lastChar;
     unsigned charSetUnalignedBits;
     unsigned charSetAlignedBits;
+};
+
+
+class PASN_GeneralisedTime : public PASN_VisibleString
+{
+    PCLASSINFO(PASN_GeneralisedTime, PASN_VisibleString);
+  public:
+    PASN_GeneralisedTime()
+      : PASN_VisibleString(UniversalGeneralisedTime, UniversalTagClass) { }
+    PASN_GeneralisedTime(const PTime & time)
+      : PASN_VisibleString(UniversalGeneralisedTime, UniversalTagClass) { SetValue(time); }
+    PASN_GeneralisedTime(unsigned tag, TagClass tagClass)
+      : PASN_VisibleString(tag, tagClass) { }
+
+    PASN_GeneralisedTime & operator=(const PTime & time);
+    void SetValue(const PTime & time) { operator=(time); }
+    PTime GetValue() const;
+};
+
+
+class PASN_UniversalTime : public PASN_VisibleString
+{
+    PCLASSINFO(PASN_UniversalTime, PASN_VisibleString);
+  public:
+    PASN_UniversalTime()
+      : PASN_VisibleString(UniversalUTCTime, UniversalTagClass) { }
+    PASN_UniversalTime(const PTime & time)
+      : PASN_VisibleString(UniversalUTCTime, UniversalTagClass) { SetValue(time); }
+    PASN_UniversalTime(unsigned tag, TagClass tagClass)
+      : PASN_VisibleString(tag, tagClass) { }
+
+    PASN_UniversalTime & operator=(const PTime & time);
+    void SetValue(const PTime & time) { operator=(time); }
+    PTime GetValue() const;
 };
 
 
