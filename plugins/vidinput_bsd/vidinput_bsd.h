@@ -29,6 +29,9 @@ public:
 
   static PStringList GetInputDeviceNames();
 
+  PStringList GetDeviceNames() const
+  { return GetInputDeviceNames(); }
+
   BOOL Open(const PString &deviceName, BOOL startImmediate);
 
   BOOL IsOpen();
