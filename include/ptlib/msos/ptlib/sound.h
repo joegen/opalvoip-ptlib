@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.12  2001/10/10 03:28:58  yurik
+ * Added open with format other than PCM
+ *
  * Revision 1.11  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -159,6 +162,9 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
 
     BOOL SetFormat(const PWaveFormat & format);
 
+    BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
+	// Open with format other than PCM
+	
   protected:
     PString     deviceName;
     Directions  direction;
@@ -175,7 +181,7 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
   private:
     BOOL OpenDevice(unsigned id);
 
-
+	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
 #endif
 
 
