@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.81  1998/12/18 04:34:37  robertj
+ * PPC Linux GNU C compatibility.
+ *
  * Revision 1.80  1998/11/30 04:47:52  robertj
  * New directory structure
  *
@@ -1231,6 +1234,12 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
   if (s_addr == (DWORD)INADDR_NONE)
     s_addr = 0;
   return *this;
+}
+
+
+PString PIPSocket::Address::AsString() const
+{
+  return inet_ntoa(*this);
 }
 
 
