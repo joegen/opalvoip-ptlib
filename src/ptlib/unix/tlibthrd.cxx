@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.60  2001/03/14 01:16:11  robertj
+ * Fixed signals processing, now uses housekeeping thread to handle signals
+ *   synchronously. This also fixes issues with stopping PServiceProcess.
+ *
  * Revision 1.59  2001/02/25 19:39:42  rogerh
  * Use a Semaphore on Mac OS X to support threads which are started as 'suspended'
  *
@@ -291,7 +295,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     width = PMAX(width, termPipe[0]+1);
   
     retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
-    PProcess::Current().PXCheckSignals();
 
     if ((retval >= 0) || (errno != EINTR))
       break;
@@ -328,7 +331,6 @@ static void sigSuspendHandler(int)
 #else
     sig = sigwait(&waitSignals);
 #endif
-    PProcess::Current().PXCheckSignals();
     if (sig == RESUME_SIG)
       return;
   }
@@ -342,10 +344,24 @@ void HouseKeepingThread::Main()
 
   while (!closing) {
     PTimeInterval waitTime = process.timers.Process();
-    if (waitTime == PMaxTimeInterval)
-      process.timerChangeSemaphore.Wait();
-    else
-      process.timerChangeSemaphore.Wait(waitTime);
+
+    struct timeval * tptr = NULL;
+    struct timeval   timeout_val;
+    if (waitTime != PMaxTimeInterval) {
+      timeout_val.tv_usec = (waitTime.GetMilliSeconds() % 1000) * 1000;
+      timeout_val.tv_sec  = waitTime.GetSeconds();
+      tptr                = &timeout_val;
+    }
+
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(process.timerChangePipe[0], &read_fds);
+    if (::select(process.timerChangePipe[0]+1, &read_fds, NULL, NULL, tptr) == 1) {
+      BYTE ch;
+      ::read(process.timerChangePipe[0], &ch, 1);
+    }
+
+    process.PXCheckSignals();
   }
 }
 
@@ -367,6 +383,8 @@ void PProcess::Construct()
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   rl.rlim_cur = rl.rlim_max;
   PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
+
+  ::pipe(timerChangePipe);
 
   // initialise the housekeeping thread
   housekeepingThread = NULL;
@@ -574,8 +592,9 @@ void PProcess::SignalTimerChange()
 {
   if (housekeepingThread == NULL)
     housekeepingThread = PNEW HouseKeepingThread;
-  else
-    timerChangeSemaphore.Signal();
+
+  BYTE ch;
+  write(timerChangePipe[1], &ch, 1);
 }
 
 
@@ -820,7 +839,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
     }
   }
   while (::select(0, NULL, NULL, NULL, tptr) != 0)
-    PProcess::Current().PXCheckSignals();
+    ;
 }
 
 
@@ -907,7 +926,6 @@ void PSemaphore::Wait()
 
   while (currentCount == 0) {
     int err = pthread_cond_wait(&condVar, &mutex);
-    PProcess::Current().PXCheckSignals();
     PAssert(err == 0 || err == EINTR, psprintf("wait error = %i", err));
   }
 
@@ -972,7 +990,6 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   BOOL ok = TRUE;
   while (currentCount == 0) {
     int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
-    PProcess::Current().PXCheckSignals();
     if (err == ETIMEDOUT) {
       ok = FALSE;
       break;

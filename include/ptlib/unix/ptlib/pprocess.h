@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.19  2001/03/14 01:16:11  robertj
+ * Fixed signals processing, now uses housekeeping thread to handle signals
+ *   synchronously. This also fixes issues with stopping PServiceProcess.
+ *
  * Revision 1.18  1999/03/02 05:41:58  robertj
  * More BeOS changes
  *
@@ -141,8 +145,8 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PMutex     threadMutex;
-    PSyncPoint timerChangeSemaphore;
-    PThread * housekeepingThread;
+    PThread  * housekeepingThread;
+    int        timerChangePipe[2];
 
   friend void * PXHouseKeepingThread(void *);
 
