@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.24  2003/02/20 00:16:06  craigs
+ * Changed MIME_Version to MIME-Version
+ *
  * Revision 1.23  2002/12/19 01:35:24  robertj
  * Fixed problem with returning incorrect lastWriteLength on translated output.
  *
@@ -1117,7 +1120,7 @@ void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 //////////////////////////////////////////////////////////////////////////////
 // PRFC822Channel
 
-const char PRFC822Channel::MimeVersionTag[] = "MIME_version";
+const char PRFC822Channel::MimeVersionTag[] = "MIME-version";
 const char PRFC822Channel::FromTag[] = "From";
 const char PRFC822Channel::ToTag[] = "To";
 const char PRFC822Channel::CCTag[] = "cc";
