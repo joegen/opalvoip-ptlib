@@ -1863,6 +1863,23 @@ BUILD_NUMBER=$BUILD_NUMBER
 { echo "$as_me:$LINENO: \"PTLib version is ${PWLIB_VERSION}\"" >&5
 echo "$as_me: \"PTLib version is ${PWLIB_VERSION}\"" >&6;};
 
+cat >>confdefs.h <<_ACEOF
+#define PWLIB_MAJOR $MAJOR_VERSION
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define PWLIB_MINOR $MINOR_VERSION
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define PWLIB_BUILD $BUILD_NUMBER
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define PWLIB_VERSION "$PWLIB_VERSION"
+_ACEOF
+
+
 
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
