@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.32  2003/04/10 06:16:09  craigs
+ * Added SHA-1 digest
+ *
  * Revision 1.31  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -134,6 +137,49 @@
 #include <ptclib/cypher.h>
 #include <ptclib/mime.h>
 #include <ptclib/random.h>
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PMessageDigest
+
+PMessageDigest::PMessageDigest()
+{
+}
+
+void PMessageDigest::Process(const PString & str)
+{
+  Process((const char *)str);
+}
+
+
+void PMessageDigest::Process(const char * cstr)
+{
+  Process(cstr, strlen(cstr));
+}
+
+
+void PMessageDigest::Process(const PBYTEArray & data)
+{
+  Process(data, data.GetSize());
+}
+
+void PMessageDigest::Process(const void * dataBlock, PINDEX length)
+{
+  InternalProcess(dataBlock, length);
+}
+
+PString PMessageDigest::CompleteDigest()
+{
+  Result result;
+  CompleteDigest(result);
+  return PBase64::Encode(&result, sizeof(result));
+}
+
+void PMessageDigest::CompleteDigest(Result & result)
+{
+  InternalCompleteDigest(result);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -299,26 +345,7 @@ void PMessageDigest5::Start()
   count = 0;
 }
 
-
-void PMessageDigest5::Process(const PString & str)
-{
-  Process((const char *)str);
-}
-
-
-void PMessageDigest5::Process(const char * cstr)
-{
-  Process(cstr, strlen(cstr));
-}
-
-
-void PMessageDigest5::Process(const PBYTEArray & data)
-{
-  Process(data, data.GetSize());
-}
-
-
-void PMessageDigest5::Process(const void * dataPtr, PINDEX length)
+void PMessageDigest5::InternalProcess(const void * dataPtr, PINDEX length)
 {
   const BYTE * data = (const BYTE *)dataPtr;
 
@@ -347,15 +374,7 @@ void PMessageDigest5::Process(const void * dataPtr, PINDEX length)
 }
 
 
-PString PMessageDigest5::Complete()
-{
-  Code result;
-  Complete(result);
-  return PBase64::Encode(&result, sizeof(result));
-}
-
-
-void PMessageDigest5::Complete(Code & result)
+void PMessageDigest5::InternalCompleteDigest(Result & result)
 {
   // Put the count into bytes platform independently
   PUInt64l countBytes = count;
@@ -374,8 +393,9 @@ void PMessageDigest5::Complete(Code & result)
   Process(&countBytes, sizeof(countBytes));
 
   // Store state in digest
+  PUInt32l * valuep = (PUInt32l *)result.value.GetPointer(4 * sizeof(PUInt32l));
   for (PINDEX i = 0; i < PARRAYSIZE(state); i++)
-    result.value[i] = state[i];
+    valuep[i] = state[i];
 
   // Zeroize sensitive information.
   memset(this, 0, sizeof(*this));
@@ -388,7 +408,7 @@ PString PMessageDigest5::Encode(const PString & str)
 }
 
 
-void PMessageDigest5::Encode(const PString & str, Code & result)
+void PMessageDigest5::Encode(const PString & str, Result & result)
 {
   Encode((const char *)str, result);
 }
@@ -400,7 +420,7 @@ PString PMessageDigest5::Encode(const char * cstr)
 }
 
 
-void PMessageDigest5::Encode(const char * cstr, Code & result)
+void PMessageDigest5::Encode(const char * cstr, Result & result)
 {
   Encode((const BYTE *)cstr, strlen(cstr), result);
 }
@@ -412,7 +432,7 @@ PString PMessageDigest5::Encode(const PBYTEArray & data)
 }
 
 
-void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)
+void PMessageDigest5::Encode(const PBYTEArray & data, Result & result)
 {
   Encode(data, data.GetSize(), result);
 }
@@ -420,20 +440,148 @@ void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)
 
 PString PMessageDigest5::Encode(const void * data, PINDEX length)
 {
-  Code result;
+  Result result;
   Encode(data, length, result);
   return PBase64::Encode(&result, sizeof(result));
 }
 
 
-void PMessageDigest5::Encode(const void * data, PINDEX len, Code & result)
+void PMessageDigest5::Encode(const void * data, PINDEX len, Result & result)
 {
   PMessageDigest5 stomach;
   stomach.Process(data, len);
   stomach.Complete(result);
 }
 
+////  backwards compatability functions
 
+void PMessageDigest5::Encode(const PString & str, Code & result)
+{
+  Encode((const char *)str, result);
+}
+
+void PMessageDigest5::Encode(const char * cstr, Code & result)
+{
+  Encode((const BYTE *)cstr, strlen(cstr), result);
+}
+
+void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)
+{
+  Encode(data, data.GetSize(), result);
+}
+
+void PMessageDigest5::Encode(const void * data, PINDEX len, Code & codeResult)
+{
+  PMessageDigest5 stomach;
+  stomach.Process(data, len);
+  stomach.Complete(codeResult);
+}
+
+PString PMessageDigest5::Complete()
+{
+  Code result;
+  Complete(result);
+  return PBase64::Encode(&result, sizeof(result));
+}
+
+void PMessageDigest5::Complete(Code & codeResult)
+{
+  Result result;
+  InternalCompleteDigest(result);
+  memcpy(codeResult.value, result.GetPointer(), sizeof(codeResult.value));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PMessageDigestSHA1
+
+#ifdef P_SSL
+
+#include <openssl/sha.h>
+
+PMessageDigestSHA1::PMessageDigestSHA1()
+{
+  shaContext = NULL;
+}
+
+void PMessageDigestSHA1::Start()
+{
+  delete shaContext;
+  shaContext = new SHA_CTX;
+
+  SHA1_Init((SHA_CTX *)shaContext);
+}
+
+void PMessageDigestSHA1::InternalProcess(const void * data, PINDEX len)
+{
+  if (shaContext == NULL)
+    return;
+
+  SHA1_Update((SHA_CTX *)shaContext, data, (unsigned long)len);
+}
+
+void PMessageDigestSHA1::InternalCompleteDigest(Result & result)
+{
+  if (shaContext == NULL)
+    return;
+
+  SHA1_Final(result.value.GetPointer(20), (SHA_CTX *)shaContext);
+  delete ((SHA_CTX *)shaContext);
+  shaContext = NULL;
+}
+
+
+PString PMessageDigestSHA1::Encode(const PString & str)
+{
+  return Encode((const char *)str);
+}
+
+
+void PMessageDigestSHA1::Encode(const PString & str, Result & result)
+{
+  Encode((const char *)str, result);
+}
+
+
+PString PMessageDigestSHA1::Encode(const char * cstr)
+{
+  return Encode((const BYTE *)cstr, strlen(cstr));
+}
+
+
+void PMessageDigestSHA1::Encode(const char * cstr, Result & result)
+{
+  Encode((const BYTE *)cstr, strlen(cstr), result);
+}
+
+
+PString PMessageDigestSHA1::Encode(const PBYTEArray & data)
+{
+  return Encode(data, data.GetSize());
+}
+
+
+void PMessageDigestSHA1::Encode(const PBYTEArray & data, Result & result)
+{
+  Encode(data, data.GetSize(), result);
+}
+
+
+PString PMessageDigestSHA1::Encode(const void * data, PINDEX length)
+{
+  Result result;
+  Encode(data, length, result);
+  return PBase64::Encode(&result, sizeof(result));
+}
+
+
+void PMessageDigestSHA1::Encode(const void * data, PINDEX len, Result & result)
+{
+  PMessageDigestSHA1 stomach;
+  stomach.Process(data, len);
+  stomach.CompleteDigest(result);
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCypher
