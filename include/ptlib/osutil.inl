@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.29 1995/04/22 00:49:19 robertj Exp $
+ * $Id: osutil.inl,v 1.30 1995/07/31 12:15:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.30  1995/07/31 12:15:44  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.29  1995/04/22 00:49:19  robertj
  * Fixed missing common construct code call in edit box constructor.
  *
@@ -336,6 +339,15 @@ PINLINE BOOL PDirectory::Remove()
 PINLINE PFilePath::PFilePath()
   { }
 
+PINLINE PFilePath::PFilePath(const PFilePath & path)
+  : PFILE_PATH_STRING(path) { }
+
+PINLINE PFilePath & PFilePath::operator=(const char * cstr)
+  { return operator=(PString(cstr)); }
+
+PINLINE PFilePath & PFilePath::operator=(const PFilePath & path)
+  { PFILE_PATH_STRING::operator=(path); return *this; }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -350,9 +362,6 @@ PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
 
 PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
   { return path.Compare(((const PFile &)obj).path); }
-
-PINLINE void PFile::CloneContents(const PFile * f)
-  { CopyContents(*f); }
 
 PINLINE BOOL PFile::Exists() const
   { return Exists(path); }
@@ -394,15 +403,6 @@ PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
 
 PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
   { Open(name, mode, opts); }
-
-PINLINE void PTextFile::DestroyContents()
-  { PFile::DestroyContents(); }
-
-PINLINE void PTextFile::CloneContents(const PTextFile *)
-  { }
-
-PINLINE void PTextFile::CopyContents(const PTextFile &)
-  { }
 
 
 ///////////////////////////////////////////////////////////////////////////////
