@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.43 1996/06/10 09:58:21 robertj Exp $
+ * $Id: sockets.cxx,v 1.44 1996/07/27 04:10:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.44  1996/07/27 04:10:35  robertj
+ * Changed Select() calls to return error codes.
+ *
  * Revision 1.43  1996/06/10 09:58:21  robertj
  * Fixed win95 compatibility with looking up zero address (got a response and shouldn't).
  *
@@ -221,60 +224,63 @@ int PSocket::Select(PSocket & sock1,
   int rval = os_select(PMAX(h1, h2)+1,
                                 readfds, writefds, exceptfds, allfds, timeout);
 
-  if (rval > 0) {
-    rval = 0;
-    if (FD_ISSET(h1, &readfds))
-      rval |= 1;
-    if (FD_ISSET(h2, &readfds))
-      rval |= 2;
-  }
+  Errors lastError;
+  int osError;
+  if (ConvertOSError(rval, lastError, osError))
+    return lastError;
+
+  rval = 0;
+  if (FD_ISSET(h1, &readfds))
+    rval -= 1;
+  if (FD_ISSET(h2, &readfds))
+    rval -= 2;
 
   return rval;
 }
 
 
-BOOL PSocket::Select(SelectList & read)
+PChannel::Errors PSocket::Select(SelectList & read)
 {
   SelectList dummy1, dummy2;
   return Select(read, dummy1, dummy2, PMaxTimeInterval);
 }
 
 
-BOOL PSocket::Select(SelectList & read, const PTimeInterval & timeout)
+PChannel::Errors PSocket::Select(SelectList & read, const PTimeInterval & timeout)
 {
   SelectList dummy1, dummy2;
   return Select(read, dummy1, dummy2, timeout);
 }
 
 
-BOOL PSocket::Select(SelectList & read, SelectList & write)
+PChannel::Errors PSocket::Select(SelectList & read, SelectList & write)
 {
   SelectList dummy1;
   return Select(read, write, dummy1, PMaxTimeInterval);
 }
 
 
-BOOL PSocket::Select(SelectList & read,
-                     SelectList & write,
-                     const PTimeInterval & timeout)
+PChannel::Errors PSocket::Select(SelectList & read,
+                                 SelectList & write,
+                                 const PTimeInterval & timeout)
 {
   SelectList dummy1;
   return Select(read, write, dummy1, timeout);
 }
 
 
-BOOL PSocket::Select(SelectList & read,
-                     SelectList & write,
-                     SelectList & except)
+PChannel::Errors PSocket::Select(SelectList & read,
+                                 SelectList & write,
+                                 SelectList & except)
 {
   return Select(read, write, except, PMaxTimeInterval);
 }
 
 
-BOOL PSocket::Select(SelectList & read,
-                     SelectList & write,
-                     SelectList & except,
-                     const PTimeInterval & timeout)
+PChannel::Errors PSocket::Select(SelectList & read,
+                                 SelectList & write,
+                                 SelectList & except,
+                                 const PTimeInterval & timeout)
 {
   int maxfds = 0;
   PINDEX nextfd = 0;
@@ -322,8 +328,10 @@ BOOL PSocket::Select(SelectList & read,
 
   int retval = os_select(maxfds+1,readfds,writefds,exceptfds,allfds,timeout);
 
-  if (retval < 0)
-    return FALSE;
+  Errors lastError;
+  int osError;
+  if (ConvertOSError(retval, lastError, osError))
+    return lastError;
 
   if (retval > 0) {
     for (i = 0; i < read.GetSize(); i++)
@@ -342,7 +350,7 @@ BOOL PSocket::Select(SelectList & read,
     except.RemoveAll();
   }
 
-  return TRUE;
+  return NoError;
 }
 
 
