@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.41  1998/10/19 00:20:38  robertj
+ * Moved error and trace stream functions to common code.
+ *
  * Revision 1.40  1998/10/18 14:27:10  robertj
  * Improved tracing functions.
  *
@@ -171,34 +174,6 @@
 #include <ptlib/osutil.inl>
 #include <ptlib.inl>
 #endif
-
-
-static ostream * PErrorStream = &cerr;
-
-ostream & PGetErrorStream()
-{
-  return *PErrorStream;
-}
-
-
-void PSetErrorStream(ostream * s)
-{
-  PErrorStream = s;
-}
-
-
-static ostream * PTraceStream = &cerr;
-
-ostream & PGetTraceStream()
-{
-  return *PTraceStream;
-}
-
-
-void PSetTraceStream(ostream * s)
-{
-  PTraceStream = s;
-}
 
 
 ostream & operator<<(ostream & s, PInt64 v)
