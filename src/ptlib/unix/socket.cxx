@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.53  2001/01/16 12:56:01  rogerh
+ * On BeOS sa_data is 'unsigned char *'. Linux and BSD defines sa_data as 'char *'
+ * Add typecast, submitted by Jac Goudsmit <jac_goudsmit@yahoo.com>
+ *
  * Revision 1.52  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -885,7 +889,7 @@ BOOL PEthSocket::Read(void * buf, PINDEX len)
 BOOL PEthSocket::Write(const void * buf, PINDEX len)
 {
   sockaddr to;
-  strcpy(to.sa_data, channelName);
+  strcpy((char *)to.sa_data, channelName);
   return os_sendto(buf, len, 0, &to, sizeof(to)) && lastWriteCount >= len;
 }
 
