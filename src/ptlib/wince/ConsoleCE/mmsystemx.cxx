@@ -221,10 +221,10 @@ HMMIO WINAPI mmioOpen(LPSTR pszFileName, LPMMIOINFO pmmioinfo, DWORD fdwOpen)
 {
   USES_CONVERSION;
  
-  DWORD dwAccess = (((DWORD)(fdwOpen & 0xFFFF)) == MMIO_READ) ? GENERIC_READ : \
-	  (((DWORD)(fdwOpen & 0xFFFF)) == MMIO_WRITE) ? GENERIC_WRITE : 0L; 
+  DWORD dwAccess = fdwOpen & MMIO_READ ? GENERIC_READ : 0;
+  dwAccess |= (fdwOpen & MMIO_WRITE) ? GENERIC_WRITE : 0xFFFF; 
 
-  DWORD dwFlags = (((DWORD)(fdwOpen & 0xFFFF)) == MMIO_CREATE) ? \
+  DWORD dwFlags = fdwOpen & MMIO_CREATE ? \
 			CREATE_ALWAYS : OPEN_EXISTING;
 
   HANDLE hFile = CreateFile(A2T(pszFileName), 
