@@ -1,12 +1,9 @@
-/*******************************************************************************
-/
-/	File:			SoundPrivate.h
-/
-/   Description:	Implementation headers for SoundConsumer and SoundProducer.
-/
-/	Copyright 1998-1999, Be Incorporated, All Rights Reserved
-/
-*******************************************************************************/
+//
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
+//
+// Portions: 1998-1999, Be Incorporated
+//
 
 #if ! defined( _SoundPrivate_h )
 #define _SoundPrivate_h

@@ -1,13 +1,17 @@
 //
-// (c) Yuri Kiryanov, home.att.net/~bevox
-// for www.Openh323.org
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
 //
-// Portions Be, Inc.
+// Portions: 1998-1999, Be Incorporated
 //
-// resample needed some stuff
 #include "SoundInput.h"
+#include "SoundPlayer.h"
 
-#define MAX_SOUND_FILE_SIZE (3 * 1024 * 1024)
+// Support kit bits
+#include "support/Locker.h"
+#include "media/MediaRoster.h"
+
+#include "stdio.h"
 
 static const char* gsNotifyCodes[] = {
 	"",
@@ -25,12 +29,34 @@ static const char* gsNotifyCodes[] = {
 	"B_LATE_NOTICE",
 };
 
-PSoundInput::PSoundInput(PSoundChannel* pChannel) :
-	SoundConsumer("PWLSoundInput", NULL, NULL, pChannel), 
-			BMediaNode("PWLSoundInput"), mpChannel(pChannel), 
-			mpSound(NULL), bytesToWrite(0)
+PSoundInput* PSoundInput::CreateSoundInput(const char* name)
+{
+	PSoundInput* input = NULL;
+	BMediaRoster* roster = BMediaRoster::CurrentRoster();
+	if( !roster )
+		roster = BMediaRoster::Roster();
+
+	if( roster )
+	{
+		input = new PSoundInput(name);
+		roster->RegisterNode(input);
+	}
+
+	return input;
+}
+
+void PSoundInput::ReleaseSoundInput(PSoundInput* input)
+{
+	BMediaRoster::CurrentRoster()->ReleaseNode( input->Node() );
+}
+
+PSoundInput::PSoundInput(const char* name, size_t bufSize ) :
+	SoundConsumer( name, NULL, NULL, NULL), 
+			BMediaNode( name ),  
+				m_roster (NULL), mfRecording(false), mFIFO(65535, 1, 3, B_ANY_ADDRESS, 0, name )
 { 
-	m_roster = BMediaRoster::Roster(&mError);
+	m_roster = BMediaRoster::CurrentRoster();
+	
 	if( m_roster )
 	{
 		mError = m_roster->GetAudioInput(&m_audioInputNode);
@@ -39,33 +65,43 @@ PSoundInput::PSoundInput(PSoundChannel* pChannel) :
 			mError = m_roster->RegisterNode(this);
 		}
 	}
-
 }
 
-bool PSoundInput::StartRecording() 
+bool PSoundInput::StartRecording()
 {
+	if( mfRecording )
+		return true;
+	
+	m_roster = BMediaRoster::CurrentRoster();
+
 	//	Find an available output for the given input node.
 	int32 count = 0;
 	mError = m_roster->GetFreeOutputsFor(m_audioInputNode, 
 			&m_audioOutput, 1, &count, B_MEDIA_RAW_AUDIO);
+
+	if( mError != B_OK )
+		cerr << "PSoundInput::StartRecording, Error: " << strerror(mError) << endl;
+		
 	if (mError == B_OK && count >= 0 ) 
 	{
 		//	Find an available input for our own Node. 
 		mError = m_roster->GetFreeInputsFor(Node(), &m_recInput, 1, &count, B_MEDIA_RAW_AUDIO);
+#ifdef EXT_DEBUG
+		cerr << "GetFreeInputsFor, Error Code: " << strerror(mError) << endl;
+#endif
 		if (mError == B_OK && count >=0 ) 
 		{
-			//	Get a format, any format.
+			//	Update desired format.
 			media_format fmt;
 			fmt.u.raw_audio = m_audioOutput.format.u.raw_audio;
 			fmt.type = B_MEDIA_RAW_AUDIO;
 
-			// Resample this rate to 8000
-			mResampler.Create(fmt.u.raw_audio.frame_rate, 8000,
-				fmt.u.raw_audio.channel_count, (fmt.u.raw_audio.format & 0xf)*8);
-	
 			//	Using the same structs for input and output is OK in BMediaRoster::Connect().
 			mError = m_roster->Connect(m_audioOutput.source, 
 					m_recInput.destination, &fmt, &m_audioOutput, &m_recInput);
+#ifdef EXT_DEBUG
+			cerr << "m_roster->Connect, Error Code: " << strerror(mError) << endl;
+#endif
 			if ( mError == B_OK )
 			{
 				//	Find out what the time source of the input is.
@@ -82,9 +118,18 @@ bool PSoundInput::StartRecording()
 				}
 				tsobj->Release();	//	we're done with this time source instance!
 		
+				// Reset FIFO
+				mFIFO.Reset();
+
+				// Reset resampler
+				memoryL = 0; memoryR = 0; mp = 0; mt = (int32) fmt.u.raw_audio.frame_rate;
+				
 				// Start
 				bigtime_t then = TimeSource()->Now()+50000LL;
-				m_roster->StartNode(Node(), then);
+				mError = m_roster->StartNode(Node(), then);
+#ifdef EXT_DEBUG
+				cerr << "m_roster->StartNode, Error Code: " << strerror(mError) << endl;
+#endif
 				if (m_audioInputNode.kind & B_TIME_SOURCE) 
 				{
 					mError = m_roster->StartNode(m_audioInputNode, TimeSource()->RealTimeFor(then, 0));
@@ -102,7 +147,12 @@ bool PSoundInput::StartRecording()
 
 bool PSoundInput::StopRecording()
 {
-	m_roster = BMediaRoster::Roster(&mError);
+	if( !mfRecording )
+		return false;
+		
+	mfRecording = false;
+
+	m_roster = BMediaRoster::CurrentRoster();
 
 	//	If we are the last connection, the Node will stop automatically since it
 	//	has nowhere to send data to.
@@ -114,25 +164,19 @@ bool PSoundInput::StopRecording()
 	return mError == B_OK;
 }
 
-PSoundInput::~PSoundInput() {
-	
-	m_roster = BMediaRoster::Roster(&mError);
-	mError = m_roster->StopNode(m_recInput.node, 0);
-	mError = m_roster->Disconnect(m_audioOutput.node.node, 
-			m_audioOutput.source, m_recInput.node.node, m_recInput.destination);
-	m_audioOutput.source = media_source::null;
-	m_recInput.destination = media_destination::null;
+PSoundInput::~PSoundInput() 
+{
+	StopRecording();
 
-//	Release();
-	mError = m_roster->UnregisterNode(this);
+	status_t status;
+	mFIFO.CopyNextBufferIn(&status, 0, B_INFINITE_TIMEOUT, true);
 }
 
 void PSoundInput::Notify(int32 code, ...)
 {
-	PAssertNULL(mpChannel);
-	PAssert( code < (int32) (sizeof(gsNotifyCodes) / sizeof(char*)), PInvalidParameter );
-#if EXT_DEBUG
-	PError << "Notify received, Code: " << gsNotifyCodes[code] << endl;
+	assert( code < (int32) (sizeof(gsNotifyCodes) / sizeof(char*)) );
+#ifdef EXT_DEBUG
+	cerr << "Notify received, Code: " << gsNotifyCodes[code] << endl;
 #endif
 }
 
@@ -140,8 +184,9 @@ void PSoundInput::Record(bigtime_t /* time */,
 	const void * data, size_t size,
 	const media_raw_audio_format & fmt )
 {
-#if EXT_DEBUG
-	PError << "\tBuffer received. Size: " << size << \
+		
+#ifdef EXT_DEBUG
+	cerr << "\tBuffer received. Size: " << size << \
 		", sample size: " << ((fmt.format & 0x0f) * 8) << \
 		", float? " << ((fmt.format == media_raw_audio_format::B_AUDIO_FLOAT)? 1 : 0) << \
 		", channels: " << fmt.channel_count << \
@@ -149,76 +194,56 @@ void PSoundInput::Record(bigtime_t /* time */,
 		endl;
 #endif
 
-	PSound* pSound = new PSound;
-	PAssertNULL(pSound);
-	pSound->SetFormat(fmt.channel_count, fmt.frame_rate, (fmt.format & 0xf) * 8); 
-	pSound->SetSize(size * (fmt.format & 0xf)); // 16bit, 2 channels
-
-	int16* pd = (int16*) data;
-	int16* ps = (int16*) pSound->GetPointer(); 
-	memcpy( ps, pd, size );
-	mResampler.Resample(*pSound);
-
-	PMutex lock;
-	lock.Wait();
-	mSounds.Enqueue(pSound);
-	if ( (pSound->GetSize() * mSounds.GetSize()) > MAX_SOUND_FILE_SIZE )
+	if( size )
 	{
-		delete mSounds.Dequeue();
-		PError << "Input buffer overflow!" << endl;
-		StopRecording();
-	}
-	lock.Signal();
-}
-
-bool PSoundInput::GetBuffer( void * buf, PINDEX len, bool fRelease = true )
-{
-	PMutex lock;
-	lock.Wait();
-		
-	if( !mpSound  )
-	{	
-getSound:	
-		if( mSounds.GetSize() )
-		{
-			mpSound = mSounds.Dequeue();
-		}
-		else
-		{
-			mpSound = NULL; // Nothing in buffer
-			bytesToWrite = 0;
-		}
-		
-		if( mpSound )
-			bytesToWrite = mpSound->GetSize();
-	}
-	
-	if( mpSound )
-	{
-		if( len <= bytesToWrite ) 
-		{
-			memcpy(buf, mpSound->GetPointer(), len);
-			bytesToWrite -= len;
-			
-#ifdef EXT_DEBUG
-			PError << "Buffer returned, size: " << len << ", left:" << bytesToWrite << endl;
-#endif			
-			if ( bytesToWrite > 0 )
-				goto getSound;	
-			else
-			{
-				delete mpSound;
-				mpSound = NULL;
-				bytesToWrite = 0;
+		short* temp = new short[ size /sizeof(short) ];
+		if( temp )
+		{ 
+			memcpy( (void*)temp, data, size );
+			size = Resample(temp, size);
+			status_t err = mFIFO.CopyNextBufferIn(temp, size, B_INFINITE_TIMEOUT, false);
+			if (err < (int32)size) {
+				fprintf(stderr, "Error while PSoundInput::Record: %s; bailing\n", strerror(err));
+				fprintf(stderr, "\tCopyNextBufferIn(%p, %ld, B_INFINITE_TIMEOUT, false) failed with %ld.\n",
+					data, size, err);
+				StopRecording();
 			}
+			delete[] temp;
 		}
-		else
-		{
-			goto getSound;	
-		}		
 	}
-	lock.Signal();
-
-	return mpSound != NULL;
 }
 
+bool PSoundInput::Read( void * buf, uint32 len )
+{
+	status_t err = mFIFO.CopyNextBlockOut(buf, len, B_INFINITE_TIMEOUT);
+	if (err < (int32) len ) {
+		return false;
+	}
+
+	return true;
+}
+
+int PSoundInput::Resample(short * in, int inSize) 
+{
+	int c = 0;
+	short * out = in;
+	inSize /= 4; // (stereo, 16 bit in and out)
+
+	while (inSize > 0) {
+		while (mp < mt) {
+			memoryL = ((memoryL*7) + *(in++) >>3);
+			memoryR = ((memoryR*7) + *(in++) >> 3);
+			mp += 8000;
+			inSize--;
+			if (inSize < 1) goto done;
+		}
+
+		*out++ = memoryL;// >> 3;
+		*out++ = memoryR;// >> 3;
+
+		mp -= mt;
+		c++;
+	}
+done:
+	return c*4; // (stereo, 16-bit)
+}

@@ -1,13 +1,9 @@
-/*******************************************************************************
-/
-/	File:			SoundConsumer.h
-/
-/   Description:	Record sound from some sound-producing Node.
-/
-/	Copyright 1998, Be Incorporated, All Rights Reserved
-/
-*******************************************************************************/
-
+//
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
+//
+// Portions: 1998-1999, Be Incorporated
+//
 
 #if !defined( _SoundConsumer_h )
 #define _SoundConsumer_h
