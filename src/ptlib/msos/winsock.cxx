@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.48  2002/05/23 01:54:35  robertj
+ * Worked around WinSock bug where getsockopt() does not work immediately
+ *   after the select() function returns an exception.
+ *
  * Revision 1.47  2002/05/22 07:22:17  robertj
  * Fixed bug in waiting for connect with a timeout not checking for errors via
  *   the except fdset in the select() call. Would give timeout for all errors.
@@ -324,21 +328,27 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   fd_set_class writefds = os_handle;
   fd_set_class exceptfds = os_handle;
   timeval_class tv = readTimeout;
-  switch (select(1, NULL, &writefds, &exceptfds, &tv)) {
+  switch (::select(1, NULL, &writefds, &exceptfds, &tv)) {
+    default :
+      err = GetLastError();
+      break;
     case 1 :
-      if (writefds.IsPresent(os_handle))
+      if (writefds.IsPresent(os_handle)) {
         err = 0;
-      else {
+        break;
+      }
+      // Do case for timeout
+    case 0 :
+      // The following is to avoid a bug in Win32 sockets. The getsockopt() function
+      // doesn't work for some period of time after a connect, saying no error!
+      for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
         int sz = sizeof(err);
         if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) != 0)
           err = GetLastError();
+        if (err != 0)
+          break;
+        ::Sleep(0);
       }
-      break;
-    case 0 :
-      err = WSAETIMEDOUT;
-      break;
-    default :
-      err = GetLastError();
   }
 
   if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR) {
