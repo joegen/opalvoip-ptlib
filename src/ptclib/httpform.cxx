@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.47  2003/03/24 04:31:03  robertj
+ * Added function to set and get strings from PConfig in correct format for
+ *   use with HTTP form array contsructs.
+ *
  * Revision 1.46  2002/11/22 06:20:26  robertj
  * Added extra space around data entry fields.
  * Added borders around arrays and composite fields.
@@ -1111,6 +1115,29 @@ void PHTTPFieldArray::AddBlankField()
 {
   fields.Append(baseField->NewField());
   SetArrayFieldName(fields.GetSize()-1);
+}
+
+
+PStringArray PHTTPFieldArray::GetStrings(PConfig & cfg)
+{
+  LoadFromConfig(cfg);
+
+  PStringArray values(GetSize());
+
+  for (PINDEX i = 0; i < GetSize(); i++)
+    values[i] = fields[i].GetValue(FALSE);
+
+  return values;
+}
+
+
+void PHTTPFieldArray::SetStrings(PConfig & cfg, const PStringArray & values)
+{
+  SetSize(values.GetSize());
+  for (PINDEX i = 0; i < values.GetSize(); i++)
+    fields[i].SetValue(values[i]);
+
+  SaveToConfig(cfg);
 }
 
 
