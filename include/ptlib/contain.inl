@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.24 1994/10/30 11:50:27 robertj Exp $
+ * $Id: contain.inl,v 1.25 1994/11/28 12:33:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.24  1994/10/30 11:50:27  robertj
+ * Revision 1.25  1994/11/28 12:33:46  robertj
+ * Added dummy parameter for cls* constructor in containers. This prevents some very
+ * strange an undesirable default construction of clones.
+ *
+ * Revision 1.24  1994/10/30  11:50:27  robertj
  * Split into Object classes and Container classes.
  * Changed mechanism for doing notification callback functions.
  *
@@ -116,7 +120,7 @@ PINLINE PString::PString()
 PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
 
-PINLINE PString::PString(const PString * str)
+PINLINE PString::PString(int, const PString * str)
   : PCharArray(*str) { }
 
 PINLINE PString::PString(const char * cstr)
@@ -206,6 +210,9 @@ PINLINE PCaselessString::PCaselessString(const char * cstr)
 PINLINE PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
 
+PINLINE PCaselessString::PCaselessString(int dummy,const PCaselessString * str)
+  : PString(dummy, str) { }
+
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }
 
@@ -228,8 +235,8 @@ PINLINE PStringStreamBuffer::PStringStreamBuffer(PStringStream * str)
 PINLINE PCollection::PCollection(PINDEX initialSize)
   : PContainer(initialSize) { }
 
-PINLINE PCollection::PCollection(const PCollection * c)
-  : PContainer(c) { }
+PINLINE PCollection::PCollection(int dummy, const PCollection * c)
+  : PContainer(dummy, c) { }
 
 PINLINE void PCollection::AllowDeleteObjects(BOOL yes)
   { reference->deleteObjects = yes; }
@@ -333,11 +340,11 @@ PINLINE BOOL PAbstractSet::Contains(const PObject & key)
 PINLINE PStringSet::PStringSet()
   : PAbstractSet() { }
 
-PINLINE PStringSet::PStringSet(const PStringSet * c)
-  : PAbstractSet(c) { }
+PINLINE PStringSet::PStringSet(int dummy, const PStringSet * c)
+  : PAbstractSet(dummy, c) { }
 
 PINLINE PObject * PStringSet::Clone() const
-  { return PNEW PStringSet(this); }
+  { return PNEW PStringSet(0, this); }
 
 PINLINE void PStringSet::Include(const PString & key)
   { Append(PNEW PString(key)); }
@@ -357,18 +364,20 @@ PINLINE const PString & PStringSet::GetKeyAt(PINDEX index) const
 PINLINE PAbstractDictionary::PAbstractDictionary()
   { hashTable->deleteKeys = TRUE; }
   
-PINLINE PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary * c)
-  : PHashTable(c) { }
+PINLINE PAbstractDictionary::PAbstractDictionary(int dummy,
+                                                 const PAbstractDictionary * c)
+  : PHashTable(dummy, c) { }
 
 
 PINLINE PStringDictionary::PStringDictionary()
   : PAbstractDictionary() { }
 
-PINLINE PStringDictionary::PStringDictionary(const PStringDictionary * c)
-  : PAbstractDictionary(c) { }
+PINLINE PStringDictionary::PStringDictionary(int dummy,
+                                                   const PStringDictionary * c)
+  : PAbstractDictionary(dummy, c) { }
 
 PINLINE PObject * PStringDictionary::Clone() const
-  { return PNEW PStringDictionary(this); }
+  { return PNEW PStringDictionary(0, this); }
 
 PINLINE BOOL PStringDictionary::SetAt(const PObject & key, PString str)
   { return PAbstractDictionary::SetAt(key, PNEW PString(str)); }
