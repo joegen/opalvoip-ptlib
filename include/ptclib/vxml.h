@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.13  2002/08/15 04:11:16  robertj
+ * Fixed shutdown problems with closing vxml session, leaks a thread.
+ * Fixed potential problems with indirect channel Close() function.
+ *
  * Revision 1.12  2002/08/08 01:03:19  craigs
  * Added function to re-enable automatic call clearing on script end
  *
@@ -264,6 +268,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual BOOL Load(const PFilePath & xmlSource);
     virtual BOOL Open(BOOL isPCM);
+    virtual BOOL Close();
 
     PVXMLIncomingChannel * GetIncomingChannel() const { return incomingChannel; }
     PVXMLOutgoingChannel * GetOutgoingChannel() const { return outgoingChannel; }
@@ -291,7 +296,6 @@ class PVXMLSession : public PIndirectChannel
 
     virtual BOOL OnEmptyAction()  { return TRUE; }
     virtual void OnEndSession()   { }
-    virtual void EndSession();
 
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
