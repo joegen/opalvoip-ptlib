@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.16  1999/08/20 03:07:44  robertj
+ * Fixed addded Concatenate function for non-template version.
+ *
  * Revision 1.15  1999/08/18 01:45:12  robertj
  * Added concatenation function to "base type" arrays.
  *
@@ -502,7 +505,7 @@ template <class T> class PBaseArray : public PAbstractArray
       { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline operator P_##cls##_Base_Type const *() const \
       { return (P_##cls##_Base_Type const *)theArray; } \
-    inline BOOL Concatenate(P_##cls##_Base_Type const & array) \
+    inline BOOL Concatenate(cls const & array) \
       { return PAbstractArray::Concatenate(array); } \
   }
 
