@@ -432,6 +432,8 @@ default_alsa=yes
 default_http=yes
 default_httpsvc=yes
 default_soap=yes
+default_xmlrpc=yes
+default_jabber=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -460,6 +462,8 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_http=yes
   default_httpsvc=no
   default_soap=no
+  default_xmlrpc=no
+  default_jabber=no
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -487,6 +491,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_http=yes
   default_httpsvc=no
   default_soap=no
+  default_xmlrpc=no
+  default_jabber=no
 fi
 
 
