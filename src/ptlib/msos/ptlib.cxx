@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.14 1995/04/22 00:53:49 robertj Exp $
+ * $Id: ptlib.cxx,v 1.15 1995/04/25 11:33:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.15  1995/04/25 11:33:35  robertj
+ * Changes for DLL support.
+ *
  * Revision 1.14  1995/04/22 00:53:49  robertj
  * Added Move() function to PFile.
  * Changed semantics of Rename() function in PFile.
@@ -60,7 +63,7 @@
 //
  */
 
-#include "ptlib.h"
+#include <ptlib.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -72,7 +75,14 @@
 #endif
 
 
-ostream * PSTATIC PErrorStream = &cerr;
+#if defined(_WIN32) && defined(_WINDLL)
+
+__declspec(dllexport) PProcess * PProcessInstance;
+__declspec(dllexport) ostream * PErrorStream;
+
+#endif
+
+const PTimeInterval PMaxTimeInterval = 0x7fffffff;
 
 
 ///////////////////////////////////////////////////////////////////////////////
