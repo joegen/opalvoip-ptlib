@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winserial.cxx,v $
+ * Revision 1.7  2005/01/12 03:24:08  csoutheren
+ * More cleanup of event handling
+ *
  * Revision 1.6  2005/01/11 12:46:37  csoutheren
  * Removed handle leak on serial port caused by memset
  * Thanks to Dmitry Samokhin
@@ -157,20 +160,15 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
   PAssertOS(SetCommTimeouts(commsResource, &cto));
 
   PWin32Overlapped overlap;
-  overlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-  if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) {
-    //CloseHandle(overlap.hEvent);
+  if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) 
     return lastWriteCount == len;
-  }
 
   if (GetLastError() == ERROR_IO_PENDING)
     if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, TRUE)) {
-      //CloseHandle(overlap.hEvent);
       return lastWriteCount == len;
     }
 
   ConvertOSError(-2, LastWriteError);
-  //CloseHandle(overlap.hEvent);
 
   return FALSE;
 }
