@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.8 1996/08/19 13:37:28 robertj Exp $
+ * $Id: url.h,v 1.9 1997/01/12 04:22:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.9  1997/01/12 04:22:54  robertj
+ * Added has function so URL can be dictionary key.
+ *
  * Revision 1.8  1996/08/19 13:37:28  robertj
  * Fixed URL parsing and definition (cannot have relative paths).
  *
@@ -70,6 +73,19 @@ PDECLARE_CLASS(PURL, PObject)
        <H2>Returns:</H2>
        <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
        according to the relative rank of the objects.
+     */
+
+    virtual PINDEX HashFunction() const;
+    /* This function yields a hash value required by the <A>PDictionary</A>
+       class. A descendent class that is required to be the key of a dictionary
+       should override this function. The precise values returned is dependent
+       on the semantics of the class. For example, the <A>PString</A> class
+       overrides it to provide a hash function for distinguishing text strings.
+
+       The default behaviour is to return the value zero.
+
+       <H2>Returns:</H2>
+       hash function value for class instance.
      */
 
     virtual void PrintOn(
@@ -156,7 +172,6 @@ PDECLARE_CLASS(PURL, PObject)
     WORD port;
     PString pathStr;
     PStringArray path;
-    BOOL absolutePath;
     PString parameters;
     PString fragment;
     PString queryStr;
