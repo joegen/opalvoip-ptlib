@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.28  2002/09/26 00:17:48  robertj
+# Fixed make install to force creation of symlinks, thanks Pierre.
+#
 # Revision 1.27  2002/08/30 11:42:46  robertj
 # Added formatting.
 # Changed alpha & beta sharable library file name convention.
@@ -148,9 +151,9 @@ else
 
   install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
-	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
-	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
-	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
+	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
+	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
+	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
 
 endif # P_SHAREDLIB
 
