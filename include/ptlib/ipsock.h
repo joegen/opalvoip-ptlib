@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.60  2003/05/21 09:34:43  rjongbloed
+ * Name lookup support for IPv6, thanks again Sébastien Josset
+ *
  * Revision 1.59  2003/04/28 02:55:08  robertj
  * Added function to see at run time if IPv6 available, thanks Sebastien Josset
  *
@@ -274,6 +277,10 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         /// Create an IPv6 address from an in_addr structure
         Address(const in6_addr & addr);
+
+        /// Create an IP (v4 or v6) address from a sockaddr (sockaddr_in,
+        /// sockaddr_in6 or sockaddr_in6_old) structure
+	Address(const int ai_family, const int ai_addrlen,struct sockaddr *ai_addr);
 #endif
 
 #ifdef __NUCLEUS_NET__
