@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.135  2003/09/17 09:02:13  csoutheren
+ * Removed memory leak detection code
+ *
  * Revision 1.134  2003/07/28 18:44:01  dsandras
  * Make use of the libc regex on Linux.
  *
@@ -1038,13 +1041,7 @@ BOOL PBitArray::Concatenate(const PBitArray & array)
 
 const PString & PString::Empty()
 {
-#if PMEMORY_CHECK
-  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
   static PString emptyString((const char *)NULL);
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
   return emptyString;
 }
 
