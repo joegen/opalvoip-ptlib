@@ -6,6 +6,9 @@
  * Portable Windows Library
  *
  * $Log: asnper.cxx,v $
+ * Revision 1.10  2004/07/11 12:33:47  csoutheren
+ * Added guards against illegal PDU values causing crashes
+ *
  * Revision 1.9  2004/03/23 04:53:57  csoutheren
  * Fixed problem with incorrect encoding of ASN NULL under some circumstances
  * Thanks to Ed Day of Objective Systems
@@ -1066,10 +1069,11 @@ BOOL PPER_Stream::Write(PChannel & chan)
 
 BOOL PPER_Stream::SingleBitDecode()
 {
-  if ((GetSize() - byteOffset)*8 - (8 - bitOffset) == 0)
+  if (!CheckByteOffset(byteOffset) || ((GetSize() - byteOffset)*8 - (8 - bitOffset) == 0))
     return FALSE;
 
   bitOffset--;
+
   BOOL value = (theArray[byteOffset] & (1 << bitOffset)) != 0;
 
   if (bitOffset == 0) {
@@ -1083,7 +1087,8 @@ BOOL PPER_Stream::SingleBitDecode()
 
 void PPER_Stream::SingleBitEncode(BOOL value)
 {
-  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+  if (!CheckByteOffset(byteOffset))
+    return;
 
   if (byteOffset >= GetSize())
     SetSize(byteOffset+10);
@@ -1111,6 +1116,9 @@ BOOL PPER_Stream::MultiBitDecode(unsigned nBits, unsigned & value)
     value = 0;
     return TRUE;
   }
+
+  if (!CheckByteOffset(byteOffset))
+    return FALSE;
 
   if (nBits < bitOffset) {
     bitOffset -= nBits;
@@ -1151,6 +1159,9 @@ void PPER_Stream::MultiBitEncode(unsigned value, unsigned nBits)
   // Make sure value is in bounds of bit available.
   if (nBits < sizeof(int)*8)
     value &= ((1 << nBits) - 1);
+
+  if (!CheckByteOffset(byteOffset))
+    return;
 
   if (nBits < bitOffset) {
     bitOffset -= nBits;
