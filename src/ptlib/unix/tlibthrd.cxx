@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.128  2004/04/12 00:58:45  csoutheren
+ * Fixed PAtomicInteger on Linux, and modified PMutex to use it
+ *
  * Revision 1.127  2004/04/11 07:58:08  csoutheren
  * Added configure.in check for recursive mutexes, and changed implementation
  * without recursive mutexes to use PCriticalSection or atomic word structs
@@ -1586,14 +1589,7 @@ void PMutex::Wait()
   if (pthread_equal(ownerThreadId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&lockCount, 1);
-#else
-    {
-      PEnterAndLeave m(lock);
-      lockCount++;
-    }
-#endif
+    ++lockCount++;
     return;
   }
 #endif
@@ -1627,14 +1623,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   if (pthread_equal(ownerThreadId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&lockCount, 1);
-#else
-    {
-      PEnterAndLeave m(lock);
-      lockCount++;
-    }
-#endif
+    ++lockCount;
     return TRUE;
   }
 #endif
@@ -1675,14 +1664,7 @@ void PMutex::Signal()
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
   if (lockCount > 0) {
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&lockCount, -1);
-#else
-    {
-      PEnterAndLeave m(lock);
-      lockCount--;
-    }
-#endif
+    --lockCount;
     return;
   }
 
