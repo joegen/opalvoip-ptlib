@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.9 1994/08/22 00:46:48 robertj Exp $
+ * $Id: ptime.h,v 1.10 1994/08/23 11:32:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.9  1994/08/22 00:46:48  robertj
+ * Revision 1.10  1994/08/23 11:32:52  robertj
+ * Oops
+ *
+ * Revision 1.9  1994/08/22  00:46:48  robertj
  * Added pragma fro GNU C++ compiler.
  *
  * Revision 1.8  1994/07/27  05:58:07  robertj
@@ -37,7 +40,7 @@
 
 #define _PTIME
 
-#ifdef __GNU__
+#ifdef __GNUC__
 #pragma interface
 #endif
 
