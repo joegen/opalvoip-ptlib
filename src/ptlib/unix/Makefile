@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.65  2001/01/03 23:10:09  craigs
+# Fixed Makefile problem when video not available
+#
 # Revision 1.64  2001/01/03 16:48:13  rogerh
 # Rename V4L_SOURCE to VIDEO_SOURCE (to be less platform specific).
 # Specify which files to use for VIDEO_SOURCE on non-linux systems eg BSD.
@@ -247,7 +250,7 @@ endif
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
-	        video4linux.cxx
+	        video4linux.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
 else
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
