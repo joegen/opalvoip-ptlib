@@ -2378,6 +2378,7 @@ EXPORTS
     ?GetGatewayInterface@PIPSocket@@SA?AVPString@@XZ @2478 NONAME ;public: static class PString  __cdecl PIPSocket::GetGatewayInterface(void)
     ?GetGrabHeight@PVideoChannel@@UAEHXZ @3447 NONAME ;public: virtual int __thiscall PVideoChannel::GetGrabHeight(void)
     ?GetGrabWidth@PVideoChannel@@UAEHXZ @3448 NONAME ;public: virtual int __thiscall PVideoChannel::GetGrabWidth(void)
+    ?GetGroupName@PProcess@@QBE?AVPString@@XZ @4645 NONAME ;public: class PString  __thiscall PProcess::GetGroupName(void)const 
     ?GetHandle@PChannel@@QBEHXZ @1461 NONAME ;public: int __thiscall PChannel::GetHandle(void)const 
     ?GetHandle@PSemaphore@@QBEPAXXZ @1462 NONAME ;public: void * __thiscall PSemaphore::GetHandle(void)const 
     ?GetHandle@PThread@@QBEPAXXZ @1463 NONAME ;public: void * __thiscall PThread::GetHandle(void)const 
@@ -3407,6 +3408,7 @@ EXPORTS
     ?SetFrameSize@PVideoInputDevice@@UAEHII@Z @3398 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSizeConverter@PVideoDevice@@UAEHIIH@Z @3768 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSizeConverter(unsigned int,unsigned int,int)
     ?SetGrabberFrameSize@PVideoChannel@@UAEXHH@Z @3461 NONAME ;public: virtual void __thiscall PVideoChannel::SetGrabberFrameSize(int,int)
+    ?SetGroupName@PProcess@@QAEHABVPString@@H@Z @4646 NONAME ;public: int __thiscall PProcess::SetGroupName(class PString const &,int)
     ?SetHue@PVideoDevice@@UAEHI@Z @3862 NONAME ;public: virtual int __thiscall PVideoDevice::SetHue(unsigned int)
     ?SetIgnoreAllocations@PMemoryHeap@@SAHH@Z @4050 NONAME ;public: static int __cdecl PMemoryHeap::SetIgnoreAllocations(int)
     ?SetInputFlowControl@PSerialChannel@@QAEHW4FlowControl@1@@Z @2164 NONAME ;public: int __thiscall PSerialChannel::SetInputFlowControl(enum PSerialChannel::FlowControl)
@@ -3470,7 +3472,7 @@ EXPORTS
     ?SetTime@PConfig@@QAEXABVPString@@0ABVPTime@@@Z @2205 NONAME ;public: void __thiscall PConfig::SetTime(class PString const &,class PString const &,class PTime const &)
     ?SetTime@PConfig@@QAEXABVPString@@ABVPTime@@@Z @2206 NONAME ;public: void __thiscall PConfig::SetTime(class PString const &,class PTime const &)
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @2207 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
-    ?SetUserName@PProcess@@QAEHABVPString@@@Z @4231 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &)
+    ?SetUserName@PProcess@@QAEHABVPString@@H@Z @4647 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &,int)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @2208 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @2209 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVFlipState@PColourConverter@@QAEXH@Z @4315 NONAME ;public: void __thiscall PColourConverter::SetVFlipState(int)
