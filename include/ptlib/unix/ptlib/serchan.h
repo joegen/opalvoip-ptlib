@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.3 1996/05/02 11:55:01 craigs Exp $
+ * $Id: serchan.h,v 1.4 1996/05/02 12:01:47 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.4  1996/05/02 12:01:47  craigs
+ * More Sun4 fixed
+ *
  * Revision 1.3  1996/05/02 11:55:01  craigs
  * Fixed problem with compiling on Sun4
  *
@@ -23,7 +26,7 @@
 
 #pragma interface
 
-#include <sys/ioctl.h>
+#include <sys/termios.h>
 
 #ifdef P_SUN4
 #undef NL0
@@ -46,8 +49,6 @@
 #undef FLUSHO
 #undef PENDIN
 #endif
-
-#include <sys/termios.h>
 
 #include "../../common/serchan.h"
   public:

@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.6 1996/05/02 11:55:28 craigs Exp $
+ * $Id: channel.h,v 1.7 1996/05/02 12:01:47 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.7  1996/05/02 12:01:47  craigs
+ * More Sun4 fixed
+ *
  * Revision 1.6  1996/05/02 11:55:28  craigs
  * Added ioctl definition for Sun4
  *
@@ -28,10 +31,6 @@
 #ifndef _PCHANNEL
 
 #pragma interface
-
-#ifdef P_SUN4
-extern "C" int ioctl(int, int, void *);
-#endif
 
 #include "../../common/channel.h"
   public:
