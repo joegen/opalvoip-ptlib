@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.6  2002/02/26 18:08:23  rogerh
+ * Add dummy stubs for the volume settings
+ *
  * Revision 1.5  2002/02/09 00:52:01  robertj
  * Slight adjustment to API and documentation for volume functions.
  *
@@ -240,19 +243,7 @@ BOOL PSoundChannel::SetVolume(unsigned newVal)
   if (os_handle <= 0)  //Cannot set volume in loop back mode.
     return FALSE;
   
-  int rc, deviceVol = (newVal << 8) | newVal;
-
-  if (dir == player)
-    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
-  else
-    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_IGAIN), &deviceVol);
-
-  if (rc < 0) {
-    PTRACE(1, "PSoundChannel::SetVolume failed : " << ::strerror(errno));
-    return FALSE;
-  }
-
-  return TRUE;
+  return FALSE;
 }
 
 BOOL  PSoundChannel::GetVolume(unsigned &devVol)
@@ -260,19 +251,8 @@ BOOL  PSoundChannel::GetVolume(unsigned &devVol)
   if (os_handle <= 0)  //Cannot get volume in loop back mode.
     return FALSE;
   
-  int vol, rc;
-  if (dir == player)
-    rc = ::ioctl(os_handle,MIXER_READ(SOUND_MIXER_VOLUME),&vol);
-  else
-    rc = ::ioctl(os_handle,MIXER_READ(SOUND_MIXER_IGAIN),&voll);
-  
-  if (rc < 0) {
-    PTRACE(1, "PSoundChannel::GetVolume failed : " << ::strerror(errno));
-    return FALSE;
-  }
-  
-  devVol = vol;
-  return TRUE;
+  devVol = 0;
+  return FALSE;
 }
   
 
