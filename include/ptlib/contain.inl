@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.42  1999/08/22 12:13:42  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.41  1999/03/09 03:08:39  robertj
  * Changes for new documentation system
  *
@@ -348,9 +351,6 @@ PINLINE void PCollection::DisallowDeleteObjects()
 
 PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
   : theArray(PNEW ObjPtrArray(initialSize)) { }
-
-PINLINE void PArrayObjects::CopyContents(const PArrayObjects & array)
-  { theArray = array.theArray; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
