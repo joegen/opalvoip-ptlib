@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.12 1996/01/23 13:25:21 robertj Exp $
+ * $Id: win32.cxx,v 1.13 1996/01/28 02:56:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.13  1996/01/28 02:56:56  robertj
+ * Fixed bug in PFilePath functions for if path ends in a directory separator.
+ * Made sure all directory separators are correct character in normalised path.
+ *
  * Revision 1.12  1996/01/23 13:25:21  robertj
  * Added time zones.
  * Fixed bug if daylight savings indication.
@@ -406,8 +410,11 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
   PString fullpath;
   PINDEX len = (PINDEX)GetFullPathName(path,
                            _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
-  if (isDirectory && len > 0 && fullpath[len-1] != '\\')
-    fullpath += '\\';
+  if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
+    fullpath += PDIR_SEPARATOR;
+  PINDEX pos = 0;
+  while ((pos = fullpath.Find('/', pos)) != P_MAX_INDEX)
+    fullpath[pos] = PDIR_SEPARATOR;
   return fullpath;
 }
 
@@ -845,7 +852,7 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
   Close();
 
   portName = port;
-  if (portName.Find('\\') == P_MAX_INDEX)
+  if (portName.Find(PDIR_SEPARATOR) == P_MAX_INDEX)
     portName = "\\\\.\\" + port;
   commsResource = CreateFile(portName,
                              GENERIC_READ|GENERIC_WRITE,
@@ -1091,12 +1098,12 @@ void PConfig::Construct(Source src)
         location = "SOFTWARE\\";
         PProcess * proc = PProcess::Current();
         if (!proc->GetManufacturer().IsEmpty())
-          location += proc->GetManufacturer() + '\\';
+          location += proc->GetManufacturer() + PDIR_SEPARATOR;
         else
           location += "PWLib\\";
-        location += proc->GetName() + '\\';
+        location += proc->GetName() + PDIR_SEPARATOR;
         if (!proc->GetVersion(FALSE).IsEmpty())
-          location += proc->GetVersion(FALSE) + '\\';
+          location += proc->GetVersion(FALSE) + PDIR_SEPARATOR;
       }
       break;
   }
