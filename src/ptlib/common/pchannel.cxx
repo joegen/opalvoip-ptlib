@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.24  2003/12/19 04:31:27  csoutheren
+ * Changed GetLastReadCount and GetLastWriteCount to be virtual
+ *
  * Revision 1.23  2003/04/23 00:37:04  craigs
  * More casts to avoid problems on MacOSX thanks to Shawn Hsiao
  *
@@ -263,6 +266,15 @@ BOOL PChannel::IsOpen() const
   return os_handle >= 0;
 }
 
+PINDEX PChannel::GetLastReadCount() const
+{ 
+  return lastReadCount; 
+}
+
+PINDEX PChannel::GetLastWriteCount() const
+{ 
+  return lastWriteCount; 
+}
 
 int PChannel::ReadChar()
 {
