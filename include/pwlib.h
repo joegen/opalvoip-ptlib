@@ -54,6 +54,7 @@ typedef int PDIMENSION;
 #endif
 
 typedef UINT PRESOURCE_ID;
+typedef short PSCROLLBAR_VALUE;
 
 #define EXPORTED __stdcall
 #define open  _open
@@ -62,16 +63,17 @@ typedef UINT PRESOURCE_ID;
 #define read  _read
 #define write _write
 
-#else
+#else // WIN32
 
 typedef int PORDINATE;
 typedef int PDIMENSION;
 
-typedef short PRESOURCE_ID;
+typedef int PRESOURCE_ID;
+typedef int PSCROLLBAR_VALUE;
 
 #define EXPORTED FAR PASCAL _export
 
-#endif
+#endif // else WIN32
 
 #ifdef _MSC_VER // default copy ctor/assignment op not generatoed warning
 #pragma warning(disable:4511; disable:4512)
@@ -1059,10 +1061,6 @@ typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
 
 
     // Member variables
-  private:
-    int initValue, initMin, initMax;
-      // These are only used to initialise the MS-Windows scroll bar
-
     BOOL tracking;
       // Indication that continuous scrolling is occurring.
 };
@@ -1569,7 +1567,7 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
     PDICTIONARY(WindowDict, HWNDKey, PInteractor);
     WindowDict CreatedWindows;
 
-    PLIST(NonModalDict, PDialog);
+    PLIST(NonModalDict, PInteractorLayout);
     NonModalDict NonModalDialogs;
 
     int timerID;
