@@ -86,6 +86,7 @@ class PXML : public PObject
     PXMLElement * GetRootElement() const { return rootElement; }
     PXMLElement * SetRootElement(PXMLElement * p);
     PXMLElement * SetRootElement(const PString & documentType);
+    BOOL          RemoveElement(PINDEX idx);
 
     PCaselessString GetDocumentType() const;
 
@@ -223,6 +224,7 @@ class PXMLElement : public PXMLObject {
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
+    BOOL          RemoveElement(PINDEX idx);
 
     PINDEX FindObject(PXMLObject * ptr) const;
 
