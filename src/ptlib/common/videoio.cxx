@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.33  2002/09/01 22:38:21  dereks
+ * Remove previous clarification, cause it breaks openphone code.
+ *
  * Revision 1.32  2002/08/30 02:31:43  dereks
  * Make operation of the code more clear. Thanks Diego Tartara
  *
@@ -709,7 +712,7 @@ BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
 
 BOOL PVideoInputDevice::GetVFlipState() 
 {
-  if ( converter == NULL )
+  if (converter == NULL)
     return FALSE;
 
   return converter->GetVFlipState();
@@ -717,8 +720,9 @@ BOOL PVideoInputDevice::GetVFlipState()
 
 BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip) 
 {
-  if ( converter == NULL )
-    return FALSE;
+  if (converter == NULL)
+    //We return !newVFlip here because of constraints from openPhone code.
+    return !newVFlip;
 
   converter->SetVFlipState(newVFlip);
   return TRUE;
@@ -726,8 +730,9 @@ BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip)
 
 BOOL PVideoInputDevice::ToggleVFlipState() 
 {
-  if ( converter == NULL )
+  if (converter == NULL)
     return FALSE;
+
   converter->ToggleVFlipState();
   return TRUE;
 } 
