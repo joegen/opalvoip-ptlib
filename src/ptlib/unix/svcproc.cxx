@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.74  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.73  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -627,7 +630,7 @@ int PServiceProcess::InitialiseService()
     SetConfigurationPath(args.GetOptionString('i'));
 
   if (args.HasOption('H'))
-    SetMaxFileHandles(args.GetOptionString('H').AsInteger());
+    SetMaxHandles(args.GetOptionString('H').AsInteger());
 
   // Set the gid we are running under
   if (args.HasOption('g')) {
