@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.87  2003/05/05 07:30:17  craigs
+ * Fixed problem with URLs that do not specify schemes
+ *
  * Revision 1.86  2003/05/02 13:50:23  craigs
  * Fixed a problem with callto:localhost
  *
@@ -671,8 +674,12 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     return;
   }
 
+  // if we could not match a scheme, then use the default scheme
+  if (schemeInfo == NULL) 
+    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+
   // if the URL should have leading slash, then remove it if it has one
-  if (schemeInfo->hasHostPort && schemeInfo->hasPath) {
+  if (schemeInfo != NULL && schemeInfo->hasHostPort && schemeInfo->hasPath) {
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
       url.Delete(0, 2);
     else
