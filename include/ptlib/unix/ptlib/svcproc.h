@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.6 1996/09/21 05:42:12 craigs Exp $
+ * $Id: svcproc.h,v 1.7 1998/05/30 13:30:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.7  1998/05/30 13:30:11  robertj
+ * Added ability to specify the log file as well as just console output.
+ *
  * Revision 1.6  1996/09/21 05:42:12  craigs
  * Changes for new common files, PConfig changes and signal handling
  *
@@ -37,7 +40,7 @@
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);
-    BOOL consoleMessages;
+    PString systemLogFile;
 };
 
 #endif
