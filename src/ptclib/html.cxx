@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.2 1996/02/08 12:24:30 robertj Exp $
+ * $Id: html.cxx,v 1.3 1996/02/19 13:31:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.3  1996/02/19 13:31:51  robertj
+ * Removed MSC_VER test as now completely removed from WIN16 library.
+ *
  * Revision 1.2  1996/02/08 12:24:30  robertj
  * Further implementation.
  *
@@ -31,8 +34,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
-
-#if !defined(_MSC_VER) || _MSC_VER > 800
 
 PHTML::PHTML()
 {
@@ -1439,10 +1440,6 @@ PHTML::SubmitButton::SubmitButton(const PString & title,
   : ResetButton("submit", fname, title, srcStr, disabled, error)
 {
 }
-
-
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
