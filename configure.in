@@ -62,7 +62,7 @@ case "$target_os" in
   linux*)          OSTYPE=linux ;  
                    OSRELEASE=`uname -r` ;
 		   OS_TAG="P_LINUX" ;
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
                    ;;
 
   freebsd* )       OSTYPE=FreeBSD ;
@@ -70,34 +70,34 @@ case "$target_os" in
                    if test "x$OSRELEASE" = "x"; then
                      OSRELEASE=`sysctl -n kern.osreldate` ;
                    fi
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
 		   OS_TAG="P_OPENBSD" ;
                    OSRELEASE=`sysctl -n kern.osrevision` ;
 		   ENDLDLIBS="-lossaudio" ;
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   netbsd* )        OSTYPE=NetBSD ;
 		   OS_TAG="P_NETBSD" ;
                    OSRELEASE=`/sbin/sysctl -n kern.osrevision` ;
 		   ENDLDLIBS="-lossaudio" ;
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   darwin* )	   OSTYPE=Darwin ;
 		   OS_TAG="P_MACOSX" ;
 		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
                    SHAREDLIBEXT="dylib";
-		   P_USE_PRAGMA=1 ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   * )		   OSTYPE="$target_os" ;
@@ -163,9 +163,6 @@ AC_DEFINE_UNQUOTED($OS_TAG, "$OSRELEASE")
 
 AC_DEFINE(PHAS_TEMPLATES, 1)
 
-if test "x$P_USE_PRAGMA" != "x" ; then
-  AC_DEFINE(P_USE_PRAGMA, 1)
-fi
 if test "x$P_64BIT" != "x" ; then
   AC_DEFINE(P_64BIT, 1)
 fi
