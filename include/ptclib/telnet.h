@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.14 1995/06/04 12:46:26 robertj Exp $
+ * $Id: telnet.h,v 1.15 1995/06/17 00:47:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
+ * Revision 1.15  1995/06/17 00:47:38  robertj
+ * Changed overloaded Open() calls to 3 separate function names.
+ * More logical design of port numbers and service names.
+ *
  * Revision 1.14  1995/06/04 12:46:26  robertj
  * Slight redesign of port numbers on sockets.
  *
@@ -111,19 +115,35 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
      */
 
 
-    virtual BOOL Open(
+    virtual BOOL Connect(
       const PString & address   // Address of remote machine to connect to.
     );
-    virtual BOOL Open(
-      WORD port                 // Port number to use for the connection.
-    );
-    virtual BOOL Open(
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
+
+       The port number as defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+
+    virtual BOOL Accept(
       PSocket & socket          // Listening socket making the connection.
     );
-    /* Open a socket to a remote host on the specified port number. If the
-       <CODE>port</CODE> parameter is zero then the port number as defined by
-       the object instance construction or the <A><CODE>SetPort()</CODE></A>
-       function is used.
+    /* Open a socket to a remote host on the specified port number. This is an
+       "accepting" socket. When a "listening" socket has a pending connection
+       to make, this will accept a connection made by the "connecting" socket
+       created to establish a link.
+
+       The port that the socket uses is the one used in the <A>Listen()</A>
+       command of the <CODE>socket</CODE> parameter.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
@@ -140,6 +160,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
        The TELNET socket uses this for sychronisation.
      */
+
 
   // New functions
     enum Command {
