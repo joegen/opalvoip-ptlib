@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.7 1996/02/03 11:33:17 robertj Exp $
+ * $Id: inetprot.cxx,v 1.8 1996/02/13 12:57:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.8  1996/02/13 12:57:49  robertj
+ * Added access to the last response in an application socket.
+ *
  * Revision 1.7  1996/02/03 11:33:17  robertj
  * Changed RadCmd() so can distinguish between I/O error and unknown command.
  *
@@ -277,7 +280,10 @@ BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
 {
   if (cmdNumber >= commandNames.GetSize())
     return FALSE;
-  return WriteLine(commandNames[cmdNumber] + " " + param);
+  if (param.IsEmpty())
+    return WriteLine(commandNames[cmdNumber]);
+  else
+    return WriteLine(commandNames[cmdNumber] + " " + param);
 }
 
 
@@ -349,6 +355,9 @@ BOOL PApplicationSocket::ReadResponse(PString & code, PString & info)
     info += line.Mid(endCode+1);
   }
 
+  lastResponseInfo = info;
+  lastResponseCode = code;
+
   return TRUE;
 }
 
@@ -365,6 +374,15 @@ char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
   return lastResponseCode[0];
 }
 
+PINDEX PApplicationSocket::GetLastResponseCode() const
+{
+  return lastResponseCode.AsInteger();
+}
+
+PString PApplicationSocket::GetLastResponseInfo() const
+{
+  return lastResponseInfo;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
