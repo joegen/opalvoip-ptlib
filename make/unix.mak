@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.37  1999/05/01 11:29:19  robertj
-# Alpha linux port changes.
+# Revision 1.38  1999/06/07 04:49:46  robertj
+# Added support for SuSe linux variant.
+#
+# Revision 1.38  1999/06/07 04:47:18  robertj
+# Added support for SUSE linux.
 #
 # Revision 1.37  1999/05/01 11:29:19  robertj
 # Alpha linux port changes.
@@ -111,20 +114,20 @@ OSTYPE   := linux
 MACHTYPE := x86
 endif
 
-ifeq ($(OSTYPE),Linux)
-OSTYPE := linux
-endif
-
 ifeq ($(OSTYPE),mklinux)
 OSTYPE   := linux
 MACHTYPE := ppc
+endif
+
+ifneq (,$(findstring $(OSTYPE),Linux linux-gnu))
+OSTYPE := linux
 endif
 
 ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 OSTYPE := solaris
 endif
 
-ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc))
+ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc i686-pc-linux-gnu))
 MACHTYPE := x86
 endif
 
@@ -132,8 +135,16 @@ endif
 ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris))
 
 all ::
+	@echo
 	@echo ######################################################################
-	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed. If you get"
+	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed. You will"
+	@echo "         have to examine the values for OSTYPE and MACHTYPE or the"
+	@echo "         uname -s and uname -m commands and set the correct unix"
+	@echo "         variant in the tables above."
+	@echo
+	@echo "              *** DO NOT IGNORE THIS MESSAGE ***
+	@echo
+	@echo "         The system almost certainly will not compile! When you get"
 	@echo "         it working please send patches to support@equival.com.au"
 	@echo ######################################################################
 	@echo
