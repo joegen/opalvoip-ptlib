@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.72 1996/07/15 10:36:12 robertj Exp $
+ * $Id: osutils.cxx,v 1.73 1996/07/27 04:12:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.73  1996/07/27 04:12:09  robertj
+ * Fixed bug in timer thread going into busy loop instead of blocking.
+ *
  * Revision 1.72  1996/07/15 10:36:12  robertj
  * Fixed bug in timer on startup, getting LARGE times timing out prematurely.
  *
@@ -410,7 +413,7 @@ void PTimerList::RemoveTimer(PTimer * timer)
 PTimeInterval PTimerList::Process()
 {
   PINDEX i;
-  PTimeInterval minTimeLeft;
+  PTimeInterval minTimeLeft = PMaxTimeInterval;
   PInternalTimerList timeouts;
   timeouts.DisallowDeleteObjects();
 
