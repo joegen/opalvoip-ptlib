@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.18  2004/05/14 10:15:26  dominance
+ * Fixes direct opening of sound output devices. The list of devices does no longer return NULL in that case. Patch provided by Julien Puydt <julien.puydt@laposte.net>.
+ *
  * Revision 1.17  2004/04/03 10:33:45  dsandras
  * Use PStringToOrdinal to store the detected devices, that fixes problems if there is a discontinuity in the succession of soundcard ID's. For example the user has card ID 1 and 3, but not 2.
  *
@@ -122,9 +125,8 @@ PSoundChannelALSA::~PSoundChannelALSA()
 }
 
 
-PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
+void PSoundChannelALSA::UpdateDictionary (Directions dir)
 {
-  PStringArray devices;
   
   int card = -1, dev = -1;
   
@@ -153,7 +155,7 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
   /* No sound card found */
   if (snd_card_next (&card) < 0 || card < 0) {
 
-    return PStringArray ();
+    return;
   }
 
 
@@ -196,12 +198,19 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
     snd_ctl_close(handle);
     snd_card_next (&card);
   }
+}
 
+PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
+{
+  PStringArray devices;
   PStringToOrdinal devices_dict;
+ 
   if (dir == Recorder)
     devices_dict = capture_devices;
   else
     devices_dict = playback_devices;
+
+  UpdateDictionary (dir);
   
   for (PINDEX j = 0 ; j < devices_dict.GetSize () ; j++) 
     devices += devices_dict.GetKeyAt (j);
@@ -248,6 +257,10 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
     real_device_name = "plug:dmix";
   }
   else {
+
+  if ((_dir == Recorder && capture_devices.IsEmpty ())
+      || (_dir == Player && playback_devices.IsEmpty ()))
+    UpdateDictionary (_dir);
 
     i = (_dir == Recorder) ? capture_devices.GetAt (_device) : playback_devices.GetAt (_device);
 
