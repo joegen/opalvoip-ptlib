@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.45  1998/11/16 06:50:40  robertj
+ * Fixed PPC GNU compiler compatibility.
+ *
  * Revision 1.44  1998/10/31 12:49:25  robertj
  * Added read/write mutex to the HTTP space variable to avoid thread crashes.
  *
@@ -271,7 +274,7 @@ void PHTTPServiceProcess::ShutdownListener()
 PString PHTTPServiceProcess::GetCopyrightText()
 {
   PTime compilationDate = PString(__DATE__);
-  PHTML html = PHTML::InBody;
+  PHTML html(PHTML::InBody);
   html << "Copyright &copy;"
        << compilationDate.AsString("yyyy") << " by "
        << PHTML::HotLink(HOME_PAGE)
@@ -287,7 +290,7 @@ PString PHTTPServiceProcess::GetCopyrightText()
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
-  PHTML html = PHTML::InBody;
+  PHTML html(PHTML::InBody);
   html << PHTML::TableStart()
        << PHTML::TableRow()
        << PHTML::TableData()
@@ -1284,7 +1287,7 @@ CREATE_MACRO(Registration,EMPTY,args)
     }
   }
 
-  PHTML out = PHTML::InBody;
+  PHTML out(PHTML::InBody);
   out << "<font size=5>"
       << sconf.GetString("Name", sconf.GetString(pending+"Name", "*** "+demoCopy+" ***"))
       << PHTML::BreakLine()
@@ -1390,7 +1393,7 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
   if ((options&NeedSignature) != 0) {
     if (!CheckSignature(text.Mid(alreadyLoadedPrefixLength))) {
       PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
-      PHTML html = "Invalid OEM Signature";
+      PHTML html("Invalid OEM Signature");
       html << "The HTML file \""
            << filename
            << "\" contains an invalid signature for \""
