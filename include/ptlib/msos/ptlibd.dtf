@@ -262,7 +262,7 @@ EXPORTS
     ??0PThread@@QAE@HW4AutoDeleteFlag@0@W4Priority@0@ABVPString@@@Z @3098 NONAME ;public: __thiscall PThread::PThread(int,enum PThread::AutoDeleteFlag,enum PThread::Priority,class PString const &)
     ??0PTime@@QAE@ABVPString@@@Z @224 NONAME ;public: __thiscall PTime::PTime(class PString const &)
     ??0PTime@@QAE@HHHHHHH@Z @225 NONAME ;public: __thiscall PTime::PTime(int,int,int,int,int,int,int)
-    ??0PTime@@QAE@J@Z @226 NONAME ;public: __thiscall PTime::PTime(long)
+    ??0PTime@@QAE@JJ@Z @3109 NONAME ;public: __thiscall PTime::PTime(long,long)
     ??0PTime@@QAE@XZ @227 NONAME ;public: __thiscall PTime::PTime(void)
     ??0PTimeInterval@@QAE@ABV0@@Z @228 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PTimeInterval const &)
     ??0PTimeInterval@@QAE@ABVPString@@@Z @3107 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)
@@ -1846,6 +1846,7 @@ EXPORTS
     ?GetMessageBody@PMail@@QAEHABVPString@@AAV2@H@Z @1512 NONAME ;public: int __thiscall PMail::GetMessageBody(class PString const &,class PString &,int)
     ?GetMessageHeader@PMail@@QAEHABVPString@@AAUHeader@1@@Z @1513 NONAME ;public: int __thiscall PMail::GetMessageHeader(class PString const &,struct PMail::Header &)
     ?GetMessageIDs@PMail@@QAE?AVPStringArray@@H@Z @1514 NONAME ;public: class PStringArray  __thiscall PMail::GetMessageIDs(int)
+    ?GetMicrosecond@PTime@@QBEJXZ @3112 NONAME ;public: long __thiscall PTime::GetMicrosecond(void)const 
     ?GetMilliSeconds@PTimeInterval@@QBE_JXZ @1515 NONAME ;public: __int64 __thiscall PTimeInterval::GetMilliSeconds(void)const 
     ?GetMinute@PTime@@QBEHXZ @1516 NONAME ;public: int __thiscall PTime::GetMinute(void)const 
     ?GetMinutes@PTimeInterval@@QBEJXZ @1517 NONAME ;public: long __thiscall PTimeInterval::GetMinutes(void)const 
@@ -1974,6 +1975,7 @@ EXPORTS
     ?GetTimePM@PTime@@SA?AVPString@@XZ @1617 NONAME ;public: static class PString  __cdecl PTime::GetTimePM(void)
     ?GetTimerList@PProcess@@QAEPAVPTimerList@@XZ @1618 NONAME ;public: class PTimerList * __thiscall PProcess::GetTimerList(void)
     ?GetTimeSeparator@PTime@@SA?AVPString@@XZ @1619 NONAME ;public: static class PString  __cdecl PTime::GetTimeSeparator(void)
+    ?GetTimestamp@PTime@@QBE_JXZ @3111 NONAME ;public: __int64 __thiscall PTime::GetTimestamp(void)const 
     ?GetTimeZone@PTime@@SAHW4TimeZoneType@1@@Z @1620 NONAME ;public: static int __cdecl PTime::GetTimeZone(enum PTime::TimeZoneType)
     ?GetTimeZone@PTime@@SAHXZ @1621 NONAME ;public: static int __cdecl PTime::GetTimeZone(void)
     ?GetTimeZoneString@PTime@@SA?AVPString@@W4TimeZoneType@1@@Z @1622 NONAME ;public: static class PString  __cdecl PTime::GetTimeZoneString(enum PTime::TimeZoneType)
@@ -2263,6 +2265,7 @@ EXPORTS
     ?IsEndOfFile@PFile@@QBEHXZ @1869 NONAME ;public: int __thiscall PFile::IsEndOfFile(void)const 
     ?IsFuture@PTime@@QBEHXZ @1870 NONAME ;public: int __thiscall PTime::IsFuture(void)const 
     ?IsGUIProcess@PProcess@@UBEHXZ @3106 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
+    ?IsInitialised@PProcess@@SAHXZ @3108 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
     ?IsLoaded@PDynaLink@@QBEHXZ @1871 NONAME ;public: int __thiscall PDynaLink::IsLoaded(void)const 
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @1872 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @1873 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
@@ -2763,4 +2766,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?IsInitialised@PProcess@@SAHXZ @3108 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
+    ?GetTimeInSeconds@PTime@@QBEJXZ @3113 NONAME ;public: long __thiscall PTime::GetTimeInSeconds(void)const 
