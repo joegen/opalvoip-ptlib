@@ -1,0 +1,3 @@
+lib html
+Lib Debug Release
+*.ncb *.opt
