@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.99  1998/10/13 14:06:28  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.98  1998/09/24 07:23:54  robertj
  * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
  *
@@ -1610,10 +1613,6 @@ void PProcess::PreInitialise(int c, char ** v, char ** e)
   argc = c;
   argv = v;
   envp = e;
-#ifdef PMEMORY_CHECK
-  extern BOOL PMainExecuted;
-  PMainExecuted = TRUE;
-#endif
 }
 
 
