@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.18  2003/04/17 03:34:07  craigs
+ * Fixed problem with delete'ing a void *
+ *
  * Revision 1.17  2003/04/10 07:02:38  craigs
  * Fixed link problem in MD5 class
  *
@@ -282,6 +285,7 @@ class PMessageDigestSHA1 : public PMessageDigest
   public:
     /// Create a new message digestor
     PMessageDigestSHA1();
+    ~PMessageDigestSHA1();
 
     /// Begin a Message Digest operation, initialising the object instance.
     void Start();
