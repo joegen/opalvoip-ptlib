@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.3 1995/12/08 13:16:38 craigs Exp $
+ * $Id: thread.h,v 1.4 1996/01/26 11:08:45 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.4  1996/01/26 11:08:45  craigs
+ * Fixed problem with blocking Accept calls
+ *
  * Revision 1.3  1995/12/08 13:16:38  craigs
  * Added semaphore include and friend class
  *
@@ -37,14 +40,14 @@ class PSemaphore;
 #include "../../common/thread.h"
 
   public:
-    BOOL PXBlockOnIO(int handle, BOOL isRead);
-    BOOL PXBlockOnIO(int handle, BOOL isRead, const PTimeInterval & timeout);
+    BOOL PXBlockOnIO(int handle, int type);
+    BOOL PXBlockOnIO(int handle, int type, const PTimeInterval & timeout);
 
   protected:
     PTimer ioTimer;
     BOOL   hasIOTimer;
     int    blockHandle;
-    BOOL   blockRead;
+    int    blockType;
     BOOL   dataAvailable;
 };
 
