@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.53  2005/01/04 08:09:42  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.52  2004/11/17 10:13:14  csoutheren
  * Fixed compilation with gcc 4.0.0
  *
@@ -224,11 +227,9 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
-#ifdef _WIN32
 namespace PWLibStupidWindowsHacks {
   int loadVideoStuff;
 };
-#endif
 
 namespace PWLib {
   PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoInputDevice> > vidinChannelFactoryAdapter("PVideoInputDevice", TRUE);

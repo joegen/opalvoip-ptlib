@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.17  2005/01/04 08:09:42  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.16  2005/01/04 07:44:03  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -85,6 +88,10 @@
 
 ////////////////////////////////////////////////////////////
 
+#include <ptclib/ptts.h>
+
+PINSTANTIATE_FACTORY(PTextToSpeech, PString)
+
 // WIN32 COM stuff must be first in file to compile properly
 
 #if P_SAPI
@@ -114,8 +121,6 @@
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
-
-PINSTANTIATE_FACTORY(PTextToSpeech, PString)
 
 ////////////////////////////////////////////////////////////
 //
