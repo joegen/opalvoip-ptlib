@@ -1676,6 +1676,7 @@ EXPORTS
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1173 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
     ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1174 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
     ?GetVFlipState@PFakeVideoInputDevice@@UAEHXZ @3153 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetVFlipState(void)
+    ?GetVFlipState@PVideoDevice@@UAEHXZ @3170 NONAME ;public: virtual int __thiscall PVideoDevice::GetVFlipState(void)
     ?GetVFlipState@PVideoInputDevice@@UAEHXZ @3154 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetVFlipState(void)
     ?GetVideoFormat@PVideoDevice@@UBE?AW4VideoFormat@1@XZ @2446 NONAME ;public: virtual enum PVideoDevice::VideoFormat  __thiscall PVideoDevice::GetVideoFormat(void)const 
     ?GetVideoPlayer@PVideoChannel@@UAEPAVPVideoOutputDevice@@XZ @3148 NONAME ;public: virtual class PVideoOutputDevice * __thiscall PVideoChannel::GetVideoPlayer(void)
@@ -1689,6 +1690,7 @@ EXPORTS
     ?GrabMovingBlocksTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @2560 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabMovingBlocksTestFrame(unsigned char *)
     ?GrabMovingLineTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @2561 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabMovingLineTestFrame(unsigned char *)
     ?GrabNTSCTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @2562 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabNTSCTestFrame(unsigned char *)
+    ?GrabOriginalMovingBlocksFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3171 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(unsigned char *)
     ?HandleCapture@PVideoInputDevice@@IAEXXZ @2447 NONAME ;protected: void __thiscall PVideoInputDevice::HandleCapture(void)
     ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @2448 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
     ?HandleVideo@PVideoInputDevice@@IAEJPAUvideohdr_tag@@@Z @2449 NONAME ;protected: long __thiscall PVideoInputDevice::HandleVideo(struct videohdr_tag *)
@@ -2392,6 +2394,7 @@ EXPORTS
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @1704 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @1705 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVFlipState@PFakeVideoInputDevice@@UAEHH@Z @3156 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVFlipState(int)
+    ?SetVFlipState@PVideoDevice@@UAEHH@Z @3172 NONAME ;public: virtual int __thiscall PVideoDevice::SetVFlipState(int)
     ?SetVFlipState@PVideoInputDevice@@UAEHH@Z @3157 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetVFlipState(int)
     ?SetVideoFormat@PFakeVideoInputDevice@@UAEHW4VideoFormat@PVideoDevice@@@Z @2572 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?SetVideoFormat@PVideoDevice@@UAEHW4VideoFormat@1@@Z @2463 NONAME ;public: virtual int __thiscall PVideoDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
@@ -2441,6 +2444,7 @@ EXPORTS
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @1743 NONAME ;public: static class PTimeInterval  __cdecl PTimer::Tick(void)
     ?ToggleVFlipInput@PVideoChannel@@QAEHXZ @3160 NONAME ;public: int __thiscall PVideoChannel::ToggleVFlipInput(void)
     ?ToggleVFlipState@PFakeVideoInputDevice@@UAEHXZ @3161 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::ToggleVFlipState(void)
+    ?ToggleVFlipState@PVideoDevice@@UAEHXZ @3173 NONAME ;public: virtual int __thiscall PVideoDevice::ToggleVFlipState(void)
     ?ToggleVFlipState@PVideoInputDevice@@UAEHXZ @3162 NONAME ;public: virtual int __thiscall PVideoInputDevice::ToggleVFlipState(void)
     ?Tokenise@PString@@QBE?AVPStringArray@@ABV1@H@Z @1744 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(class PString const &,int)const 
     ?Tokenise@PString@@QBE?AVPStringArray@@PBDH@Z @1745 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(char const *,int)const 
