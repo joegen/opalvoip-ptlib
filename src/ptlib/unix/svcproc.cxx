@@ -1,4 +1,6 @@
 #include <ptlib.h>
+
+#pragma implementation "svcproc.h"
 #include <svcproc.h>
 
 #include <syslog.h>
