@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.6 1997/03/28 04:40:46 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.7 1997/03/31 08:26:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.7  1997/03/31 08:26:58  robertj
+ * GNU compiler compatibilty.
+ *
  * Revision 1.6  1997/03/28 04:40:46  robertj
  * Fixed bug in Post function doing wrong command.
  *
@@ -189,7 +192,7 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 {
   return PHTTP::WriteCommand(cmd, url & "HTTP/1.0") &&
          outMIME.Write(*this) &&
-         Write(dataBody, dataBody.GetSize()-1);
+         Write((const char *)dataBody, dataBody.GetSize()-1);
 }
 
 
