@@ -284,6 +284,28 @@ if test $ac_cv_c_long_double != yes ; then
 fi
 
 dnl ########################################################################
+dnl check for number of parms to readdir
+AC_MSG_CHECKING(if readdir_r has 2 parms)
+AC_TRY_COMPILE([#include <dirent.h>],
+               [DIR *s; struct dirent * e; readdir_r(s, e);], P_HAS_POSIX_READDIR_R=2, P_HAS_POSIX_READDIR_R=0)
+if test ${P_HAS_POSIX_READDIR_R} = 2 ; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(if readdir_r has 3 parms)
+  AC_TRY_COMPILE([#include <dirent.h>],
+                 [DIR *s; struct dirent * e; struct dirent * p; readdir_r(s, e, &p);], P_HAS_POSIX_READDIR_R=3, P_HAS_POSIX_READDIR_R=0)
+  if test ${P_HAS_POSIX_READDIR_R} = 3 ; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+AC_DEFINE_UNQUOTED(P_HAS_POSIX_READDIR_R, ${P_HAS_POSIX_READDIR_R})
+
+
+dnl ########################################################################
 dnl check for pthreads library
 
 dnl MSWIN_DISPLAY semaphore,Semaphore Support
