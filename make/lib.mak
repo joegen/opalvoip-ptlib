@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.20  2001/12/18 04:12:08  robertj
+# Fixed Linux compatibility of previous change for Solaris.
+#
 # Revision 1.19  2001/12/17 23:33:50  robertj
 # Solaris 8 porting changes, thanks James Dugal
 #
@@ -106,9 +109,11 @@ endif
 # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
 # directly and passing it the equivalent arguments...jpd@louisiana.edu
 ifeq ($(OSTYPE),solaris)
-LDSOOPTS = ld -Bdynamic -G -h $(LIB_FILENAME).1
+LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).1
+LD = ld
 else
-LDSOOPTS += $(CPLUS) -Wl,-soname,$(LIB_FILENAME).1
+LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).1
+LD = $(CPLUS)
 endif
 
 $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
@@ -118,7 +123,7 @@ $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(LDSOOPTS)  -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
+	$(LD) $(LDSOOPTS)  -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
