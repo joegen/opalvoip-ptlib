@@ -24,6 +24,9 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.5  2003/12/14 13:30:10  csoutheren
+ * Added new function required for recent video changes
+ *
  * Revision 1.4  2003/11/25 10:49:31  dsandras
  * Removed double declaration.
  *
@@ -112,6 +115,9 @@ class PVideoInput1394AvcDevice : public PVideoInputDevice
     /**Get a list of all of the drivers available.
       */
     static PStringList GetInputDeviceNames();
+
+    PStringList GetDeviceNames() const
+    { return GetInputDeviceNames(); }
 
     /**Get the maximum frame size in bytes.
 
