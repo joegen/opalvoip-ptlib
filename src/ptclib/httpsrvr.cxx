@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.3 1996/11/10 21:09:33 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.4 1996/12/12 09:24:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.4  1996/12/12 09:24:16  robertj
+ * Persistent proxy connection support (work in progress).
+ *
  * Revision 1.3  1996/11/10 21:09:33  robertj
  * Removed redundent GetSocket() call.
  * Added flush of stream after processing request, important on persistent connections.
@@ -272,6 +275,12 @@ BOOL PHTTPServer::ProcessCommand()
 
     // build our connection info
     connectInfo.Construct(mimeInfo, majorVersion, minorVersion);
+//    if (connectInfo.IsPersistant()) {
+//      if (connectInfo.IsProxyConnection())
+//        PError << "Server: Persistant proxy connection received" << endl;
+//      else
+//        PError << "Server: Persistant direct connection received" << endl;
+//    }
 
     // if the client specified a persistant connection, then use the
     // ContentLength field. If there is no content length field, then
@@ -285,8 +294,9 @@ BOOL PHTTPServer::ProcessCommand()
     else {
       contentLength = mimeInfo.GetInteger(ContentLengthStr, -1);
       if (contentLength < 0) {
+//        PError << "Server: persistant connection has no content length" << endl;
         contentLength = 0;
-        connectInfo.SetPersistance(FALSE);
+        mimeInfo.SetAt(ContentLengthStr, "0");
       }
     }
   }
@@ -357,6 +367,9 @@ BOOL PHTTPServer::ProcessCommand()
       connectInfo.IsPersistant() &&
       transactionCount < MAX_TRANSACTIONS)
     return TRUE;
+
+//  if (connectInfo.IsPersistant())
+//    PError << "Server: connection persistance end" << endl;
 
   // close the output stream now and return FALSE
   Shutdown(ShutdownWrite);
@@ -512,8 +525,9 @@ void PHTTPServer::StartResponse(StatusCode code,
   const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
 
   // output the command line
-  WriteString(psprintf("HTTP/%u.%u %03u %s\r\n",
-              majorVersion, minorVersion, statusInfo->code, statusInfo->text));
+  const char * crlf = ""; //(transactionCount > 1) ? "\r\n" : "";
+  WriteString(psprintf("%sHTTP/%u.%u %03u %s\r\n",
+              crlf, majorVersion, minorVersion, statusInfo->code, statusInfo->text));
 
   // output the headers
   if (bodySize >= 0 && !headers.Contains(ContentLengthStr))
@@ -537,11 +551,16 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
   info.SetAt(DateStr, now.AsString(PTime::RFC1123, PTime::GMT));
   info.SetAt(MIMEVersionStr, "1.0");
   info.SetAt(ServerStr, GetServerName());
+
   if (connectInfo.IsPersistant()) {
     if (connectInfo.IsProxyConnection())
+//{      PError << "Server: setting proxy persistant response" << endl;
       info.SetAt(ProxyConnectionStr, KeepAliveStr);
+//    }
     else
+//{      PError << "Server: setting direct persistant response" << endl;
       info.SetAt(ConnectionStr, KeepAliveStr);
+//    }
   }
 }
 
@@ -713,7 +732,8 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", ", FALSE);
-    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
+    for (int z = 0; !isPersistant && z < tokens.GetSize(); z++)
+      isPersistant = isPersistant || (tokens[z] *= KeepAliveStr);
   }
 #endif
 }
