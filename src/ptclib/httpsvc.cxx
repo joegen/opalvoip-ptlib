@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.51  2000/01/27 00:35:52  robertj
+ * Fixed benign warning about uninitialised variables in MSVC optimised compile.
+ *
  * Revision 1.50  1999/08/07 06:50:52  robertj
  * Removed silly (and incorrect) warning.
  *
@@ -711,7 +714,7 @@ static BOOL FindSpliceBlock(const PRegularExpression & regex,
 void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PString block;
-  PINDEX pos, len, start, finish;
+  PINDEX pos, len, start = 0, finish = 0;
   PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
   PTime expiry = securedConf.GetTime(securedConf.GetExpiryDateKey());
 
@@ -776,7 +779,6 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
       break;
 
     case PSecureConfig::IsValid :
-      start = 0;
       while (text.FindRegEx(Pending, pos, len)) {
         static PINDEX pendingLength = securedConf.GetPendingPrefix().GetLength();
         text.Delete(text.Find('"', pos)+1, pendingLength);
