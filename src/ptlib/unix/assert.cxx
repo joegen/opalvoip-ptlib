@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.16  2002/06/25 04:05:19  robertj
+ * Fixed new assert function that does not have file/line parameters.
+ *
  * Revision 1.15  2002/06/25 02:26:05  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -99,7 +102,7 @@ void PAssertFunc(const char * msg)
     return;
   inAssert = TRUE;
 
-  ostream & trace = PTrace::Begin(0, file, line);
+  ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
   trace << "PWLib\t" << msg << PTrace::End;
 
   if (&trace != &PError)
