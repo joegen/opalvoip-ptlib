@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.17  2004/05/24 12:02:49  csoutheren
+ * Add function to permit setting a limit on the number of results returned
+ * from an LDAP query. Change the default number of results to unlimited,
+ * rather than MAX_INT which apparently is clamped to some arbitrary low value.
+ * Thanks to Damien Sandras
+ *
  * Revision 1.16  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -97,7 +103,7 @@ PLDAPSession::PLDAPSession(const PString & baseDN)
     errorNumber(LDAP_SUCCESS),
     protocolVersion(LDAP_VERSION3),
     defaultBaseDN(baseDN),
-    searchLimit(UINT_MAX),
+    searchLimit(0),
     timeout(0, 30),
     multipleValueSeparator('\n')
 {
