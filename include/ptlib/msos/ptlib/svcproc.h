@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.15 1996/10/31 12:38:56 robertj Exp $
+ * $Id: svcproc.h,v 1.16 1996/11/18 11:32:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.16  1996/11/18 11:32:02  robertj
+ * Fixed bug in doing a "stop" command closing ALL instances of service.
+ *
  * Revision 1.15  1996/10/31 12:38:56  robertj
  * Fixed bug in window not being displayed when command line used.
  *
@@ -118,16 +121,12 @@
      */
 
 
-    enum ProcessCommandResult {
-      DebugCommandMode, ProcessCommandError, CommandProcessed
-    };
-    ProcessCommandResult ProcessCommand(const char * cmd);
+    BOOL ProcessCommand(const char * cmd);
     // Process command line argument for controlling the service.
 
     BOOL CreateControlWindow(BOOL createDebugWindow);
     static LPARAM WINAPI StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LPARAM WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    void RunMessageLoop();
     void DebugOutput(const char * out);
 
     BOOL                  isWin95;
