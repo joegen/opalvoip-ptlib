@@ -41,11 +41,6 @@
 
 #define	LINE_SIZE_STEP	100
 
-#if defined(P_SUN4)
-extern "C" void gettimeofday(struct timeval * tv, struct timezone * tz);
-extern "C" char *mktemp(char *);
-#endif
-
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #ifndef P_USE_INLINES

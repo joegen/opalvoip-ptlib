@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.8 1996/05/02 12:01:23 craigs Exp $
+ * $Id: channel.cxx,v 1.9 1996/05/03 13:11:35 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.9  1996/05/03 13:11:35  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.8  1996/05/02 12:01:23  craigs
  * More Sun4 fixes
  *
@@ -35,11 +38,6 @@
 
 #include <ptlib.h>
 #include <sys/ioctl.h>
-
-#ifdef P_SUN4
-#include <errno.h>
-extern "C" int ioctl(int, int, void *);
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //

@@ -10,12 +10,13 @@ SOURCES		:= $(strip $(SOURCES))
 ###############################################################################
 #
 # Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -486 -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR #-DPHAS_TEMPLATES
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR #-DPHAS_TEMPLATES
+RELLDFLAGS	:= -s
 ####################################################
 
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
-# SunOs 4.1.x on Sun 4x, using gcc 2.6.3
+# Sun 4x, using gcc 2.6.2
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
 
 
@@ -40,7 +41,7 @@ CPLUS		= g++
 #
 endif
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -Wall 
+STDCCFLAGS	:= $(STDCCFLAGS) -Wall -m486
 #STDCCFLAGS      := $(STDCCFLAGS) -fomit-frame-pointer
 #STDCCFLAGS      := $(STDCCFLAGS) -fno-default-inline
 
@@ -56,6 +57,7 @@ ifdef	DEBUG
 LIBID		= d
 STDCCFLAGS	:= $(STDCCFLAGS) -DPMEMORY_CHECK=1 -D_DEBUG
 STDCCFLAGS	:= $(STDCCFLAGS) -g
+LDFLAGS		:= $(DEBLDFLAGS)
 
 else
 
@@ -63,7 +65,7 @@ LIBID		= r
 OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
-LDFLAGS		:= $(LDFLAGS) -s
+LDFLAGS		:= $(RELLDFLAGS)
 
 endif # DEBUG
 
