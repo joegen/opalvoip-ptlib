@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.15  2004/10/26 05:58:23  csoutheren
+ * Increased timeout on STUN responses to avoid spurious STUN failures due
+ * to network trsffic/congestion etc
+ *
  * Revision 1.14  2004/08/18 13:16:07  rjongbloed
  * Fixed STUN CreateSocketPair so first socket is always even.
  *
@@ -446,7 +450,7 @@ bool PSTUNClient::OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const
 
     if (socket.Listen(1, portInfo.currentPort)) {
       socket.SetSendAddress(serverAddress, serverPort);
-      socket.SetReadTimeout(500);
+      socket.SetReadTimeout(5000);
       return true;
     }
 
