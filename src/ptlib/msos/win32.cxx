@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.74  1998/11/19 05:19:53  robertj
+ * Bullet proofed WaitForMultipleObjects under 95.
+ *
  * Revision 1.73  1998/11/02 10:07:20  robertj
  * Added capability of pip output to go to stdout/stderr.
  *
@@ -828,9 +831,9 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   }
 
   if (mode == WriteOnly)
-    hFromChild = NULL;
+    hFromChild = INVALID_HANDLE_VALUE;
   else if (mode == ReadWriteStd) {
-    hFromChild = NULL;
+    hFromChild = INVALID_HANDLE_VALUE;
     startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   }
@@ -879,7 +882,7 @@ PPipeChannel::~PPipeChannel()
 
 BOOL PPipeChannel::IsOpen() const
 {
-  return os_handle != (int)INVALID_HANDLE_VALUE;
+  return os_handle != -1;
 }
 
 
@@ -953,7 +956,10 @@ BOOL PPipeChannel::Close()
       CloseHandle(hFromChild);
     if (hStandardError != INVALID_HANDLE_VALUE)
       CloseHandle(hStandardError);
-    TerminateProcess(info.hProcess, 1);
+    if (WaitForSingleObject(info.hProcess, 0) == WAIT_OBJECT_0)
+      TerminateProcess(info.hProcess, 1);
+    CloseHandle(info.hThread);
+    CloseHandle(info.hProcess);
     os_handle = -1;
   }
   return TRUE;
@@ -2170,12 +2176,16 @@ PThread::PThread(PINDEX stackSize,
                  Priority priorityLevel)
 {
   PAssert(stackSize > 0, PInvalidParameter);
-  autoDelete = deletion == AutoDeleteThread;
   originalStackSize = stackSize;
+
+  autoDelete = deletion == AutoDeleteThread;
+
   threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction,
                                         this, CREATE_SUSPENDED, &threadId);
   PAssertOS(threadHandle != NULL);
+
   SetPriority(priorityLevel);
+
   if (autoDelete) {
     PProcess & process = PProcess::Current();
     process.deleteThreadMutex.Wait();
@@ -2227,7 +2237,27 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
-  return threadHandle == NULL || WaitForSingleObject(threadHandle, 0) != WAIT_TIMEOUT;
+  if (threadHandle == NULL)
+    return TRUE;
+
+  DWORD result;
+  PINDEX retries = 10;
+  while ((result = WaitForSingleObject(threadHandle, 0)) != WAIT_TIMEOUT) {
+    if (result == WAIT_OBJECT_0)
+      return TRUE;
+
+    if (::GetLastError() != ERROR_INVALID_HANDLE) {
+      PAssertAlways(POperatingSystemError);
+      return TRUE;
+    }
+
+    if (retries > 0)
+      return TRUE;
+
+    retries--;
+  }
+
+  return FALSE;
 }
 
 
@@ -2361,8 +2391,12 @@ void PProcess::HouseKeepingThread::Main()
     else
       delay = nextTimer.GetInterval();
 
-    DWORD status = WaitForMultipleObjects(numHandles, handles, FALSE, delay);
-    PAssertOS(status != WAIT_FAILED);
+    DWORD result;
+    PINDEX retries = 100;
+    while ((result = WaitForMultipleObjects(numHandles, handles, FALSE, delay)) == WAIT_FAILED) {
+      PAssertOS(::GetLastError() == ERROR_INVALID_HANDLE || retries > 0);
+      retries--;
+    }
   }
 }
 
