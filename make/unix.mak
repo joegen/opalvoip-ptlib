@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.178  2003/09/18 23:02:35  csoutheren
+# Removed definition of PMEMORY_CHECK
+#
 # Revision 1.177  2003/09/17 01:18:03  csoutheren
 # Removed recursive include file system and removed all references
 # to deprecated coooperative threading support
@@ -933,7 +936,7 @@ ifndef MEMORY_CHECK
 MEMORY_CHECK := 1
 endif
 
-STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=$(MEMORY_CHECK)
+STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG 
 LDFLAGS		+= $(DEBLDFLAGS)
 
 else
