@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.43  2002/06/24 20:01:53  rogerh
+ * Add support for linux devfs and /dev/sound. Based on code by Snark.
+ *
  * Revision 1.42  2002/06/09 16:33:45  rogerh
  * Use new location of soundcard.h on FreeBSD
  *
@@ -406,7 +409,7 @@ PSoundChannel::~PSoundChannel()
 }
 
 
-static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdinalToString & mixer)
+static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdinalToString & mixer, BOOL collect_with_names)
 {
   if (!devdir.Open())
     return;
@@ -415,45 +418,45 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
     PString filename = devdir.GetEntryName();
     PString devname = devdir + filename;
     if (devdir.IsSubDir())
-      CollectSoundDevices(devname, dsp, mixer);
+      CollectSoundDevices(devname, dsp, mixer, collect_with_names);
     else {
-#if defined(P_LINUX)
-      // On Linux, look at the character device numbers
-      PFileInfo info;
-      if (devdir.GetInfo(info) &&info.type == PFileInfo::CharDevice) {
-        struct stat s;
-        if (lstat(devname, &s) == 0) {
-          // OSS compatible audio major device numbers (OSS, SAM9407, etc)
-          static const unsigned deviceNumbers[] = { 14, 145 };
-          for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
-            if ((s.st_rdev >> 8) == deviceNumbers[i]) {
-              PINDEX cardnum = (s.st_rdev >> 4) & 15;
-              if ((s.st_rdev & 15) == 3)   // Digital audio minor device number
-                dsp.SetAt(cardnum, devname);
-              else if ((s.st_rdev & 15) == 0)   // Digital audio minor device number
-                mixer.SetAt(cardnum, devname);
+      if (!collect_with_names) {
+        // On Linux, look at the character device numbers
+        PFileInfo info;
+        if (devdir.GetInfo(info) &&info.type == PFileInfo::CharDevice) {
+          struct stat s;
+          if (lstat(devname, &s) == 0) {
+            // OSS compatible audio major device numbers (OSS, SAM9407, etc)
+            static const unsigned deviceNumbers[] = { 14, 145 };
+            for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
+              if ((s.st_rdev >> 8) == deviceNumbers[i]) {
+                PINDEX cardnum = (s.st_rdev >> 4) & 15;
+                if ((s.st_rdev & 15) == 3)   // Digital audio minor device number
+                  dsp.SetAt(cardnum, devname);
+                else if ((s.st_rdev & 15) == 0)   // Digital audio minor device number
+                  mixer.SetAt(cardnum, devname);
+              }
             }
-          }
+	  }
+        }
+      } else {
+        // On devfs systems, the major numbers change dynamically.
+	// On FreeBSD and other OSs, the major numbes are different to linux.
+	// So collect devices by looking for dspN and mixerM
+
+        // Look for dspN
+        if ( (filename.GetLength() >= 4) && (filename.Left(3) == "dsp")
+          && (filename.Mid(3,1) >= "0") && (filename.Mid(3,1) <= "9")) {
+          PINDEX cardnum = filename.Mid(3).AsInteger();
+          dsp.SetAt(cardnum, devname);
+        }
+        // Look for mixerN
+        if ( (filename.GetLength() >= 6) && (filename.Left(5) == "mixer")
+          && (filename.Mid(5,1) >= "0") && (filename.Mid(5,1) <= "9")) {
+          PINDEX cardnum = filename.Mid(5).AsInteger();
+          mixer.SetAt(cardnum, devname);
         }
       }
-#else
-      // On FreeBSD, we could have looked for character device '30' for OSS
-      // but as we also suppose OSS on OpenBSD and NetBSD, we will use
-      // this OS independent code for all non Linux platforms.
-
-      // Look for dspN
-      if ( (filename.GetLength() >= 4) && (filename.Left(3) == "dsp")
-        && (filename.Mid(3,1) >= "0") && (filename.Mid(3,1) <= "9")) {
-        PINDEX cardnum = filename.Mid(3).AsInteger();
-        dsp.SetAt(cardnum, devname);
-      }
-      // Look for mixerN
-      if ( (filename.GetLength() >= 6) && (filename.Left(5) == "mixer")
-        && (filename.Mid(5,1) >= "0") && (filename.Mid(5,1) <= "9")) {
-        PINDEX cardnum = filename.Mid(5).AsInteger();
-        mixer.SetAt(cardnum, devname);
-      }
-#endif
     }
   } while (devdir.Next());
 }
@@ -461,10 +464,23 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
 
 PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
-  // First scan all of the devices and look for ones with major device
-  // numbers corresponding to OSS compatible drivers.
+  // First locate sound cards. On Linux with devfs and on the other
+  // platforms, we search for filenames with dspN or mixerN.
+  // On linux without defs we scan all of the devices and look for ones
+  // with major device numbers corresponding to OSS compatible drivers.
+
   POrdinalToString dsp, mixer;
-  CollectSoundDevices("/dev", dsp, mixer);
+
+#ifdef P_LINUX
+  PDirectory devdir = "/dev/soundcard";
+  if (devdir.Open()) {
+    CollectSoundDevices("/dev/sound", dsp, mixer, TRUE); // use names (devfs)
+  } else {
+    CollectSoundDevices("/dev", dsp, mixer, FALSE); // use major numbers
+  }
+#else
+  CollectSoundDevices("/dev", dsp, mixer, TRUE); // use names
+#endif
 
   // Now we go through the collected devices and see if any have a phyisical reality
   PStringList devices;
