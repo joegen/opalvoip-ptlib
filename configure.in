@@ -622,7 +622,7 @@ AC_CONFIG_FILES(Makefile)
 
 dnl ########################################################################
 dnl output header file
-
+AC_CONFIG_FILES(include/ptbuildopts.h.in)
 AC_CONFIG_HEADERS(include/ptbuildopts.h)
 
 AC_OUTPUT()
