@@ -1188,6 +1188,7 @@ if test "$enable_tts" = "no" ; then
   AC_MSG_NOTICE(Text-to-speech disabled)
 else
   AC_DEFINE(P_TTS, 1)
+  HAS_TTS=1
 fi
 AC_SUBST(HAS_TTS)
 
@@ -1344,6 +1345,7 @@ else
       AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
     else
       AC_DEFINE(P_VIDEO, 1)
+      HAS_VIDEO=1
     fi
   fi
 fi
