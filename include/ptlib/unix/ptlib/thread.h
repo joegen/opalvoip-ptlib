@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.26  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.25  2001/09/10 03:02:41  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -153,7 +156,7 @@ thread_id pthread_self(void) { return find_thread(NULL); }
                const PTimeInterval & timeout,
                const PIntArray & osHandles);
 
-    void PXAbortIO() const;
+    void PXAbortBlock() const;
 
 #ifdef P_PTHREADS
 
@@ -181,6 +184,7 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 
     int unblockPipe[2];
     friend class PSocket;
+    friend void PX_SuspendSignalHandler(int);
 
 #elif defined(BE_THREADS)
 
