@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.h,v $
+ * Revision 1.21  1999/03/09 08:01:47  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.20  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -97,11 +100,11 @@
 #include <ptlib/sockets.h>
 
 
+/** A TCP/IP socket for the TELNET high level protocol.
+ */
 class PTelnetSocket : public PTCPSocket
 {
   PCLASSINFO(PTelnetSocket, PTCPSocket)
-/* A TCP/IP socket for the TELNET high level protocol.
- */
 
   public:
     PTelnetSocket();
@@ -114,11 +117,7 @@ class PTelnetSocket : public PTCPSocket
 
 
   // Overrides from class PChannel
-    BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Low level read from the channel. This function may block until the
+    /** Low level read from the channel. This function may block until the
        requested number of characters were read or the read timeout was
        reached. The GetLastReadCount() function returns the actual number
        of bytes read.
@@ -129,16 +128,16 @@ class PTelnetSocket : public PTCPSocket
        The TELNET channel intercepts and escapes commands in the data stream to
        implement the TELNET protocol.
 
-       <H2>Returns:</H2>
+       @return
        TRUE indicates that at least one character was read from the channel.
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
-
-    BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+    BOOL Read(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
     );
-    /* Low level write to the channel. This function will block until the
+
+    /** Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
        reached. The GetLastWriteCount() function returns the actual number
        of bytes written.
@@ -151,12 +150,13 @@ class PTelnetSocket : public PTCPSocket
 
        Returns TRUE if at least len bytes were written to the channel.
      */
-
-
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
+    BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
     );
-    /* Connect a socket to a remote host on the specified port number. This is
+
+
+    /** Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
        communications channel.
@@ -164,15 +164,15 @@ class PTelnetSocket : public PTCPSocket
        The port number as defined by the object instance construction or the
        <A>PIPSocket::SetPort()</A> function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully connected to the remote host.
      */
-
-
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
+    virtual BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
     );
-    /* Open a socket to a remote host on the specified port number. This is an
+
+
+    /** Open a socket to a remote host on the specified port number. This is an
        "accepting" socket. When a "listening" socket has a pending connection
        to make, this will accept a connection made by the "connecting" socket
        created to establish a link.
@@ -183,21 +183,24 @@ class PTelnetSocket : public PTCPSocket
        Note that this function will block until a remote system connects to the
        port number specified in the "listening" socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-
-    virtual void OnOutOfBand(
-      const void * buf,   // Data to be received as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
     );
-    /* This is callback function called by the system whenever out of band data
+
+
+    /** This is callback function called by the system whenever out of band data
        from the TCP/IP stream is received. A descendent class may interpret
        this data according to the semantics of the high level protocol.
 
        The TELNET socket uses this for sychronisation.
      */
+    virtual void OnOutOfBand(
+      const void * buf,   // Data to be received as URGENT TCP data.
+      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
+    );
 
 
   // New functions
@@ -225,11 +228,7 @@ class PTelnetSocket : public PTCPSocket
     };
     // Defined telnet commands codes
 
-    BOOL SendCommand(
-      Command cmd,  // Command code to send
-      int opt = 0  // Option for command code.
-    );
-    /* Send an escaped IAC command. The <CODE>opt</CODE> parameters meaning
+    /** Send an escaped IAC command. The <CODE>opt</CODE> parameters meaning
        depends on the command being sent:
 
        <DL>
@@ -246,9 +245,13 @@ class PTelnetSocket : public PTCPSocket
        data stream and sends an out of band data to the remote to flush all
        data in the stream up until the syncronisation command.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the command was successfully sent.
      */
+    BOOL SendCommand(
+      Command cmd,  // Command code to send
+      int opt = 0  // Option for command code.
+    );
 
 
     enum Options {
@@ -297,41 +300,41 @@ class PTelnetSocket : public PTCPSocket
     // Defined TELNET options.
 
 
+    /** Send DO request.
+
+       @return
+       TRUE if the command was successfully sent.
+     */
     virtual BOOL SendDo(
       BYTE option    // Option to DO
     );
-    /* Send DO request.
 
-       <H2>Returns:</H2>
+    /** Send DONT command.
+
+       @return
        TRUE if the command was successfully sent.
      */
-
     virtual BOOL SendDont(
       BYTE option    // Option to DONT
     );
-    /* Send DONT command.
 
-       <H2>Returns:</H2>
+    /** Send WILL request.
+
+       @return
        TRUE if the command was successfully sent.
      */
-
     virtual BOOL SendWill(
       BYTE option    // Option to WILL
     );
-    /* Send WILL request.
 
-       <H2>Returns:</H2>
+    /** Send WONT command.
+
+       @return
        TRUE if the command was successfully sent.
      */
-
     virtual BOOL SendWont(
       BYTE option    // Option to WONT
     );
-    /* Send WONT command.
-
-       <H2>Returns:</H2>
-       TRUE if the command was successfully sent.
-     */
 
     enum SubOptionCodes {
       SubOptionIs       = 0,  // Sub-option is...
@@ -339,51 +342,51 @@ class PTelnetSocket : public PTCPSocket
     };
     // Codes for sub option negotiation.
 
+    /** Send a sub-option with the information given.
+
+       @return
+       TRUE if the command was successfully sent.
+     */
     BOOL SendSubOption(
       BYTE code,          // Suboptions option code.
       const BYTE * info,  // Information to send.
       PINDEX len,         // Length of information.
       int subCode = -1    // Suboptions sub-code, -1 indicates no sub-code.
     );
-    /* Send a sub-option with the information given.
 
-       <H2>Returns:</H2>
-       TRUE if the command was successfully sent.
+    /** Set if the option on our side is possible, this does not mean it is set
+       it only means that in response to a DO we WILL rather than WONT.
      */
-
     void SetOurOption(
       BYTE code,          // Option to check.
       BOOL state = TRUE   // New state for for option.
     ) { option[code].weCan = state; }
-    /* Set if the option on our side is possible, this does not mean it is set
-       it only means that in response to a DO we WILL rather than WONT.
-     */
 
+    /** Set if the option on their side is desired, this does not mean it is set
+       it only means that in response to a WILL we DO rather than DONT.
+     */
     void SetTheirOption(
       BYTE code,          // Option to check.
       BOOL state = TRUE  // New state for for option.
     ) { option[code].theyShould = state; }
-    /* Set if the option on their side is desired, this does not mean it is set
-       it only means that in response to a WILL we DO rather than DONT.
-     */
 
+    /** Determine if the option on our side is enabled.
+
+       @return
+       TRUE if option is enabled.
+     */
     BOOL IsOurOption(
       BYTE code    // Option to check.
     ) const { return option[code].ourState == OptionInfo::IsYes; }
-    /* Determine if the option on our side is enabled.
 
-       <H2>Returns:</H2>
+    /** Determine if the option on their side is enabled.
+
+       @return
        TRUE if option is enabled.
      */
-
     BOOL IsTheirOption(
       BYTE code    // Option to check.
     ) const { return option[code].theirState == OptionInfo::IsYes; }
-    /* Determine if the option on their side is enabled.
-
-       <H2>Returns:</H2>
-       TRUE if option is enabled.
-     */
 
     void SetTerminalType(
       const PString & newType   // New terminal type description string.
@@ -410,71 +413,71 @@ class PTelnetSocket : public PTCPSocket
     void Construct();
     // Common construct code for TELNET socket channel.
 
-    virtual void OnDo(
-      BYTE option   // Option to DO
-    );
-    /* This callback function is called by the system when it receives a DO
+    /** This callback function is called by the system when it receives a DO
        request from the remote system.
        
        The default action is to send a WILL for options that are understood by
        the standard TELNET class and a WONT for all others.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if option is accepted.
      */
-
-    virtual void OnDont(
-      BYTE option   // Option to DONT
+    virtual void OnDo(
+      BYTE option   // Option to DO
     );
-    /* This callback function is called by the system when it receives a DONT
+
+    /** This callback function is called by the system when it receives a DONT
        request from the remote system.
        
        The default action is to disable options that are understood by the
        standard TELNET class. All others are ignored.
      */
-
-    virtual void OnWill(
-      BYTE option   // Option to WILL
+    virtual void OnDont(
+      BYTE option   // Option to DONT
     );
-    /* This callback function is called by the system when it receives a WILL
+
+    /** This callback function is called by the system when it receives a WILL
        request from the remote system.
        
        The default action is to send a DO for options that are understood by
        the standard TELNET class and a DONT for all others.
      */
-
-    virtual void OnWont(
-      BYTE option   // Option to WONT
+    virtual void OnWill(
+      BYTE option   // Option to WILL
     );
-    /* This callback function is called by the system when it receives a WONT
+
+    /** This callback function is called by the system when it receives a WONT
        request from the remote system.
 
        The default action is to disable options that are understood by the
        standard TELNET class. All others are ignored.
      */
+    virtual void OnWont(
+      BYTE option   // Option to WONT
+    );
 
+    /** This callback function is called by the system when it receives a
+       sub-option command from the remote system.
+     */
     virtual void OnSubOption(
       BYTE code,          // Option code for sub-option data.
       const BYTE * info,  // Extra information being sent in the sub-option.
       PINDEX len          // Number of extra bytes.
     );
-    /* This callback function is called by the system when it receives a
-       sub-option command from the remote system.
-     */
 
 
-    virtual BOOL OnCommand(
-      BYTE code  // Code received that could not be precessed.
-    );
-    /* This callback function is called by the system when it receives an
+    /** This callback function is called by the system when it receives an
        telnet command that it does not do anything with.
 
        The default action displays a message to the <A>PError</A> stream
        (when <CODE>debug</CODE> is TRUE) and returns TRUE;
 
-       <H2>Returns:</H2>
+       @return
        TRUE if next byte is not part of the command.
      */
+    virtual BOOL OnCommand(
+      BYTE code  // Code received that could not be precessed.
+    );
 
 
   // Member variables.
