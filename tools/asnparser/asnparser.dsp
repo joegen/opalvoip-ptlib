@@ -8,12 +8,12 @@ CFG=ASNParser - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "ASNParser.mak".
+!MESSAGE NMAKE /f "asnparser.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ASNParser.mak" CFG="ASNParser - Win32 Debug"
+!MESSAGE NMAKE /f "asnparser.mak" CFG="ASNParser - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
