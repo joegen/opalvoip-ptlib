@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.5  2004/11/07 20:01:31  dsandras
+ * Make sure lastWriteCount is updated.
+ *
  * Revision 1.4  2003/11/18 10:59:06  csoutheren
  * Removed ALSA compatibility hack as ALSA users can use the ALSA plugin
  *
@@ -687,12 +690,17 @@ BOOL PSoundChannelOSS::IsOpen() const
 
 BOOL PSoundChannelOSS::Write(const void * buf, PINDEX len)
 {
+  lastWriteCount = 0;
+
   if (!Setup() || os_handle < 0)
     return FALSE;
 
   while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
     if (GetErrorCode() != Interrupted)
       return FALSE;
+  
+  lastWriteCount += len;
+  
   return TRUE;
 }
 
