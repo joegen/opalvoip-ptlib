@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.103  2001/05/08 23:27:12  robertj
+ * Fixed, yet again, case significance in hash function.
+ *
  * Revision 1.102  2001/04/26 03:45:19  robertj
  * Changed PString has function again, use a prime number for modulus.
  *
@@ -1122,7 +1125,7 @@ PINDEX PString::HashFunction() const
   PINDEX i = 0;
   PINDEX hash = 0;
   while (i < 8 && theArray[i] != 0)
-    hash = (hash << 5) ^ theArray[i++] ^ hash;
+    hash = (hash << 5) ^ tolower(theArray[i++]) ^ hash;
   return PABSINDEX(hash)%127;
 }
 
