@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.33  2003/11/18 06:46:15  csoutheren
+ * Changed to support video input plugins
+ *
  * Revision 1.32  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -153,6 +156,10 @@
 #pragma interface
 #endif
 
+#if defined(_WIN32)
+PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_VideoForWindows);
+#endif
+
 class PColourConverter;
 
 /**This class defines a video device.
@@ -272,15 +279,15 @@ class PVideoDevice : public PObject
 
     /**Close the device.
       */
-    virtual BOOL Close();
+    virtual BOOL Close() = 0;
 
     /**Start the video device I/O capture.
       */
-    virtual BOOL Start();
+    virtual BOOL Start() = 0;
 
     /**Stop the video device I/O capture.
       */
-    virtual BOOL Stop();
+    virtual BOOL Stop() = 0;
 
 
     /**Get the device name of the open device.
@@ -290,7 +297,7 @@ class PVideoDevice : public PObject
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const = 0;
+    virtual PStringList GetDeviceNames() const;
 
 
 #if PTRACING
@@ -463,7 +470,6 @@ class PVideoDevice : public PObject
     /** Is the device a camera, and obtain video
      */
     virtual BOOL CanCaptureVideo() const = 0;
- 
 
     /**Get the brightness of the image. 0xffff-Very bright. -1 is unknown.
      */
@@ -551,7 +557,6 @@ class PVideoDevice : public PObject
        Returns empty == no preference
      */
     const PString & GetPreferredColourFormat() { return preferredColourFormat; }
-
 
   protected:
     PString      deviceName;
@@ -660,7 +665,7 @@ class PVideoOutputDeviceNULL : public PVideoOutputDevice
       unsigned height,
       const BYTE * data,
       BOOL endFrame = TRUE
-    );
+    ) = 0;
 
     /**Indicate frame may be displayed.
       */
@@ -722,7 +727,7 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
       unsigned height,
       const BYTE * data,
       BOOL endFrame = TRUE
-    );
+    ) = 0;
 
   protected:
     PBYTEArray frameStore;
@@ -778,11 +783,42 @@ class PVideoInputDevice : public PVideoDevice
   public:
     /** Create a new video input device.
      */
-    PVideoInputDevice();
+    //PVideoInputDevice();
 
     /**Close the video input device on destruction.
       */
     ~PVideoInputDevice() { Close(); }
+
+    /**
+       Return the list of available video input drivers
+    */
+    static PStringList GetDriverNames(PPluginManager * pluginMgr = NULL);
+
+    /**
+       Return video devices that correspond to the specified name
+    */
+    static PStringList GetDeviceNames(
+                                     const PString &driverName,
+                                     PPluginManager * pluginMgr = NULL
+                                     );
+
+    /**
+       Return the video input device that corresponds to the specified name
+    */
+    static PVideoInputDevice *CreateDevice(
+                                          const PString &driverName,
+                                          PPluginManager * pluginMgr = NULL
+                                          );
+
+    /**
+       Return opened video input device that corresponds to the specified name
+    */
+    static PVideoInputDevice *CreateOpenedDevice(
+                                          const PString & driverName,
+                                          const PString & deviceName,
+                                          BOOL startImmediate = TRUE,
+                                          PPluginManager * pluginMgr = NULL
+                                          );
 
     /** Is the device a camera, and obtain video
      */
@@ -793,31 +829,11 @@ class PVideoInputDevice : public PVideoDevice
     virtual BOOL Open(
       const PString & deviceName,   /// Device name to open
       BOOL startImmediate = TRUE    /// Immediately start device
-    );
-
-    /**Determine of the device is currently open.
-      */
-    virtual BOOL IsOpen();
-
-    /**Close the device.
-      */
-    virtual BOOL Close();
-
-    /**Start the video device I/O.
-      */
-    virtual BOOL Start();
-
-    /**Stop the video device I/O capture.
-      */
-    virtual BOOL Stop();
+    ) = 0;
 
     /**Determine if the video device I/O capture is in progress.
       */
-    virtual BOOL IsCapturing();
-
-    /**Get a list of all of the drivers available.
-      */
-    virtual PStringList GetDeviceNames() const;
+    virtual BOOL IsCapturing() = 0;
 
     /**Get a list of all of the drivers available.
       */
@@ -828,50 +844,83 @@ class PVideoInputDevice : public PVideoDevice
        Note a particular device may be able to provide variable length
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
-    virtual PINDEX GetMaxFrameBytes();
+    virtual PINDEX GetMaxFrameBytes() = 0;
 
     /**Grab a frame.
       */
     virtual BOOL GetFrame(
       PBYTEArray & frame
-    );
+    ) = 0;
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
     virtual BOOL GetFrameData(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
+    ) = 0;
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
     virtual BOOL GetFrameDataNoDelay(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
+    ) = 0;
 
     /**Try all known video formats & see which ones are accepted by the video driver
      */
-    virtual BOOL TestAllFormats();
+    virtual BOOL TestAllFormats() = 0;
 
+  protected:
+    // this ensures that this function cannot be called on any PVideoInputDevice unless it has
+    // bee specifically implemented by that class. This will help ensure that video input plugins 
+    // get propagated
+    virtual PStringList GetDeviceNames() const
+    { return PVideoDevice::GetDeviceNames(); }
 
- protected:
-    /**Check the hardware can do the asked for size.
-
-       Note that not all cameras can provide all frame sizes.
-     */
-    virtual BOOL VerifyHardwareFrameSize(unsigned width, unsigned height);
-
-
-// Include platform dependent part of class
-#ifdef _WIN32
-#include "msos/ptlib/videoio.h"
-#else
-#include "unix/ptlib/videoio.h"
-#endif
 };
 
-#endif
+// define the video input plugin service descriptor
+
+class PVideoInputDevicePluginServiceDescriptor : public PPluginServiceDescriptor
+{
+  public:
+    PVideoInputDevicePluginServiceDescriptor(
+                     unsigned (*_GetVersion)(),
+               PVideoInputDevice *(*_CreateInstance)(),
+                 PStringList (*_GetDeviceNames)()
+     )
+    : PPluginServiceDescriptor(_GetVersion),
+      CreateInstance(_CreateInstance),
+      GetDeviceNames(_GetDeviceNames)
+    { }
+
+    PVideoInputDevice *(*CreateInstance)();
+    PStringList (*GetDeviceNames) ();
+};
+
+
+#define PCREATE_VIDINPUT_SERVICE_DESCRIPTOR(className, versionFn) \
+PVideoInputDevice * className##_CreateInstance () \
+{ \
+  return new className; \
+} \
+\
+PStringList className##_GetDeviceNames () \
+{ \
+  return className::GetInputDeviceNames(); \
+} \
+\
+PVideoInputDevicePluginServiceDescriptor className##_descriptor(\
+   versionFn, \
+   className##_CreateInstance, \
+   className##_GetDeviceNames \
+); \
+
+#define PCREATE_VIDINPUT_PLUGIN(name, className) \
+PCREATE_PLUGIN_VERSION_FN(name, PVideoInputDevice) \
+PCREATE_VIDINPUT_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PVideoInputDevice)) \
+PCREATE_PLUGIN(name, PVideoInputDevice, &className##_descriptor)
+
+#endif   // _PVIDEOIO
 
 // End Of File ///////////////////////////////////////////////////////////////
