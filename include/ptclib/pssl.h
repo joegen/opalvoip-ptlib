@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.7  2000/01/10 02:23:18  craigs
+ * Update for new OpenSSL
+ *
  * Revision 1.6  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -51,12 +54,11 @@
 #pragma interface
 #endif
 
-#include <sockets.h>
-#include <http.h>
+#include <ptlib/sockets.h>
 
 extern "C" {
-#include <ssl.h>
-#include <crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/crypto.h>
 };
 
 class PSSLChannel : public PIndirectChannel
