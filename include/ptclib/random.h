@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.3  2001/03/03 05:12:47  robertj
+ * Fixed yet another transcription error of random number generator code.
+ *
  * Revision 1.2  2001/02/27 03:33:44  robertj
  * Changed random number generator due to licensing issues.
  *
@@ -101,7 +104,8 @@ class PRandom
 
   protected:
     enum {
-      RandSize = 1<<8 // I recommend 8 for crypto, 4 for simulations
+      RandBits = 8, // I recommend 8 for crypto, 4 for simulations
+      RandSize = 1<<RandBits
     };
 
     DWORD randcnt;
