@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.61  2001/03/24 05:37:01  robertj
+ * Changed default directory of log file to same as executable.
+ * Change tray icon to wait for service stop before displaying message.
+ * Changed tray icon message display to not have date and thread.
+ *
  * Revision 1.60  2001/03/23 05:35:34  robertj
  * Added ability for a service to output trace/system log to file while in debug mode.
  * Added saving of debug window position.
@@ -261,6 +266,7 @@ enum {
   SvcCmdPause,
   SvcCmdResume,
   SvcCmdDeinstall,
+  SvcCmdNoWindow,
   NumSvcCmds
 };
 
@@ -275,6 +281,7 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
   "Pause",
   "Resume",
   "Deinstall"
+  "NoWin"
 };
 
 
@@ -351,7 +358,7 @@ void PSystemLog::Output(Level level, const char * msg)
 
   DWORD err = ::GetLastError();
 
-  if (process.isWin95 || process.debugWindow != NULL) {
+  if (process.isWin95 || process.controlWindow != NULL) {
     static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
     WaitForSingleObject(mutex, INFINITE);
 
@@ -472,14 +479,11 @@ int PSystemLog::Buffer::sync()
 
 PServiceProcess::PServiceProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
-  : PProcess(manuf, name, major, minor, stat, build)
+  : PProcess(manuf, name, major, minor, stat, build),
+    systemLogFileName(GetFile().GetDirectory() + GetName() + " Log.TXT")
 {
   controlWindow = debugWindow = NULL;
   currentLogLevel = PSystemLog::Warning;
-
-  PString dir;
-  GetWindowsDirectory(dir.GetPointer(256), 255);
-  systemLogFileName = PDirectory(dir) + GetName() + " Log.TXT";
 }
 
 
@@ -535,17 +539,10 @@ int PServiceProcess::_main(void * arg)
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!debugMode && arguments.GetCount() > 0) {
-    if (stricmp(arguments[0], "NoWin") == 0)
-      arguments.Shift(1);
-    else {
-      if (!CreateControlWindow(TRUE))
-        return 1;
-    }
-
     for (PINDEX a = 0; a < arguments.GetCount(); a++)
       ProcessCommand(arguments[a]);
 
-    if (controlWindow == NULL)
+    if (controlWindow == NULL || controlWindow == (HWND)-1)
       return GetTerminationValue();
 
     if (debugWindow != NULL && debugWindow != (HWND)-1) {
@@ -1066,10 +1063,16 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 void PServiceProcess::DebugOutput(const char * out)
 {
-  if (controlWindow == NULL || debugWindow == NULL)
+  if (controlWindow == NULL)
     return;
 
-  if (debugWindow == (HWND)-1) {
+  if (debugWindow == NULL || debugWindow == (HWND)-1) {
+    for (PINDEX i = 0; i < 3; i++) {
+      const char * tab = strchr(out, '\t');
+      if (tab == NULL)
+        break;
+      out = tab+1;
+    }
     MessageBox(controlWindow, out, GetName(), MB_TASKMODAL);
     return;
   }
@@ -1238,8 +1241,7 @@ BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
   if (dwCurrentState == SERVICE_START_PENDING)
     status.dwControlsAccepted = 0;
   else
-    status.dwControlsAccepted =
-                           SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
+    status.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
 
   // These SERVICE_STATUS members are set from parameters.
   status.dwCurrentState = dwCurrentState;
@@ -1388,7 +1390,18 @@ BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
 
   SetEvent(hEvent);
   CloseHandle(hEvent);
-  return TRUE;
+
+  // Wait for process to go away.
+  for (PINDEX i = 0; i < 20; i++) {
+    hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
+    if (hEvent == NULL)
+      return TRUE;
+    CloseHandle(hEvent);
+    ::Sleep(500);
+  }
+
+  error = 0x10000000;
+  return FALSE;
 }
 
 
@@ -1598,16 +1611,23 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
 
   BOOL good = FALSE;
   switch (cmdNum) {
+    case SvcCmdNoWindow :
+      if (controlWindow == NULL)
+        controlWindow = (HWND)-1;
+      break;
+
     case SvcCmdTray :
-    {
-      PNotifyIconData nid(controlWindow, NIF_MESSAGE|NIF_ICON, GetName());
-      nid.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(ICON_RESID), IMAGE_ICON, // 16x16 icon
-                             GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-      nid.uCallbackMessage = UWM_SYSTRAY; // message sent to nid.hWnd
-      nid.Add();    // This adds the icon
-      debugWindow = (HWND)-1;
-      return TRUE;
-    }
+      if (CreateControlWindow(FALSE)) {
+        PNotifyIconData nid(controlWindow, NIF_MESSAGE|NIF_ICON, GetName());
+        nid.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(ICON_RESID), IMAGE_ICON, // 16x16 icon
+                               GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+        nid.uCallbackMessage = UWM_SYSTRAY; // message sent to nid.hWnd
+        nid.Add();    // This adds the icon
+        debugWindow = (HWND)-1;
+        systemLogFileName = PString();
+        return TRUE;
+      }
+      return FALSE;
 
     case SvcCmdNoTray :
       if (TrayIconRegistry(this, CheckTrayIcon)) {
@@ -1622,9 +1642,10 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
 
     case SvcCmdVersion : // Version command
       ::SetLastError(0);
-      PError << GetName() << ' '
-             << GetOSClass() << '/' << GetOSName()
-             << " Version " << GetVersion(TRUE) << endl;
+      PError << GetName() << " Version " << GetVersion(TRUE)
+             << " by " << GetManufacturer()
+             << " on " << GetOSClass()   << ' ' << GetOSName()
+             << " ("   << GetOSVersion() << '-' << GetOSHardware() << ')' << endl;
       return TRUE;
 
     case SvcCmdInstall : // install
@@ -1675,6 +1696,9 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
     switch (svcManager->GetError()) {
       case ERROR_ACCESS_DENIED :
         PError << "Access denied";
+        break;
+      case 0x10000000 :
+        PError << "process still running.";
         break;
       default :
         PError << "error code = " << svcManager->GetError();
