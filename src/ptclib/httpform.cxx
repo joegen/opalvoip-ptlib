@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.13 1997/08/21 12:44:10 robertj Exp $
+ * $Id: httpform.cxx,v 1.14 1997/08/28 12:48:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.14  1997/08/28 12:48:29  robertj
+ * Changed array fields to allow for reordering.
+ *
  * Revision 1.13  1997/08/21 12:44:10  robertj
  * Fixed bug in HTTP form array size field.
  * Fixed bug where section list was only replacing first instance of macro.
@@ -400,7 +403,46 @@ void PHTTPFieldArray::SpliceHTML(PString & text) const
 }
 
 
-static const char IncludeCheckBox[] = "Include";
+static const char ArrayControlBox[] = " Array Control";
+static const char ArrayControlKeep[] = "Keep";
+static const char ArrayControlRemove[] = "Remove";
+static const char ArrayControlMoveUp[] = "Move Up";
+static const char ArrayControlMoveDown[] = "Move Down";
+static const char ArrayControlToTop[] = "To Top";
+static const char ArrayControlToBottom[] = "To Bottom";
+static const char ArrayControlIgnore[] = "Ignore";
+static const char ArrayControlAddTop[] = "Add Top";
+static const char ArrayControlAddBottom[] = "Add Bottom";
+static const char ArrayControlAdd[] = "Add";
+
+
+static void AddArrayControlBox(PHTML & html, PINDEX fld, const PHTTPFieldList & fields)
+{
+  html << PHTML::Select(fields[fld].GetName() + ArrayControlBox);
+  PINDEX size = fields.GetSize()-1;
+  if (fld >= size) {
+    html << PHTML::Option(PHTML::Selected) << ArrayControlIgnore;
+    if (size == 0)
+      html << PHTML::Option() << ArrayControlAdd;
+    else
+      html << PHTML::Option() << ArrayControlAddTop
+           << PHTML::Option() << ArrayControlAddBottom;
+  }
+  else {
+    html << PHTML::Option(PHTML::Selected) << ArrayControlKeep
+         << PHTML::Option() << ArrayControlRemove;
+    if (fld > 0)
+      html << PHTML::Option() << ArrayControlMoveUp;
+    if (fld < size-1)
+      html << PHTML::Option() << ArrayControlMoveDown;
+    if (fld > 0)
+      html << PHTML::Option() << ArrayControlToTop;
+    if (fld < size-1)
+      html << PHTML::Option() << ArrayControlToBottom;
+  }
+  html << PHTML::Select();
+}
+
 
 void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
 {
@@ -410,11 +452,7 @@ void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
     html << PHTML::TableRow() << PHTML::TableData("NOWRAP");
     fields[i].GetHTMLTag(html);
     html << PHTML::TableData("NOWRAP");
-    PString chkboxName = IncludeCheckBox & fields[i].GetName();
-    if (i < fields.GetSize()-1)
-      html << PHTML::CheckBox(chkboxName, PHTML::Checked) << " Keep";
-    else
-      html << PHTML::CheckBox(chkboxName, PHTML::UnChecked) << " Add";
+    AddArrayControlBox(html, i, fields);
   }
   html << PHTML::TableEnd();
 }
@@ -430,11 +468,7 @@ PString PHTTPFieldArray::GetHTMLValue(const PString & original) const
     PINDEX pos,len;
     if (FindSplice("rowcheck", "", row, 0, pos, len)) {
       PHTML html = PHTML::InForm;
-      PString chkboxName = IncludeCheckBox & fields[fld].GetName();
-      if (fld < fields.GetSize()-1)
-        html << PHTML::CheckBox(chkboxName, PHTML::Checked) << " Keep";
-      else
-        html << PHTML::CheckBox(chkboxName, PHTML::UnChecked) << " Add";
+      AddArrayControlBox(html, fld, fields);
       row.Splice(html, pos, len);
     }
     if (FindSplice("rownum", "", row, 0, pos, len))
@@ -476,24 +510,69 @@ void PHTTPFieldArray::SetValueAt(PINDEX idx, const PString & value)
 
 void PHTTPFieldArray::SetAllValues(const PStringToString & data)
 {
-  BOOL lastFieldIsSet = TRUE;
+  PHTTPFieldList newFields;
+  newFields.DisallowDeleteObjects();
   PINDEX i;
-  for (i = 0; i < fields.GetSize(); i++) {
-    if (data.Contains(IncludeCheckBox & fields[i].GetName()))
-      fields[i].SetAllValues(data);
-    else if (i < fields.GetSize()-1)
-      fields.SetAt(i, NULL);
-    else
-      lastFieldIsSet = FALSE;
-  }
-  for (i = 0; i < fields.GetSize(); i++) {
-    if (fields.GetAt(i) == NULL) {
-      fields.RemoveAt(i);
-      for (PINDEX j = i; j < fields.GetSize(); j++)
-        fields[j].SetName(fullName + psprintf(" %u", j+1));
-      i--;
+  for (i = 0; i < fields.GetSize(); i++)
+    newFields.Append(fields.GetAt(i));
+
+  BOOL lastFieldIsSet = FALSE;
+  PINDEX size = fields.GetSize();
+  for (i = 0; i < size; i++) {
+    PHTTPField * fieldPtr = &fields[i];
+    PINDEX pos = newFields.GetObjectsIndex(fieldPtr);
+    fieldPtr->SetAllValues(data);
+
+    PString control = data(fieldPtr->GetName() + ArrayControlBox);
+    if (control == ArrayControlMoveUp) {
+      if (pos > 0) {
+        newFields.SetAt(pos, newFields.GetAt(pos-1));
+        newFields.SetAt(pos-1, fieldPtr);
+      }
     }
+    else if (control == ArrayControlMoveDown) {
+      if (size > 2 && pos < size-2) {
+        newFields.SetAt(pos, newFields.GetAt(pos+1));
+        newFields.SetAt(pos+1, fieldPtr);
+      }
+    }
+    else if (control == ArrayControlToTop) {
+      newFields.RemoveAt(pos);
+      newFields.InsertAt(0, fieldPtr);
+    }
+    else if (control == ArrayControlToBottom) {
+      newFields.RemoveAt(pos);
+      newFields.Append(fieldPtr);
+    }
+    else if (control == ArrayControlAddTop) {
+      newFields.RemoveAt(pos);
+      newFields.InsertAt(0, fieldPtr);
+      lastFieldIsSet = TRUE;
+    }
+    else if (control == ArrayControlAddBottom || control == ArrayControlAdd) {
+      newFields.RemoveAt(pos);
+      newFields.Append(fieldPtr);
+      lastFieldIsSet = TRUE;
+    }
+    else if (control == ArrayControlIgnore) {
+      newFields.RemoveAt(pos);
+      newFields.Append(fieldPtr);
+    }
+    else if (control == ArrayControlRemove)
+      newFields.RemoveAt(pos);
   }
+
+  fields.DisallowDeleteObjects();
+  for (i = 0; i < newFields.GetSize(); i++)
+    fields.Remove(newFields.GetAt(i));
+  fields.AllowDeleteObjects();
+  fields.RemoveAll();
+
+  for (i = 0; i < newFields.GetSize(); i++) {
+    fields.Append(newFields.GetAt(i));
+    fields[i].SetName(fullName + psprintf(" %u", i+1));
+  }
+
   if (lastFieldIsSet)
     AddBlankField();
 }
