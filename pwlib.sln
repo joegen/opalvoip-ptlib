@@ -68,6 +68,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stunclient", "samples\stunc
 		{85F4F26A-1A5D-4685-A48A-448102C5C5BC} = {85F4F26A-1A5D-4685-A48A-448102C5C5BC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmpptest", "samples\xmpptest\xmpptest.vcproj", "{F338AFB2-AA33-444E-994C-4D6C0B107983}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -134,6 +138,12 @@ Global
 		{D0C00ADD-544B-4922-AB52-14415894D684}.Pseudo-Debug.Build.0 = Debug|Win32
 		{D0C00ADD-544B-4922-AB52-14415894D684}.Release.ActiveCfg = Release|Win32
 		{D0C00ADD-544B-4922-AB52-14415894D684}.Release.Build.0 = Release|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Debug.ActiveCfg = Debug|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Debug.Build.0 = Debug|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Pseudo-Debug.ActiveCfg = Debug|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Pseudo-Debug.Build.0 = Debug|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Release.ActiveCfg = Release|Win32
+		{F338AFB2-AA33-444E-994C-4D6C0B107983}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

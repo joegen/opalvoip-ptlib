@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.h,v $
+ * Revision 1.2  2004/04/26 01:51:57  rjongbloed
+ * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
+ *
  * Revision 1.1  2004/04/22 12:31:00  rjongbloed
  * Added PNotifier extensions and XMPP (Jabber) support,
  *   thanks to Federico Pinna and Reitek S.p.A.
@@ -38,103 +41,382 @@
 #pragma interface
 #endif
 
+#include <ptbuildopts.h>
+
 #if P_EXPAT
 
 #include <ptclib/pxml.h>
-#include <ptclib/psasl.h>
 #include <ptlib/notifier_ext.h>
 
 
 ///////////////////////////////////////////////////////
 
-/** This interface is the base class of each XMPP transport class
-   
-   Derived classes might include an XMPP TCP transport as well as
-   classes to handle XMPP incapsulated in SIP messages.
- */
-class XMPPTransport : public PIndirectChannel
+namespace XMPP
 {
-    PCLASSINFO(XMPPTransport, PIndirectChannel);
+  /** Various constant strings
+   */
+  extern const PString Language;
+  extern const PString Namespace;
+  extern const PString MessageStanza;
+  extern const PString PresenceStanza;
+  extern const PString IQStanza;
+  extern const PString IQQuery;
 
-  public:
-    virtual BOOL Open() = 0;
-    virtual BOOL Close() = 0;
-};
+  class JID : public PObject
+  {
+      PCLASSINFO(JID, PObject);
 
-///////////////////////////////////////////////////////
+    public:
+      JID(const char * jid = 0);
+      JID(const PString& jid);
+      JID(const PString& user, const PString& server, const PString& resource = PString::Empty());
+
+      virtual Comparison Compare(
+        const PObject & obj   // Object to compare against.
+        ) const;
+
+      PString & operator=(
+        const PString & jid  /// New JID to assign.
+        );
+
+      operator const PString&() const;
+
+      PString   GetUser() const         { return m_User; }
+      PString   GetServer() const       { return m_Server; }
+      PString   GetResource() const     { return m_Resource; }
+      PString   GetShortFormat() const  { return m_User + "@" + m_Server; }
+
+      void      SetUser(const PString& user);
+      void      SetServer(const PString& server);
+      void      SetResource(const PString& resource);
+
+    protected:
+      void      ParseJID(const PString& jid);
+      void      BuildJID() const;
+
+      PString   m_User;
+      PString   m_Server;
+      PString   m_Resource;
+
+      mutable PString m_JID;
+      mutable BOOL    m_IsDirty;
+    };
+
+    /** This interface is the base class of each XMPP transport class
+
+    Derived classes might include an XMPP TCP transport as well as
+    classes to handle XMPP incapsulated in SIP messages.
+    */
+    class Transport : public PIndirectChannel
+    {
+      PCLASSINFO(Transport, PIndirectChannel);
+
+    public:
+      virtual BOOL Open() = 0;
+      virtual BOOL Close() = 0;
+  };
+
 
 /** This class represents a XMPP stream, i.e. a XML message exchange
     between XMPP entities
  */
-class XMPPStream : public PIndirectChannel
-{
-    PCLASSINFO(XMPPStream, PIndirectChannel);
+  class Stream : public PIndirectChannel
+  {
+      PCLASSINFO(Stream, PIndirectChannel);
 
-  protected:
-    PXMLStreamParser *  m_Parser;
-    PNotifierList       m_OpenHandlers;
-    PNotifierList       m_CloseHandlers;
+    public:
+      Stream(Transport * transport = 0);
+      ~Stream();
+
+      virtual BOOL        OnOpen()            { return m_OpenHandlers.Fire(*this); }
+      PNotifierList&      OpenHandlers()      { return m_OpenHandlers; }
+
+      virtual BOOL        Close();
+      virtual void        OnClose()           { m_CloseHandlers.Fire(*this); }
+      PNotifierList&      CloseHandlers()     { return m_CloseHandlers; }
+
+      virtual BOOL        Write(const void * buf, PINDEX len);
+      virtual BOOL        Write(const PString& data);
+      virtual BOOL        Write(const PXML& pdu);
+
+      /** Read a XMPP stanza from the stream
+      */
+      virtual PXML *      Read();
+
+      /** Reset the parser. The will delete and re-instantiate the
+      XML stream parser.
+      */
+      virtual void        Reset();
+      PXMLStreamParser *  GetParser()     { return m_Parser; }
+
+    protected:
+      PXMLStreamParser *  m_Parser;
+      PNotifierList       m_OpenHandlers;
+      PNotifierList       m_CloseHandlers;
+  };
+
+
+  class BaseStreamHandler : public PThread
+  {
+      PCLASSINFO(BaseStreamHandler, PThread);
+
+    public:
+      BaseStreamHandler();
+      ~BaseStreamHandler();
+
+      virtual BOOL        Start(Transport * transport = 0);
+      virtual BOOL        Stop(const PString& error = PString::Empty());
+
+      void                SetAutoReconnect(BOOL b = TRUE, long timeout = 1000);
+
+      PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
+      Stream *            GetStream()         { return m_Stream; }
+
+      virtual BOOL        Write(const void * buf, PINDEX len);
+      virtual BOOL        Write(const PString& data);
+      virtual BOOL        Write(const PXML& pdu);
+      virtual void        OnElement(PXML& pdu);
+
+      virtual void        Main();
+
+    protected:
+      PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnOpen);
+      PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnClose);
+
+      Stream *        m_Stream;
+      BOOL            m_AutoReconnect;
+      PTimeInterval   m_ReconnectTimeout;
+
+      PNotifierList   m_ElementHandlers;
+  };
+
+
+  /** XMPP stanzas: the following classes represent the three
+    stanzas (PDUs) defined by the xmpp protocol
+   */
+
+  class Stanza : public PXML
+  {
+      PCLASSINFO(Stanza, PXML)
+
+    public:
+      /** Various constant strings
+      */
+      static const PString ID;
+      static const PString From;
+      static const PString To;
+
+      virtual BOOL IsValid() const = 0;
+
+      virtual PString GetID() const;
+      virtual PString GetFrom() const;
+      virtual PString GetTo() const;
+
+      virtual void SetID(const PString& id);
+      virtual void SetFrom(const PString& from);
+      virtual void SetTo(const PString& to);
+  };
+
+  PLIST(StanzaList, Stanza);
+
+
+  class Message : public Stanza
+  {
+    PCLASSINFO(Message, Stanza)
 
   public:
-    XMPPStream(XMPPTransport * transport = 0);
-    ~XMPPStream();
+    enum MessageType {
+      Normal,
+      Chat,
+      Error,
+      GroupChat,
+      HeadLine,
+      Unknown = 999
+    };
 
-    virtual BOOL        OnOpen()            { return m_OpenHandlers.Fire(*this); }
-    PNotifierList&      OpenHandlers()      { return m_OpenHandlers; }
-
-    virtual BOOL        Close();
-    virtual void        OnClose()           { m_CloseHandlers.Fire(*this); }
-    PNotifierList&      CloseHandlers()     { return m_CloseHandlers; }
-
-    virtual BOOL        Write(const void * buf, PINDEX len);
-
-    /** Read a XMPP stanza from the stream
+    /** Various constant strings
     */
-    virtual PXML *      Read();
+    static const PString Type;
+    static const PString Subject;
+    static const PString Body;
+    static const PString Thread;
 
-    /** Reset the parser. The will delete and re-instantiate the
-        XML stream parser.
+    /** Construct a new empty message
     */
-    virtual void        Reset();
-};
+    Message();
 
-///////////////////////////////////////////////////////
+    /** Construct a message from a (received) xml PDU.
+    The root of the pdu MUST be a message stanza.
+    NOTE: the root of the pdu is cloned.
+    */
+    Message(PXML& pdu);
+    Message(PXML * pdu);
 
-class XMPPStreamHandler : public PThread
-{
-    PCLASSINFO(XMPPStreamHandler, PThread);
+    virtual BOOL IsValid() const;
+    static BOOL IsValid(const PXML * pdu);
 
-  protected:
-    XMPPStream *        m_Stream;
-    BOOL                m_AutoReconnect;
-    PTimeInterval       m_ReconnectTimeout;
+    virtual MessageType GetType(PString * typeName = 0) const;
+    virtual PString     GetLanguage() const;
 
-    PNotifierList       m_ElementHandlers;
+    /** Get the subject for the specified language. The default subject (if any)
+    is returned in case no language is specified or a matching one cannot be
+    found
+    */
+    virtual PString GetSubject(const PString& lang = PString::Empty());
+    virtual PString GetBody(const PString& lang = PString::Empty());
+    virtual PString GetThread();
 
-    PDECLARE_NOTIFIER(XMPPStream, XMPPStreamHandler, OnOpen);
-    PDECLARE_NOTIFIER(XMPPStream, XMPPStreamHandler, OnClose);
+    virtual PXMLElement * GetSubjectElement(const PString& lang = PString::Empty());
+    virtual PXMLElement * GetBodyElement(const PString& lang = PString::Empty());
+
+    virtual void SetType(MessageType type);
+    virtual void SetType(const PString& type); // custom, possibly non standard, type
+    virtual void SetLanguage(const PString& lang);
+
+    virtual void SetSubject(const PString& subj, const PString& lang = PString::Empty());
+    virtual void SetBody(const PString& body, const PString& lang = PString::Empty());
+    virtual void SetThread(const PString& thrd);
+  };
+
+
+  class Presence : public Stanza
+  {
+    PCLASSINFO(Presence, Stanza)
 
   public:
-    XMPPStreamHandler();
-    ~XMPPStreamHandler();
+    enum PresenceType {
+      Available,
+      Unavailable,
+      Subscribe,
+      Subscribed,
+      Unsubscribe,
+      Unsubscribed,
+      Probe,
+      Error,
+      Unknown = 999
+    };
 
-    virtual BOOL        Start(XMPPTransport * transport);
-    virtual BOOL        Stop(const PString& error = PString::Empty());
+    enum ShowType {
+      Online,
+      Away,
+      Chat,
+      DND,
+      XA,
+      Other = 999
+    };
 
-    void                SetAutoReconnect(BOOL b = TRUE, long timeout = 1000);
+    /** Various constant strings
+    */
+    static const PString Type;
+    static const PString Show;
+    static const PString Status;
+    static const PString Priority;
 
-    PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
+    /** Construct a new empty presence
+    */
+    Presence();
 
-    virtual void        OnElement(PXML& pdu);
+    /** Construct a presence from a (received) xml PDU.
+    The root of the pdu MUST be a presence stanza.
+    NOTE: the root of the pdu is cloned.
+    */
+    Presence(PXML& pdu);
+    Presence(PXML * pdu);
 
-    virtual void        Main();
-};
+    virtual BOOL IsValid() const;
+    static BOOL IsValid(const PXML * pdu);
+
+    virtual PresenceType GetType(PString * typeName = 0) const;
+    virtual ShowType     GetShow(PString * showName = 0) const;
+    virtual BYTE         GetPriority() const;
+
+    /** Get the status for the specified language. The default status (if any)
+    is returned in case no language is specified or a matching one cannot be
+    found
+    */
+    virtual PString GetStatus(const PString& lang = PString::Empty());
+    virtual PXMLElement * GetStatusElement(const PString& lang = PString::Empty());
+
+    virtual void SetType(PresenceType type);
+    virtual void SetType(const PString& type); // custom, possibly non standard, type
+    virtual void SetShow(ShowType show);
+    virtual void SetShow(const PString& show); // custom, possibly non standard, type
+    virtual void SetPriority(BYTE priority);
+
+    virtual void SetStatus(const PString& status, const PString& lang = PString::Empty());
+  };
+
+
+  class IQ : public Stanza
+  {
+    PCLASSINFO(IQ, Stanza)
+
+  public:
+    enum IQType {
+      Get,
+      Set,
+      Result,
+      Error,
+      Unknown = 999
+    };
+
+    /** Various constant strings
+    */
+    static const PString Type;
+
+    IQ(IQType type, PXMLElement * body = 0);
+    IQ(PXML& pdu);
+    IQ(PXML * pdu);
+    ~IQ();
+
+    virtual BOOL IsValid() const;
+    static BOOL IsValid(const PXML * pdu);
+
+    /** This method signals that the message was taken care of
+    If the stream handler, after firing all the notifiers finds
+    that an iq set/get pdu has not being processed, it returns
+    an error to the sender
+    */
+    void SetProcessed()             { m_Processed = TRUE; }
+    BOOL HasBeenProcessed() const   { return m_Processed; }
+
+    virtual IQType        GetType(PString * typeName = 0) const;
+    virtual PXMLElement * GetBody();
+
+    virtual void SetType(IQType type);
+    virtual void SetType(const PString& type); // custom, possibly non standard, type
+    virtual void SetBody(PXMLElement * body);
+
+    // If the this message is response, returns a pointer to the
+    // original set/get message
+    virtual IQ *  GetOriginalMessage() const      { return m_OriginalIQ; }
+    virtual void  SetOriginalMessage(IQ * iq);
+
+    /** Creates a new response iq for this message (that must
+    be of the set/get type!)
+    */
+    virtual IQ *  BuildResult() const;
+
+    /** Creates an error response for this message
+    */
+    virtual IQ *  BuildError(const PString& type, const PString& code) const;
+
+    virtual PNotifierList GetResponseHandlers()   { return m_ResponseHandlers; }
+
+    static PString GenerateID();
+
+  protected:
+    BOOL            m_Processed;
+    IQ *            m_OriginalIQ;
+    PNotifierList   m_ResponseHandlers;
+  };
+
+}; // class XMPP
 
 
 #endif  // P_EXPAT
 
 #endif  // _XMPP
-
 
 // End of File ///////////////////////////////////////////////////////////////
 
