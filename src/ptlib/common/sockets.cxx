@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.142  2002/12/02 12:25:08  craigs
+ * Fixed problem with error code from gethostbyname_r not being checked correctly
+ *
  * Revision 1.141  2002/11/24 23:47:01  robertj
  * Fixed MSVC v5 compatibility
  *
@@ -772,6 +775,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #endif
 
     int retry = 3;
+    int localErrNo;
+
     do {
 #if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || (defined(__NUCLEUS_PLUS__) ) )
       // this function should really be a static on PIPSocket, but this would
@@ -780,7 +785,6 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
 
 #if !defined(P_AIX) && !defined(P_RTEMS)	// that I get no warnings
-      int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
       struct hostent hostEnt;
 #endif
@@ -791,12 +795,13 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
                         buffer, REENTRANT_BUFFER_LEN,
                         &host_info,
       		        &localErrNo);
-      		      		        
       		        
 #elif defined P_AIX
       ::gethostbyname_r(name,
                         &host_info,
                         &ht_data);		    
+      localErrNo = h_errno;
+
 #elif defined P_RTEMS
       host_info = *::gethostbyname(name);
 #else
@@ -808,14 +813,16 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #elif defined P_VXWORKS
       struct hostent hostEnt;
       host_info = Vx_gethostbyname((char *)name, &hostEnt);
+      localErrNo = h_errno;
 #else
       host_info = ::gethostbyname(name);
+      localErrNo = h_errno;
 #endif
-    } while (h_errno == TRY_AGAIN && --retry > 0);
+    } while (localErrNo == TRY_AGAIN && --retry > 0);
 
     mutex.Wait();
 
-    if (retry == 0)
+    if (localErrNo != NETDB_SUCCESS || retry == 0)
       return NULL;
 
 #if defined(P_AIX) || defined(P_RTEMS)
@@ -900,6 +907,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #endif
 
     int retry = 3;
+    int localErrNo;
     do {
 #if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || ( defined(__NUCLEUS_PLUS__) ) )
       // this function should really be a static on PIPSocket, but this would
@@ -924,8 +932,10 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                         PF_INET, 
                         &host_info,
                         &ht_data );
+      localErrNo = h_errno;
 #elif defined P_RTEMS
       host_info = *::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+      localErrNo = h_errno;
 #else
       host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
@@ -936,18 +946,19 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
 #else
       host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+      localErrNo = h_errno;
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
       extern P_IsOldWin95();
       if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
         host_info->h_addr_list[1] = NULL;
 #endif
 #endif
-    } while (h_errno == TRY_AGAIN && --retry > 0);
+    } while (localErrNo == TRY_AGAIN && --retry > 0);
 
     mutex.Wait();
 
-    if (retry == 0)
-      return FALSE;
+    if (localErrNo != NETDB_SUCCESS || retry == 0)
+      return NULL;
 
 #if defined(P_AIX) || defined(P_RTEMS)
     host = new PIPCacheData(&host_info, addr.AsString());
