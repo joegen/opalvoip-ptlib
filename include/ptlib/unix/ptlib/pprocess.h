@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.26  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.25  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -152,8 +155,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
     static void PXShowSystemWarning(PINDEX code);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
-
-    BOOL SetMaxFileHandles(int maxFileHandles);
 
   protected:
     void         CommonConstruct();

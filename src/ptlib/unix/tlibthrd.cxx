@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.96  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.95  2002/10/16 11:26:29  rogerh
  * Add missing include. Noticed by Matthias on the GnomeMeeting IRC
  *
@@ -339,6 +342,7 @@
  *
  */
 
+#include <ptlib/socket.h>
 #include <sched.h>	// for sched_yield
 #include <pthread.h>
 #include <sys/resource.h>
@@ -407,12 +411,9 @@ void PHouseKeepingThread::Main()
 
     int fd = process.timerChangePipe[0];
 
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
-    FD_SET(fd, &read_fds);
-
-    struct timeval tval;
-    if (::select(fd+1, &read_fds, NULL, NULL, delay.AsTimeVal(tval)) == 1) {
+    P_fd_set read_fds = fd;
+    P_timeval tval = delay;
+    if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
       BYTE ch;
       ::read(fd, &ch, 1);
     }
@@ -441,11 +442,10 @@ void PProcess::SignalTimerChange()
 
 void PProcess::Construct()
 {
-  // set the file descriptor limit to something sensible
+  // get the file descriptor limit
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-  rl.rlim_cur = rl.rlim_max;
-  PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
+  maxHandles = rl.rlim_cur;
 
   ::pipe(timerChangePipe);
 
@@ -455,21 +455,21 @@ void PProcess::Construct()
   CommonConstruct();
 }
 
-BOOL PProcess::SetMaxFileHandles(int maxFileHandles)
+
+BOOL PProcess::SetMaxHandles(int maxHandles)
 {
   // get the current process limit
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
 
   // set the new current limit
-  rl.rlim_cur = maxFileHandles;
-  if (setrlimit(RLIMIT_NOFILE, &rl) != 0) {
-    PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
-           << maxFileHandles << " - check permissions");
-    return FALSE;
-  }
+  rl.rlim_cur = maxHandles;
+  if (setrlimit(RLIMIT_NOFILE, &rl) == 0)
+    return TRUE;
 
-  return TRUE;
+  PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
+         << maxHandles << " - check permissions");
+  return FALSE;
 }
 
 
@@ -760,9 +760,8 @@ void PThread::Sleep(const PTimeInterval & timeout)
   PTime lastTime;
   PTime targetTime = lastTime + timeout;
   do {
-    PTimeInterval delay = targetTime - lastTime;
-    struct timeval tval;
-    if (select(0, NULL, NULL, NULL, delay.AsTimeVal(tval)) < 0 && errno != EINTR)
+    P_timeval tval = targetTime - lastTime;
+    if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
       break;
 
 #ifndef P_NETBSD
@@ -937,35 +936,35 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   PTRACE(7, "PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
-  if ((handle < 0) || (handle >= FD_SETSIZE)) {
+  if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
+    PTRACE(2, "PWLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
     errno = EBADF;
     return -1;
   }
 
   // make sure we flush the buffer before doing a write
-  fd_set tmp_rfd, tmp_wfd, tmp_efd;
-  fd_set * read_fds      = &tmp_rfd;
-  fd_set * write_fds     = &tmp_wfd;
-  fd_set * exception_fds = &tmp_efd;
+  P_fd_set read_fds;
+  P_fd_set write_fds;
+  P_fd_set exception_fds;
 
   int retval;
   do {
-
-    FD_ZERO(read_fds);
-    FD_ZERO(write_fds);
-    FD_ZERO(exception_fds);
-
     switch (type) {
       case PChannel::PXReadBlock:
       case PChannel::PXAcceptBlock:
-        FD_SET(handle, read_fds);
+        read_fds = handle;
+        write_fds.Zero();
+        exception_fds.Zero();
         break;
       case PChannel::PXWriteBlock:
-        FD_SET(handle, write_fds);
+        read_fds.Zero();
+        write_fds = handle;
+        exception_fds.Zero();
         break;
       case PChannel::PXConnectBlock:
-        FD_SET(handle, write_fds);
-        FD_SET(handle, exception_fds);
+        read_fds.Zero();
+        write_fds = handle;
+        exception_fds = handle;
         break;
       default:
         PAssertAlways(PLogicError);
@@ -973,15 +972,14 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
 
     // include the termination pipe into all blocking I/O functions
-    FD_SET(unblockPipe[0], read_fds);
+    read_fds += unblockPipe[0];
 
-    struct timeval tval;
+    P_timeval tval = timeout;
     retval = ::select(PMAX(handle, unblockPipe[0])+1,
-                      read_fds, write_fds, exception_fds,
-                      timeout.AsTimeVal(tval));
+                      read_fds, write_fds, exception_fds, tval);
   } while (retval < 0 && errno == EINTR);
 
-  if ((retval == 1) && FD_ISSET(unblockPipe[0], read_fds)) {
+  if ((retval == 1) && read_fds.IsPresent(unblockPipe[0])) {
     BYTE ch;
     ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;

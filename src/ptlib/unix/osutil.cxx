@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.71  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.70  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -356,22 +359,6 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
   return strtouq(theArray, &dummy, base);
 #endif
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// time interval
-
-struct timeval * PTimeInterval::AsTimeVal(struct timeval & buffer) const
-{
-  if (*this == PMaxTimeInterval)
-    return NULL;
-
-  buffer.tv_usec = (milliseconds % 1000) * 1000;
-  buffer.tv_sec  =  milliseconds / 1000;
-  return &buffer;
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
