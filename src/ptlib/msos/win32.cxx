@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.145  2005/01/25 11:28:25  csoutheren
+ * Changed parms to CreateEvent to be more clear
+ *
  * Revision 1.144  2005/01/16 23:00:36  csoutheren
  * Fixed problem when calling WaitForTermination from within the same thread
  *
@@ -1128,7 +1131,7 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 PWin32Overlapped::PWin32Overlapped()
 {
   memset(this, 0, sizeof(*this));
-  hEvent = CreateEvent(0, TRUE, 0, NULL);
+  hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 }
 
 PWin32Overlapped::~PWin32Overlapped()
