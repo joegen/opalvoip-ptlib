@@ -17,7 +17,7 @@ case "$target_os" in
                    OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
 
-  freebsd)         OSTYPE=FreeBSD ;
+  freebsd* )        OSTYPE=FreeBSD ;
                    OSRELEASE=`sysctl -n kern.osreldate` ;
                    STDCCFLAGS="-DP_FREEBSD=$OSRELEASE" ;;
 
@@ -67,6 +67,10 @@ case "$target_cpu" in
    * )		   MACHTYPE=$target_cpu ;
 		   echo "CPU $target_cpu not recognized - proceed with caution!" ;;
 esac
+
+echo "OSTYPE set to $OSTYPE";
+echo "OSRLEASE set to $OSRELEASE";
+echo "MACHTYPE set to $MACHTYPE";
 
 AC_SUBST(MACHTYPE,  $MACHTYPE)
 AC_SUBST(OSTYPE,    $OSTYPE)
