@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.7  2003/04/28 23:57:40  robertj
+ * Fixed Solaris compatibility
+ *
  * Revision 1.6  2003/04/22 23:21:37  craigs
  * Swapped includes at request of Shawn Hsiao for compatiobility with MacOSX
  *
@@ -208,10 +211,10 @@ static BOOL ProcessDNSRecords(
     }
 
     // get other common parts of the record
-    u_short   type;
-    u_short   dnsClass;
-    u_int32_t ttl;
-    u_short   dlen;
+    WORD  type;
+    WORD  dnsClass;
+    DWORD ttl;
+    WORD  dlen;
 
     GETSHORT(type,     cp);
     GETSHORT(dnsClass, cp);
