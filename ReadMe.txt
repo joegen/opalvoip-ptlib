@@ -10,9 +10,10 @@ Contents
 	3.	CVS Access
 	4.	Building PWLib
 	5.	Using PWLib
-	6.	Platform Specific Issues
-	7.	Conclusion
-	8.	Licensing
+        6.      IPv6 issues
+	7.	Platform Specific Issues
+	8.	Conclusion
+	9.	Licensing
 
 
 
@@ -44,6 +45,7 @@ world as well.
 
 
 
+
 ================================================================================
 
 2. Apologies (not)
@@ -69,6 +71,7 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 
 
 
+
 ================================================================================
 
 3. CVS Access
@@ -84,6 +87,7 @@ The modules available are:
 	pwlib_xlib (does not work, anyone is welcome to fix!)
 	ptlib_win32
 	pwlib_win32
+
 
 
 
@@ -189,8 +193,8 @@ Debug versions append 'd' to filename, ie: ptlibsd.lib.
 MSDevWizard will not build in VisualStudio v7 and so is not included as a project.
 
 
---------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
 4.2. For unix.
 --------------
 
@@ -251,6 +255,7 @@ should be changed to
 
 To prevent the incorrect function prototype from being defined. The getdate.y 
 should then produce a getdate.tab.c file that will actually compile.
+
 
 
 
@@ -320,8 +325,8 @@ include $(PWLIBDIR)/make/ptlib.mak
 # End of Makefile
 
 
---------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
 5.2. PWlib Classes
 ------------------
 
@@ -363,9 +368,344 @@ implementation is in the works but has not progressed very far.
 
 
 
+
 ================================================================================
 
-6. Platform Specific Issues
+6. IPv6 support in pwlib
+------------------------
+
+The IPv6 support in pwlib is still experimental. You have to get the latest
+CVS version to compile it (does work since 7th November 2002). Pwlib can be
+compiled with or without the IPv6 support.
+
+When compiled with the IPv6 support, applications using only IPv4 are still 
+fully backward compatible. Pwlib is able to manage simultaneously IPv4 and
+IPv6 connections.
+
+
+
+--------------------------------------------------------------------------------
+6.1. Windows platforms
+----------------------
+
+According to microsoft, IPv6 is not supported under 9x, experimental on Win2000, 
+supported on XP.
+You must use a compiler with IPv6 aware includes and libraries:
+  - VC6 must be patched to support RFC 2553 structure. (See 7.1 and 7.2 for patch)
+  - .Net should be ok (to be confirmed)
+The port as been performed with VC6 patched on a win2000 platform.
+
+For more informations about IPv6 support:
+  Microsoft IPv6 support: 
+    http://research.microsoft.com/msripv6/
+  IPv6 for win2000: 
+    http://msdn.microsoft.com/downloads/sdks/platform/tpipv6.asp
+  IPv6 for XP: 
+    http://www.microsoft.com/windowsxp/pro/techinfo/administration/ipv6/default.asp
+
+
+
+6.1.1. Windows platforms: Win2000
+---------------------------------
+Go to Microsoft win2000 IPv6 tech preview web page.
+http://msdn.microsoft.com/downloads/sdks/platform/tpipv6.asp
+Download the 'tpipv6-001205.exe' file and read carrefully the faq.
+http://msdn.microsoft.com/downloads/sdks/platform/tpipv6/faq.asp
+
+This program is designed for win2000 English Service pack 1.
+To install it on newer Service pack, you have to modify some files.
+Again, read the Faq.
+ 
+This install the IPv6 driver and the IPv6 includes.
+
+
+
+6.1.2. Windows platforms: XP
+----------------------------
+Read the IPv6 faq for windows XP
+http://www.microsoft.com/windowsxp/pro/techinfo/administration/ipv6/default.asp
+
+The 'ipv6 install' command installs only the IPv6 drivers.
+You need to install additionnals IPv6 includes for VC6.
+.NET should be ready. (to be confirmed ....)
+
+
+
+6.1.3. Compiling
+----------------
+To compile pwlib and openh323 with the IPv6 support you have to set an 
+environment variable:
+IPV6FLAG=1
+Set it using: [Start]/[Configuration pannel]/[System]/[Environment]
+
+Add the IPv6 SDK include path in your Visual C++ 6 environment:
+[Tools]/[Options]/[Directories]/[Include files]
+
+
+
+--------------------------------------------------------------------------------
+6.2. Linux platforms
+--------------------
+
+Recent Linux distributions support IPv6.
+2.4 kernels are IPv6 aware.
+
+Linux IPv6 Faq:
+http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/
+
+
+
+6.2.1. Enabling IPv6 support
+----------------------------
+IPv6 can be compiled statically in the kernel or compiled as a module.
+To load the IPv6 module, as 'root'
+#modprobe ipv6
+
+
+
+6.2.2. Compiling
+--------------
+Check that IPv6 is really on
+#ls /proc/net/if_inet6
+If this file exists, then IPv6 support is compiled in pwlib and openh323.
+
+
+
+--------------------------------------------------------------------------------
+6.3. Testing
+------------
+
+The test application sources can be found in the directory: openh323/samples/simple
+Once compiled the binaries are in simple/debug, release, obj_linux_x86_d, or
+obj_linux_x86_r.
+Under windows, the test application is simple.exe
+Under linux, the test application is simh323
+IPv6 support can be tested on only one machine. Just open two shell/command windows.
+
+
+
+6.3.1. IPv6 Address and port notation
+-------------------------------------
+IPv4 address and port are written in dot notation: xx.xx.xx.xx:4000
+IPv6 global address are written in semi-colon notation: [xx:xx:xx:xx::xx]:4000
+IPv6 scoped address ad a field for the scope: [xx:xx:xx:xx::xx%scope]:4000
+
+Exemples:
+Global address
+[3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5]:4000
+[3ffe:0b80:0002:f9c1::500b:0ea5]:4000
+
+Scoped address
+[fe80::232:56ff:fe95:315%lnc0]:4000
+Scoped address are not supported yet.
+
+
+
+6.3.2. Tests configuration
+--------------------------
+Tests 1,2,3 run on a single dual stack machine.
+  IPv4 Address: 127.0.0.1, 10.0.0.6
+  IPv6 Address: ::1, 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5
+
+Tests 4,5,6 run on two dual stack machine.
+PC1
+  IPv4 Address: 10.0.0.6
+  IPv6 Address: ::1, 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5
+PC2
+  IPv4 Address: 10.0.0.8
+  IPv6 Address: ::1, 3ffe:0b80:0002:f9c1:0000:0000:500b:0eb6
+
+
+
+6.3.3. Test 1: IPv4 <--> IPv4 local call
+----------------------------------------
+This test checks the backward compatibility with IPv4
+
+In first shell/command window, listen on 127.0.0.1, wait for a call.
+simple.exe -tttt -n -i 127.0.0.1 -l -a
+In second shell/command window, listen on 10.0.0.6, call 127.0.0.1
+simple.exe -tttt -n -i  10.0.0.6 -n 127.0.0.1
+
+
+
+6.3.4. Test 2: IPv6 <--> IPv6 local call 
+----------------------------------------
+This test checks the IPv6 support
+
+In first shell/command window, listen on ::1, wait for a call.
+simple.exe -tttt -n -i ::1 -l -a
+In second shell/command window, listen on IPv6 address, call ::1
+simple.exe -tttt -n -i 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5 -n [::1]
+
+
+6.3.5. Test 3: IPv4 <--> IPv6 local call
+----------------------------------------
+This test checks that simultaneous IPv4 and IPv6 calls are supported.
+
+In first shell/command window, listen on 127.0.0.1, wait for a call.
+simple.exe -tttt -n -i 127.0.0.1 -l -a
+In second shell/command window, listen on IPv6 address, call 127.0.0.1
+simple.exe -tttt -n -i 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5 -n 127.0.0.1
+
+
+
+6.3.6. Test 4: IPv4 <--> IPv4 call between two hosts
+----------------------------------------------------
+This test checks the backward compatibility with IPv4
+
+First host, listen on 10.0.0.6, wait for a call.
+simple.exe -tttt -n -i 127.0.0.1 -l -a
+Second host, listen on 10.0.0.8, call 10.0.0.6
+simple.exe -tttt -n -i  10.0.0.8 -n 10.0.0.6
+
+
+
+6.3.7. Test 5: IPv6 <--> IPv6 call between two hosts
+----------------------------------------------------
+This test checks the IPv6 support
+
+First host, listen on 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5, wait for a call.
+simple.exe -tttt -n -i 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5 -l -a
+Second host, listen on 3ffe:0b80:0002:f9c1:0000:0000:500b:0eb6, call 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5
+simple.exe -tttt -n -i 3ffe:0b80:0002:f9c1:0000:0000:500b:0eb6 -n [3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5]
+
+
+
+6.3.8. Test 6: IPv4 <--> IPv6 call between two hosts
+----------------------------------------------------
+This test checks that simultaneous IPv4 and IPv6 calls are supported.
+
+First host, listen on 10.0.0.6, wait for a call.
+simple.exe -tttt -n -i 10.0.0.6 -l -a
+Second host, listen on 3ffe:0b80:0002:f9c1:0000:0000:500b:0eb6, call 10.0.0.6
+simple.exe -tttt -n -i 3ffe:0b80:0002:f9c1:0000:0000:500b:0eb6 -n 10.0.0.6
+
+
+
+--------------------------------------------------------------------------------
+6.4. Known limitations
+--------------------
+
+You must use IPv6 address with global scope. Tests with IPv6 local link address
+fail.
+
+
+
+--------------------------------------------------------------------------------
+6.5. Questions
+--------------
+
+6.5.1. How to patch my VC6 includes files ?
+-----------------------------------------
+
+To patch you Developper studio Visual C++ version 6, just edit the file
+"C:\Program Files\Microsoft Visual Studio\VC98\Include\ws2tcpip.h", and add
+the sin6_scope_id field in the sockadd_in6 structure.
+struct sockaddr_in6 {
+          short     sin6_family;         /* AF_INET6 */
+          u_short sin6_port;  /* Transport level port number */
+          u_long    sin6_flowinfo; /* IPv6 flow information */
+          struct in_addr6 sin6_addr; /* IPv6 address */
+          u_long    sin6_scope_id; /* scope id (new in RFC2553) */ <--- Add this one
+};
+
+This may have an impact on you system stability, use it only on
+experimental platforms. Using .NET compiler should be a better solution.
+
+
+
+6.5.2. Why do I need to modify my Visual C++6 include files ? 
+-----------------------------------------------------------
+
+Visual Studio C++ version 6 implements the old RFC 2133 in file "ws2tcpip.h".
+RFC 2133 defines a 24 byte sockaddr_in6 structure.
+struct sockaddr_in6 {
+          short     sin6_family;         /* AF_INET6 */
+          u_short sin6_port;  /* Transport level port number */
+          u_long    sin6_flowinfo; /* IPv6 flow information */
+          struct in_addr6 sin6_addr; /* IPv6 address */
+};
+
+
+This RFC as been replaced by RFC 2553.
+RFC 2133 defines a 28 byte addsock_in6 structure.
+struct sockaddr_in6 {
+          short     sin6_family;         /* AF_INET6 */
+          u_short sin6_port;  /* Transport level port number */
+          u_long    sin6_flowinfo; /* IPv6 flow information */
+          struct in_addr6 sin6_addr; /* IPv6 address */
+          u_long    sin6_scope_id; /* scope id (new in RFC2553) */
+};
+
+
+
+6.5.3. How to get an ipv6 address with a Global scope ?
+-----------------------------------------------------
+
+6.5.3.1. Manually
+-----------------
+
+Set one manually if you're not connected to IPv4 Internet or IPv6 backbone:
+#ip -6 addr add 3ffe:0b80:0002:f9c1:0000:0000:500b:0ea5 dev eth0
+(this address is owned by freenet6.net).
+
+Check the address is set.
+#ifconfig
+eth0      Lien encap:Ethernet  HWaddr 00:08:D5:10:C7:BB
+          inet adr:12.0.0.2  Bcast:12.255.255.255  Masque:255.0.0.0
+          adr inet6: 3ffe:b80:2:f9c1::500b:ea5/128 Scope:Global  <- - - Ok, Global scope
+          adr inet6: fe80::208:c7ff:fe59:bbc7/10 Scope:Lien <- - - [ Can't use this one ]
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:9 errors:0 dropped:0 overruns:9 carrier:0
+          collisions:0
+          RX bytes:0 (0.0 b)  TX bytes:534 (534.0 b)
+
+
+6.5.3.2. Tunnel broker
+----------------------
+
+Get one from a free IPv6 tunnel broker.
+Exemple: 
+http://www.freenet6.net : Canadian tunnel broker
+http://tb.ngnet.it      : Italian tunnel broker (Telecom Italia Research)
+
+
+Note: The current (10/2002) freenet6 windows binary is buggy, use it to get the 
+values, and set manually your tunnel.
+
+
+
+--------------------------------------------------------------------------------
+6.6. Troubles
+------------
+
+6.6.1. Listen on ::1:1720 failed: Address family not supported by protocol
+-----------------------------------------------------------------------
+IPv6 module is not loaded in the kernel.
+#modprobe ipv6
+
+
+
+6.6.2. SimpleH323	TCP Could not open H.323 listener port on 1720
+--------------------------------------------------------------
+Add some traces: -t on the command line. 
+
+
+
+6.6.3. SimpleH323	TCP Listen on fe80::2b0:d0ff:fedf:d6bf:1720 failed: Invalid argument
+------------------------------------------------------------------------------------
+This address is a local scope address. As the scope_id field is always set to 0,
+its value is invalid.
+
+Use address with global scope.
+
+
+
+
+================================================================================
+
+7. Platform Specific Issues
 ---------------------------
 PWLib has been ported to several platforms. However on some systems not all of
 the functionality has been implemented. This could be due to lack of support
@@ -374,7 +714,7 @@ the port.
 
 
 --------------------------------------------------------------------------------
-6.1. FreeBSD Issues
+7.1. FreeBSD Issues
 -------------------
 
 Port Maintained by Roger Hardiman <roger@freebsd.org>
@@ -383,7 +723,7 @@ OenH323Proxy, but is not fully tested.
 
 
 --------------------------------------------------------------------------------
-6.2. OpenBSD Issues
+7.2. OpenBSD Issues
 -------------------
 
 Port Maintained by Roger Hardiman <roger@freebsd.org>
@@ -392,7 +732,7 @@ OenH323Proxy, but is not fully tested.
 
 
 --------------------------------------------------------------------------------
-6.3. NetBSD Issues
+7.3. NetBSD Issues
 ------------------
 
 Port Maintained by Roger Hardiman <roger@freebsd.org>
@@ -405,7 +745,7 @@ OpenBSD support.
 
 
 --------------------------------------------------------------------------------
-6.4. Mac OS X (Darwin) Issues
+7.4. Mac OS X (Darwin) Issues
 -----------------------------
 
 Port Maintained by Roger Hardiman <roger@freebsd.org> but recently
@@ -432,7 +772,7 @@ There is no video support due to a lack of documentation and hardware.
 
 
 --------------------------------------------------------------------------------
-6.5. BeOS Issues
+7.5. BeOS Issues
 ----------------
 
 Port Maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
@@ -450,7 +790,7 @@ Look for more port-related info on http://www.dogsbone.com/be
 
 
 --------------------------------------------------------------------------------
-6.6. Windows CE Issues
+7.6. Windows CE Issues
 ----------------------
 
 Port Maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
@@ -462,7 +802,7 @@ An html version of this readme is available at ;
 http://www.mivideo.net/videophone
 
 
-6.6.1. HOW-TO build and test Windows CE OpenH323 Port POCKETBONE
+7.6.1. HOW-TO build and test Windows CE OpenH323 Port POCKETBONE
 ----------------------------------------------------------------
 March 30 2002, Currently, there is NO source available that compiles
 and Tx/Rx Video and Audio for pocketbone. Only the released binary
@@ -481,7 +821,7 @@ configuration parameters to build it.
 It would be nice to be in a ZIP file, so it is not subject to changes,
 as in the CVS. 
 
-6.6.2. Collecting the Required Files
+7.6.2. Collecting the Required Files
 ------------------------------------
 There are three source modules required to build Pocketbone, 
 two of them, openh323 and pwlib libraries and the contributed 
@@ -506,7 +846,7 @@ open the project workspace located in the contrib/pocketbone
 (Pocketbone.vcp). It should automatically find the other two
 modules (openh323 and pwlib ) and load their respective .vcp files. 
 
-6.6.3. Steps to Build POCKETBONE
+7.6.3. Steps to Build POCKETBONE
 --------------------------------
 To build POCKETBONE you first need to build the two libraries,
 pwlib and openh323. You should build these two libraries using
@@ -608,7 +948,7 @@ usually be handled with #ifdef statements in the code.
 In order to maintain a single set of source files for 
 different platforms.
 
-6.6.4. Latest CVS version March 20 2002
+7.6.4. Latest CVS version March 20 2002
 ---------------------------------------
 PWLIB.zip ( 7,424 Kb)  
 "http://www.mivideo.net/videophone/cvs 4 20 pwlib.zip"
@@ -647,7 +987,7 @@ testing from 4/22/2002  ;
  and the 'walkie-talkie is NOT clicked.
  
 
-6.6.5. PocketBone 10b1 Binary zip for iPAQ
+7.6.5. PocketBone 10b1 Binary zip for iPAQ
 ------------------------------------------
 http://www.mivideo.net/videophone/PocketBone10b1.zip
 ( 2,317,824 bytes 10/24/2001).
@@ -669,7 +1009,7 @@ http://www.tabletmedia.com/ifon.asp
 Unpack the binary zip file and copy PocketBone.exe to
 \Windows\Start Menu and gx.dll to \Windows. 
 
-6.6.6. PocketBone .9a1 binary ARMREl
+7.6.6. PocketBone .9a1 binary ARMREl
 ------------------------------------
 ( 2,257 Kb 8/9/2001 )
 The main bitmap for this version looks like;
@@ -713,7 +1053,7 @@ http://www.mivideo.net/pwlib.zip
 OpenH323 source Zip (1,692 Kb) 
 http://www.mivideo.net/openh323.zip
 
-6.6.7. General Usage Notes
+7.6.7. General Usage Notes
 --------------------------
 
 - PocketBone performs best on iPAQ Pocket PC 2002.
@@ -803,7 +1143,7 @@ On NetMeeting go to Video settings,
   duplex on a PPC. rfer to;
   http://www.mivideo.net/Buttons.jpg
 
-6.6.8. Testing
+7.6.8. Testing
 --------------
 Ohphone can be used to test Pocketbone as well as Netmeeting.
 Although Netmeeting does not hold up to the H323 standard well.
@@ -821,11 +1161,11 @@ either in H323 or when set to IP phones work quite well . 
 Testing has been done on HP Jornada and Casio PDAs. 
 Results will soon follow along with configurations, notes and source Zip files.
 
-6.6.9. Links 
+7.6.9. Links 
 ------------
 Keep in touch with the PDA global activities thru http://www.infosync.no/
 
-6.6.10. Futures
+7.6.10. Futures
 --------------
 Porting to other platforms such as Palm, and other CPUs such as MIPS, SH3,
 SH4 are not too difficult.
@@ -840,7 +1180,7 @@ http://www.mivideo.net/videophone
 
 
 --------------------------------------------------------------------------------
-6.7. Solaris Issues
+7.7. Solaris Issues
 -------------------
 On Solaris 8, you need to install GNU Ld (the loader) to get
 shared libraries to compile. (otherwise there is an error with -soname)
@@ -851,9 +1191,11 @@ There is currently no implementation of GetRouteTable() in socket.cxx
 so OpenH323Proxy will not work.
 
 
+
+
 ================================================================================
 
-7. Conclusion
+8. Conclusion
 -------------
 
 This package is far from a "product". There is very limited documentation and
@@ -867,9 +1209,10 @@ this class library over that one.
 
 
 
+
 ================================================================================
 
-8. Licensing                 
+9. Licensing                 
 ------------
 
 The bulk of this library is licensed under the MPL (Mozilla Public License)
@@ -927,9 +1270,11 @@ license:
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
 
+
+
 ================================================================================
 Equivalence Pty. Ltd.
-Home of FireDoor, MibMaster & PhonePatch
+Home of OpenH323 and the Open Phone Abstraction Library (OPAL)
 
 support@equival.com.au
 http://www.equival.com.au (US Mirror - http://www.equival.com)
