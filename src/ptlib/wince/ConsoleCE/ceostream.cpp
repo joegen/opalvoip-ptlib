@@ -10,10 +10,13 @@
 #include "ptlib.h"
 
 #ifdef _WIN32_WCE
+#pragma warning(disable : 4073)
+#pragma init_seg(lib)
+
 YWinCEOStream cerr;
 YWinCEOStream cout;
 #else
-#include "../../../include/ptlib/wince/YWinCEOStream.h"
+#include "../../../include/ptlib/wince/ceostream.h"
 #endif
 
 #define BufferSize 1024
