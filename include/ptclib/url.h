@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.18  2002/03/18 05:01:54  robertj
+ * Added functions to set component parts of URL.
+ *
  * Revision 1.17  2001/11/08 00:32:49  robertj
  * Added parsing of ';' based parameter fields into string dictionary if there are multiple parameters, with '=' values.
  *
@@ -225,32 +228,79 @@ class PURL : public PObject
 
 
     /// Get the scheme field of the URL.
-    const PCaselessString & GetScheme() const   { return scheme; }
+    const PCaselessString & GetScheme() const { return scheme; }
+
+    /// Set the scheme field of the URL
+    void SetScheme(const PString & scheme);
+
     /// Get the username field of the URL.
-    const PString & GetUserName() const         { return username; }
+    const PString & GetUserName() const { return username; }
+
+    /// Set the username field of the URL.
+    void SetUserName(const PString & username);
+
     /// Get the password field of the URL.
-    const PString & GetPassword() const         { return password; }
+    const PString & GetPassword() const { return password; }
+
+    /// Set the password field of the URL.
+    void SetPassword(const PString & password);
+
     /// Get the hostname field of the URL.
     const PCaselessString & GetHostName() const { return hostname; }
+
+    /// Set the hostname field of the URL.
+    void SetHostName(const PString & hostname);
+
     /// Get the port field of the URL.
-    WORD GetPort() const                        { return port; }
-    /// Get the path field of the URL as a string.
-    const PString & GetPathStr() const          { return pathStr; }
-    /// Get the path field of the URL as a string array.
-    const PStringArray & GetPath() const        { return path; }
-    /// Get the parameter (;) field of the URL.
-    const PString & GetParameters() const       { return parameters; }
-    /// Get the parameter (;) field(s) of the URL as a string dictionary.
-    PStringToString GetParamVars() const        { return paramVars; }
-    /// Get the fragment (##) field of the URL.
-    const PString & GetFragment() const         { return fragment; }
-    /// Get the Query (?) field of the URL as a string.
-    const PString & GetQuery() const            { return queryStr; }
-    /// Get the Query (?) field of the URL as a string dictionary.
-    PStringToString GetQueryVars() const        { return queryVars; }
+    WORD GetPort() const { return port; }
 
     /// Set the port field in the URL.
-    void SetPort(WORD newPort)                  { port = newPort; }
+    void SetPort(WORD newPort);
+
+    /// Get the path field of the URL as a string.
+    const PString & GetPathStr() const { return pathStr; }
+
+    /// Set the path field of the URL as a string.
+    void SetPathStr(const PString & pathStr);
+
+    /// Get the path field of the URL as a string array.
+    const PStringArray & GetPath() const { return path; }
+
+    /// Set the path field of the URL as a string array.
+    void SetPath(const PStringArray & path);
+
+    /// Get the parameter (;) field of the URL.
+    PString GetParameters() const;
+
+    /// Set the parameter (;) field of the URL.
+    void SetParameters(const PString & parameters);
+
+    /// Get the parameter (;) field(s) of the URL as a string dictionary.
+    const PStringToString & GetParamVars() const { return paramVars; }
+
+    /// Set the parameter (;) field(s) of the URL as a string dictionary.
+    void SetParamVars(const PStringToString & paramVars);
+
+    /// Set the parameter (;) field of the URL as a string dictionary.
+    void SetParamVar(const PString & key, const PString & data);
+
+    /// Get the fragment (##) field of the URL.
+    const PString & GetFragment() const { return fragment; }
+
+    /// Get the Query (?) field of the URL as a string.
+    PString GetQuery() const;
+
+    /// Set the Query (?) field of the URL as a string.
+    void SetQuery(const PString & query);
+
+    /// Get the Query (?) field of the URL as a string dictionary.
+    const PStringToString & GetQueryVars() const { return queryVars; }
+
+    /// Set the Query (?) field(s) of the URL as a string dictionary.
+    void SetQueryVars(const PStringToString & queryVars);
+
+    /// Set the Query (?) field of the URL as a string dictionary.
+    void SetQueryVar(const PString & key, const PString & data);
 
     /**Open the URL in a browser.
 
@@ -264,6 +314,9 @@ class PURL : public PObject
   //@}
 
   protected:
+    void Recalculate();
+    PString urlString;
+
     PCaselessString scheme;
     PString username;
     PString password;
@@ -271,10 +324,8 @@ class PURL : public PObject
     WORD port;
     PString pathStr;
     PStringArray path;
-    PString parameters;
     PStringToString paramVars;
     PString fragment;
-    PString queryStr;
     PStringToString queryVars;
 };
 
