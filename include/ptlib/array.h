@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.2 1994/12/21 11:52:46 robertj Exp $
+ * $Id: array.h,v 1.3 1995/01/15 04:49:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
- * Revision 1.2  1994/12/21 11:52:46  robertj
+ * Revision 1.3  1995/01/15 04:49:09  robertj
+ * Fixed errors in template version.
+ *
+ * Revision 1.2  1994/12/21  11:52:46  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.1  1994/12/12  09:59:29  robertj
@@ -326,7 +329,7 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
 
    See the $H$PDECLARE_BASEARRAY for more information.
  */
-#define PBASEARRAY(cls, T) typedef PBaseArray<T> cls;
+#define PBASEARRAY(cls, T) typedef PBaseArray<T> cls
 
 #else
 
@@ -573,8 +576,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 #ifdef PHAS_TEMPLATES
 
 template <class T>
-PDECLARE_CLASS(PArray, PObjectArray)
-/* This template class maps the PObjectArray to a specific object type. The
+PDECLARE_CLASS(PArray, PArrayObjects)
+/* This template class maps the PArrayObjects to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
    Note that if templates are not used the $H$PDECLARE_ARRAY macro will
@@ -625,7 +628,7 @@ PDECLARE_CLASS(PArray, PObjectArray)
 
 
 /*$MACRO PDECLARE_ARRAY(cls, T)
-   This macro is used to declare a descendent of PObjectArray class,
+   This macro is used to declare a descendent of PArrayObjects class,
    customised for a particular object type $B$T$B$.
 
    If the compilation is using templates then this macro produces a descendent
@@ -648,7 +651,7 @@ PDECLARE_CLASS(PArray, PObjectArray)
 
 
 /*$MACRO PARRAY(cls, T)
-   This macro is used to declare a descendent of PObjectArray class,
+   This macro is used to declare a descendent of PArrayObjects class,
    customised for a particular object type $B$T$B$. This macro closes the
    class declaration off so no additional members can be added.
 
@@ -658,7 +661,7 @@ PDECLARE_CLASS(PArray, PObjectArray)
    See the $H$PBaseArray class and $H$PDECLARE_ARRAY macro for more
    information.
  */
-#define PARRAY(cls, T) typedef PArray<T> cls;
+#define PARRAY(cls, T) typedef PArray<T> cls
 
 
 #else // PHAS_TEMPLATES
