@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.41 1996/01/03 11:09:35 robertj Exp $
+ * $Id: osutils.cxx,v 1.42 1996/01/03 23:15:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.42  1996/01/03 23:15:39  robertj
+ * Fixed some PTime bugs.
+ *
  * Revision 1.41  1996/01/03 11:09:35  robertj
  * Added Universal Time and Time Zones to PTime class.
  *
@@ -193,6 +196,14 @@ void PTimeInterval::SetInterval(long millisecs,
 // PTime
 
 #if defined(_PTIME)
+
+PTime::PTime(time_t t, PTime::TimeZone zone)
+  : theTime(t)
+{ 
+  if (zone == GMT)
+    t -= GetTimeZone();
+}
+
 
 PTime::PTime(int second, int minute, int hour,
              int day,    int month,  int year,
@@ -430,7 +441,9 @@ PString PTime::AsString(const char * format) const
   BOOL isUTC    = strchr(format, 'u') != NULL || strchr(format, 'g') != NULL;
 
   PString str;
-  time_t realTime = theTime + (isUTC ? 0 : GetTimeZone());
+  time_t realTime = theTime;
+  if (isUTC)
+    realTime += GetTimeZone();
   struct tm * t = localtime(&realTime);
   PINDEX repeatCount;
 
