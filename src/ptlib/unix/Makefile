@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.88  2002/04/02 11:59:32  craigs
+# Added pxmlrpc
+#
 # Revision 1.87  2002/02/20 02:37:26  dereks
 # Initial release of Firewire camera support for linux.
 # Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -411,7 +414,8 @@ SOUND_SOURCE = esdaudio.cxx
 endif
 
 ifdef HAS_EXPAT
-PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx
+PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
+		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
