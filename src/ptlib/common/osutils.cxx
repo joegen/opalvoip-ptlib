@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.111  1998/11/02 10:13:01  robertj
+ * Removed GNU warning.
+ *
  * Revision 1.110  1998/11/01 04:56:53  robertj
  * Added BOOl return value to Parse() to indicate there are parameters available.
  *
@@ -2356,6 +2359,8 @@ BOOL PIntCondMutex::Condition()
       return value >= target;
     case GT :
       return value > target;
+    default :
+      break;
   }
   return value == target;
 }
