@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.60  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.59  2001/03/07 23:37:59  robertj
  * Fixed slow down in UDP packet send, thanks Dmitriy Reka
  *
@@ -253,24 +257,8 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   if (errno != EINPROGRESS)
     return -1;
 
-  // use the os_select call, as that will be aborted by a thread close, whereas PXBlockOnIO cannot
-  fd_set writeFds, emptyFds;
-  FD_ZERO(&writeFds);
-  FD_ZERO(&emptyFds);
-  FD_SET(os_handle, &writeFds);
-  PIntArray handles;
-  handles.SetAt(0, os_handle);
-
-  val = os_select(os_handle+1, emptyFds, writeFds, emptyFds, handles, writeTimeout);
-
-  // check the response
-  if (val < 0)
-    return -1;
-
-  if (val == 0) {
-    errno = ECONNREFUSED;
-    return -1;
-  }
+  if (PXSetIOBlock(PXConnectBlock, readTimeout))
+    return TRUE;
 
 #ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
@@ -286,25 +274,25 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   return -1;
 }
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
-                       const PTimeInterval & timeout)
+int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
 {
-  if (!PXSetIOBlock(PXAcceptBlock, sock, timeout)) {
+  if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout())) {
     errno = EINTR;
     return -1;
   }
 
 #if defined(E_PROTO)
   while (1) {
-    int new_fd = ::accept(sock, addr, (socklen_t *)size);
+    int new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size);
     if ((new_fd >= 0) || (errno != EPROTO))
       return new_fd;
     //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
   }
 #else
-  return ::accept(sock, addr, (socklen_t *)size);
+  return ::accept(listener.GetHandle(), addr, (socklen_t *)size);
 #endif
 }
+
 
 #ifndef P_PTHREADS
 
@@ -351,19 +339,19 @@ int PSocket::os_select(int width,
     }
   }
 
-  int termPipe = PThread::Current()->termPipe[0];
-  FD_SET(termPipe, &readBits);
-  width = PMAX(width, termPipe+1);
+  int unblockPipe = PThread::Current()->unblockPipe[0];
+  FD_SET(unblockPipe, &readBits);
+  width = PMAX(width, unblockPipe+1);
 
   do {
     int result = ::select(width, &readBits, &writeBits, &exceptionBits, tptr);
     if (result >= 0) {
-      if (FD_ISSET(termPipe, &readBits)) {
-        FD_CLR(termPipe, &readBits);
+      if (FD_ISSET(unblockPipe, &readBits)) {
+        FD_CLR(unblockPipe, &readBits);
         if (result == 1) {
           BYTE ch;
-          ::read(termPipe, &ch, 1);
-          FD_CLR(termPipe, &readBits);
+          ::read(unblockPipe, &ch, 1);
+          FD_CLR(unblockPipe, &readBits);
           errno = EINTR;
           return -1;
         }

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.18  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.17  1999/10/24 01:32:11  craigs
  * Removed definition of BREAK_SIGNAL and moved to src file
  *
@@ -95,17 +99,10 @@
 
   protected:
     BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
-    BOOL PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
-
     int  PXClose();
 
-    PString channelName;
-
-#ifdef P_PTHREADS
-  protected:
-    PMutex    PX_readMutex;
-    pthread_t PX_readThreadId;
-#endif
+    PString   channelName;
+    PThread * px_blockedThread;
 };
 
 #endif

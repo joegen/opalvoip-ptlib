@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.28  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.27  2000/12/05 08:24:50  craigs
  * Fixed problem with EINTR causing havoc
  *
@@ -125,28 +129,33 @@ ios::ios(const ios &)
   PAssertAlways("Cannot copy ios");
 }
 
+
+void PChannel::Construct()
+{
+  os_handle = -1;
+  px_blockedThread = NULL;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // PChannel::PXSetIOBlock
-//   These functions are used to perform IO blocks.
+//   This function is used to perform IO blocks.
 //   If the return value is FALSE, then the select call either
 //   returned an error or a timeout occurred. The member variable lastError
 //   can be used to determine which error occurred
 //
 
-BOOL PChannel::PXSetIOBlock (int type, const PTimeInterval & timeout)
+BOOL PChannel::PXSetIOBlock(int type, const PTimeInterval & timeout)
 {
-  return PXSetIOBlock(type, os_handle, timeout);
-}
-
-BOOL PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval & timeout)
-{
-  if (blockHandle < 0) {
+  if (os_handle < 0) {
     lastError = NotOpen;
     return FALSE;
   }
 
-  int stat = PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
+  px_blockedThread = PThread::Current();
+  int stat = px_blockedThread->PXBlockOnIO(os_handle, type, timeout);
+  px_blockedThread = NULL;
 
   // if select returned < 0, then covert errno into lastError and return FALSE
   if (stat < 0)
@@ -199,8 +208,7 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
   
   while (len > 0) {
 
-    int sendResult = ::write(os_handle,
-                  ((const char *)buf)+lastWriteCount, len);
+    int sendResult = ::write(os_handle, ((const char *)buf)+lastWriteCount, len);
     if (sendResult > 0)
       PThread::Yield();
     else {
@@ -210,8 +218,7 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
       if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
         return FALSE;
 
-      sendResult = ::write(os_handle,
-                    ((const char *)buf)+lastWriteCount, len);
+      sendResult = ::write(os_handle, ((const char *)buf)+lastWriteCount, len);
 
     }
 
@@ -248,10 +255,10 @@ BOOL PChannel::PXClose()
   PX_iostreamMutex.Signal();
 
 #if !defined(P_PTHREADS) && !defined(BE_THREADS)
+#ifndef __BEOS__
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 
-#ifndef __BEOS__
   DWORD cmd = 0;
   ::ioctl(handle, FIONBIO, &cmd);
 #endif
@@ -261,6 +268,9 @@ BOOL PChannel::PXClose()
   do {
     stat = ::close(handle);
   } while (stat == -1 && errno == EINTR);
+
+  if (px_blockedThread != NULL)
+    px_blockedThread->PXAbortIO();
 
   return stat;
 }

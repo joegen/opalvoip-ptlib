@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.35  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.34  2000/06/26 13:58:42  robertj
  * Nucleus port (again)
  *
@@ -535,10 +539,9 @@ class PSocket : public PChannel
       PINDEX tolen
     );
     int os_accept(
-      int sock,
+      PSocket & listener,
       struct sockaddr * addr,
-      PINDEX * size,
-      const PTimeInterval & timeout
+      PINDEX * size
     );
     static int os_select(
       int maxfds,
