@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.164  2003/04/01 02:09:46  robertj
+# Changed detection of OpenLDAP so more specific to OpenLDAP header file
+#   and not detect other implementations.
+#
 # Revision 1.163  2003/03/28 10:25:43  rogerh
 # Fix OpenLDAP libraries
 #
@@ -1506,8 +1510,8 @@ endif
 
 endif # DEBUG
 
-# define OpenLDAP cariables if installed
-ifneq (,$(wildcard /usr/include/ldap.h))
+# define OpenLDAP variables if installed
+ifneq (,$(shell grep -i openldap /usr/include/ldap.h))
 STDCCFLAGS	+= -DP_LDAP 
 ENDLDLIBS	+= -llber -lldap -lldap_r
 ifeq ($(OSTYPE),linux)
