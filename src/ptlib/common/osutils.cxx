@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.44 1996/01/28 02:52:04 robertj Exp $
+ * $Id: osutils.cxx,v 1.45 1996/01/28 14:09:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.45  1996/01/28 14:09:39  robertj
+ * Fixed bug in time reading function for dates before 1980.
+ * Fixed bug in time reading, was out by one month.
+ * Added time functions to PConfig.
+ *
  * Revision 1.44  1996/01/28 02:52:04  robertj
  * Added assert into all Compare functions to assure comparison between compatible objects.
  *
@@ -276,12 +281,9 @@ void PTime::ReadFrom(istream &strm)
     return;
 
   struct tm t;
-  t.tm_sec = 0;
-  t.tm_min = 0;
-  t.tm_hour = 0;
+  memset(&t, 0, sizeof(t));
   t.tm_mday = 1;
-  t.tm_mon = 1;
-  t.tm_year = 0;
+  t.tm_year = 70;
 
   int temp;       // Get first number
   strm >> temp;
@@ -331,8 +333,9 @@ void PTime::ReadFrom(istream &strm)
       break;
   }
 
-  if (t.tm_year < 80)
+  if (t.tm_year < 70)
     t.tm_year += 100;
+  t.tm_mon--;
 
   theTime = mktime(&t);
   PAssert(theTime != -1, PInvalidParameter);
@@ -1755,6 +1758,21 @@ void PConfig::SetReal(const PString & section, const PString & key, double value
 {
   PString str(PString::Printf, "%g", value);
   SetString(section, key, str);
+}
+
+
+PTime PConfig::GetTime(const PString & section, const PString & key, const PTime & dflt)
+{
+  PStringStream s = GetString(section, key, dflt.AsString());
+  PTime t;
+  s >> t;
+  return t;
+}
+
+
+void PConfig::SetTime(const PString & section, const PString & key, const PTime & value)
+{
+  SetString(section, key, value.AsString());
 }
 
 
