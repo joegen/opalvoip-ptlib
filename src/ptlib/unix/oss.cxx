@@ -27,6 +27,12 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.52  2002/11/28 12:15:24  rogerh
+ * Change SetVolume/GetVolume to use the mic and not the igain for the input
+ * volume.
+ * Our target audience are likely to be using mics and many broken
+ * sound drivers do not implement igain properly.
+ *
  * Revision 1.51  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -865,6 +871,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
     else
       PTRACE(6, "OSS\tRead completed");
 
+    lastReadCount = len; // ROGER's HACK
     return TRUE;
   }
 
@@ -1225,7 +1232,7 @@ BOOL PSoundChannel::SetVolume(unsigned newVal)
   if (direction  == Player) 
     rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
    else 
-    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_IGAIN), &deviceVol);
+    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_MIC), &deviceVol);
 
   if (rc < 0) {
     PTRACE(1, "PSoundChannel::SetVolume failed : " << ::strerror(errno));
@@ -1244,7 +1251,7 @@ BOOL  PSoundChannel::GetVolume(unsigned &devVol)
   if (direction == Player)
     rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_VOLUME), &vol);
   else
-    rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_IGAIN), &vol);
+    rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_MIC), &vol);
   
   if (rc < 0) {
     PTRACE(1,  "PSoundChannel::GetVolume failed : " << ::strerror(errno)) ;
