@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.5  2003/11/18 10:39:56  csoutheren
+ * Changed PTRACE levels to give better output at trace level 3
+ *
  * Revision 1.4  2003/11/12 10:27:11  csoutheren
  * Changes to allow operation of static plugins under Windows
  *
@@ -95,12 +98,12 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
   else {
     unsigned (*GetAPIVersion)();
     if(!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
-      PTRACE(4, "Failed to recognize a plugin in " << fileName);
+      PTRACE(3, "Failed to recognize a plugin in " << fileName);
     }
 
     else {
       if ((*GetAPIVersion)() != PWLIB_PLUGIN_API_VERSION) {
-        PTRACE(4, fileName << " is a plugin, but the version mismatch");
+        PTRACE(3, fileName << " is a plugin, but the version mismatch");
       }
 
       else {
@@ -109,7 +112,7 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
         void (*triggerRegister)(PPluginManager *);
 
         if (!dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) {
-          PTRACE(4, "Failed to find the registration-triggering function in " << fileName);
+          PTRACE(3, "Failed to find the registration-triggering function in " << fileName);
         }
 
         // call the register function and add the plugin to the list of plugins
@@ -133,7 +136,7 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
   PDirectory dir = directory;
  
   if (!dir.Open()) {
-    PTRACE(2, "Cannot open plugin directory " << dir);
+    PTRACE(4, "Cannot open plugin directory " << dir);
     return;
   }
  
