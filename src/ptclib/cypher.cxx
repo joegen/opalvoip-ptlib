@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.20 1997/10/10 10:43:41 robertj Exp $
+ * $Id: cypher.cxx,v 1.21 1997/10/30 10:19:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.21  1997/10/30 10:19:19  robertj
+ * Fixed bug with having empty string in encrypted text.
+ *
  * Revision 1.20  1997/10/10 10:43:41  robertj
  * Fixed bug in password encryption, missing string terminator.
  *
@@ -464,9 +467,14 @@ PString PCypher::Decode(const PString & cypher)
 BOOL PCypher::Decode(const PString & cypher, PString & clear)
 {
   clear = PString();
+
   PBYTEArray clearText;
-  if (!Decode(cypher, clearText) || clearText.IsEmpty())
+  if (!Decode(cypher, clearText))
     return FALSE;
+
+  if (clearText.IsEmpty())
+    return TRUE;
+
   PINDEX sz = clearText.GetSize();
   memcpy(clear.GetPointer(sz+1), (const BYTE *)clearText, sz);
   return TRUE;
