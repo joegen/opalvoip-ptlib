@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.19 1996/02/03 11:07:59 robertj Exp $
+ * $Id: collect.cxx,v 1.20 1996/02/08 12:24:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.20  1996/02/08 12:24:13  robertj
+ * Added default print for dictionaries in form key=data\n.
+ * Added missing GetAt() function on PSet to be consistent with all others.
+ *
  * Revision 1.19  1996/02/03 11:07:59  robertj
  * A bit more bullet proofing of sorted list class.
  *
@@ -1277,16 +1281,15 @@ PINDEX PAbstractSet::GetValuesIndex(const PObject & obj) const
 }
 
 
-BOOL PAbstractSet::SetAt(PINDEX, PObject * obj)
+PObject * PAbstractSet::GetAt(PINDEX index) const
 {
-  return Append(obj);
-;
+  return (PObject *)&AbstractGetKeyAt(index);
 }
 
 
-PObject * PAbstractSet::GetAt(PINDEX) const
+BOOL PAbstractSet::SetAt(PINDEX, PObject * obj)
 {
-  return NULL;
+  return Append(obj);
 }
 
 
@@ -1393,6 +1396,13 @@ PObject & PAbstractDictionary::GetRefAt(const PObject & key) const
 {
   Element * element = hashTable->GetElementAt(key);
   return *PAssertNULL(element)->data;
+}
+
+
+void PAbstractDictionary::PrintOn(ostream &strm) const
+{
+  for (PINDEX  i = 0; i < GetSize(); i++)
+    strm << AbstractGetKeyAt(i) << '=' << AbstractGetDataAt(i) << endl;
 }
 
 
