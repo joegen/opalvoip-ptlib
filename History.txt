@@ -2,6 +2,30 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.14
+------------
+	Added support for producing shared libraries.
+
+	Added optimisation to array comparisons if referencing same array.
+
+	Fixed problem with changing size of referenced objects, reference needed
+	to be broken and wasn't invalidating other references causing crashes.
+
+	Updated OpenSSL support.
+
+	Improved FreeBSD support (later versions, OSS sound etc).
+
+	Fixed some minor BeOS issues.
+
+	Added support for power PC Linux variant.
+
+	Fixed ASN PER encoder boundary condition error for constrained integer 
+	encoding (values 1, 256 etc).
+
+	Fixed ASN parsing of multiple IMPORTS and OID's in IMPORTS section.
+
+
+
 Release 1.13
 ------------
 	Fixed alignment problem in debug memory check code (especially with
