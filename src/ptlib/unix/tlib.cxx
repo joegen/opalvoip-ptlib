@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.63  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.62  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -224,9 +227,9 @@
 #else
 #include <sys/time.h>
 #include <pwd.h>
+#endif // P_VXWORKS
 #include <signal.h>
 #include <sys/wait.h>
-#endif // P_VXWORKS
 #include <errno.h>
 
 #if defined(P_LINUX)
@@ -340,6 +343,9 @@ PDirectory PProcess::GetOSConfigDir()
 PDirectory PProcess::PXGetHomeDir ()
 
 {
+#ifdef P_VXWORKS
+  return "./";
+#else
   PString dest;
   char *ptr;
   struct passwd *pw = NULL;
@@ -369,6 +375,7 @@ PDirectory PProcess::PXGetHomeDir ()
     dest += "/";
 
   return dest;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

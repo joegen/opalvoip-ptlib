@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.27  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.26  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -174,21 +177,20 @@ void PSerialChannel::Construct()
 
 BOOL PSerialChannel::Close()
 {
-  if (os_handle >= 0) {
-
 #ifdef P_VXWORKS
   PAssertAlways(PUnimplementedFunction);
 #else
+  if (os_handle >= 0) {
 
     // delete the lockfile
     PFile::Remove(PString(LOCK_PREFIX) + channelName);
 
     // restore the original terminal settings
     TCSETATTR(os_handle, &oldTermio);
-#endif // P_VXWORKS
   }
 
   return PChannel::Close();
+#endif // P_VXWORKS
 }
 
 

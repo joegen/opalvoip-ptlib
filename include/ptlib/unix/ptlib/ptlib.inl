@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.26  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.25  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -81,7 +84,7 @@
 PINLINE DWORD PProcess::GetProcessID() const
 {
 #ifdef P_VXWORKS
-  return threadId;
+  return PX_threadId;
 #else
   return (DWORD)getpid();
 #endif // P_VXWORKS
