@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.6 1996/05/23 09:56:27 robertj Exp $
+ * $Id: ftp.cxx,v 1.8 1996/05/30 10:04:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.8  1996/05/30 10:04:46  robertj
+ * Fixed bug in breaking accept within FTP constructor returning wrong error code.
+ *
+ * Revision 1.7  1996/05/26 03:46:36  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.6  1996/05/23 09:56:27  robertj
  * Changed FTP so can do passive/active mode on all data transfers.
  *
@@ -123,10 +129,13 @@ void PFTPSocket::ConstructServerSocket(const PString & readyString)
   Construct();
 
   state = NeedUser;
-  WriteResponse(220, readyString);
 
-  // the default data port for a client is the same port
-  GetPeerAddress(remoteHost, remotePort);
+  if (IsOpen()) {
+    WriteResponse(220, readyString);
+
+    // the default data port for a client is the same port
+    GetPeerAddress(remoteHost, remotePort);
+  }
 }
 
 
@@ -578,9 +587,10 @@ BOOL PFTPSocket::OnPORT(const PCaselessString & args)
   PStringArray tokens = args.Tokenise(",");
 
   long values[6];
-  int len = PMIN(args.GetSize(), 6);
+  PINDEX len = PMIN(args.GetSize(), 6);
 
-  for (PINDEX i = 0; i < len; i++) {
+  PINDEX i;
+  for (i = 0; i < len; i++) {
     values[i] = tokens[i].AsInteger();
     if (values[i] < 0 || values[i] > 255)
       break;
