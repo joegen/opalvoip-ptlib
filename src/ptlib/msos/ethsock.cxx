@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.8  1998/10/12 09:34:42  robertj
+ * New method for getting IP addresses of interfaces.
+ *
  * Revision 1.7  1998/10/06 10:24:41  robertj
  * Fixed hang when using reset command, removed the command!
  *
@@ -63,6 +66,7 @@
 
 
 #define PACKET_SERVICE_NAME "EPacket"
+#define SERVICES_REGISTRY_KEY "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,6 +163,8 @@ class PWin32PacketDriver
     virtual BOOL EnumInterfaces(PINDEX idx, PString & name) = 0;
     virtual BOOL BindInterface(const PString & interfaceName) = 0;
 
+    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask) = 0;
+
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap) = 0;
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap) = 0;
     BOOL CompleteIO(DWORD & received, PWin32Overlapped & overlap);
@@ -189,8 +195,13 @@ class PWin32PacketVxD : public PWin32PacketDriver
     virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
     virtual BOOL BindInterface(const PString & interfaceName);
 
+    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+  protected:
+    PStringList transportBinding;
 };
 
 
@@ -204,8 +215,13 @@ class PWin32PacketSYS : public PWin32PacketDriver
     virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
     virtual BOOL BindInterface(const PString & interfaceName);
 
+    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+  protected:
+    PString registryKey;
 };
 
 
@@ -604,7 +620,7 @@ BOOL PWin32PacketDriver::SetOid(UINT oid, DWORD data)
 
 BOOL PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
 {
-  static const PString RegBase = "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Class\\Net";
+  static const PString RegBase = SERVICES_REGISTRY_KEY "Class\\Net";
 
   PString keyName;
   RegistryKey registry(RegBase, RegistryKey::ReadOnly);
@@ -619,6 +635,26 @@ BOOL PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
     name = keyName;
 
   return TRUE;
+}
+
+
+static PString SearchRegistryKeys(const PString & key,
+                                  const PString & variable,
+                                  const PString & value)
+{
+  RegistryKey registry(key, RegistryKey::ReadOnly);
+
+  PString str;
+  if (registry.QueryValue(variable, str) && (str *= value))
+    return key;
+
+  for (PINDEX idx = 0; registry.EnumKey(idx, str); idx++) {
+    PString result = SearchRegistryKeys(key + str + '\\', variable, value);
+    if (!result)
+      return result;
+  }
+
+  return PString();
 }
 
 
@@ -676,8 +712,90 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
   if (!QueryOid(OID_GEN_DRIVER_VERSION, 2, buf))
     return FALSE;
 
-  dwError = ERROR_SUCCESS;
+  dwError = ERROR_SUCCESS;    // Successful, even if may not be bound.
+
+  PString devKey = SearchRegistryKeys("HKEY_LOCAL_MACHINE\\Enum\\", "Driver", "Net\\" + devName);
+  if (devKey.IsEmpty())
+    return TRUE;
+
+  RegistryKey bindRegistry(devKey + "Bindings", RegistryKey::ReadOnly);
+  PString binding;
+  for (PINDEX idx = 0; bindRegistry.EnumValue(idx, binding); idx++) {
+    if (binding.Left(6) *= "MSTCP\\") {
+      RegistryKey mstcpRegistry("HKEY_LOCAL_MACHINE\\Enum\\Network\\" + binding, RegistryKey::ReadOnly);
+      PString str;
+      if (mstcpRegistry.QueryValue("Driver", str))
+        transportBinding.AppendString(SERVICES_REGISTRY_KEY "Class\\" + str);
+    }
+  }
+
   return TRUE;
+}
+
+
+BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
+                                    PIPSocket::Address & addr,
+                                    PIPSocket::Address & net_mask)
+{
+  if (idx >= transportBinding.GetSize())
+    return FALSE;
+
+  RegistryKey transportRegistry(transportBinding[idx], RegistryKey::ReadOnly);
+  PString str;
+  if (transportRegistry.QueryValue("IPAddress", str))
+    addr = str;
+  else
+    addr = 0;
+
+  if (addr != 0) {
+    if (transportRegistry.QueryValue("IPMask", str))
+      net_mask = str;
+    else {
+      if (IN_CLASSA(addr))
+        net_mask = "255.0.0.0";
+      else if (IN_CLASSB(addr))
+        net_mask = "255.255.0.0";
+      else if (IN_CLASSC(addr))
+        net_mask = "255.255.255.0";
+      else
+        net_mask = 0;
+    }
+    return TRUE;
+  }
+
+  PEthSocket::Address macAddress;
+  if (!QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(macAddress), macAddress.b))
+    return FALSE;
+
+  PINDEX dhcpCount;
+  for (dhcpCount = 0; dhcpCount < 8; dhcpCount++) {
+    RegistryKey dhcpRegistry(psprintf(SERVICES_REGISTRY_KEY "VxD\\DHCP\\DhcpInfo%02u", dhcpCount),
+                             RegistryKey::ReadOnly);
+    if (dhcpRegistry.QueryValue("DhcpInfo", str)) {
+      struct DhcpInfo {
+        DWORD index;
+        PIPSocket::Address ipAddress;
+        PIPSocket::Address mask;
+        PIPSocket::Address server;
+        PIPSocket::Address anotherAddress;
+        DWORD unknown1;
+        DWORD unknown2;
+        DWORD unknown3;
+        DWORD unknown4;
+        DWORD unknown5;
+        DWORD unknown6;
+        BYTE  unknown7;
+        PEthSocket::Address macAddress;
+      } * dhcpInfo = (DhcpInfo *)(const char *)str;
+      if (dhcpInfo->macAddress == macAddress) {
+        addr = dhcpInfo->ipAddress;
+        net_mask = dhcpInfo->mask;
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 
@@ -728,29 +846,41 @@ PWin32PacketSYS::PWin32PacketSYS()
 }
 
 
+static BOOL RegistryQueryMultiSz(RegistryKey & registry,
+                                 const PString & variable,
+                                 PINDEX idx,
+                                 PString & value)
+{
+  PString allValues;
+  if (!registry.QueryValue(variable, allValues))
+    return FALSE;
+
+  const char * ptr = allValues;
+  while (*ptr != '\0' && idx-- > 0)
+    ptr += strlen(ptr)+1;
+
+  if (*ptr == '\0')
+    return FALSE;
+
+  value = ptr;
+  return TRUE;
+}
+
+
 static const char PacketDeviceStr[] = "\\Device\\" PACKET_SERVICE_NAME "_";
 
 BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
 {
-  RegistryKey registry("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\" PACKET_SERVICE_NAME "\\Linkage",
+  RegistryKey registry(SERVICES_REGISTRY_KEY PACKET_SERVICE_NAME "\\Linkage",
                        RegistryKey::ReadOnly);
-  PString exports;
-  if (!registry.QueryValue("Export", exports))
-    return FALSE;
-
-  const char * ptr = exports;
-  while (*ptr != '\0' && idx-- > 0)
-    ptr += strlen(ptr)+1;
-
-  if (*ptr == '\0') {
+  if (!RegistryQueryMultiSz(registry, "Export", idx, name)) {
     dwError = ERROR_NO_MORE_ITEMS;
     return FALSE;
   }
 
-  if (strncmp(ptr, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
-    ptr += sizeof(PacketDeviceStr)-1;
+  if (strncmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
+    name.Delete(0, sizeof(PacketDeviceStr)-1);
 
-  name = ptr;
   return TRUE;
 }
 
@@ -778,7 +908,31 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
     return FALSE;
   }
 
+  registryKey = SERVICES_REGISTRY_KEY + interfaceName;
   dwError = ERROR_SUCCESS;
+  return TRUE;
+}
+
+
+BOOL PWin32PacketSYS::EnumIpAddress(PINDEX idx,
+                                    PIPSocket::Address & addr,
+                                    PIPSocket::Address & net_mask)
+{
+  PString str;
+  RegistryKey registry(registryKey, RegistryKey::ReadOnly);
+
+  if (!RegistryQueryMultiSz(registry, "IPAddress", idx, str)) {
+    dwError = ERROR_NO_MORE_ITEMS;
+    return FALSE;
+  }
+  addr = str;
+
+  if (!RegistryQueryMultiSz(registry, "SubnetMask", idx, str)) {
+    dwError = ERROR_NO_MORE_ITEMS;
+    return FALSE;
+  }
+  net_mask = str;
+
   return TRUE;
 }
 
@@ -875,34 +1029,13 @@ BOOL PEthSocket::Connect(const PString & newName)
   Close();
 
   if (!driver->BindInterface(newName)) {
-    osError = driver->GetLastError();
+    osError = driver->GetLastError()|0x40000000;
     return FALSE;
   }
 
-  Address myAddr;
-  if (GetAddress(myAddr)) {
-    os_handle = 1;
-    for (;;) {
-      Address itsAddr;
-      PWin32AsnOid ifPhysAddressOid = "1.3.6.1.2.1.2.2.1.6.0";
-      ifPhysAddressOid[ifPhysAddressOid.idLength-1] = os_handle;
-      if (!snmp->GetOid(ifPhysAddressOid, &itsAddr, sizeof(itsAddr)))
-        break;
-
-      ifPhysAddressOid.Free();
-      if (itsAddr == myAddr) {
-        interfaceName = newName;
-        return TRUE;
-      }
-
-      os_handle++;
-    }
-    os_handle = -1;
-  }
-
-  osError = driver->GetLastError();
-  driver->Close();
-  return FALSE;
+  interfaceName = newName;
+  os_handle = 1;
+  return TRUE;
 }
 
 
@@ -912,42 +1045,82 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 }
 
 
+BOOL PEthSocket::GetGatewayAddress(PIPSocket::Address & addr) const
+{
+  AsnInteger ifNum = -1;
+  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
+  if (!snmp->GetOid(gatewayOid, addr))
+    return FALSE;
+
+  gatewayOid.Free();
+  return TRUE;
+}
+
+
 PString PEthSocket::GetGatewayInterface() const
 {
   AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
-  if (snmp->GetOid(gatewayOid, ifNum) && ifNum >= 0) {
-    gatewayOid.Free();
+  if (!snmp->GetOid(gatewayOid, ifNum) && ifNum >= 0)
+    return PString();
 
-    Address gwAddr;
-    PWin32AsnOid ifPhysAddressOid = "1.3.6.1.2.1.2.2.1.6.0";
-    ifPhysAddressOid[ifPhysAddressOid.idLength-1] = ifNum;
-    if (snmp->GetOid(ifPhysAddressOid, &gwAddr, sizeof(gwAddr))) {
-      ifPhysAddressOid.Free();
+  gatewayOid.Free();
 
-      PWin32PacketDriver * tempDriver = CreatePacketDriver();
-      PINDEX idx = 0;
-      PString name;
-      while (tempDriver->EnumInterfaces(idx++, name)) {
-        if (tempDriver->BindInterface(name)) {
-          Address ifAddr;
-          if (tempDriver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(ifAddr), ifAddr.b) &&
-              ifAddr == gwAddr) {
-            delete tempDriver;
-            return name;
-          }
-        }
+  PIPSocket::Address gwAddr = 0;
+  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
+  PWin32AsnOid oid = baseOid;
+  PWin32AsnAny value;
+  while (snmp->GetNextOid(oid, value)) {
+    if (!(baseOid *= oid))
+      break;
+    if (value.asnType != ASN_IPADDRESS)
+      break;
+
+    oid[9] = 2;
+    AsnInteger ifIndex = -1;
+    if (!snmp->GetOid(oid, ifIndex) || ifIndex < 0)
+      break;
+
+    if (ifIndex == ifNum) {
+      memcpy(&gwAddr, value.asnValue.address.stream, sizeof(gwAddr));
+      break;
+    }
+
+    oid[9] = 1;
+  }
+
+  if (gwAddr == 0)
+    return PString();
+
+  PWin32PacketDriver * tempDriver = CreatePacketDriver();
+
+  PString gatewayInterface, anInterface;
+
+  PINDEX ifIdx = 0;
+  while (gatewayInterface.IsEmpty() && tempDriver->EnumInterfaces(ifIdx++, anInterface)) {
+    if (tempDriver->BindInterface(anInterface)) {
+      PIPSocket::Address ifAddr, ifMask;
+      PINDEX ipIdx = 0;
+      if (tempDriver->EnumIpAddress(ipIdx++, ifAddr, ifMask) && ifAddr == gwAddr) {
+        gatewayInterface = anInterface;
+        break;
       }
-      delete tempDriver;
     }
   }
-  return PString();
+
+  delete tempDriver;
+
+  return gatewayInterface;
 }
 
 
 BOOL PEthSocket::GetAddress(Address & addr)
 {
-  return driver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(addr), addr.b);
+  if (driver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(addr), addr.b))
+    return TRUE;
+
+  osError = driver->GetLastError()|0x40000000;
+  return FALSE;
 }
 
 
@@ -955,32 +1128,16 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
                                PIPSocket::Address & addr,
                                PIPSocket::Address & net_mask)
 {
-  if (!IsOpen())
-    return FALSE;
-
-  AsnInteger ifNum = os_handle;
-  PWin32AsnAny value;
-  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
-  PWin32AsnOid oid = baseOid;
-  while (snmp->GetNextOid(oid, value)) {
-    if (!(baseOid *= oid))
-      return FALSE;
-    if (value.asnType != ASN_IPADDRESS)
-      return FALSE;
-
-    oid[9] = 2;
-    AsnInteger ifIndex = -1;
-    if (!snmp->GetOid(oid, ifIndex) || ifIndex < 0)
-      return FALSE;
-
-    if (ifIndex == ifNum && idx-- == 0) {
-      memcpy(&addr, value.asnValue.address.stream, sizeof(addr));
-      oid[9] = 3;
-      if (snmp->GetOid(oid, net_mask))
-        oid.Free();
+  if (IsOpen()) {
+    if (driver->EnumIpAddress(idx, addr, net_mask))
       return TRUE;
-    }
-    oid[9] = 1;
+
+    osError = ENOENT;
+    lastError = NotFound;
+  }
+  else {
+    osError = EBADF;
+    lastError = NotOpen;
   }
 
   return FALSE;
@@ -1001,9 +1158,17 @@ static const struct {
 
 BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
-  DWORD filter = 0;
-  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter) || filter == 0)
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
     return FALSE;
+  }
+
+  DWORD filter = 0;
+  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter) || filter == 0) {
+    osError = driver->GetLastError()|0x40000000;
+    return FALSE;
+  }
 
   mask = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
@@ -1018,13 +1183,22 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 
 BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 {
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   DWORD bits = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
     if ((filter&FilterMasks[i].pwlib) != 0)
       bits |= FilterMasks[i].ndis;
   }
-  if (!driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits))
+
+  if (!driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits)) {
+    osError = driver->GetLastError()|0x40000000;
     return FALSE;
+  }
 
   filterType = type;
   return TRUE;
@@ -1033,9 +1207,17 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 
 PEthSocket::MediumTypes PEthSocket::GetMedium()
 {
-  DWORD medium = 0;
-  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0)
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
     return NumMediumTypes;
+  }
+
+  DWORD medium = 0;
+  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0) {
+    osError = driver->GetLastError()|0x40000000;
+    return NumMediumTypes;
+  }
 
   static const DWORD MediumValues[NumMediumTypes] = {
     NdisMedium802_3, NdisMediumWan
@@ -1052,6 +1234,12 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
 
 BOOL PEthSocket::Read(void * data, PINDEX length)
 {
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   PINDEX idx;
 
   do {
@@ -1093,6 +1281,12 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
 
 BOOL PEthSocket::Write(const void * data, PINDEX length)
 {
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   HANDLE handles[MAXIMUM_WAIT_OBJECTS];
 
   PINDEX idx;
