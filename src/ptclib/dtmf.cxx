@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.13  2005/01/25 06:35:27  csoutheren
+ * Removed warnings under MSVC
+ *
  * Revision 1.12  2004/11/17 10:13:14  csoutheren
  * Fixed compilation with gcc 4.0.0
  *
@@ -276,10 +279,10 @@ void PDTMFEncoder::AddTone(char _digit, unsigned len)
 {
   char digit = (char)toupper(_digit);
   if ('0' <= digit && digit <= '9')
-    digit = digit - '0';
+    digit = (char)(digit - '0');
 
   else if ('A' <= digit && digit <= 'D')
-    digit = digit + 10 - 'A';
+    digit = (char)(digit + 10 - 'A');
 
   else if (digit == '*')
     digit = 14;
