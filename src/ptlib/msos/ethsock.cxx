@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.cxx,v 1.1 1998/08/20 06:04:52 robertj Exp $
+ * $Id: ethsock.cxx,v 1.2 1998/08/21 05:27:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.2  1998/08/21 05:27:13  robertj
+ * Fine tuning of interface.
+ *
  * Revision 1.1  1998/08/20 06:04:52  robertj
  * Initial revision
  *
@@ -773,78 +776,6 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PEthSocket::Address::Address()
-{
-  memset(b, 0xff, sizeof(b));
-}
-
-
-PEthSocket::Address::Address(const BYTE * addr)
-{
-  memcpy(b, PAssertNULL(addr), sizeof(b));
-}
-
-
-PEthSocket::Address::Address(const Address & addr)
-{
-  l = addr.l;
-  s = addr.s;
-}
-
-
-PEthSocket::Address::Address(const PString & str)
-{
-  operator=(str);
-}
-
-
-PEthSocket::Address & PEthSocket::Address::operator=(const Address & addr)
-{
-  l = addr.l;
-  s = addr.s;
-  return *this;
-}
-
-
-PEthSocket::Address & PEthSocket::Address::operator=(const PString & str)
-{
-  memset(b, 0, sizeof(b));
-
-  int shift = 0;
-  PINDEX byte = 5;
-  PINDEX pos = str.GetLength();
-  while (pos-- > 0) {
-    int c = str[pos];
-    if (c != '-') {
-      if (isdigit(c))
-        b[byte] |= (c - '0') << shift;
-      else if (isxdigit(c))
-        b[byte] |= (toupper(c) - 'A' + 10) << shift;
-      else {
-        memset(this, 0, sizeof(*this));
-        return *this;
-      }
-      if (shift == 0)
-        shift = 4;
-      else {
-        shift = 0;
-        byte--;
-      }
-    }
-  }
-
-  return *this;
-}
-
-
-PEthSocket::Address::operator PString() const
-{
-  return psprintf("%02X-%02X-%02X-%02X-%02X-%02X", b[0], b[1], b[2], b[3], b[4], b[5]);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 static PWin32PacketDriver * CreatePacketDriver()
 {
   OSVERSIONINFO info;
@@ -866,6 +797,8 @@ PEthSocket::PEthSocket(PINDEX nBuffers, PINDEX size)
   buffers = new PWin32PacketBuffer[nBuffers];
   for (PINDEX i = 0; i < nBuffers; i++)
     buffers[i].SetSize(size);
+
+  filterType = TypeAll;
 }
 
 
@@ -876,6 +809,13 @@ PEthSocket::~PEthSocket()
   delete [] buffers;
   delete driver;
   delete snmp;
+}
+
+
+BOOL PEthSocket::OpenSocket()
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
 }
 
 
@@ -924,26 +864,6 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
 }
 
 
-BOOL PEthSocket::OpenSocket()
-{
-  PAssertAlways(PUnimplementedFunction);
-  return FALSE;
-}
-
-
-const char * PEthSocket::GetProtocolName() const
-{
-  return "eth";
-}
-
-
-BOOL PEthSocket::Listen(unsigned, WORD, Reusability)
-{
-  PAssertAlways(PUnimplementedFunction);
-  return FALSE;
-}
-
-
 BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
   return driver->EnumInterfaces(idx, name);
@@ -987,19 +907,6 @@ PString PEthSocket::GetGatewayInterface() const
 BOOL PEthSocket::GetAddress(Address & addr)
 {
   return driver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(addr), addr.b);
-}
-
-
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr)
-{
-  PIPSocket::Address net_mask;
-  return EnumIpAddress(0, addr, net_mask);
-}
-
-
-BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
-{
-  return EnumIpAddress(0, addr, net_mask);
 }
 
 
@@ -1051,29 +958,35 @@ static const struct {
 };
 
 
-unsigned PEthSocket::GetFilter()
+BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
   DWORD filter;
   if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter))
-    return 0;
+    return FALSE;
 
-  unsigned bits = 0;
+  mask = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
     if ((filter&FilterMasks[i].ndis) != 0)
-      bits |= FilterMasks[i].pwlib;
+      mask |= FilterMasks[i].pwlib;
   }
-  return bits;
+
+  type = (WORD)filterType;
+  return TRUE;
 }
 
 
-BOOL PEthSocket::SetFilter(unsigned filter)
+BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 {
   DWORD bits = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
     if ((filter&FilterMasks[i].pwlib) != 0)
       bits |= FilterMasks[i].ndis;
   }
-  return driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits);
+  if (!driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits))
+    return FALSE;
+
+  filterType = type;
+  return TRUE;
 }
 
 
