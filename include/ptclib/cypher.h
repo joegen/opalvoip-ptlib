@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.5 1996/03/16 04:36:43 robertj Exp $
+ * $Id: cypher.h,v 1.6 1996/03/17 05:47:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.6  1996/03/17 05:47:00  robertj
+ * Changed secured config to allow for expiry dates.
+ *
  * Revision 1.5  1996/03/16 04:36:43  robertj
  * Redesign of secure config to accommodate expiry dates and option values passed in security key code.
  *
@@ -375,6 +378,7 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
       Defaults,
       Pending,
       IsValid,
+      Expired,
       Invalid
     };
     ValidationState GetValidation() const;
