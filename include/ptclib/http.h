@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.26 1997/10/30 10:22:52 robertj Exp $
+ * $Id: http.h,v 1.27 1998/01/26 00:24:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.27  1998/01/26 00:24:24  robertj
+ * Added more information to PHTTPConnectionInfo.
+ * Added function to allow HTTPClient to automatically connect if URL has hostname.
+ *
  * Revision 1.26  1997/10/30 10:22:52  robertj
  * Added multiple user basic authorisation scheme.
  *
@@ -197,37 +201,6 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
     ChildList children;
     PHTTPSpace * parent;
     PHTTPResource * resource;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPConnectionInfo
-
-PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
-/* This object describes the connectiono associated with a HyperText Transport
-   Protocol request. This information is required by handler functions on
-   <A>PHTTPResource</A> descendant classes to manage the connection correctly.
-*/
-  public:
-    PHTTPConnectionInfo();
-    void Construct(const PMIMEInfo & inMIME, int majorVersion, int MinorVersion);
-
-    void SetPersistance(BOOL newPersist);
-    BOOL IsCompatible(int major, int minor) const;
-
-    BOOL IsPersistant() const         { return isPersistant; }
-    BOOL IsProxyConnection() const    { return isProxyConnection; }
-    int  GetMajorVersion() const      { return majorVersion; }
-    int  GetMinorVersion() const      { return minorVersion; }
-
-    void SetEntityBodyLength(long v)  { entityBodyLength = v; }
-    long GetEntityBodyLength() const  { return entityBodyLength; }
-
-  protected:
-    BOOL isPersistant;
-    BOOL isProxyConnection;
-    int  majorVersion;
-    int  minorVersion;
-    long entityBodyLength;
 };
 
 
@@ -456,11 +429,16 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
        <H2>Returns:</H2>
        TRUE if document is being transferred.
      */
+
+  protected:
+    BOOL AssureConnect(const PURL & url);
 };
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPServer
+
+class PHTTPConnectionInfo;
 
 PDECLARE_CLASS(PHTTPServer, PHTTP)
 /* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
@@ -577,9 +555,6 @@ PDECLARE_CLASS(PHTTPServer, PHTTP)
      */
 
     virtual BOOL OnProxy(
-      Commands cmd,                 // Command to be proxied.
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo
     );
     /* Handle a proxy command request from a client. This will only get called
@@ -674,6 +649,49 @@ PDECLARE_CLASS(PHTTPServer, PHTTP)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PHTTPConnectionInfo
+
+PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
+/* This object describes the connectiono associated with a HyperText Transport
+   Protocol request. This information is required by handler functions on
+   <A>PHTTPResource</A> descendant classes to manage the connection correctly.
+*/
+  public:
+    PHTTPConnectionInfo(PHTTP::Commands cmd);
+    PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & url, const PMIMEInfo & mime);
+    void Construct(PHTTPServer & server, int majorVersion, int MinorVersion);
+
+    PHTTP::Commands GetCommand() const { return command; }
+
+    void SetURL(const PURL & u, WORD defPort);
+    const PURL & GetURL() const       { return url; }
+
+    const PMIMEInfo & GetMIME() const { return mimeInfo; }
+
+
+    void SetPersistance(BOOL newPersist);
+    BOOL IsCompatible(int major, int minor) const;
+
+    BOOL IsPersistant() const         { return isPersistant; }
+    BOOL IsProxyConnection() const    { return isProxyConnection; }
+    int  GetMajorVersion() const      { return majorVersion; }
+    int  GetMinorVersion() const      { return minorVersion; }
+
+    long GetEntityBodyLength() const  { return entityBodyLength; }
+
+  protected:
+    PHTTP::Commands command;
+    PURL      url;
+    PMIMEInfo mimeInfo;
+    BOOL      isPersistant;
+    BOOL      isProxyConnection;
+    int       majorVersion;
+    int       minorVersion;
+    long      entityBodyLength;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
 PDECLARE_CLASS(PHTTPRequest, PObject)
@@ -686,7 +704,7 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
     PHTTPRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
-	  PHTTPServer & socket			// socket that request initiated on
+      PHTTPServer & socket          // socket that request initiated on
     );
 
     const PURL & url;               // Universal Resource Locator for document.
@@ -694,7 +712,7 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
     PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
     PINDEX contentSize;             // Size of the body of the resource data.
-	PIPSocket::Address origin;	    // IP address of origin of request
+    PIPSocket::Address origin;      // IP address of origin of request
 };
 
 
