@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.121  2004/02/15 22:36:29  csoutheren
+# Included ALSA in default non-plugin sound drivers
+#
 # Revision 1.120  2003/11/18 10:41:20  csoutheren
 # Fixed problem with linking in static plugins
 #
@@ -489,6 +492,13 @@ ifeq ($(HAS_PLUGINS),0)
 ifeq ($(OSTYPE),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
 SOUND_SOURCE	= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
+
+ifeq ($(HAS_ALSA),1)
+
+VPATH_CXX	+= $(PLUGIN_DIR)/sound_alsa
+SOUND_SOURCE	= $(PLUGIN_DIR)/sound_alsa/sound_alsa.cxx
+endif
+
 endif
 
 #  #Set SOUND_SOURCE to dummyaudio, a file which links but does not
