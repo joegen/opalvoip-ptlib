@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.5  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.4  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -47,7 +50,7 @@
 #pragma interface
 #endif
 
-
+#include <ptlib.h>
 
 /**Mersenne Twister random number generator.
    An application would create a static instance of this class, and then use

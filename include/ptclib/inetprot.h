@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.18  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.17  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -90,6 +93,7 @@
 #pragma interface
 #endif
 
+#include <ptlib.h>
 
 class PSocket;
 class PIPSocket;

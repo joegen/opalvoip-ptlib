@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.5  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.4  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -47,6 +50,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
 
 /** Class for implementing an "adaptive" delay.
     This class will cause the the caller to, on average, delay
