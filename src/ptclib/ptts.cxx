@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.7  2003/10/30 11:28:25  rjongbloed
+ * Added dircetory name for Speech API under Windows.
+ *
  * Revision 1.6  2003/09/17 06:02:13  csoutheren
  * Fixed windows header file problem caused by removing recursive headers
  *
@@ -55,6 +58,11 @@
 // WIN32 COM stuff must be first in file to compile properly
 
 #if P_SAPI
+
+#if defined(P_SAPI_LIBRARY)
+#pragma comment(lib, P_SAPI_LIBRARY)
+#endif
+
 
 #ifndef _WIN32_DCOM
 #define _WIN32_DCOM 1
