@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.9 1996/03/31 09:08:04 robertj Exp $
+ * $Id: pprocess.h,v 1.10 1996/05/23 10:02:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.10  1996/05/23 10:02:41  robertj
+ * Changed process.h to pprocess.h to avoid name conflict.
+ *
  * Revision 1.9  1996/03/31 09:08:04  robertj
  * Added mutex to thread dictionary access.
  *
@@ -45,7 +48,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include "../../common/process.h"
+#include "../../common/pprocess.h"
   public:
     ~PProcess();
 
