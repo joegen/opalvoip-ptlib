@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.27  2000/12/05 08:24:50  craigs
+ * Fixed problem with EINTR causing havoc
+ *
  * Revision 1.26  2000/05/15 23:33:06  craigs
  * Fixed problem where lastReadCount was not zeroed if no read occurred
  *
@@ -298,6 +301,7 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = BufferTooSmall;
       break;
 
+    case EBADF:  // will get EBADF if a read/write occurs after closing. This must return Interrupted
     case EINTR:
       lastError = Interrupted;
       break;
@@ -321,7 +325,6 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
 
     case EFAULT:
     case ELOOP:
-    case EBADF:
     case EINVAL:
       lastError = BadParameter;
       break;
