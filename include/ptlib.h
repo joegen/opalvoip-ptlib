@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.21  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.20  1999/06/17 13:38:11  robertj
  * Fixed race condition on indirect channel close, mutex needed in PIndirectChannel.
  *
@@ -231,7 +234,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#if defined(P_USE_INLINES)
+#if P_USE_INLINES
 #include <ptlib/ptlib.inl>
 #include <ptlib/osutil.inl>
 #endif
