@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_AUDIO HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -885,7 +885,7 @@ Optional Features:
   --disable-httpsvc       disable HTTP service support
   --disable-configfile    disable config file support
   --disable-audio         disable audio support
-  --enable-alsa           disable non-plugin ALSA audio support
+  --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
   --enable-exceptions     enable C++ exceptions
@@ -2761,13 +2761,14 @@ default_serial=yes
 default_pop3smtp=yes
 default_audio=yes
 default_video=yes
-default_alsa=yes
 default_http=yes
 default_httpsvc=yes
 default_soap=yes
 default_xmlrpc=yes
 default_jabber=yes
 default_configfile=yes
+default_alsa=yes
+default_oss=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -2792,13 +2793,14 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
-  default_alsa=yes
   default_http=yes
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
   default_configfile=no
+  default_alsa=yes
+  default_oss=yes
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -2822,13 +2824,14 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
-  default_alsa=yes
   default_http=yes
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
   default_configfile=no
+  default_alsa=yes
+  default_oss=no
 fi
 
 
@@ -6457,6 +6460,7 @@ fi
 
 HAS_VIDEO=
 HAS_VIDEO_CAPTURE=
+
 if test "$enable_video" = "no" ; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -6622,35 +6626,34 @@ _ACEOF
       HAS_VIDEO=1
     fi
   fi
-fi
-
-
-
-# Check whether --enable-v4l or --disable-v4l was given.
+    # Check whether --enable-v4l or --disable-v4l was given.
 if test "${enable_v4l+set}" = set; then
   enableval="$enable_v4l"
 
 fi;
-# Check whether --enable-v4l2 or --disable-v4l2 was given.
+  # Check whether --enable-v4l2 or --disable-v4l2 was given.
 if test "${enable_v4l2+set}" = set; then
   enableval="$enable_v4l2"
 
 fi;
-# Check whether --enable-bsdvideo or --disable-bsdvideo was given.
+  # Check whether --enable-bsdvideo or --disable-bsdvideo was given.
 if test "${enable_bsdvideo+set}" = set; then
   enableval="$enable_bsdvideo"
 
 fi;
-# Check whether --enable-avc or --disable-avc was given.
+  # Check whether --enable-avc or --disable-avc was given.
 if test "${enable_avc+set}" = set; then
   enableval="$enable_avc"
 
 fi;
-# Check whether --enable-dc or --disable-dc was given.
+  # Check whether --enable-dc or --disable-dc was given.
 if test "${enable_dc+set}" = set; then
   enableval="$enable_dc"
 
 fi;
+fi
+
+
 
 
 
@@ -7070,17 +7073,30 @@ fi
 
 
 HAS_ALSA=
+HAS_OSS=
 if test "$enable_audio" = "yes" ; then
-  # Check whether --enable-alsa or --disable-alsa was given.
+
+    # Check whether --enable-alsa or --disable-alsa was given.
 if test "${enable_alsa+set}" = set; then
   enableval="$enable_alsa"
   enable_alsa=$enableval
 fi;
-  if test "${enable_alsa}z" = "z" ; then
-    enable_alsa=$default_alsa
-  fi
+  # Check whether --enable-oss or --disable-oss was given.
+if test "${enable_oss+set}" = set; then
+  enableval="$enable_oss"
+  enable_oss=$enableval
+fi;
 
   if test "$enable_plugins" = "no" ; then
+
+    if test "${enable_alsa}z" = "z" ; then
+      enable_alsa=$default_alsa
+    fi
+
+    if test "${enable_oss}z" = "z" ; then
+      enable_oss=$default_oss
+    fi
+
     if test "$enable_alsa" = "yes" ; then
       if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
   echo "$as_me:$LINENO: checking for alsa/asoundlib.h" >&5
@@ -7222,20 +7238,168 @@ echo $ECHO_N "checking for ALSA sound support... $ECHO_C" >&6
         echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
         ENDLDLIBS="$ENDLDLIBS -lasound"
+        HAS_ALSA=1
       else
         echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
+      fi
+    fi
+
+    if test "${HAS_ALSA}z" = "z" ; then
+      if test "$enable_oss" = "yes" ; then
+        if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for sys/soundcard.h" >&5
+echo $ECHO_N "checking for sys/soundcard.h... $ECHO_C" >&6
+if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_sys_soundcard_h" >&5
+echo "${ECHO_T}$ac_cv_header_sys_soundcard_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking sys/soundcard.h usability" >&5
+echo $ECHO_N "checking sys/soundcard.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <sys/soundcard.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking sys/soundcard.h presence" >&5
+echo $ECHO_N "checking sys/soundcard.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <sys/soundcard.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc in
+  yes:no )
+    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: sys/soundcard.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------ ##
+## Report this to bug-autoconf@gnu.org. ##
+## ------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+  no:yes )
+    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: sys/soundcard.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: sys/soundcard.h: check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: sys/soundcard.h: proceeding with the preprocessor's result" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------ ##
+## Report this to bug-autoconf@gnu.org. ##
+## ------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for sys/soundcard.h" >&5
+echo $ECHO_N "checking for sys/soundcard.h... $ECHO_C" >&6
+if test "${ac_cv_header_sys_soundcard_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_sys_soundcard_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_sys_soundcard_h" >&5
+echo "${ECHO_T}$ac_cv_header_sys_soundcard_h" >&6
+
+fi
+if test $ac_cv_header_sys_soundcard_h = yes; then
+  SNDCARDHDR=1
+fi
+
+
+        echo "$as_me:$LINENO: checking for OSS sound support" >&5
+echo $ECHO_N "checking for OSS sound support... $ECHO_C" >&6
+        if test "${SNDCARDHDR}z" != "z"; then
+          HAS_OSS=1
+
+          echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+        else
+          echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+        fi
       fi
     fi
   fi
 fi
 
 
-# Check whether --enable-oss or --disable-oss was given.
-if test "${enable_oss+set}" = set; then
-  enableval="$enable_oss"
 
-fi;
+
 
 if test "$OSTYPE" = "solaris" ; then
   USE_SYSTEM_SWAB=
@@ -8146,6 +8310,7 @@ s,@HAS_HTTP@,$HAS_HTTP,;t t
 s,@HAS_HTTPSVC@,$HAS_HTTPSVC,;t t
 s,@HAS_CONFIG_FILE@,$HAS_CONFIG_FILE,;t t
 s,@HAS_AUDIO@,$HAS_AUDIO,;t t
+s,@HAS_OSS@,$HAS_OSS,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@STDCXXFLAGS@,$STDCXXFLAGS,;t t
