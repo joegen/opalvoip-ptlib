@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.36  2003/03/20 23:42:01  dereks
+ * Make PPM video output device work correctly.
+ *
  * Revision 1.35  2003/03/17 07:50:41  robertj
  * Added OpenFull() function to open with all video parameters in one go.
  * Made sure vflip variable is set in converter even if converter has not
@@ -861,9 +864,11 @@ BOOL PVideoOutputDeviceNULL::EndFrame()
 
 PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
 {
+  PTRACE(6, "PPM\t Constructor of PVideoOutputDeviceRGB");
+
   colourFormat = "RGB24";
   bytesPerPixel = 3;
-  frameStore.SetSize(frameWidth*frameHeight*bytesPerPixel);
+  frameStore.SetSize(frameWidth * frameHeight * bytesPerPixel);
 }
 
 
@@ -904,9 +909,16 @@ BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
   if (x+width > frameWidth || y+height > frameHeight)
     return FALSE;
 
-  if (x == 0 && width == frameWidth)
-    memcpy(frameStore.GetPointer() + y*width*bytesPerPixel, data, height*width*bytesPerPixel);
-  else {
+  PINDEX bytesReturned;
+  if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
+    if (converter == NULL)
+      converter = PColourConverter::Create("YUV420P", colourFormat, width, height);
+    if (converter == NULL) 
+      PAssertAlways(psprintf("Failed creating a converter for YUV420  to %s, size %dx%d", 
+			     colourFormat.GetPointer(), width, height));
+    converter->Convert(data, frameStore.GetPointer(), &bytesReturned);
+  }  else {
+    PAssertAlways("Code not written for partial frames");
     for (unsigned dy = 0; dy < height; dy++)
       memcpy(frameStore.GetPointer() + ((y+dy)*width + x)*bytesPerPixel,
              data + dy*width*bytesPerPixel, width*bytesPerPixel);
@@ -918,12 +930,12 @@ BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
   return TRUE;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevicePPM
 
 PVideoOutputDevicePPM::PVideoOutputDevicePPM()
 {
+  PTRACE(6, "PPM\t Constructor of PVideoOutputDevicePPM");
   frameNumber = 0;
 }
 
@@ -966,15 +978,21 @@ PStringList PVideoOutputDevicePPM::GetDeviceNames() const
 BOOL PVideoOutputDevicePPM::EndFrame()
 {
   PFile file;
-
-  if (!file.Open(psprintf(deviceName, frameNumber++), PFile::WriteOnly))
+  PString fileName = psprintf("%s%d", deviceName.GetPointer(), frameNumber++);
+  
+  if (!file.Open(fileName, PFile::WriteOnly)) {
+    PTRACE(1, "PPMVid\tFailed to open PPM output file " << fileName);
     return FALSE;
+  }
 
   file << "P6 " << frameWidth  << " " << frameHeight << " " << 255 << "\n";
 
-  if (!file.Write(frameStore, frameStore.GetSize()))
+  if (!file.Write(frameStore, frameStore.GetSize())) {
+    PTRACE(1, "PPMVid\tFailed to write frame data to PPM output file " << fileName);
     return FALSE;
+  }
 
+  PTRACE(6, "PPMVid\tFinished writing PPM file " << fileName);
   return file.Close();
 }
 
