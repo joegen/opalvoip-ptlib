@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.88  2004/07/11 14:19:07  csoutheren
+ * More bulletproofing of ASN routines against random data attacks
+ *
  * Revision 1.87  2004/07/11 12:33:47  csoutheren
  * Added guards against illegal PDU values causing crashes
  *
@@ -337,7 +340,7 @@ static PINDEX CountBits(unsigned range)
   return nBits;
 }
 
-inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = 1000000)
+inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
 {
   // a 1mbit PDU has got to be an error
   return (0 <= offset && offset < upper);
@@ -444,10 +447,11 @@ void PASN_ConstrainedObject::SetConstraintBounds(ConstraintType ctype,
   }
 
   extendable = ctype == ExtendableConstraint;
-  PAssert((lower >= 0 || upper < 0x7fffffff) &&
-          (lower < 0 || (unsigned)lower <= upper), PInvalidParameter);
-  lowerLimit = lower;
-  upperLimit = upper;
+  if ((lower >= 0 || upper < 0x7fffffff) &&
+     (lower < 0 || (unsigned)lower <= upper)) {
+    lowerLimit = lower;
+    upperLimit = upper;
+  }
 }
 
 
@@ -1158,7 +1162,8 @@ PASN_BitString & PASN_BitString::operator=(const PASN_BitString & other)
 
 void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 {
-  PAssert((PINDEX)nBits < MaximumStringSize, PInvalidParameter);
+  if ((PINDEX)nBits >= MaximumStringSize)
+    return;
 
   bitData = bytes;
   SetSize(nBits);
@@ -1167,7 +1172,8 @@ void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 
 void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 {
-  PAssert((PINDEX)nBits < MaximumStringSize, PInvalidParameter);
+  if ((PINDEX)nBits >= MaximumStringSize)
+    return;
 
   if (size == 0)
     size = (nBits+7)/8;
@@ -1178,7 +1184,7 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 
 BOOL PASN_BitString::SetSize(unsigned nBits)
 {
-  if ((PINDEX)nBits > MaximumStringSize)
+  if ((PINDEX)nBits > MaximumStringSize || upperLimit > (unsigned)MaximumStringSize || lowerLimit < 0)
     return FALSE;
 
   if (constraint == Unconstrained)
@@ -1276,7 +1282,9 @@ void PASN_BitString::PrintOn(ostream & strm) const
 
 void PASN_BitString::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
-  PAssert(lower >= 0, PInvalidParameter);
+  if (lower < 0)
+    return;
+
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   SetSize(GetSize());
 }
@@ -1427,7 +1435,9 @@ void PASN_OctetString::PrintOn(ostream & strm) const
 
 void PASN_OctetString::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
-  PAssert(lower >= 0, PInvalidParameter);
+  if (lower < 0)
+    return;
+
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   SetSize(GetSize());
 }
@@ -1447,7 +1457,7 @@ PINDEX PASN_OctetString::GetDataLength() const
 
 BOOL PASN_OctetString::SetSize(PINDEX newSize)
 {
-  if (newSize > MaximumStringSize)
+  if (newSize > MaximumStringSize || upperLimit > (unsigned)MaximumStringSize || lowerLimit < 0)
     return FALSE;
 
   if (constraint != Unconstrained) {
@@ -1538,6 +1548,10 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
     characterSet.SetSize(canonicalSetSize);
     memcpy(characterSet.GetPointer(), canonicalSet, canonicalSetSize);
   }
+  else if (setSize >= MaximumArraySize ||
+           canonicalSetSize >= MaximumArraySize ||
+           characterSet.GetSize() >= MaximumArraySize)
+    return;
   else {
     characterSet.SetSize(setSize);
     PINDEX count = 0;
@@ -1545,7 +1559,8 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
       if (memchr(set, canonicalSet[i], setSize) != NULL)
         characterSet[count++] = canonicalSet[i];
     }
-    PAssert(count > 0, PInvalidParameter);
+    if (count < 0)
+      return;
     characterSet.SetSize(count);
   }
 
@@ -1576,7 +1591,9 @@ void PASN_ConstrainedString::PrintOn(ostream & strm) const
 void PASN_ConstrainedString::SetConstraintBounds(ConstraintType type,
                                                  int lower, unsigned upper)
 {
-  PAssert(lower >= 0, PInvalidParameter);
+  if (lower < 0)
+    return;
+
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if (value.GetSize() < (PINDEX)lowerLimit)
@@ -2500,7 +2517,9 @@ void PASN_Array::PrintOn(ostream & strm) const
 
 void PASN_Array::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
-  PAssert(lower >= 0, PInvalidParameter);
+  if (lower < 0)
+    return;
+
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if (GetSize() < (PINDEX)lowerLimit)
