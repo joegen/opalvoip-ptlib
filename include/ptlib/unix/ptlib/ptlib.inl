@@ -95,14 +95,6 @@ PINLINE PString PTime::GetTimePM()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PTimeInterval & PTimeInterval::operator =(const PTimeInterval & timeInterval)
-  { milliseconds = timeInterval.milliseconds; return *this; }
-
-PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & copy)
-  { milliseconds = copy.milliseconds; }
-
-///////////////////////////////////////////////////////////////////////////////
-
 PINLINE BOOL PDirectory::IsSubDir() const
   { return (entryInfo == NULL) ? FALSE : (entryInfo->type == PFileInfo::SubDirectory); }
 
