@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.9  2002/12/04 00:41:12  robertj
+ * Added sockets symbol not in winsock for getXbyY functions.
+ *
  * Revision 1.8  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -58,6 +61,7 @@
 #ifndef _PIPSOCKET
 
 #ifndef _WIN32_WCE
+
 #define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
 #define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
 #define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
@@ -81,6 +85,9 @@
 #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
 #define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
+
+#define NETDB_SUCCESS 0
+
 #endif
 
 
