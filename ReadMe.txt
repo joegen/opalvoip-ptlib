@@ -347,6 +347,8 @@ Note that asnparser is being built separately on NT and then used for .asn file 
 Biggest issue is poor multithreading capabilities of current implementation of Windows CE. 
 Therefore I doubt CE 2.11 build could be useful at all. PocketPC builds look better.
 
+Look for more port-related info on http://www.dogsbone.com/ce
+
 7. Conclusion
 -------------
 
