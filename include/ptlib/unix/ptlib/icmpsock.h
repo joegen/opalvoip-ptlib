@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.5  1998/11/30 22:06:45  robertj
+ * New directory structure.
+ *
  * Revision 1.4  1998/09/24 04:11:38  robertj
  * Added open software license.
  *
@@ -48,7 +51,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PICMPSocket
 
-#include "../../common/ptlib/icmpsock.h"
+#include "../../icmpsock.h"
   protected:
     BOOL WritePing(
       const PString & host,   // Host to send ping.
