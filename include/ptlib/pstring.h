@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.27 1997/05/16 12:10:12 robertj Exp $
+ * $Id: pstring.h,v 1.28 1997/06/08 04:48:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.28  1997/06/08 04:48:58  robertj
+ * Added regular expressions.
+ * Fixed non-template class descendent order.
+ *
  * Revision 1.27  1997/05/16 12:10:12  robertj
  * Fixed G++ compatibility bug.
  *
@@ -105,6 +109,7 @@
 // PString class
 
 class PStringArray;
+class PRegularExpression;
 
 #ifdef PHAS_UNICODE
 #define PSTRING_ANCESTOR_CLASS PWordArray
@@ -875,6 +880,21 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        from the set are in the string.
      */
 
+    PINDEX FindRegEx(
+      const PRegularExpression & regex, // regular expression to find
+      PINDEX offset = 0     // Offset into string to begin search.
+    ) const;
+    /* Locate the position within the string of one of the regular expression.
+       The search will begin at the character offset provided.
+
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will always return <CODE>P_MAX_INDEX</CODE>.
+       
+       <H2>Returns:</H2>
+       position of regular expression in the string, or P_MAX_INDEX if no
+       characters from the set are in the string.
+     */
+
 
     void Replace(
       const PString & target,   // String to be replaced in string.
@@ -1481,10 +1501,12 @@ PDECLARE_ARRAY(PStringArray, PString)
        Index of string in array or P_MAX_INDEX if not found.
      */
 
-#ifdef PHAS_TEMPLATES
-    PString & operator[](
+    inline PString & operator[](
       PINDEX index  // Index position in the collection of the object.
+#ifdef PHAS_TEMPLATES
     ) const { return PArray<PString>::operator[](index); }
+#else
+    ) const { return PStringArray_PTemplate::operator[](index); }
 #endif
 
     PString & operator[](
@@ -1609,11 +1631,27 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
+       This function asserts if there is no data at the key position.
+
        <H2>Returns:</H2>
        reference to the object indexed by the key.
      */
+
     PString operator()(const K & key, const char * dflt = "") const
       { if (Contains(key)) return (*this)[key]; return dflt; }
+    /* Get the string contained in the dictionary at the <CODE>key</CODE>
+       position. The hash table is used to locate the data quickly via the
+       hash function provided by the key.
+
+       The last key/data pair is remembered by the class so that subseqent
+       access is very fast.
+
+       This function returns the <CODE>dflt</CODE> value if there is no data
+       at the key position.
+
+       <H2>Returns:</H2>
+       reference to the object indexed by the key.
+     */
 
     virtual PString * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
@@ -1753,7 +1791,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_STRING_DICTIONARY(cls, K) \
+#define PSTRING_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
   private: \
     PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); } \
@@ -1769,15 +1807,15 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       : PAbstractDictionary() { } \
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
-    inline PString operator()(const K & key, const char * dflt = "") const \
-      { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
     inline PString & operator[](const K & key) const \
       { return (PString &)GetRefAt(key); } \
+    inline PString operator()(const K & key, const char * dflt = "") const \
+      { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
     virtual PString * RemoveAt(const K & key) \
       { PObject * obj = GetAt(key); PAbstractDictionary::SetAt(key,NULL); return (PString*)obj;}\
     inline virtual PString * GetAt(const K & key) const \
       { return (PString *)PAbstractDictionary::GetAt(key); } \
-    inline virtual BOOL SetDataAt(PINDEX index, const PString str) \
+    inline virtual BOOL SetDataAt(PINDEX index, const PString & str) \
      {return PAbstractDictionary::SetDataAt(index,PNEW PString(str));} \
     inline virtual BOOL SetAt(const K & key, const PString & str) \
       { return PAbstractDictionary::SetAt(key, PNEW PString(str)); } \
@@ -1785,9 +1823,19 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       { return (const K &)AbstractGetKeyAt(index); } \
     inline PString & GetDataAt(PINDEX index) const \
       { return (PString &)AbstractGetDataAt(index); } \
+  }
 
-#define PSTRING_DICTIONARY(cls, K) PDECLARE_STRING_DICTIONARY(cls, K) }
-
+#define PDECLARE_STRING_DICTIONARY(cls, K) \
+  PSTRING_DICTIONARY(cls##_PTemplate, K); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 #endif // PHAS_TEMPLATES
 
@@ -1876,6 +1924,145 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString)
       BOOL caselessKeys = FALSE,   // New keys are to be PCaselessStrings
       BOOL caselessValues = FALSE  // New values are to be PCaselessStrings
     );
+};
+
+
+extern "C" {
+typedef struct re_pattern_buffer regex_t;
+};
+
+
+PDECLARE_CLASS(PRegularExpression, PObject)
+/* A class representing a regular expression that may be used for locating
+   patterns in strings. The regular expression string is "compiled" into a
+   form that is more efficient during the matching. This compiled form
+   exists for the lifetime of the PRegularExpression instance.
+ */
+
+  public:
+    enum {
+      // Compile options
+      Extended = 1,
+      IgnoreCase = 2,
+      AnchorNewLine = 4,
+      // Execute options
+      NotBeginningOfLine = 1,
+      NotEndofLine = 2
+    };
+
+    PRegularExpression();
+    PRegularExpression(
+      const PString & pattern,    // Pattern to compile
+      int flags = IgnoreCase      // Pattern match options
+    );
+    PRegularExpression(
+      const char * cpattern,      // Pattern to compile
+      int flags = IgnoreCase      // Pattern match options
+    );
+    // Create and compile a new regular expression pattern.
+
+    ~PRegularExpression();
+    // Release storage for the compiled regular expression.
+
+
+    enum ErrorCodes {
+      NoError = 0,	    /* Success.  */
+      NoMatch,		      /* Didn't find a match (for regexec).  */
+
+      // POSIX regcomp return error codes.  (In the order listed in the standard.)
+      BadPattern,		    /* Invalid pattern.  */
+      CollateError,		  /* Not implemented.  */
+      BadClassType,		  /* Invalid character class name.  */
+      BadEscape,		    /* Trailing backslash.  */
+      BadSubReg,		    /* Invalid back reference.  */
+      UnmatchedBracket, /* Unmatched left bracket.  */
+      UnmatchedParen,		/* Parenthesis imbalance.  */ 
+      UnmatchedBrace,		/* Unmatched \{.  */
+      BadBR,		        /* Invalid contents of \{\}.  */
+      RangeError,		    /* Invalid range end.  */
+      OutOfMemory,		  /* Ran out of memory.  */
+      BadRepitition,		/* No preceding re for repetition op.  */
+
+      /* Error codes we've added.  */
+      PrematureEnd,		  /* Premature end.  */
+      TooBig,		        /* Compiled pattern bigger than 2^16 bytes.  */
+      UnmatchedRParen,	/* Unmatched ) or \); not returned from regcomp.  */
+      NotCompiled
+    };
+
+    ErrorCodes GetErrorCode() const;
+    /* Get the error code for the last Compile() or Execute() operation.
+
+       <H2>Returns:</H2>
+       Error code.
+     */
+
+    PString GetErrorText() const;
+    /* Get the text description for the error of the last Compile() or
+       Execute() operation.
+
+       <H2>Returns:</H2>
+       Error text string.
+     */
+
+
+    BOOL Compile(
+      const PString & pattern,    // Pattern to compile
+      int flags = IgnoreCase      // Pattern match options
+    );
+    BOOL Compile(
+      const char * cpattern,      // Pattern to compile
+      int flags = IgnoreCase      // Pattern match options
+    );
+    /* Compile the pattern into an internal format to speed subsequent
+       execution of the pattern match algorithm.
+
+       <H2>Returns:</H2>
+       TRUE if successfully compiled.
+     */
+
+
+    BOOL Execute(
+      const PString & str,    // Source string to search
+      PIntArray & starts,     // List of match locations
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const PString & str,    // Source string to search
+      PIntArray & starts,     // List of match locations
+      PIntArray & ends,       // List of match ends
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const char * cstr,      // Source string to search
+      PIntArray & starts,     // List of match locations
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const char * cstr,      // Source string to search
+      PIntArray & starts,     // List of match locations
+      PIntArray & ends,       // List of match ends
+      int flags = 0           // Pattern match options
+    ) const;
+    /* Execute the pattern match algorithm using the previously compiled
+       pattern.
+
+       The <CODE>starts</CODE> array is filled with as many matches as will fit
+       into the array. If the the array size is zero then it is set to at least
+       one for the first match found.
+       
+       The <CODE>ends</CODE> array is set to teh ending position of each
+       substring whose start is returned in the <CODE>starts</CODE> array. This
+       will always be set to the same size as that array.
+
+       <H2>Returns:</H2>
+       TRUE if successfully compiled.
+     */
+
+
+  protected:
+    regex_t * expression;
+    int lastError;
 };
 
 
