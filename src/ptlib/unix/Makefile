@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.113  2003/05/22 12:41:42  dsandras
+# Check if TRY_1394AVC/DC=1 to compile support for it or not.
+#
 # Revision 1.112  2003/04/28 08:37:06  craigs
 # Added SDL
 #
@@ -429,11 +432,11 @@ ifeq ($(OSTYPE),NetBSD)
 VIDEO_CAPTURE_SOURCE = video4bsd.cxx
 endif
 
-ifdef TRY_1394DC
+ifeq (1,$(TRY_1394DC))
 VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
 endif
 
-ifdef TRY_1394AVC
+ifeq (1,$(TRY_1394AVC))
 VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
 endif
 
