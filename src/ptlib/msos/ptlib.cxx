@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.11 1995/01/06 10:41:43 robertj Exp $
+ * $Id: ptlib.cxx,v 1.12 1995/02/27 10:37:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.11  1995/01/06 10:41:43  robertj
+ * Revision 1.12  1995/02/27 10:37:06  robertj
+ * Added GetUserNmae().
+ * Removed superfluous Read() and Write() for text files.
+ *
+ * Revision 1.11  1995/01/06  10:41:43  robertj
  * Moved identifiers into different scope.
  * Changed file size to 64 bit integer.
  *
@@ -516,19 +520,6 @@ BOOL PTextFile::IsTextFile() const
 }
 
 
-BOOL PTextFile::Read(void * buf, PINDEX len)
-{
-  BOOL retVal = PFile::Read(buf, len);
-  return retVal;
-}
-
-
-BOOL PTextFile::Write(const void * buf, PINDEX len)
-{
-  BOOL retVal = PFile::Write(buf, len);
-  return retVal;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
@@ -598,6 +589,21 @@ void PThread::Block(PThreadBlockFunction isBlockFun, PObject * obj)
   blocker = obj;
   status = Blocked;
   Yield();
+}
+
+
+PString PProcess::GetUserName() const
+{
+  const char * username = getenv("LOGNAME");
+  if (username == NULL) {
+    username = getenv("USER");
+    if (username == NULL) {
+      // _intdosx
+      username = "";
+    }
+  }
+  PAssert(*username != '\0', "Cannot determine user name, set LOGNAME.");
+  return username;
 }
 
 
