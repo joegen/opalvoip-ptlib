@@ -8,6 +8,9 @@
  * Original code by William Ingle (address unknown)
  *
  * $Log: epacket.h,v $
+ * Revision 1.2  1998/10/01 09:06:29  robertj
+ * NT driver compatibility.
+ *
  * Revision 1.1  1998/09/28 08:10:33  robertj
  * Initial revision
  *
@@ -16,7 +19,9 @@
 #ifndef __EPACKET_H
 #define __EPACKET_H
 
+#ifndef CTL_CODE
 #include <winioctl.h>
+#endif
 
 #define FILE_DEVICE_EPACKET 0x1000
 
@@ -32,8 +37,8 @@
 #pragma pack(1)
 
 typedef struct _EPACKET_OID {
-  DWORD Oid;
-  DWORD Length;
+  ULONG Oid;
+  ULONG Length;
   UCHAR Data[1];
 } EPACKET_OID;
 
