@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.7  2003/10/23 21:49:51  dereksmithies
+ * Add very sensible fix to limit extent of search. Thanks Ben Lear.
+ *
  * Revision 1.6  2003/08/04 05:13:17  dereksmithies
  * Reinforce the disablement if the command lines specifies --no-XXXX to a feature.
  *
@@ -317,13 +320,20 @@ int main(int argc, char* argv[])
 
   list<Feature>::iterator feature;
 
+  const char EXTERN_DIR[] = "--extern-dir=";
+  
   bool searchDisk = true;
+  char *externDir = 0;
   for (int i = 1; i < argc; i++) {
     if (stricmp(argv[i], "--no-search") == 0)
       searchDisk = false;
+    else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
+	    externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
+    }
     else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
       cout << "usage: configure args\n"
-              "  --no-search\t\tDo not search disk for libraries.\n";
+              "  --no-search\t\tDo not search disk for libraries.\n"
+	"  --extern-dir\t\t specify where to search disk for libraries.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (feature->cmdLineArgument[0] != '\0') {
           cout << "  --no-" << feature->cmdLineArgument
@@ -357,8 +367,12 @@ int main(int argc, char* argv[])
     if (!foundAll) {
       // Do search of entire system
       char drives[100];
-      if (!GetLogicalDriveStrings(sizeof(drives), drives))
-        strcpy(drives, "C:\\");
+      if (!externDir){
+	if (!GetLogicalDriveStrings(sizeof(drives), drives))
+	  strcpy(drives, "C:\\");
+      } else {
+	strcpy(drives, externDir);	
+      }
 
       const char * drive = drives;
       while (*drive != '\0') {
