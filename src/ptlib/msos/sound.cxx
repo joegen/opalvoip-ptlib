@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.2  1999/02/22 10:15:15  robertj
+ * Sound driver interface implementation to Linux OSS specification.
+ *
  * Revision 1.1  1999/02/16 06:02:07  robertj
  * Major implementation to Linux OSS model
  *
@@ -42,6 +45,13 @@ class PMultiMediaFile
   public:
     PMultiMediaFile();
     ~PMultiMediaFile();
+
+    BOOL CreateWaveFile(const PFilePath & filename,
+                        const PWaveFormat & waveFormat,
+                        DWORD dataSize);
+    BOOL OpenWaveFile(const PFilePath & filename,
+                      PWaveFormat & waveFormat,
+                      DWORD & dataSize);
 
     BOOL Open(const PFilePath & filename, DWORD dwOpenFlags, LPMMIOINFO lpmmioinfo = NULL);
     BOOL Close(UINT wFlags = 0);
@@ -73,6 +83,87 @@ PMultiMediaFile::PMultiMediaFile()
 PMultiMediaFile::~PMultiMediaFile()
 {
   Close();
+}
+
+
+BOOL PMultiMediaFile::CreateWaveFile(const PFilePath & filename,
+                                     const PWaveFormat & waveFormat,
+                                     DWORD dataSize)
+{
+  if (!Open(filename, MMIO_CREATE|MMIO_WRITE))
+    return FALSE;
+
+  MMCKINFO mmChunk;
+  mmChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
+  mmChunk.cksize = 4 + // Form type
+                   4 + sizeof(DWORD) + waveFormat.GetSize() + // fmt chunk
+                   4 + sizeof(DWORD) + dataSize;              // data chunk
+
+  // Create a RIFF chunk
+  if (!CreateChunk(mmChunk, MMIO_CREATERIFF))
+    return FALSE;
+
+  // Save the format sub-chunk
+  mmChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
+  mmChunk.cksize = waveFormat.GetSize();
+  if (!CreateChunk(mmChunk))
+    return FALSE;
+
+  if (!Write(waveFormat, waveFormat.GetSize()))
+    return FALSE;
+
+  // Save the data sub-chunk
+  mmChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
+  mmChunk.cksize = dataSize;
+  return CreateChunk(mmChunk);
+}
+
+
+BOOL PMultiMediaFile::OpenWaveFile(const PFilePath & filename,
+                                   PWaveFormat  & waveFormat,
+                                   DWORD & dataSize)
+{
+  // Open wave file
+  if (!Open(filename, MMIO_READ | MMIO_ALLOCBUF))
+    return FALSE;
+
+  MMCKINFO mmParentChunk, mmSubChunk;
+  dwLastError = MMSYSERR_NOERROR;
+
+  // Locate a 'RIFF' chunk with a 'WAVE' form type
+  mmParentChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
+  if (!Descend(MMIO_FINDRIFF, mmParentChunk))
+    return FALSE;
+
+  // Find the format chunk
+  mmSubChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
+  if (!Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk))
+    return FALSE;
+
+  // Get the size of the format chunk, allocate memory for it
+  if (!waveFormat.SetSize(mmSubChunk.cksize))
+    return FALSE;
+
+  // Read the format chunk
+  if (!Read(waveFormat.GetPointer(), waveFormat.GetSize()))
+    return FALSE;
+
+  // Ascend out of the format subchunk
+  Ascend(mmSubChunk);
+
+  // Find the data subchunk
+  mmSubChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
+  if (!Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk))
+    return FALSE;
+
+  // Get the size of the data subchunk
+  if (mmSubChunk.cksize == 0) {
+    dwLastError = MMSYSERR_INVALPARAM;
+    return FALSE;
+  }
+
+  dataSize = mmSubChunk.cksize;
+  return TRUE;
 }
 
 
@@ -156,10 +247,11 @@ PWaveFormat::~PWaveFormat()
 
 PWaveFormat::PWaveFormat(const PWaveFormat & fmt)
 {
-  waveFormat = (WAVEFORMATEX *)malloc(fmt.size);
+  size = fmt.size;
+  waveFormat = (WAVEFORMATEX *)malloc(size);
   PAssert(waveFormat != NULL, POutOfMemory);
 
-  memcpy(waveFormat, fmt.waveFormat, fmt.size);
+  memcpy(waveFormat, fmt.waveFormat, size);
 }
 
 
@@ -168,10 +260,11 @@ PWaveFormat & PWaveFormat::operator=(const PWaveFormat & fmt)
   if (waveFormat != NULL)
     free(waveFormat);
 
-  waveFormat = (WAVEFORMATEX *)malloc(fmt.size);
+  size = fmt.size;
+  waveFormat = (WAVEFORMATEX *)malloc(size);
   PAssert(waveFormat != NULL, POutOfMemory);
 
-  memcpy(waveFormat, fmt.waveFormat, fmt.size);
+  memcpy(waveFormat, fmt.waveFormat, size);
   return *this;
 }
 
@@ -183,6 +276,7 @@ void PWaveFormat::SetFormat(unsigned numChannels,
   if (waveFormat != NULL)
     free(waveFormat);
 
+  size = sizeof(WAVEFORMATEX);
   waveFormat = (WAVEFORMATEX *)malloc(sizeof(WAVEFORMATEX));
   PAssert(waveFormat != NULL, POutOfMemory);
 
@@ -220,14 +314,13 @@ BOOL PWaveFormat::SetSize(PINDEX sz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PSound::PSound(unsigned format,
-               unsigned channels,
+PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
                unsigned bitsPerSample,
                PINDEX   bufferSize,
                const BYTE * buffer)
 {
-  encoding = format;
+  encoding = 0;
   numChannels = channels;
   sampleRate = samplesPerSecond;
   sampleSize = bitsPerSample;
@@ -247,42 +340,32 @@ PSound::PSound(const PFilePath & filename)
 }
 
 
+PSound & PSound::operator=(const PBYTEArray & data)
+{
+  PBYTEArray::operator=(data);
+  return *this;
+}
+
+
+void PSound::SetFormat(unsigned channels,
+                       unsigned samplesPerSecond,
+                       unsigned bitsPerSample)
+{
+  encoding = 0;
+  numChannels = channels;
+  sampleRate = samplesPerSecond;
+  sampleSize = bitsPerSample;
+  formatInfo.SetSize(0);
+}
+
+
 BOOL PSound::Load(const PFilePath & filename)
 {
   // Open wave file
   PMultiMediaFile mmio;
-  if (!mmio.Open(filename, MMIO_READ | MMIO_ALLOCBUF)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  MMCKINFO mmParentChunk, mmSubChunk;
-  dwLastError = MMSYSERR_NOERROR;
-
-  // Locate a 'RIFF' chunk with a 'WAVE' form type
-  mmParentChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-  if (!mmio.Descend(MMIO_FINDRIFF, mmParentChunk)) {
-    if (dwLastError != WAVERR_BADFORMAT)
-      dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Find the format chunk
-  mmSubChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
-  if (!mmio.Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Get the size of the format chunk, allocate memory for it
   PWaveFormat waveFormat;
-  if (!waveFormat.SetSize(mmSubChunk.cksize)) {
-    dwLastError = MMSYSERR_NOMEM;
-    return FALSE;
-  }
-
-  // Read the format chunk
-  if (!mmio.Read(waveFormat.GetPointer(), waveFormat.GetSize())) {
+  DWORD dataSize;
+  if (!mmio.OpenWaveFile(filename, waveFormat, dataSize)) {
     dwLastError = mmio.GetLastError();
     return FALSE;
   }
@@ -292,24 +375,8 @@ BOOL PSound::Load(const PFilePath & filename)
   sampleRate = waveFormat->nSamplesPerSec;
   sampleSize = waveFormat->wBitsPerSample;
 
-  // Ascend out of the format subchunk
-  mmio.Ascend(mmSubChunk);
-
-  // Find the data subchunk
-  mmSubChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
-  if (!mmio.Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Get the size of the data subchunk
-  if (mmSubChunk.cksize == 0) {
-    dwLastError = MMSYSERR_INVALPARAM;
-    return FALSE;
-  }
-      
   // Allocate and lock memory for the waveform data.
-  if (!SetSize(mmSubChunk.cksize)) {
+  if (!SetSize(dataSize)) {
     dwLastError = MMSYSERR_NOMEM;
     return FALSE;
   }
@@ -326,13 +393,6 @@ BOOL PSound::Load(const PFilePath & filename)
 
 BOOL PSound::Save(const PFilePath & filename)
 {
-  // Open wave file
-  PMultiMediaFile mmio;
-  if (!mmio.Open(filename, MMIO_CREATE|MMIO_WRITE)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
   PWaveFormat waveFormat;
   if (encoding == 0)
     waveFormat.SetFormat(numChannels, sampleRate, sampleSize);
@@ -341,35 +401,9 @@ BOOL PSound::Save(const PFilePath & filename)
     memcpy(waveFormat.GetPointer(), GetFormatInfoData(), GetFormatInfoSize());
   }
 
-  MMCKINFO mmChunk;
-  mmChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-  mmChunk.cksize = 4 + // Form type
-                   4 + sizeof(DWORD) + waveFormat.GetSize() + // fmt chunk
-                   4 + sizeof(DWORD) + GetSize();             // data chunk
-
-  // Create a RIFF chunk
-  if (!mmio.CreateChunk(mmChunk, MMIO_CREATERIFF)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Save the format sub-chunk
-  mmChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
-  mmChunk.cksize = waveFormat.GetSize();
-  if (!mmio.CreateChunk(mmChunk)) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  if (!mmio.Write(&waveFormat, waveFormat.GetSize())) {
-    dwLastError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Save the data sub-chunk
-  mmChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
-  mmChunk.cksize = GetSize();
-  if (!mmio.CreateChunk(mmChunk)) {
+  // Open wave file
+  PMultiMediaFile mmio;
+  if (!mmio.CreateWaveFile(filename, waveFormat, GetSize())) {
     dwLastError = mmio.GetLastError();
     return FALSE;
   }
@@ -391,13 +425,20 @@ PWaveBuffer::PWaveBuffer(PINDEX sz)
 {
   hWaveOut = NULL;
   hWaveIn = NULL;
-  link = NULL;
+  header.dwFlags = WHDR_DONE;
 }
 
 
 PWaveBuffer::~PWaveBuffer()
 {
   Release();
+}
+
+
+PWaveBuffer & PWaveBuffer::operator=(const PSound & sound)
+{
+  PBYTEArray::operator=(sound);
+  return *this;
 }
 
 
@@ -412,9 +453,12 @@ void PWaveBuffer::PrepareCommon(PINDEX count)
 }
 
 
-DWORD PWaveBuffer::Prepare(HWAVEOUT hOut, PINDEX count)
+DWORD PWaveBuffer::Prepare(HWAVEOUT hOut, PINDEX & count)
 {
   // Set up WAVEHDR structure and prepare it to be written to wave device
+  if (count > GetSize())
+    count = GetSize();
+
   PrepareCommon(count);
   hWaveOut = hOut;
   return waveOutPrepareHeader(hWaveOut, &header, sizeof(header));
@@ -444,6 +488,7 @@ DWORD PWaveBuffer::Release()
     hWaveIn = NULL;
   }
 
+  header.dwFlags |= WHDR_DONE;
   return err;
 }
 
@@ -472,27 +517,13 @@ void PSoundChannel::Construct()
   direction = Player;
   hWaveOut = NULL;
   hWaveIn = NULL;
+  hEventDone = CreateEvent(NULL, FALSE, FALSE, NULL);
 
   waveFormat.SetFormat(1, 8000, 16);
 
-  hEventEnd  = CreateEvent(NULL, TRUE, FALSE, NULL);
-  hEventDone = CreateEvent(NULL, TRUE, FALSE, NULL);
+  bufferByteOffset = P_MAX_INDEX;
 
-  int err = _beginthread(StaticThreadMain, 2048, this);
-  if (err == -1)
-    hThread = NULL;
-  else {
-    hThread = (HANDLE)err;
-    SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
-  }
-
-  InitializeCriticalSection(&mutex);
-
-  extractByteOffset = P_MAX_INDEX;
-  extractBufferIndex = 0;
-  insertBufferIndex = 0;
-
-  SetBuffers(2, 32768);
+  SetBuffers(32768, 2);
 }
 
 
@@ -500,19 +531,8 @@ PSoundChannel::~PSoundChannel()
 {
   Close();
 
-  if (hEventEnd != NULL)
-    SetEvent(hEventEnd);
-
-  if (hThread != NULL)
-    WaitForSingleObject(hThread, 10000);
-
   if (hEventDone != NULL)
     DeleteObject(hEventDone);
-
-  if (hEventEnd != NULL)
-    DeleteObject(hEventEnd);
-
-  DeleteCriticalSection(&mutex);
 }
 
 
@@ -631,15 +651,10 @@ BOOL PSoundChannel::Open(const PString & device,
 
 BOOL PSoundChannel::OpenDevice(unsigned id)
 {
-  if (hWaveOut != NULL) {
-    osError = waveOutClose(hWaveOut);
-    hWaveOut = NULL;
-  }
+  Close();
 
-  if (hWaveIn != NULL) {
-    osError = waveInClose(hWaveIn);
-    hWaveIn = NULL;
-  }
+  bufferByteOffset = P_MAX_INDEX;
+  bufferIndex = 0;
 
   switch (direction) {
     case Player :
@@ -655,12 +670,6 @@ BOOL PSoundChannel::OpenDevice(unsigned id)
 
   if (osError != MMSYSERR_NOERROR)
     return FALSE;
-
-  EnterCriticalSection(&mutex);
-    extractByteOffset = P_MAX_INDEX;
-    extractBufferIndex = 0;
-    insertBufferIndex = 0;
-  LeaveCriticalSection(&mutex);
 
   os_handle = id;
   return TRUE;
@@ -686,6 +695,16 @@ BOOL PSoundChannel::Close()
 
   Abort();
 
+  if (hWaveOut != NULL) {
+    osError = waveOutClose(hWaveOut);
+    hWaveOut = NULL;
+  }
+
+  if (hWaveIn != NULL) {
+    osError = waveInClose(hWaveIn);
+    hWaveIn = NULL;
+  }
+
   os_handle = -1;
   return TRUE;
 }
@@ -699,22 +718,19 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   BOOL ok = TRUE;
 
-  EnterCriticalSection(&mutex);
-    if (!buffers.SetSize(count))
-      ok = FALSE;
-    else {
-      for (PINDEX i = 0; i < count; i++) {
-        if (buffers.GetAt(i) == NULL)
-          buffers.SetAt(i, new PWaveBuffer(size));
-        if (!buffers[i].SetSize(size))
-          ok = FALSE;
-      }
+  if (!buffers.SetSize(count))
+    ok = FALSE;
+  else {
+    for (PINDEX i = 0; i < count; i++) {
+      if (buffers.GetAt(i) == NULL)
+        buffers.SetAt(i, new PWaveBuffer(size));
+      if (!buffers[i].SetSize(size))
+        ok = FALSE;
     }
+  }
 
-    extractByteOffset = P_MAX_INDEX;
-    extractBufferIndex = 0;
-    insertBufferIndex = 0;
-  LeaveCriticalSection(&mutex);
+  bufferByteOffset = P_MAX_INDEX;
+  bufferIndex = 0;
 
   return ok;
 }
@@ -733,65 +749,6 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-BOOL PSoundChannel::Read(void * data, PINDEX size)
-{
-  lastReadCount = 0;
-
-  if (hWaveIn == NULL) {
-    osError = MMSYSERR_NOTSUPPORTED;
-    return FALSE;
-  }
-
-  if (extractByteOffset == P_MAX_INDEX) {
-    // Start the first read, queue all the buffers
-    for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-      buffers[i].Prepare(hWaveIn);
-      osError = waveInAddBuffer(hWaveIn, &buffers[i].header, sizeof(WAVEHDR));
-      if (osError != MMSYSERR_NOERROR)
-        return FALSE;
-    }
-
-    insertBufferIndex = 0;
-    extractBufferIndex = 0;
-    extractByteOffset = 0;
-
-    osError = waveInStart(hWaveIn); // start recording
-    if (osError != MMSYSERR_NOERROR) {
-      extractByteOffset = P_MAX_INDEX;
-      return FALSE;
-    }
-  }
-
-  PWaveBuffer & buffer = buffers[extractBufferIndex];
-  WAVEHDR & header = buffer.header;
-
-  while ((header.dwFlags&WHDR_DONE) == 0) {
-    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
-      return FALSE;
-  }
-
-  lastReadCount = header.dwBytesRecorded - extractByteOffset;
-  if (lastReadCount > size)
-    lastReadCount = size;
-
-  memcpy(data, &buffers[extractBufferIndex][extractByteOffset], lastReadCount);
-
-  extractByteOffset += lastReadCount;
-
-  if (extractByteOffset >= (PINDEX)header.dwBytesRecorded) {
-    EnterCriticalSection(&mutex);
-      PINDEX nextBufferIndex = (extractBufferIndex+1)%buffers.GetSize();
-      if (nextBufferIndex != insertBufferIndex) {
-        extractBufferIndex = nextBufferIndex;
-        extractByteOffset = 0;
-      }
-    LeaveCriticalSection(&mutex);
-  }
-
-  return lastReadCount > 0;
-}
-
-
 BOOL PSoundChannel::Write(const void * data, PINDEX size)
 {
   lastWriteCount = 0;
@@ -804,58 +761,25 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
   const BYTE * ptr = (const BYTE *)data;
 
   while (size > 0) {
-    PINDEX nextBufferIndex;
-    if (!GetNextPlayBuffer(nextBufferIndex))
+    PWaveBuffer & buffer = buffers[bufferIndex];
+    if ((buffer.header.dwFlags&WHDR_DONE) == 0)
       return FALSE; // No free buffers
 
     // Can't write more than a buffer full
-    PINDEX count = buffers[nextBufferIndex].GetSize();
-    if (count > size)
-      count = size;
-    memcpy(buffers[nextBufferIndex].GetPointer(), data, count);
-
-    if (!QueuePlayBuffer(nextBufferIndex, count))
+    PINDEX count = size;
+    if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
       return FALSE;
 
+    memcpy(buffer.GetPointer(), data, count);
+
+    if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
+      return FALSE;
+
+    bufferIndex = (bufferIndex+1)%buffers.GetSize();
     lastWriteCount += count;
     size -= count;
     ptr += count;
   }
-
-  return TRUE;
-}
-
-
-BOOL PSoundChannel::GetNextPlayBuffer(PINDEX & nextBufferIndex)
-{
-  // Get the next free buffer
-  EnterCriticalSection(&mutex);
-    nextBufferIndex = (insertBufferIndex+1)%buffers.GetSize();
-    BOOL ok = nextBufferIndex != extractBufferIndex;
-  LeaveCriticalSection(&mutex);
-
-  return ok; // No free buffers
-}
-
-
-BOOL PSoundChannel::QueuePlayBuffer(PINDEX nextBufferIndex, PINDEX count)
-{
-  PWaveBuffer & buffer = buffers[nextBufferIndex];
-  buffer.Prepare(hWaveOut, count);
-
-  // Back into mutexed stuff
-  EnterCriticalSection(&mutex);
-    if (insertBufferIndex == extractBufferIndex) {
-      // Empty queue, start the write directly
-      osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR));
-      if (osError != MMSYSERR_NOERROR) {
-        LeaveCriticalSection(&mutex);
-        buffer.Release();
-        return FALSE;
-      }
-    }
-    insertBufferIndex = nextBufferIndex;
-  LeaveCriticalSection(&mutex);
 
   return TRUE;
 }
@@ -882,8 +806,15 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
   }
 
   if (ok) {
-    PINDEX soundSize = sound.GetSize();
-    if (SetBuffers(soundSize, 1) && Write((const BYTE *)sound, soundSize)) {
+    // To avoid lots of copying of sound data, we fake the PSound buffer into
+    // the internal buffers and play directly from the PSound object.
+    buffers.SetSize(1);
+    PWaveBuffer & buffer = buffers[0];
+    buffer = sound;
+
+    PINDEX count = sound.GetSize();
+    if ((osError = buffer.Prepare(hWaveOut, count)) == MMSYSERR_NOERROR &&
+        (osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) == MMSYSERR_NOERROR) {
       if (wait)
         ok = WaitForPlayCompletion();
     }
@@ -901,60 +832,15 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 {
   Abort();
 
-  // Open wave file
   PMultiMediaFile mmio;
-  if (!mmio.Open(filename, MMIO_READ | MMIO_ALLOCBUF)) {
-    osError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  MMCKINFO mmParentChunk, mmSubChunk;
-  osError = MMSYSERR_NOERROR;
-
-  // Locate a 'RIFF' chunk with a 'WAVE' form type
-  mmParentChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-  if (!mmio.Descend(MMIO_FINDRIFF, mmParentChunk)) {
-    if (osError != WAVERR_BADFORMAT)
-      osError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Find the format chunk
-  mmSubChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
-  if (!mmio.Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk)) {
-    osError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Get the size of the format chunk, allocate memory for it
   PWaveFormat fileFormat;
-  if (!fileFormat.SetSize(mmSubChunk.cksize)) {
-    osError = MMSYSERR_NOMEM;
-    return FALSE;
-  }
-
-  // Read the format chunk
-  if (!mmio.Read(fileFormat.GetPointer(), fileFormat.GetSize())) {
+  DWORD dataSize;
+  if (!mmio.OpenWaveFile(filename, fileFormat, dataSize)) {
     osError = mmio.GetLastError();
     return FALSE;
   }
 
-  // Ascend out of the format subchunk
-  mmio.Ascend(mmSubChunk);
-
-  // Find the data subchunk
-  mmSubChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
-  if (!mmio.Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk)) {
-    osError = mmio.GetLastError();
-    return FALSE;
-  }
-
-  // Get the size of the data subchunk
-  if (mmSubChunk.cksize == 0) {
-    osError = MMSYSERR_INVALPARAM;
-    return FALSE;
-  }
-
+  // Save old format and set to one loaded from file.
   unsigned numChannels = waveFormat->nChannels;
   unsigned sampleRate = waveFormat->nSamplesPerSec;
   unsigned bitsPerSample = waveFormat->wBitsPerSample;
@@ -964,28 +850,33 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
     return FALSE;
   }
 
-  while (mmSubChunk.cksize > 0) {
-    PINDEX nextBufferIndex;
-    while (!GetNextPlayBuffer(nextBufferIndex)) {
+  while (dataSize > 0) {
+    PWaveBuffer & buffer = buffers[bufferIndex];
+    while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       // No free buffers, so wait for one
-      WaitForSingleObject(hEventDone, INFINITE);
+      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
+        SetFormat(numChannels, sampleRate, bitsPerSample);
+        return FALSE;
+      }
     }
 
-    PINDEX count = buffers[nextBufferIndex].GetSize();
-    if (count > (PINDEX)mmSubChunk.cksize)
-      count = mmSubChunk.cksize;
+    // Can't write more than a buffer full
+    PINDEX count = dataSize;
+    if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
+      return FALSE;
 
     // Read the waveform data subchunk
-    if (!mmio.Read(buffers[nextBufferIndex].GetPointer(), count))
+    if (!mmio.Read(buffer.GetPointer(), count))
       break;
 
-    if (!QueuePlayBuffer(nextBufferIndex, count))
+    if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
       break;
 
-    mmSubChunk.cksize -= count;
+    bufferIndex = (bufferIndex+1)%buffers.GetSize();
+    dataSize -= count;
   }
 
-  if (mmSubChunk.cksize == 0 && wait)
+  if (dataSize == 0 && wait)
     WaitForPlayCompletion();
 
   SetFormat(numChannels, sampleRate, bitsPerSample);
@@ -995,16 +886,201 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
-  EnterCriticalSection(&mutex);
-    BOOL completed = insertBufferIndex == extractBufferIndex;
-  LeaveCriticalSection(&mutex);
-  return completed;
+  for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+    if ((buffers[i].header.dwFlags&WHDR_DONE) == 0)
+      return FALSE;
+  }
+
+  return TRUE;
 }
 
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) {
+    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::StartRecording()
+{
+  // See if has started already.
+  if (bufferByteOffset != P_MAX_INDEX)
+    return TRUE;
+
+  // Start the first read, queue all the buffers
+  for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+    PWaveBuffer & buffer = buffers[i];
+    if ((buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
+      return FALSE;
+    if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
+      return FALSE;
+  }
+
+  bufferByteOffset = 0;
+
+  if ((osError = waveInStart(hWaveIn)) == MMSYSERR_NOERROR) // start recording
+    return TRUE;
+
+  bufferByteOffset = P_MAX_INDEX;
+  return FALSE;
+}
+
+
+BOOL PSoundChannel::Read(void * data, PINDEX size)
+{
+  lastReadCount = 0;
+
+  if (hWaveIn == NULL) {
+    osError = MMSYSERR_NOTSUPPORTED;
+    return FALSE;
+  }
+
+  if (!StartRecording())  // Start the first read, queue all the buffers
+    return FALSE;
+
+  WaitForRecordBufferFull();
+
+  PWaveBuffer & buffer = buffers[bufferIndex];
+
+  PINDEX bytesRecorded = buffer.header.dwBytesRecorded;
+  lastReadCount = bytesRecorded - bufferByteOffset;
+  if (lastReadCount > size)
+    lastReadCount = size;
+
+  if (lastReadCount == 0)
+    return FALSE;
+
+  memcpy(data, &buffer[bufferByteOffset], lastReadCount);
+
+  bufferByteOffset += lastReadCount;
+  if (bufferByteOffset >= buffer.GetSize()) {
+    if ((buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
+      return FALSE;
+    if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
+      return FALSE;
+
+    bufferIndex = (bufferIndex+1)%buffers.GetSize();
+    bufferByteOffset = 0;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::RecordSound(PSound & sound)
+{
+  if (!StartRecording())  // Start the first read, queue all the buffers
+    return FALSE;
+
+  if (!WaitForAllRecordBuffersFull())
+    return FALSE;
+
+  sound.SetFormat(waveFormat->nChannels,
+                  waveFormat->nSamplesPerSec,
+                  waveFormat->wBitsPerSample);
+
+  if (buffers.GetSize() == 1 &&
+          (PINDEX)buffers[0].header.dwBytesRecorded == buffers[0].GetSize())
+    sound = buffers[0];
+  else {
+    PINDEX totalSize = 0;
+    PINDEX i;
+    for (i = 0; i < buffers.GetSize(); i++)
+      totalSize += buffers[i].header.dwBytesRecorded;
+
+    if (!sound.SetSize(totalSize)) {
+      osError = MMSYSERR_NOMEM;
+      return FALSE;
+    }
+
+    BYTE * ptr = sound.GetPointer();
+    for (i = 0; i < buffers.GetSize(); i++) {
+      PINDEX sz = buffers[i].header.dwBytesRecorded;
+      memcpy(ptr, buffers[i], sz);
+      ptr += sz;
+    }
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::RecordFile(const PFilePath & filename)
+{
+  if (!StartRecording())  // Start the first read, queue all the buffers
+    return FALSE;
+
+  if (!WaitForAllRecordBuffersFull())
+    return FALSE;
+
+  PINDEX dataSize = 0;
+  PINDEX i;
+  for (i = 0; i < buffers.GetSize(); i++)
+    dataSize += buffers[i].header.dwBytesRecorded;
+
+  PMultiMediaFile mmio;
+  if (!mmio.CreateWaveFile(filename, waveFormat, dataSize)) {
+    osError = mmio.GetLastError();
+    return FALSE;
+  }
+
+  for (i = 0; i < buffers.GetSize(); i++) {
+    if (!mmio.Write(buffers[i], buffers[i].header.dwBytesRecorded))
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::IsRecordBufferFull()
+{
+  if (bufferByteOffset == P_MAX_INDEX)
+    return TRUE;
+
+  return (buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0;
+}
+
+
+BOOL PSoundChannel::AreAllRecordBuffersFull()
+{
+  if (bufferByteOffset == P_MAX_INDEX)
+    return TRUE;
+
+  for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+    if ((buffers[i].header.dwFlags&WHDR_DONE) == 0)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::WaitForRecordBufferFull()
+{
+  if (bufferByteOffset == P_MAX_INDEX)
+    return FALSE;
+
+  while (!IsRecordBufferFull()) {
+    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PSoundChannel::WaitForAllRecordBuffersFull()
+{
+  if (bufferByteOffset == P_MAX_INDEX)
+    return FALSE;
+
+  while (!AreAllRecordBuffersFull()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
       return FALSE;
   }
@@ -1021,14 +1097,11 @@ BOOL PSoundChannel::Abort()
   if (hWaveIn != NULL)
     osError = waveInReset(hWaveIn);
 
-  EnterCriticalSection(&mutex);
-    extractByteOffset = P_MAX_INDEX;
-    extractBufferIndex = 0;
-    insertBufferIndex = 0;
-  LeaveCriticalSection(&mutex);
-
   for (PINDEX i = 0; i < buffers.GetSize(); i++)
     buffers[i].Release();
+
+  bufferByteOffset = P_MAX_INDEX;
+  bufferIndex = 0;
 
   return osError == MMSYSERR_NOERROR;
 }
@@ -1049,54 +1122,6 @@ PString PSoundChannel::GetErrorText() const
 
   return str;
 }
-
-
-void PSoundChannel::StaticThreadMain(void * arg)
-{
-  ((PSoundChannel *)arg)->ThreadMain();
-}
-
-
-void PSoundChannel::ThreadMain()
-{
-  HANDLE handles[2];
-  handles[0] = hEventEnd;
-  handles[1] = hEventDone;
-
-  for (;;) {
-    switch (WaitForMultipleObjects(sizeof(handles), handles, FALSE, INFINITE)) {
-      case WAIT_OBJECT_0 : // hEventEnd
-        return;
-
-      case WAIT_OBJECT_0+1 : // hEventDone
-        if (hWaveOut != NULL) {
-          EnterCriticalSection(&mutex);
-            extractBufferIndex = (extractBufferIndex+1)%buffers.GetSize();
-            if (extractBufferIndex != insertBufferIndex)
-              waveOutWrite(hWaveOut, &buffers[extractBufferIndex].header, sizeof(WAVEHDR));
-          LeaveCriticalSection(&mutex);
-        }
-        else if (hWaveIn != NULL && extractByteOffset != P_MAX_INDEX) {
-          EnterCriticalSection(&mutex);
-            while (insertBufferIndex != extractBufferIndex) {
-              insertBufferIndex = (insertBufferIndex+1)%buffers.GetSize();
-              PWaveBuffer & buffer = buffers[insertBufferIndex];
-              buffer.Prepare(hWaveIn);
-              waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR));
-            }
-          LeaveCriticalSection(&mutex);
-        }
-
-        ResetEvent(hEventDone);
-        break;
-
-      default :
-        if (::GetLastError() != 0)
-          return;
-    }
-  }
-}
-
 
 
 // End of File ///////////////////////////////////////////////////////////////
