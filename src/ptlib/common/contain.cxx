@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.64 1997/03/02 03:41:42 robertj Exp $
+ * $Id: contain.cxx,v 1.65 1997/06/08 04:48:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.65  1997/06/08 04:48:04  robertj
+ * Added regular expressions.
+ *
  * Revision 1.64  1997/03/02 03:41:42  robertj
  * Fixed bug in not being able to construct a zero length PStringArray.
  *
@@ -244,6 +247,12 @@
 #include <ptlib.h>
 
 #include <ctype.h>
+
+extern "C" {
+#define __STDC__ 1
+#include "regex.h"
+};
+
 
 #if !defined(P_USE_INLINES)
 #include "ptlib/contain.inl"
@@ -1125,6 +1134,19 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 }
 
 
+PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
+{
+  if (offset >= GetLength())
+    return P_MAX_INDEX;
+
+  PIntArray pos;
+  if (regex.Execute(&theArray[offset], pos))
+    return pos[0];
+
+  return P_MAX_INDEX;
+}
+
+
 void PString::Replace(const PString & target,
                       const PString & subs,
                       BOOL all, PINDEX offset)
@@ -1629,6 +1651,128 @@ PStringToString::PStringToString(PINDEX count,
         SetAt(init->key, init->value);
     init++;
   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PRegularExpression::PRegularExpression()
+{
+  lastError = NotCompiled;
+  expression = NULL;
+}
+
+
+PRegularExpression::PRegularExpression(const PString & pattern, int flags)
+{
+  expression = NULL;
+  Compile(pattern, flags);
+}
+
+
+PRegularExpression::PRegularExpression(const char * pattern, int flags)
+{
+  expression = NULL;
+  Compile(pattern, flags);
+}
+
+
+PRegularExpression::~PRegularExpression()
+{
+  if (expression != NULL) {
+    regfree(expression);
+    delete expression;
+  }
+}
+
+
+PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
+{
+  return (ErrorCodes)lastError;
+}
+
+
+PString PRegularExpression::GetErrorText() const
+{
+  PString str;
+  regerror(lastError, expression, str.GetPointer(256), 256);
+  return str;
+}
+
+
+BOOL PRegularExpression::Compile(const PString & pattern, int flags)
+{
+  return Compile((const char *)pattern, flags);
+}
+
+
+BOOL PRegularExpression::Compile(const char * pattern, int flags)
+{
+  if (expression != NULL) {
+    regfree(expression);
+    delete expression;
+  }
+  expression = new regex_t;
+  lastError = regcomp(expression, pattern, flags);
+  return lastError == NoError;
+}
+
+
+BOOL PRegularExpression::Execute(const PString & str, PIntArray & starts, int flags) const
+{
+  PIntArray dummy;
+  return Execute((const char *)str, starts, dummy, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const PString & str,
+                                 PIntArray & starts,
+                                 PIntArray & ends,
+                                 int flags) const
+{
+  return Execute((const char *)str, starts, ends, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const char * cstr, PIntArray & starts, int flags) const
+{
+  PIntArray dummy;
+  return Execute(cstr, starts, dummy, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const char * cstr,
+                                 PIntArray & starts,
+                                 PIntArray & ends,
+                                 int flags) const
+{
+  if (expression == NULL)
+    return NotCompiled;
+
+  regmatch_t single_match;
+  regmatch_t * matches = &single_match;
+
+  PINDEX count = starts.GetSize();
+  if (count > 1)
+    matches = new regmatch_t[count];
+  else
+    count = 1;
+
+  ((PRegularExpression*)this)->lastError = regexec(expression, cstr, count, matches, flags);
+
+  if (lastError == NoError) {
+    starts.SetMinSize(count);
+    ends.SetMinSize(count);
+    for (PINDEX i = 0; i < count; i++) {
+      starts[i] = matches[i].rm_so;
+      ends[i] = matches[i].rm_eo;
+    }
+  }
+
+  if (matches != &single_match)
+    delete [] matches;
+
+  return lastError == NoError;
 }
 
 
