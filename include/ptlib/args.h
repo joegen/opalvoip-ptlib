@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.20  2000/05/25 11:05:31  robertj
+ * Added PConfigArgs class so can save program arguments to config files.
+ *
  * Revision 1.19  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -205,7 +208,7 @@ class PArgList : public PObject
 
        @return TRUE if there is at least one parameter after parsing.
      */
-    BOOL Parse(
+    virtual BOOL Parse(
       const char * theArgumentSpec,
       /** The specification string for argument options. See description for
          details.
@@ -213,7 +216,7 @@ class PArgList : public PObject
       BOOL optionsBeforeParams = TRUE  /// Parse options only before parameters
     );
     /** Parse the arguments. */
-    BOOL Parse(
+    virtual BOOL Parse(
       const PString & theArgumentStr,
       /** The specification string for argument options. See description for
          details.
@@ -229,15 +232,15 @@ class PArgList : public PObject
 
        @return option repeat count.
      */
-    PINDEX GetOptionCount(
+    virtual PINDEX GetOptionCount(
       char optionChar  /// Character letter code for the option
     ) const;
     /** Get the count of option */
-    PINDEX GetOptionCount(
+    virtual PINDEX GetOptionCount(
       const char * optionStr /// String code for the option
     ) const;
     /** Get the count of option */
-    PINDEX GetOptionCount(
+    virtual PINDEX GetOptionCount(
       const PString & optionName /// String code for the option
     ) const;
 
@@ -266,17 +269,17 @@ class PArgList : public PObject
 
        @return the options associated string.
      */
-    PString GetOptionString(
+    virtual PString GetOptionString(
       char optionChar,          /// Character letter code for the option
       const char * dflt = NULL  /// Default value of the option string
     ) const;
     /** Get option string. */
-    PString GetOptionString(
+    virtual PString GetOptionString(
       const char * optionStr,   /// String letter code for the option
       const char * dflt = NULL  /// Default value of the option string
     ) const;
     /** Get option string. */
-    PString GetOptionString(
+    virtual PString GetOptionString(
       const PString & optionName, /// String code for the option
       const char * dflt = NULL    /// Default value of the option string
     ) const;
@@ -377,6 +380,107 @@ class PArgList : public PObject
     BOOL ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
     PINDEX GetOptionCountByIndex(PINDEX idx) const;
     PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
+};
+
+
+/**This class parse command line arguments with the ability to override them
+   from a PConfig file/registry.
+  */
+class PConfigArgs : public PArgList
+{
+    PCLASSINFO(PConfigArgs, PArgList);
+  public:
+  /**@name Construction */
+  //@{
+    PConfigArgs(
+      const PArgList & args   /// Raw argument list.
+    );
+  //@}
+
+  /**@name Overrides from class PArgList */
+  //@{
+    /** Get the count of the number of times the option was specified on the
+       command line.
+
+       @return option repeat count.
+     */
+    virtual PINDEX GetOptionCount(
+      char optionChar  /// Character letter code for the option
+    ) const;
+    /** Get the count of option */
+    virtual PINDEX GetOptionCount(
+      const char * optionStr /// String code for the option
+    ) const;
+    /** Get the count of option */
+    virtual PINDEX GetOptionCount(
+      const PString & optionName /// String code for the option
+    ) const;
+
+    /** Get option string.
+       Gets the string associated with an option e.g. -ofile or -o file
+       would return the string "file". An option may have an associated string
+       if it had a ':' character folowing it in the specification string passed
+       to the Parse() function.
+
+       @return the options associated string.
+     */
+    virtual PString GetOptionString(
+      char optionChar,          /// Character letter code for the option
+      const char * dflt = NULL  /// Default value of the option string
+    ) const;
+    /** Get option string. */
+    virtual PString GetOptionString(
+      const char * optionStr,   /// String letter code for the option
+      const char * dflt = NULL  /// Default value of the option string
+    ) const;
+    /** Get option string. */
+    virtual PString GetOptionString(
+      const PString & optionName, /// String code for the option
+      const char * dflt = NULL    /// Default value of the option string
+    ) const;
+  //@}
+
+  /**@name Overrides from class PArgList */
+  //@{
+    /**Save the current options to the PConfig.
+       This function will check to see if the option name is present and if
+       so, save to the PConfig all of the arguments present in the currently
+       parsed list. Note that the optionName for saving is not saved to the
+       PConfig itself as this would cause the data to be saved always!
+      */
+    void Save(
+      const PString & optionName   /// Option name for saving.
+    );
+
+    /**Set the PConfig section name for options.
+      */
+    void SetSectionName(
+      const PString & section /// New section name
+    ) { sectionName = section; }
+
+    /**Get the PConfig section name for options.
+      */
+    const PString & GetSectionName() const { return sectionName; }
+
+    /**Set the prefix for option negation.
+       The default is "no-".
+      */
+    void SetNegationPrefix(
+      const PString & prefix /// New prefix string
+    ) { negationPrefix = prefix; }
+
+    /**Get the prefix for option negation.
+       The default is "no-".
+      */
+    const PString & GetNegationPrefix() const { return negationPrefix; }
+  //@}
+
+
+  protected:
+    PString CharToString(char ch) const;
+    PConfig config;
+    PString sectionName;
+    PString negationPrefix;
 };
 
 
