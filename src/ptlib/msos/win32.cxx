@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.110  2001/08/07 03:20:39  robertj
+ * Fixed close of DLL so flagged as closed, thanks Stefan Ditscheid.
+ *
  * Revision 1.109  2001/07/09 01:35:48  robertj
  * Added name to housekeeper thread.
  *
@@ -1658,8 +1661,10 @@ BOOL PDynaLink::Open(const PString & name)
 
 void PDynaLink::Close()
 {
-  if (_hDLL != NULL)
+  if (_hDLL != NULL) {
     FreeLibrary(_hDLL);
+    _hDLL = NULL;
+  }
 }
 
 
