@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.15 1995/06/17 11:13:05 robertj Exp $
+ * $Id: pprocess.h,v 1.16 1995/12/10 11:33:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.16  1995/12/10 11:33:36  robertj
+ * Added extra user information to processes and applications.
+ * Changes to main() startup mechanism to support Mac.
+ *
  * Revision 1.15  1995/06/17 11:13:05  robertj
  * Documentation update.
  *
@@ -56,6 +60,19 @@
 #pragma interface
 #endif
 
+#include <semaphor.h>
+
+
+/*$MACRO PCREATE_PROCESS(cls)
+   This macro is used to declare the components necessary for a user PWLib
+   process. For a PWLib program to work correctly on all platforms the
+   <CODE>main()</CODE> function must be defined in the same module as the
+   instance of the application.
+ */
+#define PCREATE_PROCESS(cls) \
+  int main(int argc, char ** argv, char ** envp) \
+    { static cls instance; return PProcessInstance->_main(argc, argv, envp); }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -65,7 +82,7 @@ PDECLARE_CLASS(PProcess, PThread)
    "programme" in the  context of the operating system. Note that there can
    only be one instance of a PProcess class in a given programme.
    
-   The instance of a PProcess or it GUI descendent <A>PApplication</A> is
+   The instance of a PProcess or its GUI descendent <A>PApplication</A> is
    usually a static variable created by the application writer. This is the
    initial "anchor" point for all data structures in an application. As the
    application writer never needs to access the standard system
@@ -75,8 +92,15 @@ PDECLARE_CLASS(PProcess, PThread)
  */
 
   public:
-    PProcess();
+    PProcess(
+      const char * manuf = "",   // Name of manufacturer
+      const char * name = "",    // Name of product
+      const char * ver = ""      // Version of the product
+    );
     // Create a new process instance.
+
+    ~PProcess();
+    // Destroy the process
 
 
   // Overrides from class PObject
@@ -133,12 +157,37 @@ PDECLARE_CLASS(PProcess, PThread)
        argument handling class instance.
      */
 
-    PString GetName() const;
-    /* Get the name of the process. This is usually the title part of the
-       executable image file.
+    const PString & GetManufacturer() const;
+    /* Get the name of the manufacturer of the software. This is used in the
+       default "About" dialog box and for determining the location of the
+       configuration information as used by the <A>PConfig<A/> class.
+
+       The default for this information is the empty string.
     
        <H2>Returns:</H2>
-       string for the process name.
+       string for the manufacturer name eg "Equivalence".
+     */
+
+    const PString & GetName() const;
+    /* Get the name of the process. This is used in the
+       default "About" dialog box and for determining the location of the
+       configuration information as used by the <A>PConfig<A/> class.
+
+       The default is the title part of the executable image file.
+    
+       <H2>Returns:</H2>
+       string for the process name eg ".
+     */
+
+    const PString & GetVersion() const;
+    /* Get the version of the software. This is used in the default "About"
+       dialog box and for determining the location of the configuration
+       information as used by the <A>PConfig<A/> class.
+
+       The default for this information is the empty string.
+    
+       <H2>Returns:</H2>
+       string for the version eg "1.00".
      */
 
     const PFilePath & GetFile() const;
@@ -166,14 +215,30 @@ PDECLARE_CLASS(PProcess, PThread)
        list of timers.
      */
 
+#if defined(P_PLATFORM_HAS_THREADS)
+
+    void SignalTimerChange();
+    // Signal to the timer thread that a change was made.
+
+#endif
+
 
   protected:
-    virtual void PreInitialise(
+    virtual int _main(
+      int argc,     // Number of program arguments.
+      char ** argv, // Array of strings for program arguments.
+      char ** envp  // Array of strings for program environment.
+    );
+    /* Internal initialisation function called directly from
+       <CODE>main()</CODE>. The user should never call this function.
+     */
+
+    void PreInitialise(
       int argc,     // Number of program arguments.
       char ** argv  // Array of strings for program arguments.
     );
     /* Internal initialisation function called directly from
-       <CODE>main()</CODE>. The user should never call this function.
+       <CODE>_main()</CODE>. The user should never call this function.
      */
 
 #ifndef P_PLATFORM_HAS_THREADS
@@ -192,8 +257,14 @@ PDECLARE_CLASS(PProcess, PThread)
     int terminationValue;
     // Application return value
 
-    PString executableName;
+    PString manufacturer;
+    // Application manufacturer name.
+
+    PString productName;
     // Application executable base name from argv[0]
+
+    PString version;
+    // Application version.
 
     PFilePath executableFile;
     // Application executable file from argv[0] (not open)
@@ -204,19 +275,31 @@ PDECLARE_CLASS(PProcess, PThread)
     PTimerList timers;
     // List of active timers in system
 
-#ifndef P_PLATFORM_HAS_THREADS
+#if defined(P_PLATFORM_HAS_THREADS)
+
+    PDECLARE_CLASS(TimerThread, PThread)
+      public:
+        TimerThread();
+        void Main();
+        PSemaphore semaphore;
+    };
+    TimerThread * timerThread;
+    // Thread for doing timers.
+
+#else
 
     PThread * currentThread;
     // Currently running thread in the process
 
-  friend class PThread;
-
 #endif
 
 
-    friend int main(
+  friend class PThread;
+
+  friend int main(
       int argc,     // Number of program arguments.
-      char ** argv  // Array of strings for program arguments.
+      char ** argv, // Array of strings for program arguments.
+      char ** envp  // Array of strings for program environment.
     );
     /* The main() system entry point to programme. This does platform dependent
        initialisation and then calls the <A>PreInitialise()</A> function, then
