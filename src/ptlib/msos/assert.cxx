@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.24  1999/02/12 01:01:57  craigs
+ * Fixed problem with linking static versions of libraries
+ *
  * Revision 1.23  1998/12/04 10:10:45  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -100,7 +103,6 @@
 
 #include <ptlib.h>
 #include <ptlib/svcproc.h>
-#include <ptlib/debstrm.h>
 
 #include <errno.h>
 #include <strstrea.h>
@@ -189,55 +191,6 @@ PImageDLL::PImageDLL()
       !GetFunction("SymFunctionTableAccess", (Function &)SymFunctionTableAccess) ||
       !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase))
     Close();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PDebugStream
-
-PDebugStream::PDebugStream()
-  : ostream(&buffer)
-{
-}
-
-
-PDebugStream::Buffer::Buffer()
-{
-  setb(buffer, &buffer[sizeof(buffer)-2]);
-  unbuffered(FALSE);
-  setp(base(), ebuf());
-}
-
-
-int PDebugStream::Buffer::overflow(int c)
-{
-  int bufSize = out_waiting();
-
-  if (c != EOF) {
-    *pptr() = (char)c;
-    bufSize++;
-  }
-
-  if (bufSize != 0) {
-    char * p = pbase();
-    setp(p, epptr());
-    p[bufSize] = '\0';
-    OutputDebugString(p);
-  }
-
-  return 0;
-}
-
-
-int PDebugStream::Buffer::underflow()
-{
-  return EOF;
-}
-
-
-int PDebugStream::Buffer::sync()
-{
-  return overflow(EOF);
 }
 
 
