@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.108  2001/06/01 04:03:05  yurik
+ * Removed dependency on obsolete function
+ *
  * Revision 1.107  2001/05/29 00:49:18  robertj
  * Added ability to put in a printf %x in thread name to get thread object
  *   address into user settable thread name.
@@ -1535,12 +1538,7 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
   if (initial > maxCount)
     initial = maxCount;
-#ifndef _WIN32_WCE
   handle = CreateSemaphore(NULL, initial, maxCount, NULL);
-#else
-  handle = CreateEvent(NULL, FALSE, initial? TRUE : FALSE, NULL); 
-  currentCount = initial;
-#endif
   PAssertOS(handle != NULL);
 }
 
@@ -1568,14 +1566,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 
 void PSemaphore::Signal()
 {
-#ifndef _WIN32_WCE
   if (!ReleaseSemaphore(handle, 1, NULL))
-#else
-  if( currentCount > 0 )
-   currentCount--;
-
-  if (!currentCount && !SetEvent(handle))
-#endif
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
 }
