@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.8  2004/06/24 07:36:24  csoutheren
+ * Added definitions of T_SRV and T_NAPTR for hosts that do not have these
+ *
  * Revision 1.7  2004/05/31 12:49:47  csoutheren
  * Added handling of unknown DNS types
  *
@@ -82,6 +85,15 @@
 // these classes provide an emulation of the Microsoft DNS API 
 // on non-Window systems
 //
+
+#ifndef T_SRV
+#define T_SRV   33
+#endif
+
+#ifndef T_NAPTR
+#define T_NAPTR   35
+#endif
+
 
 #define	DNS_STATUS		int
 #define	DNS_TYPE_SRV		T_SRV
