@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.63  2001/12/16 23:40:16  robertj
+ * Fixed system log so does not crash if current thread not created by PWLib.
+ *
  * Revision 1.62  2001/12/09 23:45:20  craigs
  * Set debugMode flag when in .... debug mode!
  *
@@ -257,11 +260,21 @@ void PSystemLog::Output(Level level, const char * cmsg)
 
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
-    PString threadName = PThread::Current()->GetThreadName();
-    if (threadName.GetLength() <= 23)
-      *out << setw(23) << threadName;
-    else
-      *out << threadName.Left(10) << "..." << threadName.Right(10);
+
+    PThread * thread = PThread::Current();
+    if (thread == NULL)
+      *out << "ThreadID=0x"
+           << setfill('0') << hex
+           << setw(8) << (unsigned)pthread_self()
+           << setfill(' ') << dec;
+    else {
+      PString threadName = thread->GetThreadName();
+      if (threadName.GetLength() <= 23)
+        *out << setw(23) << threadName;
+      else
+        *out << threadName.Left(10) << "..." << threadName.Right(10);
+    }
+
     *out << '\t'
          << PLevelName[level+1]
          << '\t'
