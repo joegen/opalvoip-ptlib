@@ -174,7 +174,9 @@ else
 fi
 
 if test $GCSECTIONS = 1; then
-  LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+  if test "${OSTYPE}" != "Darwin" ; then
+    LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+  fi
 fi
 
 dnl #########################################################################
