@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.69 1998/03/17 10:13:23 robertj Exp $
+ * $Id: contain.cxx,v 1.70 1998/08/21 05:24:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.70  1998/08/21 05:24:07  robertj
+ * Added hex dump capability to base array types.
+ * Added ability to have base arrays of static memory blocks.
+ *
  * Revision 1.69  1998/03/17 10:13:23  robertj
  * Fixed bug in Trim() should do all white space not just the space character.
  *
@@ -262,7 +266,9 @@
 
 #include <ctype.h>
 
+#ifndef __STDC__
 #define __STDC__ 1
+#endif
 #include "regex.h"
 
 
@@ -361,25 +367,32 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
                                const void *buffer,
-                               PINDEX bufferSizeInElements)
+                               PINDEX bufferSizeInElements,
+                               BOOL dynamicAllocation)
   : PContainer(bufferSizeInElements)
 {
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0, PInvalidParameter);
+
+  allocatedDynamically = dynamicAllocation;
+
   if (GetSize() == 0)
     theArray = NULL;
-  else {
+  else if (dynamicAllocation) {
     PINDEX sizebytes = elementSize*GetSize();
     theArray = (char *)PMALLOC(sizebytes);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
   }
+  else
+    theArray = (char *)buffer;
 }
 
 
 void PAbstractArray::DestroyContents()
 {
   if (theArray != NULL) {
-    PFREE(theArray);
+    if (allocatedDynamically)
+      PFREE(theArray);
     theArray = NULL;
   }
 }
@@ -389,6 +402,7 @@ void PAbstractArray::CopyContents(const PAbstractArray & array)
 {
   elementSize = array.elementSize;
   theArray = array.theArray;
+  allocatedDynamically = array.allocatedDynamically;
 }
 
 
@@ -402,6 +416,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
   else
     memcpy(newArray, array->theArray, sizebytes);
   theArray = newArray;
+  allocatedDynamically = TRUE;
 }
 
 
@@ -452,11 +467,20 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
   if (theArray != NULL) {
     if (newsizebytes == 0) {
-      PFREE(theArray);
+      if (allocatedDynamically)
+        PFREE(theArray);
       newArray = NULL;
     }
-    else if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
-      return FALSE;
+    else if (allocatedDynamically) {
+      if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
+        return FALSE;
+    }
+    else {
+      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+        return FALSE;
+      memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
+      allocatedDynamically = TRUE;
+    }
   }
   else if (newsizebytes != 0) {
     if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
@@ -475,10 +499,211 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 }
 
 
+void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
+{
+  if (allocatedDynamically && theArray != NULL)
+    PFREE(theArray);
+
+  theArray = (char *)buffer;
+  reference->size = bufferSize;
+  allocatedDynamically = FALSE;
+}
+
+
 void * PAbstractArray::GetPointer(PINDEX minSize)
 {
   PAssert(SetMinSize(minSize), POutOfMemory);
   return theArray;
+}
+
+
+void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed) const
+{
+  PINDEX line_width = strm.width();
+  if (line_width == 0)
+    line_width = 16/size;
+
+  PINDEX indent = strm.precision();
+
+  PINDEX val_width;
+  switch (strm.flags()&ios::basefield) {
+    case ios::hex :
+      val_width = size*2;
+      is_signed = FALSE;
+      break;
+    case ios::oct :
+      val_width = ((size*8)+2)/3;
+      is_signed = FALSE;
+      break;
+    default :
+      switch (size) {
+        case 1 :
+          val_width = 3;
+          break;
+        case 2 :
+          val_width = 5;
+          break;
+        default :
+          val_width = 10;
+          break;
+      }
+      if (is_signed)
+        val_width++;
+  }
+
+  long mask = -1;
+  if (size < sizeof(mask))
+    mask = (1L << (size*8)) - 1;
+
+  PINDEX i = 0;
+  while (i < GetSize()) {
+    if (i > 0)
+      strm << '\n';
+    PINDEX j;
+    for (j = 0; j < indent; j++)
+      strm.put(' ');
+    for (j = 0; j < line_width; j++) {
+      if (j == line_width/2)
+        strm.put(' ');
+      if (i+j < GetSize()) {
+        strm << setw(val_width);
+        if (is_signed)
+          strm << GetNumberValueAt(i+j);
+        else
+          strm << (DWORD)(GetNumberValueAt(i+j)&mask);
+      }
+      else {
+        PINDEX k;
+        for (k = 0; k < val_width; k++)
+          strm.put(' ');
+      }
+      strm << ' ';
+    }
+    strm << "  ";
+    for (j = 0; j < line_width; j++) {
+      if (i+j < GetSize()) {
+        long val = GetNumberValueAt(i+j);
+        if (val >= 0 && val < 256 && isprint(val))
+          strm << (char)val;
+        else
+          strm << '.';
+      }
+    }
+    i += line_width;
+  }
+}
+
+
+long PAbstractArray::GetNumberValueAt(PINDEX) const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void PCharArray::PrintOn(ostream & strm) const
+{
+  PINDEX width = strm.width();
+  if (width > GetSize())
+    width -= GetSize();
+  else
+    width = 0;
+
+  BOOL left = (strm.flags()&ios::adjustfield) == ios::left;
+  if (left)
+    strm.write(theArray, GetSize());
+
+  while (width-- > 0)
+    strm.put(strm.fill());
+
+  if (!left)
+    strm.write(theArray, GetSize());
+}
+
+
+void PShortArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(short), TRUE);
+}
+
+
+long PShortArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((short *)theArray)[idx];
+}
+
+
+void PIntArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(int), TRUE);
+}
+
+
+long PIntArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((int *)theArray)[idx];
+}
+
+
+void PLongArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(long), TRUE);
+}
+
+
+long PLongArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((long *)theArray)[idx];
+}
+
+
+void PBYTEArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(BYTE), FALSE);
+}
+
+
+long PBYTEArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((BYTE *)theArray)[idx];
+}
+
+
+void PWORDArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(WORD), FALSE);
+}
+
+
+long PWORDArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((WORD *)theArray)[idx];
+}
+
+
+void PUnsignedArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(unsigned), FALSE);
+}
+
+
+long PUnsignedArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((unsigned *)theArray)[idx];
+}
+
+
+void PDWORDArray::PrintOn(ostream & strm) const
+{
+  PrintNumbersOn(strm, sizeof(DWORD), FALSE);
+}
+
+
+long PDWORDArray::GetNumberValueAt(PINDEX idx) const
+{
+  return ((DWORD *)theArray)[idx];
 }
 
 
