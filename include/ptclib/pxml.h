@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.19  2003/01/13 02:14:02  robertj
+ * Improved error logging for auto-loaded XML
+ *
  * Revision 1.18  2002/12/16 06:38:24  robertj
  * Added ability to specify certain elemets (by name) that are exempt from
  *   the indent formatting. Useful for XML/RPC where leading white space is
@@ -98,7 +101,7 @@ class PXML : public PObject
     BOOL StopAutoReloadURL();
     PString GetAutoReloadStatus() { PWaitAndSignal m(autoLoadMutex); PString str = autoLoadError; return str; }
     BOOL AutoLoadURL();
-    virtual void OnAutoLoad(BOOL /*ok*/) { }
+    virtual void OnAutoLoad(BOOL ok);
 
     BOOL LoadURL(const PURL & url);
     BOOL LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
