@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.85  2003/05/02 13:20:33  craigs
+ * Fixed callto problems
+ *
  * Revision 1.84  2003/04/28 04:41:22  robertj
  * Changed URL parsing so if a default scheme is present then explicit scheme
  *   must be "known" to avoid ambiguity with host:port parsing.
@@ -588,22 +591,27 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
 
   // Have explicit scheme
   if (url[pos] == ':') {
-    schemeInfo = GetSchemeInfo(url.Left(pos));
-    if (schemeInfo == NULL && defaultScheme == NULL)
-      schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
-    if (schemeInfo != NULL)
-      url.Delete(0, pos+1);
+    PString tempScheme = url.Left(pos);
+    if (tempScheme == "callto")
+      scheme = "callto";
+    else {
+      schemeInfo = GetSchemeInfo(tempScheme);
+      if (schemeInfo == NULL && defaultScheme == NULL)
+        schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+      if (schemeInfo != NULL)
+        url.Delete(0, pos+1);
+
+      // if there is no scheme, then use default
+      if (schemeInfo == NULL && defaultScheme != NULL)
+        schemeInfo = GetSchemeInfo(defaultScheme);
+      if (schemeInfo == NULL)
+        schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+      scheme = schemeInfo->name;
+    }
   }
 
-  // if there is no scheme, then use default
-  if (schemeInfo == NULL && defaultScheme != NULL)
-    schemeInfo = GetSchemeInfo(defaultScheme);
-  if (schemeInfo == NULL)
-    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
-  scheme = schemeInfo->name;
-
   // Super special case!
-  if (scheme == "callto") {
+  if (scheme *= "callto") {
 
     // For some bizarre reason callto uses + instead of ; for paramters
     // We do a loop so that phone numbers of the form +61243654666 still work
@@ -626,7 +634,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
         if (pos == P_MAX_INDEX)
           username = UntranslateString(url, LoginTranslation);
         else {
-          hostname = UntranslateString(url.Left(pos), LoginTranslation);
+          hostname = UntranslateString(url.Mid(7, pos-7), LoginTranslation);
           username = UntranslateString(url.Mid(pos+1), LoginTranslation);
         }
       }
