@@ -215,7 +215,7 @@ getMessage( Socket fd, char* buf, int* len,
    int originalSize = *len;
 
    struct sockaddr_in from;
-#ifdef P_MACOSX
+#if defined(P_MACOSX) || defined (__BEOS__)
    int fromLen = sizeof(from);
 #else
    socklen_t fromLen = sizeof(from);
@@ -306,8 +306,12 @@ sendMessage( Socket fd, char* buf, int l,
       switch (e)
       {
          case ECONNREFUSED:
-         case EHOSTDOWN:
-         case EHOSTUNREACH:
+         
+	 #ifndef __BEOS__
+	 case EHOSTDOWN:
+	 #endif
+         
+	 case EHOSTUNREACH:
          {
             // quietly ignore this 
          }
