@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.17  2002/01/13 21:01:55  rogerh
+ * The class contructor is now used to specify the type of new WAV files
+ * (eg PCM or G7231)
+ *
  * Revision 1.16  2002/01/11 16:33:46  rogerh
  * Create a PWAVFile Open() function, which processes the WAV header
  *
@@ -111,18 +115,21 @@ void swab(const void * void_from, void * void_to, register size_t len)
 ///////////////////////////////////////////////////////////////////////////////
 // PWAVFile
 
-PWAVFile::PWAVFile()
+PWAVFile::PWAVFile(WaveType type)
+  : PFile()
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
+  waveType = type;
 }
 
 
-PWAVFile::PWAVFile(OpenMode mode, int opts)
+PWAVFile::PWAVFile(OpenMode mode, int opts, WaveType type)
   : PFile(mode, opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
+  waveType = type;
 }
 
 
@@ -205,7 +212,7 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
   return (rval);
 }
 
-BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts, WaveType type)
+BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 {
   if (!(PFile::Open(name, mode, opts))) return FALSE;
 
@@ -214,8 +221,6 @@ BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts, WaveType t
   header_needs_updating = FALSE;
 
   if (!IsOpen()) return FALSE; 
-
-  waveType = type;
 
   // Try and process the WAV file header information.
   // Either ProcessHeader() or GenerateHeader() must be called.
