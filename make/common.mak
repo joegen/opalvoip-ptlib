@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.47  2000/04/26 00:40:48  robertj
+# Redesigned version number system to have single file to change on releases.
+#
 # Revision 1.46  2000/04/06 20:12:33  craigs
 # Added install targets
 #
@@ -263,24 +266,26 @@ RELEASEBASEDIR=$(PROG)
 endif
 
 ifndef VERSION
+ifndef VERSION_FILE
 ifneq (,$(wildcard custom.cxx))
 VERSION_FILE := custom.cxx
 endif
 ifneq (,$(wildcard version.h))
 VERSION_FILE := version.h
 endif
+endif
 
 ifdef VERSION_FILE
-VERSION:=$(strip \
-	$(subst \#define,, $(subst MAJOR_VERSION,,\
-		$(shell grep "define *MAJOR_VERSION" $(VERSION_FILE))))).$(strip \
-	$(subst \#define,,$(subst MINOR_VERSION,,\
-		$(shell grep "define *MINOR_VERSION" $(VERSION_FILE)))))$(strip \
-	$(subst \#define,,$(subst BUILD_TYPE,,\
-		$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
-		$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))$(strip \
-	$(subst \#define,,$(subst BUILD_NUMBER,,\
-		$(shell grep "define *BUILD_NUMBER" $(VERSION_FILE)))))
+MAJOR_VERSION:=$(strip $(subst \#define,, $(subst MAJOR_VERSION,,\
+			$(shell grep "define *MAJOR_VERSION" $(VERSION_FILE)))))
+MINOR_VERSION:=$(strip $(subst \#define,, $(subst MINOR_VERSION,,\
+			$(shell grep "define *MINOR_VERSION" $(VERSION_FILE)))))
+BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
+			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
+			$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+BUILD_NUMBER:=$(strip $(subst \#define,,$(subst BUILD_NUMBER,,\
+			$(shell grep "define *BUILD_NUMBER" $(VERSION_FILE)))))
+VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
 endif
 endif
 
