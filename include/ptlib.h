@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.4 1994/07/25 03:36:03 robertj Exp $
+ * $Id: ptlib.h,v 1.5 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
- * Revision 1.4  1994/07/25 03:36:03  robertj
+ * Revision 1.5  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.4  1994/07/25  03:36:03  robertj
  * Added sockets to common, normalising to same comment standard.
  *
  * Revision 1.3  1994/07/21  12:17:41  robertj
@@ -24,6 +27,10 @@
 
 #ifndef _PTLIB_H
 #define _PTLIB_H
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 #include <contain.h>

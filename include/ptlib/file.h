@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.18 1994/08/21 23:43:02 robertj Exp $
+ * $Id: file.h,v 1.19 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.18  1994/08/21 23:43:02  robertj
+ * Revision 1.19  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.18  1994/08/21  23:43:02  robertj
  * Added "remove on close" feature for temporary files.
  * Added "force" option to Remove/Rename etc to override write protection.
  * Added function to set file permissions.
@@ -68,6 +71,10 @@
 
 
 #define _PFILE
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

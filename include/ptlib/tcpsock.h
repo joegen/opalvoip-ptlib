@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
+ * $Id: tcpsock.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
- * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.3  1994/08/21  23:43:02  robertj
  * Changed type of socket port number for better portability.
  * Added Out of Band data functions.
  *
@@ -18,6 +21,11 @@
  */
 
 #define _PTCPSOCKET
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 PDECLARE_CLASS(PTCPSocket, PIPSocket)
 

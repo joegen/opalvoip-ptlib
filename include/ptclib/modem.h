@@ -1,5 +1,5 @@
 /*
- * $Id: modem.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
+ * $Id: modem.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: modem.h,v $
- * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.3  1994/08/21  23:43:02  robertj
  * Moved meta-string transmitter from PModem to PChannel.
  *
  * Revision 1.2  1994/07/25  03:32:29  robertj
@@ -21,6 +24,10 @@
 
 
 #define _PMODEM
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 PDECLARE_CLASS(PModem, PSerialChannel)

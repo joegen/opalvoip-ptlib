@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.6 1994/04/20 12:17:44 robertj Exp $
+ * $Id: textfile.h,v 1.7 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
- * Revision 1.6  1994/04/20 12:17:44  robertj
+ * Revision 1.7  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.6  1994/04/20  12:17:44  robertj
  * PFilePath addition
  *
  * Revision 1.5  1994/04/01  14:17:26  robertj
@@ -26,6 +29,10 @@
  */
 
 #define _PTEXTFILE
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

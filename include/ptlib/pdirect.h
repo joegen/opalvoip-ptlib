@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.12 1994/06/25 11:55:15 robertj Exp $
+ * $Id: pdirect.h,v 1.13 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.12  1994/06/25 11:55:15  robertj
+ * Revision 1.13  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.12  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.11  1994/04/20  12:17:44  robertj
@@ -41,6 +44,11 @@
 
 
 #define _PDIRECTORY
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // File System

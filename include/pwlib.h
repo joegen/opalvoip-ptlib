@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.30 1994/07/25 03:31:41 robertj Exp $
+ * $Id: pwlib.h,v 1.31 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.30  1994/07/25 03:31:41  robertj
+ * Revision 1.31  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.30  1994/07/25  03:31:41  robertj
  * Renamed common pwlib to pwmisc to avoid name conflict.
  *
  * Revision 1.29  1994/07/17  10:46:06  robertj
@@ -24,6 +27,10 @@
 
 #ifndef _PWLIB_H
 #define _PWLIB_H
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 #include <ptlib.h>
