@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.53  2004/08/09 11:10:34  csoutheren
+ * Changed SetTextToSpeech to return ptr to new engine
+ *
  * Revision 1.52  2004/07/28 02:01:51  csoutheren
  * Removed deadlock in some call shutdown scenarios
  *
@@ -294,8 +297,10 @@ void PVXMLPlayableFilename::Play(PVXMLChannel & outgoingChannel)
 
 void PVXMLPlayableFilename::OnStop() 
 {
-  if (autoDelete) 
+  if (autoDelete) {
+    PTRACE(3, "PVXML\tDeleting file \"" << fn << "\"");
     PFile::Remove(fn); 
+  }
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilename> vxmlPlayableFilenameFactory("File");
@@ -347,8 +352,10 @@ void PVXMLPlayableFilenameList::OnRepeat(PVXMLChannel & outgoingChannel)
 void PVXMLPlayableFilenameList::OnStop() 
 {
   if (autoDelete)  {
-    for (PINDEX i = 0; i < filenames.GetSize(); ++i)
+    for (PINDEX i = 0; i < filenames.GetSize(); ++i) {
+      PTRACE(3, "PVXML\tDeleting file \"" << filenames[i] << "\"");
       PFile::Remove(filenames[i]); 
+    }
   }
 }
 
@@ -633,7 +640,7 @@ PVXMLSession::~PVXMLSession()
     delete textToSpeech;
 }
 
-void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
+PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
 {
   PWaitAndSignal m(sessionMutex);
 
@@ -642,9 +649,10 @@ void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
 
   autoDeleteTextToSpeech = autoDelete;
   textToSpeech = _tts;
+  return textToSpeech;
 }
 
-void PVXMLSession::SetTextToSpeech(const PString & ttsName)
+PTextToSpeech * PVXMLSession::SetTextToSpeech(const PString & ttsName)
 {
   PWaitAndSignal m(sessionMutex);
 
@@ -652,9 +660,9 @@ void PVXMLSession::SetTextToSpeech(const PString & ttsName)
     delete textToSpeech;
 
   autoDeleteTextToSpeech = TRUE;
-  textToSpeech = PFactory<PTextToSpeech>::CreateInstance(ttsName);;
+  textToSpeech = PFactory<PTextToSpeech>::CreateInstance(ttsName);
+  return textToSpeech;
 }
-
 
 BOOL PVXMLSession::Load(const PString & source)
 {
@@ -1469,15 +1477,15 @@ BOOL PVXMLSession::PlayText(const PString & _text,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
-
   PStringArray list;
-  if (!ConvertTextToFilenameList(_text, type, list, !(GetVar("caching") *= "safe")) || (list.GetSize() == 0)) {
+  BOOL useCache = !(GetVar("caching") *= "safe");
+  if (!ConvertTextToFilenameList(_text, type, list, useCache) || (list.GetSize() == 0)) {
     PTRACE(1, "PVXML\tCannot convert text to speech");
     return FALSE;
   }
 
   PVXMLPlayableFilenameList * playable = new PVXMLPlayableFilenameList;
-  if (!playable->Open(*vxmlChannel, list, delay, repeat, TRUE)) {
+  if (!playable->Open(*vxmlChannel, list, delay, repeat, !useCache)) {
     delete playable;
     PTRACE(1, "PVXML\tCannot create playable for filename list");
     return FALSE;
