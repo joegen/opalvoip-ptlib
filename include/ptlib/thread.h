@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.28  2002/04/24 01:09:56  robertj
+ * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
+ *
  * Revision 1.27  2001/09/10 02:51:22  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -578,6 +581,13 @@ class PThread : public PObject
 
 
     friend class PSemaphore;
+#endif
+
+
+#if PTRACING
+  private:
+    unsigned traceBlockIndentLevel;
+    friend class PTrace::Block;
 #endif
 
 
