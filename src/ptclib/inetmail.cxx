@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.8 1996/12/21 01:24:39 robertj Exp $
+ * $Id: inetmail.cxx,v 1.9 1997/07/14 11:47:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.9  1997/07/14 11:47:14  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.8  1996/12/21 01:24:39  robertj
  * Added missing open message to smtp server.
  *
@@ -48,7 +51,7 @@ static const PString CRLFdotCRLF = "\r\n.\r\n";
 //////////////////////////////////////////////////////////////////////////////
 // PSMTP
 
-static char const * SMTPCommands[PSMTP::NumCommands] = {
+static char const * const SMTPCommands[PSMTP::NumCommands] = {
   "HELO", "EHLO", "QUIT", "HELP", "NOOP",
   "TURN", "RSET", "VRFY", "EXPN", "RCPT",
   "MAIL", "SEND", "SAML", "SOML", "DATA"
@@ -693,7 +696,7 @@ BOOL PSMTPServer::HandleMessage(PCharArray &, BOOL, BOOL)
 //////////////////////////////////////////////////////////////////////////////
 // PPOP3
 
-static char const * POP3Commands[PPOP3::NumCommands] = {
+static char const * const POP3Commands[PPOP3::NumCommands] = {
   "USER", "PASS", "QUIT", "RSET", "NOOP", "STAT",
   "LIST", "RETR", "DELE", "APOP", "TOP",  "UIDL"
 };
