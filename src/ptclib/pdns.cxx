@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.20  2004/11/15 11:33:52  csoutheren
+ * Fixed problem in SRV record handling
+ *
  * Revision 1.19  2004/06/24 07:36:24  csoutheren
  * Added definitions of T_SRV and T_NAPTR for hosts that do not have these
  *
@@ -322,7 +325,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
       (dnsRecord->wType == DNS_TYPE_SRV) &&
       (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
       ) {
-    SRVRecord * record = new SRVRecord();
+    record = new SRVRecord();
     record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
     record->port     = dnsRecord->Data.SRV.wPort;
     record->priority = dnsRecord->Data.SRV.wPriority;
