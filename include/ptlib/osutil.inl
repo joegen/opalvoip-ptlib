@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.26 1995/01/18 09:00:40 robertj Exp $
+ * $Id: osutil.inl,v 1.27 1995/01/27 11:11:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.26  1995/01/18 09:00:40  robertj
+ * Revision 1.27  1995/01/27 11:11:19  robertj
+ * Changed single string default constructor to be section name not file name.
+ *
+ * Revision 1.26  1995/01/18  09:00:40  robertj
  * Added notifiers to timers.
  *
  * Revision 1.25  1995/01/15  04:51:09  robertj
@@ -515,11 +518,8 @@ PINLINE PModem::Status PModem::GetStatus() const
 PINLINE PConfig::PConfig(Source src)
   : defaultSection("Options") { Construct(src); }
 
-PINLINE PConfig::PConfig(Source src, const PString & section)
+PINLINE PConfig::PConfig(const PString & section, Source src)
   : defaultSection(section) { Construct(src); }
-
-PINLINE PConfig::PConfig(const PFilePath & filename)
-  : defaultSection("Options") { Construct(filename); }
 
 PINLINE PConfig::PConfig(const PFilePath & filename, const PString & section)
   : defaultSection(section) { Construct(filename); }
