@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.30  2001/08/16 11:58:22  rogerh
+ * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.29  2001/08/12 06:32:04  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -342,7 +345,7 @@ BOOL PPipeChannel::IsRunning() const
 
 int PPipeChannel::WaitForTermination()
 {
-#if defined(P_PTHREADS) || defined(P_MACOS)
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   if (kill (childPid, 0) == 0) {
     while (wait3(NULL, WUNTRACED, NULL) != childPid)
       ;
@@ -358,7 +361,7 @@ int PPipeChannel::WaitForTermination()
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
-#if defined(P_PTHREADS) || defined(P_MACOS)
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
   if (kill (childPid, 0) == 0) {
     while (wait3(NULL, WUNTRACED, NULL) != childPid)

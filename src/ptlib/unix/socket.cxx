@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.69  2001/08/16 11:58:22  rogerh
+ * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.68  2001/08/12 07:12:40  rogerh
  * More Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -235,7 +238,7 @@ int PSocket::os_socket(int af, int type, int protocol)
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
 #ifndef __BEOS__
-#if !defined(P_PTHREADS) && !defined(P_MACOS)
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
 // non PThread unixes need non-blocking sockets
     DWORD cmd = 1;
     if ((::ioctl(handle, FIONBIO, &cmd) != 0) ||
@@ -261,7 +264,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   // need to use non-blocking form of connect, so we can abort it if it fails
   // but only if not in PThreads, as non-PThreads versions are already non-blocking
 
-#if defined(P_PTHREADS) || defined(P_MACOS)
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   DWORD cmd = 1;
   if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
@@ -269,7 +272,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
   int val = ::connect(os_handle, addr, size);
 
-#if defined(P_PTHREADS) || defined(P_MACOS)
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   cmd = 0;
   if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
@@ -323,7 +326,7 @@ int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size
 }
 
 
-#if !defined(P_PTHREADS) && !defined(P_MACOS)
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
 
 int PSocket::os_select(int maxHandle,
                    fd_set & readBits,
@@ -577,7 +580,7 @@ BOOL PSocket::os_sendto(
   else
     writeResult = ::send(os_handle, (char *)buf, len, flags);
   if (writeResult > 0) {
-#if !defined(P_PTHREADS) && !defined(P_MACOS)
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
     PThread::Yield();
 #endif
     lastWriteCount = writeResult;

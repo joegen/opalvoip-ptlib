@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.51  2001/08/16 11:58:22  rogerh
+ * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.50  2001/06/20 06:05:47  rogerh
  * Updates for Mac OS X from Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
  *
@@ -276,6 +279,9 @@ PMemoryHeap::Wrapper::Wrapper()
 
 #if defined(_WIN32)
   EnterCriticalSection(&instance->mutex);
+#elif defined(P_MAC_MPTHREADS)
+  long err;
+  PAssertOS((err = MPEnterCriticalRegion(instance->mutex, kDurationForever)) == 0);
 #elif defined(P_PTHREADS)
   pthread_mutex_lock(&instance->mutex);
 #endif
@@ -289,6 +295,9 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 #if defined(_WIN32)
   LeaveCriticalSection(&instance->mutex);
+#elif defined(P_MAC_MPTHREADS)
+  long err;
+  PAssertOS((err = MPExitCriticalRegion(instance->mutex)) == 0 || instance->isDestroyed);
 #elif defined(P_PTHREADS)
   pthread_mutex_unlock(&instance->mutex);
 #endif
@@ -323,7 +332,9 @@ PMemoryHeap::PMemoryHeap()
   static PDebugStream debug;
   leakDumpStream = &debug;
 #else
-#if defined(P_PTHREADS)
+#if defined(P_MAC_MPTHREADS)
+  PAssertOS(MPCreateCriticalRegion(&mutex) == 0);
+#elif defined(P_PTHREADS)
   pthread_mutex_init(&mutex, NULL);
 #endif
   leakDumpStream = &cerr;
@@ -344,6 +355,8 @@ PMemoryHeap::~PMemoryHeap()
   DeleteCriticalSection(&mutex);
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
+#elif defined(P_MAC_MPTHREADS)
+  MPDeleteCriticalRegion(mutex);
 #elif defined(P_PTHREADS)
   pthread_mutex_destroy(&mutex);
 #endif
@@ -924,8 +937,10 @@ PSerialiser & PTextSerialiser::operator<<(float)
 PSerialiser & PTextSerialiser::operator<<(double)
   { return *this; }
 
+#ifndef NO_LONG_DOUBLE
 PSerialiser & PTextSerialiser::operator<<(long double)
   { return *this; }
+#endif
 
 PSerialiser & PTextSerialiser::operator<<(const char *)
   { return *this; }
@@ -989,8 +1004,10 @@ PSerialiser & PBinarySerialiser::operator<<(float)
 PSerialiser & PBinarySerialiser::operator<<(double)
   { return *this; }
 
+#ifndef NO_LONG_DOUBLE
 PSerialiser & PBinarySerialiser::operator<<(long double)
   { return *this; }
+#endif
 
 PSerialiser & PBinarySerialiser::operator<<(const char *)
   { return *this; }
@@ -1050,8 +1067,10 @@ PUnSerialiser & PTextUnSerialiser::operator>>(float &)
 PUnSerialiser & PTextUnSerialiser::operator>>(double &)
   { return *this; }
 
+#ifndef NO_LONG_DOUBLE
 PUnSerialiser & PTextUnSerialiser::operator>>(long double &)
   { return *this; }
+#endif
 
 PUnSerialiser & PTextUnSerialiser::operator>>(char *)
   { return *this; }
@@ -1112,8 +1131,10 @@ PUnSerialiser & PBinaryUnSerialiser::operator>>(float &)
 PUnSerialiser & PBinaryUnSerialiser::operator>>(double &)
   { return *this; }
 
+#ifndef NO_LONG_DOUBLE
 PUnSerialiser & PBinaryUnSerialiser::operator>>(long double &)
   { return *this; }
+#endif
 
 PUnSerialiser & PBinaryUnSerialiser::operator>>(char *)
   { return *this; }
