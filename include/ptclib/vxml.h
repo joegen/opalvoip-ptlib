@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.21  2002/11/08 03:38:34  craigs
+ * Fixed problem with G.723.1 files
+ *
  * Revision 1.20  2002/09/18 06:37:13  robertj
  * Added functions to load vxml directly, via file or URL. Old function
  *   intelligently picks which one to use.
@@ -380,6 +383,7 @@ class PVXMLChannel : public PIndirectChannel
     virtual void DelayFrame(PINDEX msecs) = 0;
     virtual unsigned GetWavFileType() const = 0;
     virtual BOOL IsMediaPCM() const = 0;
+    virtual PString AdjustFn(const PString & fn) { return fn; }
 
   protected:
     PVXMLSession & vxml;
@@ -456,13 +460,14 @@ class PVXMLOutgoingChannelG7231 : public PVXMLOutgoingChannel
   PCLASSINFO(PVXMLOutgoingChannelG7231, PVXMLOutgoingChannel);
   public:
     PVXMLOutgoingChannelG7231(PVXMLSession & vxml);
-    void QueueFile(const PString & ofn, PINDEX repeat = 1, PINDEX delay = 0);
 
     unsigned GetWavFileType() const
       { return PWAVFile::fmt_VivoG7231; }
 
     BOOL IsMediaPCM() const
       { return FALSE; }
+
+    PString AdjustFn(const PString & fn);
 
   protected:
     // overrides from PVXMLOutgoingChannel
@@ -532,6 +537,8 @@ class PVXMLIncomingChannelG7231 : public PVXMLIncomingChannel
 
     BOOL IsMediaPCM() const
       { return FALSE; }
+
+    PString AdjustFn(const PString & fn);
 
   protected:
     // overrides from PVXMLIncomingChannel
