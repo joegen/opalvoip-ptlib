@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.9  2001/02/07 03:33:43  craigs
+ * Added functions to get sound channel parameters
+ *
  * Revision 1.8  2000/07/02 14:15:55  craigs
  * Fixed minor formatting issues
  *
@@ -83,10 +86,12 @@ class PSoundPlayer;
 #ifdef __BEOS__
     PSoundInput* mpInput;
     PSoundPlayer* mpOutput;
+#endif
+
     unsigned mNumChannels;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
-#endif
+    unsigned actualSampleRate;
 };
 
 
