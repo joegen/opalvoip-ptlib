@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.59  2000/02/29 12:26:14  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.58  2000/01/07 12:31:12  robertj
  * Fixed 8 byte alignment on memory heap checking.
  *
@@ -381,6 +384,8 @@ public:
     TraceLevel = 16,
     /// Include the file and line for the trace call in all output
     FileAndLine = 32,
+    /// Include thread object pointer address in all trace output
+    ThreadAddress = 64,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with SetStream(new PSystemLog).
       */
@@ -490,14 +495,7 @@ public:
       const char * file;
       int          line;
       const char * name;
-      static unsigned IndentLevel;
   };
-
-private:
-  static ostream *Stream;
-  static unsigned Options;
-  static unsigned LevelThreshold;
-friend class Block;
 };
 
 #if !PTRACING

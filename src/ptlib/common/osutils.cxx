@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.130  2000/02/29 12:26:14  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.129  2000/02/17 11:34:28  robertj
  * Changed PTRACE output to help line up text after filename output.
  *
@@ -463,51 +466,51 @@ void PSetErrorStream(ostream * s)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ostream * PTrace::Stream = &cerr;
-unsigned PTrace::Options = PTrace::FileAndLine;
-unsigned PTrace::LevelThreshold = 0;
-unsigned PTrace::Block::IndentLevel = 0;
+static ostream * PTraceStream = &cerr;
+static unsigned PTraceOptions = PTrace::FileAndLine;
+static unsigned PTraceLevelThreshold = 0;
+static unsigned PTraceBlockIndentLevel = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
 {
-  Stream = s != NULL ? s : &cerr;
+  PTraceStream = s != NULL ? s : &cerr;
 }
 
 
 void PTrace::SetOptions(unsigned options)
 {
-  Options |= options;
+  PTraceOptions |= options;
 }
 
 
 void PTrace::ClearOptions(unsigned options)
 {
-  Options &= ~options;
+  PTraceOptions &= ~options;
 }
 
 
 unsigned PTrace::GetOptions()
 {
-  return Options;
+  return PTraceOptions;
 }
 
 
 void PTrace::SetLevel(unsigned level)
 {
-  LevelThreshold = level;
+  PTraceLevelThreshold = level;
 }
 
 
 unsigned PTrace::GetLevel()
 {
-  return LevelThreshold;
+  return PTraceLevelThreshold;
 }
 
 
 BOOL PTrace::CanTrace(unsigned level)
 {
-  return level <= LevelThreshold;
+  return level <= PTraceLevelThreshold;
 }
 
 
@@ -517,31 +520,52 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
   PTraceMutex.Wait();
 
-  if ((Options&SystemLogStream) != 0) {
+  if ((PTraceOptions&SystemLogStream) != 0) {
     unsigned lvl = level+PSystemLog::Warning;
     if (lvl >= PSystemLog::NumLogLevels)
       lvl = PSystemLog::NumLogLevels-1;
-    ((PSystemLog*)Stream)->SetLevel((PSystemLog::Level)lvl);
+    ((PSystemLog*)PTraceStream)->SetLevel((PSystemLog::Level)lvl);
   }
   else {
-    if ((Options&DateAndTime) != 0) {
+    if ((PTraceOptions&DateAndTime) != 0) {
       PTime now;
-      *Stream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
     }
 
-    if ((Options&Timestamp) != 0)
-      *Stream << setprecision(3) << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
+    if ((PTraceOptions&Timestamp) != 0)
+      *PTraceStream << setprecision(3) << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
 
-    if ((Options&Thread) != 0)
-      *Stream << hex << setfill('0')
-              << setw(7) << (unsigned)PThread::Current()
-              << dec << setfill(' ') << '\t';
+    if ((PTraceOptions&Thread) != 0) {
+      PThread * thread = PThread::Current();
+
+      PString name;
+      if (thread != NULL)
+        name = thread->GetThreadName();
+
+      if (!name)
+        *PTraceStream << setw(23) << name.Left(23) << '\t';
+      else {
+        name = thread->GetClass();
+        if ((PTraceOptions&ThreadAddress) != 0)
+          *PTraceStream << setw(23) << name.Left(23) << '\t';
+        else
+          *PTraceStream << setw(15) << name.Left(15) << ':'
+                        << hex << setfill('0')
+                        << setw(7) << (unsigned)thread
+                        << dec << setfill(' ') << '\t';
+      }
+    }
+
+    if ((PTraceOptions&ThreadAddress) != 0)
+      *PTraceStream << hex << setfill('0')
+                    << setw(7) << (unsigned)PThread::Current()
+                    << dec << setfill(' ') << '\t';
   }
 
-  if ((Options&TraceLevel) != 0)
-    *Stream << level << '\t';
+  if ((PTraceOptions&TraceLevel) != 0)
+    *PTraceStream << level << '\t';
 
-  if ((Options&FileAndLine) != 0 && fileName != NULL) {
+  if ((PTraceOptions&FileAndLine) != 0 && fileName != NULL) {
     const char * file = strrchr(fileName, '/');
     if (file != NULL)
       file++;
@@ -553,16 +577,16 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
         file = fileName;
     }
 
-    *Stream << setw(16) << file << '(' << lineNum << ")\t";
+    *PTraceStream << setw(16) << file << '(' << lineNum << ")\t";
   }
 
-  return *Stream;
+  return *PTraceStream;
 }
 
 
 ostream & PTrace::End(ostream & s)
 {
-  if ((Options&SystemLogStream) != 0)
+  if ((PTraceOptions&SystemLogStream) != 0)
     s.flush();
   else
     s << endl;
@@ -579,11 +603,11 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   line = lineNum;
   name = traceName;
 
-  IndentLevel += 2;
+  PTraceBlockIndentLevel += 2;
 
-  if ((Options&Blocks) != 0) {
+  if ((PTraceOptions&Blocks) != 0) {
     ostream & s = PTrace::Begin(1, file, line);
-    for (unsigned i = 0; i < IndentLevel; i++)
+    for (unsigned i = 0; i < PTraceBlockIndentLevel; i++)
       s << '=';
     s << "> " << name << PTrace::End;
   }
@@ -592,15 +616,15 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 
 PTrace::Block::~Block()
 {
-  if ((Options&Blocks) != 0) {
+  if ((PTraceOptions&Blocks) != 0) {
     ostream & s = PTrace::Begin(1, file, line);
     s << '<';
-    for (unsigned i = 0; i < IndentLevel; i++)
+    for (unsigned i = 0; i < PTraceBlockIndentLevel; i++)
       s << '=';
     s << ' ' << name << PTrace::End;
   }
 
-  IndentLevel -= 2;
+  PTraceBlockIndentLevel -= 2;
 }
 
 
@@ -1231,6 +1255,17 @@ void PProcess::Terminate()
 }
 
 
+PString PProcess::GetThreadName() const
+{
+  return GetName(); 
+}
+ 
+ 
+void PProcess::SetThreadName(const PString & /*name*/)
+{
+}
+
+
 PString PProcess::GetVersion(BOOL full) const
 {
   const char * const statusLetter[NumCodeStatuses] =
@@ -1242,6 +1277,27 @@ PString PProcess::GetVersion(BOOL full) const
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
+
+void PThread::PrintOn(ostream & strm) const
+{
+  PString name = GetThreadName();
+  if (name.IsEmpty())
+    name.sprintf("%s<%08x>", GetClass(), this);
+  strm << name;
+}
+
+
+PString PThread::GetThreadName() const
+{
+  return threadName; 
+}
+ 
+ 
+void PThread::SetThreadName(const PString & name)
+{
+  threadName = name; 
+}
+
 
 #ifndef P_PLATFORM_HAS_THREADS
 
@@ -1258,7 +1314,11 @@ void PThread::InitialiseProcessThread()
 }
 
 
-PThread::PThread(PINDEX stackSize, AutoDeleteFlag deletion, Priority priorityLevel)
+PThread::PThread(PINDEX stackSize,
+                 AutoDeleteFlag deletion,
+                 Priority priorityLevel,
+                 const PString & name)
+  : threadName(name)
 {
   autoDelete = deletion == AutoDeleteThread;
   basePriority = priorityLevel;   // Threads user settable priority level

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.22  2000/02/29 12:26:14  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.21  1999/06/06 05:07:17  robertj
  * Fixed documentation error.
  *
@@ -198,7 +201,8 @@ class PThread : public PObject
       PINDEX stackSize,                 /// Size of stack to use for thread.
       AutoDeleteFlag deletion = AutoDeleteThread,
         /// Automatically delete PThread instance on termination of thread.
-      Priority priorityLevel = NormalPriority  /// Initial priority of thread.
+      Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
+      const PString & ThreadName = "" /// The name of the thread (for Debug/Trace)
     );
 
     /** Destroy the thread, this simply calls the #Terminate()# function
@@ -209,6 +213,17 @@ class PThread : public PObject
        the #Main()# function.
      */
     ~PThread();
+  //@}
+
+  /**@name Overrides from PObject */
+  //@{
+    /**Standard stream print function.
+       The PObject class has a << operator defined that calls this function
+       polymorphically.
+      */
+    void PrintOn(
+      ostream & strm    /// Stream to output text representation
+    ) const;
   //@}
 
   /**@name Control functions */
@@ -298,6 +313,22 @@ class PThread : public PObject
        current thread priority.
      */
     virtual Priority GetPriority() const;
+
+    /** Get the name of the thread. Thread names are a optional debugging aid.
+
+       @return
+       current thread name.
+     */
+    virtual PString GetThreadName() const;
+
+    /** Change the name of the thread. Thread names are a optional debugging aid.
+
+       @return
+       current thread name.
+     */
+    virtual void SetThreadName(
+      const PString & name        /// New name for the thread.
+    );
   //@}
 
   /**@name Miscellaneous */
@@ -369,6 +400,9 @@ class PThread : public PObject
 
     BOOL autoDelete;
     // Automatically delete the thread on completion.
+
+    // Give the thread a name for debugging purposes.
+    PString threadName;
 
 #ifndef P_PLATFORM_HAS_THREADS
     void AllocateStack(
