@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.127  2002/05/31 06:37:22  robertj
+# Added PWLIB_TEMPLATES environment variable to compile using GCC templates.
+#
 # Revision 1.126  2002/05/07 01:57:51  craigs
 # Always link with -ldl, not just when using shared libraries
 #
@@ -1201,6 +1204,10 @@ ifdef P_PTHREADS
 STDCCFLAGS	+= -DP_PTHREADS
 endif
 
+#define templates if available
+ifdef PWLIB_TEMPLATES
+STDCCFLAGS	+= -DP_HAS_TEMPLATES
+endif
 
 # compiler flags for all modes
 STDCCFLAGS	+= -DPBYTE_ORDER=$(ENDIAN)
