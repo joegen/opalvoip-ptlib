@@ -762,7 +762,11 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
 #if defined(P_LINUX) || defined(P_SUN4)
-  return PString((type == StandardTime) ? ::tzname[0] : ::tzname[1]); 
+  const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
+  if (str != NULL)
+    return PString();
+  else
+    return PString(str);
 #elif defined(P_SUN4)
   char buffer[10];
   struct tm * timestruct = localtime(time(NULL)); 
