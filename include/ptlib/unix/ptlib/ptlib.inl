@@ -110,13 +110,10 @@ PINLINE PString PFilePath::GetVolume() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PFile::Rename(const PString & oldname, const PString & newname, BOOL force)
-  { return rename(oldname,newname) == 0; }
-
-PINLINE BOOL PFile::Exists(const PString & name)
+PINLINE BOOL PFile::Exists(const PFilePath & name)
   { return access(name, 0) == 0; }
 
-PINLINE BOOL PFile::Remove(const PString & name, BOOL force)
+PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL force)
   { return unlink(name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
