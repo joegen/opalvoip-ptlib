@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.59  2001/02/15 01:12:15  robertj
+ * Moved some often repeated HTTP service code into PHTTPServiceProcess.
+ *
  * Revision 1.58  2001/02/13 03:30:22  robertj
  * Added function to do heap validation.
  *
@@ -485,6 +488,12 @@ PServiceProcess & PServiceProcess::Current()
   PServiceProcess & process = (PServiceProcess &)PProcess::Current();
   PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service!");
   return process;
+}
+
+
+const char * PServiceProcess::GetServiceDependencies() const
+{
+  return "EventLog\0";
 }
 
 

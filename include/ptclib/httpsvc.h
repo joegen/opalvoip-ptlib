@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.33  2001/02/15 01:12:15  robertj
+ * Moved some often repeated HTTP service code into PHTTPServiceProcess.
+ *
  * Revision 1.32  2001/02/14 02:30:59  robertj
  * Moved HTTP Service Macro facility to public API so can be used by apps.
  * Added ability to specify the service macro keyword, defaults to "macro".
@@ -181,6 +184,13 @@ class PHTTPServiceProcess : public PServiceProcess
 
     PHTTPServiceProcess(const Info & inf);
     ~PHTTPServiceProcess();
+
+    BOOL OnStart();
+    void OnStop();
+    BOOL OnPause();
+    void OnContinue();
+    void OnControl();
+    const char * GetServiceDependencies() const;
 
     virtual void OnConfigChanged() = 0;
     virtual BOOL Initialise(const char * initMsg) = 0;
