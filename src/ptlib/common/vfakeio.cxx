@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.21  2003/06/14 02:59:34  rjongbloed
+ * Fixed MSVC warning.
+ *
  * Revision 1.20  2003/06/11 22:17:54  dereksmithies
  * Add fake video device which display text, on --videoinput 5
  *
@@ -1809,7 +1812,7 @@ void PFakeVideoInputDevice::GrabTextVideoFrame(BYTE *resFrame)
   }
 
   PINDEX boxSize = (height / (MAX_L_HEIGHT * 2) ) & 0xfe;
-  int index = (PTime() - startTime).GetMilliSeconds() / 300;
+  int index = (int)((PTime() - startTime).GetMilliSeconds() / 300);
  
   PINDEX maxI = (width / boxSize) - 2;
   for (i = 0; i < maxI; i++)
