@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.8  2002/07/29 14:15:47  craigs
+ * Added asynchronous VXML execution
+ *
  * Revision 1.7  2002/07/17 08:34:12  craigs
  * Fixed deadlock problems
  *
@@ -276,6 +279,8 @@ class PVXMLSession : public PObject
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
 
+    PDECLARE_NOTIFIER(PThread, PVXMLSession, DialogExecute);
+
   protected:
     BOOL ExecuteWithoutLock();
 
@@ -294,6 +299,9 @@ class PVXMLSession : public PObject
     BOOL recordDTMFTerm;
     int recordMaxTime;
     int recordFinalSilence;
+
+    PThread * vxmlThread;
+    BOOL vxmlStatus;
 };
 
 //////////////////////////////////////////////////////////////////
