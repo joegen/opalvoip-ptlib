@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.25  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.24  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -104,13 +108,12 @@
  *
  */
 
-
+#ifndef _PTIMER
 #define _PTIMER
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
 
 class PThread;
 
@@ -352,8 +355,14 @@ class PTimer : public PTimeInterval
 
 
 // Include platform dependent part of class
-#include <ptlib/timer.h>
+#ifdef _WIN32
+#include "win32/ptlib/timer.h"
+#else
+#include "unix/ptlib/timer.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

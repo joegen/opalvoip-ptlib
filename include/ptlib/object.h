@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.87  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.86  2002/10/14 21:42:37  rogerh
  * Only use malloc.h on Windows
  *
@@ -302,6 +306,12 @@
 
 #ifdef P_USE_PRAGMA
 #pragma interface
+#endif
+
+#ifdef _WIN32
+#include "win32/ptlib/contain.h"
+#else
+#include "unix/ptlib/contain.h"
 #endif
 
 #if defined(P_VXWORKS)

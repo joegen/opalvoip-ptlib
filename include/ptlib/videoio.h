@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.31  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.30  2003/03/17 08:10:00  robertj
  * Fixed GNU warning
  *
@@ -139,15 +143,14 @@
  */
 
 
+#ifndef _PVIDEOIO
 #define _PVIDEOIO
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-
 class PColourConverter;
-
 
 /**This class defines a video device.
    This class is used to abstract the few parameters that are common to both\
@@ -859,8 +862,13 @@ class PVideoInputDevice : public PVideoDevice
 
 
 // Include platform dependent part of class
-#include <ptlib/videoio.h>
+#ifdef _WIN32
+#include "win32/ptlib/videoio.h"
+#else
+#include "unix/ptlib/videoio.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

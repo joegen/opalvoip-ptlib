@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.28  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.27  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -112,6 +116,7 @@
  *
  */
 
+#ifndef _PTIMEINTERVAL
 #define _PTIMEINTERVAL
 
 #ifdef P_USE_PRAGMA
@@ -456,8 +461,14 @@ class PTimeInterval : public PObject
 
 
 // Include platform dependent part of class
-#include <ptlib/timeint.h>
+#ifdef _WIN32
+#include "win32/ptlib/timeint.h"
+#else
+#include "unix/ptlib/timeint.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

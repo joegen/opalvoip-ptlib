@@ -27,8 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.33  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.32  2002/10/04 04:33:27  robertj
- * Added functions for getting operating system thread identifer values.
+ * Added functions for getting operating system thread identifier values.
  *
  * Revision 1.31  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
@@ -126,6 +130,8 @@
  *
  */
 
+#ifndef _PTHREAD
+#define _PTHREAD
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -137,6 +143,7 @@
 
 class PSemaphore;
 
+typedef P_THREADIDENTIFIER PThreadIdentifier;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
@@ -149,26 +156,10 @@ class PSemaphore;
    This is reflected in this library by the #PProcess# class being
    descended from the PThread class.
 
-   The implementation of a thread is platform dependent. Not all platforms
-   support concurrent threads within a process or even concurrent processes!
-   For example, MS-DOS has no form of multi-threading or multi-processing,
-   Microsoft Windows has a cooperative multi-processing but no multi-threading.
-   Unix has full pre-emptive multi-processing but most cannot do multiple
-   threads within that process while some Unix systems and Windows NT have
-   full preemptive proceses and threads.
-
-   If a platform does not directly support multiple threads, the library will
-   them using a cooperative co-routine technique. This requires that each
-   thread of execution within a process, voluntarily yields control to other
-   threads. This will occur if the thread is blocked inside an I/O function
-   on a #PChannel# or when the #PThread::Yield()# function is
-   explicitly called.
-   
-   Note that this is {\bf cooperative}. An endless loop will stop all
-   threads in a process, possibly all processes on some platforms. If a
-   lengthy operation is to take place that does not involve blocking I/O,
-   eg pure computation or disk file I/O, then it is the responsiblity of the
-   programmer to assure enough yielding for background threads to execute.
+   The implementation of a thread is platform dependent, but it is
+   assumed that the platform has some support for native threads.
+   Previous versions of PWLib has some support for co-operative
+   threads, but this has been removed
  */
 class PThread : public PObject
 {
@@ -224,16 +215,12 @@ class PThread : public PObject
        may be freed using the delete operator as soon as the thread is
        terminated or executes to completion (usually the latter).
 
-       The stack size specified is {\bf not} simply in bytes. It is a value
-       that is multiplied by a factor into bytes depending on the target
-       platform. For example a Unix system with a RISC processor may use
-       significantly more stack than an MS-DOS platform. These sizes are
-       normalised to the "stack factor" provided here. For some platforms, eg
-       Windows NT, the stack size is only an initial size and the stack will
-       automatically be increased as required.
+       The stack size argument retained only for source code compatibility for
+       previous implementations. It is not used in the current code and
+       may be removed in subsequent versions.
      */
     PThread(
-      PINDEX stackSize,                 /// Size of stack to use for thread.
+      PINDEX ,                 /// Not used - previously stack size
       AutoDeleteFlag deletion = AutoDeleteThread,
         /// Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
@@ -382,11 +369,11 @@ class PThread : public PObject
   //@{
     /**Get operating system specific thread identifier for this thread.
       */
-    virtual PThreadIdentifer GetThreadId() const;
+    virtual PThreadIdentifier GetThreadId() const;
 
     /**Get operating system specific thread identifier for current thread.
       */
-    static PThreadIdentifer GetCurrentThreadId();
+    static PThreadIdentifier GetCurrentThreadId();
 
     /** User override function for the main execution routine of the thread. A
        descendent class must provide the code that will be executed in the
@@ -408,15 +395,11 @@ class PThread : public PObject
      */
     static PThread * Current();
 
-    /** Yield to another thread. If there are no other threads then this
-       function does nothing. Note that on most platforms the threading is
-       cooperative and this function must be called for other threads to run
-       at all. There may be an implicit call to Yield within the I/O functions
-       of #PChannel# classes. This is so when a thread is I/O blocked then
-       other threads can, as far as possible, continue to run.
-       
-       If the platform directly supports multiple threads then this function
-       will do nothing.
+    /** Yield to another thread without blocking.
+        This duplicates the implicit thread yield that may occur on some
+        I/O operations or system calls.
+
+        This may not be implemented on all platforms.
      */
     static void Yield();
 
@@ -441,19 +424,6 @@ class PThread : public PObject
        required due to the bootstrap logic of processes and threads.
      */
 
-#ifndef P_PLATFORM_HAS_THREADS
-    virtual BOOL IsNoLongerBlocked();
-    /* Check if the condition that has blocked a thread in an I/O function,
-       for example, has ceased. This is required by the internal cooperative
-       thread scheduler.
-
-       This function is not present for platforms that support threads.
-       
-       <H2>Returns:</H2>
-       TRUE if the thread is no longer blocked.
-     */
-#endif
-
   private:
     PThread();
     // Create a new thread instance as part of a PProcess class.
@@ -473,146 +443,19 @@ class PThread : public PObject
     // Give the thread a name for debugging purposes.
     PString threadName;
 
-#ifndef P_PLATFORM_HAS_THREADS
-    void AllocateStack(
-      PINDEX stackSize  // Size of the stack to allocate.
-    );
-    /* Allocate the stack for the thread.
-
-       The stack size specified is {\bf not} simply in bytes. It is a value
-       that is multiplied by a factor into bytes depending on the target
-       platform. For example a Unix system with a RISC processor may use
-       significantly more stack than an MS-DOS platform. These sizes are
-       normalised to the "stack factor" provided here. For some platforms, eg
-       Windows NT, the stack size is only an initial size and the stack will
-       automatically be increased as required.
-
-       This function is not present for platforms that support threads.
-     */
-
-    void ClearBlock();
-    /* Clear the blocked thread. This is used by platform dependent code to
-       signal to the common code scheduler that the thread is no longer
-       blocked.
-
-       This function is not present for platforms that support threads.
-     */
-
-    void BeginThread();
-    /* Function to start #Main()# and exit when completed.
-
-       This function is not present for platforms that support threads.
-     */
-
-    virtual void SwitchContext(
-      PThread * from    // Thread being switched from.
-    );
-    /* Do the machinations needed to jump to the current thread. This is a
-       platform dependent function that utilises the standard C
-       #setjmp()# and #longjmp()# functions to implement
-       the co-routines.
-    
-       This function is not present for platforms that support threads.
-     */
-
-
-    // Member fields
-    Priority basePriority;
-    /* The threads priority level, relative to other threads.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    int dynamicPriority;
-    /* The threads priority during this scheduled slice. A thread that has not
-       been scheduled has its dynamic priority increased so that next time
-       the scheduler is looking for a thread to run it has a better chance of
-       executing. Once a thread is executed the dynamic priority is set back
-       to the base priority as set by #SetPriority()#.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    int suspendCount;
-    /* The threads count of calls to #Suspend()# or #Resume()#.
-       If <=0 then can run, if >0 means suspended and is not to be scheduled.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    PTimer sleepTimer;
-    /* Time for thread to remain asleep. Thread is not scheduled while this
-       is running after a #Sleep()# call.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    PSemaphore * blockingSemaphore;
-    /* Semaphore that is blocking this thread.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    PThread * link;
-    /* Link to next thread in circular list. The use of a list rather than
-       priority queues or other sophisticated task queuing technique is to
-       simplify the scheduler. It is expected that any given process will not
-       have a large number of threads, ie less than approximately ten, so the
-       overhead of the list search is small in comparison to the overhead in
-       complex data structures.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    enum {
-      Starting,         // Thread is starting up.
-      Running,          // Thread is the currently executing context.
-      Waiting,          // Thread is waiting to be scheduled.
-      Sleeping,         // Thread is sleeping until sleepTimer is up.
-      Suspended,        // Thread is currently suspended.
-      BlockedIO,        // Thread is currently blocked in I/O.
-      SuspendedBlockIO, // Thread is blocked {\bf and} suspended.
-      BlockedSem,       // Thread is currently blocked by a semaphore.
-      SuspendedBlockSem,// Thread is blocked {\bf and} suspended.
-      Terminating,      // Thread is terminating but has not died yet.
-      Terminated        // Thread has terminated.
-    } status;
-    /* Thread status for scheduler handling.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    jmp_buf context;
-    /* Buffer for context switching.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    char PSTATIC * stackBase;
-    /* Base of stack allocated for the thread. The PSTATIC is for DOS-Windows.
-
-       This variable is not present for platforms that support threads.
-     */
-
-    char PSTATIC * stackTop;
-    /* Top of stack allocated for the thread.
-
-       This variable is not present for platforms that support threads.
-     */
-
-
-    friend class PSemaphore;
-#endif
-
-
   private:
     unsigned traceBlockIndentLevel;
     friend class PTrace::Block;
 
 
 // Include platform dependent part of class
-#include <ptlib/thread.h>
+#ifdef _WIN32
+#include "win32/ptlib/thread.h"
+#else
+#include "unix/ptlib/thread.h"
+#endif
 };
 
+#endif	// _PTHREAD
 
 // End Of File ///////////////////////////////////////////////////////////////
