@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.2  2002/06/27 06:44:46  robertj
+ * Changed "" to PString::Empty() where assigning to PString.
+ *
  * Revision 1.1  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -122,7 +125,7 @@ PINLINE BOOL PDirectory::Exists(const PString & p)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PString PFilePath::GetVolume() const
-  { return PString(""); }
+  { return PString::Empty(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 
