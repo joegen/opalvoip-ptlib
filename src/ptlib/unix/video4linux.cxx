@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.7  2001/03/07 00:10:05  robertj
+ * Improved the device list, uses /proc, thanks Thorsten Westheider.
+ *
  * Revision 1.6  2001/03/03 23:25:07  robertj
  * Fixed use of video conversion function, returning bytes in destination frame.
  *
@@ -158,14 +161,39 @@ BOOL PVideoInputDevice::IsCapturing()
 }
 
 
-PStringList PVideoInputDevice::GetDeviceNames() const
+PStringList PVideoInputDevice::GetInputDeviceNames()
 {
-  PStringList list;
+  PDirectory   procvideo("/proc/video/dev");
+  PString      entry;
+  PStringList  devlist;
+  
+  if (procvideo.Exists()) {
+    if (procvideo.Open(PFileInfo::RegularFile)) {
+      do {
+        entry = procvideo.GetEntryName();
+      
+        if (entry.Left(5) == "video") {
+          PString thisDevice = "/dev/" + entry;
+          int videoFd;  
+          if ((videoFd = open(thisDevice, O_RDONLY))) {
+            struct video_capability  videoCaps;
+            if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 &&
+                   (videoCaps.type & VID_TYPE_CAPTURE) != 0)
+              devlist.AppendString(thisDevice);
+            close(videoFd);
+          }
+        }
+      } while (procvideo.Next());
+    }
+  }
+  else {
+    // Fallback (no proc file system support or whatever)
 
-  list.AppendString("/dev/video0");
-  list.AppendString("/dev/video1");
-
-  return list;
+    devlist.AppendString("/dev/video0");
+    devlist.AppendString("/dev/video1");
+  }
+  
+  return devlist;
 }
 
 

@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.9  2001/03/07 00:10:05  robertj
+ * Improved the device list, uses /proc, thanks Thorsten Westheider.
+ *
  * Revision 1.8  2001/03/03 23:29:00  robertj
  * Oops, fixed BSD version of video.
  *
@@ -168,7 +171,7 @@ BOOL PVideoInputDevice::IsCapturing()
 }
 
 
-PStringList PVideoInputDevice::GetDeviceNames() const
+PStringList PVideoInputDevice::GetInputDeviceNames()
 {
   PStringList list;
 
