@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.91  2004/04/03 07:16:05  rjongbloed
+ * Fixed backward compatibility with MSVC 6
+ *
  * Revision 1.90  2004/04/03 06:54:22  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -359,6 +362,7 @@
     #endif
   #else
     #include <iostream.h>
+    #include <strstrea.h>
     #ifndef __MWERKS__
       #include <iomanip.h>
     #endif
