@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.119  2003/05/02 00:39:11  dereks
+ * Changes to make threading work on Redhat 9
+ *
  * Revision 1.118  2003/04/24 12:03:13  rogerh
  * Calling pthread_mutex_unlock() on a mutex which is not locked can be
  * considered an error. NetBSD now enforce this error so we need to quickly
@@ -1502,6 +1505,7 @@ void PMutex::Signal()
 #endif
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PThread::Yield();
 }
 
 
