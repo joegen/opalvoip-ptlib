@@ -648,7 +648,10 @@ InputDir=\Work\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\..\.. 
+	cd ..\..\..\tools\msvc6chk 
+	.\msvc6chk 
+	if errorlevel 1 exit %ERRORLEVEL% 
+	cd ..\.. 
 	.\configure --exclude-env=MSVC_PWLIB_CONFIGURE_EXCLUDE_DIRS 
 	
 # End Custom Build
@@ -660,7 +663,10 @@ InputDir=\Work\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\..\.. 
+	cd ..\..\..\tools\msvc6chk 
+	.\msvc6chk 
+	if errorlevel 1 exit %ERRORLEVEL% 
+	cd ..\.. 
 	.\configure --exclude-env=MSVC_PWLIB_CONFIGURE_EXCLUDE_DIRS 
 	
 # End Custom Build
