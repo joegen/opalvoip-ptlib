@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.58 1998/03/09 11:17:38 robertj Exp $
+ * $Id: win32.cxx,v 1.59 1998/03/17 10:17:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.59  1998/03/17 10:17:09  robertj
+ * Fixed problem with viewing registry entries where the section ends with a \.
+ *
  * Revision 1.58  1998/03/09 11:17:38  robertj
  * FAT32 compatibility
  *
@@ -1468,6 +1471,8 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
 
 RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 {
+  PAssert(!subkeyname.IsEmpty(), PInvalidParameter);
+
   PProcess & proc = PProcess::Current();
   DWORD access = mode == ReadOnly ? KEY_READ : KEY_ALL_ACCESS;
   DWORD error;
@@ -1484,6 +1489,9 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
   }
   else {
     subkey = subkeyname;
+    PINDEX lastCharPos = subkey.GetLength()-1;
+    while (lastCharPos > 0 && subkey[lastCharPos] == '\\')
+      subkey.Delete(lastCharPos--, 1);
     basekey = NULL;
 
     if (!proc.GetVersion(FALSE).IsEmpty()) {
