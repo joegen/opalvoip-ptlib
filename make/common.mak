@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.31  1999/02/19 11:32:10  robertj
+# Improved the "release" target to build release tar files.
+#
 # Revision 1.30  1999/01/16 09:56:24  robertj
 # Changed some macros to more informative names.
 #
@@ -182,27 +185,56 @@ clean:
 #
 ######################################################################
 
+ifdef DEBUG
+
+release:
+	$(MAKE) DEBUG= release
+
+else
+
 ifndef RELEASEDIR
 RELEASEDIR=releases
 endif
 
-ifndef RELEASEPROGDIR
-RELEASEPROGDIR=$(PROG)
+ifndef RELEASEBASEDIR
+RELEASEBASEDIR=$(PROG)
 endif
 
-ifdef VERSION
-ifdef DEBUG
-release:
-	$(MAKE) DEBUG= release
-else
-release: $(OBJDIR)/$(PROG)
-	cp $(OBJDIR)/$(PROG) $(RELEASEDIR)/$(RELEASEPROGDIR)
-	cd $(RELEASEDIR) ; tar cf - $(RELEASEPROGDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
+ifndef VERSION
+ifneq (,$(wildcard custom.cxx))
+VERSION:=$(strip \
+	$(subst \#define,, $(subst MAJOR_VERSION,,\
+		$(shell grep "define *MAJOR_VERSION" custom.cxx)))).$(strip \
+	$(subst \#define,,$(subst MINOR_VERSION,,\
+		$(shell grep "define *MINOR_VERSION" custom.cxx))))$(strip \
+	$(subst \#define,,$(subst BUILD_TYPE,,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
+		$(shell grep "define *BUILD_TYPE" custom.cxx))))))$(strip \
+	$(subst \#define,,$(subst BUILD_NUMBER,,\
+		$(shell grep "define *BUILD_NUMBER" custom.cxx))))
 endif
-else
-release:
-	echo You must define a VERSION macro.
 endif
+
+
+ifndef VERSION
+
+release :
+	@echo Must define VERSION macro or have custom.cxx file.
+
+else
+
+RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
+
+release: $(OBJDIR)/$(PROG) releasefiles
+	cp $(OBJDIR)/$(PROG) $(RELEASEPROGDIR)/$(PROG)
+	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
+	rm -r $(RELEASEPROGDIR)
+
+releasefiles ::
+	-mkdir -p $(RELEASEPROGDIR)
+
+endif
+
+endif # else ifdef DEBUG
 
 
 ######################################################################
