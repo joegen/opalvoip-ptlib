@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.74  2001/06/26 15:49:15  rogerh
+# Define HAS_VIDEOCAPTURE on platforms with video capture code
+#
 # Revision 1.73  2001/06/26 14:20:36  rogerh
 # Compile the generic video files on all platforms
 #
@@ -282,14 +285,17 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
 VIDEO_SOURCE += video4linux.cxx
+STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
 VIDEO_SOURCE += video4bsd.cxx
+STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
 VIDEO_SOURCE += video4bsd.cxx
+STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 #Set SOUND_SOURCE to dummyaudio, a file which links but does not
