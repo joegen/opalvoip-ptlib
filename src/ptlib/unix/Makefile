@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.93  2002/08/14 15:18:54  craigs
+# Added ptts.cxx to build
+#
 # Revision 1.92  2002/06/27 05:39:34  craigs
 # Added vxml.cxx
 #
@@ -461,6 +464,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/telnet.cxx \
 	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
 	$(COMPONENT_SRC_DIR)/dtmf.cxx \
+	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(SSL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
