@@ -250,6 +250,10 @@ SOURCE=..\..\Ptclib\Inetprot.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Ptclib\modem.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Pasn.cxx
 
 !IF  "$(CFG)" == "Console Componets - Win32 Release"
@@ -289,19 +293,6 @@ SOURCE=..\..\Ptclib\Pssl.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\Serial.cxx
-
-!IF  "$(CFG)" == "Console Componets - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console Componets - Win32 Debug"
-
-# ADD CPP /Yu"ptlib.h"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Ptclib\Snmpclnt.cxx
 
 !IF  "$(CFG)" == "Console Componets - Win32 Release"
@@ -329,17 +320,7 @@ SOURCE=..\..\Ptclib\Snmpserv.cxx
 # Begin Source File
 
 SOURCE=..\..\Ptclib\Telnet.cxx
-
-!IF  "$(CFG)" == "Console Componets - Win32 Release"
-
 # ADD CPP /Yc"ptlib.h"
-
-!ELSEIF  "$(CFG)" == "Console Componets - Win32 Debug"
-
-# ADD CPP /Yc"ptlib.h"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"
