@@ -20,6 +20,7 @@
 #define	PORTLISTENV	"PWLIB_SERIALPORTS"
 #define	DEV_PREFIX	"/dev/"
 
+#include "../../common/src/serial.cxx"
 
 ////////////////////////////////////////////////////////////////
 //
@@ -128,7 +129,7 @@ BOOL PSerialChannel::Open(const PString & port,
 
   // attempt to open the device
   PString device_name = PString(DEV_PREFIX) + port;
-  if ((os_handle = open((const char *)device_name, O_RDWR|O_NONBLOCK)) < 0) {
+  if ((os_handle = ::open((const char *)device_name, O_RDWR|O_NONBLOCK)) < 0) {
     lastError = AccessDenied;
     Close();
     return FALSE;
@@ -147,6 +148,8 @@ BOOL PSerialChannel::Open(const PString & port,
   SetStopBits(stop);
   SetInputFlowControl(inputFlow);
   SetOutputFlowControl(outputFlow);
+
+  ::fcntl(os_handle, F_SETFD, 1);
 
   return TRUE;
 }

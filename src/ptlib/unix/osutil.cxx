@@ -13,8 +13,6 @@
 #pragma implementation "timer.h"
 #pragma implementation "pdirect.h"
 #pragma implementation "file.h"
-#pragma implementation "sfile.h"
-#pragma implementation "textfile.h"
 #pragma implementation "ptime.h"
 #pragma implementation "timeint.h"
 #pragma implementation "filepath.h"
@@ -51,13 +49,6 @@
 
 #include <ptlib.h>
 
-#if ! defined (P_USE_INLINES)
-
-#include "../../common/osutil.inl"
-#include "ptlib.inl"
-
-#endif
-
 #define	LINE_SIZE_STEP	100
 
 #if defined(P_SUN4)
@@ -66,6 +57,11 @@ extern "C" char *mktemp(char *);
 #endif
 
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
+
+#ifndef P_USE_INLINES
+#include "../../common/osutil.inl"
+#include "ptlib.inl"
+#endif
 
 static PString CanonicaliseDirectory (const PString & path)
 
@@ -173,8 +169,10 @@ void PDirectory::Close()
 {
   if (directory != NULL)
     PAssert(closedir(directory) == 0, POperatingSystemError);
+  directory = NULL;
   if (entryInfo != NULL)
     delete entryInfo;
+  entryInfo = NULL;
 }
 
 void PDirectory::Construct ()
@@ -288,7 +286,10 @@ BOOL PFile::Open(OpenMode mode, int opt)
 
   removeOnClose = opt & Temporary;
 
-  return ConvertOSError(os_handle = open(path, oflags, DEFAULT_FILE_MODE));
+  if (!ConvertOSError(os_handle = ::open(path, oflags, DEFAULT_FILE_MODE)))
+    return FALSE;
+
+  return ConvertOSError(::fcntl(os_handle, F_SETFD, 1));
 }
 
 
@@ -544,10 +545,10 @@ PString PFilePath::GetType() const
   int p = FindLast('.');
   int l = (p == P_MAX_INDEX) ? 0 : (GetLength() - p);
 
-  if (p < 0 || l > 4 || l < 2)
+  if (p < 0 || l < 2)
     return PString("");
   else
-    return Right(GetLength()-p);
+    return (*this)(p, P_MAX_INDEX);
 }
 
 
@@ -672,5 +673,41 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
                        PString(_time_info->full_month[(int)month-1]);
 #endif
 }
+
+
+BOOL PTime::IsDaylightSavings()
+{
+  time_t theTime = ::time(NULL);
+  return ::localtime(&theTime)->tm_isdst != 0;
+}
+
+int PTime::GetTimeZone(PTime::TimeZoneType type) 
+#if defined(P_HPUX9)
+#warning No timezone
+  { return 0; }
+#elif defined(P_SUN4)
+#warning No timezone
+  { return 0; }
+#else
+{
+  long tz = -::timezone/60;
+  if (type == StandardTime)
+    return tz;
+  else
+    return tz + ::daylight*60;
+}
+#endif
+
+PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
+#if defined(P_HPUX9)
+#warning No timezone name
+  { return PString(); }
+#elif defined(P_SUN4)
+#warning No timezone name
+  { return PString(); }
+#else
+  { return PString((type == StandardTime) ? ::tzname[0] : ::tzname[1]); }
+#endif
+
 
 // End Of File ///////////////////////////////////////////////////////////////

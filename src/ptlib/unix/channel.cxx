@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.6 1996/01/26 11:09:42 craigs Exp $
+ * $Id: channel.cxx,v 1.7 1996/04/15 10:49:11 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.7  1996/04/15 10:49:11  craigs
+ * Last build prior to release of MibMaster v1.0
+ *
  * Revision 1.6  1996/01/26 11:09:42  craigs
  * Fixed problem with blocking accepts and incorrect socket errors
  *
@@ -39,36 +42,33 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// PChannel
+// PChannel::PXSetIOBlock
+//   These functions are used to perform IO blocks.
+//   If the return value is FALSE, then the select call either
+//   returned an error or a timeout occurred. The member variable lastError
+//   can be used to determine which error occurred
 //
 
-BOOL PChannel::PXSetIOBlock (int type)
+BOOL PChannel::PXSetIOBlock (int type, PTimeInterval timeout)
 {
-  return PXSetIOBlock(type, os_handle);
+  return PXSetIOBlock(type, os_handle, timeout);
 }
 
-BOOL PChannel::PXSetIOBlock (int type, int blockHandle)
+BOOL PChannel::PXSetIOBlock (int type, int blockHandle, PTimeInterval timeout)
 {
-  PTimeInterval timeout;
-  switch (type) {
-    case PXReadBlock:
-      timeout = readTimeout;
-      break;
+  int stat = PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
 
-    case PXWriteBlock:
-      timeout = writeTimeout;
-      break;
+  // if select returned < 0, then covert errno into lastError and return FALSE
+  if (stat < 0)
+    return ConvertOSError(-1);
 
-    case PXOtherBlock:
-    case PXAcceptBlock:
-      timeout = PMaxTimeInterval;
-      break;
-  }
+  // if the select succeeded, then return TRUE
+  if (stat > 0) 
+    return TRUE;
 
-  if (timeout != PMaxTimeInterval) 
-    return PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
-  else
-    return PThread::Current()->PXBlockOnIO(blockHandle, type);
+  // otherwise, a timeout occurred so return FALSE
+  lastError = Timeout;
+  return FALSE;
 }
 
 
@@ -79,9 +79,10 @@ BOOL PChannel::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  if (!PXSetIOBlock(PXReadBlock)) 
-    lastError = Timeout;
-  else if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
+    return FALSE;
+
+  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -91,21 +92,34 @@ BOOL PChannel::Read(void * buf, PINDEX len)
 
 BOOL PChannel::Write(const void * buf, PINDEX len)
 {
+
+  // if the os_handle isn't open, no can do
   if (os_handle < 0) {
     lastError = NotOpen;
     return FALSE;
   }
 
-  if (!PXSetIOBlock(PXWriteBlock))
-    lastError = Timeout;
-  else {
-    lastWriteCount = ::write(os_handle, buf, len);
-    if (ConvertOSError(lastWriteCount))
-      return lastWriteCount >= len;
-  }
+  // flush the buffer before doing a write
+  flush();
 
   lastWriteCount = 0;
-  return FALSE;
+  
+  while (len > 0) {
+
+    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
+      return FALSE;
+
+    int sendResult = ::write(os_handle,
+                  ((const char *)buf)+lastWriteCount, len - lastWriteCount);
+
+    if (!ConvertOSError(sendResult))
+      return FALSE;
+
+    lastWriteCount += sendResult;
+    len -= sendResult;
+  }
+
+  return TRUE;
 }
 
 BOOL PChannel::Close()
@@ -113,11 +127,19 @@ BOOL PChannel::Close()
   if (os_handle < 0) {
     lastError = NotOpen;
     return FALSE;
-  } else {
-    int handle = os_handle;
-    os_handle = -1;
-    return ConvertOSError(::close(handle));
   }
+
+  // flush the buffer before doing a close
+  flush();
+
+  // abort any I/O block using this os_handle
+  PProcess::Current()->PXAbortIOBlock(os_handle);
+
+  int handle = os_handle;
+  os_handle = -1;
+  DWORD cmd = 0;
+  ::ioctl(handle, FIONBIO, &cmd);
+  return ConvertOSError(::close(handle));
 }
 
 PString PChannel::GetErrorText() const
@@ -146,36 +168,47 @@ BOOL PChannel::ConvertOSError(int err)
       lastError = NoError;
       return TRUE;
 
+    case EINTR:
+      lastError = Interrupted;
+      break;
+
     case EEXIST:
       lastError = FileExists;
       break;
+
     case EISDIR:
     case EROFS:
     case EACCES:
       lastError = AccessDenied;
       break;
+
     case ETXTBSY:
-    case EINVAL:
       lastError = DeviceInUse;
       break;
+
     case EFAULT:
     case ELOOP:
     case EBADF:
+    case EINVAL:
       lastError = BadParameter;
       break;
+
     case ENOENT :
     case ENAMETOOLONG:
     case ENOTDIR:
       lastError = NotFound;
       break;
+
     case EMFILE:
     case ENFILE:
     case ENOMEM :
       lastError = NoMemory;
       break;
+
     case ENOSPC:
       lastError = DiskFull;
       break;
+
     default :
       lastError = Miscellaneous;
       break;
