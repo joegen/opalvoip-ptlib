@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.98  2000/02/18 09:55:21  robertj
+ * Added parameter so get/setsockopt can have other levels to SOL_SOCKET.
+ *
  * Revision 1.97  1999/10/27 01:21:44  robertj
  * Improved portability of copy from host_info struct to IP address.
  *
@@ -688,39 +691,39 @@ BOOL PSocket::Accept(PSocket &)
 }
 
 
-BOOL PSocket::SetOption(int option, int value)
+BOOL PSocket::SetOption(int option, int value, int level)
 {
-  return ConvertOSError(::setsockopt(os_handle,
-                           SOL_SOCKET, option, (char *)&value, sizeof(value)));
+  return ConvertOSError(::setsockopt(os_handle, level, option,
+                                     (char *)&value, sizeof(value)));
 }
 
 
-BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
+BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int level)
 {
-  return ConvertOSError(::setsockopt(os_handle,
-                             SOL_SOCKET, option, (char *)valuePtr, valueSize));
+  return ConvertOSError(::setsockopt(os_handle, level, option,
+                                     (char *)valuePtr, valueSize));
 }
 
 
-BOOL PSocket::GetOption(int option, int & value)
+BOOL PSocket::GetOption(int option, int & value, int level)
 {
 #ifdef __BEOS__
   return FALSE;
 #else
   socklen_t valSize = sizeof(value);
-  return ConvertOSError(::getsockopt(os_handle,
-                                SOL_SOCKET, option, (char *)&value, &valSize));
+  return ConvertOSError(::getsockopt(os_handle, level, option,
+                                     (char *)&value, &valSize));
 #endif
 }
 
 
-BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize)
+BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize, int level)
 {
 #ifdef __BEOS__
   return FALSE;
 #else
-  return ConvertOSError(::getsockopt(os_handle,
-                            SOL_SOCKET, option, (char *)valuePtr, (socklen_t *)&valueSize));
+  return ConvertOSError(::getsockopt(os_handle, level, option,
+                                     (char *)valuePtr, (socklen_t *)&valueSize));
 #endif
 }
 

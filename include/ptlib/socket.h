@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.32  2000/02/18 09:55:21  robertj
+ * Added parameter so get/setsockopt can have other levels to SOL_SOCKET.
+ *
  * Revision 1.31  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -239,8 +242,9 @@ class PSocket : public PChannel
        TRUE if the option was successfully set.
      */
     BOOL SetOption(
-      int option,   /// Option to set.
-      int value     /// New value for option.
+      int option,             /// Option to set.
+      int value,              /// New value for option.
+      int level = SOL_SOCKET  /// Level for option
     );
 
     /**Set options on the socket. These options are defined as Berkeley socket
@@ -252,7 +256,8 @@ class PSocket : public PChannel
     BOOL SetOption(
       int option,             /// Option to set.
       const void * valuePtr,  /// Pointer to new value for option.
-      PINDEX valueSize        /// Size of new value.
+      PINDEX valueSize,       /// Size of new value.
+      int level = SOL_SOCKET  /// Level for option
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
@@ -262,8 +267,9 @@ class PSocket : public PChannel
        TRUE if the option was successfully retreived.
      */
     BOOL GetOption(
-      int option,   /// Option to get.
-      int & value   /// Integer to receive value.
+      int option,             /// Option to get.
+      int & value,            /// Integer to receive value.
+      int level = SOL_SOCKET  /// Level for option
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
@@ -273,9 +279,10 @@ class PSocket : public PChannel
        TRUE if the option was successfully retreived.
      */
     BOOL GetOption(
-      int option,       /// Option to get.
-      void * valuePtr,  /// Pointer to buffer for value.
-      PINDEX valueSize  /// Size of buffer to receive value.
+      int option,             /// Option to get.
+      void * valuePtr,        /// Pointer to buffer for value.
+      PINDEX valueSize,       /// Size of buffer to receive value.
+      int level = SOL_SOCKET  /// Level for option
     );
   //@}
 
