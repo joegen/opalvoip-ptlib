@@ -2496,10 +2496,10 @@ fi
 echo "$as_me:2496: result: $ac_cv_header_openssl_ssl_h" >&5
 echo "${ECHO_T}$ac_cv_header_openssl_ssl_h" >&6
 if test $ac_cv_header_openssl_ssl_h = yes; then
-  SSLHDR=1
+  SSLHDR=yes
 fi
 
-  if test $SSLHDR != 1 ; then
+  if test $SSLHDR != yes ; then
     echo "$as_me:2503: checking for /usr/local/openssl/include/openssl/ssl.h" >&5
 echo $ECHO_N "checking for /usr/local/openssl/include/openssl/ssl.h... $ECHO_C" >&6
 if test "${ac_cv_header__usr_local_openssl_include_openssl_ssl_h+set}" = set; then
@@ -2538,10 +2538,10 @@ fi
 echo "$as_me:2538: result: $ac_cv_header__usr_local_openssl_include_openssl_ssl_h" >&5
 echo "${ECHO_T}$ac_cv_header__usr_local_openssl_include_openssl_ssl_h" >&6
 if test $ac_cv_header__usr_local_openssl_include_openssl_ssl_h = yes; then
-  SSLHDR=1
+  SSLHDR=yes
 fi
 
-    if test $SSLHDR = 1 ; then
+    if test $SSLHDR = yes ; then
       SSLINCLUDEDIR=/usr/local/openssl/include
     else
       echo "$as_me:2547: checking for /usr/local/ssl/include/openssl/ssl.h" >&5
@@ -2582,16 +2582,16 @@ fi
 echo "$as_me:2582: result: $ac_cv_header__usr_local_ssl_include_openssl_ssl_h" >&5
 echo "${ECHO_T}$ac_cv_header__usr_local_ssl_include_openssl_ssl_h" >&6
 if test $ac_cv_header__usr_local_ssl_include_openssl_ssl_h = yes; then
-  SSLHDR=1
+  SSLHDR=yes
 fi
 
-      if test $SSLHDR = 1 ; then
+      if test $SSLHDR = yes ; then
         SSLINCLUDEDIR=/usr/local/ssl/include
       fi
     fi
   fi
 
-  if test $SSLHDR != 0 ; then
+  if test $SSLHDR = yes ; then
     HAS_OPENSSL=1
 
 cat >>confdefs.h <<\EOF
