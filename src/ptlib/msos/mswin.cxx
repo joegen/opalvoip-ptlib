@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.10 1995/03/12 05:00:06 robertj Exp $
+ * $Id: mswin.cxx,v 1.11 1995/06/17 00:59:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.11  1995/06/17 00:59:23  robertj
+ * Moved PPipeChannel::Execute from common dos/windows to individual files.
+ *
  * Revision 1.10  1995/03/12 05:00:06  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -46,6 +49,7 @@
 
 #include "ptlib.h"
 #include <errno.h>
+#include <fcntl.h>
 
 #include <stdresid.h>
 
@@ -643,6 +647,47 @@ PStringList PSerialChannel::GetPortNames()
     ports.Append(new PString(buf));
   }
   return ports;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+BOOL PPipeChannel::Execute()
+{
+  if (hasRun)
+    return FALSE;
+
+  flush();
+  if (os_handle >= 0) {
+    _close(os_handle);
+    os_handle = -1;
+  }
+
+  if ((osError = (int)WinExec(subProgName, SW_HIDE)) < 32) {
+    switch (osError) {
+      case 0 :
+      case 8 :
+        osError = ENOMEM;
+        break;
+      case 5 :
+        osError = EACCES;
+        break;
+      case 2 :
+        break;
+      default :
+        osError += 0x4000;
+    }
+    return ConvertOSError(-2);
+  }
+
+  if (!fromChild.IsEmpty()) {
+    os_handle = _open(fromChild, _O_RDONLY);
+    if (!ConvertOSError(os_handle))
+      return FALSE;
+  }
+
+  return TRUE;
 }
 
 
