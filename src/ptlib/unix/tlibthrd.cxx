@@ -96,10 +96,14 @@ void PProcess::Construct()
 
   // initialise the housekeeping thread
   housekeepingThread = NULL;
+
+  CommonConstruct();
 }
 
 PProcess::~PProcess()
 {
+  CommonDestruct();
+
   if (housekeepingThread != NULL)
     delete housekeepingThread;
 }
