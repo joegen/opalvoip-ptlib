@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.130  2004/04/27 04:36:47  rjongbloed
+ * Fixed occassional crash on exit due to level 5 trace in PProcess
+ *   destructor that needs an undestructed PProcess.
+ * Added some more logging for unblocking threads.
+ *
  * Revision 1.129  2004/04/12 03:35:27  csoutheren
  * Fixed problems with non-recursuve mutexes and critical sections on
  * older compilers and libc
@@ -637,6 +642,8 @@ PProcess::~PProcess()
     delete housekeepingThread;
   }
   CommonDestruct();
+
+  PTRACE(5, "PWLib\tDestroyed process " << this);
 }
 
 
@@ -733,7 +740,8 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
+  if (this != &PProcess::Current())
+    PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
 }
 
 
@@ -1317,7 +1325,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
-    PTRACE(6, "PWLib\tUnblocked I/O");
+    PTRACE(6, "PWLib\tUnblocked I/O fd=" << unblockPipe[0]);
   }
 
   return retval;
@@ -1327,6 +1335,7 @@ void PThread::PXAbortBlock() const
 {
   BYTE ch;
   ::write(unblockPipe[1], &ch, 1);
+  PTRACE(6, "PWLib\tUnblocking I/O fd=" << unblockPipe[0] << " thread=" << GetThreadName());
 }
 
 
