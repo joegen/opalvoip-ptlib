@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.36  2004/10/21 09:20:33  csoutheren
+ * Fixed compile problems on gcc 2.95.x
+ *
  * Revision 1.35  2004/08/17 15:18:30  csoutheren
  * Added support for MovedTemp/MovedPerm to GetDocument
  * Fixed problem with empty URL passed to ExecuteCommand
@@ -382,7 +385,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
   else
     this_stream << cmdName;
 
-  this_stream << ' ' << (url.IsEmpty() ? "/" : url) << " HTTP/1.1\r\n"
+  this_stream << ' ' << (url.IsEmpty() ? PString("/") : url) << " HTTP/1.1\r\n"
               << setfill('\r') << outMIME;
 
   return Write((const char *)dataBody, len);
