@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2004/04/20 00:19:31  dereksmithies
+ * Add code to generate compile time error if SDL is not installed.
+ *
  * Revision 1.7  2004/01/18 14:20:26  dereksmithies
  * Opening of video devices for plugins works now.
  *
@@ -47,7 +50,6 @@
  *
  */
 
-
 #include "precompile.h"
 #include "main.h"
 #include "version.h"
@@ -57,6 +59,16 @@ PCREATE_PROCESS(VidTest);
 
 #include  <ptlib/video.h>
 #include  <ptclib/vsdl.h>
+
+
+#if P_SDL
+#else
+#error
+#error You need to have SDL video installed on your box for this 
+#error program to compile and run.  SDL is used as the display engine.
+#error 
+#error 
+#endif
 
 VidTest::VidTest()
   : PProcess("Equivalence", "vidtest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
