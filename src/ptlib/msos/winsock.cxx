@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.50  2002/10/08 12:41:52  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.49  2002/05/23 09:07:41  robertj
  * Further adjustments to compensate for Winsock weirdness on some platforms.
  *
@@ -564,59 +567,70 @@ BOOL PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PIPSocket
+// PIPSocket::Address
 
 PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 {
-  S_un.S_un_b.s_b1 = b1;
-  S_un.S_un_b.s_b2 = b2;
-  S_un.S_un_b.s_b3 = b3;
-  S_un.S_un_b.s_b4 = b4;
+  version = 4;
+  v.four.S_un.S_un_b.s_b1 = b1;
+  v.four.S_un.S_un_b.s_b2 = b2;
+  v.four.S_un.S_un_b.s_b3 = b3;
+  v.four.S_un.S_un_b.s_b4 = b4;
 }
 
 
 PIPSocket::Address::Address(DWORD dw)
 {
-  S_un.S_addr = dw;
+  operator=(dw);
 }
 
 
 PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 {
-  S_un.S_addr = dw;
+  if (dw == 0) {
+    version = 0;
+    memset(&v, 0, sizeof(v));
+  }
+  else {
+    version = 4;
+    v.four.S_un.S_addr = dw;
+  }
   return *this;
 }
 
 
 PIPSocket::Address::operator DWORD() const
 {
-  return S_un.S_addr;
+  return version != 4 ? 0 : v.four.S_un.S_addr;
 }
 
 
 BYTE PIPSocket::Address::Byte1() const
 {
-  return S_un.S_un_b.s_b1;
+  return v.four.S_un.S_un_b.s_b1;
 }
 
 
 BYTE PIPSocket::Address::Byte2() const
 {
-  return S_un.S_un_b.s_b2;
+  return v.four.S_un.S_un_b.s_b2;
 }
 
 
 BYTE PIPSocket::Address::Byte3() const
 {
-  return S_un.S_un_b.s_b3;
+  return v.four.S_un.S_un_b.s_b3;
 }
 
 
 BYTE PIPSocket::Address::Byte4() const
 {
-  return S_un.S_un_b.s_b4;
+  return v.four.S_un.S_un_b.s_b4;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// PIPSocket
 
 BOOL P_IsOldWin95()
 {
@@ -644,8 +658,8 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
     return TRUE;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  Address addr = hostname;
-  if (addr == 16777343)  // Is 127.0.0.1
+  PIPSocket::Address addr = hostname;
+  if (addr.IsLoopback())  // Is 127.0.0.1 or ::1
     return TRUE;
 
   if (addr == 0) {
@@ -653,16 +667,23 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       return FALSE;
   }
 
+  // Seb: Should check that it's really IPv4 aware.
   struct hostent * host_info = ::gethostbyname(GetHostName());
 
   if (P_IsOldWin95())
-    return addr == Address(*(struct in_addr *)host_info->h_addr_list[0]);
+    return addr == *(struct in_addr *)host_info->h_addr_list[0];
 
   for (PINDEX i = 0; host_info->h_addr_list[i] != NULL; i++) {
-    if (addr == Address(*(struct in_addr *)host_info->h_addr_list[i]))
+#if P_HAS_IPV6
+    if (host_info->h_length == 16) {
+      if (addr == *(struct in_addr6 *)host_info->h_addr_list[i])
+	return TRUE;
+    }
+    else
+#endif
+    if (addr == *(struct in_addr *)host_info->h_addr_list[i])
       return TRUE;
   }
-
   return FALSE;
 }
 
