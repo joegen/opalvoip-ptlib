@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.39  2001/04/23 05:46:06  robertj
+ * Fixed problem with unconstrained PASN_NumericString coding in 8 bits
+ *   instead of 4, thanks Chew Kuan.
+ *
  * Revision 1.38  2001/04/23 04:40:14  robertj
  * Added ASN standard types GeneralizedTime and UTCTime
  *
@@ -1807,8 +1811,7 @@ PASN_ConstrainedString::PASN_ConstrainedString(const char * canonical, PINDEX si
   canonicalSet = canonical;
   canonicalSetSize = size;
   canonicalSetBits = CountBits(size);
-  charSetUnalignedBits = 8;
-  charSetAlignedBits = 8;
+  SetCharacterSet(canonicalSet, canonicalSetSize, Unconstrained);
 }
 
 
@@ -1859,8 +1862,10 @@ void PASN_ConstrainedString::SetCharacterSet(ConstraintType ctype, unsigned firs
 
 void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, ConstraintType ctype)
 {
-  if (ctype == Unconstrained)
-    characterSet.SetSize(0);
+  if (ctype == Unconstrained) {
+    characterSet.SetSize(canonicalSetSize);
+    memcpy(characterSet.GetPointer(), canonicalSet, canonicalSetSize);
+  }
   else {
     characterSet.SetSize(setSize);
     PINDEX count = 0;
@@ -1872,10 +1877,7 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
     characterSet.SetSize(count);
   }
 
-  if (characterSet.IsEmpty())
-    charSetUnalignedBits = 8;
-  else
-    charSetUnalignedBits = CountBits(characterSet.GetSize());
+  charSetUnalignedBits = CountBits(characterSet.GetSize());
 
   charSetAlignedBits = 1;
   while (charSetUnalignedBits > charSetAlignedBits)
