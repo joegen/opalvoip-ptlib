@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.15 1996/03/03 07:37:59 robertj Exp $
+ * $Id: tcpsock.h,v 1.16 1996/03/26 00:57:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.16  1996/03/26 00:57:15  robertj
+ * Added contructor that takes PTCPSocket so avoid copy constructor being used instead of accept.
+ *
  * Revision 1.15  1996/03/03 07:37:59  robertj
- * FireDoorV10
+ * Added Reusability clause to the Listen() function on sockets.
  *
  * Revision 1.14  1996/02/25 03:01:27  robertj
  * Moved some socket functions to platform dependent code.
@@ -84,8 +87,14 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
     PTCPSocket(
       PSocket & socket          // Listening socket making the connection.
     );
+    PTCPSocket(
+      PTCPSocket & tcpSocket    // Listening socket making the connection.
+    );
     /* Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
+
+       Note thate the "copy" constructor here is areally a "listening" socket
+       the same as the PSocket & parameter version.
      */
 
 
