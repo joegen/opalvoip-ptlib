@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.7 1995/01/09 12:38:31 robertj Exp $
+ * $Id: object.h,v 1.8 1995/01/15 04:51:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.7  1995/01/09 12:38:31  robertj
+ * Revision 1.8  1995/01/15 04:51:31  robertj
+ * Mac compatibility.
+ * Added levels of memory checking.
+ *
+ * Revision 1.7  1995/01/09  12:38:31  robertj
  * Changed variable names around during documentation run.
  * Fixed smart pointer comparison.
  * Fixed serialisation stuff.
@@ -45,6 +49,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream.h>
+#ifndef __MWERKS__
+#include <iomanip.h>
+#endif
 
 
 
@@ -180,7 +187,7 @@ extern ostream * PSTATIC PErrorStream;
 ///////////////////////////////////////////////////////////////////////////////
 // The low level object support, memory checks, run time typing etc.
 
-#if defined(PMEMORY_CHECK)
+#if defined(PMEMORY_CHECK) && MEMORY_CHECK>2
 
 /*$MACRO PMALLOC(s)
    This macro is used to allocate memory via the memory check system selected
@@ -214,6 +221,26 @@ extern ostream * PSTATIC PErrorStream;
  */
 #define PFREE(p) PObject::MemoryCheckDeallocate(p, NULL)
 
+#else // defined(PMEMORY_CHECK) && MEMORY_CHECK>1
+
+
+#define PMALLOC(s)    malloc(s)
+#define PCALLOC(n,s)  calloc(n, s)
+#ifdef __GNUC__
+inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
+  { return realloc(p, s <= 4 ? 4 : s); }
+#define PREALLOC(p,s) p_realloc(p, s)
+#else
+#define PREALLOC(p,s) realloc(p, s)
+#endif
+#define PFREE(p)      free(p)
+
+
+#endif // defined(PMEMORY_CHECK) && MEMORY_CHECK>1
+
+
+#if defined(PMEMORY_CHECK)
+
 /*$MACRO PNEW
    This macro is used to allocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
@@ -234,17 +261,6 @@ extern ostream * PSTATIC PErrorStream;
 
 #else // defined(PMEMORY_CHECK)
 
-
-#define PMALLOC(s)    malloc(s)
-#define PCALLOC(n,s)  calloc(n, s)
-#ifdef __GNUC__
-inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
-  { return realloc(p, s <= 4 ? 4 : s); }
-#define PREALLOC(p,s) p_realloc(p, s)
-#else
-#define PREALLOC(p,s) realloc(p, s)
-#endif
-#define PFREE(p)      free(p)
 #define PNEW          new
 #define PNEW_AND_DELETE_FUNCTIONS
 
@@ -614,6 +630,18 @@ PCLASS PObject {
     
        This funtion will only be present if the PMEMORY_CHECK compile time
        option is specified.
+     */
+
+    static void MemoryCheckStatistics(
+      long * currentMemory,   // Current memory usage in bytes.
+      long * peakMemory,      // Peak memory usage in bytes.
+      long * currentObjects,  // Current number of memory object.
+      long * peakObjects,     // Peak number of memory objects.
+      long * totalObjects     // Total number of memory objects created.
+    );
+    /* Get memory check system statistics.
+
+       If any parameter is NULL then it is not returned.
      */
 
     PNEW_AND_DELETE_FUNCTIONS
