@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.50  2001/01/24 06:19:14  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.49  2000/11/28 12:47:13  robertj
  * Added ability to separate collection entries with newline in PrintOn by using fillchar.
  *
@@ -185,7 +188,9 @@
 
 #include <ptlib.h>
 
+#ifndef _WIN32_WCE
 #define new PNEW
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
