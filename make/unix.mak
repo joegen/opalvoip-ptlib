@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.175  2003/07/24 22:01:42  dereksmithies
+# Add fixes from Peter Nixon  for fixing install problems. Thanks.
+#
 # Revision 1.174  2003/06/18 13:19:01  csoutheren
 # Default debug builds now shared
 #
@@ -187,7 +190,11 @@ MACHTYPE := ppc
 endif
 
 ifneq (,$(findstring ppc, $(MACHTYPE)))
+ifneq (,$(findstring ppc64, $(MACHTYPE)))
+MACHTYPE := ppc64
+else
 MACHTYPE := ppc
+endif
 endif
 
 ifneq (,$(findstring Power, $(MACHTYPE)))
@@ -288,6 +295,9 @@ endif
 # any -W overrides won't have any effect
 STDCCFLAGS += -Wall 
 
+ifdef RPM_OPT_FLAGS
+STDCCFLAGS	+= $(RPM_OPT_FLAGS)
+endif
 
 ifneq ($(OSTYPE),rtems)
 ifndef SYSINCDIR
@@ -320,20 +330,26 @@ endif
 
 ifeq ($(MACHTYPE),x86_64)
 STDCCFLAGS     += -DP_64BIT
+LDLIBS		+= -lresolv
+endif
+
+ifeq ($(MACHTYPE),ppc64)
+STDCCFLAGS     += -DP_64BIT
 endif
 
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
 STDCCFLAGS	+= -fPIC
+OPTCCFLAGS	+= -fPIC
 endif # PROG
 endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
-SYSLIBDIR	:= /usr/lib
+SYSLIBDIR	:= $(shell $(PWLIBDIR)/make/ptlib-config --libdir)
 #LDFLAGS	+= --no-whole-archive --cref
 STDCCFLAGS      += -DP_USE_PRAGMA
-
+OPTCCFLAGS      += -DP_USE_PRAGMA
 
 endif # linux
 
@@ -950,7 +966,7 @@ endif
 #STDCCFLAGS     += -fno-implement-inlines
 
 # add OS directory to include path
-STDCCFLAGS	+= -I$(UNIX_INC_DIR)
+STDCCFLAGS	+= -I$(UNIX_INC_DIR) -I/usr/include/pwlib
 
 
 # add library directory to library path and include the library
