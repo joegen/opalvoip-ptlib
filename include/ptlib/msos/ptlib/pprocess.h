@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.25  1999/02/16 08:10:33  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.24  1998/12/04 10:13:08  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -132,7 +135,9 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
     ThreadList autoDeleteThreads;
     PMutex deleteThreadMutex;
 
-    PDECLARE_CLASS(HouseKeepingThread, PThread)
+    class HouseKeepingThread : public PThread
+    {
+      PCLASSINFO(HouseKeepingThread, PThread)
         public:
         HouseKeepingThread();
         void Main();

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.16  1999/02/16 08:10:33  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.15  1998/11/30 02:55:31  robertj
  * New directory structure
  *
@@ -113,7 +116,9 @@
 };
 
 
-PDECLARE_CLASS(PWinSock, PSocket)
+class PWinSock : public PSocket
+{
+  PCLASSINFO(PWinSock, PSocket)
 // Must be one and one only instance of this class, and it must be static!.
   public:
     PWinSock();
