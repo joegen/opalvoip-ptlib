@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.6  2002/10/29 00:06:24  robertj
+ * Changed template classes so things like PSafeList actually creates the
+ *   base collection class as well.
+ * Allowed for the PSafeList::Append() to return a locked pointer to the
+ *   object just appended.
+ *
  * Revision 1.5  2002/10/04 08:22:50  robertj
  * Changed read/write mutex so can be called by same thread without deadlock
  *   removing the need to a lock count in safe pointer.
@@ -171,15 +177,6 @@ PSafeCollection::~PSafeCollection()
 }
 
 
-PINDEX PSafeCollection::SafeAppend(PSafeObject * obj)
-{
-  collectionMutex.Wait();
-  PINDEX idx = collection->Append(obj);
-  collectionMutex.Signal();
-  return idx;
-}
-
-
 BOOL PSafeCollection::SafeRemove(PSafeObject * obj)
 {
   if (obj == NULL)
@@ -197,13 +194,15 @@ BOOL PSafeCollection::SafeRemove(PSafeObject * obj)
 }
 
 
-PSafeObject * PSafeCollection::SafeRemoveAt(PINDEX idx)
+BOOL PSafeCollection::SafeRemoveAt(PINDEX idx)
 {
-  collectionMutex.Wait();
-  SafeRemoveObject((PSafeObject *)collection->RemoveAt(idx));
-  collectionMutex.Signal();
+  PWaitAndSignal mutex(collectionMutex);
+  PSafeObject * obj = (PSafeObject *)collection->RemoveAt(idx);
+  if (obj == NULL)
+    return FALSE;
 
-  return NULL;
+  SafeRemoveObject(obj);
+  return TRUE;
 }
 
 
