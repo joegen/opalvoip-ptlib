@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.cxx,v 1.4 1997/07/14 11:47:18 robertj Exp $
+ * $Id: telnet.cxx,v 1.5 1998/01/26 02:49:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.5  1998/01/26 02:49:23  robertj
+ * GNU support.
+ *
  * Revision 1.4  1997/07/14 11:47:18  robertj
  * Added "const" to numerous variables.
  *
@@ -22,7 +25,12 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "telnet.h"
+#endif
+
 #include <ptlib.h>
+#include <sockets.h>
 #include <telnet.h>
 
 
