@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.41  2002/02/15 03:56:09  yurik
+ * Warnings removed during compilation, patch courtesy of Jehan Bing, jehan@bravobrava.com
+ *
  * Revision 1.40  2001/10/16 07:44:06  robertj
  * Added AsString() function to PTimeInterval.
  *
@@ -345,7 +348,7 @@ static time_t p_mktime(struct tm * t, int zone)
     theTime = 0;
   else if (zone != PTime::Local) {
     theTime += PTime::GetTimeZone()*60;  // convert to local time
-    if (theTime > zone*60)
+    if (theTime > (time_t) zone*60)
       theTime -= zone*60;           // and then to GMT
   }
   return theTime;
