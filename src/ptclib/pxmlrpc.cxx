@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.20  2002/12/13 01:12:24  robertj
+ * Added copy constructor and assignment operator to XML/RPC structs
+ *
  * Revision 1.19  2002/12/10 03:51:17  robertj
  * Fixed member variable display in structure
  *
@@ -887,6 +890,15 @@ void PXMLRPCStructBase::EndConstructor()
 {
   initialiserInstance = initialiserStack;
   initialiserMutex.Signal();
+}
+
+
+PXMLRPCStructBase & PXMLRPCStructBase::operator=(const PXMLRPCStructBase & other)
+{
+  for (PINDEX i = 0; i < variablesByOrder.GetSize(); i++)
+    variablesByOrder[i].Copy(other.variablesByOrder[i]);
+
+  return *this;
 }
 
 
