@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.15  2000/05/02 08:30:26  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.14  2000/04/09 18:19:23  rogerh
  * Add my changes for NetBSD support.
  *
@@ -94,16 +97,41 @@
 #endif
 
 
-PSoundHandleDict PSoundChannel::handleDict;
-PMutex           PSoundChannel::dictMutex;
+///////////////////////////////////////////////////////////////////////////////
+// declare type for sound handle dictionary
 
+class SoundHandleEntry : public PObject {
+
+  PCLASSINFO(SoundHandleEntry, PObject)
+
+  public:
+    SoundHandleEntry();
+
+    int handle;
+    int direction;
+
+    unsigned numChannels;
+    unsigned sampleRate;
+    unsigned bitsPerSample;
+    unsigned fragmentValue;
+    BOOL isInitialised;
+};
+
+PDICTIONARY(SoundHandleDict, PString, SoundHandleEntry);
 
 #define LOOPBACK_BUFFER_SIZE 5000
 #define BYTESINBUF ((startptr<endptr)?(endptr-startptr):(LOOPBACK_BUFFER_SIZE+endptr-startptr))
 
-char buffer[LOOPBACK_BUFFER_SIZE];
-int  startptr, endptr;
+static char buffer[LOOPBACK_BUFFER_SIZE];
+static int  startptr, endptr;
 
+PMutex PSoundChannel::dictMutex;
+
+static SoundHandleDict & handleDict()
+{
+  static SoundHandleDict dict;
+  return dict;
+}
 
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
@@ -186,7 +214,7 @@ BOOL PSound::PlayFile(const PFilePath & file, BOOL /*wait*/)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PSoundHandleEntry::PSoundHandleEntry()
+SoundHandleEntry::SoundHandleEntry()
 {
   handle    = -1;
   direction = 0;
@@ -257,9 +285,9 @@ BOOL PSoundChannel::Open(const PString & _device,
   int dir = _dir + 1;
 
   // if this device in in the dictionary
-  if (handleDict.Contains(_device)) {
+  if (handleDict().Contains(_device)) {
 
-    PSoundHandleEntry & entry = handleDict[_device];
+    SoundHandleEntry & entry = handleDict()[_device];
 
     // see if the sound channel is already open in this direction
     if ((entry.direction & dir) != 0) {
@@ -285,8 +313,8 @@ BOOL PSoundChannel::Open(const PString & _device,
     }
 
     // add the device to the dictionary
-    PSoundHandleEntry * entry = PNEW PSoundHandleEntry;
-    handleDict.SetAt(_device, entry); 
+    SoundHandleEntry * entry = PNEW SoundHandleEntry;
+    handleDict().SetAt(_device, entry); 
 
     // save the information into the dictionary entry
     entry->handle        = os_handle;
@@ -322,10 +350,10 @@ BOOL PSoundChannel::Setup()
   dictMutex.Wait();
 
   // the device must always be in the dictionary
-  PAssertOS(handleDict.Contains(device));
+  PAssertOS(handleDict().Contains(device));
 
   // get record for the device
-  PSoundHandleEntry & entry = handleDict[device];
+  SoundHandleEntry & entry = handleDict()[device];
 
   BOOL stat = FALSE;
   if (entry.isInitialised)  {
@@ -386,15 +414,15 @@ BOOL PSoundChannel::Close()
 
   // the device must be in the dictionary
   dictMutex.Wait();
-  PSoundHandleEntry * entry;
-  PAssert((entry = handleDict.GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
+  SoundHandleEntry * entry;
+  PAssert((entry = handleDict().GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
 
   // modify the directions bit mask in the dictionary
   entry->direction ^= (direction+1);
 
   // if this is the last usage of this entry, then remove it
   if (entry->direction == 0) {
-    handleDict.RemoveAt(device);
+    handleDict().RemoveAt(device);
     dictMutex.Signal();
     return PChannel::Close();
   }
@@ -476,10 +504,10 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   dictMutex.Wait();
 
   // the device must always be in the dictionary
-  PAssertOS(handleDict.Contains(device));
+  PAssertOS(handleDict().Contains(device));
 
   // get record for the device
-  PSoundHandleEntry & entry = handleDict[device];
+  SoundHandleEntry & entry = handleDict()[device];
 
   entry.numChannels   = numChannels;
   entry.sampleRate    = sampleRate;
@@ -516,10 +544,10 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   dictMutex.Wait();
 
   // the device must always be in the dictionary
-  PAssertOS(handleDict.Contains(device));
+  PAssertOS(handleDict().Contains(device));
 
   // get record for the device
-  PSoundHandleEntry & entry = handleDict[device];
+  SoundHandleEntry & entry = handleDict()[device];
 
   // set information in the common record
   entry.fragmentValue = arg;
@@ -545,9 +573,9 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
   dictMutex.Wait();
 
   // the device must always be in the dictionary
-  PAssertOS(handleDict.Contains(device));
+  PAssertOS(handleDict().Contains(device));
 
-  PSoundHandleEntry & entry = handleDict[device];
+  SoundHandleEntry & entry = handleDict()[device];
 
   int arg = entry.fragmentValue;
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.21  2000/05/02 08:30:26  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.20  1998/12/16 12:40:41  robertj
  * Fixed bug where .ini file is not written when service run as a daemon.
  *
@@ -167,7 +170,7 @@ void PProcess::CreateConfigFilesDictionary()
 
 
 PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
-  : PThread(10000, AutoDeleteThread),
+  : PThread(10000, NoAutoDeleteThread),
     stop(s)
 {
   Resume();
@@ -175,7 +178,6 @@ PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
 
 PXConfigWriteThread::~PXConfigWriteThread()
 {
-  stop.Acknowledge();
 }
 
 void PXConfigWriteThread::Main()
@@ -184,6 +186,8 @@ void PXConfigWriteThread::Main()
     configDict->WriteChangedInstances(FALSE);   // check dictionary for items that need writing
 
   configDict->WriteChangedInstances(TRUE);
+
+  stop.Acknowledge();
 }
 
 
@@ -394,8 +398,11 @@ PXConfigDictionary::PXConfigDictionary(int)
 
 PXConfigDictionary::~PXConfigDictionary()
 {
-  if (writeThread != NULL)
+  if (writeThread != NULL) {
     stopConfigWriteThread.Signal();
+    writeThread->WaitForTermination();
+    delete writeThread;
+  }
   delete environmentInstance;
 }
 
