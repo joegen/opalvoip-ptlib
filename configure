@@ -2458,7 +2458,7 @@ cat >>confdefs.h <<\EOF
 EOF
 
 else
-  HAS_OPEN_SSL=1
+  HAS_OPENSSL=1
 
 cat >>confdefs.h <<\EOF
 #define P_SSL 1
@@ -3351,7 +3351,7 @@ s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
 s,@CPP@,$CPP,;t t
 s,@HAS_OPENLDAP@,$HAS_OPENLDAP,;t t
-s,@HAS_OPEN_SSL@,$HAS_OPEN_SSL,;t t
+s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@HAS_EXPAT@,$HAS_EXPAT,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@ENDLDLIBS@,$ENDLDLIBS,;t t
