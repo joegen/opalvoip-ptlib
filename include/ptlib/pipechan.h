@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.7 1995/03/14 12:42:02 robertj Exp $
+ * $Id: pipechan.h,v 1.8 1995/06/17 11:12:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.8  1995/06/17 11:12:53  robertj
+ * Documentation update.
+ *
  * Revision 1.7  1995/03/14 12:42:02  robertj
  * Updated documentation to use HTML codes.
  *
@@ -47,24 +50,23 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
    Where full multi-processing is not supported then the sub-program is run
    with its input supplied from, or output captured to, a disk file. The
    current process is then suspended during the execution of the sub-program.
-   In the latter case the semantics of the <A><CODE>Execute()</CODE></A> and
-   <A><CODE>Close()</CODE></A> functions change from the usual for channels.
+   In the latter case the semantics of the <A>Execute()</A> and <A>Close()</A>
+   functions change from the usual for channels.
 
    Note that for platforms that do not support multi-processing, the current
    process is suspended until the sub-program terminates. The input and output
    of the sub-program is transferred via a temporary file. The exact moment of
    execution of the sub-program depends on the mode. If mode is
-   <A><CODE>ReadOnly</CODE></A> then it is executed immediately and its output
-   captured. In <A><CODE>WriteOnly</CODE></A> mode the sub-program is run when
-   the <A><CODE>Close()</CODE></A> function is called, or when the pipe
-   channel is destroyed. In <A><CODE>ReadWrite</CODE></A> mode the sub-program
-   is run when the <A><CODE>Execute()</CODE></A> function is called indicating
-   that the output from the current process to the sub-program has completed
-   and input is now desired.
+   <CODE>ReadOnly</CODE> then it is executed immediately and its output
+   captured. In <CODE>WriteOnly</CODE> mode the sub-program is run when the
+   <A>Close()</A> function is called, or when the pipe channel is destroyed.
+   In <CODE>ReadWrite</CODE> mode the sub-program is run when the
+   <A>Execute()</A> function is called indicating that the output from the
+   current process to the sub-program has completed and input is now desired.
    
-   The <A><CODE>CanReadAndWrite()</CODE></A> function effectively determines
-   whether full multi-processing is supported by the platform. Note that this
-   is different to whether <I>multi-threading</I> is supported.
+   The <A>CanReadAndWrite()</A> function effectively determines whether full
+   multi-processing is supported by the platform. Note that this is different
+   to whether <I>multi-threading</I> is supported.
  */
 
   public:
@@ -100,17 +102,17 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     /* Create a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout.
        
-       If the mode is <A><CODE>ReadOnly</CODE></A> then the stdout of the
-       sub-program is supplied via the <A><CODE>Read()</CODE></A> calls of the
-       PPipeChannel. The sub-programs input is set to the platforms NULL
-       device (eg /dev/nul).
+       If the mode is <CODE>ReadOnly</CODE> then the <CODE>stdout</CODE> of the
+       sub-program is supplied via the <A>Read()</A> calls of the PPipeChannel.
+       The sub-programs input is set to the platforms null device (eg
+       /dev/nul).
 
-       If mode is <A><CODE>WriteOnly</CODE></A> then
-       <A><CODE>Write()</CODE></A> calls of the PPipeChannel are suppied to
-       the sub-programs stdin and its stdout is sent to the NULL device.
+       If mode is <CODE>WriteOnly</CODE> then <A>Write()</A> calls of the
+       PPipeChannel are suppied to the sub-programs <CODE>stdin</CODE> and its
+       <CODE>stdout</CODE> is sent to the null device.
        
-       If mode is <A><CODE>ReadWrite</CODE></A> then both read and write
-       actions can occur.
+       If mode is <CODE>ReadWrite</CODE> then both read and write actions can
+       occur.
 
        The <CODE>subProgram</CODE> parameter may contain just the path of the
        program to be run or a program name and space separated arguments,
@@ -191,10 +193,10 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     /* Close the channel. This will kill the sub-program's process (on
        platforms where that is relevent).
        
-       For <A><CODE>WriteOnly</CODE></A> or <A><CODE>ReadWrite</CODE></A> mode
-       pipe channels on platforms that do no support concurrent
-       mult-processing and have not yet called the
-       <A><CODE>Execute()</CODE></A> function this will run the sub-program.
+       For <CODE>WriteOnly</CODE> or <CODE>ReadWrite</CODE> mode pipe channels
+       on platforms that do no support concurrent multi-processing and have
+       not yet called the <A>Execute()</A> function this will run the
+       sub-program.
      */
 
 
