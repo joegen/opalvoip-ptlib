@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.13  2003/03/17 07:45:14  robertj
+ * Removed redundant "render now" function.
+ *
  * Revision 1.12  2003/02/18 03:55:59  dereks
  * Add 1394AVC pathces from  Georgi Georgiev. Thanks!
  *
@@ -194,10 +197,6 @@ class PVideoChannel : public PChannel
        previously defined media 
      */
     virtual BOOL Redraw(const void * frame); 
-
-    /**Set the current time.
-     */
-    virtual void SetRenderNow(int _now);  
 
     /**Return the previously specified width.
      */
