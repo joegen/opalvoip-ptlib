@@ -6,6 +6,7 @@ dnl ########################################################################
 dnl set the PWLIB directory to the current directory
 
 PWLIBDIR=`pwd`
+echo "Plugin source directory is $PWLIBDIR";
 AC_SUBST(PWLIBDIR)
 dnl set the pwlib installation dir for pwlib-config
 AC_SUBST(PWINSTDIR)
