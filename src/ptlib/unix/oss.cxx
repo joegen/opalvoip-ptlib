@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.35  2002/01/24 05:55:52  rogerh
+ * fill lastReadCount (in the base class) when doing a Read.
+ *
  * Revision 1.34  2002/01/07 04:15:38  robertj
  * Removed ALSA major device number as this is not how it does its OSS
  *   compatibility mode, it uses device id 14 as usual.
@@ -703,13 +706,14 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
 
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
 {
+  lastReadCount = 0;
+
   if (!Setup())
     return FALSE;
 
   if (os_handle > 0) {
     PTRACE(6, "OSS\tRead start");
-    int stat;
-    while (!ConvertOSError(stat = ::read(os_handle, (void *)buf, len))) {
+    while (!ConvertOSError(lastReadCount = ::read(os_handle, (void *)buf, len))) {
       if (GetErrorCode() != Interrupted) {
         PTRACE(6, "OSS\tRead failed");
         return FALSE;
@@ -717,8 +721,8 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
       PTRACE(6, "OSS\tRead interrupted");
     }
 
-    if (stat != (int)len)
-      PTRACE(6, "OSS\tRead completed short - " << stat << " vs " << len);
+    if (lastReadCount != (int)len)
+      PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
     else
       PTRACE(6, "OSS\tRead completed");
 
@@ -741,6 +745,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   if (bufferLen == 0) {
     PTRACE(1,"all zero\n");
     memset(buf, 0, len);
+    lastReadCount = len;
     return TRUE;
   }
 
@@ -762,6 +767,8 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   if (copy < len) {
     memset(&(((char *)buf)[copy]), 0, len - copy);
   }
+
+  lastReadCount = len;
 
   return TRUE;
 }
