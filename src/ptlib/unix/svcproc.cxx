@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.22  1998/11/06 03:44:55  robertj
+ * Fixed bug in argument list parsing, not doing it to member variable.
+ * Added check for daemon already running before starting a new daemon.
+ *
  * Revision 1.21  1998/10/11 02:26:46  craigs
  * Added thread ID to output messages
  *
@@ -138,17 +142,39 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 }
 
 #ifdef _PATH_VARRUN
-void killpidfile()
+static PString get_pid_filename()
 {
-  PString pidfilename = _PATH_VARRUN + PProcess::Current().GetFile().GetFileName() + ".pid";
-  PFile::Remove(pidfilename);
+  return _PATH_VARRUN + PProcess::Current().GetFile().GetFileName() + ".pid";
+}
+
+static void killpidfile()
+{
+  PFile::Remove(get_pid_filename());
+}
+
+static pid_t get_daemon_pid(BOOL showError)
+{
+  PString pidfilename = get_pid_filename();
+  ifstream pidfile(pidfilename);
+  if (!pidfile.is_open()) {
+    if (showError)
+      PError << "Could not open pid file: " << pidfilename << endl;
+    return 0;
+  }
+
+  pid_t pid;
+  pidfile >> pid;
+  if (pid == 0 && showError)
+    PError << "Illegal format pid file: " << pidfilename << endl;
+
+  return pid;
 }
 #endif
 
 int PServiceProcess::_main(void *)
 {
   // parse arguments so we can grab what we want
-  PArgList args = GetArguments();
+  PArgList & args = GetArguments();
 
   args.Parse("vdchxpktl:u:g:");
 
@@ -167,17 +193,12 @@ int PServiceProcess::_main(void *)
 
 #ifdef _PATH_VARRUN
   if (args.HasOption('k') || args.HasOption('t')) {
-    PString pidfilename = _PATH_VARRUN + GetFile().GetFileName() + ".pid";
-    ifstream pidfile(pidfilename);
-    if (pidfile.is_open()) {
-      int pid;
-      pidfile >> pid;
+    pid_t pid = get_daemon_pid(TRUE);
+    if (pid != 0) {
       if (kill(pid, args.HasOption('t') ? SIGTERM : SIGKILL) == 0)
         return 0;
       PError << "Could not kill process " << pid << " - " << strerror(errno) << endl;
     }
-    else
-      PError << "Could not open pid file: " << pidfilename << endl;
     return 2;
   }
 #endif
@@ -278,6 +299,13 @@ int PServiceProcess::_main(void *)
 
   // Run as a daemon, ie fork
   if (args.HasOption('d')) {
+#ifdef _PATH_VARRUN
+    pid_t old_pid = get_daemon_pid(FALSE);
+    if (old_pid != 0 && kill(old_pid, 0) == 0) {
+      PError << "Already have daemon running with pid " << old_pid << endl;
+      return 3;
+    }
+#endif
     pid_t pid = fork();
     switch (pid) {
       case -1 : // Failed
@@ -302,7 +330,7 @@ int PServiceProcess::_main(void *)
 #ifdef _PATH_VARRUN
         if (!args.HasOption('p')) {
           // Write out the child pid to magic file in /var/run (at least for linux)
-          PString pidfilename = _PATH_VARRUN + GetFile().GetFileName() + ".pid";
+          PString pidfilename = get_pid_filename();
           ofstream pidfile(pidfilename);
           if (pidfile.is_open())
             pidfile << pid;
