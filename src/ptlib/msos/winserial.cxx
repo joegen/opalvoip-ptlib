@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winserial.cxx,v $
+ * Revision 1.5  2004/12/27 22:38:27  csoutheren
+ * Fixed problems with accessing serial port under Windows
+ *
  * Revision 1.4  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -95,17 +98,17 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
   if (eventMask != (EV_RXCHAR|EV_TXEMPTY))
     PAssertOS(SetCommMask(commsResource, EV_RXCHAR|EV_TXEMPTY));
 
-  PWin32Overlapped overlap;
   DWORD timeToGo = readTimeout.GetInterval();
   DWORD bytesToGo = len;
   char * bufferPtr = (char *)buf;
 
   for (;;) {
+    PWin32Overlapped overlap;
     DWORD readCount = 0;
     if (!ReadFile(commsResource, bufferPtr, bytesToGo, &readCount, &overlap)) {
-      if (GetLastError() != ERROR_IO_PENDING)
+      if (::GetLastError() != ERROR_IO_PENDING)
         return ConvertOSError(-2, LastReadError);
-      if (!GetOverlappedResult(commsResource, &overlap, &readCount, FALSE))
+      if (!::GetOverlappedResult(commsResource, &overlap, &readCount, FALSE))
         return ConvertOSError(-2, LastReadError);
     }
 
@@ -115,10 +118,16 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
     if (lastReadCount >= len || timeToGo == 0)
       return lastReadCount > 0;
 
-    if (!WaitCommEvent(commsResource, &eventMask, &overlap)) {
-      if (GetLastError() != ERROR_IO_PENDING)
+    if (!::WaitCommEvent(commsResource, &eventMask, &overlap)) {
+      if (::GetLastError()!= ERROR_IO_PENDING)
         return ConvertOSError(-2, LastReadError);
-      if (WaitForSingleObject(overlap.hEvent, timeToGo) == WAIT_FAILED)
+      DWORD err = ::WaitForSingleObject(overlap.hEvent, timeToGo);
+      if (err == WAIT_TIMEOUT) {
+        SetErrorValues(Timeout, EAGAIN, LastReadError);
+        ::CancelIo(commsResource);
+        return lastReadCount > 0;
+      }
+      else if (err == WAIT_FAILED)
         return ConvertOSError(-2, LastReadError);
     }
   }
@@ -147,18 +156,18 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
   memset(&overlap, 0, sizeof(overlap));
   overlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) {
-    CloseHandle(overlap.hEvent);
+    //CloseHandle(overlap.hEvent);
     return lastWriteCount == len;
   }
 
   if (GetLastError() == ERROR_IO_PENDING)
     if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, TRUE)) {
-      CloseHandle(overlap.hEvent);
+      //CloseHandle(overlap.hEvent);
       return lastWriteCount == len;
     }
 
   ConvertOSError(-2, LastWriteError);
-  CloseHandle(overlap.hEvent);
+  //CloseHandle(overlap.hEvent);
 
   return FALSE;
 }
