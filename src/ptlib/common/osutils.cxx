@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.62 1996/04/14 02:53:34 robertj Exp $
+ * $Id: osutils.cxx,v 1.63 1996/05/09 12:19:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.63  1996/05/09 12:19:00  robertj
+ * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
+ *
  * Revision 1.62  1996/04/14 02:53:34  robertj
  * Split serial and pipe channel into separate compilation units for Linux executable size reduction.
  *
@@ -242,7 +245,7 @@ PTimer::PTimer(const PTimeInterval & time)
 
 PTimer & PTimer::operator=(DWORD milliseconds)
 {
-  resetTime = milliseconds;
+  resetTime = (PInt64)milliseconds;
   StartRunning(oneshot);
   return *this;
 }
