@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.128  2003/02/02 23:29:34  robertj
+ * Fixed bug in RightTrim() (lost off last non blank char), tnanks Joerg Schoemer
+ *
  * Revision 1.127  2002/12/16 08:10:35  robertj
  * Fixed infinite loop when converting an illegal (incomplete) UTF-8 string
  *   to UCS-2, thanks Chih-Wei Huang
@@ -2051,7 +2054,7 @@ PString PString::RightTrim() const
   }
 
   // make Apple & Tornado gnu compiler happy
-  PString retval(theArray, rpos - theArray);
+  PString retval(theArray, rpos - theArray + 1);
   return retval;
 }
 
