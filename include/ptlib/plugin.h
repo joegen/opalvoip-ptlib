@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.8  2004/06/21 10:40:02  csoutheren
+ * Fixed problem with dynamic plugins
+ *
  * Revision 1.7  2004/06/21 00:57:40  csoutheren
  * Changed service plugin static registration to use attribute (( constructor ))
  *
@@ -87,7 +90,15 @@ class PPluginService: public PObject
 
 //////////////////////////////////////////////////////
 
-#define PCREATE_PLUGIN_VERSION_DECLARE \
+#define PCREATE_PLUGIN_VERSION_DECLARE 
+
+#define PCREATE_STATIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
+unsigned PPlugin_##serviceType##_##serviceName##_GetVersion() \
+  { return PWLIB_PLUGIN_API_VERSION; } 
+
+#define PCREATE_DYNAMIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
+extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
+{ return PWLIB_PLUGIN_API_VERSION; } 
 
 //////////////////////////////////////////////////////
 //
@@ -99,20 +110,6 @@ class PPluginService: public PObject
 //  function with attribute (( constructor )) and it will get called on startup
 //
 
-#define PCREATE_STATIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
-unsigned PPlugin_##serviceType##_##serviceName##_GetVersion() \
-  { return PWLIB_PLUGIN_API_VERSION; } 
-
-#define PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor) \
-PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
-extern "C" void PWLibPlugin_TriggerRegister (PPluginManager * pluginMgr) { \
-PPlugin_##serviceType##_##serviceName##_Registration \
-     pplugin_##serviceType##_##serviceName##_Registration_Instance(pluginMgr); \
-     pplugin_##serviceType##_##serviceName##_Registration_Instance.kill_warning = 0; \
-} 
-
-#ifdef _WIN32
-
 #define PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 class PPlugin_##serviceType##_##serviceName##_Registration { \
   public: \
@@ -120,6 +117,8 @@ class PPlugin_##serviceType##_##serviceName##_Registration { \
     { pluginMgr->RegisterService(#serviceName, #serviceType, descriptor); } \
     int kill_warning; \
 }; \
+
+#ifdef _WIN32
 
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
@@ -131,10 +130,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
   extern PPlugin_##cls##_Registration PPlugin_##cls##_Registration_Instance; \
   static PPlugin_##cls##_Registration * PPlugin_##cls##_Registration_Static_Library_Loader = &PPlugin_##cls##_Registration_Instance
 
-
 #else
-
-#include "pluginmgr.h"
 
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
@@ -143,6 +139,14 @@ static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_#
 #define PWLIB_STATIC_LOAD_PLUGIN(cls) 
 
 #endif
+
+#define PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor) \
+PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
+extern "C" void PWLibPlugin_TriggerRegister (PPluginManager * pluginMgr) { \
+PPlugin_##serviceType##_##serviceName##_Registration \
+     pplugin_##serviceType##_##serviceName##_Registration_Instance(pluginMgr); \
+     pplugin_##serviceType##_##serviceName##_Registration_Instance.kill_warning = 0; \
+} 
 
 //////////////////////////////////////////////////////
 
