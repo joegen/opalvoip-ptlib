@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.63  2004/02/08 22:46:35  csoutheren
+ * Added casts to fix problems with gcc
+ *
  * Revision 1.62  2004/02/08 11:13:20  rjongbloed
  * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
  *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
@@ -946,7 +949,7 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
   Element * elmt = NULL;
-  PINDEX pos = ValueSelect(info->root, *obj, elmt);
+  PINDEX pos = ValueSelect(info->root, *obj, (const Element *)elmt);
   if (pos == P_MAX_INDEX)
     return P_MAX_INDEX;
 
@@ -978,7 +981,7 @@ PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  PINDEX pos = ValueSelect(info->root, obj, info->lastElement);
+  PINDEX pos = ValueSelect(info->root, obj, (const Element *)info->lastElement);
   if (pos == P_MAX_INDEX)
     return P_MAX_INDEX;
 
