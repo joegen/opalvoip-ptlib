@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.24 1994/08/21 23:43:02 robertj Exp $
+ * $Id: contain.cxx,v 1.25 1994/09/25 10:49:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.24  1994/08/21 23:43:02  robertj
+ * Revision 1.25  1994/09/25 10:49:44  robertj
+ * Added empty functions for serialisation.
+ *
+ * Revision 1.24  1994/08/21  23:43:02  robertj
  * Added object serialisation classes.
  * Changed parameter before variable argument list to NOT be a reference.
  *
@@ -498,6 +501,123 @@ PSerialiser & PBinarySerialiser::operator<<(const unsigned char *)
 
 PSerialiser & PBinarySerialiser::operator<<(const signed char *)
   { return *this; }
+
+
+PUnSerialiser::PUnSerialiser(istream & strm)
+  : stream(strm)
+{
+}
+
+
+PTextUnSerialiser::PTextUnSerialiser(istream & strm)
+  : PUnSerialiser(strm)
+{
+}
+
+
+PUnSerialiser & PTextUnSerialiser::operator>>(char &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(unsigned char &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(signed char &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(short &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(unsigned short &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(int &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(unsigned int &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(long &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(unsigned long &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(float &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(double &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(long double &)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(char *)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(unsigned char *)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(signed char *)
+  { return *this; }
+
+PUnSerialiser & PTextUnSerialiser::operator>>(PObject &)
+  { return *this; }
+
+
+PBinaryUnSerialiser::PBinaryUnSerialiser(istream & strm)
+  : PUnSerialiser(strm)
+{
+}
+
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(char &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(unsigned char &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(signed char &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(short &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(unsigned short &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(int &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(unsigned int &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(long &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(unsigned long &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(float &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(double &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(long double &)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(char *)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(unsigned char *)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(signed char *)
+  { return *this; }
+
+PUnSerialiser & PBinaryUnSerialiser::operator>>(PObject &)
+  { return *this; }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
