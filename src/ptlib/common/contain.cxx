@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.70 1998/08/21 05:24:07 robertj Exp $
+ * $Id: contain.cxx,v 1.71 1998/09/14 12:36:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.71  1998/09/14 12:36:29  robertj
+ * Fixed bug causing memory leak due to uninitialised member variable for dynamic allocation of arrays.
+ *
  * Revision 1.70  1998/08/21 05:24:07  robertj
  * Added hex dump capability to base array types.
  * Added ability to have base arrays of static memory blocks.
@@ -358,10 +361,13 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
 {
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0, PInvalidParameter);
+
   if (GetSize() == 0)
     theArray = NULL;
   else
     theArray = (char *)PCALLOC(GetSize(), elementSize);
+
+  allocatedDynamically = TRUE;
 }
 
 
