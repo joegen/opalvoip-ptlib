@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.36 1996/10/08 13:03:47 robertj Exp $
+ * $Id: win32.cxx,v 1.37 1996/10/14 03:11:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.37  1996/10/14 03:11:25  robertj
+ * Changed registry key so when reading only opens in ReadOnly mode.
+ *
  * Revision 1.36  1996/10/08 13:03:47  robertj
  * Added new error messages.
  *
@@ -1083,7 +1086,12 @@ PStringList PSerialChannel::GetPortNames()
 class RegistryKey
 {
   public:
-    RegistryKey(const PString & subkey, BOOL create = FALSE);
+    enum OpenMode {
+      ReadOnly,
+      ReadWrite,
+      Create
+    };
+    RegistryKey(const PString & subkey, OpenMode mode);
     ~RegistryKey();
     BOOL EnumKey(PINDEX idx, PString & str);
     BOOL EnumValue(PINDEX idx, PString & str);
@@ -1098,31 +1106,28 @@ class RegistryKey
 };
 
 
-RegistryKey::RegistryKey(const PString & subkey, BOOL create)
+RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
 {
   PProcess * proc = PProcess::Current();
+  DWORD access = mode == ReadOnly ? KEY_READ : KEY_ALL_ACCESS;
   if (!proc->GetVersion(FALSE).IsEmpty()) {
     PString keyname = subkey;
     keyname.Replace("CurrentVersion", proc->GetVersion(FALSE));
 
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                            keyname, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key) == ERROR_SUCCESS)
       return;
 
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                            keyname, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key) == ERROR_SUCCESS)
       return;
   }
 
-  if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key) == ERROR_SUCCESS)
     return;
 
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, access, &key) == ERROR_SUCCESS)
     return;
 
-  if (create) {
+  if (mode == Create) {
     HKEY rootKey = HKEY_CURRENT_USER;
     if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
       rootKey = HKEY_LOCAL_MACHINE;
@@ -1311,7 +1316,7 @@ static void RecurseRegistryKeys(const PString & location,
                                 PINDEX baseLength,
                                 PStringList &sections)
 {
-  RegistryKey registry = location;
+  RegistryKey registry(location, RegistryKey::ReadOnly);
   PString name;
   for (PINDEX idx = 0; registry.EnumKey(idx, name); idx++) {
     RecurseRegistryKeys(location + name + '\\', baseLength, sections);
@@ -1360,7 +1365,7 @@ PStringList PConfig::GetKeys(const PString & section) const
 
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry = location + section;
+      RegistryKey registry(location + section, RegistryKey::ReadOnly);
       PString name;
       for (PINDEX idx = 0; registry.EnumValue(idx, name); idx++)
         keys.AppendString(name);
@@ -1387,7 +1392,7 @@ void PConfig::DeleteSection(const PString & section)
   switch (source) {
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry = location;
+      RegistryKey registry(location, RegistryKey::ReadWrite);
       registry.DeleteKey(section);
       break;
     }
@@ -1411,7 +1416,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry = location + section;
+      RegistryKey registry(location + section, RegistryKey::ReadWrite);
       registry.DeleteValue(key);
       break;
     }
@@ -1443,7 +1448,7 @@ PString PConfig::GetString(const PString & section,
 
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry = location + section;
+      RegistryKey registry(location + section, RegistryKey::ReadOnly);
       if (!registry.QueryValue(key, str))
         str = dflt;
       break;
@@ -1473,7 +1478,7 @@ void PConfig::SetString(const PString & section,
 
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry(location + section, TRUE);
+      RegistryKey registry(location + section, RegistryKey::Create);
       registry.SetValue(key, value);
       break;
     }
@@ -1495,7 +1500,7 @@ BOOL PConfig::GetBoolean(const PString & section,
   }
 
   PAssert(!section.IsEmpty(), PInvalidParameter);
-  RegistryKey registry = location + section;
+  RegistryKey registry(location + section, RegistryKey::ReadOnly);
 
   DWORD value;
   if (!registry.QueryValue(key, value, TRUE))
@@ -1511,7 +1516,7 @@ void PConfig::SetBoolean(const PString & section, const PString & key, BOOL valu
     SetString(section, key, value ? "True" : "False");
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    RegistryKey registry(location + section, TRUE);
+    RegistryKey registry(location + section, RegistryKey::Create);
     registry.SetValue(key, value ? 1 : 0);
   }
 }
@@ -1526,7 +1531,7 @@ long PConfig::GetInteger(const PString & section,
   }
 
   PAssert(!section.IsEmpty(), PInvalidParameter);
-  RegistryKey registry = location + section;
+  RegistryKey registry(location + section, RegistryKey::ReadOnly);
 
   DWORD value;
   if (!registry.QueryValue(key, value, FALSE))
@@ -1544,7 +1549,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    RegistryKey registry(location + section, TRUE);
+    RegistryKey registry(location + section, RegistryKey::Create);
     registry.SetValue(key, value);
   }
 }
