@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.8  2000/01/25 04:05:23  robertj
+# Fixed make files for GUI systems and moved object directories to lib directory.
+#
 # Revision 1.7  1999/10/24 15:29:53  craigs
 # Changed default GUI for Unix to Motif
 #
@@ -48,7 +51,7 @@ endif
 include $(PWLIBDIR)/make/$(GUI).mak
 
 
-OBJDIR          = obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+OBJBASE         = obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
 
