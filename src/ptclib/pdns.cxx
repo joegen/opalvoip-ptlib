@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.10  2004/01/03 03:10:42  csoutheren
+ * Fixed more problems with looking up SRV records, especially on Windows
+ *
  * Revision 1.9  2004/01/02 13:22:04  csoutheren
  * Fixed problem with extracting SRV records from DNS
  *
@@ -464,7 +467,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
     }
 
     // pick a random item at this priority
-    PINDEX j = firstPos + ((count == 0) ? 0 : (PRandom::Number() % (count-1)) );
+    PINDEX j = firstPos + ((count == 0) ? 0 : (PRandom::Number() % count) );
     count = 0;
     for (i = 0; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
       if (!(*this)[i].used) {
@@ -512,7 +515,7 @@ BOOL PDNS::GetSRVRecords(const PString & service, PDNS::SRVRecordList & recordLi
   PDNS_RECORD results = NULL;
   DNS_STATUS status = DnsQuery_A((const char *)service, 
                                  DNS_TYPE_SRV, 
-                                 DNS_QUERY_STANDARD, 
+                                 DNS_QUERY_STANDARD | DNS_QUERY_BYPASS_CACHE, 
                                  NULL, 
                                  &results, 
                                  NULL);
@@ -522,7 +525,11 @@ BOOL PDNS::GetSRVRecords(const PString & service, PDNS::SRVRecordList & recordLi
   // find SRV records
   PDNS_RECORD dnsRecord = results;
   while (dnsRecord != NULL) {
-    if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_SRV)) {
+    if (
+        (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
+        (dnsRecord->wType == DNS_TYPE_SRV) &&
+        (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
+       ) {
       SRVRecord * record = new SRVRecord();
       record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
       record->port     = results->Data.SRV.wPort;
