@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.23  2003/08/12 22:04:18  dereksmithies
+ * Add fix from Philippe Massicotte to fix segfaults on large images. Thanks!
+ *
  * Revision 1.22  2003/06/14 03:28:50  rjongbloed
  * Further MSVC warning fix up
  *
@@ -1651,13 +1654,13 @@ void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
     int columns[9];
     int heights[9];
     int offset;
-    offset = (width >> 3) & 0xfe;
+    offset = (width >> 3) & 0xffe;
 
     for(wi = 0; wi < 8; wi++) 
       columns[wi] = wi * offset;
     columns[8] = width;
     
-    offset = (height >> 3) & 0xfe;
+    offset = (height >> 3) & 0xffe;
     for(hi = 0; hi < 9; hi++) 
       heights[hi] = hi * offset;
     heights[8] = height;
@@ -1677,14 +1680,14 @@ void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
     
     //Draw a black box rapidly moving down the left of the window.
     boxSize= height / 10;
-    hi = ((3 * colourIndex) % (height-boxSize)) & 0xfe; //Make certain hi is even.
+    hi = ((3 * colourIndex) % (height-boxSize)) & 0xffe; //Make certain hi is even.
     FillRect(resFrame, width, height, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
     
     //Draw four parallel black lines, which move up the middle of the window.
     colourIndex = colourIndex / 3;     //Every three seconds, lines move.
     
     for(wi = 0; wi < 2; wi++) 
-      columns[wi]= (((wi + 1)  * width) / 3) & 0xfe;// Force columns to be even.
+      columns[wi]= (((wi + 1)  * width) / 3) & 0xffe;// Force columns to be even.
     
     hi = colourIndex % ((height - 16) / 2);
     hi = (height - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
@@ -1814,7 +1817,7 @@ void PFakeVideoInputDevice::GrabTextVideoFrame(BYTE *resFrame)
     }
   }
 
-  PINDEX boxSize = (height / (MAX_L_HEIGHT * 2) ) & 0xfe;
+  PINDEX boxSize = (height / (MAX_L_HEIGHT * 2) ) & 0xffe;
   int index = (int)((PTime() - startTime).GetMilliSeconds() / 300);
  
   PINDEX maxI = (width / boxSize) - 2;
