@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_SASL2 HAS_SASL HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_SASL2 HAS_SASL HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -856,6 +856,7 @@ Optional Features:
   --disable-qos           disable QOS support in PWLIB
   --disable-sdl           disable SDL support in PWLIB
   --disable-video         disable non-plugin video device support in PWLIB
+  --enable-shm-video	  enable shared memory video devices (off by default)
   --enable-alsa           disable non-plugin ALSA audio support
   --enable-memcheck       enable leak testing code (off by default)
 
@@ -2562,7 +2563,9 @@ cat >>confdefs.h <<\_ACEOF
 #define PNO_LONG_DOUBLE
 _ACEOF
 
-elif test ${OSTYPE} = Darwin ; then
+fi
+
+if test ${OSTYPE} = Darwin ; then
   STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
 fi
 
@@ -6276,6 +6279,21 @@ _ACEOF
 fi
 
 
+
+# Check whether --enable-shm_video or --disable-shm_video was given.
+if test "${enable_shm_video+set}" = set; then
+  enableval="$enable_shm_video"
+  shm_video=$enableval
+fi;
+
+USE_SHM_VIDEO_DEVICES=0
+if test "$shm_video" = "yes" ; then
+  USE_SHM_VIDEO_DEVICES=1
+  { echo "$as_me:$LINENO: Shared memory video devices enabled" >&5
+echo "$as_me: Shared memory video devices enabled" >&6;}
+fi
+
+
 # Check whether --enable-alsa or --disable-alsa was given.
 if test "${enable_alsa+set}" = set; then
   enableval="$enable_alsa"
@@ -7304,6 +7322,7 @@ s,@HAS_EXPAT@,$HAS_EXPAT,;t t
 s,@HAS_IPV6@,$HAS_IPV6,;t t
 s,@HAS_SDL@,$HAS_SDL,;t t
 s,@HAS_VIDEO_CAPTURE@,$HAS_VIDEO_CAPTURE,;t t
+s,@USE_SHM_VIDEO_DEVICES@,$USE_SHM_VIDEO_DEVICES,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@STDCXXFLAGS@,$STDCXXFLAGS,;t t
