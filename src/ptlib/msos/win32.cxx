@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.138  2004/09/17 04:05:12  csoutheren
+ * Changed Windows PDirectory semantics to be the same as Unix
+ *
  * Revision 1.137  2004/06/09 13:35:11  csoutheren
  * Disabled "wait for key" at end of program unless in debug mode or PMEMORY_CHECK
  * is enabled
@@ -708,7 +711,7 @@ void PDirectory::Construct()
 void PDirectory::CopyContents(const PDirectory & dir)
 {
   scanMask  = dir.scanMask;
-  hFindFile = dir.hFindFile;
+  hFindFile = INVALID_HANDLE_VALUE;
   fileinfo  = dir.fileinfo;
 }
 
