@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.17 1994/04/20 12:17:44 robertj Exp $
+ * $Id: contain.cxx,v 1.18 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.17  1994/04/20 12:17:44  robertj
+ * Revision 1.18  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.17  1994/04/20  12:17:44  robertj
  * assert changes
  *
  * Revision 1.16  1994/04/11  12:08:37  robertj
@@ -90,10 +93,14 @@
 #include <stdlib.h>
 #include <iomanip.h>
 
+#if !defined(P_USE_INLINES)
+#include "contain.inl"
+#endif
+
 
 void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 {
-  char * textmsg[PMaxStandardAssertMessage] = {
+  static const char * const textmsg[PMaxStandardAssertMessage] = {
     NULL,
     "Out of memory",
     "Null pointer reference",
@@ -107,7 +114,9 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
     "Unsupported feature",
     "Invalid or closed operating system window"
   };
-  char * theMsg, msgbuf[20];
+
+  const char * theMsg;
+  char msgbuf[20];
   if (msg < PMaxStandardAssertMessage)
     theMsg = textmsg[msg];
   else {
@@ -149,7 +158,8 @@ void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
       break;
     }
     backward--;
-    PAssert(forward < PointerHashTableSize && backward >= 0);
+    PAssert(forward < PointerHashTableSize && backward >= 0,
+                                                     "Point hash table full");
   }
   PointerHashTable[entry].ptr = obj;
   PointerHashTable[entry].size = nSize;
@@ -173,11 +183,13 @@ void PObject::DeallocateObjectMemory(void * ptr, const char * className)
       break;
     }
     backward--;
-    PAssert(forward < PointerHashTableSize && backward >= 0);
+    PAssert(forward < PointerHashTableSize && backward >= 0,
+                                              "Deallocating invalid pointer");
   }
 
 #ifndef __GNUC__
-  PAssert(PointerHashTable[entry].className == className);
+  PAssert(PointerHashTable[entry].className == className,
+                                         "Deallocated pointer class changed");
 #endif
   PointerHashTable[entry].ptr = NULL;
   free(ptr);
@@ -233,7 +245,7 @@ PObject::Comparison PObject::Compare(const PObject & obj) const
 
 ostream & PObject::PrintOn(ostream & strm) const
 {
-  return strm << GetClassName();
+  return strm << GetClass();
 }
 
 
@@ -312,9 +324,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   PAssert(elementSize != 0, PInvalidParameter);
   if (GetSize() == 0)
     reference->size = 1;
-  PINDEX sizebytes = elementSize*GetSize();
-  theArray = new char[sizebytes];
-  memset(theArray, 0, sizebytes);
+  theArray = (char *)calloc(GetSize(), elementSize);
 }
 
 
@@ -328,14 +338,14 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
   if (GetSize() == 0)
     reference->size = 1;
   PINDEX sizebytes = elementSize*GetSize();
-  theArray = new char[sizebytes];
+  theArray = (char *)malloc(sizebytes);
   memcpy(theArray, PAssertNULL(buffer), sizebytes);
 }
 
 
 void PAbstractArray::DestroyContents()
 {
-  delete[] theArray;
+  free(theArray);
   theArray = NULL;
 }
 
@@ -386,26 +396,26 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
     newSize = 1;
 
   PINDEX newsizebytes = elementSize*newSize;
-  char *newArray = new char[newsizebytes];
-  if (newArray == NULL)
-    return FALSE;
-
   PINDEX oldsizebytes = elementSize*GetSize();
-  if (newsizebytes <= oldsizebytes)
-    memcpy(newArray, theArray, newsizebytes);
-  else {
-    memcpy(newArray, theArray, oldsizebytes);
-    memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
-  }
+  char * newArray;
 
   if (IsUnique()) {
-    delete [] theArray;
+    if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
+      return FALSE;
     reference->size = newSize;
   }
   else {
+    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+      return FALSE;
+
+    memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
+
     reference->count--;
     reference = new Reference(newSize);
   }
+
+  if (newsizebytes > oldsizebytes)
+    memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
 
   theArray = newArray;
   return TRUE;
@@ -529,10 +539,7 @@ ostream & PString::PrintOn(ostream &strm) const
 
 istream & PString::ReadFrom(istream &strm)
 {
-  PAssert(MakeUnique(), POutOfMemory);
-  delete theArray;
-  theArray = new char[1000];
-  strm >> theArray;
+  strm.getline(GetPointer(10000), 10000);
   PAssert(MakeMinimumSize(), POutOfMemory);
   return strm;
 }

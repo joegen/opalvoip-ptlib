@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.2 1994/04/20 12:17:44 robertj Exp $
+ * $Id: pprocess.h,v 1.3 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,89 +8,79 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.2  1994/04/20 12:17:44  robertj
- * PFilePath addition
- *
- * Revision 1.1  1994/04/01  14:25:36  robertj
- * Initial revision
+ * Revision 1.3  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
  *
  */
 
 
-#define _PTEXTAPPLICATION
+#define _PPROCESS
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextApplication
+// PProcess
 
-PDECLARE_CLASS(PTextApplication, PObject)
+PDECLARE_CLASS(PProcess, PThread)
+  // Process object definition. This defines a running "programme" in the 
+  // context of the operating system. Note that there can only be one instance
+  // of a PProcess class in a programme.
+
   public:
-    // PApplication initialisation
-    PTextApplication();
-      // Create a new application instance.
+    PProcess();
+      // Create a new process instance.
 
-    ~PTextApplication();
-      // Destroy the application
+    ~PProcess();
+      // Destroy the process.
 
     // Overrides from class PObject
     Comparison Compare(const PObject & obj) const;
-      // Return EqualTo if the two application object have the same name.
+      // Return EqualTo if the two process object have the same name.
 
 
     // New functions for class
-    virtual BOOL Initialise() = 0;
-      // User override function to initialise an application.
-
-    virtual void MainBody() = 0;
-      // User override function to initialise an application.
-
-    virtual int Termination();
-      // User override function for cleaning up on application termination.
-      // Most cleaning up would be accommodated by the destruction of all
-      // objects in use, but this may sometime be overridden to do additional
-      // clean up or returning a programme return code, that may be used by the
-      // operating system.
+    static PProcess * Current();
+      // Get the current processes object
 
     virtual void Terminate();
-      // Terminate the application. Usually only used in abnormal abort
+      // Terminate the process. Usually only used in abnormal abort
       // situation.
 
-    const PArgList & GetArguments() const;
+    void SetTerminationValue(int value);
+      // Set the termination value for the process
+
+    int GetTerminationValue() const;
+      // Get the termination value for the process
+
+    PArgList & GetArguments();
       // Return the argument list.
 
-    PString GetAppName() const;
-      // Return the root name of the applications executable image.
+    PString GetName() const;
+      // Return the root name of the processes executable image.
 
-    const PFilePath & GetAppFile() const;
-      // Return the applications executable image file path.
+    const PFilePath & GetFile() const;
+      // Return the processes executable image file path.
 
-    PString GetEnvironment(const PString & varName) const;
-      // Return the environment variable.
-
-    void AddTimer(PTimer * timer);
-      // Add a timer object to the list of timers handled by the application.
-
-    void RemoveTimer(PTimer * timer);
-      // Remvoe a timer from the list of timers handled by the application.
+    PTimerList * GetTimerList();
+      // Get the list of timers handled by the application.
 
 
-  protected:
+  private:
     friend int main(int argc, char ** argv);
-    int Main(int argc, char ** argv);
-      // Internal function called directly from main().
+      // The main() system entry point to programme. Calls PreInitialise then
+      // the Main() function.
 
     void PreInitialise(int argc, char ** argv);
-      // Internal function called directly from main().
+      // Internal initialisation function called directly from main().
 
 
     // Member variables
     int terminationValue;
       // Application return value
 
-    PString applicationName;
+    PString executableName;
       // Application executable base name from argv[0]
 
-    PFilePath applicationFile;
+    PFilePath executableFile;
       // Application executable file from argv[0] (not open)
 
     PArgList arguments;

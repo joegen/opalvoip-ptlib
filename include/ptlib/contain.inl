@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.17 1994/04/20 12:17:44 robertj Exp $
+ * $Id: contain.inl,v 1.18 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.17  1994/04/20 12:17:44  robertj
+ * Revision 1.18  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.17  1994/04/20  12:17:44  robertj
  * assert stuff
  *
  * Revision 1.16  1994/04/01  14:05:46  robertj
@@ -59,9 +62,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE BOOL PObject::IsClass(const char * clsName) const
-  { return strcmp(clsName, GetClassName()) == 0; }
 
 PINLINE BOOL PObject::operator==(const PObject & obj) const
   { return Compare(obj) == EqualTo; }
