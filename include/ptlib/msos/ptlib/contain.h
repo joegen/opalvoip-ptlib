@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.37  2004/04/11 22:47:03  csoutheren
+ * Remove unused parameter warnings for Windows <string>
+ *
  * Revision 1.36  2004/04/11 13:26:25  csoutheren
  * Removed namespace problems and removed warnings for Windows <string>
  *
@@ -420,6 +423,7 @@ extern "C" char ** __argv;
 
 #pragma warning(push)
 #include <yvals.h>    
+#pragma warning(disable:4100)
 #pragma warning(disable:4018)
 #pragma warning(disable:4663)
 #pragma warning(disable:4146)
