@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.5 1996/05/23 09:56:24 robertj Exp $
+ * $Id: ftp.h,v 1.6 1996/09/14 13:09:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.6  1996/09/14 13:09:08  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.5  1996/05/23 09:56:24  robertj
  * Changed FTP so can do passive/active mode on all data transfers.
  *
@@ -33,37 +39,55 @@
 #pragma interface
 #endif
 
-#ifndef _PAPPLICATIONSOCKET
-#include <appsock.h>
-#endif
+#include <inetprot.h>
+#include <sockets.h>
 
 
-PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
+PDECLARE_CLASS(PFTP, PInternetProtocol)
   public:
-    enum { DefaultFTPPort = 21 };
-    enum { MaxIllegalPasswords = 3 };
+    // FTP commands
+    enum Commands { 
+      USER, PASS, ACCT, CWD, CDUP, SMNT, QUIT, REIN, PORT, PASV, TYPE,
+      STRU, MODE, RETR, STOR, STOU, APPE, ALLO, REST, RNFR, RNTO, ABOR,
+      DELE, RMD, MKD, PWD, LIST, NLST, SITE, SYST, STAT, HELP, NOOP,
+      NumCommands
+    };
 
-    PFTPSocket(
-      WORD port = DefaultFTPPort  // Port number to use for the connection.
-    );
-    // declare a client socket - use Connect later
+    enum RepresentationType {
+      ASCII,
+      EBCDIC,
+      Image
+    };
 
-    PFTPSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port = DefaultFTPPort  // Port number to use for the connection.
-    );
-    // declare a client socket - automatically Connects
+    enum DataChannelType {
+      NormalPort,
+      Passive
+    };
 
-    PFTPSocket(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    PFTPSocket(
-      PSocket & socket,         // Listening socket making the connection.
-      const PString & readyString   // Sign on string on connection ready.
-    );
-    // declare a server socket - automatically Accepts
+    enum NameTypes {
+      ShortNames,
+      DetailedNames
+    };
 
-    ~PFTPSocket();
+    BOOL SendPORT(
+      const PIPSocket::Address & addr,  // Address for PORT connection.
+      WORD port                         // Port number for PORT connection.
+    );
+    // Send the PORT command for a transfer.
+
+
+  protected:
+    PFTP();
+    // Construct an inetern File Ttransfer Protocol channel.
+};
+
+
+PDECLARE_CLASS(PFTPClient, PFTP)
+  public:
+    PFTPClient();
+    // Declare an FTP client socket.
+
+    ~PFTPClient();
     // Delete and close the socket.
 
 
@@ -76,19 +100,7 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
      */
 
 
-    //
-    // client routines
-    //
-
-    BOOL Connect(
-      const PString & address     // Remote address to connect to.
-    );
-    /* Connect a socket to a remote host for FTP.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully connected to the remote host.
-     */
-
+  // New functions for class
     BOOL LogIn(
       const PString & username,   // User name for FTP log in.
       const PString & password    // Password for the specified user name.
@@ -106,11 +118,6 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
        String for the type of system.
      */
 
-    enum RepresentationType {
-      ASCII,
-      EBCDIC,
-      Image
-    };
     BOOL SetType(
       RepresentationType type   // RepresentationTypeof file to transfer
     );
@@ -136,14 +143,6 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
        String for the directory path, or empty string if an error occurred.
      */
 
-    enum DataChannelType {
-      NormalPort,
-      Passive
-    };
-    enum NameTypes {
-      ShortNames,
-      DetailedNames
-    };
     PStringArray GetDirectoryNames(
       NameTypes type = ShortNames,        // Detail level on a directory entry.
       DataChannelType channel = Passive   // Data channel type.
@@ -197,10 +196,36 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
      */
 
 
-    //
-    // server routines
-    //
+  protected:
+    BOOL OnOpen();
+    PTCPSocket * NormalClientTransfer(
+      Commands cmd,
+      const PString & args
+    );
+    PTCPSocket * PassiveClientTransfer(
+      Commands cmd,
+      const PString & args
+    );
 
+    WORD remotePort;
+};
+
+
+PDECLARE_CLASS(PFTPServer, PFTP)
+  public:
+    enum { MaxIllegalPasswords = 3 };
+
+    PFTPServer();
+    PFTPServer(
+      const PString & readyString   // Sign on string on connection ready.
+    );
+    // declare a server socket
+
+    ~PFTPServer();
+    // Delete the server, cleaning up passive sockets.
+
+
+  // New functions for class
     virtual PString GetHelloString(const PString & user) const;
       // return the string printed when a user logs in
       // default value is a string giving the user name
@@ -211,13 +236,6 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
     virtual PString GetSystemTypeString() const;
       // return the string to be returned by the SYST command
 
-
-    enum Commands { 
-      USER, PASS, ACCT, CWD, CDUP, SMNT, QUIT, REIN, PORT, PASV, TYPE,
-      STRU, MODE, RETR, STOR, STOU, APPE, ALLO, REST, RNFR, RNTO, ABOR,
-      DELE, RMD, MKD, PWD, LIST, NLST, SITE, SYST, STAT, HELP, NOOP,
-      NumCommands
-    };
 
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
@@ -342,24 +360,12 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
     );
     // Send the specified file to the client.
 
-    BOOL SendPORT(
-      const PIPSocket::Address & addr,  // Address for PORT connection.
-      WORD port                         // Port number for PORT connection.
-    );
-    // Send the PORT command for a transfer.
-
 
   protected:
+    BOOL OnOpen();
     void Construct();
-    void ConstructServerSocket(const PString & readyString);
-    PTCPSocket * NormalClientTransfer(
-      Commands cmd,
-      const PString & args
-    );
-    PTCPSocket * PassiveClientTransfer(
-      Commands cmd,
-      const PString & args
-    );
+
+    PString readyString;
 
     enum {
       NotConnected,
