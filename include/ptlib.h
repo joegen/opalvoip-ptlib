@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.11 1996/08/08 10:08:40 robertj Exp $
+ * $Id: ptlib.h,v 1.12 1996/09/14 13:09:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
+ * Revision 1.12  1996/09/14 13:09:16  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.11  1996/08/08 10:08:40  robertj
  * Directory structure changes for common files.
  *
@@ -82,6 +88,12 @@
 // PChannel
 
 #include <channel.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIndirectChannel
+
+#include <ptlib/indchan.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
