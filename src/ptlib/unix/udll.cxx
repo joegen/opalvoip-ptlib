@@ -1,5 +1,5 @@
 /*
- * $Id: udll.cxx,v 1.2 1997/10/30 12:41:22 craigs Exp $
+ * $Id: udll.cxx,v 1.3 1998/01/04 08:11:41 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1997 Equivalence
  *
  * $Log: udll.cxx,v $
+ * Revision 1.3  1998/01/04 08:11:41  craigs
+ * Remove Solarisism and made platform independent
+ *
  * Revision 1.2  1997/10/30 12:41:22  craigs
  * Added GetExtension command
  *
@@ -22,9 +25,7 @@
 #include <ptlib.h>
 #include <dynalink.h>
 
-#ifdef P_SOLARIS
-#include <dlfcn.h>
-#else
+#ifndef RTLD_LAZY
 #message "No implementation for dynamic library functions"
 #endif
 
