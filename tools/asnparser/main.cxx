@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.49  2004/04/13 11:33:55  csoutheren
+ * Fixed XER output, thanks to Federico Pinna
+ *
  * Revision 1.48  2004/04/03 08:22:23  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -172,7 +175,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 0
+#define BUILD_NUMBER 1
 
 
 unsigned lineNumber;
@@ -2273,7 +2276,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    cxx << "  if (PIsDescendantStr(&strm, \"PXER_Stream\"))\n"
+    cxx << "  if (PIsDescendantStr(&strm, PXER_Stream))\n"
            "    return TRUE;\n\n";
   }
 
