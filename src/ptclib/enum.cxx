@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.3  2004/06/05 01:58:37  rjongbloed
+ * Fixed MSVC 6 compatibility
+ *
  * Revision 1.2  2004/05/31 23:14:17  csoutheren
  * Fixed warnings under VS.net and fixed problem with SRV records when returning multiple records
  *
@@ -253,7 +256,7 @@ BOOL PDNS::ENUMLookup(
   return PDNS::ENUMLookup(e164, service, PStringArray(sizeof(domains)/sizeof(domains[0]), domains), dn);
 }
 
-static BOOL ENUMLookup(const PString & e164, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
+static BOOL InternalENUMLookup(const PString & e164, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
 {
   BOOL result = FALSE;
 
@@ -359,7 +362,7 @@ BOOL PDNS::ENUMLookup(
     if (!PDNS::GetRecords(domain + "." + enumSpaces[i], records))
       continue;
 
-    if (ENUMLookup(e164, service, records, returnStr))
+    if (InternalENUMLookup(e164, service, records, returnStr))
       return TRUE;
   }
 
