@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.119  2002/02/25 16:23:16  rogerh
+# Test for GCC 3 in unix.mak and not it common.mak so -DGCC3 can be set
+#
 # Revision 1.118  2002/02/20 02:37:26  dereks
 # Initial release of Firewire camera support for linux.
 # Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -527,7 +530,13 @@ endif
 # any -W overrides won't have any effect
 STDCCFLAGS += -Wall
 
+
 # We want to be GCC 3.0 compatible
+GCC_VER = $(shell $(CPLUS) --version | sed 's/\..*//' )
+ifeq    ($(GCC_VER),3)
+USE_GCC3 = 1
+endif
+
 ifdef USE_GCC3
 STDCCFLAGS	+= -DGCC3 -D__USE_STL__
 endif
