@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.27 1994/12/12 10:16:20 robertj Exp $
+ * $Id: contain.inl,v 1.28 1994/12/12 13:13:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.27  1994/12/12 10:16:20  robertj
+ * Revision 1.28  1994/12/12 13:13:12  robertj
+ * Fixed bugs in PString mods just made.
+ *
+ * Revision 1.27  1994/12/12  10:16:20  robertj
  * Restructuring and documentation of container classes.
  * Renaming of some macros for declaring container classes.
  * Added some extra functionality to PString.
@@ -206,7 +209,7 @@ PINLINE PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
 
 PINLINE PStringArray
       PString::Tokenise(const PString & separators, BOOL onePerSeparator) const
-  { return Tokenise(separators, onePerSeparator); }
+  { return Tokenise((const char *)separators, onePerSeparator); }
 
 PINLINE PString::operator const unsigned char *() const
   { return (const unsigned char *)theArray; }
