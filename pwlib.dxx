@@ -160,6 +160,7 @@ window as a descendent off the \Ref{PMainWindow} class.
                 //@Include: include/ptlib/videoio.h
 		//@Include: include/ptlib/remconn.h
 		//@Include: include/ptlib/mail.h
+		//@Include: include/ptlib/pwavfile.h
 	    //@}
     //@}
 
