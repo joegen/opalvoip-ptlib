@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.24  2000/10/20 05:31:09  robertj
+ * Added function to change auto delete flag on a thread.
+ *
  * Revision 1.23  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -319,6 +322,18 @@ class PThread : public PObject
        current thread priority.
      */
     virtual Priority GetPriority() const;
+
+    /** Set the flag indicating thread object is to be automatically deleted
+        when the thread ends.
+     */
+    virtual void SetAutoDelete(
+      AutoDeleteFlag deletion = AutoDeleteThread  /// New auto delete setting.
+    );
+
+    /** Reet the flag indicating thread object is to be automatically deleted
+        when the thread ends.
+     */
+    void SetNoAutoDelete() { SetAutoDelete(NoAutoDeleteThread); }
 
     /** Get the name of the thread. Thread names are a optional debugging aid.
 
