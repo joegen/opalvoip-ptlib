@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.2  2002/01/15 03:55:43  craigs
+ * Added PAdaptiveDelay class
+ *
  * Revision 1.1  2001/07/10 03:07:07  robertj
  * Added queue channel and delay channel classes to ptclib.
  *
@@ -37,8 +40,32 @@
 #pragma interface
 #endif
 
+/** Class for implementing an "adaptive" delay.
+    This class will cause the the caller to, on average, delay
+    the specified number of milliseconds between calls. This can
+    be used to simulate hardware timing for a sofwtare only device
 
-/** Class for implementing a a "delay line" channel.
+  */
+
+
+class PAdaptiveDelay : public PObject
+{ 
+  PCLASSINFO(PAdaptiveDelay, PObject);
+  
+  public:
+    PAdaptiveDelay();
+    BOOL Delay(int time);
+    void Restart();
+    int  GetError();
+ 
+  protected:
+    PTime  previousTime;
+    BOOL   firstTime;
+    int    error;
+};
+
+
+/** Class for implementing a "delay line" channel.
     This indirect channel can be placed in a channel I/O chain to limit the
     speed of I/O. This can be useful if blocking is not available and buffers
     could be overwritten if the I/O occurs at full speed.
