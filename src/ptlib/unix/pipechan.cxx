@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.22  1999/02/22 13:26:54  robertj
+ * BeOS port changes.
+ *
  * Revision 1.21  1998/11/30 21:51:46  robertj
  * New directory structure.
  *
@@ -364,6 +367,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
   os_handle = stderrChildPipe[0];
   
   BOOL status = FALSE;
+#ifndef __BEOS__
   int available;
   if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
     if (available != 0)
@@ -380,6 +384,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
       }
     }
   }
+#endif
 
   os_handle = 0;
   return status;

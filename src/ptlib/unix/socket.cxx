@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.37  1999/02/22 13:26:54  robertj
+ * BeOS port changes.
+ *
  * Revision 1.36  1998/11/30 21:51:58  robertj
  * New directory structure.
  *
@@ -113,15 +116,25 @@ int PSocket::os_socket(int af, int type, int protocol)
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
     // make the socket non-blocking and close on exec
+#ifndef __BEOS__
 #ifndef P_PTHREADS
     DWORD cmd = 1;
 #endif
+#else
+    int cmd = -1;
+#endif
+
     if (
+#ifndef __BEOS__
 #ifndef P_PTHREADS
         !ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
 #endif
         !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
       ::close(handle);
+#else
+	!ConvertOSError(setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &i, sizeof(int)))) {
+      ::closesocket(handle);
+#endif
       return -1;
     }
 //PError << "socket " << handle << " created" << endl;
@@ -151,6 +164,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return -1;
   }
 
+#ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
@@ -159,6 +173,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return 0;
 
   errno = optval;
+#endif //!__BEOS__
   return -1;
 }
 
@@ -291,6 +306,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   PUDPSocket sock;
 
+#ifndef __BEOS__
   // get number of interfaces
   int ifNum;
 #ifdef SIOCGIFNUM
@@ -325,6 +341,8 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       }
     }
   }
+#endif //!__BEOS__
+
   return FALSE;
 }
 
@@ -538,6 +556,7 @@ BOOL PEthSocket::Close()
 
 BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
+#ifndef __BEOS__
   PUDPSocket ifsock;
 
   ifreq ifreqs[20]; // Maximum of 20 interfaces
@@ -561,9 +580,9 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
       }
     }
   }
+#endif //!__BEOS__
 
   return FALSE;
-
 }
 
 
@@ -584,6 +603,7 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
   if (!IsOpen())
     return FALSE;
 
+#ifndef __BEOS__
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
@@ -602,14 +622,18 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
 
   net_mask = sin->sin_addr;
   return TRUE;
+#else
+  return FALSE;
+#endif //!__BEOS__
 }
 
 
 BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
   if (!IsOpen())
-    return 0;
+    return FALSE;
 
+#ifndef __BEOS__
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -624,6 +648,9 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
   mask = filterMask;
   type = filterType;
   return TRUE;
+#else
+  return FALSE;
+#endif //!__BEOS__
 }
 
 
@@ -639,6 +666,7 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
       return FALSE;
   }
 
+#ifndef __BEOS__
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -656,6 +684,9 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
   filterMask = filter;
 
   return TRUE;
+#else
+  return FALSE;
+#endif //!__BEOS__
 }
 
 
