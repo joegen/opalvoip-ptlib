@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.18 1996/11/17 02:35:12 craigs Exp $
+# $Id: Makefile,v 1.19 1996/11/17 08:35:50 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.19  1996/11/17 08:35:50  craigs
+# Fixed distsrc target
+#
 # Revision 1.18  1996/11/17 02:35:12  craigs
 # Removed SSL from list of build targets
 #
@@ -130,14 +133,10 @@ test:
             | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' \
 	)
 
-distunix:
-	(cd $(PWLIBDIR); tar -czvf unix-src.tgz \
-	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
-	unix/src/common.mak unix/include/* )
 distsrc:
 	(cd $(PWLIBDIR); tar -czvf ptlib-src.tgz \
-	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
-	unix/src/common.mak unix/include/* common/*.h common/ptlib/* )
+	unix/src/*.cxx unix/src/*.h unix/src/Makefile unix/src/*.mak \
+	unix/include/* common/*.h common/ptlib/* common/ptlib/src/* )
 
 #######################################################
 
