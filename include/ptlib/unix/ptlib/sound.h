@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.5  1999/07/19 01:34:22  craigs
+ * Rewite to compensate for linux OSS sensitivity to ioctl order.
+ *
  * Revision 1.4  1999/06/30 13:50:21  craigs
  * Added code to allow full duplex audio
  *
@@ -53,6 +56,12 @@ class PSoundHandleEntry : public PObject {
 
     int handle;
     int direction;
+
+    unsigned numChannels;
+    unsigned sampleRate;
+    unsigned bitsPerSample;
+    unsigned fragmentValue;
+    BOOL isInitialised;
 };
 
 PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
@@ -63,12 +72,18 @@ PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
 #include "../../sound.h"
 
   BOOL Close();
+  BOOL Write(const void * buf, PINDEX len);
+  BOOL Read(void * buf, PINDEX len);
 
   protected:
+    BOOL  Setup();
+
     static PSoundHandleDict handleDict;
     static PMutex           dictMutex;
-    int direction;
+
+    Directions direction;
     PString device;
+    BOOL isInitialised;
 };
 
 
