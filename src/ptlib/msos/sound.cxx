@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.24  2001/09/10 02:48:51  robertj
+ * Removed previous change as breaks semantics of Read() function, moved test
+ *   for zero buffer length to part that waits for buffer to be full.
+ *
  * Revision 1.23  2001/09/09 17:37:49  yurik
  * dwBytesRecorded in WAVEHDR could return 0. We should not close the channel in this case
  *
@@ -1167,21 +1171,14 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
-  PINDEX bytesRecorded = buffer.header.dwBytesRecorded;
-  if ( bytesRecorded == 0 ) // Could be nothing
-	  return TRUE;
-
-  lastReadCount = bytesRecorded - bufferByteOffset;
+  lastReadCount = buffer.header.dwBytesRecorded - bufferByteOffset;
   if (lastReadCount > size)
     lastReadCount = size;
-
-  if (bufferByteOffset == P_MAX_INDEX)
-    return FALSE;
 
   memcpy(data, &buffer[bufferByteOffset], lastReadCount);
 
   bufferByteOffset += lastReadCount;
-  if (bufferByteOffset >= buffer.GetSize()) {
+  if (bufferByteOffset >= (PINDEX)buffer.header.dwBytesRecorded) {
     if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
       return FALSE;
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
@@ -1274,7 +1271,8 @@ BOOL PSoundChannel::IsRecordBufferFull()
   if (bufferByteOffset == P_MAX_INDEX)
     return TRUE;
 
-  return (buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0;
+  return (buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0 &&
+          buffers[bufferIndex].header.dwBytesRecorded > 0;
 }
 
 
