@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winserial.cxx,v $
+ * Revision 1.6  2005/01/11 12:46:37  csoutheren
+ * Removed handle leak on serial port caused by memset
+ * Thanks to Dmitry Samokhin
+ *
  * Revision 1.5  2004/12/27 22:38:27  csoutheren
  * Fixed problems with accessing serial port under Windows
  *
@@ -153,7 +157,6 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
   PAssertOS(SetCommTimeouts(commsResource, &cto));
 
   PWin32Overlapped overlap;
-  memset(&overlap, 0, sizeof(overlap));
   overlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) {
     //CloseHandle(overlap.hEvent);
