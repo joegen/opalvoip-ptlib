@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.3 1995/03/14 13:31:35 robertj Exp $
+ * $Id: pipechan.h,v 1.4 1996/08/08 10:09:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.4  1996/08/08 10:09:07  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.3  1995/03/14 13:31:35  robertj
  * Implemented DOS pipe channel.
  *
@@ -23,7 +26,7 @@
 
 #ifndef _PPIPECHANNEL
 
-#include "..\..\common\pipechan.h"
+#include "..\..\common\ptlib/pipechan.h"
   protected:
 #if defined(_WIN32)
     PROCESS_INFORMATION info;
