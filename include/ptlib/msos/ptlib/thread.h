@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.10 1996/03/31 09:08:42 robertj Exp $
+ * $Id: thread.h,v 1.11 1996/06/13 13:32:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.11  1996/06/13 13:32:12  robertj
+ * Rewrite of auto-delete threads, fixes Windows95 total crash.
+ *
  * Revision 1.10  1996/03/31 09:08:42  robertj
  * Added mutex to thread dictionary access.
  *
@@ -71,12 +74,13 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
 #include "../../common/thread.h"
 #if defined(P_PLATFORM_HAS_THREADS)
-#if defined(_WIN32)
+  public:
+    HANDLE GetHandle() const { return threadHandle; }
+    DWORD CleanUpOnTerminated();
+
   protected:
-    void RegisterWithProcess(BOOL terminating);
     HANDLE threadHandle;
     DWORD  threadId;
-#endif
 
   private:
     PINDEX originalStackSize;
