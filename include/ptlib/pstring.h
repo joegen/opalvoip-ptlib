@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.47  2002/01/22 01:03:57  craigs
+ * Added operator += and operator + functions to PStringArray and PStringList
+ * Added AppendString operator to PStringArray
+ *
  * Revision 1.46  2001/10/17 05:09:22  robertj
  * Added contructors and assigmnent operators so integer types can be
  *   automatically converted to strings.
@@ -1948,6 +1952,31 @@ PDECLARE_ARRAY(PStringArray, PString);
     PString & operator[](
       PINDEX index  /// Index position in the collection of the object.
     );
+
+    /** Append a string to the array
+     */
+    PINDEX AppendString(
+      const PString & str /// String to append.
+    );
+
+    /**Concatenate a PString or PStringArray to the array
+
+       @return
+       The PStringArray with the new items appended
+     */
+    PStringArray & operator +=(const PStringArray & array);
+    PStringArray & operator +=(const PString & str);
+
+
+    /**Create a new PStringArray, and add PString or PStringArray to it
+       a new PStringArray
+
+       @return
+       A new PStringArray with the additional elements(s)
+     */
+    PStringArray operator + (const PStringArray & array);
+    PStringArray operator + (const PString & str);
+
   //@}
 };
 
@@ -2011,6 +2040,25 @@ PDECLARE_LIST(PStringList, PString);
     PINDEX GetStringsIndex(
       const PString & str   /// String value to search for.
     ) const;
+
+    /**Concatenate a PString or PStringArray to the list
+
+       @return
+       The PStringArray with the new items appended
+     */
+    PStringList & operator +=(const PStringList & list);
+    PStringList & operator +=(const PString & str);
+
+
+    /**Create a new PStringList, and add PString or PStringList to it
+       a new PStringList
+
+       @return
+       A new PStringList with the additional elements(s)
+     */
+    PStringList operator + (const PStringList & array);
+    PStringList operator + (const PString & str);
+
   //@}
 };
 

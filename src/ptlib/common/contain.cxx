@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.108  2002/01/22 01:03:57  craigs
+ * Added operator += and operator + functions to PStringArray and PStringList
+ * Added AppendString operator to PStringArray
+ *
  * Revision 1.107  2001/10/30 00:20:12  robertj
  * Fixed broken signed number conversion from previous change.
  *
@@ -1837,6 +1841,14 @@ PStringArray PString::Lines() const
   return lines;
 }
 
+PStringArray & PStringArray::operator += (const PStringArray & v)
+{
+  PINDEX i;
+  for (i = 0; i < v.GetSize(); i++)
+    AppendString(v[i]);
+
+  return *this;
+}
 
 PString PString::LeftTrim() const
 {
@@ -2262,6 +2274,15 @@ PStringList::PStringList(const PSortedStringList & list)
 {
   for (PINDEX i = 0; i < list.GetSize(); i++)
     AppendString(list[i]);
+}
+
+PStringList & PStringList::operator += (const PStringList & v)
+{
+  PINDEX i;
+  for (i = 0; i < v.GetSize(); i++)
+    AppendString(v[i]);
+
+  return *this;
 }
 
 
