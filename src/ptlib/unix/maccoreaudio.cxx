@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.10  2003/11/02 15:55:48  shawn
+ * use static_cast<>, especially Mac OS X 10.3 (Panther)
+ *
  * Revision 1.9  2003/05/16 17:49:19  shawn
  * Audio code for CoreAudio of Mac OS X now uses multiple playback buffers.
  *
@@ -727,15 +730,18 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   PRINT_DATA(mBitsPerChannel, "bitsPerChannel");
 */
 
+  AudioConverterRef ref = static_cast<AudioConverterRef>(caConverterRef);
+  AudioConverterRef *refToRef = &ref;
+
   if (direction == Player) {
     theStatus = AudioConverterNew(&pwlibDescription,
 				  &theDescription,
-				  &(AudioConverterRef)caConverterRef);
+				  refToRef);
   }
   else {
     theStatus = AudioConverterNew(&theDescription,
 				  &pwlibDescription,
-				  &(AudioConverterRef)caConverterRef);
+				  refToRef);
   }
   if (theStatus != 0) {
     PTRACE(1, "can not create audio converter for streams " << theStatus);
