@@ -30,6 +30,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.7  1999/06/30 08:57:20  robertj
+ * Fixed bug in encodeing sequence of constrained primitive type. Constraint not set.
+ * Fixed bug in not emitting namespace use clause.
+ * Added "normalisation" of separate sequence of <base type> to be single class.
+ *
  * Revision 1.6  1999/06/09 06:58:09  robertj
  * Adjusted heading comments.
  *
@@ -388,7 +393,6 @@ class TypeBase : public PObject
     virtual void FlattenUsedTypes();
     virtual TypeBase * FlattenThisType(const TypeBase & parent);
     virtual BOOL IsChoice() const;
-    virtual BOOL IsDefinedType() const;
     virtual BOOL IsParameterizedType() const;
     virtual BOOL IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
@@ -440,7 +444,6 @@ class DefinedType : public TypeBase
     void PrintOn(ostream &) const;
 
     virtual BOOL IsChoice() const;
-    virtual BOOL IsDefinedType() const;
     virtual BOOL IsParameterizedType() const;
     virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
     virtual const char * GetAncestorClass() const;
