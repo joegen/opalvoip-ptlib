@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.6  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.5  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -53,41 +56,44 @@
 #pragma interface
 #endif
 
+/** Internet Protocol Datagram Socket class.
+*/
 class PIPDatagramSocket : public PIPSocket
 {
-  PCLASSINFO(PIPDatagramSocket, PIPSocket)
+  PCLASSINFO(PIPDatagramSocket, PIPSocket);
   protected:
-    PIPDatagramSocket();
-    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+    /**Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
      */
+    PIPDatagramSocket();
 
 
   public:
   // New functions for class
-    virtual BOOL ReadFrom(
-      void * buf,     // Data to be written as URGENT TCP data.
-      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
-      Address & addr, // Address from which the datagram was received.
-      WORD & port     // Port from which the datagram was received.
-    );
-    /* Read a datagram from a remote computer.
+    /**Read a datagram from a remote computer.
        
-       <H2>Returns:</H2>
-       TRUE if any bytes were sucessfully read.
+       @return TRUE if any bytes were sucessfully read.
      */
-
-    virtual BOOL WriteTo(
-      const void * buf,   // Data to be written as URGENT TCP data.
-      PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
-      const Address & addr, // Address to which the datagram is sent.
-      WORD port           // Port to which the datagram is sent.
+    virtual BOOL ReadFrom(
+      void * buf,     /// Data to be written as URGENT TCP data.
+      PINDEX len,     /// Number of bytes pointed to by #buf#.
+      Address & addr, /// Address from which the datagram was received.
+      WORD & port     /// Port from which the datagram was received.
     );
-    /* Write a datagram to a remote computer.
 
-       <H2>Returns:</H2>
-       TRUE if all the bytes were sucessfully written.
+    /**Write a datagram to a remote computer.
+
+       @return TRUE if all the bytes were sucessfully written.
      */
+    virtual BOOL WriteTo(
+      const void * buf,   /// Data to be written as URGENT TCP data.
+      PINDEX len,         /// Number of bytes pointed to by #buf#.
+      const Address & addr, /// Address to which the datagram is sent.
+      WORD port           /// Port to which the datagram is sent.
+    );
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
