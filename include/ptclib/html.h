@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.10 1996/03/10 13:14:53 robertj Exp $
+ * $Id: html.h,v 1.11 1996/03/12 11:30:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.11  1996/03/12 11:30:00  robertj
+ * Fixed resetting of HTML output using operator=.
+ *
  * Revision 1.10  1996/03/10 13:14:53  robertj
  * Simplified some of the classes and added catch all string for attributes.
  *
@@ -76,10 +79,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
     ~PHTML();
 
     PHTML & operator=(
-      const PHTML & html    // HTML to copy
+      const char * cstr    // String for title in restating HTML.
     );
-    /* Copy the data from the source HTML string into the current HTML
-       string.
+    PHTML & operator=(
+      const PString & str    // String for title in restating HTML.
+    );
+    /* Restart the HTML string output using the specified value as the
+       new title. If <CODE>title</CODE> is empty then no HEAD or TITLE
+       elements are placed into the HTML.
      */
 
 
@@ -861,6 +868,11 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
   private:
     BYTE elementSet[NumElementsInSet/8+1];
+
+    PHTML & operator=(
+      const PHTML & html    // HTML to copy
+    );
+    // Cannot do HTML to HTML copy.
 };
 
 
