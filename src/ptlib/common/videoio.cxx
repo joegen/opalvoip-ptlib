@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.45  2004/01/17 17:41:50  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.44  2003/12/14 10:01:02  rjongbloed
  * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
  *
@@ -977,7 +980,7 @@ BOOL PVideoOutputDevicePPM::IsOpen()
 
 BOOL PVideoOutputDevicePPM::Close()
 {
-  deviceName = PString::Empty();
+  deviceName.MakeEmpty();
   return TRUE;
 }
 
