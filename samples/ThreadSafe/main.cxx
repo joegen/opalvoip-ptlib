@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2003/10/13 23:38:31  dereksmithies
+ * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
+ *
  * Revision 1.3  2002/12/11 03:38:45  robertj
  * Added more tests
  *
@@ -50,7 +53,7 @@ TestObject::~TestObject()
 }
 
 
-PObject::Comparison TestObject::Compare(const PObject & obj)
+PObject::Comparison TestObject::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(Class()), PInvalidCast);
   unsigned othervalue = ((const TestObject &)obj).value;
@@ -86,17 +89,35 @@ ThreadSafe::~ThreadSafe()
   sparse.RemoveAll();
 }
 
+void ThreadSafe::Usage()
+{
+  cout << "Usage: threadsafe {options} [number]" << endl
+       << "-t (more t's for more detail) logging on" << endl
+       << "-o output file for logging" << endl
+       << "-1 (or --test1) carry out test 1" << endl
+       << "-2 (or --test2) carry out test 2" << endl
+       << "-3 (or --test3) carry out test 3" << endl 
+       << "The number field is optional, and specifies the number of threads for test 1" << endl
+       << endl;
+  return;
+}
+
+
 
 void ThreadSafe::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("1-test1."
-             "2-test2."
-             "3-test3."
-             "t-trace.");
 
-  if (args.HasOption('t'))
-    PTrace::Initialise(args.GetOptionCount('t'));
+  args.Parse(
+             "t-trace."       "-no-trace."
+	     "o-output:"      "-no-output."
+	     "1-test1."       "-no-test1."
+             "2-test2."       "-no-test2."
+             "3-test3."       "-no-test3.");
+
+  PTrace::Initialise(args.GetOptionCount('t'),
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+                     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 
   if (args.HasOption('1'))
     Test1(args);
@@ -104,6 +125,10 @@ void ThreadSafe::Main()
     Test2(args);
   else if (args.HasOption('3'))
     Test3(args);
+  else Usage();
+
+  PTrace::ClearOptions(0);
+  PTrace::SetLevel(0);
 }
 
 
@@ -118,7 +143,7 @@ void ThreadSafe::Test1(PArgList & args)
 
   for (PINDEX i = 0; i < threadCount; i++) {
     PTimeInterval duration = PRandom::Number()%540000 + 60000;
-    cout << setw(4) << (i+1) << '=' << duration;
+    cout << setw(4) << (i + 1) << '=' << duration;
     if (i%5 == 4)
       cout << '\n';
     PThread::Create(PCREATE_NOTIFIER(Test1Thread), (INT)duration.GetMilliSeconds());
@@ -145,7 +170,7 @@ void ThreadSafe::Test1Output()
   unsorted.DeleteObjectsToBeRemoved();
   sparse.DeleteObjectsToBeRemoved();
 
-  cout << setprecision(0) << setw(5) << (PTimer::Tick()-startTick)
+  cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick)
        << " Threads=" << threadCount
        << ", Unsorted=" << unsorted.GetSize()
        << ", Sorted=" << sorted.GetSize()
@@ -170,12 +195,12 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
   while (timeout.IsRunning()) {
     switch (random%15) {
       case 0 :
-        if (random%(unsorted.GetSize()+1) == 0)
+        if (random%(unsorted.GetSize()+1) == 0) 	
           unsorted.Append(new TestObject(*this, random));
         break;
 
       case 1 :
-        if (random%(sorted.GetSize()+1) == 0)
+        if (random%(sorted.GetSize()+1) == 0) 
           sorted.Append(new TestObject(*this, random));
         break;
 
