@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.16 1995/11/09 12:17:10 robertj Exp $
+ * $Id: object.h,v 1.17 1996/01/02 11:54:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.17  1996/01/02 11:54:11  robertj
+ * Mac OS compatibility changes.
+ *
  * Revision 1.16  1995/11/09 12:17:10  robertj
  * Added platform independent base type access classes.
  *
@@ -230,6 +233,8 @@ class PInt64__ {
     PInt64__(unsigned long l) : low(l), high(0) { }
     PInt64__(unsigned long l, unsigned long h) : low(l), high(h) { }
 
+    void operator=(const PInt64__ & v) { low = v.low; high = v.high; }
+
     void Inc() { if (++low == 0) ++high; }
     void Dec() { if (--low == 0) --high; }
 
@@ -448,10 +453,10 @@ class PStandardType
     name(PMemoryPointer & mem) { Get(mem); } \
     operator type() const { return data; } \
     operator type &() { return data; } \
-    void Get(istream & stream); \
-    void Get(PMemoryPointer & mem); \
-    void Put(ostream & stream) const; \
-    void Put(PMemoryPointer & mem) const; \
+    inline void Get(istream & stream); \
+    inline void Get(PMemoryPointer & mem); \
+    inline void Put(ostream & stream) const; \
+    inline void Put(PMemoryPointer & mem) const; \
     friend ostream & operator<<(ostream & s, const name & v) { v.Put(s); return s; } \
     friend istream & operator>>(istream & s, name & v) { v.Get(s); return s; } \
     private: type data; \
