@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.19  2001/04/23 00:43:55  robertj
+# Added make update target to get from cvs and rebuild
+#
 # Revision 1.18  2001/04/17 06:30:37  robertj
 # Altered so can use tagbuild target in root directory.
 #
@@ -114,6 +117,10 @@ optnoshared debugnoshared bothnoshared : P_SHAREDLIB=0
 # all these targets are just passed to all subdirectories
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
+
+update:
+	cvs upate
+	$(MAKE) bothdepend both
 
 ptlib:
 	$(MAKE) -C src/ptlib/$(TARGETDIR) both
