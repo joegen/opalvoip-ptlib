@@ -1,5 +1,5 @@
 /*
- * $Id: asner.h,v 1.3 1997/12/18 05:08:13 robertj Exp $
+ * $Id: asner.h,v 1.4 1998/05/07 05:19:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.h,v $
+ * Revision 1.4  1998/05/07 05:19:28  robertj
+ * Fixed problems with using copy constructor/assignment oeprator on PASN_Objects.
+ *
  * Revision 1.3  1997/12/18 05:08:13  robertj
  * Added function to get choice discriminator name.
  *
@@ -94,9 +97,6 @@ class PASN_Object : public PObject
     BOOL extendable;   // PER extension capability
     TagClass tagClass; // BER tag class
     unsigned tag;      // ASN object tag
-
-  private:
-    PASN_Object(const PASN_Object &) { }
 };
 
 
@@ -136,6 +136,7 @@ class PASN_Null : public PASN_Object
     PASN_Null(unsigned tag = UniversalNull,
               TagClass tagClass = UniversalTagClass);
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -157,6 +158,7 @@ class PASN_Boolean : public PASN_Object
     BOOL GetValue() const { return value; }
     void SetValue(BOOL v) { value = v; }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -183,6 +185,7 @@ class PASN_Integer : public PASN_ConstrainedObject
     unsigned GetValue() const { return value; }
     void SetValue(unsigned v) { operator=(v); }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -217,6 +220,7 @@ class PASN_Enumeration : public PASN_Object
 
     unsigned GetMaximum() const { return numEnums; }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -243,6 +247,7 @@ class PASN_Real : public PASN_Object
     double GetValue() const { return value; }
     void SetValue(double v) { value = v; }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -261,10 +266,18 @@ class PASN_ObjectId : public PASN_Object
     PASN_ObjectId(unsigned tag = UniversalObjectId,
                   TagClass tagClass = UniversalTagClass);
 
+    PASN_ObjectId(const PASN_ObjectId & other);
+    PASN_ObjectId & operator=(const PASN_ObjectId & other);
+
     PASN_ObjectId & operator=(const char * dotstr);
     PASN_ObjectId & operator=(const PString & dotstr);
     void SetValue(const PString & dotstr);
 
+    PINDEX GetSize() const { return value.GetSize(); }
+    const PUnsignedArray & GetValue() const { return value; }
+    unsigned operator[](PINDEX idx) const { return value[idx]; }
+
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -289,6 +302,9 @@ class PASN_BitString : public PASN_ConstrainedObject
                    ConstraintType ctype = Unconstrained,
                    PINDEX nBits = 0);
 
+    PASN_BitString(const PASN_BitString & other);
+    PASN_BitString & operator=(const PASN_BitString & other);
+
     void SetData(PINDEX nBits, const PBYTEArray & bytes);
     void SetData(PINDEX nBits, const BYTE * buf, PINDEX size);
 
@@ -300,6 +316,7 @@ class PASN_BitString : public PASN_ConstrainedObject
     void Clear(PINDEX bit);
     void Invert(PINDEX bit);
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -326,15 +343,9 @@ class PASN_OctetString : public PASN_ConstrainedObject
                      int lower = 0, unsigned upper = UINT_MAX,
                      ConstraintType ctype = Unconstrained);
 
-    PINDEX GetSize() const { return value.GetSize(); }
-    BOOL SetSize(PINDEX newSize) { return value.SetSize(newSize); }
-    BYTE * GetPointer(PINDEX sz = 0) { return value.GetPointer(sz); }
-    operator const BYTE *() const { return value; }
-    BYTE operator[](PINDEX i) const { return value[i]; }
-    BYTE & operator[](PINDEX i) { return value[i]; }
-    operator const PBYTEArray &() const { return value; }
-    const PBYTEArray & GetValue() const { return value; }
-    PString AsString() const;
+    PASN_OctetString(const PASN_OctetString & other);
+    PASN_OctetString & operator=(const PASN_OctetString & other);
+
     PASN_OctetString & operator=(const char * str);
     PASN_OctetString & operator=(const PString & str);
     PASN_OctetString & operator=(const PBYTEArray & arr);
@@ -342,7 +353,17 @@ class PASN_OctetString : public PASN_ConstrainedObject
     void SetValue(const PString & str) { operator=(str); }
     void SetValue(const PBYTEArray & arr) { operator=(arr); }
     void SetValue(const BYTE * data, PINDEX len);
+    const PBYTEArray & GetValue() const { return value; }
+    operator const PBYTEArray &() const { return value; }
+    operator const BYTE *() const { return value; }
+    PString AsString() const;
+    BYTE operator[](PINDEX i) const { return value[i]; }
+    BYTE & operator[](PINDEX i) { return value[i]; }
+    BYTE * GetPointer(PINDEX sz = 0) { return value.GetPointer(sz); }
+    PINDEX GetSize() const { return value.GetSize(); }
+    BOOL SetSize(PINDEX newSize) { return value.SetSize(newSize); }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -361,12 +382,6 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_ConstrainedString, PASN_ConstrainedObject)
   public:
-    PASN_ConstrainedString(const char * canonicalSet, PINDEX setSize,
-                           unsigned tag, TagClass tagClass,
-                           int lower, unsigned upper,
-                           ConstraintType ctype,
-                           const char * charSet, BOOL extendChars);
-
     PASN_ConstrainedString & operator=(const char * str);
     PASN_ConstrainedString & operator=(const PString & str) { return operator=((const char *)str); }
     operator const PString &() const { return value; }
@@ -384,6 +399,12 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     void EncodePER(PPER_Stream & strm) const;
 
   protected:
+    PASN_ConstrainedString(const char * canonicalSet, PINDEX setSize,
+                           unsigned tag, TagClass tagClass,
+                           int lower, unsigned upper,
+                           ConstraintType ctype,
+                           const char * charSet, BOOL extendChars);
+
     PString value;
     PString charSet;
     PINDEX canonicalSetBits;
@@ -405,6 +426,7 @@ class PASN_NumericString : public PASN_ConstrainedString
     PASN_NumericString & operator=(const char * str) { PASN_ConstrainedString::SetValue(str); return *this; }
     PASN_NumericString & operator=(const PString & str) { PASN_ConstrainedString::SetValue(str); return *this; }
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -422,6 +444,7 @@ class PASN_PrintableString : public PASN_ConstrainedString
     PASN_PrintableString & operator=(const char * str) { PASN_ConstrainedString::SetValue(str); return *this; }
     PASN_PrintableString & operator=(const PString & str) { PASN_ConstrainedString::SetValue(str); return *this; }
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -439,6 +462,7 @@ class PASN_VisibleString : public PASN_ConstrainedString
     PASN_VisibleString & operator=(const char * str) { PASN_ConstrainedString::SetValue(str); return *this; }
     PASN_VisibleString & operator=(const PString & str) { PASN_ConstrainedString::SetValue(str); return *this; }
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -456,6 +480,7 @@ class PASN_IA5String : public PASN_ConstrainedString
     PASN_IA5String & operator=(const char * str) { PASN_ConstrainedString::SetValue(str); return *this; }
     PASN_IA5String & operator=(const PString & str) { PASN_ConstrainedString::SetValue(str); return *this; }
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -473,6 +498,7 @@ class PASN_GeneralString : public PASN_ConstrainedString
     PASN_GeneralString & operator=(const char * str) { PASN_ConstrainedString::SetValue(str); return *this; }
     PASN_GeneralString & operator=(const PString & str) { PASN_ConstrainedString::SetValue(str); return *this; }
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -486,11 +512,15 @@ class PASN_BMPString : public PASN_ConstrainedObject
                    int lower = 0, unsigned upper = UINT_MAX,
                    ConstraintType ctype = Unconstrained);
 
+    PASN_BMPString(const PASN_BMPString & other);
+    PASN_BMPString & operator=(const PASN_BMPString & other);
+
     PASN_BMPString & operator=(const PString & v);
     operator PString() const { return GetValue(); }
     PString GetValue() const;
     void SetValue(const PString & v) { operator=(v); }
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -507,21 +537,34 @@ class PASN_BMPString : public PASN_ConstrainedObject
 };
 
 
+class PASN_Sequence;
+
 class PASN_Choice : public PASN_Object
 {
     PCLASSINFO(PASN_Choice, PASN_Object)
   public:
-    PASN_Choice(PINDEX nChoices = UINT_MAX, BOOL extend = FALSE);
-    PASN_Choice(unsigned tag, TagClass tagClass, PINDEX nChoices, BOOL extend);
-    PASN_Choice(unsigned tag, TagClass tagClass, PINDEX nChoices, BOOL extend, const PString & nameSpec);
     ~PASN_Choice();
-
-    PASN_Choice & operator=(const PASN_Choice & other);
 
     virtual void SetTag(unsigned newTag, TagClass tagClass = DefaultTagClass);
     PString GetTagName() const;
     PASN_Object & GetObject() const;
     BOOL IsValid() const { return choice != NULL; }
+
+    operator PASN_Null &() const;
+    operator PASN_Boolean &() const;
+    operator PASN_Integer &() const;
+    operator PASN_Enumeration &() const;
+    operator PASN_Real &() const;
+    operator PASN_ObjectId &() const;
+    operator PASN_BitString &() const;
+    operator PASN_OctetString &() const;
+    operator PASN_NumericString &() const;
+    operator PASN_PrintableString &() const;
+    operator PASN_VisibleString &() const;
+    operator PASN_IA5String &() const;
+    operator PASN_GeneralString &() const;
+    operator PASN_BMPString &() const;
+    operator PASN_Sequence &() const;
 
     virtual BOOL CreateObject() = 0;
 
@@ -536,6 +579,13 @@ class PASN_Choice : public PASN_Object
     virtual void EncodePER(PPER_Stream &) const;
 
   protected:
+    PASN_Choice(PINDEX nChoices = UINT_MAX, BOOL extend = FALSE);
+    PASN_Choice(unsigned tag, TagClass tagClass, PINDEX nChoices, BOOL extend);
+    PASN_Choice(unsigned tag, TagClass tagClass, PINDEX nChoices, BOOL extend, const PString & nameSpec);
+
+    PASN_Choice(const PASN_Choice & other);
+    PASN_Choice & operator=(const PASN_Choice & other);
+
     unsigned maxChoices;
     PASN_Object * choice;
     POrdinalToString names;
@@ -553,6 +603,7 @@ class PASN_Sequence : public PASN_Object
                   TagClass tagClass = UniversalTagClass,
                   PINDEX nOpts = 0, BOOL extend = FALSE, PINDEX nExtend = 0);
 
+    PASN_Sequence(const PASN_Sequence & other);
     PASN_Sequence & operator=(const PASN_Sequence & other);
 
     PINDEX GetSize() const { return fields.GetSize(); }
@@ -562,6 +613,7 @@ class PASN_Sequence : public PASN_Object
     BOOL HasOptionalField(PINDEX opt) const;
     void IncludeOptionalField(PINDEX opt);
 
+    virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
@@ -611,6 +663,7 @@ class PASN_Set : public PASN_Sequence
              TagClass tagClass = UniversalTagClass,
              PINDEX nOpts = 0, BOOL extend = FALSE, PINDEX nExtend = 0);
 
+    virtual PObject * Clone() const;
     virtual PString GetTypeAsString() const;
 };
 
@@ -619,13 +672,6 @@ class PASN_Array : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_Array, PASN_ConstrainedObject)
   public:
-    PASN_Array(unsigned tag = UniversalSequence,
-               TagClass tagClass = UniversalTagClass,
-               int lower = 0, unsigned upper = UINT_MAX,
-               ConstraintType ctype = Unconstrained);
-
-    PASN_Array & operator=(const PASN_Array & other);
-
     PINDEX GetSize() const { return array.GetSize(); }
     void SetSize(PINDEX newSize);
     PASN_Object & operator[](PINDEX i) const { return array[i]; }
@@ -642,6 +688,14 @@ class PASN_Array : public PASN_ConstrainedObject
     virtual PASN_Object * CreateObject() const = 0;
 
   protected:
+    PASN_Array(unsigned tag = UniversalSequence,
+               TagClass tagClass = UniversalTagClass,
+               int lower = 0, unsigned upper = UINT_MAX,
+               ConstraintType ctype = Unconstrained);
+
+    PASN_Array(const PASN_Array & other);
+    PASN_Array & operator=(const PASN_Array & other);
+
     PASN_ObjectArray array;
 };
 
