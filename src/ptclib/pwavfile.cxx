@@ -1,5 +1,5 @@
 /*
- * wavfile.cxx
+ * pwavfile.cxx
  *
  * WAV file I/O channel class.
  *
@@ -28,18 +28,18 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.3  2001/07/19 09:57:24  rogerh
+ * Use correct filename
+ *
  * Revision 1.2  2001/07/19 09:53:29  rogerh
  * Add the PWAVFile class to read and write .wav files
- *
- * Revision 1.1  2001/07/19 09:36:22  rogerh
- * The PWAVFile class can read and write .wav audio files. Used in OpenAM.
  * The PWAVFile class was written by Roger Hardiman <roger@freebsd.org>
  * and Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
  *
  */
 
 #ifdef __GNUC__
-#pragma implementation "wavfile.h"
+#pragma implementation "pwavfile.h"
 #endif
 
 #include <ptlib.h>
