@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.8 1996/11/04 03:37:23 robertj Exp $
+ * $Id: remconn.cxx,v 1.9 1996/11/04 09:45:26 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.9  1996/11/04 09:45:26  robertj
+ * Yet more debugging.
+ *
  * Revision 1.8  1996/11/04 03:37:23  robertj
  * Added more debugging for remote drop outs.
  *
@@ -213,10 +216,10 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
 
   RASCONNSTATUS status;
   status.dwSize = sizeof(status);
-  DWORD err = Ras.GetConnectStatus(rasConnection, &status);
-  if (err != 0) {
+  ((PRemoteConnection*)this)->rasError = Ras.GetConnectStatus(rasConnection, &status);
+  if (rasError != 0) {
     char msg[100];
-    sprintf(msg, "RAS Connection Lost: error %ld", err);
+    sprintf(msg, "RAS Connection Lost: error %ld", rasError);
     PAssertAlways(msg);
     return ConnectionLost;
   }
