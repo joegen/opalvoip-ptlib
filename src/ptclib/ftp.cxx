@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.10 1997/07/14 11:47:09 robertj Exp $
+ * $Id: ftp.cxx,v 1.11 1998/01/26 05:20:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.11  1998/01/26 05:20:30  robertj
+ * GNU Support.
+ *
  * Revision 1.10  1997/07/14 11:47:09  robertj
  * Added "const" to numerous variables.
  *
@@ -42,6 +45,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "ftp.h"
+#endif
 
 #include <ptlib.h>
 #include <sockets.h>
