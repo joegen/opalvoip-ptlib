@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.25  2001/09/10 03:02:41  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ * Changed threading so does not actually start thread until Resume(), makes
+ *   the logic of start up much simpler and more portable.
+ * Quite a bit of tidyin up of the pthreads code.
+ *
  * Revision 1.24  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -151,28 +158,24 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 #ifdef P_PTHREADS
 
   public:
+    pthread_t PX_GetThreadId() const;
+#ifndef P_HAS_SEMAPHORES
     void PXSetWaitingSemaphore(PSemaphore * sem);
-    //void InitialiseProcessThread();
-    static void * PX_ThreadStart(void *);
-    static void PX_ThreadEnd(void *);
-    pthread_t   PX_GetThreadId() const;
-
-    Priority originalPriority;
-
-  protected:
-    void PX_NewThread(BOOL startSuspended);
-
-    PINDEX     PX_origStackSize;
-    int        PX_suspendCount;
-#ifdef P_MACOSX
-    PSemaphore *suspend_semaphore;
 #endif
 
+  protected:
+    static void * PX_ThreadStart(void *);
+    static void PX_ThreadEnd(void *);
+
+    PINDEX          PX_origStackSize;
+    Priority        PX_priority;
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
+    int             PX_suspendCount;
+    BOOL            PX_firstTimeStart;
 
 #ifndef P_HAS_SEMAPHORES
-    PSemaphore * PX_waitingSemaphore;
+    PSemaphore    * PX_waitingSemaphore;
     pthread_mutex_t PX_WaitSemMutex;
 #endif
 
