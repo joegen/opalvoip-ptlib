@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.39 1996/02/13 13:06:55 robertj Exp $
+ * $Id: osutil.inl,v 1.40 1996/02/15 14:47:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.40  1996/02/15 14:47:33  robertj
+ * Fixed bugs in time zone compensation (some in the C library).
+ *
  * Revision 1.39  1996/02/13 13:06:55  robertj
  * Changed GetTimeZone() so can specify the standard/daylight time.
  *
@@ -257,7 +260,7 @@ PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
 PINLINE PString PTime::AsString(const PString & format, int zone) const
   { return AsString((const char *)format, zone); }
 
-PINLINE long PTime::GetTimeZone() 
+PINLINE int PTime::GetTimeZone() 
   { return GetTimeZone(IsDaylightSavings() ? DaylightSavings : StandardTime); }
 
 ///////////////////////////////////////////////////////////////////////////////
