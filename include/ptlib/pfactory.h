@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.14  2004/07/01 11:41:28  csoutheren
+ * Fixed compile and run problems on Linux
+ *
  * Revision 1.13  2004/07/01 04:33:57  csoutheren
  * Updated documentation on PFactory classes
  *
@@ -144,14 +147,15 @@ class PFactoryBase
     virtual ~PFactoryBase()
     { }
 
-  protected:
     class FactoryMap : public std::map<std::string, PFactoryBase *>
     {
       public:
         FactoryMap() { }
         ~FactoryMap();
     };
+
     static FactoryMap & GetFactories();
+    static PMutex & GetFactoriesMutex();
 
     PMutex mutex;
 
@@ -294,15 +298,22 @@ class PFactory : PFactoryBase
     static PFactory & GetInstance()
     {
       std::string className = typeid(PFactory).name();
+      PWaitAndSignal m(GetFactoriesMutex());
       FactoryMap & factories = GetFactories();
       FactoryMap::const_iterator entry = factories.find(className);
-      if (entry != factories.end())
-        return *(dynamic_cast<PFactory*>(entry->second));
+      if (entry != factories.end()) {
+        PAssert(entry->second != NULL, "Factory map returned NULL for existing key");
+        PFactoryBase * b = entry->second;
+        // don't use the following dynamic cast, because gcc does not like it
+        //PFactory * f = dynamic_cast<PFactory*>(b);
+        return *(PFactory *)b;
+      }
 
       PFactory * factory = new PFactory;
       factories[className] = factory;
       return *factory;
     }
+
 
     void Register_Internal(const _Key_T & key, WorkerBase * worker)
     {
