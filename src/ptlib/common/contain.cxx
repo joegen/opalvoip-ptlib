@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.27 1994/10/30 11:50:44 robertj Exp $
+ * $Id: contain.cxx,v 1.28 1994/11/28 12:37:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.27  1994/10/30 11:50:44  robertj
+ * Revision 1.28  1994/11/28 12:37:29  robertj
+ * Added dummy parameter to container classes.
+ *
+ * Revision 1.27  1994/10/30  11:50:44  robertj
  * Split into Object classes and Container classes.
  * Changed mechanism for doing notification callback functions.
  *
@@ -136,7 +139,7 @@ PContainer::PContainer(PINDEX initialSize)
 }
 
 
-PContainer::PContainer(const PContainer * cont)
+PContainer::PContainer(int, const PContainer * cont)
 {
   reference = new Reference(0);
   *PAssertNULL(reference) = *cont->reference;
