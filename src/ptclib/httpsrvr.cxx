@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.14 1998/01/26 00:42:19 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.15 1998/01/26 10:32:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.15  1998/01/26 10:32:29  robertj
+ * Fixed missing initialisation of entity body length
+ *
  * Revision 1.14  1998/01/26 00:42:19  robertj
  * Added more information to PHTTPConnectionInfo.
  * Made SetDefaultMIMEFields in HTTP Server not set those fields if already set.
@@ -763,6 +766,8 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd)
 
   isPersistant      = FALSE;
   isProxyConnection = FALSE;
+
+  entityBodyLength  = 0;
 }
 
 
@@ -770,10 +775,14 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & u, co
   : url(u), mimeInfo(mime)
 {
   command           = cmd;
+
   majorVersion      = 1;
   minorVersion      = 0;
+
   isPersistant      = FALSE;
   isProxyConnection = FALSE;
+
+  entityBodyLength  = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
 }
 
 
