@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.27 1995/01/15 04:57:15 robertj Exp $
+ * $Id: osutils.cxx,v 1.28 1995/01/18 09:02:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.27  1995/01/15 04:57:15  robertj
+ * Revision 1.28  1995/01/18 09:02:43  robertj
+ * Added notifier to timer.
+ *
+ * Revision 1.27  1995/01/15  04:57:15  robertj
  * Implemented PTime::ReadFrom.
  * Fixed flush of iostream at end of file.
  *
@@ -546,7 +549,8 @@ void PTimer::Resume()
 
 void PTimer::OnTimeout()
 {
-  // Empty callback function
+  if (!callback.IsNULL())
+    callback(*this, state == Running);
 }
 
 
