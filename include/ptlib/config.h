@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.10 1995/01/27 11:06:20 robertj Exp $
+ * $Id: config.h,v 1.11 1995/03/14 12:41:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
- * Revision 1.10  1995/01/27 11:06:20  robertj
+ * Revision 1.11  1995/03/14 12:41:12  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.10  1995/01/27  11:06:20  robertj
  * Changed single string default constructor to be section name not file name.
  *
  * Revision 1.9  1994/12/12  10:11:59  robertj
@@ -51,26 +54,28 @@ PDECLARE_CLASS(PConfig, PObject)
    configuration file, an application specific configuration file or an
    explicit configuration file.
 
-   Configuration information follows a three level hierarchy: $I$file$I$,
-   $I$section$I$ and $I$variable$I$. Thus, a configuration file consists of a
-   number of sections each with a number of variables selected by a $I$key$I$.
-   Each variable has an associated value.
+   Configuration information follows a three level hierarchy: <I>file</I>,
+   <I>section</I> and <I>variable</I>. Thus, a configuration file consists of
+   a number of sections each with a number of variables selected by a
+   <I>key</I>. Each variable has an associated value.
 
    Note that the evironment source for configuration information does not have
    sections. The section is ignored and the same set of keys are available.
    
    The configuration file is a standard text file for the platform with its
    internals appearing in the form:
-        $F$[Section String]
-        Key Name=Value String$F$
+        <PRE><CODE>
+        [Section String]
+        Key Name=Value String
+        </CODE></PRE>
  */
 
   public:
     enum Source {
       Environment,
       /* The platform specific environment. For Unix, MSDOS, NT etc this is
-         $U$the$U$ environment current when the program was run. For the MacOS
-         this is a subset of the Gestalt and SysEnviron information.
+         <EM>the</EM> environment current when the program was run. For the
+         MacOS this is a subset of the Gestalt and SysEnviron information.
        */
       System,
       /* The platform specific system wide configuration file. For MS-Windows
@@ -117,8 +122,8 @@ PDECLARE_CLASS(PConfig, PObject)
        with keys and get or set configuration values will use this section
        unless an explicit section name is specified.
 
-       Note when the $B$Environment$B$ source is being used the default section
-       may be set but it is ignored.
+       Note when the <CODE>Environment</CODE> source is being used the default
+       section may be set but it is ignored.
      */
 
     PString GetDefaultSection() const;
@@ -126,20 +131,22 @@ PDECLARE_CLASS(PConfig, PObject)
        with keys and get or set configuration values will use this section
        unless an explicit section name is specified.
 
-       Note when the $B$Environment$B$ source is being used the default section
-       may be retrieved but it is ignored.
+       Note when the <CODE>Environment</CODE> source is being used the default
+       section may be retrieved but it is ignored.
 
-       Returns: default section name string.
+       <H2>Returns:</H2>
+       default section name string.
      */
 
     PStringList GetSections();
     /* Get all of the section names currently specified in the file. A section
        is the part specified by the [ and ] characters.
 
-       Note when the $B$Environment$B$ source is being used this will return
-       an empty list as there are no section present.
+       Note when the <CODE>Environment</CODE> source is being used this will
+       return an empty list as there are no section present.
 
-       Returns: list of all section names.
+       <H2>Returns:</H2>
+       list of all section names.
      */
 
     PStringList GetKeys() const;
@@ -149,7 +156,8 @@ PDECLARE_CLASS(PConfig, PObject)
     /* Get a list of all the keys in the section. If the section name is not
        specified then use the default section.
 
-       Returns: list of all key names.
+       <H2>Returns:</H2>
+       list of all key names.
      */
 
 
@@ -197,10 +205,12 @@ PDECLARE_CLASS(PConfig, PObject)
        section name is not specified then the default section is used.
        
        If the key is not present the value returned is the that provided by
-       the $B$dlft$B$ parameter. Note that this is different from the key being
-       present but having no value, in which case an empty string is returned.
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case an empty string is
+       returned.
 
-       Returns: string value of the variable.
+       <H2>Returns:</H2>
+       string value of the variable.
      */
 
     void SetString(
@@ -237,10 +247,11 @@ PDECLARE_CLASS(PConfig, PObject)
        Key=False, Key=No, or Key=0 for FALSE.
 
        If the key is not present the value returned is the that provided by
-       the $B$dlft$B$ parameter. Note that this is different from the key being
-       present but having no value, in which case FALSE is returned.
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case FALSE is returned.
 
-       Returns: boolean value of the variable.
+       <H2>Returns:</H2>
+       boolean value of the variable.
      */
 
     void SetBoolean(
@@ -273,10 +284,11 @@ PDECLARE_CLASS(PConfig, PObject)
        section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the $B$dlft$B$ parameter. Note that this is different from the key being
-       present but having no value, in which case zero is returned.
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case zero is returned.
 
-       Returns: integer value of the variable.
+       <H2>Returns:</H2>
+       integer value of the variable.
      */
 
     void SetInteger(
@@ -309,10 +321,11 @@ PDECLARE_CLASS(PConfig, PObject)
        the section name is not specified then the default section is used.
 
        If the key is not present the value returned is the that provided by
-       the $B$dlft$B$ parameter. Note that this is different from the key being
-       present but having no value, in which case zero is returned.
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case zero is returned.
 
-       Returns: floating point value of the variable.
+       <H2>Returns:</H2>
+       floating point value of the variable.
      */
 
     void SetReal(
