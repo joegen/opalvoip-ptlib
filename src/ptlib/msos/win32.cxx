@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.103  2001/04/15 03:38:42  yurik
+ * Removed shutdown flag. Use IsTerminated() instead
+ *
  * Revision 1.102  2001/04/14 04:54:03  yurik
  * Added process shutdown flag
  *
@@ -1005,8 +1008,6 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #ifndef _WIN32_WCE
   AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
-#else
-  process.isShuttingDown = false;
 #endif
 
   process.activeThreadMutex.Wait();
@@ -1017,9 +1018,6 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   thread->Main();
 
-#ifdef _WIN32_WCE
-  process.isShuttingDown = true;
-#endif
   return 0;
 }
 
