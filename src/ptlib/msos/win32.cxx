@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.3 1995/04/25 11:33:54 robertj Exp $
+ * $Id: win32.cxx,v 1.4 1995/06/04 12:48:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.4  1995/06/04 12:48:52  robertj
+ * Fixed bug in directory path creation.
+ * Fixed bug in comms channel open error.
+ *
  * Revision 1.3  1995/04/25 11:33:54  robertj
  * Fixed Borland compiler warnings.
  *
@@ -114,7 +118,7 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PString::operator=(CreateFullPath(*this, TRUE) + '\\');
+  PString::operator=(CreateFullPath(*this, TRUE));
 }
 
 
@@ -173,11 +177,14 @@ void PDirectory::Close()
 }
 
 
-PString PDirectory::CreateFullPath(const PString & path, BOOL)
+PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 {
   LPSTR dummy;
   PString fullpath;
-  GetFullPathName(path, _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
+  PINDEX len = (PINDEX)GetFullPathName(path,
+                           _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
+  if (isDirectory && len > 0 && fullpath[len-1] != '\\')
+    fullpath += '\\';
   return fullpath;
 }
 
@@ -543,16 +550,16 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
   if (commsResource == INVALID_HANDLE_VALUE)
     return ConvertOSError(-2);
 
+  os_handle = 0;
+
   SetupComm(commsResource, 2048, 2048);
 
-  if (SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow)) {
-    os_handle = 0;
+  if (SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow))
     return TRUE;
-  }
 
   ConvertOSError(-2);
   CloseHandle(commsResource);
-  commsResource = INVALID_HANDLE_VALUE;
+  os_handle = -1;
   return FALSE;
 }
 
