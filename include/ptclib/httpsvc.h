@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.19 1998/01/26 00:28:32 robertj Exp $
+ * $Id: httpsvc.h,v 1.20 1998/02/16 00:15:13 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.20  1998/02/16 00:15:13  robertj
+ * Major rewrite of application info passed in PHTTPServiceProcess constructor.
+ *
  * Revision 1.19  1998/01/26 00:28:32  robertj
  * Removed POrderPage completely from httpsvc.
  * Added PHTTPAuthority to PHTTPServiceString constructor.
@@ -81,23 +84,37 @@
 PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
   public:
-    PHTTPServiceProcess(
-      const char * name,      // Name of product
-      const char * manuf,     // Name of manufacturer
-      const char * gifText,   // text for gif file in page headers
+    enum {
+      MaxSecuredKeys = 10
+    };
+    struct Info {
+      const char * productName;
+      const char * manufacturerName;
 
-      WORD majorVersion,    // Major version number of the product
-      WORD minorVersion,    // Minor version number of the product
-      CodeStatus status,    // Development status of the product
-      WORD buildNumber,     // Build number of the product
+      WORD majorVersion;
+      WORD minorVersion;
+      CodeStatus buildStatus;    // AlphaCode, BetaCode or ReleaseCode
+      WORD buildNumber;
+      const char * compilationDate;
 
-      const char * homePage = NULL,  // WWW address of manufacturers home page
-      const char * email = NULL,     // contact email for manufacturer
-      const PTEACypher::Key * prodKey = NULL,  // Poduct key for registration
-      const char * const * securedKeys = NULL, // Product secured keys for registration
-      PINDEX securedKeyCount = 0,
-      const PTEACypher::Key * sigKey = NULL // Signature key for encryption of HTML files
-    );
+      PTEACypher::Key productKey;  // Poduct key for registration
+      const char * securedKeys[MaxSecuredKeys]; // Product secured keys for registration
+      PINDEX securedKeyCount;
+
+      PTEACypher::Key signatureKey;   // Signature key for encryption of HTML files
+
+      const char * manufHomePage; // WWW address of manufacturers home page
+      const char * email;         // contact email for manufacturer
+      const char * productHTML;   // HTML for the product name, if NULL defaults to
+                                  //   the productName variable.
+      const char * gifHTML;       // HTML to show GIF image in page headers, if NULL
+                                  //   then the following are used to build one
+      const char * gifFilename;   // File name for the products GIF file
+      int gifWidth;               // Size of GIF image, if zero then none is used
+      int gifHeight;              //   in the generated HTML.
+    };
+
+    PHTTPServiceProcess(const Info & inf);
     ~PHTTPServiceProcess();
 
     virtual void OnConfigChanged() = 0;
@@ -112,11 +129,13 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     virtual PString GetCopyrightText();
 
-    const PString & GetEMailAddress() const { return email; }
-    const PString & GetHomePage() const { return homePage; }
-    const PTEACypher::Key GetProductKey() const { return productKey; }
+    const PTime & GetCompilationDate() const { return compilationDate; }
+    const PString & GetHomePage() const { return manufacturersHomePage; }
+    const PString & GetEMailAddress() const { return manufacturersEmail; }
+    const PString & GetProductName() const { return productNameHTML; }
+    const PTEACypher::Key & GetProductKey() const { return productKey; }
     const PStringArray & GetSecuredKeys() const { return securedKeys; }
-    const PTEACypher::Key GetSignatureKey() const { return signatureKey; }
+    const PTEACypher::Key & GetSignatureKey() const { return signatureKey; }
 
     static PHTTPServiceProcess & Current();
 
@@ -128,14 +147,16 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     PSocket  * httpListeningSocket;
     PHTTPSpace httpNameSpace;
 
-    PString    gifText;
-
-    PString    email;
-    PString    homePage;
-
     PTEACypher::Key productKey;
     PStringArray    securedKeys;
     PTEACypher::Key signatureKey;
+
+    PTime      compilationDate;
+    PString    manufacturersHomePage;
+    PString    manufacturersEmail;
+    PString    productNameHTML;
+    PString    gifHTML;
+
 
     void ShutdownListener();
     void BeginRestartSystem();
