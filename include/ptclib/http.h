@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.20 1996/08/22 13:20:55 robertj Exp $
+ * $Id: http.h,v 1.21 1996/09/14 13:09:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.21  1996/09/14 13:09:10  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.20  1996/08/22 13:20:55  robertj
  * Fixed bug in authorisation, missing virtual prevented polymorphism.
  *
@@ -85,7 +91,7 @@
 #pragma interface
 #endif
 
-#include <appsock.h>
+#include <inetprot.h>
 #include <mime.h>
 #include <url.h>
 #include <html.h>
@@ -210,9 +216,9 @@ PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTTPSocket
+// PHTTP
 
-PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
+PDECLARE_CLASS(PHTTP, PInternetProtocol)
 /* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
    When acting as a client, the procedure is to make the connection to a
@@ -243,33 +249,6 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
  */
 
   public:
-    PHTTPSocket(
-      WORD port = 80              // Port number to connect to.
-    );
-    PHTTPSocket(
-      const PString & address,    // Address of remote machine to connect to.
-      WORD port = 80              // Port number to connect to.
-    );
-    PHTTPSocket(
-      const PString & address,    // Address of remote machine to connect to.
-      const PString & service     // Service name to connect to.
-    );
-    PHTTPSocket(
-      PSocket & socket            // Listening socket making the connection.
-    );
-    PHTTPSocket(
-      PSocket & socket,           // Listening socket making the connection.
-      const PHTTPSpace & urlSpace  // Name space to use for URLs received.
-    );
-    /* Create a TCP/IP HTTP protocol socket channel. The form with the single
-       <CODE>port</CODE> parameter creates an unopened socket, the form with
-       the <CODE>address</CODE> parameter makes a connection to a remote
-       system, opening the socket. The form with the <CODE>socket</CODE>
-       parameter opens the socket to an incoming call from a "listening"
-       socket.
-     */
-
-
   // New functions for class.
     enum Commands {
       GET,
@@ -289,7 +268,93 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
       NumCommands
     };
 
+    enum StatusCode {
+      Continue = 100,              // 100 - Continue
+      SwitchingProtocols,          // 101 - upgrade allowed
+      OK = 200,                    // 200 - request has succeeded
+      Created,                     // 201 - new resource created: entity body contains URL
+      Accepted,                    // 202 - request accepted, but not yet completed
+      NonAuthoritativeInformation, // 203 - not definitive entity header
+      NoContent,                   // 204 - no new information
+      ResetContent,                // 205 - contents have been reset
+      PartialContent,              // 206 - partial GET succeeded
+      MultipleChoices = 300,       // 300 - requested resource available elsewehere 
+      MovedPermanently,            // 301 - resource moved permanently: location field has new URL
+      MovedTemporarily,            // 302 - resource moved temporarily: location field has new URL
+      SeeOther,                    // 303 - see other URL
+      NotModified,                 // 304 - document has not been modified
+      UseProxy,                    // 305 - proxy redirect
+      BadRequest = 400,            // 400 - request malformed or not understood
+      UnAuthorised,                // 401 - request requires authentication
+      PaymentRequired,             // 402 - reserved 
+      Forbidden,                   // 403 - request is refused due to unsufficient authorisation
+      NotFound,                    // 404 - resource cannot be found
+      MethodNotAllowed,            // 405 - not allowed on this resource
+      NoneAcceptable,              // 406 - encoding not acceptable
+      ProxyAuthenticationRequired, // 407 - must authenticate with proxy first
+      RequestTimeout,              // 408 - server timeout on request
+      Conflict,                    // 409 - resource conflict on action
+      Gone,                        // 410 - resource gone away
+      LengthRequired,              // 411 - no Content-Length
+      UnlessTrue,                  // 412 - no Range header for TRUE Unless
+      InternalServerError = 500,   // 500 - server has encountered an unexpected error
+      NotImplemented,              // 501 - server does not implement request
+      BadGateway,                  // 502 - error whilst acting as gateway
+      ServiceUnavailable,          // 503 - server temporarily unable to service request
+      GatewayTimeout               // 504 - timeout whilst talking to gateway
+    };
 
+  protected:
+    PHTTP();
+    /* Create a TCP/IP HTTP protocol channel.
+     */
+
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
+    /* Parse a response line string into a response code and any extra info
+       on the line. Results are placed into the member variables
+       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
+
+       The default bahaviour looks for a space or a '-' and splits the code
+       and info either side of that character, then returns FALSE.
+
+       <H2>Returns:</H2>
+       Position of continuation character in response, 0 if no continuation
+       lines are possible.
+     */
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPClient
+
+PDECLARE_CLASS(PHTTPClient, PHTTP)
+/* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
+
+   When acting as a client, the procedure is to make the connection to a
+   remote server, then to retrieve a document using the following procedure:
+      <PRE><CODE>
+      PHTTPSocket web("webserver");
+      if (web.IsOpen()) {
+        if (web.GetDocument("http://www.someone.com/somewhere/url")) {
+          while (web.Read(block, sizeof(block)))
+            ProcessHTML(block);
+        }
+        else
+           PError << "Could not get page." << endl;
+      }
+      else
+         PError << "HTTP conection failed." << endl;
+      </PRE></CODE>
+ */
+
+  public:
+    PHTTPClient();
+    // Create a new HTTP client channel.
+
+
+  // New functions for class.
     int ExecuteCommand(Commands cmd,
                        const PString & url,
                        const PMIMEInfo & outMIME,
@@ -346,8 +411,41 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        <H2>Returns:</H2>
        TRUE if document is being transferred.
      */
+};
 
 
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPServer
+
+PDECLARE_CLASS(PHTTPServer, PHTTP)
+/* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
+
+    When acting as a server, a descendant class would be created to override
+    at least the <A>HandleOpenMailbox()</A>, <A>HandleSendMessage()</A> and
+    <A>HandleDeleteMessage()</A> functions. Other functions may be overridden
+    for further enhancement to the sockets capabilities, but these will give a
+    basic POP3 server functionality.
+
+    The server socket thread would continuously call the
+    <A>ProcessMessage()</A> function until it returns FALSE. This will then
+    call the appropriate virtual function on parsing the POP3 protocol.
+ */
+
+  public:
+    PHTTPServer();
+    PHTTPServer(
+      const PHTTPSpace & urlSpace  // Name space to use for URLs received.
+    );
+    /* Create a TCP/IP HTTP protocol socket channel. The form with the single
+       <CODE>port</CODE> parameter creates an unopened socket, the form with
+       the <CODE>address</CODE> parameter makes a connection to a remote
+       system, opening the socket. The form with the <CODE>socket</CODE>
+       parameter opens the socket to an incoming call from a "listening"
+       socket.
+     */
+
+
+  // New functions for class.
     virtual PString GetServerName() const;
     /* Get the name of the server.
 
@@ -473,42 +571,6 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        TRUE if the connection may persist, FALSE if the connection must close
      */
 
-    enum StatusCode {
-      Continue = 100,              // 100 - Continue
-      SwitchingProtocols,          // 101 - upgrade allowed
-      OK = 200,                    // 200 - request has succeeded
-      Created,                     // 201 - new resource created: entity body contains URL
-      Accepted,                    // 202 - request accepted, but not yet completed
-      NonAuthoritativeInformation, // 203 - not definitive entity header
-      NoContent,                   // 204 - no new information
-      ResetContent,                // 205 - contents have been reset
-      PartialContent,              // 206 - partial GET succeeded
-      MultipleChoices = 300,       // 300 - requested resource available elsewehere 
-      MovedPermanently,            // 301 - resource moved permanently: location field has new URL
-      MovedTemporarily,            // 302 - resource moved temporarily: location field has new URL
-      SeeOther,                    // 303 - see other URL
-      NotModified,                 // 304 - document has not been modified
-      UseProxy,                    // 305 - proxy redirect
-      BadRequest = 400,            // 400 - request malformed or not understood
-      UnAuthorised,                // 401 - request requires authentication
-      PaymentRequired,             // 402 - reserved 
-      Forbidden,                   // 403 - request is refused due to unsufficient authorisation
-      NotFound,                    // 404 - resource cannot be found
-      MethodNotAllowed,            // 405 - not allowed on this resource
-      NoneAcceptable,              // 406 - encoding not acceptable
-      ProxyAuthenticationRequired, // 407 - must authenticate with proxy first
-      RequestTimeout,              // 408 - server timeout on request
-      Conflict,                    // 409 - resource conflict on action
-      Gone,                        // 410 - resource gone away
-      LengthRequired,              // 411 - no Content-Length
-      UnlessTrue,                  // 412 - no Range header for TRUE Unless
-      InternalServerError = 500,   // 500 - server has encountered an unexpected error
-      NotImplemented,              // 501 - server does not implement request
-      BadGateway,                  // 502 - error whilst acting as gateway
-      ServiceUnavailable,          // 503 - server temporarily unable to service request
-      GatewayTimeout               // 504 - timeout whilst talking to gateway
-    };
-
     void StartResponse(
       StatusCode code,      // Status code for the response.
       PMIMEInfo & headers,  // MIME variables included in response.
@@ -554,23 +616,7 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
 
 
   protected:
-    virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
-    );
-    /* Parse a response line string into a response code and any extra info
-       on the line. Results are placed into the member variables
-       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
-
-       The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns FALSE.
-
-       <H2>Returns:</H2>
-       Position of continuation character in response, 0 if no continuation
-       lines are possible.
-     */
-
-
-    void ConstructServer();
+    void Construct();
 
     PINDEX majorVersion;
     PINDEX minorVersion;
@@ -599,7 +645,7 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
 
     const PURL & url;               // Universal Resource Locator for document.
     const PMIMEInfo & inMIME;       // Extra MIME information in command.
-    PHTTPSocket::StatusCode code;   // Status code for OnError() reply.
+    PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
     PINDEX contentSize;             // Size of the body of the resource data.
 };
@@ -823,7 +869,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 
 
     virtual BOOL OnGET(
-      PHTTPSocket & socket,       // HTTP socket that received the request
+      PHTTPServer & server,       // HTTP server that received the request
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & info,     // Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo
@@ -841,7 +887,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual BOOL OnGETData(
-      PHTTPSocket & socket,
+      PHTTPServer & server,
       const PURL & url,
       const PHTTPConnectionInfo & connectInfo,
       PHTTPRequest & request
@@ -858,7 +904,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     */
 
     virtual BOOL OnHEAD(
-      PHTTPSocket & socket,       // HTTP socket that received the request
+      PHTTPServer & server,       // HTTP server that received the request
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & info,     // Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo
@@ -876,7 +922,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual BOOL OnPOST(
-      PHTTPSocket & socket,         // HTTP socket that received the request
+      PHTTPServer & server,         // HTTP server that received the request
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & info,       // Extra MIME information in command.
       const PStringToString & data, // Variables in the POST data.
@@ -989,7 +1035,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 
   protected:
     BOOL CheckAuthority(
-      PHTTPSocket & socket,               // Socket to send response to.
+      PHTTPServer & server,               // Server to send response to.
       const PHTTPRequest & request,       // Information on this request.
       const PHTTPConnectionInfo & conInfo // Information on the connection
     );
@@ -997,7 +1043,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual BOOL OnGETOrHEAD(
-      PHTTPSocket & socket,       // HTTP socket that received the request
+      PHTTPServer & server,       // HTTP server that received the request
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & info,     // Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo,
