@@ -28,6 +28,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.8  2001/07/23 01:20:20  rogerh
+ * Add updates from Shawn - ensure isvalidWAV is false for zero length files.
+ * GetDataLength uses actual file size to support file updates as well as appends.
+ * Add updates from Roger - Update Header() just writes to specific fields which
+ * preserves any 'extra' data in an existing header between FORMAT and DATA chunks.
+ *
  * Revision 1.7  2001/07/20 07:32:36  rogerh
  * Back out previous change. BSD systems already have swab in the C library.
  * Also use swab in Write()
@@ -96,10 +102,14 @@ PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
+
   if (!IsOpen()) return; 
 
-  // try and process the WAV file header information
+  // Try and process the WAV file header information.
+  // Either ProcessHeader() or GenerateHeader() must be called.
+
   if (PFile::GetLength() > 0) {
+    // try and process the WAV file header information
     if (mode == ReadOnly || mode == ReadWrite) {
       isValidWAV = ProcessHeader();
     }
@@ -109,9 +119,13 @@ PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts)
     }
   }
   else {
+    // generate header
     if (mode == ReadWrite || mode == WriteOnly) {
       lenData = -1;
       GenerateHeader();
+    }
+    if (mode == ReadOnly) {
+      isValidWAV = FALSE; // ReadOnly on a zero length file
     }
   }
 
@@ -129,6 +143,7 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
 #if PBYTE_ORDER==PBIG_ENDIAN
+  // Note: swab only works on even length buffers.
   if (bitsPerSample == 16)
     swab(buf, buf, PFile::GetLastReadCount());
 #endif
@@ -151,10 +166,8 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
 #endif
 
   rval = PFile::Write(buf, len);
-  // update lenData is the write is succeed
+  // Needs to update header on close.
   if (rval == TRUE) {
-    if (lenData < 0) lenData = 0;
-    lenData += PFile::GetLastWriteCount();
     header_needs_updating = TRUE;
   }
 
@@ -232,10 +245,14 @@ off_t PWAVFile::GetHeaderLength() const
 }
 
 
-off_t PWAVFile::GetDataLength() const
+off_t PWAVFile::GetDataLength()
 {
-  if (isValidWAV)
+  if (isValidWAV) {
+    // Updates data length before returns.
+    lenData = PFile::GetLength();
+    lenData -= lenHeader;
     return lenData;
+  }
   else
     return 0;
 }
@@ -309,7 +326,7 @@ BOOL PWAVFile::ProcessHeader() {
   RETURN_ON_READ_FAILURE(PFile::Read(&bytes_per_sample,2), 2);
   RETURN_ON_READ_FAILURE(PFile::Read(&bits_per_sample,2), 2);
 
-  int size_format_chunk = len_format + 8;
+  int size_format_chunk = (int)len_format + 8;
 
   // The spec allows for extra bytes between the FORMAT and DATA chunks.
   // Use the len_format field from FORMAT to determine where to move to
@@ -352,7 +369,7 @@ BOOL PWAVFile::ProcessHeader() {
 
 // Generates a 8000Hz, mono, 16-bit sample WAV header.  When it is
 // called with lenData < 0, it will write the header as if the lenData
-// are LONG_MAX minus header length.
+// is LONG_MAX minus header length.
 // Note: If it returns FALSE, the file may be left in inconsistent
 // state.
 BOOL PWAVFile::GenerateHeader()
@@ -368,19 +385,25 @@ BOOL PWAVFile::GenerateHeader()
     return (FALSE);
   }
 
-  // Make sure this is a sane operation.
-  if (isValidWAV == TRUE) {
-    PTRACE(1, "Overwrites existing WAV header and data (with length " << lenData << ")");
-  }
-
-  // only deal with the following format
+  // only deal with the following format (and set class variables)
+  lenHeader = 44;
   numChannels = 1;
   sampleRate = 8000;
   bitsPerSample = 16;
 
+  // length of audio data is set to a large value if lenData does not
+  // contain a valid (non negative) number. We must then write out real values
+  // when we close the wav file.
+  int audioData;
+  if (lenData < 0) {
+    audioData = LONG_MAX - lenHeader;
+    header_needs_updating = TRUE;
+  } else {
+    audioData = lenData;
+  }
+  
   // Write the RIFF chunk.
-  // length of data to follow; use LONG_MAX for now
-  PInt32l len_after = (lenData >= 0) ? lenData + 44 - 8 : LONG_MAX;
+  PInt32l len_after = audioData + (lenHeader - 8);
 
   // Use PFile::Write as we do not want to use our PWAVFile::Write code
   // as that does some byte swapping
@@ -410,25 +433,45 @@ BOOL PWAVFile::GenerateHeader()
     return FALSE;
 
   // Write the DATA chunk.
-  // max data length is LONG_MAX - header length (44)
-  PInt32l data_len = (lenData >= 0) ? lenData : LONG_MAX - 44;
+  PInt32l data_len = audioData;
 
   if (!PFile::Write(WAV_LABEL_DATA,4) ||
       !PFile::Write(&data_len,4))
       return FALSE;
 
-  lenHeader = 44;
-
   isValidWAV = TRUE;
+
   return (TRUE);
 }
 
-// Update the WAV header according to the amount of data that were
-// written.  Note we just blindly rewrite the entire header, so if the
-// original file has a different FORMAT chunk length, we may corrupt
-// the file.
+// Update the WAV header according to the file length
 BOOL PWAVFile::UpdateHeader()
 {
-  GenerateHeader();
+  // Check file is still open
+  if (IsOpen() == FALSE) {
+    PTRACE(1,"Not Open");
+    return (FALSE);
+  }
+
+  // Check there is already a valid header
+  if (isValidWAV == FALSE) {
+    PTRACE(1,"WAV File not valid");
+    return (FALSE);
+  }
+
+  // Find out the length of the audio data
+  lenData = PFile::GetLength() - lenHeader;
+
+  // Write out the 'len_after' field
+  PFile::SetPosition(4);
+  PInt32l len_after;
+  len_after = (lenHeader - 8) + lenData; // size does not include first 8 bytes
+  if (!PFile::Write(&len_after,4)) return (FALSE);
+
+  // Write out the 'data_len' field
+  PFile::SetPosition(lenHeader - 4);
+  PInt32l data_len = lenData;
+  if (!PFile::Write(&data_len,4)) return (FALSE);
+
   return (TRUE);
 }
