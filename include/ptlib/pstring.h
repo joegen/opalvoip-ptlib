@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.8 1995/03/12 04:44:39 robertj Exp $
+ * $Id: pstring.h,v 1.9 1995/03/14 12:42:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.8  1995/03/12 04:44:39  robertj
+ * Revision 1.9  1995/03/14 12:42:16  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.8  1995/03/12  04:44:39  robertj
  * Fixed use of PCaselessString as dictionary key.
  *
  * Revision 1.7  1995/02/05  00:48:09  robertj
@@ -56,10 +59,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
    for string processing and conversion. Operators are provided so that
    strings can virtually be treated as a basic type.
 
-   The $B$PSTRING_ANCESTOR_CLASS$B$ is dependent on whether UNICODE support is
-   selected. The $U$entire library and application$U$ must be compiled with or
-   without UNICODE or undefined results will occur. PSTRING_ANCESTOR_CLASS
-   macro is normally set to PCharArray.
+   The <CODE>PSTRING_ANCESTOR_CLASS</CODE> is dependent on whether UNICODE
+   support is selected. The <EM>entire library and application</EM> must be
+   compiled with or without UNICODE or undefined results will occur.
+   <CODE>PSTRING_ANCESTOR_CLASS</CODE> macro is normally set to
+   <A>PCharArray</A>.
 
    Note that the array is a '\0' terminated string as in C strings. Thus the
    memory allocated, and the length of the string may be different values.
@@ -95,8 +99,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
       PINDEX len          // Length of the string in bytes.
     );
     /* Create a string from the char array. A new memory block is allocated of
-       a size equal to $B$len$B$ plus one which is sufficient to take the
-       string and a terminating '\0' character.
+       a size equal to <CODE>len</CODE> plus one which is sufficient to take
+       the string and a terminating '\0' character.
 
        If UNICODE is used then each char from the char pointer is mapped to a
        single UNICODE character.
@@ -104,8 +108,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        Note that this function will allow a string with embedded '\0'
        characters to be created, but most of the functions here will be unable
        to access characters beyond the first '\0'. Furthermore, if the
-       $B$MakeMinimumSize()$B$ function is called, all data beyond that first
-       '\0' character will be lost.
+       <A><CODE>MakeMinimumSize()</CODE></A> function is called, all data
+       beyond that first '\0' character will be lost.
      */
 
     PString(char c);
@@ -134,8 +138,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
     PString(
       ConversionType type,  // Type of data source for conversion.
-      const char * str,     // String to convert.
-      ...                   // Extra parameters for $B$sprintf()$B$ call.
+      const char * str,    // String to convert.
+      ...                 // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     PString(
       ConversionType type,  // Type of data source for conversion.
@@ -165,10 +169,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Get the relative rank of the two strings. The system standard function,
        eg strcmp(), is used.
 
-       Returns: comparison of the two objects, $B$EqualTo$B$ for same,
-                $B$LessThan$B$ for $B$obj$B$ logically less than the object
-                and $B$GreaterThan$B$ for $B$obj$B$ logically greater than
-                the object.
+       <H2>Returns:</H2>
+       comparison of the two objects, <CODE>EqualTo</CODE> for same,
+       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
+       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       greater than the object.
      */
 
     virtual void PrintOn(
@@ -176,7 +181,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     ) const;
     /* Output the string to the specified stream.
 
-       Returns: stream that the string was output to.
+       <H2>Returns:</H2>
+       stream that the string was output to.
      */
 
     virtual void ReadFrom(
@@ -184,10 +190,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     );
     /* Input the string from the specified stream. This will read all
        characters until a end of line is reached. The end of line itself is
-       $U$not$U$ placed in the string, however it $U$is$U$ removed from the
-       stream.
+       <EM>not</EM> placed in the string, however it <EM>is</EM> removed from
+       the stream.
 
-       Returns: stream that the string was input from.
+       <H2>Returns:</H2>
+       stream that the string was input from.
      */
 
     virtual PINDEX HashFunction() const;
@@ -201,18 +208,20 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        with the letter 'A' followed by 'B or 'C' then the current hash function
        will not perform very well.
 
-       Returns: hash value for string.
+       <H2>Returns:</H2>
+       hash value for string.
      */
 
 
   // Overrides from class PContainer
     virtual BOOL IsEmpty() const;
     /* Determine if the string is empty. This is semantically slightly
-       different from the usual container $B$IsEmpty()$B$ function. It does not
-       test for $B$GetSize()$B$ equal to zero, it tests for $B$GetLength()$B$
-       equal to zero.
+       different from the usual container <A><CODE>IsEmpty()</CODE></A>
+       function. It does not test for <A><CODE>GetSize()</CODE></A> equal to
+       zero, it tests for <A><CODE>GetLength()</CODE></A> equal to zero.
 
-       Returns: TRUE if no non-null characters in string.
+       <H2>Returns:</H2>
+       TRUE if no non-null characters in string.
      */
 
 
@@ -225,37 +234,42 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
 
-       Returns: TRUE if new memory block successfully allocated.
+       <H2>Returns:</H2>
+       TRUE if new memory block successfully allocated.
      */
 
     PINDEX GetLength() const;
     /* Determine the length of the null terminated string. This is different
-       from $B$GetSize()$B$ which returns the amount of memory allocated to the
-       string. This is often, though no necessarily, one larger than the
-       length of the string.
+       from <A><CODE>GetSize()</CODE></A> which returns the amount of memory
+       allocated to the string. This is often, though no necessarily, one
+       larger than the length of the string.
        
-       Returns: length of the null terminated string.
+       <H2>Returns:</H2>
+       length of the null terminated string.
      */
 
     PString & operator=(
       const PString & str  // New string to assign.
     );
     /* Assign the string to the current object. The current instance then
-       becomes another reference to the same string in the $B$str$B$ parameter.
+       becomes another reference to the same string in the <CODE>str</CODE>
+       parameter.
        
-       Returns: reference to the current PString object.
+       <H2>Returns:</H2>
+       reference to the current PString object.
      */
 
     PString & operator=(
       const char * cstr  // C string to assign.
     );
     /* Assign the C string to the current object. The current instance then
-       becomes a unique reference to a copy of the $B$cstr$B$ parameter. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+       becomes a unique reference to a copy of the <CODE>cstr</CODE> parameter.
+       The <CODE>cstr</CODE> parameter is typically a literal string, eg:
 
-          $F$myStr = "fred";$F$
+       <CODE>        myStr = "fred";</CODE>
        
-       Returns: reference to the current PString object.
+       <H2>Returns:</H2>
+       reference to the current PString object.
      */
 
     PString operator+(
@@ -264,7 +278,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Concatenate two strings to produce a third. The original strings are
        not modified, an entirely new unique reference to a string is created.
        
-       Returns: new string with concatenation of the object and parameter.
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
      */
 
     PString operator+(
@@ -272,23 +287,27 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     ) const;
     /* Concatenate a C string to a PString to produce a third. The original
        string is not modified, an entirely new unique reference to a string
-       is created. The $B$cstr$B$ parameter is typically a literal string, eg:
+       is created. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$myStr = aStr + "fred";$F$
+       <CODE>        myStr = aStr + "fred";</CODE>
 
-       Returns: new string with concatenation of the object and parameter.
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
      */
 
     PString operator+(
-      char c   // Character to concatenate.
+      char ch   // Character to concatenate.
     ) const;
     /* Concatenate a single character to a PString to produce a third. The
        original string is not modified, an entirely new unique reference to a
-       string is created. The $B$c$B$ parameter is typically a literal, eg:
+       string is created. The <CODE>ch</CODE> parameter is typically a
+       literal, eg:
 
-          $F$myStr = aStr + '!';$F$
+       <CODE>        myStr = aStr + '!';</CODE>
 
-       Returns: new string with concatenation of the object and parameter.
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
      */
 
     PINLINE friend PString operator+(
@@ -297,11 +316,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     );
     /* Concatenate a PString to a C string to produce a third. The original
        string is not modified, an entirely new unique reference to a string
-       is created. The $B$cstr$B$ parameter is typically a literal string, eg:
+       is created. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$myStr = "fred" + aStr;$F$
+       <CODE>        myStr = "fred" + aStr;</CODE>
 
-       Returns: new string with concatenation of the object and parameter.
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
      */
 
     PINLINE friend PString operator+(
@@ -310,11 +331,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     );
     /* Concatenate a PString to a single character to produce a third. The
        original string is not modified, an entirely new unique reference to a
-       string is created. The $B$c$B$ parameter is typically a literal, eg:
+       string is created. The <CODE>c</CODE> parameter is typically a literal,
+       eg:
 
-          $F$myStr = '!' + aStr;$F$
+       <CODE>        myStr = '!' + aStr;</CODE>
 
-       Returns: new string with concatenation of the object and parameter.
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
      */
 
     PString & operator+=(
@@ -322,146 +345,166 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     );
     /* Concatenate a string to another string, modifiying that string.
 
-       Returns: reference to string that was concatenated to.
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
      */
 
     PString & operator+=(
       const char * cstr  // C string to concatenate.
     );
     /* Concatenate a C string to a PString, modifiying that string. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+       <CODE>cstr</CODE> parameter is typically a literal string, eg:
 
-          $F$myStr += "fred";$F$
+       <CODE>        myStr += "fred";</CODE>
 
-       Returns: reference to string that was concatenated to.
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
      */
 
 
     BOOL operator==(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if equal.
+       <H2>Returns:</H2>
+       TRUE if equal.
      */
 
     BOOL operator!=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if not equal.
+       <H2>Returns:</H2>
+       TRUE if not equal.
      */
 
     BOOL operator<(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if less than.
+       <H2>Returns:</H2>
+       TRUE if less than.
      */
 
     BOOL operator>(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if greater than.
+       <H2>Returns:</H2>
+       TRUE if greater than.
      */
 
     BOOL operator<=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if less than or equal.
+       <H2>Returns:</H2>
+       TRUE if less than or equal.
      */
 
     BOOL operator>=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the $B$Compare()$B$ function. This is
-       identical to the $H$PObject class function but is necessary due to
-       other overloaded versions.
+    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
+       This is identical to the <A>PObject</A> class function but is necessary
+       due to other overloaded versions.
 
-       Returns: TRUE if greater than or equal.
+       <H2>Returns:</H2>
+       TRUE if greater than or equal.
      */
 
 
     BOOL operator==(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal string,
+       eg:
 
-          $F$if (myStr == "fred")$F$
+       <CODE>        if (myStr == "fred")</CODE>
 
-       Returns: TRUE if equal.
+       <H2>Returns:</H2>
+       TRUE if equal.
      */
 
     BOOL operator!=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$if (myStr != "fred")$F$
+       <CODE>        if (myStr != "fred")</CODE>
 
-       Returns: TRUE if not equal.
+       <H2>Returns:</H2>
+       TRUE if not equal.
      */
 
     BOOL operator<(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$if (myStr < "fred")$F$
+       <CODE>        if (myStr < "fred")</CODE>
 
-       Returns: TRUE if less than.
+       <H2>Returns:</H2>
+       TRUE if less than.
      */
 
     BOOL operator>(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$if (myStr > "fred")$F$
+       <CODE>        if (myStr > "fred")</CODE>
 
-       Returns: TRUE if greater than.
+       <H2>Returns:</H2>
+       TRUE if greater than.
      */
 
     BOOL operator<=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$if (myStr <= "fred")$F$
+       <CODE>        if (myStr <= "fred")</CODE>
 
-       Returns: TRUE if less than or equal.
+       <H2>Returns:</H2>
+       TRUE if less than or equal.
      */
 
     BOOL operator>=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the $B$Compare()$B$ function. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+       function. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$if (myStr >= "fred")$F$
+       <CODE>        if (myStr >= "fred")</CODE>
 
-       Returns: TRUE if greater than or equal.
+       <H2>Returns:</H2>
+       TRUE if greater than or equal.
      */
 
 
@@ -480,15 +523,16 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Locate the position within the string of the character or substring. The
        search will begin at the character offset provided.
        
-       If $B$offset$B$ is beyond the length of the string, then the function
-       will always return P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will always return <CODE>P_MAX_INDEX</CODE>.
        
        The matching will be for identical character or string. If a search
        ignoring case is required then the string should be converted to a
-       $H$PCaselessString before the search is made.
+       <A>PCaselessString</A> before the search is made.
 
-       Returns: position of character or substring in the string, or
-                P_MAX_INDEX if the character or substring is not in the string.
+       <H2>Returns:</H2>
+       position of character or substring in the string, or P_MAX_INDEX if the
+       character or substring is not in the string.
      */
 
     virtual PINDEX FindLast(
@@ -507,16 +551,17 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        substring. The search will begin at the character offset provided,
        moving backward through the string.
 
-       If $B$offset$B$ is beyond the length of the string, then the search
-       begins at the end of the string. If $B$offset$B$ is zero then the
-       function always returns P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       search begins at the end of the string. If <CODE>offset</CODE> is zero
+       then the function always returns <CODE>P_MAX_INDEX</CODE>.
 
        The matching will be for identical character or string. If a search
        ignoring case is required then the string should be converted to a
-       $H$PCaselessString before the search is made.
+       <A>PCaselessString</A> before the search is made.
 
-       Returns: position of character or substring in the string, or
-                P_MAX_INDEX if the character or substring is not in the string.
+       <H2>Returns:</H2>
+       position of character or substring in the string, or P_MAX_INDEX if the
+       character or substring is not in the string.
      */
 
     virtual PINDEX FindOneOf(
@@ -530,15 +575,16 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Locate the position within the string of one of the characters in the
        set. The search will begin at the character offset provided.
 
-       If $B$offset$B$ is beyond the length of the string, then the function
-       will always return P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will always return <CODE>P_MAX_INDEX</CODE>.
        
        The matching will be for identical character or string. If a search
        ignoring case is required then the string should be converted to a
-       $H$PCaselessString before the search is made.
+       <A>PCaselessString</A> before the search is made.
 
-       Returns: position of character in the string, or P_MAX_INDEX if no
-                characters from the set are in the string.
+       <H2>Returns:</H2>
+       position of character in the string, or P_MAX_INDEX if no characters
+       from the set are in the string.
      */
 
 
@@ -576,17 +622,19 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Extract a portion of the string into a new string. The original string
        is not changed and a new unique reference to a string is returned.
        
-       The substring is returned inclusive of the characters at the $B$start$B$
-       and $B$end$B$ positions.
+       The substring is returned inclusive of the characters at the
+       <CODE>start</CODE> and <CODE>end</CODE> positions.
        
-       If the $B$end$B$ position is greater than the length of the string then
-       all characters from the $B$start$B$ up to the end of the string are
+       If the <CODE>end</CODE> position is greater than the length of the
+       string then all characters from the <CODE>start</CODE> up to the end of
+       the string are returned.
+
+       If <CODE>start</CODE> is greater than the length of the string or
+       <CODE>end</CODE> is before <CODE>start</CODE> then an empty string is
        returned.
 
-       If $B$start$B$ is greater than the length of the string or $B$end$B$ is
-       before $B$start$B$ then an empty string is returned.
-
-       Returns: substring of the source string.
+       <H2>Returns:</H2>
+       substring of the source string.
      */
 
     PString Left(
@@ -598,12 +646,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        A substring from the beginning of the string for the number of
        characters specified is extracted.
        
-       If $B$len$B$ is greater than the length of the string then all
+       If <CODE>len</CODE> is greater than the length of the string then all
        characters to the end of the string are returned.
 
-       If $B$len$B$ is zero then an empty string is returned.
+       If <CODE>len</CODE> is zero then an empty string is returned.
 
-       Returns: substring of the source string.
+       <H2>Returns:</H2>
+       substring of the source string.
      */
 
     PString Right(
@@ -615,12 +664,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        A substring from the end of the string for the number of characters
        specified is extracted.
        
-       If $B$len$B$ is greater than the length of the string then all
+       If <CODE>len</CODE> is greater than the length of the string then all
        characters to the beginning of the string are returned.
 
-       If $B$len$B$ is zero then an empty string is returned.
+       If <CODE>len</CODE> is zero then an empty string is returned.
 
-       Returns: substring of the source string.
+       <H2>Returns:</H2>
+       substring of the source string.
      */
 
     PString Mid(
@@ -630,17 +680,18 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     /* Extract a portion of the string into a new string. The original string
        is not changed and a new unique reference to a string is returned.
        
-       A substring from the $B$start$B$ position for the number of characters
-       specified is extracted.
+       A substring from the <CODE>start</CODE> position for the number of
+       characters specified is extracted.
        
-       If $B$len$B$ is greater than the length of the string from the
-       $B$start$B$ position then all characters to the end of the string are
-       returned.
+       If <CODE>len</CODE> is greater than the length of the string from the
+       <CODE>start</CODE> position then all characters to the end of the
+       string are returned.
 
-       If $B$start$B$ is greater than the length of the string or $B$len$B$ is
-       zero then an empty string is returned.
+       If <CODE>start</CODE> is greater than the length of the string or
+       <CODE>len</CODE> is zero then an empty string is returned.
 
-       Returns: substring of the source string.
+       <H2>Returns:</H2>
+       substring of the source string.
      */
 
 
@@ -649,7 +700,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        except all spaces at the beginning of the string. The original string
        is not changed and a new unique reference to a string is returned.
        
-       Returns: string with leading spaces removed.
+       <H2>Returns:</H2>
+       string with leading spaces removed.
      */
 
     PString RightTrim() const;
@@ -657,7 +709,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        except all spaces at the end of the string. The original string is not
        changed and a new unique reference to a string is returned.
        
-       Returns: string with trailing spaces removed.
+       <H2>Returns:</H2>
+       string with trailing spaces removed.
      */
 
     PString Trim() const;
@@ -666,7 +719,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        string is not changed and a new unique reference to a string is
        returned.
        
-       Returns: string with leading and trailing spaces removed.
+       <H2>Returns:</H2>
+       string with leading and trailing spaces removed.
      */
 
 
@@ -676,7 +730,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        string is not changed and a new unique reference to a string is
        returned.
        
-       Returns: string with upper case converted to lower case.
+       <H2>Returns:</H2>
+       string with upper case converted to lower case.
      */
 
     PString ToUpper() const;
@@ -685,17 +740,18 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        string is not changed and a new unique reference to a string is
        returned.
        
-       Returns: string with lower case converted to upper case.
+       <H2>Returns:</H2>
+       string with lower case converted to upper case.
      */
 
 
     PString & sprintf(
       const char * cfmt,    // C string for output format.
-      ...                   // Extra parameters for $B$sprintf()$B$ call.
+      ...                  // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     /* Concatenate a formatted output to the string. This is identical to the
-       standard C library $B$sprintf()$B$ function, but appends its output
-       to the string.
+       standard C library <CODE>sprintf()</CODE> function, but appends its
+       output to the string.
        
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -704,15 +760,17 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
        
-       Returns: reference to the current string object.
+       <H2>Returns:</H2>
+       reference to the current string object.
      */
 
     friend PString psprintf(
       const char * cfmt,    // C string for output format.
-      ...                   // Extra parameters for $B$sprintf()$B$ call.
+      ...                  // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     /* Produce formatted output as a string. This is identical to the standard
-       C library $B$sprintf()$B$ function, but sends its output to a PString.
+       C library <CODE>sprintf()</CODE> function, but sends its output to a
+       <A>PString</A>.
 
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -721,20 +779,21 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
        
-       Returns: reference to the current string object.
+       <H2>Returns:</H2>
+       reference to the current string object.
      */
 
     PString & vsprintf(
-      const char * cfmt,    // C string for output format.
-      va_list args          // Extra parameters for $B$sprintf()$B$ call.
+      const char * cfmt,   // C string for output format.
+      va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     PString & vsprintf(
-      const PString & fmt,  // String for output format.
-      va_list args          // Extra parameters for $B$sprintf()$B$ call.
+      const PString & fmt, // String for output format.
+      va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     /* Concatenate a formatted output to the string. This is identical to the
-       standard C library $B$vsprintf()$B$ function, but appends its output
-       to the string.
+       standard C library <CODE>vsprintf()</CODE> function, but appends its
+       output to the string.
 
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -743,19 +802,21 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
        
-       Returns: reference to the current string object.
+       <H2>Returns:</H2>
+       reference to the current string object.
      */
 
     friend PString pvsprintf(
-      const char * cfmt,    // C string for output format.
-      va_list args          // Extra parameters for $B$sprintf()$B$ call.
+      const char * cfmt,   // C string for output format.
+      va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     PINLINE friend PString pvsprintf(
-      const PString & fmt,  // String for output format.
-      va_list args          // Extra parameters for $B$sprintf()$B$ call.
+      const PString & fmt, // String for output format.
+      va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
     /* Produce formatted output as a string. This is identical to the standard
-       C library $B$vsprintf()$B$ function, but sends its output to a PString.
+       C library <CODE>vsprintf()</CODE> function, but sends its output to a
+       <A>PString</A>.
 
        This function makes the assumption that there is less the 1000
        characters of formatted output. The function will assert if this occurs.
@@ -764,7 +825,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
        
-       Returns: reference to the current string object.
+       <H2>Returns:</H2>
+       reference to the current string object.
      */
 
 
@@ -778,9 +840,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        The number base may only be from 2 to 36 and the function will assert
        if it is not in this range.
 
-       This function uses the standard C library $B$strtol()$B$ function.
+       This function uses the standard C library <CODE>strtol()</CODE>
+       function.
 
-       Returns: integer value for the string.
+       <H2>Returns:</H2>
+       integer value for the string.
      */
 
     double AsReal() const;
@@ -788,9 +852,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        decimal or exponential form. All characters up to the first illegal
        character for a floting point number are converted.
 
-       This function uses the standard C library $B$strtod()$B$ function.
+       This function uses the standard C library <CODE>strtod()</CODE>
+       function.
 
-       Returns: floating point value for the string.
+       <H2>Returns:</H2>
+       floating point value for the string.
      */
      
 
@@ -810,13 +876,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        from the specified set.
        
        There are two options for the tokenisation, the first is where the
-       $B$onePerSeparator$B$ is TRUE. This form will produce a token for each
-       delimiter found in the set. Thus the string ",two,three,,five" would be
-       split into 5 substrings; "", "two", "three", "" and "five".
+       <CODE>onePerSeparator</CODE> is TRUE. This form will produce a token
+       for each delimiter found in the set. Thus the string ",two,three,,five"
+       would be split into 5 substrings; "", "two", "three", "" and "five".
        
-       The second form where $B$onePerSeparator$B$ is FALSE is used where
-       consecutive delimiters do not constitute a empty token. In this case
-       the string "  a list  of words  " would be split into 4 substrings;
+       The second form where <CODE>onePerSeparator</CODE> is FALSE is used
+       where consecutive delimiters do not constitute a empty token. In this
+       case the string "  a list  of words  " would be split into 4 substrings;
        "a", "list", "of" and "words".
 
        There is an important distinction when there are delimiters at the
@@ -824,7 +890,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        empty strings at the end of the array and in the second the delimiters
        are ignored.
 
-       Returns: an array of substring for each token in the string.
+       <H2>Returns:</H2>
+       an array of substring for each token in the string.
      */
 
     PStringArray Lines() const;
@@ -833,11 +900,13 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        line feed pair ("\r\n"). A line feed and carriage return pair ("\n\r")
        would yield a blank line. between the characters.
 
-       The $B$Tokenise()$B$ function should not be used to split a string into
-       lines as a "\r\n" pair consitutes a single line ending. The
-       $B$Tokenise()$B$ function would produce a blank line in between them.
+       The <A><CODE>Tokenise()</CODE></A> function should not be used to split
+       a string into lines as a "\r\n" pair consitutes a single line ending.
+       The <A><CODE>Tokenise()</CODE></A> function would produce a blank line
+       in between them.
 
-       Returns: string array with a substring for each line in the string.
+       <H2>Returns:</H2>
+       string array with a substring for each line in the string.
      */
 
 
@@ -849,7 +918,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        This function will assert if the string is greater than 255 characters
        in length.
 
-       Returns: byte array containing the "pascal" style string.
+       <H2>Returns:</H2>
+       byte array containing the "pascal" style string.
      */
 
     PString ToLiteral() const;
@@ -858,16 +928,18 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        such as line feed, to \n form. Any '"' characters are also escaped with
        a \ character and the entire string is enclosed in '"' characters.
        
-       Returns: string converted to a C language literal form.
+       <H2>Returns:</H2>
+       string converted to a C language literal form.
      */
 
 #ifndef PHAS_UNICODE
     operator const unsigned char *() const;
     /* Get the internal buffer as a pointer to unsigned characters. The
        standard "operator const char *" function is provided by the
-       $H$PCharArray ancestor class.
+       <A>PCharArray</A> ancestor class.
 
-       Returns: pointer to character buffer.
+       <H2>Returns:</H2>
+       pointer to character buffer.
      */
 #endif
 
@@ -878,9 +950,10 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     ) const;
     /* Internal function to compare the current string value against the
        specified C string. This is a wrapper araound the standard C libary
-       function $B$strcmp()$B$.
+       function <CODE>strcmp()</CODE>.
 
-       Returns: relative rank of the two strings.
+       <H2>Returns:</H2>
+       relative rank of the two strings.
      */
 
     PString(int dummy, const PString * str);
@@ -891,8 +964,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
 PDECLARE_CLASS(PCaselessString, PString)
 /* This class is a variation of a string that ignores case. Thus in all
-   standard comparison ("==", "<" etc) and search ($B$Find()$B$ etc) functions
-   the case of the characters and strings is ignored.
+   standard comparison ("==", "<" etc) and search (<A><CODE>Find()</CODE></A>
+   etc) functions the case of the characters and strings is ignored.
    
    The characters in the string still maintain their case. Only the comparison
    oeprations are affected. So printing etc will still display the string as
@@ -915,17 +988,22 @@ PDECLARE_CLASS(PCaselessString, PString)
       const PString & str  // String to initialise the caseless string from.
     );
     /* Create a caseless string, with a reference to the characters in the
-       normal $H$PString provided. A PCaselessString may also be provided to
-       this constructor.
+       normal <A>PString</A> provided. A PCaselessString may also be provided
+       to this constructor.
      */
 
 
-    PCaselessString & operator=(const char * cstr);
-    PCaselessString & operator=(const PString & str);
-    /* Set the current instance to reference the same string as the $B$str$B$
-       parameter. The previous reference is decremented and if no more
-       references to the string are present, the string buffer is released. A
-       PCaselessString may also be provided to this operator.
+    PCaselessString & operator=(
+      const char * cstr   // C string to initialise the caseless string from.
+    );
+    PCaselessString & operator=(
+      const PString & str  // String to initialise the caseless string from.
+    );
+    /* Set the current instance to reference the same string as the
+       <CODE>str</CODE> parameter. The previous reference is decremented and
+       if no more references to the string are present, the string buffer is
+       released. A <A>PCaselessString</A> may also be provided to this
+       operator.
      */
 
 
@@ -947,7 +1025,8 @@ PDECLARE_CLASS(PCaselessString, PString)
        with the letter 'A' followed by 'B or 'C' then the current hash function
        will not perform very well.
 
-       Returns: hash value for string.
+       <H2>Returns:</H2>
+       hash value for string.
      */
 
 
@@ -968,11 +1047,12 @@ PDECLARE_CLASS(PCaselessString, PString)
        search will begin at the character offset provided. The case of either
        string or character is ignored.
        
-       If $B$offset$B$ is beyond the length of the string, then the function
-       will always return P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will always return <CODE>P_MAX_INDEX</CODE>.
        
-       Returns: position of character or substring in the string, or
-                P_MAX_INDEX if the character or substring is not in the string.
+       <H2>Returns:</H2>
+       position of character or substring in the string, or P_MAX_INDEX if the
+       character or substring is not in the string.
      */
 
     virtual PINDEX FindLast(
@@ -992,12 +1072,13 @@ PDECLARE_CLASS(PCaselessString, PString)
        moving backward through the string. The case of either string or
        character is ignored.
 
-       If $B$offset$B$ is beyond the length of the string, then the search
-       begins at the end of the string. If $B$offset$B$ is zero then the
-       function always returns P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       search begins at the end of the string. If <CODE>offset</CODE> is zero
+       then the function always returns <CODE>P_MAX_INDEX</CODE>.
 
-       Returns: position of character or substring in the string, or
-                P_MAX_INDEX if the character or substring is not in the string.
+       <H2>Returns:</H2>
+       position of character or substring in the string, or P_MAX_INDEX if the
+       character or substring is not in the string.
      */
 
     virtual PINDEX FindOneOf(
@@ -1012,11 +1093,12 @@ PDECLARE_CLASS(PCaselessString, PString)
        set. The search will begin at the character offset provided. The case of
        either string or character set is ignored.
 
-       If $B$offset$B$ is beyond the length of the string, then the function
-       will always return P_MAX_INDEX.
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will always return <CODE>P_MAX_INDEX</CODE>.
        
-       Returns: position of character in the string, or P_MAX_INDEX if no
-                characters from the set are in the string.
+       <H2>Returns:</H2>
+       position of character in the string, or P_MAX_INDEX if no characters
+       from the set are in the string.
      */
 
 
@@ -1026,9 +1108,10 @@ PDECLARE_CLASS(PCaselessString, PString)
     ) const;
     /* Internal function to compare the current string value against the
        specified C string. This is a wrapper araound the standard C libary
-       function $B$stricmp()$B$ or $B$strcasecmp()$B$.
+       function <CODE>stricmp()</CODE> or <CODE>strcasecmp()</CODE>.
 
-       Returns: relative rank of the two strings.
+       <H2>Returns:</H2>
+       relative rank of the two strings.
      */
 
     PCaselessString(int dummy, const PCaselessString * str);
@@ -1041,7 +1124,7 @@ class PStringStream;
 
 PCLASS PStringStream : public PString, public iostream {
 /* This class is a standard C++ stream class descendent for reading or writing
-   streamed data to or from a $H$PString class.
+   streamed data to or from a <A>PString</A> class.
    
    All of the standard stream I/O operators, manipulators etc will operate on
    the PString class.
@@ -1059,7 +1142,7 @@ PCLASS PStringStream : public PString, public iostream {
       const PString & str   // Initial value for string stream.
     );
     /* Create a new string stream and initialise it to the provided value. The
-       string stream references the same string buffer as the $B$str$B$
+       string stream references the same string buffer as the <CODE>str</CODE>
        parameter until any output to the string stream is attempted. The
        reference is then broken and the instance of the string stream becomes
        a unique reference to a string buffer.
@@ -1077,29 +1160,33 @@ PCLASS PStringStream : public PString, public iostream {
       const PString & str  // New string to assign.
     );
     /* Assign the string to the current object. The current instance then
-       becomes another reference to the same string in the $B$str$B$ parameter.
+       becomes another reference to the same string in the <CODE>str</CODE>
+       parameter.
        
        This will reset the read pointer for input to the beginning of the
        string. Also, any data output to the string up until the asasignement
        will be lost.
 
-       Returns: reference to the current PStringStream object.
+       <H2>Returns:</H2>
+       reference to the current PStringStream object.
      */
 
     PStringStream & operator=(
       const char * cstr  // C string to assign.
     );
     /* Assign the C string to the string stream. The current instance then
-       becomes a unique reference to a copy of the $B$cstr$B$ parameter. The
-       $B$cstr$B$ parameter is typically a literal string, eg:
+       becomes a unique reference to a copy of the <CODE>cstr</CODE>
+       parameter. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
 
-          $F$myStr = "fred";$F$
+       <CODE>        myStr = "fred";</CODE>
 
        This will reset the read pointer for input to the beginning of the
        string. Also, any data output to the string up until the asasignement
        will be lost.
 
-       Returns: reference to the current PStringStream object.
+       <H2>Returns:</H2>
+       reference to the current PStringStream object.
      */
 
 
@@ -1129,17 +1216,17 @@ PCLASS PStringStream : public PString, public iostream {
 
 PDECLARE_ARRAY(PStringArray, PString)
 /*PDECLARE_CLASS(PStringArray, PArray)
-   This is an array collection class of $H$PString objects. It has all the
-   usual functions for a collection, with the object types set to $H$PString
-   pointers.
+   This is an array collection class of <A>PString</A> objects. It has all the
+   usual functions for a collection, with the object types set to
+   <A>PString</A> pointers.
    
-   In addition some addition functions are added that take a const $H$PString
-   reference instead of a pointer as most standard collection functions do.
-   This is more convenient for when string expressions are used as parameters
-   to function in the collection.
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
 
-   See the $H$PAbstractArray and $H$PArray classes and $H$PDECLARE_ARRAY macro
-   for more information.
+   See the <A>PAbstractArray</A> and <A>PArray</A> classes and
+   <A>PDECLARE_ARRAY</A> macro for more information.
  */
 
   public:
@@ -1150,17 +1237,17 @@ PDECLARE_ARRAY(PStringArray, PString)
 
 PDECLARE_LIST(PStringList, PString)
 /*PDECLARE_CLASS(PStringList, PList)
-   This is a list collection class of $H$PString objects. It has all the
-   usual functions for a collection, with the object types set to $H$PString
-   pointers.
+   This is a list collection class of <A>PString</A> objects. It has all the
+   usual functions for a collection, with the object types set to
+   <A>PString</A> pointers.
    
-   In addition some addition functions are added that take a const $H$PString
-   reference instead of a pointer as most standard collection functions do.
-   This is more convenient for when string expressions are used as parameters
-   to function in the collection.
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
 
-   See the $H$PAbstractList and $H$PList classes and $H$PDECLARE_LIST macro
-   for more information.
+   See the <A>PAbstractList</A> and <A>PList</A> classes and
+   <A>PDECLARE_LIST</A> macro for more information.
  */
 
   public:
@@ -1172,17 +1259,17 @@ PDECLARE_LIST(PStringList, PString)
 
 PDECLARE_SORTED_LIST(PSortedStringList, PString)
 /*PDECLARE_CLASS(PSortedStringList, PSortedList)
-   This is a sorted list collection class of $H$PString objects. It has all the
-   usual functions for a collection, with the object types set to $H$PString
-   pointers.
+   This is a sorted list collection class of <A>PString</A> objects. It has all
+   the usual functions for a collection, with the object types set to
+   <A>PString</A> pointers.
    
-   In addition some addition functions are added that take a const $H$PString
-   reference instead of a pointer as most standard collection functions do.
-   This is more convenient for when string expressions are used as parameters
-   to function in the collection.
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
 
-   See the $H$PAbstractSortedList and $H$PSortedList classes and
-   $H$PDECLARE_SORTEDLIST macro for more information.
+   See the <A>PAbstractSortedList</A> and <A>PSortedList</A> classes and
+   <A>PDECLARE_SORTEDLIST</A> macro for more information.
  */
 
   public:
@@ -1194,21 +1281,21 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString)
 
 PDECLARE_SET(PStringSet, PString, TRUE)
 /*PDECLARE_CLASS(PStringSet, PSet)
-   This is a set collection class of $H$PString objects. It has all the
-   usual functions for a collection, with the object types set to $H$PString
-   pointers.
+   This is a set collection class of <A>PString</A> objects. It has all the
+   usual functions for a collection, with the object types set to
+   <A>PString</A> pointers.
 
-   In addition some addition functions are added that take a const $H$PString
-   reference instead of a pointer as most standard collection functions do.
-   This is more convenient for when string expressions are used as parameters
-   to function in the collection.
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
 
    Unlike the normal sets, this will delete the PStrings removed from it. This
    complements the automatic creation of new PString objects when literals or
    expressions are used.
 
-   See the $H$PAbstractSet and $H$PSet classes and $H$PDECLARE_SET macro for
-   more information.
+   See the <A>PAbstractSet</A> and <A>PSet</A> classes and <A>PDECLARE_SET</A>
+   macro for more information.
  */
 
   public:
@@ -1222,11 +1309,11 @@ PDECLARE_SET(PStringSet, PString, TRUE)
 template <class K>
 PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 /* This template class maps the PAbstractDictionary to a specific key type and
-   a $H$PString data type. The functions in this class primarily do all the
+   a <A>PString</A> data type. The functions in this class primarily do all the
    appropriate casting of types.
 
-   Note that if templates are not used the $H$PDECLARE_STRING_DICTIONARY macro
-   will simulate the template instantiation.
+   Note that if templates are not used the <A>PDECLARE_STRING_DICTIONARY</A>
+   macro will simulate the template instantiation.
  */
 
   public:
@@ -1248,14 +1335,15 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
     const PString & operator[](const K & key) const
       { return (const PString &)GetRefAt(key); }
-    /* Get the string contained in the dictionary at the $B$key$B$ position.
-       The hash table is used to locate the data quickly via the hash function
-       privided by the key.
+    /* Get the string contained in the dictionary at the <CODE>key</CODE>
+       position. The hash table is used to locate the data quickly via the
+       hash function provided by the key.
 
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to the object indexed by the key.
+       <H2>Returns:</H2>
+       reference to the object indexed by the key.
      */
 
     virtual PString * GetAt(
@@ -1264,7 +1352,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
-       Returns: pointer to object at the specified key.
+       <H2>Returns:</H2>
+       pointer to object at the specified key.
      */
 
     virtual BOOL SetDataAt(
@@ -1276,7 +1365,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       Returns: TRUE if the new object could be placed into the dictionary.
+       <H2>Returns:</H2>
+       TRUE if the new object could be placed into the dictionary.
      */
 
     virtual BOOL SetAt(
@@ -1291,7 +1381,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        hash function. Subsequent searches use the has function to speed access
        to the data item.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     const K & GetKeyAt(PINDEX index) const
@@ -1304,7 +1395,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
     PString & GetDataAt(PINDEX index) const
@@ -1317,7 +1409,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to data at the index position.
+       <H2>Returns:</H2>
+       reference to data at the index position.
      */
 
 
@@ -1329,16 +1422,17 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 /*$MACRO PDECLARE_STRING_DICTIONARY(cls, K)
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular key type $B$K$B$ and data object type
-   $H$PString.
+   customised for a particular key type <B>K</B> and data object type
+   <A>PString</A>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$PStringDictionary template class. If templates are not being used
-   then the macro defines a set of inline functions to do all casting of types.
-   The resultant classes have an identical set of functions in either case.
+   of the <A>PStringDictionary</A> template class. If templates are not being
+   used then the macro defines a set of inline functions to do all casting of
+   types. The resultant classes have an identical set of functions in either
+   case.
 
-   See the $H$PStringDictionary and $H$PAbstractDictionary classes for more
-   information.
+   See the <A>PStringDictionary</A> and <A>PAbstractDictionary</A> classes for
+   more information.
  */
 #define PDECLARE_STRING_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PStringDictionary<K>) \
@@ -1354,15 +1448,15 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 /*$MACRO PSTRING_DICTIONARY(cls, K, D)
    This macro is used to declare a descendent of PAbstractDictionary class,
-   customised for a particular key type $B$K$B$ and data object type
-   $H$PString. This macro closes the class declaration off so no additional
+   customised for a particular key type <B>K</B> and data object type
+   <A>PString</A>. This macro closes the class declaration off so no additional
    members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$PStringDictionary template class.
+   of the <A>PStringDictionary</A> template class.
 
-   See the $H$PStringDictionary class and $H$PDECLARE_STRING_DICTIONARY macro
-   for more information.
+   See the <A>PStringDictionary</A> class and <A>PDECLARE_STRING_DICTIONARY</A>
+   macro for more information.
  */
 #define PSTRING_DICTIONARY(cls, K) typedef PStringDictionary<K> cls
 
@@ -1401,34 +1495,35 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 PSTRING_DICTIONARY(POrdinalStringDictionary, POrdinalKey);
 /*PDECLARE_CLASS(POrdinalStringDictionary, PStringDictionary)
-   This is a dictionary collection class of $H$PString objects, keyed by an
+   This is a dictionary collection class of <A>PString</A> objects, keyed by an
    ordinal value. It has all the usual functions for a collection, with the
-   object types set to $H$PString pointers. The class could be considered like
-   a sparse array of strings.
+   object types set to <A>PString</A> pointers. The class could be considered
+   like a sparse array of strings.
 
-   In addition some addition functions are added that take a const $H$PString
-   reference instead of a pointer as most standard collection functions do.
-   This is more convenient for when string expressions are used as parameters
-   to function in the collection.
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
 
-   See the $H$PAbstractDictionary and $H$PStringDictionary classes and
-   $H$PDECLARE_DICTIONARY and $H$PDECLARE_STRING_DICTIONARY macros for more
-   information.
+   See the <A>PAbstractDictionary</A> and <A>PStringDictionary</A> classes and
+   <A>PDECLARE_DICTIONARY</A> and <A>PDECLARE_STRING_DICTIONARY</A> macros for
+   more information.
  */
 
 PORDINAL_DICTIONARY(PStringOrdinalDictionary, PString);
 /*PDECLARE_CLASS(PStringOrdinalDictionary, POrdinalDictionary)
-   This is a dictionary collection class of ordinals (via the $H$POrdinalKey
-   class) keyed by $H$PString objects. It has all the usual functions for a
-   collection, with the object types set to $H$POrdinalKey pointers.
+   This is a dictionary collection class of ordinals (via the
+   <A>POrdinalKey</A> class) keyed by <A>PString</A> objects. It has all the
+   usual functions for a collection, with the object types set to
+   <A>POrdinalKey</A> pointers.
 
    In addition some addition functions are added that take a const
-   $H$POrdinalKey reference ir a simple PINDEX instead of a pointer as most
-   standard collection functions do. This is more convenient for when integer
-   expressions are used as parameters to function in the collection.
+   <A>POrdinalKey</A> reference or a simple <A>PINDEX</A> instead of a pointer
+   as most standard collection functions do. This is more convenient for when
+   integer expressions are used as parameters to function in the collection.
 
-   See the $H$PAbstractDicionary and $H$POrdinalDictionary classes and
-   $H$PDECLARE_ORDINAL_DICTIONARY macro for more information.
+   See the <A>PAbstractDicionary</A> and <A>POrdinalDictionary</A> classes and
+   <A>PDECLARE_ORDINAL_DICTIONARY</A> macro for more information.
  */
 
 
