@@ -26,6 +26,9 @@
  * Based on code originally by Bob Jenkins.
  *
  * $Log: random.cxx,v $
+ * Revision 1.4  2001/03/03 05:12:47  robertj
+ * Fixed yet another transcription error of random number generator code.
+ *
  * Revision 1.3  2001/02/28 04:27:35  robertj
  * Fixed stupid error in random number seeding, infinite loop.
  *
@@ -127,7 +130,7 @@ void PRandom::SetSeed(DWORD seed)
   x = *m;  \
   a = (a^(mix)) + *(m2++); \
   *(m++) = y = ind(mm,x) + a + b; \
-  *(r++) = b = ind(mm,y>>RandSize) + x; \
+  *(r++) = b = ind(mm,y>>RandBits) + x; \
 }
 
 unsigned PRandom::Generate()
