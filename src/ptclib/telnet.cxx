@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.11  2003/11/13 21:14:57  csoutheren
+ * Added fix for telnet NOP command thanks to Andrei Koulik
+ *
  * Revision 1.10  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -911,6 +914,8 @@ void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX len)
 
 BOOL PTelnetSocket::OnCommand(BYTE code)
 {
+  if (code == NOP)
+    return TRUE;
   PTelnetError << "unknown command " << (int)code << endl;
   return TRUE;
 }
