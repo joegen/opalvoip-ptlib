@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.1 1994/12/12 09:59:37 robertj Exp $
+ * $Id: pstring.h,v 1.2 1994/12/12 13:13:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.1  1994/12/12 09:59:37  robertj
+ * Revision 1.2  1994/12/12 13:13:13  robertj
+ * Fixed bugs in PString mods just made.
+ *
+ * Revision 1.1  1994/12/12  09:59:37  robertj
  * Initial revision
  *
  */
@@ -924,8 +927,8 @@ PDECLARE_CLASS(PCaselessString, PString)
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
     virtual PINDEX Find(
-      const char * cstr,           // C string to search for in string.
-      PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
+      const char * cstr,    // C string to search for in string.
+      PINDEX offset = 0     // Offset into string to begin search.
     ) const;
     /* Locate the position within the string of the character or substring. The
        search will begin at the character offset provided. The case of either
