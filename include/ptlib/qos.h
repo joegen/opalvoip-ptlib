@@ -18,6 +18,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.h,v $
+ * Revision 1.2  2003/10/27 03:51:38  csoutheren
+ * Added ifdef to disable QoS code on systems that do not support it
+ *
  * Revision 1.1  2003/10/27 03:20:10  csoutheren
  * Initial version of QoS implementation
  *   Thanks to Henry Harrison of AliceStreet
@@ -32,12 +35,13 @@
 #pragma interface
 #endif
 
+#if P_HAS_QOS
 #ifdef _WIN32
-#include <qos.h>
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <qossp.h>
-#endif
+#endif  // _WIN32
+#endif  // P_HAS_QOS
 
 #ifndef QOS_NOT_SPECIFIED
 #define QOS_NOT_SPECIFIED 0xFFFFFFFF
