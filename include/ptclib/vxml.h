@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.29  2004/06/02 08:29:28  csoutheren
+ * Added new code from Andreas Sikkema to implement various VXML features
+ *
  * Revision 1.28  2004/06/02 06:17:21  csoutheren
  * Removed unnecessary buffer copying and removed potential busy loop
  *
@@ -125,6 +128,8 @@
 #pragma interface
 #endif
 
+#include <queue>
+
 #include <ptlib/pipechan.h>
 
 #include <ptclib/pxml.h>
@@ -146,7 +151,7 @@ class PVXMLGrammar : public PObject
   PCLASSINFO(PVXMLGrammar, PObject);
   public:
     PVXMLGrammar(PXMLElement * field);
-    virtual BOOL OnUserInput(const PString & /*str*/) { return TRUE; }
+    virtual BOOL OnUserInput(const char /*ch*/) { return TRUE; }
     virtual void Stop() { }
 
     PString GetValue() const { return value; }
@@ -184,7 +189,7 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
   PCLASSINFO(PVXMLDigitsGrammar, PVXMLGrammar);
   public:
     PVXMLDigitsGrammar(PXMLElement * field, PINDEX minDigits, PINDEX maxDigits, PString terminators);
-    BOOL OnUserInput(const PString & str);
+    BOOL OnUserInput(const char ch);
     virtual void Stop();
 
   protected:
@@ -212,7 +217,6 @@ class PVXMLCacheItem : public PURL
 
 
 PLIST(PVXMLCache, PVXMLCacheItem);
-
 
 //////////////////////////////////////////////////////////////////
 
@@ -243,8 +247,6 @@ class PVXMLSession : public PIndirectChannel
 
     PVXMLChannel * GetIncomingChannel() const { return incomingChannel; }
     PVXMLChannel * GetOutgoingChannel() const { return outgoingChannel; }
-
-    BOOL Execute();
 
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
@@ -284,9 +286,19 @@ class PVXMLSession : public PIndirectChannel
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
     void AllowClearCall();
-    PURL NormaliseResourceName(const PString & src);
+    virtual BOOL DoTransfer(const PVXMLTransferOptions &) { return TRUE; }
+    virtual void OnTransfer(const PVXMLTransferResult &);
 
-    PXMLElement * FindForm(const PString & id);
+    virtual BOOL DoExit()                                 { return TRUE; }
+
+    void SetCallingToken( PString& token ) { callingCallToken = token; }
+
+    PXMLElement * FindHandler(const PString & event);
+
+  protected:
+    void ProcessUserInput();
+    void ProcessNode();
+    void ProcessGrammar();
 
     BOOL TraverseAudio();
     BOOL TraverseGoto();
@@ -295,26 +307,21 @@ class PVXMLSession : public PIndirectChannel
 
     BOOL TraverseIf();
     BOOL TraverseExit();
-
-    virtual BOOL TraverseTransfer();
-
-    virtual BOOL DoTransfer(PVXMLTransferOptions &) { return TRUE; }
-    virtual BOOL DoExit() { return TRUE; }
-
-    virtual void OnTransfer(PVXMLTransferResult&);
-
-    void SetCallingToken( PString& token ) { callingCallToken = token; }
-
-    PXMLElement * FindHandler(const PString & event);
+    BOOL TraverseVar();
+    BOOL TraverseSubmit();
+    BOOL TraverseMenu();
+    BOOL TraverseChoice(const PString & grammarResult);
 
     void SayAs(const PString & className, const PString & text);
     static PTimeInterval StringToTime(const PString & str);
 
-  protected:
-    friend class PVXMLChannel;
+    PURL NormaliseResourceName(const PString & src);
 
-    void ProcessNode();
-    void ProcessGrammar();
+    PXMLElement * FindForm(const PString & id);
+
+    virtual BOOL TraverseTransfer();
+
+    friend class PVXMLChannel;
 
     PSyncPoint waitForEvent;
 
@@ -328,6 +335,9 @@ class PVXMLSession : public PIndirectChannel
 
     PStringToString sessionVars;
     PStringToString documentVars;
+
+    PMutex userInputMutex;
+    std::queue<char> userInputQueue;
 
     BOOL recording;
     PFilePath recordFn;
@@ -365,7 +375,9 @@ class PVXMLSession : public PIndirectChannel
     PString       callingCallToken;
     PSyncPoint    transferSync;
     PSyncPoint    answerSync;
-
+    PString       grammarResult;
+    PString       eventName;
+    PINDEX        defaultDTMF;
 };
 
 
@@ -468,7 +480,6 @@ class PVXMLQueueURLItem : public PVXMLQueueItem
 
 PQUEUE(PVXMLQueue, PVXMLQueueItem);
 
-
 //////////////////////////////////////////////////////////////////
 
 class PVXMLChannel : public PIndirectChannel
@@ -526,6 +537,8 @@ class PVXMLChannel : public PIndirectChannel
 
     virtual void HandleDelay(PINDEX amount);
 
+    void SetName(const PString & name) { channelName = name; }
+
   protected:
     PVXMLSession & vxml;
     BOOL isIncoming;
@@ -556,6 +569,10 @@ class PVXMLChannel : public PIndirectChannel
     int silentCount;
     int totalData;
     PTimer delayTimer;
+
+    // "channelname" (which is the name of the <record> tag) so
+    // results can be saved in vxml session variable
+    PString channelName;
 };
 
 
@@ -614,23 +631,23 @@ class PVXMLTransferOptions : public PObject
   public:
     PVXMLTransferOptions() { }
 
-    void SetCallingToken( PString& calling) { callingToken = calling; }
-    PString& GetCallingToken( ) { return callingToken; }
+    void SetCallingToken(const PString & calling) { callingToken = calling; }
+    PString GetCallingToken() const               { return callingToken; }
     
-    void SetCalledToken( PString& called) { calledToken = called; }
-    PString& GetCalledToken( ) { return calledToken; }
+    void SetCalledToken(const PString & called)   { calledToken = called; }
+    PString GetCalledToken( ) const               { return calledToken; }
 
-    void SetSourceDNR( PString& src ) { source = src; }
-    PString& GetSourceDNR() { return source; }
+    void SetSourceDNR(const PString & src)        { source = src; }
+    PString GetSourceDNR() const                  { return source; }
 
-    void SetDestinationDNR( PString& dest ) { destination = dest; }
-    PString& GetDestinationDNR() { return destination; }
+    void SetDestinationDNR(const PString & dest ) { destination = dest; }
+    PString GetDestinationDNR() const             { return destination; }
 
-    void SetTimeout( unsigned int time ) { timeout = time; }
-    unsigned int GetTimeout() { return timeout; }
+    void SetTimeout(unsigned int time)            { timeout = time; }
+    unsigned int GetTimeout() const               { return timeout; }
 
-    void SetBridge( bool brdg ) { bridge = brdg; }
-    bool GetBridge() { return bridge; }
+    void SetBridge(BOOL brdg)                     { bridge = brdg; }
+    BOOL GetBridge() const                        { return bridge; }
 
   private:
     PString callingToken;
@@ -638,21 +655,30 @@ class PVXMLTransferOptions : public PObject
     PString destination;
     PString source;
     unsigned int timeout;
-    bool bridge;
+    BOOL bridge;
 };
 
 class PVXMLTransferResult : public PString
 {
   PCLASSINFO(PVXMLTransferResult, PString);
   public:
-    PVXMLTransferResult(){ }
-    PVXMLTransferResult( char* cstr ) : PString( cstr ) {}
-    PVXMLTransferResult( PString& str ) : PString( str ) {}
+    PVXMLTransferResult()
+    { }
 
-    void SetName( PString& n ) { name = n; }
-    PString& GetName() { return name; } 
-    // Mainly a couple of transfer states, 
-    // like busy, noanswer, network_busy, neer_end_disconnect, far_end_disconnect, network_disconnect
+    PVXMLTransferResult(char * cstr) 
+      : PString( cstr ) 
+    { }
+
+    PVXMLTransferResult(const PString & str )
+      : PString(str)
+    {}
+
+    void SetName(const PString & n) 
+    { name = n; }
+
+    PString GetName() const         
+    { return name; } 
+
   private:
     PString name;
 };
