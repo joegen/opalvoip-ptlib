@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.69  2002/07/15 06:39:23  craigs
+ * Added function to allow raising of per-process file handle limit
+ *
  * Revision 1.68  2002/06/13 08:50:11  rogerh
  * GCC 3.1 uses slightly different #includes
  *
@@ -445,6 +448,7 @@ int PServiceProcess::InitialiseService()
              "h-help."
              "x-execute."
              "p-pid-file:"
+	     "H-handlemax:"
              "i-ini-file:"
              "k-kill."
              "t-terminate."
@@ -573,6 +577,7 @@ int PServiceProcess::InitialiseService()
             "  -x --execute        execute as a normal program\n"
             "  -i --ini-file       set the ini file to use, may be explicit file or\n"
             "                      a ':' separated set of directories to search.\n"
+	    "  -H --handlemax n    set maximum number of file handles (set before uid/gid)\n"
 #ifdef P_LINUX
             "  -C --core-size      set the maximum core file size\n"
 #endif
@@ -582,6 +587,9 @@ int PServiceProcess::InitialiseService()
 
   if (args.HasOption('i'))
     SetConfigurationPath(args.GetOptionString('i'));
+
+  if (args.HasOption('H'))
+    SetMaxFileHandles(args.GetOptionString('H').AsInteger());
 
   // Set the gid we are running under
   if (args.HasOption('g')) {
