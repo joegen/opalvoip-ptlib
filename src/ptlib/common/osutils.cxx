@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.101  1998/10/19 00:19:59  robertj
+ * Moved error and trace stream functions to common code.
+ *
  * Revision 1.100  1998/10/18 14:28:45  robertj
  * Renamed argv/argc to eliminate accidental usage.
  *
@@ -355,6 +358,34 @@
 #include <ptlib.h>
 
 #include <ctype.h>
+
+
+static ostream * PErrorStream = &cerr;
+
+ostream & PGetErrorStream()
+{
+  return *PErrorStream;
+}
+
+
+void PSetErrorStream(ostream * s)
+{
+  PErrorStream = s;
+}
+
+
+static ostream * PTraceStream = &cerr;
+
+ostream & PGetTraceStream()
+{
+  return *PTraceStream;
+}
+
+
+void PSetTraceStream(ostream * s)
+{
+  PTraceStream = s;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
