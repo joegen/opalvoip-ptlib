@@ -1,6 +1,6 @@
 
 /*
- * $Id: ipsock.h,v 1.1 1995/01/23 18:43:27 craigs Exp $
+ * $Id: ipsock.h,v 1.2 1996/04/15 10:50:48 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.2  1996/04/15 10:50:48  craigs
+ * Last revision prior to release of MibMaster
+ *
  * Revision 1.1  1995/01/23 18:43:27  craigs
  * Initial revision
  *
@@ -30,5 +33,8 @@
 
 #include "../../common/ipsock.h"
 };
+
+
+ostream & operator << (ostream & strm, const PIPSocket::Address & addr);
 
 #endif
