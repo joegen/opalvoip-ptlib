@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.177.2.2  2005/02/07 00:54:33  csoutheren
+ * Backported latest IPV6 changes from Atlas-devel
+ *
+ * Revision 1.184  2005/02/07 00:47:18  csoutheren
+ * Changed IPV6 code to use standard IPV6 macros
+ *
  * Revision 1.177.2.1  2005/02/04 05:19:10  csoutheren
  * Backported patches from Atlas-devel
  *
@@ -2103,13 +2109,9 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback()
 /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
 BOOL PIPSocket::Address::IsV4Mapped() const
 {
-  if (version != 6) { return FALSE; }
-
-  return (
-         (v.six.s6_addr[0]==0) &&(v.six.s6_addr[1]==0) &&(v.six.s6_addr[2]==0) &&(v.six.s6_addr[3]==0)
-      && (v.six.s6_addr[4]==0) &&(v.six.s6_addr[5]==0) &&(v.six.s6_addr[6]==0) &&(v.six.s6_addr[7]==0)
-      && (v.six.s6_addr[8]==0) &&(v.six.s6_addr[9]==0) &&(v.six.s6_addr[10]==0xFF) &&(v.six.s6_addr[11]==0xFF)
-        );
+  if (version != 6)
+    return FALSE;
+  return IN6_IS_ADDR_V4MAPPED(&v.six) || IN6_IS_ADDR_V4COMPAT(&v.six);
 }
 
 
@@ -2486,7 +2488,7 @@ BOOL PIPSocket::Address::IsLoopback() const
 {
 #if P_HAS_IPV6
   if (version == 6)
-    return *this == loopback6;
+    IN6_IS_ADDR_LOOPBACK(&v.six);
 #endif
   return *this == loopback4;
 }
