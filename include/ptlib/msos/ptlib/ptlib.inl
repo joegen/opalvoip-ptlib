@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.15 1996/07/20 05:32:26 robertj Exp $
+ * $Id: ptlib.inl,v 1.16 1996/08/20 12:10:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.16  1996/08/20 12:10:36  robertj
+ * Fixed bug in timers wrapping unexpectedly and producing fast timeout.
+ *
  * Revision 1.15  1996/07/20 05:32:26  robertj
  * MSVC 4.1 compatibility.
  *
@@ -63,7 +66,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS) || defined(_WIN32)
 
 PINLINE PTimeInterval PTimer::Tick()
   { return (int)(GetTickCount()&0x7fffffff); }
@@ -75,10 +78,18 @@ PINLINE unsigned PTimer::Resolution()
   { return 55; }
 #endif
 
+#elif CLOCKS_PER_SEC==1000
+
+PINLINE PTimeInterval PTimer::Tick()
+  { return clock(); }
+
+PINLINE unsigned PTimer::Resolution()
+  { return 1; }
+
 #else
 
 PINLINE PTimeInterval PTimer::Tick()
-  { return clock()*CLOCKS_PER_SEC/1000; }
+  { return (PInt64)clock()*CLOCKS_PER_SEC/1000; }
 
 PINLINE unsigned PTimer::Resolution()
   { return 1000/CLOCKS_PER_SEC; }
