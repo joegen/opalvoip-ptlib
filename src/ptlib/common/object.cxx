@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.24 1997/02/09 03:45:28 robertj Exp $
+ * $Id: object.cxx,v 1.25 1997/07/08 13:07:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.25  1997/07/08 13:07:07  robertj
+ * DLL support.
+ *
  * Revision 1.24  1997/02/09 03:45:28  robertj
  * Fixed unix/dos compatibility with include file.
  *
@@ -135,7 +138,7 @@ class PMemChkOutClass : public ostream {
       { flush(); delete rdbuf(); }
 
   private:
-    class PEXPORT Buffer : public strstreambuf {
+    class Buffer : public strstreambuf {
       public:
         Buffer() : strstreambuf(buffer, sizeof(buffer)-1, buffer) { }
         virtual int sync() {
