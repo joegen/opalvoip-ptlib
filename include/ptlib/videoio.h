@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.23  2002/01/16 03:51:20  dereks
+ * Move flip methods in PVideoInputDevice  to  PVideoDevice
+ *
  * Revision 1.22  2002/01/14 02:59:54  robertj
  * Added preferred colour format selection, thanks Walter Whitlock
  *
@@ -425,6 +428,26 @@ class PVideoDevice : public PObject
      */
     virtual BOOL GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
+
+
+    /**Get the video conversion vertical flip state.
+       Default action is to return FALSE.
+     */
+    virtual BOOL GetVFlipState()
+      { return FALSE; }
+
+    /**Set the video conversion vertical flip state.
+       Default action is to return FALSE.
+     */
+    virtual BOOL SetVFlipState(BOOL newVFlipState) 
+      { return FALSE; }
+
+    /**Toggle the video conversion vertical flip state.
+       Default action is to return FALSE.
+    */
+    virtual BOOL ToggleVFlipState() 
+      { return FALSE; }
+        
 
     /**Set preferred native colour format from video capture device.
        Note empty == no preference.
