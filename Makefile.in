@@ -27,7 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.6  2003/07/28 09:08:21  dsandras
+# Fixed same kind of things for "make uninstall".
+#
 # Revision 1.5  2003/07/28 09:05:04  dsandras
+#
 # Make sure that things are installed in $(DESTDIR)$(PREFIX) and not only $(DESTDIR). Use the style used in all distributions for headers of $(DESTIR)$(PREFIX).
 #
 # Revision 1.4  2003/07/24 22:01:42  dereksmithies
@@ -189,7 +193,7 @@ install:
 	(cd $(DESTDIR)$(PREFIX)/share/pwlib; ln -s ../../include/pwlib include)
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/include/pwlib $(DESTDIR)$(PREFIX)/share/pwlib/ 
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ 
 	rm -f $(DESTDIR)$(PREFIX)/@libdir@/$(PTLIB_FILE)* $(DESTDIR)$(PREFIX)/@libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
 
 
