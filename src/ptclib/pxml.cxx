@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.38  2004/04/09 06:52:17  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.37  2004/02/23 23:52:20  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -100,9 +104,7 @@
 
 
 #ifdef _MSC_VER
-#pragma comment(lib,    P_EXPAT_LIBRARY)
-#pragma comment(linker, "/delayload:expat.dll")
-#pragma comment(lib,    "Delayimp.lib")
+#pragma comment(lib, P_EXPAT_LIBRARY)
 #endif
 
 
