@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.73 1996/07/27 04:12:09 robertj Exp $
+ * $Id: osutils.cxx,v 1.74 1996/08/11 06:53:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.74  1996/08/11 06:53:04  robertj
+ * Fixed bug in Sleep() function (nonpreemptive version).
+ *
  * Revision 1.73  1996/07/27 04:12:09  robertj
  * Fixed bug in timer thread going into busy loop instead of blocking.
  *
@@ -1432,7 +1435,7 @@ void PThread::Yield()
         break;
 
       case Sleeping :
-        if (thread->sleepTimer != 0) {
+        if (thread->sleepTimer == 0) {
           if (thread->IsSuspended())
             thread->status = Suspended;
           else
