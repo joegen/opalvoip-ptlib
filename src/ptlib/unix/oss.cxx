@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.27  2001/08/22 02:23:07  robertj
+ * Fixed duplicate class name. All PWlib classes should start with P
+ *
  * Revision 1.26  2001/08/21 12:33:25  rogerh
  * Make loopback mode actually work. Added the AudioDelay class from OpenMCU
  * and made Read() return silence when the buffer is empty.
@@ -133,12 +136,12 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-class AudioDelay : public PObject
+class PAudioDelay : public PObject
 {
-  PCLASSINFO(AudioDelay, PObject);
+  PCLASSINFO(PAudioDelay, PObject);
 
   public:
-    AudioDelay();
+    PAudioDelay();
     BOOL Delay(int time);
     void Restart();
     int  GetError();
@@ -152,18 +155,18 @@ class AudioDelay : public PObject
 #define MIN_HEADROOM    30
 #define MAX_HEADROOM    60
     
-AudioDelay::AudioDelay()
+PAudioDelay::PAudioDelay()
 {
   firstTime = TRUE;
   error = 0;
 }
     
-void AudioDelay::Restart()
+void PAudioDelay::Restart()
 {
   firstTime = TRUE;
 }
   
-BOOL AudioDelay::Delay(int frameTime)
+BOOL PAudioDelay::Delay(int frameTime)
 {
   if (firstTime) {
     firstTime = FALSE;
@@ -220,8 +223,8 @@ static char buffer[LOOPBACK_BUFFER_SIZE];
 static int  startptr, endptr;
 static unsigned int bufferLen;
 static PMutex audioBufferMutex;
-AudioDelay readDelay;
-AudioDelay writeDelay;
+PAudioDelay readDelay;
+PAudioDelay writeDelay;
 
 
 PMutex PSoundChannel::dictMutex;
