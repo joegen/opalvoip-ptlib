@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.24  1998/11/14 01:11:38  robertj
+ * PPC linux GNU compatibility.
+ *
  * Revision 1.23  1998/10/31 12:49:23  robertj
  * Added read/write mutex to the HTTP space variable to avoid thread crashes.
  *
@@ -1558,7 +1561,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 
   // construct a directory listing
   contentType = "text/html";
-  PHTML reply = "Directory of " + request.url.AsString();
+  PHTML reply("Directory of " + request.url.AsString());
   PDirectory dir = realPath;
   if (dir.Open()) {
     do {
