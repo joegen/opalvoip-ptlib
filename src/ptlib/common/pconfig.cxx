@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pconfig.cxx,v $
+ * Revision 1.2  2000/06/26 11:17:21  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.1  1998/11/30 12:46:17  robertj
  * Initial revision
  *
@@ -52,7 +55,7 @@ PStringToString PConfig::GetAllKeyValues(const PString & section) const
 }
 
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined (__NUCLEUS_MNT__)
 
 BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt) const
 {
