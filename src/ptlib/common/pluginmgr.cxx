@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.27  2005/01/11 06:57:15  csoutheren
+ * Fixed namespace collisions with plugin starup factories
+ *
  * Revision 1.26  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -367,11 +370,7 @@ class PluginLoaderStartup : public PProcessStartup
     std::vector<PPluginModuleManager *> managers;
 };
 
-PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
+static PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
 
-#ifdef _WIN32
-
-PINSTANTIATE_FACTORY(PProcessStartup, PString)
-
-#endif
+PINSTANTIATE_FACTORY(PluginLoaderStartup, PString)
 
