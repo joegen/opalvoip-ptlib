@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.2 1995/01/03 09:43:27 robertj Exp $
+ * $Id: winsock.cxx,v 1.3 1995/03/12 05:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,18 +8,15 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
- * Revision 1.2  1995/01/03 09:43:27  robertj
+ * Revision 1.3  1995/03/12 05:00:10  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.2  1995/01/03  09:43:27  robertj
  * Moved out of band stuff to common.
  *
-// Revision 1.1  1994/10/30  12:06:56  robertj
-// Initial revision
-//
-// Revision 1.1  1994/10/23  05:42:49  robertj
-// Initial revision
-//
-// Revision 1.1  1994/08/22  00:18:02  robertj
-// Initial revision
-//
+ * Revision 1.1  1994/10/30  12:06:56  robertj
+ * Initial revision
  */
 
 #include <ptlib.h>
