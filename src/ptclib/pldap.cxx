@@ -23,7 +23,7 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Id: pldap.cxx,v 1.1 2003/03/28 01:15:44 robertj Exp $
+ * $Id: pldap.cxx,v 1.2 2003/03/28 05:16:11 robertj Exp $
  */
 
 #ifdef __GNUC__
@@ -156,10 +156,13 @@ PList<PStringToString> PLDAPSession::SearchAll(const PString & filter,
 
           struct berval ** bvals = ldap_get_values_len(ldapSession, msg, attrib);
           if (bvals != NULL) {
-            PString value;
+            PString value = (*entry)(attrib);
 
-            for (PINDEX i = 0; bvals[i] != NULL; i++ )
+            for (PINDEX i = 0; bvals[i] != NULL; i++ ) {
+              if (!value)
+                value += '\n';
               value += PString(bvals[i]->bv_val, bvals[i]->bv_len);
+            }
             ber_bvecfree(bvals);
 
             entry->SetAt(attrib, value);
