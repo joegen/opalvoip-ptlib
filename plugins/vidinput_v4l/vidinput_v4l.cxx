@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.6  2004/01/18 14:22:12  dereksmithies
+ * Use names that are substrings of the actual device name, to open the device.
+ *
  * Revision 1.5  2004/01/18 11:13:08  dereksmithies
  * Tidy up code & make more clear. Guarantee that tables of names are populated.
  *
@@ -446,11 +449,11 @@ PString V4LNames::GetDeviceName(PString userName)
 {
   PWaitAndSignal m(mutex);
 
-  PString result= userKey(userName);
-  if (result.IsEmpty())
-    return userName;
+  for (PINDEX i = 0; i < userKey.GetSize(); i++)
+    if (userKey.GetKeyAt(i).Find(userName) != P_MAX_INDEX)
+      return userKey.GetDataAt(i);
 
-  return result;
+  return userName;
 }
 
 void V4LNames::AddUserDeviceName(PString userName, PString devName)
