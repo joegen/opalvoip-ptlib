@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.59  2001/01/08 22:53:34  craigs
+ * Changed OnPOST to allow subtle usage of embedded commands
+ *
  * Revision 1.58  2000/12/14 08:09:41  robertj
  * Fixed missing immediate expiry date on string and file service HTTP resourcer.
  *
@@ -525,12 +528,12 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & reply)
 {
+  PSYSTEMLOG(Debug3, "Post to " << request.url << '\n' << data);
+  BOOL retval = PHTTPConfig::Post(request, data, reply);
+
   PServiceHTML::ProcessMacros(request, reply,
                               baseURL.AsString(PURL::PathOnly).Mid(1),
                               PServiceHTML::LoadFromFile);
-
-  PSYSTEMLOG(Debug3, "Post to " << request.url << '\n' << data);
-  BOOL retval = PHTTPConfig::Post(request, data, reply);
 
   OnLoadedText(request, reply);
 
