@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.42 1996/12/17 13:13:05 robertj Exp $
+ * $Id: win32.cxx,v 1.43 1997/01/01 11:17:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,17 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.43  1997/01/01 11:17:06  robertj
+ * Added implementation for PPipeChannel::GetReturnCode and PPipeChannel::IsRunning
+ *
+ * Revision 1.44  1996/12/29 13:05:03  robertj
+ * Added wait and abort for pipe channel commands.
+ * Added setting of error codes on status error.
+ *
+ * Revision 1.43  1996/12/29 02:53:13  craigs
+ * Added implementation for PPipeChannel::GetReturnCode and
+ *   PPipeChannel::IsRunning
+ *
  * Revision 1.42  1996/12/17 13:13:05  robertj
  * Fixed win95 support for registry security code,
  *
@@ -596,6 +607,45 @@ BOOL PPipeChannel::IsOpen() const
   return os_handle != (int)INVALID_HANDLE_VALUE;
 }
 
+
+int PPipeChannel::GetReturnCode() const
+{
+  DWORD code;
+  if (GetExitCodeProcess(info.hProcess, &code) && (code != STILL_ACTIVE))
+    return code;
+
+  ((PPipeChannel*)this)->ConvertOSError(-2);
+  return -1;
+}
+
+BOOL PPipeChannel::IsRunning() const
+{
+  DWORD code;
+  return GetExitCodeProcess(info.hProcess, &code) && (code == STILL_ACTIVE);
+}
+
+int PPipeChannel::WaitForTermination()
+{
+  if (WaitForSingleObject(info.hProcess, INFINITE) == WAIT_OBJECT_0)
+    return GetReturnCode();
+
+  ConvertOSError(-2);
+  return -1;
+}
+
+int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
+{
+  if (WaitForSingleObject(info.hProcess, timeout.GetInterval()) == WAIT_OBJECT_0)
+    return GetReturnCode();
+
+  ConvertOSError(-2);
+  return -1;
+}
+
+BOOL PPipeChannel::Kill(int signal)
+{
+  return ConvertOSError(TerminateProcess(info.hProcess, signal) ? 0 : -2);
+}
 
 BOOL PPipeChannel::Read(void * buffer, PINDEX len)
 {
