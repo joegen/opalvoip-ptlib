@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.50 1996/02/08 12:20:44 robertj Exp $
+ * $Id: contain.cxx,v 1.51 1996/02/19 13:34:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.51  1996/02/19 13:34:53  robertj
+ * Removed PCaselessString hash function to fix dictionary match failure.
+ * Fixed *= operator yet again.
+ *
  * Revision 1.50  1996/02/08 12:20:44  robertj
  * Added new operators to PString for case insensitive compare and spaced concatenate.
  * Fixed bug in Find() not finding case insensitive substrings.
@@ -873,14 +877,15 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 }
 
 
-PINLINE BOOL PString::operator*=(const char * cstr) const
+BOOL PString::operator*=(const char * cstr) const
 {
   PAssertNULL(cstr);
-  PINDEX offset = 0;
-  PINDEX length = GetLength();
-  while (length-- > 0 && (theArray[offset] != '\0' || *cstr != '\0')) {
-    if (InternalCompare(offset++, *cstr++) != EqualTo)
+  const char * pstr = theArray;
+  while (*pstr != '\0' && *cstr != '\0') {
+    if (toupper(*pstr) != toupper(*cstr))
       return FALSE;
+    pstr++;
+    cstr++;
   }
   return TRUE;
 }
@@ -1278,18 +1283,6 @@ PString pvsprintf(const char * fmt, va_list arg)
 PObject * PCaselessString::Clone() const
 {
   return PNEW PCaselessString(*this);
-}
-
-
-PINDEX PCaselessString::HashFunction() const
-{
-#ifdef PHAS_UNICODE
-  return (toupper(((WORD*)theArray)[0])+
-               toupper(((WORD*)theArray)[1])+toupper(((WORD*)theArray)[2]))%23;
-#else
-  return ((BYTE)toupper(theArray[0])+
-                     (BYTE)toupper(theArray[1])+(BYTE)toupper(theArray[2]))%23;
-#endif
 }
 
 
