@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.27  2000/05/23 05:50:43  robertj
+ * Attempted to fix stack dump, still refuses to work even though used to work perfectly.
+ *
  * Revision 1.26  2000/03/04 08:07:07  robertj
  * Fixed problem with window not appearing when assert on GUI based win32 apps.
  *
@@ -119,8 +122,6 @@
 
 #if defined(_WIN32)
 
-#include <imagehlp.h>
-
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
   char wndClassName[100];
@@ -152,6 +153,8 @@ void PWaitOnExitConsoleWindow()
 }
 
 
+#include <imagehlp.h>
+
 class PImageDLL : public PDynaLink
 {
   PCLASSINFO(PImageDLL, PDynaLink)
@@ -165,6 +168,18 @@ class PImageDLL : public PDynaLink
     );
   BOOL (__stdcall *SymCleanup)(
     IN HANDLE hProcess
+    );
+  DWORD (__stdcall *SymGetOptions)();
+  DWORD (__stdcall *SymSetOptions)(
+    DWORD options
+    );
+  DWORD (__stdcall *SymLoadModule)(
+    HANDLE hProcess,
+    HANDLE hFile,     
+    PSTR   ImageName,  
+    PSTR   ModuleName, 
+    DWORD  BaseOfDll,  
+    DWORD  SizeOfDll   
     );
   BOOL (__stdcall *StackWalk)(
     DWORD                             MachineType,
@@ -186,6 +201,12 @@ class PImageDLL : public PDynaLink
 
   PFUNCTION_TABLE_ACCESS_ROUTINE SymFunctionTableAccess;
   PGET_MODULE_BASE_ROUTINE       SymGetModuleBase;
+
+  BOOL (__stdcall *SymGetModuleInfo)(
+    IN  HANDLE              hProcess,
+    IN  DWORD               dwAddr,
+    OUT PIMAGEHLP_MODULE    ModuleInfo
+    );
 };
 
 
@@ -194,10 +215,14 @@ PImageDLL::PImageDLL()
 {
   if (!GetFunction("SymInitialize", (Function &)SymInitialize) ||
       !GetFunction("SymCleanup", (Function &)SymCleanup) ||
+      !GetFunction("SymGetOptions", (Function &)SymGetOptions) ||
+      !GetFunction("SymSetOptions", (Function &)SymSetOptions) ||
+      !GetFunction("SymLoadModule", (Function &)SymLoadModule) ||
       !GetFunction("StackWalk", (Function &)StackWalk) ||
       !GetFunction("SymGetSymFromAddr", (Function &)SymGetSymFromAddr) ||
       !GetFunction("SymFunctionTableAccess", (Function &)SymFunctionTableAccess) ||
-      !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase))
+      !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase) ||
+      !GetFunction("SymGetModuleInfo", (Function &)SymGetModuleInfo))
     Close();
 }
 
@@ -224,69 +249,105 @@ void PAssertFunc(const char * file, int line, const char * msg)
 #if defined(_WIN32) && defined(_M_IX86)
   PImageDLL imagehlp;
   if (imagehlp.IsLoaded()) {
-    HANDLE hProcess = GetCurrentProcess();
+    // Turn on load lines.
+    imagehlp.SymSetOptions(imagehlp.SymGetOptions()|SYMOPT_LOAD_LINES);
+    HANDLE hProcess;
+    OSVERSIONINFO ver;
+    ::GetVersionEx(&ver);
+    if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
+      hProcess = GetCurrentProcess();
+    else
+      hProcess = (HANDLE)GetCurrentProcessId();
     if (imagehlp.SymInitialize(hProcess, NULL, TRUE)) {
-      STACKFRAME frame;
-      memset(&frame, 0, sizeof(frame));
-      frame.AddrPC.Mode = AddrModeFlat;
-      frame.AddrFrame.Mode = AddrModeFlat;
+      HANDLE hThread = GetCurrentThread();
+      // The thread information.
+      CONTEXT threadContext;
+      threadContext.ContextFlags = CONTEXT_FULL ;
+      if (GetThreadContext(hThread, &threadContext)) {
+        STACKFRAME frame;
+        memset(&frame, 0, sizeof(frame));
 
-      __asm {
-        call $+5
-        pop frame.AddrPC.Offset
-        mov frame.AddrFrame.Offset,ebp
-      }
+#if defined (_M_IX86)
+#define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_I386
+        frame.AddrPC.Offset    = threadContext.Eip;
+        frame.AddrPC.Mode      = AddrModeFlat;
+        frame.AddrStack.Offset = threadContext.Esp;
+        frame.AddrStack.Mode   = AddrModeFlat;
+        frame.AddrFrame.Offset = threadContext.Ebp;
+        frame.AddrFrame.Mode   = AddrModeFlat;
 
-      int frameCount = 0;
-      while (frameCount++ < 16 &&
-             imagehlp.StackWalk(IMAGE_FILE_MACHINE_I386,
-                                hProcess,
-                                GetCurrentThread(),
-                                &frame,
-                                NULL, // Context
-                                NULL, // ReadMemoryRoutine
-                                imagehlp.SymFunctionTableAccess,
-                                imagehlp.SymGetModuleBase,
-                                 NULL)) {
-        if (frameCount > 1 && frame.AddrPC.Offset != 0) {
-          char buffer[sizeof(IMAGEHLP_SYMBOL)+100];
-          PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)buffer;
-          symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
-          symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL);
-          DWORD displacement = 0;
-          if (imagehlp.SymGetSymFromAddr(hProcess,
-                                         frame.AddrPC.Offset,
-                                         &displacement,
-                                         symbol)) {
-            str << "\n    " << symbol->Name;
+#elif defined (_M_ALPHA)
+#define IMAGE_FILE_MACHINE IMAGE_FILE_MACHINE_ALPHA
+        frame.AddrPC.Offset = (unsigned long)threadContext.Fir;
+        frame.AddrPC.Mode   = AddrModeFlat;
+#else
+#error ( "Unknown machine!" )
+#endif
+
+        int frameCount = 0;
+        while (frameCount++ < 16 &&
+               imagehlp.StackWalk(IMAGE_FILE_MACHINE,
+                                  hProcess,
+                                  hThread,
+                                  &frame,
+                                  &threadContext,
+                                  NULL, // ReadMemoryRoutine
+                                  imagehlp.SymFunctionTableAccess,
+                                  imagehlp.SymGetModuleBase,
+                                  NULL)) {
+          if (frameCount > 1 && frame.AddrPC.Offset != 0) {
+            char buffer[sizeof(IMAGEHLP_SYMBOL)+100];
+            PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)buffer;
+            symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
+            symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL);
+            DWORD displacement = 0;
+            if (imagehlp.SymGetSymFromAddr(hProcess,
+                                           frame.AddrPC.Offset,
+                                           &displacement,
+                                           symbol)) {
+              str << "\n    " << symbol->Name;
+            }
+            else {
+              str << "\n    0x"
+                  << hex << setfill('0')
+                  << setw(8) << frame.AddrPC.Offset
+                  << dec << setfill(' ');
+            }
+            str << '(' << hex << setfill('0');
+            for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
+              if (i > 0)
+                str << ", ";
+              if (frame.Params[i] != 0)
+                str << "0x";
+              str << frame.Params[i];
+            }
+            str << setfill(' ') << ')';
+            if (displacement != 0)
+              str << " + 0x" << displacement;
           }
-          else {
-            str << "\n    0x"
-                << hex << setfill('0')
-                << setw(8) << frame.AddrPC.Offset
-                << dec << setfill(' ');
-          }
-          str << '(' << hex << setfill('0');
-          for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
-            if (i > 0)
-              str << ", ";
-            if (frame.Params[i] != 0)
-              str << "0x";
-            str << frame.Params[i];
-          }
-          str << setfill(' ') << ')';
-          if (displacement != 0)
-            str << " + 0x" << displacement;
         }
+
+        if (frameCount <= 2) {
+          DWORD e = ::GetLastError();
+          str << "\n    No stack dump: IMAGEHLP.DLL StackWalk failed: error=" << e;
+        }
+      }
+      else {
+        DWORD e = ::GetLastError();
+        str << "\n    No stack dump: IMAGEHLP.DLL GetThreadContext failed: error=" << e;
       }
 
       imagehlp.SymCleanup(hProcess);
     }
-    else
-      str << "\n    No stack dump: IMAGEHLP.DLL SymInitialise failed.";
+    else {
+      DWORD e = ::GetLastError();
+      str << "\n    No stack dump: IMAGEHLP.DLL SymInitialise failed: error=" << e;
+    }
   }
-  else
-    str << "\n    No stack dump: IMAGEHLP.DLL could not be loaded.";
+  else {
+    DWORD e = ::GetLastError();
+    str << "\n    No stack dump: IMAGEHLP.DLL could not be loaded: error=" << e;
+  }
 #endif
 
   str << ends;
