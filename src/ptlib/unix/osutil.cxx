@@ -331,7 +331,7 @@ PString PDirectory::GetVolume() const
   return volume;
 }
 
-BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
+BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
 #if defined(P_LINUX)
   struct statfs fs;
@@ -339,6 +339,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
   if (statfs(operator+("."), &fs) == -1)
     return FALSE;
 
+  clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
 
@@ -347,6 +348,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
   if (statvfs(operator+("."), &buf) != 0)
     return FALSE;
 
+  clusterSize = buf.f_frsize;
   total = buf.f_blocks * buf.f_frsize;
   free  = buf.f_bfree  * buf.f_frsize;
 
