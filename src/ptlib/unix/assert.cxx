@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.8  2000/03/27 18:20:09  craigs
+ * Added the ability to get a stack dump on assert
+ *
  * Revision 1.7  2000/03/21 03:09:54  craigs
  * Fixed the fix with EOF
  *
@@ -64,7 +67,11 @@ void PAssertFunc (const char * file, int line, const char * msg)
 
 #ifndef P_VXWORKS
   for(;;) {
-    PError << "\n<A>bort, <C>ore dump, <I>gnore? " << flush;
+    PError << "\n<A>bort, <C>ore dump, <I>gnore"
+#ifdef _DEBUG
+           << ", <S>tack"
+#endif
+           << "? " << flush;
     int c = getchar();
 
     switch (c) {
@@ -73,6 +80,20 @@ void PAssertFunc (const char * file, int line, const char * msg)
       case EOF :
         PError << "\nAborting.\n";
         _exit(1);
+
+#ifdef _DEBUG
+      case 's' :
+      case 'S' :
+        {
+          PString fn  = PProcess::Current().GetFile();
+          PString cmd = psprintf("/bin/echo 'where\ninfo threads%s'|gdb %s %d",
+                                 ((c == 's') ? "\ndetach" : ""),
+                                 (const char *)fn,
+                                 getpid());
+          system((const char *)cmd);
+        }
+        break;
+#endif
 
       case 'c' :
       case 'C' :
