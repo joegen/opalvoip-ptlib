@@ -640,15 +640,15 @@ static
 #endif
 int yylex(YYSTYPE * yylval, void * yyInput)
 {
-    register int	c;
     register char	*p;
     char		buff[20];
     int			Count;
     int			sign;
+    register int	c = PTimeGetChar(yyInput);
 
-    for ( ; ; ) {
-	while (isspace(c = PTimeGetChar(yyInput)))
-	    ;
+    while (c != EOF && c != '\0' && c != '\n') {
+	while (isspace(c))
+	    c = PTimeGetChar(yyInput);
 
 	if (isdigit(c) || c == '-' || c == '+') {
 	    if (c == '-' || c == '+') {
@@ -669,16 +669,20 @@ int yylex(YYSTYPE * yylval, void * yyInput)
 		yylval->Number = -yylval->Number;
 	    return sign ? tSNUMBER : tUNUMBER;
 	}
+
 	if (isalpha(c)) {
-	    for (p = buff; isalpha(c) || c == '.'; c = PTimeGetChar(yyInput))
+	    for (p = buff; isalpha(c) || c == '.'; c = PTimeGetChar(yyInput)) {
 		if (p < &buff[sizeof(buff)-1])
 		    *p++ = (char)c;
+	    }
 	    *p = '\0';
 	    PTimeUngetChar(yyInput, c);
 	    return LookupWord(buff, yylval);
 	}
+
 	if (c != '(')
 	    return c;
+
 	Count = 0;
 	do {
 	    c = PTimeGetChar(yyInput);
@@ -690,6 +694,8 @@ int yylex(YYSTYPE * yylval, void * yyInput)
 		Count--;
 	} while (Count > 0);
     }
+
+    return EOF;
 }
 
 #ifdef _MSC_VER
