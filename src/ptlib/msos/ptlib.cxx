@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.73  2004/10/23 10:51:40  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.72  2004/06/22 11:07:23  rjongbloed
  * Fixed incorrect test for error on _sopen return value, thanks Brian Coverstone
  *
@@ -1041,16 +1044,17 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   return TRUE;
 }
 
+#endif // _WIN32_WCE
+
 BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(_WIN32_WCE)
   FileSecurityPermissions(name, permissions);
 #endif
 
   return _chmod(name, permissions&(_S_IWRITE|_S_IREAD)) == 0;
 }
 
-#endif // _WIN32_WCE
 
 BOOL PFile::IsTextFile() const
 {
