@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.40  2001/03/19 00:20:55  robertj
+ * Added test for if deamon actually stops
+ *
  * Revision 1.39  2001/03/19 00:11:03  robertj
  * Added information message when killing service.
  *
@@ -319,7 +322,16 @@ int PServiceProcess::_main(void *)
         cout << "TERM";
       else
         cout << "KILL";
-      cout << " to daemon at pid " << pid << endl;
+      cout << " to daemon at pid " << pid << ' ' << flush;
+      for (PINDEX retry = 1; retry <= 5; retry++) {
+        Sleep(1000);
+        if (kill(pid, 0) != 0) {
+          cout << "\nDaemon stopped." << endl;
+          return 0;
+        }
+        cout << '.' << flush;
+      }
+      cout << "\nDaemon has not stopped." << endl;
       return 0;
     }
 
