@@ -10,7 +10,6 @@
 #include "ptlib.h"
 
 #ifdef _WIN32_WCE
-#pragma init_seg(lib)
 YWinCEOStream cerr;
 YWinCEOStream cout;
 #else
