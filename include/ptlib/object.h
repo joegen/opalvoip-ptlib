@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.108  2004/07/11 07:56:35  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.107  2004/07/03 06:49:49  rjongbloed
  * Added PTRACE_PARAM() macro to fix warnings on parameters used in PTRACE
  *  macros only.
@@ -1026,6 +1029,8 @@ class PMemoryHeap {
     CRITICAL_SECTION mutex;
 #elif defined(P_PTHREADS)
     pthread_mutex_t mutex;
+#elif defined(P_VXWORKS)
+    void * mutex;
 #endif
 };
 
@@ -1075,6 +1080,15 @@ and line into the memory allocation to allow the PMemoryHeap class to keep
 track of the memory block.
 */
 #define free(p) PMemoryHeap::Deallocate(p, NULL)
+
+
+/** Override of system call for memory check system.
+This macro is used to deallocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
+#define cfree(p) PMemoryHeap::Deallocate(p, NULL)
 
 
 /** Macro for overriding system default #new# operator.
