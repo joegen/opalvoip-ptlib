@@ -47,14 +47,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Equivalence Pty. Ltd.\0"
             VALUE "FileDescription", "PTLib\0"
-            VALUE "FileVersion", "1.15\0"
+            VALUE "FileVersion", "1.0pl15\0"
             VALUE "InternalName", "PTLib\0"
-            VALUE "LegalCopyright", "Copyright © 1999 Equivalence Pty. Ltd.\0"
+            VALUE "LegalCopyright", "Copyright © 1993-2000 Equivalence Pty. Ltd.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "PTLib.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Equivalence Portable Windows Library\0"
-            VALUE "ProductVersion", "1.15\0"
+            VALUE "ProductVersion", "1.0pl15\0"
             VALUE "SpecialBuild", "\0"
         END
     END
