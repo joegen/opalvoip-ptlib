@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.36  2000/03/20 22:56:34  craigs
+ * Fixed problems with race conditions caused by testing or changing
+ * attributes on a terminated thread. Only occured on a fast machine!
+ *
  * Revision 1.35  2000/03/17 03:45:40  craigs
  * Fixed problem with connect call hanging
  *
@@ -465,7 +469,9 @@ unsigned PThread::PX_GetThreadId() const
 
 void PThread::Restart()
 {
-  PAssert(IsTerminated(), "Cannot restart running thread");
+  if (IsTerminated())
+    return;
+
   PX_NewThread(FALSE);
 }
 
@@ -572,7 +578,9 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
+  if (IsTerminated())
+    return FALSE;
+
   PAssertOS(pthread_mutex_lock((pthread_mutex_t *)&PX_suspendMutex) == 0);
   BOOL suspended = PX_suspendCount > 0;
   PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0);
@@ -582,13 +590,11 @@ BOOL PThread::IsSuspended() const
 
 void PThread::SetPriority(Priority /*priorityLevel*/)
 {
-  PAssert(!IsTerminated(), "Cannot set priority of terminated thread");
 }
 
 
 PThread::Priority PThread::GetPriority() const
 {
-  PAssert(!IsTerminated(), "Cannot get priority of terminated thread");
   return LowestPriority;
 }
 
