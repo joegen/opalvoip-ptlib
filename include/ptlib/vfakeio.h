@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.3  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.2  2000/12/19 23:58:14  robertj
  * Fixed MSVC compatibility issues.
  *
@@ -47,19 +50,13 @@
 /** This class defines a video input device that
     generates fictitous image data.
 */
-class PFakeVideoInputDevice: public PVideoInputDevice
+class PFakeVideoInputDevice : public PVideoInputDevice
 {
-  
-  PCLASSINFO(PFakeVideoInputDevice,PVideoInputDevice);
-
+    PCLASSINFO(PFakeVideoInputDevice,PVideoInputDevice);
  public:
   /** Create a new (fake) video input device.
    */
-    PFakeVideoInputDevice(
-      VideoFormat videoFormat   = PVideoDevice::PAL,
-      int channelNumber         = 0,
-      ColourFormat colourFormat = RGB24
-      );
+    PFakeVideoInputDevice();
 
 
     /**Open the device given the device name.
@@ -139,24 +136,69 @@ class PFakeVideoInputDevice: public PVideoInputDevice
 	    */
     virtual void WaitFinishPreviousFrame();
 
-    BOOL SetVideoFormat(VideoFormat newFormat);
+    /**Set the video format to be used.
 
-    int GetNumChannels();
+       Default behaviour sets the value of the videoFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetVideoFormat(
+      VideoFormat videoFormat   /// New video format
+    );
 
-    BOOL SetChannel(int newChannel);
+    /**Get the number of video channels available on the device.
+
+       Default behaviour returns 1.
+    */
+    virtual int GetNumChannels() ;
+
+    /**Set the video channel to be used on the device.
+
+       Default behaviour sets the value of the channelNumber variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetChannel(
+         int channelNumber  /// New channel number for device.
+    );
     
-    BOOL SetColourFormat(ColourFormat newFormat);
+    /**Set the colour format to be used.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetColourFormat(
+      const PString & colourFormat   // New colour format for device.
+    );
     
-    BOOL SetFrameRate(unsigned rate);
-         
-    BOOL GetFrameSizeLimits(unsigned & minWidth,
-                            unsigned & minHeight,
-                            unsigned & maxWidth,
-                            unsigned & maxHeight) ;
+    /**Set the video frame rate to be used on the device.
 
-
-    BOOL SetFrameSize(unsigned width, unsigned height);
+       Default behaviour sets the value of the frameRate variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetFrameRate(
+      unsigned rate  /// Frames per 100 seconds
+    );
          
+    /**Get the minimum & maximum size of a frame on the device.
+
+       Default behaviour returns the value 1 to UINT_MAX for both and returns
+       FALSE.
+    */
+    virtual BOOL GetFrameSizeLimits(
+      unsigned & minWidth,   /// Variable to receive minimum width
+      unsigned & minHeight,  /// Variable to receive minimum height
+      unsigned & maxWidth,   /// Variable to receive maximum width
+      unsigned & maxHeight   /// Variable to receive maximum height
+    ) ;
+
+    /**Set the frame size to be used.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
          
     void ClearMapping() { return ; }
     
