@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.102  2001/04/14 04:54:03  yurik
+ * Added process shutdown flag
+ *
  * Revision 1.101  2001/03/24 05:52:42  robertj
  * Added Windows 98 and ME to GetOSName()
  * Added build number to GetOSVersion()
@@ -381,7 +384,6 @@
 #include <ptlib/debstrm.h>
 
 #define new PNEW
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
@@ -1003,6 +1005,8 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #ifndef _WIN32_WCE
   AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
+#else
+  process.isShuttingDown = false;
 #endif
 
   process.activeThreadMutex.Wait();
@@ -1013,6 +1017,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   thread->Main();
 
+#ifdef _WIN32_WCE
+  process.isShuttingDown = true;
+#endif
   return 0;
 }
 
