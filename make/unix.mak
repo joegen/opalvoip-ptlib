@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.68  2000/04/03 22:31:08  rogerh
+# Get a more exact FreeBSD version number using a kernel sysctl
+#
 # Revision 1.67  2000/03/17 03:47:00  craigs
 # Changed DEBUG version to always be static
 #
@@ -386,7 +389,7 @@ STDCCFLAGS	+= -m486
 endif
 
 ifndef OSRELEASE
-OSRELEASE	:= $(word 1,$(subst ., ,$(strip $(shell uname -r))))
+OSRELEASE	:= $(shell /sbin/sysctl -n kern.osreldate)
 endif
 
 STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
