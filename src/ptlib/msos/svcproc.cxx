@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.28 1997/10/30 10:17:10 robertj Exp $
+ * $Id: svcproc.cxx,v 1.29 1997/11/04 06:01:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.29  1997/11/04 06:01:45  robertj
+ * Fix of "service hung at startup" message for NT service.
+ *
  * Revision 1.28  1997/10/30 10:17:10  robertj
  * Fixed bug in detection of running service.
  *
@@ -614,6 +617,10 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
   // this event when it receives the "stop" control code.
   terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
   if (terminationEvent == NULL)
+    return;
+
+  startedEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (startedEvent == NULL)
     return;
 
   GetArguments().SetArgs(argc, argv);
