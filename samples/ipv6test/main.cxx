@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2005/02/03 12:38:00  csoutheren
+ * Added tests for URL parsing
+ *
  * Revision 1.4  2005/01/15 19:27:07  csoutheren
  * Added test for GetInterfaceTable
  * Thanks to Jan Willamowius
@@ -47,7 +50,7 @@
 #include "version.h"
 
 #include <ptlib/sockets.h>
-
+#include <ptclib/url.h>
 
 PCREATE_PROCESS(IPV6Test);
 
@@ -207,6 +210,19 @@ void IPV6Test::Main()
     }
 	cout << "manual check";
     cout << endl;
+  }
+  {
+    // test #9 - see if URLs decode correctly
+    cout << "test #9: check if parsing IPV6 URLs works" << endl;
+
+    PURL url("h323:@[::ffff:220.244.81.10]:1234");
+    PString addrStr = url.GetHostName();
+    PIPSocket::Address addr;
+    PIPSocket::GetHostAddress(addrStr, addr);
+    WORD port = url.GetPort();
+    cout << "  host string = " << addrStr << " (should be [::ffff:220.244.81.10])\n"
+         << "  address     = " << addr    << " (should be ::ffff:220.244.81.10)\n"
+         << "  port        = " << port    << " (should be 1234)\n";
   }
 #endif
 }
