@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.1 1996/05/15 21:11:51 robertj Exp $
+ * $Id: svcproc.cxx,v 1.2 1996/05/23 10:03:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.2  1996/05/23 10:03:21  robertj
+ * Windows 95 support.
+ *
  * Revision 1.1  1996/05/15 21:11:51  robertj
  * Initial revision
  *
@@ -19,6 +22,7 @@
 #include <winuser.h>
 #include <winnls.h>
 
+#include <process.h>
 #include <fstream.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -266,7 +270,7 @@ void PServiceProcess::SystemLog(SystemLogLevel level, const char * fmt, ...)
       "Information"
     };
     ostream * out = PErrorStream;
-    if (isWin95) {
+    if (!debugMode) {
       PString dir;
       GetWindowsDirectory(dir.GetPointer(256), 255);
       out = new ofstream(dir + "\\FireDoorLog.TXT", ios::app);
@@ -278,7 +282,7 @@ void PServiceProcess::SystemLog(SystemLogLevel level, const char * fmt, ...)
     if (level != LogInfo && err != 0)
       *out << " - error = " << err;
     *out << endl;
-    if (isWin95)
+    if (!debugMode)
       delete out;
     ReleaseSemaphore(mutex, 1, NULL);
   }
@@ -333,147 +337,319 @@ void PServiceProcess::OnContinue()
 }
 
 
-class P_SC_HANDLE
+
+class ServiceManager
 {
   public:
-    P_SC_HANDLE()
-        { h = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS); }
-    P_SC_HANDLE(const P_SC_HANDLE & manager, PServiceProcess * svc)
-        { h = OpenService(manager, svc->GetName(), SERVICE_ALL_ACCESS); }
-    ~P_SC_HANDLE()
-        { if (h != NULL) CloseServiceHandle(h); }
-    operator SC_HANDLE() const
-        { return h; }
-    BOOL IsNULL()
-        { return h == NULL; }
-  private:
-    SC_HANDLE h;
+    ServiceManager()  { error = 0; }
+
+    virtual BOOL Create(PServiceProcess * svc) = 0;
+    virtual BOOL Delete(PServiceProcess * svc) = 0;
+    virtual BOOL Start(PServiceProcess * svc) = 0;
+    virtual BOOL Stop(PServiceProcess * svc) = 0;
+    virtual BOOL Pause(PServiceProcess * svc) = 0;
+    virtual BOOL Resume(PServiceProcess * svc) = 0;
+
+    DWORD GetError() const { return error; }
+
+  protected:
+    DWORD error;
 };
+
+
+class Win95_ServiceManager : public ServiceManager
+{
+  public:
+    virtual BOOL Create(PServiceProcess * svc);
+    virtual BOOL Delete(PServiceProcess * svc);
+    virtual BOOL Start(PServiceProcess * svc);
+    virtual BOOL Stop(PServiceProcess * svc);
+    virtual BOOL Pause(PServiceProcess * svc);
+    virtual BOOL Resume(PServiceProcess * svc);
+};
+
+
+BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
+{
+  HKEY key;
+  if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
+                   "SOFTWARE\\Microsoft\\Windows\\CurentVersion\\Run",
+                   &key)) != ERROR_SUCCESS)
+    return FALSE;
+
+  error = RegSetValueEx(key, svc->GetName(), 0, REG_EXPAND_SZ,
+         (LPBYTE)(const char *)svc->GetFile(), svc->GetFile().GetLength() + 1);
+
+  RegCloseKey(key);
+
+  return error == ERROR_SUCCESS;
+}
+
+
+BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
+{
+  PString name =
+         "SOFTWARE\\Microsoft\\Windows\\CurentVersion\\Run\\" + svc->GetName();
+  error = RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+
+  return error == ERROR_SUCCESS;
+}
+
+
+BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
+{
+  BOOL ok = _spawnl(_P_DETACH, svc->GetFile(), svc->GetFile(), NULL) >= 0;
+  error = errno;
+  return ok;
+}
+
+
+BOOL Win95_ServiceManager::Stop(PServiceProcess *)
+{
+  PError << "Cannot stop service under Windows 95" << endl;
+  error = 1;
+  return FALSE;
+}
+
+
+BOOL Win95_ServiceManager::Pause(PServiceProcess *)
+{
+  PError << "Cannot pause service under Windows 95" << endl;
+  error = 1;
+  return FALSE;
+}
+
+
+BOOL Win95_ServiceManager::Resume(PServiceProcess *)
+{
+  PError << "Cannot resume service under Windows 95" << endl;
+  error = 1;
+  return FALSE;
+}
+
+
+
+class NT_ServiceManager : public ServiceManager
+{
+  public:
+    NT_ServiceManager()  { schSCManager = schService = NULL; }
+    ~NT_ServiceManager();
+
+    BOOL Create(PServiceProcess * svc);
+    BOOL Delete(PServiceProcess * svc);
+    BOOL Start(PServiceProcess * svc);
+    BOOL Stop(PServiceProcess * svc)
+      { return Control(svc, SERVICE_CONTROL_STOP); }
+    BOOL Pause(PServiceProcess * svc)
+      { return Control(svc, SERVICE_CONTROL_PAUSE); }
+    BOOL Resume(PServiceProcess * svc)
+      { return Control(svc, SERVICE_CONTROL_CONTINUE); }
+
+    DWORD GetError() const { return error; }
+
+  private:
+    BOOL OpenManager();
+    BOOL Open(PServiceProcess * svc);
+    BOOL Control(PServiceProcess * svc, DWORD command);
+
+    SC_HANDLE schSCManager, schService;
+    DWORD error;
+};
+
+
+NT_ServiceManager::~NT_ServiceManager()
+{
+  if (schService != NULL)
+    CloseServiceHandle(schService);
+  if (schSCManager != NULL)
+    CloseServiceHandle(schSCManager);
+}
+
+
+BOOL NT_ServiceManager::OpenManager()
+{
+  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+  if (schSCManager != NULL)
+    return TRUE;
+
+  error = GetLastError();
+  PError << "Could not open Service Manager." << endl;
+  return FALSE;
+}
+
+
+BOOL NT_ServiceManager::Open(PServiceProcess * svc)
+{
+  if (!OpenManager())
+    return FALSE;
+
+  schService = OpenService(schSCManager, svc->GetName(), SERVICE_ALL_ACCESS);
+  if (schService != NULL)
+    return TRUE;
+
+  error = GetLastError();
+  PError << "Service is not installed." << endl;
+  return FALSE;
+}
+
+
+BOOL NT_ServiceManager::Create(PServiceProcess * svc)
+{
+  if (!OpenManager())
+    return FALSE;
+
+  schService = OpenService(schSCManager, svc->GetName(), SERVICE_ALL_ACCESS);
+  if (schService != NULL) {
+    PError << "Service is already installed." << endl;
+    return FALSE;
+  }
+
+  schService = CreateService(
+                    schSCManager,                   // SCManager database
+                    svc->GetName(),                 // name of service
+                    svc->GetName(),                 // name to display
+                    SERVICE_ALL_ACCESS,             // desired access
+                    SERVICE_WIN32_OWN_PROCESS,      // service type
+                    SERVICE_DEMAND_START,           // start type
+                    SERVICE_ERROR_NORMAL,           // error control type
+                    svc->GetFile(),                 // service's binary
+                    NULL,                           // no load ordering group
+                    NULL,                           // no tag identifier
+                    svc->GetServiceDependencies(),  // no dependencies
+                    NULL,                           // LocalSystem account
+                    NULL);                          // no password
+  if (schService == NULL) {
+    error = GetLastError();
+    return FALSE;
+  }
+
+  HKEY key;
+  if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
+             "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
+                                       svc->GetName(), &key)) != ERROR_SUCCESS)
+    return FALSE;
+
+  PString fn = svc->GetFile();
+  if ((error = RegSetValueEx(key, "EventMessageFile", 0, REG_EXPAND_SZ,
+               (LPBYTE)(const char *)fn, fn.GetLength()+1)) == ERROR_SUCCESS) {
+    DWORD dwData = EVENTLOG_ERROR_TYPE |
+                             EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
+    error = RegSetValueEx(key, "TypesSupported",
+                                 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
+  }
+
+  RegCloseKey(key);
+
+  return error == ERROR_SUCCESS;
+}
+
+
+BOOL NT_ServiceManager::Delete(PServiceProcess * svc)
+{
+  if (!Open(svc))
+    return FALSE;
+
+  PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\"
+                                                              + svc->GetName();
+  error = RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+
+  if (!DeleteService(schService))
+    error = GetLastError();
+
+  return error == ERROR_SUCCESS;
+}
+
+
+BOOL NT_ServiceManager::Start(PServiceProcess * svc)
+{
+  if (!Open(svc))
+    return FALSE;
+
+  BOOL ok = StartService(schService, 0, NULL);
+  error = GetLastError();
+  return ok;
+}
+
+
+BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
+{
+  if (!Open(svc))
+    return FALSE;
+
+  SERVICE_STATUS status;
+  BOOL ok = ControlService(schService, command, &status);
+  error = GetLastError();
+  return ok;
+}
 
 
 PServiceProcess::ProcessCommandResult
                              PServiceProcess::ProcessCommand(const char * cmd)
 {
   static const char * commandNames[] = {
-    "debug", "version",
-    "install", "remove", "start", "stop", "pause", "resume"
+    "debug", "version", "install", "remove", "start", "stop", "pause", "resume"
   };
-#define FIRST_NTSVC_COMMAND (PARRAYSIZE(commandNames)-6)
 
-  PINDEX numCmds = isWin95 ? FIRST_NTSVC_COMMAND : PARRAYSIZE(commandNames);
   PINDEX cmdNum = 0;
   while (stricmp(cmd, commandNames[cmdNum]) != 0) {
-    if (++cmdNum >= numCmds) {
+    if (++cmdNum >= PARRAYSIZE(commandNames)) {
       if (*cmd != '\0')
         PError << "Unknown command \"" << cmd << "\".\n";
       PError << "usage: " << GetName() << " [ ";
-      for (cmdNum = 0; cmdNum < numCmds-1; cmdNum++)
+      for (cmdNum = 0; cmdNum < PARRAYSIZE(commandNames)-1; cmdNum++)
         PError << commandNames[cmdNum] << " | ";
       PError << commandNames[cmdNum] << " ]" << endl;
       return ProcessCommandError;
     }
   }
 
+  NT_ServiceManager nt;
+  Win95_ServiceManager win95;
+  ServiceManager * svcManager =
+                    isWin95 ? (ServiceManager *)&win95 : (ServiceManager *)&nt;
+  BOOL good = FALSE;
   switch (cmdNum) {
     case 0 : // Debug mode
       return DebugCommandMode;
 
-    case  1 : // Version command
+    case 1 : // Version command
       PError << GetName() << ' '
              << GetOSClass() << '/' << GetOSName()
              << " Version " << GetVersion(TRUE) << endl;
       return ProcessCommandError;
-  }
 
-  P_SC_HANDLE schSCManager;
-  if (schSCManager.IsNULL()) {
-    PError << "Could not open Service Manager." << endl;
-    return ProcessCommandError;
-  }
-
-  P_SC_HANDLE schService(schSCManager, this);
-  if (cmdNum != FIRST_NTSVC_COMMAND && schService.IsNULL()) {
-    PError << "Service is not installed." << endl;
-    return ProcessCommandError;
-  }
-
-  SERVICE_STATUS status;
-
-  BOOL good = FALSE;
-  switch (cmdNum) {
-    case FIRST_NTSVC_COMMAND : // install
-      if (!schService.IsNULL()) {
-        PError << "Service is already installed." << endl;
-        return ProcessCommandError;
-      }
-      else {
-        SC_HANDLE newService = CreateService(
-                          schSCManager,               // SCManager database
-                          GetName(),                  // name of service
-                          GetName(),                  // name to display
-                          SERVICE_ALL_ACCESS,         // desired access
-                          SERVICE_WIN32_OWN_PROCESS,  // service type
-                          SERVICE_DEMAND_START,       // start type
-                          SERVICE_ERROR_NORMAL,       // error control type
-                          GetFile(),                  // service's binary
-                          NULL,                       // no load ordering group
-                          NULL,                       // no tag identifier
-                          GetServiceDependencies(),   // no dependencies
-                          NULL,                       // LocalSystem account
-                          NULL);                      // no password
-        good = newService != NULL;
-        if (good) {
-          CloseServiceHandle(newService);
-          HKEY key;
-          if (RegCreateKey(HKEY_LOCAL_MACHINE,
-              "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
-                                           GetName(), &key) == ERROR_SUCCESS) {
-            RegSetValueEx(key, "EventMessageFile", 0, REG_EXPAND_SZ,
-                   (LPBYTE)(const char *)GetFile(), GetFile().GetLength() + 1);
-            DWORD dwData = EVENTLOG_ERROR_TYPE |
-                             EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-            RegSetValueEx(key, "TypesSupported",
-                                 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
-            RegCloseKey(key);
-          }
-        }
-      }
+    case 2 : // install
+      good = svcManager->Create(this);
       break;
 
-    case FIRST_NTSVC_COMMAND+1 : // remove
-      good = DeleteService(schService);
-      if (good) {
-        PString name = "SYSTEM\\CurrentControlSet\\Services\\"
-                                         "EventLog\\Application\\" + GetName();
-        RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
-      }
+    case 3 : // remove
+      good = svcManager->Delete(this);
       break;
 
-    case FIRST_NTSVC_COMMAND+2 : // start
-      good = StartService(schService, 0, NULL);
+    case 4 : // start
+      good = svcManager->Start(this);
       break;
 
-    case FIRST_NTSVC_COMMAND+3 : // stop
-      good = ControlService(schService, SERVICE_CONTROL_STOP, &status);
+    case 5 : // stop
+      good = svcManager->Stop(this);
       break;
 
-    case FIRST_NTSVC_COMMAND+4 : // pause
-      good = ControlService(schService, SERVICE_CONTROL_PAUSE, &status);
+    case 6 : // pause
+      good = svcManager->Pause(this);
       break;
 
-    case FIRST_NTSVC_COMMAND+5 : // resume
-      good = ControlService(schService, SERVICE_CONTROL_CONTINUE, &status);
+    case 7 : // resume
+      good = svcManager->Resume(this);
       break;
   }
 
-  DWORD err = GetLastError();
   PError << "Service command \"" << commandNames[cmdNum] << "\" ";
   if (good) {
     PError << "successful." << endl;
     return CommandProcessed;
   }
   else {
-    PError << "failed - error code = " << err << endl;
+    PError << "failed - error code = " << svcManager->GetError() << endl;
     return ProcessCommandError;
   }
 }
