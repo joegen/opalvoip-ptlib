@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.13  2002/08/08 01:03:06  craigs
+ * Added function to re-enable automatic call clearing on script end
+ *
  * Revision 1.12  2002/08/07 13:38:14  craigs
  * Fixed bug in calculating lengths of G.723.1 packets
  *
@@ -422,6 +425,12 @@ PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mod
 { 
   return new PWAVFile(fn, mode, opts, fmt); 
 }
+
+void PVXMLSession::AllowClearCall()
+{
+  loaded = TRUE;
+}
+
 
 ///////////////////////////////////////////////////////////////
 
