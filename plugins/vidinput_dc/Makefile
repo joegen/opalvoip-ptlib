@@ -1,0 +1,10 @@
+ifndef PWLIBDIR
+PWLIBDIR = $(HOME)/pwlib
+endif
+
+PLUGIN_NAME	= dc
+PLUGIN_FAMILY	= device/videoinput
+PLUGIN_LIBS	= -lraw1394 -ldv -ldc1394_control
+PLUGIN_SOURCES	= video4dc1394.cxx
+
+include ../../make/plugins.mak
