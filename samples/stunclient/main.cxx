@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2004/02/24 11:15:48  rjongbloed
+ * Added function to get external router address, also did a bunch of documentation.
+ *
  * Revision 1.4  2003/02/05 06:26:49  robertj
  * More work in making the STUN usable for Symmetric NAT systems.
  *
@@ -80,6 +83,13 @@ void StunClient::Main()
 
   PSTUNClient stun(args[0], portbase, portmax);
   cout << "NAT type: " << stun.GetNatTypeName() << endl;
+
+  PIPSocket::Address router;
+  if (!stun.GetExternalAddress(router)) {
+    cout << "Could not get router address!" << endl;
+    return;
+  }
+  cout << "Router address: " << router << endl;
 
   PUDPSocket * udp;
   if (!stun.CreateSocket(udp)) {

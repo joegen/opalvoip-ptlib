@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.12  2004/02/24 11:15:48  rjongbloed
+ * Added function to get external router address, also did a bunch of documentation.
+ *
  * Revision 1.11  2004/02/17 11:11:05  rjongbloed
  * Added missing #pragma pack() to turn off byte alignment for the last class, thanks Ted Szoczei
  *
@@ -72,7 +75,9 @@
 PSTUNClient::PSTUNClient(const PString & server,
                          WORD portBase, WORD portMax,
                          WORD portPairBase, WORD portPairMax)
-  : serverAddress(0)
+  : serverAddress(0),
+    cachedExternalAddress(0),
+    timeAddressObtained(0)
 {
   serverPort = DefaultPort;
   Construct();
@@ -86,7 +91,9 @@ PSTUNClient::PSTUNClient(const PIPSocket::Address & address, WORD port,
                          WORD portBase, WORD portMax,
                          WORD portPairBase, WORD portPairMax)
   : serverAddress(address),
-    serverPort(port)
+    serverPort(port),
+    cachedExternalAddress(0),
+    timeAddressObtained(0)
 {
   Construct();
   SetPortRanges(portBase, portMax, portPairBase, portPairMax);
@@ -547,8 +554,47 @@ PString PSTUNClient::GetNatTypeName(BOOL force)
 }
 
 
+BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
+                                     const PTimeInterval & maxAge)
+{
+  if (cachedExternalAddress.IsValid() && (PTime() - timeAddressObtained > maxAge)) {
+    externalAddress = cachedExternalAddress;
+    return TRUE;
+  }
+
+  externalAddress = 0; // Set to invalid address
+
+  PUDPSocket socket;
+  if (!OpenSocket(socket, singlePortInfo))
+    return false;
+
+  PSTUNMessage request(PSTUNMessage::BindingRequest);
+  request.AddAttribute(PSTUNChangeRequest(false, false));
+  PSTUNMessage response;
+  if (!response.Poll(socket, request))
+  {
+    PTRACE(1, "STUN\tServer " << serverAddress << ':' << serverPort << " unexpectedly went offline.");
+    return false;
+  }
+
+  PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)response.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+  if (mappedAddress == NULL)
+  {
+    PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+    return false;
+  }
+
+  
+  externalAddress = cachedExternalAddress = mappedAddress->GetIP();
+  timeAddressObtained = PTime();
+  return true;
+}
+
+
 BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
 {
+  socket = NULL;
+
   switch (GetNatType(FALSE)) {
     case ConeNat :
     case RestrictedNat :
@@ -582,7 +628,8 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
       if (mappedAddress != NULL)
       {
         stunSocket->externalIP = mappedAddress->GetIP();
-        stunSocket->port = mappedAddress->port;
+        if (GetNatType(FALSE) != SymmetricNat)
+          stunSocket->port = mappedAddress->port;
         stunSocket->SetSendAddress(0, 0);
         stunSocket->SetReadTimeout(PMaxTimeInterval);
         socket = stunSocket;
@@ -603,6 +650,9 @@ BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
 BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2)
 {
+  socket1 = NULL;
+  socket2 = NULL;
+
   switch (GetNatType(FALSE)) {
     case ConeNat :
     case RestrictedNat :
@@ -658,7 +708,8 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
       return false;
     }
-    stunSocket[i].port = mappedAddress->port;
+    if (GetNatType(FALSE) != SymmetricNat)
+      stunSocket[i].port = mappedAddress->port;
     stunSocket[i].externalIP = mappedAddress->GetIP();
   }
 
