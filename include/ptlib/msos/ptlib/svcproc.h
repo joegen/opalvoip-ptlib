@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.17 1997/02/05 11:49:38 robertj Exp $
+ * $Id: svcproc.h,v 1.18 1997/03/18 21:23:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.18  1997/03/18 21:23:26  robertj
+ * Fix service manager falsely accusing app of crashing if OnStart() is slow.
+ *
  * Revision 1.17  1997/02/05 11:49:38  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -135,6 +138,7 @@
     BOOL                  isWin95;
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
+    HANDLE                startedEvent;
     HANDLE                terminationEvent;
     HWND                  controlWindow;
     HWND                  debugWindow;
