@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.10  1998/10/23 04:09:08  robertj
+ * Fixes for NT support.
+ * Allowed both old and new driver by compilation option.
+ *
  * Revision 1.9  1998/10/15 05:41:48  robertj
  * New memory leak check code.
  *
@@ -59,6 +63,8 @@
 
 #include <ptlib.h>
 #include <sockets.h>
+
+//#define USE_VPACKET
 #include <epacket.h>
 
 #include <snmp.h>
@@ -68,7 +74,13 @@
 #pragma warning(default:4201)
 
 
+#ifdef USE_VPACKET
+#define PACKET_SERVICE_NAME "VPacket"
+#else
 #define PACKET_SERVICE_NAME "EPacket"
+#define GetQueryOidCommand(oid) IOCTL_EPACKET_QUERY_OID
+#endif
+
 #define SERVICES_REGISTRY_KEY "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\"
 
 
@@ -181,6 +193,9 @@ class PWin32PacketDriver
     BOOL QueryOid(UINT oid, UINT len, BYTE * data);
     BOOL SetOid(UINT oid, DWORD data);
     BOOL SetOid(UINT oid, UINT len, const BYTE * data);
+#ifdef USE_VPACKET
+    virtual UINT GetQueryOidCommand(DWORD oid) const = 0;
+#endif
 
   protected:
     PWin32PacketDriver();
@@ -203,6 +218,11 @@ class PWin32PacketVxD : public PWin32PacketDriver
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
 
+#ifdef USE_VPACKET
+    virtual UINT GetQueryOidCommand(DWORD oid) const
+      { return oid >= OID_802_3_PERMANENT_ADDRESS ? IOCTL_EPACKET_QUERY_OID : IOCTL_EPACKET_STATISTICS; }
+#endif
+
   protected:
     PStringList transportBinding;
 };
@@ -222,6 +242,11 @@ class PWin32PacketSYS : public PWin32PacketDriver
 
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+#ifdef USE_VPACKET
+    virtual UINT GetQueryOidCommand(DWORD) const
+      { return IOCTL_EPACKET_QUERY_OID; }
+#endif
 
   protected:
     PString registryKey;
@@ -570,7 +595,7 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
   PWin32OidBuffer buf(oid, len);
   DWORD rxsize = 0;
-  if (!IoControl(IOCTL_EPACKET_QUERY_OID, buf, buf, buf, buf, rxsize))
+  if (!IoControl(GetQueryOidCommand(oid), buf, buf, buf, buf, rxsize))
     return FALSE;
 
   if (rxsize == 0)
@@ -589,7 +614,7 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
   oidData[2] = 0x12345678;
 
   DWORD rxsize = 0;
-  if (!IoControl(IOCTL_EPACKET_QUERY_OID,
+  if (!IoControl(GetQueryOidCommand(oid),
                  oidData, sizeof(oidData),
                  oidData, sizeof(oidData),
                  rxsize))
@@ -671,7 +696,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
   DWORD rxsize;
 
   if (hDriver == INVALID_HANDLE_VALUE) {
-    hDriver = CreateFile("\\\\.\\EPACKET.VXD",
+    hDriver = CreateFile("\\\\.\\" PACKET_SERVICE_NAME ".VXD",
                          GENERIC_READ | GENERIC_WRITE,
                          0,
                          NULL,
@@ -685,6 +710,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
       return FALSE;
     }
 
+#ifndef USE_VPACKET
     rxsize = 0;
     if (!IoControl(IOCTL_EPACKET_VERSION, NULL, 0, buf, sizeof(buf), rxsize)) {
       dwError = ::GetLastError();
@@ -696,6 +722,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
       dwError = ERROR_BAD_DRIVER;
       return FALSE;
     }
+#endif
   }
 
   PString devName;
@@ -903,6 +930,7 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
     return FALSE;
   }
 
+  ::SetLastError(0);
   hDriver = CreateFile("\\\\.\\" PACKET_SERVICE_NAME "_" + interfaceName,
                        GENERIC_READ | GENERIC_WRITE,
                        0,
@@ -915,7 +943,7 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
     return FALSE;
   }
 
-  registryKey = SERVICES_REGISTRY_KEY + interfaceName;
+  registryKey = SERVICES_REGISTRY_KEY + interfaceName + "\\Parameters\\Tcpip";
   dwError = ERROR_SUCCESS;
   return TRUE;
 }
@@ -1172,10 +1200,13 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
   }
 
   DWORD filter = 0;
-  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter) || filter == 0) {
+  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter)) {
     osError = driver->GetLastError()|0x40000000;
     return FALSE;
   }
+
+  if (filter == 0)
+    return PEthSocket::FilterDirected;
 
   mask = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
