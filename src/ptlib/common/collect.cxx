@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.7 1994/09/25 10:49:09 robertj Exp $
+ * $Id: collect.cxx,v 1.8 1994/10/23 03:41:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.7  1994/09/25 10:49:09  robertj
+ * Revision 1.8  1994/10/23 03:41:31  robertj
+ * Fixed dictionary functions that should work by index not key.
+ *
+ * Revision 1.7  1994/09/25  10:49:09  robertj
  * Removed redundent PAssertNULL.
  *
  * Revision 1.6  1994/08/21  23:43:02  robertj
@@ -1304,7 +1307,7 @@ PINDEX PAbstractDictionary::Insert(const PObject &, PObject *)
 
 PINDEX PAbstractDictionary::InsertAt(PINDEX index, PObject * obj)
 {
-  SetAt(PScalarKey(index), obj);
+  SetAt(AbstractGetKeyAt(index), obj);
   return index;
 }
  
@@ -1318,9 +1321,9 @@ BOOL PAbstractDictionary::Remove(const PObject *)
 
 PObject * PAbstractDictionary::RemoveAt(PINDEX index)
 {
-  PObject * obj = GetAt(index);
-  SetAt(PScalarKey(index), NULL);
-  return obj;
+  PObject & obj = AbstractGetDataAt(index);
+  SetAt(AbstractGetKeyAt(index), NULL);
+  return &obj;
 }
 
 
@@ -1348,6 +1351,12 @@ PObject * PAbstractDictionary::GetAt(PINDEX index) const
 }
  
  
+BOOL PAbstractDictionary::SetDataAt(PINDEX index, PObject * val)
+{
+  return SetAt(AbstractGetKeyAt(index), val);
+}
+
+
 BOOL PAbstractDictionary::Enumerate(PEnumerator func, PObject * info) const
 {
   return hashTable->EnumerateElements(func, info, FALSE);
