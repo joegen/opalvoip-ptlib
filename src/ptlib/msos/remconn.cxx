@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.26  1999/06/27 04:21:59  robertj
+ * Added more debugging to GetStatus() error reporting.
+ *
  * Revision 1.25  1999/02/16 08:08:07  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -311,19 +314,21 @@ static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
   status.dwSize = IsWinVer401() ? sizeof(status) : sizeof(winver400::tagRASCONNSTATUSA);
 
   rasError = Ras.GetConnectStatus(rasConnection, &status);
-  SetLastError(rasError);
-
   if (rasError == ERROR_INVALID_HANDLE) {
     PError << "RAS Connection Status invalid handle, retrying.";
     rasError = Ras.GetConnectStatus(rasConnection, &status);
-    SetLastError(rasError);
   }
 
-  if (rasError == 0)
+  if (rasError == 0) {
+    rasError = status.dwError;
+    SetLastError(rasError);
     return status.rasconnstate;
+  }
 
   PError << "RAS Connection Status failed (" << rasError << "), retrying.";
   rasError = Ras.GetConnectStatus(rasConnection, &status);
+  if (rasError == 0)
+    rasError = status.dwError;
   SetLastError(rasError);
 
   return -1;
