@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.5 1995/06/17 00:59:18 robertj Exp $
+ * $Id: doswin.cxx,v 1.6 1995/07/31 12:14:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.6  1995/07/31 12:14:52  robertj
+ * Added semaphore class.
+ *
  * Revision 1.5  1995/06/17 00:59:18  robertj
  * Moved PPipeChannel::Execute from common dos/windows to individual files.
  *
@@ -259,7 +262,7 @@ void PThread::Block(BlockFunction isBlockFun, PObject * obj)
 {
   isBlocked = isBlockFun;
   blocker = obj;
-  status = Blocked;
+  status = BlockedIO;
   Yield();
 }
 
