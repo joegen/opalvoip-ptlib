@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.3  2003/04/17 01:22:29  craigs
+ * Fixed problem with OpenLDAP and OpenSSL-0.9.7
+ *
  * Revision 1.2  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -107,6 +110,16 @@
 #pragma include_alias(<openssl/ssl23.h>,      <@SSL_DIR@/inc32/openssl/ssl23.h>)
 #pragma include_alias(<openssl/err.h>,        <@SSL_DIR@/inc32/openssl/err.h>)
 #pragma include_alias(<openssl/rand.h>,       <@SSL_DIR@/inc32/openssl/rand.h>)
+#pragma include_alias(<openssl/symhacks.h>,   <@SSL_DIR@/inc32/openssl/symhacks.h>)
+#pragma include_alias(<openssl/comp.h>,       <@SSL_DIR@/inc32/openssl/comp.h>)
+#pragma include_alias(<openssl/ossl_typ.h>,   <@SSL_DIR@/inc32/openssl/ossl_typ.h>)
+#pragma include_alias(<openssl/md4.h>,        <@SSL_DIR@/inc32/openssl/md4.h>)
+#pragma include_alias(<openssl/des_old.h>,    <@SSL_DIR@/inc32/openssl/des_old.h>)
+#pragma include_alias(<openssl/ui_compat.h>,  <@SSL_DIR@/inc32/openssl/ui_compat.h>)
+#pragma include_alias(<openssl/ui.h>,         <@SSL_DIR@/inc32/openssl/ui.h>)
+#pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
+#pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
+#pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
 #endif
 
 #define P_SSL_DIR         "@SSL_DIR@/"
@@ -155,6 +168,7 @@
 #pragma include_alias(<lber.h>,          <@LDAP_DIR@/include/lber.h>)
 #pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
 #pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
+#pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
 #endif
 
 #define P_LDAP_LIBRARY      "@LDAP_DIR@/DLLRelease/openldap.lib"
