@@ -1,5 +1,5 @@
 
-ifdef SHAREDLIB
+ifeq ($(P_SHAREDLIB),1)
 
 ifndef LIBVER_MAJ
 LIBVER_MAJ	= 1

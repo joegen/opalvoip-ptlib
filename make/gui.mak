@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.10  2000/02/04 19:33:25  craigs
+# Added ability to create non-shared versions of programs
+#
 # Revision 1.9  2000/01/25 04:38:52  robertj
 # Another fix for shared libraries
 #
@@ -60,7 +63,7 @@ GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
 
 PWLIB           = pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
-ifndef SHAREDLIB
+ifeq	($(P_SHAREDLIB),0)
 PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).a
 else
 PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).so
