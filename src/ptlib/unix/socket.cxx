@@ -1,5 +1,5 @@
 /*
- * $Id: socket.cxx,v 1.24 1998/09/08 05:15:14 robertj Exp $
+ * $Id: socket.cxx,v 1.25 1998/09/08 09:54:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994-1996 Equivalence Pty. Ltd.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.25  1998/09/08 09:54:31  robertj
+ * Fixed ppp and ippp compatibility.
+ *
  * Revision 1.24  1998/09/08 05:15:14  robertj
  * Fixed problem in Windows requiring snmpapi.dll for PEthSocket class.
  *
@@ -373,7 +376,8 @@ PEthSocket::PEthSocket(PINDEX, PINDEX)
   medium = MediumUnknown;
   filterMask = FilterDirected|FilterBroadcast;
   filterType = TypeAll;
-  padBytes = skipBytes = 0;
+  fakeMacHeader = FALSE;
+  ipppInterface = FALSE;
 }
 
 
@@ -387,25 +391,25 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
 {
   Close();
 
-  padBytes = skipBytes = 0;
+  fakeMacHeader = FALSE;
+  ipppInterface = FALSE;
 
   if (strncmp("eth", interfaceName, 3) == 0)
     medium = Medium802_3;
-  else if (strncmp("ippp", interfaceName, 4) == 0) {
+  else if (strncmp("lo", interfaceName, 2) == 0)
+    medium = MediumLoop;
+  else if (strncmp("sl", interfaceName, 2) == 0) {
     medium = MediumWan;
+    fakeMacHeader = TRUE;
   }
   else if (strncmp("ppp", interfaceName, 3) == 0) {
     medium = MediumWan;
-    padBytes = 4;
+    fakeMacHeader = TRUE;
   }
-  else if (strncmp("sl", interfaceName, 2) == 0) {
+  else if (strncmp("ippp", interfaceName, 4) == 0) {
     medium = MediumWan;
-    padBytes = 16;
-  }
-  else if (strncmp("lo", interfaceName, 2) == 0) {
-    medium = MediumLoop;
-    padBytes = 2;
-    skipBytes = 12;
+    fakeMacHeader = TRUE;
+    ipppInterface = TRUE;
   }
   else {
     lastError = NotFound;
@@ -619,16 +623,20 @@ BOOL PEthSocket::ResetAdaptor()
 
 BOOL PEthSocket::Read(void * buf, PINDEX len)
 {
+  static const BYTE macHeader[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0, 0, 0, 0, 0, 0, 8, 0 };
+
   BYTE * bufptr = (BYTE *)buf;
 
-  if (padBytes > 0) {
-    memset(bufptr, 0, padBytes);
-    bufptr += padBytes;
-    if (len <= padBytes) {
+  if (fakeMacHeader) {
+    if (len <= sizeof(macHeader)) {
+      memcpy(bufptr, macHeader, len);
       lastReadCount = len;
       return TRUE;
     }
-    len -= padBytes;
+
+    memcpy(bufptr, macHeader, sizeof(macHeader));
+    bufptr += sizeof(macHeader);
+    len -= sizeof(macHeader);
   }
 
   for (;;) {
@@ -640,11 +648,18 @@ BOOL PEthSocket::Read(void * buf, PINDEX len)
     if (channelName != from.sa_data)
       continue;
 
-    if (skipBytes > 0) {
-      if (lastReadCount <= skipBytes)
-        lastReadCount = 0;
-      else
-        memmove(bufptr, bufptr+skipBytes, lastReadCount-skipBytes);
+    if (ipppInterface) {
+      if (lastReadCount <= 10)
+        return FALSE;
+      if (memcmp(bufptr+6, "\xff\x03\x00\x21", 4) == 0) {
+        lastReadCount -= 10;
+        memmove(bufptr, bufptr+10, lastReadCount);
+      }
+    }
+
+    if (fakeMacHeader) {
+      lastReadCount += sizeof(macHeader);
+      break;
     }
 
     if ((filterMask&FilterPromiscuous) != 0)
