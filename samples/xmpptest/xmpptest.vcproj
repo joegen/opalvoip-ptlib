@@ -104,7 +104,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ptclibd.lib ptlibsd.lib wxmswd.lib tiffd.lib jpegd.lib pngd.lib regexd.lib zlibd.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
 				OutputFile=".\Debug/xmpptest.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/xmpptest.pdb"
