@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.23  2000/10/05 00:04:20  robertj
+ * Fixed some warnings.
+ *
  * Revision 1.22  2000/07/04 20:34:16  rogerh
  * Only use ioctl SNDCTL_DSP_SETDUPLEX is Linux. It is not defined in FreeBSD
  * In NetBSD and OpenBSD (using liboss), the ioctl returns EINVAL.
@@ -516,7 +519,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
       PTRACE(6, "OSS\tRead interrupted");
     }
 
-    if (stat != len)
+    if (stat != (int)len)
       PTRACE(6, "OSS\tRead completed short - " << stat << " vs " << len);
     else
       PTRACE(6, "OSS\tRead completed");
@@ -591,7 +594,7 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     return FALSE;
   }
 
-  PINDEX totalSize = size * count;
+  //PINDEX totalSize = size * count;
 
   //size = 16;
   //count = (totalSize + 15) / 16;
