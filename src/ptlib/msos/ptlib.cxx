@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.61  2002/11/08 06:02:53  robertj
+ * Fixed problem wth getting file title if directory has a dot but the
+ *   filename doesn't, thanks Peter 'Luna' Runestig
+ *
  * Revision 1.60  2002/10/17 07:17:43  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -626,7 +630,11 @@ PCaselessString PFilePath::GetTitle() const
   else
     backslash++;
 
-  return operator()(backslash, FindLast('.')-1);
+  PINDEX last_dot = FindLast('.');
+  if (last_dot < backslash)
+    last_dot = P_MAX_INDEX;
+
+  return operator()(backslash, last_dot-1);
 }
 
 
