@@ -24,13 +24,22 @@
 //
 
 
-
+#ifndef _WIN32_WCE
 #include <cassert>
 #include <cstring>
+#endif
 
 #if !defined(_ERRNO_H)
 #include <errno.h>
 #endif
+
+#ifdef _WIN32_WCE
+#include <winsock.h>
+#define CLOSE closesocket
+#define assert
+
+#else // !_WIN32_WCE
+#define CLOSE close
 
 #ifndef WIN32
 #include <sys/time.h>
@@ -39,6 +48,7 @@
 #include <netinet/in.h>
 #endif
 
+#endif // _WIN32_WCE
 #include "udp.h"
 #include "stun.h"
 
@@ -700,7 +710,7 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, i
      fd[i] = openPort((port == 0) ? port : (port + i));
      if (fd[i] < 0) {
        while (i > 0)
-         close(fd[--i]);
+         CLOSE(fd[--i]);
        return false;
      }
    }
@@ -750,7 +760,7 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, i
          *sAddr = mappedAddr[0];
          *fd1 = fd[0];
          *fd2 = fd[1];
-         close( fd[2] );
+         CLOSE( fd[2] );
          return true;
       }
    }
@@ -762,14 +772,14 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, i
          *sAddr = mappedAddr[1];
          *fd1 = fd[1];
          *fd2 = fd[2];
-         close( fd[0] );
+         CLOSE( fd[0] );
          return true;
       } 
    }
    
    for( i=0; i<NUM; i++)
    {
-      close( fd[i] );
+      CLOSE( fd[i] );
    }
    
    return false;
@@ -1007,7 +1017,7 @@ verbose );
       Socket s = openPort( 11000, testImappedAddr.addr.v4addr );
       if ( s != INVALID_SOCKET )
       {
-         close(s);
+         CLOSE(s);
          isNat = false;
          //cerr << "binding worked" << endl;
       }
