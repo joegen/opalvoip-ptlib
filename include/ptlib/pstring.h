@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.49  2002/02/15 04:29:31  robertj
+ * Added PString::Empty() to return the primordial empty string. Saves on a
+ *   couple of memory allocations for every empty string ever used.
+ *
  * Revision 1.48  2002/01/26 23:55:55  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -241,6 +245,10 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
   public:
   /**@name Construction */
   //@{
+    /**Return an empty string.
+      */
+    static const PString & Empty();
+
     /**Construct an empty string. This will have one character in it which is
        the '\0' character.
      */
