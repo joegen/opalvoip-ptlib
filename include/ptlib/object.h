@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.13 1995/04/25 12:04:35 robertj Exp $
+ * $Id: object.h,v 1.14 1995/06/04 12:34:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.14  1995/06/04 12:34:19  robertj
+ * Added trace functions.
+ *
  * Revision 1.13  1995/04/25 12:04:35  robertj
  * Fixed borland compatibility.
  * Fixed function hiding ancestor virtuals.
@@ -174,6 +177,29 @@ extern ostream * PSTATIC PErrorStream;
    of <CODE>PError</CODE> output is wished to be redirected to a file.
  */
 #define PError (*PErrorStream)
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Debug and tracing
+
+class PTrace {
+/* This class is used for tracing the entry and exit of program blocks.
+ */
+  public:
+    inline PTrace(const char * traceName)
+      { PError << "Entering: " << (name = traceName) << endl; }
+    inline ~PTrace()
+      { PError << "Leaving : " << name << endl; }
+  private:
+    const char * name;
+};
+
+/*$MACRO PTRACE(name)
+   This macro creates a trace variable for tracking the entry and exit of
+   program blocks.
+ */
+#define PTRACE(n) PTrace __trace_instance(n)
 
 
 ///////////////////////////////////////////////////////////////////////////////
