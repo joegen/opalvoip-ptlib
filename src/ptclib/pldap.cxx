@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.15  2004/02/23 23:52:19  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.14  2004/02/04 09:37:00  rjongbloed
  * Fixed memory leak and race condition, thanks Rossano Ravelli
  *
@@ -81,8 +84,14 @@
 
 #if defined(_WIN32)
 #pragma comment(lib, P_LDAP_LIBRARY)
-#endif
 
+#ifdef _DEBUG
+#pragma comment(linker, "/delayload:openldapd.dll")
+#else
+#pragma comment(linker, "/delayload:openldap.dll")
+#endif
+#pragma comment(lib,    "Delayimp.lib")
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
