@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.45  2004/06/01 23:25:20  csoutheren
+ * Disabled warnings under MSVC
+ *
  * Revision 1.44  2004/06/01 05:22:43  csoutheren
  * Restored memory check functionality
  *
@@ -492,6 +495,8 @@ extern "C" char ** __argv;
 #if _MSC_VER>=1300
 using namespace std;
 #endif
+
+#pragma warning(disable:4786)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
