@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.33 1996/07/15 10:37:20 robertj Exp $
+ * $Id: http.cxx,v 1.34 1996/07/27 04:13:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.34  1996/07/27 04:13:47  robertj
+ * Fixed use of HTTP proxy on non-persistent connections.
+ *
  * Revision 1.33  1996/07/15 10:37:20  robertj
  * Improved proxy "self" detection (especially localhost).
  *
@@ -823,7 +826,7 @@ BOOL PHTTPSocket::ProcessCommand()
   // below are to catch every way of specifying the host (name, alias, any of
   // several IP numbers etc).
   BOOL doProxy;
-  if (connectInfo.IsProxyConnection() || url.GetScheme() != "http")
+  if (url.GetScheme() != "http")
     doProxy = TRUE;
   else if (url.GetPort() != 0 && url.GetPort() != GetPort())
     doProxy = TRUE;
