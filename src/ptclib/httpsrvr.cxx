@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.1 1996/09/14 13:02:18 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.2 1996/10/26 03:31:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.2  1996/10/26 03:31:05  robertj
+ * Changed OnError so can pass in full HTML page as parameter.
+ *
  * Revision 1.1  1996/09/14 13:02:18  robertj
  * Initial revision
  *
@@ -550,7 +553,7 @@ BOOL PHTTPServer::OnUnknown(const PCaselessString & cmd,
 
 
 BOOL PHTTPServer::OnError(StatusCode code,
-                     const PString & extra,
+             const PCaselessString & extra,
          const PHTTPConnectionInfo & connectInfo)
 {
   const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
@@ -566,19 +569,24 @@ BOOL PHTTPServer::OnError(StatusCode code,
     return statusInfo->code == OK;
   }
 
-  PHTML reply;
-  reply << PHTML::Title()
-        << statusInfo->code
-        << ' '
-        << statusInfo->text
-        << PHTML::Body()
-        << PHTML::Heading(1)
-        << statusInfo->code
-        << ' '
-        << statusInfo->text
-        << PHTML::Heading(1)
-        << extra
-        << PHTML::Body();
+  PString reply;
+  if (extra.Find("<BODY>") != P_MAX_INDEX)
+    reply = extra;
+  else {
+    PHTML html;
+    html << PHTML::Title()
+         << statusInfo->code
+         << ' '
+         << statusInfo->text
+         << PHTML::Body()
+         << PHTML::Heading(1)
+         << statusInfo->code
+         << ' '
+         << statusInfo->text
+         << PHTML::Heading(1)
+         << extra
+         << PHTML::Body();
+  }
 
   headers.SetAt(ContentTypeStr, "text/html");
   StartResponse(code, headers, reply.GetLength());
