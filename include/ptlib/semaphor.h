@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.1 1995/08/01 21:41:24 robertj Exp $
+ * $Id: semaphor.h,v 1.2 1995/11/21 11:49:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.2  1995/11/21 11:49:42  robertj
+ * Added timeout on semaphore wait.
+ *
  * Revision 1.1  1995/08/01 21:41:24  robertj
  * Initial revision
  *
@@ -76,8 +79,14 @@ PDECLARE_CLASS(PSemaphore, PObject)
 
   // New functions for class.
     void Wait();
+    BOOL Wait(
+      const PTimeInterval & timeout // Amount of time to wait for semaphore.
+    );
     /* If the semaphore count is > 0, decrement the semaphore and return. If
        if is = 0 then wait (block).
+
+       <H2>Returns:</H2>
+       TRUE if semaphore was signalled, FALSE if timed out.
      */
 
     void Signal();
@@ -96,6 +105,7 @@ PDECLARE_CLASS(PSemaphore, PObject)
   protected:
     unsigned currentCount;
     unsigned maximumCount;
+    PTimer   timeout;
     PQUEUE(BlockedThreadsQueue, PThread);
     BlockedThreadsQueue blockedThreads;
 #endif
