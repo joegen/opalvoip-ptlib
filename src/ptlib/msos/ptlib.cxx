@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.12 1995/02/27 10:37:06 robertj Exp $
+ * $Id: ptlib.cxx,v 1.13 1995/03/12 05:00:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.12  1995/02/27 10:37:06  robertj
+ * Revision 1.13  1995/03/12 05:00:08  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.12  1995/02/27  10:37:06  robertj
  * Added GetUserNmae().
  * Removed superfluous Read() and Write() for text files.
  *
@@ -53,11 +57,9 @@
 
 #include "ptlib.h"
 
-#include <fcntl.h>
 #include <errno.h>
-#include <dos.h>
+#include <fcntl.h>
 #include <sys\stat.h>
-#include <malloc.h>
 
 #ifndef P_USE_INLINES
 #include <osutil.inl>
@@ -123,6 +125,30 @@ BOOL PChannel::ConvertOSError(int error)
   if (error >= 0)
     return TRUE;
 
+#if defined(_WIN32)
+  if (error != -2)
+    osError = errno;
+  else {
+    osError = GetLastError();
+    switch (osError) {
+      case ERROR_INVALID_HANDLE :
+        osError = EBADF;
+        break;
+      case ERROR_INVALID_PARAMETER :
+        osError = EINVAL;
+        break;
+      case ERROR_ACCESS_DENIED :
+        osError = EACCES;
+        break;
+      case ERROR_NOT_ENOUGH_MEMORY :
+        osError = ENOMEM;
+        break;
+      default :
+        osError |= 0x40000000;
+    }
+  }
+#endif
+
   switch (osError) {
     case 0 :
       lastError = NoError;
@@ -166,67 +192,6 @@ void PDirectory::CopyContents(const PDirectory & dir)
 }
 
 
-static PString FixPath(const PString & path, BOOL isDirectory)
-{
-  PString curdir;
-  PAssert(getcwd(curdir.GetPointer(P_MAX_PATH),
-                                   P_MAX_PATH) != NULL, POperatingSystemError);
-
-  PString fullpath;
-
-  PINDEX offset;
-  if (path.GetLength() < 2 || path[1] != ':') {
-    fullpath = curdir(0,1);
-    offset = 0;
-  }
-  else {
-    fullpath = path(0,1).ToUpper();
-    offset = 2;
-  }
-
-  char slash = path[offset];
-  if (slash != '\\' && slash != '/') {
-    if (fullpath[0] == curdir[0])
-      fullpath += curdir(2, P_MAX_INDEX);
-    else if (_chdrive(fullpath[0]-'A'+1) == 0) {
-      PString otherdir;
-      PAssert(getcwd(otherdir.GetPointer(P_MAX_PATH),
-                                   P_MAX_PATH) != NULL, POperatingSystemError);
-      fullpath += otherdir(2, P_MAX_INDEX);
-      _chdrive(curdir[0]-'A'+1);  // Put drive back
-    }
-    slash = fullpath[fullpath.GetLength()-1];
-    if (slash != '\\' && slash != '/')
-      fullpath += "\\";
-  }
-
-  fullpath += path(offset, P_MAX_INDEX);
-
-  slash = fullpath[fullpath.GetLength()-1];
-  if (isDirectory && slash != '\\' && slash != '/')
-    fullpath += "\\";
-
-  int pos;
-  while ((pos = fullpath.Find('/')) != P_MAX_INDEX)
-    fullpath[pos] = '\\';
-
-  while ((pos = fullpath.Find("\\.\\")) != P_MAX_INDEX)
-    fullpath = fullpath(0, pos) + fullpath(pos+3, P_MAX_INDEX);
-
-  while ((pos = fullpath.Find("\\..\\")) != P_MAX_INDEX)
-    fullpath = fullpath(0, fullpath.FindLast('\\', pos-1)) +
-                                                  fullpath(pos+4, P_MAX_INDEX);
-
-  return fullpath.ToUpper();
-}
-
-
-void PDirectory::Construct()
-{
-  PString::operator=(FixPath(*this, TRUE));
-}
-
-
 BOOL PDirectory::Change(const PString & p)
 {
   PDirectory d = p;
@@ -236,55 +201,27 @@ BOOL PDirectory::Change(const PString & p)
 
 BOOL PDirectory::Filtered()
 {
-  if (strcmp(fileinfo.name, ".") == 0)
+#if defined(_WIN32)
+  char * name = fileinfo.cFileName;
+#else
+  char * name = fileinfo.name;
+#endif
+  if (strcmp(name, ".") == 0)
     return TRUE;
-  if (strcmp(fileinfo.name, "..") == 0)
+  if (strcmp(name, "..") == 0)
     return TRUE;
   if (scanMask == PFileInfo::AllPermissions)
     return FALSE;
 
   PFileInfo inf;
-  PAssert(PFile::GetInfo(*this+fileinfo.name, inf), POperatingSystemError);
+  PAssert(PFile::GetInfo(*this+name, inf), POperatingSystemError);
   return (inf.type&scanMask) == 0;
 }
 
 
-BOOL PDirectory::Open(int newScanMask)
+BOOL PDirectory::IsRoot() const
 {
-  scanMask = newScanMask;
-  if (_dos_findfirst(*this+"*.*", 0xff, &fileinfo) != 0)
-    return FALSE;
-
-  return Filtered() ? Next() : TRUE;
-}
-
-
-BOOL PDirectory::Next()
-{
-  do {
-    if (_dos_findnext(&fileinfo) != 0)
-      return FALSE;
-  } while (Filtered());
-
-  return TRUE;
-}
-
-
-PString PDirectory::GetEntryName() const
-{
-  return fileinfo.name;
-}
-
-
-BOOL PDirectory::IsSubDir() const
-{
-  return (fileinfo.attrib&_A_SUBDIR) != 0;
-}
-
-
-void PDirectory::Close()
-{
-  /* do nothing */
+  return GetLength() == 3;
 }
 
 
@@ -292,43 +229,133 @@ void PDirectory::Close()
 // File Path
 
 PFilePath::PFilePath(const PString & str)
-  : PFILE_PATH_STRING(FixPath(str, FALSE))
+  : PCaselessString(PDirectory::CreateFullPath(str, FALSE))
 {
 }
 
 
 PFilePath::PFilePath(const char * cstr)
-  : PFILE_PATH_STRING(FixPath(cstr, FALSE))
+  : PCaselessString(PDirectory::CreateFullPath(cstr, FALSE))
 {
+}
+
+
+PFilePath::PFilePath(const char * prefix, const char * dir)
+{
+  if (dir != NULL) {
+    PDirectory tmpdir(dir);
+    operator=(tmpdir);
+  }
+  else {
+    PConfig cfg(PConfig::Environment);
+    PString path = cfg.GetString("TMPDIR");
+    if (path.IsEmpty()) {
+      path = cfg.GetString("TMP");
+      if (path.IsEmpty())
+        path = cfg.GetString("TEMP");
+    }
+    if (path.IsEmpty() || path[path.GetLength()-1] != '\\')
+      path += '\\';
+    *this = path;
+  }
+  if (prefix != NULL)
+    *this += prefix;
+  else
+    *this += "PW";
+  *this += "XXXXXX";
+  PAssert(_mktemp(GetPointer()) != NULL, "Could not make temporary file");
 }
 
 
 PFilePath & PFilePath::operator=(const PString & str)
 {
-  PFILE_PATH_STRING::operator=(FixPath(str, FALSE));
+  PCaselessString::operator=(PDirectory::CreateFullPath(str, FALSE));
   return *this;
+}
+
+
+PCaselessString PFilePath::GetVolume() const
+{
+  PINDEX colon = Find(':');
+  if (colon == P_MAX_INDEX)
+    return PCaselessString();
+  return Left(colon+1);
+}
+
+
+PCaselessString PFilePath::GetPath() const
+{
+  PINDEX backslash = FindLast('\\');
+  if (backslash == P_MAX_INDEX)
+    return PCaselessString();
+
+  PINDEX colon = Find(':');
+  if (colon == P_MAX_INDEX)
+    colon = 0;
+  else
+    colon++;
+
+  return operator()(colon, backslash);
+}
+
+
+PCaselessString PFilePath::GetFileName() const
+{
+  PINDEX backslash = FindLast('\\');
+  if (backslash == P_MAX_INDEX)
+    backslash = 0;
+  else
+    backslash++;
+
+  return operator()(backslash, P_MAX_INDEX);
+}
+
+
+PCaselessString PFilePath::GetTitle() const
+{
+  PINDEX backslash = FindLast('\\');
+  if (backslash == P_MAX_INDEX)
+    backslash = 0;
+  else
+    backslash++;
+
+  return operator()(backslash, FindLast('.')-1);
+}
+
+
+PCaselessString PFilePath::GetType() const
+{
+  PINDEX dot = FindLast('.');
+  if (dot == P_MAX_INDEX)
+    return PCaselessString();
+  return operator()(dot, P_MAX_INDEX);
 }
 
 
 void PFilePath::SetType(const PCaselessString & type)
 {
-  *this = operator()(0, FindLast('.')-1) + type;
+  PINDEX dot = FindLast('.');
+  if (dot != P_MAX_INDEX)
+    *this = Left(dot-1) + type;
+  else
+    *this += type;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-void PFile::SetFilePath(const PString & newName)
-{
-  path = FixPath(newName, FALSE);
-}
-
-
 void PFile::CopyContents(const PFile & f)
 {
   path = f.path;
   os_handle = f.os_handle;
+}
+
+
+void PFile::SetFilePath(const PString & newName)
+{
+  if (!IsOpen())
+    path = newName;
 }
 
 
@@ -413,9 +440,13 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
       break;
   }
 
+#if defined(_WIN32)
+  info.hidden = (GetFileAttributes(name) & FILE_ATTRIBUTE_HIDDEN) != 0;
+#else
   unsigned int attr;
   _dos_getfileattr(name, &attr);
   info.hidden = (attr & _A_HIDDEN) != 0;
+#endif
 
   return TRUE;
 }
@@ -438,11 +469,8 @@ BOOL PFile::Open(OpenMode mode, int opts)
   Close();
   clear();
 
-  if (path.IsEmpty()) {
-    char * tmp = tempnam("C:\\", "PWL");
-    path = PString(PAssertNULL(tmp));
-    free(tmp);
-  }
+  if (path.IsEmpty())
+    path = PFilePath("PWL", NULL);
 
   int oflags = IsTextFile() ? _O_TEXT : _O_BINARY;
   switch (mode) {
@@ -469,45 +497,16 @@ BOOL PFile::Open(OpenMode mode, int opts)
   if ((opts&Truncate) != 0)
     oflags |= O_TRUNC;
 
-  BOOL ok = (os_handle = _open(path, oflags, S_IREAD|S_IWRITE)) >= 0;
-  osError = ok ? 0 : errno;
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-    case ENOENT :
-      lastError = NotFound;
-    case EEXIST :
-      lastError = FileExists;
-    case EACCES :
-      lastError = AccessDenied;
-    case ENOMEM :
-      lastError = NoMemory;
-    default :
-      lastError = Miscellaneous;
-  }
-  return ok;
+  if ((opts&Temporary) != 0)
+    removeOnClose = TRUE;
+
+  return ConvertOSError(os_handle = _open(path, oflags, S_IREAD|S_IWRITE));
 }
 
 
 BOOL PFile::SetLength(off_t len)
 {
-  BOOL ok = chsize(GetHandle(), len) == 0;
-  osError = ok ? 0 : errno;
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-    case ENOSPC :
-      lastError = DiskFull;
-    case EACCES :
-      lastError = AccessDenied;
-    case ENOMEM :
-      lastError = NoMemory;
-    case EBADF :
-      lastError = NotOpen;
-    default :
-      lastError = Miscellaneous;
-  }
-  return ok;
+  return ConvertOSError(_chsize(GetHandle(), len));
 }
 
 
@@ -520,91 +519,27 @@ BOOL PTextFile::IsTextFile() const
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PPipeChannel
-
-void PPipeChannel::Construct(const PString & subProgram,
-                const char * const * arguments, OpenMode mode, BOOL searchPath)
+BOOL PTextFile::ReadLine(PString & str)
 {
-}
-
-
-void PPipeChannel::DestroyContents()
-{
-}
-
-
-void PPipeChannel::CloneContents(const PPipeChannel *)
-{
-  PAssertAlways("Cannot clone pipe");
-}
-
-
-void PPipeChannel::CopyContents(const PPipeChannel & chan)
-{
-}
-
-
-BOOL PPipeChannel::Read(void * buffer, PINDEX len)
-{
-  return FALSE;
-}
-      
-
-BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
-{
-  return FALSE;
-}
-
-
-BOOL PPipeChannel::Close()
-{
-  if (IsOpen()) {
-    os_handle = -1;
+  char * ptr = str.GetPointer(100);
+  PINDEX len = 0;
+  int c;
+  while ((c = ReadChar()) >= 0 && c != '\n') {
+    *ptr++ = (char)c;
+    if (++len >= str.GetSize())
+      ptr = str.GetPointer(len + 100) + len;
   }
-  return TRUE;
+  *ptr = '\0';
+  PAssert(str.MakeMinimumSize(), POutOfMemory);
+  return c >= 0 || len > 0;
 }
 
 
-BOOL PPipeChannel::Execute()
+BOOL PTextFile::WriteLine(const PString & str)
 {
-  return TRUE;
+  return WriteString(str) && WriteChar('\n');
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PThread
-
-PThread::~PThread()
-{
-  Terminate();
-  _nfree(stackBase);   // Give stack back to the near heap
-}
-
-
-void PThread::Block(PThreadBlockFunction isBlockFun, PObject * obj)
-{
-  isBlocked = isBlockFun;
-  blocker = obj;
-  status = Blocked;
-  Yield();
-}
-
-
-PString PProcess::GetUserName() const
-{
-  const char * username = getenv("LOGNAME");
-  if (username == NULL) {
-    username = getenv("USER");
-    if (username == NULL) {
-      // _intdosx
-      username = "";
-    }
-  }
-  PAssert(*username != '\0', "Cannot determine user name, set LOGNAME.");
-  return username;
-}
 
 
 // End Of File ///////////////////////////////////////////////////////////////
