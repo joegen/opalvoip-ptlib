@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.37  2000/05/05 05:06:38  robertj
+ * Added tcp.h to get TCP_NODELAY for setsockopt call.
+ *
  * Revision 1.36  2000/04/10 11:39:49  rogerh
  * Add NetBSD pthread support
  *
@@ -107,6 +110,7 @@
 #include <unistd.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <dlfcn.h>
 
 
