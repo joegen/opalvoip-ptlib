@@ -89,7 +89,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"Lib/PTLib.bsc" 
 BSC32_SBRS= \
@@ -235,7 +235,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -422,7 +422,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -572,7 +572,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"Lib/PTLib.bsc" 
 BSC32_SBRS= \
@@ -669,7 +669,7 @@ SOURCE=.\assert.cxx
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\assert.obj"	"$(INTDIR)\Console.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -679,7 +679,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\assert.obj"	"$(INTDIR)\assert.sbr"	"$(INTDIR)\Console.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -689,7 +689,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\assert.obj"	"$(INTDIR)\assert.sbr"	"$(INTDIR)\Console.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -699,7 +699,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fp"$(INTDIR)\Console.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\assert.obj"	"$(INTDIR)\Console.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -810,7 +810,7 @@ InputPath=..\common\getdate.y
 "..\common\getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat 
 	@echo off 
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 << 
 	
 
@@ -821,7 +821,7 @@ InputPath=..\common\getdate.y
 "..\common\getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat 
 	@echo off 
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 << 
 	
 
@@ -832,7 +832,7 @@ InputPath=..\common\getdate.y
 "..\common\getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat 
 	@echo off 
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 << 
 	
 
@@ -843,7 +843,7 @@ InputPath=..\common\getdate.y
 "..\common\getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	<<tempfile.bat 
 	@echo off 
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 << 
 	
 
@@ -853,7 +853,7 @@ SOURCE=..\common\getdate_tab.c
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob0 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob0 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\getdate_tab.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -863,7 +863,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob0 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\getdate_tab.obj"	"$(INTDIR)\getdate_tab.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -873,7 +873,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\getdate_tab.obj"	"$(INTDIR)\getdate_tab.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -883,7 +883,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob0 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob0 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\getdate_tab.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1713,7 +1713,7 @@ SOURCE=..\common\regex\regcomp.c
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regcomp.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1723,7 +1723,7 @@ CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regcomp.obj"	"$(INTDIR)\regcomp.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1733,7 +1733,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regcomp.obj"	"$(INTDIR)\regcomp.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1743,7 +1743,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regcomp.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1757,7 +1757,7 @@ SOURCE=..\common\regex\regerror.c
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regerror.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1767,7 +1767,7 @@ CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regerror.obj"	"$(INTDIR)\regerror.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1777,7 +1777,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regerror.obj"	"$(INTDIR)\regerror.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1787,7 +1787,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regerror.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1801,7 +1801,7 @@ SOURCE=..\common\regex\regexec.c
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regexec.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1811,7 +1811,7 @@ CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regexec.obj"	"$(INTDIR)\regexec.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1821,7 +1821,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regexec.obj"	"$(INTDIR)\regexec.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1831,7 +1831,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regexec.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1845,7 +1845,7 @@ SOURCE=..\common\regex\regfree.c
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regfree.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1855,7 +1855,7 @@ CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regfree.obj"	"$(INTDIR)\regfree.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1865,7 +1865,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regfree.obj"	"$(INTDIR)\regfree.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1875,7 +1875,7 @@ CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\regfree.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
