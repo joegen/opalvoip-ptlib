@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.232  2005/03/19 02:52:55  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
+ *
  * Revision 1.231  2005/01/31 08:05:40  csoutheren
  * More patches for MacOSX, thanks to Hannes Friederich
  *
@@ -1021,7 +1024,7 @@ ostream & PTrace::End(ostream & s)
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
      must suffer with blank lines in that case.
    */
-  ::streambuf & rb = *s.rdbuf();
+  // ::streambuf & rb = *s.rdbuf();
 #if 0
 #ifndef P_LINUX
   if (((s.flags()&ios::unitbuf) != 0) ||
