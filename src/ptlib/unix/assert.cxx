@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.9  2001/04/20 10:13:02  robertj
+ * Made sure cannot have nested asserts.
+ *
  * Revision 1.8  2000/03/27 18:20:09  craigs
  * Added the ability to get a stack dump on assert
  *
@@ -61,6 +64,11 @@
 void PAssertFunc (const char * file, int line, const char * msg)
 
 {
+  static BOOL inAssert;
+  if (inAssert)
+    return;
+  inAssert = TRUE;
+
   PError << "Assertion fail: File " << file << ", Line " << line << endl;
   if (msg != NULL)
     PError << msg << endl;
@@ -103,6 +111,7 @@ void PAssertFunc (const char * file, int line, const char * msg)
       case 'i' :
       case 'I' :
         PError << "\nIgnoring.\n";
+        inAssert = FALSE;
         return;
     }
   }
