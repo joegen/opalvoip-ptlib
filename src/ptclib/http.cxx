@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.98  2004/03/13 06:30:52  rjongbloed
+ * Virtualised parse function.
+ *
  * Revision 1.97  2004/02/24 11:14:44  rjongbloed
  * Fixed correct initialisation of some internal variables in URL if parse fails.
  *
@@ -600,7 +603,7 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 }
 
 
-void PURL::Parse(const char * cstr, const char * defaultScheme)
+BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
   urlString = cstr;
 
@@ -707,7 +710,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     }
 
     password = paramVars("password");
-    return;
+    return TRUE;
   }
 
   // if the URL should have leading slash, then remove it if it has one
@@ -839,6 +842,8 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     else
       port = schemeInfo->defaultPort;
   }
+
+  return !IsEmpty();
 }
 
 
