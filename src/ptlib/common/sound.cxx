@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.3  2003/11/12 04:42:02  csoutheren
+ * Removed non-specific code when compiling for WIn32
+ *
  * Revision 1.2  2003/11/12 03:27:25  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren of Post Increment
@@ -159,6 +162,8 @@ BOOL PSoundChannel::Open(
 
 ///////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
                unsigned bitsPerSample,
@@ -236,3 +241,5 @@ BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 
   return channel.PlayFile(file, wait);
 }
+
+#endif //_WIN32
