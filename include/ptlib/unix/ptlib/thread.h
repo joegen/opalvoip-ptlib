@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.29  2002/10/05 05:22:43  robertj
+ * Fixed adding GetThreadId() function.
+ *
  * Revision 1.28  2002/10/04 04:33:44  robertj
  * Added functions for getting operating system thread identifer values.
  *
@@ -123,8 +126,7 @@
  *
  */
 
-#ifndef _PTHREAD
-#define _PTHREAD
+#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -146,10 +148,10 @@ typedef pthread_t PThreadIdentifer;
 
 #define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
+#undef _PTHREAD_PLATFORM_INCLUDE
 
 #endif
 #ifdef _PTHREAD_PLATFORM_INCLUDE
-#undef _PTHREAD_PLATFORM_INCLUDE
 
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
@@ -245,11 +247,17 @@ typedef pthread_t PThreadIdentifer;
     int    selectErrno;
 #endif
 
+#endif
+
+#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
+#define _PTHREAD
+
 inline PThreadIdentifer PThread::GetThreadId() const
   { return PX_threadId; }
 
 inline PThreadIdentifer PThread::GetCurrentThreadId()
   { return ::pthread_self(); }
+
 
 #endif
 

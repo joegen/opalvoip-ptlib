@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.93  2002/10/05 05:22:43  robertj
+ * Fixed adding GetThreadId() function.
+ *
  * Revision 1.92  2002/10/01 06:27:48  robertj
  * Added bullet proofing against possible EINTR error returns on all pthread
  *   functions when under heavy load. Linux really should NOT do this, but ...
@@ -555,12 +558,6 @@ PThread::~PThread()
 }
 
 
-pthread_t PThread::PX_GetThreadId() const
-{
-  return PX_threadId;
-}
-
-
 void PThread::Restart()
 {
   if (!IsTerminated())
@@ -901,7 +898,7 @@ void PThread::PX_ThreadEnd(void * arg)
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
   
-  pthread_t id = thread->PX_GetThreadId();
+  pthread_t id = thread->GetThreadId();
   if (id != 0) {
 
     // remove this thread from the active thread list
