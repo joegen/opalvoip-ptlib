@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.6 1995/07/31 12:14:52 robertj Exp $
+ * $Id: doswin.cxx,v 1.7 1995/08/24 12:41:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.7  1995/08/24 12:41:10  robertj
+ * Changed PChannel so not a PContainer.
+ *
  * Revision 1.6  1995/07/31 12:14:52  robertj
  * Added semaphore class.
  *
@@ -189,23 +192,9 @@ void PPipeChannel::Construct(const PString & subProgram,
 }
 
 
-void PPipeChannel::DestroyContents()
+PPipeChannel::~PPipeChannel()
 {
   Close();
-}
-
-
-void PPipeChannel::CloneContents(const PPipeChannel *)
-{
-  PAssertAlways("Cannot clone pipe");
-}
-
-
-void PPipeChannel::CopyContents(const PPipeChannel & chan)
-{
-  toChild = chan.toChild;
-  fromChild = chan.fromChild;
-  hasRun = chan.hasRun;
 }
 
 
