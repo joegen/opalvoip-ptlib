@@ -4796,7 +4796,6 @@ fi
 
 
 
-if test "${HAS_PTHREADS:-unset}" != "unset" ; then
 
 for ac_header in SDL/SDL.h
 do
@@ -4939,10 +4938,10 @@ fi
 
 done
 
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    echo "$as_me:$LINENO: checking for SDL_Init in -lSDL" >&5
-echo $ECHO_N "checking for SDL_Init in -lSDL... $ECHO_C" >&6
-if test "${ac_cv_lib_SDL_SDL_Init+set}" = set; then
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  echo "$as_me:$LINENO: checking for SDL_CreateYUVOverlay in -lSDL" >&5
+echo $ECHO_N "checking for SDL_CreateYUVOverlay in -lSDL... $ECHO_C" >&6
+if test "${ac_cv_lib_SDL_SDL_CreateYUVOverlay+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4961,11 +4960,11 @@ extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char SDL_Init ();
+char SDL_CreateYUVOverlay ();
 int
 main ()
 {
-SDL_Init ();
+SDL_CreateYUVOverlay ();
   ;
   return 0;
 }
@@ -4982,41 +4981,40 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_SDL_SDL_Init=yes
+  ac_cv_lib_SDL_SDL_CreateYUVOverlay=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_SDL_SDL_Init=no
+ac_cv_lib_SDL_SDL_CreateYUVOverlay=no
 fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_SDL_SDL_Init" >&5
-echo "${ECHO_T}$ac_cv_lib_SDL_SDL_Init" >&6
-if test $ac_cv_lib_SDL_SDL_Init = yes; then
+echo "$as_me:$LINENO: result: $ac_cv_lib_SDL_SDL_CreateYUVOverlay" >&5
+echo "${ECHO_T}$ac_cv_lib_SDL_SDL_CreateYUVOverlay" >&6
+if test $ac_cv_lib_SDL_SDL_CreateYUVOverlay = yes; then
   HAS_SDL=1
 else
   HAS_SDL=
 fi
 
-  fi
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    HAS_SDL=1
+fi
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  HAS_SDL=1
 
 
 cat >>confdefs.h <<\_ACEOF
 #define P_SDL 1
 _ACEOF
 
-    if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
-    fi
-    if test ${SDLLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
-    fi
-    ENDLDLIBS="$ENDLDLIBS -lSDL"
+  if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
   fi
+  if test ${SDLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -lSDL"
 fi
 
 
