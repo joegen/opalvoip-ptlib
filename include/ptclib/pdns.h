@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.5  2003/07/22 23:52:20  dereksmithies
+ * Fix from Fabrizio Ammollo to cope with when P_DNS is disabled. Thanks!
+ *
  * Revision 1.4  2003/04/16 07:02:55  robertj
  * Cleaned up source.
  *
@@ -38,6 +41,7 @@
  *
  */
 
+#if P_DNS
 #ifndef _PDNS_H
 #define _PDNS_H
 
@@ -130,6 +134,6 @@ class PDNS : public PObject
 
 
 #endif // _PDNS_H
-
+#endif // P_DNS
 
 // End Of File ///////////////////////////////////////////////////////////////
