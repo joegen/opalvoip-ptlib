@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.30  1999/11/05 09:37:46  craigs
+ * Made static form of ConvertOSError public scope
+ *
  * Revision 1.29  1999/10/09 01:22:06  robertj
  * Fixed error display for sound channels.
  *
@@ -599,6 +602,13 @@ class PChannel : public PObject, public iostream {
     );
   //@}
 
+    /** Convert an operating system error into platform independent error.
+       This will set the lastError and osError member variables for access by
+       GetErrorCode() and GetErrorNumber().
+       
+       @return TRUE if there was no error.
+     */
+    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
 
   protected:
     PChannel(const PChannel &);
@@ -614,13 +624,6 @@ class PChannel : public PObject, public iostream {
      */
     virtual BOOL ConvertOSError(int error);
 
-    /** Convert an operating system error into platform independent error.
-       This will set the lastError and osError member variables for access by
-       GetErrorCode() and GetErrorNumber().
-       
-       @return TRUE if there was no error.
-     */
-    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
 
     /** Read a character with specified timeout.
       This reads a single character from the channel waiting at most the
