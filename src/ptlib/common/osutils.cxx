@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.147  2000/08/31 01:12:36  robertj
+ * Fixed problem with no new lines in trace output to stderr.
+ *
  * Revision 1.146  2000/08/30 05:56:07  robertj
  * Fixed free running timers broken by previous change.
  *
@@ -659,7 +662,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 ostream & PTrace::End(ostream & s)
 {
-  if (s.rdbuf()->out_waiting() > 0) {
+  /* Only output if there is something to output, this prevents some blank trace
+     entries from appearing under some patholgical conditions. Unfortunately if
+     stderr is used the unitbuf flag causes the out_waiting() not to work so we 
+     must suffer with blank lines in that case.
+   */
+  if ((s.flags()&ios::unitbuf) != 0 || s.rdbuf()->out_waiting() > 0) {
     if ((PTraceOptions&SystemLogStream) != 0)
       s.flush();
     else
