@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.5 1994/01/03 04:42:23 robertj Exp $
+ * $Id: ptime.h,v 1.6 1994/01/13 03:16:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.5  1994/01/03 04:42:23  robertj
+ * Revision 1.6  1994/01/13 03:16:09  robertj
+ * Added function to return time as a string.
+ *
+ * Revision 1.5  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.4  1993/12/31  06:45:38  robertj
@@ -62,6 +65,8 @@ PDECLARE_CLASS(PTime,PObject)
     PTimeInterval operator-(const PTime & t) const;
     PTime operator-(const PTimeInterval & t) const;
     PTime & operator-=(const PTimeInterval & t);
+
+    PString AsString() const;
 
 
   protected:
