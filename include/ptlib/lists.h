@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.31  2005/01/25 06:35:27  csoutheren
+ * Removed warnings under MSVC
+ *
  * Revision 1.30  2005/01/09 06:35:03  rjongbloed
  * Fixed ability to make Clone() or MakeUnique() of a sorted list.
  *
@@ -1015,7 +1018,6 @@ class PAbstractSortedList : public PCollection
     ) const;
   //@}
 
-  protected:
     struct Element {
       friend class Info;
       Element * parent;
@@ -1026,6 +1028,7 @@ class PAbstractSortedList : public PCollection
       enum { Red, Black } colour;
     };
 
+  protected:
     struct Info {
       Info();
 
