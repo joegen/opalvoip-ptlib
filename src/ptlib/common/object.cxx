@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.35  1998/12/22 10:24:17  robertj
+ * Fixed MSVC warnings caused by changes made in linux PPC support.
+ *
  * Revision 1.34  1998/12/15 09:01:10  robertj
  * Fixed 8 byte alignment problem in memory leak check code for sparc.
  *
@@ -322,7 +325,7 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   obj->next      = NULL;
   obj->size      = nSize;
   obj->fileName  = file;
-  obj->line      = line;
+  obj->line      = (WORD)line;
   obj->className = className;
   obj->request   = allocationRequest++;
   obj->flags     = flags;
@@ -375,7 +378,7 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
 
   obj->size      = nSize;
   obj->fileName  = file;
-  obj->line      = line;
+  obj->line      = (WORD)line;
   obj->request   = mem->allocationRequest++;
   if (obj->prev != NULL)
     obj->prev->next = obj;
