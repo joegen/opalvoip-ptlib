@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.6  1999/01/16 09:56:26  robertj
+# Changed some macros to more informative names.
+#
 # Revision 1.5  1998/12/02 02:37:06  robertj
 # New directory structure.
 #
@@ -42,15 +45,11 @@ endif
 include $(PWLIBDIR)/make/$(GUI).mak
 
 
-OBJDIR          = obj_$(GUI)_$(OBJ_SUFFIX)_$(LIBID)
+OBJDIR          = obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
 
-ifndef GUI_LIB_SUFFIX
-GUI_LIB_SUFFIX  = $(OBJ_SUFFIX)
-endif
-
-PWLIB           = pw_$(GUI)_$(LIB_SUFFIX)_$(LIBID)
+PWLIB           = pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 ifndef SHAREDLIB
 PWLIB_FILE      = $(LIBDIR)/lib$(PWLIB).a
@@ -72,7 +71,7 @@ LDLIBS	:= -l$(PWLIB) $(GUILIB) $(LDLIBS)
 #
 #  rules for resource compilation
 #
-PWRC		= $(PWLIBDIR)/tools/pwrc/obj_$(OBJ_SUFFIX)_r/pwrc -a $(GUI)
+PWRC		= $(PWLIBDIR)/tools/pwrc/obj_$(PLATFORM_TYPE)_r/pwrc -a $(GUI)
 
 #
 # if we are using a resource file, then define the required files
