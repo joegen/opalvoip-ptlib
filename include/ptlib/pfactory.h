@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.16  2004/07/06 04:26:44  csoutheren
+ * Fixed problem when using factory maps with non-standard keys
+ *
  * Revision 1.15  2004/07/02 03:14:47  csoutheren
  * Made factories non-singleton, by default
  * Added more docs
@@ -236,7 +239,7 @@ class PFactory : PFactoryBase
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase(singleton)
         {
-          PFactory<_Abstract_T>::Register(key, this);
+          PFactory<_Abstract_T, _Key_T>::Register(key, this);   // here
         }
 
       protected:
