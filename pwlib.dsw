@@ -72,21 +72,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "H323Proxy"=.\Apps\H323Proxy\H323Proxy.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Console
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "MailSwitch"=.\Apps\MailSwitch\MailSwitch.dsp - Package Owner=<4>
 
 Package=<5>
@@ -148,6 +133,21 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name PWLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "PhonePatch"=.\Apps\PhonePatch\PhonePatch.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Console
     End Project Dependency
 }}}
 
