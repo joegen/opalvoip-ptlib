@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.13 1995/03/12 05:00:08 robertj Exp $
+ * $Id: ptlib.cxx,v 1.14 1995/04/22 00:53:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.14  1995/04/22 00:53:49  robertj
+ * Added Move() function to PFile.
+ * Changed semantics of Rename() function in PFile.
+ * Changed file path string to use PFilePath object.
+ *
  * Revision 1.13  1995/03/12 05:00:08  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -307,7 +312,7 @@ PCaselessString PFilePath::GetFileName() const
   else
     backslash++;
 
-  return operator()(backslash, P_MAX_INDEX);
+  return Mid(backslash);
 }
 
 
@@ -359,7 +364,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-BOOL PFile::Access(const PString & name, OpenMode mode)
+BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 {
   int accmode;
 
@@ -380,7 +385,7 @@ BOOL PFile::Access(const PString & name, OpenMode mode)
 }
 
 
-BOOL PFile::Remove(const PString & name, BOOL force)
+BOOL PFile::Remove(const PFilePath & name, BOOL force)
 {
   if (remove(name) == 0)
     return TRUE;
@@ -392,15 +397,35 @@ BOOL PFile::Remove(const PString & name, BOOL force)
 }
 
 
-BOOL PFile::Rename(const PString & oldname, const PString & newname, BOOL force)
+BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
 {
-  if (rename(oldname, newname) == 0)
+  if (newname.FindOneOf(":\\/") != P_MAX_INDEX) {
+    errno = EINVAL;
+    return FALSE;
+  }
+  if (rename(oldname, oldname.GetDirectory() + newname) == 0)
     return TRUE;
-  if (!force || errno != EEXIST)
+  if (!force || errno == ENOENT || !Exists(newname))
     return FALSE;
   if (!Remove(newname, TRUE))
     return FALSE;
-  return rename(oldname, newname) == 0;
+  return rename(oldname, oldname.GetDirectory() + newname) == 0;
+}
+
+
+BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+{
+  if (rename(oldname, newname) == 0)
+    return TRUE;
+  if (errno == ENOENT)
+    return FALSE;
+  if (force && Exists(newname)) {
+    if (!Remove(newname, TRUE))
+      return FALSE;
+    if (rename(oldname, newname) == 0)
+      return TRUE;
+  }
+  return Copy(oldname, newname, force) && Remove(oldname);
 }
 
 
