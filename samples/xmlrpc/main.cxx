@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2002/10/04 05:16:44  craigs
+ * Changed for new XMLRPC code
+ *
  * Revision 1.2  2002/03/27 01:54:40  craigs
  * Added ability to send random struct as request
  * Added ability to preview request without sending
@@ -24,6 +27,10 @@
     http://time.xmlrpc.com/RPC2 currentTime.getCurrentTime 
 
     http://www.mirrorproject.com/xmlrpc mirror.Random
+
+    http://www.newsisfree.com/xmlrpc.php
+
+    -s http://10.0.2.13:6666/RPC2 Function1 key value
 
 
  */
@@ -63,7 +70,7 @@ void XMLRPCApp::Main()
 
   PXMLRPC rpc(url);
 
-  PXMLRPCRequest  request(method);
+  PXMLRPCBlock request(method);
 
   if (args.HasOption('s')) {
     PStringToString dict;
@@ -74,7 +81,7 @@ void XMLRPCApp::Main()
       dict.SetAt(key, value);
     }
 
-    request.GetParams()->AddStructParam(dict);
+    request.AddStruct(dict);
   }
 
   if (args.HasOption('d')) {
@@ -82,7 +89,7 @@ void XMLRPCApp::Main()
     return;
   }
 
-  PXMLRPCResponse response;
+  PXMLRPCBlock response;
 
   if (!rpc.MakeRequest(request, response)) {
     PError << "Error in request (" 
