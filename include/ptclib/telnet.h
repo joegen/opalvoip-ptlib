@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
+ * $Id: telnet.h,v 1.6 1994/11/28 12:38:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Revision 1.6  1994/11/28 12:38:59  robertj
+ * Added DONT and WONT states.
+ *
+ * Revision 1.5  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.4  1994/08/22  00:46:48  robertj
@@ -61,8 +64,14 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     virtual void OnDo(BYTE code);
       // Received DO request
 
+    virtual void OnDont(BYTE code);
+      // Received DONT request
+
     virtual void OnWill(BYTE code);
       // Received WILL request
+
+    virtual void OnWont(BYTE code);
+      // Received WONT request
 
     virtual void SendWill(BYTE code);
       // Send WILL request
@@ -102,7 +111,9 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       StateNormal,
       StateIAC,
       StateDo,
+      StateDont,
       StateWill,
+      StateWont,
       StateUnknownCommand,
     };
 
