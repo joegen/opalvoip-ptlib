@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.13 1995/10/14 15:05:54 robertj Exp $
+ * $Id: socket.h,v 1.14 1995/12/10 11:35:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.14  1995/12/10 11:35:21  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.13  1995/10/14 15:05:54  robertj
  * Added functions for changing integer from host to network byte order.
  *
@@ -126,6 +129,14 @@ PDECLARE_CLASS(PSocket, PChannel)
 
     inline static WORD  Net2Host(WORD  v) { return ntohs(v); }
     inline static DWORD Net2Host(DWORD v) { return ntohl(v); }
+      // Convert from network to host byte order
+#else
+    inline static WORD  Host2Net(WORD  v);
+    inline static DWORD Host2Net(DWORD v);
+      // Convert from host to network byte order
+
+    inline static WORD  Net2Host(WORD  v);
+    inline static DWORD Net2Host(DWORD v);
       // Convert from network to host byte order
 #endif
 
