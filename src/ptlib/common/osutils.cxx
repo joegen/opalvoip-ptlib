@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.79 1996/12/05 11:44:22 craigs Exp $
+ * $Id: osutils.cxx,v 1.80 1996/12/21 05:54:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.80  1996/12/21 05:54:38  robertj
+ * Fixed possible deadlock in timers.
+ *
  * Revision 1.79  1996/12/05 11:44:22  craigs
  * Made indirect close from different thread less likely to have
  * race condition
@@ -281,7 +284,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : resetTime(millisecs, seconds, minutes, hours, days)
 {
   state = Stopped;
-  inTimeout = FALSE;
+  timeoutThread = NULL;
   StartRunning(TRUE);
 }
 
@@ -290,7 +293,7 @@ PTimer::PTimer(const PTimeInterval & time)
   : resetTime(time)
 {
   state = Stopped;
-  inTimeout = FALSE;
+  timeoutThread = NULL;
   StartRunning(TRUE);
 }
 
@@ -313,7 +316,7 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 
 PTimer::~PTimer()
 {
-  PAssert(!inTimeout, "Timer destroyed in OnTimeout()");
+  PAssert(PThread::Current() != timeoutThread, "Timer destroyed in OnTimeout()");
   if (state == Running)
     PProcess::Current()->GetTimerList()->RemoveTimer(this);
 }
@@ -328,21 +331,21 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
-  if (state == Running && !inTimeout)
+  if (state == Running && timeoutThread == NULL)
     PProcess::Current()->GetTimerList()->RemoveTimer(this);
 
   PTimeInterval::operator=(resetTime);
   oneshot = once;
   state = (*this) != 0 ? Running : Stopped;
 
-  if (state == Running && !inTimeout)
+  if (state == Running && timeoutThread == NULL)
     PProcess::Current()->GetTimerList()->AppendTimer(this);
 }
 
 
 void PTimer::Stop()
 {
-  if (state == Running && !inTimeout)
+  if (state == Running && timeoutThread == NULL)
     PProcess::Current()->GetTimerList()->RemoveTimer(this);
   state = Stopped;
   SetInterval(0);
@@ -352,7 +355,7 @@ void PTimer::Stop()
 void PTimer::Pause()
 {
   if (state == Running) {
-    if (!inTimeout)
+    if (timeoutThread == NULL)
       PProcess::Current()->GetTimerList()->RemoveTimer(this);
     state = Paused;
   }
@@ -362,7 +365,7 @@ void PTimer::Pause()
 void PTimer::Resume()
 {
   if (state == Paused) {
-    if (!inTimeout)
+    if (timeoutThread == NULL)
       PProcess::Current()->GetTimerList()->AppendTimer(this);
     state = Running;
   }
@@ -386,7 +389,7 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
     return FALSE;
   }
 
-  inTimeout = TRUE;
+  timeoutThread = PThread::Current();
   if (oneshot) {
     operator=(PTimeInterval(0));
     state = Stopped;
@@ -453,7 +456,7 @@ PTimeInterval PTimerList::Process()
 
   for (i = 0; i < GetSize(); i++)
     if ((*this)[i].Process(sampleTime, minTimeLeft))
-      timeouts.Append(GetAt(i));
+      timeouts.Append(RemoveAt(i));
   mutex.Signal();
 
   for (i = 0; i < timeouts.GetSize(); i++)
@@ -461,9 +464,9 @@ PTimeInterval PTimerList::Process()
 
   mutex.Wait();
   for (i = 0; i < timeouts.GetSize(); i++) {
-    timeouts[i].inTimeout = FALSE;
-    if (!timeouts[i].IsRunning())
-      Remove(timeouts.GetAt(i));
+    timeouts[i].timeoutThread = NULL;
+    if (timeouts[i].IsRunning())
+      Append(timeouts.GetAt(i));
   }
   mutex.Signal();
 
