@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.9  1998/11/30 02:55:18  robertj
+ * New directory structure
+ *
  * Revision 1.8  1998/09/24 03:30:11  robertj
  * Added open software license.
  *
@@ -73,7 +76,7 @@
 #endif
 
 
-#include "../../common/ptlib/mail.h"
+#include "../../mail.h"
 
   protected:
     DWORD    sessionId;
