@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.6  1998/10/26 11:09:19  robertj
+ * Added separation of stdout and stderr.
+ *
  * Revision 1.5  1998/09/24 04:11:44  robertj
  * Added open software license.
  *
@@ -54,6 +57,7 @@
   protected:
     int toChildPipe[2];
     int fromChildPipe[2];
+    int stderrChildPipe[2];
     int childPid;
     int retVal;
 };
