@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.41  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.40  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -667,7 +670,7 @@ class PFile : public PChannel
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/file.h"
+#include "msos/ptlib/file.h"
 #else
 #include "unix/ptlib/file.h"
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: conchan.h,v $
+ * Revision 1.5  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.4  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -93,7 +96,7 @@ class PConsoleChannel : public PChannel
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/conchan.h"
+#include "msos/ptlib/conchan.h"
 #else
 #include "unix/ptlib/conchan.h"
 #endif

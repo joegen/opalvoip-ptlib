@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.13  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.12  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -76,6 +79,27 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#ifdef _WIN32
+
+#  ifndef P_HAS_MAPI
+#  define P_HAS_MAPI 1
+#  endif
+
+#  ifndef P_HAS_CMC
+#  define P_HAS_CMC 1
+#  endif
+
+#  if P_HAS_MAPI
+#  include <mapi.h>
+#  endif
+
+#  if P_HAS_CMC
+#  include <xcmc.h>
+#  endif
+
+#endif  // _WIN32
+
 
 /**This class establishes a mail session with the platforms mail system.
 */
@@ -349,10 +373,12 @@ class PMail : public PObject
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/mail.h"
+#include "msos/ptlib/mail.h"
 #else
 #include "unix/ptlib/mail.h"
 #endif
 };
+
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
