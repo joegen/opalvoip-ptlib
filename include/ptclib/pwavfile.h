@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.3  2001/07/20 07:06:27  rogerh
+ * Fix a typo
+ *
  * Revision 1.2  2001/07/20 03:30:59  robertj
  * Minor cosmetic changes to new PWAVFile class.
  *
@@ -46,7 +49,7 @@
 //#endif
 
 
-/**A class representing a a WAV audio file.
+/**A class representing a WAV audio file.
   */
 class PWAVFile : public PFile
 {
