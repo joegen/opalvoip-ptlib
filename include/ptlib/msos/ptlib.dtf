@@ -3177,7 +3177,8 @@ EXPORTS
     ?GetErrorText@PRegularExpression@@QBE?AVPString@@XZ @1504 NONAME
     ?GetErrorText@PSoundChannelWin32@@UBE?AVPString@@W4ErrorGroup@PChannel@@@Z @2735 NONAME
     ?GetExtension@PDynaLink@@SA?AVPString@@XZ @1506 NONAME
-    ?GetFactories@PFactoryBase@@KAAAVFactoryMap@1@XZ @5735 NONAME
+    ?GetFactories@PFactoryBase@@SAAAVFactoryMap@1@XZ @5835 NONAME
+    ?GetFactoriesMutex@PFactoryBase@@SAAAVPMutex@@XZ @5836 NONAME
     ?GetFile@PProcess@@QBEABVPFilePath@@XZ @4664 NONAME
     ?GetFileName@PFilePath@@QBE?AVPCaselessString@@XZ @1507 NONAME
     ?GetFilePath@PFile@@QBEABVPFilePath@@XZ @4665 NONAME
