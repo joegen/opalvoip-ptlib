@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.44  2001/05/29 00:59:16  robertj
+ * Fixed excessive padding on constrained strings.
+ *
  * Revision 1.43  2001/05/22 23:37:42  robertj
  * Fixed problem with assigning a constrained string value to itself, which
  *   can occur when changing constraints.
@@ -1888,6 +1891,7 @@ PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
   }
 
   value = newValue;
+  value.MakeMinimumSize();
   return *this;
 }
 
