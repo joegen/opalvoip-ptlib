@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.13  2000/03/20 22:43:10  craigs
+# Added totally new mechanism for detecting GUI
+#
 # Revision 1.12  2000/03/03 00:37:42  robertj
 # Fixed problem for when have GUI environment variable set, always builds GUI!
 #
@@ -58,7 +61,11 @@
 include $(PWLIBDIR)/make/defaultgui.mak
 include $(PWLIBDIR)/make/$(GUI_TYPE).mak
 
-GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI_TYPE)
+ifndef	GUI_SRC_NAME
+GUI_SRC_NAME	= $(GUI_TYPE)
+endif
+
+GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI_SRC_NAME)
 
 PWLIB           = pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
