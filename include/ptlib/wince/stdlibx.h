@@ -184,4 +184,28 @@ BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
 
 #endif // __cplusplus
 
+#ifndef ECONNRESET
+#define ECONNRESET WSAECONNRESET
+#endif
+ 
+#ifndef ECONNREFUSED
+#define ECONNREFUSED WSAECONNREFUSED
+#endif
+ 
+#ifndef ENETUNREACH
+#define ENETUNREACH WSAENETUNREACH
+#endif
+ 
+#ifndef ETIMEDOUT
+#define ETIMEDOUT WSAETIMEDOUT
+#endif
+ 
+#ifndef EADDRINUSE
+#define EADDRINUSE WSAEADDRINUSE
+#endif
+ 
+#ifndef EADDRNOTAVAIL
+#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
+#endif
+
 #endif
