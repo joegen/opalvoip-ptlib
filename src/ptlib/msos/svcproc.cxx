@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.63  2001/04/12 01:34:02  robertj
+ * Added threads to NT event log.
+ *
  * Revision 1.62  2001/03/24 05:53:12  robertj
  * Added Windows 98 and ME to GetOSName()
  *
@@ -408,16 +411,24 @@ void PSystemLog::Output(Level level, const char * msg)
     if (hEventSource == NULL)
       return;
 
+    char thrdbuf[16];
+    PString threadName = PThread::Current()->GetThreadName();
+    if (!threadName)
+      strcpy(thrdbuf, threadName.Left(15));
+    else
+      sprintf(thrdbuf, "0x%08X", PThread::Current());
+
     char errbuf[25];
     if (level > StdError && level < Info && err != 0)
       ::sprintf(errbuf, "\nError code = %d", err);
     else
       errbuf[0] = '\0';
 
-    LPCTSTR strings[3];
-    strings[0] = msg;
-    strings[1] = errbuf;
-    strings[2] = level != Fatal ? "" : " Program aborted.";
+    LPCTSTR strings[4];
+    strings[0] = thrdbuf;
+    strings[1] = msg;
+    strings[2] = errbuf;
+    strings[3] = level != Fatal ? "" : " Program aborted.";
 
     static const WORD levelType[NumLogLevels+1] = {
       EVENTLOG_INFORMATION_TYPE,
