@@ -1171,6 +1171,14 @@ if test "${OSTYPE}" != "Darwin" ; then
   fi
 fi
 
+dnl ########################################################################
+dnl this reduces the size of all executables and libraries
+
+STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+
+dnl ########################################################################
+dnl final declarations
+
 AC_SUBST(STDCCFLAGS)
 AC_SUBST(STDCXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
