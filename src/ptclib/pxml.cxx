@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.41  2004/10/23 10:58:15  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.40  2004/10/12 23:28:08  csoutheren
  * Fixed problem with bogus DOCTYPE being output
  *
@@ -111,7 +114,9 @@
 
 
 #ifdef _MSC_VER
+#ifndef _WIN32_WCE
 #pragma comment(lib, P_EXPAT_LIBRARY)
+#endif // !_WIN32_WCE
 #endif
 
 
