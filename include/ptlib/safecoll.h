@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.5  2002/10/04 08:22:40  robertj
+ * Changed read/write mutex so can be called by same thread without deadlock
+ *   removing the need to a lock count in safe pointer.
+ * Added asserts if try and dereference a NULL safe pointer.
+ * Added more documentation on behaviour.
+ *
  * Revision 1.4  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -465,8 +471,6 @@ class PSafePtrBase : public PObject
     PSafeCollection * collection;
     PSafeObject     * currentObject;
     PSafetyMode       lockMode;
-    PThread         * lockThread;
-    unsigned          lockCount;
 };
 
 
@@ -476,6 +480,11 @@ class PSafePtrBase : public PObject
   collection (eg a PList or PDictionary) of objects that needs to be a made
   thread safe. Any thread can add, read, write or remove an object with both
   the object and the database of objects itself kept thread safe.
+
+  There are two modes of safe pointer, one that is enumerating a collection
+  and one that is independent of the collection that the safe object is in.
+  There are some subtle semantics that must be observed in each of these two
+  modes especially when switching from one to the other.
 
   NOTE: the PSafePtr will allow safe and mutexed access to objects but is not
   thread safe itself! You should not share PSafePtr instances across threads.
@@ -562,8 +571,18 @@ template <class T> class PSafePtr : public PSafePtrBase
 
     /**Set the new pointer to a PSafeObject.
        This will set the pointer to the new object. The old object pointed to
-       will be unlocked and dereferenced and the new object referenced and set
-       to the same locking mode as the previous pointer value.
+       will be unlocked and dereferenced and the new object referenced.
+
+       If the safe pointer has an associated collection and the new object is
+       in that collection, then the object is set to the same locking mode as
+       the previous pointer value. This, in effect, jumps the enumeration of a
+       collection to the specifed object.
+
+       If the safe pointer has no associated collection or the object is not
+       in the associated collection, then the object is always only referenced
+       and there is no read only or read/write lock done. In addition any
+       associated collection is removed so this becomes a non enumerating
+       safe pointer.
      */
     PSafePtr & operator=(T * obj)
       {
@@ -576,6 +595,9 @@ template <class T> class PSafePtr : public PSafePtrBase
        colelction that the pointer was created with. The old object pointed to
        will be unlocked and dereferenced and the new object referenced and set
        to the same locking mode as the previous pointer value.
+
+       If the idx'th object is not in the collection, then the safe pointer
+       is set to NULL.
      */
     PSafePtr & operator=(PINDEX idx)
       {
@@ -592,11 +614,11 @@ template <class T> class PSafePtr : public PSafePtrBase
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *(T *)currentObject; }
+    T & operator*()  const { return *(T *)PAssertNULL(currentObject); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  (T *)currentObject; }
+    T * operator->() const { return  (T *)PAssertNULL(currentObject); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
