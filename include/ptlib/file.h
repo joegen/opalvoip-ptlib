@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.37  2002/07/02 07:59:42  craigs
+ * Added virtual to GetLength call
+ *
  * Revision 1.36  2002/01/13 20:54:55  rogerh
  * Make the other Open() virtual so it can be overridden (eg in PWAVFile)
  *
@@ -549,7 +552,7 @@ class PFile : public PChannel
        @return
        length of file in bytes.
      */
-    off_t GetLength() const;
+    virtual off_t GetLength() const;
       
     /**Set the size of the file, padding with 0 bytes if it would require
        expanding the file, or truncating it if being made shorter.
