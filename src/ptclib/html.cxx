@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.1 1996/02/03 11:18:46 robertj Exp $
+ * $Id: html.cxx,v 1.2 1996/02/08 12:24:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.2  1996/02/08 12:24:30  robertj
+ * Further implementation.
+ *
  * Revision 1.1  1996/02/03 11:18:46  robertj
  * Initial revision
  *
@@ -29,7 +32,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
 
-#if _MSC_VER > 800
+#if !defined(_MSC_VER) || _MSC_VER > 800
 
 PHTML::PHTML()
 {
@@ -84,6 +87,12 @@ void PHTML::Toggle(ElementInSet elmt)
 
 void PHTML::Element::Output(PHTML & html) const
 {
+  PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
+                                                "HTML element out of centext");
+
+  if (crlf == OpenCRLF && !html.Is(inElement))
+    html << "\r\n";
+
   html << '<';
   if (html.Is(inElement))
     html << '/';
@@ -106,19 +115,19 @@ void PHTML::Element::AddAttr(PHTML &) const
 
 
 PHTML::Head::Head()
-  : Element("HEAD", InHead, BothCRLF)
+  : Element("HEAD", InHead, NumElementsInSet, BothCRLF)
 {
 }
 
 void PHTML::Head::Output(PHTML & html) const
 {
-  PAssert(!html.Is(InBody), "Bad HTML element");
+  PAssert(!html.Is(InBody), "HTML element out of centext");
   Element::Output(html);
 }
 
 
 PHTML::Body::Body()
-  : Element("BODY", InBody, BothCRLF)
+  : Element("BODY", InBody, NumElementsInSet, BothCRLF)
 {
 }
 
@@ -134,19 +143,19 @@ void PHTML::Body::Output(PHTML & html) const
 
 
 PHTML::Title::Title()
-  : Element("TITLE", InTitle, CloseCRLF)
+  : Element("TITLE", InTitle, InHead, CloseCRLF)
 {
   titleString = NULL;
 }
 
 PHTML::Title::Title(const char * titleCStr)
-  : Element("TITLE", InTitle, CloseCRLF)
+  : Element("TITLE", InTitle, InHead, CloseCRLF)
 {
   titleString = titleCStr;
 }
 
 PHTML::Title::Title(const PString & titleStr)
-  : Element("TITLE", InTitle, CloseCRLF)
+  : Element("TITLE", InTitle, InHead, CloseCRLF)
 {
   titleString = titleStr;
 }
@@ -171,23 +180,19 @@ void PHTML::Title::Output(PHTML & html) const
 }
 
 
-void PHTML::BodyElement::Output(PHTML & html) const
-{
-  PAssert(html.Is(InBody), "HTML element out of centext");
-  Element::Output(html);
-}
-
-
 PHTML::Banner::Banner()
-  : BodyElement("BANNER", NumElementsInSet, BothCRLF)
+  : Element("BANNER", NumElementsInSet, InBody, BothCRLF)
 {
 }
 
 
-PHTML::ClearedElement::ClearedElement(
-                             const char * n, ElementInSet elmt, OptionalCRLF c,
-                             ClearCodes clear, int distance)
-  : BodyElement(n, elmt, c)
+PHTML::ClearedElement::ClearedElement(const char * n,
+                                      ElementInSet elmt,
+                                      ElementInSet req,
+                                      OptionalCRLF c,
+                                      ClearCodes clear,
+                                      int distance)
+  : Element(n, elmt, req, c)
 {
   clearCode = clear;
   clearDistance = distance;
@@ -208,10 +213,15 @@ void PHTML::ClearedElement::AddAttr(PHTML & html) const
 }
 
 
-PHTML::ComplexElement::ComplexElement(
-          const char * n, ElementInSet elmt, OptionalCRLF c,
-          AlignCodes align, NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ClearedElement(n, elmt, c, clear, distance)
+PHTML::ComplexElement::ComplexElement(const char * n,
+                                      ElementInSet elmt,
+                                      ElementInSet req,
+                                      OptionalCRLF c,
+                                      AlignCodes align,
+                                      NoWrapCodes noWrap,
+                                      ClearCodes clear,
+                                      int distance)
+  : ClearedElement(n, elmt, req, c, clear, distance)
 {
   alignCode = align;
   noWrapFlag = noWrap == NoWrap;
@@ -234,14 +244,20 @@ void PHTML::ComplexElement::AddAttr(PHTML & html) const
 
 
 PHTML::Division::Division(ClearCodes clear, int distance)
-  : ClearedElement("DIV", InDivision, BothCRLF, clear, distance)
+  : ClearedElement("DIV", InDivision, InBody, BothCRLF, clear, distance)
 {
 }
 
 
-PHTML::Heading::Heading(int number, int sequence, int skip,
-          AlignCodes align, NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement("H", InHeading, CloseCRLF, align, noWrap, clear, distance)
+PHTML::Heading::Heading(int number,
+                        int sequence,
+                        int skip,
+                        AlignCodes align,
+                        NoWrapCodes noWrap,
+                        ClearCodes clear,
+                        int distance)
+  : ComplexElement("H", InHeading, InBody, CloseCRLF,
+                   align, noWrap, clear, distance)
 {
   num = number;
   srcString = NULL;
@@ -249,9 +265,16 @@ PHTML::Heading::Heading(int number, int sequence, int skip,
   skipSeq = skip;
 }
 
-PHTML::Heading::Heading(int number, const char * image, int sequence, int skip,
-          AlignCodes align, NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement("H", InHeading, BothCRLF, align, noWrap, clear, distance)
+PHTML::Heading::Heading(int number,
+                        const char * image,
+                        int sequence,
+                        int skip,
+                        AlignCodes align,
+                        NoWrapCodes noWrap,
+                        ClearCodes clear,
+                        int distance)
+  : ComplexElement("H", InHeading, InBody, CloseCRLF,
+                   align, noWrap, clear, distance)
 {
   num = number;
   srcString = image;
@@ -260,9 +283,15 @@ PHTML::Heading::Heading(int number, const char * image, int sequence, int skip,
 }
 
 PHTML::Heading::Heading(int number,
-          const PString & imageStr, int sequence, int skip,
-          AlignCodes align, NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement("H", InHeading, BothCRLF, align, noWrap, clear, distance)
+                        const PString & imageStr,
+                        int sequence,
+                        int skip,
+                        AlignCodes align,
+                        NoWrapCodes noWrap,
+                        ClearCodes clear,
+                        int distance)
+  : ComplexElement("H", InHeading, InBody, CloseCRLF,
+                   align, noWrap, clear, distance)
 {
   num = number;
   srcString = imageStr;
@@ -285,21 +314,23 @@ void PHTML::Heading::AddAttr(PHTML & html) const
 
 
 PHTML::BreakLine::BreakLine(ClearCodes clear, int distance)
-  : ClearedElement("BR", NumElementsInSet, BothCRLF, clear, distance)
+  : ClearedElement("BR", NumElementsInSet, InBody, BothCRLF, clear, distance)
 {
 }
 
 
 PHTML::Paragraph::Paragraph(AlignCodes align,
-                            NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement("P", NumElementsInSet, NoCRLF,
+                            NoWrapCodes noWrap,
+                            ClearCodes clear,
+                            int distance)
+  : ComplexElement("P", NumElementsInSet, InBody, OpenCRLF,
                    align, noWrap, clear, distance)
 {
 }
 
 
 PHTML::PreFormat::PreFormat(int widthInChars, ClearCodes clear, int distance)
-  : ClearedElement("PRE", InPreFormat, CloseCRLF, clear, distance)
+  : ClearedElement("PRE", InPreFormat, InBody, CloseCRLF, clear, distance)
 {
   width = widthInChars;
 }
@@ -314,13 +345,13 @@ void PHTML::PreFormat::AddAttr(PHTML & html) const
 
 
 PHTML::Anchor::Anchor(const char * href)
-  : BodyElement("A", InAnchor, NoCRLF)
+  : Element("A", InAnchor, InBody, NoCRLF)
 {
   hrefString = href;
 }
 
 PHTML::Anchor::Anchor(const PString & hrefStr)
-  : BodyElement("A", InAnchor, NoCRLF)
+  : Element("A", InAnchor, InBody, NoCRLF)
 {
   hrefString = hrefStr;
 }
@@ -334,10 +365,16 @@ void PHTML::Anchor::AddAttr(PHTML & html) const
 }
 
 
-PHTML::ImageElement::ImageElement(const char * n, ElementInSet elmt,
-                          OptionalCRLF c, const char * image, AlignCodes align,
-                          NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement(n, elmt, c, align, noWrap, clear, distance)
+PHTML::ImageElement::ImageElement(const char * n,
+                                  ElementInSet elmt,
+                                  ElementInSet req,
+                                  OptionalCRLF c,
+                                  const char * image,
+                                  AlignCodes align,
+                                  NoWrapCodes noWrap,
+                                  ClearCodes clear,
+                                  int distance)
+  : ComplexElement(n, elmt, req, c, align, noWrap, clear, distance)
 {
   srcString = image;
 }
@@ -352,7 +389,7 @@ void PHTML::ImageElement::AddAttr(PHTML & html) const
 
 
 PHTML::Image::Image(const char * src, AlignCodes align, int w, int h)
-  : ImageElement("IMG", NumElementsInSet, NoCRLF,
+  : ImageElement("IMG", NumElementsInSet, InBody, NoCRLF,
                  src, align, WrapWords, ClearDefault, 0)
 {
   altString = NULL;
@@ -361,8 +398,10 @@ PHTML::Image::Image(const char * src, AlignCodes align, int w, int h)
 }
 
 PHTML::Image::Image(const char * src,
-                    const char * alt, AlignCodes align, int w, int h)
-  : ImageElement("IMG", NumElementsInSet, NoCRLF,
+                    const char * alt,
+                    AlignCodes align,
+                    int w, int h)
+  : ImageElement("IMG", NumElementsInSet, InBody, NoCRLF,
                  src, align, WrapWords, ClearDefault, 0)
 {
   altString = alt;
@@ -371,8 +410,10 @@ PHTML::Image::Image(const char * src,
 }
 
 PHTML::Image::Image(const PString & srcStr,
-                    const char * alt, AlignCodes align, int w, int h)
-  : ImageElement("IMG", NumElementsInSet, NoCRLF,
+                    const char * alt,
+                    AlignCodes align,
+                    int w, int h)
+  : ImageElement("IMG", NumElementsInSet, InBody, NoCRLF,
                  srcStr, align, WrapWords, ClearDefault, 0)
 {
   altString = alt;
@@ -381,8 +422,10 @@ PHTML::Image::Image(const PString & srcStr,
 }
 
 PHTML::Image::Image(const PString & srcStr,
-                    const PString & altStr, AlignCodes align, int w, int h)
-  : ImageElement("IMG", NumElementsInSet, NoCRLF,
+                    const PString & altStr,
+                    AlignCodes align,
+                    int w, int h)
+  : ImageElement("IMG", NumElementsInSet, InBody, NoCRLF,
                  srcStr, align, WrapWords, ClearDefault, 0)
 {
   altString = altStr;
@@ -404,65 +447,58 @@ void PHTML::Image::AddAttr(PHTML & html) const
 
 
 PHTML::HRule::HRule(const char * image, ClearCodes clear, int distance)
-  : ImageElement("HR", NumElementsInSet, NoCRLF,
+  : ImageElement("HR", NumElementsInSet, InBody, BothCRLF,
                  image, AlignDefault, WrapWords, clear, distance)
 {
 }
 
 PHTML::HRule::HRule(const PString & imageStr, ClearCodes clear, int distance)
-  : ImageElement("HR", InNote, CloseCRLF,
+  : ImageElement("HR", NumElementsInSet, InBody, BothCRLF,
                  imageStr, AlignDefault, WrapWords, clear, distance)
 {
 }
 
 
 PHTML::Note::Note(const char * image, ClearCodes clear, int distance)
-  : ImageElement("NOTE", InNote, CloseCRLF,
+  : ImageElement("NOTE", InNote, InBody, BothCRLF,
                  image, AlignDefault, WrapWords, clear, distance)
 {
 }
 
 PHTML::Note::Note(const PString & imageStr, ClearCodes clear, int distance)
-  : ImageElement("NOTE", InNote, CloseCRLF,
+  : ImageElement("NOTE", InNote, InBody, BothCRLF,
                  imageStr, AlignDefault, WrapWords, clear, distance)
 {
 }
 
 
 PHTML::Address::Address(NoWrapCodes noWrap, ClearCodes clear, int distance)
-  : ComplexElement("ADDRESS", InAddress, BothCRLF,
+  : ComplexElement("ADDRESS", InAddress, InBody, BothCRLF,
                    AlignDefault, noWrap, clear, distance)
 {
 }
 
 
 PHTML::BlockQuote::BlockQuote(NoWrapCodes noWrap,ClearCodes clear,int distance)
-  : ComplexElement("BQ", InBlockQuote, CloseCRLF,
+  : ComplexElement("BQ", InBlockQuote, InBody, BothCRLF,
                    AlignDefault, noWrap, clear, distance)
 {
 }
 
 
 PHTML::Credit::Credit()
-  : BodyElement("CREDIT", NumElementsInSet, NoCRLF)
+  : Element("CREDIT", NumElementsInSet, InBlockQuote, OpenCRLF)
 {
 }
-
-void PHTML::Credit::Output(PHTML & html) const
-{
-  PAssert(html.Is(InBlockQuote), "HTML element out of context");
-  BodyElement::Output(html);
-}
-
 
 PHTML::SetTab::SetTab(const char * id)
-  : BodyElement("TAB", NumElementsInSet, NoCRLF)
+  : Element("TAB", NumElementsInSet, InBody, NoCRLF)
 {
   ident = id;
 }
 
 PHTML::SetTab::SetTab(const PString & idStr)
-  : BodyElement("TAB", NumElementsInSet, NoCRLF)
+  : Element("TAB", NumElementsInSet, InBody, NoCRLF)
 {
   ident = idStr;
 }
@@ -475,7 +511,7 @@ void PHTML::SetTab::AddAttr(PHTML & html) const
 
 
 PHTML::Tab::Tab(int indent, AlignCodes align, char decimal)
-  : ComplexElement("TAB", NumElementsInSet, NoCRLF,
+  : ComplexElement("TAB", NumElementsInSet, InBody, NoCRLF,
                    align, WrapWords, ClearDefault, 0)
 {
   ident = NULL;
@@ -484,7 +520,7 @@ PHTML::Tab::Tab(int indent, AlignCodes align, char decimal)
 }
 
 PHTML::Tab::Tab(const char * id, AlignCodes align, char decimal)
-  : ComplexElement("TAB", NumElementsInSet, NoCRLF,
+  : ComplexElement("TAB", NumElementsInSet, InBody, NoCRLF,
                    align, WrapWords, ClearDefault, 0)
 {
   ident = id;
@@ -493,7 +529,7 @@ PHTML::Tab::Tab(const char * id, AlignCodes align, char decimal)
 }
 
 PHTML::Tab::Tab(const PString & idStr, AlignCodes align, char decimal)
-  : ComplexElement("TAB", NumElementsInSet, NoCRLF,
+  : ComplexElement("TAB", NumElementsInSet, InBody, NoCRLF,
                    align, WrapWords, ClearDefault, 0)
 {
   ident = idStr;
@@ -514,9 +550,11 @@ void PHTML::Tab::AddAttr(PHTML & html) const
 }
 
 
-PHTML::ListElement::ListElement(const char * n, ElementInSet elmt,
-                           CompactCodes compact,ClearCodes clear, int distance)
-  : ClearedElement(n, elmt, BothCRLF, clear, distance)
+PHTML::ListElement::ListElement(const char * n,
+                                CompactCodes compact,
+                                ClearCodes clear,
+                                int distance)
+  : ClearedElement(n, InList, InBody, BothCRLF, clear, distance)
 {
   compactFlag = compact == Compact;
 }
@@ -530,9 +568,12 @@ void PHTML::ListElement::AddAttr(PHTML & html) const
 }
 
 
-PHTML::UnorderedList::UnorderedList(PlainCodes plain, ListWrapCodes wrap,
-                          CompactCodes compact, ClearCodes clear, int distance)
-  : ListElement("UL", InUnorderedList, compact, clear, distance)
+PHTML::UnorderedList::UnorderedList(PlainCodes plain,
+                                    ListWrapCodes wrap,
+                                    CompactCodes compact,
+                                    ClearCodes clear,
+                                    int distance)
+  : ListElement("UL", compact, clear, distance)
 {
   plainFlag  = plain == Plain;
   wrapColumn = wrap;
@@ -549,8 +590,12 @@ void PHTML::UnorderedList::AddAttr(PHTML & html) const
 }
 
 
-PHTML::OrderedList::OrderedList(BOOL contSeq, int seqNum, CompactCodes compact, ClearCodes clear, int distance)
-  : ListElement("OL", InOrderedList, compact, clear, distance)
+PHTML::OrderedList::OrderedList(BOOL contSeq,
+                                int seqNum,
+                                CompactCodes compact,
+                                ClearCodes clear,
+                                int distance)
+  : ListElement("OL", compact, clear, distance)
 {
   continueSeq = contSeq;
   sequenceNum = seqNum;
@@ -566,38 +611,27 @@ void PHTML::OrderedList::AddAttr(PHTML & html) const
 }
 
 
-PHTML::DefinitionList::DefinitionList(CompactCodes compact, ClearCodes clear, int distance)
-  : ListElement("DL", InDefinitionList, compact, clear, distance)
+PHTML::DefinitionList::DefinitionList(CompactCodes compact,
+                                      ClearCodes clear,
+                                      int distance)
+  : ListElement("DL", compact, clear, distance)
 {
 }
 
 
 PHTML::ListHeading::ListHeading()
-  : Element("LH", InListHeading, CloseCRLF)
+  : Element("LH", InListHeading, InList, CloseCRLF)
 {
 }
-
-void PHTML::ListHeading::Output(PHTML & html) const
-{
-  PAssert(html.Is(InUnorderedList) ||
-          html.Is(InOrderedList) ||
-          html.Is(InDefinitionList),
-          "HTML element out of centext");
-  Element::Output(html);
-}
-
 
 PHTML::ListItem::ListItem(int skip, ClearCodes clear, int distance)
-  : ClearedElement("LI", NumElementsInSet, NoCRLF, clear, distance)
+  : ClearedElement("LI", NumElementsInSet, InList, OpenCRLF, clear, distance)
 {
   skipSeq = skip;
 }
 
 void PHTML::ListItem::AddAttr(PHTML & html) const
 {
-  PAssert(html.Is(InUnorderedList) ||
-          html.Is(InOrderedList),
-          "HTML element out of centext");
   if (skipSeq > 0)
     html << " SKIP=" << skipSeq;
   ClearedElement::AddAttr(html);
@@ -605,35 +639,33 @@ void PHTML::ListItem::AddAttr(PHTML & html) const
 
 
 PHTML::DefinitionTerm::DefinitionTerm(ClearCodes clear, int distance)
-  : ClearedElement("DT", NumElementsInSet, NoCRLF, clear, distance)
+  : ClearedElement("DT", NumElementsInSet, InList, NoCRLF, clear, distance)
 {
 }
 
 void PHTML::DefinitionTerm::Output(PHTML & html) const
 {
-  PAssert(html.Is(InDefinitionList), "HTML element out of centext");
-  PAssert(!html.Is(InDefinitionTerm), "HTML defintion item missing");
+  PAssert(!html.Is(InDefinitionTerm), "HTML definition item missing");
   Element::Output(html);
   html.Set(InDefinitionTerm);
 }
 
 
 PHTML::DefinitionItem::DefinitionItem(ClearCodes clear, int distance)
-  : ClearedElement("DD", NumElementsInSet, NoCRLF, clear, distance)
+  : ClearedElement("DD", NumElementsInSet, InList, NoCRLF, clear, distance)
 {
 }
 
 void PHTML::DefinitionItem::Output(PHTML & html) const
 {
-  PAssert(html.Is(InDefinitionList), "HTML element out of centext");
-  PAssert(html.Is(InDefinitionTerm), "HTML defintion term missing");
+  PAssert(html.Is(InDefinitionTerm), "HTML definition term missing");
   Element::Output(html);
   html.Clr(InDefinitionTerm);
 }
 
 
 PHTML::Table::Table(BorderCodes border)
-  : BodyElement("TABLE", InTable, BothCRLF)
+  : Element("TABLE", InTable, InBody, BothCRLF)
 {
   borderFlag = border == Border;
 }
@@ -649,7 +681,7 @@ PHTML::TableElement::TableElement(const char * nam,
                                   ElementInSet elmt,
                                   OptionalCRLF opt,
                                   const char * attr)
-  : BodyElement(nam, elmt, opt)
+  : Element(nam, elmt, InTable, opt)
 {
   attributes = attr;
 }
@@ -663,13 +695,13 @@ void PHTML::TableElement::AddAttr(PHTML & html) const
 
 
 PHTML::TableRow::TableRow(const char * attr)
-  : TableElement("TR", NumElementsInSet, NoCRLF, attr)
+  : TableElement("TR", NumElementsInSet, OpenCRLF, attr)
 {
 }
 
 
 PHTML::TableHeader::TableHeader(const char * attr)
-  : TableElement("TH", NumElementsInSet, NoCRLF, attr)
+  : TableElement("TH", NumElementsInSet, CloseCRLF, attr)
 {
 }
 
@@ -680,74 +712,86 @@ PHTML::TableData::TableData(const char * attr)
 }
 
 
-PHTML::Form::Form(const char * action,
-               const char * method, const char * encoding, const char * script)
-  : BodyElement("FORM", InForm, BothCRLF)
+PHTML::Form::Form(const char * method,
+                  const char * action,
+                  const char * mimeType,
+                  const char * script)
+  : Element("FORM", InForm, InBody, BothCRLF)
 {
   actionString = action;
   methodString = method;
-  encodingString = encoding;
+  mimeTypeString = mimeType;
   scriptString = script;
 }
 
-PHTML::Form::Form(const PString & action,
-               const char * method, const char * encoding, const char * script)
-  : BodyElement("FORM", InForm, BothCRLF)
+PHTML::Form::Form(const PString & method,
+                  const char * action,
+                  const char * mimeType,
+                  const char * script)
+  : Element("FORM", InForm, InBody, BothCRLF)
 {
-  actionString = action;
   methodString = method;
-  encodingString = encoding;
+  actionString = action;
+  mimeTypeString = mimeType;
   scriptString = script;
 }
 
-PHTML::Form::Form(const PString & action,
-            const PString & method, const char * encoding, const char * script)
-  : BodyElement("FORM", InForm, BothCRLF)
+PHTML::Form::Form(const PString & method,
+                  const PString & action,
+                  const char * mimeType,
+                  const char * script)
+  : Element("FORM", InForm, InBody, BothCRLF)
 {
-  actionString = action;
   methodString = method;
-  encodingString = encoding;
+  actionString = action;
+  mimeTypeString = mimeType;
   scriptString = script;
 }
 
-PHTML::Form::Form(const PString & action,
-         const PString & method, const PString & encoding, const char * script)
-  : BodyElement("FORM", InForm, BothCRLF)
+PHTML::Form::Form(const PString & method,
+                  const PString & action,
+                  const PString & mimeType,
+                  const char * script)
+  : Element("FORM", InForm, InBody, BothCRLF)
 {
-  actionString = action;
   methodString = method;
-  encodingString = encoding;
+  actionString = action;
+  mimeTypeString = mimeType;
   scriptString = script;
 }
 
-PHTML::Form::Form(const PString & action,
-      const PString & method, const PString & encoding, const PString & script)
-  : BodyElement("FORM", InForm, BothCRLF)
+PHTML::Form::Form(const PString & method,
+                  const PString & action,
+                  const PString & mimeType,
+                  const PString & script)
+  : Element("FORM", InForm, InBody, BothCRLF)
 {
-  actionString = action;
   methodString = method;
-  encodingString = encoding;
+  actionString = action;
+  mimeTypeString = mimeType;
   scriptString = script;
 }
 
 void PHTML::Form::AddAttr(PHTML & html) const
 {
-  if (actionString != NULL)
-    html << " ACTION=\"" << actionString << '"';
   if (methodString != NULL)
     html << " METHOD=" << methodString;
-  if (encodingString != NULL)
-    html << " ENCTYPE=\"" << encodingString << '"';
+  if (actionString != NULL)
+    html << " ACTION=\"" << actionString << '"';
+  if (mimeTypeString != NULL)
+    html << " ENCTYPE=\"" << mimeTypeString << '"';
   if (scriptString != NULL)
     html << " SCRIPT=\"" << scriptString << '"';
-  BodyElement::AddAttr(html);
+  Element::AddAttr(html);
 }
 
 
-PHTML::FieldElement::FieldElement(
-                             const char * n, ElementInSet elmt, OptionalCRLF c,
-                             DisableCodes disabled, const char * error)
-  : BodyElement(n, elmt, c)
+PHTML::FieldElement::FieldElement(const char * n,
+                                  ElementInSet elmt,
+                                  OptionalCRLF c,
+                                  DisableCodes disabled,
+                                  const char * error)
+  : Element(n, elmt, InForm, c)
 {
   disabledFlag = disabled == Disabled;
   errorString = error;
@@ -755,12 +799,11 @@ PHTML::FieldElement::FieldElement(
 
 void PHTML::FieldElement::AddAttr(PHTML & html) const
 {
-  PAssert(html.Is(InForm), "HTML element out of centext");
   if (disabledFlag)
     html << " DISABLED";
   if (errorString != NULL)
     html << " ERROR=\"" << errorString << '"';
-  BodyElement::AddAttr(html);
+  Element::AddAttr(html);
 }
 
 
@@ -869,6 +912,7 @@ void PHTML::InputField::AddAttr(PHTML & html) const
 {
   PAssert(typeString != NULL && *typeString != '\0', PInvalidParameter);
   html << " TYPE=" << typeString;
+  FormField::AddAttr(html);
 }
 
 
@@ -879,6 +923,32 @@ PHTML::InputText::InputText(const char * fname,
                             DisableCodes disabled,
                             const char * error)
   : InputField("text", fname, disabled, error)
+{
+  width = size;
+  length = maxLength;
+  value = init;
+}
+
+PHTML::InputText::InputText(const PString & fname,
+                            int size,
+                            const char * init,
+                            int maxLength,
+                            DisableCodes disabled,
+                            const char * error)
+  : InputField("text", fname, disabled, error)
+{
+  width = size;
+  length = maxLength;
+  value = init;
+}
+
+PHTML::InputText::InputText(const char * fnameStr,
+                            int size,
+                            const PString & init,
+                            int maxLength,
+                            DisableCodes disabled,
+                            const char * error)
+  : InputField("text", fnameStr, disabled, error)
 {
   width = size;
   length = maxLength;
@@ -901,6 +971,7 @@ PHTML::InputText::InputText(const PString & fnameStr,
 PHTML::InputText::InputText(const char * type,
                             const char * fname,
                             int size,
+                            const char * init,
                             int maxLength,
                             DisableCodes disabled,
                             const char * error)
@@ -908,7 +979,7 @@ PHTML::InputText::InputText(const char * type,
 {
   width = size;
   length = maxLength;
-  value = NULL;
+  value = init;
 }
 
 void PHTML::InputText::AddAttr(PHTML & html) const
@@ -924,19 +995,41 @@ void PHTML::InputText::AddAttr(PHTML & html) const
 
 PHTML::InputPassword::InputPassword(const char * fname,
                                     int size,
+                                    const char * init,
                                     int maxLength,
                                     DisableCodes disabled,
                                     const char * error)
-  : InputText("password", fname, size, maxLength, disabled, error)
+  : InputText("password", fname, size, init, maxLength, disabled, error)
 {
 }
 
 PHTML::InputPassword::InputPassword(const PString & fnameStr,
                                     int size,
+                                    const char * init,
                                     int maxLength,
                                     DisableCodes disabled,
                                     const char * error)
-  : InputText("password", fnameStr, size, maxLength, disabled, error)
+  : InputText("password", fnameStr, size, init, maxLength, disabled, error)
+{
+}
+
+PHTML::InputPassword::InputPassword(const char * fname,
+                                    int size,
+                                    const PString & init,
+                                    int maxLength,
+                                    DisableCodes disabled,
+                                    const char * error)
+  : InputText("password", fname, size, init, maxLength, disabled, error)
+{
+}
+
+PHTML::InputPassword::InputPassword(const PString & fnameStr,
+                                    int size,
+                                    const PString & init,
+                                    int maxLength,
+                                    DisableCodes disabled,
+                                    const char * error)
+  : InputText("password", fnameStr, size, init, maxLength, disabled, error)
 {
 }
 
@@ -947,7 +1040,7 @@ PHTML::CheckBox::CheckBox(const char * fname,
                           const char * error)
   : InputField("checkbox", fname, disabled, error)
 {
-  checkedFlag = check = Checked;
+  checkedFlag = check == Checked;
 }
 
 PHTML::CheckBox::CheckBox(const PString & fnameStr,
@@ -956,7 +1049,7 @@ PHTML::CheckBox::CheckBox(const PString & fnameStr,
                           const char * error)
   : InputField("checkbox", fnameStr, disabled, error)
 {
-  checkedFlag = check = Checked;
+  checkedFlag = check == Checked;
 }
 
 PHTML::CheckBox::CheckBox(const char * type,
@@ -966,7 +1059,7 @@ PHTML::CheckBox::CheckBox(const char * type,
                           const char * error)
   : InputField(type, fname, disabled, error)
 {
-  checkedFlag = check = Checked;
+  checkedFlag = check == Checked;
 }
 
 void PHTML::CheckBox::AddAttr(PHTML & html) const
@@ -1031,7 +1124,16 @@ PHTML::InputRange::InputRange(const PString & fnameStr,
 void PHTML::InputRange::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  html << " MIN=" << minValue << " MAX=" << maxValue << " VALUE=" << initValue;
+  PINDEX max = PMAX(-minValue, maxValue);
+  PINDEX width = 1;
+  while (max > 10) {
+    width++;
+    max /= 10;
+  }
+  html << " SIZE=" << width
+       << " MIN=" << minValue
+       << " MAX=" << maxValue
+       << " VALUE=" << initValue;
 }
 
 
