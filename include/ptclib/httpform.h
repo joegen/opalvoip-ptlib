@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.13  2000/12/18 07:12:37  robertj
+ * Added ability to have fixed length array fields.
+ *
  * Revision 1.12  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -374,7 +377,8 @@ class PHTTPFieldArray : public PHTTPCompositeField
   public:
     PHTTPFieldArray(
       PHTTPField * baseField,
-      BOOL ordered
+      BOOL ordered,
+      PINDEX fixedSize = 0
     );
 
     ~PHTTPFieldArray();
@@ -410,6 +414,7 @@ class PHTTPFieldArray : public PHTTPCompositeField
 
     PHTTPField * baseField;
     BOOL orderedArray;
+    BOOL canAddElements;
 };
 
 
