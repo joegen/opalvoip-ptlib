@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.40  2005/01/25 06:35:28  csoutheren
+ * Removed warnings under MSVC
+ *
  * Revision 1.39  2005/01/04 07:44:03  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -1034,23 +1037,21 @@ BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
 	  if ( (i % 2) == 0 ) {
 	      /* B */
 	      if ( (i > WIDTH) && ((i % WIDTH) > 0) ) {
-		  *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
-				*(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* R */
-		  *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
-				*(rawpt+WIDTH)+*(rawpt-WIDTH))/4;	/* G */
+		  *scanpt++ = (BYTE) ((*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+ *(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4);	/* R */
+		  *scanpt++ = (BYTE) ((*(rawpt-1)+*(rawpt+1)+ *(rawpt+WIDTH)+*(rawpt-WIDTH))/4);	/* G */
 		  *scanpt++ = *rawpt;					/* B */
 	      } else {
 		  /* first line or left column */
 		  *scanpt++ = *(rawpt+WIDTH+1);		/* R */
-		  *scanpt++ = (*(rawpt+1)+*(rawpt+WIDTH))/2;	/* G */
+		  *scanpt++ = (BYTE) ((*(rawpt+1)+*(rawpt+WIDTH))/2);	/* G */
 		  *scanpt++ = *rawpt;				/* B */
 	      }
 	  } else {
 	      /* (B)G */
 	      if ( (i > WIDTH) && ((i % WIDTH) < (WIDTH-1)) ) {
-		  *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* R */
+		  *scanpt++ = (BYTE) ((*(rawpt+WIDTH)+*(rawpt-WIDTH))/2);	/* R */
 		  *scanpt++ = *rawpt;					/* G */
-		  *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* B */
+		  *scanpt++ = (BYTE) ((*(rawpt-1)+*(rawpt+1))/2);		/* B */
 	      } else {
 		  /* first line or right column */
 		  *scanpt++ = *(rawpt+WIDTH);	/* R */
@@ -1062,9 +1063,9 @@ BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
 	  if ( (i % 2) == 0 ) {
 	      /* G(R) */
 	      if ( (i < (WIDTH*(HEIGHT-1))) && ((i % WIDTH) > 0) ) {
-		  *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* R */
+		  *scanpt++ = (BYTE) ((*(rawpt-1)+*(rawpt+1))/2);		/* R */
 		  *scanpt++ = *rawpt;					/* G */
-		  *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* B */
+		  *scanpt++ = (BYTE) ((*(rawpt+WIDTH)+*(rawpt-WIDTH))/2);	/* B */
 	      } else {
 		  /* bottom line or left column */
 		  *scanpt++ = *(rawpt+1);		/* R */
@@ -1075,14 +1076,12 @@ BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
 	      /* R */
 	      if ( i < (WIDTH*(HEIGHT-1)) && ((i % WIDTH) < (WIDTH-1)) ) {
 		  *scanpt++ = *rawpt;					/* R */
-		  *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
-				*(rawpt-WIDTH)+*(rawpt+WIDTH))/4;	/* G */
-		  *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
-				*(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* B */
+		  *scanpt++ = (BYTE) ((*(rawpt-1)+*(rawpt+1)+*(rawpt-WIDTH)+*(rawpt+WIDTH))/4);	/* G */
+		  *scanpt++ = (BYTE) ((*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+*(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4);	/* B */
 	      } else {
 		  /* bottom line or right column */
 		  *scanpt++ = *rawpt;				/* R */
-		  *scanpt++ = (*(rawpt-1)+*(rawpt-WIDTH))/2;	/* G */
+		  *scanpt++ = (BYTE) ((*(rawpt-1)+*(rawpt-WIDTH))/2);	/* G */
 		  *scanpt++ = *(rawpt-WIDTH-1);		/* B */
 	      }
 	  }
