@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.29 1996/06/10 09:54:35 robertj Exp $
+ * $Id: win32.cxx,v 1.30 1996/06/13 13:32:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.30  1996/06/13 13:32:13  robertj
+ * Rewrite of auto-delete threads, fixes Windows95 total crash.
+ *
  * Revision 1.29  1996/06/10 09:54:35  robertj
  * Fixed Win95 compatibility for semaphores.
  *
@@ -1505,9 +1508,18 @@ DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
 {
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
-  thread->RegisterWithProcess(FALSE);
+  PProcess * process = PProcess::Current();
+
+  AttachThreadInput(thread->threadId, ((PThread*)process)->threadId, TRUE);
+  AttachThreadInput(((PThread*)process)->threadId, thread->threadId, TRUE);
+
+  process->threadMutex.Wait();
+  process->activeThreads.SetAt(thread->threadId, thread);
+  process->threadMutex.Signal();
+
+  process->SignalTimerChange();
+
   thread->Main();
-  thread->RegisterWithProcess(TRUE);
 
   return 0;
 }
@@ -1534,41 +1546,43 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  Terminate();
+  if (!IsTerminated())
+    Terminate();
 }
 
 
 void PThread::Restart()
 {
-  if (threadHandle == NULL) {
-    threadHandle = CreateThread(NULL,
+  Terminate();
+
+  threadHandle = CreateThread(NULL,
                   originalStackSize, MainFunction, (LPVOID)this, 0, &threadId);
-    PAssertOS(threadHandle != NULL);
-  }
+  PAssertOS(threadHandle != NULL);
 }
 
 
 void PThread::Terminate()
 {
-  if (threadHandle != NULL && originalStackSize > 0) {
-    if (Current() == this)
-      ExitThread(0);
-    else
-      TerminateThread(threadHandle, 1);
-    RegisterWithProcess(TRUE);
-  }
+  PAssert(!IsTerminated(), "Operation on terminated thread");
+  PAssert(originalStackSize > 0, PLogicError);
+
+  if (Current() == this)
+    ExitThread(0);
+  else
+    TerminateThread(threadHandle, 1);
 }
 
 
 BOOL PThread::IsTerminated() const
 {
-  return threadHandle == NULL;
+  return threadHandle == NULL ||
+                         WaitForSingleObject(threadHandle, 0) == WAIT_OBJECT_0;
 }
 
 
 void PThread::Suspend(BOOL susp)
 {
-  PAssert(threadHandle != NULL, "Suspend on terminated thread");
+  PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
     SuspendThread(threadHandle);
   else
@@ -1578,20 +1592,23 @@ void PThread::Suspend(BOOL susp)
 
 void PThread::Resume()
 {
-  PAssert(threadHandle != NULL, "Resume on terminated thread");
+  PAssert(!IsTerminated(), "Operation on terminated thread");
   ResumeThread(threadHandle);
 }
 
 
 BOOL PThread::IsSuspended() const
 {
-  SuspendThread(PAssertNULL(threadHandle));
+  PAssert(!IsTerminated(), "Operation on terminated thread");
+  SuspendThread(threadHandle);
   return ResumeThread(threadHandle) <= 1;
 }
 
 
 void PThread::SetPriority(Priority priorityLevel)
 {
+  PAssert(!IsTerminated(), "Operation on terminated thread");
+
   static int priorities[NumPriorities] = {
     THREAD_PRIORITY_LOWEST,
     THREAD_PRIORITY_BELOW_NORMAL,
@@ -1605,6 +1622,8 @@ void PThread::SetPriority(Priority priorityLevel)
 
 PThread::Priority PThread::GetPriority() const
 {
+  PAssert(!IsTerminated(), "Operation on terminated thread");
+
   switch (GetThreadPriority(threadHandle)) {
     case THREAD_PRIORITY_LOWEST :
       return LowestPriority;
@@ -1648,25 +1667,85 @@ PThread * PThread::Current()
 }
 
 
-void PThread::RegisterWithProcess(BOOL terminating)
+DWORD PThread::CleanUpOnTerminated()
 {
-  PProcess * process = PProcess::Current();
+  DWORD id = 0;
+  if (IsTerminated()) {
+    id = threadId;
 
-  if (!terminating) {
-    AttachThreadInput(threadId, ((PThread*)process)->threadId,TRUE);
-    AttachThreadInput(((PThread*)process)->threadId, threadId,TRUE);
-  }
+    if (threadHandle != NULL) {
+      CloseHandle(threadHandle);
+      threadHandle = NULL;
+    }
 
-  process->threadMutex.Wait();
-  process->activeThreads.SetAt(threadId, terminating ? NULL : this);
-  process->threadMutex.Signal();
-
-  if (terminating) {
-    CloseHandle(threadHandle);
-    threadHandle = NULL;
     if (autoDelete)
       delete this;
   }
+  return id;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess::TimerThread
+
+PProcess::HouseKeepingThread::HouseKeepingThread()
+  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
+{
+  Resume();
+}
+
+
+void PProcess::HouseKeepingThread::Main()
+{
+  PProcess & process = *PProcess::Current();
+  for (;;) {
+    process.threadMutex.Wait();
+    HANDLE * handles = new HANDLE[process.activeThreads.GetSize()+1];
+    DWORD numHandles = 1;
+    handles[0] = semaphore.GetHandle();
+    for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
+      handles[numHandles] = process.activeThreads.GetDataAt(i).GetHandle();
+      if (handles[numHandles] != process.GetHandle())
+        numHandles++;
+    }
+    process.threadMutex.Signal();
+
+    PTimeInterval nextTimer = process.timers.Process();
+    DWORD delay;
+    if (nextTimer == PMaxTimeInterval)
+      delay = INFINITE;
+    else if (nextTimer > 10000)
+      delay = 10000;
+    else
+      delay = nextTimer.GetInterval();
+
+    DWORD status = WaitForMultipleObjects(numHandles, handles, FALSE, delay);
+
+    PAssertOS(status != WAIT_FAILED);
+
+    delete [] handles;
+
+    if (status != WAIT_OBJECT_0 && status != WAIT_TIMEOUT) {
+      process.threadMutex.Wait();
+      for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
+        DWORD id = process.activeThreads.GetDataAt(i).CleanUpOnTerminated();
+        if (id != 0)
+          process.activeThreads.SetAt(id, NULL);
+      }
+      process.threadMutex.Signal();
+    }
+  }
+}
+
+
+void PProcess::SignalTimerChange()
+{
+  if (houseKeeper == (PThread *)-1)
+    return;
+  if (houseKeeper == NULL)
+    houseKeeper = PNEW HouseKeepingThread;
+  else
+    houseKeeper->semaphore.Signal();
 }
 
 
@@ -1675,14 +1754,14 @@ void PThread::RegisterWithProcess(BOOL terminating)
 
 void PProcess::Construct()
 {
-  timerThread = NULL;
+  houseKeeper = NULL;
 }
 
 
 PProcess::~PProcess()
 {
-  if (timerThread != (PThread *)-1)
-    delete timerThread;
+  if (houseKeeper != (PThread *)-1)
+    delete houseKeeper;
 
 #ifndef PMEMORY_CHECK
   extern void PWaitOnExitConsoleWindow();
