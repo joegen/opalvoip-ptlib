@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
+ * Revision 1.5  2001/10/18 01:15:18  robertj
+ * Fixed compile error.
+ *
  * Revision 1.4  1999/09/03 02:01:34  robertj
  * Added missing functions so will at least link
  *
@@ -263,10 +266,8 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 
 BOOL PSoundChannel::WaitForRecordBufferFull()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
 }
