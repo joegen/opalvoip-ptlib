@@ -1228,6 +1228,7 @@ EXPORTS
     ?GetOptionString@PArgList@@QBE?AVPString@@PBD0@Z @1096 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(char const *,char const *)const 
     ?GetOptionStringByIndex@PArgList@@ABE?AVPString@@HPBD@Z @1097 NONAME ;private: class PString  __thiscall PArgList::GetOptionStringByIndex(int,char const *)const 
     ?GetOSClass@PProcess@@SA?AVPString@@XZ @1098 NONAME ;public: static class PString  __cdecl PProcess::GetOSClass(void)
+    ?GetOSHardware@PProcess@@SA?AVPString@@XZ @1981 NONAME ;public: static class PString  __cdecl PProcess::GetOSHardware(void)
     ?GetOSName@PProcess@@SA?AVPString@@XZ @1099 NONAME ;public: static class PString  __cdecl PProcess::GetOSName(void)
     ?GetOSVersion@PProcess@@SA?AVPString@@XZ @1100 NONAME ;public: static class PString  __cdecl PProcess::GetOSVersion(void)
     ?GetOutputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1101 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetOutputFlowControl(void)const 
@@ -1968,4 +1969,4 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    ?GetOSHardware@PProcess@@SA?AVPString@@XZ @1981 NONAME ;public: static class PString  __cdecl PProcess::GetOSHardware(void)
+    ?GetOSConfigDir@PProcess@@SA?AVPDirectory@@XZ @1982 NONAME ;public: static class PDirectory  __cdecl PProcess::GetOSConfigDir(void)
