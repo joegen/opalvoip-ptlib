@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.3  1999/02/22 10:10:12  robertj
+ * Changed channel output flush to remove double Write() call.
+ *
  * Revision 1.2  1999/01/31 00:57:18  robertj
  * Fixed bug when opening an already open file, should close it!
  *
@@ -69,9 +72,8 @@ int PChannelStreamBuffer::overflow(int c)
   }
 
   if (c != EOF) {
-    char ch = (char)c;
-    if (!channel->Write(&ch, 1))
-      return EOF;
+    *pptr() = (char)c;
+    pbump(1);
   }
 
   return 0;
