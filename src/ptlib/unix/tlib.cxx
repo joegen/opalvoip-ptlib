@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.35  1998/11/24 09:39:16  robertj
+ * FreeBSD port.
+ *
  * Revision 1.34  1998/10/31 14:14:21  robertj
  * Changed syncptack.h to syncthrd.h for more thread synchronisation objects.
  *
@@ -141,7 +144,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
