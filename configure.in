@@ -216,14 +216,22 @@ dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
-AC_MSG_CHECKING(if compiler accepts -fno-rtti)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CFLAGS -fno-rtti -c conftest.cc > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
+AC_ARG_ENABLE(rtti,
+        [  --enable-rtti           enables RTTI support],
+        rtti=$enableval)
+if test "$rtti" = "yes" ; then
+  AC_MSG_NOTICE(Forcing use of RTTI)
   STDCCFLAGS="$STDCCFLAGS -fno-rtti"
 else
-  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(if compiler accepts -fno-rtti)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CXX $CFLAGS -fno-rtti -c conftest.cc > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+  else
+    AC_MSG_RESULT(no)
+  fi
 fi
 
 GCSECTIONS=0
