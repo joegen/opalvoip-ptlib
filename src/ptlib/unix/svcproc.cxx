@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.41  2001/03/19 02:41:13  robertj
+ * Extra trace output on exiting service.
+ *
  * Revision 1.40  2001/03/19 00:20:55  robertj
  * Added test for if deamon actually stops
  *
@@ -546,6 +549,10 @@ void PServiceProcess::PXOnSignal(int sig)
     case SIGINT :
     case SIGTERM :
       OnStop();
+      {
+        PSystemLog s(PSystemLog::StdError);
+        s << "Terminating service process \"" << GetName() << '"';
+      }
       Terminate();
       break;
 
