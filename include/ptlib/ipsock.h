@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.52  2002/10/29 07:59:45  robertj
+ * Changed in_addr6 to more universally used in6_addr.
+ *
  * Revision 1.51  2002/10/08 14:31:43  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -247,7 +250,7 @@ class PIPSocket : public PSocket
 
 #if P_HAS_IPV6
         /// Create an IPv6 address from an in_addr structure
-        Address(const in_addr6 & addr);
+        Address(const in6_addr & addr);
 #endif
 
 #ifdef __NUCLEUS_NET__
@@ -260,7 +263,7 @@ class PIPSocket : public PSocket
 
 #if P_HAS_IPV6
         /// Copy an address from another IPv6 address
-        Address & operator=(const in_addr6 & addr);
+        Address & operator=(const in6_addr & addr);
 #endif
 
         /// Copy an address from a string
@@ -275,8 +278,8 @@ class PIPSocket : public PSocket
         BOOL operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
         BOOL operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
 #if P_HAS_IPV6
-        BOOL operator==(in_addr6 & addr) const;
-        BOOL operator!=(in_addr6 & addr) const { return !operator==(addr); }
+        BOOL operator==(in6_addr & addr) const;
+        BOOL operator!=(in6_addr & addr) const { return !operator==(addr); }
 #endif
         BOOL operator==(in_addr & addr) const;
         BOOL operator!=(in_addr & addr) const { return !operator==(addr); }
@@ -305,7 +308,7 @@ class PIPSocket : public PSocket
 
 #if P_HAS_IPV6
         /// Return IPv4 address in network order
-        operator in_addr6() const;
+        operator in6_addr() const;
 #endif
 
         /// Return IPv4 address in network order
@@ -353,7 +356,7 @@ class PIPSocket : public PSocket
         union {
           in_addr four;
 #if P_HAS_IPV6
-          in_addr6 six;
+          in6_addr six;
 #endif
         } v;
 
