@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.9 1994/12/12 10:11:59 robertj Exp $
+ * $Id: config.h,v 1.10 1995/01/27 11:06:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
- * Revision 1.9  1994/12/12 10:11:59  robertj
+ * Revision 1.10  1995/01/27 11:06:20  robertj
+ * Changed single string default constructor to be section name not file name.
+ *
+ * Revision 1.9  1994/12/12  10:11:59  robertj
  * Documentation.
  *
  * Revision 1.8  1994/08/23  11:32:52  robertj
@@ -92,11 +95,8 @@ PDECLARE_CLASS(PConfig, PObject)
       Source src = Application  // Standard source for the configuration.
     );
     PConfig(
-      Source src,               // Standard source for the configuration.
-      const PString & section   // Default section to search for variables.
-    );
-    PConfig(
-      const PFilePath & filename  // Explicit name of the configuration file.
+      const PString & section,  // Default section to search for variables.
+      Source src = Application  // Standard source for the configuration.
     );
     PConfig(
       const PFilePath & filename, // Explicit name of the configuration file.
