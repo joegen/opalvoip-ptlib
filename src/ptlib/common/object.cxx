@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.55  2002/06/25 10:33:55  robertj
+ * REmoved usage of sstream for GNU v3 as it is completely different to the
+ *   old ostrstream classes.
+ *
  * Revision 1.54  2002/06/25 02:23:57  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -208,13 +212,10 @@
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
-#if (__GNUC__ >= 3)
-#include <sstream>
-#else
 #include <strstream.h>
-#endif
 #include <signal.h>
 #endif
+
 
 void PAssertFunc(const char * file,
                  int line,
