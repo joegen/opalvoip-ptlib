@@ -452,10 +452,6 @@ SOURCE=..\..\..\include\ptlib\vconvert.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\include\ptlib\vfakeio.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\include\ptlib\videoio.h
 # End Source File
 # End Group
