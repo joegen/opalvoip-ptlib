@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.15 1995/12/23 03:46:23 robertj Exp $
+ * $Id: pstring.h,v 1.16 1996/01/02 12:04:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.16  1996/01/02 12:04:31  robertj
+ * Mac OS compatibility changes.
+ * Removed requirement that PArray elements have parameterless constructor..
+ *
  * Revision 1.15  1995/12/23 03:46:23  robertj
  * Added operators for include and exclude from string set.
  *
@@ -1278,7 +1282,11 @@ PCLASS PStringStream : public PString, public iostream {
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
+#ifdef __MWERKS__
+        virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
+#else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);
+#endif
         PStringStream * string;
     };
 };
@@ -1316,6 +1324,23 @@ PDECLARE_ARRAY(PStringArray, PString)
 
        <H2>Returns:</H2>
        Index of string in array or P_MAX_INDEX if not found.
+     */
+
+#ifdef PHAS_TEMPLATES
+    PString & operator[](
+      PINDEX index  // Index position in the collection of the object.
+    ) const { return PArray<PString>::operator[](index); }
+#endif
+
+    PString & operator[](
+      PINDEX index  // Index position in the collection of the object.
+    );
+    /* Retrieve a reference  to the object in the array. If there was not an
+       object at that ordinal position or the index was beyond the size of the
+       array then the function will create a new one.
+
+       <H2>Returns:</H2>
+       reference to the object at <CODE>index</CODE> position.
      */
 };
 
