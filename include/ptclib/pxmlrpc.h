@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.12  2002/12/04 02:09:26  robertj
+ * Changed macro name prefix to PXMLRPC
+ *
  * Revision 1.11  2002/12/04 00:31:13  robertj
  * Fixed GNU compatibility
  *
@@ -253,11 +256,11 @@ class PXMLRPCStructBase : public PObject {
 };
 
 
-#define PXML_STRUCT_BEGIN(name) \
+#define PXMLRPC_STRUCT_BEGIN(name) \
   class name : public PXMLRPCStructBase { \
     public: name() { EndConstructor(); }
 
-#define PXML_VARIABLE_CUSTOM(base, type, variable, xmltype, extras) \
+#define PXMLRPC_VARIABLE_CUSTOM(base, type, variable, xmltype, extras) \
     public: type variable; \
     private: struct PXmlVar_##variable : public PXMLRPCVariableBase { \
       PXmlVar_##variable() \
@@ -270,28 +273,28 @@ class PXMLRPCStructBase : public PObject {
       type & instance; \
     } pxmlvar_##variable
 
-#define PXML_STRUCT_END() \
+#define PXMLRPC_STRUCT_END() \
   };
 
-#define PXML_VARIABLE(base, type, variable, xmltype) \
-        PXML_VARIABLE_CUSTOM(base, type, variable, xmltype, ;)
+#define PXMLRPC_VARIABLE(base, type, variable, xmltype) \
+        PXMLRPC_VARIABLE_CUSTOM(base, type, variable, xmltype, ;)
 
-#define PXML_STRING(base, type, variable)  PXML_VARIABLE(base, type, variable, string)
-#define PXML_INTEGER(base, type, variable) PXML_VARIABLE(base, type, variable, int)
-#define PXML_BOOLEAN(base, type, variable) PXML_VARIABLE(base, type, variable, boolean)
-#define PXML_DOUBLE(base, type, variable)  PXML_VARIABLE(base, type, variable, double)
+#define PXMLRPC_STRING(base, type, variable)  PXMLRPC_VARIABLE(base, type, variable, string)
+#define PXMLRPC_INTEGER(base, type, variable) PXMLRPC_VARIABLE(base, type, variable, int)
+#define PXMLRPC_BOOLEAN(base, type, variable) PXMLRPC_VARIABLE(base, type, variable, boolean)
+#define PXMLRPC_DOUBLE(base, type, variable)  PXMLRPC_VARIABLE(base, type, variable, double)
 
-#define PXML_DATETIME(base, type, variable) \
-        PXML_VARIABLE_CUSTOM(base, type, variable, dateTime.iso8601, \
+#define PXMLRPC_DATETIME(base, type, variable) \
+        PXMLRPC_VARIABLE_CUSTOM(base, type, variable, dateTime.iso8601, \
              PString ToString() const { return instance.AsString("yyyyMMddThh:mm:ss"); } )
 
-#define PXML_BINARY(base, type, variable) \
-        PXML_VARIABLE_CUSTOM(base, type, variable, base64, \
+#define PXMLRPC_BINARY(base, type, variable) \
+        PXMLRPC_VARIABLE_CUSTOM(base, type, variable, base64, \
                      PString ToString() const { return ToBase64(instance); } \
                      void FromString(const PString & str) { FromBase64(str, instance); } )
 
-#define PXML_STRUCT(base, type, variable) \
-        PXML_VARIABLE_CUSTOM(base, type, variable, struct, \
+#define PXMLRPC_STRUCT(base, type, variable) \
+        PXMLRPC_VARIABLE_CUSTOM(base, type, variable, struct, \
                              PXMLRPCStructBase * GetStruct() const { return &instance; } )
 
 
