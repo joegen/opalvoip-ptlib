@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.18  2004/04/03 07:14:51  csoutheren
+ * Remove no-rtti compiler flag
+ * Added __USE_STL__ to allow interopability with STL and iostreams
+ *
  * Revision 1.17  2003/10/27 03:21:43  csoutheren
  * Added UINT type needed for QoS
  *
@@ -117,4 +121,12 @@ typedef int PINDEX;
 
 inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
 #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+
+///////////////////////////////////////////
+//
+// needed for STL
+//
+#if (__GNUC__ >= 3)
+#define	__USE_STL__
+#endif
 
