@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.12 1996/02/25 11:23:40 robertj Exp $
+ * $Id: winsock.cxx,v 1.13 1996/03/04 12:41:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.13  1996/03/04 12:41:02  robertj
+ * Fixed bug in leaving socket in non-blocking mode.
+ * Changed _Close to os_close to be consistent.
+ *
  * Revision 1.12  1996/02/25 11:23:40  robertj
  * Fixed bug in Read for when a timeout occurs on select, not returning error code.
  *
@@ -125,10 +129,12 @@ BOOL PSocket::Read(void * buf, PINDEX len)
     return FALSE;
 
   int recvResult = ::recv(os_handle, (char *)buf, len, 0);
-  if (!ConvertOSError(recvResult))
-    return FALSE;
+  if (ConvertOSError(recvResult))
+    lastReadCount = recvResult;
 
-  lastReadCount = recvResult;
+  u_long state = 0;
+  ::ioctlsocket(os_handle, FIONBIO, &state);
+
   return lastReadCount > 0;
 }
 
@@ -142,10 +148,12 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
     return FALSE;
 
   int sendResult = ::send(os_handle, (const char *)buf, len, 0);
-  if (!ConvertOSError(sendResult))
-    return FALSE;
+  if (ConvertOSError(sendResult))
+    lastWriteCount = sendResult;
 
-  lastWriteCount = sendResult;
+  u_long state = 0;
+  ::ioctlsocket(os_handle, FIONBIO, &state);
+
   return lastWriteCount >= len;
 }
 
@@ -154,11 +162,11 @@ BOOL PSocket::Close()
 {
   if (!IsOpen())
     return FALSE;
-  return ConvertOSError(_Close());
+  return ConvertOSError(os_close());
 }
 
 
-int PSocket::_Close()
+int PSocket::os_close()
 {
   int err = closesocket(os_handle);
   os_handle = -1;
@@ -286,13 +294,16 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
   int addrLen = sizeof(sockAddr);
   int recvResult = recvfrom(os_handle,
                   (char *)buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
-  if (!ConvertOSError(recvResult))
-    return FALSE;
+  if (ConvertOSError(recvResult)) {
+    addr = sockAddr.sin_addr;
+    port = ntohs(sockAddr.sin_port);
 
-  addr = sockAddr.sin_addr;
-  port = ntohs(sockAddr.sin_port);
+    lastReadCount = recvResult;
+  }
 
-  lastReadCount = recvResult;
+  u_long state = 0;
+  ::ioctlsocket(os_handle, FIONBIO, &state);
+
   return lastReadCount > 0;
 }
 
@@ -311,10 +322,12 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
   sockAddr.sin_port = htons(port);
   int sendResult = ::sendto(os_handle, (const char *)buf, len, 0,
                                (struct sockaddr *)&sockAddr, sizeof(sockAddr));
-  if (!ConvertOSError(sendResult))
-    return FALSE;
+  if (ConvertOSError(sendResult))
+    lastWriteCount = sendResult;
 
-  lastWriteCount = sendResult;
+  u_long state = 0;
+  ::ioctlsocket(os_handle, FIONBIO, &state);
+
   return lastWriteCount >= len;
 }
 
