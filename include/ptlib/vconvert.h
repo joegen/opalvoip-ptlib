@@ -25,6 +25,9 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.4  2001/03/03 23:25:07  robertj
+ * Fixed use of video conversion function, returning bytes in destination frame.
+ *
  * Revision 1.3  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -166,6 +169,7 @@ class PColourConverter : public PObject
     */
     virtual BOOL ConvertInPlace(
       BYTE * frameBuffer,               /// Frame buffer to translate data
+      PINDEX * bytesReturned = NULL,    /// Bytes written to frameBuffer
       BOOL noIntermediateFrame = FALSE  /// Flag to use intermediate store
     );
 
