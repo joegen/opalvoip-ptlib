@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.183  2002/04/19 00:43:17  craigs
+ * Fixed problem with file modes
+ *
  * Revision 1.182  2002/04/19 00:20:31  craigs
  * Added option to append to log file rather than create anew each time
  *
@@ -700,9 +703,12 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
     BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
 
-    PTextFile * traceOutput = new PTextFile(filename, PFile::ReadWrite);
-    if (options & AppendToFile)
+    PTextFile * traceOutput;
+    if (options & AppendToFile) {
+      traceOutput = new PTextFile(filename, PFile::ReadWrite);
       traceOutput->SetPosition(0, PFile::End);
+    } else 
+      traceOutput = new PTextFile(filename, PFile::WriteOnly);
 
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
