@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2004/06/19 09:00:35  csoutheren
+ * Updated for TTS changes
+ *
  * Revision 1.3  2004/06/02 08:30:22  csoutheren
  * Tweaks to avoid some problems with reading single bytes from a PCM stream
  *
@@ -90,6 +93,7 @@ void Vxmltest::Main()
   args.Parse(
              "t.-trace."
              "o:output:"
+             "-tts:"
              );
 
 #if PTRACING
@@ -103,13 +107,16 @@ void Vxmltest::Main()
     return;
   }
 
-  PTextToSpeech tts;
-  if (!tts.SetEngine(tts.GetEngines()[0])) {
+  PTextToSpeech * tts = NULL;
+  PGenericFactory<PTextToSpeech>::KeyList_T engines = PGenericFactory<PTextToSpeech>::GetKeyList();
+  if (engines.size() != 0)
+    tts = PGenericFactory<PTextToSpeech>::CreateInstance(engines[0]);
+  if (tts == NULL) {
     PError << "error: cannot select default text to speech engine" << endl;
     return;
   }
 
-  vxml = new PVXMLSession(&tts, FALSE);
+  vxml = new PVXMLSession(tts);
   PString device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
   PSoundChannel player;
   if (!player.Open(device, PSoundChannel::Player)) {
