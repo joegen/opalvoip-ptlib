@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.7 1994/12/21 11:52:57 robertj Exp $
+ * $Id: filepath.h,v 1.8 1995/03/14 12:41:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
- * Revision 1.7  1994/12/21 11:52:57  robertj
+ * Revision 1.8  1995/03/14 12:41:25  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.7  1994/12/21  11:52:57  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.6  1994/10/24  00:06:58  robertj
@@ -49,8 +52,8 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
    volumes.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is $H$PString. For other platforms,
-   the ancestor class is $H$PCaselessString.
+   case sensitive, eg Unix, the ancestor is <A>PString</A>. For other
+   platforms, the ancestor class is <A>PCaselessString</A>.
  */
 
   public:
@@ -104,7 +107,8 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
        letter followed by a colon ("C:"), for Macintosh it is the volume name
        ("Untitled") and for Unix it is empty ("").
        
-       Returns: string for the volume name part of the file specification..
+       <H2>Returns:</H2>
+       string for the volume name part of the file specification..
      */
       
     PFILE_PATH_STRING GetPath() const;
@@ -113,14 +117,16 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
        on DOS this could be "\SRC\PWLIB\", for Macintosh ":Source:PwLib:" and
        for Unix "/users/equivalence/src/pwlib/".
 
-       Returns: string for the path part of the file specification.
+       <H2>Returns:</H2>
+       string for the path part of the file specification.
      */
 
     PFILE_PATH_STRING GetTitle() const;
     /* Get the title component of the full file specification, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" this would be "FRED".
 
-       Returns: string for the title part of the file specification.
+       <H2>Returns:</H2>
+       string for the title part of the file specification.
      */
 
     PFILE_PATH_STRING GetType() const;
@@ -132,16 +138,19 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
        Note there are standard translations from file extensions, eg ".TXT"
        and some Macintosh file types, eg "TEXT".
 
-       Returns: string for the type part of the file specification.
+       <H2>Returns:</H2>
+       string for the type part of the file specification.
      */
 
     PFILE_PATH_STRING GetFileName() const;
     /* Get the actual directory entry name component of the full file
-       specification. This may be identical to $B$GetTitle()+GetType()$B$ or
-       simply $B$GetTitle()$B$ depending on the platform. eg for DOS file
-       "C:\SRC\PWLIB\FRED.TXT" this would be "FRED.TXT".
+       specification. This may be identical to
+       <CODE>GetTitle() + GetType()</CODE> or simply <CODE>GetTitle()</CODE>
+       depending on the platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this
+       would be "FRED.TXT".
 
-       Returns: string for the file name part of the file specification.
+       <H2>Returns:</H2>
+       string for the file name part of the file specification.
      */
 
     void SetType(
