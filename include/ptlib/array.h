@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.31  2004/05/13 02:07:14  dereksmithies
+ * Fixes, so it works with doc++
+ *
  * Revision 1.30  2004/04/09 03:42:34  csoutheren
  * Removed all usages of "virtual inline" and "inline virtual"
  *
@@ -742,6 +745,7 @@ class PShortArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PSCALAR_ARRAY(PShortArray, short);
 
@@ -767,6 +771,7 @@ class PIntArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PSCALAR_ARRAY(PIntArray, int);
 
@@ -792,6 +797,7 @@ class PLongArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PSCALAR_ARRAY(PLongArray, long);
 
@@ -817,6 +823,7 @@ class PBYTEArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PDECLARE_BASEARRAY(PBYTEArray, BYTE);
   public:
@@ -855,6 +862,7 @@ class PWORDArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PSCALAR_ARRAY(PWORDArray, WORD);
 
@@ -880,6 +888,7 @@ class PUnsignedArray : public PBaseArray {
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
+};
 #endif
 PSCALAR_ARRAY(PUnsignedArray, unsigned);
 
