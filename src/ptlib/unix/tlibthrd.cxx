@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.84  2002/06/04 00:25:31  robertj
+ * Fixed incorrectly initialised trace indent, thanks Artis Kugevics
+ *
  * Revision 1.83  2002/05/21 09:13:00  robertj
  * Fixed problem when using posix recursive mutexes, thanks Artis Kugevics
  *
@@ -423,9 +426,7 @@ void PThread::InitialiseProcessThread()
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
 
-#if PTRACING
   traceBlockIndentLevel = 0;
-#endif
 }
 
 
@@ -455,9 +456,7 @@ PThread::PThread(PINDEX stackSize,
   // new thread is actually started the first time Resume() is called.
   PX_firstTimeStart = TRUE;
 
-#if PTRACING
   traceBlockIndentLevel = 0;
-#endif
 }
 
 
