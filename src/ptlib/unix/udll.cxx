@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.15  2003/07/09 11:37:13  rjongbloed
+ * Fixed corrct closing of DLL (setting handle to NULL) thanks Fabrizio Ammollo
+ *
  * Revision 1.14  2003/05/14 10:50:30  dereksmithies
  * Quick hack to add the function: PDynaLink::GetName().  Fix me.
  *
@@ -360,8 +363,10 @@ BOOL PDynaLink::Open(const PString & name)
 
 void PDynaLink::Close()
 {
-  if (dllHandle != NULL)
+  if (dllHandle != NULL) {
     dlclose(dllHandle);
+    dllHandle = NULL;
+  }
 }
 
 BOOL PDynaLink::IsLoaded() const
