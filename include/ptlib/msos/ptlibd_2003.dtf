@@ -162,6 +162,7 @@ EXPORTS
     ??0PArrayObjects@@IAE@HPBV0@@Z @119 NONAME ;protected: __thiscall PArrayObjects::PArrayObjects(int,class PArrayObjects const *)
     ??0PArrayObjects@@QAE@ABV0@@Z @120 NONAME ;public: __thiscall PArrayObjects::PArrayObjects(class PArrayObjects const &)
     ??0PArrayObjects@@QAE@H@Z @121 NONAME ;public: __thiscall PArrayObjects::PArrayObjects(int)
+    ??0PAtomicInteger@@QAE@J@Z @5834 NONAME ;public: __thiscall PAtomicInteger::PAtomicInteger(long)
     ??0PBitArray@@QAE@ABV0@@Z @122 NONAME ;public: __thiscall PBitArray::PBitArray(class PBitArray const &)
     ??0PBitArray@@QAE@H@Z @123 NONAME ;public: __thiscall PBitArray::PBitArray(int)
     ??0PBitArray@@QAE@PBXHH@Z @124 NONAME ;public: __thiscall PBitArray::PBitArray(void const *,int,int)
@@ -200,6 +201,7 @@ EXPORTS
     ??0PContainer@@IAE@HPBV0@@Z @157 NONAME ;protected: __thiscall PContainer::PContainer(int,class PContainer const *)
     ??0PContainer@@QAE@ABV0@@Z @158 NONAME ;public: __thiscall PContainer::PContainer(class PContainer const &)
     ??0PContainer@@QAE@H@Z @159 NONAME ;public: __thiscall PContainer::PContainer(int)
+    ??0PCriticalSection@@QAE@XZ @5835 NONAME ;public: __thiscall PCriticalSection::PCriticalSection(void)
     ??0PDebugStream@@QAE@XZ @160 NONAME ;public: __thiscall PDebugStream::PDebugStream(void)
     ??0PDirectory@@QAE@ABV0@@Z @161 NONAME ;public: __thiscall PDirectory::PDirectory(class PDirectory const &)
     ??0PDirectory@@QAE@ABVPString@@@Z @162 NONAME ;public: __thiscall PDirectory::PDirectory(class PString const &)
@@ -207,6 +209,7 @@ EXPORTS
     ??0PDirectory@@QAE@XZ @164 NONAME ;public: __thiscall PDirectory::PDirectory(void)
     ??0PDynaLink@@QAE@ABVPString@@@Z @165 NONAME ;public: __thiscall PDynaLink::PDynaLink(class PString const &)
     ??0PDynaLink@@QAE@XZ @166 NONAME ;public: __thiscall PDynaLink::PDynaLink(void)
+    ??0PEnterAndLeave@@QAE@AAVPCriticalSection@@H@Z @5836 NONAME ;public: __thiscall PEnterAndLeave::PEnterAndLeave(class PCriticalSection &,int)
     ??0PEthSocket@@QAE@HHH@Z @167 NONAME ;public: __thiscall PEthSocket::PEthSocket(int,int,int)
     ??0PFile@@QAE@ABVPFilePath@@W4OpenMode@0@H@Z @169 NONAME ;public: __thiscall PFile::PFile(class PFilePath const &,enum PFile::OpenMode,int)
     ??0PFile@@QAE@W4OpenMode@0@H@Z @170 NONAME ;public: __thiscall PFile::PFile(enum PFile::OpenMode,int)
@@ -476,6 +479,7 @@ EXPORTS
     ??0P_YUV422_YUV420P_Registration@@QAE@XZ @406 NONAME ;public: __thiscall P_YUV422_YUV420P_Registration::P_YUV422_YUV420P_Registration(void)
     ??0P_YUV422_YUV422@@QAE@ABVPString@@0II@Z @407 NONAME ;public: __thiscall P_YUV422_YUV422::P_YUV422_YUV422(class PString const &,class PString const &,unsigned int,unsigned int)
     ??0P_YUV422_YUV422_Registration@@QAE@XZ @408 NONAME ;public: __thiscall P_YUV422_YUV422_Registration::P_YUV422_YUV422_Registration(void)
+    ??0Reference@PContainer@@QAE@ABV01@@Z @5837 NONAME ;public: __thiscall PContainer::Reference::Reference(class PContainer::Reference const &)
     ??0Reference@PContainer@@QAE@H@Z @409 NONAME ;public: __thiscall PContainer::Reference::Reference(int)
     ??0RegistryKey@@QAE@ABVPString@@W4OpenMode@0@@Z @410 NONAME ;public: __thiscall RegistryKey::RegistryKey(class PString const &,enum RegistryKey::OpenMode)
     ??0RouteEntry@PIPSocket@@QAE@ABVAddress@1@@Z @411 NONAME ;public: __thiscall PIPSocket::RouteEntry::RouteEntry(class RouteEntry::Address const &)
@@ -564,9 +568,11 @@ EXPORTS
     ??1PConfigArgs@@UAE@XZ @484 NONAME ;public: virtual __thiscall PConfigArgs::~PConfigArgs(void)
     ??1PConsoleChannel@@UAE@XZ @485 NONAME ;public: virtual __thiscall PConsoleChannel::~PConsoleChannel(void)
     ??1PContainer@@UAE@XZ @486 NONAME ;public: virtual __thiscall PContainer::~PContainer(void)
+    ??1PCriticalSection@@UAE@XZ @5838 NONAME ;public: virtual __thiscall PCriticalSection::~PCriticalSection(void)
     ??1PDebugStream@@UAE@XZ @487 NONAME ;public: virtual __thiscall PDebugStream::~PDebugStream(void)
     ??1PDirectory@@UAE@XZ @488 NONAME ;public: virtual __thiscall PDirectory::~PDirectory(void)
     ??1PDynaLink@@UAE@XZ @489 NONAME ;public: virtual __thiscall PDynaLink::~PDynaLink(void)
+    ??1PEnterAndLeave@@QAE@XZ @5839 NONAME ;public: __thiscall PEnterAndLeave::~PEnterAndLeave(void)
     ??1PEthSocket@@UAE@XZ @490 NONAME ;public: virtual __thiscall PEthSocket::~PEthSocket(void)
     ??1PFile@@UAE@XZ @492 NONAME ;public: virtual __thiscall PFile::~PFile(void)
     ??1PFileInfo@@UAE@XZ @493 NONAME ;public: virtual __thiscall PFileInfo::~PFileInfo(void)
@@ -710,6 +716,7 @@ EXPORTS
     ??1P_YUV422_YUV420P_Registration@@UAE@XZ @619 NONAME ;public: virtual __thiscall P_YUV422_YUV420P_Registration::~P_YUV422_YUV420P_Registration(void)
     ??1P_YUV422_YUV422@@UAE@XZ @620 NONAME ;public: virtual __thiscall P_YUV422_YUV422::~P_YUV422_YUV422(void)
     ??1P_YUV422_YUV422_Registration@@UAE@XZ @621 NONAME ;public: virtual __thiscall P_YUV422_YUV422_Registration::~P_YUV422_YUV422_Registration(void)
+    ??1Reference@PContainer@@QAE@XZ @5840 NONAME ;public: __thiscall PContainer::Reference::~Reference(void)
     ??1RegistryKey@@QAE@XZ @622 NONAME ;public: __thiscall RegistryKey::~RegistryKey(void)
     ??1RouteEntry@PIPSocket@@UAE@XZ @623 NONAME ;public: virtual __thiscall PIPSocket::RouteEntry::~RouteEntry(void)
     ??1SecurityID@@QAE@XZ @624 NONAME ;public: __thiscall SecurityID::~SecurityID(void)
@@ -809,6 +816,7 @@ EXPORTS
     ??4PWin32AsnOid@@QAEAAV0@ABUAsnObjectIdentifier@@@Z @952 NONAME ;public: class PWin32AsnOid & __thiscall PWin32AsnOid::operator=(struct AsnObjectIdentifier const &)
     ??4P_fd_set@@QAEAAV0@I@Z @953 NONAME ;public: class P_fd_set & __thiscall P_fd_set::operator=(unsigned int)
     ??4P_timeval@@QAEAAV0@ABVPTimeInterval@@@Z @954 NONAME ;public: class P_timeval & __thiscall P_timeval::operator=(class PTimeInterval const &)
+    ??4Reference@PContainer@@QAEAAV01@ABV01@@Z @5841 NONAME ;public: class PContainer::Reference & __thiscall PContainer::Reference::operator=(class PContainer::Reference const &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVAddress@PIPSocket@@@Z @5568 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,class PIPSocket::Address &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVPObject@@@Z @5569 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,class PObject &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AA_J@Z @5570 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,__int64 &)
@@ -887,6 +895,7 @@ EXPORTS
     ??BAddress@PIPSocket@@QBEKXZ @1025 NONAME ;public: __thiscall PIPSocket::Address::operator unsigned long(void)const 
     ??BAddress@PIPXSocket@@QBE?AVPString@@XZ @1026 NONAME ;public: __thiscall PIPXSocket::Address::operator class PString(void)const 
     ??BCMC_message_reference_ptr@@QAEPAUCMC_counted_string@@XZ @1027 NONAME ;public: __thiscall CMC_message_reference_ptr::operator struct CMC_counted_string *(void)
+    ??BPAtomicInteger@@QBEJXZ @5842 NONAME ;public: __thiscall PAtomicInteger::operator long(void)const 
     ??BPOrdinalKey@@QBEHXZ @1028 NONAME ;public: __thiscall POrdinalKey::operator int(void)const 
     ??BPsockaddr@@QBEPAUsockaddr@@XZ @3874 NONAME ;public: __thiscall Psockaddr::operator struct sockaddr *(void)const 
     ??BPString@@QBEPBEXZ @1029 NONAME ;public: __thiscall PString::operator unsigned char const *(void)const 
@@ -904,9 +913,11 @@ EXPORTS
     ??CPVideoDeviceBitmap@@QBEPAUtagBITMAPINFO@@XZ @1036 NONAME ;public: struct tagBITMAPINFO * __thiscall PVideoDeviceBitmap::operator->(void)const 
     ??CPWaveFormat@@QBEPAUtWAVEFORMATEX@@XZ @1037 NONAME ;public: struct tWAVEFORMATEX * __thiscall PWaveFormat::operator->(void)const 
     ??DPTimeInterval@@QBE?AV0@H@Z @1039 NONAME ;public: class PTimeInterval  __thiscall PTimeInterval::operator*(int)const 
+    ??EPAtomicInteger@@QAEJXZ @5843 NONAME ;public: long __thiscall PAtomicInteger::operator++(void)
     ??EPIntCondMutex@@QAEAAV0@XZ @1040 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator++(void)
     ??EPOrdinalKey@@QAEHH@Z @1041 NONAME ;public: int __thiscall POrdinalKey::operator++(int)
     ??EPOrdinalKey@@QAEHXZ @1042 NONAME ;public: int __thiscall POrdinalKey::operator++(void)
+    ??FPAtomicInteger@@QAEJXZ @5844 NONAME ;public: long __thiscall PAtomicInteger::operator--(void)
     ??FPIntCondMutex@@QAEAAV0@XZ @1043 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator--(void)
     ??FPOrdinalKey@@QAEHH@Z @1044 NONAME ;public: int __thiscall POrdinalKey::operator--(int)
     ??FPOrdinalKey@@QAEHXZ @1045 NONAME ;public: int __thiscall POrdinalKey::operator--(void)
@@ -1052,6 +1063,7 @@ EXPORTS
     ??_7PConsoleChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5584 NONAME ;const PConsoleChannel::`vftable'{for `std::basic_iostream<char,struct std::char_traits<char> >'}
     ??_7PConsoleChannel@@6BPObject@@@ @1182 NONAME ;const  PConsoleChannel::`vftable'{for `PObject'}
     ??_7PContainer@@6B@ @1183 NONAME ;const  PContainer::`vftable'
+    ??_7PCriticalSection@@6B@ @5845 NONAME ;const PCriticalSection::`vftable'
     ??_7PDebugStream@@6B@ @1184 NONAME ;const  PDebugStream::`vftable'
     ??_7PDirectory@@6B@ @1185 NONAME ;const  PDirectory::`vftable'
     ??_7PDynaLink@@6B@ @1186 NONAME ;const  PDynaLink::`vftable'
@@ -1366,6 +1378,7 @@ EXPORTS
     ??_R0?AVPConfigArgs@@@8 @4080 NONAME ;class PConfigArgs `RTTI Type Descriptor'
     ??_R0?AVPConsoleChannel@@@8 @4081 NONAME ;class PConsoleChannel `RTTI Type Descriptor'
     ??_R0?AVPContainer@@@8 @4082 NONAME ;class PContainer `RTTI Type Descriptor'
+    ??_R0?AVPCriticalSection@@@8 @5846 NONAME ;class PCriticalSection `RTTI Type Descriptor'
     ??_R0?AVPDebugStream@@@8 @4083 NONAME ;class PDebugStream `RTTI Type Descriptor'
     ??_R0?AVPDirectory@@@8 @4084 NONAME ;class PDirectory `RTTI Type Descriptor'
     ??_R0?AVPDynaLink@@@8 @4085 NONAME ;class PDynaLink `RTTI Type Descriptor'
@@ -1598,6 +1611,7 @@ EXPORTS
     ??_R1A@?0A@A@PConfigArgs@@8 @4306 NONAME ;PConfigArgs::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PConsoleChannel@@8 @4307 NONAME ;PConsoleChannel::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PContainer@@8 @4308 NONAME ;PContainer::`RTTI Base Class Descriptor at (0,-1,0,0)'
+    ??_R1A@?0A@A@PCriticalSection@@8 @5847 NONAME ;PCriticalSection::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PDebugStream@@8 @4309 NONAME ;PDebugStream::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PDirectory@@8 @4310 NONAME ;PDirectory::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PDynaLink@@8 @4311 NONAME ;PDynaLink::`RTTI Base Class Descriptor at (0,-1,0,0)'
@@ -1817,6 +1831,7 @@ EXPORTS
     ??_R2PConfigArgs@@8 @4522 NONAME ;PConfigArgs::`RTTI Base Class Array'
     ??_R2PConsoleChannel@@8 @4523 NONAME ;PConsoleChannel::`RTTI Base Class Array'
     ??_R2PContainer@@8 @4524 NONAME ;PContainer::`RTTI Base Class Array'
+    ??_R2PCriticalSection@@8 @5848 NONAME ;PCriticalSection::`RTTI Base Class Array'
     ??_R2PDebugStream@@8 @4525 NONAME ;PDebugStream::`RTTI Base Class Array'
     ??_R2PDirectory@@8 @4526 NONAME ;PDirectory::`RTTI Base Class Array'
     ??_R2PDynaLink@@8 @4527 NONAME ;PDynaLink::`RTTI Base Class Array'
@@ -2028,6 +2043,7 @@ EXPORTS
     ??_R3PConfigArgs@@8 @4731 NONAME ;PConfigArgs::`RTTI Class Hierarchy Descriptor'
     ??_R3PConsoleChannel@@8 @4732 NONAME ;PConsoleChannel::`RTTI Class Hierarchy Descriptor'
     ??_R3PContainer@@8 @4733 NONAME ;PContainer::`RTTI Class Hierarchy Descriptor'
+    ??_R3PCriticalSection@@8 @5849 NONAME ;PCriticalSection::`RTTI Class Hierarchy Descriptor'
     ??_R3PDebugStream@@8 @4734 NONAME ;PDebugStream::`RTTI Class Hierarchy Descriptor'
     ??_R3PDirectory@@8 @4735 NONAME ;PDirectory::`RTTI Class Hierarchy Descriptor'
     ??_R3PDynaLink@@8 @4736 NONAME ;PDynaLink::`RTTI Class Hierarchy Descriptor'
@@ -2241,6 +2257,7 @@ EXPORTS
     ??_R4PConsoleChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5696 NONAME ;const PConsoleChannel::`RTTI Complete Object Locator'{for `std::basic_iostream<char,struct std::char_traits<char> >'}
     ??_R4PConsoleChannel@@6BPObject@@@ @4943 NONAME ;const  PConsoleChannel::`RTTI Complete Object Locator'{for `PObject'}
     ??_R4PContainer@@6B@ @4944 NONAME ;const  PContainer::`RTTI Complete Object Locator'
+    ??_R4PCriticalSection@@6B@ @5850 NONAME ;const PCriticalSection::`RTTI Complete Object Locator'
     ??_R4PDebugStream@@6B@ @4945 NONAME ;const  PDebugStream::`RTTI Complete Object Locator'
     ??_R4PDirectory@@6B@ @4946 NONAME ;const  PDirectory::`RTTI Complete Object Locator'
     ??_R4PDynaLink@@6B@ @4947 NONAME ;const  PDynaLink::`RTTI Complete Object Locator'
@@ -2560,6 +2577,7 @@ EXPORTS
     ?Class@PConfigArgs@@SAPBDXZ @1542 NONAME ;public: static char const * __cdecl PConfigArgs::Class(void)
     ?Class@PConsoleChannel@@SAPBDXZ @1543 NONAME ;public: static char const * __cdecl PConsoleChannel::Class(void)
     ?Class@PContainer@@SAPBDXZ @1544 NONAME ;public: static char const * __cdecl PContainer::Class(void)
+    ?Class@PCriticalSection@@SAPBDXZ @5851 NONAME ;public: static char const * __cdecl PCriticalSection::Class(void)
     ?Class@PDirectory@@SAPBDXZ @1545 NONAME ;public: static char const * __cdecl PDirectory::Class(void)
     ?Class@PDynaLink@@SAPBDXZ @1546 NONAME ;public: static char const * __cdecl PDynaLink::Class(void)
     ?Class@PEthSocket@@SAPBDXZ @1547 NONAME ;public: static char const * __cdecl PEthSocket::Class(void)
@@ -2801,6 +2819,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PConfigArgs@@UBE?AW4Comparison@PObject@@ABV3@@Z @1772 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConfigArgs::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PConsoleChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @1773 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConsoleChannel::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PContainer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1774 NONAME ;public: virtual enum PObject::Comparison  __thiscall PContainer::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PCriticalSection@@UBE?AW4Comparison@PObject@@ABV3@@Z @5852 NONAME ;public: virtual enum PObject::Comparison __thiscall PCriticalSection::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PDirectory@@UBE?AW4Comparison@PObject@@ABV3@@Z @1775 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDirectory::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PDynaLink@@UBE?AW4Comparison@PObject@@ABV3@@Z @1776 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDynaLink::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PEthSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1777 NONAME ;public: virtual enum PObject::Comparison  __thiscall PEthSocket::CompareObjectMemoryDirect(class PObject const &)const 
@@ -3037,6 +3056,7 @@ EXPORTS
     ?EndNest@PReadWriteMutex@@IAEXXZ @1993 NONAME ;protected: void __thiscall PReadWriteMutex::EndNest(void)
     ?EndRead@PReadWriteMutex@@QAEXXZ @1994 NONAME ;public: void __thiscall PReadWriteMutex::EndRead(void)
     ?EndWrite@PReadWriteMutex@@QAEXXZ @1995 NONAME ;public: void __thiscall PReadWriteMutex::EndWrite(void)
+    ?Enter@PCriticalSection@@QAEXXZ @5853 NONAME ;public: void __thiscall PCriticalSection::Enter(void)
     ?EnterSafetyMode@PSafePtrBase@@IAEHW4EnterSafetyModeOption@1@@Z @1996 NONAME ;protected: int __thiscall PSafePtrBase::EnterSafetyMode(enum PSafePtrBase::EnterSafetyModeOption)
     ?EnumInterfaces@PEthSocket@@QAEHHAAVPString@@@Z @1997 NONAME ;public: int __thiscall PEthSocket::EnumInterfaces(int,class PString &)
     ?EnumInterfaces@PWin32PacketSYS@@UAEHHAAVPString@@@Z @1998 NONAME ;public: virtual int __thiscall PWin32PacketSYS::EnumInterfaces(int,class PString &)
@@ -3179,6 +3199,7 @@ EXPORTS
     ?GetClass@PConfigArgs@@UBEPBDI@Z @5431 NONAME ;public: virtual char const * __thiscall PConfigArgs::GetClass(unsigned int)const 
     ?GetClass@PConsoleChannel@@UBEPBDI@Z @5432 NONAME ;public: virtual char const * __thiscall PConsoleChannel::GetClass(unsigned int)const 
     ?GetClass@PContainer@@UBEPBDI@Z @5433 NONAME ;public: virtual char const * __thiscall PContainer::GetClass(unsigned int)const 
+    ?GetClass@PCriticalSection@@UBEPBDI@Z @5854 NONAME ;public: virtual char const * __thiscall PCriticalSection::GetClass(unsigned int)const 
     ?GetClass@PDirectory@@UBEPBDI@Z @5434 NONAME ;public: virtual char const * __thiscall PDirectory::GetClass(unsigned int)const 
     ?GetClass@PDynaLink@@UBEPBDI@Z @5435 NONAME ;public: virtual char const * __thiscall PDynaLink::GetClass(unsigned int)const 
     ?GetClass@PEthSocket@@UBEPBDI@Z @5436 NONAME ;public: virtual char const * __thiscall PEthSocket::GetClass(unsigned int)const 
@@ -3742,6 +3763,7 @@ EXPORTS
     ?InternalIsDescendant@PConfigArgs@@UBEHPBD@Z @5294 NONAME ;public: virtual int __thiscall PConfigArgs::InternalIsDescendant(char const *)const 
     ?InternalIsDescendant@PConsoleChannel@@UBEHPBD@Z @5295 NONAME ;public: virtual int __thiscall PConsoleChannel::InternalIsDescendant(char const *)const 
     ?InternalIsDescendant@PContainer@@UBEHPBD@Z @5296 NONAME ;public: virtual int __thiscall PContainer::InternalIsDescendant(char const *)const 
+    ?InternalIsDescendant@PCriticalSection@@UBEHPBD@Z @5855 NONAME ;public: virtual int __thiscall PCriticalSection::InternalIsDescendant(char const *)const 
     ?InternalIsDescendant@PDirectory@@UBEHPBD@Z @5297 NONAME ;public: virtual int __thiscall PDirectory::InternalIsDescendant(char const *)const 
     ?InternalIsDescendant@PDynaLink@@UBEHPBD@Z @5298 NONAME ;public: virtual int __thiscall PDynaLink::InternalIsDescendant(char const *)const 
     ?InternalIsDescendant@PEthSocket@@UBEHPBD@Z @5299 NONAME ;public: virtual int __thiscall PEthSocket::InternalIsDescendant(char const *)const 
@@ -3886,6 +3908,7 @@ EXPORTS
     ?IsValid@PTime@@QBEHXZ @2921 NONAME ;public: int __thiscall PTime::IsValid(void)const 
     ?IsValid@SecurityID@@QBEHXZ @2922 NONAME ;public: int __thiscall SecurityID::IsValid(void)const 
     ?Kill@PPipeChannel@@QAEHH@Z @2923 NONAME ;public: int __thiscall PPipeChannel::Kill(int)
+    ?Leave@PCriticalSection@@QAEXXZ @5856 NONAME ;public: void __thiscall PCriticalSection::Leave(void)
     ?left@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5746 NONAME ;public: static enum std::_Iosb<int>::_Fmtflags const std::_Iosb<int>::left
     ?Left@PString@@QBE?AV1@H@Z @2924 NONAME ;public: class PString  __thiscall PString::Left(int)const 
     ?LeftRotate@PAbstractSortedList@@IAEXPAUElement@1@@Z @3971 NONAME ;protected: void __thiscall PAbstractSortedList::LeftRotate(struct PAbstractSortedList::Element *)
@@ -4389,6 +4412,7 @@ EXPORTS
     ?SetTime@PConfig@@UAEXABVPString@@ABVPTime@@@Z @3965 NONAME ;public: virtual void __thiscall PConfig::SetTime(class PString const &,class PTime const &)
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @3388 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
     ?SetUserName@PProcess@@QAEHABVPString@@H@Z @3389 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &,int)
+    ?SetValue@PAtomicInteger@@QAEXJ@Z @5857 NONAME ;public: void __thiscall PAtomicInteger::SetValue(long)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @3390 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @3391 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVFlipState@PColourConverter@@QAEXH@Z @3392 NONAME ;public: void __thiscall PColourConverter::SetVFlipState(int)
