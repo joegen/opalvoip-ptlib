@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.224  2004/06/01 05:22:44  csoutheren
+ * Restored memory check functionality
+ *
  * Revision 1.223  2004/05/23 12:34:38  rjongbloed
  * Fixed PProcess startup up execution to after PProcess instance is created
  *   so does not crash if using startup technique to initialise tracing.
@@ -832,7 +835,14 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   PProcess & process = PProcess::Current();
 #endif
 
+#if PMEMORY_CHECK
+  int ignoreAllocations = -1;
+#endif
+
   if (filename != NULL) {
+#if PMEMORY_CHECK
+    ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
+#endif
     PTextFile * traceOutput;
     if (options & AppendToFile) {
       traceOutput = new PTextFile(filename, PFile::ReadWrite);
@@ -857,6 +867,11 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
          << " on " << process.GetOSClass() << ' ' << process.GetOSName()
          << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
          << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu"));
+
+#if PMEMORY_CHECK
+  if (ignoreAllocations >= 0)
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations != 0);
+#endif
 }
 
 
@@ -1815,6 +1830,10 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+
   p_argc = c;
   p_argv = v;
   p_envp = e;
@@ -1844,7 +1863,13 @@ PProcess::PProcess(const char * manuf, const char * name,
   // cannot assure destruction at the right time we simply allocate it and
   // NEVER destroy it! This is OK as the only reason for its destruction is
   // the program is exiting and then who cares?
+#if PMEMORY_CHECK
+  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
   PTraceMutex = new PMutex;
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
+#endif
 
 #ifndef P_RTEMS
   if (p_argv != 0 && p_argc > 0) {
@@ -1882,8 +1907,8 @@ PProcess::PProcess(const char * manuf, const char * name,
         PTrace::Initialise(atoi(env), NULL, PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
     }
 
-    PProcessStartupFactory::KeyList list = PProcessStartupFactory::GetKeyList();
-    PProcessStartupFactory::KeyList::const_iterator r;
+    PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+    PProcessStartupFactory::KeyList_T::const_iterator r;
     for (r = list.begin(); r != list.end(); ++r) {
       if (*r != "SetTraceLevel") {
         PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
