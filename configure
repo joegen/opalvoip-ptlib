@@ -5689,11 +5689,8 @@ _ACEOF
   HAS_IPV6=0
 
 else
-  echo "$as_me:$LINENO: checking for IPv6 Support" >&5
-echo $ECHO_N "checking for IPv6 Support... $ECHO_C" >&6
-if test "${HAS_IPV6+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
+  echo "$as_me:$LINENO: checking for IPv6 support" >&5
+echo $ECHO_N "checking for IPv6 support... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -5702,7 +5699,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <sys/types.h>
-                   #include <netinet/in.h>
+                  #include <netinet/in.h>
 int
 main ()
 {
@@ -5731,10 +5728,10 @@ sed 's/^/| /' conftest.$ac_ext >&5
 HAS_IPV6=no
 fi
 rm -f conftest.$ac_objext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: $HAS_IPV6" >&5
-echo "${ECHO_T}$HAS_IPV6" >&6
-  if test $HAS_IPV6 = yes ; then
+  if test $HAS_IPV6 = no ; then
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+  else
     cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -5772,7 +5769,12 @@ sed 's/^/| /' conftest.$ac_ext >&5
 HAS_IPV6=no
 fi
 rm -f conftest.$ac_objext conftest.$ac_ext
-    if test $HAS_IPV6 = yes ; then
+    if test $HAS_IPV6 = no ; then
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    else
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define P_HAS_IPV6 1

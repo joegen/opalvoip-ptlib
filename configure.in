@@ -946,15 +946,20 @@ if test "$ipv6" = "no" ; then
   AC_DEFINE(P_HAS_IPV6, 0)
   AC_SUBST(HAS_IPV6, 0)
 else
-  AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
-  [AC_TRY_COMPILE([#include <sys/types.h>
-                   #include <netinet/in.h>],
-                   [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
-  if test $HAS_IPV6 = yes ; then
+  AC_MSG_CHECKING(for IPv6 support)
+  AC_TRY_COMPILE([#include <sys/types.h>
+                  #include <netinet/in.h>],
+                  [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)
+  if test $HAS_IPV6 = no ; then
+    AC_MSG_RESULT(no)
+  else
     AC_TRY_COMPILE([#include <sys/socket.h>
                      #include <netdb.h>],
                      [getnameinfo(NULL, 0, NULL, 0, NULL, 0, 0);], HAS_IPV6=yes, HAS_IPV6=no)
-    if test $HAS_IPV6 = yes ; then
+    if test $HAS_IPV6 = no ; then
+      AC_MSG_RESULT(no)
+    else
+      AC_MSG_RESULT(yes)
       AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
     fi
   fi
