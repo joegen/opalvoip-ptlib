@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.40 1995/04/25 11:29:38 robertj Exp $
+ * $Id: contain.cxx,v 1.41 1995/06/04 12:39:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.41  1995/06/04 12:39:59  robertj
+ * Made char * array all const in PStringArray constructor.
+ *
  * Revision 1.40  1995/04/25 11:29:38  robertj
  * Fixed Borland compiler warnings.
  *
@@ -1299,7 +1302,7 @@ PStringStream::~PStringStream()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringArray::PStringArray(PINDEX count, char **strarr)
+PStringArray::PStringArray(PINDEX count, char const * const * strarr)
 {
   PAssertNULL(strarr);
   SetSize(count);
