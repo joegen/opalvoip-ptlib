@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.10  2001/01/02 06:07:07  robertj
+ * Fixed race condition in reopening indirect channel, thanks Bertrand Croq.
+ *
  * Revision 1.9  2000/11/14 08:25:58  robertj
  * Added function to propagate the error text through to indirect channel.
  *
@@ -677,12 +680,25 @@ BOOL PIndirectChannel::Open(PChannel * readChan,
                             BOOL autoDeleteRead,
                             BOOL autoDeleteWrite)
 {
-  Close();
+  flush();
 
   channelPointerMutex.StartWrite();
 
+  if (readChannel != NULL)
+    readChannel->Close();
+
+  if (readChannel != writeChannel && writeChannel != NULL)
+    writeChannel->Close();
+
+  if (readAutoDelete)
+    delete readChannel;
+
+  if (readChannel != writeChannel && writeAutoDelete)
+    delete writeChannel;
+
   readChannel = readChan;
   readAutoDelete = autoDeleteRead;
+
   writeChannel = writeChan;
   writeAutoDelete = autoDeleteWrite;
 
