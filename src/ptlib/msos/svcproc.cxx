@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.48  1998/12/04 10:10:45  robertj
+ * Added virtual for determining if process is a service. Fixes linkage problem.
+ *
  * Revision 1.47  1998/11/30 04:50:17  robertj
  * New directory structure
  *
@@ -447,6 +450,12 @@ PServiceProcess & PServiceProcess::Current()
   PServiceProcess & process = (PServiceProcess &)PProcess::Current();
   PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service!");
   return process;
+}
+
+
+BOOL PServiceProcess::IsServiceProcess() const
+{
+  return TRUE;
 }
 
 
