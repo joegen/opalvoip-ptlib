@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.28 1996/05/30 10:07:26 robertj Exp $
+ * $Id: http.cxx,v 1.29 1996/06/05 12:33:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.29  1996/06/05 12:33:04  robertj
+ * Fixed bug in parsing URL with no path, is NOT absolute!
+ *
  * Revision 1.28  1996/05/30 10:07:26  robertj
  * Fixed bug in version number checking of return code compatibility.
  *
@@ -356,7 +359,7 @@ void PURL::Parse(const char * cstr)
   // the hierarchy is what is left
   pathStr = url;
   path = url.Tokenise("/", FALSE);
-  absolutePath = path[0].IsEmpty();
+  absolutePath = path.GetSize() > 0 && path[0].IsEmpty();
   if (absolutePath)
     path.RemoveAt(0);
   for (pos = 0; pos < path.GetSize(); pos++) {
