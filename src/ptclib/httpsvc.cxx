@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.63  2001/02/15 01:12:15  robertj
+ * Moved some often repeated HTTP service code into PHTTPServiceProcess.
+ *
  * Revision 1.62  2001/02/14 06:52:26  robertj
  * Fixed GNU compatibility with last change to PServiceMacro.
  *
@@ -302,6 +305,63 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
 }
 
 
+BOOL PHTTPServiceProcess::OnStart()
+{
+  return Initialise("Started");
+}
+
+
+void PHTTPServiceProcess::OnStop()
+{
+  PSYSTEMLOG(Warning, GetName() << " stopped.");
+  PServiceProcess::OnStop();
+}
+
+
+BOOL PHTTPServiceProcess::OnPause()
+{
+  OnConfigChanged();
+  return TRUE;
+}
+
+
+void PHTTPServiceProcess::OnContinue()
+{
+  if (Initialise("Restarted"))
+    return;
+
+  OnStop();
+  Terminate();
+}
+
+void PHTTPServiceProcess::OnControl()
+{
+  // This function get called when the Control menu item is selected in the
+  // tray icon mode of the service.
+  PStringStream url;
+  url << "http://";
+
+  PString host = PIPSocket::GetHostName();
+  PIPSocket::Address addr;
+  if (PIPSocket::GetHostAddress(host, addr))
+    url << host;
+  else
+    url << "localhost";
+
+  url << ':' << httpListeningSocket->GetPort();
+
+  PURL::OpenBrowser(url);
+}
+
+
+#ifdef _WIN32
+const char * PHTTPServiceProcess::GetServiceDependencies() const
+{
+  return "EventLog\0Tcpip\0";
+}
+#endif
+
+
 BOOL PHTTPServiceProcess::ListenForHTTP(WORD port, PINDEX stackSize)
 {
   if (httpListeningSocket != NULL &&
@@ -362,6 +422,10 @@ PString PHTTPServiceProcess::GetCopyrightText()
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
+  PFile header;
+  if (header.Open("header.html", PFile::ReadOnly))
+    return header.ReadString(header.GetLength());
+
   PHTML html(PHTML::InBody);
   html << PHTML::TableStart()
        << PHTML::TableRow()
