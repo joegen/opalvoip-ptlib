@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.87  2002/04/18 06:16:06  robertj
+ * Fixed Net BSD problem with RTF_CLONED flag, thanks Motoyuki OHMORI
+ * Fixed operator precedence problem with bit mask tests in RTF_CLONE code.
+ *
  * Revision 1.86  2002/04/12 07:57:41  robertj
  * Fixed bug introduced into Accept() by previous change.
  *
@@ -1119,11 +1123,15 @@ BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
     return FALSE;
   }
 
-#ifdef P_OPENBSD // OpenBSD does not have the cloned flag
-  if( ~rtm->rtm_flags&RTF_LLINFO) {
+  if ((~rtm->rtm_flags&RTF_LLINFO)
+#if defined(P_NETBSD)
+        && (~rtm->rtm_flags&RTF_CLONED)     // Net BSD has flag one way
+#elif !defined(P_OPENBSD)
+        && (~rtm->rtm_flags&RTF_WASCLONED)  // Free BSD/MAC has it another
 #else
-  if( ~rtm->rtm_flags&RTF_LLINFO && ~rtm->rtm_flags&RTF_WASCLONED) {
+                                            // Open BSD does not have it at all!
 #endif
+     ) {
 
     //strcpy(name, if_table[rtm->rtm_index].GetName);
 
