@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.58  2003/10/30 11:33:59  rjongbloed
+ * Added automatic inclusion of Winsock2 library.
+ *
  * Revision 1.57  2003/10/28 23:36:22  csoutheren
  * Changed to use ws2_32.lib or wsock32.lib depending on use of QoS
  *
@@ -227,11 +230,11 @@
 #include <wsipx.h>
 #include <wsnwlink.h>
 
-#ifdef P_HAS_QOS
-#pragma comment(lib, "ws2_32.lib")
-#else
-#pragma comment(lib, "wsock32.lib")
+
+#if defined(P_WINSOCK2_LIBRARY)
+#pragma comment(lib, P_WINSOCK2_LIBRARY)
 #endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PWinSock
