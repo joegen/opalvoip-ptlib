@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.18 1998/01/26 01:51:37 robertj Exp $
+ * $Id: httpform.cxx,v 1.19 1998/01/26 02:49:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.19  1998/01/26 02:49:17  robertj
+ * GNU support.
+ *
  * Revision 1.18  1998/01/26 01:51:37  robertj
  * Fixed uninitialised variable.
  *
@@ -67,6 +70,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "httpform.h"
+#endif
 
 #include <ptlib.h>
 #include <httpform.h>
