@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.79  2002/06/13 08:34:05  rogerh
+ * gcc 3.1 needs iostream instead of iostream.h
+ *
  * Revision 1.78  2002/05/22 00:23:31  craigs
  * Added GMTTime flag to tracing options
  *
@@ -288,9 +291,16 @@
 #include <iostream>
 #include <strstream>
 #else
+#if (__GNUC__ >= 3)
+#include <iostream>
+#ifndef __MWERKS__
+#include <iomanip>
+#endif
+#else
 #include <iostream.h>
 #ifndef __MWERKS__
 #include <iomanip.h>
+#endif
 #endif
 #endif
 
