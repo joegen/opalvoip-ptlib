@@ -1,12 +1,13 @@
 /*
- * $Id: config.h,v 1.1 1995/01/23 18:43:27 craigs Exp $
+ * $Id: config.h,v 1.2 1995/04/04 18:31:51 craigs Exp $
  */
 
 #ifndef _PCONFIG
 
 #pragma interface
 
-class PXConfig;
+class PXConfigSection;
+PLIST(PXConfig, PXConfigSection);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
