@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.41 1996/02/25 03:02:45 robertj Exp $
+ * $Id: osutil.inl,v 1.42 1996/03/17 05:43:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.42  1996/03/17 05:43:21  robertj
+ * Changed PTimeInterval to 64 bit integer.
+ *
  * Revision 1.41  1996/02/25 03:02:45  robertj
  * Added consts to all GetXxxx functions in PConfig.
  *
@@ -146,13 +149,13 @@ PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(milliseconds); }
 
 PINLINE long PTimeInterval::GetMilliseconds() const
-  { return milliseconds; }
+  { return (long)milliseconds; }
 
 PINLINE long PTimeInterval::GetSeconds() const
-  { return milliseconds/1000; }
+  { return (long)(milliseconds/1000); }
 
 PINLINE long PTimeInterval::GetMinutes() const
-  { return milliseconds/60000; }
+  { return (long)(milliseconds/60000); }
 
 PINLINE int PTimeInterval::GetHours() const
   { return (int)(milliseconds/3600000); }
@@ -193,22 +196,22 @@ PINLINE BOOL PTimeInterval::operator<=(const PTimeInterval & t) const
   { return milliseconds <= t.milliseconds; }
 
 PINLINE BOOL PTimeInterval::operator==(long msecs) const
-  { return milliseconds == msecs; }
+  { return (long)milliseconds == msecs; }
 
 PINLINE BOOL PTimeInterval::operator!=(long msecs) const
-  { return milliseconds != msecs; }
+  { return (long)milliseconds != msecs; }
 
 PINLINE BOOL PTimeInterval::operator> (long msecs) const
-  { return milliseconds > msecs; }
+  { return (long)milliseconds > msecs; }
 
 PINLINE BOOL PTimeInterval::operator>=(long msecs) const
-  { return milliseconds >= msecs; }
+  { return (long)milliseconds >= msecs; }
 
 PINLINE BOOL PTimeInterval::operator< (long msecs) const
-  { return milliseconds < msecs; }
+  { return (long)milliseconds < msecs; }
 
 PINLINE BOOL PTimeInterval::operator<=(long msecs) const
-  { return milliseconds <= msecs; }
+  { return (long)milliseconds <= msecs; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
