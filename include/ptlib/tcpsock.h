@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.20  1998/12/22 10:23:08  robertj
+ * Added clone() function to support SOCKS in FTP style protocols.
+ *
  * Revision 1.19  1998/09/23 06:21:37  robertj
  * Added open source copyright license.
  *
@@ -126,6 +129,22 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        Note thate the "copy" constructor here is areally a "listening" socket
        the same as the PSocket & parameter version.
+     */
+
+
+  // Overrides from class PObject.
+    virtual PObject * Clone() const;
+    /* Create a copy of the class on the heap. The exact semantics of the
+       descendent class determine what is required to make a duplicate of the
+       instance. Not all classes can even <EM>do</EM> a clone operation.
+       
+       The main user of the clone function is the <A>PDictionary</A> class as
+       it requires copies of the dictionary keys.
+
+       The default behaviour is for this function to assert.
+
+       <H2>Returns:</H2>
+       pointer to new copy of the class instance.
      */
 
 
