@@ -639,12 +639,12 @@ stunParseServerName( char* name, StunAddress* stunServerAddr)
 }
 
 int
-stunOpenSocket( StunAddress& dest, StunAddress* sAddr )
+stunOpenSocket( StunAddress& dest, StunAddress* sAddr, int port )
 {
    assert( dest.addr.v4addr != 0 );
    assert( dest.addrHdr.port != 0 );
 
-   Socket myFd = openPort();
+   Socket myFd = openPort(port);
 
    char msg[udpMaxMessageLength];
    int msgLen = sizeof(msg)/sizeof(*msg);
@@ -887,7 +887,7 @@ changedAddr );
  
 
 StunNatType
-stunType( StunAddress& dest,bool verbose )
+stunType( StunAddress& dest, bool verbose, int portBase)
 { 
    assert( dest.addr.v4addr != 0 );
    assert( dest.addrHdr.port != 0 );
@@ -896,7 +896,7 @@ stunType( StunAddress& dest,bool verbose )
    StunAddress changedAddr;
    UInt32 id;
     
-   Socket myFd = openPort();
+   Socket myFd = openPort(portBase);
     
    bool respTestI=false;
    bool isNat=true;
