@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.78  2002/08/30 02:23:13  craigs
+# Added changes for correct creation of debug libraries
+#    thanks to Martin Froehlich
+#
 # Revision 1.77  2002/06/25 04:13:07  robertj
 # Added symbol NODEPS so dependency files are not included, very useful for
 #   when they get corrupted so don;t have to manually delete them.
@@ -478,18 +482,6 @@ bothnoshared ::
 #
 ######################################################################
 
-ifdef DEBUG
-
-# Cannot do this in DEBUG mode, so do it without DEBUG
-
-release ::
-	$(MAKE) DEBUG= release
-
-else
-
-# if user has not defined VERSION macro, calculate it from version file
-ifndef VERSION
-
 # if have not explictly defined VERSION_FILE, locate a default
 
 ifndef VERSION_FILE
@@ -510,58 +502,57 @@ endif
 ifdef VERSION_FILE
 
 # Set default strings to search in VERSION_FILE
-
-ifndef MAJOR_VERSION_DEFINE
-MAJOR_VERSION_DEFINE:=MAJOR_VERSION
-endif
-
-ifndef MINOR_VERSION_DEFINE
-MINOR_VERSION_DEFINE:=MINOR_VERSION
-endif
-
-ifndef BUILD_NUMBER_DEFINE
-BUILD_NUMBER_DEFINE:=BUILD_NUMBER
-endif
+  ifndef MAJOR_VERSION_DEFINE
+    MAJOR_VERSION_DEFINE:=MAJOR_VERSION
+  endif
+  ifndef MINOR_VERSION_DEFINE
+    MINOR_VERSION_DEFINE:=MINOR_VERSION
+  endif
+  ifndef BUILD_NUMBER_DEFINE
+    BUILD_NUMBER_DEFINE:=BUILD_NUMBER
+  endif
 
 
 # If not specified, find the various version components in the VERSION_FILE
 
-ifndef MAJOR_VERSION
-MAJOR_VERSION:=$(strip $(subst \#define,, $(subst $(MAJOR_VERSION_DEFINE),,\
-			$(shell grep "define *$(MAJOR_VERSION_DEFINE) *" $(VERSION_FILE)))))
-endif
-ifndef MINOR_VERSION
-MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
-			$(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
-endif
-ifndef BUILD_TYPE
-BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
-			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
-			$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
-endif
-ifndef BUILD_NUMBER
-BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
-			$(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
-endif
+  ifndef MAJOR_VERSION
+    MAJOR_VERSION:=$(strip $(subst \#define,, $(subst $(MAJOR_VERSION_DEFINE),,\
+                   $(shell grep "define *$(MAJOR_VERSION_DEFINE) *" $(VERSION_FILE)))))
+  endif
+  ifndef MINOR_VERSION
+    MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
+                   $(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
+  endif
+  ifndef BUILD_TYPE
+    BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
+                $(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
+                $(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+  endif
+  ifndef BUILD_NUMBER
+    BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
+                  $(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
+  endif
 
-
-# Build the VERSION string from the components
-
-VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
-
-
-# Build the CVS_TAG string from the components
-
-ifndef CVS_TAG
-CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
-endif
-
+# Check for VERSION either predefined or defined by previous section from VERSION_FILE
+  ifndef VERSION
+    VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+  endif # ifndef VERSION
 endif # ifdef VERSION_FILE
 
-endif # ifndef VERSION
+# Build the CVS_TAG string from the components
+ifndef CVS_TAG
+  CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
+endif
 
+ifdef DEBUG
 
-# Check for VERSION either predefined or defined by previosu section from VERSION_FILE
+# Cannot do this in DEBUG mode, so do it without DEBUG
+
+release ::
+	$(MAKE) DEBUG= release
+
+else
+
 
 ifndef VERSION
 
