@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.113  2001/10/07 16:05:59  yurik
+ * Removed MFC dependency
+ *
  * Revision 1.112  2001/09/11 03:27:46  robertj
  * Improved error processing on high level protocol failures, usually
  *   caused by unexpected shut down of a socket.
@@ -1458,9 +1461,7 @@ PString PProcess::GetOSVersion()
 PDirectory PProcess::GetOSConfigDir()
 {
 #ifdef _WIN32_WCE
-	TCHAR  dir[_MAX_PATH];dir[0]=0;
-	wce_GetSystemDirectory(dir,sizeof(dir));	
-	return PString(dir);
+	return PString("\\Windows");
 #else	
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
