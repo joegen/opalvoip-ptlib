@@ -316,7 +316,8 @@ fi
 dnl ########################################################################
 dnl check for number of parms to readdir
 AC_MSG_CHECKING(if readdir_r has 2 parms)
-AC_TRY_COMPILE([#include <dirent.h>],
+AC_TRY_COMPILE([#define _POSIX_PTHREAD_SEMANTICS
+                #include <dirent.h>],
                [DIR *s; struct dirent * e; readdir_r(s, e);], P_HAS_POSIX_READDIR_R=2, P_HAS_POSIX_READDIR_R=0)
 if test ${P_HAS_POSIX_READDIR_R} = 2 ; then
   AC_MSG_RESULT(yes)
