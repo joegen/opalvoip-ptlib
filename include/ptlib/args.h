@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.17  1998/11/01 04:56:51  robertj
+ * Added BOOl return value to Parse() to indicate there are parameters available.
+ *
  * Revision 1.16  1998/10/30 11:22:14  robertj
  * Added constructors that take strings as well as const char *'s.
  *
@@ -159,14 +162,14 @@ PDECLARE_CLASS(PArgList, PObject)
     );
       // Set the internal copy of the program arguments.
 
-    void Parse(
+    BOOL Parse(
       const char * theArgumentSpec,
       /* The specification string for argument options. See description for
          details.
        */
       BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
-    void Parse(
+    BOOL Parse(
       const PString & theArgumentStr,
       /* The specification string for argument options. See description for
          details.
@@ -191,6 +194,9 @@ PDECLARE_CLASS(PArgList, PObject)
 
        For example, "ab:c" allows for "-a -b arg -barg -c" and
        "a-an-arg.b-option:c;" allows for "-a --an-arg --option arg -c -copt".
+
+       <H2>Returns:</H2>
+       TRUE if there is at least one parameter after parsing.
      */
 
     PINDEX GetOptionCount(
