@@ -12,18 +12,6 @@
 
 #define VERSION   "1.0"
 
-struct FileUpgradeInfo {
-  HKEY key;
-  const char * registryBase;
-  const char * registryKey;
-  const char * filename;
-  unsigned int oldcrc;
-
-  const char * newFilename;
-  unsigned int newcrc;
-
-  char * copyright;
-};
 
 static char * dinkumwareCopyright = 
 "The files presented here are copyright © 1995-2000 by P.J. Plauger.\n"
@@ -37,7 +25,20 @@ static char * dinkumwareCopyright =
 "DINKUMWARE, LTD. AND P.J. PLAUGER SHALL NOT BE LIABLE FOR ANY DAMAGES\n"
 "SUFFERED BY LICENSEE AS A RESULT OF USING THESE FILES.";
 
-static FileUpgradeInfo fileInfo[] = {
+
+
+static struct FileUpgradeInfo {
+  HKEY key;
+  const char * registryBase;
+  const char * registryKey;
+  const char * filename;
+  unsigned int oldcrc;
+
+  const char * newFilename;
+  unsigned int newcrc;
+
+  char * copyright;
+} fileInfo[] = {
   { HKEY_LOCAL_MACHINE,
     "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
     "ProductDir",
@@ -96,6 +97,23 @@ bool CalculateCRCOfFile(const std::string & fn, unsigned long & crc32)
 }
 
 
+class RegKey
+{
+public:
+  RegKey()
+  {
+    key = NULL;
+  }
+  ~RegKey()
+  {
+    if (key != NULL)
+      RegCloseKey(key);
+  }
+
+  HKEY key;
+};
+
+
 int main(int argc, char * argv[])
 {
   cout << "PWLIB File Upgrader v" << VERSION << "\n"
@@ -121,8 +139,7 @@ int main(int argc, char * argv[])
   int status = 0;
 
   unsigned i;
-  for (i = 0; fileInfo[i].registryBase != NULL; ++i) {
-
+  for (i = 0; fileInfo[i].filename != NULL; ++i) {
     FileUpgradeInfo & info = fileInfo[i];
 
     char * infoKeyName = "(unknown)";
@@ -139,130 +156,134 @@ int main(int argc, char * argv[])
       infoKeyName = "HKEY_USERS";
 
     // open registry key
-    HKEY key;
+    RegKey key;
     LONG stat = RegOpenKeyEx(info.key,
-                     info.registryBase,
-                     0, KEY_READ,
-                     &key);
+                             info.registryBase,
+                             0, KEY_READ,
+                             &key.key);
     if (stat != ERROR_SUCCESS) {
       cout << "Registry entry " << infoKeyName << "\\" << info.registryBase << " not found - error = " << stat << endl;
+      continue;
     }
 
-    else {
-      DWORD keyType;
-      char keyData[4096];
-      DWORD keyLen = sizeof(keyData);
-      if (RegQueryValueEx(key, 
-                          info.registryKey,
-                          NULL,
-                          &keyType,
-                          (BYTE *)keyData, &keyLen) != ERROR_SUCCESS) {
-        cout << "Registry key " << infoKeyName << "\\" << info.registryBase << "\\" << info.registryKey << " not found" << endl;
-      }
+    DWORD keyType;
+    char keyData[4096];
+    DWORD keyLen = sizeof(keyData);
+    if (RegQueryValueEx(key.key, 
+                        info.registryKey,
+                        NULL,
+                        &keyType,
+                        (BYTE *)keyData, &keyLen) != ERROR_SUCCESS) {
+      cout << "Registry key " << infoKeyName << "\\" << info.registryBase << "\\" << info.registryKey << " not found" << endl;
+      continue;
+    }
 
+    std::string fn(keyData);
+    fn += '\\';
+    fn += info.filename;
+
+    unsigned long crc32;
+    if (!CalculateCRCOfFile(fn, crc32)) {
+      cout << fn.c_str() << "does not exist" << endl;
+      continue;
+    }
+
+    if (testFiles) {
+      unsigned long newcrc;
+      if (!CalculateCRCOfFile(info.newFilename, newcrc))
+        cout << info.newFilename << "does not exist" << endl;
       else {
-        std::string fn(keyData);
-        fn += '\\';
-        fn += info.filename;
+        cout << hex << crc32  << dec << " = " << fn.c_str() << "\n"
+             << hex << newcrc << dec << " = " << info.newFilename << "\n"
+             << endl;
+      }
+    } 
+    
+    else if (crc32 == info.newcrc) {
+      cout << fn.c_str() << " already upgraded" << endl;
+      continue;
+    }
 
-        unsigned long crc32;
-        if (!CalculateCRCOfFile(fn, crc32))
-          cout << fn.c_str() << "does not exist" << endl;
-        else {
-          if (testFiles) {
-            unsigned long newcrc;
-            if (!CalculateCRCOfFile(info.newFilename, newcrc))
-              cout << info.newFilename << "does not exist" << endl;
-            else {
-              cout << hex << crc32  << dec << " = " << fn.c_str() << "\n"
-                   << hex << newcrc << dec << " = " << info.newFilename << "\n"
-                   << endl;
-            }
-          } 
-          
-          else if (crc32 == info.newcrc)
-            cout << fn.c_str() << " already upgraded" << endl;
+    if (crc32 != info.oldcrc) {
+      cout << "WARNING: " << fn.c_str() << " has unknown CRC " << hex << crc32 << dec
+           << ", assuming it does NOT need upgrade." << endl;
+      continue;
+    }
 
-          else {
-            if (crc32 != info.oldcrc)
-              cout << "WARNING: " << fn.c_str() << " has unknown CRC " << hex << crc32 << dec << endl;
+    // create name of backup file
+    std::string backupFn = fn + ".backup";
+    char buffer[4];
+    int count = 1;
+    for (;;) {
+      if (::access(backupFn.c_str(), 0) != 0)
+        break;
+      sprintf(buffer, "_%i.backup", count++);
+      backupFn = fn + std::string(buffer);
+    }
 
-            // create name of backup file
-            std::string backupFn = fn + ".backup";
-            char buffer[4];
-            int count = 1;
-            for (;;) {
-              if (::access(backupFn.c_str(), 0) != 0)
-                break;
-              sprintf(buffer, "_%i.backup", count++);
-              backupFn = fn + std::string(buffer);
-            }
+    if (!doUpgrade) {
+      cout << "\nWARNING: the following file requires upgrading:\n"
+           << fn.c_str() << endl;
+      std::string cmd = argv[0];
+      int pos = cmd.rfind('\\');
+      if (pos != std::string::npos)
+        cmd.erase(0, pos+1);
+      pos = cmd.rfind('.');
+      if (pos != std::string::npos)
+        cmd.erase(pos);
+      cout << "Please run \"" << cmd.c_str() << " upgrade\" to upgrade this file" << endl;
+      status = 1;
+      continue;
+    } 
+    
+    cout << "\nWARNING: the following file requires upgrading:\n"
+         << fn.c_str() << endl;
 
-            if (!doUpgrade) {
-              cout << "\nWARNING: the following file requires upgrading\n"
-                   << fn.c_str() << endl;
-              char * pos = strrchr(argv[0], '\\');
-              char * pos2 = strrchr(pos+1, '.');
-              std::string cmd(pos+1, pos2-pos-1);
-              cout << "Please run \"" << cmd.c_str() << " upgrade\" to upgrade this file" << endl;
-            } 
-            
-            else {
+    if (info.copyright != NULL)
+      cout << "\n" << info.copyright << "\n" << endl;
 
-              cout << "\nWARNING: the following file requires upgrading\n"
-                   << fn.c_str() << endl;
-
-              if (info.copyright != NULL)
-                cout << "\n" << info.copyright << "\n" << endl;
-
-              if (!force) {
-                cout << "Upgrade file (y/n) ? ";
-                char ch;
-                cin >> ch;
-                ch = toupper(ch);
-                if (ch != 'Y') {
-                  cout << "Aborting upgrade." << endl;
-                  return 1;
-                }
-              }
-
-              cout << endl;
-
-              // check that replacement file exists
-              if (::access(info.newFilename, 0) != 0) {
-                cout << "ERROR: new file " << info.newFilename << "not found - aborting upgrade" << endl;
-                return 1;
-              }
-
-              // rename existing file
-              if (::rename(fn.c_str(), backupFn.c_str()) != 0) {
-                cout << "ERROR: rename of " << fn.c_str() << " to " << backupFn.c_str() << " failed" << endl;
-                return 1;
-              }
-
-              // copy new file
-              if (!CopyFile(info.newFilename, fn.c_str(), true)) {
-                cout << "ERROR: copy of " << info.newFilename << " to " << fn.c_str() << " failed\n"
-                     << "       reverting " << backupFn.c_str() << " to " << fn.c_str() << endl;
-                ::unlink(fn.c_str());
-                ::rename(backupFn.c_str(), fn.c_str());
-                return 1;
-              }
-
-              // upgrade done
-              cout << "The following files have been upgraded\n"
-                   << "  " << fn.c_str() << "\n"
-                   << "The previous version of the file has been renamed to\n"
-                   << "  " << backupFn.c_str() << endl;
-            }
-          }
-        }
+    if (!force) {
+      cout << "Upgrade file (y/n) ? " << flush;
+      char ch;
+      cin >> ch;
+      ch = toupper(ch);
+      if (ch != 'Y') {
+        cout << "Aborting upgrade." << endl;
+        continue;
       }
     }
 
-    RegCloseKey(key);
+    // check that replacement file exists
+    if (::access(info.newFilename, 0) != 0) {
+      cout << "ERROR: new file " << info.newFilename << "not found - aborting upgrade" << endl;
+      status = 1;
+      continue;
+    }
+
+    // rename existing file
+    if (::rename(fn.c_str(), backupFn.c_str()) != 0) {
+      cout << "ERROR: rename of " << fn.c_str() << " to " << backupFn.c_str() << " failed" << endl;
+      status = 1;
+      continue;
+    }
+
+    // copy new file
+    if (!CopyFile(info.newFilename, fn.c_str(), true)) {
+      cout << "ERROR: copy of " << info.newFilename << " to " << fn.c_str() << " failed\n"
+           << "       reverting " << backupFn.c_str() << " to " << fn.c_str() << endl;
+      ::unlink(fn.c_str());
+      ::rename(backupFn.c_str(), fn.c_str());
+      status = 1;
+      continue;
+    }
+
+    // upgrade done
+    cout << "The following files have been upgraded\n"
+         << "  " << fn.c_str() << "\n"
+         << "The previous version of the file has been renamed to\n"
+         << "  " << backupFn.c_str() << endl;
   }
 
-	return status;
+  return status;
 }
 
