@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.2 1996/01/28 02:49:00 robertj Exp $
+ * $Id: cypher.cxx,v 1.3 1996/01/28 14:14:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.3  1996/01/28 14:14:12  robertj
+ * Further implementation of secure config.
+ *
  * Revision 1.2  1996/01/28 02:49:00  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  * Added the secure configuration mechanism for protecting applications.
@@ -551,14 +554,21 @@ void PTEACypher::DecodeBlock(const BYTE * in, BYTE * out)
 ///////////////////////////////////////////////////////////////////////////////
 // PSecureConfig
 
-PSecureConfig::PSecureConfig(const char * encryptPhrase,
-                             const char * const * securedKeys,
+static const char SecuredOptions[] = "Secured Options";
+
+PSecureConfig::PSecureConfig(const char * const * securedKeys,
                              PINDEX count,
-                             const char * securedSection,
+                             Source src)
+  : PConfig(SecuredOptions, src), securedKey(count, securedKeys)
+{
+}
+
+PSecureConfig::PSecureConfig(const char * const * securedKeys,
+                             PINDEX count,
+                             const PString & securedSection,
                              Source src)
   : PConfig(securedSection, src), securedKey(count, securedKeys)
 {
-  PMessageDigest5::Encode(encryptPhrase, cryptKey);
 }
 
 
@@ -582,8 +592,11 @@ PString PSecureConfig::CalculateValidation()
   PMessageDigest5::Code digest;
   digestor.Complete(digest);
 
-  PTEACypher crypt(cryptKey);
-  return crypt.Encode(digest, sizeof(digest));
+  PTEACypher::Key key;
+  memset(key, 42, sizeof(key));
+  memcpy(key, digest, PMIN(sizeof(key), sizeof(digest)));
+  PTEACypher crypt(key);
+  return crypt.Encode(PProcess::Current()->GetName() + SecuredOptions);
 }
 
 
