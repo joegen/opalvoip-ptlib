@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.14  2000/11/09 05:50:23  robertj
+ * Added RFC822 aware channel class for doing internet mail.
+ *
  * Revision 1.13  2000/06/21 01:01:21  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -87,6 +90,7 @@
 #endif
 
 #include <ptclib/inetprot.h>
+#include <ptclib/mime.h>
 
 class PSocket;
 
@@ -218,6 +222,7 @@ class PSMTPClient : public PSMTP
     BOOL    eightBitMIME;
     PString fromAddress;
     PStringList toNames;
+    BOOL    sendingData;
 
   private:
     BOOL _BeginMessage();
@@ -804,6 +809,212 @@ class PPOP3Server : public PPOP3
     PUnsignedArray messageSizes;
     PStringArray   messageIDs;
     PBYTEArray     messageDeletions;
+};
+
+
+/**A channel for sending/receiving RFC822 compliant mail messages.
+   This encpsulates all that is required to send an RFC822 compliant message
+   via another channel. It automatically adds/strips header information from
+   the stream so the Read() and Write() functions only deal with the message
+   body.
+   For example to send a message using the SMTP classes:
+      <PRE><CODE>
+      PSMTPClient mail("mailserver");
+      if (mail.IsOpen()) {
+        PRFC822Channel message;
+        message.SetFromAddress("Me@here.com.au");
+        message.SetToAddress("Fred@somwhere.com");
+        if (message.Open(mail)) {
+          if (mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com")) {
+            if (!message.Write(myMessageBody))
+              PError << "Mail write failed." << endl;
+            if (!message.EndMessage())
+              PError << "Mail send failed." << endl;
+          }
+        }
+      }
+      else
+         PError << "Mail conection failed." << endl;
+      </PRE></CODE>
+  */
+class PRFC822Channel : public PIndirectChannel
+{
+    PCLASSINFO(PRFC822Channel, PIndirectChannel);
+  public:
+    enum Direction {
+      Sending,
+      Receiving
+    };
+    /**Construct a RFC822 aware channel.
+      */
+    PRFC822Channel(
+      Direction direction /// Indicates are sending or receiving a message
+    );
+
+    /**Close the channel before destruction.
+      */
+    ~PRFC822Channel();
+
+
+  // Overrides from class PChannel.
+    /**Close the channel.
+       This assures that all mime fields etc are closed off before closing
+       the underliying channel.
+      */
+    BOOL Close();
+
+    /** Low level write to the channel.
+
+       This override assures that the header is written before the body that
+       will be output via this function.
+
+       @return
+       TRUE if at least len bytes were written to the channel.
+     */
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+
+
+    /**Begin a new message.
+       This may be used if the object is to encode 2 or more messages
+       sequentially. It resets the internal state of the object.
+      */
+    void NewMessage(
+      Direction direction  /// Indicates are sending or receiving a message
+    );
+
+    /**Enter multipart MIME message mode.
+       This indicates that the message, or individual part within a message as
+       MIME is nestable, is a multipart message. This form returns the
+       boundary indicator string generated internally which must then be used
+       in all subsequent NextPart() calls.
+
+       Note this must be called before any writes are done to the message or
+       part.
+      */
+    PString MultipartMessage();
+
+    /**Enter multipart MIME message mode.
+       This indicates that the message, or individual part within a message as
+       MIME is nestable, is a multipart message. In this form the user
+       supplies a boundary indicator string which must then be used in all
+       subsequent NextPart() calls.
+
+       Note this must be called before any writes are done to the message or
+       part.
+      */
+    BOOL MultipartMessage(
+      const PString & boundary
+    );
+
+    /**Indicate that a new multipart message part is to begin.
+       This will close off the previous part, and any nested multipart
+       messages contained therein, and allow a new part to begin.
+
+       The user may adjust the parts content type and other header fields
+       after this call and before the first write of the parts body.
+      */
+    void NextPart(
+      const PString & boundary
+    );
+
+
+    /**Set the sender address.
+       This must be called before any writes are done to the channel.
+      */
+    void SetFromAddress(
+      const PString & fromAddress  /// Senders e-mail address
+    );
+
+    /**Set the recipient address(es).
+       This must be called before any writes are done to the channel.
+      */
+    void SetToAddress(
+      const PString & toAddress /// Recipients e-mail address (comma separated)
+    );
+
+    /**Set the Carbon Copy address(es).
+       This must be called before any writes are done to the channel.
+      */
+    void SetCC(
+      const PString & ccAddress /// Recipients e-mail address (comma separated)
+    );
+
+    /**Set the Blind Carbon Copy address(es).
+       This must be called before any writes are done to the channel.
+      */
+    void SetBCC(
+      const PString & bccAddress /// Recipients e-mail address (comma separated)
+    );
+
+    /**Set the message subject.
+       This must be called before any writes are done to the channel.
+      */
+    void SetSubject(
+      const PString & subject  /// Subject string
+    );
+
+    /**Set the content type.
+       This must be called before any writes are done to the channel. It may
+       be set again immediately after any call to NextPart() when multipart
+       mime is being used.
+      */
+    void SetContentType(
+      const PString & contentType   /// Content type in form major/minor
+    );
+
+
+    /**Set the and arbitrary header field.
+       This must be called before any writes are done to the channel.
+      */
+    void SetHeaderField(
+      const PString & name,   /// MIME fields tag
+      const PString & value   /// MIME fields contents
+    );
+
+    // Common MIME header tags
+    static const char FromTag[];
+    static const char ToTag[];
+    static const char CCTag[];
+    static const char BCCTag[];
+    static const char SubjectTag[];
+    static const char DateTag[];
+    static const char ReturnPathTag[];
+    static const char ReceivedTag[];
+    static const char MessageIDTag[];
+    static const char MailerTag[];
+    static const char ContentTypeTag[];
+    static const char ContentDispositionTag[];
+    static const char ContentTransferEncodingTag[];
+
+    /**Send this message using an SMTP socket.
+       This will create a PSMTPClient and connect to the specified host then
+       send the message to the remote SMTP server.
+      */
+    BOOL SendWithSMTP(
+      const PString & hostname
+    );
+
+    /**Send this message using an SMTP socket.
+       This assumes PSMTPClient is open the sends the message to the remote
+       SMTP server.
+      */
+    BOOL SendWithSMTP(
+      PSMTPClient * smtp
+    );
+
+
+  protected:
+    BOOL OnOpen();
+
+    BOOL writeHeaders;
+    PMIMEInfo headers;
+
+    BOOL writePartHeaders;
+    PMIMEInfo partHeaders;
+    PStringList  boundaries;
 };
 
 
