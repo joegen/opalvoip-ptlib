@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.24 1998/01/26 07:25:21 robertj Exp $
+# $Id: Makefile,v 1.25 1998/02/12 04:17:55 robertj Exp $
 # $Log: Makefile,v $
+# Revision 1.25  1998/02/12 04:17:55  robertj
+# Made DEBUG variable optional
+#
 # Revision 1.24  1998/01/26 07:25:21  robertj
 # Removed tiny files, as now have pragma in the common files.
 #
@@ -76,7 +79,10 @@
 #
 #
 
+ifndef DEBUG
 DEBUG		= 1
+endif
+
 COMMONSRC	= ../../common/ptlib/src
 
 SOURCES		= switch.cxx \
@@ -188,4 +194,4 @@ else
 endif
 
 endif
-# Do not delete this line - make depend depends upon it
+
