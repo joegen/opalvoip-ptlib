@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.74  2001/10/03 10:18:15  rogerh
+ * Make Mac OS X (Darwin) use the new GetRouteTable() function.
+ *
  * Revision 1.73  2001/09/24 15:37:35  rogerh
  * Add GetRouteTable() for BSD Unix. Based on FreeBSD's own networking code,
  * and from an implementation by Martin Nilsson <martin@gneto.com>
@@ -995,7 +998,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   }
 }
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 
 BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
                      long *p_net_mask, long *p_dest_addr, int *p_metric);
