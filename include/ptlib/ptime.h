@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.17 1996/02/08 12:13:03 robertj Exp $
+ * $Id: ptime.h,v 1.18 1996/02/13 12:58:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.18  1996/02/13 12:58:43  robertj
+ * Changed GetTimeZone() so can specify standard/daylight time.
+ *
  * Revision 1.17  1996/02/08 12:13:03  robertj
  * Changed zone parameter in PTime to indicate the time zone as minutes not enum.
  * Staticised some functions that are system global.
@@ -85,9 +88,9 @@ PDECLARE_CLASS(PTime, PObject)
 
   public:
     enum {
-      Local = 9999,
-      UTC = 0,
-      GMT = UTC
+      UTC   = 0,
+      GMT   = UTC,
+      Local                = 9999,
     };
 
     PTime(
@@ -240,18 +243,22 @@ PDECLARE_CLASS(PTime, PObject)
        TRUE if daylight savings time is active.
      */
 
-    static long GetTimeZone();
-    /* Get the number of minutes to add to UTC (previously known as GMT) to
-       get the local time.
-
-       <H2>Returns:</H2>
-       Number of minutes.
-     */
-
     enum TimeZoneType {
       StandardTime,
       DaylightSavings
     };
+
+    static long GetTimeZone();
+    static long GetTimeZone(
+       TimeZoneType type	// Daylight saving or standard time.
+    );
+    /* Get the number of minutes to add to UTC (previously known as GMT) to
+       get the local time. The first form automatically adjusts for daylight
+       savings time, whilst the second form returns the specified time.
+
+       <H2>Returns:</H2>
+       Number of minutes.
+     */
 
     static PString GetTimeZoneString(
        TimeZoneType type = StandardTime	// Daylight saving or standard time.
