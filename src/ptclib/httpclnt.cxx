@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.34  2004/04/19 12:53:06  csoutheren
+ * Fix for iostream changes thanks to David Parr
+ *
  * Revision 1.33  2003/04/23 07:00:15  rogerh
  * Fix the encoding checking. the find_ip sample program now works again
  *
@@ -365,17 +368,18 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
                                PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
+  ostream & this_stream = *this;
   PINDEX len = dataBody.GetSize()-1;
   if (!outMIME.Contains(ContentLengthTag))
     outMIME.SetInteger(ContentLengthTag, len);
 
   if (cmdName.IsEmpty())
-    *this << "GET";
+    this_stream << "GET";
   else
-    *this << cmdName;
+    this_stream << cmdName;
 
-  *this << ' ' << url << " HTTP/1.1\r\n"
-        << setfill('\r') << outMIME;
+  this_stream << ' ' << url << " HTTP/1.1\r\n"
+              << setfill('\r') << outMIME;
 
   return Write((const char *)dataBody, len);
 }
