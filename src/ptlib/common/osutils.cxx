@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.53 1996/03/03 07:39:51 robertj Exp $
+ * $Id: osutils.cxx,v 1.54 1996/03/04 12:22:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.54  1996/03/04 12:22:46  robertj
+ * Fixed threading for unix stack check and loop list start point.
+ *
  * Revision 1.53  1996/03/03 07:39:51  robertj
  * Fixed bug in thread scheduler for correct termination of "current" thread.
  *
@@ -1755,7 +1758,7 @@ void PThread::Yield()
   if (current == process)
     process->GetTimerList()->Process();
   else
-    PAssert(&process > stackBase, "Stack overflow!");
+    PAssert((char *)&process > process->stackBase, "Stack overflow!");
 
   if (current->status == Running) {
     if (current->basePriority != HighestPriority && current->link != current)
@@ -1818,7 +1821,7 @@ void PThread::Yield()
         prev->link = thread->link;   // Unlink it from the list
         thread->status = Terminated;
         if (thread == start)         // If unlinking the "start" thread
-          start = thread->prev;      //    then we better make it still in list
+          start = prev;      //    then we better make it still in list
         if (thread != current && thread->autoDelete)
           delete thread;
         break;
