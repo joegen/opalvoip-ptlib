@@ -641,7 +641,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
     if (mktemp(p.GetPointer()) == NULL) {
       char extra = 'a';
       do 
-        PString p = s + prefix + extra++ + "XXXXXX";
+        p = s + prefix + extra++ + "XXXXXX";
       while (mktemp(p.GetPointer()) == NULL && extra <= 'z');
     }
     *this = PString(p);
