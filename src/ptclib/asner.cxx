@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.64  2002/07/25 10:52:49  robertj
+ * Changes to allow more granularity in PDU dumps, hex output increasing
+ *   with increasing trace level.
+ *
  * Revision 1.63  2002/06/05 12:29:15  craigs
  * Changes for gcc 3.1
  *
@@ -1542,16 +1546,34 @@ PObject * PASN_BitString::Clone() const
 
 void PASN_BitString::PrintOn(ostream & strm) const
 {
-  BYTE mask = 0x80;
-  PINDEX offset = 0;
-  for (unsigned i = 0; i < totalBits; i++) {
-    strm << ((bitData[offset]&mask) != 0 ? '1' : '0');
-    mask >>= 1;
-    if (mask == 0) {
-      mask = 0x80;
-      offset++;
+  int indent = strm.precision() + 2;
+  long flags = strm.flags();
+
+  if (totalBits > 128)
+    strm << "Hex {\n"
+         << hex << setfill('0') << resetiosflags(ios::floatfield) << setiosflags(ios::fixed)
+         << setw(16) << setprecision(indent) << bitData
+         << dec << setfill(' ') << resetiosflags(ios::floatfield)
+         << setw(indent-1) << "}";
+  else if (totalBits > 32)
+    strm << "Hex:"
+         << hex << setfill('0') << resetiosflags(ios::floatfield) << setiosflags(ios::fixed)
+         << setprecision(2) << setw(16) << bitData
+         << dec << setfill(' ') << resetiosflags(ios::floatfield);
+  else {
+    BYTE mask = 0x80;
+    PINDEX offset = 0;
+    for (unsigned i = 0; i < totalBits; i++) {
+      strm << ((bitData[offset]&mask) != 0 ? '1' : '0');
+      mask >>= 1;
+      if (mask == 0) {
+        mask = 0x80;
+        offset++;
+      }
     }
   }
+
+  strm.flags(flags);
 }
 
 
@@ -1848,30 +1870,25 @@ PObject * PASN_OctetString::Clone() const
 void PASN_OctetString::PrintOn(ostream & strm) const
 {
   int indent = strm.precision() + 2;
-  strm << ' ' << value.GetSize() << " octets {\n";
-  PINDEX i = 0;
-  while (i < value.GetSize()) {
-    strm << setw(indent) << " " << hex << setfill('0');
-    PINDEX j;
-    for (j = 0; j < 16; j++) {
-      if (i+j < value.GetSize())
-        strm << setw(2) << (unsigned)value[i+j] << ' ';
-      else
-        strm << "   ";
-    }
-    strm << "  ";
-    for (j = 0; j < 16; j++) {
-      if (i+j < value.GetSize()) {
-        if (isprint(value[i+j]))
-          strm << value[i+j];
-        else
-          strm << ' ';
-      }
-    }
-    strm << dec << setfill(' ') << '\n';
-    i += 16;
+  long flags = strm.flags();
+
+  strm << ' ' << value.GetSize() << " octets {\n"
+       << hex << setfill('0') << resetiosflags(ios::floatfield)
+       << setprecision(indent) << setw(16);
+
+  if (value.GetSize() <= 32 || (flags&ios::floatfield) != ios::fixed)
+    strm << value;
+  else {
+    PBYTEArray truncatedArray(value, 32);
+    strm << truncatedArray << '\n'
+         << setfill(' ')
+         << setw(indent+4) << "...\n";
   }
-  strm << setw(indent-1) << "}";
+
+  strm << dec << setfill(' ')
+       << setw(indent-1) << "}";
+
+  strm.flags(flags);
 }
 
 
