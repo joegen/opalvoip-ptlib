@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.25  2003/11/19 09:29:45  csoutheren
+ * Added super hack to avoid problems with multiple plugins in a single file
+ *
  * Revision 1.24  2003/11/19 04:29:46  csoutheren
  * Changed to support video output plugins
  *
@@ -101,10 +104,11 @@
  *
  *
  */
-
 #ifdef __GNUC__
 #pragma implementation "vfakeio.h"
 #endif
+
+#define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
