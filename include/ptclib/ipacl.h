@@ -1,11 +1,32 @@
 /*
  * ipacl.h
  *
- * PWLib application header file for rcsd
+ * IP Access Control Lists
  *
- * Copyright 1998 Equivalence Pty. Ltd.
+ * Portable Windows Library
+ *
+ * Copyright (c) 1998-2002 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.9  2002/11/06 22:47:24  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.8  2002/07/17 02:54:24  robertj
  * Added access functions for member variables.
  *
