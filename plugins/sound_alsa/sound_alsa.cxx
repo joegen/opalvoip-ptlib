@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.9  2003/12/09 22:47:10  dsandras
+ * Use less aggressive Abort.
+ *
  * Revision 1.8  2003/12/03 21:48:21  dsandras
  * Better handling of buffer sizes. Removed unuseful code.
  *
@@ -660,7 +663,7 @@ BOOL PSoundChannelALSA::Abort()
   if (!os_handle)
     return FALSE;
 
-  if ((r = snd_pcm_drop (os_handle)) < 0) {
+  if ((r = snd_pcm_drain (os_handle)) < 0) {
 
     PTRACE (1, "ALSA\tCannot abort" <<
 	    snd_strerror (r));
