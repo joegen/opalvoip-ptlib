@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.167  2003/04/17 00:05:04  craigs
+# Added patches from Hugo Santos mainly for Darwin compatibility
+#
 # Revision 1.166  2003/04/16 07:16:55  craigs
 # Modified for new autoconf based configuration
 #
@@ -624,7 +627,7 @@ ifeq ($(OSTYPE),Darwin)
 # Uncomment them if you wish, but it will do nothing for the time being.
 
 LDFLAGS		+= "-multiply_defined suppress"
-ENDLDLIBS	+= "-framework AudioToolbox -framework CoreAudio" ;;
+ENDLDLIBS	+= "-framework AudioToolbox -framework CoreAudio"
 
 #HAS_QUICKTIMEX := 1
 #STDCCFLAGS     += -DHAS_QUICKTIMEX
