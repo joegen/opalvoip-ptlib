@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.57 1996/03/16 04:51:50 robertj Exp $
+ * $Id: osutils.cxx,v 1.58 1996/03/31 09:06:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.58  1996/03/31 09:06:14  robertj
+ * Fixed WriteString() so works with sockets.
+ * Changed PPipeSokcet argument string list to array.
+ *
  * Revision 1.57  1996/03/16 04:51:50  robertj
  * Fixed yet another bug in the scheduler.
  *
@@ -547,15 +551,29 @@ int PChannel::ReadChar()
 }
 
 
-PString PChannel::ReadString(PINDEX len)
+PString PChannel::ReadString(PINDEX maxLen)
 {
   PString str;
-  if (!Read(str.GetPointer(len), len))
-    return PString();
-  str.SetSize(lastReadCount+1);
+  char * ptr = str.GetPointer(maxLen+1);
+  PINDEX len = 0;
+
+  while (len < maxLen && Read(ptr+len, maxLen - len))
+    len += lastReadCount;
+
+  str.SetSize(len+1);
   return str;
 }
 
+BOOL PChannel::WriteString(const PString & str)
+{
+  const char * ptr = str;
+  PINDEX len = 0, slen = str.GetLength();
+
+  while (len < slen && Write(ptr+len, slen - len))
+    len += lastWriteCount;
+
+  return len == slen;
+}
 
 BOOL PChannel::ReadAsync(void * buf, PINDEX len)
 {
@@ -949,11 +967,12 @@ BOOL PStructuredFile::Write(void * buffer)
 PBASEARRAY(PConstCharStarArray, const char *);
 
 PPipeChannel::PPipeChannel(const PString & subProgram,
-                 const PStringList & arguments, OpenMode mode, BOOL searchPath)
+                const PStringArray & arguments, OpenMode mode, BOOL searchPath)
 {
-  PConstCharStarArray args(arguments.GetSize());
+  PConstCharStarArray args(arguments.GetSize()+1);
   for (PINDEX i = 0; i < arguments.GetSize(); i++)
     args[i] = arguments[i];
+  args[i] = NULL;
   Construct(subProgram, args, mode, searchPath);
 }
 
@@ -1990,7 +2009,6 @@ void PSemaphore::Signal()
         PAssertAlways("Semaphore unblock of thread that is not blocked");
     }
     thread->sleepTimer = 0;
-    PThread::Yield();
   }
   else if (currentCount < maximumCount)
     currentCount++;
