@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.116  2003/03/10 15:37:00  rogerh
+ * fix IsTerminated() function.
+ *
  * Revision 1.115  2003/03/07 00:07:15  robertj
  * Fixed Mac OS X patch which broke every other platform.
  *
@@ -747,7 +750,7 @@ void PThread::Suspend(BOOL susp)
     return;
   }
 
-#if defined(P_MAXOSX) && (P_MACOSX <= 55)
+#if defined(P_MACOSX) && (P_MACOSX <= 55)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
@@ -961,7 +964,9 @@ void PThread::Terminate()
 #if ( defined(P_NETBSD) && defined(P_NO_CANCEL) )
   pthread_kill(PX_threadId,SIGKILL);
 #else
-  pthread_cancel(PX_threadId);
+  if (PX_threadId) {
+    pthread_cancel(PX_threadId);
+  }
 #endif
 }
 
@@ -971,9 +976,10 @@ BOOL PThread::IsTerminated() const
   if (PX_threadId == 0)
     return TRUE;
 
-#if defined(P_MAXOSX) && (P_MACOSX <= 55)
-  // MacOS X does not support pthread_kill so we cannot use it
+#if defined(P_MACOSX) && (P_MACOSX <= 55)
+  // MacOS X (darwin 5.5) does not support pthread_kill so we cannot use it
   // to test the validity of the thread
+#else
   if (pthread_kill(PX_threadId, 0) != 0)
     return TRUE;
 #endif
