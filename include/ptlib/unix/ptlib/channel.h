@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.1 1995/01/23 18:43:27 craigs Exp $
+ * $Id: channel.h,v 1.2 1995/01/23 22:59:47 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,14 +8,19 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
+ * Revision 1.2  1995/01/23 22:59:47  craigs
+ * Changes for HPUX and Sun 4
  *
  */
 
 #ifndef _PCHANNEL
 
 #pragma interface
+
+#if defined(P_SUN4)
+#include <errno.h>
+#include <sys/errno.h>
+#endif
 
 #include "../../common/channel.h"
   protected:
