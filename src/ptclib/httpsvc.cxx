@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.43  1998/10/29 11:58:52  robertj
+ * Added ability to configure the HTTP threads stack size.
+ *
  * Revision 1.42  1998/10/29 11:31:57  robertj
  * Fixed default URL to have lower case and spaceless product name.
  * Increased HTTP stack size.
@@ -220,18 +223,18 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
 }
 
 
-BOOL PHTTPServiceProcess::ListenForHTTP(WORD port, BOOL startThread)
+BOOL PHTTPServiceProcess::ListenForHTTP(WORD port, PINDEX stackSize)
 {
   if (httpListeningSocket != NULL &&
       httpListeningSocket->GetPort() == port &&
       httpListeningSocket->IsOpen())
     return TRUE;
 
-  return ListenForHTTP(new PTCPSocket(port), startThread);
+  return ListenForHTTP(new PTCPSocket(port), stackSize);
 }
 
 
-BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, BOOL startThread)
+BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, PINDEX stackSize)
 {
   if (httpListeningSocket != NULL)
     ShutdownListener();
@@ -240,8 +243,8 @@ BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, BOOL startThread)
   if (!httpListeningSocket->Listen())
     return FALSE;
 
-  if (startThread)
-    new PHTTPServiceThread(*this, *httpListeningSocket, httpNameSpace);
+  if (stackSize > 1000)
+    new PHTTPServiceThread(stackSize, *this, *httpListeningSocket, httpNameSpace);
 
   return TRUE;
 }
@@ -355,14 +358,16 @@ BOOL PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PStrin
 
 //////////////////////////////////////////////////////////////
 
-PHTTPServiceThread::PHTTPServiceThread(PHTTPServiceProcess & app,
+PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
+                                       PHTTPServiceProcess & app,
                                        PSocket & listeningSocket,
                                        PHTTPSpace & http)
-  : PThread(20000, AutoDeleteThread),
+  : PThread(stackSize, AutoDeleteThread),
     process(app),
     listener(listeningSocket),
     httpNameSpace(http)
 {
+  myStackSize = stackSize;
   Resume();
 }
 
@@ -380,13 +385,13 @@ void PHTTPServiceThread::Main()
     if (server.GetErrorCode() != PChannel::Interrupted)
       PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
     if (listener.IsOpen())
-      new PHTTPServiceThread(process, listener, httpNameSpace);
+      new PHTTPServiceThread(myStackSize, process, listener, httpNameSpace);
     else
       process.httpThreadClosed.Signal();
     return;
   }
 
-  new PHTTPServiceThread(process, listener, httpNameSpace);
+  new PHTTPServiceThread(myStackSize, process, listener, httpNameSpace);
 
   // process requests
   while (server.ProcessCommand())
