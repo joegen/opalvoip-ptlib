@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.3  2003/05/05 08:39:52  robertj
+ * Added ability to explicitly disable a feature, or tell configure exactly
+ *   where features library is so it does not need to search for it.
+ *
  * Revision 1.2  2003/04/17 03:32:06  robertj
  * Improved windows configure program to use lines out of configure.in
  *
@@ -46,7 +50,81 @@ using namespace std;
 class Feature
 {
   public:
-    Feature() : defineValue("1") { found = false; }
+    Feature() { found = false; }
+    Feature(const string & line)
+       : defineValue("1"),
+         found(false)
+    {
+      int pos = 10;
+      int comma;
+      if ((comma = line.find(',', pos)) == string::npos)
+        return;
+
+      displayName = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos)
+        return;
+
+      cmdLineArgument = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        defineName = line.substr(pos);
+        found = true;
+        return;
+      }
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        defineName = line.substr(pos);
+        found = true;
+        return;
+      }
+
+      defineName = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        defineValue = line.substr(pos);
+        found = true;
+        return;
+      }
+
+      defineValue = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        directoryName = line.substr(pos);
+        return;
+      }
+
+      directoryName = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        includeName = line.substr(pos);
+        return;
+      }
+
+      includeName = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      if ((comma = line.find(',', pos)) == string::npos) {
+        includeText = line.substr(pos);
+        return;
+      }
+
+      includeText = line.substr(pos, comma-pos);
+      pos = comma+1;
+
+      while ((comma = line.find(',', pos)) != string::npos) {
+        if (Locate(line.substr(pos, comma-pos).c_str()))
+          return;
+        pos = comma+1;
+      }
+
+      Locate(line.substr(pos).c_str());
+    }
 
     virtual void Adjust(string & line)
     {
@@ -111,19 +189,8 @@ class Feature
       return true;
     }
 
-    bool IsFound() const { return found; }
-
-    friend ostream & operator<<(ostream & stream, const Feature & feature)
-    {
-      stream << feature.displayName << ' ';
-      if (feature.found)
-        stream << "enabled";
-      else
-        stream << "disabled";
-      return stream;
-    }
-
     string displayName;
+    string cmdLineArgument;
     string defineName;
     string defineValue;
     string directoryName;
@@ -211,12 +278,6 @@ bool ProcessHeader(const string & headerFilename)
 
 int main(int argc, char* argv[])
 {
-  bool searchDisk = true;
-  for (int i = 1; i < argc; i++) {
-    if (stricmp(argv[i], "--no-search") == 0)
-      searchDisk = false;
-  }
-
   ifstream conf("configure.in", ios::in);
   if (!conf.is_open()) {
     cerr << "Could not open configure.in file" << endl;
@@ -236,58 +297,45 @@ int main(int argc, char* argv[])
           headers.push_back(line.substr(pos+1, end-pos-1));
       }
     }
-    else if ((pos = line.find("dnl MSWIN ")) != string::npos) {
-      pos += 10;
-      int comma = line.find(',', pos);
-      if (comma != string::npos) {
-        Feature feature;
-        feature.displayName = line.substr(pos, comma-pos);
-        pos = comma+1;
-        if ((comma = line.find(',', pos)) == string::npos) {
-          feature.defineName = line.substr(pos);
-          feature.found = true;
-        }
-        else {
-          feature.defineName = line.substr(pos, comma-pos);
-          pos = comma+1;
-          if ((comma = line.find(',', pos)) == string::npos) {
-            feature.defineValue = line.substr(pos);
-            feature.found = true;
-          }
-          else {
-            feature.defineValue = line.substr(pos, comma-pos);
-            pos = comma+1;
-            if ((comma = line.find(',', pos)) == string::npos)
-              feature.directoryName = line.substr(pos);
-            else {
-              feature.directoryName = line.substr(pos, comma-pos);
-              pos = comma+1;
-              if ((comma = line.find(',', pos)) == string::npos)
-                feature.includeName = line.substr(pos);
-              else {
-                feature.includeName = line.substr(pos, comma-pos);
-                pos = comma+1;
-                if ((comma = line.find(',', pos)) == string::npos)
-                  feature.includeText = line.substr(pos);
-                else {
-                  feature.includeText = line.substr(pos, comma-pos);
-                  feature.Locate(line.substr(comma+1).c_str());
-                }
-              }
-            }
-          }
-        }
-        features.push_back(feature);
-      }
-    }
+    else if (line.find("dnl MSWIN ") == 0)
+      features.push_back(Feature(line));
   }
 
   list<Feature>::iterator feature;
 
+  bool searchDisk = true;
+  for (int i = 1; i < argc; i++) {
+    if (stricmp(argv[i], "--no-search") == 0)
+      searchDisk = false;
+    else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
+      cout << "usage: configure args\n"
+              "  --no-search\t\tDo not search disk for libraries.\n";
+      for (feature = features.begin(); feature != features.end(); feature++) {
+        if (feature->cmdLineArgument[0] != '\0') {
+          cout << "  --no-" << feature->cmdLineArgument
+               << "\t\tDisable " << feature->displayName << '\n';
+          if (feature->includeName[0] != '\0')
+            cout << "  --" << feature->cmdLineArgument << "-dir=dir"
+                    "\tSet directory for " << feature->displayName << '\n';
+        }
+      }
+      return 1;
+    }
+    else {
+      for (feature = features.begin(); feature != features.end(); feature++) {
+        if (stricmp(argv[i], ("--no-"+feature->cmdLineArgument).c_str()) == 0)
+          feature->defineName = "";
+        else if (stricmp(argv[i], ("--"+feature->cmdLineArgument+"-dir=").c_str()) == 0)
+          if (!feature->Locate(argv[i]))
+            cerr << feature->displayName << " not found in " << argv[i] << endl;
+      }
+    }
+  }
+
   if (searchDisk) {
     bool foundAll = true;
     for (feature = features.begin(); feature != features.end(); feature++) {
-      if (!feature->IsFound())
+      if (!feature->found)
         foundAll = false;
     }
 
@@ -309,14 +357,22 @@ int main(int argc, char* argv[])
     }
   }
 
-  for (feature = features.begin(); feature != features.end(); feature++)
-    cout << "  " << *feature << '\n';
+  for (feature = features.begin(); feature != features.end(); feature++) {
+    cout << "  " << feature->displayName << ' ';
+    if (feature->includeName[0] == '\0')
+      cout << "set to " << feature->defineValue;
+    else if (feature->found)
+      cout << "enabled";
+    else
+      cout << "disabled";
+    cout << '\n';
+  }
   cout << endl;
 
   for (list<string>::iterator hdr = headers.begin(); hdr != headers.end(); hdr++)
     ProcessHeader(*hdr);
 
-  cout << "Configuration completed:\n";
+  cout << "Configuration completed.\n";
 
   return 0;
 }
