@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.4 1993/12/29 04:41:26 robertj Exp $
+ * $Id: osutils.cxx,v 1.5 1993/12/31 06:53:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.4  1993/12/29 04:41:26  robertj
+ * Revision 1.5  1993/12/31 06:53:02  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.4  1993/12/29  04:41:26  robertj
  * Mac port.
  *
  * Revision 1.3  1993/11/20  17:26:28  robertj
@@ -210,11 +213,6 @@ void PTimer::OnTimeout()
 }
 
 
-PTimerList::PTimerList()
-{
-}
-
-
 PMilliseconds PTimerList::Process()
 {
   PTimer * timer = (PTimer *)GetAt(0); // Get earliest timer value
@@ -342,6 +340,11 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname)
 }
 
 
+#endif
+
+
+#ifndef P_USE_INLINES
+#include "../osutil.inl"
 #endif
 
 
