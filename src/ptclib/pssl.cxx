@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.23 2001/05/31 07:04:11 craigs Exp $
+ * $Id: pssl.cxx,v 1.24 2001/06/01 00:53:59 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.24  2001/06/01 00:53:59  robertj
+ * Added certificate constructor that takes a PBYTEArray
+ *
  * Revision 1.23  2001/05/31 07:04:11  craigs
  * Changed random seed function
  *
@@ -230,9 +233,16 @@ PSSLCertificate::PSSLCertificate(const PFilePath & certFile, int fileType)
 }
 
 
-PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize, BYTE /*unused*/)
+PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize)
 {
   certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
+}
+
+
+PSSLCertificate::PSSLCertificate(const PBYTEArray & certData)
+{
+  const BYTE * certPtr = certData;
+  certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
 }
 
 
