@@ -293,6 +293,8 @@ CLEAN :
 	-@erase "$(INTDIR)\pssl.sbr"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\random.sbr"
+	-@erase "$(INTDIR)\shttpsvc.obj"
+	-@erase "$(INTDIR)\shttpsvc.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpclnt.sbr"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -338,7 +340,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\shttpsvc.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -370,7 +373,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\shttpsvc.obj"
 
 "$(OUTDIR)\ptsslclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -408,6 +412,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\random.obj"
+	-@erase "$(INTDIR)\shttpsvc.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
 	-@erase "$(INTDIR)\socks.obj"
@@ -453,7 +458,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\shttpsvc.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -1120,6 +1126,28 @@ SOURCE=..\..\ptclib\random.cxx
 
 
 "$(INTDIR)\random.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\shttpsvc.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\shttpsvc.obj"	"$(INTDIR)\shttpsvc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\shttpsvc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
