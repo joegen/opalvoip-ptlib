@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.47  1998/11/30 04:50:17  robertj
+ * New directory structure
+ *
  * Revision 1.46  1998/10/18 14:28:34  robertj
  * Renamed argv/argc to eliminate accidental usage.
  * Fixed strange problem withs etting debug window tabstops in optimised version.
@@ -180,7 +183,6 @@
  */
 
 #include <ptlib.h>
-#include <svcproc.h>
 
 #include <winuser.h>
 #include <winnls.h>
@@ -192,6 +194,7 @@
 #include <fcntl.h>
 #include <io.h>
 
+#include <ptlib/svcproc.h>
 
 #define UWM_SYSTRAY (WM_USER + 1)
 #define ICON_RESID 1
