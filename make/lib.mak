@@ -48,10 +48,10 @@ else
 $(LIBDIR)/$(LIB_BASENAME): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 ifdef RANLIB
-	ar rc $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
-	ranlib $(LIBDIR)/$(LIB_BASENAME)
+	$(AR) rc $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
+	$(RANLIB) $(LIBDIR)/$(LIB_BASENAME)
 else
-	ar rcs $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
+	$(AR) rcs $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
 endif
 
 CLEAN_FILES += $(LIBDIR)/$(LIB_BASENAME)
