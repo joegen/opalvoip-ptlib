@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.53  1999/06/14 07:59:39  robertj
+ * Enhanced tracing again to add options to trace output (timestamps etc).
+ *
  * Revision 1.52  1999/04/21 01:57:09  robertj
  * Added confirmation dialog to menu commands.
  *
@@ -495,7 +498,7 @@ int PServiceProcess::_main(void * arg)
 #endif
 
   static PDebugStream debugStream;
-  PSetTraceStream(&debugStream);
+  PTrace::SetStream(&debugStream);
 
   hInstance = (HINSTANCE)arg;
 
