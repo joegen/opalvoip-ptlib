@@ -15,7 +15,7 @@ Package=<4>
     Project_Dep_Name AlertRun
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name PTLib
+    Project_Dep_Name Console
     End Project Dependency
 }}}
 
@@ -68,6 +68,21 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "H323Proxy"=.\Apps\H323Proxy\H323Proxy.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Console
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -147,7 +162,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name PTLib
+    Project_Dep_Name Console
     End Project Dependency
 }}}
 
