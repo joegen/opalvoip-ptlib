@@ -1,5 +1,9 @@
 #
-# end of user configurable items
+# unix.mak
+#
+# First part of make rules, included in ptlib.mak and pwlib.mak.
+# Note: Do not put any targets in the file. This should defaine variables
+#       only, as targets are all in common.mak
 #
 # Portable Windows Library
 #
@@ -25,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.26  1998/11/24 09:39:19  robertj
-# FreeBSD port.
+# Revision 1.27  1998/12/02 02:37:41  robertj
+# New directory structure.
+#
+# Revision 1.27  1998/12/02 02:37:41  robertj
+# New directory structure.
 #
 # Revision 1.26  1998/11/24 09:39:19  robertj
 # FreeBSD port.
@@ -41,6 +48,16 @@
 # Support for PPC Linux, better arrangement of variables.
 #
 # Revision 1.22  1998/09/24 04:20:53  robertj
+# Added open software license.
+#
+DEBUG=1
+
+ifndef DEBUG
+DEBUG := 1
+PWLIBDIR = $(HOME)/pwlib
+
+ifndef PWLIBDIR
+PWLIBDIR := $(HOME)/pwlib
 
 
 ###############################################################################
@@ -92,7 +109,7 @@ ifeq ($(OSTYPE),linux)
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX
 ENDIAN=PLITTLE_ENDIAN
-STDCCFLAGS	:= $(STDCCFLAGS) -m486
+
 else
 ENDIAN=PBIG_ENDIAN
 
@@ -124,7 +141,7 @@ endif # linux
 ####################################################
 
 ENDIAN=PLITTLE_ENDIAN
-STDCCFLAGS	:= $(STDCCFLAGS) -m486
+P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
@@ -217,13 +234,10 @@ CPLUS		:= g++
 SHELL		:= /bin/sh
 OBJ_SUFFIX	= $(OSTYPE)_$(MACHTYPE)
 
-#
-# if there is no PWLIBDIR variable set, then set one
-#
-ifndef PWLIBDIR
-#PWLIBDIR	= /usr/local/pwlib
-PWLIBDIR	= $(HOME)/pwlib
-endif
+
+.SUFFIXES:	.cxx .prc 
+
+# Directories
 
 #
 endif # DEBUG
@@ -285,7 +299,6 @@ endif # DEBUG
 OBJDIR		:= obj_$(OBJ_SUFFIX)_$(LIBID)
 
 LIBDIR		= $(PWLIBDIR)/lib
-COMMONDIR	= $(PWLIBDIR)/common
 
 #
 # add PW library directory to library path
@@ -303,7 +316,6 @@ LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
 ifndef LIB_SUFFIX
 LIB_SUFFIX	= $(OBJ_SUFFIX)
 endif
-OSDIR		= $(PWLIBDIR)/unix
 PTLIB		= pt_$(LIB_SUFFIX)_$(LIBID)
 
 ifndef SHAREDLIB
@@ -312,13 +324,10 @@ else
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
 endif
 
-VPATH_CXX	:= $(VPATH_CXX) $(OSDIR)/src $(COMMONDIR)/ptlib/src
-VPATH_H		:= $(VPATH_H) $(OSDIR)/include
-
 #
 #STDCCFLAGS     := $(STDCCFLAGS) -Woverloaded-virtual
 #
-STDCCFLAGS	:= -I$(OSDIR)/include $(STDCCFLAGS)
+#STDCCFLAGS     := $(STDCCFLAGS) -fno-implement-inlines
 
 #
 # add OS library
