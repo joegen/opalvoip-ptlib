@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.48  2002/10/31 05:52:37  robertj
+ * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
+ *   there are far too many inheerent assumptions every to make it 16 bit.
+ *
  * Revision 1.47  2002/10/04 01:47:44  robertj
  * Added various increment and decrement operators to POrdinalKey.
  *
@@ -214,7 +218,7 @@ PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
 
 PINLINE PString::PString(int, const PString * str)
-  : PSTRING_ANCESTOR_CLASS(*str) { }
+  : PCharArray(*str) { }
 
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
@@ -231,10 +235,8 @@ PINLINE PString & PString::operator=(char ch)
 PINLINE BOOL PString::MakeMinimumSize()
   { return SetSize(GetLength()+1); }
 
-#ifndef PHAS_UNICODE
 PINLINE PINDEX PString::GetLength() const
   { return strlen(theArray); }
-#endif
 
 PINLINE BOOL PString::operator!() const
   { return !IsEmpty(); }
