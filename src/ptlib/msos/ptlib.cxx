@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.23 1996/01/28 02:56:16 robertj Exp $
+ * $Id: ptlib.cxx,v 1.24 1996/08/08 10:09:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.24  1996/08/08 10:09:23  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.23  1996/01/28 02:56:16  robertj
  * Fixed bug in PFilePath functions for if path ends in a directory separator.
  *
@@ -97,7 +100,7 @@
 #include <sys\stat.h>
 
 #ifndef P_USE_INLINES
-#include <osutil.inl>
+#include <ptlib/osutil.inl>
 #include <ptlib.inl>
 #endif
 
