@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.48  2000/02/17 23:47:40  robertj
+ * Fixed error in check for SIOCGHWADDR define, thanks Markus Storm.
+ *
  * Revision 1.47  2000/01/20 08:20:57  robertj
  * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
  *
@@ -121,12 +124,10 @@
 #include <ptlib/sockets.h>
 
 
-#ifdef SIOCGENADDR
+#if defined(SIOCGENADDR)
 #define SIO_Get_MAC_Address SIOCGENADDR
 #define	ifr_macaddr         ifr_ifru.ifru_enaddr
-#endif
-
-#ifdef SIOCGENADDR
+#elif defined(SIOCGIFHWADDR)
 #define SIO_Get_MAC_Address SIOCGIFHWADDR
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
