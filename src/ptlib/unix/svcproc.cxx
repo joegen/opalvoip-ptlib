@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.57  2001/07/04 08:54:23  robertj
+ * Added dump of thread in SEGV signal handler, this one seems to work.
+ *
  * Revision 1.56  2001/07/03 04:41:25  yurik
  * Corrections to Jac's submission from 6/28
  *
@@ -675,7 +678,7 @@ void PServiceProcess::Terminate()
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
-  const char * msg;
+  const char * sigmsg;
 
   // Override the default behavious for these signals as that just
   // summarily exits the program. Allow PXOnSignal() to do orderly exit.
@@ -687,22 +690,47 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
       return;
 
     case SIGSEGV :
-      msg = "\nCaught segmentation fault (SIGSEGV), aborting.\n";
+      sigmsg = "segmentation fault (SIGSEGV)";
       break;
 
     case SIGFPE :
-      msg = "\nCaught floating point exception (SIGFPE), aborting.\n";
+      sigmsg = "floating point exception (SIGFPE)";
       break;
 
 #ifndef __BEOS__ // In BeOS, SIGBUS is the same value as SIGSEGV
     case SIGBUS :
-      msg = "\nCaught bus error (SIGBUS), aborting.\n";
+      sigmsg = "bus error (SIGBUS)";
       break;
 #endif
     default :
       PProcess::PXOnAsyncSignal(sig);
       return;
   }
+
+  static BOOL inHandler = FALSE;
+  if (inHandler)
+    raise(SIGQUIT); // Dump core
+
+  inHandler = TRUE;
+
+
+  unsigned thread_id = (unsigned)pthread_self();
+  PThread * thread_ptr = activeThreads.GetAt(thread_id);
+
+  char msg[200];
+  sprintf(msg, "\nCaught %s, thread_id=%u", sigmsg, thread_id);
+
+  if (thread_ptr != NULL) {
+    PString thread_name = thread_ptr->GetThreadName();
+    if (thread_name.IsEmpty())
+      sprintf(&msg[strlen(msg)], " obj_ptr=%p", thread_ptr);
+    else {
+      strcat(msg, " name=");
+      strcat(msg, thread_name);
+    }
+  }
+
+  strcat(msg, ", aborting.\n");
 
   if (systemLogFile.IsEmpty()) {
     syslog(LOG_CRIT, 
