@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.21 1994/10/30 11:36:58 robertj Exp $
+ * $Id: osutils.cxx,v 1.22 1994/11/28 12:38:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.21  1994/10/30 11:36:58  robertj
+ * Revision 1.22  1994/11/28 12:38:23  robertj
+ * Async write functions should have const pointer.
+ *
+ * Revision 1.21  1994/10/30  11:36:58  robertj
  * Fixed missing space in tine format string.
  *
  * Revision 1.20  1994/10/23  03:46:41  robertj
@@ -666,7 +669,7 @@ BOOL PChannel::WriteChar(int c)
 }
 
 
-BOOL PChannel::WriteAsync(void * buf, PINDEX len)
+BOOL PChannel::WriteAsync(const void * buf, PINDEX len)
 {
   BOOL retVal = Write(buf, len);
   OnWriteComplete(buf, lastWriteCount);
@@ -674,7 +677,7 @@ BOOL PChannel::WriteAsync(void * buf, PINDEX len)
 }
 
 
-void PChannel::OnWriteComplete(void *, PINDEX)
+void PChannel::OnWriteComplete(const void *, PINDEX)
 {
 }
 
