@@ -219,7 +219,7 @@ fi
 
 
 if test ${HAS_PTHREADS} != yes ; then
-  AC_MSG_FAILURE(must have pthreads!)
+  AC_MSG_ERROR(must have pthreads!)
 fi
 
 AC_DEFINE(P_PTHREADS, 1, "PThreads found")
@@ -565,7 +565,7 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
 
 AC_CONFIG_FILES(make/ptbuildopts.mak)
-AC_CONFIG_FILES(make/ptlib-config)
+AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
 AC_CONFIG_FILES(Makefile)
 
 dnl ########################################################################
