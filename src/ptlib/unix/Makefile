@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.101  2003/01/06 18:41:08  rogerh
+# Add NetBSD patches, taken from the NetBSD pkg patches.
+# Submitted by Andreas Wrede
+#
 # Revision 1.100  2002/11/22 10:14:07  robertj
 # QNX port, thanks Xiaodan Tang
 #
@@ -376,6 +380,10 @@ VIDEO_CAPTURE_SOURCE = video4bsd.cxx
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
+VIDEO_CAPTURE_SOURCE = video4bsd.cxx
+endif
+
+ifeq ($(OSTYPE),NetBSD)
 VIDEO_CAPTURE_SOURCE = video4bsd.cxx
 endif
 

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.19  2003/01/06 18:41:08  rogerh
+ * Add NetBSD patches, taken from the NetBSD pkg patches.
+ * Submitted by Andreas Wrede
+ *
  * Revision 1.18  2002/04/10 08:40:36  rogerh
  * Simplify the SetVideoChannelFormat() code. Use the implementation in the
  * ancestor class.
@@ -106,8 +110,10 @@
 #include <machine/ioctl_meteor.h>
 #endif
 
-#if defined(P_OPENBSD)
+#if defined(P_OPENBSD) || defined(P_NETBSD)
 #if P_OPENBSD >= 200105
+#include <dev/ic/bt8xx.h> 
+#elif P_NETBSD >= 105000000
 #include <dev/ic/bt8xx.h> 
 #else 
 #include <i386/ioctl_meteor.h>
