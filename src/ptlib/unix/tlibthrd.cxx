@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.70  2001/09/10 03:03:02  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ * Changed threading so does not actually start thread until Resume(), makes
+ *   the logic of start up much simpler and more portable.
+ * Quite a bit of tidyin up of the pthreads code.
+ *
  * Revision 1.69  2001/08/30 08:57:40  robertj
  * Changed calls to usleep to be PThread::Yield(), normalising single
  *   timeslice process swap out.
@@ -280,12 +287,563 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 #define new PNEW
 
 
+void PHouseKeepingThread::Main()
+{
+  PProcess & process = PProcess::Current();
+
+  while (!closing) {
+    PTimeInterval waitTime = process.timers.Process();
+
+    struct timeval * tptr = NULL;
+    struct timeval   timeout_val;
+    if (waitTime != PMaxTimeInterval) {
+      timeout_val.tv_usec = (waitTime.GetMilliSeconds() % 1000) * 1000;
+      timeout_val.tv_sec  = waitTime.GetSeconds();
+      tptr                = &timeout_val;
+    }
+
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(process.timerChangePipe[0], &read_fds);
+    if (::select(process.timerChangePipe[0]+1, &read_fds, NULL, NULL, tptr) == 1) {
+      BYTE ch;
+      ::read(process.timerChangePipe[0], &ch, 1);
+    }
+
+    process.PXCheckSignals();
+  }
+}
+
+
+void PProcess::SignalTimerChange()
+{
+  if (housekeepingThread == NULL) {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+    housekeepingThread = new PHouseKeepingThread;
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+  }
+
+  BYTE ch;
+  write(timerChangePipe[1], &ch, 1);
+}
+
+
+void PProcess::Construct()
+{
+  // make sure we don't get upset by resume signals
+  // This does not apply to Mac OS X which does not support the
+  // required signal operations for Suspend()
+#ifndef P_MACOSX
+  sigset_t blockedSignals;
+  sigemptyset(&blockedSignals);
+  sigaddset(&blockedSignals, RESUME_SIG);
+  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
+#endif // P_MACOSX
+
+  // set the file descriptor limit to something sensible
+  struct rlimit rl;
+  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+  rl.rlim_cur = rl.rlim_max;
+  PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
+
+  ::pipe(timerChangePipe);
+
+  // initialise the housekeeping thread
+  housekeepingThread = NULL;
+
+  CommonConstruct();
+}
+
+
+PProcess::~PProcess()
+{
+  // Don't wait for housekeeper to stop if Terminate() is called from it.
+  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
+    housekeepingThread->SetClosing();
+    SignalTimerChange();
+    housekeepingThread->WaitForTermination();
+    delete housekeepingThread;
+  }
+  CommonDestruct();
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+PThread::PThread()
+{
+  // see InitialiseProcessThread()
+}
+
+
+void PThread::InitialiseProcessThread()
+{
+  autoDelete          = FALSE;
+
+  PX_origStackSize    = 0;
+  PX_threadId         = pthread_self();
+  PX_priority         = NormalPriority;
+  PX_suspendCount     = 0;
+
+#ifndef P_HAS_SEMAPHORES
+  PX_waitingSemaphore = NULL;
+  PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
+#endif
+
+  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
+
+  PAssertOS(::pipe(unblockPipe) == 0);
+
+  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
+  ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
+}
+
+
+PThread::PThread(PINDEX stackSize,
+                 AutoDeleteFlag deletion,
+                 Priority priorityLevel,
+                 const PString & name)
+  : threadName(name)
+{
+  autoDelete = (deletion == AutoDeleteThread);
+
+  PAssert(stackSize > 0, PInvalidParameter);
+  PX_origStackSize = stackSize;
+  PX_threadId = 0;
+  PX_priority = priorityLevel;
+  PX_suspendCount = 1;
+
+#ifndef P_HAS_SEMAPHORES
+  PX_waitingSemaphore = NULL;
+  pthread_mutex_init(&PX_WaitSemMutex, NULL);
+#endif
+
+  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
+
+  PAssertOS(::pipe(unblockPipe) == 0);
+
+  // new thread is actually started the first time Resume() is called.
+  PX_firstTimeStart = TRUE;
+}
+
+
+PThread::~PThread()
+{
+  if (!IsTerminated()) 
+    Terminate();
+
+  ::close(unblockPipe[0]);
+  ::close(unblockPipe[1]);
+
+#ifndef P_HAS_SEMAPHORES
+  pthread_mutex_destroy(&PX_WaitSemMutex);
+#endif
+
+  //PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
+  pthread_mutex_destroy(&PX_suspendMutex);
+}
+
+
+pthread_t PThread::PX_GetThreadId() const
+{
+  return PX_threadId;
+}
+
+
+void PThread::Restart()
+{
+  if (!IsTerminated())
+    return;
+
+  pthread_attr_t threadAttr;
+  pthread_attr_init(&threadAttr);
+
+#ifdef P_LINUX
+  /*
+    Set realtime scheduling if our effective user id is root (only then is this
+    allowed) AND our priority is Highest.
+      As far as I can see, we could use either SCHED_FIFO or SCHED_RR here, it
+    doesn't matter.
+      I don't know if other UNIX OSs have SCHED_FIFO and SCHED_RR as well.
+
+    WARNING: a misbehaving thread (one that never blocks) started with Highest
+    priority can hang the entire machine. That is why root permission is 
+    neccessary.
+  */
+  if ((geteuid() == 0) && (PX_priority == HighestPriority))
+    PAssertOS(pthread_attr_setschedpolicy(&threadAttr, SCHED_FIFO) == 0);
+#endif
+
+  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) == 0);
+}
+
+
+
+// Mac OS X and Darwin 1.2 does not support pthread_kill() or sigwait()
+// so we cannot implement suspend and resume using signals. Instead we have a
+// partial implementation using a Semaphore.
+// As a result, we can create a thread in a suspended state and then 'resume'
+// it, but once it is going, we can no longer suspend it.
+// So, for Mac OS X, we will accept Resume() calls (or Suspend(FALSE))
+// but reject Suspend(TRUE) calls with an Assertion. This will indicate
+// to a user that we cannot Suspend threads on Mac OS X
+
+#ifndef P_MACOSX
+static void sigSuspendHandler(int)
+{
+  // wait for a resume signal
+
+  sigset_t waitSignals;
+  sigemptyset(&waitSignals);
+  sigaddset(&waitSignals, RESUME_SIG);
+  sigaddset(&waitSignals, SIGINT);
+  sigaddset(&waitSignals, SIGQUIT);
+  sigaddset(&waitSignals, SIGTERM);
+
+  for (;;) {
+    int sig;
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
+    sigwait(&waitSignals, &sig);
+#else
+    sig = sigwait(&waitSignals);
+#endif
+    if (sig == RESUME_SIG)
+      return;
+  }
+}
+#endif // P_MACOSX
+
+
+void PThread::Suspend(BOOL susp)
+{
+  PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
+
+  // Check for start up condition, first time Resume() is called
+  if (PX_firstTimeStart) {
+    if (susp) {
+      PX_suspendCount++;
+      return;
+    }
+    else if (PX_suspendCount > 0) {
+      PX_suspendCount--;
+      if (PX_suspendCount > 0)
+        return;
+    }
+
+    PX_firstTimeStart = FALSE;
+    Restart();
+    return;
+  }
+
+#ifdef P_MACOSX
+  // Suspend - warn the user with an Assertion
+  PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
+#else
+  if (pthread_kill(PX_threadId, 0) == 0) {
+
+    // if suspending, then see if already suspended
+    if (susp) {
+      PX_suspendCount++;
+      if (PX_suspendCount == 1) {
+        if (PX_threadId != pthread_self()) 
+          pthread_kill(PX_threadId, SUSPEND_SIG);
+        else {
+          PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
+          sigSuspendHandler(SUSPEND_SIG);
+          return;  // Mutex already unlocked
+        }
+      }
+    }
+
+    // if resuming, then see if to really resume
+    else if (PX_suspendCount > 0) {
+      PX_suspendCount--;
+      if (PX_suspendCount == 0) 
+        pthread_kill(PX_threadId, RESUME_SIG);
+    }
+  }
+
+  PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
+#endif // P_MACOSX
+}
+
+
+void PThread::Resume()
+{
+  Suspend(FALSE);
+}
+
+
+BOOL PThread::IsSuspended() const
+{
+  if (IsTerminated())
+    return FALSE;
+
+  PAssertOS(pthread_mutex_lock((pthread_mutex_t *)&PX_suspendMutex) == 0);
+  BOOL suspended = PX_suspendCount != 0;
+  PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0);
+  return suspended;
+}
+
+
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  autoDelete = deletion == AutoDeleteThread;
+}
+
+
+void PThread::SetPriority(Priority priorityLevel)
+{
+  PX_priority = priorityLevel;
+
+#ifdef P_LINUX
+  if (IsTerminated())
+    return;
+
+  struct sched_param sched_param;
+  
+  if ((priorityLevel == HighestPriority) && (geteuid() == 0) ) {
+    sched_param.sched_priority = sched_get_priority_min( SCHED_FIFO );
+    
+    PAssertOS(pthread_setschedparam(PX_threadId, SCHED_FIFO, &sched_param) == 0);
+  }
+  else if (priorityLevel != HighestPriority) {
+    /* priority 0 is the only permitted value for the SCHED_OTHER scheduler */ 
+    sched_param.sched_priority = 0;
+    
+    PAssertOS(pthread_setschedparam(PX_threadId, SCHED_OTHER, &sched_param) == 0);
+  }
+#endif
+}
+
+
+PThread::Priority PThread::GetPriority() const
+{
+#ifdef LINUX
+  int schedulingPolicy;
+  struct sched_param schedParams;
+  
+  PAssertOS( pthread_getschedparam( PX_threadId, &schedulingPolicy, 
+                                    &schedParams ) );
+  
+  switch( schedulingPolicy )
+  {
+    case SCHED_OTHER:
+      break;
+      
+    case SCHED_FIFO:
+    case SCHED_RR:
+      return HighestPriority;
+      
+    default:
+      /* Unknown scheduler. We don't know what priority this thread has. */
+      PTRACE( 1, "PWLib\tPThread::GetPriority: unknown scheduling policy #" 
+              << schedulingPolicy );
+  }
+#endif
+
+  return NormalPriority; /* as good a guess as any */
+}
+
+
+#ifndef P_HAS_SEMAPHORES
+void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
+{
+  PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
+  PX_waitingSemaphore = sem;
+  PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+}
+#endif
+
+
+void PThread::Sleep(const PTimeInterval & timeout)
+{
+  usleep((unsigned)timeout.GetMilliSeconds()*1000);
+}
+
+
+void PThread::Yield()
+{
+  usleep(1000); // Approx one timeslice
+}
+
+
+PThread * PThread::Current()
+{
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+  PThread * thread = process.activeThreads.GetAt((unsigned)pthread_self());
+  process.threadMutex.Signal();
+  return PAssertNULL(thread);
+}
+
+
+void PThread::Terminate()
+{
+  if (PX_origStackSize <= 0)
+    return;
+
+  if (IsTerminated())
+    return;
+
+  PTRACE(1, "PWLib\tForcing termination of thread " << (void *)this);
+
+  if (Current() == this)
+    pthread_exit(NULL);
+  else {
+    WaitForTermination(20);
+
+#ifndef P_HAS_SEMAPHORES
+    PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
+    if (PX_waitingSemaphore != NULL) {
+      PAssertOS(pthread_mutex_lock(&PX_waitingSemaphore->mutex) == 0);
+      PX_waitingSemaphore->queuedLocks--;
+      PAssertOS(pthread_mutex_unlock(&PX_waitingSemaphore->mutex) == 0);
+      PX_waitingSemaphore = NULL;
+    }
+    PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+#endif
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
+    pthread_kill(PX_threadId, SIGKILL);
+#else
+    pthread_cancel(PX_threadId);
+#endif
+  }
+}
+
+
+BOOL PThread::IsTerminated() const
+{
+  if (PX_threadId == 0) {
+    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") = 0");
+    return TRUE;
+  }
+
+#ifndef P_MACOSX
+  // MacOS X does not support pthread_kill so we cannot use it
+  // to test the validity of the thread
+  if (pthread_kill(PX_threadId, 0) != 0)  {
+    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") terminated");
+    return TRUE;
+  }
+#endif
+
+  //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
+  return FALSE;
+}
+
+
+void PThread::WaitForTermination() const
+{
+  PAssert(Current() != this, "Waiting for self termination!");
+  
+  PXAbortIO();
+
+  while (!IsTerminated())
+    Yield(); // One time slice
+}
+
+
+BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+{
+  PAssert(Current() != this, "Waiting for self termination!");
+  
+  //PTRACE(1, "PWLib\tWaitForTermination(" << maxWait << ')');
+  PXAbortIO();
+
+  PTimer timeout = maxWait;
+  while (!IsTerminated()) {
+    if (timeout == 0)
+      return FALSE;
+    Yield(); // One time slice
+  }
+  return TRUE;
+}
+
+
+void * PThread::PX_ThreadStart(void * arg)
+{ 
+  pthread_t threadId = pthread_self();
+
+  // self-detach
+  pthread_detach(threadId);
+
+  PThread * thread = (PThread *)arg;
+  thread->SetThreadName(thread->GetThreadName());
+
+  PProcess & process = PProcess::Current();
+
+#ifndef P_MACOSX
+  // This does not apply to Mac OS X which does not use signals to Resume a
+  // thread.
+  // block RESUME_SIG
+  sigset_t blockedSignals;
+  sigemptyset(&blockedSignals);
+  sigaddset(&blockedSignals, RESUME_SIG);
+  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
+
+  struct sigaction suspend_action;
+  memset(&suspend_action, 0, sizeof(suspend_action));
+  suspend_action.sa_handler = sigSuspendHandler;
+  sigaction(SUSPEND_SIG, &suspend_action, 0);
+#endif // P_MACOSX
+
+  // add thread to thread list
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt((unsigned)threadId, thread);
+  process.threadMutex.Signal();
+
+  // make sure the cleanup routine is called when the thread exits
+  pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
+
+  // now call the the thread main routine
+  //PTRACE(1, "PWLib\tAbout to call Main");
+  thread->Main();
+
+  // execute the cleanup routine
+  pthread_cleanup_pop(1);
+
+  return NULL;
+}
+
+
+void PThread::PX_ThreadEnd(void * arg)
+{
+  PThread * thread = (PThread *)arg;
+  PProcess & process = PProcess::Current();
+  
+  pthread_t id = thread->PX_GetThreadId();
+  if (id != 0) {
+
+    // remove this thread from the active thread list
+    process.threadMutex.Wait();
+    process.activeThreads.SetAt((unsigned)id, NULL);
+    process.threadMutex.Signal();
+  }
+
+  // delete the thread if required, note this is done this way to avoid
+  // a race condition, the thread ID cannot be zeroed before the if!
+  if (thread->autoDelete) {
+    thread->PX_threadId = 0;  // Prevent terminating terminated thread
+    delete thread;
+  }
+  else
+    thread->PX_threadId = 0;
+}
+
+
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   //PTRACE(1,"PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
   if ((handle < 0) || (handle >= FD_SETSIZE)) {
-    errno = EINTR;
+    errno = EBADF;
     return -1;
   }
 
@@ -351,652 +909,6 @@ void PThread::PXAbortIO() const
 {
   BYTE ch;
   ::write(unblockPipe[1], &ch, 1);
-}
-
-
-// Mac OS X does not support sigwait()
-#ifndef P_MACOSX
-
-static void sigSuspendHandler(int)
-{
-  // wait for a resume signal
-
-  sigset_t waitSignals;
-  sigemptyset(&waitSignals);
-  sigaddset(&waitSignals, RESUME_SIG);
-  sigaddset(&waitSignals, SIGINT);
-  sigaddset(&waitSignals, SIGQUIT);
-  sigaddset(&waitSignals, SIGTERM);
-
-  for (;;) {
-    int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-    sigwait(&waitSignals, &sig);
-#else
-    sig = sigwait(&waitSignals);
-#endif
-    if (sig == RESUME_SIG)
-      return;
-  }
-}
-#endif // P_MACOSX
-
-
-void PHouseKeepingThread::Main()
-{
-  PProcess & process = PProcess::Current();
-
-  while (!closing) {
-    PTimeInterval waitTime = process.timers.Process();
-
-    struct timeval * tptr = NULL;
-    struct timeval   timeout_val;
-    if (waitTime != PMaxTimeInterval) {
-      timeout_val.tv_usec = (waitTime.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = waitTime.GetSeconds();
-      tptr                = &timeout_val;
-    }
-
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
-    FD_SET(process.timerChangePipe[0], &read_fds);
-    if (::select(process.timerChangePipe[0]+1, &read_fds, NULL, NULL, tptr) == 1) {
-      BYTE ch;
-      ::read(process.timerChangePipe[0], &ch, 1);
-    }
-
-    process.PXCheckSignals();
-  }
-}
-
-
-void PProcess::Construct()
-{
-  // make sure we don't get upset by resume signals
-  // This does not apply to Mac OS X which does not support the
-  // required signal operations for Suspend()
-#ifndef P_MACOSX
-  sigset_t blockedSignals;
-  sigemptyset(&blockedSignals);
-  sigaddset(&blockedSignals, RESUME_SIG);
-  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
-#endif // P_MACOSX
-
-  // set the file descriptor limit to something sensible
-  struct rlimit rl;
-  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-  rl.rlim_cur = rl.rlim_max;
-  PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
-
-  ::pipe(timerChangePipe);
-
-  // initialise the housekeeping thread
-  housekeepingThread = NULL;
-
-  CommonConstruct();
-}
-
-
-PProcess::~PProcess()
-{
-  // Don't wait for housekeeper to stop if Terminate() is called from it.
-  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
-    housekeepingThread->SetClosing();
-    SignalTimerChange();
-    housekeepingThread->WaitForTermination();
-    delete housekeepingThread;
-  }
-  CommonDestruct();
-}
-
-
-PThread::PThread()
-{
-  // see InitialiseProcessThread()
-}
-
-
-void PThread::InitialiseProcessThread()
-{
-  PX_origStackSize    = 0;
-  autoDelete          = FALSE;
-  PX_threadId         = pthread_self();
-  PX_suspendCount     = 0;
-  ::pipe(unblockPipe);
-
-#ifndef P_HAS_SEMAPHORES
-  PX_waitingSemaphore = NULL;
-  PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
-#endif
-
-  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
-
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
-}
-
-
-PThread::PThread(PINDEX stackSize,
-                 AutoDeleteFlag deletion,
-                 Priority priorityLevel,
-                 const PString & name)
-  : threadName(name)
-{
-  PAssert(stackSize > 0, PInvalidParameter);
-
-  PX_origStackSize = stackSize;
-  autoDelete       = (deletion == AutoDeleteThread);
-
-  /* it appears that this whole file assumes that PThreads are present, so 
-     I won't bother with #ifdef P_PTHREAD here and elsewhere. 
-  */
-  originalPriority = priorityLevel;
-
-#ifndef P_HAS_SEMAPHORES
-  PX_waitingSemaphore = NULL;
-  pthread_mutex_init(&PX_WaitSemMutex, NULL);
-#endif
-
-  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
-
-  ::pipe(unblockPipe);
-
-  // throw the new thread
-  PX_NewThread(TRUE);
-}
-
-
-PThread::~PThread()
-{
-  if (!IsTerminated()) 
-    Terminate();
-
-  ::close(unblockPipe[0]);
-  ::close(unblockPipe[1]);
-
-#ifndef P_HAS_SEMAPHORES
-  //PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
-  pthread_mutex_destroy(&PX_WaitSemMutex);
-#endif
-
-  //PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
-  pthread_mutex_destroy(&PX_suspendMutex);
-}
-
-
-void PThread::PX_NewThread(BOOL startSuspended)
-{
-  // initialise suspend counter and create mutex
-  PX_suspendCount = startSuspended ? 1 : 0;
-
-  // initialise Suspend/Resume semaphore (for Mac OS X)
-#ifdef P_MACOSX
-  suspend_semaphore = new PSemaphore(0,1);
-#endif
-
-  // throw the thread
-  
-  pthread_attr_t threadAttr;
-  pthread_attr_init(&threadAttr);
-
-#ifdef P_LINUX
-  /*
-    Set realtime scheduling if our effective user id is root (only then is this
-    allowed) AND our priority is Highest.
-      As far as I can see, we could use either SCHED_FIFO or SCHED_RR here, it
-    doesn't matter.
-      I don't know if other UNIX OSs have SCHED_FIFO and SCHED_RR as well.
-
-    WARNING: a misbehaving thread (one that never blocks) started with Highest
-    priority can hang the entire machine. That is why root permission is 
-    neccessary.
-  */
-  if( (geteuid() == 0) && (originalPriority == HighestPriority) )
-    PAssertOS( pthread_attr_setschedpolicy( &threadAttr, SCHED_FIFO ) == 0 );
-#endif
-
-  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) == 0);
-
-#if defined(P_FREEBSD)
-  // There is a potential race condition here which shows up with FreeBSD 4.2
-  // and later, but really applies to all pthread libraries.
-  // If a thread is started in suspend mode, we need to make sure
-  // the thread (PX_ThreadStart) has had a chance to execute and block on the
-  // sigwait() (blocking on the Resume Signal) before this function returns.
-  // Otherwise the main program may issue a Resume Signal on the thread
-  // by calling PThread::Resume() before the thread is ready for it.
-  // If that happens the program will abort with an unhandled signal error.
-  // A workaround (not 100% guaranteed) is to yield here, which gives
-  // the newly created thread (PX_ThreadStart) a chance to execute.
-
-  if (startSuspended) {
-    sched_yield();
-  }
-#endif
-}
- 
-
-void * PThread::PX_ThreadStart(void * arg)
-{ 
-  pthread_t threadId = pthread_self();
-
-  // self-detach
-  pthread_detach(threadId);
-
-  PThread * thread = (PThread *)arg;
-  thread->SetThreadName(thread->GetThreadName());
-
-  PProcess & process = PProcess::Current();
-
-  // block RESUME_SIG
-  // This does not apply to Mac OS X which does not use signals to Resume a
-  // thread.
-#ifndef P_MACOSX
-  sigset_t blockedSignals;
-  sigemptyset(&blockedSignals);
-  sigaddset(&blockedSignals, RESUME_SIG);
-  //sigaddset(&blockedSignals, P_IO_BREAK_SIGNAL);
-  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
-#endif
-
-  // add thread to thread list
-  process.threadMutex.Wait();
-  process.activeThreads.SetAt((unsigned)threadId, thread);
-  process.threadMutex.Signal();
-
-  // make sure the cleanup routine is called when the thread exits
-  pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
-
-  // if we are not supposed to start suspended, then don't wait
-  // if we are supposed to start suspended, then wait for a resume
-
-  //PAssertOS(pthread_mutex_lock(&thread->PX_suspendMutex) == 0);
-  //if (thread->PX_suspendCount ==  0) 
-  //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
-  //else
-  //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
-
-
-// Mac OS X with Darwin 1.2 does not support sigwait() so use a Semaphore
-// to allow the thread creation to block until the Resume() is called.
-
-#ifdef P_MACOSX
-  if (thread->PX_suspendCount != 0) {
-    thread->suspend_semaphore->Wait();	// Wait for the Resume
-  }
-
-#else
-  if (thread->PX_suspendCount != 0) {
-    sigset_t waitSignals;
-    sigemptyset(&waitSignals);
-    sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-    int sig;
-    sigwait(&waitSignals, &sig);
-#else
-    sigwait(&waitSignals);
-#endif
-  }
-
-  // set the signal handler for SUSPEND_SIG
-  struct sigaction suspend_action;
-  memset(&suspend_action, 0, sizeof(suspend_action));
-  suspend_action.sa_handler = sigSuspendHandler;
-  sigaction(SUSPEND_SIG, &suspend_action, 0);
-
-#endif // P_MACOSX
-
-  // now call the the thread main routine
-  //PTRACE(1, "PWLib\tAbout to call Main");
-  thread->Main();
-
-  // execute the cleanup routine
-  pthread_cleanup_pop(1);
-
-  return NULL;
-}
-
-
-void PProcess::SignalTimerChange()
-{
-  if (housekeepingThread == NULL) {
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
-    housekeepingThread = new PHouseKeepingThread;
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
-#endif
-  }
-
-  BYTE ch;
-  write(timerChangePipe[1], &ch, 1);
-}
-
-
-void PThread::PX_ThreadEnd(void * arg)
-{
-  PThread * thread = (PThread *)arg;
-  PProcess & process = PProcess::Current();
-  
-  pthread_t id = thread->PX_GetThreadId();
-  if (id != 0) {
-
-    // remove this thread from the active thread list
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt((unsigned)id, NULL);
-    process.threadMutex.Signal();
-  }
-
-  // delete the thread if required, note this is done this way to avoid
-  // a race condition, the thread ID cannot be zeroed before the if!
-  if (thread->autoDelete) {
-    thread->PX_threadId = 0;  // Prevent terminating terminated thread
-    delete thread;
-  }
-  else
-    thread->PX_threadId = 0;
-}
-
-
-pthread_t PThread::PX_GetThreadId() const
-{
-  return PX_threadId;
-}
-
-
-void PThread::Restart()
-{
-  if (IsTerminated())
-    return;
-
-  PX_NewThread(FALSE);
-}
-
-
-void PThread::Terminate()
-{
-  if (PX_origStackSize <= 0)
-    return;
-
-  if (IsTerminated())
-    return;
-
-  PTRACE(1, "PWLib\tForcing termination of thread " << (void *)this);
-
-  if (Current() == this)
-    pthread_exit(NULL);
-  else {
-    WaitForTermination(20);
-
-#ifndef P_HAS_SEMAPHORES
-    PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
-    if (PX_waitingSemaphore != NULL) {
-      PAssertOS(pthread_mutex_lock(&PX_waitingSemaphore->mutex) == 0);
-      PX_waitingSemaphore->queuedLocks--;
-      PAssertOS(pthread_mutex_unlock(&PX_waitingSemaphore->mutex) == 0);
-      PX_waitingSemaphore = NULL;
-    }
-    PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
-#endif
-
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-    pthread_kill(PX_threadId, SIGKILL);
-#else
-    pthread_cancel(PX_threadId);
-#endif
-  }
-}
-
-
-void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
-{
-#ifndef P_HAS_SEMAPHORES
-  PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
-  PX_waitingSemaphore = sem;
-  PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
-#endif
-}
-
-
-BOOL PThread::IsTerminated() const
-{
-  if (PX_threadId == 0) {
-    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") = 0");
-    return TRUE;
-  }
-
-// MacOS X does not support pthread_kill so we cannot use it
-// to test the validity of the thread
-
-#ifndef P_MACOSX
-  if (pthread_kill(PX_threadId, 0) != 0)  {
-    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") terminated");
-    return TRUE;
-  }
-#endif
-
-  //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
-  return FALSE;
-}
-
-// Mac OS X and Darwin 1.2 does not support pthread_kill() or sigwait()
-// so we cannot implement suspend and resume using signals. Instead we have a
-// partial implementation using a Semaphore.
-// As a result, we can create a thread in a suspended state and then 'resume'
-// it, but once it is going, we can no longer suspend it.
-// So, for Mac OS X, we will accept Resume() calls (or Suspend(FALSE))
-// but reject Suspend(TRUE) calls with an Assertion. This will indicate
-// to a user that we cannot Suspend threads on Mac OS X
-
-#ifdef P_MACOSX
-void PThread::Suspend(BOOL susp)
-{
-  PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
-
-  if (susp) {
-    // Suspend - warn the user with an Assertion
-    PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
-  }
-
-  // if resuming, then see if to really resume
-  else if (PX_suspendCount > 0) {
-    PX_suspendCount--;
-    if (PX_suspendCount == 0)  {
-      suspend_semaphore->Signal();
-    }
-  }
-
-  PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
-}
-
-#else // P_MACOSX
-
-void PThread::Suspend(BOOL susp)
-{
-  PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
-  BOOL unlock = TRUE;
-
-  if (pthread_kill(PX_threadId, 0) == 0) {
-
-    // if suspending, then see if already suspended
-    if (susp) {
-      PX_suspendCount++;
-      if (PX_suspendCount == 1) {
-        if (PX_threadId != pthread_self()) 
-          pthread_kill(PX_threadId, SUSPEND_SIG);
-        else {
-          unlock = FALSE;
-          PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
-          sigset_t waitSignals;
-          sigemptyset(&waitSignals);
-          sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-          int sig;
-          sigwait(&waitSignals, &sig);
-#else
-          sigwait(&waitSignals);
-#endif
-        }
-      }
-    }
-
-    // if resuming, then see if to really resume
-    else if (PX_suspendCount > 0) {
-      PX_suspendCount--;
-      if (PX_suspendCount == 0) 
-        pthread_kill(PX_threadId, RESUME_SIG);
-    }
-  }
-  if (unlock)
-    PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
-}
-
-#endif // P_MACOSX
-
-void PThread::Resume()
-{
-  Suspend(FALSE);
-}
-
-
-BOOL PThread::IsSuspended() const
-{
-  if (IsTerminated())
-    return FALSE;
-
-  PAssertOS(pthread_mutex_lock((pthread_mutex_t *)&PX_suspendMutex) == 0);
-  BOOL suspended = PX_suspendCount > 0;
-  PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0);
-  return suspended;
-}
-
-
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
-}
-
-/*
-  erl: I don't know if this method should be const or not. What does const mean
-  wrt a method?
-*/
-void PThread::SetPriority( Priority priorityLevel )
-{
-#ifdef P_LINUX
-  struct sched_param sched_param;
-  
-  if( (priorityLevel == HighestPriority) && (geteuid() == 0) )
-  {
-    sched_param.sched_priority = sched_get_priority_min( SCHED_FIFO );
-    
-    PAssertOS( pthread_setschedparam( PX_threadId, SCHED_FIFO, &sched_param ) 
-               == 0 );
-  }
-  else if( priorityLevel != HighestPriority )
-  {
-    /* priority 0 is the only permitted value for the SCHED_OTHER scheduler */ 
-    sched_param.sched_priority = 0;
-    
-    PAssertOS( pthread_setschedparam( PX_threadId, SCHED_OTHER, 
-                                      &sched_param ) == 0 );
-  }
-#endif
-}
-
-/*
-  erl: Should this method be const or not? What does const on a method mean?
-*/
-PThread::Priority PThread::GetPriority() const
-{
-#ifdef LINUX
-  int schedulingPolicy;
-  struct sched_param schedParams;
-  
-  PAssertOS( pthread_getschedparam( PX_threadId, &schedulingPolicy, 
-                                    &schedParams ) );
-  
-  switch( schedulingPolicy )
-  {
-    case SCHED_OTHER:
-      return NormalPriority;
-      
-    case SCHED_FIFO:
-    case SCHED_RR:
-      return HighestPriority;
-      
-    default:
-      /* Unknown scheduler. We don't know what priority this thread has. */
-      PTRACE( 1, "PWLib\tPThread::GetPriority: unknown scheduling policy #" 
-              << schedulingPolicy );
-      
-      return originalPriority; /* as good a guess as any */
-  }
-#else
-  return LowestPriority;
-#endif
-}
-
-
-void PThread::Yield()
-{
-  usleep(1000); // Approx one timeslice
-}
-
-
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned)pthread_self());
-  process.threadMutex.Signal();
-  return PAssertNULL(thread);
-}
-
-
-void PThread::Sleep(const PTimeInterval & timeout)
-{
-  struct timeval * tptr = NULL;
-
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) {
-    if (timeout.GetMilliSeconds() < 1000L*60L*60L*24L) {
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-  while (::select(0, NULL, NULL, NULL, tptr) != 0)
-    ;
-}
-
-
-void PThread::WaitForTermination() const
-{
-  PAssert(Current() != this, "Waiting for self termination!");
-  
-  PXAbortIO();
-
-  while (!IsTerminated())
-    Yield(); // One time slice
-}
-
-
-BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
-{
-  PAssert(Current() != this, "Waiting for self termination!");
-  
-  //PTRACE(1, "PWLib\tWaitForTermination(delay)");
-  PXAbortIO();
-
-  PTimer timeout = maxWait;
-  while (!IsTerminated()) {
-    if (timeout == 0)
-      return FALSE;
-    Yield(); // One time slice
-  }
-  return TRUE;
 }
 
 
