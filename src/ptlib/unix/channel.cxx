@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.5 1995/10/15 12:56:54 craigs Exp $
+ * $Id: channel.cxx,v 1.6 1996/01/26 11:09:42 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.6  1996/01/26 11:09:42  craigs
+ * Fixed problem with blocking accepts and incorrect socket errors
+ *
  * Revision 1.5  1995/10/15 12:56:54  craigs
  * Multiple updates - split channel implementation into multiple files
  *
@@ -39,13 +42,33 @@
 // PChannel
 //
 
-BOOL PChannel::SetIOBlock (BOOL isRead)
+BOOL PChannel::PXSetIOBlock (int type)
 {
-  PTimeInterval timeout = isRead ? readTimeout : writeTimeout;
+  return PXSetIOBlock(type, os_handle);
+}
+
+BOOL PChannel::PXSetIOBlock (int type, int blockHandle)
+{
+  PTimeInterval timeout;
+  switch (type) {
+    case PXReadBlock:
+      timeout = readTimeout;
+      break;
+
+    case PXWriteBlock:
+      timeout = writeTimeout;
+      break;
+
+    case PXOtherBlock:
+    case PXAcceptBlock:
+      timeout = PMaxTimeInterval;
+      break;
+  }
+
   if (timeout != PMaxTimeInterval) 
-    return PThread::Current()->PXBlockOnIO(os_handle, isRead, timeout);
+    return PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
   else
-    return PThread::Current()->PXBlockOnIO(os_handle, isRead);
+    return PThread::Current()->PXBlockOnIO(blockHandle, type);
 }
 
 
@@ -56,7 +79,7 @@ BOOL PChannel::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  if (!SetIOBlock(TRUE)) 
+  if (!PXSetIOBlock(PXReadBlock)) 
     lastError = Timeout;
   else if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
     return lastReadCount > 0;
@@ -73,10 +96,13 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
     return FALSE;
   }
 
-  if (!SetIOBlock(FALSE))
+  if (!PXSetIOBlock(PXWriteBlock))
     lastError = Timeout;
-  else if (ConvertOSError(lastWriteCount = ::write(os_handle, buf, len)))
-    return lastWriteCount >= len;
+  else {
+    lastWriteCount = ::write(os_handle, buf, len);
+    if (ConvertOSError(lastWriteCount))
+      return lastWriteCount >= len;
+  }
 
   lastWriteCount = 0;
   return FALSE;
@@ -88,8 +114,9 @@ BOOL PChannel::Close()
     lastError = NotOpen;
     return FALSE;
   } else {
+    int handle = os_handle;
     os_handle = -1;
-    return ConvertOSError(::close(os_handle));
+    return ConvertOSError(::close(handle));
   }
 }
 
@@ -124,13 +151,16 @@ BOOL PChannel::ConvertOSError(int err)
       break;
     case EISDIR:
     case EROFS:
+    case EACCES:
       lastError = AccessDenied;
       break;
     case ETXTBSY:
+    case EINVAL:
       lastError = DeviceInUse;
       break;
     case EFAULT:
     case ELOOP:
+    case EBADF:
       lastError = BadParameter;
       break;
     case ENOENT :
