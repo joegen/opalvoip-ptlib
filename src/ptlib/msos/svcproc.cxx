@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.4 1996/06/10 09:54:08 robertj Exp $
+ * $Id: svcproc.cxx,v 1.5 1996/07/27 04:07:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.5  1996/07/27 04:07:57  robertj
+ * Changed thread creation to use C library function instead of direct WIN32.
+ * Changed SystemLog to be stream based rather than printf based.
+ * Fixed Win95 support for service start/stop and prevent multiple starts.
+ *
  * Revision 1.4  1996/06/10 09:54:08  robertj
  * Fixed Win95 service install bug (typo!)
  *
@@ -33,6 +38,115 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <io.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSystemLog
+
+void PSystemLog::Output(Level level, const char * msg)
+{
+  PServiceProcess & process = *PServiceProcess::Current();
+  if (level > process.GetLogLevel())
+    return;
+
+  DWORD err = GetLastError();
+
+  if (process.debugMode || process.isWin95) {
+    static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
+    WaitForSingleObject(mutex, INFINITE);
+    static const char * levelName[NumLogLevels] = {
+      "Fatal error",
+      "Error",
+      "Warning",
+      "Information"
+    };
+    ostream * out = PErrorStream;
+    if (!process.debugMode) {
+      PString dir;
+      GetWindowsDirectory(dir.GetPointer(256), 255);
+      out = new ofstream(dir+"\\"+process.GetName()+" Log.TXT", ios::app);
+    }
+    PTime now;
+    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
+    if (msg[0] != '\0')
+      *out << ": " << msg;
+    if (level != Info && err != 0)
+      *out << " - error = " << err;
+    *out << endl;
+    if (!process.debugMode)
+      delete out;
+    ReleaseMutex(mutex);
+    SetLastError(0);
+  }
+  else {
+    // Use event logging to log the error.
+    HANDLE hEventSource = RegisterEventSource(NULL, process.GetName());
+    if (hEventSource == NULL)
+      return;
+
+    char errbuf[25];
+    if (level != Info && err != 0)
+      ::sprintf(errbuf, "\nError code = %d", err);
+    else
+      errbuf[0] = '\0';
+
+    LPCTSTR strings[3];
+    strings[0] = msg;
+    strings[1] = errbuf;
+    strings[2] = level != Fatal ? "" : " Program aborted.";
+
+    static const WORD levelType[NumLogLevels] = {
+      EVENTLOG_ERROR_TYPE,
+      EVENTLOG_ERROR_TYPE,
+      EVENTLOG_WARNING_TYPE,
+      EVENTLOG_INFORMATION_TYPE
+    };
+    ReportEvent(hEventSource, // handle of event source
+                levelType[level],     // event type
+                0,                    // event category
+                1,                    // event ID
+                NULL,                 // current user's SID
+                PARRAYSIZE(strings),  // number of strings
+                0,                    // no bytes of raw data
+                strings,              // array of error strings
+                NULL);                // no raw data
+    DeregisterEventSource(hEventSource);
+  }
+}
+
+
+int PSystemLog::Buffer::overflow(int c)
+{
+  if (pptr() >= epptr()) {
+    int ppos = pptr() - pbase();
+    char * newptr = string.GetPointer(string.GetSize() + 10);
+    setp(newptr, newptr + string.GetSize() - 1);
+    pbump(ppos);
+  }
+  if (c != EOF) {
+    *pptr() = (char)c;
+    pbump(1);
+  }
+  return 0;
+}
+
+
+int PSystemLog::Buffer::underflow()
+{
+  return EOF;
+}
+
+
+int PSystemLog::Buffer::sync()
+{
+  PSystemLog::Output(log->logLevel, string);
+
+  string.SetSize(10);
+  char * base = string.GetPointer();
+  *base = '\0';
+  setp(base, base + string.GetSize() - 1);
+  return 0;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,16 +201,52 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     }
   }
 
-  currentLogLevel = debugMode ? LogInfo : LogError;
+  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Error;
 
   if (debugMode || isWin95) {
     signal(SIGINT, Control_C);
     SetTerminationValue(1);
-    if (OnStart()) {
-      SetTerminationValue(0);
-      Main();
+
+    PConfig cfg;
+    DWORD pid = cfg.GetInteger("Pid");
+    if (pid != 0) {
+      HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+      if (h != NULL) {
+        CloseHandle(h);
+        PError << "Service already running" << endl;
+        return 1;
+      }
     }
+    cfg.SetInteger("Pid", GetProcessID());
+
+    terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
+    PAssertOS(terminationEvent != NULL);
+
+    threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
+    PAssertOS(threadHandle != (HANDLE)-1);
+
+    HWND wnd = CreateWindow(MAKEINTRESOURCE(32770),
+                            "",
+                            WS_OVERLAPPED,
+                            0, 0, 0, 0, 
+                            NULL, NULL, 
+                            (HINSTANCE)0x00400000,
+                            NULL);
+
+    MSG msg;
+    msg.message = WM_QUIT+1;
+    while (msg.message != WM_QUIT && 
+           MsgWaitForMultipleObjects(1, &terminationEvent, TRUE, INFINITE, QS_ALLINPUT) == WAIT_OBJECT_0+1) {
+      while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        if (msg.message != WM_QUIT)
+          DispatchMessage(&msg);
+      }
+    }
+
+    DestroyWindow(wnd);
+
     OnStop();
+    cfg.SetInteger("Pid", 0);
     return GetTerminationValue();
   }
 
@@ -114,7 +264,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   if (StartServiceCtrlDispatcher(dispatchTable))
     return GetTerminationValue();
 
-  SystemLog(LogFatal, "StartServiceCtrlDispatcher failed.");
+  PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
   PError << "Could not start service.\n";
   ProcessCommand("");
   return 1;
@@ -147,25 +297,24 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
   GetArguments().SetArgs(argc, argv);
 
   // start the thread that performs the work of the service.
-  threadHandle = CreateThread(NULL,4096,StaticThreadEntry,NULL,0,&threadId);
-  if (threadHandle != NULL)
+  threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
+  if (threadHandle != (HANDLE)-1)
     WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
 
-  TerminateThread(threadHandle, 1);
   CloseHandle(terminationEvent);
   ReportStatus(SERVICE_STOPPED, 0);
 }
 
 
-DWORD EXPORTED PServiceProcess::StaticThreadEntry(LPVOID)
+void PServiceProcess::StaticThreadEntry(void * arg)
 {
-  Current()->ThreadEntry();
-  return 0;
+  ((PServiceProcess *)arg)->ThreadEntry();
 }
 
 
 void PServiceProcess::ThreadEntry()
 {
+  threadId = GetCurrentThreadId();
   if (OnStart()) {
     ReportStatus(SERVICE_RUNNING);
     Main();
@@ -232,7 +381,7 @@ BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
   status.dwCheckPoint = dwCheckPoint;
   status.dwWaitHint = dwWaitHint;
 
-  if (debugMode)
+  if (debugMode || isWin95)
     return TRUE;
 
   // Report the status of the service to the service control manager.
@@ -240,85 +389,8 @@ BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
     return TRUE;
 
   // If an error occurs, stop the service.
-  SystemLog(LogError, "SetServiceStatus failed");
+  PSystemLog::Output(PSystemLog::Error, "SetServiceStatus failed");
   return FALSE;
-}
-
-
-void PServiceProcess::SystemLog(SystemLogLevel level,const PString & msg)
-{
-  SystemLog(level, "%s", (const char *)msg);
-}
-
-
-void PServiceProcess::SystemLog(SystemLogLevel level, const char * fmt, ...)
-{
-  if (level > currentLogLevel)
-    return;
-
-  DWORD err = GetLastError();
-
-  char msg[1000];
-  va_list args;
-  va_start(args, fmt);
-  vsprintf(msg, fmt, args);
-
-  if (debugMode || isWin95) {
-    static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
-    WaitForSingleObject(mutex, INFINITE);
-    static const char * levelName[NumLogLevels] = {
-      "Fatal error",
-      "Error",
-      "Warning",
-      "Information"
-    };
-    ostream * out = PErrorStream;
-    if (!debugMode) {
-      PString dir;
-      GetWindowsDirectory(dir.GetPointer(256), 255);
-      out = new ofstream(dir + "\\FireDoorLog.TXT", ios::app);
-    }
-    PTime now;
-    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
-    if (msg[0] != '\0')
-      *out << ": " << msg;
-    if (level != LogInfo && err != 0)
-      *out << " - error = " << err;
-    *out << endl;
-    if (!debugMode)
-      delete out;
-    ReleaseSemaphore(mutex, 1, NULL);
-  }
-  else {
-    // Use event logging to log the error.
-    HANDLE hEventSource = RegisterEventSource(NULL, GetName());
-    if (hEventSource == NULL)
-      return;
-
-    if (level != LogInfo && err != 0)
-      sprintf(&msg[strlen(msg)], "\nError code = %d", err);
-
-    LPCTSTR strings[2];
-    strings[0] = msg;
-    strings[1] = level != LogFatal ? "" : " Program aborted.";
-
-    static const WORD levelType[NumLogLevels] = {
-      EVENTLOG_ERROR_TYPE,
-      EVENTLOG_ERROR_TYPE,
-      EVENTLOG_WARNING_TYPE,
-      EVENTLOG_INFORMATION_TYPE
-    };
-    ReportEvent(hEventSource, // handle of event source
-                levelType[level],     // event type
-                0,                    // event category
-                1,                    // event ID
-                NULL,                 // current user's SID
-                PARRAYSIZE(strings),  // number of strings
-                0,                    // no bytes of raw data
-                strings,              // array of error strings
-                NULL);                // no raw data
-    DeregisterEventSource(hEventSource);
-  }
 }
 
 
@@ -391,9 +463,15 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 
 BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 {
-  PString name =
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\" + svc->GetName();
-  error = RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+  HKEY key;
+  if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
+                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           &key)) != ERROR_SUCCESS)
+    return FALSE;
+
+  error = RegDeleteValue(key, (char *)(const char *)svc->GetName());
+
+  RegCloseKey(key);
 
   return error == ERROR_SUCCESS;
 }
@@ -401,17 +479,62 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 
 BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
 {
+  PConfig cfg;
+  DWORD pid = cfg.GetInteger("Pid");
+  if (pid != 0) {
+    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if (h != NULL) {
+      CloseHandle(h);
+      PError << "Service already running" << endl;
+      error = 1;
+      return FALSE;
+    }
+  }
+
   BOOL ok = _spawnl(_P_DETACH, svc->GetFile(), svc->GetFile(), NULL) >= 0;
   error = errno;
   return ok;
 }
 
 
-BOOL Win95_ServiceManager::Stop(PServiceProcess *)
+BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
 {
-  PError << "Cannot stop service under Windows 95" << endl;
-  error = 1;
-  return FALSE;
+  PConfig cfg;
+  DWORD pid = cfg.GetInteger("Pid");
+  if (pid == 0) {
+    error = 1;
+    PError << "Service not started" << endl;
+    return FALSE;
+  }
+
+  HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+  if (hProcess == NULL) {
+    error = GetLastError();
+    PError << "Service is not running" << endl;
+    return FALSE;
+  }
+
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
+  if (hEvent == NULL) {
+    error = GetLastError();
+    CloseHandle(hProcess);
+    PError << "Service no longer running" << endl;
+    return FALSE;
+  }
+
+  SetEvent(hEvent);
+  CloseHandle(hEvent);
+
+  DWORD processStatus = WaitForSingleObject(hProcess, 30000);
+  error = GetLastError();
+  CloseHandle(hProcess);
+  
+  if (processStatus != WAIT_OBJECT_0) {
+    PError << "Error or timeout during service stop" << endl;
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 
@@ -590,7 +713,7 @@ PServiceProcess::ProcessCommandResult
                              PServiceProcess::ProcessCommand(const char * cmd)
 {
   static const char * commandNames[] = {
-    "debug", "version", "install", "remove", "start", "stop", "pause", "resume"
+    "debug", "version", "install", "remove", "start", "stop", "pause", "resume", "deinstall"
   };
 
   PINDEX cmdNum = 0;
@@ -643,6 +766,16 @@ PServiceProcess::ProcessCommandResult
 
     case 7 : // resume
       good = svcManager->Resume(this);
+      break;
+
+    case 8 : // deinstall
+      svcManager->Delete(this);
+      PConfig cfg;
+      PStringList sections = cfg.GetSections();
+      PINDEX i;
+      for (i = 0; i < sections.GetSize(); i++)
+        cfg.DeleteSection(sections[i]);
+      good = TRUE;
       break;
   }
 
