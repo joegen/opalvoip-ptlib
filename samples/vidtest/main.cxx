@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2005/03/10 08:10:57  dereksmithies
+ * Use a more descriptive name for the manufacturer.
+ *
  * Revision 1.8  2004/04/20 00:19:31  dereksmithies
  * Add code to generate compile time error if SDL is not installed.
  *
@@ -71,7 +74,7 @@ PCREATE_PROCESS(VidTest);
 #endif
 
 VidTest::VidTest()
-  : PProcess("Equivalence", "vidtest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("PwLib Example Factory", "vidtest", 1, 0, ReleaseCode, 0)
 {
 }
 
