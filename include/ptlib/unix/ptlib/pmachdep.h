@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.31  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.30  2000/01/25 04:55:36  robertj
  * Added FreeBSD support for distinction between v3.x and later versions. Thanks Roger Hardiman.
  *
@@ -129,6 +132,32 @@ typedef size_t socklen_t;
 #if (P_FREEBSD < 4)
 typedef int socklen_t;
 #endif
+
+#define HAS_IFREQ
+
+#define PSETPGRP()  setpgrp(0, 0)
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_OPENBSD)
+
+#if defined(P_PTHREADS)
+#define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+
+#include <pthread.h>
+#endif
+
+#include <paths.h>
+#include <errno.h>
+#include <dlfcn.h>
+#include <termios.h>
+#include <sys/fcntl.h>
+#include <sys/filio.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/ioctl.h>
+#include <sys/signal.h>
+#include <net/if.h>
 
 #define HAS_IFREQ
 
