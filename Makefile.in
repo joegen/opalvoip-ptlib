@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.10  2003/08/27 09:46:07  dsandras
+# Readded DESTDIR support (thanks to Stefan Bruens <lurch@gmx.li>)
+#
 # Revision 1.9  2003/07/29 11:22:17  csoutheren
 # Removed trailing slash from vars.
 #
@@ -156,6 +159,9 @@ include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
 SUBDIRS += tools/asnparser
+ifeq (1, $(TRY_PLUGINS))
+SUBDIRS += plugins
+endif
 
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
@@ -176,31 +182,30 @@ docs:
 	doc++ --dir html --tables pwlib.dxx
 
 install:
-	mkdir -p $(PREFIX)/include
-	mkdir -p $(PREFIX)/bin
-	mkdir -p $(LIBDIR)
-	mkdir -p $(PREFIX)/share/pwlib
+	mkdir -p $(DESTDIR)$(PREFIX)/include
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib
 	chmod a+r lib/*@SHAREDLIBEXT@*
-	cp -df lib/*@SHAREDLIBEXT@* $(LIBDIR)/
-	cp -rf include/ptclib/ $(PREFIX)/include/
-	cp -rf include/ptlib/ $(PREFIX)/include/
-	cp -rf include/ptbuildopts.h $(PREFIX)/include/
-	cp -rf include/ptlib.h $(PREFIX)/include/
-	cp tools/asnparser/obj*/asnparser $(PREFIX)/bin/
-	mkdir -p $(PREFIX)/share/pwlib/make/
-	cp -rf make/*.mak $(PREFIX)/share/pwlib/make/
-	cp make/ptlib-config $(PREFIX)/bin/
-	rm -rf $(PREFIX)/include/ptlib/CVS/
-	rm -rf $(PREFIX)/include/ptlib/unix/CVS/
-	rm -rf $(PREFIX)/include/ptlib/unix/ptlib/CVS/
-	rm -rf $(PREFIX)/include/ptclib/CVS/
-	(cd @libdir@; ln -s $(PTLIB_FILE) libpt.@SHAREDLIBEXT@)
-	chmod -R a+r $(PREFIX)/include/ptlib $(PREFIX)/include/ptclib $(PREFIX)/include/ptlib.h $(PREFIX)/share/pwlib $(PREFIX)/include/ptbuildopts.h $(PREFIX)/include/ptlib.h
-	chmod a+rx $(PREFIX)/include/ptlib $(PREFIX)/include/ptlib/unix $(PREFIX)/include/ptlib/unix/ptlib $(PREFIX)/include/ptclib $(PREFIX)/bin/ptlib-config $(PREFIX)/share/pwlib/make/ 
+	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
+	cp -rf include/ptclib/ $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptlib/ $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptlib.h $(DESTDIR)$(PREFIX)/include/
+	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
+	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	cp -rf make/*.mak $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	cp make/ptlib-config $(DESTDIR)$(PREFIX)/bin/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptclib/CVS/
+	(cd $(DESTDIR)@libdir@; ln -s $(PTLIB_FILE) libpt.@SHAREDLIBEXT@)
+	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h
+	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/bin/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/ 
 
 uninstall:
-	rm -rf $(PREFIX)/include/ptlib $(PREFIX)/include/ptclib $(PREFIX)/include/ptlib.h $(PREFIX)/include/ptbuildopts.h $(PREFIX)/share/pwlib/ 
-	rm -f @libdir@/$(PTLIB_FILE)* @libdir@/libpt.so $(PREFIX)/bin/asnparser
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ 
+	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
 
 
 # End of Makefile.in
