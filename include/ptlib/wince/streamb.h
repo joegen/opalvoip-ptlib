@@ -111,7 +111,7 @@ inline int streambuf::out_waiting() const { return (_pptr>=_pbase) ? (_pptr-_pba
 
 inline int streambuf::sputbackc(char _c){ return (_eback<gptr()) ? *(--_gptr)=_c : pbackfail(_c); }
 
-inline int streambuf::sputc(int _i){ return (_pptr<_epptr) ? (unsigned char)(*(_pptr)=(char)_i) : overflow(_i);}
+inline int streambuf::sputc(int _i){ return (_pptr<_epptr) ? (unsigned char)(*(_pptr++)=(char)_i) : overflow(_i);}
 
 inline int streambuf::sputn(const char * _str,int _n) { return xsputn(_str, _n); }
 inline int streambuf::sgetn(char * _str,int _n) { return xsgetn(_str, _n); }
