@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.41 1996/08/08 10:08:49 robertj Exp $
+ * $Id: pwlib.h,v 1.42 1996/10/14 03:06:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
+ * Revision 1.42  1996/10/14 03:06:55  robertj
+ * Fixed name conflict with colordlg.h
+ *
  * Revision 1.41  1996/08/08 10:08:49  robertj
  * Directory structure changes for common files.
  *
@@ -519,7 +522,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PColourDialog
 
-#include <colordlg.h>
+#include <pclrdlg.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
