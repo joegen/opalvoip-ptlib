@@ -1,5 +1,5 @@
 /*
- * $Id: icmpsock.h,v 1.5 1997/02/05 11:52:07 robertj Exp $
+ * $Id: icmpsock.h,v 1.6 1998/01/26 00:30:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.6  1998/01/26 00:30:41  robertj
+ * Added error codes, TTL and data buffer to Ping.
+ *
  * Revision 1.5  1997/02/05 11:52:07  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -47,17 +50,37 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
      */
 
 
+    enum PingStatus {
+      Success,
+      NetworkUnreachable,
+      HostUnreachable,
+      PacketTooBig,
+      RequestTimedOut,
+      BadRoute,
+      TtlExpiredTransmit,
+      TtlExpiredReassembly,
+      SourceQuench,
+      MtuChange,
+      GeneralError,
+      NumStatuses
+    };
+
     class PingInfo {
       public:
-        PingInfo(WORD seqNum = 0,
-                 WORD id = (WORD)PProcess::Current().GetProcessID())
-          { identifier = id; sequenceNum = seqNum; }
+        PingInfo(WORD id = (WORD)PProcess::Current().GetProcessID());
 
+        // Supplied data
         WORD identifier;         // Arbitrary identifier for the ping.
         WORD sequenceNum;        // Sequence number for ping packet.
+        BYTE ttl;                // Time To Live for packet.
+        const BYTE * buffer;     // Send buffer (if NULL, defaults to 32 bytes).
+        PINDEX bufferSize;       // Size of buffer (< 64k).
+
+        // Returned data
         PTimeInterval delay;     // Time for packet to make trip.
         Address remoteAddr;      // Source address of reply packet.
         Address localAddr;       // Destination address of reply packet.
+        PingStatus status;       // Status of the last ping operation
     };
 
     BOOL Ping(
