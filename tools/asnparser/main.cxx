@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.32  2001/04/23 04:40:14  robertj
+ * Added ASN standard types GeneralizedTime and UTCTime
+ *
  * Revision 1.31  2001/02/22 23:31:42  robertj
  * Fixed display of version number just added.
  *
@@ -275,7 +278,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 3, ReleaseCode, 0)
+  : PProcess("Equivalence", "ASNParse", 1, 4, ReleaseCode, 0)
 {
 }
 
@@ -2745,7 +2748,7 @@ GeneralizedTimeType::GeneralizedTimeType()
 
 const char * GeneralizedTimeType::GetAncestorClass() const
 {
-  return "PASN_GeneralizedTime";
+  return "PASN_GeneralisedTime";
 }
 
 
@@ -2759,7 +2762,7 @@ UTCTimeType::UTCTimeType()
 
 const char * UTCTimeType::GetAncestorClass() const
 {
-  return "PASN_UTCTime";
+  return "PASN_UniversalTime";
 }
 
 
