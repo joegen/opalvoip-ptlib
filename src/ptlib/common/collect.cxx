@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.9 1994/10/30 11:34:49 robertj Exp $
+ * $Id: collect.cxx,v 1.10 1994/12/05 11:24:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.9  1994/10/30 11:34:49  robertj
+ * Revision 1.10  1994/12/05 11:24:58  robertj
+ * Fixed bugs in InsertAt and RemoveAt in PObjectArray.
+ *
+ * Revision 1.9  1994/10/30  11:34:49  robertj
  * Fixed ObjectArray to have pointer to array object pointers.
  *
  * Revision 1.8  1994/10/23  03:41:31  robertj
@@ -144,8 +147,7 @@ PObject * PArrayObjects::GetAt(PINDEX index) const
 
 BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
 {
-  if (!theArray->MakeUnique() ||
-                   (index >= theArray->GetSize() && !theArray->SetSize(index+1)))
+  if (!theArray->SetMinSize(index+1))
     return FALSE;
   PObject * oldObj = theArray->GetAt(index);
   if (oldObj != NULL && reference->deleteObjects)
@@ -157,9 +159,9 @@ BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
 
 PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 {
-  for (PINDEX i = index; i < GetSize(); i++)
-    theArray->SetAt(i+1, (*theArray)[i]);
-  SetAt(index, obj);
+  for (PINDEX i = GetSize(); i > index; i--)
+    (*theArray)[i] = (*theArray)[i-1];
+  (*theArray)[index] = obj;
   return index;
 }
 
@@ -167,9 +169,10 @@ PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 PObject * PArrayObjects::RemoveAt(PINDEX index)
 {
   PObject * obj = (*theArray)[index];
-  for (PINDEX i = index; i < GetSize(); i++)
+  PINDEX size = GetSize()-1;
+  for (PINDEX i = index; i < size; i++)
     (*theArray)[i] = (*theArray)[i+1];
-  SetSize(GetSize()-1);
+  SetSize(size);
   if (obj != NULL && reference->deleteObjects) {
     delete obj;
     obj = NULL;
