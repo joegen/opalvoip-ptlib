@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.2  2004/05/10 10:09:19  csoutheren
+ * Removed printf that was interpreted as a trigraph
+ *
  * Revision 1.1  2003/12/17 15:40:56  dominance
  * Added DC Plugin as provided by Julien Puydt <julien.puydt@laposte.net>. Needs manual patching of plugins/configure for now though. (i.e. disabled by default, run autoconf in plugins/)
  *
@@ -413,7 +416,7 @@ BOOL PVideoInput1394DcDevice::Start()
   else if (supported_framerates & (1U << (31-0)))
     framerate = FRAMERATE_1_875;
   else {
-    PTRACE(1, "No supported frame rate??!!" << supported_framerates);
+    PTRACE(1, "Frame rate " << supported_framerates << " is not supported");
     return FALSE;
   }  
 
