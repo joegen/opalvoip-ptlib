@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.1 1994/12/12 09:59:32 robertj Exp $
+ * $Id: dict.h,v 1.2 1994/12/17 01:36:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.1  1994/12/12 09:59:32  robertj
+ * Revision 1.2  1994/12/17 01:36:57  robertj
+ * Fixed memory leak in PStringSet
+ *
+ * Revision 1.1  1994/12/12  09:59:32  robertj
  * Initial revision
  *
  */
@@ -454,7 +457,7 @@ template <class T> PDECLARE_CLASS(PSet, PAbstractSet)
       : PAbstractSet(dummy, c) \
       { reference->deleteObjects = c->reference->deleteObjects; } \
   public: \
-    inline cls(BOOL initialDeleteObjects = FALSE) \
+    inline cls(BOOL initialDeleteObjects = initDelObj) \
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); } \
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
