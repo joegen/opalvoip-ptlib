@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.1  2004/06/20 11:18:03  csoutheren
+ * Rewrite of resource cacheing to cache text-to-speech output
+ *
  * Revision 1.30  2004/06/19 07:21:08  csoutheren
  * Change TTS engine registration to use abstract factory code
  * Started disentanglement of PVXMLChannel from PVXMLSession
@@ -209,22 +212,36 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLCacheItem : public PURL
+class PVXMLCache : public PMutex
 {
-  PCLASSINFO(PVXMLCacheItem, PURL);
   public:
-    PVXMLCacheItem(const PURL & url)
-      : PURL(url)
-    { }
+    PVXMLCache(const PDirectory & _directory);
 
-    PFilePath fn;
-    PString contentType;
-    PTime loadTime;
-    BOOL ok;
+    PFilePath CreateFilename(const PString & prefix, const PString & key, const PString & fileType);
+
+    void Put(const PString & prefix,
+             const PString & key, 
+             const PString & fileType, 
+             const PString & contentType,       
+           const PFilePath & fn, 
+                 PFilePath & dataFn);
+
+    BOOL Get(const PString & prefix,
+             const PString & key, 
+             const PString & fileType, 
+                   PString & contentType,       
+                 PFilePath & fn);
+
+    PFilePath GetCacheDir() const
+    { return directory; }
+
+    PFilePath GetRandomFilename(const PString & prefix, const PString & fileType);
+
+    static PVXMLCache & GetResourceCache();
+
+  protected:
+    PDirectory directory;
 };
-
-
-PLIST(PVXMLCache, PVXMLCacheItem);
 
 //////////////////////////////////////////////////////////////////
 
@@ -299,8 +316,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString PVXMLSession::EvaluateExpr(const PString & oexpr);
 
-    virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType);
-    virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn);
+    virtual BOOL RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn);
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
@@ -390,11 +406,6 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PXMLElement * currentForm;
     PXMLElement * currentField;
     PXMLObject  * currentNode;
-
-    static PMutex cacheMutex;
-    static PDirectory cacheDir;
-    static PVXMLCache * resourceCache;
-    static PINDEX cacheCount;
 
   private:
     void      ExecuteDialog();

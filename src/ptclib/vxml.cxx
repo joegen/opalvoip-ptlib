@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42.2.1  2004/06/20 11:18:03  csoutheren
+ * Rewrite of resource cacheing to cache text-to-speech output
+ *
  * Revision 1.42  2004/06/19 07:21:08  csoutheren
  * Change TTS engine registration to use abstract factory code
  * Started disentanglement of PVXMLChannel from PVXMLSession
@@ -190,14 +193,127 @@
 // LATER: Lookup what this value should be
 #define DEFAULT_TIMEOUT     10000
 
-#define CACHE_BUFFER_SIZE   1024
+
+//////////////////////////////////////////////////////////
+
+static PString GetContentType(const PFilePath & fn)
+{
+  PString type = fn.GetType();
+
+  if (type *= ".vxml")
+    return "text/vxml";
+
+  if (type *= ".wav")
+    return "audio/x-wav";
+
+  return PString::Empty();
+}
 
 
-PMutex     PVXMLSession::cacheMutex;
-PDirectory PVXMLSession::cacheDir;
-PVXMLCache * PVXMLSession::resourceCache = NULL;
-PINDEX       PVXMLSession::cacheCount = 0;
+PVXMLCache::PVXMLCache(const PDirectory & _directory)
+  : directory(_directory)
+{
+  if (!directory.Exists())
+    directory.Create();
+}
 
+static PString MD5AsHex(const PString & str)
+{
+  PMessageDigest::Result digest;
+  PMessageDigest5::Encode(str, digest);
+
+  PString hexStr;
+  const BYTE * data = digest.GetPointer();
+  for (PINDEX i = 0; i < digest.GetSize(); ++i)
+    hexStr.sprintf("%02x", (unsigned)data[i]);
+  return hexStr;
+}
+
+
+PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key, const PString & fileType)
+{
+  PString md5   = MD5AsHex(key);
+  PString md5_2 = MD5AsHex(key);
+
+  return directory + ((prefix + "_") + md5 + fileType);
+}
+
+BOOL PVXMLCache::Get(const PString & prefix,
+                     const PString & key, 
+                     const PString & fileType, 
+                           PString & contentType, 
+                         PFilePath & dataFn)
+{
+  PWaitAndSignal m(*this);
+
+  dataFn = CreateFilename(prefix, key, "." + fileType);
+  PFilePath typeFn = CreateFilename(prefix, key, "_type.txt");
+  if (!PFile::Exists(dataFn) || PFile::Exists(typeFn)) {
+    PTRACE(4, "Key " << key << " not found in cache");
+    return FALSE;
+  }
+
+  PTextFile typeFile(typeFn, PFile::ReadOnly);
+  if (!typeFile.IsOpen()) {
+    PTRACE(4, "Cannot find type for cached key " << key << " in cache");
+    PFile::Remove(dataFn);
+    return FALSE;
+  }
+
+  typeFile.ReadLine(contentType);
+  contentType.Trim();
+  if (contentType.IsEmpty())
+    contentType = GetContentType(dataFn);
+
+  return TRUE;
+}
+
+void PVXMLCache::Put(const PString & prefix,
+                     const PString & key, 
+                     const PString & fileType, 
+                     const PString & contentType,       
+                   const PFilePath & fn, 
+                         PFilePath & dataFn)
+{
+  PWaitAndSignal m(*this);
+
+  // create the filename for the cache files
+  dataFn = CreateFilename(prefix, key, "." + fileType);
+  PFilePath typeFn = CreateFilename(prefix, key, "_type.txt");
+
+  // write the content type file
+  PTextFile typeFile(typeFn, PFile::WriteOnly);
+  if (contentType.IsEmpty())
+    typeFile.WriteLine(GetContentType(fn));
+  else
+    typeFile.WriteLine(contentType);
+
+  // rename the file to the correct name
+  PFile::Rename(fn, dataFn.GetFileName(), TRUE);
+}
+
+PVXMLCache & PVXMLCache::GetResourceCache()
+{
+  static PVXMLCache cache(PDirectory() + "cache");
+  return cache;
+}
+
+
+PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & fileType)
+{
+  PFilePath fn;
+
+  // create a random temporary filename
+
+  PRandom r;
+  for (;;) {
+    fn = directory + psprintf("%s_%i.%s", (const char *)prefix, r.Generate() % 1000000, (const char *)fileType);
+    if (!PFile::Exists(fn))
+      break;
+  }
+
+  return fn;
+}
 
 //////////////////////////////////////////////////////////
 
@@ -210,33 +326,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   textToSpeech     = NULL;
 
   SetTextToSpeech(_tts, autoDelete);
-
-  PWaitAndSignal m(cacheMutex);
-  cacheCount++;
-  if (resourceCache == NULL) {
-    resourceCache = new PVXMLCache;
-    cacheDir = PDirectory() + "cache";
-
-    // load the cache information, if already present
-    PFilePath cacheInfo = cacheDir + "cache.txt";
-    if (PFile::Exists(cacheInfo)) {
-      PTextFile cacheFile;
-      if (cacheFile.Open(cacheInfo, PFile::ReadOnly)) {
-        PString line;
-        while (cacheFile.ReadLine(line)) {
-          PStringArray info = line.Tokenise("|", TRUE);
-          if (info.GetSize() > 3) {
-            PVXMLCacheItem * item = new PVXMLCacheItem(info[0]);
-            item->fn          = cacheDir + info[1];
-            item->contentType = info[2];
-            item->loadTime    = PTime();
-            item->ok          = info[3] *= "y";
-            resourceCache->Append(item);
-          }
-        }
-      }
-    }
-  }
 
   Initialise();
 }
@@ -257,31 +346,8 @@ PVXMLSession::~PVXMLSession()
 {
   Close();
 
-  if ((textToSpeech != NULL) && autoDeleteTextToSpeech) {
+  if ((textToSpeech != NULL) && autoDeleteTextToSpeech)
     delete textToSpeech;
-  }
-
-  PWaitAndSignal m(cacheMutex);
-  cacheCount--;
-
-  // write out the cache information
-  if (cacheCount == 0) {
-    PFilePath cacheInfo = cacheDir + "cache.txt";
-    PTextFile cacheFile;
-    if (cacheFile.Open(cacheInfo, PFile::WriteOnly)) {
-      PINDEX i;
-      for (i = 0; i < resourceCache->GetSize(); i++) {
-        PVXMLCacheItem & item = (*resourceCache)[i];
-        cacheFile << item.AsString() << "|" 
-                  << item.fn.GetFileName() << "|"
-                  << item.contentType << "|"
-                  << (item.ok ? "Y" : "N") 
-                  << endl;
-      }
-    }
-    delete resourceCache;
-    resourceCache = NULL;
-  }
 }
 
 void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
@@ -340,14 +406,27 @@ BOOL PVXMLSession::LoadFile(const PFilePath & filename)
 BOOL PVXMLSession::LoadURL(const PURL & url)
 {
   // retreive the document (may be a HTTP get)
-  PBYTEArray data;
+  PFilePath fn;
   PString contentType;
-  if (!RetrieveResource(url, data, contentType)) {
+  if (!RetreiveResource(url, contentType, fn)) {
     PTRACE(1, "PVXML\tCannot load document " << url);
     return FALSE;
   }
 
-  if (!LoadVXML(PString((const char *)(const BYTE *)data, data.GetSize()))) {
+  PTextFile file(fn, PFile::ReadOnly);
+  if (!file.IsOpen()) {
+    PTRACE(1, "PVXML\tCannot read data from " << fn);
+    return FALSE;
+  }
+
+  off_t len = file.GetLength();
+  PString text;
+  file.Read(text.GetPointer(len+1), len);
+  len = file.GetLastReadCount();
+  text.SetSize(len+1);
+  text[(PINDEX)len] = '\0';
+
+  if (!LoadVXML(text)) {
     PTRACE(1, "PVXML\tCannot load VXML in " << url);
     return FALSE;
   }
@@ -415,151 +494,75 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
 }
 
 
-BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn)
+BOOL PVXMLSession::RetreiveResource(const PURL & url, 
+                                       PString & contentType, 
+                                     PFilePath & dataFn)
 {
-  BOOL loadFile = FALSE;
-  text.SetSize(0);
+  BOOL stat = FALSE;
+
+  // files on the local file system get loaded locally
+  if (url.GetScheme() *= "file") {
+    dataFn = url.AsFilePath();
+    if (contentType.IsEmpty())
+      contentType = GetContentType(dataFn);
+    stat = TRUE;
+  }
 
   // do a HTTP get when appropriate
-  if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
+  else if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
 
-    PWaitAndSignal m(cacheMutex);
+    PFilePath fn;
+    PString fileType = url.AsFilePath().GetType();
 
     // see if the URL is in the cache
-    if (resourceCache != NULL) {
-      PINDEX index = resourceCache->GetValuesIndex(url);
-      if (index != P_MAX_INDEX) {
+    BOOL inCache = PVXMLCache::GetResourceCache().Get("url", url.AsString(), fileType, contentType, dataFn);
 
-        // if too long since last examined, then expire the cache
-        PTimeInterval interval = PTime() - (*resourceCache)[index].loadTime;
-        if (interval.GetMilliSeconds() > 1000*60)
-          resourceCache->RemoveAt(index);
-        else {
-          PVXMLCacheItem & item = (*resourceCache)[index];
+    if (!inCache) {
 
-          // if the cache indicates the resource was invalid
-          if (!item.ok)
-            return FALSE;
-
-          // check the content type, maybe
-          if (!contentType.IsEmpty() && (contentType != item.contentType))
-            return FALSE;
-
-          // set the file load information
-          fn          = item.fn;
-          contentType = item.contentType;
-          loadFile    = TRUE;
-        }
-      } 
-    }
-
-    // resource was not in the cache, so add it
-    if (!loadFile) {
-      PHTTPClient client;
-      PMIMEInfo outMIME, replyMIME;
-
-      // create a cache item indicating a failed load
-      PVXMLCacheItem * item = new PVXMLCacheItem(url);
-      item->ok = FALSE;
-      if (resourceCache != NULL)
-        resourceCache->Append(item);
+      // get a random filename
+      fn = PVXMLCache::GetResourceCache().GetRandomFilename("url", fileType);
 
       // get the resource header information
+      PHTTPClient client;
+      PMIMEInfo outMIME, replyMIME;
       if (!client.GetDocument(url, outMIME, replyMIME)) {
         PTRACE(2, "PVXML\tCannot load resource " << url);
-        return FALSE;
+        stat =FALSE;
+      } 
+      
+      else {
+
+        // Get the body of the response in a PBYTEArray (might be binary data)
+        PBYTEArray incomingData;
+        client.ReadContentBody(replyMIME, incomingData);
+
+        // write the data in the file
+        PFile cacheFile(fn, PFile::WriteOnly);
+        cacheFile.Write(incomingData.GetPointer(), incomingData.GetSize() );
+        contentType = replyMIME(PHTTPClient::ContentTypeTag);
+
+        // if we have a cache, then put the data into the cache
+        PVXMLCache::GetResourceCache().Put("url", url.AsString(), fileType, contentType, fn, dataFn);
+
+        // data is loaded
+        stat = TRUE;
       }
-
-      // Get the body of the response in a PBYTEArray (might by binary data)
-      PBYTEArray incomingData;
-
-      // Data can come in in multipart/chunked, this way seems to solve this
-      client.ReadContentBody(replyMIME, incomingData);
-
-      // create the cache directory, if not already in existence
-      if (!cacheDir.Exists())
-        cacheDir.Create();
-
-      // create a filename for the cache item
-      PRandom r;
-      for (;;) {
-        fn = cacheDir + psprintf("url_%i.wav", r.Generate() % 1000000);
-        if (!PFile::Exists(fn))
-          break;
-      }
-
-      // open the cache file
-      PFile cacheFile;
-      if (!cacheFile.Open(fn, PFile::WriteOnly)) {
-        PTRACE(2, "PVXML\tCannot create temporary cache file " << fn);
-        return FALSE;
-      }
-
-      // write the data in the cache file
-      cacheFile.Write( incomingData.GetPointer(), incomingData.GetSize() );
-
-      // set the cache information
-      item->ok          = TRUE;
-      item->fn          = fn;
-      item->loadTime    = PTime();
-      item->contentType = replyMIME(PHTTPClient::ContentTypeTag);
-
-      // check the content type, maybe
-      if (!contentType.IsEmpty() && (contentType != item->contentType))
-        return FALSE;
-
-      // data is loaded
-      return TRUE;
     }
   }
 
   // files on the local file system get loaded locally
   else if (url.GetScheme() *= "file") {
-
-    fn = url.AsFilePath();
-    loadFile = TRUE;
+    dataFn = url.AsFilePath();
+    stat = TRUE;
   }
 
   // unknown schemes give an error
   else 
-    return FALSE;
+    stat = FALSE;
 
-  return loadFile;
+  return stat;
 }
 
-BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType)
-{
-  PFilePath fn;
-
-  // get name of file
-  if (!RetrieveResource(url, text, contentType, fn))
-    return FALSE;
-
-  // if data was already loaded, do nothing
-  if (text.GetSize() != 0)
-    return TRUE;
-
-
-  // load the data
-  PFile file;
-  if (!file.Open(fn, PFile::ReadOnly)) 
-    return FALSE;
-
-  // read the data
-  off_t len = file.GetLength();
-  if (!file.Read(text.GetPointer(len), len))
-    return FALSE;
-
-  // set content type from extension, if required
-  if (!contentType.IsEmpty()) {
-    if (fn.GetType() *= ".vxml")
-      contentType = "text/vxml";
-    else if (fn.GetType() *= ".wav")
-      contentType = "audio/x-wav";
-  }
-
-  return TRUE;
-}
 
 PXMLElement * PVXMLSession::FindForm(const PString & id)
 {
@@ -1167,34 +1170,51 @@ BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
   return TRUE;
 }
 
-BOOL PVXMLSession::PlayText(const PString & _text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
+BOOL PVXMLSession::PlayText(const PString & _text, 
+                    PTextToSpeech::TextType type, 
+                                     PINDEX repeat, 
+                                     PINDEX delay)
 {
-  if (textToSpeech == NULL)
-    return TRUE;
+  PString prefix = psprintf("tts%i", type);
 
   PStringArray lines = _text.Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++) {
+
     PString text = lines[i].Trim();
     if (text.IsEmpty())
       continue;
 
-    PFilePath tmpfname("tts", NULL);
-    PRandom r;
-    PFilePath fname(tmpfname.GetDirectory() + (psprintf("tts_%i.wav", r.Generate() % 1000000)));
-    if (!textToSpeech->OpenFile(fname)) {
-      PTRACE(2, "PVXML\tcannot open file " << fname);
+    BOOL spoken = FALSE;
+    PFilePath dataFn;
+
+    // see if we have converted this text before
+    PString contentType;
+    spoken = PVXMLCache::GetResourceCache().Get(prefix, text, "wav", contentType, dataFn);
+
+    if (!spoken) {
+
+      // we need a text speech converter
+      PFilePath tmpfname;
+      if (textToSpeech != NULL) {
+        tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
+        if (!textToSpeech->OpenFile(tmpfname)) {
+          PTRACE(2, "PVXML\tcannot open file " << tmpfname);
+        } else {
+          spoken = textToSpeech->Speak(text, type);
+          if (!textToSpeech->Close()) {
+            PTRACE(2, "PVXML\tcannot close TTS engine");
+          }
+        }
+        PVXMLCache::GetResourceCache().Put(prefix, text, "wav", contentType, tmpfname, dataFn);
+      }
+    }
+
+    if (!spoken) {
+      PTRACE(2, "PVXML\tcannot speak text using TTS engine");
+    } else if (!PlayFile(dataFn, repeat, delay, FALSE)) {
+      PTRACE(2, "PVXML\tCannot play " << dataFn);
     } else {
-      BOOL spoken = textToSpeech->Speak(text, type);
-      if (!textToSpeech->Close()) {
-        PTRACE(2, "PVXML\tcannot close TTS engine");
-      }
-      if (!spoken) {
-        PTRACE(2, "PVXML\tcannot speak text using TTS engine");
-      } else if (!PlayFile(fname, repeat, delay, TRUE)) {
-        PTRACE(2, "PVXML\tCannot play " << fname);
-      } else {
-        PTRACE(2, "PVXML\tText queued: \"" << text << '"');
-      }
+      PTRACE(2, "PVXML\tText queued: \"" << text << '"');
     }
   }
 
@@ -1339,27 +1359,13 @@ BOOL PVXMLSession::TraverseAudio()
         } 
         
         else {
-          PFilePath fn; 
-          BOOL haveFn = FALSE;
-
           // get a normalised name for the resource
+          PFilePath fn; 
           PURL url = NormaliseResourceName(str);
 
-          if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
-            PString contentType;
-            PBYTEArray data;
-            if (RetrieveResource(url, data, contentType, fn))
-              haveFn = TRUE;
-          }
-
-          // attempt to load the resource if a file
-          else if (url.GetScheme() *= "file") {
-            fn = url.AsFilePath();
-            haveFn = TRUE;
-          }
-
-          // check the file type
-          if (haveFn) {
+          // load the resource from the cache
+          PString contentType;
+          if (RetreiveResource(url, contentType, fn)) {
             PWAVFile * wavFile = outgoingChannel->CreateWAVFile(fn);
             if (wavFile == NULL)
               PTRACE(3, "PVXML\tCannot create audio file " + fn);
@@ -1582,7 +1588,7 @@ BOOL PVXMLSession::TraverseTransfer()
 
   PAssert(currentNode->IsElement(), "TraverseTransfer(): Expected element");
   
-  // Retrieve parameters
+  // Retreive parameters
   PString dest = ((PXMLElement*)currentNode)->GetAttribute("dest");
   PString source = ((PXMLElement*)currentNode)->GetAttribute("source");
   PString connectTimeoutStr = ((PXMLElement*)currentNode)->GetAttribute("connecttimeout");
@@ -1710,7 +1716,7 @@ BOOL PVXMLSession::TraverseSubmit()
     return FALSE;
   }
 
-  if (!( GetVar(name + ".type" ) == "audio/x-wav" )) {
+  if (!(GetVar(name + ".type") == "audio/x-wav" )) {
     PTRACE(1, "VXMLSess\t<submit> does not (yet) support submissions of types other than \"audio/x-wav\"");
     return FALSE;
   }
@@ -1887,6 +1893,7 @@ BOOL PVXMLSession::TraverseVar()
   return result;
 }
 
+
 void PVXMLSession::OnEndRecording(const PString & channelName)
 {
   SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
@@ -1894,10 +1901,12 @@ void PVXMLSession::OnEndRecording(const PString & channelName)
   SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
 }
 
+
 void PVXMLSession::Trigger()
 {
   waitForEvent.Signal();
 }
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
