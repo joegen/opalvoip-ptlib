@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.72  2002/11/21 03:46:22  robertj
+ * Changed to encode only the minimum number of bits required, this improves
+ *   compatibility with some brain dead ASN decoders.
+ *
  * Revision 1.71  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -1748,10 +1752,13 @@ void PASN_BitString::EncodeSequenceExtensionBitmap(PPER_Stream & strm) const
 {
   PAssert(totalBits > 0, PLogicError);
 
-  strm.SmallUnsignedEncode(totalBits-1);
+  unsigned bitsLeft = totalBits;
+  while (bitsLeft > 1 && !(*this)[bitsLeft-1])
+    bitsLeft--;
+
+  strm.SmallUnsignedEncode(bitsLeft-1);
 
   PINDEX idx = 0;
-  unsigned bitsLeft = totalBits;
   while (bitsLeft >= 8) {
     strm.MultiBitEncode(bitData[idx++], 8);
     bitsLeft -= 8;
