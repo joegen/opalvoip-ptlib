@@ -11,19 +11,11 @@
 
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
-
 !ENDIF 
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
 
 !ENDIF 
 

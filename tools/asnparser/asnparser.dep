@@ -63,10 +63,6 @@
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
-
 !ENDIF 
 
 .\asn_lex.cxx : \
@@ -133,10 +129,6 @@
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
 
 !ENDIF 
 
