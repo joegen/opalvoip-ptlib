@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.8  2002/01/13 21:00:41  rogerh
+ * The type of new .WAV files must now be specified in the class constructor.
+ * Take out Open() function from the last commit and create a new Open()
+ * function which replaces the one in the PFile base class.
+ *
  * Revision 1.7  2002/01/11 16:33:46  rogerh
  * Create a PWAVFile Open() function, which processes the WAV header
  *
@@ -76,26 +81,6 @@ class PWAVFile : public PFile
   public:
   /**@name Construction */
   //@{
-    /**Create a WAV file object but do not open it. It does not
-       initially have a valid file name. However, an attempt to open the file
-       using the #PFile::Open()# function will generate a unique
-       temporary file.
-     */
-    PWAVFile();
-
-    /**Create a unique temporary file name, and open the file in the specified
-       mode and using the specified options. Note that opening a new, unique,
-       temporary file name in ReadOnly mode will always fail. This would only
-       be usefull in a mode and options that will create the file.
-
-       The #PChannel::IsOpen()# function may be used after object
-       construction to determine if the file was successfully opened.
-     */
-    PWAVFile(
-      OpenMode mode,          /// Mode in which to open the file.
-      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
-    );
-
     /**When a file is opened for writing, we can specify if this is a PCM
        wav file or a G.723.1 wav file.
      */
@@ -106,6 +91,37 @@ class PWAVFile : public PFile
       G7231_WavFile
     };
 
+
+    /**Create a WAV file object but do not open it. It does not
+       initially have a valid file name. However, an attempt to open the file
+       using the #PFile::Open()# function will generate a unique
+       temporary file.
+
+       If a WAV file is being created, the type parameter can be used
+       to create a PCM Wave file or a G.723.1 Wave file by using
+       #WaveType enum#
+     */
+    PWAVFile(
+      WaveType type = PCM_WavFile /// Type of WAV File to create
+    );
+
+    /**Create a unique temporary file name, and open the file in the specified
+       mode and using the specified options. Note that opening a new, unique,
+       temporary file name in ReadOnly mode will always fail. This would only
+       be usefull in a mode and options that will create the file.
+
+       If a WAV file is being created, the type parameter can be used
+       to create a PCM Wave file or a G.723.1 Wave file by using
+       #WaveType enum#
+
+       The #PChannel::IsOpen()# function may be used after object
+       construction to determine if the file was successfully opened.
+     */
+    PWAVFile(
+      OpenMode mode,          /// Mode in which to open the file.
+      int opts = ModeDefault, /// #OpenOptions enum# for open operation.
+      WaveType type = PCM_WavFile /// Type of WAV File to create
+    );
 
     /**Create a WAV file object with the specified name and open it in
        the specified mode and with the specified options.
@@ -153,8 +169,9 @@ class PWAVFile : public PFile
     /**Open the specified WAV file name in the specified mode and with
        the specified options. If the file object already has an open file then
        it is closed.
-       This reads (and validates) the header for existing
-       files, or creates a new header for new files.
+       This reads (and validates) the header for existing files.
+       For new files, it creates a new file (and header) using the type of
+       WAV file specified in the class constructor.
        
        Note: if #mode# is StandardInput, StandardOutput or StandardError,   
        then the #name# parameter is ignored.
@@ -165,8 +182,7 @@ class PWAVFile : public PFile
     virtual BOOL Open(
       const PFilePath & name,    // Name of file to open.
       OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault,    // #OpenOptions enum# for open operation.
-      WaveType type = PCM_WavFile /// Type of WAV File to create
+      int opts = ModeDefault     // #OpenOptions enum# for open operation.
     );
 
     /** Close the file channel.
