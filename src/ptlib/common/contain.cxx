@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.60 1996/08/08 10:08:45 robertj Exp $
+ * $Id: contain.cxx,v 1.61 1996/08/22 13:21:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.61  1996/08/22 13:21:55  robertj
+ * Fixed major bug in FindLast(), could scan all of memory in negative direction.
+ *
  * Revision 1.60  1996/08/08 10:08:45  robertj
  * Directory structure changes for common files.
  *
@@ -1017,6 +1020,8 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
 PINDEX PString::FindLast(char ch, PINDEX offset) const
 {
   PINDEX len = GetLength();
+  if (len == 0)
+    return P_MAX_INDEX;
   if (offset >= len)
     offset = len-1;
 
