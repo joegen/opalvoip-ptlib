@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.62 1997/12/11 10:30:35 robertj Exp $
+ * $Id: sockets.cxx,v 1.63 1997/12/18 05:06:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.63  1997/12/18 05:06:13  robertj
+ * Moved IsLocalHost() to platform dependent code.
+ *
  * Revision 1.62  1997/12/11 10:30:35  robertj
  * Added operators for IP address to DWORD conversions.
  *
@@ -844,40 +847,6 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 }
 
 
-BOOL PIPSocket::IsLocalHost(const PString & hostname)
-{
-  if (hostname.IsEmpty())
-    return TRUE;
-
-  if (hostname *= "localhost")
-    return TRUE;
-
-  // lookup the host address using inet_addr, assuming it is a "." address
-  Address addr = hostname;
-  if (addr == 16777343)  // Is 127.0.0.1
-    return TRUE;
-  if (addr == (DWORD)-1)
-    return FALSE;
-
-  PStringArray itsAliases = GetHostAliases(hostname);
-  if (itsAliases.IsEmpty())
-    return FALSE;
-
-  PStringArray myAliases = GetHostAliases(GetHostName());
-  if (myAliases.IsEmpty())
-    return FALSE;
-
-  for (PINDEX mine = 0; mine < myAliases.GetSize(); mine++) {
-    for (PINDEX its = 0; its < itsAliases.GetSize(); its++) {
-      if (myAliases[mine] *= itsAliases[its])
-        return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
-
 BOOL PIPSocket::GetLocalAddress(Address & addr)
 {
   sockaddr_in address;
@@ -1087,7 +1056,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
   s_addr = inet_addr((const char *)dotNotation);
-  if (s_addr == INADDR_NONE)
+  if (s_addr == (DWORD)INADDR_NONE)
     s_addr = 0;
   return *this;
 }
