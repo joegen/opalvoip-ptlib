@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.137  2003/12/13 23:08:46  csoutheren
+ * Changed PRegularExpression to allow a copy constructor and operator =
+ *
  * Revision 1.136  2003/12/04 13:12:41  csoutheren
  * Fixed error in PRegularExpression that caused double delete when incorrect regular expression used
  *
@@ -2880,8 +2883,9 @@ void PStringToString::ReadFrom(istream & strm)
 
 PRegularExpression::PRegularExpression()
 {
-  lastError = NotCompiled;
-  expression = NULL;
+  lastError   = NotCompiled;
+  expression  = NULL;
+  flagsSaved  = IgnoreCase;
 }
 
 
@@ -2898,6 +2902,21 @@ PRegularExpression::PRegularExpression(const char * pattern, int flags)
   Compile(pattern, flags);
 }
 
+PRegularExpression::PRegularExpression(const PRegularExpression & from)
+{
+  expression   = NULL;
+  patternSaved = from.patternSaved;
+  flagsSaved   = from.flagsSaved;
+  Compile(patternSaved, flagsSaved);
+}
+
+PRegularExpression & PRegularExpression::operator =(const PRegularExpression & from)
+{
+  expression   = NULL;
+  patternSaved = from.patternSaved;
+  flagsSaved   = from.flagsSaved;
+  Compile(patternSaved, flagsSaved);
+}
 
 PRegularExpression::~PRegularExpression()
 {
@@ -2930,16 +2949,20 @@ BOOL PRegularExpression::Compile(const PString & pattern, int flags)
 
 BOOL PRegularExpression::Compile(const char * pattern, int flags)
 {
+  patternSaved = pattern;
+  flagsSaved   = flags;
+
   if (expression != NULL) {
     regfree(expression);
     delete expression;
     expression = NULL;
   }
   if (pattern == NULL || *pattern == '\0')
-    return BadPattern;
-
-  expression = new regex_t;
-  lastError = regcomp(expression, pattern, flags);
+    lastError = BadPattern;
+  else {
+    expression = new regex_t;
+    lastError = regcomp(expression, pattern, flags);
+  }
   return lastError == NoError;
 }
 
