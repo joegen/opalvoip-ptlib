@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.16 1996/03/26 00:57:15 robertj Exp $
+ * $Id: tcpsock.h,v 1.17 1996/09/14 13:09:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.17  1996/09/14 13:09:42  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.16  1996/03/26 00:57:15  robertj
  * Added contructor that takes PTCPSocket so avoid copy constructor being used instead of accept.
  *
@@ -99,22 +105,6 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
 
   // Overrides from class PSocket.
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number. This is
-       typically used by the client or initiator of a communications channel.
-       This connects to a "listening" socket at the other end of the
-       communications channel.
-
-       The port number as defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully connected to the remote host.
-     */
-
-
     virtual BOOL Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
       WORD port = 0,           // Port number to use for the connection.
@@ -153,26 +143,6 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
      */
 
 
-  // Overrides from class PIPSocket.
-    virtual WORD GetPortByService(
-      const PString & service   // Name of service to get port number for.
-    ) const;
-    /* Get the port number for the specified service.
-    
-       <H2>Returns:</H2>
-       Port number for service name.
-     */
-
-    virtual PString GetServiceByPort(
-      WORD port   // Number for service to find name of.
-    ) const;
-    /* Get the service name from the port number.
-    
-       <H2>Returns:</H2>
-       Service name for port number.
-     */
-
-
   // New functions for class
     virtual BOOL WriteOutOfBand(
       const void * buf,   // Data to be written as URGENT TCP data.
@@ -200,6 +170,11 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        The default behaviour is for the out of band data to be ignored.
      */
+
+
+  protected:
+    virtual BOOL OpenSocket();
+    virtual const char * GetProtocolName() const;
 
 
 // Class declaration continued in platform specific header file ///////////////
