@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.19 2001/05/09 07:00:22 robertj Exp $
+ * $Id: pssl.cxx,v 1.20 2001/05/16 06:02:37 craigs Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.20  2001/05/16 06:02:37  craigs
+ * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
+ *
  * Revision 1.19  2001/05/09 07:00:22  robertj
  * Removed clearing of lock callbacks in context destructor, should not!
  *
@@ -549,7 +552,6 @@ BOOL PSSLChannel::Read(void * buf, PINDEX len)
   return returnValue;
 }
 
-
 BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 {
   flush();
@@ -691,6 +693,13 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode)
   SSL_set_verify(ssl, verify, VerifyCallBack);
 }
 
+BOOL PSSLChannel::RawSSLRead(PChannel * chan, void * buf, PINDEX & len)
+{
+  if (!chan->Read(buf, len)) 
+    return FALSE; 
+  len = chan->GetLastReadCount(); 
+  return TRUE; 
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -796,10 +805,14 @@ static int Psock_read(BIO * bio, char * out, int outl)
 
   if (out != NULL) {
     PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
-    BOOL b = chan->Read(out, outl);
+
+    // redirect the read through the channel so we can intercept data if required
+    //BOOL b = chan->Read(out, outl);
+    BOOL b = PSSLSOCKET(bio)->RawSSLRead(chan, out, outl);
+
     BIO_clear_retry_flags(bio);
     if (b) 
-      ret = chan->GetLastReadCount();
+      ret = outl; //chan->GetLastReadCount();
     else if (Psock_should_retry(chan->GetErrorCode())) {
       BIO_set_retry_read(bio);
       ret = -1;
