@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.183  2005/01/26 05:38:01  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.182  2005/01/16 21:27:07  csoutheren
  * Changed PIPSocket::IsAny to be const
  *
@@ -1000,10 +1003,11 @@ void PIPCacheData::AddEntry(struct addrinfo * addr_info)
 #endif
 
 
-static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
+static PTimeInterval GetConfigTime(const char * /*key*/, DWORD dflt)
 {
-  PConfig cfg("DNS Cache");
-  return cfg.GetInteger(key, dflt);
+  //PConfig cfg("DNS Cache");
+  //return cfg.GetInteger(key, dflt);
+  return dflt;
 }
 
 
