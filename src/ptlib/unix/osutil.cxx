@@ -748,13 +748,13 @@ BOOL PTime::IsDaylightSavings()
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_SOLARIS)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_SUN4) || defined(P_SOLARIS)
+#elif defined(P_SUN4) 
   struct timeb tb;
   ftime(&tb);
   if (type == StandardTime || tb.dstflag == 0)
