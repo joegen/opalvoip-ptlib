@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.29  1998/10/15 07:03:46  robertj
+# Moved object.cxx to last place so memory leak destructor is called at the right time.
+#
 # Revision 1.28  1998/09/24 07:40:34  robertj
 # Moved structured file to common.
 # Removed small files only containing pragma implementations
@@ -131,7 +134,6 @@ SOURCES		= switch.cxx \
 		  socket.cxx \
 		  uicmp.cxx \
 		  udll.cxx \
-		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
 		  $(COMMONSRC)/sfile.cxx \
@@ -156,7 +158,8 @@ SOURCES		= switch.cxx \
 		  $(COMMONSRC)/snmpserv.cxx \
 		  $(COMMONSRC)/cypher.cxx \
 		  $(COMMONSRC)/pssl.cxx \
-		  $(COMMONSRC)/asner.cxx 
+		  $(COMMONSRC)/asner.cxx \
+		  $(COMMONSRC)/object.cxx   # must be last module
 
 OBJS	= $(OBJDIR)/regex.o
 
