@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.59  2004/02/22 03:27:30  ykiryanov
+ * Added missing prototype for seteuid for BeOS
+ *
  * Revision 1.58  2004/02/21 21:26:30  ykiryanov
  * Added P_THREADIDENTIFIER for BeOS threads
  *
@@ -408,6 +411,7 @@ struct servent * getservbyname(const char *, const char *);
 typedef int socklen_t;
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
+int seteuid(uid_t euid);
 
 #ifndef BE_BONELESS
 #include <bone/arpa/inet.h>
