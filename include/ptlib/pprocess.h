@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.64  2004/05/18 21:49:25  csoutheren
+ * Added ability to display trace output from program startup via environment
+ * variable or by application creating a PProcessStartup descendant
+ *
  * Revision 1.63  2004/05/18 06:01:06  csoutheren
  * Deferred plugin loading until after main has executed by using abstract factory classes
  *
@@ -802,6 +806,14 @@ class PProcessStartup : public PObject
 };
 
 typedef PGenericFactory<PProcessStartup> PProcessStartupFactory;
+
+template <unsigned level, unsigned options = PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine>
+class PTraceLevelSetStartup : public PProcessStartup
+{
+  public:
+    void OnStartup()
+    { PTrace::Initialise(level, NULL, options); }
+};
 
 #endif
 
