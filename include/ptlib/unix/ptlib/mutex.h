@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.5  1999/03/05 07:03:27  robertj
+ * Some more BeOS port changes.
+ *
  * Revision 1.4  1999/01/09 03:35:09  robertj
  * Improved efficiency of mutex to use pthread functions directly.
  *
@@ -49,12 +52,16 @@
 // PMutex
 
 #include "../../mutex.h"
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) || defined(BE_THREADS)
   public:
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
     virtual BOOL WillBlock() const;
+#endif
+#ifdef BE_THREADS
+  protected:
+  	int32 benaphoreCount;
 #endif
 };
 
