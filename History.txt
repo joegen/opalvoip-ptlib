@@ -2,6 +2,49 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.12
+------------
+	Made static form of ConvertOSError public scope.
+
+	Added override of new functions for MSVC memory check code.
+
+	Added functions to get current trace options and level.
+
+	Fixed display of decimals in milliseconds when precision other than 3.
+
+	Fixed problem, assuring millisecond accuracy in timestamp of trace
+	output.
+
+	Improved portability of copy from host_info struct to IP address.
+
+	Created PCustomListBox to allow native Motif code PStringListBox
+	implementation.
+
+	Fixed problem with PSemaphore::Wait consuming 100% CPU under unix.
+
+	Changed semaphore.h inclusion to be dependent upon P_HAS_SEMAPHORE
+	under unix.
+
+	Added pipe to thread to allow asynchronous abort of socket operations
+	under unix.
+
+	Added define to only include semaphore libraries on Linux platform
+
+	Changed semantics of OnClose() to be the same as PTitledWindow in Win32.
+
+	Fixed problems with creating/deleting dialogs from background threads in
+	Win32.
+
+	Fixed possible crash accessing IP addresses from SNMP tables in Win32.
+
+	Fixed bug in GetErrorText() occasionally returning incorrect empty
+	string in Win32.
+
+	Fixed bug in SetDimensions() to allow for a window with a menu in Win32.
+
+	Added missing GetLength function for PComboBoxes in Win32.
+
+
 Release 1.11
 ------------
 	Fixed error display for sound channels.
