@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.4  1998/11/30 02:55:25  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:30:17  robertj
  * Added open software license.
  *
@@ -46,7 +49,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-#include "../../common/ptlib/ptime.h"
+#include "../../ptime.h"
 };
 
 
