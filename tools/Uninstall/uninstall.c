@@ -6,6 +6,9 @@
  *  Copyright 1997 by Equivalence Pty Ltd
  *
  *  $Log: uninstall.c,v $
+ *  Revision 1.2  1999/07/16 03:21:26  robertj
+ *  Changed directory removal so does not show error it is already gone
+ *
  *  Revision 1.1  1999/03/16 07:22:37  robertj
  *  Uninstall now kills tray icon before uninstalling.
  *  Install now checks that "localhost" works.
@@ -234,7 +237,7 @@ BOOL DelTree(const char * dir)
 
     else {
       if (DeleteFile(subStr) == 0)
-        vMessageBox(NULL, IDS_ERROR_DELETING_FILE, MB_ICONWARNING|MB_OK, subStr);
+        vMessageBox(NULL, IDS_ERROR_DELETING_FILE, MB_ICONWARNING|MB_OK, subStr, GetLastError());
     }
 
     next = head->next;
@@ -243,8 +246,8 @@ BOOL DelTree(const char * dir)
     head = next;
   }
 
-  if (!RemoveDirectory(dir))
-    vMessageBox(NULL, IDS_ERROR_DELETING_DIR, MB_ICONWARNING|MB_OK, dir);
+  if (!RemoveDirectory(dir) && GetLastError() != ERROR_FILE_NOT_FOUND)
+    vMessageBox(NULL, IDS_ERROR_DELETING_DIR, MB_ICONWARNING|MB_OK, dir, GetLastError());
 
   return TRUE;
 }
