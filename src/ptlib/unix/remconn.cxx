@@ -54,7 +54,7 @@ static const PString DialPrefixStr     = "DialPrefix";
 static const PString DefaultDialPrefix = "ATDT";
 
 static const PString LoginStr     = "Login";
-static const PString DefaultLogin = "";
+static const PString DefaultLogin = "'' sername: $USERID assword: $PASSWORD";
 
 static const PString TimeoutStr     = "TimeoutStr";
 static const PString DefaultTimeout = "90";
@@ -154,7 +154,6 @@ BOOL PRemoteConnection::Open(const PString & name,
   PString chatErrs   = config.GetString(ErrorsStr,     DefaultErrors);
   PString modemInit  = config.GetString(InitStr,       DefaultInit);
   PString dialPrefix = config.GetString(DialPrefixStr, DefaultDialPrefix);
-  PString portName   = config.GetString(PortStr,       DefaultPort);
   PString pppdOpts   = config.GetString(PPPDOptsStr,   DefaultPPPDOpts);
 
   ///////////////////////////////////////////
@@ -162,9 +161,12 @@ BOOL PRemoteConnection::Open(const PString & name,
   // get remote system parameters
   //
   config.SetDefaultSection(remoteName);
+  PString portName   = config.GetString(PortStr,
+				config.GetString(OptionsStr, PortStr, DefaultPort));
   PString loginStr   = config.GetString(LoginStr,    DefaultLogin);
   PString timeoutStr = config.GetString(TimeoutStr,  DefaultTimeout);
   PINDEX timeout = timeoutStr.AsInteger();
+  PString addressStr = config.GetString(AddressStr, "");
   PString nameServerStr = config.GetString(NameServerStr, "");
 
 
@@ -173,21 +175,22 @@ BOOL PRemoteConnection::Open(const PString & name,
   // start constructing the command argument array
   //
   PStringArray argArray;
-  argArray.SetAt(argArray.GetSize(), PNEW PString(portName));
-  argArray.SetAt(argArray.GetSize(), PNEW PString(baudRate));
+  PINDEX argCount = 0;
+  argArray[argCount++] = portName;
+  argArray[argCount++] = baudRate;
 
   PStringArray tokens = PPPDOpts.Tokenise(' ');
   PINDEX i;
   for (i = 0; i < tokens.GetSize(); i++)
-    argArray.SetAt(argArray.GetSize(), PNEW PString(tokens[i]));
+    argArray[argCount++] = tokens[i];
 
   tokens = pppdOpts.Tokenise(' ');
   for (i = 0; i < tokens.GetSize(); i++)
-    argArray.SetAt(argArray.GetSize(), PNEW PString(tokens[i]));
+    argArray[argCount++] = tokens[i];
 
   if (!nameServerStr.IsEmpty()) {
-    argArray.SetAt(argArray.GetSize(), PNEW PString("ipparam"));
-    argArray.SetAt(argArray.GetSize(), PNEW PString(nameServerStr));
+    argArray[argCount++] = "ipparam";
+    argArray[argCount++] = nameServerStr;
   }
 
   ///////////////////////////////////////////
@@ -203,9 +206,12 @@ BOOL PRemoteConnection::Open(const PString & name,
   //
   PString chatCmd = chatErrs & modemInit & dialPrefix + phoneNumber & loginStr;
   if (!chatCmd.IsEmpty()) {
-    argArray.SetAt(argArray.GetSize(), PNEW PString("connect"));
-    argArray.SetAt(argArray.GetSize(), PNEW PString(chatStr & "-t" + timeoutStr & chatCmd));
+    argArray[argCount++] = "connect";
+    argArray[argCount++] = chatStr & "-t" + timeoutStr & chatCmd;
   }
+
+  if (!addressStr)
+    argArray[argCount++] = addressStr + ":";
 
   ///////////////////////////////////////////
   //
@@ -399,6 +405,9 @@ PRemoteConnection::Status PRemoteConnection::SetConfiguration(
                  BOOL create            // Flag to create connection if not present
                )
 {
+  if (config.phoneNumber.IsEmpty())
+    return GeneralFailure;
+
   PConfig cfg(0, RasStr);
 
   if (!create && cfg.GetString(name, NumberStr, "").IsEmpty())
@@ -406,12 +415,42 @@ PRemoteConnection::Status PRemoteConnection::SetConfiguration(
 
   cfg.SetDefaultSection(name);
 
-//  cfg.SetString(PortStr, config.device);
-  cfg.SetString(NumberStr, config.phoneNumber);
-  cfg.SetString(AddressStr, config.ipAddress);
-  cfg.SetString(NameServerStr, config.dnsAddress);
-  cfg.SetString(LoginStr, config.script);
+  if (config.device.IsEmpty())
+    cfg.DeleteKey(PortStr);
+  else
+    cfg.SetString(PortStr, config.device);
 
+  cfg.SetString(NumberStr, config.phoneNumber);
+
+  if (config.ipAddress.IsEmpty())
+    cfg.DeleteKey(AddressStr);
+  else
+    cfg.SetString(AddressStr, config.ipAddress);
+
+  if (config.dnsAddress.IsEmpty())
+    cfg.DeleteKey(NameServerStr);
+  else
+    cfg.SetString(NameServerStr, config.dnsAddress);
+
+  if (config.script.IsEmpty())
+    cfg.DeleteKey(LoginStr);
+  else
+    cfg.SetString(LoginStr, config.script);
+
+  return Connected;
+}
+
+
+PRemoteConnection::Status PRemoteConnection::RemoveConfiguration(
+		const PString & name  // Remote connection to remove
+		)
+{
+  PConfig cfg(0, RasStr);
+
+  if (cfg.GetString(name, NumberStr, "").IsEmpty())
+    return NoNameOrNumber;
+
+  cfg.DeleteSection(name);
   return Connected;
 }
 
