@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.69  2003/09/18 23:52:08  dereksmithies
+ * Fix checks on NULL pointers. Many thanks to Chris Rankin.
+ *
  * Revision 1.68  2003/09/17 01:18:04  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -473,7 +476,7 @@ BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
     struct passwd * pw = ::getpwnam(username);
 #endif
 
-    if (pw != NULL || pw->pw_name != NULL)
+    if (pw != NULL && pw->pw_name != NULL)
       uid = pw->pw_uid;
     else {
       if (strspn(username, "1234567890") == strlen(username))
@@ -561,7 +564,7 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
     struct group * gr = ::getgrnam(groupname);
 #endif
 
-    if (gr != NULL || gr->gr_name != NULL)
+    if (gr != NULL && gr->gr_name != NULL)
       gid = gr->gr_gid;
     else {
       if (strspn(groupname, "1234567890") == strlen(groupname))
