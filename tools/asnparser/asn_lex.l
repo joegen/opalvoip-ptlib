@@ -1,6 +1,6 @@
 %{
 /*
- * $Id: asn_lex.l,v 1.5 1999/02/09 01:26:50 robertj Exp $
+ * $Id: asn_lex.l,v 1.6 1999/06/06 05:30:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,10 @@
  * Copyright 1997 by Equivalence
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.6  1999/06/06 05:30:28  robertj
+ * Support for parameterised types and type-dentifier types.
+ * Added ability to output multiple .cxx files.
+ *
  * Revision 1.5  1999/02/09 01:26:50  robertj
  * Fixed warning problems with #define for identifier "comment"
  *
@@ -37,11 +41,19 @@
 extern FILE * yyin;
 
 extern unsigned lineNumber;
+
+int LexEcho = FALSE;
+#define YY_USER_ACTION if (LexEcho) cout << yytext << flush;
+
+
+int ReferenceTokenContext = MODULEREFERENCE;
 int IdentifierTokenContext = IDENTIFIER;
 int BraceTokenContext = '{';
+int NullTokenContext = NULL_TYPE;
 int InMacroContext = FALSE;
 int HasObjectTypeMacro = FALSE;
 int InMIBContext = FALSE;
+TypesList * CurrentImportList = NULL;
 
 extern "C" int yywrap() { return 1; }
 
@@ -59,7 +71,7 @@ static int TokenSelect(int context, int token1, int token2)
 
 %%
 
-"::="         { return ASSIGNMENT; }
+"::="				   { return ASSIGNMENT; }
 
 "ABSENT"                           { return ABSENT; }              
 "ABSTRACT-SYNTAX"                  { return ABSTRACT_SYNTAX; }
@@ -105,7 +117,7 @@ static int TokenSelect(int context, int token1, int token2)
 "MIN"                              { return MIN; }
 "MINUS-INFINITY"                   { return MINUS_INFINITY; }
 "NOTATION"			   { return NOTATION; }
-"NULL"                             { return NULL_t; }
+"NULL"                             { return NullTokenContext; }
 "NumericString"                    { return NumericString; }
 "OBJECT"                           { return OBJECT; }
 "OCTET"                            { return OCTET; }
@@ -141,10 +153,10 @@ static int TokenSelect(int context, int token1, int token2)
 "empty"                            { return TokenSelect(InMacroContext, empty_t, IDENTIFIER); }
 "type"                             { return TokenSelect(InMacroContext, type_t, IDENTIFIER); }
 "value"                            { return TokenSelect(InMacroContext, value_t, IDENTIFIER); }
-"OBJECT-TYPE"			   { return TokenSelect(HasObjectTypeMacro, OBJECT_TYPE, TYPEREFERENCE); }
-"TRAP-TYPE"			   { return TokenSelect(HasObjectTypeMacro, TRAP_TYPE, TYPEREFERENCE); }
-"ACCESS"			   { return TokenSelect(InMIBContext, ACCESS, TYPEREFERENCE); }
-"STATUS"			   { return TokenSelect(InMIBContext, STATUS, TYPEREFERENCE); }
+"OBJECT-TYPE"			   { return TokenSelect(HasObjectTypeMacro, OBJECT_TYPE, ReferenceTokenContext); }
+"TRAP-TYPE"			   { return TokenSelect(HasObjectTypeMacro, TRAP_TYPE, ReferenceTokenContext); }
+"ACCESS"			   { return TokenSelect(InMIBContext, ACCESS, ReferenceTokenContext); }
+"STATUS"			   { return TokenSelect(InMIBContext, STATUS, ReferenceTokenContext); }
 "read-only"			   { return TokenSelect(InMIBContext, read_only_t, IDENTIFIER); }
 "read-write"			   { return TokenSelect(InMIBContext, read_write_t, IDENTIFIER); }
 "write-only"			   { return TokenSelect(InMIBContext, write_only_t, IDENTIFIER); }
@@ -153,12 +165,12 @@ static int TokenSelect(int context, int token1, int token2)
 "optional"			   { return TokenSelect(InMIBContext, optional_t, IDENTIFIER); }
 "obsolete"			   { return TokenSelect(InMIBContext, obsolete_t, IDENTIFIER); }
 "deprecated"			   { return TokenSelect(InMIBContext, deprecated_t, IDENTIFIER); }
-"DESCRIPTION"			   { return TokenSelect(InMIBContext, DESCRIPTION_t, TYPEREFERENCE); }
-"REFERENCE"			   { return TokenSelect(InMIBContext, REFERENCE_t, TYPEREFERENCE); }
-"INDEX"				   { return TokenSelect(InMIBContext, INDEX_t, TYPEREFERENCE); }
-"DEFVAL"			   { return TokenSelect(InMIBContext, DEFVAL_t, TYPEREFERENCE); }
-"ENTERPRISE"			   { return TokenSelect(InMIBContext, ENTERPRISE, TYPEREFERENCE); }
-"VARIABLES"			   { return TokenSelect(InMIBContext, VARIABLES, TYPEREFERENCE); }
+"DESCRIPTION"			   { return TokenSelect(InMIBContext, DESCRIPTION_t, ReferenceTokenContext); }
+"REFERENCE"			   { return TokenSelect(InMIBContext, REFERENCE_t, ReferenceTokenContext); }
+"INDEX"				   { return TokenSelect(InMIBContext, INDEX_t, ReferenceTokenContext); }
+"DEFVAL"			   { return TokenSelect(InMIBContext, DEFVAL_t, ReferenceTokenContext); }
+"ENTERPRISE"			   { return TokenSelect(InMIBContext, ENTERPRISE, ReferenceTokenContext); }
+"VARIABLES"			   { return TokenSelect(InMIBContext, VARIABLES, ReferenceTokenContext); }
 
                                                                  
 
@@ -217,6 +229,10 @@ static int TokenSelect(int context, int token1, int token2)
 
 "="  { return '='; }
 
+'|'  { return '|'; }
+
+"^"  { return '^'; }
+
 (\"[^\"]*\")(\"[^\"]*\")*  {
     PString s = yytext;
     PINDEX pos;
@@ -243,12 +259,28 @@ static int TokenSelect(int context, int token1, int token2)
 
 ([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
     yylval.sval = new PString(yytext);
+    if (CurrentImportList != NULL &&
+	CurrentImportList->GetValuesIndex(*yylval.sval) != P_MAX_INDEX)
+      return IMPORT_IDENTIFIER;
     return IdentifierTokenContext;
+  }
+
+"&"([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {   /* See X.681 section 7.5 */
+    yylval.sval = new PString(yytext);
+    return VALUEFIELDREFERENCE;
+  }
+
+"&"([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.681 section 7.4 */
+    yylval.sval = new PString(yytext);
+    return TYPEFIELDREFERENCE;
   }
 
 ([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.680 section 9.2 */
     yylval.sval = new PString(yytext);
-    return TYPEREFERENCE;
+    if (CurrentImportList != NULL &&
+	CurrentImportList->GetValuesIndex(SearchType(*yylval.sval)) != P_MAX_INDEX)
+      return IMPORT_IDENTIFIER;
+    return ReferenceTokenContext;
   }
 
 [ \t\r]  { }
