@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.46  1999/06/14 07:59:37  robertj
+ * Enhanced tracing again to add options to trace output (timestamps etc).
+ *
  * Revision 1.45  1999/05/01 11:29:19  robertj
  * Alpha linux port changes.
  *
@@ -299,94 +302,138 @@ and NT GUI applications. An application could change this pointer to a
 #define PTRACING
 #endif
 
-/** Set the stream to be used for trace output.
-This stream is used for all trace output using the various trace functions
-and macros.
-*/
-void PSetTraceStream(ostream * out /** New output stream from trace. */ );
+/**Class to encapsulate tracing functions.
+   This class does not require any instances and is only being used as a
+   method of grouping functions together in a name space.
+  */
+class PTrace
+{
+public:
+  /** Set the stream to be used for trace output.
+  This stream is used for all trace output using the various trace functions
+  and macros.
+  */
+  static void SetStream(ostream * out /** New output stream from trace. */ );
 
-/** Set the PTraceBlock output flag.
-Set the internal flag for PTraceBlock classes to output to the trace stream.
-If this is FALSE, all PTraceBlock output is inhibited regardless of the trace
-level. If TRUE the PTraceBlock may occur provided the trace level is greater
-than zero.
-*/
-void PSetTraceBlock(BOOL enable /** Flag for enabling all PTraceBlock output. */ );
+  /// Options for trace output.
+  enum Options {
+    /**Include PTrace::Block constructs in output
+       If this is bit is clear, all PTrace::Block output is inhibited
+       regardless of the trace level. If set, the PTrace::Block may occur
+       provided the trace level is greater than zero.
+    */
+    Blocks = 1,
+    /// Include date and time in all output
+    DateAndTime = 2,
+    /// Include (millisecond) timestamp in all output
+    Timestamp = 4,
+    /// Include identifier for thread trace is made from in all output
+    Thread = 8,
+    /// Include trace level in all output
+    TraceLevel = 16,
+    /// Include the file and line for the trace call in all output
+    FileAndLine = 32
+  };
 
-/** Set the trace level.
-The PTRACE() macro checks to see if its level is equal to or lower then the
-level set by this function. If so then the trace text is output to the trace
-stream.
-*/
-void PSetTraceLevel(unsigned level /** New level for trace */ );
+  /** Set the trace options.
+  The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
+  may contain assorted values. These are defined by the Options enum.
 
-/** Determine if the level may cause trace output.
-This checks against the current global trace level set by #PSetTraceLevel#
-for if the trace output may be emitted. This is used by the PTRACE macro.
-*/
-BOOL PCanTrace(unsigned level /** New level */);
+  Note this function OR's the bits included in the options parameter.
+  */
+  static void SetOptions(unsigned options /** New level for trace */ );
 
-/** Begin a trace output.
-If the trace stream output is used outside of the provided macros, it
-should be noted that a mutex is obtained on the call to #PBeginTrace# which
-will prevent any other threads from using the trace stream until the
-#PEndTrace# function is called.
+  /** Clear the trace options.
+  The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
+  may contain assorted values. These are defined by the Options enum.
 
-So a typical usage would be:
-\begin{verbatim}
-  ostream & s = PBegintrace();
-  s << "hello";
-  if (want_there)
-    s << " there";
-  s << '!' << PEndTrace();
-\end{verbatim}
-*/
-ostream & PBeginTrace(
-  const char * fileName,  /// Filename of source file being traced
-  int lineNum             /// Line number of source file being traced.
-);
+  Note this function AND's the complement of the bits included in the options
+  parameter.
+  */
+  static void ClearOptions(unsigned options /** New level for trace */ );
 
-/** End a trace output.
-If the trace stream output is used outside of the provided macros, the
-#PEndTrace# function must be used at the end of the section of trace
-output. A mutex is obtained on the call to #PBeginTrace# which will prevent
-any other threads from using the trace stream until the PEndTrace. The
-#PEndTrace# is used in a similar manner to #::endl# or #::flush#.
+  /** Set the trace level.
+  The PTRACE() macro checks to see if its level is equal to or lower then the
+  level set by this function. If so then the trace text is output to the trace
+  stream.
+  */
+  static void SetLevel(unsigned level /** New level for trace */ );
 
-So a typical usage would be:
-\begin{verbatim}
-  ostream & s = PBegintrace();
-  s << "hello";
-  if (want_there)
-    s << " there";
-  s << '!' << PEndTrace();
-\end{verbatim}
-*/
-ostream & PEndTrace(ostream & strm /** Trace output stream being completed */);
+  /** Determine if the level may cause trace output.
+  This checks against the current global trace level set by #PSetTraceLevel#
+  for if the trace output may be emitted. This is used by the PTRACE macro.
+  */
+  static BOOL CanTrace(unsigned level /** New level */);
+
+  /** Begin a trace output.
+  If the trace stream output is used outside of the provided macros, it
+  should be noted that a mutex is obtained on the call to #PBeginTrace# which
+  will prevent any other threads from using the trace stream until the
+  #PEndTrace# function is called.
+
+  So a typical usage would be:
+  \begin{verbatim}
+    ostream & s = PTrace::Begin(3, __FILE__, __LINE__);
+    s << "hello";
+    if (want_there)
+      s << " there";
+    s << '!' << PTrace::End();
+  \end{verbatim}
+  */
+  static ostream & Begin(
+    unsigned level,         /// Log level for output
+    const char * fileName,  /// Filename of source file being traced
+    int lineNum             /// Line number of source file being traced.
+  );
+
+  /** End a trace output.
+  If the trace stream output is used outside of the provided macros, the
+  #PEndTrace# function must be used at the end of the section of trace
+  output. A mutex is obtained on the call to #PBeginTrace# which will prevent
+  any other threads from using the trace stream until the PEndTrace. The
+  #PEndTrace# is used in a similar manner to #::endl# or #::flush#.
+
+  So a typical usage would be:
+  \begin{verbatim}
+    ostream & s = PTrace::Begin();
+    s << "hello";
+    if (want_there)
+      s << " there";
+    s << '!' << PTrace::End();
+  \end{verbatim}
+  */
+  static ostream & End(ostream & strm /** Trace output stream being completed */);
 
 
-/** Class to trace Execution blocks.
-This class is used for tracing the entry and exit of program blocks. Upon
-construction it outputs an entry trace message and on destruction outputs an
-exit trace message. This is normally only used from in the PTRACE_BLOCK macro.
-*/
-class PTraceBlock {
-  public:
-    /** Output entry trace message. */
-    PTraceBlock(
-      const char * fileName, /// Filename of source file being traced
-      int lineNum,           /// Line number of source file being traced.
-      const char * traceName
-        /// String to be output with trace, typically it is the function name.
-     );
-    /// Output exit trace message.
-    ~PTraceBlock();
-  private:
-    const char * file;
-    int          line;
-    const char * name;
+  /** Class to trace Execution blocks.
+  This class is used for tracing the entry and exit of program blocks. Upon
+  construction it outputs an entry trace message and on destruction outputs an
+  exit trace message. This is normally only used from in the PTRACE_BLOCK macro.
+  */
+  class Block {
+    public:
+      /** Output entry trace message. */
+      Block(
+        const char * fileName, /// Filename of source file being traced
+        int lineNum,           /// Line number of source file being traced.
+        const char * traceName
+          /// String to be output with trace, typically it is the function name.
+       );
+      /// Output exit trace message.
+      ~Block();
+    private:
+      const char * file;
+      int          line;
+      const char * name;
+      static unsigned IndentLevel;
+  };
+
+private:
+  static ostream *Stream;
+  static unsigned Options;
+  static unsigned LevelThreshold;
+friend class Block;
 };
-
 
 #ifndef PTRACING
 
@@ -402,13 +449,14 @@ blocks. It creates an instance of the PTraceBlock class that will output a
 trace message at the line PTRACE_BLOCK is called and then on exit from the
 scope it is defined in.
 */
-#define PTRACE_BLOCK(name) PTraceBlock __trace_block_instance(__FILE__, __LINE__, name)
+#define PTRACE_BLOCK(name) PTrace::Block __trace_block_instance(__FILE__, __LINE__, name)
 
 /** Trace the execution of a line.
 This macro outputs a trace of a source file line execution.
 */
 #define PTRACE_LINE() \
-    if (!PCanTrace(1)) ; else PBeginTrace(__FILE__, __LINE__) << PEndTrace
+    if (!PTrace::CanTrace(1)) ; else \
+      PTrace::Begin(1, __FILE__, __LINE__) << PTrace::End
 
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
@@ -416,7 +464,8 @@ output operators. The output is only made if the trace level set by the
 #PSetTraceLevel# function is greater than or equal to the #level# argument.
 */
 #define PTRACE(level, args) \
-    if (!PCanTrace(level)) ; else PBeginTrace(__FILE__, __LINE__) << args << PEndTrace
+    if (!PTrace::CanTrace(level)) ; else \
+      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
 
 #endif
 
