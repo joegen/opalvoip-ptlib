@@ -36,7 +36,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
 
-#include "../../common/ptlib/dynalink.h"
+#include "../../dynalink.h"
   protected:
     void * dllHandle;
 };
