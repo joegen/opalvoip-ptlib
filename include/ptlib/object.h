@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.110  2004/08/14 14:17:29  csoutheren
+ * Fixed problem with PAssert and associated functions caused by using expressions
+ * as statements. inline functions are your friend :)
+ *
  * Revision 1.109  2004/08/05 12:09:35  rjongbloed
  * Added macros for "remove const" and "down cast" funcions with and without RTTI.
  * Added ability to disable Asserts.
@@ -507,14 +511,30 @@ enum PStandardAssertMessage {
 
 #define __CLASS__ NULL
 
+void PAssertFunc(const char * file, int line, const char * className, PStandardAssertMessage msg);
+void PAssertFunc(const char * file, int line, const char * className, const char * msg);
+void PAssertFunc(const char * full_msg);
+
+inline bool PAssertFuncInline(bool b, const char * file, int line, const char * className, PStandardAssertMessage msg)
+{
+  if (!b) 
+    PAssertFunc(file, line, className, msg);
+  return b;
+}
+inline bool PAssertFuncInline(bool b, const char * file, int line, const char * className, const char * msg)
+{
+  if (!b) 
+    PAssertFunc(file, line, className, msg);
+  return b;
+}
+
 /** This macro is used to assert that a condition must be TRUE.
 If the condition is FALSE then an assert function is called with the source
 file and line number the macro was instantiated on, plus the message described
 by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
 */
-#define PAssert(b, m) \
-          ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,(m)),false))
+#define PAssert(b, m) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,(m))
 
 /** This macro is used to assert that a condition must be TRUE.
 If the condition is FALSE then an assert function is called with the source
@@ -523,8 +543,7 @@ by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
 The #c# parameter specifies the class name that the error occurred in
 */
-#define PAssert2(b, c, m) \
-          ((b)?true:(PAssertFunc(__FILE__,__LINE__,(c),(m)),false))
+#define PAssert2(b, c, m) PAssertFuncInline((b), __FILE__,__LINE__,(c),(m))
 
 /** This macro is used to assert that an operating system call succeeds.
 If the condition is FALSE then an assert function is called with the source
@@ -532,8 +551,7 @@ file and line number the macro was instantiated on, plus the message
 described by the #POperatingSystemError# value in the #PStandardAssertMessage#
 enum.
  */
-#define PAssertOS(b) \
-          ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,POperatingSystemError),false))
+#define PAssertOS(b) PAssertFuncInline((b), __FILE__,__LINE__,__CLASS__,POperatingSystemError)
 
 /** This macro is used to assert that a pointer must be non-null.
 If the pointer is NULL then an assert function is called with the source file
@@ -544,8 +562,8 @@ Note that this evaluates the expression defined by #ptr# twice. To
 prevent incorrect behaviour with this, the macro will assume that the
 #ptr# parameter is an L-Value.
  */
-#define PAssertNULL(p) ((&(p)&&(p)!=NULL)?(p):(PAssertFunc(__FILE__, \
-                                        __LINE__, __CLASS__, PNullPointerReference), (p)))
+#define PAssertNULL(p) ((&(p)&&(p)!=NULL)?(p): \
+                     (PAssertFunc(__FILE__,__LINE__, __CLASS__, PNullPointerReference),(p)))
 
 /** This macro is used to assert immediately.
 The assert function is called with the source file and line number the macro
@@ -553,7 +571,7 @@ was instantiated on, plus the message described by the #msg# parameter. This
 parameter may be either a standard value from the #PStandardAssertMessage#
 enum or a literal string.
 */
-#define PAssertAlways(m) PAssertFunc(__FILE__, __LINE__, __CLASS__, (m))
+#define PAssertAlways(m) PAssertFunc(__FILE__,__LINE__,__CLASS__,(m))
 
 /** This macro is used to assert immediately.
 The assert function is called with the source file and line number the macro
@@ -561,15 +579,9 @@ was instantiated on, plus the message described by the #msg# parameter. This
 parameter may be either a standard value from the #PStandardAssertMessage#
 enum or a literal string.
 */
-#define PAssertAlways2(c, m) PAssertFunc(__FILE__, __LINE__, (c), (m))
+#define PAssertAlways2(c, m) PAssertFunc(__FILE__,__LINE__,(c),(m))
 
 #endif // P_USE_ASSERTS
-
-void PAssertFunc(const char * file, int line, const char * className, PStandardAssertMessage msg);
-void PAssertFunc(const char * file, int line, const char * className, const char * msg);
-void PAssertFunc(const char * full_msg);
-
-
 
 
 /** Get the stream being used for error output.
