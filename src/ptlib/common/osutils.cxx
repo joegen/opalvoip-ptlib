@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.153  2001/01/25 07:14:39  robertj
+ * Fixed spurios memory leak message. Usual static global problem.
+ *
  * Revision 1.152  2001/01/24 18:27:44  yurik
  * Added if !#defined WinCE when asm code used. Asm can't be used under WCE
  *
@@ -1459,6 +1462,9 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
   p_argc = c;
   p_argv = v;
   p_envp = e;
