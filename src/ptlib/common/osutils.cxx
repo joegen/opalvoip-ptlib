@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.150  2000/12/21 12:37:03  craigs
+ * Fixed deadlock problem with creating PTimer inside OnTimeout
+ *
  * Revision 1.149  2000/11/28 12:55:37  robertj
  * Added static function to create a new thread class and automatically
  *   run a function on another class in the context of that thread.
@@ -940,8 +943,12 @@ PTimeInterval PTimerList::Process()
   }
   lastSample = now;
 
-  for (i = 0; i < GetSize(); i++)
-    (*this)[i].Process(sampleTime, minTimeLeft);
+  for (i = 0; i < GetSize(); i++) {
+    PTimer & timer = (*this)[i];
+    listMutex.Signal();
+    timer.Process(sampleTime, minTimeLeft);
+    listMutex.Wait();
+  }
   
   listMutex.Signal();
 
