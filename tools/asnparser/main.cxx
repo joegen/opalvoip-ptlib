@@ -30,6 +30,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.20  1999/08/09 13:02:36  robertj
+ * Added ASN compiler #defines for backward support of pre GCC 2.9 compilers.
+ * Added ASN compiler #defines to reduce its memory footprint.
+ * Added ASN compiler code generation of assignment operators for string classes.
+ *
  * Revision 1.19  1999/07/22 06:48:55  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -236,7 +241,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 1)
+  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 2)
 {
 }
 
@@ -1062,7 +1067,9 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
   hdr << templatePrefix
       << "class " << GetIdentifier() << " : public " << GetTypeName() << "\n"
          "{\n"
+         "#ifndef PASN_LEANANDMEAN\n"
          "    PCLASSINFO(" << GetIdentifier() << ", " << GetTypeName() << ");\n"
+         "#endif\n"
          "  public:\n"
          "    " << GetIdentifier() << "(unsigned tag = ";
   if (tag.type == Tag::Universal &&
@@ -1102,7 +1109,9 @@ void TypeBase::EndGenerateCplusplus(ostream & hdr, ostream & cxx)
   cxx << GetTemplatePrefix()
       << "PObject * " << GetClassNameString() << "::Clone() const\n"
          "{\n"
+         "#ifndef PASN_LEANANDMEAN\n"
          "  PAssert(IsClass(" << GetClassNameString() << "::Class()), PInvalidCast);\n"
+         "#endif\n"
          "  return new " << GetClassNameString() << "(*this);\n"
          "}\n"
          "\n"
@@ -1831,7 +1840,9 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
     cxx << GetTemplatePrefix()
         << "PObject::Comparison " << GetClassNameString() << "::Compare(const PObject & obj) const\n"
            "{\n"
+           "#ifndef PASN_LEANANDMEAN\n"
            "  PAssert(IsDescendant(" << GetClassNameString() << "::Class()), PInvalidCast);\n"
+           "#endif\n"
            "  const " << GetClassNameString() << " & other = (const " << GetClassNameString() << " &)obj;\n"
            "\n"
            "  Comparison result;\n"
@@ -2175,20 +2186,33 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   for (i = 0; i < fields.GetSize(); i++) {
     PString type = fields[i].GetTypeName();
     if (!typesOutput.Contains(type)) {
-      hdr << "    operator " << type << " &();\n";
-      hdr << "    operator const " << type << " &() const;\n";
-      cxx << GetTemplatePrefix()
+      hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+             "    operator " << type << " &() const;\n"
+             "#else\n"
+             "    operator " << type << " &();\n"
+             "    operator const " << type << " &() const;\n"
+             "#endif\n";
+      cxx << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+          << GetTemplatePrefix()
+          << GetClassNameString() << "::operator " << type << " &() const\n"
+             "#else\n"
+          << GetTemplatePrefix()
           << GetClassNameString() << "::operator " << type << " &()\n"
              "{\n"
+             "#ifndef PASN_LEANANDMEAN\n"
              "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+             "#endif\n"
              "  return *(" << type << " *)choice;\n"
              "}\n"
              "\n"
              "\n"
           << GetTemplatePrefix()
           << GetClassNameString() << "::operator const " << type << " &() const\n"
+             "#endif\n"
              "{\n"
+             "#ifndef PASN_LEANANDMEAN\n"
              "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+             "#endif\n"
              "  return *(" << type << " *)choice;\n"
              "}\n"
              "\n"
@@ -2359,6 +2383,31 @@ StringTypeBase::StringTypeBase(int tag)
 int StringTypeBase::GetBraceTokenContext() const
 {
   return STRING_BRACE;
+}
+
+
+void StringTypeBase::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
+{
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v);\n"
+         "    " << actualType.GetIdentifier() << " & operator=(const PString & v);\n";
+  cxx << actualType.GetTemplatePrefix()
+      << actualType.GetIdentifier() << " & "
+      << actualType.GetClassNameString() << "::operator=(const char * v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n"
+      << actualType.GetTemplatePrefix()
+      << actualType.GetIdentifier() << " & "
+      << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n";
 }
 
 
