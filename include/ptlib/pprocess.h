@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.20 1996/02/25 11:15:26 robertj Exp $
+ * $Id: pprocess.h,v 1.21 1996/03/12 11:30:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.21  1996/03/12 11:30:21  robertj
+ * Moved destructor to platform dependent code.
+ *
  * Revision 1.20  1996/02/25 11:15:26  robertj
  * Added platform dependent Construct function to PProcess.
  *
@@ -134,9 +137,6 @@ PDECLARE_CLASS(PProcess, PThread)
       WORD buildNumber = 1             // Build number of the product
     );
     // Create a new process instance.
-
-    ~PProcess();
-    // Destroy the process
 
 
   // Overrides from class PObject
