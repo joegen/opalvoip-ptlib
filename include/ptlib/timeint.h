@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.26  2002/05/28 13:05:26  robertj
+ * Fixed PTimer::SetInterval so it restarts timer as per operator=()
+ *
  * Revision 1.25  2001/10/16 07:44:06  robertj
  * Added AsString() function to PTimeInterval.
  *
@@ -264,7 +267,7 @@ class PTimeInterval : public PObject
               SetInterval(0, 0, 2)
 \end{verbatim}
      */
-    void SetInterval(
+    virtual void SetInterval(
       PInt64 milliseconds = 0,  /// Number of milliseconds for interval.
       long seconds = 0,         /// Number of seconds for interval.
       long minutes = 0,         /// Number of minutes for interval.
