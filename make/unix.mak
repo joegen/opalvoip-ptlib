@@ -49,7 +49,7 @@ ifdef SHAREDLIB
 endif
 else
 OBJ_SUFFIX	= linux
-OBJ_SUFFIX	= linux
+LIB_SUFFIX	= linux
 endif
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
 endif
