@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.8  2001/12/13 09:19:32  robertj
+ * Added ability to create HTTP server certificate if one does not exist.
+ *
  * Revision 1.7  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -119,8 +122,28 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 }
 
 
-BOOL PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile)
+BOOL PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile,
+                                                     BOOL create,
+                                                     const char * dn)
 {
+  if (create && !PFile::Exists(certificateFile)) {
+    PSSLPrivateKey key(1024);
+    PSSLCertificate certificate;
+    PStringStream name;
+    if (dn != NULL)
+      name << dn;
+    else {
+      name << "/O=" << GetManufacturer()
+           << "/CN=" << GetName() << '@' << PIPSocket::GetHostName();
+    }
+    if (!certificate.CreateRoot(name, key)) {
+      PTRACE(0, "MTGW\tCould not create certificate");
+      return FALSE;
+    }
+    certificate.Save(certificateFile);
+    key.Save(certificateFile, TRUE);
+  }
+
   return sslContext->UseCertificate(certificateFile) &&
          sslContext->UsePrivateKey(certificateFile);
 }
