@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.11  2003/12/12 05:11:56  rogerhardiman
+ * Add SDL support on FreeBSD. Header files live in SDL11 directory
+ *
  * Revision 1.10  2003/11/06 09:13:20  rjongbloed
  * Improved the Windows configure system to allow multiple defines based on file existence. Needed for SDL support of two different distros.
  *
@@ -69,7 +72,11 @@
 
 extern "C" {
 
+#if defined(P_FREEBSD)
+#include <SDL11/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 };
 
