@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.128  2002/10/17 01:24:11  robertj
+ * Fixed so internal sockaddr classes GetSize() returns correct size for
+ *   particular sockaddr it represents, thanks Sébastien Josset.
+ *
  * Revision 1.127  2002/10/16 06:19:36  robertj
  * Rewrite of IPv6 sockaddr code to use intelligent class to automatically
  *   know if it is sockaddr_in or aockaddr_in6.
@@ -447,7 +451,7 @@ class Psockaddr
     Psockaddr(const PIPSocket::Address & ip, WORD port);
     sockaddr* operator->() const { return (sockaddr *)&storage; }
     operator sockaddr*()   const { return (sockaddr *)&storage; }
-    socklen_t GetSize()    const { return sizeof(storage); }
+    socklen_t GetSize() const;
     PIPSocket::Address GetIP() const;
     WORD GetPort() const;
   private:
@@ -468,6 +472,19 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
     addr4->sin_family = AF_INET;
     addr4->sin_addr = ip;
     addr4->sin_port = htons(port);
+  }
+}
+
+
+socklen_t Psockaddr::GetSize() const
+{
+  switch (((sockaddr *)&storage)->sa_family) {
+    case AF_INET :
+      return sizeof(sockaddr_in);
+    case AF_INET6 :
+      return sizeof(sockaddr_in6);
+    default :
+      return sizeof(storage);
   }
 }
 
