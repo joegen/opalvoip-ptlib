@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.27  2002/02/03 19:55:57  dereks
+ * *** empty log message ***
+ *
  * Revision 1.26  2002/01/08 01:32:50  robertj
  * Tidied up some PTRACE debug output.
  *
@@ -728,24 +731,24 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, FALSE);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, FALSE);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
 }
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24F)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, TRUE);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32F)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, TRUE);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, !doVFlip);
 }
 
 
