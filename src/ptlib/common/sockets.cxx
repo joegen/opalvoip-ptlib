@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.26 1996/02/15 14:46:44 robertj Exp $
+ * $Id: sockets.cxx,v 1.27 1996/02/19 13:30:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.27  1996/02/19 13:30:15  robertj
+ * Fixed bug in getting port by service name when specifying service by string number.
+ * Added SO_LINGER option to socket to stop data loss on close.
+ *
  * Revision 1.26  1996/02/15 14:46:44  robertj
  * Added Select() function to PSocket.
  *
@@ -98,6 +102,8 @@
 
 #include <ctype.h>
 
+
+static PTCPSocket dummyForWINSOCK; // Assure winsock is initialised
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -440,7 +446,7 @@ WORD PIPSocket::GetPortByService(const char * protocol, const PString & service)
   if (serv != NULL)
     return ntohs(serv->s_port);
 
-  if (space == P_MAX_INDEX)
+  if (space != P_MAX_INDEX)
     return (WORD)atoi(service(space+1, P_MAX_INDEX));
 
   if (isdigit(service[0]))
@@ -483,7 +489,13 @@ BOOL PIPSocket::_Socket(int type)
 #endif
 #endif
 
-  return TRUE;
+  if (type == SOCK_DGRAM)
+    return TRUE;
+
+  // Wait 10 seconds for close to flush output
+  static linger ling = { 1, 10 };
+  return ConvertOSError(setsockopt(os_handle,
+                          SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
 }
 
 
