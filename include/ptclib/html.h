@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.6 1996/02/08 11:50:38 robertj Exp $
+ * $Id: html.h,v 1.7 1996/02/19 13:18:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.7  1996/02/19 13:18:25  robertj
+ * Removed MSC_VER test as now completely removed from WIN16 library.
+ *
  * Revision 1.6  1996/02/08 11:50:38  robertj
  * More implementation.
  *
@@ -29,7 +32,6 @@
  */
 
 #ifndef _PHTML
-#if !defined(_MSC_VER) || _MSC_VER > 800
 #define _PHTML
 
 #ifdef __GNUC__
@@ -1154,7 +1156,6 @@ PDECLARE_CLASS(PHTML, PStringStream)
 };
 
 
-#endif
 #endif
 
 
