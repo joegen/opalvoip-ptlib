@@ -84,6 +84,8 @@ AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
 dnl ########################################################################
 dnl check the endianness
 
+dnl MSWIN Byte Order,PBYTE_ORDER,PLITTLE_ENDIAN
+
 AC_C_BIGENDIAN()
 if test ${ac_cv_c_bigendian} = yes ; then
   PBYTE_ORDER=PBIG_ENDIAN
@@ -96,6 +98,9 @@ AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
+
+dnl MSWIN DNS Resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
+
 LIBS=""
 AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=$LIBS)
 if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
@@ -104,6 +109,8 @@ fi
 
 dnl ########################################################################
 dnl look for OpenLDAP
+
+dnl MSWIN Open LDAP,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\
 
 if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
   AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
@@ -135,6 +142,8 @@ dnl ########################################################################
 dnl look for OpenSSL
 dnl check for environment vcariable, then assume standard system install
 
+dnl MSWIN Open SSL,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\
+
 if test ${OPENSSLDIR:-unset} != "unset" ; then
   echo "Using ${OPENSSLDIR} for SSL"
   HAVE_LIBSSL=1
@@ -159,6 +168,8 @@ fi
 dnl ########################################################################
 dnl look for expat XML parser
 
+dnl MSWIN Expat XML,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\
+
 AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
 if test "${HAVE_EXPAT:-unset}" = "unset" ; then
   AC_CHECK_LIB(expat, XML_ParserCreate, HAVE_LIBEXPAT=1, HAVE_LIBEXPAT=)
@@ -182,8 +193,18 @@ if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
   ENDLDLIBS="$ENDLDLIBS -lexpat"
 fi
 
+
+dnl ########################################################################
+dnl Speach
+
+dnl MSWIN Speech API,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
+
+
 dnl ########################################################################
 dnl check for pthreads library
+
+dnl MSWIN Semaphore Support,P_HAS_SEMAPHORES
+
 AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
 
 if test ${HAS_PTHREADS} = yes ; then
@@ -198,8 +219,12 @@ if test ${HAS_PTHREADS} = yes ; then
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 fi
 
+
 dnl ########################################################################
 dnl check for dynamic library code (dlopen end friends)
+
+dnl MSWIN DLL Support,P_DYNALINK
+
 LIBS=""
 AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
@@ -208,6 +233,8 @@ fi
 
 dnl ########################################################################
 dnl look for IPV6 functions
+
+dnl MSWIN IPv6 Support,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program Files\Microsoft Visual Studio\VC98\Include\
 
 AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
 [AC_TRY_COMPILE([#include <sys/types.h>
