@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.47  2000/11/16 07:16:58  robertj
+ * Fixed maximum line length of base64 output to be 76 columns not 304.
+ *
  * Revision 1.46  2000/11/14 08:28:44  robertj
  * Fixed bug in base64 encoder, overwriting memory buffer.
  *
@@ -870,7 +873,7 @@ void PBase64::OutputBase64(const BYTE * data)
   out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
   out[encodeLength++] = Binary2Base64[data[2]&0x3f];
 
-  if (++nextLine > 76) {
+  if (++nextLine > 19) { // 76 columns
     if (useCRLFs)
       out[encodeLength++] = '\r';
     out[encodeLength++] = '\n';
