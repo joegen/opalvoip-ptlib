@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.48  2000/11/12 07:57:45  rogerh
+ * *** empty log message ***
+ *
  * Revision 1.47  2000/10/31 08:09:51  rogerh
  * Change return type of PX_GetThreadId() to save unnecessary typecasting
  *
@@ -276,6 +279,14 @@ static void sigSuspendHandler(int)
 }
 
 
+static void sigResumeHandler(int)
+{
+  // do nothing. This is here so the 'signal' is consumed
+  // and stops the application terminating with "User signal 2"
+fprintf(stderr,"RESUMER\n");
+}
+
+
 void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
@@ -452,10 +463,10 @@ void * PThread::PX_ThreadStart(void * arg)
   }
 
   // set the signal handler for SUSPEND_SIG
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = sigSuspendHandler;
-  sigaction(SUSPEND_SIG, &action, 0);
+  struct sigaction suspend_action;
+  memset(&suspend_action, 0, sizeof(suspend_action));
+  suspend_action.sa_handler = sigSuspendHandler;
+  sigaction(SUSPEND_SIG, &suspend_action, 0);
 
   // now call the the thread main routine
   //PTRACE(1, "tlibthrd\tAbout to call Main");
@@ -575,6 +586,13 @@ void PThread::Suspend(BOOL susp)
 {
   PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
   BOOL unlock = TRUE;
+
+#if defined(P_FREEBSD)
+  struct sigaction resume_action;
+  memset(&resume_action, 0, sizeof(resume_action));
+  resume_action.sa_handler = sigResumeHandler;
+  sigaction(RESUME_SIG, &resume_action, 0);
+#endif
 
   if (pthread_kill(PX_threadId, 0) == 0) {
 
