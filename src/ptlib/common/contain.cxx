@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.155  2004/04/15 03:50:35  csoutheren
+ * Fixed problem with MakeUnique
+ *
  * Revision 1.154  2004/04/14 23:34:52  csoutheren
  * Added plugin for data access
  *
@@ -646,7 +649,7 @@ void PContainer::AssignContents(const PContainer & cont)
   }
 
   if (!IsUnique()) {
-  --reference->count;
+    --reference->count;
 
 #if PCONTAINER_USES_CRITSEC
     reference->critSec.Leave();
@@ -719,8 +722,9 @@ BOOL PContainer::MakeUnique()
   if (IsUnique())
     return TRUE;
 
+  Reference * oldReference = reference;
   reference = new Reference(*reference);
-  --reference->count;
+  --oldReference->count;
 
   return FALSE;
 }
