@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.9  2001/03/15 23:41:22  robertj
+ * Fixed bug just introduced so can access regisrtry directly again from PConfig.
+ *
  * Revision 1.8  2001/03/09 05:50:48  robertj
  * Added ability to set default PConfig file or path to find it.
  *
@@ -526,17 +529,13 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
       break;
 
     case Application :
-      if (IsRegistryPath(defaultSection)) {
-        defaultSection = PString();
-        location = defaultSection;
-      }
+      if (IsRegistryPath(defaultSection))
+        location = PString();
       else {
         PProcess & proc = PProcess::Current();
         PString cfgPath = proc.GetConfigurationFile();
-        if (IsRegistryPath(cfgPath)) {
-          defaultSection = PString();
+        if (IsRegistryPath(cfgPath))
           location = cfgPath;
-        }
         else if (!cfgPath) {
           source = NumSources; // Make a file based config
           location = cfgPath;
