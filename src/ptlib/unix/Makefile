@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.20 1997/04/22 11:00:01 craigs Exp $
+# $Id: Makefile,v 1.21 1998/01/04 08:29:37 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.21  1998/01/04 08:29:37  craigs
+# Changed for Linux
+#
 # Revision 1.20  1997/04/22 11:00:01  craigs
 # Added SSL and DLL functions
 #
@@ -92,6 +95,7 @@ SOURCES		= switch.cxx \
 		  uhttpsvc.cxx \
 		  uhttpform.cxx \
 		  uasn.cxx \
+		  uperasn.cxx \
 		  usnmp.cxx \
 		  usocket.cxx \
 		  uicmp.cxx \
@@ -100,7 +104,6 @@ SOURCES		= switch.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
-		  $(COMMONSRC)/pmain.cxx \
 		  $(COMMONSRC)/ptime.cxx \
 		  $(COMMONSRC)/collect.cxx \
 		  $(COMMONSRC)/snmpclnt.cxx \
@@ -109,6 +112,8 @@ SOURCES		= switch.cxx \
 		  $(COMMONSRC)/httpsrvr.cxx \
 		  $(COMMONSRC)/ftpclnt.cxx \
 		  $(COMMONSRC)/ftpsrvr.cxx 
+
+OBJS	= $(OBJDIR)/regex.o
 
 #######################################################
 
@@ -125,6 +130,9 @@ $(OBJDIR)/switch.o: ./switch.cxx
 endif
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
+
+$(OBJDIR)/regex.o:	../../common/ptlib/src/regex.cxx
+	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 
 thelot:
 	make alllibs
@@ -173,3 +181,4 @@ else
 endif
 
 endif
+# Do not delete this line - make depend depends upon it
