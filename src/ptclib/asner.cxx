@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.17  1999/03/09 08:12:38  robertj
+ * Fixed problem with closing a steam encoding twice.
+ *
  * Revision 1.16  1999/01/16 01:28:25  robertj
  * Fixed problems with reading stream multiple times.
  *
@@ -3125,6 +3128,8 @@ void PASN_Stream::PrintOn(ostream & strm) const
 
 void PASN_Stream::SetPosition(PINDEX newPos)
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (newPos > GetSize())
     byteOffset = GetSize();
   else
@@ -3150,12 +3155,14 @@ void PASN_Stream::BeginEncoding()
 
 void PASN_Stream::CompleteEncoding()
 {
-  if (bitOffset != 8) {
-    bitOffset = 8;
-    byteOffset++;
+  if (byteOffset != P_MAX_INDEX) {
+    if (bitOffset != 8) {
+      bitOffset = 8;
+      byteOffset++;
+    }
+    SetSize(byteOffset);
+    byteOffset = P_MAX_INDEX;
   }
-  SetSize(byteOffset);
-  byteOffset = 0;
 }
 
 
@@ -3171,6 +3178,8 @@ BYTE PASN_Stream::ByteDecode()
 
 void PASN_Stream::ByteEncode(unsigned value)
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (bitOffset != 8) {
     bitOffset = 8;
     byteOffset++;
@@ -3199,6 +3208,8 @@ unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 
 void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (nBytes == 0)
     return;
 
@@ -3213,6 +3224,8 @@ void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 
 void PASN_Stream::ByteAlign()
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (bitOffset != 8) {
     bitOffset = 8;
     byteOffset++;
@@ -3556,11 +3569,16 @@ BOOL PPER_Stream::SingleBitDecode()
 
 void PPER_Stream::SingleBitEncode(BOOL value)
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (byteOffset >= GetSize())
     SetSize(byteOffset+10);
+
   bitOffset--;
+
   if (value)
     theArray[byteOffset] |= 1 << bitOffset;
+
   if (bitOffset == 0)
     ByteAlign();
 }
@@ -3604,6 +3622,8 @@ int PPER_Stream::MultiBitDecode(unsigned nBits)
 
 void PPER_Stream::MultiBitEncode(int value, unsigned nBits)
 {
+  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+
   if (nBits == 0)
     return;
 
