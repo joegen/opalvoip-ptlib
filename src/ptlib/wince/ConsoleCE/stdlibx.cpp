@@ -13,6 +13,7 @@
 #include <Atlconv.h>
 #include <winbase.h>
 #include <winnt.h>
+#include <snmp.h>
 
 #include <ptlib/sockets.h>
 
@@ -498,15 +499,6 @@ char * _mktemp (char *temp)
         return(temp);
 }
 
-BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
-{
-	return FALSE;
-}
-
-PEthSocket::Address::Address(const PString & str)
-{
-}
-
 LONG RegOpenKeyEx( HKEY hKey, const char* lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult )
 { USES_CONVERSION; return 
 	RegOpenKeyEx( hKey, A2T(lpSubKey), ulOptions, 
@@ -520,9 +512,9 @@ LONG RegCreateKeyEx( HKEY hKey, const char* lpSub, DWORD dwr, LPSTR lpcls, DWORD
 	dwr, A2T(lpcls), dwo, sam, lpsa, phk, lpdw ); 
 }
 
-LONG RegEnumKey(HKEY hKey, DWORD dwIndex, const char* lpName, DWORD cbName)
-{ USES_CONVERSION; DWORD cb = cbName; return RegEnumKeyEx(
-	hKey, dwIndex, A2T(lpName), &cb, 0L, NULL, NULL, NULL); 
+LONG RegEnumKey(HKEY hKey, DWORD dwIndex, LPTSTR ptcsName, DWORD cbName)
+{	DWORD cb = cbName; 
+	return RegEnumKeyEx( hKey, dwIndex, ptcsName, &cb, 0L, NULL, NULL, NULL ); 
 }
 
 LONG RegDeleteKey( HKEY hKey, const char* lpSubKey )
