@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.16  2002/12/16 06:57:15  robertj
+ * Added ability to specify certain elemets (by name) that are exempt from
+ *   the indent formatting. Useful for XML/RPC where leading white space is
+ *   not ignored by all servers.
+ * Improved the macros for defining RPC functions.
+ *
  * Revision 1.15  2002/12/13 01:04:56  robertj
  * Added copy constructor and assignment operator to XML/RPC structs
  *
@@ -118,7 +124,10 @@ class PXMLRPC : public PObject
       UserFault                       = 1000,
     };
 
-    PXMLRPC(const PURL & url);
+    PXMLRPC(
+      const PURL & url,
+      unsigned options = 0
+    );
 
     void SetTimeout(const PTimeInterval & _timeout) { timeout = _timeout; }
 
@@ -136,10 +145,11 @@ class PXMLRPC : public PObject
   protected:
     BOOL PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
 
-    PURL url;
-    PINDEX  faultCode;
-    PString faultText;
+    PURL          url;
+    PINDEX        faultCode;
+    PString       faultText;
     PTimeInterval timeout;
+    unsigned      options;
 };
 
 /////////////////////////////////////////////////////////////////
@@ -301,73 +311,109 @@ class PXMLRPCStructBase : public PObject {
 #define PXMLRPC_STRUCT_END() \
   };
 
+
 #define PXMLRPC_VARIABLE(base, type, variable, xmltype) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, xmltype, ;, ;)
+
 
 #define PXMLRPC_VARIABLE_INIT(base, type, variable, xmltype, init) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, xmltype, instance=init;, ;)
 
+
 #define PXMLRPC_STRING(base, type, variable) \
         PXMLRPC_VARIABLE(base, type, variable, "string")
+
 
 #define PXMLRPC_STRING_INIT(base, type, variable, init) \
         PXMLRPC_VARIABLE_INIT(base, type, variable, "string", init)
 
+
 #define PXMLRPC_INTEGER(base, type, variable) \
         PXMLRPC_VARIABLE(base, type, variable, "int")
+
 
 #define PXMLRPC_INTEGER_INIT(base, type, variable, init) \
         PXMLRPC_VARIABLE_INIT(base, type, variable, "int", init)
 
+
 #define PXMLRPC_BOOLEAN(base, type, variable) \
         PXMLRPC_VARIABLE(base, type, variable, "boolean")
+
 
 #define PXMLRPC_BOOLEAN_INIT(base, type, variable, init) \
         PXMLRPC_VARIABLE_INIT(base, type, variable, "boolean", init)
 
+
 #define PXMLRPC_DOUBLE(base, type, variable) \
         PXMLRPC_VARIABLE(base, type, variable, "double")
+
 
 #define PXMLRPC_DOUBLE_INIT(base, type, variable, init) \
         PXMLRPC_VARIABLE_INIT(base, type, variable, "double", init)
 
+
 #define PXMLRPC_DATETIME(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "dateTime.iso8601", ;, \
              PString ToString() const { return instance.AsString(PTime::ShortISO8601); } )
+
 
 #define PXMLRPC_BINARY(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "base64", ;, \
                      PString ToString() const { return ToBase64(instance); } \
                      void FromString(const PString & str) { FromBase64(str, instance); } )
 
+
 #define PXMLRPC_STRUCT(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "struct", ;, \
                              PXMLRPCStructBase * GetStruct() const { return &instance; } )
 
 
-#define PXMLRPC_FUNCTION_NOARG_NOREPLY(name) \
+
+#define PXMLRPC_FUNC_NOARG_NOREPLY(name) \
   BOOL name() { return MakeRequest(#name); }
 
-#define PXMLRPC_FUNCTION_1ARG(name, argtype, rpctype) \
+
+#define PXMLRPC_FUNC_SINGLE_ARG(name, vartype, argtype) \
   class name##_in : public PXMLRPCStructBase { \
     public: name##_in(const argtype & var) : variable(var) { EndConstructor(); } \
-    PXMLRPC_VARIABLE(name##_in, argtype, variable, rpctype);
+        vartype(name##_in, argtype, variable);
 
-#define PXMLRPC_FUNCTION_ARGS(name) \
+
+#define PXMLRPC_FUNC_MULTI_ARGS(name) \
   class name##_in : public PXMLRPCStructBase { \
     public: name##_in() { EndConstructor(); }
 
-#define PXMLRPC_FUNCTION_REPLY(name) \
+
+#define PXMLRPC_FUNC_MULTI_REPLY(name) \
   }; \
   class name##_out : public PXMLRPCStructBase { \
     public: name##_out() { EndConstructor(); }
 
-#define PXMLRPC_FUNCTION_NOARGS(name) \
+
+#define PXMLRPC_FUNC_NO_ARGS(name) \
   }; \
   BOOL name(name##_out & reply) \
     { return MakeRequest(#name, name##_in(), reply); }
 
-#define PXMLRPC_FUNCTION_END(name) \
+
+#define PXMLRPC_FUNC_STRUCT_ARG(name) \
+  }; \
+  class name##_in_carrier : public PXMLRPCStructBase { \
+    public: name##_in_carrier(const name##_in & var) : variable(var) { EndConstructor(); } \
+    private: struct var_class : public PXMLRPCVariableBase { \
+      var_class(const name##_in & var) \
+        : PXMLRPCVariableBase("variable", "struct"), instance(var) { } \
+      virtual void PrintOn (ostream & s) const { s << instance; } \
+      virtual PXMLRPCStructBase * GetStruct() const { return (PXMLRPCStructBase *)&instance; } \
+      virtual void Copy(const PXMLRPCVariableBase &) { } \
+      const name##_in & instance; \
+    } variable; \
+  }; \
+  BOOL name(const name##_in & args, name##_out & reply) \
+    { return MakeRequest(#name, name##_in_carrier(args), reply); }
+
+
+#define PXMLRPC_FUNC_NORM_ARGS(name) \
   }; \
   BOOL name(const name##_in & args, name##_out & reply) \
     { return MakeRequest(#name, args, reply); }
