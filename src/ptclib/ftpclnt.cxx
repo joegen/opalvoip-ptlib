@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.9  2000/06/21 01:14:23  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.8  2000/04/07 06:29:46  rogerh
  * Add a short term workaround for an Internal Compiler Error on MAC OS X when
  * returning certain types of PString. Submitted by Kevin Packard.
@@ -193,7 +196,7 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
 
 PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 {
-  if (ExecuteCommand(STAT, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
+  if (ExecuteCommand(STATcmd, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
     PINDEX start = lastResponseInfo.Find('\n');
     if (start != P_MAX_INDEX) {
       PINDEX end = lastResponseInfo.Find('\n', ++start);
