@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.4 1995/04/01 08:05:59 robertj Exp $
+ * $Id: doswin.cxx,v 1.5 1995/06/17 00:59:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.5  1995/06/17 00:59:18  robertj
+ * Moved PPipeChannel::Execute from common dos/windows to individual files.
+ *
  * Revision 1.4  1995/04/01 08:05:59  robertj
  * Fixed yield for straight DOS and QUICKWIN systems.
  *
@@ -242,49 +245,6 @@ BOOL PPipeChannel::Close()
 }
 
 
-BOOL PPipeChannel::Execute()
-{
-  if (hasRun)
-    return FALSE;
-
-  flush();
-  if (os_handle >= 0) {
-    _close(os_handle);
-    os_handle = -1;
-  }
-
-#if defined(_WINDOWS)
-  if ((osError = (int)WinExec(subProgName, SW_HIDE)) < 32) {
-    switch (osError) {
-      case 0 :
-      case 8 :
-        osError = ENOMEM;
-        break;
-      case 5 :
-        osError = EACCES;
-        break;
-      case 2 :
-        break;
-      default :
-        osError += 0x4000;
-    }
-    return ConvertOSError(-2);
-  }
-#else
-  if (!ConvertOSError(system(subProgName)))
-    return FALSE;
-#endif
-
-  if (!fromChild.IsEmpty()) {
-    os_handle = _open(fromChild, _O_RDONLY);
-    if (!ConvertOSError(os_handle))
-      return FALSE;
-  }
-
-  return TRUE;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
@@ -303,9 +263,6 @@ void PThread::Block(BlockFunction isBlockFun, PObject * obj)
   Yield();
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
