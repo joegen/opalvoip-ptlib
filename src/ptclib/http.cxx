@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.90  2003/06/05 00:15:54  rjongbloed
+ * Fixed callto bug created by previous patch.
+ *
  * Revision 1.89  2003/06/04 01:42:05  rjongbloed
  * Fixed h323 scheme, does not have a "password" field.
  *
@@ -653,7 +656,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
         if (pos == P_MAX_INDEX)
           username = UntranslateString(url, LoginTranslation);
         else {
-          hostname = UntranslateString(url.Mid(7, pos-7), LoginTranslation);
+          hostname = UntranslateString(url.Left(pos), LoginTranslation);
           username = UntranslateString(url.Mid(pos+1), LoginTranslation);
         }
       }
@@ -668,7 +671,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
           if (type == "ip" || type == "host")
             hostname = UntranslateString(url, LoginTranslation);
           else
-            username = UntranslateString(url.Mid(7), LoginTranslation);
+            username = UntranslateString(url, LoginTranslation);
         }
       }
     }
