@@ -10,6 +10,29 @@
 #include <remconn.h>
 
 
+PDECLARE_CLASS(PRASDLL, PDynaLink)
+  public:
+    PRASDLL();
+
+  DWORD (FAR PASCAL *Dial)(LPRASDIALEXTENSIONS,LPTSTR,LPRASDIALPARAMS,DWORD,LPVOID,LPHRASCONN);
+  DWORD (FAR PASCAL *HangUp)(HRASCONN);
+  DWORD (FAR PASCAL *GetConnectStatus)(HRASCONN,LPRASCONNSTATUS);
+  DWORD (FAR PASCAL *EnumConnections)(LPRASCONN,LPDWORD,LPDWORD);
+  DWORD (FAR PASCAL *EnumEntries)(LPTSTR,LPTSTR,LPRASENTRYNAME,LPDWORD,LPDWORD);
+} Ras;
+
+PRASDLL::PRASDLL()
+  : PDynaLink("RASAPI.DLL")
+{
+  if (!GetFunction("RasDialA", (Function &)Dial) ||
+      !GetFunction("RasHangUpA", (Function &)HangUp) ||
+      !GetFunction("RasGetConnectStatusA", (Function &)GetConnectStatus) ||
+      !GetFunction("RasEnumConnectionsA", (Function &)EnumConnections) ||
+      !GetFunction("RasEnumEntriesA", (Function &)EnumEntries))
+    Close();
+}
+
+
 PRemoteConnection::PRemoteConnection()
 {
   Construct();
@@ -76,6 +99,8 @@ void PRemoteConnection::Construct()
 BOOL PRemoteConnection::Open()
 {
   Close();
+  if (!Ras.IsLoaded())
+    return FALSE;
 
   RASCONN connection;
   connection.dwSize = sizeof(RASCONN);
@@ -84,12 +109,12 @@ BOOL PRemoteConnection::Open()
   DWORD size = sizeof(connection);
   DWORD numConnections;
 
-  rasError = RasEnumConnections(connections, &size, &numConnections);
+  rasError = Ras.EnumConnections(connections, &size, &numConnections);
 
   if (rasError == ERROR_BUFFER_TOO_SMALL) {
     connections = new RASCONN[size/sizeof(RASCONN)];
     connections[0].dwSize = sizeof(RASCONN);
-    rasError = RasEnumConnections(connections, &size, &numConnections);
+    rasError = Ras.EnumConnections(connections, &size, &numConnections);
   }
 
   if (rasError == 0) {
@@ -126,12 +151,12 @@ BOOL PRemoteConnection::Open()
   strcpy(params.szUserName, userName);
   strcpy(params.szPassword, password);
 
-  rasError = RasDial(NULL, NULL, &params, 0, NULL, &rasConnection);
+  rasError = Ras.Dial(NULL, NULL, &params, 0, NULL, &rasConnection);
   if (rasError == 0)
     return TRUE;
 
   if (rasConnection != NULL) {
-    RasHangUp(rasConnection);
+    Ras.HangUp(rasConnection);
     rasConnection = NULL;
   }
 
@@ -143,7 +168,7 @@ BOOL PRemoteConnection::Open()
 void PRemoteConnection::Close()
 {
   if (rasConnection != NULL) {
-    RasHangUp(rasConnection);
+    Ras.HangUp(rasConnection);
     rasConnection = NULL;
   }
 }
@@ -151,6 +176,9 @@ void PRemoteConnection::Close()
 
 PRemoteConnection::Status PRemoteConnection::GetStatus() const
 {
+  if (!Ras.IsLoaded())
+    return NotInstalled;
+
   if (rasConnection == NULL) {
     switch (rasError) {
       case SUCCESS :
@@ -172,7 +200,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
   else {
     RASCONNSTATUS status;
     status.dwSize = sizeof(status);
-    if (RasGetConnectStatus(rasConnection, &status) == 0) {
+    if (Ras.GetConnectStatus(rasConnection, &status) == 0) {
       switch (status.rasconnstate) {
         case RASCS_Connected :
           return Connected;
@@ -188,6 +216,10 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
 
 PStringArray PRemoteConnection::GetAvailableNames()
 {
+  PStringArray array;
+  if (!Ras.IsLoaded())
+    return array;
+
   RASENTRYNAME entry;
   entry.dwSize = sizeof(RASENTRYNAME);
 
@@ -195,15 +227,14 @@ PStringArray PRemoteConnection::GetAvailableNames()
   DWORD size = sizeof(entry);
   DWORD numEntries;
 
-  DWORD rasError = RasEnumEntries(NULL, NULL, entries, &size, &numEntries);
+  DWORD rasError = Ras.EnumEntries(NULL, NULL, entries, &size, &numEntries);
 
   if (rasError == ERROR_BUFFER_TOO_SMALL) {
     entries = new RASENTRYNAME[size/sizeof(RASENTRYNAME)];
     entries[0].dwSize = sizeof(RASENTRYNAME);
-    rasError = RasEnumEntries(NULL, NULL, entries, &size, &numEntries);
+    rasError = Ras.EnumEntries(NULL, NULL, entries, &size, &numEntries);
   }
 
-  PStringArray array;
   if (rasError == 0) {
     array.SetSize(numEntries);
     for (DWORD i = 0; i < numEntries; i++)
