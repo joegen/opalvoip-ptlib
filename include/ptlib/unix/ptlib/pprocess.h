@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.29  2004/05/23 21:11:39  ykiryanov
+ * Made BeOS PProcess members same as on Linux and Mac
+ *
  * Revision 1.28  2004/04/02 03:37:07  ykiryanov
  * Added timerChangePipe, to make code better
  *
@@ -159,7 +162,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     PAbstractDictionary * configFiles;
 
 
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS) || defined (__BEOS__)
 
   public:
     void SignalTimerChange();
@@ -170,25 +173,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     PMutex     threadMutex;
     int        timerChangePipe[2];
     PHouseKeepingThread * housekeepingThread;
-
-#elif defined(BE_THREADS)
-
-  public:
-    void SignalTimerChange();
-
-  private:
-    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    ThreadDict activeThreads;
-    PMutex activeThreadMutex;
-    PLIST(ThreadList, PThread);
-    ThreadList autoDeleteThreads;
-    PMutex deleteThreadMutex;
-    PHouseKeepingThread * housekeepingThread;
-
-    int        timerChangePipe[2];
-    
-    friend PThread * PThread::Current();
-    friend int32 PThread::ThreadFunction(void * thread);
 
 #elif defined(VX_TASKS)
 
