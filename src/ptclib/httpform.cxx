@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.37  2000/12/18 12:13:08  robertj
+ * Fixed bug in auto-generated HTML in fixed size arrays, should not have add/delete box.
+ *
  * Revision 1.36  2000/12/18 11:41:01  robertj
  * Fixed bug in auto-generated HTML in non-array composite fields
  *
@@ -845,7 +848,8 @@ void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
     html << PHTML::TableRow() << PHTML::TableData("NOWRAP");
     fields[i].GetHTMLTag(html);
     html << PHTML::TableData("NOWRAP");
-    AddArrayControlBox(html, i);
+    if (canAddElements)
+      AddArrayControlBox(html, i);
   }
   html << PHTML::TableEnd();
 }
