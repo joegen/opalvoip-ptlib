@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.27  2000/02/17 12:05:02  robertj
+ * Added better random number generator after finding major flaws in MSVCRT version.
+ *
  * Revision 1.26  1998/11/30 04:50:45  robertj
  * New directory structure
  *
@@ -120,6 +123,7 @@
 #include <ptlib.h>
 #include <ptclib/cypher.h>
 #include <ptclib/mime.h>
+#include <ptclib/random.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -609,13 +613,9 @@ void PTEACypher::GetKey(Key & newKey) const
 
 void PTEACypher::GenerateKey(Key & newKey)
 {
-#ifdef _DEBUG
-  srand(0);
-#else
-  srand((unsigned)(time(NULL)+clock()));
-#endif
+  static PRandom rand; //=1 // Explicitly set seed if need known random sequence
   for (PINDEX i = 0; i < sizeof(Key); i++)
-    newKey.value[i] = (BYTE)rand();
+    newKey.value[i] = (BYTE)rand;
 }
 
 
