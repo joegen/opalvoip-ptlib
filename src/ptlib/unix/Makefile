@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.63  2000/12/19 22:20:26  dereks
+# Add video channel classes to connect to the PwLib PVideoInputDevice class.
+# Add PFakeVideoInput class to generate test images for video.
+#
 # Revision 1.62  2000/12/16 13:00:46  rogerh
 # BeOS changes, submitted by Yuri Kiryanov <openh323@kiryanov.com>
 #
@@ -237,7 +241,7 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx
 endif
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
-V4L_SOURCE := $(COMMON_SRC_DIR)/videoio.cxx video4linux.cxx 
+V4L_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx $(COMMON_SRC_DIR)/videoio.cxx video4linux.cxx $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),linux)
@@ -307,6 +311,7 @@ SOURCES	= \
 	$(GETDATE_SOURCE) \
 	uicmp.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
+	$(COMMON_SRC_DIR)/pvidchan.cxx \
 	socket.cxx \
 	svcproc.cxx \
 	remconn.cxx \

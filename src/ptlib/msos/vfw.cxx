@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.7  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.6  2000/11/09 00:28:38  robertj
  * Changed video capture for step frame grab instead of streamed grabbing.
  *
@@ -46,7 +50,7 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
-
+#include <ptlib/vfakeio.h>
 
 #define STEP_GRAB_CAPTURE 0
 
@@ -170,7 +174,7 @@ PCapStatus::PCapStatus(HWND hWnd)
 // PVideoDevice
 
 PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
-                                     unsigned channel,
+                                     int channel,
                                      ColourFormat colourFmt)
   : PVideoDevice(videoFmt, channel, colourFmt)
 {
@@ -178,11 +182,15 @@ PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
   hCaptureWindow = NULL;
   lastFramePtr = NULL;
   lastFrameSize = 0;
-}
 
+  conversion = NULL;
+}
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
+  if( channelNumber < 0 )
+    return FALSE;
+
   Close();
 
   deviceName = devName;
@@ -202,9 +210,9 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 }
 
 
-BOOL PVideoInputDevice::IsOpen() const
+BOOL PVideoInputDevice::IsOpen() 
 {
-  return hCaptureWindow != NULL;
+	 return hCaptureWindow != NULL;
 }
 
 
@@ -212,7 +220,7 @@ BOOL PVideoInputDevice::Close()
 {
   if (!IsOpen())
     return FALSE;
-
+ 
   Stop();
 
   ::PostThreadMessage(captureThread->GetThreadId(), WM_QUIT, 0, 0L);
@@ -302,7 +310,7 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  BOOL running = IsCapturing();
+ BOOL running = IsCapturing();
   if (running)
     Stop();
 
@@ -367,8 +375,8 @@ PStringList PVideoInputDevice::GetDeviceNames() const
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
-  if (IsOpen())
-    return PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
+   if (IsOpen())
+     return PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
 
   return 0;
 }
@@ -523,7 +531,7 @@ BOOL PVideoInputDevice::InitialiseCapture()
 
 void PVideoInputDevice::HandleCapture()
 {
-  if (InitialiseCapture()) {
+   if (InitialiseCapture()) {
     threadStarted.Signal();
 
     MSG msg;
@@ -540,6 +548,5 @@ void PVideoInputDevice::HandleCapture()
 
   threadStarted.Signal();
 }
-
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.5  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.4  2000/07/26 02:54:41  robertj
  * Fixed platform dependent code changing public functions to protected.
  *
@@ -70,6 +74,5 @@
 
   friend class PVideoInputThread;
 };
-
 
 #endif
