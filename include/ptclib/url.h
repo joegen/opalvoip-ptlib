@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.16  2001/09/28 00:32:24  robertj
+ * Broke out internal static function for unstranslating URL strings.
+ *
  * Revision 1.15  1999/03/09 08:01:47  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -186,6 +189,7 @@ class PURL : public PObject
       /// Translate the query parameters field for a URL.
       QueryTranslation
     };
+
     /**Translate a string from general form to one that can be included into
        a URL. All reserved characters for the particular field type are
        escaped.
@@ -194,6 +198,18 @@ class PURL : public PObject
        String for the URL ready translation.
      */
     static PString TranslateString(
+      const PString & str,    /// String to be translated.
+      TranslationType type    /// Type of translation.
+    );
+
+    /**Untranslate a string from a form that was included into a URL into a
+       normal string. All reserved characters for the particular field type
+       are unescaped.
+
+       @return
+       String from the URL untranslated.
+     */
+    static PString UntranslateString(
       const PString & str,    /// String to be translated.
       TranslationType type    /// Type of translation.
     );
