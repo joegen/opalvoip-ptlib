@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.38  2003/04/27 23:52:57  craigs
+ * Fixed problem with SHA1 not calling Start
+ *
  * Revision 1.37  2003/04/17 12:12:59  robertj
  * Added windows library inclusion for optional openssl.
  *
@@ -521,6 +524,7 @@ void PMessageDigest5::Complete(Code & codeResult)
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
   shaContext = NULL;
+  Start();
 }
 
 PMessageDigestSHA1::~PMessageDigestSHA1()
