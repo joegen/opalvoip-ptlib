@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.9 1995/06/17 11:12:17 robertj Exp $
+ * $Id: args.h,v 1.10 1995/12/10 11:26:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
+ * Revision 1.10  1995/12/10 11:26:38  robertj
+ * Fixed signed/unsigned bug in shift count.
+ *
  * Revision 1.9  1995/06/17 11:12:17  robertj
  * Documentation update.
  *
@@ -244,7 +247,7 @@ PDECLARE_CLASS(PArgList, PObject)
     PStringArray argumentList;
     // The array of associated strings to options.
 
-    PINDEX       shift;
+    int          shift;
     // Shift count for the parameters in the argument list.
 };
 
