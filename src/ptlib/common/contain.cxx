@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.21 1994/07/27 05:58:07 robertj Exp $
+ * $Id: contain.cxx,v 1.22 1994/08/01 03:40:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.21  1994/07/27 05:58:07  robertj
+ * Revision 1.22  1994/08/01 03:40:28  robertj
+ * Fixed PString() constructor from integer
+ *
+ * Revision 1.21  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.20  1994/07/25  03:38:38  robertj
@@ -242,12 +245,13 @@ void PDumpMemoryLeaks()
   PointerHashTableStruct * entry = PointerHashTable;
   for (int i = 0; i < PointerHashTableSize; i++, entry++) {
     if (entry->ptr != NULL) {
-      PError << entry->fileName << '(' << entry->line << ") : memory leak : '"
+      PError << (entry->fileName != NULL ? entry->fileName : "<Unknown>")
+             << '(' << entry->line << ") : memory leak : '"
              << entry->className << "' @"
              << resetiosflags(ios::basefield) << setiosflags(ios::hex)
              << setw(8) << setfill('0') << (long)(entry->ptr)
              << resetiosflags(ios::basefield) << setiosflags(ios::dec)
-             << setw(1) << " (" << entry->size << ')' << endl;
+             << setw(1) << " [" << entry->size << ']' << endl;
     }
   }
 }
@@ -549,14 +553,16 @@ PString::PString(ConversionType type, const char * str)
 }
 
 
-static void ltostr(long value, unsigned base, char * str)
+static char * ltostr(long value, unsigned base, char * str)
 {
   if (value >= (long)base)
-    ltostr(value/base, base, str+1);
-  else if (value < 10)
+    str = ltostr(value/base, base, str);
+  value %= base;
+  if (value < 10)
     *str = (char)(value + '0');
   else
     *str = (char)(value + 'A'-10);
+  return str+1;
 }
 
 
