@@ -1,5 +1,7 @@
 AC_INIT(include/ptlib.h)
 
+AC_CONFIG_SUBDIRS(plugins)
+
 AC_PROG_CXX
 
 dnl ########################################################################
@@ -246,6 +248,59 @@ dnl
 if test ${OSTYPE} != Darwin ; then
   AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
 fi
+
+dnl ########################################################################
+dnl check for regex library
+AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
+if test "x$HAS_REGEX" != "x" ; then
+  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
+fi
+AC_SUBST(HAS_REGEX)
+AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
+
+
+dnl ########################################################################
+dnl check for dynamic library code (dlopen end friends)
+
+dnl MSWIN DLL Support,,P_DYNALINK
+
+LIBS=""
+if test ${OSTYPE} = Darwin ; then
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
+else
+  AC_CHECK_HEADERS(dlfcn.h, P_DYNALINK=1)
+  if test "u${P_DYNALINK:-nset}" != "unset" ; then
+    AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+  else
+    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
+    if test ${HAS_LIBDL} = yes ; then
+      AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+    fi
+  fi
+fi
+
+dnl #########################################################################
+dnl check to see if plugins enabled
+dnl MSWIN Plugin Support,,P_HAS_PLUGINS
+plugins="no"
+AC_MSG_CHECKING(if plugins support needs to be compiled)
+AC_ARG_ENABLE(plugins,
+       [  --enable-plugins        enable plugins' support in PWLIB],
+       plugins="yes")
+
+if test "${plugins}" = "no" ; then
+  AC_MSG_RESULT(no)
+  AC_SUBST(HAS_PLUGINS, 0)
+elif test "${P_DYNALINK:-unset}" = "unset" ; then
+  AC_MSG_RESULT(plugins disabled as dlopen not available)
+  AC_SUBST(HAS_PLUGINS, 0)
+else
+  AC_MSG_RESULT(plugins enabled)
+  AC_SUBST(HAS_PLUGINS, 1)
+  AC_DEFINE(P_HAS_PLUGINS, 1, "plugins enabled")
+fi
+
+AC_DEFINE_UNQUOTED(P_DEFAULT_PLUGIN_DIR, "${INSTALLPREFIX}/pwlib/lib")
 
 dnl #########################################################################
 dnl  Check for FIREWIRE if available, from GnomeMeeting
@@ -557,22 +612,6 @@ fi
 
 
 dnl ########################################################################
-dnl check for dynamic library code (dlopen end friends)
-
-dnl MSWIN_DISPLAY dll,DLL Support
-dnl MSWIN_DEFINE  dll,P_DYNALINK
-
-LIBS=""
-if test ${OSTYPE} != Darwin ; then
-  AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
-  if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-    AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
-  fi
-else
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
-fi
-
-dnl ########################################################################
 dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
@@ -617,16 +656,6 @@ if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
   echo "No Video Capture support"
 fi
-
-
-dnl ########################################################################
-dnl check for regex library
-AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
-if test "x$HAS_REGEX" != "x" ; then
-  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
-fi
-AC_SUBST(HAS_REGEX)
-AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
 
 
 dnl ########################################################################
