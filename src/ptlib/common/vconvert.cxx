@@ -25,6 +25,9 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.6  2001/03/06 23:48:32  robertj
+ * Fixed naming convention on video converter classes.
+ *
  * Revision 1.5  2001/03/03 23:25:07  robertj
  * Fixed use of video conversion function, returning bytes in destination frame.
  *
@@ -51,8 +54,9 @@
 #include <ptlib/vconvert.h>
 
 
-///////////////////////////////////////////////////////////////////////////////
-// PVideoConvert
+#define PSTANDARD_COLOUR_CONVERTER(from,to) \
+  PCOLOUR_CONVERTER(P_##from##_##to,#from,#to)
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PColourConverter
@@ -141,7 +145,7 @@ BOOL PColourConverter::ConvertInPlace(BYTE * frameBuffer,
   v=(BYTE)(((int)50*r  -(int)42*g -(int)8*b+12800)/100); \
 
 
-static void RGBtoYUV411(unsigned width, unsigned height,
+static void RGBtoYUV411p(unsigned width, unsigned height,
                         const BYTE * rgb, BYTE * yuv,
                         unsigned rgbIncrement)
 {
@@ -173,25 +177,25 @@ static void RGBtoYUV411(unsigned width, unsigned height,
 }
 
 
-PCOLOUR_CONVERTER(RGB24toYUV411,"RGB24","YUV411P")
+PSTANDARD_COLOUR_CONVERTER(RGB24,YUV411P)
 {
-  RGBtoYUV411(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 3);
+  RGBtoYUV411p(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 3);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
 }
 
 
-PCOLOUR_CONVERTER(RGB32toYUV411,"RGB32","YUV411P")
+PSTANDARD_COLOUR_CONVERTER(RGB32,YUV411P)
 {
-  RGBtoYUV411(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 4);
+  RGBtoYUV411p(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 4);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
 }
 
 
-PCOLOUR_CONVERTER(Yuv422ToYuv411p,"YUV422","YUV411P")
+PSTANDARD_COLOUR_CONVERTER(YUV422,YUV411P)
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
@@ -226,7 +230,7 @@ PCOLOUR_CONVERTER(Yuv422ToYuv411p,"YUV422","YUV411P")
 
 #define LIMIT(x) (unsigned char) (((x > 0xffffff) ? 0xff0000 : ((x <= 0xffff) ? 0 : x & 0xff0000)) >> 16)
 
-PCOLOUR_CONVERTER(Yuv411ToRgb32,"YUV411","RGB32")
+PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
@@ -291,7 +295,7 @@ PCOLOUR_CONVERTER(Yuv411ToRgb32,"YUV411","RGB32")
 }
 
 
-PCOLOUR_CONVERTER(Rgb24ToRgb32,"RGB24","RGB32")
+PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
 {
   // Go from bottom to top so can do in place conversion
   const BYTE * src = srcFrameBuffer+srcFrameBytes-1;
