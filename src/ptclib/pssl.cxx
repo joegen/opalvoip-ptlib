@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.16 2000/11/14 08:33:16 robertj Exp $
+ * $Id: pssl.cxx,v 1.17 2000/11/27 06:46:16 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.17  2000/11/27 06:46:16  robertj
+ * Added asserts with SSL error message text.
+ *
  * Revision 1.16  2000/11/14 08:33:16  robertj
  * Added certificate and private key classes.
  *
@@ -356,6 +359,16 @@ static int VerifyCallBack(int ok, X509_STORE_CTX * ctx)
 }
 
 
+static void PSSLAssert(const char * msg)
+{
+  char buf[256];
+  strcpy(buf, msg);
+  ERR_error_string(ERR_peek_error(), &buf[strlen(msg)]);
+  PTRACE(1, "SSL\t" << buf);
+  PAssertAlways(buf);
+}
+
+
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
   PINDEX i;
@@ -374,6 +387,9 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
       seed[i] = (BYTE)rand();
     RAND_seed(seed, sizeof(seed));
 
+    // set up multithread stuff
+    CRYPTO_set_locking_callback(LockingCallback);
+
     needInitialisation = FALSE;
   }
 
@@ -382,14 +398,16 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
   // create the new SSL context
   SSL_METHOD * meth = SSLv23_method();
   context  = SSL_CTX_new(meth);
-  PAssert(context != NULL, "Cannot create master SSL context");
+  if (context == NULL)
+    PSSLAssert("Error creating context: ");
 
   // Shutdown
   SSL_CTX_set_quiet_shutdown(context, 1);
 
   // Set default locations
-  PAssert(SSL_CTX_load_verify_locations(context, NULL, ".") && 
-          SSL_CTX_set_default_verify_paths(context), "Cannot set CAfile and path");
+  if (!SSL_CTX_load_verify_locations(context, NULL, ".") ||
+      !SSL_CTX_set_default_verify_paths(context))
+    PSSLAssert("Cannot set CAfile and path: ");
 
   if (sessionId != NULL) {
     if (idSize == 0)
@@ -400,9 +418,6 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 
   // set default verify mode
   SSL_CTX_set_verify(context, SSL_VERIFY_NONE, VerifyCallBack);
-
-  // set up multithread stuff
-  CRYPTO_set_locking_callback(LockingCallback);
 }
 
 
@@ -473,6 +488,8 @@ PSSLChannel::PSSLChannel(PSSLContext * ctx, BOOL autoDel)
   }
 
   ssl = SSL_new(*context);
+  if (ssl == NULL)
+    PSSLAssert("Error creating channel: ");
 }
 
 
