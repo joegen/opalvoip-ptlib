@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.11  1998/11/30 02:50:52  robertj
+ * New directory structure
+ *
  * Revision 1.10  1998/09/23 06:19:42  robertj
  * Added open source copyright license.
  *
@@ -69,7 +72,7 @@
 #pragma interface
 #endif
 
-#include <inetprot.h>
+#include <ptclib/inetprot.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
