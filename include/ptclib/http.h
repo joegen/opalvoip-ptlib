@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.28 1998/02/03 06:29:38 robertj Exp $
+ * $Id: http.h,v 1.29 1998/04/14 03:42:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.29  1998/04/14 03:42:59  robertj
+ * Fixed error code propagation in HTTP client.
+ *
  * Revision 1.28  1998/02/03 06:29:38  robertj
  * Added local address and port to PHTTPRequest.
  *
@@ -399,9 +402,9 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
      */
 
     BOOL GetDocument(
-      const PURL & url,          // Universal Resource Locator for document.
-      const PMIMEInfo & outMIME, // MIME info in request
-      PMIMEInfo & replyMIME      // MIME info in response
+      const PURL & url,         // Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      // MIME info in request
+      PMIMEInfo & replyMIME     // MIME info in response
     );
     /* Get the document specified by the URL.
 
@@ -410,9 +413,9 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
      */
 
     BOOL GetHeader(
-      const PURL & url,          // Universal Resource Locator for document.
-      const PMIMEInfo & outMIME, // MIME info in request
-      PMIMEInfo & replyMIME      // MIME info in response
+      const PURL & url,         // Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      // MIME info in request
+      PMIMEInfo & replyMIME     // MIME info in response
     );
     /* Get the header for the document specified by the URL.
 
@@ -423,7 +426,7 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
 
     BOOL PostData(
       const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & outMIME,    // MIME info in request
+      PMIMEInfo & outMIME,          // MIME info in request
       const PStringToString & data, // Information posted to the HTTP server.
       PMIMEInfo & replyMIME         // MIME info in response
     );
@@ -434,7 +437,7 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
      */
 
   protected:
-    BOOL AssureConnect(const PURL & url);
+    BOOL AssureConnect(const PURL & url, PMIMEInfo & outMIME);
 };
 
 
