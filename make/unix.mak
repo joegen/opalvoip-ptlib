@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.58  2000/01/25 04:55:36  robertj
+# Added FreeBSD support for distinction between v3.x and later versions. Thanks Roger Hardiman.
+#
 # Revision 1.57  2000/01/25 04:05:23  robertj
 # Fixed make files for GUI systems and moved object directories to lib directory.
 #
@@ -328,7 +331,7 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-OSRELEASE	:= $(subst -RELEASE,,$(shell uname -r))
+OSRELEASE	:= $(word 1,$(subst ., ,$(strip $(shell uname -r))))
 
 STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
 
