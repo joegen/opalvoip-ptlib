@@ -11,12 +11,14 @@
 #ifdef WCE_NO_EXTERNAL_STREAMS
 ostream_withassign cerr;
 ostream_withassign cout;
+ostream_withassign clog;
 
 static Iostream_init  __InitCerr(cerr,1);
 static Iostream_init  __InitCout(cout,-1);
 
 PStringStream cerr;
 PStringStream cout;
+PStringStream clog;
 #endif // WCE_NO_EXTERNAL_STREAMS
 
 /*******************************************************************************/
