@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.15 1997/08/28 13:56:34 robertj Exp $
+ * $Id: httpsvc.h,v 1.16 1997/10/30 10:22:35 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.16  1997/10/30 10:22:35  robertj
+ * Added ability to customise regisration text by application.
+ *
  * Revision 1.15  1997/08/28 13:56:34  robertj
  * Fixed bug where HTTP directory was not processed for macros.
  *
@@ -106,8 +109,9 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     static PHTTPServiceProcess & Current();
 
-    virtual void SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
-    { }
+    virtual void AddRegisteredText(PHTML & html);
+    virtual void AddUnregisteredText(PHTML & html);
+    virtual void SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &);
 
   protected:
     PSocket  * httpListeningSocket;
