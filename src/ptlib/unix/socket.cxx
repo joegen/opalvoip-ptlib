@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.106  2004/05/06 11:28:30  rjongbloed
+ * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
+ *
  * Revision 1.105  2004/05/05 06:52:37  ykiryanov
  * Made BeOS changes
  *
@@ -355,7 +358,7 @@ int PX_NewHandle(const char *, int);
 void P_fd_set::Construct()
 {
   max_fd = PProcess::Current().GetMaxHandles();
-  set = (fd_set *)new char[(max_fd+7)>>3];
+  set = (fd_set *)malloc((max_fd+7)>>3);
 }
 
 

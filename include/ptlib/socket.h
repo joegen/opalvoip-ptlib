@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.47  2004/05/06 11:28:30  rjongbloed
+ * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
+ *
  * Revision 1.46  2004/04/27 04:37:50  rjongbloed
  * Fixed ability to break of a PSocket::Select call under linux when a socket
  *   is closed by another thread.
@@ -605,7 +608,7 @@ class P_fd_set {
     P_fd_set(SOCKET fd);
     ~P_fd_set()
       {
-        delete[] set;
+        free(set);
       }
 
     P_fd_set & operator=(SOCKET fd);
