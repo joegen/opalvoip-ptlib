@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.36 1996/03/26 00:57:54 robertj Exp $
+ * $Id: sockets.cxx,v 1.37 1996/03/31 09:06:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,10 +8,8 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.36  1996/03/26 00:57:54  robertj
- * Added contructor that takes PTCPSocket so avoid copy constructor being used instead of accept.
- * Added GetLocalAddress() variant that returns port number as well.
- * Removed Linger settings on Connect and Accept.
+ * Revision 1.37  1996/03/31 09:06:41  robertj
+ * Added socket shutdown function.
  *
  * Revision 1.35  1996/03/18 13:33:18  robertj
  * Fixed incompatibilities to GNU compiler where PINDEX != int.
@@ -140,16 +138,22 @@ static PTCPSocket dummyForWINSOCK; // Assure winsock is initialised
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
 
+BOOL PSocket::Shutdown(ShutdownValue value)
+{
+  return ConvertOSError(::shutdown(os_handle, value));
+}
+
+
 BOOL PSocket::SetOption(int option, int value)
 {
-  return ConvertOSError(setsockopt(os_handle,
+  return ConvertOSError(::setsockopt(os_handle,
                            SOL_SOCKET, option, (char *)&value, sizeof(value)));
 }
 
 
 BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
 {
-  return ConvertOSError(setsockopt(os_handle,
+  return ConvertOSError(::setsockopt(os_handle,
                              SOL_SOCKET, option, (char *)valuePtr, valueSize));
 }
 
@@ -157,14 +161,14 @@ BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
 BOOL PSocket::GetOption(int option, int & value)
 {
   int valSize = sizeof(value);
-  return ConvertOSError(getsockopt(os_handle,
+  return ConvertOSError(::getsockopt(os_handle,
                                 SOL_SOCKET, option, (char *)&value, &valSize));
 }
 
 
 BOOL PSocket::GetOption(int option, void * valuePtr, int valueSize)
 {
-  return ConvertOSError(getsockopt(os_handle,
+  return ConvertOSError(::getsockopt(os_handle,
                             SOL_SOCKET, option, (char *)valuePtr, &valueSize));
 }
 
@@ -360,11 +364,14 @@ PString PIPSocket::GetName() const
 
 PString PIPSocket::GetHostName()
 {
-  char buf[50];
-  if (gethostname(buf, sizeof(buf)) == 0)
-    return buf;
-  else
+  PString name;
+  if (gethostname(name.GetPointer(50), 49) != 0)
     return "localhost";
+
+  if (name.Find('.') != P_MAX_INDEX)
+    return name;
+
+  return GetHostName(name);
 }
 
 
@@ -375,9 +382,9 @@ PString PIPSocket::GetHostName(const PString & hostname)
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
   if (temp != 0)
-    host_info = gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
+    host_info = ::gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
   else
-    host_info = gethostbyname(hostname);
+    host_info = ::gethostbyname(hostname);
 
   if (host_info != NULL)
     return host_info->h_name;
@@ -391,7 +398,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
 PString PIPSocket::GetHostName(const Address & addr)
 {
   struct hostent * host_info =
-                  gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+                ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
   if (host_info != NULL)
     return host_info->h_name;
   else
@@ -420,7 +427,7 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
 
   // otherwise lookup the name as a host name
   struct hostent * host_info;
-  if ((host_info = gethostbyname(hostname)) == NULL)
+  if ((host_info = ::gethostbyname(hostname)) == NULL)
     return FALSE;
 
   memcpy(&addr, host_info->h_addr, sizeof(addr));
@@ -450,10 +457,10 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
   if (temp != 0)
-    BuildAliases(gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
+    BuildAliases(::gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
                  aliases);
   else
-    BuildAliases(gethostbyname(hostname), aliases);
+    BuildAliases(::gethostbyname(hostname), aliases);
 
   return aliases;
 }
@@ -462,7 +469,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
   PStringArray aliases;
-  BuildAliases(gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
+  BuildAliases(::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
                aliases);
 
   return aliases;
@@ -473,7 +480,7 @@ BOOL PIPSocket::GetLocalAddress(Address & addr)
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
   addr = address.sin_addr;
@@ -485,20 +492,19 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
   addr = address.sin_addr;
   portNum = ntohs(address.sin_port);
   return TRUE;
 }
-
-
+ 
 BOOL PIPSocket::GetPeerAddress(Address & addr)
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
   addr = address.sin_addr;
@@ -510,7 +516,7 @@ BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
   addr = address.sin_addr;
@@ -523,7 +529,7 @@ PString PIPSocket::GetLocalHostName()
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return PString();
 
   struct hostent * host_info = gethostbyaddr(
@@ -536,7 +542,7 @@ PString PIPSocket::GetPeerHostName()
 {
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+  if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return PString();
 
   struct hostent * host_info = gethostbyaddr(
@@ -745,8 +751,8 @@ BOOL PTCPSocket::Connect(const PString & host)
     return FALSE;
 
   // attempt to connect
-  if (_Connect(host))
-      return TRUE;
+  if (_Connect(host)) 
+    return TRUE;
 
   os_close();
   return FALSE;
@@ -778,8 +784,15 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  int size = sizeof(address);
+  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
+                                          (struct sockaddr *)&address, &size)))
+    return FALSE;
+
   port = ((PIPSocket &)socket).GetPort();
-  return ConvertOSError(os_handle = os_accept(socket.GetHandle(), NULL, NULL));
+  return TRUE;
 }
 
 
