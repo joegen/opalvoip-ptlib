@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.20 1994/10/23 03:46:41 robertj Exp $
+ * $Id: osutils.cxx,v 1.21 1994/10/30 11:36:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.20  1994/10/23 03:46:41  robertj
+ * Revision 1.21  1994/10/30 11:36:58  robertj
+ * Fixed missing space in tine format string.
+ *
+ * Revision 1.20  1994/10/23  03:46:41  robertj
  * Shortened OS error assert.
  *
  * Revision 1.19  1994/09/25  10:51:04  robertj
@@ -212,7 +215,7 @@ PString PTime::AsString(TimeFormat format) const
   switch (format) {
     case LongDateTime :
     case LongDate :
-      fmt += "wwww";
+      fmt += "wwww ";
       switch (GetDateOrder()) {
         case MonthDayYear :
           fmt += "MMMM d, yyyy";
@@ -227,7 +230,7 @@ PString PTime::AsString(TimeFormat format) const
 
     case MediumDateTime :
     case MediumDate :
-      fmt += "www";
+      fmt += "www ";
       switch (GetDateOrder()) {
         case MonthDayYear :
           fmt += "MMM d, yy";
