@@ -23,7 +23,22 @@ Release 1.1pl17
 
 	Fixed bug that causes crash when gettng cursor/selection position in
 	a PEditBox.
+
+	Added flags for controlling file sharing.
+
+	Added start of video I/O abstraction classes.
 	
+	Added runtime_malloc() function for cases where memory check code must
+	be bypassed.
+
+	Fixed bug when PWaveFormat is assigned to itself.
+
+	Fixed shutdown issues with buffers in use in PSoundChannel.
+
+	Fixed potential race condition in OSS initialise (Unix sound).
+
+	Fixed BSD compatibility for OSS sound usage.
+
 
 Release 1.1pl16
 ------------
