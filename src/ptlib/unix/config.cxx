@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.36  2004/04/03 23:55:59  csoutheren
+ * Added fix for PConfig environment variables under Linux
+ *   Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.35  2003/03/17 08:10:59  robertj
  * Fixed bug with parsing lines with no equal sign
  *
@@ -572,13 +576,15 @@ void PConfig::Construct(Source src,
                         const PString & appname,
                         const PString & /*manuf*/)
 {
+  // handle cnvironment configs differently
+  if (src == PConfig::Environment)  {
+    config = configDict->GetEnvironmentInstance();
+    return;
+  }
+  
   PString name;
   PFilePath filename, readFilename;
-
-  // handle cnvironment configs differently
-  if (src == PConfig::Environment) 
-    config = configDict->GetEnvironmentInstance();
-
+  
   // look up file name to read, and write
   if (src == PConfig::System)
     LocateFile(SYS_CONFIG_NAME, readFilename, filename);
