@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.57 1997/01/04 06:54:38 robertj Exp $
+ * $Id: sockets.cxx,v 1.58 1997/01/04 07:42:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.58  1997/01/04 07:42:18  robertj
+ * Fixed GCC Warnings.
+ *
  * Revision 1.57  1997/01/04 06:54:38  robertj
  * Added missing canonical name to alias list.
  *
@@ -608,7 +611,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     SetAt(key, host);
   }
 
-  return host->GetHostAddress() != 0 ? host : NULL;
+  return host->GetHostAddress() != 0 ? host : 0;
 }
 
 
@@ -695,7 +698,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     SetAt(key, host);
   }
 
-  return host->GetHostAddress() != 0 ? host : NULL;
+  return host->GetHostAddress() != 0 ? host : 0;
 }
 
 
