@@ -2857,7 +2857,7 @@ if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
 fi
 
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  ENDLDLIBS="$ENDLDLIBS $HAVE_DYNALINK"
+  ENDLDLIBS="$ENDLDLIBS -ldl"
 fi
 
 ac_config_files="$ac_config_files make/ptbuildopts.mak"
