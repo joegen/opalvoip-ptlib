@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.25 1998/01/26 00:35:21 robertj Exp $
+ * $Id: socket.h,v 1.26 1998/08/25 14:07:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.26  1998/08/25 14:07:42  robertj
+ * Added getprotobyxxx wrapper functions.
+ *
  * Revision 1.25  1998/01/26 00:35:21  robertj
  * Fixed documentation of PSocket::Select().
  *
@@ -219,7 +222,26 @@ PDECLARE_CLASS(PSocket, PChannel)
        <H2>Returns:</H2>
        TRUE if the shutdown was performed
      */
-    
+
+    static WORD GetProtocolByName(
+      const PString & name      // Name of protocol
+    );
+    /* Get the number of the protocol associated with the specified name.
+
+       <H2>Returns:</H2>
+       Number of protocol or 0 if the protocol was not found.
+     */
+
+    static PString GetNameByProtocol(
+      WORD proto                // Number of protocol
+    );
+    /* Get the name of the protocol number specified.
+
+       <H2>Returns:</H2>
+       Name of protocol or the number if the protocol was not found.
+     */
+
+
     virtual WORD GetPortByService(
       const PString & service   // Name of service to get port number for.
     ) const;
