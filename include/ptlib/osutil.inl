@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.23 1995/01/09 12:34:25 robertj Exp $
+ * $Id: osutil.inl,v 1.24 1995/01/11 09:45:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.23  1995/01/09 12:34:25  robertj
+ * Revision 1.24  1995/01/11 09:45:02  robertj
+ * Documentation and normalisation.
+ *
+ * Revision 1.23  1995/01/09  12:34:25  robertj
  * Removed unnecesary return value from I/O functions.
  *
  * Revision 1.22  1994/10/24  00:07:01  robertj
@@ -161,17 +164,11 @@ PINLINE BOOL PTimeInterval::operator<=(long msecs) const
 PINLINE PTime::PTime(time_t t)
   : theTime(t) { }
 
-PINLINE PTime::PTime(const PTime & t)
-  : theTime(t.theTime) { }
-
-PINLINE PTime & PTime::operator=(const PTime & t)
-  { theTime = t.theTime; return *this; }
-
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(theTime); }
 
 PINLINE void PTime::PrintOn(ostream & strm) const
-  { strm << AsString(); }
+  { strm << AsString(ShortDateTime); }
 
 PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
