@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.34  1998/11/22 08:11:37  craigs
+ * *** empty log message ***
+ *
  * Revision 1.33  1998/11/14 10:37:38  robertj
  * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
  *
@@ -435,7 +438,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 //  PEthSocket
 //
 
-PEthSocket::PEthSocket(PINDEX, PINDEX)
+PEthSocket::PEthSocket(PINDEX, PINDEX, PINDEX)
 {
   medium = MediumUnknown;
   filterMask = FilterDirected|FilterBroadcast;
@@ -554,7 +557,7 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 
 }
 
-
+/*
 PString PEthSocket::GetGatewayInterface() const
 {
   PTextFile procfile;
@@ -577,6 +580,7 @@ PString PEthSocket::GetGatewayInterface() const
 
   return iface;
 }
+*/
 
 
 BOOL PEthSocket::GetAddress(Address & addr)
