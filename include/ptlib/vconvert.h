@@ -23,8 +23,12 @@
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
+ *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.8  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.7  2001/03/08 23:36:02  robertj
  * Added backward compatibility SetFrameSize() function.
  * Added internal SimpleConvert() function for same type converters.
@@ -219,6 +223,14 @@ class PColourConverter : public PObject
       unsigned width,   /// Width of frame (used for both src and dst)
       unsigned height   /// Height of frame (used for both src and dst)
     );
+
+    /**Return the output frame size
+      */
+    BOOL GetDstFrameSize(unsigned &w, unsigned &h) const;
+
+    /**Return the input frame size
+      */
+    BOOL GetSrcFrameSize(unsigned &w, unsigned &h) const;
 
 
   protected:
