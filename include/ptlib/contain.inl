@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.29 1995/01/09 12:36:28 robertj Exp $
+ * $Id: contain.inl,v 1.30 1995/03/12 04:38:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.29  1995/01/09 12:36:28  robertj
+ * Revision 1.30  1995/03/12 04:38:01  robertj
+ * Added assignment operator for const char * for efficiency.
+ *
+ * Revision 1.29  1995/01/09  12:36:28  robertj
  * Changes due to Mac port.
  *
  * Revision 1.28  1994/12/12  13:13:12  robertj
@@ -237,6 +240,9 @@ PINLINE PCaselessString::PCaselessString(const PString & str)
 
 PINLINE PCaselessString::PCaselessString(int dummy,const PCaselessString * str)
   : PString(dummy, str) { }
+
+PINLINE PCaselessString & PCaselessString::operator=(const char * cstr)
+  { PString::operator=(cstr); return *this; }
 
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }
