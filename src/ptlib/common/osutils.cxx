@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.213  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.212  2004/04/03 06:54:29  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -1839,7 +1842,7 @@ BOOL PProcess::IsInitialised()
 
 PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PProcess::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PProcess), PInvalidCast);
   return productName.Compare(((const PProcess &)obj).productName);
 }
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.27  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.26  2004/03/22 10:15:28  rjongbloed
  * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
  *   when goes out of scope.
@@ -184,7 +187,7 @@ int PChannelStreamBuffer::sync()
   int inAvail = egptr() - gptr();
   if (inAvail > 0) {
     setg(eback(), egptr(), egptr());
-    if (channel->IsDescendant(PFile::Class()))
+    if (PIsDescendant(channel, PFile))
       ((PFile *)channel)->SetPosition(-inAvail, PFile::Current);
   }
 
@@ -203,7 +206,7 @@ streampos PChannelStreamBuffer::seekoff(streamoff off,
 #endif
 {
   sync();
-  if (channel->IsDescendant(PFile::Class())) {
+  if (PIsDescendant(channel, PFile)) {
     PFile * file = (PFile *)channel;
     file->SetPosition(off, (PFile::FilePositionOrigin)dir);
     return file->GetPosition();
@@ -250,7 +253,7 @@ PChannel::~PChannel()
 
 PObject::Comparison PChannel::Compare(const PObject & obj) const
 {
-  PAssert(IsDescendant(PChannel::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PChannel), PInvalidCast);
   int h1 = GetHandle();
   int h2 = ((const PChannel&)obj).GetHandle();
   if (h1 < h2)
@@ -630,7 +633,7 @@ PIndirectChannel::PIndirectChannel()
 
 PObject::Comparison PIndirectChannel::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PIndirectChannel::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PIndirectChannel), PInvalidCast);
   const PIndirectChannel & other = (const PIndirectChannel &)obj;
   return readChannel == other.readChannel &&
          writeChannel == other.writeChannel ? EqualTo : GreaterThan;
@@ -893,7 +896,7 @@ PFile::~PFile()
 
 PObject::Comparison PFile::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PFile::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PFile), PInvalidCast);
   return path.Compare(((const PFile &)obj).path);
 }
 

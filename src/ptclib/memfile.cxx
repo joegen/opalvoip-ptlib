@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.cxx,v $
+ * Revision 1.5  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.4  2002/12/19 03:35:43  robertj
  * Fixed missing set of lastWriteCount in Write() function.
  *
@@ -65,7 +68,7 @@ PMemoryFile::PMemoryFile(const PBYTEArray & ndata)
 
 PObject::Comparison PMemoryFile::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PMemoryFile), PInvalidCast);
   return data.Compare(((const PMemoryFile &)obj).data);
 }
 

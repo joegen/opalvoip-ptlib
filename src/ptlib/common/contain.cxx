@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.148  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.147  2004/04/03 06:54:25  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -756,7 +759,7 @@ void PAbstractArray::ReadFrom(istream & strm)
 
 PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PAbstractArray::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PAbstractArray), PInvalidCast);
   const PAbstractArray & other = (const PAbstractArray &)obj;
 
   char * otherArray = other.theArray;
@@ -1443,7 +1446,7 @@ void PString::ReadFrom(istream &strm)
 
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PString::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PString), PInvalidCast);
   return InternalCompare(0, P_MAX_INDEX, ((const PString &)obj).theArray);
 }
 
