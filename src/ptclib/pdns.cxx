@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.5  2003/04/16 14:21:12  craigs
+ * Added set of T_SRV for MacOS
+ *
  * Revision 1.4  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -65,6 +68,10 @@
 #include <arpa/nameser.h>
 #endif
 
+#endif
+
+#ifndef	T_SRV
+#define	T_SRV	33
 #endif
 
 
