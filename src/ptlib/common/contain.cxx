@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.55 1996/03/31 08:58:49 robertj Exp $
+ * $Id: contain.cxx,v 1.56 1996/04/14 02:52:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.56  1996/04/14 02:52:39  robertj
+ * Fixed bug in PString::FindLast(), never found sub-strings.
+ *
  * Revision 1.55  1996/03/31 08:58:49  robertj
  * Fixed hash function for strings to work for caseless strings.
  *
@@ -1010,16 +1013,16 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
   int strSum = 0;
   int cstrSum = 0;
   for (PINDEX i = 0; i < clen; i++) {
-    strSum += theArray[offset+i];
-    cstrSum += cstr[i];
+    strSum += toupper(theArray[offset+i]);
+    cstrSum += toupper(cstr[i]);
   }
 
   // search for a matching substring
   while (offset > 0) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
-    strSum += theArray[offset--];
-    strSum -= theArray[offset+clen];
+    strSum += toupper(theArray[--offset]);
+    strSum -= toupper(theArray[offset+clen]);
   }
 
   return P_MAX_INDEX;
