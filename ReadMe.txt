@@ -96,10 +96,11 @@ For Windows.
 	somewhere in your path.
 4.	Build the target MergeSym, in release mode.
 5.	Build the target ASNParser, in release mode.
-6.	Build the pwtest target, if you have the full distribution. Otherwise
+6.	Build the target PWRC, in release mode.
+7.	Build the pwtest target, if you have the full distribution. Otherwise
 	just build the targets PTLib and Console Components, in release & 
 	debug modes.
-9.	That it, you are now on your own!
+8.	That it, you are now on your own!
 
 
 For unix.
