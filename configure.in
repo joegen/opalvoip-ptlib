@@ -1,5 +1,7 @@
 AC_INIT(include/ptlib.h)
 
+AC_PROG_CXX
+
 dnl ########################################################################
 dnl set the PWLIB directory to the current directory
 
@@ -145,7 +147,6 @@ AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
 dnl ########################################################################
 dnl look for compile flags
 AC_LANG(C++)
-AC_LANG(C)
 
 dnl AC_MSG_CHECKING(if compiler accepts -fno-rtti)
 dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
