@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.24  1998/12/16 12:41:25  robertj
+ * Fixed bug where .ini file is not written when service run as a daemon.
+ *
  * Revision 1.23  1998/11/30 21:52:00  robertj
  * New directory structure.
  *
@@ -309,6 +312,12 @@ int PServiceProcess::_main(void *)
       return 3;
     }
 #endif
+
+    // Need to get rid of the config write thread before fork, as on
+    // pthreads platforms the forked process does not have the thread
+    delete configFiles;
+    CreateConfigFilesDictionary();
+
     pid_t pid = fork();
     switch (pid) {
       case -1 : // Failed
