@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.41  1999/02/26 04:10:39  robertj
+ * More BeOS port changes
+ *
  * Revision 1.40  1999/02/19 11:34:15  robertj
  * Added platform dependent function for "system configuration" directory.
  *
@@ -181,20 +184,18 @@ extern "C" int select(int width,
 			struct timeval *timeout);
 #endif
 
-
-#if defined(__BEOS__)
-__pid_t wait3 (__WAIT_STATUS __stat_loc,
-			   int __options, struct rusage * __usage)
-{
-	return 0; // Don't know yet what to do 
-}
+#ifdef __BEOS__
+#include "OS.h"
 #endif
-
 
 
 PString PProcess::GetOSClass()
 {
+#ifndef __BEOS_
   return PString("Unix");
+#else
+  return PString("Be,Inc.");
+#endif
 }
 
 PString PProcess::GetOSName()
@@ -207,6 +208,8 @@ PString PProcess::GetOSName()
 #else
   return PString(info.sysname);
 #endif
+#elif defined(__BEOS__)
+  return PString("BeOS");
 #else
 #warning No GetOSName specified
   return PString("Unknown");
@@ -219,6 +222,11 @@ PString PProcess::GetOSHardware()
   struct utsname info;
   uname(&info);
   return PString(info.machine);
+#elif defined(__BEOS__)
+  system_info info;
+  get_system_info(&info);
+  return PString(info.cpu_type <= B_CPU_PPC_686 ? "PPC" :
+  			  info.cpu_type >= B_CPU_INTEL_X86 ? "Intel" : "Wow!" );
 #else
 #warning No GetOSHardware specified
   return PString("unknown");
@@ -235,6 +243,8 @@ PString PProcess::GetOSVersion()
 #else
   return PString(info.release);
 #endif
+#elif defined(__BEOS__)
+  return PString("R4");
 #else
 #warning No GetOSVersion specified
   return PString("?.?");
