@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.15  1999/01/07 03:37:12  robertj
+ * dded default for pthreads, shortens command line in compile.
+ *
  * Revision 1.14  1998/11/30 22:06:30  robertj
  * New directory structure.
  *
@@ -72,7 +75,6 @@
 
 #pragma interface
 
-#include <ptlib/pmachdep.h>
 #include <ptlib/mutex.h>
 
 #include "../../channel.h"
