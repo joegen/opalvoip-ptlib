@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.10  2000/05/08 08:55:44  robertj
+ * Fixed production error for ValueSet, thanks Huang-Ming Huang
+ *
  * Revision 1.9  2000/01/19 12:33:07  robertj
  * Fixed parsing of OID's in IMPORTS section.
  *
@@ -2463,7 +2466,7 @@ SimpleDefinedValue
 /********/
 
 ValueSet
-  : '{' ElementSetSpec '}'
+  : '{' ElementSetSpecs '}'
   ;
 
 
