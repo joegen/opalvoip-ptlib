@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.41  2003/08/18 23:32:22  rjongbloed
+ * Micro optimisation suggested by Chih-Wei Huang
+ *
  * Revision 1.40  2003/08/01 16:00:51  csoutheren
  * Changed #if to #ifdef to (maybe) avoid compiler problems with gcc 2.95.2
  *
@@ -715,8 +718,8 @@ class PASN_BMPString : public PASN_ConstrainedObject
     operator PWORDArray() const { return value; }
     PString GetValue() const { return value; }
     void GetValue(PWORDArray & v) const { v = value; }
-    void SetValue(const char * v) { operator=(v); }
-    void SetValue(const PString & v) { operator=((const char *)v); }
+    void SetValue(const char * v) { operator=(PString(v).AsUCS2()); }
+    void SetValue(const PString & v) { operator=(v.AsUCS2()); }
     void SetValue(const PWORDArray & v) { operator=(v); }
     void SetValue(const PASN_BMPString & v) { operator=(v.value); }
 
