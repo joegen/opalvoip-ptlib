@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.14 1995/06/17 00:43:10 robertj Exp $
+ * $Id: pprocess.h,v 1.15 1995/06/17 11:13:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.15  1995/06/17 11:13:05  robertj
+ * Documentation update.
+ *
  * Revision 1.14  1995/06/17 00:43:10  robertj
  * Made PreInitialise virtual for NT service support
  *
@@ -67,7 +70,7 @@ PDECLARE_CLASS(PProcess, PThread)
    initial "anchor" point for all data structures in an application. As the
    application writer never needs to access the standard system
    <CODE>main()</CODE> function, it is in the library, the programmes
-   execution begins with the virtual function <A><CODE>Main()</CODE></A> on a
+   execution begins with the virtual function <A>PThread::Main()</A> on a
    process.
  */
 
@@ -216,8 +219,8 @@ PDECLARE_CLASS(PProcess, PThread)
       char ** argv  // Array of strings for program arguments.
     );
     /* The main() system entry point to programme. This does platform dependent
-       initialisation and then calls the <A><CODE>PreInitialise()</CODE></A>
-       function, then the <A><CODE>Main()</CODE></A> function.
+       initialisation and then calls the <A>PreInitialise()</A> function, then
+       the <A>PThread::Main()</A> function.
      */
 
 
