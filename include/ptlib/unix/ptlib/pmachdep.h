@@ -3,6 +3,10 @@
 
 #include <netdb.h>
 
+#if defined(P_PTHREADS)
+#include <pthread.h>
+#endif
+
 #if defined(P_LINUX)
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
@@ -12,17 +16,13 @@
 #include <sys/socketio.h>
 #include <dlfcn.h>
 
-#ifdef SIOCGIFCOUNT
+#if defined(SIOCGIFCOUNT)
 #define SIOCGIFNUM  SIOCGIFCOUNT
 #else
 #define SIOCGIFNUM  0x8938
 #endif
 
-#if defined(P_PTHREADS)
-#include <pthread.h>
-#endif
-
-#if defined(P_SOLARIS)
+#elif defined(P_SOLARIS)
 
 #include <errno.h>
 #include <sys/sockio.h>
