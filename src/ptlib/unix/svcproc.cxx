@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.43  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.42  2001/03/20 01:04:46  robertj
  * Fixed some difficulties with terminating a service process from signals or
  *   from simply dropping out of Main().
@@ -117,6 +121,9 @@
 #include <signal.h>
 
 #include "uerror.h"
+
+
+#define new PNEW
 
 
 #define	MAX_LOG_LINE_LEN	1024
@@ -256,7 +263,7 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 }
 
 
-int PServiceProcess::_main(void *)
+int PServiceProcess::InitialiseService()
 {
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(TRUE);
@@ -340,11 +347,11 @@ int PServiceProcess::_main(void *)
         cout << '.' << flush;
       }
       cout << "\nDaemon has not stopped." << endl;
-      return 0;
+      return 2;
     }
 
     PError << "Could not stop process " << pid << " - " << strerror(errno) << endl;
-    return 2;
+    return 1;
   }
 
   BOOL helpAndExit = FALSE;
@@ -459,7 +466,7 @@ int PServiceProcess::_main(void *)
         pidfile >> pid;
         if (pid != 0 && kill(pid, 0) == 0) {
           PError << "Already have daemon running with pid " << pid << endl;
-          return 3;
+          return 2;
         }
       }
     }
@@ -475,7 +482,7 @@ int PServiceProcess::_main(void *)
 
       case -1 : // Failed
         PError << "Fork failed creating daemon process." << endl;
-        return -1;
+        return 1;
 
       default : // Parent process
         cout << "Daemon started with pid " << pid << endl;
@@ -504,14 +511,27 @@ int PServiceProcess::_main(void *)
   // Make sure housekeeping thread is going so signals are handled.
   SignalTimerChange();
 
-  // call the main function
-  if (OnStart())
-    Main();
-
-  Terminate();
-
-  return 0; // Should never get here
+  return -1;
 }
+
+int PServiceProcess::_main(void *)
+{
+  if ((terminationValue = InitialiseService()) < 0) {
+    terminationValue = 1;
+    if (OnStart()) {
+      terminationValue = 0;
+      Main();
+      Terminate();
+    }
+  }
+
+  // close the system log
+  if (systemLogFile.IsEmpty())
+    closelog();
+
+  return terminationValue;
+}
+
 
 BOOL PServiceProcess::OnPause()
 {
@@ -560,15 +580,14 @@ void PServiceProcess::Terminate()
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
-  static BOOL stoppingService = FALSE;
-  if (!stoppingService)
-    switch (sig) {
-      case SIGINT :
-      case SIGTERM :
-        stoppingService = TRUE;
-      case SIGHUP :
-        return;
-    }
+  // Override the default behavious for these signals as that just
+  // summarily exits the program. Allow PXOnSignal() to do orderly exit.
+  switch (sig) {
+    case SIGINT :
+    case SIGTERM :
+    case SIGHUP :
+      return;
+  }
 
   PProcess::PXOnAsyncSignal(sig);
 }

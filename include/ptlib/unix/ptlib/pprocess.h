@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.20  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.19  2001/03/14 01:16:11  robertj
  * Fixed signals processing, now uses housekeeping thread to handle signals
  *   synchronously. This also fixes issues with stopping PServiceProcess.
@@ -107,7 +111,7 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     friend class PApplication;
     friend class PServiceProcess;
     friend void PXSignalHandler(int);
-    friend class HouseKeepingThread;
+    friend class PHouseKeepingThread;
 
     ~PProcess();
 
@@ -145,10 +149,8 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PMutex     threadMutex;
-    PThread  * housekeepingThread;
     int        timerChangePipe[2];
-
-  friend void * PXHouseKeepingThread(void *);
+    PHouseKeepingThread * housekeepingThread;
 
 #elif defined(BE_THREADS)
 
