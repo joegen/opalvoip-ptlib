@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.8 1993/12/16 00:51:46 robertj Exp $
+ * $Id: contain.cxx,v 1.9 1993/12/24 04:20:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.8  1993/12/16 00:51:46  robertj
+ * Revision 1.9  1993/12/24 04:20:52  robertj
+ * Mac CFront port.
+ *
+ * Revision 1.8  1993/12/16  00:51:46  robertj
  * Made some container functions const.
  *
  * Revision 1.7  1993/12/15  21:10:10  robertj
@@ -630,7 +633,7 @@ PString PString::Trim() const
   if (*lpos == '\0')
     return PString();
 
-  char * rpos = theArray+Length()-1;
+  const char * rpos = theArray+Length()-1;
   if (*rpos != ' ')
     return PString(lpos);
 
@@ -967,13 +970,6 @@ PStringArray::PStringArray(PINDEX count, char **strarr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractList::Info::Info()
-{
-  head = tail = lastElement = NULL;
-  lastIndex = 0;
-}
-
-
 PAbstractList::PAbstractList(const PAbstractList & list)
   : PCollection(list),
     info(list.info)
@@ -982,8 +978,9 @@ PAbstractList::PAbstractList(const PAbstractList & list)
 
 
 PAbstractList::PAbstractList(const PAbstractList * list)
-  : info(new Info)
+  : info(new ListInfo)
 {
+  PAssertNULL(info);
   for (PListElement * element = list->info->head;
                                       element != NULL; element = element->next)
     Append(element->data->Clone());
@@ -1223,16 +1220,10 @@ PListElement::PListElement(PObject * theData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractSortedList::Info::Info()
-{
-  root = lastElement = NULL;
-  lastIndex = 0;
-}
-
-
 PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
-  : info(new Info)
+  : info(new SortedListInfo)
 {
+  PAssertNULL(info);
   PSortedListElement * element = list->info->root;
   while (element->left != NULL)
     element = element->left;
@@ -1692,8 +1683,10 @@ ostream & PScalarKey::PrintOn(ostream & strm) const
 
 PHashTable::PHashTable()
   : PCollection(0),
-    hashTable(new InternalHashTable)
+    hashTable(new PInternalHashTable)
 {
+  PAssertNULL(hashTable);
+  hashTable->lastElement = NULL;
 }
 
 
@@ -1705,7 +1698,7 @@ PHashTable::PHashTable(const PHashTable & ht)
 
   
 PHashTable::PHashTable(const PHashTable * ht)
-  : hashTable((InternalHashTable *)ht->hashTable->Clone())
+  : hashTable((PInternalHashTable *)ht->hashTable->Clone())
 {
 }
 
@@ -1740,13 +1733,14 @@ void PHashTable::DestroyContents()
 }
 
 
-void PHashTable::InternalHashTable::AppendElement(const PObject & key, PObject * data)
+void PInternalHashTable::AppendElement(const PObject & key, PObject * data)
 {
   lastElement = NULL;
 
   PINDEX bucket = key.HashFunction();
-  HashTableElement * list = GetAt(bucket);
-  HashTableElement * element = new HashTableElement;
+  PHashTableElement * list = GetAt(bucket);
+  PHashTableElement * element = new PHashTableElement;
+  PAssertNULL(element);
   element->key = key.Clone();
   element->data = data;
   if (list == NULL) {
@@ -1768,7 +1762,7 @@ void PHashTable::InternalHashTable::AppendElement(const PObject & key, PObject *
 }
 
 
-PObject * PHashTable::InternalHashTable::RemoveElement(const PObject & key)
+PObject * PInternalHashTable::RemoveElement(const PObject & key)
 {
   PObject * obj = NULL;
   if (GetElementAt(key) != NULL) {
@@ -1788,7 +1782,7 @@ PObject * PHashTable::InternalHashTable::RemoveElement(const PObject & key)
 }
 
 
-BOOL PHashTable::InternalHashTable::SetLastElementAt(PINDEX index)
+BOOL PInternalHashTable::SetLastElementAt(PINDEX index)
 {
   if (lastElement == NULL || lastIndex == P_MAX_INDEX) {
     lastIndex = 0;
@@ -1834,15 +1828,14 @@ BOOL PHashTable::InternalHashTable::SetLastElementAt(PINDEX index)
 }
 
 
-PHashTable::HashTableElement *
-               PHashTable::InternalHashTable::GetElementAt(const PObject & key)
+PHashTableElement * PInternalHashTable::GetElementAt(const PObject & key)
 {
   if (lastElement != NULL && *lastElement->key == key)
     return lastElement;
 
-  HashTableElement * list = GetAt(key.HashFunction());
+  PHashTableElement * list = GetAt(key.HashFunction());
   if (list != NULL) {
-    HashTableElement * element = list;
+    PHashTableElement * element = list;
     do {
       if (*element->key == key) {
         lastElement = element;
@@ -1856,13 +1849,13 @@ PHashTable::HashTableElement *
 }
 
 
-BOOL PHashTable::InternalHashTable::EnumerateElements(
+BOOL PInternalHashTable::EnumerateElements(
                             PEnumerator func, PObject * info, BOOL keys) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    HashTableElement * list = operator[](i);
+    PHashTableElement * list = operator[](i);
     if (list != NULL) {
-      HashTableElement * element = list;
+      PHashTableElement * element = list;
       do {
         if (!func(keys ? *element->key : *element->data, info))
           return FALSE;
@@ -1946,7 +1939,7 @@ BOOL PAbstractSet::Enumerate(PEnumerator func, PObject * info) const
 PObject * PAbstractDictionary::Clone() const
 {
   PAbstractDictionary * newDict = new PAbstractDictionary();
-  InternalHashTable * ht = (InternalHashTable *)hashTable.Clone();
+  PInternalHashTable * ht = (PInternalHashTable *)hashTable.Clone();
   newDict->hashTable = *ht;
   delete ht;
   return newDict;
@@ -2029,7 +2022,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
     reference->size--;
   }
   else {
-    HashTableElement * element = hashTable->GetElementAt(key);
+    PHashTableElement * element = hashTable->GetElementAt(key);
     if (element == NULL) {
       hashTable->AppendElement(key, obj);
       reference->size++;
@@ -2046,7 +2039,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 
 PObject * PAbstractDictionary::GetAt(const PObject & key) const
 {
-  HashTableElement * element = hashTable->GetElementAt(key);
+  PHashTableElement * element = hashTable->GetElementAt(key);
   return element != NULL ? element->data : NULL;
 }
 
