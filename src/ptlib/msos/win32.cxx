@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.91  2000/04/05 02:50:18  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.90  2000/03/29 04:31:59  robertj
  * Removed assertion on terminating terminated thread, this is really OK.
  *
@@ -353,7 +356,14 @@
 
 PTime::PTime()
 {
-  time(&theTime);
+  // Magic constant to convert epoch from 1601 to 1970
+  static const PInt64 delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
+  static const PInt64 scale = 10000000;
+
+  PInt64 timestamp;
+  GetSystemTimeAsFileTime((LPFILETIME)&timestamp);
+  theTime = (time_t)(timestamp/scale - delta);
+  microseconds = (long)(timestamp%scale/10);
 }
 
 
