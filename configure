@@ -2043,6 +2043,7 @@ case "$target_cpu" in
 
    x86_64)	   MACHTYPE=x86_64 ;
 		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7) MACHTYPE=alpha ;
@@ -2060,10 +2061,12 @@ case "$target_cpu" in
 
    powerpc64 )     MACHTYPE=ppc64 ;
 		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    ppc64 )         MACHTYPE=ppc64 ;
 		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    ia64)	   MACHTYPE=ia64 ;
@@ -2072,6 +2075,7 @@ case "$target_cpu" in
 
    s390x)	   MACHTYPE=s390x ;
 		   P_64BIT=1 ;
+                   LIB64=1 ;
 		   ;;
 
    s390)	   MACHTYPE=s390 ;
@@ -3685,10 +3689,19 @@ fi
 
 
 
+if test "x$LIB64" != "x" ; then
+
 cat >>confdefs.h <<_ACEOF
-#define P_DEFAULT_PLUGIN_DIR "${LIBDIR}/pwlib"
+#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib64/pwlib"
 _ACEOF
 
+else
+
+cat >>confdefs.h <<_ACEOF
+#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib/pwlib"
+_ACEOF
+
+fi
 
 
 
