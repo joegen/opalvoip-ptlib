@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.29  2001/01/24 06:56:03  yurik
+ * Correcting a typo in WinCE related code
+ *
  * Revision 1.28  2001/01/24 06:34:44  yurik
  * Windows CE port-related changes
  *
@@ -421,7 +424,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
     }
   }
 #else
-#pragma message(Assert is not yet implemented under WinCE\n")
+#pragma message("Assert is not yet implemented under WinCE\n")
 #endif // _WIN32_WCE
 }
 
