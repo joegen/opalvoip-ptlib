@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.18 1995/10/14 15:11:31 robertj Exp $
+ * $Id: sockets.cxx,v 1.19 1995/12/10 11:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.19  1995/12/10 11:42:23  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.18  1995/10/14 15:11:31  robertj
  * Added internet address to string conversion functionality.
  *
@@ -128,16 +131,22 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   struct hostent * host_info;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  long temp;
-  if ((temp = inet_addr((const char *)hostname)) != -1)
+  Address temp = hostname;
+  if (temp != 0)
     host_info = gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
   else
     host_info = gethostbyname(hostname);
 
   if (host_info != NULL) {
-    int i = 0;
-    while (host_info->h_aliases[i] != NULL)
+    for (int i = 0; host_info->h_aliases[i] != NULL; i++)
       aliases[i] = host_info->h_aliases[i];
+  }
+
+  if (aliases.GetSize() == 0) {
+    if (temp != 0)
+      aliases[0] = temp;
+    else
+      aliases[0] = hostname;
   }
 
   return aliases;
@@ -221,8 +230,6 @@ void PIPSocket::SetPort(const PString & service)
 {
   PAssert(!IsOpen(), "Cannot change port number of opened socket");
   port = GetPortByService(service);
-  if (port == 0)
-    port = (WORD)service.AsInteger();
 }
 
 
@@ -243,6 +250,8 @@ WORD PIPSocket::GetPortByService(const char * protocol, const char * service)
   struct servent * serv = ::getservbyname(service, protocol);
   if (serv != NULL)
     return ntohs(serv->s_port);
+  else if (isdigit(service[0]))
+    return (WORD)atoi(service);
   else
     return 0;
 }
@@ -250,11 +259,11 @@ WORD PIPSocket::GetPortByService(const char * protocol, const char * service)
 
 PString PIPSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-  struct servent * serv = ::getservbyport(port, protocol);
+  struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
   else
-    return PString();
+    return PString(PString::Unsigned, port);
 }
 
 
@@ -302,25 +311,16 @@ BOOL PIPSocket::_Connect(const PString & host)
 }
 
 
-BOOL PIPSocket::_Listen(unsigned queueSize)
+BOOL PIPSocket::_Bind()
 {
   // attempt to listen
   sockaddr_in sin;
   sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = INADDR_ANY;
   sin.sin_port = htons(port);  // set the port
   memset(&sin.sin_addr, 0, sizeof(sin.sin_addr));
 
-  if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
-    return FALSE;
-
-  return ConvertOSError(::listen(os_handle, queueSize));
-}
-
-
-BOOL PIPSocket::Accept(PSocket & socket)
-{
-  // attempt to create a socket
-  return ConvertOSError(os_handle = ::accept(socket.GetHandle(), NULL, 0));
+  return ConvertOSError(bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)));
 }
 
 
@@ -350,6 +350,15 @@ PIPSocket::Address::Address(const PString & dotNotation)
 }
 
 
+PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
+{
+  S_un.S_un_b.s_b1 = b1;
+  S_un.S_un_b.s_b2 = b2;
+  S_un.S_un_b.s_b3 = b3;
+  S_un.S_un_b.s_b4 = b4;
+}
+
+
 PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
 {
   s_addr = addr.s_addr;
@@ -367,12 +376,6 @@ PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 PIPSocket::Address::operator PString() const
 {
   return inet_ntoa(*this);
-}
-
-
-PIPSocket::Address::operator DWORD() const
-{
-  return ntohl(s_addr);
 }
 
 
@@ -426,7 +429,8 @@ BOOL PTCPSocket::Connect(const PString & host)
   if (_Connect(host))
     return TRUE;
 
-  Close();
+  closesocket(os_handle);
+  os_handle = -1;
   return FALSE;
 }
 
@@ -442,11 +446,27 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
     return FALSE;
 
   // attempt to listen
-  if (_Listen(queueSize))
+  if (_Bind() && ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
 
-  Close();
+  closesocket(os_handle);
+  os_handle = -1;
   return FALSE;
+}
+
+
+BOOL PTCPSocket::Accept(PSocket & socket)
+{
+  // attempt to create a socket
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  int size = sizeof(address);
+  if (!ConvertOSError(os_handle = ::accept(socket.GetHandle(),
+                                          (struct sockaddr *)&address, &size)))
+    return FALSE;
+
+  port = ntohs(address.sin_port);
+  return TRUE;
 }
 
 
@@ -515,12 +535,6 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 }
 
 
-PUDPSocket::PUDPSocket(PSocket & socket)
-{
-  Accept(socket);
-}
-
-
 BOOL PUDPSocket::Connect(const PString & host)
 {
   // attempt to create a socket
@@ -536,7 +550,7 @@ BOOL PUDPSocket::Connect(const PString & host)
 }
 
 
-BOOL PUDPSocket::Listen(unsigned queueSize, WORD newPort)
+BOOL PUDPSocket::Listen(unsigned, WORD newPort)
 {
   // make sure we have a port
   if (newPort != 0)
@@ -547,10 +561,17 @@ BOOL PUDPSocket::Listen(unsigned queueSize, WORD newPort)
     return FALSE;
 
   // attempt to listen
-  if (_Listen(queueSize))
+  if (_Bind())
     return TRUE;
 
   Close();
+  return FALSE;
+}
+
+
+BOOL PUDPSocket::Accept(PSocket &)
+{
+  PAssertAlways("Illegal operation.");
   return FALSE;
 }
 
