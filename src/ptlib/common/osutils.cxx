@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.148  2000/10/20 05:31:32  robertj
+ * Added function to change auto delete flag on a thread.
+ *
  * Revision 1.147  2000/08/31 01:12:36  robertj
  * Fixed problem with no new lines in trace output to stderr.
  *
@@ -1502,7 +1505,7 @@ PString PThread::GetThreadName() const
 {
   return threadName; 
 }
- 
+
  
 void PThread::SetThreadName(const PString & name)
 {
@@ -1594,6 +1597,13 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   }
 
   return TRUE;
+}
+
+
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  autoDelete = deletion == AutoDeleteThread;
 }
 
 
