@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.19  1998/11/24 09:39:11  robertj
+ * FreeBSD port.
+ *
  * Revision 1.18  1998/11/06 01:06:05  robertj
  * Solaris environment variable name.
  *
@@ -64,10 +67,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <termio.h>
 #include <signal.h>
 
+#if defined(P_LINUX) || defined(P_SOLARIS)
+#include <termio.h>
+#endif
+
 #include "../../common/ptlib/src/pipechan.cxx"
+
 
 ////////////////////////////////////////////////////////////////
 //
@@ -190,9 +197,11 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#ifdef P_SOLARIS
+#if defined(P_SOLARIS)
     extern char ** environ;
 #define __environ environ
+#elif defined(P_FREEBSD)
+    extern char ** __environ;
 #endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
