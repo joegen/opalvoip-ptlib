@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.58  2001/07/27 14:39:12  robertj
+# Allowed libs target to have multiple definitions
+#
 # Revision 1.57  2001/06/30 06:59:06  yurik
 # Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
 #
@@ -422,7 +425,7 @@ debugdepend :: $(DEPS)
 optdepend ::
 	@$(MAKE) DEBUG= optdepend
 
-libs:
+libs ::
 	$(MAKE) -C $(PWLIBDIR) debug
 
 else
@@ -446,7 +449,7 @@ debugdepend ::
 optdepend :: $(DEPS)
 	@echo Created dependencies.
 
-libs:
+libs ::
 	$(MAKE) -C $(PWLIBDIR) opt
 
 endif
