@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.15 1994/07/02 03:03:49 robertj Exp $
+ * $Id: osutil.inl,v 1.16 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.15  1994/07/02 03:03:49  robertj
+ * Revision 1.16  1994/07/17 10:46:06  robertj
+ * Moved file handle to PChannel.
+ *
+ * Revision 1.15  1994/07/02  03:03:49  robertj
  * Time interval and timer redesign.
  *
  * Revision 1.14  1994/06/25  11:55:15  robertj
@@ -326,9 +329,6 @@ PINLINE BOOL PFile::GetInfo(PFileInfo & info) const
 PINLINE const PFilePath & PFile::GetFilePath() const
   { return path; }
       
-
-PINLINE BOOL PFile::IsOpen() const
-  { return os_handle >= 0; }
 
 PINLINE PString PFile::GetName() const
   { return path; }
