@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.2  2002/05/02 00:30:03  robertj
+ * Allowed for non-template containers
+ *
  * Revision 1.1  2002/05/01 04:16:44  robertj
  * Added thread safe collection classes.
  *
@@ -35,6 +38,10 @@ class TestObject : public PSafeObject
     unsigned value;
 };
 
+PLIST(TestList, TestObject);
+PSORTED_LIST(TestSortedList, TestObject);
+PDICTIONARY(TestDict, POrdinalKey, TestObject);
+
 
 class ThreadSafe : public PProcess
 {
@@ -48,9 +55,9 @@ class ThreadSafe : public PProcess
     PDECLARE_NOTIFIER(PThread, ThreadSafe, TestThread);
     void Test();
 
-    PSafeList<PList<TestObject>, TestObject> unsorted;
-    PSafeList<PSortedList<TestObject>, TestObject> sorted;
-    PSafeDictionary<PDictionary<POrdinalKey, TestObject>, POrdinalKey, TestObject> sparse;
+    PSafeList<TestList, TestObject> unsorted;
+    PSafeList<TestSortedList, TestObject> sorted;
+    PSafeDictionary<TestDict, POrdinalKey, TestObject> sparse;
 
     PINDEX        threadCount;
     PTimeInterval startTick;
