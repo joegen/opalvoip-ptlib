@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.h,v $
+ * Revision 1.2  2004/04/28 11:26:42  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.1  2004/04/18 12:02:31  csoutheren
  * Added classes for SASL authentication
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -31,7 +34,7 @@
  *
  */
 
-#if P_SASL
+#if P_SASL2
 #ifndef _PSASL
 #define _PSASL
 
@@ -87,6 +90,6 @@ public:
 };
 
 #endif  // _PSASL
-#endif  // P_SASL
+#endif  // P_SASL2
 
 // End of File ///////////////////////////////////////////////////////////////
