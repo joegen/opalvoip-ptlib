@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.33  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.32  2004/04/03 23:53:09  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -715,7 +718,7 @@ template <class T> class PSet : public PAbstractSet
   public: \
     inline cls(BOOL initialDeleteObjects = FALSE) \
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline void Include(const PObject * key) \
       { Append((PObject *)key); } \
@@ -738,7 +741,7 @@ template <class T> class PSet : public PAbstractSet
   public: \
     inline cls(BOOL initialDeleteObjects = initDelObj) \
       : cls##_PTemplate() { AllowDeleteObjects(initialDeleteObjects); } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
 
@@ -1385,19 +1388,19 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
   public: \
     inline cls() \
       : PAbstractDictionary() { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline PINDEX operator[](const K & key) const \
       { return (POrdinalKey &)GetRefAt(key); } \
     virtual BOOL Contains(const K & key) const \
       { return AbstractContains(key); } \
-    inline virtual POrdinalKey * GetAt(const K & key) const \
+    virtual POrdinalKey * GetAt(const K & key) const \
       { return (POrdinalKey *)AbstractGetAt(key); } \
-    inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
+    virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
       { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); } \
-    inline virtual BOOL SetAt(const K & key, PINDEX ordinal) \
+    virtual BOOL SetAt(const K & key, PINDEX ordinal) \
       { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); } \
-    inline virtual PINDEX RemoveAt(const K & key) \
+    virtual PINDEX RemoveAt(const K & key) \
       { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
