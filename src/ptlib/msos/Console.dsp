@@ -275,12 +275,6 @@ SOURCE=..\common\pvidchan.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\regex.cxx
-# ADD CPP /W2 /D "__STDC__" /D "STDC_HEADERS"
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=.\remconn.cxx
 # End Source File
 # Begin Source File
@@ -678,6 +672,34 @@ SOURCE=..\..\..\include\ptlib\osutil.inl
 # Begin Source File
 
 SOURCE=..\..\..\include\ptlib\msos\ptlib\ptlib.inl
+# End Source File
+# End Group
+# Begin Group "Regex"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\common\regex\regcomp.c
+# ADD CPP /W1 /I "..\common\regex"
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\regex\regerror.c
+# ADD CPP /W1 /I "..\common\regex"
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\regex\regexec.c
+# ADD CPP /W1 /I "..\common\regex"
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\regex\regfree.c
+# ADD CPP /W1 /I "..\common\regex"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # End Group
 # End Target

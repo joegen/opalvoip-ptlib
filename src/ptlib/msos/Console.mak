@@ -60,7 +60,10 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
-	-@erase "$(INTDIR)\regex.obj"
+	-@erase "$(INTDIR)\regcomp.obj"
+	-@erase "$(INTDIR)\regerror.obj"
+	-@erase "$(INTDIR)\regexec.obj"
+	-@erase "$(INTDIR)\regfree.obj"
 	-@erase "$(INTDIR)\remconn.obj"
 	-@erase "$(INTDIR)\serial.obj"
 	-@erase "$(INTDIR)\sfile.obj"
@@ -110,7 +113,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -124,7 +126,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\regcomp.obj" \
+	"$(INTDIR)\regerror.obj" \
+	"$(INTDIR)\regexec.obj" \
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -178,8 +184,14 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
-	-@erase "$(INTDIR)\regex.obj"
-	-@erase "$(INTDIR)\regex.sbr"
+	-@erase "$(INTDIR)\regcomp.obj"
+	-@erase "$(INTDIR)\regcomp.sbr"
+	-@erase "$(INTDIR)\regerror.obj"
+	-@erase "$(INTDIR)\regerror.sbr"
+	-@erase "$(INTDIR)\regexec.obj"
+	-@erase "$(INTDIR)\regexec.sbr"
+	-@erase "$(INTDIR)\regfree.obj"
+	-@erase "$(INTDIR)\regfree.sbr"
 	-@erase "$(INTDIR)\remconn.obj"
 	-@erase "$(INTDIR)\remconn.sbr"
 	-@erase "$(INTDIR)\serial.obj"
@@ -240,7 +252,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
-	"$(INTDIR)\regex.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -254,7 +265,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\win32.sbr" \
 	"$(INTDIR)\wincfg.sbr" \
 	"$(INTDIR)\winserial.sbr" \
-	"$(INTDIR)\winsock.sbr"
+	"$(INTDIR)\winsock.sbr" \
+	"$(INTDIR)\regcomp.sbr" \
+	"$(INTDIR)\regerror.sbr" \
+	"$(INTDIR)\regexec.sbr" \
+	"$(INTDIR)\regfree.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -281,7 +296,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -295,7 +309,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\regcomp.obj" \
+	"$(INTDIR)\regerror.obj" \
+	"$(INTDIR)\regexec.obj" \
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -349,8 +367,14 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
-	-@erase "$(INTDIR)\regex.obj"
-	-@erase "$(INTDIR)\regex.sbr"
+	-@erase "$(INTDIR)\regcomp.obj"
+	-@erase "$(INTDIR)\regcomp.sbr"
+	-@erase "$(INTDIR)\regerror.obj"
+	-@erase "$(INTDIR)\regerror.sbr"
+	-@erase "$(INTDIR)\regexec.obj"
+	-@erase "$(INTDIR)\regexec.sbr"
+	-@erase "$(INTDIR)\regfree.obj"
+	-@erase "$(INTDIR)\regfree.sbr"
 	-@erase "$(INTDIR)\remconn.obj"
 	-@erase "$(INTDIR)\remconn.sbr"
 	-@erase "$(INTDIR)\serial.obj"
@@ -411,7 +435,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
-	"$(INTDIR)\regex.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -425,7 +448,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\win32.sbr" \
 	"$(INTDIR)\wincfg.sbr" \
 	"$(INTDIR)\winserial.sbr" \
-	"$(INTDIR)\winsock.sbr"
+	"$(INTDIR)\winsock.sbr" \
+	"$(INTDIR)\regcomp.sbr" \
+	"$(INTDIR)\regerror.sbr" \
+	"$(INTDIR)\regexec.sbr" \
+	"$(INTDIR)\regfree.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -452,7 +479,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -466,7 +492,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\regcomp.obj" \
+	"$(INTDIR)\regerror.obj" \
+	"$(INTDIR)\regexec.obj" \
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -503,7 +533,10 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
-	-@erase "$(INTDIR)\regex.obj"
+	-@erase "$(INTDIR)\regcomp.obj"
+	-@erase "$(INTDIR)\regerror.obj"
+	-@erase "$(INTDIR)\regexec.obj"
+	-@erase "$(INTDIR)\regfree.obj"
 	-@erase "$(INTDIR)\remconn.obj"
 	-@erase "$(INTDIR)\serial.obj"
 	-@erase "$(INTDIR)\sfile.obj"
@@ -553,7 +586,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -567,7 +599,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\regcomp.obj" \
+	"$(INTDIR)\regerror.obj" \
+	"$(INTDIR)\regexec.obj" \
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -1213,50 +1249,6 @@ SOURCE=..\common\pvidchan.cxx
 
 !ENDIF 
 
-SOURCE=..\common\regex.cxx
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W2 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /D "__STDC__" /D "STDC_HEADERS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\regex.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W2 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /D "__STDC__" /D "STDC_HEADERS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\regex.obj"	"$(INTDIR)\regex.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-CPP_SWITCHES=/nologo /MDd /W2 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /D "__STDC__" /D "STDC_HEADERS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\regex.obj"	"$(INTDIR)\regex.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-CPP_SWITCHES=/nologo /MD /W2 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /D "__STDC__" /D "STDC_HEADERS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\regex.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
 SOURCE=.\remconn.cxx
 
 !IF  "$(CFG)" == "Console - Win32 Release"
@@ -1669,6 +1661,182 @@ SOURCE=.\winsock.cxx
 
 
 "$(INTDIR)\winsock.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+
+
+!ENDIF 
+
+SOURCE=..\common\regex\regcomp.c
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regcomp.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regcomp.obj"	"$(INTDIR)\regcomp.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regcomp.obj"	"$(INTDIR)\regcomp.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regcomp.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=..\common\regex\regerror.c
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regerror.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regerror.obj"	"$(INTDIR)\regerror.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regerror.obj"	"$(INTDIR)\regerror.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regerror.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=..\common\regex\regexec.c
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regexec.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regexec.obj"	"$(INTDIR)\regexec.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regexec.obj"	"$(INTDIR)\regexec.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regexec.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=..\common\regex\regfree.c
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regfree.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regfree.obj"	"$(INTDIR)\regfree.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+CPP_SWITCHES=/nologo /MDd /W1 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regfree.obj"	"$(INTDIR)\regfree.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+CPP_SWITCHES=/nologo /MD /W1 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "..\common\regex" /D "NDEBUG" /D "PTRACING" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\regfree.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
 
 
 !ENDIF 

@@ -177,12 +177,12 @@ ALL : "$(OUTDIR)\PTLibd.dll"
 
 !ELSE 
 
-ALL : "Console - Win32 SSL Debug" "$(OUTDIR)\PTLibd.dll"
+ALL : "Console - Win32 SSL Debug" "MergeSym - Win32 SSL Debug" "$(OUTDIR)\PTLibd.dll"
 
 !ENDIF 
 
 !IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 SSL DebugCLEAN" 
+CLEAN :"MergeSym - Win32 SSL DebugCLEAN" "Console - Win32 SSL DebugCLEAN" 
 !ELSE 
 CLEAN :
 !ENDIF 
@@ -214,8 +214,8 @@ LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib ke
 DEF_FILE= \
 	"$(INTDIR)\PTLibd.def"
 LINK32_OBJS= \
-	"$(INTDIR)\ptlib.res" \
 	"$(INTDIR)\dllmain.obj" \
+	"$(INTDIR)\ptlib.res" \
 	"$(OUTDIR)\ptlibsd.lib"
 
 "$(OUTDIR)\PTLibd.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -237,12 +237,12 @@ ALL : "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
 
 !ELSE 
 
-ALL : "Console - Win32 SSL Release" "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
+ALL : "Console - Win32 SSL Release" "MergeSym - Win32 SSL Release" "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
 
 !ENDIF 
 
 !IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 SSL ReleaseCLEAN" 
+CLEAN :"MergeSym - Win32 SSL ReleaseCLEAN" "Console - Win32 SSL ReleaseCLEAN" 
 !ELSE 
 CLEAN :
 !ENDIF 
@@ -274,8 +274,8 @@ LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib ke
 DEF_FILE= \
 	"$(INTDIR)\ptlib.def"
 LINK32_OBJS= \
-	"$(INTDIR)\ptlib.res" \
 	"$(INTDIR)\dllmain.obj" \
+	"$(INTDIR)\ptlib.res" \
 	"$(OUTDIR)\ptlibs.lib"
 
 "$(OUTDIR)\PTLib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -365,7 +365,27 @@ SOURCE="$(InputPath)"
 
 !ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
 
+"MergeSym - Win32 SSL Debug" : 
+   cd "\Work\pwlib\tools\MergeSym"
+   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Debug" 
+   cd "..\..\src\ptlib\msos"
+
+"MergeSym - Win32 SSL DebugCLEAN" : 
+   cd "\Work\pwlib\tools\MergeSym"
+   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Debug" RECURSE=1 CLEAN 
+   cd "..\..\src\ptlib\msos"
+
 !ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
+
+"MergeSym - Win32 SSL Release" : 
+   cd "\Work\pwlib\tools\MergeSym"
+   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Release" 
+   cd "..\..\src\ptlib\msos"
+
+"MergeSym - Win32 SSL ReleaseCLEAN" : 
+   cd "\Work\pwlib\tools\MergeSym"
+   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Release" RECURSE=1 CLEAN 
+   cd "..\..\src\ptlib\msos"
 
 !ENDIF 
 
@@ -508,7 +528,7 @@ USERDEP__PTLIB="$(OutDir)\ptlibs.lib"
 "$(INTDIR)\ptlib.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIB)
 	<<tempfile.bat 
 	@echo off 
-	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 << 
 	
@@ -528,7 +548,7 @@ USERDEP__PTLIB="$(OutDir)\ptlibs.lib"
 "$(INTDIR)\ptlib.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIB)
 	<<tempfile.bat 
 	@echo off 
-	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 << 
 	
@@ -550,7 +570,7 @@ USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"
 "$(INTDIR)\PTLibd.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIBD)
 	<<tempfile.bat 
 	@echo off 
-	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 << 
 	
@@ -566,7 +586,7 @@ USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"
 "$(INTDIR)\PTLibd.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIBD)
 	<<tempfile.bat 
 	@echo off 
-	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
+	MergeSym -v -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 << 
 	
