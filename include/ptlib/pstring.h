@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.75  2004/06/01 05:21:38  csoutheren
+ * Added conversions between std::string and PString, and vector<PString> and PStringArray
+ *
  * Revision 1.74  2004/05/04 11:10:36  rjongbloed
  * Fixed usage of MakeEmpty() with PStringStream.
  *
@@ -342,6 +345,12 @@ class PString : public PCharArray {
      */
     PINLINE PString(
       const PString & str  /// String to create new reference to.
+    );
+
+    /**Create a new string from the specified std::string
+     */
+    PINLINE PString(
+      const std::string & str
     );
 
     /**Create a string from the C string array. This is most commonly used with
@@ -2102,6 +2111,28 @@ class PStringArray : public PArray {
     PStringArray(
       const PSortedStringList & list  /// List of strings to convert to array.
     );
+
+    /**
+      * Create a PStringArray from a vector of PStrings
+      */
+    PStringArray(
+      const std::vector<PString> & vec
+    )
+    {
+      for (std::vector<PString>::const_iterator r = vec.begin(); r != vec.end(); ++r)
+        AppendString(*r);
+    }
+
+    /**
+      * Create a PStringArray from a vector of std::string
+      */
+    PStringArray(
+      const std::vector<std::string> & vec
+    )
+    {
+      for (std::vector<std::string>::const_iterator r = vec.begin(); r != vec.end(); ++r)
+        AppendString(PString(*r));
+    }
   //@}
 
   /**@name Overrides from class PObject */
