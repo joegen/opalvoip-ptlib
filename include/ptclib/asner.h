@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.42  2003/12/14 10:21:29  rjongbloed
+ * Fixed bug in length incorrectlty decoded from ASN and (apparently) rare circumstances. Thanks pangxg@hotmail.com.
+ * Cleaned up return values to be BOOL rather than int for some functions.
+ *
  * Revision 1.41  2003/08/18 23:32:22  rjongbloed
  * Micro optimisation suggested by Chih-Wei Huang
  *
@@ -297,7 +301,7 @@ class PASN_ConstrainedObject : public PASN_Object
     int GetLowerLimit() const { return lowerLimit; }
     unsigned GetUpperLimit() const { return upperLimit; }
 
-    int ConstrainedLengthDecode(PPER_Stream & strm, unsigned & length);
+    BOOL ConstrainedLengthDecode(PPER_Stream & strm, unsigned & length);
     void ConstrainedLengthEncode(PPER_Stream & strm, unsigned length) const;
 
     BOOL ConstraintEncode(PPER_Stream & strm, unsigned value) const;
