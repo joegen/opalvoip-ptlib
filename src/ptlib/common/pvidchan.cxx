@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.3  2001/06/19 00:51:57  dereks
+ * The ::Write method now returns the result of mpOutput->Redraw(), rather than
+ *   always true.
+ *
  * Revision 1.2  2001/03/23 20:24:23  yurik
  * Got rid of "unknown pragma" for WinCE port
  *
@@ -122,8 +126,8 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
 {
    if( mpOutput == NULL)
       return FALSE;
-	 mpOutput->Redraw (buf);
-	 return TRUE;
+   
+   return mpOutput->Redraw (buf);
 }
 
 BOOL PVideoChannel::Close()
