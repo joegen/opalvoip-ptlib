@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.5  2004/07/08 04:58:11  csoutheren
+ * Exposed VXML playable classes to allow descendants
+ *
  * Revision 1.30.2.4  2004/07/07 07:07:41  csoutheren
  * Changed PWAVFile to use abstract factories (extensively)
  * Removed redundant blocking/unblocking when using G.723.1
@@ -487,6 +490,57 @@ class PVXMLPlayable : public PObject
     BOOL autoDelete;
 };
 
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableURL : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableURL, PVXMLPlayable);
+  public:
+    BOOL Open(const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL v);
+    void Play(PVXMLChannel & outgoingChannel);
+  protected:
+    PURL url;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableData : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableData, PVXMLPlayable);
+  public:
+    BOOL Open(const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v);
+    void SetData(const PBYTEArray & _data);
+    void Play(PVXMLChannel & outgoingChannel);
+  protected:
+    PBYTEArray data;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableCommand : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableCommand, PVXMLPlayable);
+  public:
+    PVXMLPlayableCommand();
+    void Play(PVXMLChannel & outgoingChannel);
+    void OnStop();
+
+  protected:
+    PPipeChannel * pipeCmd;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableFilename : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableFilename, PVXMLPlayable);
+  public:
+    BOOL Open(const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
+    void Play(PVXMLChannel & outgoingChannel);
+    void OnStop();
+  protected:
+    PFilePath fn;
+};
 
 //////////////////////////////////////////////////////////////////
 
@@ -532,16 +586,16 @@ class PVXMLChannel : public PDelayChannel
     virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount) = 0;
     virtual void GetBeepData(PBYTEArray &, unsigned) { }
 
-    virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
+    virtual BOOL QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
 
-    virtual void QueuePlayable(const PString & type, const PString & str, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = TRUE);
-    virtual void QueuePlayable(PVXMLPlayable * newItem);
-    virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual BOOL QueuePlayable(const PString & type, const PString & str, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
+    virtual BOOL QueuePlayable(PVXMLPlayable * newItem);
+    virtual BOOL QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
 
-    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE)
+    virtual BOOL QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE)
     { return QueuePlayable("File", fn, repeat, delay, autoDelete); }
 
-    virtual void QueueCommand(const PString & cmd, PINDEX repeat = 1, PINDEX delay = 0)
+    virtual BOOL QueueCommand(const PString & cmd, PINDEX repeat = 1, PINDEX delay = 0)
     { return QueuePlayable("Command", cmd, repeat, delay, TRUE); }
 
     virtual void FlushQueue();
