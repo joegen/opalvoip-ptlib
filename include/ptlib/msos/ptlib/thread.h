@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.19  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.18  1999/08/25 02:41:16  robertj
  * Fixed problem with creating windows in background threads, not happening until have a message sent.
  *
@@ -84,8 +88,7 @@
  *
  */
 
-
-#ifndef _PTHREAD
+#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
 
 #if defined(_WIN32)
 
@@ -112,7 +115,13 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+#define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
+#undef _PTHREAD_PLATFORM_INCLUDE
+
+#endif
+#ifdef _PTHREAD_PLATFORM_INCLUDE
+
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
@@ -152,11 +161,18 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
       // High water mark for stack allocated for the thread
 #endif
 #endif
-};
-
-
-inline PThread::PThread()
-  { }   // Is mostly initialised by InitialiseProcessThread().
 
 
 #endif
+
+
+#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
+#define _PTHREAD
+
+inline PThread::PThread()
+  { }
+
+#endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.9  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.8  1998/11/30 22:06:32  robertj
  * New directory structure.
  *
@@ -39,19 +43,28 @@
 
 #pragma interface
 
+
 class PXConfig;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
 
+#define _PCONFIG_PLATFORM_INCLUDE
 #include "../../config.h"
+
+#endif
+#ifdef _PCONFIG_PLATFORM_INCLUDE
+#undef _PCONFIG_PLATFORM_INCLUDE
+
   public:
     PConfig(int, const PString & name);
     ~PConfig();
 
   protected:
     PXConfig * config;
-};
-
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

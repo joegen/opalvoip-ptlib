@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.10  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.9  2000/05/01 05:59:11  robertj
  * Added mutex to PSoundChannel buffer structure.
  *
@@ -60,10 +64,6 @@
 #ifndef _PSOUND
 
 #include <mmsystem.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PSound
 
 
 class PWaveFormat : public PObject
@@ -122,7 +122,16 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
 
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PSound
+
+#define _PSOUND_PLATFORM_INCLUDE
 #include "../../sound.h"
+
+#endif
+#ifdef _PSOUND_PLATFORM_INCLUDE
+#undef _PSOUND_PLATFORM_INCLUDE
+
   public:
     // Overrides from class PChannel
     virtual PString GetName() const;
@@ -161,7 +170,9 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
 
   private:
     BOOL OpenDevice(unsigned id);
-};
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.13  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.12  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -71,7 +75,13 @@
 
 #pragma interface
 
+#define _PSERVICEPROCESS_PLATFORM_INCLUDE
 #include "../../svcproc.h"
+
+#endif
+#ifdef _PSERVICEPROCESS_PLATFORM_INCLUDE
+#undef _PSERVICEPROCESS_PLATFORM_INCLUDE
+
   public:
     ~PServiceProcess();
     virtual void Terminate();
@@ -83,6 +93,8 @@
     PString systemLogFile;
     PString pidFileToRemove;
     BOOL isTerminating;
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

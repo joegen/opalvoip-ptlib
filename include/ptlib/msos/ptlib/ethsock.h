@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.6  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.5  1998/11/30 02:55:09  robertj
  * New directory structure
  *
@@ -53,7 +57,16 @@ class PWin32PacketBuffer;
 PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PEthSocket
+
+#define _PETHSOCKET_PLATFORM_INCLUDE
 #include "../../ethsock.h"
+
+#endif
+#ifdef _PETHSOCKET_PLATFORM_INCLUDE
+#undef _PETHSOCKET_PLATFORM_INCLUDE
+
   public:
   // Overrides from class PChannel
     virtual PString GetName() const;
@@ -64,8 +77,6 @@ PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
     PString              interfaceName;
     PWin32PackBufArray   readBuffers;
     PWin32PackBufArray   writeBuffers;
-};
-
 
 #endif
 

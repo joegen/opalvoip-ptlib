@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.10  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.9  2001/02/07 03:33:43  craigs
  * Added functions to get sound channel parameters
  *
@@ -57,6 +61,7 @@
 
 #pragma interface
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
@@ -65,10 +70,17 @@ class PSoundInput;
 class PSoundPlayer;
 #endif
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
 
+#define _PSOUND_PLATFORM_INCLUDE
 #include "../../sound.h"
+
+#endif
+#ifdef _PSOUND_PLATFORM_INCLUDE
+#undef _PSOUND_PLATFORM_INCLUDE
+
   public:
     BOOL Close();
     BOOL Write(const void * buf, PINDEX len);
@@ -92,7 +104,8 @@ class PSoundPlayer;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
     unsigned actualSampleRate;
-};
-
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

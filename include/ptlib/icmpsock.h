@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.11  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.10  1999/08/07 15:22:20  craigs
  * Changed Success to PingSuccess to avoid namespace collision with X define of the same name
  *
@@ -164,13 +168,10 @@ class PICMPSocket : public PIPDatagramSocket
     const char * GetProtocolName() const;
     virtual BOOL OpenSocket();
 
-#ifdef DOC_PLUS_PLUS
+
+// Include platform dependent part of class
+#include <ptlib/icmpsock.h>
 };
-#endif
-
-// Class declaration continued in platform specific header file ///////////////
 
 
-
-
-
+// End Of File ///////////////////////////////////////////////////////////////

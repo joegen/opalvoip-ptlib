@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.4  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.3  1998/11/30 02:55:19  robertj
  * New directory structure
  *
@@ -38,17 +42,23 @@
  *
  */
 
-
 #ifndef _PMUTEX
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex
 
+#define _PMUTEX_PLATFORM_INCLUDE
 #include "../../mutex.h"
-  public:
-    virtual void Signal();
-};
-
 
 #endif
+#ifdef _PMUTEX_PLATFORM_INCLUDE
+#undef _PMUTEX_PLATFORM_INCLUDE
+
+  public:
+    virtual void Signal();
+
+#endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

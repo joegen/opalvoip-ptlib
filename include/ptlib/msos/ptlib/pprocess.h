@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.31  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.30  2001/04/15 03:37:45  yurik
  * Removed shutdown flag. Use IsTerminated() instead
  *
@@ -120,7 +124,6 @@
  *
  */
 
-
 #ifndef _PPROCESS
 
 #include <ptlib/syncpoint.h>
@@ -131,10 +134,17 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
 #endif
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+#define _PPROCESS_PLATFORM_INCLUDE
 #include "../../pprocess.h"
+
+#endif
+#ifdef _PPROCESS_PLATFORM_INCLUDE
+#undef _PPROCESS_PLATFORM_INCLUDE
+
   public:
     ~PProcess();
 
@@ -177,7 +187,9 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
 #endif
 
 #endif
-};
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.10  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.9  1999/03/09 08:52:25  robertj
  * Changes caused by documentation frenzy.
  *
@@ -63,8 +67,6 @@
 
 #pragma interface
 
-///////////////////////////////////////////////////////////////////////////////
-// PDirectory
 
 #include <dirent.h>
 #include <limits.h>
@@ -75,13 +77,23 @@
 
 typedef PString PFilePathString;
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PDirectory
+
+#define _PDIRECTORY_PLATFORM_INCLUDE
 #include "../../pdirect.h"
+
+#endif
+#ifdef _PDIRECTORY_PLATFORM_INCLUDE
+#undef _PDIRECTORY_PLATFORM_INCLUDE
+
   protected:
     DIR           * directory;
     PFileInfo     * entryInfo;
     struct dirent * entryBuffer;
-};
 
 #endif
 
 
+// End Of File ////////////////////////////////////////////////////////////////

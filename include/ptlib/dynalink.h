@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.7  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.6  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -147,8 +151,10 @@ class PDynaLink : public PObject
     );
   //@}
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/dynalink.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

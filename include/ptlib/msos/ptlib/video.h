@@ -27,16 +27,17 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.3  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.2  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
  *
  * Revision 1.1  2000/11/09 00:33:23  dereks
  * Initial release. Required for PVideoChannel class.
- *
- *
  */
-
 
 #ifndef _PVIDEO
 
@@ -46,8 +47,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PVideo
 
-
+#define _PVIDEO_PLATFORM_INCLUDE
 #include "../../video.h"
+
+#endif
+#ifdef _PVIDEO_PLATFORM_INCLUDE
+#undef _PVIDEO_PLATFORM_INCLUDE
 
   public:
     // Overrides from class PChannel
@@ -65,8 +70,7 @@
 
    static PMutex           bufferMutex;
 
-
-};
-
-
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

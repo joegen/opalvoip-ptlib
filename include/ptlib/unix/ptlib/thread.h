@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.21  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.20  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -94,6 +98,8 @@
  */
 
 #ifndef _PTHREAD
+#define _PTHREAD
+
 
 #pragma interface
 
@@ -105,7 +111,13 @@ class PSemaphore;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+#define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
+
+#endif
+#ifdef _PTHREAD_PLATFORM_INCLUDE
+#undef _PTHREAD_PLATFORM_INCLUDE
+
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
@@ -179,6 +191,8 @@ class PSemaphore;
     int    selectReturnVal;
     int    selectErrno;
 #endif
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

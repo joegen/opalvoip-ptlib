@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.8  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.7  1999/03/09 03:08:39  robertj
  * Changes for new documentation system
  *
@@ -55,11 +59,8 @@
  *
  */
 
-
 #ifndef _PDIRECTORY
 
-///////////////////////////////////////////////////////////////////////////////
-// PDirectory
 
 #include <direct.h>
 #if !defined(_WIN32)
@@ -73,7 +74,16 @@ const PINDEX P_MAX_PATH = _MAX_PATH;
 typedef PCaselessString PFilePathString;
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PDirectory
+
+#define _PDIRECTORY_PLATFORM_INCLUDE
 #include "../../pdirect.h"
+
+#endif
+#ifdef _PDIRECTORY_PLATFORM_INCLUDE
+#undef _PDIRECTORY_PLATFORM_INCLUDE
+
   protected:
 #if defined(_WIN32)
     HANDLE hFindFile;
@@ -86,7 +96,9 @@ typedef PCaselessString PFilePathString;
 
   public:
     static PString CreateFullPath(const PString & path, BOOL isDirectory);
-};
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

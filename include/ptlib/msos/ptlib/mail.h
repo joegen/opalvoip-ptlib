@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.11  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.10  1999/02/16 08:10:33  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -79,7 +83,15 @@
 #endif
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PMail
+
+#define _PMAIL_PLATFORM_INCLUDE
 #include "../../mail.h"
+
+#endif
+#ifdef _PMAIL_PLATFORM_INCLUDE
+#undef _PMAIL_PLATFORM_INCLUDE
 
   protected:
     DWORD    sessionId;
@@ -189,9 +201,9 @@
     };
     MAPIDLL mapi;
 #endif
-};
 
 
 #endif
+
 
 // End Of File ///////////////////////////////////////////////////////////////

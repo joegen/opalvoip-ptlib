@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.12  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.11  2001/04/23 00:34:29  robertj
  * Added ability for PWaitAndSignal to not wait on semaphore.
  *
@@ -218,8 +222,10 @@ class PSemaphore : public PObject
     PSemaphore(const PSemaphore &) { }
     PSemaphore & operator=(const PSemaphore &) { return *this; }
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/semaphor.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////
