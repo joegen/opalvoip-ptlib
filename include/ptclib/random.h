@@ -1,8 +1,7 @@
 /*
  * random.h
  *
- * Mersenne Twister random number generator.
- * From Makoto Matsumoto and Takuji Nishimura.
+ * ISAAC random number generator by Bob Jenkins.
  *
  * Portable Windows Library
  *
@@ -25,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.2  2001/02/27 03:33:44  robertj
+ * Changed random number generator due to licensing issues.
+ *
  * Revision 1.1  2000/02/17 12:05:02  robertj
  * Added better random number generator after finding major flaws in MSVCRT version.
  *
@@ -98,9 +100,16 @@ class PRandom
 
 
   protected:
-    enum { N = 624 };     /* cycle size */
-    unsigned long mt[N];  /* the array for the state vector  */
-    int mti;
+    enum {
+      RandSize = 1<<8 // I recommend 8 for crypto, 4 for simulations
+    };
+
+    DWORD randcnt;
+    DWORD randrsl[RandSize];
+    DWORD randmem[RandSize];
+    DWORD randa;
+    DWORD randb;
+    DWORD randc;
 };
 
 
