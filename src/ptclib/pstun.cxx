@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.4  2003/02/04 07:02:17  robertj
+ * Added ip/port version of constructor.
+ * Removed creating sockets for Open type.
+ *
  * Revision 1.3  2003/02/04 05:55:04  craigs
  * Added socket pair function
  *
@@ -51,11 +55,23 @@
 
 PSTUNClient::PSTUNClient(const PString & server, WORD _portBase, WORD _portEnd)
   : serverAddress(0),
-    serverPort(3478),
+    serverPort(DefaultPort),
     portBase(_portBase),
     portEnd(_portEnd)
 {
   SetServer(server);
+  natType      = UnknownNat;
+  stunPossible = FALSE;
+}
+
+
+PSTUNClient::PSTUNClient(const PIPSocket::Address & address, WORD port,
+                         WORD _portBase, WORD _portEnd)
+  : serverAddress(address),
+    serverPort(port),
+    portBase(_portBase),
+    portEnd(_portEnd)
+{
   natType      = UnknownNat;
   stunPossible = FALSE;
 }
@@ -78,7 +94,7 @@ BOOL PSTUNClient::SetServer(const PString & server)
 }
 
 
-BOOL PSTUNClient::SetServer(PIPSocket::Address address, WORD port)
+BOOL PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
 {
   serverAddress = address;
   serverPort = port;
@@ -106,7 +122,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType()
   };
   static const BOOL StunPossibleTable[] = {
     FALSE, // UnknownNat,
-    TRUE,  // OpenNat,
+    FALSE, // OpenNat,
     TRUE,  // ConeNat,
     TRUE,  // RestrictedNat,
     TRUE,  // PortRestrictedNat,
