@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.22 1998/07/24 06:56:05 robertj Exp $
+ * $Id: httpform.cxx,v 1.23 1998/08/09 10:35:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.23  1998/08/09 10:35:11  robertj
+ * Changed array control so can have language override.
+ *
  * Revision 1.22  1998/07/24 06:56:05  robertj
  * Fixed case significance problem in HTTP forms.
  * Improved detection of VALUE= fields with and without quotes.
@@ -285,18 +288,18 @@ PString PHTTPField::GetHTMLInput(const PString & input) const
 }
 
 
-PString PHTTPField::GetHTMLSelect(const PString & selection) const
+static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
+                                const PString & myValue, PStringList & validValues,
+                                PINDEX & finishAdjust)
 {
-  PString myValue = GetValue(FALSE);
-  PString text = selection;
   PINDEX start, finish;
-  PINDEX pos = 0;
+  PINDEX pos = begin;
   PINDEX len = 0;
   static PRegularExpression StartOption("<[ \t\r\n]*option[^>]*>",
                                         PRegularExpression::IgnoreCase);
   static PRegularExpression EndOption("<[ \t\r\n]*/option[^>]*>",
                                       PRegularExpression::IgnoreCase);
-  while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish)) {
+  while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish) && pos < end) {
     PCaselessString option = text(pos, start-1);
     PINDEX before, after;
     if (FindInputValue(option, before, after)) {
@@ -304,13 +307,29 @@ PString PHTTPField::GetHTMLSelect(const PString & selection) const
       finish = pos + after - 1;
     }
     PINDEX selpos = option.Find("selected");
-    if (text(start, finish) == myValue) {
+    PString thisValue = text(start, finish);
+    if (thisValue == myValue) {
       if (selpos == P_MAX_INDEX) {
         text.Splice(" selected", pos+7, 0);
+        finishAdjust += 9;
+        end += 9;
         len += 9;
       }
     }
     else {
+      if (validValues.GetSize() > 0) {
+        for (PINDEX valid = 0; valid < validValues.GetSize(); valid++) {
+          if (thisValue == validValues[valid])
+            break;
+        }
+        if (valid >= validValues.GetSize()) {
+          text.Delete(pos, len);
+          selpos = P_MAX_INDEX;
+          finishAdjust -= len;
+          end -= len;
+          len = 0;
+        }
+      }
       if (selpos != P_MAX_INDEX) {
         selpos += pos;
         PINDEX sellen = 8;
@@ -319,11 +338,20 @@ PString PHTTPField::GetHTMLSelect(const PString & selection) const
           sellen++;
         }
         text.Delete(selpos, sellen);
+        finishAdjust -= sellen;
+        end -= sellen;
         len -= sellen;
       }
     }
   }
+}
 
+PString PHTTPField::GetHTMLSelect(const PString & selection) const
+{
+  PString text = selection;
+  PStringList dummy1;
+  PINDEX dummy2;
+  AdjustSelectOptions(text, 0, P_MAX_INDEX, GetValue(FALSE), dummy1, dummy2);
   return text;
 }
 
@@ -687,32 +715,43 @@ static const char ArrayControlAddBottom[] = "Add Bottom";
 static const char ArrayControlAdd[] = "Add";
 
 
-void PHTTPFieldArray::AddArrayControlBox(PHTML & html, PINDEX fld) const
+static PStringList GetArrayControlOptions(PINDEX fld, PINDEX size, BOOL orderedArray)
 {
-  html << PHTML::Select(fields[fld].GetName() + ArrayControlBox);
-  PINDEX size = fields.GetSize()-1;
+  PStringList options;
+
   if (fld >= size) {
-    html << PHTML::Option(PHTML::Selected) << ArrayControlIgnore;
+    options.AppendString(ArrayControlIgnore);
     if (size == 0 || !orderedArray)
-      html << PHTML::Option() << ArrayControlAdd;
-    else
-      html << PHTML::Option() << ArrayControlAddTop
-           << PHTML::Option() << ArrayControlAddBottom;
-  }
-  else {
-    html << PHTML::Option(PHTML::Selected) << ArrayControlKeep
-         << PHTML::Option() << ArrayControlRemove;
-    if (orderedArray) {
-      if (fld > 0)
-        html << PHTML::Option() << ArrayControlMoveUp;
-      if (fld < size-1)
-        html << PHTML::Option() << ArrayControlMoveDown;
-      if (fld > 0)
-        html << PHTML::Option() << ArrayControlToTop;
-      if (fld < size-1)
-        html << PHTML::Option() << ArrayControlToBottom;
+      options.AppendString(ArrayControlAdd);
+    else {
+      options.AppendString(ArrayControlAddTop);
+      options.AppendString(ArrayControlAddBottom);
     }
   }
+  else {
+    options.AppendString(ArrayControlKeep);
+    options.AppendString(ArrayControlRemove);
+    if (orderedArray) {
+      if (fld > 0)
+        options.AppendString(ArrayControlMoveUp);
+      if (fld < size-1)
+        options.AppendString(ArrayControlMoveDown);
+      if (fld > 0)
+        options.AppendString(ArrayControlToTop);
+      if (fld < size-1)
+        options.AppendString(ArrayControlToBottom);
+    }
+  }
+
+  return options;
+}
+
+void PHTTPFieldArray::AddArrayControlBox(PHTML & html, PINDEX fld) const
+{
+  PStringList options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
+  html << PHTML::Select(fields[fld].GetName() + ArrayControlBox);
+  for (PINDEX i = 0; i < options.GetSize(); i++)
+    html << PHTML::Option(i == 0 ? PHTML::Selected : PHTML::NotSelected) << options[i];
   html << PHTML::Select();
 }
 
@@ -747,6 +786,20 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX fini
       PHTML html = PHTML::InForm;
       AddArrayControlBox(html, fld);
       SpliceAdjust(html, text, pos, len, finish);
+    }
+
+    static PRegularExpression SelectRow("<select[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"!--#form[ \t\r\n]+rowselect[ \t\r\n]*--\"[^>]*>",
+                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+    static PRegularExpression SelEndRegEx("</select[^>]*>",
+                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+    PINDEX begin, end;
+    if (FindSpliceBlock(SelectRow, SelEndRegEx, text, 0, pos, len, begin, end)) {
+      PStringList options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
+      AdjustSelectOptions(text, begin, end, options[0], options, finish);
+      static PRegularExpression RowSelect("!--#form[ \t\r\n]+rowselect[ \t\r\n]*--",
+                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+      if (text.FindRegEx(RowSelect, pos, len, pos, begin))
+        SpliceAdjust(fields[fld].GetName() + ArrayControlBox, text, pos, len, finish);
     }
 
     static PRegularExpression RowNum("<?!--#form[ \t\r\n]+rownum[ \t\r\n]*-->?",
