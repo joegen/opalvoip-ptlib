@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.10  2000/12/15 13:20:17  rogerh
+ * Fix typo
+ *
  * Revision 1.9  2000/12/15 12:50:14  rogerh
  * Fix some BeOS problems with #if defines.
  * Requested by Yuri Kiryanov <openh323@kiryanov.com>
@@ -74,7 +77,7 @@
     virtual BOOL WillBlock() const;
   protected:
 
-#if defined(P_THREADS)
+#if defined(P_PTHREADS)
     pthread_t ownerThreadId;
 #endif
 
