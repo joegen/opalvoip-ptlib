@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.4  1999/06/30 13:49:26  craigs
+ * Added code to allow full duplex audio
+ *
  * Revision 1.3  1999/05/28 14:14:29  robertj
  * Added function to get default audio device.
  *
@@ -48,6 +51,8 @@
 #include <sys/soundcard.h>
 #include <sys/time.h>
 
+PSoundHandleDict PSoundChannel::handleDict;
+PMutex           PSoundChannel::dictMutex;
 
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
@@ -105,6 +110,13 @@ BOOL PSound::Save(const PFilePath & /*filename*/)
   return FALSE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+PSoundHandleEntry::PSoundHandleEntry()
+{
+  handle    = -1;
+  direction = 0;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -127,6 +139,7 @@ PSoundChannel::PSoundChannel(const PString & device,
 
 void PSoundChannel::Construct()
 {
+  os_handle = -1;
 }
 
 
@@ -142,6 +155,7 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 
   array[0] = "/dev/audio";
   array[1] = "/dev/dsp";
+  array[2] = "/dev/dspW";
 
   return array;
 }
@@ -149,22 +163,99 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 
 PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
 {
-  return "/dev/audio";
+  return "/dev/dsp";
 }
 
 
-BOOL PSoundChannel::Open(const PString & device,
-                         Directions dir,
+BOOL PSoundChannel::Open(const PString & _device,
+                         Directions _dir,
                          unsigned numChannels,
                          unsigned sampleRate,
                          unsigned bitsPerSample)
 {
   Close();
 
-  if (!ConvertOSError(os_handle = ::open(device, (dir != Player) ? O_RDONLY : O_WRONLY)))
+  // make the direction value either 1 or 2
+  int dir = _dir+1;
+
+  // save the new device name
+  device = _device;
+
+  dictMutex.Wait();
+
+  // if the entry is in the dictionary, then see if we can reuse the handle
+  if (handleDict.Contains(device)) {
+    PSoundHandleEntry & entry = handleDict[device];
+
+    // see if the sound channel is already open in this direction
+    if ((entry.direction & dir) != 0) {
+      dictMutex.Signal();
+      return FALSE;
+    }
+
+    // indicate the device is now open in both directions
+    entry.direction |= dir;
+
+    // and indicate that this channel is now open
+    os_handle = entry.handle;
+    direction = dir;
+
+    dictMutex.Signal();
+
+    return TRUE;
+    
+  } 
+
+  // open the device in read/write mode always
+  if (!ConvertOSError(os_handle = ::open(device, O_RDWR)))
     return FALSE;
 
+  // always open in full duplex mode always
+  //if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETDUPLEX, 0)))
+  //  return FALSE;
+
+  // add the device to the dictionary
+  PSoundHandleEntry * entry = PNEW PSoundHandleEntry;
+  handleDict.SetAt(device, entry);
+
+  // save the direction
+  direction = dir;
+
+  // save the information into the dictionary entry
+  entry->handle    = os_handle;
+  entry->direction = dir;
+    
+  dictMutex.Signal();
+
   return SetFormat(numChannels, sampleRate, bitsPerSample);
+}
+
+
+BOOL PSoundChannel::Close()
+{
+  // if the channel isn't open, do nothing
+  if (os_handle < 0)
+    return TRUE;
+
+  // the device must be in the dictionary
+  dictMutex.Wait();
+  PSoundHandleEntry * entry;
+  PAssert((entry = handleDict.GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
+
+  // modify the directions bit mask in the dictionary
+  entry->direction ^= direction;
+
+  // if this is the last usage of this entry, then remove it
+  if (entry->direction == 0) {
+    handleDict.RemoveAt(device);
+    dictMutex.Signal();
+    return PChannel::Close();
+  }
+
+  // flag this channel as closed
+  dictMutex.Signal();
+  os_handle = -1;
+  return TRUE;
 }
 
 
@@ -172,8 +263,6 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
-  return TRUE;
-
   Abort();
 
   // must always set paramaters in the following order:
@@ -182,6 +271,10 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   //   speed (sampling rate)
 
   int arg, val;
+
+  // reset the device first so it will accept the new parms
+  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_RESET, &arg)))
+    return FALSE;
 
   PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
   arg = val = (bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
@@ -242,6 +335,7 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 
 BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 {
+  return FALSE;
 }
 
 
@@ -263,11 +357,13 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 
 BOOL PSoundChannel::RecordSound(PSound & sound)
 {
+  return FALSE;
 }
 
 
 BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 {
+  return FALSE;
 }
 
 
