@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.17 1996/01/02 11:54:11 robertj Exp $
+ * $Id: object.h,v 1.18 1996/01/23 13:14:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.18  1996/01/23 13:14:32  robertj
+ * Added const version of PMemoryPointer.
+ * Added constructor to endian classes for the base type.
+ *
  * Revision 1.17  1996/01/02 11:54:11  robertj
  * Mac OS compatibility changes.
  *
@@ -397,7 +401,7 @@ class PStandardType
       istream & stream // Stream to get data in platform independent form.
     ) { Get(stream); }
     PStandardType(
-      PMemoryPointer & mem // Memory to get data in platform independent form.
+      PConstMemoryPointer & mem // Memory to get data in platform independent form.
     ) { Get(mem); }
     /* Create a new instance of the platform independent type using platform
        dependent data, or platform independent streams.
@@ -414,7 +418,7 @@ class PStandardType
       istream & stream // Stream to get data in platform independent form.
     );
     void Get(
-      PMemoryPointer & mem // Memory to get data in platform independent form.
+      PConstMemoryPointer & mem // Memory to get data in platform independent form.
     );
     /* Get the platform dependent value from the platform independent value
        next in the stream or pointed to in memory. The stream or memory pointer
@@ -449,12 +453,13 @@ class PStandardType
 #define PI_TYPE(name, type) \
   struct name { \
     name() { } \
+    name(type value) : data(value) { } \
     name(istream & stream) { Get(stream); } \
-    name(PMemoryPointer & mem) { Get(mem); } \
+    name(PConstMemoryPointer & mem) { Get(mem); } \
     operator type() const { return data; } \
     operator type &() { return data; } \
     inline void Get(istream & stream); \
-    inline void Get(PMemoryPointer & mem); \
+    inline void Get(PConstMemoryPointer & mem); \
     inline void Put(ostream & stream) const; \
     inline void Put(PMemoryPointer & mem) const; \
     friend ostream & operator<<(ostream & s, const name & v) { v.Put(s); return s; } \
@@ -465,7 +470,7 @@ class PStandardType
 #define PI_SAME(name, type) \
   inline void name::Get(istream & stream) \
     { stream.read((char *)&data, sizeof(type)); } \
-  inline void name::Get(PMemoryPointer & mem) \
+  inline void name::Get(PConstMemoryPointer & mem) \
     { data = *(type *)mem; mem += sizeof(type); } \
   inline void name::Put(ostream & stream) const \
     { stream.write((char *)&data, sizeof(type)); } \
@@ -478,7 +483,7 @@ class PStandardType
 #define PI_DIFF(name, type) \
   inline void name::Get(istream & stream) \
     { PI_LOOP(type) stream.get(*--bytes); } \
-  inline void name::Get(PMemoryPointer & mem) \
+  inline void name::Get(PConstMemoryPointer & mem) \
     { PI_LOOP(type) *--bytes = *mem++; } \
   inline void name::Put(ostream & stream) const \
     { PI_LOOP(type) stream.put(*--bytes); } \
