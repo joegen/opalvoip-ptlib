@@ -1408,11 +1408,11 @@ case "$target_os" in
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD=$OSRELEASE" ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
-                   OSRELEASE='$(subst 5.,,$(shell uname -r))' ;
+                   OSRELEASE=`uname -r | sed "s/5\.//g"` ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
   darwin* )	   OSTYPE=Darwin ;
-		   OSRELEASE='$(subst .,,$(shell uname -r))' ;
+		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
                    STDCCFLAGS='-DP_MACOSX=$(OSRELEASE) -DNO_LONG_DOUBLE' ;
                    SHAREDLIBEXT="dylib";;
 
@@ -4451,6 +4451,7 @@ fi
 
 
 LIBS=""
+if test ${OSTYPE} != Darwin ; then
 
 for ac_header in dlfcn.h
 do
@@ -4593,7 +4594,14 @@ fi
 
 done
 
-if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+  if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_DYNALINK 1
+_ACEOF
+
+  fi
+else
 
 cat >>confdefs.h <<\_ACEOF
 #define P_DYNALINK 1
@@ -5212,7 +5220,8 @@ if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
 fi
 
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  echo "$as_me:$LINENO: checking for dlopen in -ldl" >&5
+  if test ${OSTYPE} != Darwin ; then
+    echo "$as_me:$LINENO: checking for dlopen in -ldl" >&5
 echo $ECHO_N "checking for dlopen in -ldl... $ECHO_C" >&6
 if test "${ac_cv_lib_dl_dlopen+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5272,8 +5281,9 @@ else
   HAS_LIBDL=no
 fi
 
-  if test ${HAS_LIBDL} = yes ; then
-    ENDLDLIBS="$ENDLDLIBS -ldl"
+    if test ${HAS_LIBDL} = yes ; then
+      ENDLDLIBS="$ENDLDLIBS -ldl"
+    fi
   fi
 fi
 
