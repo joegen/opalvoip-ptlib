@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.4  2001/03/12 03:54:11  dereks
+ * Make setting frame rate consistent with that for real video device.
+ *
  * Revision 1.3  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -172,10 +175,10 @@ class PFakeVideoInputDevice : public PVideoInputDevice
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
-       returns the IsOpen() status.
+       return the IsOpen() status.
     */
     virtual BOOL SetFrameRate(
-      unsigned rate  /// Frames per 100 seconds
+      unsigned rate  /// Frames per second
     );
          
     /**Get the minimum & maximum size of a frame on the device.
