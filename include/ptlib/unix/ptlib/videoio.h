@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.6  2001/03/03 06:13:01  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.5  2001/01/05 10:50:04  rogerh
  * More BSD Unix support for PVideoInputDevice
  *
@@ -64,7 +67,7 @@
     virtual BOOL SetVideoFormat(VideoFormat videoFormat);
     virtual int  GetNumChannels();
     virtual BOOL SetChannel(int channelNumber);
-    virtual BOOL SetColourFormat(ColourFormat colourFormat);
+    virtual BOOL SetColourFormat(const PString & colourFormat);
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) ;
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
@@ -76,8 +79,9 @@
     int    videoFd;
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
+    int    colourFormatCode;
     BYTE * videoBuffer;
-    PINDEX videoFrameSize;
+    PINDEX frameBytes;
     int    currentFrame;
     struct video_mbuf frame;
     struct video_mmap frameBuffer[2];
@@ -97,7 +101,7 @@
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
     BYTE * videoBuffer;
-    PINDEX videoFrameSize;
+    PINDEX frameBytes;
     int    mmap_size;
 #endif
 };
