@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.40  2004/01/30 02:06:06  csoutheren
+ * Added mutex to avoid threading problems on Windows
+ * Thanks to Hans Verbeek
+ *
  * Revision 1.39  2003/11/05 22:51:22  csoutheren
  * Added pragma to automatically included required libs
  *
@@ -1832,8 +1836,17 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static PMutex & GetSNMPMutex()
+{
+  static PMutex snmpmutex;
+  return snmpmutex;
+}
+
+
 BOOL PIPSocket::GetGatewayAddress(Address & addr)
 {
+  PWaitAndSignal m(GetSNMPMutex());
+
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
   return PWin32SnmpLibrary::Current().GetOid(gatewayOid, addr);
 }
@@ -1841,8 +1854,9 @@ BOOL PIPSocket::GetGatewayAddress(Address & addr)
 
 PString PIPSocket::GetGatewayInterface()
 {
-  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+  PWaitAndSignal m(GetSNMPMutex());
 
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
   AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
   if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
@@ -1854,8 +1868,9 @@ PString PIPSocket::GetGatewayInterface()
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
-  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+  PWaitAndSignal m(GetSNMPMutex());
 
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
   table.RemoveAll();
 
   PWin32AsnOid baseOid = "1.3.6.1.2.1.4.21.1";
@@ -1918,8 +1933,9 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
-  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+  PWaitAndSignal m(GetSNMPMutex());
 
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
   table.RemoveAll();
 
   if (!snmp.IsLoaded()) {
