@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.35  2003/02/01 13:25:52  robertj
+ * Added function to add new elements directly to ASN array.
+ *
  * Revision 1.34  2003/01/24 23:43:43  robertj
  * Fixed subtle problems with the use of MAX keyword for unsigned numbers,
  *   should beUINT_MAX not INT_MAX, thanks Stevie Gray for pointing it out.
@@ -929,6 +932,7 @@ class PASN_Array : public PASN_ConstrainedObject
     PINDEX GetSize() const { return array.GetSize(); }
     BOOL SetSize(PINDEX newSize);
     PASN_Object & operator[](PINDEX i) const { return array[i]; }
+    void Append(PASN_Object * obj) { array.SetAt(array.GetSize(), obj); }
     void RemoveAt(PINDEX i) { array.RemoveAt(i); }
     void RemoveAll() { array.RemoveAll(); }
 
