@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.41  2004/06/01 05:24:12  csoutheren
+ * Changed loading of inetmib1.dll to use PProcessStartup to avoid crashes when it is unloaded before ~H323Endpoint is called
+ *
  * Revision 1.40  2004/01/30 02:06:06  csoutheren
  * Added mutex to avoid threading problems on Windows
  * Thanks to Hans Verbeek
@@ -276,6 +279,7 @@ class PWin32SnmpLibrary
     void Close();
     BOOL IsLoaded() { return TRUE; }
 #endif
+public:
     PWin32SnmpLibrary();
 
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
@@ -290,13 +294,64 @@ class PWin32SnmpLibrary
     PString GetInterfaceName(PIPSocket::Address ipAddr);
 
     static PWin32SnmpLibrary & Current();
+    static PMutex & GetMutex();
 
   private:
-    BOOL (WINAPI *Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
-    BOOL (WINAPI *Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
+    PMutex mutex;
+
+    BOOL (WINAPI *_Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
+    BOOL (WINAPI *_Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
+
+    BOOL Init(DWORD upTime, HANDLE * trapEvent, AsnObjectIdentifier * firstSupportedRegion)
+    { return (*_Init)(upTime, trapEvent, firstSupportedRegion); }
+
+    BOOL Query(BYTE pduType, SnmpVarBindList * pVarBindList, AsnInteger32 * pErrorStatus, AsnInteger32 * pErrorIndex)
+    { return _Query(pduType, pVarBindList, pErrorStatus, pErrorIndex); }
+
     BOOL QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value);
 };
 
+class WinSNMPLoader : public PProcessStartup
+{
+  PCLASSINFO(WinSNMPLoader, PProcessStartup);
+  public:
+    void OnStartup()
+    { snmpLibrary = NULL; }
+
+    PWin32SnmpLibrary & Current()
+    {
+      PWaitAndSignal m(mutex);
+      if (snmpLibrary == NULL) {
+        snmpLibrary = new PWin32SnmpLibrary;
+      }
+      return *snmpLibrary;
+    }
+
+    void OnShutdown()
+    { 
+      PWaitAndSignal m(mutex); 
+      delete snmpLibrary; 
+      snmpLibrary = NULL;
+    }
+
+  protected:
+    PMutex mutex;
+    PWin32SnmpLibrary * snmpLibrary;
+};
+
+static PAbstractSingletonFactory<PProcessStartup, WinSNMPLoader> winSNMPLoadedStartupFactory("WinSNMPLoader");
+
+PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
+{ 
+  return ((WinSNMPLoader *)PGenericFactory<PProcessStartup>::CreateInstance("WinSNMPLoader"))->Current();
+}
+
+PMutex & PWin32SnmpLibrary::GetMutex()
+{
+  return Current().mutex;
+}
+
+#define GetSNMPMutex    PWin32SnmpLibrary::GetMutex
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -583,6 +638,7 @@ PWin32AsnOid & PWin32AsnOid::operator=(const AsnObjectIdentifier & oid)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+
 PWin32SnmpLibrary::PWin32SnmpLibrary()
 #ifndef _WIN32_WCE
   : PDynaLink("inetmib1.dll")
@@ -591,8 +647,8 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #ifndef _WIN32_WCE
   HANDLE hEvent;
   AsnObjectIdentifier baseOid;
-  if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
-      !GetFunction("SnmpExtensionQuery", (Function &)Query)) {
+  if (!GetFunction("SnmpExtensionInit", (Function &)_Init) ||
+      !GetFunction("SnmpExtensionQuery", (Function &)_Query)) {
     Close();
     PTRACE(1, "PWlib\tInvalid DLL: inetmib1.dll");
   }
@@ -607,11 +663,10 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #endif
 }
 
-
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
 {
-  if (!IsLoaded())
-    return FALSE;
+  //if (!IsLoaded())
+  //  return FALSE;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
@@ -623,8 +678,8 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & value)
 {
-  if (!IsLoaded())
-    return FALSE;
+  //if (!IsLoaded())
+  //  return FALSE;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
@@ -636,8 +691,8 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & v
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PString & str)
 {
-  if (!IsLoaded())
-    return FALSE;
+  //if (!IsLoaded())
+  //  return FALSE;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
@@ -653,8 +708,8 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PString & str)
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
 {
-  if (!IsLoaded())
-    return FALSE;
+  //if (!IsLoaded())
+  //  return FALSE;
 
   PWin32AsnAny any;
   if (!GetOid(oid, any))
@@ -678,8 +733,8 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT val
 
 BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnAny & value)
 {
-  if (!IsLoaded())
-    return FALSE;
+  //if (!IsLoaded())
+  //  return FALSE;
 
   value.MemFree();
 
@@ -768,12 +823,13 @@ PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
 }
 
 
+/*
 PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
 {
   static PWin32SnmpLibrary instance;
   return instance;
 }
-
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1836,19 +1892,21 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
 static PMutex & GetSNMPMutex()
 {
   static PMutex snmpmutex;
   return snmpmutex;
 }
-
+*/
 
 BOOL PIPSocket::GetGatewayAddress(Address & addr)
 {
   PWaitAndSignal m(GetSNMPMutex());
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
 
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
-  return PWin32SnmpLibrary::Current().GetOid(gatewayOid, addr);
+  return snmp.GetOid(gatewayOid, addr);
 }
 
 
@@ -1857,6 +1915,7 @@ PString PIPSocket::GetGatewayInterface()
   PWaitAndSignal m(GetSNMPMutex());
 
   PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+
   AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
   if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
@@ -1870,7 +1929,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
   PWaitAndSignal m(GetSNMPMutex());
 
-  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+  PWin32SnmpLibrary & snmp = snmp.Current();
   table.RemoveAll();
 
   PWin32AsnOid baseOid = "1.3.6.1.2.1.4.21.1";
@@ -1935,9 +1994,10 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
   PWaitAndSignal m(GetSNMPMutex());
 
-  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+  PWin32SnmpLibrary & snmp = snmp.Current();
   table.RemoveAll();
 
+  /*
   if (!snmp.IsLoaded()) {
     // Error loading the SNMP library, fail safe to using whatever the
     // address of the local host is.
@@ -1949,6 +2009,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
     table.Append(new InterfaceEntry("localhost", PIPSocket::Address(), netMask, PString::Empty()));
     return TRUE;
   }
+  */
 
   PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
   PWin32AsnOid oid = baseOid;
