@@ -131,9 +131,8 @@ void PThread::SwitchContext(PThread * from)
 
 BOOL PThread::IsNoLongerBlocked()
 {
-  // if we aren't blocked on a channel, return TRUE
-  if (blockHandle < 0)
-    return TRUE;
+  // if we aren't blocked on a channel, assert
+  PAssert (blockHandle >= 0, "IsNoLongerBlocked called for thread not I/O blocked");
 
   // setup file descriptor tables for select call
   fd_set readfds, writefds;
@@ -214,10 +213,11 @@ void PProcess::OperatingSystemYield()
   thread = current;
   do {
     if (thread->blockHandle >= 0) {
-      if (thread->blockRead)
-        thread->dataAvailable = FD_ISSET (thread->blockHandle, &readfds);
-      else
-        thread->dataAvailable = FD_ISSET (thread->blockHandle, &writefds);
+        thread->dataAvailable = FALSE;
+//      if (thread->blockRead)
+//        thread->dataAvailable = FD_ISSET (thread->blockHandle, &readfds);
+//      else
+//        thread->dataAvailable = FD_ISSET (thread->blockHandle, &writefds);
     }
     thread = thread->link;
   } while (thread != current);
@@ -227,6 +227,8 @@ void PProcess::OperatingSystemYield()
 BOOL PThread::PXBlockOnIO(int handle, BOOL isRead)
 
 {
+  PAssert(status == Running, "Attempt to I/O block a thread which is not running");
+
   blockHandle   = handle;
   blockRead     = isRead;
   hasIOTimer    = FALSE;
@@ -241,6 +243,8 @@ BOOL PThread::PXBlockOnIO(int handle, BOOL isRead)
 BOOL PThread::PXBlockOnIO(int handle, BOOL isRead, const PTimeInterval & timeout)
 
 {
+  PAssert(status == Running, "Attempt to I/O block a thread which is not running");
+
   blockHandle   = handle;
   blockRead     = isRead;
   hasIOTimer    = TRUE;
