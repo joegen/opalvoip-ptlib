@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.15 1994/03/07 07:45:40 robertj Exp $
+ * $Id: contain.inl,v 1.16 1994/04/01 14:05:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.15  1994/03/07 07:45:40  robertj
+ * Revision 1.16  1994/04/01 14:05:46  robertj
+ * Added PString specific containers.
+ *
+ * Revision 1.15  1994/03/07  07:45:40  robertj
  * Major upgrade
  *
  * Revision 1.14  1994/01/15  02:48:55  robertj
@@ -199,8 +202,24 @@ PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINLINE PStringStreamBuffer::PStringStreamBuffer(const PStringStreamBuffer & s)
+  : string(s.string) { }
+
+PINLINE PStringStreamBuffer &
+                  PStringStreamBuffer::operator=(const PStringStreamBuffer & s)
+  { string = s.string; return *this; }
+
+PINLINE PStringStreamBuffer::PStringStreamBuffer(PStringStream * str)
+  : string(PAssertNULL(str)) { sync(); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PINLINE PCollection::PCollection(PINDEX initialSize)
   : PContainer(initialSize) { }
+
+PINLINE PCollection::PCollection(const PCollection * c)
+  : PContainer(c) { }
 
 PINLINE void PCollection::AllowDeleteObjects(BOOL yes)
   { reference->deleteObjects = yes; }
@@ -263,17 +282,63 @@ PINLINE PScalarKey::operator PINDEX() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractSet::PAbstractSet()
-  { }
+  { hashTable->deleteKeys = reference->deleteObjects; }
   
 PINLINE BOOL PAbstractSet::Contains(const PObject & key)
   { return hashTable->GetElementAt(key) != NULL; }
 
 
+PINLINE PStringSet::PStringSet()
+  : PAbstractSet() { }
+
+PINLINE PStringSet::PStringSet(const PStringSet * c)
+  : PAbstractSet(c) { }
+
+PINLINE PObject * PStringSet::Clone() const
+  { return new PStringSet(this); }
+
+PINLINE void PStringSet::Include(const PString & key)
+  { Append(new PString(key)); }
+
+PINLINE void PStringSet::Exclude(const PString & key)
+  { Remove(&key); }
+
+PINLINE BOOL PStringSet::operator[](const PString & key)
+  { return Contains(key); }
+
+PINLINE const PString & PStringSet::GetKeyAt(PINDEX index) const
+  { return (const PString &)AbstractGetKeyAt(index); }
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractDictionary::PAbstractDictionary()
-  { }
+  { hashTable->deleteKeys = TRUE; }
   
+PINLINE PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary * c)
+  : PHashTable(c) { }
+
+
+PINLINE PStringDictionary::PStringDictionary()
+  : PAbstractDictionary() { }
+
+PINLINE PStringDictionary::PStringDictionary(const PStringDictionary * c)
+  : PAbstractDictionary(c) { }
+
+PINLINE PObject * PStringDictionary::Clone() const
+  { return new PStringDictionary(this); }
+
+PINLINE BOOL PStringDictionary::SetAt(const PObject & key, PString str)
+  { return PAbstractDictionary::SetAt(key, new PString(str)); }
+
+PINLINE PString & PStringDictionary::operator[](const PString & key) const
+  { return (PString &)GetRefAt(key); }
+
+PINLINE const PString & PStringDictionary::GetKeyAt(PINDEX index) const
+  { return (const PString &)AbstractGetKeyAt(index); }
+
+PINLINE PString & PStringDictionary::GetDataAt(PINDEX index) const
+  { return (PString &)AbstractGetDataAt(index); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
