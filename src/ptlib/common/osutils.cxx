@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.124  1999/09/13 13:15:07  robertj
+ * Changed PTRACE so will output to system log in PServiceProcess applications.
+ *
  * Revision 1.123  1999/08/22 12:54:35  robertj
  * Fixed warnings about inlines on older GNU compiler
  *
@@ -487,16 +490,24 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
   PTraceMutex.Wait();
 
-  if ((Options&DateAndTime) != 0) {
-    PTime now;
-    *Stream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+  if ((Options&SystemLogStream) != 0) {
+    unsigned lvl = level+PSystemLog::Warning;
+    if (lvl >= PSystemLog::NumLogLevels)
+      lvl = PSystemLog::NumLogLevels-1;
+    ((PSystemLog*)Stream)->SetLevel((PSystemLog::Level)lvl);
   }
+  else {
+    if ((Options&DateAndTime) != 0) {
+      PTime now;
+      *Stream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+    }
 
-  if ((Options&Timestamp) != 0)
-    *Stream << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
+    if ((Options&Timestamp) != 0)
+      *Stream << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
 
-  if ((Options&Thread) != 0)
-    *Stream << PThread::Current() << '\t';
+    if ((Options&Thread) != 0)
+      *Stream << PThread::Current() << '\t';
+  }
 
   if ((Options&TraceLevel) != 0)
     *Stream << level << '\t';
