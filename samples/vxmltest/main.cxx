@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2004/07/01 13:05:58  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.4  2004/06/19 09:00:35  csoutheren
  * Updated for TTS changes
  *
@@ -108,9 +112,9 @@ void Vxmltest::Main()
   }
 
   PTextToSpeech * tts = NULL;
-  PGenericFactory<PTextToSpeech>::KeyList_T engines = PGenericFactory<PTextToSpeech>::GetKeyList();
+  PFactory<PTextToSpeech>::KeyList_T engines = PFactory<PTextToSpeech>::GetKeyList();
   if (engines.size() != 0)
-    tts = PGenericFactory<PTextToSpeech>::CreateInstance(engines[0]);
+    tts = PFactory<PTextToSpeech>::CreateInstance(engines[0]);
   if (tts == NULL) {
     PError << "error: cannot select default text to speech engine" << endl;
     return;
