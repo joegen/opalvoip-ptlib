@@ -90,6 +90,7 @@ class PSoundChannelALSA: public PSoundChannel
 
  private:
 
+  static void UpdateDictionary(PSoundChannel::Directions);
   BOOL Volume (BOOL, unsigned, unsigned &);
   PSoundChannel::Directions direction;
   PString device;
