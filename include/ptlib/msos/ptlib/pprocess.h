@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.27  2001/01/24 06:08:49  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.26  2000/03/04 07:48:15  robertj
  * Fixed problem with window not appearing when assert on GUI based win32 apps.
  *
@@ -113,8 +116,11 @@
 
 #include <ptlib/syncpoint.h>
 
+#ifndef _WIN32_WCE
 extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
-
+#else
+extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
