@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.23 1996/08/25 09:35:47 robertj Exp $
+ * $Id: inetprot.cxx,v 1.24 1996/09/14 13:09:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.24  1996/09/14 13:09:36  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.23  1996/08/25 09:35:47  robertj
  * Added bug in appsock that last response is set on an I/O error.
  *
@@ -84,7 +90,9 @@
  */
 
 #include <ptlib.h>
-#include <mailsock.h>
+#include <inetprot.h>
+#include <sockets.h>
+#include <mime.h>
 
 
 static const PString CRLF = "\r\n";
@@ -92,70 +100,29 @@ static const PString CRLFdotCRLF = "\r\n.\r\n";
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PApplicationSocket
+// PInternetProtocol
 
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       WORD port)
-  : PTCPSocket(port), commandNames(cmdCount, cmdNames, TRUE)
-{
-  Construct();
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & service)
-  : PTCPSocket(service), commandNames(cmdCount, cmdNames, TRUE)
-{
-  Construct();
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & address,
-                                       WORD port)
-  : PTCPSocket(address, port), commandNames(cmdCount, cmdNames, TRUE)
-{
-  Construct();
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & address,
-                                       const PString & service)
-  : PTCPSocket(address, service), commandNames(cmdCount, cmdNames, TRUE)
-{
-  Construct();
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       PSocket & socket)
-  : PTCPSocket(socket), commandNames(cmdCount, cmdNames, TRUE)
-{
-  Construct();
-}
-
-
-void PApplicationSocket::Construct()
+PInternetProtocol::PInternetProtocol(const char * svcName,
+                                     PINDEX cmdCount,
+                                     char const * const * cmdNames)
+  : defaultServiceName(svcName),
+    commandNames(cmdCount, cmdNames, TRUE),
+    readLineTimeout(0, 10)   // 10 seconds
 {
   SetReadTimeout(PTimeInterval(0, 0, 10));  // 10 minutes
-  readLineTimeout = PTimeInterval(0, 10);   // 10 seconds
   stuffingState = DontStuff;
   newLineToCRLF = TRUE;
   unReadCount = 0;
 }
 
-void PApplicationSocket::SetReadLineTimeout(const PTimeInterval & t)
+
+void PInternetProtocol::SetReadLineTimeout(const PTimeInterval & t)
 {
   readLineTimeout = t;
 }
 
-BOOL PApplicationSocket::Read(void * buf, PINDEX len)
+
+BOOL PInternetProtocol::Read(void * buf, PINDEX len)
 {
   lastReadCount = PMIN(unReadCount, len);
   const char * unReadPtr = ((const char *)unReadBuffer)+unReadCount;
@@ -171,7 +138,7 @@ BOOL PApplicationSocket::Read(void * buf, PINDEX len)
 
   if (len > 0) {
     PINDEX saveCount = lastReadCount;
-    PTCPSocket::Read(bufptr, len);
+    PIndirectChannel::Read(bufptr, len);
     lastReadCount += saveCount;
   }
 
@@ -179,10 +146,10 @@ BOOL PApplicationSocket::Read(void * buf, PINDEX len)
 }
 
 
-BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
+BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
 {
   if (len == 0 || stuffingState == DontStuff)
-    return PTCPSocket::Write(buf, len);
+    return PIndirectChannel::Write(buf, len);
 
   PINDEX totalWritten = 0;
   const char * base = (const char *)buf;
@@ -198,11 +165,11 @@ BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
           case '\n' :
             if (newLineToCRLF) {
               if (current > base) {
-                if (!PTCPSocket::Write(base, current - base))
+                if (!PIndirectChannel::Write(base, current - base))
                   return FALSE;
                 totalWritten += lastWriteCount;
               }
-              if (!PTCPSocket::Write("\r", 1))
+              if (!PIndirectChannel::Write("\r", 1))
                 return FALSE;
               totalWritten += lastWriteCount;
               base = current;
@@ -217,11 +184,11 @@ BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
       case StuffCRLF :
         if (*current == '.') {
           if (current > base) {
-            if (!PTCPSocket::Write(base, current - base))
+            if (!PIndirectChannel::Write(base, current - base))
               return FALSE;
             totalWritten += lastWriteCount;
           }
-          if (!PTCPSocket::Write(".", 1))
+          if (!PIndirectChannel::Write(".", 1))
             return FALSE;
           totalWritten += lastWriteCount;
           base = current;
@@ -236,7 +203,7 @@ BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
   }
 
   if (current > base)
-    if (!PTCPSocket::Write(base, current - base))
+    if (!PIndirectChannel::Write(base, current - base))
       return FALSE;
 
   lastWriteCount += totalWritten;
@@ -244,7 +211,57 @@ BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
 }
 
 
-BOOL PApplicationSocket::WriteLine(const PString & line)
+BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
+{
+  if (socket->IsOpen()) {
+    if (Open(socket))
+      return TRUE;
+    Close();
+  }
+  else
+    delete socket;
+
+  return FALSE;
+}
+
+
+BOOL PInternetProtocol::Connect(const PString & address, WORD port)
+{
+  if (port == 0)
+    return Connect(address, defaultServiceName);
+
+  return AttachSocket(new PTCPSocket(address, port));
+}
+
+
+BOOL PInternetProtocol::Connect(const PString & address, const PString & service)
+{
+  return AttachSocket(new PTCPSocket(address, service));
+}
+
+
+BOOL PInternetProtocol::Accept(PSocket & listener)
+{
+  return AttachSocket(new PTCPSocket(listener));
+}
+
+
+const PString & PInternetProtocol::GetDefaultService() const
+{
+  return defaultServiceName;
+}
+
+
+PIPSocket * PInternetProtocol::GetSocket() const
+{
+  PChannel * channel = GetBaseReadChannel();
+  if (channel != NULL && channel->IsDescendant(PIPSocket::Class()))
+    return (PIPSocket *)channel;
+  return NULL;
+}
+
+
+BOOL PInternetProtocol::WriteLine(const PString & line)
 {
   if (line.FindOneOf(CRLF) == P_MAX_INDEX)
     return WriteString(line + CRLF);
@@ -258,7 +275,7 @@ BOOL PApplicationSocket::WriteLine(const PString & line)
 }
 
 
-BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
+BOOL PInternetProtocol::ReadLine(PString & str, BOOL allowContinuation)
 {
   str = PString();
 
@@ -277,7 +294,7 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
     if (unReadCount == 0) {
       char readAhead[1000];
       SetReadTimeout(0);
-      if (PTCPSocket::Read(readAhead, sizeof(readAhead)))
+      if (PIndirectChannel::Read(readAhead, sizeof(readAhead)))
         UnRead(readAhead, GetLastReadCount());
       SetReadTimeout(readLineTimeout);
     }
@@ -320,20 +337,20 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
 }
 
 
-void PApplicationSocket::UnRead(int ch)
+void PInternetProtocol::UnRead(int ch)
 {
   unReadBuffer.SetSize((unReadCount+256)&~255);
   unReadBuffer[unReadCount++] = (char)ch;
 }
 
 
-void PApplicationSocket::UnRead(const PString & str)
+void PInternetProtocol::UnRead(const PString & str)
 {
   UnRead((const char *)str, str.GetLength());
 }
 
 
-void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
+void PInternetProtocol::UnRead(const void * buffer, PINDEX len)
 {
   char * unreadptr =
                unReadBuffer.GetPointer((unReadCount+len+255)&~255)+unReadCount;
@@ -344,14 +361,15 @@ void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
 }
 
 
-BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber)
+BOOL PInternetProtocol::WriteCommand(PINDEX cmdNumber)
 {
   if (cmdNumber >= commandNames.GetSize())
     return FALSE;
   return WriteLine(commandNames[cmdNumber]);
 }
 
-BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber, const PString & param)
+
+BOOL PInternetProtocol::WriteCommand(PINDEX cmdNumber, const PString & param)
 {
   if (cmdNumber >= commandNames.GetSize())
     return FALSE;
@@ -362,7 +380,7 @@ BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber, const PString & param)
 }
 
 
-BOOL PApplicationSocket::ReadCommand(PINDEX & num, PString & args)
+BOOL PInternetProtocol::ReadCommand(PINDEX & num, PString & args)
 {
   do {
     if (!ReadLine(args))
@@ -382,13 +400,13 @@ BOOL PApplicationSocket::ReadCommand(PINDEX & num, PString & args)
 }
 
 
-BOOL PApplicationSocket::WriteResponse(unsigned code, const PString & info)
+BOOL PInternetProtocol::WriteResponse(unsigned code, const PString & info)
 {
   return WriteResponse(psprintf("%03u", code), info);
 }
 
 
-BOOL PApplicationSocket::WriteResponse(const PString & code,
+BOOL PInternetProtocol::WriteResponse(const PString & code,
                                        const PString & info)
 {
   if (info.FindOneOf(CRLF) == P_MAX_INDEX)
@@ -404,7 +422,7 @@ BOOL PApplicationSocket::WriteResponse(const PString & code,
 }
 
 
-BOOL PApplicationSocket::ReadResponse()
+BOOL PInternetProtocol::ReadResponse()
 {
   PString line;
   if (!ReadLine(line)) {
@@ -431,7 +449,7 @@ BOOL PApplicationSocket::ReadResponse()
 }
 
 
-BOOL PApplicationSocket::ReadResponse(int & code, PString & info)
+BOOL PInternetProtocol::ReadResponse(int & code, PString & info)
 {
   BOOL retval = ReadResponse();
 
@@ -442,7 +460,7 @@ BOOL PApplicationSocket::ReadResponse(int & code, PString & info)
 }
 
 
-PINDEX PApplicationSocket::ParseResponse(const PString & line)
+PINDEX PInternetProtocol::ParseResponse(const PString & line)
 {
   PINDEX endCode = line.FindOneOf(" -");
   if (endCode == P_MAX_INDEX) {
@@ -457,13 +475,13 @@ PINDEX PApplicationSocket::ParseResponse(const PString & line)
 }
 
 
-int PApplicationSocket::ExecuteCommand(PINDEX cmd)
+int PInternetProtocol::ExecuteCommand(PINDEX cmd)
 {
   return ExecuteCommand(cmd, PString());
 }
 
 
-int PApplicationSocket::ExecuteCommand(PINDEX cmd,
+int PInternetProtocol::ExecuteCommand(PINDEX cmd,
                                        const PString & param)
 {
   PTimeInterval oldTimeout = GetReadTimeout();
@@ -475,13 +493,13 @@ int PApplicationSocket::ExecuteCommand(PINDEX cmd,
 }
 
 
-int PApplicationSocket::GetLastResponseCode() const
+int PInternetProtocol::GetLastResponseCode() const
 {
   return lastResponseCode;
 }
 
 
-PString PApplicationSocket::GetLastResponseInfo() const
+PString PInternetProtocol::GetLastResponseInfo() const
 {
   return lastResponseInfo;
 }
@@ -496,7 +514,7 @@ PMIMEInfo::PMIMEInfo(istream & strm)
 }
 
 
-PMIMEInfo::PMIMEInfo(PApplicationSocket & socket)
+PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 {
   Read(socket);
 }
@@ -528,7 +546,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
 }
 
 
-BOOL PMIMEInfo::Read(PApplicationSocket & socket)
+BOOL PMIMEInfo::Read(PInternetProtocol & socket)
 {
   PString line;
   while (socket.ReadLine(line, TRUE)) {
@@ -547,7 +565,7 @@ BOOL PMIMEInfo::Read(PApplicationSocket & socket)
 }
 
 
-BOOL PMIMEInfo::Write(PApplicationSocket & socket) const
+BOOL PMIMEInfo::Write(PInternetProtocol & socket) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     if (!socket.WriteLine(GetKeyAt(i) + ": " + GetDataAt(i)))
