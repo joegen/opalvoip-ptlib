@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.80  1998/11/30 04:47:52  robertj
+ * New directory structure
+ *
  * Revision 1.79  1998/11/14 06:28:36  robertj
  * Changed senatics of os_sendto to return TRUE if ANY bytes are sent.
  *
@@ -270,7 +273,7 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 #include <ctype.h>
 
