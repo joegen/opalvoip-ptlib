@@ -35,6 +35,8 @@ EXPORTS
     ??$getline@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@YAAAV?$basic_istream@DU?$char_traits@D@std@@@0@AAV10@AAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@D@Z @4529 NONAME
     ??$getline@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@YAAAV?$basic_istream@GU?$char_traits@G@std@@@0@AAV10@AAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@0@@Z @4530 NONAME
     ??$getline@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@YAAAV?$basic_istream@GU?$char_traits@G@std@@@0@AAV10@AAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@0@G@Z @4531 NONAME
+    ??$PAssertCast@$$CBVPSafePtrBase@@@@YAPBVPSafePtrBase@@PBV0@PBDH@Z @6741 NONAME
+    ??$PAssertCast@VPSafeObject@@@@YAPAVPSafeObject@@PAV0@PBDH@Z @6742 NONAME
     ??$PLoadPluginDirectory@VPPluginManager@@@@YAXAAVPPluginManager@@ABVPDirectory@@PBD@Z @6438 NONAME
     ??$p_signed2string@H@@YAPADHHPAD@Z @4532 NONAME
     ??$p_signed2string@J@@YAPADJJPAD@Z @4533 NONAME
@@ -429,9 +431,9 @@ EXPORTS
     ??0PRemoteConnection@@QAE@XZ @123 NONAME
     ??0PSafeCollection@@QAE@PAVPCollection@@@Z @124 NONAME
     ??0PSafeObject@@QAE@XZ @125 NONAME
-    ??0PSafePtrBase@@IAE@AAVPSafeCollection@@W4PSafetyMode@@H@Z @126 NONAME
-    ??0PSafePtrBase@@IAE@AAVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @127 NONAME
     ??0PSafePtrBase@@IAE@ABV0@@Z @128 NONAME
+    ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@H@Z @6743 NONAME
+    ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @6744 NONAME
     ??0PSafePtrBase@@IAE@PAVPSafeObject@@W4PSafetyMode@@@Z @129 NONAME
     ??0PSemaphore@@IAE@PAX@Z @130 NONAME
     ??0PSemaphore@@QAE@ABV0@@Z @131 NONAME
@@ -2823,8 +2825,8 @@ EXPORTS
     ?AsInt64@PString@@QBE_JI@Z @889 NONAME
     ?AsInteger@PString@@QBEJI@Z @890 NONAME
     ?AsReal@PString@@QBENXZ @891 NONAME
-    ?Assign@PSafePtrBase@@IAEXAAVPSafeCollection@@@Z @892 NONAME
     ?Assign@PSafePtrBase@@IAEXABV1@@Z @893 NONAME
+    ?Assign@PSafePtrBase@@IAEXABVPSafeCollection@@@Z @6745 NONAME
     ?Assign@PSafePtrBase@@IAEXH@Z @894 NONAME
     ?Assign@PSafePtrBase@@IAEXPAVPSafeObject@@@Z @895 NONAME
     ?AssignContents@PAbstractArray@@MAEXABVPContainer@@@Z @896 NONAME
@@ -3445,8 +3447,9 @@ EXPORTS
     ?DeleteKey@PConfig@@UAEXABVPString@@@Z @2969 NONAME
     ?DeleteKey@RegistryKey@@QAEHABVPString@@@Z @1256 NONAME
     ?DeleteMessage@PMail@@QAEHABVPString@@@Z @1257 NONAME
+    ?DeleteObject@PSafeCollection@@UBEXPAVPObject@@@Z @6739 NONAME
     ?DeleteObjectsTimeout@PSafeCollection@@MAEXAAVPTimer@@H@Z @1258 NONAME
-    ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEXXZ @1259 NONAME
+    ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEHXZ @6740 NONAME
     ?DeleteSection@PConfig@@UAEXABVPString@@@Z @2970 NONAME
     ?DeleteSection@PConfig@@UAEXXZ @2971 NONAME
     ?DeleteSubTrees@PAbstractSortedList@@IAEXPAUElement@1@H@Z @3018 NONAME
@@ -4063,6 +4066,7 @@ EXPORTS
     ?GetSize@PArrayObjects@@UBEHXZ @1685 NONAME
     ?GetSize@PBitArray@@UBEHXZ @1686 NONAME
     ?GetSize@PContainer@@UBEHXZ @1687 NONAME
+    ?GetSize@PSafeCollection@@QBEHXZ @6746 NONAME
     ?GetSize@Psockaddr@@QBEHXZ @2941 NONAME
     ?GetSize@PWaveFormat@@QBEHXZ @5276 NONAME
     ?GetSpeed@PSerialChannel@@QBEKXZ @1688 NONAME
@@ -4767,7 +4771,7 @@ EXPORTS
     ?RightTrim@PString@@QBE?AV1@XZ @2345 NONAME
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @2346 NONAME
     ?SafeDereference@PSafeObject@@QAEXXZ @2347 NONAME
-    ?SafelyCanBeDeleted@PSafeObject@@QAEHXZ @2348 NONAME
+    ?SafelyCanBeDeleted@PSafeObject@@QBEHXZ @6747 NONAME
     ?SafeReference@PSafeObject@@QAEHXZ @2349 NONAME
     ?SafeRemove@PSafeCollection@@MAEHPAVPSafeObject@@@Z @2350 NONAME
     ?SafeRemove@PSafeObject@@QAEXXZ @2351 NONAME
