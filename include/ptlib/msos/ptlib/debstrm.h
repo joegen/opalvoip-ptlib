@@ -1,5 +1,5 @@
 /*
- * $Id: debstrm.h,v 1.3 1996/08/17 10:00:40 robertj Exp $
+ * $Id: debstrm.h,v 1.4 1996/11/04 03:34:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: debstrm.h,v $
+ * Revision 1.4  1996/11/04 03:34:24  robertj
+ * Fixed missing #define for multiple inclusion of file.
+ *
  * Revision 1.3  1996/08/17 10:00:40  robertj
  * Changes for Windows DLL support.
  *
@@ -24,6 +27,7 @@
 
 
 #ifndef _PDEBUGSTREAM
+#define _PDEBUGSTREAM
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDebugStream for MS-Windows
