@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.62  2000/07/20 05:46:34  robertj
+ * Added runtime_malloc() function for cases where memory check code must be bypassed.
+ *
  * Revision 1.61  2000/07/13 15:45:35  robertj
  * Removed #define std that causes everyone so much grief!
  *
@@ -777,6 +780,19 @@ class PMemoryHeap {
 };
 
 
+/** Allocate memory for the run time library.
+This version of free is used for data that is not to be allocated using the
+memory check system, ie will be free'ed inside the C run time library.
+*/
+inline void runtime_malloc(size_t bytes /** Size of block to allocate */ ) { malloc(bytes); }
+
+/** Free memory allocated by run time library.
+This version of free is used for data that is not allocated using the
+memory check system, ie was malloc'ed inside the C run time library.
+*/
+inline void runtime_free(void * ptr /** Memory block to free */ ) { free(ptr); }
+
+
 /** Override of system call for memory check system.
 This macro is used to allocate memory via the memory check system selected
 with the #PMEMORY_CHECK# compile time option. It will include the source file
@@ -801,12 +817,6 @@ track of the memory block.
 */
 #define realloc(p,s) PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__)
 
-
-/** Free memory allocated by run time library.
-This version of free is used for data that is not allocated using the
-memory check system, ie was malloc'ed inside the C run time library.
-*/
-inline void runtime_free(void * ptr /** Memory block to free */ ) { free(ptr); }
 
 /** Override of system call for memory check system.
 This macro is used to deallocate memory via the memory check system selected
@@ -886,6 +896,7 @@ inline void operator delete[](void * ptr, const char *, int)
 
 #define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
+#define runtime_malloc(s) malloc(s)
 #define runtime_free(p) free(p)
 
 #endif // _DEBUG
