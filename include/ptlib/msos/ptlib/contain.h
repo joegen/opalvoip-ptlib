@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.31  2004/04/03 06:54:23  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.30  2004/01/06 21:17:38  csoutheren
  * Fixed formatting of warning message regarding old include system
  * Thanks to Louis R. Marascio
@@ -150,6 +153,10 @@ and from the pre-processor options for this project"
 #define PHAS_TEMPLATES
 #endif
 
+#if _MSC_VER>=1300
+#define __USE_STL__ 1
+#endif
+
 #endif
 
 
@@ -240,6 +247,8 @@ typedef long PInt32;
 typedef signed __int64 PInt64;
 typedef unsigned __int64 PUInt64;
 
+#if _MSC_VER<1300
+
 class ostream;
 class istream;
 
@@ -248,6 +257,8 @@ ostream & operator<<(ostream & s, PUInt64 v);
 
 istream & operator>>(istream & s, PInt64 & v);
 istream & operator>>(istream & s, PUInt64 & v);
+
+#endif
 
 #endif
 
