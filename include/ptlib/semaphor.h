@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.14  2001/11/23 00:55:18  robertj
+ * Changed PWaitAndSignal so works inside const functions.
+ *
  * Revision 1.13  2001/06/01 04:00:21  yurik
  * Removed dependency on obsolete function
  *
@@ -105,7 +108,7 @@ class PWaitAndSignal {
        before returning.
       */
     PWaitAndSignal(
-      PSemaphore & sem,   /// Semaphore descendent to wait/signal.
+      const PSemaphore & sem,   /// Semaphore descendent to wait/signal.
       BOOL wait = TRUE    /// Wait for semaphore before returning.
     );
     /** Signal the semaphore.
