@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.11  2001/06/04 10:13:38  robertj
+ * Added compare function to compare value of os_handle.
+ * Added has function based on os_handle value.
+ *
  * Revision 1.10  2001/01/02 06:07:07  robertj
  * Fixed race condition in reopening indirect channel, thanks Bertrand Croq.
  *
@@ -178,6 +182,25 @@ PChannel::~PChannel()
   Close();
   delete (PChannelStreamBuffer *)rdbuf();
   init(NULL);
+}
+
+
+PObject::Comparison PChannel::Compare(const PObject & obj) const
+{
+  PAssert(IsDescendant(PChannel::Class()), PInvalidCast);
+  int h1 = GetHandle();
+  int h2 = ((const PChannel&)obj).GetHandle();
+  if (h1 < h2)
+    return LessThan;
+  if (h1 > h2)
+    return GreaterThan;
+  return EqualTo;
+}
+
+
+PINDEX PChannel::HashFunction() const
+{
+  return GetHandle()%97;
 }
 
 
