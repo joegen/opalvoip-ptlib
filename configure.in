@@ -328,6 +328,21 @@ if test ${HAS_PTHREADS} != yes ; then
 fi
 
 dnl ########################################################################
+dnl check for XPG6 compliant pthreads (timed spinlocks)
+
+if test ${HAS_PTHREADS} = yes ; then
+  AC_CHECK_LIB(pthread, pthread_mutex_timedlock, HAS_PTHREADS_XPG6=yes, HAS_PTHREADS_XPG6=no)
+  if test ${HAS_PTHREADS_XPG6} = yes ; then
+    AC_DEFINE(P_PTHREADS_XPG6, 1, "XPG6 compliant pthreads found")
+  fi
+
+  AC_CHECK_LIB(pthread, sem_timedwait, HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
+  if test ${HAS_SEMAPHORES_XPG6} = yes ; then
+    AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")
+  fi
+fi
+
+dnl ########################################################################
 dnl check for regex library
 
 dnl yes this test needs to be outside the if below

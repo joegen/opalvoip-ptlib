@@ -2670,6 +2670,145 @@ echo "$as_me: error: must have pthreads!" >&2;}
 fi
 
 
+if test ${HAS_PTHREADS} = yes ; then
+  echo "$as_me:$LINENO: checking for pthread_mutex_timedlock in -lpthread" >&5
+echo $ECHO_N "checking for pthread_mutex_timedlock in -lpthread... $ECHO_C" >&6
+if test "${ac_cv_lib_pthread_pthread_mutex_timedlock+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char pthread_mutex_timedlock ();
+int
+main ()
+{
+pthread_mutex_timedlock ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pthread_pthread_mutex_timedlock=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_pthread_pthread_mutex_timedlock=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_pthread_mutex_timedlock" >&5
+echo "${ECHO_T}$ac_cv_lib_pthread_pthread_mutex_timedlock" >&6
+if test $ac_cv_lib_pthread_pthread_mutex_timedlock = yes; then
+  HAS_PTHREADS_XPG6=yes
+else
+  HAS_PTHREADS_XPG6=no
+fi
+
+  if test ${HAS_PTHREADS_XPG6} = yes ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_PTHREADS_XPG6 1
+_ACEOF
+
+  fi
+
+  echo "$as_me:$LINENO: checking for sem_timedwait in -lpthread" >&5
+echo $ECHO_N "checking for sem_timedwait in -lpthread... $ECHO_C" >&6
+if test "${ac_cv_lib_pthread_sem_timedwait+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char sem_timedwait ();
+int
+main ()
+{
+sem_timedwait ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pthread_sem_timedwait=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_pthread_sem_timedwait=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_sem_timedwait" >&5
+echo "${ECHO_T}$ac_cv_lib_pthread_sem_timedwait" >&6
+if test $ac_cv_lib_pthread_sem_timedwait = yes; then
+  HAS_SEMAPHORES_XPG6=yes
+else
+  HAS_SEMAPHORES_XPG6=no
+fi
+
+  if test ${HAS_SEMAPHORES_XPG6} = yes ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define P_HAS_SEMAPHORES_XPG6 1
+_ACEOF
+
+  fi
+fi
+
+
 ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
