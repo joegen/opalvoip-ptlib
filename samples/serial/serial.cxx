@@ -11,6 +11,9 @@
  *
  *
  * $Log: serial.cxx,v $
+ * Revision 1.3  2005/03/14 07:33:51  dereksmithies
+ * Fix console input handling.  Concatenate characters split by PSerialChannel reading.
+ *
  * Revision 1.2  2005/03/12 06:44:22  dereksmithies
  * Fix typo in setting stopbits.  Program now reports all serial parameters that are used.
  *
@@ -174,23 +177,24 @@ void Serial::HandleSerialInput()
 #define MAXM 1000
     char buffer[MAXM];
     PString str;
-    PINDEX  i;
+    BOOL found = FALSE;
 
     while(serial.IsOpen()) {
 	memset(buffer, 0, MAXM);
         serial.Read(buffer, MAXM);
 
 	if (endNow) {
-	    cout << "End of thread to handle serial input" << endl;
+	    PTRACE(3, "End of thread to handle serial input");
 	    return;
 	}
 
         PINDEX len = serial.GetLastReadCount();
         if (len != 0) {
-            str = buffer;
-            for (i = str.GetLength(); i > 0; i--)
-                if (str[i - 1] < 0x20)
-                    str.Delete(i - 1, 1);
+	    buffer[len] = 0;
+	    PTRACE(1, "Read the string \"" << buffer << "\" from the serial port");
+            str += PString(buffer);
+	    if (str.Find("\n") != P_MAX_INDEX)
+		found = TRUE;
         }
 
         PINDEX err = serial.GetErrorCode();
@@ -199,9 +203,12 @@ void Serial::HandleSerialInput()
             cout << "get data from serial port, failed, error is " << serial.GetErrorText() << endl;
         }
 
-        if (str.GetLength() > 0) {
+        if (found) {
+	    str.Replace("\n", "");	    
             PTRACE(1, "Read the message \"" << str << "\"");
 	    cout << "have read the message \"" << str << "\" from the serial port" << endl;
+	    str = "";
+	    found = FALSE;
         }
     }
 }
@@ -318,6 +325,7 @@ void Serial::HandleConsoleInput()
   help << "  Q   : Exit program\n";
   help << "      : anything else to send a message\n";
 
+  PError << " " << endl << help << endl;
 
   for (;;) {
 
@@ -326,31 +334,33 @@ void Serial::HandleConsoleInput()
     char oneLine[200];
     fgets(oneLine, 200, stdin);
     
-    PString str(oneLine);
-    for (PINDEX i = str.GetLength(); i > 0; i--)
-        if (str[i - 1] < 0x20)
-            str.Delete(i - 1, 1);
-    
+    PString str(oneLine);    
     if (str.GetLength() < 1)
 	continue;
 
-    char ch = str.ToLower()[0];
-    switch(ch) {
-	case '?' :
-	case 'h' : PError << help << endl;
-	    break;
-	    
-	case 'x' :
-	case 'q' :
-	    PError << "\nEnd of thread to read from keyboard " << endl << endl;
+    BOOL helped = FALSE;
+    if (str.GetLength() == 2) {
+	char ch = str.ToLower()[0];
+	
+	if ((ch == '?') || (ch == 'h')) {
+	    helped = TRUE;
+	    PError << help << endl;
+	}
+
+	if ((ch == 'x') || (ch == 'q')) {
+	    PTRACE(3, "\nEnd of thread to read from keyboard ");
 	    endNow = TRUE;
 	    return;
-	    break;
+	}
 
-	default:
+    }
+
+    if (!helped) {
 	    PTRACE(1, "Serial\t Write the message\"" << str << "\" to the serial port");
 	    serial.Write(str.GetPointer(), str.GetLength());
+	    continue;
     }
+
   }
 }
  
