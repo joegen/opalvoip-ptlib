@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.10  2004/03/23 04:43:42  csoutheren
+ * Modified plugin manager to allow code modules to be notified when plugins
+ * are loaded or unloaded
+ *
  * Revision 1.9  2004/02/23 23:56:01  csoutheren
  * Removed unneeded class
  *
@@ -48,7 +52,6 @@
 #  endif
 #endif
 
-
 //////////////////////////////////////////////////////
 
 PPluginManager & PPluginManager::GetPluginManager()
@@ -76,7 +79,7 @@ PPluginManager::~PPluginManager()
 {
 }
 
-BOOL PPluginManager::LoadPlugin (const PString & fileName)
+BOOL PPluginManager::LoadPlugin(const PString & fileName)
 {
   PWaitAndSignal m(pluginListMutex);
 
@@ -108,8 +111,12 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
           PTRACE(3, "Failed to find the registration-triggering function in " << fileName);
         }
 
+        // call the notifier
+        CallNotifier(*dll, 0);
+
+        // add the plugin to the list of plugins
         pluginList.Append(dll);
-      	return TRUE;
+        return TRUE;
       }
     }
   }
@@ -199,4 +206,34 @@ BOOL PPluginManager::RegisterService(const PString & serviceName,
   serviceList.Append(service);
 
   return TRUE;
+}
+
+
+void PPluginManager::AddNotifier(const PNotifier & notifyFunction, BOOL existing)
+{
+  PWaitAndSignal m(notifierMutex);
+  notifierList.Append(new PNotifier(notifyFunction));
+
+  if (existing)
+    for (PINDEX i = 0; i < pluginList.GetSize(); i++) 
+      CallNotifier(pluginList[i], 0);
+}
+
+void PPluginManager::RemoveNotifier(const PNotifier & notifyFunction)
+{
+  PWaitAndSignal m(notifierMutex);
+  for (PINDEX i = 0; i < notifierList.GetSize(); i++) {
+    if (notifierList[i] == notifyFunction) {
+      notifierList.RemoveAt(i);
+      i = 0;
+      continue;
+    }
+  }
+}
+
+void PPluginManager::CallNotifier(PDynaLink & dll, INT code)
+{
+  PWaitAndSignal m(notifierMutex);
+  for (PINDEX i = 0; i < notifierList.GetSize(); i++)
+    notifierList[i](dll, code);
 }
