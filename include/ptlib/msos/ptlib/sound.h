@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.6  1999/02/22 10:15:15  robertj
+ * Sound driver interface implementation to Linux OSS specification.
+ *
  * Revision 1.5  1999/02/16 06:02:39  robertj
  * Major implementation to Linux OSS model
  *
@@ -76,6 +79,8 @@ class PWaveFormat
 };
 
 
+class PSound;
+
 class PWaveBuffer : public PBYTEArray
 {
   PCLASSINFO(PWaveBuffer, PBYTEArray);
@@ -83,7 +88,9 @@ class PWaveBuffer : public PBYTEArray
     PWaveBuffer(PINDEX sz = 0);
     ~PWaveBuffer();
 
-    DWORD Prepare(HWAVEOUT hWaveOut, PINDEX count);
+    PWaveBuffer & operator=(const PSound & sound);
+
+    DWORD Prepare(HWAVEOUT hWaveOut, PINDEX & count);
     DWORD Prepare(HWAVEIN hWaveIn);
     DWORD Release();
 
@@ -92,8 +99,6 @@ class PWaveBuffer : public PBYTEArray
     HWAVEOUT hWaveOut;
     HWAVEIN  hWaveIn;
     WAVEHDR  header;
-
-    PWaveBuffer * link;
 
   friend class PSoundChannel;
 };
@@ -121,29 +126,24 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
       // Close the channel.
 
 
+    PString GetErrorText() const;
+    // Get a text form of the last error encountered.
+
+
   protected:
     PString     deviceName;
     Directions  direction;
     HWAVEIN     hWaveIn;
     HWAVEOUT    hWaveOut;
+    HANDLE      hEventDone;
     PWaveFormat waveFormat;
 
-    HANDLE hEventEnd;
-    HANDLE hEventDone;
-    HANDLE hThread;
-
-    CRITICAL_SECTION mutex;
     PWaveBufferArray buffers;
-    PINDEX           insertBufferIndex;
-    PINDEX           extractBufferIndex;
-    PINDEX           extractByteOffset;
+    PINDEX           bufferIndex;
+    PINDEX           bufferByteOffset;
 
   private:
-    static void StaticThreadMain(void *);
-    void ThreadMain();
     BOOL OpenDevice(unsigned id);
-    BOOL GetNextPlayBuffer(PINDEX & nextBufferIndex);
-    BOOL QueuePlayBuffer(PINDEX nextBufferIndex, PINDEX count);
 };
 
 
