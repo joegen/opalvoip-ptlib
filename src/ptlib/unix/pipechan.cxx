@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.41  2003/01/09 08:21:47  robertj
+ * Fixed possibly handle leak if fork() fails.
+ * Also added belt and braces checks for making sure no handle can leak in
+ *   other unknown logic. Plus do handle high water mark logging.
+ *
  * Revision 1.40  2003/01/08 01:33:52  craigs
  * Fixed problem with not checking errno on return from waitpid
  *
@@ -141,6 +146,9 @@
 #include "../common/pipechan.cxx"
 
 
+int PX_NewHandle(const char *, int);
+
+
 ////////////////////////////////////////////////////////////////
 //
 //  PPipeChannel
@@ -170,39 +178,52 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   // setup the pipe to the child
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
-  else 
+  else {
     PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
+    PX_NewHandle("PPipeChannel toChildPipe", PMAX(toChildPipe[0], toChildPipe[1]));
+  }
  
   // setup the pipe from the child
   if (mode == WriteOnly || mode == ReadWriteStd)
     fromChildPipe[0] = fromChildPipe[1] = -1;
-  else
+  else {
     PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
+    PX_NewHandle("PPipeChannel fromChildPipe", PMAX(fromChildPipe[0], fromChildPipe[1]));
+  }
 
   if (stderrSeparate)
     PAssert(pipe(stderrChildPipe) == 0, POperatingSystemError);
-  else
+  else {
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
+    PX_NewHandle("PPipeChannel stderrChildPipe", PMAX(stderrChildPipe[0], stderrChildPipe[1]));
+  }
 
   // fork to allow us to execute the child
 #if defined(__BEOS__) || defined(P_IRIX)
-  if ((childPid = fork()) != 0) {
+  childPid = fork();
 #else
-  if ((childPid = vfork()) != 0) {
+  childPid = vfork();
 #endif
+  if (childPid < 0)
+    return FALSE;
+
+  if (childPid > 0) {
     // setup the pipe to the child
-    if (toChildPipe[0] != -1) 
+    if (toChildPipe[0] != -1) {
       ::close(toChildPipe[0]);
+      toChildPipe[0] = -1;
+    }
 
-    if (fromChildPipe[1] != -1)
+    if (fromChildPipe[1] != -1) {
       ::close(fromChildPipe[1]);
+      fromChildPipe[1] = -1;
+    }
  
-    if (stderrChildPipe[1] != -1)
+    if (stderrChildPipe[1] != -1) {
       ::close(stderrChildPipe[1]);
+      stderrChildPipe[1] = -1;
+    }
  
-    if (childPid < 0)
-      return FALSE;
-
     os_handle = 0;
     return TRUE;
   }
@@ -295,16 +316,23 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
 BOOL PPipeChannel::Close()
 {
-  if (!IsOpen())
-    return TRUE;
-
   // close pipe from child
   if (fromChildPipe[0] != -1) {
     ::close(fromChildPipe[0]);
     fromChildPipe[0] = -1;
   }
 
+  if (fromChildPipe[1] != -1) {
+    ::close(fromChildPipe[1]);
+    fromChildPipe[1] = -1;
+  }
+
   // close pipe to child
+  if (toChildPipe[0] != -1) {
+    ::close(toChildPipe[0]);
+    toChildPipe[0] = -1;
+  }
+
   if (toChildPipe[1] != -1) {
     ::close(toChildPipe[1]);
     toChildPipe[1] = -1;
@@ -314,6 +342,11 @@ BOOL PPipeChannel::Close()
   if (stderrChildPipe[0] != -1) {
     ::close(stderrChildPipe[0]);
     stderrChildPipe[0] = -1;
+  }
+
+  if (stderrChildPipe[1] != -1) {
+    ::close(stderrChildPipe[1]);
+    stderrChildPipe[1] = -1;
   }
 
   // kill the child process
