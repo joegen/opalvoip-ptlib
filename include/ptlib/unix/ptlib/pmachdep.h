@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.32  2000/04/03 22:03:01  rogerh
+ * Fix socklen_t usage for FreeBSD 3.x
+ *
  * Revision 1.31  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -128,8 +131,8 @@ typedef size_t socklen_t;
 #include <sys/signal.h>
 #include <net/if.h>
 
-/* socklen_t is defined in FreeBSD 4.0 and above in sys/socket.h */
-#if (P_FREEBSD < 4)
+/* socklen_t is defined in FreeBSD 3.4-STABLE, 4.0-RELEASE and above */
+#if (P_FREEBSD <= 340000)
 typedef int socklen_t;
 #endif
 
