@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.19 1996/01/28 02:46:43 robertj Exp $
+ * $Id: object.h,v 1.20 1996/02/24 14:19:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.20  1996/02/24 14:19:29  robertj
+ * Fixed bug in endian independent integer code for memory transfers.
+ *
  * Revision 1.19  1996/01/28 02:46:43  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  * Added missing bit shift operators to 64 bit integer class.
@@ -482,11 +485,11 @@ class PStandardType
   inline void name::Get(istream & stream) \
     { stream.read((char *)&data, sizeof(type)); } \
   inline void name::Get(const BYTE ** mem) \
-    { data = *(type *)mem; mem += sizeof(type); } \
+    { data = *(type *)*mem; *mem += sizeof(type); } \
   inline void name::Put(ostream & stream) const \
     { stream.write((char *)&data, sizeof(type)); } \
   inline void name::Put(BYTE ** mem) const \
-    { *(type *)mem = data; mem += sizeof(type); }
+    { *(type *)*mem = data; *mem += sizeof(type); }
 
 #define PI_LOOP(type) \
     BYTE * bytes = ((BYTE *)&data)+sizeof(type); while (bytes != (BYTE *)&data)
