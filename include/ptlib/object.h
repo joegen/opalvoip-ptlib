@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.64  2001/01/24 06:15:44  yurik
+ * Windows CE port-related declarations
+ *
  * Revision 1.63  2000/07/28 05:13:47  robertj
  * Fixed silly mistake in runtime_malloc() function, should return a pointer!
  *
@@ -248,7 +251,9 @@
 #endif
 #endif
 
-
+#ifdef _WIN32_WCE
+#include <stdlibx.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Disable inlines when debugging for faster compiles (the compiler doesn't
