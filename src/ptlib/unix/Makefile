@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.107  2003/03/28 03:03:28  craigs
+# Added LDAP sources
+#
 # Revision 1.106  2003/02/24 17:49:02  rogerh
 # Add Mac Core Audio changes from Shawn.
 #
@@ -376,6 +379,10 @@ CFLAGS += -DPTRACING=1
 # global statics will be constructed/destructed in the correct order
 
 
+ifdef HAS_OPENLDAP
+LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx
+endif
+
 ifdef HAS_OPENSSL
 SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
@@ -533,6 +540,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(SSL_SOURCE) \
+	$(LDAP_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
 	$(GETDATE_SOURCE) \
