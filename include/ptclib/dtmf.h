@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.4  2004/09/09 05:23:37  dereksmithies
+ * Add utility function to report on dtmf characters used.
+ *
  * Revision 1.3  2004/09/09 04:00:00  csoutheren
  * Added DTMF encoding functions
  *
@@ -116,6 +119,13 @@ class PDTMFEncoder : public PBYTEArray
       AddTone(480, 620, 500);
       AddTone(0,   0,   500);
     }
+
+    /**
+     * Convenience function to get the dtmf symbol for index i, where i is
+     * in the range of 0 to 15
+     */
+
+    char DtmfChar(PINDEX i);
 
   protected:
     static PMutex & GetMutex();
