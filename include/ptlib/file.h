@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.42  2003/09/26 09:58:50  rogerhardiman
+ * Move #include <sys/stat.h> from the unix file.h to the main file.h
+ * FreeBSD's sys/stat.h includes extern "C" for some prototypes and you
+ * cannot have an extern "C" in the middle of a C++ class
+ *
  * Revision 1.41  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -165,6 +170,12 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#ifndef _WIN32
+#include <sys/stat.h>
+#endif
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
