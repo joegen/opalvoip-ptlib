@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.34  2000/04/29 04:50:16  robertj
+ * Added microseconds to string output.
+ * Fixed uninitialised microseconds on some constructors.
+ *
  * Revision 1.33  2000/04/28 13:23:25  robertj
  * Fixed printing of negative time intervals.
  *
@@ -312,6 +316,8 @@ PTime::PTime(int second, int minute, int hour,
              int day,    int month,  int year,
              int zone)
 {
+  microseconds = 0;
+
   struct tm t;
   PAssert(second >= 0 && second <= 59, PInvalidParameter);
   t.tm_sec = second;
@@ -334,8 +340,15 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PTime::Class()), PInvalidCast);
   const PTime & other = (const PTime &)obj;
-  return theTime < other.theTime ? LessThan :
-         theTime > other.theTime ? GreaterThan : EqualTo;
+  if (theTime < other.theTime)
+    return LessThan;
+  if (theTime > other.theTime)
+    return GreaterThan;
+  if (microseconds < other.microseconds)
+    return LessThan;
+  if (microseconds > other.microseconds)
+    return GreaterThan;
+  return EqualTo;
 }
 
 
@@ -453,7 +466,8 @@ PString PTime::AsString(const char * format, int zone) const
 
   BOOL is12hour = strchr(format, 'a') != NULL;
 
-  PString str;
+  PStringStream str;
+  str.fill('0');
 
   // the localtime call automatically adjusts for daylight savings time
   // so take this into account when converting non-local times
@@ -472,41 +486,39 @@ PString PTime::AsString(const char * format, int zone) const
         while (*++format == 'a')
           ;
         if (t->tm_hour < 12)
-          str += GetTimeAM();
+          str << GetTimeAM();
         else
-          str += GetTimePM();
+          str << GetTimePM();
         break;
 
       case 'h' :
         while (*++format == 'h')
           repeatCount++;
-        str += psprintf("%0*u", repeatCount,
-                                is12hour ? (t->tm_hour+11)%12+1 : t->tm_hour);
+        str << setw(repeatCount) << (is12hour ? (t->tm_hour+11)%12+1 : t->tm_hour);
         break;
 
       case 'm' :
         while (*++format == 'm')
           repeatCount++;
-        str += psprintf("%0*u", repeatCount, t->tm_min);
+        str << setw(repeatCount) << t->tm_min;
         break;
 
       case 's' :
         while (*++format == 's')
           repeatCount++;
-        str += psprintf("%0*u", repeatCount, t->tm_sec);
+        str << setw(repeatCount) << t->tm_sec;
         break;
 
       case 'w' :
         while (*++format == 'w')
           repeatCount++;
         if (repeatCount != 3 || *format != 'e')
-          str += GetDayName((Weekdays)t->tm_wday,
-                                    repeatCount <= 3 ? Abbreviated : FullName);
+          str << GetDayName((Weekdays)t->tm_wday, repeatCount <= 3 ? Abbreviated : FullName);
         else {
           static const char * const EnglishDayName[] = {
             "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
           };
-          str += EnglishDayName[t->tm_wday];
+          str << EnglishDayName[t->tm_wday];
           format++;
         }
         break;
@@ -515,16 +527,16 @@ PString PTime::AsString(const char * format, int zone) const
         while (*++format == 'M')
           repeatCount++;
         if (repeatCount < 3)
-          str += psprintf("%0*u", repeatCount, t->tm_mon+1);
+          str << setw(repeatCount) << (t->tm_mon+1);
         else if (repeatCount > 3 || *format != 'E')
-          str += GetMonthName((Months)(t->tm_mon+1),
+          str << GetMonthName((Months)(t->tm_mon+1),
                                     repeatCount == 3 ? Abbreviated : FullName);
         else {
           static const char * const EnglishMonthName[] = {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
           };
-          str += EnglishMonthName[t->tm_mon];
+          str << EnglishMonthName[t->tm_mon];
           format++;
         }
         break;
@@ -532,32 +544,51 @@ PString PTime::AsString(const char * format, int zone) const
       case 'd' :
         while (*++format == 'd')
           repeatCount++;
-        str += psprintf("%0*u", repeatCount, t->tm_mday);
+        str << setw(repeatCount) << t->tm_mday;
         break;
 
       case 'y' :
         while (*++format == 'y')
           repeatCount++;
         if (repeatCount < 3)
-          str += psprintf("%02u", t->tm_year%100);
+          str << setw(2) << (t->tm_year%100);
         else
-          str += psprintf("%04u", t->tm_year+1900);
+          str << setw(4) << (t->tm_year+1900);
         break;
 
       case 'z' :
         while (*++format == 'z')
           ;
         if (zone == 0)
-          str += "GMT";
+          str << "GMT";
         else {
-          str += (zone < 0 ? '-' : '+');
+          str << (zone < 0 ? '-' : '+');
           zone = PABS(zone);
-          str += psprintf("%02u%02u", zone/60, zone%60);
+          str << setw(2) << (zone/60) << setw(2) << (zone%60);
+        }
+        break;
+
+      case 'u' :
+        while (*++format == 'u')
+          repeatCount++;
+        switch (repeatCount) {
+          case 1 :
+            str << ((microseconds+50000)/100000);
+            break;
+          case 2 :
+            str << setw(2) << ((microseconds+5000)/10000);
+            break;
+          case 3 :
+            str << setw(3) << ((microseconds+500)/1000);
+            break;
+          default :
+            str << setw(6) << microseconds;
+            break;
         }
         break;
 
       default :
-        str += *format++;
+        str << *format++;
     }
   }
 
@@ -618,6 +649,7 @@ void PTime::ReadFrom(istream & strm)
   time_t now;
   struct tm timeBuf;
   time(&now);
+  microseconds = 0;
   theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone());
 }
 
