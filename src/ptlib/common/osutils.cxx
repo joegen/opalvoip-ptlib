@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.141  2000/06/02 01:35:56  craigs
+ * Added more guards for NULL PStrings in PConfigArg handling
+ *
  * Revision 1.140  2000/05/25 14:45:07  robertj
  * Fixed detection of real argument over configured value.
  *
@@ -1255,8 +1258,11 @@ PString PConfigArgs::GetOptionString(char option, const char * dflt) const
     return PArgList::GetOptionString(option, dflt);
 
   PString stropt = CharToString(option);
-  if (stropt.IsEmpty())
-    return dflt;
+  if (stropt.IsEmpty()) {
+    if (dflt != NULL)
+      return dflt
+    return PString();
+  }
 
   return GetOptionString(stropt, dflt);
 }
@@ -1275,8 +1281,11 @@ PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) 
     return PArgList::GetOptionString(option, dflt);
 
   // if user has specified "no-option", then ignore config file
-  if (PArgList::HasOption(negationPrefix + option))
-    return dflt;
+  if (PArgList::HasOption(negationPrefix + option)) {
+    if (dflt != NULL)
+      return dflt
+    return PString();
+  }
 
   return config.GetString(sectionName, option, dflt != NULL ? dflt : "");
 }
