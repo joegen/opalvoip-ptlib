@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.7  2004/11/15 13:26:43  csoutheren
+ * Removed debugging (oops!)
+ *
  * Revision 1.6  2004/11/08 04:04:51  csoutheren
  * Added resampling to allow operation on hardware that only supports 48khz
  *
@@ -755,8 +758,6 @@ BOOL PSoundChannelOSS::Read(void * buf, PINDEX len)
   if (!Setup() || os_handle < 0)
     return FALSE;
 
-  PTRACE(6, "OSS\tRead start");
-
   if (resampleRate == 0) {
 
     PINDEX total = 0;
@@ -796,7 +797,6 @@ BOOL PSoundChannelOSS::Read(void * buf, PINDEX len)
 
       {
         PINDEX bufLen = PMIN(resampleBuffer.GetSize(), srcBytes);
-PTRACE(1, "Reading " << bufLen << " bytes");
         while (!ConvertOSError(bytes = ::read(os_handle, resampleBuffer.GetPointer(), bufLen))) {
           if (GetErrorCode() != Interrupted) 
             return FALSE;
@@ -813,7 +813,6 @@ PTRACE(1, "Reading " << bufLen << " bytes");
           src += 2;
         }
         *(PUInt16l *)dst = sample / resampleRate;
-printf("%02x %02x ", dst[0], dst[1]);
         dst +=2 ;
         lastReadCount += 2;
       }
