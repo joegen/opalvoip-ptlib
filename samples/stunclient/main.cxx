@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2004/10/26 06:00:45  csoutheren
+ * Added -t and -o options
+ *
  * Revision 1.5  2004/02/24 11:15:48  rjongbloed
  * Added function to get external router address, also did a bunch of documentation.
  *
@@ -61,6 +64,12 @@ StunClient::StunClient()
 void StunClient::Main()
 {
   PArgList & args = GetArguments();
+  args.Parse("t-trace."       "-no-trace."
+             "o-output:"      "-no-output.");
+
+  PTrace::Initialise(args.GetOptionCount('t'),
+                   args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+                   PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 
   WORD portbase, portmax;
 
@@ -81,7 +90,7 @@ void StunClient::Main()
       portmax = (WORD)args[2].AsUnsigned();
   }
 
-  PSTUNClient stun(args[0], portbase, portmax);
+  PSTUNClient stun(args[0], portbase, portmax, portbase, portmax);
   cout << "NAT type: " << stun.GetNatTypeName() << endl;
 
   PIPSocket::Address router;
