@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.68  2002/05/02 05:11:29  craigs
+ * Fixed problem with not translating + chars in URL query parameters
+ *
  * Revision 1.67  2002/03/19 23:39:57  robertj
  * Fixed string output to include PathOnly variant, lost in previous mod.
  *
@@ -389,22 +392,16 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 {
   PString xlat = str;
 
-  if (type == QueryTranslation) {
-    PINDEX space = (PINDEX)-1;
-    while ((space = xlat.Find(' ', space+1)) != P_MAX_INDEX)
-      xlat[space] = '+';
-  }
-
   PString safeChars = "abcdefghijklmnopqrstuvwxyz"
                       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                      "0123456789$-_.+!*'(),";
+                      "0123456789$-_.!*'(),";
   switch (type) {
     case LoginTranslation :
-      safeChars += ";?&=";
+      safeChars += "+;?&=";
       break;
 
     case PathTranslation :
-      safeChars += ":@&=";
+      safeChars += "+:@&=";
       break;
 
     case QueryTranslation :
@@ -413,6 +410,12 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
   PINDEX pos = (PINDEX)-1;
   while ((pos += 1+strspn(&xlat[pos+1], safeChars)) < xlat.GetLength())
     xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
+
+  if (type == QueryTranslation) {
+    PINDEX space = (PINDEX)-1;
+    while ((space = xlat.Find(' ', space+1)) != P_MAX_INDEX)
+      xlat[space] = '+';
+  }
 
   return xlat;
 }
