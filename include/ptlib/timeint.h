@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.12 1995/03/14 12:42:50 robertj Exp $
+ * $Id: timeint.h,v 1.13 1996/03/17 05:52:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.13  1996/03/17 05:52:02  robertj
+ * Changed PTimeInterval to 64 bit integer.
+ *
  * Revision 1.12  1995/03/14 12:42:50  robertj
  * Updated documentation to use HTML codes.
  *
@@ -69,11 +72,11 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
   public:
     PTimeInterval(
-      long milliseconds = 0,  // Number of milliseconds for interval.
-      int seconds = 0,        // Number of seconds for interval.
-      int minutes = 0,        // Number of minutes for interval.
-      int hours = 0,          // Number of hours for interval.
-      int days = 0            // Number of days for interval.
+      PInt64 milliseconds = 0,  // Number of milliseconds for interval.
+      long seconds = 0,         // Number of seconds for interval.
+      long minutes = 0,         // Number of minutes for interval.
+      long hours = 0,           // Number of hours for interval.
+      int days = 0              // Number of days for interval.
     );
     /* Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
@@ -162,11 +165,11 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
 
     void SetInterval(
-      long milliseconds = 0,  // Number of milliseconds for interval.
-      int seconds = 0,        // Number of seconds for interval.
-      int minutes = 0,        // Number of minutes for interval.
-      int hours = 0,          // Number of hours for interval.
-      int days = 0            // Number of days for interval.
+      PInt64 milliseconds = 0,  // Number of milliseconds for interval.
+      long seconds = 0,         // Number of seconds for interval.
+      long minutes = 0,         // Number of minutes for interval.
+      long hours = 0,           // Number of hours for interval.
+      int days = 0              // Number of days for interval.
     );
     /* Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
@@ -303,7 +306,7 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
   protected:
   // Member variables
-    long milliseconds;
+    PInt64 milliseconds;
     // Number of milliseconds in time interval.
 
 
