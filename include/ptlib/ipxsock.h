@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.11  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.10  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -66,9 +69,8 @@
 #pragma interface
 #endif
 
-#ifndef _PSOCKET
 #include <ptlib/socket.h>
-#endif
+
 
 /**This class describes a type of socket that will communicate using the
    IPX/SPX protocols.
@@ -323,7 +325,7 @@ class PIPXSocket : public PSocket
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/ipxsock.h"
+#include "msos/ptlib/ipxsock.h"
 #else
 #include "unix/ptlib/ipxsock.h"
 #endif

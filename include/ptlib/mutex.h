@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.10  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.9  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -105,7 +108,7 @@ class PMutex : public PSemaphore
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/mutex.h"
+#include "msos/ptlib/mutex.h"
 #else
 #include "unix/ptlib/mutex.h"
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.41  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.40  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -164,8 +167,8 @@
 #endif
 
 #ifdef _WIN32
-#define PDIR_SEPARATOR '\/'
-#define P_MAX_PATH    (_POSIX_PATH_MAX)
+#define PDIR_SEPARATOR '\\'
+const PINDEX P_MAX_PATH = _MAX_PATH;
 typedef PCaselessString PFilePathString;
 #else
 #define PDIR_SEPARATOR '/'
@@ -582,7 +585,7 @@ class PDirectory : public PFilePathString
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/pdirect.h"
+#include "msos/ptlib/pdirect.h"
 #else
 #include "unix/ptlib/pdirect.h"
 #endif
