@@ -1,0 +1,30 @@
+# Microsoft Developer Studio Generated Dependency File, included by PTLib.mak
+
+.\dllmain.cxx : \
+	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	
+
+.\libver.rc : \
+	"..\..\..\version.h"\
+	
+
+!IF  "$(CFG)" == "PTLib - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
+
+!ENDIF 
+
+!IF  "$(CFG)" == "PTLib - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
+
+!ENDIF 
+
