@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.27  2000/03/21 21:23:23  robertj
+ * Added option to rename imported module names, allows include filename matching.
+ *
  * Revision 1.26  2000/01/19 12:33:07  robertj
  * Fixed parsing of OID's in IMPORTS section.
  *
@@ -260,14 +263,23 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 3, AlphaCode, 2)
+  : PProcess("Equivalence", "ASNParse", 1, 3, BetaCode, 3)
 {
 }
 
 void App::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("vedics;o:m:n");
+  args.Parse("v-verbose."
+             "e-echo."
+             "d-debug."
+             "c-c++."
+             "n-namespace."
+             "i-inlines."
+             "s-split;"
+             "o-output:"
+             "m-module:"
+             "r-rename:");
 
   unsigned numFiles = 1;
   if (args.HasOption('s')) {
@@ -279,16 +291,17 @@ void App::Main()
   }
 
   if (args.GetCount() < 1 || args.GetCount() > 1 || numFiles == 0) {
-    PError << "usage: asnparse [-v] [-e] [-d] [-c [-i] [-n]] [-s[n]] [-o file] [-m name] asnfile\n"
-              "  -v      Verbose output (multiple times for more verbose)\n"
-              "  -e      Echo input file\n"
-              "  -d      Debug output (copious!)\n"
-              "  -c      Generate C++ files\n"
-              "  -s[n]   Split output into n (default 2) files\n"
-              "  -o file Output filename/directory\n"
-              "  -m name Module name prefix/namespace\n"
-              "  -n      Use C++ namespace\n"
-              "  -i      Use C++ inlines\n"
+    PError << "usage: asnparse [options] asnfile\n"
+              "  -v --verbose        Verbose output (multiple times for more verbose)\n"
+              "  -e --echo           Echo input file\n"
+              "  -d --debug          Debug output (copious!)\n"
+              "  -c --c++            Generate C++ files\n"
+              "  -n --namespace      Use C++ namespace\n"
+              "  -i --inlines        Use C++ inlines\n"
+              "  -s[n] --split[n]    Split output into n (default 2) files\n"
+              "  -o --output file    Output filename/directory\n"
+              "  -m --module name    Module name prefix/namespace\n"
+              "  -r --rename from=to Rename import module\n"
            << endl;
     return;
   }
@@ -3268,16 +3281,12 @@ void MibTrap::PrintOn(ostream & strm) const
 /////////////////////////////////////////////////////////
 
 ImportModule::ImportModule(PString * name, TypesList * syms)
-  : fullModuleName(*name)
+  : fullModuleName(*name),
+    shortModuleName(Module->GetImportModuleName(*name))
 {
   delete name;
   symbols = *syms;
   delete syms;
-
-  PINDEX pos = fullModuleName.Find('-');
-  if (pos > 32)
-    pos = 32;
-  shortModuleName = fullModuleName.Left(pos);
 
   for (PINDEX i = 0; i < symbols.GetSize(); i++) {
     symbols[i].SetImportPrefix(shortModuleName);
@@ -3321,6 +3330,16 @@ ModuleDefinition::ModuleDefinition(PString * name, PStringList * id, Tag::Mode d
   defaultTagMode = defTagMode;
   exportAll = FALSE;
   indentLevel = 1;
+
+  PArgList & args = PProcess::Current().GetArguments();
+  if (args.HasOption('r')) {
+    PStringArray renames = args.GetOptionString('r').Lines();
+    for (PINDEX i = 0; i < renames.GetSize(); i++) {
+      PINDEX equal = renames[i].Find('=');
+      if (equal > 0 && equal != P_MAX_INDEX)
+        importNames.SetAt(renames[i].Left(equal).Trim(), renames[i].Mid(equal+1).Trim());
+    }
+  }
 }
 
 
@@ -3370,6 +3389,18 @@ TypeBase * ModuleDefinition::FindType(const PString & name)
   if (pos != P_MAX_INDEX)
     return &sortedTypes[pos];
   return NULL;
+}
+
+
+PString ModuleDefinition::GetImportModuleName(const PString & moduleName)
+{
+  if (importNames.Contains(moduleName))
+    return importNames[moduleName];
+
+  PINDEX pos = moduleName.Find('-');
+  if (pos > 32)
+    pos = 32;
+  return moduleName.Left(pos);
 }
 
 
