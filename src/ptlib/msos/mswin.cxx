@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.14 1995/12/10 11:58:37 robertj Exp $
+ * $Id: mswin.cxx,v 1.15 1996/01/28 02:55:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.15  1996/01/28 02:55:33  robertj
+ * WIN16 support.
+ *
  * Revision 1.14  1995/12/10 11:58:37  robertj
  * Added WIN32 registry support for PConfig objects.
  *
@@ -102,7 +105,7 @@ PString PTime::GetTimePM()
 }
 
 
-PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
+PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
   static const char * const weekdays[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -113,9 +116,9 @@ PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
   };
   PString str;
   if (LoadString(_hInstance, dayOfWeek+
-        (abbreviated ? PSTD_ID_STR_ABBREV_WEEKDAYS : PSTD_ID_STR_WEEKDAYS),
+        (type != FullName ? PSTD_ID_STR_ABBREV_WEEKDAYS : PSTD_ID_STR_WEEKDAYS),
         str.GetPointer(100), 99) == 0)
-    return (abbreviated ? abbrev_weekdays : weekdays)[dayOfWeek];
+    return (type != FullName ? abbrev_weekdays : weekdays)[dayOfWeek];
   str.MakeMinimumSize();
   return str;
 }
@@ -130,7 +133,7 @@ PString PTime::GetDateSeparator()
 }
 
 
-PString PTime::GetMonthName(Months month, BOOL abbreviated)
+PString PTime::GetMonthName(Months month, NameType type)
 {
   static const char * const months[] = { "",
     "January", "February", "March", "April", "May", "June",
@@ -142,9 +145,9 @@ PString PTime::GetMonthName(Months month, BOOL abbreviated)
   };
   PString str;
   if (LoadString(_hInstance, month+
-       (UINT)(abbreviated ? PSTD_ID_STR_ABBREV_MONTHS : PSTD_ID_STR_MONTHS),
+       (UINT)(type != FullName ? PSTD_ID_STR_ABBREV_MONTHS : PSTD_ID_STR_MONTHS),
        str.GetPointer(100), 99) == 0)
-    return (abbreviated ? abbrev_months : months)[month];
+    return (type != FullName ? abbrev_months : months)[month];
   str.MakeMinimumSize();
   return str;
 }
@@ -153,6 +156,18 @@ PString PTime::GetMonthName(Months month, BOOL abbreviated)
 PTime::DateOrder PTime::GetDateOrder()
 {
   return (DateOrder)GetProfileInt("intl", "iDate", 0);
+}
+
+
+long PTime::GetTimeZone() const
+{
+  return 0;
+}
+
+
+PString PTime::GetTimeZoneString(TimeZoneType type) const
+{
+  return "";
 }
 
 
