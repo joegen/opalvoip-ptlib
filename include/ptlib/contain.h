@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.37 1994/11/28 12:33:44 robertj Exp $
+ * $Id: contain.h,v 1.38 1994/12/05 11:18:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.37  1994/11/28 12:33:44  robertj
+ * Revision 1.38  1994/12/05 11:18:58  robertj
+ * Moved SetMinSize from PAbstractArray to PContainer.
+ *
+ * Revision 1.37  1994/11/28  12:33:44  robertj
  * Added dummy parameter for cls* constructor in containers. This prevents some very
  * strange an undesirable default construction of clones.
  *
@@ -153,6 +156,7 @@ PDECLARE_CLASS(PContainer, PObject)
     // New functions for class
     virtual PINDEX GetSize() const;
     virtual BOOL SetSize(PINDEX newSize) = 0;
+    BOOL SetMinSize(PINDEX minSize);
     virtual BOOL IsEmpty() const;
     
 
@@ -221,14 +225,11 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
     virtual BOOL SetSize(PINDEX newSize);
 
     // New functions for class
-    BOOL SetMinSize(PINDEX minSize);
     void * GetPointer(PINDEX minSize = 0);
 
   protected:
     PINDEX elementSize;
     char * theArray;
-
-    BOOL MakeUnique();
 };
 
 
