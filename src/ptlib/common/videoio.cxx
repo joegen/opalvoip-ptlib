@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.52  2004/11/17 10:13:14  csoutheren
+ * Fixed compilation with gcc 4.0.0
+ *
  * Revision 1.51  2004/10/27 09:24:18  dsandras
  * Added patch from Nicola Orru' to convert from SBGGR8 to YUV420P. Thanks!
  *
@@ -232,12 +235,12 @@ namespace PWLib {
   PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", TRUE);
 };
 
-PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PString & type) const
+template <> PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PString & type) const
 {
   return PVideoInputDevice::CreateDevice(type);
 }
 
-PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PString & type) const
+template <> PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PString & type) const
 {
   return PVideoOutputDevice::CreateDevice(type);
 }

@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.10  2004/11/17 10:13:14  csoutheren
+ * Fixed compilation with gcc 4.0.0
+ *
  * Revision 1.9  2004/10/28 20:07:10  csoutheren
  * Fixes for MacOSX platforms, thanks to Hannes Friederich
  *
@@ -69,7 +72,7 @@
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
-PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
+template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
 {
   return PSoundChannel::CreateChannel(type);
 }
