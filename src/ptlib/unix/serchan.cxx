@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.10  1998/12/21 06:08:08  robertj
+ * Fixed warning on solaris x86 GNU system.
+ *
  * Revision 1.9  1998/11/30 21:51:54  robertj
  * New directory structure.
  *
@@ -43,6 +46,7 @@
 
 #include <ptlib.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/ioctl.h>
 
 
