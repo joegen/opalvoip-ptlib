@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.18  1998/11/14 23:37:06  robertj
+ * Fixed file path directory extraction, not able to return root directory
+ *
  * Revision 1.17  1998/09/24 03:30:19  robertj
  * Added open software license.
  *
@@ -138,13 +141,6 @@ PINLINE BOOL PDirectory::Remove(const PString & p)
 PINLINE BOOL PDirectory::Restart(int scanMask)
   { return Open(scanMask); }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PFilePath
-
-PINLINE PDirectory PFilePath::GetDirectory() const
-  { return Left(FindLast('\\')); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
