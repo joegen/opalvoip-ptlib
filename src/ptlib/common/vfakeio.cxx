@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.27  2004/03/16 08:27:14  csoutheren
+ * Removed illegal characters
+ *
  * Revision 1.26  2003/12/14 10:01:02  rjongbloed
  * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
  *
@@ -430,7 +433,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "******",
              "      ",
              "      " }},
-    { 'æ', { "      ",
+    { '\230', { "      ",
 	     "      ",
 	     "      ",
 	     " ** * ",
@@ -441,7 +444,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " ** * ",
              "      ",
              "      " }},
-    { 'ø', { "      ",
+    { '\248', { "      ",
 	     "      ",
 	     "     *",
 	     " **** ",
@@ -452,7 +455,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " **** ",
              "*     ",
              "      " }},
-    { 'å', { "  **  ",
+    { '229', { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     " **** ",
@@ -749,7 +752,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*****",
              "     ",
              "     " }},
-    { 'Æ', { " ** ***",
+    { '\198', { " ** ***",
 	     "*  *   ",
 	     "*  *   ",
 	     "*  *   ",
@@ -760,7 +763,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*  ****",
              "       ",
              "       " }},
-    { 'Ø', { " *** ",
+    { '\216', { " *** ",
 	     "*  **",
 	     "* * *",
 	     "* * *",
@@ -771,7 +774,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " *** ",
              "*    ",
              "     " }},
-    { 'Å', { "  **  ",
+    { '197', { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     "  **  ",
