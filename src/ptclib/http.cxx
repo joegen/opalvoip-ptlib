@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.114  2005/01/16 20:36:48  csoutheren
+ * Changed URLS to put IP address in [] if contains a ":"
+ *
  * Revision 1.113  2005/01/04 08:09:41  csoutheren
  * Fixed Linux configure problems
  *
@@ -993,8 +996,12 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
       }
     }
 
-    if (schemeInfo->hasHostPort)
-      str << hostname;
+    if (schemeInfo->hasHostPort) {
+      if (hostname.Find(':') != P_MAX_INDEX)
+        str << '[' << hostname << ']';
+      else
+        str << hostname;
+    }
 
     if (schemeInfo->defaultPort != 0) {
       if (port != schemeInfo->defaultPort)
