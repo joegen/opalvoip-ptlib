@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.93  2003/07/22 03:26:10  csoutheren
+ * Fixed problem with parsing default H323 addresses
+ *
  * Revision 1.92  2003/06/23 15:31:40  ykiryanov
  * Slightly changed call to ShellExecuteEx to make compatible with Win32
  *
@@ -620,19 +623,16 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
       schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
     if (schemeInfo != NULL)
       url.Delete(0, pos+1);
-
-    // if there is no scheme, then use default
-    if (schemeInfo == NULL && defaultScheme != NULL)
-      schemeInfo = GetSchemeInfo(defaultScheme);
-    if (schemeInfo == NULL)
-      schemeInfo = &SchemeTable[DEFAULT_SCHEME];
-    scheme = schemeInfo->name;
   }
 
   // if we could not match a scheme, then use the default scheme
-  if (schemeInfo == NULL) 
+  if (schemeInfo == NULL && defaultScheme != NULL)
+    schemeInfo = GetSchemeInfo(defaultScheme);
+
+  if (schemeInfo == NULL)
     schemeInfo = &SchemeTable[DEFAULT_SCHEME];
 
+  scheme = schemeInfo->name;
 
   // Super special case!
   if (scheme *= "callto") {
