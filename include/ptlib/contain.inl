@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.14 1994/01/15 02:48:55 robertj Exp $
+ * $Id: contain.inl,v 1.15 1994/03/07 07:45:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.14  1994/01/15 02:48:55  robertj
+ * Revision 1.15  1994/03/07 07:45:40  robertj
+ * Major upgrade
+ *
+ * Revision 1.14  1994/01/15  02:48:55  robertj
  * Rearranged PString assignment operator for NT portability.
  *
  * Revision 1.13  1994/01/13  08:42:29  robertj
@@ -124,7 +127,7 @@ PINLINE PObject::Comparison PString::CompareString(const char * cstr) const
 PINLINE BOOL PString::MakeMinimumSize()
   { return SetSize(strlen(theArray)+1); }
 
-PINLINE PINDEX PString::Length() const
+PINLINE PINDEX PString::GetLength() const
   { return strlen(theArray); }
 
 PINLINE PString & PString::operator=(const PString & str)
@@ -199,11 +202,11 @@ PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
 PINLINE PCollection::PCollection(PINDEX initialSize)
   : PContainer(initialSize) { }
 
-PINLINE void PCollection::DeleteObjects(BOOL yes)
+PINLINE void PCollection::AllowDeleteObjects(BOOL yes)
   { reference->deleteObjects = yes; }
 
-PINLINE void PCollection::NoDeleteObjects()
-  { DeleteObjects(FALSE); }
+PINLINE void PCollection::DisallowDeleteObjects()
+  { AllowDeleteObjects(FALSE); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,17 +258,6 @@ PINLINE PScalarKey::PScalarKey(PINDEX newKey)
 
 PINLINE PScalarKey::operator PINDEX() const
   { return theKey; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-PINLINE PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
-  { return *(PObject *)(hashTable->SetLastElementAt(index)
-                                      ? hashTable->lastElement->data : NULL); }
-
-PINLINE const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
-  { return *(PObject *)(hashTable->SetLastElementAt(index)
-                                       ? hashTable->lastElement->key : NULL); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
