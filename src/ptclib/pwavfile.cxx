@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.23  2002/05/23 05:04:11  robertj
+ * Set error code if get invalid sized write for G.723.1 wav file.
+ *
  * Revision 1.22  2002/05/23 03:59:55  robertj
  * Changed G.723.1 WAV file so every frame is 24 bytes long.
  *
@@ -274,7 +277,7 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
     PINDEX frameSize = FrameSize[*frame&3];
 
     if (len < frameSize)
-      return FALSE;
+      return SetErrorValues(Miscellaneous, EINVAL, LastWriteError);
 
     BYTE writebuf[24];
     memcpy(writebuf, frame, frameSize);
