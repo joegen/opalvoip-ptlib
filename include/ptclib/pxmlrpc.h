@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.18  2003/04/15 03:00:41  robertj
+ * Added array support to XML/RPC
+ * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
+ *   big fix to base XML parser not returning internal data elements.
+ *
  * Revision 1.17  2003/01/28 05:08:07  robertj
  * Fixed copy constructor on function arguments and return value
  *
@@ -94,6 +99,7 @@
 
 
 class PXMLRPCBlock;
+class PXMLRPCVariableBase;
 class PXMLRPCStructBase;
 
 
@@ -123,6 +129,7 @@ class PXMLRPC : public PObject
       RequestHasNoParms,
       MethodNameIsEmpty,
       UnknownMethod,
+      ParamNotArray,
 
       UserFault                       = 1000,
     };
@@ -169,7 +176,7 @@ class PXMLRPCBlock : public PXML
 
     PXMLElement * GetParams();
     PXMLElement * GetParam(PINDEX idx) const;
-    PINDEX GetParamCount() const             { return (params == NULL) ? 0 : params->GetSize(); }
+    PINDEX GetParamCount() const;
 
     // used when used as a response
     PINDEX  GetFaultCode() const                     { return faultCode; }
@@ -188,14 +195,16 @@ class PXMLRPCBlock : public PXML
     BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
     BOOL GetParam(PINDEX idx, PStringToString & result);
     BOOL GetParam(PINDEX idx, PXMLRPCStructBase & result);
-
-    PXMLElement * GetStructParam(PINDEX idx);
+    BOOL GetParam(PINDEX idx, PStringArray & result);
+    BOOL GetParam(PINDEX idx, PArray<PStringToString> & result);
 
     // static functions for parsing values
     BOOL ParseScalar(PXMLElement * element, PString & type, PString & value);
     BOOL ParseStruct(PXMLElement * element, PStringToString & structDict);
     BOOL ParseStruct(PXMLElement * element, PXMLRPCStructBase & structData);
-    PXMLElement * ParseStructElement(PXMLElement * structElement, PINDEX idx, PString & name);
+    BOOL ParseArray(PXMLElement * element, PStringArray & array);
+    BOOL ParseArray(PXMLElement * element, PArray<PStringToString> & array);
+    BOOL ParseArray(PXMLElement * element, PXMLRPCVariableBase & array);
 
     // static functions for creating values
     static PXMLElement * CreateValueElement(PXMLElement * element);
@@ -213,6 +222,12 @@ class PXMLRPCBlock : public PXML
     static PXMLElement * CreateStruct(const PStringToString & dict, const PString & typeStr);
     static PXMLElement * CreateStruct(const PXMLRPCStructBase & structData);
 
+    static PXMLElement * CreateArray(const PStringArray & array);
+    static PXMLElement * CreateArray(const PStringArray & array, const PString & typeStr);
+    static PXMLElement * CreateArray(const PStringArray & array, const PStringArray & types);
+    static PXMLElement * CreateArray(const PArray<PStringToString> & array);
+    static PXMLElement * CreateArray(const PXMLRPCVariableBase & array);
+
     // helper functions for adding parameters
     void AddParam(PXMLElement * parm);
     void AddParam(const PString & str);
@@ -223,6 +238,10 @@ class PXMLRPCBlock : public PXML
     void AddBinary(const PBYTEArray & data);
     void AddStruct(const PStringToString & dict);
     void AddStruct(const PStringToString & dict, const PString & typeStr);
+    void AddArray(const PStringArray & array);
+    void AddArray(const PStringArray & array, const PString & typeStr);
+    void AddArray(const PStringArray & array, const PStringArray & types);
+    void AddArray(const PArray<PStringToString> & array);
 
   protected:
     PXMLElement * params;
@@ -233,20 +252,22 @@ class PXMLRPCBlock : public PXML
 
 /////////////////////////////////////////////////////////////////
 
-class PXMLRPCStructBase;
-
 class PXMLRPCVariableBase : public PObject {
     PCLASSINFO(PXMLRPCVariableBase, PObject);
-  public:
+  protected:
     PXMLRPCVariableBase(const char * name, const char * type = NULL);
 
+  public:
     const char * GetName() const { return name; }
     const char * GetType() const { return type; }
 
     virtual void Copy(const PXMLRPCVariableBase & other) = 0;
-    virtual PString ToString() const;
-    virtual void FromString(const PString & str);
-    virtual PXMLRPCStructBase * GetStruct() const { return NULL; }
+    virtual PString ToString(PINDEX i) const;
+    virtual void FromString(PINDEX i, const PString & str);
+    virtual PXMLRPCStructBase * GetStruct(PINDEX i) const;
+    virtual BOOL IsArray() const;
+    virtual PINDEX GetSize() const;
+    virtual BOOL SetSize(PINDEX);
 
     PString ToBase64(PAbstractArray & data) const;
     void FromBase64(const PString & str, PAbstractArray & data);
@@ -254,6 +275,45 @@ class PXMLRPCVariableBase : public PObject {
   protected:
     const char * name;
     const char * type;
+
+  private:
+    PXMLRPCVariableBase(const PXMLRPCVariableBase &) { }
+};
+
+
+class PXMLRPCArrayBase : public PXMLRPCVariableBase {
+    PCLASSINFO(PXMLRPCArrayBase, PXMLRPCVariableBase);
+  protected:
+    PXMLRPCArrayBase(PContainer & array, const char * name, const char * type);
+    PXMLRPCArrayBase & operator=(const PXMLRPCArrayBase &);
+
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual void Copy(const PXMLRPCVariableBase & other);
+    virtual BOOL IsArray() const;
+    virtual PINDEX GetSize() const;
+    virtual BOOL SetSize(PINDEX);
+
+  protected:
+    PContainer & array;
+};
+
+
+class PXMLRPCArrayObjectsBase : public PXMLRPCArrayBase {
+    PCLASSINFO(PXMLRPCArrayObjectsBase, PXMLRPCArrayBase);
+  protected:
+    PXMLRPCArrayObjectsBase(PArrayObjects & array, const char * name, const char * type);
+    PXMLRPCArrayObjectsBase & operator=(const PXMLRPCArrayObjectsBase &);
+
+  public:
+    virtual PString ToString(PINDEX i) const;
+    virtual void FromString(PINDEX i, const PString & str);
+    virtual BOOL SetSize(PINDEX);
+
+    virtual PObject * CreateObject() const = 0;
+
+  protected:
+    PArrayObjects & array;
 };
 
 
@@ -308,8 +368,20 @@ class PXMLRPCStructBase : public PObject {
     } pxmlrpcvar_##variable
 
 #define PXMLRPC_VARIABLE_CUSTOM(base, type, variable, xmltype, init, extras) \
-    PXMLRPC_VARIABLE_CLASS(base, type, variable, xmltype, init, extras); \
-    public: type variable
+    public: type variable; \
+    PXMLRPC_VARIABLE_CLASS(base, type, variable, xmltype, init, extras)
+
+#define PXMLRPC_ARRAY_CUSTOM(base, arraytype, basetype, variable, xmltype, par, extras) \
+    public: arraytype variable; \
+    private: struct PXMLRPCVar_##variable : public par { \
+      PXMLRPCVar_##variable() \
+        : par(((base &)base::GetInitialiser()).variable, #variable, xmltype), \
+          instance((arraytype &)array) \
+        { } \
+      extras \
+      arraytype & instance; \
+    } pxmlrpcvar_##variable
+
 
 #define PXMLRPC_STRUCT_END() \
   };
@@ -357,18 +429,42 @@ class PXMLRPCStructBase : public PObject {
 
 #define PXMLRPC_DATETIME(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "dateTime.iso8601", ;, \
-             PString ToString() const { return instance.AsString(PTime::ShortISO8601); } )
+                    PString ToString(PINDEX) const { return instance.AsString(PTime::ShortISO8601); } )
 
 
 #define PXMLRPC_BINARY(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "base64", ;, \
-                     PString ToString() const { return ToBase64(instance); } \
-                     void FromString(const PString & str) { FromBase64(str, instance); } )
+                    PString ToString(PINDEX) const { return ToBase64(instance); } \
+                    void FromString(PINDEX, const PString & str) { FromBase64(str, instance); } )
 
 
 #define PXMLRPC_STRUCT(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "struct", ;, \
-                             PXMLRPCStructBase * GetStruct() const { return &instance; } )
+                    PXMLRPCStructBase * GetStruct(PINDEX) const { return &instance; } )
+
+
+#define PXMLRPC_ARRAY(base, arraytype, basetype, variable, xmltype) \
+        PXMLRPC_ARRAY_CUSTOM(base, arraytype, basetype, variable, xmltype, PXMLRPCArrayObjectsBase, \
+                    PObject * CreateObject() const { return new basetype; })
+
+
+#define PXMLRPC_ARRAY_STRING(base, arraytype, basetype, variable) \
+        PXMLRPC_ARRAY(base, arraytype, basetype, variable, "string")
+
+#define PXMLRPC_ARRAY_INTEGER(base, type, variable) \
+        PXMLRPC_ARRAY_CUSTOM(base, PBaseArray<type>, type, variable, "int", PXMLRPCArrayBase, \
+                    PString ToString(PINDEX i) const { return PString(instance[i]); } \
+                    void FromString(PINDEX i, const PString & str) { instance[i] = (type)str.AsInteger(); })
+
+#define PXMLRPC_ARRAY_DOUBLE(base, type, variable) \
+        PXMLRPC_ARRAY_CUSTOM(base, PBaseArray<type>, type, variable, "double", PXMLRPCArrayBase, \
+                    PString ToString(PINDEX i) const { return psprintf("%f", instance[i]); } \
+                    void FromString(PINDEX i, const PString & str) { instance[i] = (type)str.AsReal(); })
+
+#define PXMLRPC_ARRAY_STRUCT(base, type, variable) \
+        PXMLRPC_ARRAY_CUSTOM(base, PArray<type>, type, variable, "struct", PXMLRPCArrayObjectsBase, \
+                             PXMLRPCStructBase * GetStruct(PINDEX i) const { return &instance[i]; } \
+                             PObject * CreateObject() const { return new type; })
 
 
 
@@ -404,7 +500,7 @@ class PXMLRPCStructBase : public PObject {
       var_class(const name##_in & var) \
         : PXMLRPCVariableBase("variable", "struct"), instance(var) { } \
       virtual void PrintOn (ostream & s) const { s << instance; } \
-      virtual PXMLRPCStructBase * GetStruct() const { return (PXMLRPCStructBase *)&instance; } \
+      virtual PXMLRPCStructBase * GetStruct(PINDEX) const { return (PXMLRPCStructBase *)&instance; } \
       virtual void Copy(const PXMLRPCVariableBase &) { } \
       const name##_in & instance; \
     } variable; \
