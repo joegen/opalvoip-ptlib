@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.89  2004/04/14 10:07:00  csoutheren
+# Added CXXFLAGS
+#
 # Revision 1.88  2003/12/29 07:15:31  csoutheren
 # Fixed problem with creating statically linked executables
 #
@@ -294,7 +297,7 @@ SOURCES         := $(strip $(SOURCES))
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -x c++ -c $< -o $@
+	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) ${CXXFLAGS) -x c++ -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
