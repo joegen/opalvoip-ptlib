@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.34  1998/10/31 12:49:21  robertj
+ * Added read/write mutex to the HTTP space variable to avoid thread crashes.
+ *
  * Revision 1.33  1998/10/25 01:00:46  craigs
  * Added ability to specify per-directory authorisation for PHTTPDirectory
  *
@@ -160,7 +163,7 @@
 
 class PHTTPResource;
 
-PDECLARE_CLASS(PHTTPSpace, PObject)
+PDECLARE_CONTAINER(PHTTPSpace, PContainer)
 /* This class describes a name space that a Universal Resource Locator operates
    in. Each section of the hierarchy field of the URL points to a leg in the
    tree specified by this class.
@@ -168,22 +171,7 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
 
   public:
     PHTTPSpace();
-    // Construct the root of the URL name space tree.
-
-    ~PHTTPSpace();
-    // Destroy the sub-tree of the URL name space.
-
-
-  // Overrides from class PObject
-    virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
-    ) const;
-    /* Compare the two URLs and return their relative rank.
-
-       <H2>Returns:</H2>
-       <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
-       according to the relative rank of the objects.
-     */
+    // Constructor for HTTP URL Name Space
 
 
   // New functions for class.
@@ -220,7 +208,7 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
      */
 
     PHTTPResource * FindResource(
-      const PURL & url          // URL to search for in the name space.
+      const PURL & url   // URL to search for in the name space.
     );
     /* Locate the resource specified by the URL in the URL name space.
 
@@ -228,17 +216,39 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
        The resource found or NULL if no resource at that position in hiearchy.
      */
 
-  protected:
-    PHTTPSpace(
-      const PString & name,           // Name of URL hierarchy section.
-      PHTTPSpace * parentNode = NULL  // Pointer to parent node in tree.
-    );
+    void StartRead() const { mutex->StartRead(); }
+    /* This function attempts to acquire the mutex for reading.
+     */
 
-    PString name;
-    PSORTED_LIST(ChildList, PHTTPSpace);
-    ChildList children;
-    PHTTPSpace * parent;
-    PHTTPResource * resource;
+    void EndRead() const { mutex->EndRead(); }
+    /* This function attempts to release the mutex for reading.
+     */
+
+    void StartWrite() const { mutex->StartWrite(); }
+    /* This function attempts to acquire the mutex for writing.
+     */
+
+    void EndWrite() const { mutex->EndWrite(); }
+    /* This function attempts to release the mutex for writing.
+     */
+
+
+  protected:
+    PReadWriteMutex * mutex;
+    class Node;
+    PSORTED_LIST(ChildList, Node);
+    PDECLARE_CLASS(Node, PString)
+      public:
+        Node(const PString & name, Node * parentNode);
+        ~Node();
+
+        Node          * parent;
+        ChildList       children;
+        PHTTPResource * resource;
+    } * root;
+
+  private:
+    BOOL SetSize(PINDEX) { return FALSE; }
 };
 
 
@@ -526,8 +536,8 @@ PDECLARE_CLASS(PHTTPServer, PHTTP)
      */
 
     void SetURLSpace(
-      PHTTPSpace & space   // New URL name space to use.
-    ) { urlSpace = space; }
+      const PHTTPSpace & space   // New URL name space to use.
+    );
     // Use a new URL name space for this HTTP socket.
 
 
