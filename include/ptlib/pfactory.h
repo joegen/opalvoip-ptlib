@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.8  2004/06/01 05:44:12  csoutheren
+ * Added typedefs to allow access to types
+ * Changed singleton class to use new so as to allow full cleanup
+ *
  * Revision 1.7  2004/05/23 12:33:56  rjongbloed
  * Made some subtle changes to the way the static variables are instantiated in
  *   the factoris to fix problems with DLL's under windows. May not be final solution.
@@ -98,36 +102,60 @@
  *  
  */
 
-template <class AbstractType, typename TypeKey = PString>
+template <class _Abstract_T, typename _Key_T = PString>
 class PGenericFactory
 {
   public:
-    typedef AbstractType * (*CreatorFunctionType)();
+    typedef _Key_T      Key_T;
+    typedef _Abstract_T Abstract_T;
+    typedef _Abstract_T * (*CreatorFunction_T)();
+
     class AbstractInfo {
       public:
         AbstractInfo()
           : creator(NULL), isSingleton(FALSE), instance(NULL)
         { }
-        AbstractInfo(CreatorFunctionType creat, BOOL single)
+        AbstractInfo(CreatorFunction_T creat, BOOL single)
           : creator(creat), isSingleton(single), instance(NULL)
         { }
-        AbstractInfo(AbstractType * inst, BOOL single)
+        AbstractInfo(_Abstract_T * inst, BOOL single)
           : creator(NULL), isSingleton(single), instance(inst)
         { }
-        CreatorFunctionType creator;
+        CreatorFunction_T creator;
         BOOL isSingleton;
-        AbstractType * instance;
+        _Abstract_T * instance;
     };
 
-    typedef std::map<TypeKey, AbstractInfo> KeyMap;
-    typedef std::vector<TypeKey> KeyList;
+    typedef std::map<_Key_T, AbstractInfo> KeyMap_T;
+    typedef std::vector<_Key_T> KeyList_T;
 
-    static AbstractType * CreateInstance(const TypeKey & key)
+    static void Register(const _Key_T & key, CreatorFunction_T func, BOOL isSingleton)
+    { Register(key, AbstractInfo(func, isSingleton)); }
+
+    static void Register(const _Key_T & key, _Abstract_T * instance, BOOL isSingleton)
+    { Register(key, AbstractInfo(instance, isSingleton)); }
+
+    static void Register(const _Key_T & key, const AbstractInfo & info)
     {
       PWaitAndSignal m(GetMutex());
-      KeyMap & keyMap = GetKeyMap();
-      AbstractType * instance = NULL;
-      typename KeyMap::const_iterator entry = keyMap.find(key);
+      KeyMap_T & keyMap = GetKeyMap();
+      if (keyMap.find(key) == keyMap.end())
+        keyMap[key] = info;
+    }
+
+    static void Unregister(const _Key_T & key)
+    {
+      PWaitAndSignal m(GetMutex());
+      KeyMap_T & keyMap = GetKeyMap();
+      keyMap.erase(key);
+    }
+
+    static _Abstract_T * CreateInstance(const _Key_T & key)
+    {
+      PWaitAndSignal m(GetMutex());
+      KeyMap_T & keyMap = GetKeyMap();
+      _Abstract_T * instance = NULL;
+      typename KeyMap_T::const_iterator entry = keyMap.find(key);
       if (entry != keyMap.end()) {
         if (entry->second.isSingleton && entry->second.instance != NULL)
           instance = entry->second.instance;
@@ -137,58 +165,35 @@ class PGenericFactory
       return instance;
     }
 
-    static void Register(const TypeKey & key, CreatorFunctionType func, BOOL isSingleton)
-    {
-      Register(key, AbstractInfo(func, isSingleton));
-    }
-
-    static void Register(const TypeKey & key, AbstractType * instance, BOOL isSingleton)
-    {
-      Register(key, AbstractInfo(instance, isSingleton));
-    }
-
-    static void Register(const TypeKey & key, const AbstractInfo & info)
+    static BOOL IsSingleton(const _Key_T & key)
     {
       PWaitAndSignal m(GetMutex());
-      KeyMap & keyMap = GetKeyMap();
-      if (keyMap.find(key) == keyMap.end())
-        keyMap[key] = info;
-    }
-
-    static BOOL IsSingleton(const TypeKey & key)
-    {
-      PWaitAndSignal m(GetMutex());
-      KeyMap & keyMap = GetKeyMap();
+      KeyMap_T & keyMap = GetKeyMap();
       if (keyMap.find(key) == keyMap.end())
         return FALSE;
       return keyMap[key].isSingleton;
     }
 
-    static KeyList GetKeyList()
+    static KeyList_T GetKeyList()
     { 
       PWaitAndSignal m(GetMutex());
-      KeyMap & keyMap = GetKeyMap();
-      KeyList list;
-      typename KeyMap::const_iterator entry;
+      KeyMap_T & keyMap = GetKeyMap();
+      KeyList_T list;
+      typename KeyMap_T::const_iterator entry;
       for (entry = keyMap.begin(); entry != keyMap.end(); ++entry)
         list.push_back(entry->first);
       return list;
     }
 
     static PMutex & GetMutex()
-    {
-      return GetFactory().mutex;
-    }
+    { return GetFactory().mutex; }
 
-    static KeyMap & GetKeyMap()
-    {
-      return GetFactory().keyMap;
-    }
+    static KeyMap_T & GetKeyMap()
+    { return GetFactory().keyMap; }
 
   protected:
     PGenericFactory()
-    {
-    }
+    { }
 
     static PGenericFactory & GetFactory()
     {
@@ -197,7 +202,7 @@ class PGenericFactory
     }
 
     PMutex mutex;
-    KeyMap keyMap;
+    KeyMap_T keyMap;
 
   private:
     PGenericFactory(const PGenericFactory &) {}
@@ -205,19 +210,15 @@ class PGenericFactory
 };
 
 
-template <class AbstractType, class ConcreteType, typename TypeKey = PString>
+template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
 class PAbstractFactory
 {
   public:
-    PAbstractFactory(const TypeKey & key)
-    {
-      PGenericFactory<AbstractType>::Register(key, &CreateInstance, FALSE);
-    }
+    PAbstractFactory(const _Key_T & key)
+    { PGenericFactory<_Abstract_T>::Register(key, &CreateInstance, FALSE); }
 
-    static AbstractType * CreateInstance()
-    {
-      return new ConcreteType;
-    }
+    static _Abstract_T * CreateInstance()
+    { return new ConcreteType; }
 
   private:
     PAbstractFactory(const PAbstractFactory &) {}
@@ -225,25 +226,27 @@ class PAbstractFactory
 };
 
 
-template <class AbstractType, class ConcreteType, typename TypeKey = PString>
+template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
 class PAbstractSingletonFactory
 {
   public:
-    PAbstractSingletonFactory(const TypeKey & key)
-    {
-      PGenericFactory<AbstractType>::Register(key, &GetInstance(), TRUE);
-    }
+    PAbstractSingletonFactory(const _Key_T & key)
+    { PGenericFactory<_Abstract_T>::Register(key, &CreateInstance, TRUE); }
+
+    static _Abstract_T * CreateInstance()
+    { return &GetInstance(); }
 
     static ConcreteType & GetInstance()
     {
-      static ConcreteType instance;
-      return instance;
+      static ConcreteType * instance = NULL;
+      if (instance == NULL)
+        instance = new ConcreteType;
+      return *instance;
     }
 
   private:
     PAbstractSingletonFactory(const PAbstractSingletonFactory &) {}
     void operator=(const PAbstractSingletonFactory &) {}
 };
-
 
 #endif // _PFACTORY_H
