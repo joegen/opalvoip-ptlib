@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.82  1999/08/18 01:45:13  robertj
+ * Added concatenation function to "base type" arrays.
+ *
  * Revision 1.81  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -572,6 +575,22 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 {
   PAssert(SetMinSize(minSize), POutOfMemory);
   return theArray;
+}
+
+
+BOOL PAbstractArray::Concatenate(const PAbstractArray & array)
+{
+  if (!allocatedDynamically || array.elementSize != elementSize)
+    return FALSE;
+
+  PINDEX oldLen = GetSize();
+  PINDEX addLen = array.GetSize();
+
+  if (!SetSize(oldLen + addLen))
+    return FALSE;
+
+  memcpy(theArray+oldLen*elementSize, array.theArray, addLen*elementSize);
+  return TRUE;
 }
 
 
