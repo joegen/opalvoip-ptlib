@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.5 1994/06/25 11:55:15 robertj Exp $
+ * $Id: timer.h,v 1.6 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.5  1994/06/25 11:55:15  robertj
+ * Revision 1.6  1994/07/02 03:03:49  robertj
+ * Redesign of timers.
+ *
+ * Revision 1.5  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.4  1994/03/07  07:38:19  robertj
@@ -31,7 +34,7 @@
 class PTimer;
 
 
-PDECLARE_CLASS(PTimerList, PAbstractSortedList)
+PDECLARE_CLASS(PTimerList, PAbstractList)
   public:
     PTimerList();
       // Create a new timer list
@@ -42,34 +45,35 @@ PDECLARE_CLASS(PTimerList, PAbstractSortedList)
       // they have expired. The return value is the number of milliseconds
       // until the next timer needs to be despatched. The function need not be
       // called again for this amount of time, though it can (and usually is).
+
+  private:
+    PTimeInterval lastSample;
+      // The last system timer tick value that was used to process timers.
 };
 
 
 PDECLARE_CLASS(PTimer, PTimeInterval)
-  // A class representing a system timer.
+  // A class representing a system timer. The PTimeInterval ancestor value is
+  // the amount of time left in the timer.
 
   public:
     PTimer(long milliseconds = 0,
-                   int seconds = 0,int minutes = 0,int hours = 0,int days = 0);
-      // Create a new timer object
+                int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
+      // Create a new timer object and start it in one shot mode for the
+      // specified amount of time
  
-    PTimer(const PTimer & timer);
-    PTimer & operator=(const PTimer & timer);
-      // Make a duplicate of the specified timer
+    PTimer(const PTimeInterval & time);
+    PTimer & operator=(const PTimeInterval & time);
+      // Restart the timer in one shot mode using the specified time value.
 
     virtual ~PTimer();
       // Destroy the timer object
 
 
-    // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-
-
     // New functions for class
-    void Start(BOOL once = TRUE);
-      // Start a timer, if once is TRUE then the timer stops after one 
-      // interval, otherwise it calls the notification function every time 
-      // interval.
+    void RunContinuous(const PTimeInterval & time);
+      // Start a timerin continous cycle mode. It calls the notification
+      // function every time interval.
 
     void Stop();
       // Stop a running timer.
@@ -103,12 +107,17 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
       // This function is called.
 
 
+  private:
+    void StartRunning(BOOL once);
+      // Start the timer from the resetTime variable.
+
+    BOOL Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft);
+      // Process the timer decrementing it by the delta amount and calling
+      // the OnTimeout() when zero. Returns TRUE if is no longer running.
+
     // Member variables
-    PTimerList * owner;
-      // List of timers that this timer is placed into/out of
-      
-    PTimeInterval targetTime;
-      // The system timer tick value that the next timeout will occur.
+    PTimeInterval resetTime;
+      // The time to reset a timer to when RunContinuous() is called.
 
     BOOL oneshot;
       // Timer operates once then stops.
@@ -119,10 +128,6 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     BOOL inTimeout;
       // Timer is currently executing its OnTimeout() function. This is to
       // prevent recursive calls when timer is in free running mode.
-
-    PTimeInterval pauseLeft;
-      // The amount of time left when the Pause() function was called, used
-      // when Resume() is subsequently called.
 
 
   friend class PTimerList;
