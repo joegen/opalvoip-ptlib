@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.3 1993/11/20 17:26:28 robertj Exp $
+ * $Id: osutils.cxx,v 1.4 1993/12/29 04:41:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.3  1993/11/20 17:26:28  robertj
+ * Revision 1.4  1993/12/29 04:41:26  robertj
+ * Mac port.
+ *
+ * Revision 1.3  1993/11/20  17:26:28  robertj
  * Removed separate osutil.h
  *
  * Revision 1.2  1993/08/31  03:38:02  robertj
@@ -109,6 +112,124 @@ PTime::PTime(int second, int minute, int hour, int day, int month, int year)
 istream & PTime::ReadFrom(istream &strm)
 {
   return strm;
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimer
+
+#if defined(_PTIMER)
+
+PTimer::PTimer(PApplication * app,
+              long milliseconds, int seconds, int minutes, int hours, int days)
+  : PTimeInterval(milliseconds, seconds, minutes, hours, days),
+    owner(PAssertNULL(app)),
+    state(stopped)
+{
+}
+
+
+PTimer::PTimer(const PTimer & timer)
+  : PTimeInterval(timer), 
+    owner(timer.owner), 
+    state(stopped)
+{
+}
+
+
+PTimer & PTimer::operator=(const PTimer & timer)
+{
+  PTimeInterval::operator=(timer);
+  owner = timer.owner;
+  state = stopped;
+  return *this;
+}
+
+
+PTimer::~PTimer()
+{
+  if (state == running)
+    owner->RemoveTimer(this);
+}
+
+
+PObject::Comparison PTimer::Compare(const PObject & obj) const
+{
+  const PTimer & other = (const PTimer &)obj;
+  return targetTime < other.targetTime ? LessThan :
+         targetTime > other.targetTime ? GreaterThan : EqualTo;
+}
+
+
+void PTimer::Start(BOOL once)
+{
+  if (state == running)
+    owner->RemoveTimer(this);
+  oneshot = once;
+  targetTime = Tick() + milliseconds;
+  owner->AddTimer(this);
+  state = running;
+}
+
+
+void PTimer::Stop()
+{
+  if (state == running)
+    owner->RemoveTimer(this);
+  state = stopped;
+  targetTime = PMaxMilliseconds;
+}
+
+
+void PTimer::Pause()
+{
+  if (state == running) {
+    owner->RemoveTimer(this);
+    pauseLeft = targetTime - Tick();
+    state = paused;
+  }
+}
+
+
+void PTimer::Resume()
+{
+  if (state == paused) {
+    targetTime = Tick() + pauseLeft;
+    owner->AddTimer(this);
+    state = running;
+  }
+}
+
+
+void PTimer::OnTimeout()
+{
+  // Empty callback function
+}
+
+
+PTimerList::PTimerList()
+{
+}
+
+
+PMilliseconds PTimerList::Process()
+{
+  PTimer * timer = (PTimer *)GetAt(0); // Get earliest timer value
+  if (timer != NULL) {
+    if (PTimer::Tick() > timer->targetTime) {
+      if (timer->oneshot)
+        timer->Stop();
+      else
+        timer->Start(FALSE);
+      timer->OnTimeout();
+    }
+    timer = (PTimer *)GetAt(0); // Get new earliest timer value
+  }
+
+  return timer != NULL ? timer->targetTime - PTimer::Tick() : PMaxMilliseconds;
 }
 
 
