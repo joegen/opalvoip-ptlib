@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.21 1998/03/17 10:16:00 robertj Exp $
+ * $Id: httpsvc.h,v 1.22 1998/03/20 03:16:09 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.22  1998/03/20 03:16:09  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.21  1998/03/17 10:16:00  robertj
  * Allowed registration page to have HTML override.
  *
@@ -166,7 +169,7 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     void CompleteRestartSystem();
 
     PThread *  restartThread;
-    PSemaphore httpThreadClosed;
+    PSyncPoint httpThreadClosed;
 
   friend class PConfigPage;
   friend class PConfigSectionsPage;
