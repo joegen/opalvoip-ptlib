@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.112  2001/12/17 23:33:50  robertj
+# Solaris 8 porting changes, thanks James Dugal
+#
 # Revision 1.111  2001/12/06 06:27:35  craigs
 # Added P_EXPAT flag
 #
@@ -704,16 +707,26 @@ OSRELEASE	:= $(subst 5.,,$(shell uname -r))
 CC		:= gcc
 STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		+= -lsocket -lnsl -ldl -lposix4
-LDFLAGS		+= -R/usr/local/gnu/lib
+LDFLAGS		+= -R/opt/openh323/lib
 
 #P_USE_RANLIB		:= 1
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
-SYSLIBDIR	:= /usr/local/gnu/lib
+SYSLIBDIR	:= /opt/openh323/lib
 
 ifdef P_PTHREADS
 ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT
+endif
+
+# Rest added by jpd@louisiana.edu, to get .so libs created!
+ifndef DEBUG
+ifndef P_SHAREDLIB
+P_SHAREDLIB=1
+ifndef PROG
+STDCCFLAGS	+= -fPIC
+endif # PROG
+endif
 endif
 
 endif # solaris

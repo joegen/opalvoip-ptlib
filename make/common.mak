@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.69  2001/12/17 23:33:50  robertj
+# Solaris 8 porting changes, thanks James Dugal
+#
 # Revision 1.68  2001/11/29 07:50:42  robertj
 # Removed static, it doesn't work either
 #
@@ -640,7 +643,7 @@ $(RESCXX) $(RESCODE): $(RESHDR)
 $(RESHDR): $(RESOURCE)
 	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
 	$(PWRC_CMD) -v $(RCFLAGS) $(RESOURCE)
-	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; \
+	@if test -e $(TMPRSRC) && diff $(RESHDR) $(TMPRSRC) >/dev/null 2>&1 ; \
 		then cp $(TMPRSRC) $(RESHDR) ; \
 		else rm -f $(TMPRSRC) ;  fi
 
