@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.14  2000/07/01 09:39:31  robertj
+ * Fixed shutdown issues with buffers in use.
+ *
  * Revision 1.13  2000/06/29 00:39:29  robertj
  * Fixed bug when PWaveFormat is assigned to itself.
  *
@@ -567,13 +570,19 @@ DWORD PWaveBuffer::Release()
 {
   DWORD err = MMSYSERR_NOERROR;
 
+  // There seems to be some pathalogical cases where on an Abort() call the buffers
+  // still are "in use", even though waveOutReset() was called. So wait until the
+  // sound driver has finished with the buffer before releasing it.
+
   if (hWaveOut != NULL) {
-    err = waveOutUnprepareHeader(hWaveOut, &header, sizeof(header));
+    while ((err = waveOutUnprepareHeader(hWaveOut, &header, sizeof(header))) == WAVERR_STILLPLAYING)
+      PThread::Yield();
     hWaveOut = NULL;
   }
 
   if (hWaveIn != NULL) {
-    err = waveInUnprepareHeader(hWaveIn, &header, sizeof(header));
+    while ((err = waveInUnprepareHeader(hWaveIn, &header, sizeof(header))) == WAVERR_STILLPLAYING)
+      PThread::Yield();
     hWaveIn = NULL;
   }
 
@@ -823,14 +832,18 @@ BOOL PSoundChannel::Close()
   Abort();
 
   if (hWaveOut != NULL) {
-    osError = waveOutClose(hWaveOut);
+    while ((osError = waveOutClose(hWaveOut)) == WAVERR_STILLPLAYING)
+      waveOutReset(hWaveOut);
     hWaveOut = NULL;
   }
 
   if (hWaveIn != NULL) {
-    osError = waveInClose(hWaveIn);
+    while ((osError = waveInClose(hWaveIn)) == WAVERR_STILLPLAYING)
+      waveInReset(hWaveIn);
     hWaveIn = NULL;
   }
+
+  Abort();
 
   os_handle = -1;
   return TRUE;
