@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.2  2001/07/20 03:30:59  robertj
+ * Minor cosmetic changes to new PWAVFile class.
+ *
  * Revision 1.1  2001/07/19 09:55:48  rogerh
  * Add PWAVFile, a class to read and write .wav files, written by
  * Roger Hardiman and <roger@freebsd.org> and
@@ -145,52 +148,51 @@ class PWAVFile : public PFile
     off_t GetPosition() const;
   //@}
 
-    /**Find out how many channels the WAV file has. Typically this is 1 for
+  /**@name Member variable access */
+  //@{
+    /**Get how many channels the WAV file has. Typically this is 1 for
        mono and 2 for stereo.
     */
-    int getNumChannels()   { if (isValidWAV) return numChannels;
-                             else return 0; }
+    unsigned GetChannels() const;
 
     /**Find out the sample rate of the WAV file in Hz.
     */
-    int getSampleRate()    { if (isValidWAV) return sampleRate;
-                             else return 0; }
-
-    /**Find out the size of WAV header presented in the file.
-    */
-    int getLenHeader()     { if (isValidWAV) return lenHeader;
-                             else return 0; }
-
-    /**Find out how many bytes of audio data there are.
-    */
-    int getLenData()       { if (isValidWAV) return lenData;
-                             else return 0; }
+    unsigned GetSampleRate() const;
 
     /**Find out how may bits there are per sample, eg 8 or 16.
     */
-    int getBitsPerSample() { if (isValidWAV) return bitsPerSample;
-                             else return 0; }
+    unsigned GetSampleSize() const;
+
+    /**Find out the size of WAV header presented in the file.
+    */
+    off_t GetHeaderLength() const;
+
+    /**Find out how many bytes of audio data there are.
+    */
+    off_t GetDataLength() const;
 
     /**Determine if the WAV file is a valid wave file.
 
-    @return
-    TRUE indicates that the WAV file is valid
-    FALSE indicates that the WAV file is invalid
+      @return
+      TRUE indicates that the WAV file is valid
+      FALSE indicates that the WAV file is invalid
     */
-    BOOL IsValid()         { return isValidWAV; }
+    BOOL IsValid() const { return isValidWAV; }
+  //@}
  
+
   protected:
     BOOL ProcessHeader();
     BOOL GenerateHeader();
     BOOL UpdateHeader();
 
-    BOOL isValidWAV;
-    int numChannels;
-    int sampleRate;
-    int bitsPerSample;
-    int lenHeader;
-    int lenData;
-    int header_needs_updating;
+    BOOL     isValidWAV;
+    unsigned numChannels;
+    unsigned sampleRate;
+    unsigned bitsPerSample;
+    off_t    lenHeader;
+    off_t    lenData;
+    BOOL     header_needs_updating;
 
 };
 
