@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.14 1997/01/25 02:22:47 robertj Exp $
+ * $Id: remconn.cxx,v 1.15 1997/02/05 11:47:25 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.15  1997/02/05 11:47:25  robertj
+ * Fixed NT 3.51 support, again! (PAP compatibility)
+ *
  * Revision 1.14  1997/01/25 02:22:47  robertj
  * Fixed backward compatibilty with NT3.51 and Win'95
  *
@@ -34,16 +37,6 @@
 
 #include <ptlib.h>
 #include <remconn.h>
-
-namespace winver351 {
-#undef WINVER
-#define WINVER 0x351
-#undef _RAS_H_
-#undef RAS_MaxEntryName
-#undef RAS_MaxDeviceName
-#undef RAS_MaxCallbackNumber
-#include <ras.h>
-}
 
 namespace winver400 {
 #undef WINVER
@@ -90,17 +83,19 @@ PRASDLL::PRASDLL()
 }
 
 
-static int GetRasVersion()
+static BOOL IsWinVer401()
 {
   OSVERSIONINFO verinf;
   verinf.dwOSVersionInfoSize = sizeof(verinf);
   GetVersionEx(&verinf);
 
   if (verinf.dwPlatformId != VER_PLATFORM_WIN32_NT)
-    return 1;
+    return FALSE;
+
   if (verinf.dwMajorVersion < 4)
-    return 0;
-  return 2;
+    return FALSE;
+
+  return TRUE;
 }
 
 
@@ -173,19 +168,10 @@ BOOL PRemoteConnection::Open()
   if (!Ras.IsLoaded())
     return FALSE;
 
-  int rasVersion = GetRasVersion();
+  BOOL isVer401 = IsWinVer401();
 
   RASCONN connection;
-  switch (rasVersion) {
-    case 0 :
-      connection.dwSize = sizeof(winver351::tagRASCONNA);
-      break;
-    case 1 :
-      connection.dwSize = sizeof(winver400::tagRASCONNA);
-      break;
-    case 2 :
-      connection.dwSize = sizeof(RASCONN);
-  }
+  connection.dwSize = isVer401 ? sizeof(RASCONN) : sizeof(winver400::tagRASCONNA);
 
   LPRASCONN connections = &connection;
   DWORD size = sizeof(connection);
@@ -219,16 +205,8 @@ BOOL PRemoteConnection::Open()
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
-  switch (rasVersion) {
-    case 0 :
-      params.dwSize = sizeof(winver351::tagRASDIALPARAMSA);
-      break;
-    case 1 :
-      params.dwSize = sizeof(winver400::tagRASDIALPARAMSA);
-      break;
-    case 2 :
-      params.dwSize = sizeof(params);
-  }
+  params.dwSize = isVer401 ? sizeof(params) : sizeof(winver400::tagRASDIALPARAMSA);
+
   if (remoteName[0] != '.') {
     PAssert(remoteName.GetLength() < sizeof(params.szEntryName)-1, PInvalidParameter);
     strcpy(params.szEntryName, remoteName);
@@ -266,16 +244,7 @@ void PRemoteConnection::Close()
 static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
 {
   RASCONNSTATUS status;
-  switch (GetRasVersion()) {
-    case 0 :
-      status.dwSize = sizeof(winver351::tagRASCONNSTATUSA);
-      break;
-    case 1 :
-      status.dwSize = sizeof(winver400::tagRASCONNSTATUSA);
-      break;
-    case 2 :
-      status.dwSize = sizeof(status);
-  }
+  status.dwSize = IsWinVer401() ? sizeof(status) : sizeof(winver400::tagRASCONNSTATUSA);
 
   rasError = Ras.GetConnectStatus(rasConnection, &status);
   SetLastError(rasError);
