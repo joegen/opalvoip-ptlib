@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.8  2004/04/14 11:14:10  csoutheren
+ * Final fix for generic plugin manager
+ *
  * Revision 1.7  2004/04/14 10:57:38  csoutheren
  * Removed multiple definition of statc function in generic plugin functions
  *
@@ -117,13 +120,13 @@ static name##_PluginLoader * name##_PluginLoader_Static = &name##_PluginLoader_I
 #define PWLIB_PLUGIN_MODULE_LOADER_IMPLEMENT(name, mgrclass) \
 class name##_PluginLoader  { public: name##_PluginLoader(); } name##_PluginLoader_Instance; \
 name##_PluginLoader::name##_PluginLoader() { mgrclass::GetManager(); } \
-mgr & mgr::GetManager()\
+mgrclass & mgrclass::GetManager()\
 {\
   static PMutex mutex; \
-  static mgr * systemMgr = NULL;\
+  static mgrclass * systemMgr = NULL;\
   PWaitAndSignal m(mutex);\
   if (systemMgr == NULL)\
-    systemMgr = new mgr;\
+    systemMgr = new mgrclass;\
   return *systemMgr;\
 }\
 
