@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.98  1998/09/24 07:23:54  robertj
+ * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
+ *
  * Revision 1.97  1998/09/23 06:22:24  robertj
  * Added open source copyright license.
  *
@@ -1294,26 +1297,6 @@ BOOL PFile::Copy(const PFilePath & oldname, const PFilePath & newname, BOOL forc
     return FALSE;
 
   return newfile.Close();
-}
-
-
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PStructuredFile
-
-#if defined(_PSTRUCTUREDFILE)
-
-BOOL PStructuredFile::Read(void * buffer)
-{
-  return PFile::Read(buffer, structureSize);
-}
-      
-
-BOOL PStructuredFile::Write(void * buffer)
-{
-  return PFile::Write(buffer, structureSize);
 }
 
 
