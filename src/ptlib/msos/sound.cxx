@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.17  2001/03/15 23:39:29  robertj
+ * Fixed bug with trying to write block larger than one buffer, thanks Norbert Oertel
+ *
  * Revision 1.16  2001/02/07 04:45:54  robertj
  * Added functions to get current sound channel format parameters.
  *
@@ -947,7 +950,7 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
     if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
       break;
 
-    memcpy(buffer.GetPointer(), data, count);
+    memcpy(buffer.GetPointer(), ptr, count);
 
     if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
       break;
