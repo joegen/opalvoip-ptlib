@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.40  2003/01/08 01:33:52  craigs
+ * Fixed problem with not checking errno on return from waitpid
+ *
  * Revision 1.39  2003/01/08 01:29:22  craigs
  * More changes for return code to waitpid
  *
@@ -437,7 +440,7 @@ int PPipeChannel::WaitForTermination()
       }
       return retVal;
     }
-  } while (err == EINTR);
+  } while (errno == EINTR);
 #else
   if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
@@ -476,7 +479,7 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
       }
       return retVal;
     }
-  } while (err == EINTR);
+  } while (errno == EINTR);
 #else
   if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
