@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.9  1998/11/20 03:18:24  robertj
+ * Split rad and write buffers to separate pools.
+ *
  * Revision 1.8  1998/11/19 05:18:21  robertj
  * Added route table manipulation functions to PIPSocket class.
  *
@@ -72,8 +75,9 @@ PDECLARE_CLASS(PEthSocket, PSocket)
 
   public:
     PEthSocket(
-      PINDEX nBuffers = 8,  // Number of buffers.
-      PINDEX size = 1514    // Size of each buffer.
+      PINDEX nReadBuffers = 8,  // Number of buffers used for reading.
+      PINDEX nWriteBuffers = 1, // Number of buffers used for writing.
+      PINDEX size = 1514        // Size of each buffer.
     );
     /* Create a new ethernet packet socket. Some platforms require a set of
        buffers to be allocated to avoid losing frequent packets.
