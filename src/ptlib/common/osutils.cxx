@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.33 1995/04/25 11:30:06 robertj Exp $
+ * $Id: osutils.cxx,v 1.34 1995/06/04 12:41:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.34  1995/06/04 12:41:08  robertj
+ * Fixed bug in accessing argument strings with no argument.
+ *
  * Revision 1.33  1995/04/25 11:30:06  robertj
  * Fixed Borland compiler warnings.
  *
@@ -1750,7 +1753,7 @@ PINDEX PArgList::GetOptionCount(const char * option) const
 PString PArgList::GetOptionString(char option, const char * dflt) const
 {
   PINDEX p = argumentSpec.Find(option);
-  if (p != P_MAX_INDEX)
+  if (p != P_MAX_INDEX && argumentList.GetAt(p) != NULL)
     return argumentList[p];
 
   if (dflt != NULL)
