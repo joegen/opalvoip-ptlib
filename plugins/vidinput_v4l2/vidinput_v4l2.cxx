@@ -34,6 +34,9 @@
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.2  2004/10/27 09:22:59  dsandras
+ * Added patch from Nicola Orru' to make things work better.
+ *
  * Revision 1.1  2004/09/21 12:54:23  dsandras
  * Added initial port to the new pwlib API/V4L2 API for the video4linux 2 code of Guilhem Tardy. Thanks!
  *
@@ -93,7 +96,8 @@ static struct {
     { "YUV422", V4L2_PIX_FMT_YYUV },
     { "YUV422P", V4L2_PIX_FMT_YUV422P },
     { "JPEG", V4L2_PIX_FMT_JPEG },
-    { "H263", V4L2_PIX_FMT_H263 }
+    { "H263", V4L2_PIX_FMT_H263 },
+    { "SBGGR8", V4L2_PIX_FMT_SBGGR8 }
 };
 
 
@@ -133,14 +137,15 @@ BOOL PVideoInputV4l2Device::Open(const PString & devName, BOOL startImmediate)
   // get the capture parameters
   videoStreamParm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (::ioctl(videoFd, VIDIOC_G_PARM, &videoStreamParm) < 0)  {
+
     PTRACE(1,"PVidInDev\tG_PARM failed : " << ::strerror(errno));
-    ::close (videoFd);
-    videoFd = -1;
-    return FALSE;
+    canSetFrameRate = FALSE;
 
   } else {
+
     canSetFrameRate = videoStreamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME;
-    PVideoDevice::SetFrameRate (10000000 * videoStreamParm.parm.capture.timeperframe.numerator / videoStreamParm.parm.capture.timeperframe.denominator);
+    if (canSetFrameRate)
+      PVideoDevice::SetFrameRate (10000000 * videoStreamParm.parm.capture.timeperframe.numerator / videoStreamParm.parm.capture.timeperframe.denominator);
   }
   
   return TRUE;
@@ -190,6 +195,9 @@ BOOL PVideoInputV4l2Device::Start()
     PTRACE(6,"PVidInDev\tstart streaming, fd=" << videoFd);
 
     struct v4l2_buffer buf;
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.index = 0;
+
     if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
       PTRACE(3,"PVidInDev\tVIDIOC_QBUF failed : " << ::strerror(errno));
       return FALSE;
@@ -282,28 +290,27 @@ BOOL PVideoInputV4l2Device::IsCapturing()
 
 PStringList PVideoInputV4l2Device::GetInputDeviceNames()
 {
-  PDirectory procVideo("/proc/video/dev");
+  PDirectory procVideo("/dev/v4l");
   PStringList devList;
 
   devList.RemoveAll ();
   if (procVideo.Exists()) {
-    if (procVideo.Open(PFileInfo::RegularFile)) {
+    if (procVideo.Open(PFileInfo::CharDevice)) {
       do {
+
 	PString entry = procVideo.GetEntryName();
 
-	if (entry.Left(7) == "capture") {
-	  PString thisDevice = "/dev/video" + entry.Mid(7);
-	  int videoFd;
+	PString thisDevice = "/dev/v4l/" + entry;
+	int videoFd;
 
-	  if ((videoFd = ::open(thisDevice, O_RDONLY)) >= 0) {
-	    struct v4l2_capability videoCaps;
+	if ((videoFd = ::open(thisDevice, O_RDONLY)) >= 0) {
+	  struct v4l2_capability videoCaps;
 
-	    if (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 &&
-		videoCaps.capabilities == V4L2_CAP_VIDEO_CAPTURE) {
-	      devList.AppendString(thisDevice);
-	    }
-	    ::close(videoFd);
+	  if (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 ||
+	      (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+	    devList.AppendString(thisDevice);
 	  }
+	  ::close(videoFd);
 	}
       } while (procVideo.Next());
     }   
@@ -360,7 +367,8 @@ BOOL PVideoInputV4l2Device::SetVideoFormat(VideoFormat newFormat)
   while (1) {
     if (::ioctl(videoFd, VIDIOC_ENUMSTD, &videoEnumStd) < 0) {
       PTRACE(1,"VideoInputDevice\tEnumStd failed : " << ::strerror(errno));    
-      return FALSE;
+      videoEnumStd.id = V4L2_STD_PAL;
+      break; 
     }
     if (videoEnumStd.id == fmt[newFormat].code) {
       break;
@@ -371,7 +379,6 @@ BOOL PVideoInputV4l2Device::SetVideoFormat(VideoFormat newFormat)
   // set the video standard
   if (::ioctl(videoFd, VIDIOC_S_STD, &videoEnumStd.id) < 0) {
     PTRACE(1,"VideoInputDevice\tS_STD failed : " << ::strerror(errno));
-    return FALSE;
   }
 
   PTRACE(6,"PVidInDev\tset video format \"" << fmt[newFormat].name << "\", fd=" << videoFd);
@@ -494,7 +501,7 @@ BOOL PVideoInputV4l2Device::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate)) {
     PTRACE(3,"PVidInDev\tSetFrameRate failed for rate " << rate);
-    return FALSE;
+    return TRUE; // Ignore
   }
 
   if (canSetFrameRate) {
@@ -504,7 +511,7 @@ BOOL PVideoInputV4l2Device::SetFrameRate(unsigned rate)
     // set the stream parameters
     if (::ioctl(videoFd, VIDIOC_S_PARM, &videoStreamParm) < 0)  {
       PTRACE(1,"PVidInDev\tS_PARM failed : "<< ::strerror(errno));
-      return FALSE;
+      return TRUE;
     }
 
     PTRACE(6,"PVidInDev\tset frame rate " << rate << "fps, fd=" << videoFd);
@@ -520,6 +527,11 @@ BOOL PVideoInputV4l2Device::GetFrameSizeLimits(unsigned & minWidth,
 					       unsigned & maxHeight) 
 {
   /* Not used in V4L2 */
+  minWidth=0;
+  maxWidth=65535;
+  minHeight=0;
+  maxHeight=65535;
+
   return FALSE;
 }
 
@@ -734,8 +746,9 @@ BOOL PVideoInputV4l2Device::NormalReadProcess(BYTE * buffer, PINDEX * bytesRetur
   while (bytesRead < 0 && errno == EINTR);
 
   if (bytesRead < 0) {
-    PTRACE(1,"PVidInDev\tread failed");
-    return FALSE;
+    
+    PTRACE(1,"PVidInDev\tread failed (read = "<<bytesRead<< " expected " << frameBytes <<")");
+    bytesRead = frameBytes;
   }
 
   if ((PINDEX)bytesRead != frameBytes) {
