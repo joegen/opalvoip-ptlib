@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.4 1996/08/07 13:40:57 robertj Exp $
+ * $Id: icmp.cxx,v 1.5 1996/08/11 06:52:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.5  1996/08/11 06:52:14  robertj
+ * Oops
+ *
  * Revision 1.4  1996/08/07 13:40:57  robertj
  * Fixed sparc memory alignment problem from int 64
  *
@@ -164,7 +167,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
   PInt64 then;
   BYTE * pthen = (BYTE *)&then;
   BYTE * psendtime = (BYTE *)&icmpPacket->sendtime;
-  memcpy(src, psendtime, sizeof(PInt64));
+  memcpy(pthen, psendtime, sizeof(PInt64));
   info.delay.SetInterval(now - then);
 #else
   info.delay.SetInterval(now - icmpPacket->sendtime);
