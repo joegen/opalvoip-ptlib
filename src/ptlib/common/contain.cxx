@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.118  2002/06/27 06:59:34  robertj
+ * Removed memory leak display of static that is not really a leak.
+ *
  * Revision 1.117  2002/06/25 02:24:24  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -1024,7 +1027,13 @@ BOOL PBitArray::Concatenate(const PBitArray & array)
 
 const PString & PString::Empty()
 {
+#if PMEMORY_CHECK
+  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
   static PString emptyString((const char *)NULL);
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
+#endif
   return emptyString;
 }
 
