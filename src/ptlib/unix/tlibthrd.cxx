@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.81  2002/04/16 10:57:26  rogerh
+ * Change WaitForTermination() so it does not use 100% CPU.
+ * Reported by Andrea <ghittino@tiscali.it>
+ *
  * Revision 1.80  2002/01/23 04:26:36  craigs
  * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
  * use of default copy constructors for objects containing instances of
@@ -748,8 +752,10 @@ void PThread::WaitForTermination() const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
-  while (!IsTerminated())
-    Yield(); // One time slice
+  while (!IsTerminated()) {
+    Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
+               // CPU usage and also yeilds so other threads can run.
+  } 
 }
 
 
@@ -763,7 +769,8 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   while (!IsTerminated()) {
     if (timeout == 0)
       return FALSE;
-    Yield(); // One time slice
+    Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
+               // CPU usage and also yeilds so other threads can run.
   }
   return TRUE;
 }
