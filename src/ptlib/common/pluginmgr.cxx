@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.3  2003/11/12 06:58:59  csoutheren
+ * Added default plugin directory for Windows
+ *
  * Revision 1.2  2003/11/12 03:27:25  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren of Post Increment
@@ -19,7 +22,11 @@
 #include <ptlib/pluginmgr.h>
 
 #ifndef	P_DEFAULT_PLUGIN_DIR
-#define	P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
+#  ifdef  _WIN32
+#    define	P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
+#  else
+#    define	P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
+#  endif
 #endif
 
 // static vars to help bootstrap the default plugin instance
