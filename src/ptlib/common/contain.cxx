@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.117  2002/06/25 02:24:24  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.116  2002/06/24 06:18:36  robertj
  * Fixed bug when getting extra space at start of outputing PBaseArray.
  * Added ability to not include ASCII in PbaseArray output using ios::fixed.
@@ -456,6 +460,8 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #endif
 
 #define new PNEW
+#undef  __CLASS__
+#define __CLASS__ GetClass()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -463,20 +469,26 @@ extern "C" int vsprintf(char *, const char *, va_list);
 PContainer::PContainer(PINDEX initialSize)
 {
   reference = new Reference(initialSize);
-  PAssertNULL(reference);
+  PAssert(reference != NULL, POutOfMemory);
 }
 
 
 PContainer::PContainer(int, const PContainer * cont)
 {
+  PAssertNULL(cont);
+  PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
+
   reference = new Reference(0);
-  *PAssertNULL(reference) = *cont->reference;
+  PAssert(reference != NULL, POutOfMemory);
+
+  *reference = *cont->reference;
 }
 
 
 PContainer::PContainer(const PContainer & cont)
-{                                                            
-  reference = PAssertNULL(cont.reference);
+{
+  PAssert2(cont.reference != NULL, cont.GetClass(), "Copy of deleted container");
+  reference = cont.reference;
   reference->count++;
 }
 
@@ -493,7 +505,8 @@ void PContainer::AssignContents(const PContainer & cont)
     delete reference;
   }
 
-  reference = PAssertNULL(cont.reference);
+  PAssert2(cont.reference != NULL, cont.GetClass(), "Assign of deleted container");
+  reference = cont.reference;
   reference->count++;
 }
 
@@ -542,8 +555,10 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
 
   if (GetSize() == 0)
     theArray = NULL;
-  else
+  else {
     theArray = (char *)calloc(GetSize(), elementSize);
+    PAssert(theArray != NULL, POutOfMemory);
+  }
 
   allocatedDynamically = TRUE;
 }
@@ -565,6 +580,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
   else if (dynamicAllocation) {
     PINDEX sizebytes = elementSize*GetSize();
     theArray = (char *)malloc(sizebytes);
+    PAssert(theArray != NULL, POutOfMemory);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
   }
   else
@@ -1060,21 +1076,24 @@ PString::PString(const WORD * ustr)
 PString::PString(const char * cstr, PINDEX len)
   : PSTRING_ANCESTOR_CLASS(len+1)
 {
-  PSTRING_COPY(theArray, PAssertNULL(cstr), len);
+  if (len > 0)
+    PSTRING_COPY(theArray, PAssertNULL(cstr), len);
 }
 
 
 PString::PString(const WORD * ustr, PINDEX len)
   : PSTRING_ANCESTOR_CLASS(len+1)
 {
-  PAssertNULL(ustr);
+  if (len > 0) {
+    PAssertNULL(ustr);
 #ifdef PHAS_UNICODE
-  memcpy(theArray, ustr, len*sizeof(WORD))
+    memcpy(theArray, ustr, len*sizeof(WORD))
 #else
-  char * cstr = theArray;
-  while (len-- > 0)
-    *cstr++ = (char)*ustr++;
+    char * cstr = theArray;
+    while (len-- > 0)
+      *cstr++ = (char)*ustr++;
 #endif
+  }
 }
 
 
@@ -2290,7 +2309,7 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
       break;
 
     default:
-      PAssertAlways(PInvalidParameter);
+      PAssertAlways2(string->GetClass(), PInvalidParameter);
       newgptr = gptr();
       newpptr = pptr();
   }
