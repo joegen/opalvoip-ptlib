@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.32  2001/09/11 03:39:19  robertj
+ * Improved error processing on high level protocol failures, usually
+ *   caused by unexpected shut down of a socket.
+ *
  * Revision 1.31  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -328,10 +332,21 @@ BOOL PChannel::PXClose()
   return stat;
 }
 
-PString PChannel::GetErrorText(Errors, int osError = 0)
+PString PChannel::GetErrorText(Errors normalisedError, int osError = 0)
 {
-  if (osError == 0)
-    return PString();
+  if (osError == 0) {
+    if (normalisedError == NoError)
+      return PString();
+
+    static int const errors[NumNormalisedErrors] = {
+      0, ENOENT, EEXIST, ENOSPC, EACCES, EBUSY, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR,
+      EMSGSIZE, EIO, 0x1000000
+    };
+    osError = errors[normalisedError];
+  }
+
+  if (osError == 0x1000000)
+    return "High level protocol failure";
 
   const char * err = strerror(osError);
   if (err != NULL)
