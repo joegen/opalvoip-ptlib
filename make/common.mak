@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.35  1999/06/28 09:12:01  robertj
+# Fixed problems with the order in which macros are defined especially on BeOS & Solaris
+#
 # Revision 1.34  1999/06/27 02:42:10  robertj
 # Fixed BeOS compatability.
 # Fixed error of platform name not supported, needed :: on main targets.
@@ -87,12 +90,12 @@ vpath %.dep $(DEPDIR)
 #
 # add common directory to include path - must be after PW and PT directories
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(PWLIBDIR)/include
+STDCCFLAGS	+= -I$(PWLIBDIR)/include
 
 #
 # add any trailing libraries
 #
-LDLIBS		:= $(LDLIBS) $(ENDLDLIBS)
+LDLIBS += $(ENDLDLIBS)
 
 #
 # define rule for .cxx and .c files
@@ -108,17 +111,17 @@ $(OBJDIR)/%.o : %.c
 #
 # create list of object files 
 #
-TMP_SRC	:= $(SOURCES:.c=.o)
-OBJS	:= $(TMP_SRC:.cxx=.o) $(OBJS)
-OBJS	:= $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(OBJS)))
+SRC_OBJS := $(SOURCES:.c=.o)
+SRC_OBJS := $(SRC_OBJS:.cxx=.o)
+OBJS	 := $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS)))
 
 #
 # create list of dependency files 
 #
-DEPDIR	:= $(OBJDIR)
-TMP_SRC	:= $(SOURCES:.c=.dep)
-DEPS	:= $(TMP_SRC:.cxx=.dep)
-DEPS	:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
+DEPDIR	 := $(OBJDIR)
+SRC_DEPS := $(SOURCES:.c=.dep)
+SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
+DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 
 #
 # define rule for .dep files
@@ -136,7 +139,7 @@ $(DEPDIR)/%.dep : %.c
 #
 # add in good files to delete
 #
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS) $(DEPS) core
+CLEAN_FILES += $(OBJS) $(DEPS) core
 
 ######################################################################
 #
@@ -155,7 +158,7 @@ endif
 endif
 
 ifdef BUILDFILES
-OBJS	:= $(OBJS) $(OBJDIR)/buildnum.o
+OBJS += $(OBJDIR)/buildnum.o
 endif
 
 ifndef STATIC
@@ -182,7 +185,7 @@ ifdef GUI
 $(TARGET):	$(PWLIB_FILE)
 endif
 
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG) $(OBJDI)/$(PROG)_dll
+CLEAN_FILES += $(TARGET)
 
 # ifdef PROG
 endif
