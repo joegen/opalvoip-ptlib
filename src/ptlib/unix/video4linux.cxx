@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.25  2001/12/10 22:22:48  dereks
+ * Add hint so Logitech USB Camera will only grab in large video size.
+ *
  * Revision 1.24  2001/12/08 00:59:44  robertj
  * Added hint for BT879 chips, thanks Damian Sandras.
  *
@@ -134,7 +137,7 @@
 #define HINT_ALWAYS_WORKS_640_480           0x0020  /// Camera always  opens OK at this size.
 #define HINT_ONLY_WORKS_PREF_PALETTE        0x0040  /// Camera always (and only) opens at pref palette.
 #define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
-
+#define HINT_FORCE_LARGE_SIZE               0x0100  /// driver does not work in small video size.
 
 static struct {
   char     *name_regexp;        // String used to match the driver name
@@ -179,6 +182,14 @@ static struct {
     HINT_ONLY_WORKS_PREF_PALETTE   |
     HINT_HAS_PREF_PALETTE,
     VIDEO_PALETTE_YUV422 },
+
+  /** USB camera, which only works in large size.
+   */
+  { "Logitech USB Webcam",
+    "Logitech USB Webcam which works in large size only",
+    HINT_FORCE_LARGE_SIZE,
+    VIDEO_PALETTE_YUV420P 
+  },
 
   /** Default device with no special settings
    */
@@ -547,11 +558,18 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
   if (!IsOpen())
     return FALSE;
 
-  minWidth  = videoCapability.minwidth;
-  minHeight = videoCapability.minheight;
-  maxWidth  = videoCapability.maxwidth;
-  maxHeight = videoCapability.maxheight;
+  if(HINT(HINT_FORCE_LARGE_SIZE)) {
+    videoCapability.maxheight = 288;
+    videoCapability.maxwidth  = 352;
+    videoCapability.minheight = 288;
+    videoCapability.minwidth  = 352;
+  }
 
+  maxHeight = videoCapability.maxheight;
+  maxWidth  = videoCapability.maxwidth;
+  minHeight = videoCapability.minheight;
+  minWidth  = videoCapability.minwidth;
+    
   PTRACE(3,"PVideoInputDevice:\t GetFrameSizeLimits. "<<minWidth<<"x"<<minHeight<<" -- "<<maxWidth<<"x"<<maxHeight);
   
   return TRUE;
@@ -770,6 +788,15 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 {
   struct video_window vwin;
 
+  if (HINT(HINT_FORCE_LARGE_SIZE))
+    if(  (width==352) && (height==288) ) {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize USB OK  352x288 ");
+      return TRUE;
+    } else {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize USB FAIL "<<width<<"x"<<height);
+      return FALSE;
+    }
+    
   if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
     PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK  for  320x240 ");
     return TRUE;
