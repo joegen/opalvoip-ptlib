@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.29  2005/04/06 10:10:54  dsandras
+# Fixed install target with DESTDIR thanks to Stefan Bruens.
+#
 # Revision 1.28  2004/06/24 12:46:48  csoutheren
 # Fixed path in plugin install
 #
@@ -244,6 +247,7 @@ docs:
 
 install:
 	( for dir in $(DESTDIR)$(LIBDIR) \
+		     $(DESTDIR)$(PREFIX)/bin \
 		     $(DESTDIR)$(PREFIX)/include/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptclib \
