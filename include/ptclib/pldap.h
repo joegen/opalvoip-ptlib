@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.6  2003/06/05 05:29:30  rjongbloed
+ * Fixed LDAP bind authentication methods, thanks Ravelli Rossano
+ *
  * Revision 1.5  2003/04/07 12:00:04  robertj
  * Fixed search function returning an error if can't find anything for filter.
  *
@@ -113,7 +116,8 @@ class PLDAPSession : public PObject
     enum AuthenticationMethod {
       AuthSimple,
       AuthSASL,
-      AuthKerberos
+      AuthKerberos,
+      NumAuthenticationMethod
     };
 
     /**Bind to the remote LDAP server.
