@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.46  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.45  2003/08/14 02:07:11  dereksmithies
  * Fix bug in AsString handling. Thanks Diego Tartara for pointing it out.
  *
@@ -195,7 +198,7 @@ PTimeInterval::PTimeInterval(const PString & str)
 
 PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PTimeInterval::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PTimeInterval), PInvalidCast);
   const PTimeInterval & other = (const PTimeInterval &)obj;
   return milliseconds < other.milliseconds ? LessThan :
          milliseconds > other.milliseconds ? GreaterThan : EqualTo;
@@ -400,7 +403,7 @@ PTime::PTime(int second, int minute, int hour,
 
 PObject::Comparison PTime::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PTime::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PTime), PInvalidCast);
   const PTime & other = (const PTime &)obj;
   if (theTime < other.theTime)
     return LessThan;
