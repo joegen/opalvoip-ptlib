@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.33  2003/04/10 07:14:27  craigs
+ * Fixed link problem in MD5 class
+ *
  * Revision 1.32  2003/04/10 06:16:09  craigs
  * Added SHA-1 digest
  *
@@ -450,7 +453,7 @@ void PMessageDigest5::Encode(const void * data, PINDEX len, Result & result)
 {
   PMessageDigest5 stomach;
   stomach.Process(data, len);
-  stomach.Complete(result);
+  stomach.CompleteDigest(result);
 }
 
 ////  backwards compatability functions
