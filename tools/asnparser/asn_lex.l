@@ -31,6 +31,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.16  2001/04/23 04:40:14  robertj
+ * Added ASN standard types GeneralizedTime and UTCTime
+ *
  * Revision 1.15  2001/01/17 00:52:56  robertj
  * Added option to remove warning about isatty() under Win32.
  *
@@ -155,6 +158,7 @@ static int TokenSelect(int context, int token1, int token2)
 "EXTERNAL"                         { return EXTERNAL; }
 "FALSE"                            { return FALSE_t; }
 "FROM"                             { return FROM; }
+"GeneralizedTime"                  { return GeneralizedTime; }
 "GeneralString"                    { return GeneralString; }
 "GraphicString"                    { return GraphicString; }
 "IA5String"                        { return IA5String; }
@@ -198,6 +202,7 @@ static int TokenSelect(int context, int token1, int token2)
 "UNIQUE"                           { return UNIQUE; }
 "UNIVERSAL"                        { return UNIVERSAL; }
 "UniversalString"                  { return UniversalString; }
+"UTCTime"                          { return UTCTime; }
 "VALUE"				   { return VALUE; }
 "VideotexString"                   { return VideotexString; }
 "VisibleString"                    { return VisibleString; }
