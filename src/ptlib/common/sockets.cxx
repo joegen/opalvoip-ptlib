@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.51 1996/11/16 01:43:49 craigs Exp $
+ * $Id: sockets.cxx,v 1.52 1996/11/16 10:49:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.52  1996/11/16 10:49:03  robertj
+ * Fixed missing const in PIPSocket::Address stream output operator..
+ *
  * Revision 1.51  1996/11/16 01:43:49  craigs
  * Fixed problem with ambiguous DNS cache keys
  *
@@ -647,11 +650,6 @@ BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray &
   return host != NULL;
 }
 
-ostream & operator<<(ostream & s, const PIPSocket::Address & a)
-{
-  return s << inet_ntoa(a);
-}
-
 PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 {
   mutex.Wait();
@@ -1007,7 +1005,7 @@ PIPSocket::Address::operator PString() const
 }
 
 
-ostream & operator<<(ostream & s, PIPSocket::Address & a)
+ostream & operator<<(ostream & s, const PIPSocket::Address & a)
 {
   return s << inet_ntoa(a);
 }
