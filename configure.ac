@@ -1172,7 +1172,7 @@ dnl Speech
 
 dnl MSWIN_DISPLAY       sapi,Speech API
 dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_DEFINE_SYMBOL sapi,P_TTS
+dnl MSWIN_DEFINE        sapi,P_TTS
 dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
 dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
 
@@ -1315,6 +1315,9 @@ dnl machine/ioctl_meteor on FreeBSD
 dnl i386/ioctl_meteor on OpenBSD
 dnl dev/ic/bt8xx on NetBSD
 
+dnl MSWIN_DISPLAY    video,Video Support
+dnl MSWIN_DEFINE     video,P_VIDEO
+
 AC_ARG_ENABLE(video,
        [  --disable-video         disable video device support])
 
@@ -1438,7 +1441,8 @@ AC_SUBST(HAS_PIPECHAN)
 dnl ########################################################################
 dnl check for enabling DTMF support
 
-dnl MSWIN DTMF Support,,P_DTMF
+dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
+dnl MSWIN_DEFINE   dtmf,P_DTMF
 
 AC_ARG_ENABLE(dtmf,
        [  --disable-dtmf          disable DTMF protocol support])

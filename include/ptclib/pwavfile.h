@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.17  2005/01/04 07:44:02  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.16  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -535,27 +539,6 @@ class PWAVFile : public PFile
 
     BOOL     header_needs_updating;
 };
-
-#ifdef _WIN32
-
-#  ifndef P_DISABLE_FACTORY_INSTANCES
-
-#    ifndef  P_FACTORY_INSTANCE_PWAVFileConverter
-#      define P_FACTORY_INSTANCE_PWAVFileConverter 1
-#        pragma message("Including PWAVFileConverter factory loader")
-         PLOAD_FACTORY(PWAVFileConverter, unsigned)
-#    endif
-
-#    ifndef  P_FACTORY_INSTANCE_PWAVFileFormat
-#      define P_FACTORY_INSTANCE_PWAVFileFormat 1
-#        pragma message("Including PWAVFileFormat factory loader")
-         PLOAD_FACTORY(PWAVFileFormat, unsigned)
-#    endif
-
-# endif
-
-#endif
-
 
 #endif
 

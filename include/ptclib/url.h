@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.32  2005/01/04 07:44:02  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.31  2004/12/08 00:51:11  csoutheren
  * Move PURLLegacyScheme to header file to allow external usage
  *
@@ -444,18 +448,6 @@ class PURLLegacyScheme : public PURLScheme
     BOOL relativeImpliesScheme;
     WORD defaultPort;
 };
-
-
-
-#ifdef _WIN32
-#  ifndef P_DISABLE_FACTORY_INSTANCES
-#    ifndef  P_FACTORY_INSTANCE_PURLScheme
-#      define P_FACTORY_INSTANCE_PURLScheme 1
-#      pragma message("Including PURLScheme factory loader")
-       PLOAD_FACTORY(PURLScheme, PString)
-#    endif
-#  endif
-#endif
 
 #endif
 
