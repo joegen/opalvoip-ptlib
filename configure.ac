@@ -624,6 +624,8 @@ AC_MSG_CHECKING(if plugins support needs to be compiled)
 AC_ARG_ENABLE(plugins,
        [  --enable-plugins        enable plugins' support in PWLIB],
        plugins=$enableval)
+v4l2="no"
+AC_ARG_ENABLE(v4l2, [  --enable-v4l2           enable V4L2 video support],,enable_v4l2=no)
 
 HAS_PLUGINS=0
 if test "${plugins}" = "no" ; then
