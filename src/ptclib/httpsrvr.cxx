@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.16 1998/02/03 06:24:10 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.17 1998/04/01 01:55:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.17  1998/04/01 01:55:16  robertj
+ * Fixed bug when serving HTTPFile that has zero bytes in it.
+ *
  * Revision 1.16  1998/02/03 06:24:10  robertj
  * Added local address and port to PHTTPRequest.
  * Fixed bug in default entity length. should be read to EOF.
@@ -1310,7 +1313,8 @@ PString PHTTPFile::LoadText(PHTTPRequest & request)
   PAssert(file.IsOpen(), PLogicError);
   PINDEX count = file.GetLength();
   PString text;
-  PAssert(file.Read(text.GetPointer(count+1), count), PLogicError);
+  if (count > 0)
+    PAssert(file.Read(text.GetPointer(count+1), count), PLogicError);
   PAssert(file.Close(), PLogicError);
   return text;
 }
