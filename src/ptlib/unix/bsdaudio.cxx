@@ -1,5 +1,5 @@
 /*
- * beaudio.cxx
+ * bsdaudio.cxx
  *
  * Sound driver implementation.
  *
@@ -26,15 +26,9 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: beaudio.cxx,v $
- * Revision 1.3  1999/06/28 09:28:02  robertj
+ * $Log: bsdaudio.cxx,v $
+ * Revision 1.1  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
- *
- * Revision 1.2  1999/03/05 07:03:27  robertj
- * Some more BeOS port changes.
- *
- * Revision 1.1  1999/03/02 05:41:59  robertj
- * More BeOS changes
  *
  */
 
@@ -42,6 +36,7 @@
 
 #include <ptlib.h>
 
+#include <machine/soundcard.h>
 
 
 PSound::PSound(unsigned channels,
@@ -135,6 +130,8 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
   PStringArray array;
 
+  array[0] = "/dev/audio";
+  array[1] = "/dev/dsp";
 
   return array;
 }
@@ -153,6 +150,9 @@ BOOL PSoundChannel::Open(const PString & device,
                          unsigned bitsPerSample)
 {
   Close();
+
+  if (!ConvertOSError(os_handle = ::open(device, dir == Player ? O_RDONLY : O_WRONLY)))
+    return FALSE;
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
