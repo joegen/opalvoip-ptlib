@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.5 1996/01/28 02:48:27 robertj Exp $
+ * $Id: inetprot.cxx,v 1.6 1996/01/28 14:11:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.6  1996/01/28 14:11:11  robertj
+ * Fixed bug in MIME content types for non caseless strings.
+ * Added default value in string for service name.
+ *
  * Revision 1.5  1996/01/28 02:48:27  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  *
@@ -486,7 +490,7 @@ void PMIMEInfo::SetAssociation(const PStringToString & allTypes, BOOL merge)
 
 PString PMIMEInfo::GetContentType(const PString & fileType)
 {
-  if (contentTypes.GetAt(fileType) != NULL)
+  if (contentTypes.GetAt(PCaselessString(fileType)) != NULL)
     return contentTypes[fileType];
   return "application/octet-stream";
 }
@@ -750,14 +754,14 @@ static char const * SMTPCommands[PSMTPSocket::NumCommands] = {
 
 
 PSMTPSocket::PSMTPSocket()
-  : PApplicationSocket(NumCommands, SMTPCommands, "smtp")
+  : PApplicationSocket(NumCommands, SMTPCommands, "smtp 25")
 {
   Construct();
 }
 
 
 PSMTPSocket::PSMTPSocket(const PString & address)
-  : PApplicationSocket(NumCommands, SMTPCommands, "smtp")
+  : PApplicationSocket(NumCommands, SMTPCommands, "smtp 25")
 {
   Construct();
   Connect(address);
@@ -1341,14 +1345,14 @@ PString PPOP3Socket::errResponse = "-ERR";
 
 
 PPOP3Socket::PPOP3Socket()
-  : PApplicationSocket(NumCommands, POP3Commands, "pop3")
+  : PApplicationSocket(NumCommands, POP3Commands, "pop3 110")
 {
   Construct();
 }
 
 
 PPOP3Socket::PPOP3Socket(const PString & address)
-  : PApplicationSocket(NumCommands, POP3Commands, "pop3")
+  : PApplicationSocket(NumCommands, POP3Commands, "pop3 110")
 {
   Construct();
   Connect(address);
