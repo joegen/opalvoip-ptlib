@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.5  1998/11/30 21:52:03  robertj
+ * New directory structure.
+ *
  * Revision 1.4  1998/09/24 04:12:26  robertj
  * Added open software license.
  *
@@ -45,7 +48,7 @@
 #pragma implementation "dynalink.h"
 
 #include <ptlib.h>
-#include <dynalink.h>
+
 
 #ifndef RTLD_LAZY
 #message "No implementation for dynamic library functions"
