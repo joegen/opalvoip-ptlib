@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.39 1998/04/01 01:52:53 robertj Exp $
+ * $Id: svcproc.cxx,v 1.40 1998/04/07 13:32:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.40  1998/04/07 13:32:14  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.39  1998/04/01 01:52:53  robertj
  * Fixed problem with NoAutoDelete threads.
  *
@@ -409,10 +412,10 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 }
 
 
-int PServiceProcess::_main()
+int PServiceProcess::_main(void * arg)
 {
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
-  hInstance = (HINSTANCE)envp;
+  hInstance = (HINSTANCE)arg;
 
   debugMode = FALSE;
   isWin95 = GetOSName() == "95";
