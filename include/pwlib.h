@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.38 1995/07/31 12:06:04 robertj Exp $
+ * $Id: pwlib.h,v 1.39 1995/10/14 15:03:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
+ * Revision 1.39  1995/10/14 15:03:12  robertj
+ * Added floating dialogs.
+ *
  * Revision 1.38  1995/07/31 12:06:04  robertj
  * Split off pop up window from balloon.
  *
@@ -433,6 +436,12 @@
 // PDialog
 
 #include <dialog.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFloatingDialog
+
+#include <floatdlg.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
