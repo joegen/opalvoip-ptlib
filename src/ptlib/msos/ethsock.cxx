@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.32  2002/02/25 09:57:29  robertj
+ * Fixed possible NULL pointer use and  memory leak, thanks Klaus König
+ *
  * Revision 1.31  2002/02/15 03:56:46  yurik
  * Warnings removed during compilation, patch courtesy of Jehan Bing, jehan@bravobrava.com
  *
@@ -627,24 +630,21 @@ BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnA
   SnmpVarBindList vars;
   vars.len = 1;
   vars.list = (SnmpVarBind*)SnmpUtilMemAlloc(sizeof(SnmpVarBind));
+  if (vars.list == NULL)
+    return FALSE;
 
   vars.list->name = oid;
   vars.list->value = value;
 
   AsnInteger status, error;
-  if (!Query(cmd, &vars, &status, &error))
-    return FALSE;
+  if (Query(cmd, &vars, &status, &error) && status == SNMP_ERRORSTATUS_NOERROR) {
+    (AsnAny&)value = vars.list->value; // Use cast so does simple copy
+    oid = vars.list->name;
+  }
 
-  if (status != SNMP_ERRORSTATUS_NOERROR)
-    return FALSE;
+  SnmpUtilMemFree(vars.list);
 
-  (AsnAny&)value = vars.list->value; // Use cast so does simple copy
-  oid = vars.list->name;
-
-  if (vars.list != NULL)
-    SnmpUtilMemFree(vars.list);
-
-  return TRUE;
+  return status == SNMP_ERRORSTATUS_NOERROR;
 }
 
 
