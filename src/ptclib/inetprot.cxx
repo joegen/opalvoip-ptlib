@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.57  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.56  2004/03/23 05:59:17  csoutheren
  * Moved the Base64 routines into cypher.cxx, which is a more sensible
  * place and reduces the inclusion of unrelated code
@@ -401,7 +404,7 @@ const PString & PInternetProtocol::GetDefaultService() const
 PIPSocket * PInternetProtocol::GetSocket() const
 {
   PChannel * channel = GetBaseReadChannel();
-  if (channel != NULL && channel->IsDescendant(PIPSocket::Class()))
+  if (channel != NULL && PIsDescendant(channel, PIPSocket))
     return (PIPSocket *)channel;
   return NULL;
 }

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.100  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.99  2004/03/23 05:08:21  csoutheren
  * Fixed problem with use of ShellExecuteEx function
  *
@@ -487,7 +490,7 @@ PURL::PURL(const PFilePath & filePath)
 
 PObject::Comparison PURL::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PURL::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PURL), PInvalidCast);
   return urlString.Compare(((const PURL &)obj).urlString);
 }
 

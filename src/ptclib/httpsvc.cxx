@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.95  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.94  2004/04/03 06:54:24  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -407,7 +410,7 @@ PHTTPServiceProcess::~PHTTPServiceProcess()
 PHTTPServiceProcess & PHTTPServiceProcess::Current() 
 {
   PHTTPServiceProcess & process = (PHTTPServiceProcess &)PProcess::Current();
-  PAssert(process.IsDescendant(PHTTPServiceProcess::Class()), "Not a HTTP service!");
+  PAssert(PIsDescendant(&process, PHTTPServiceProcess), "Not a HTTP service!");
   return process;
 }
 
@@ -1376,7 +1379,7 @@ PServiceMacro::PServiceMacro(const PCaselessString & name, BOOL isBlock)
 
 PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PServiceMacro), PInvalidCast);
   const PServiceMacro & other = (const PServiceMacro &)obj;
 
   if (isMacroBlock != other.isMacroBlock)
