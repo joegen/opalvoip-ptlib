@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.10  2003/02/20 08:56:55  rogerh
+ * Updated code from Shawn following some Mac OS X and linux testing.
+ *
  * Revision 1.9  2003/02/19 10:22:22  rogerh
  * Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
  *
@@ -305,15 +308,14 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
   int rval;
 
   if (os_handle > 0) {
-    PTime beforeWrite;
     // Sends data to esd.
     rval = ::write(os_handle, buf, len);
     if (rval > 0) {
-      PTime afterWrite;
-      PTimeInterval elapsed = afterWrite - beforeWrite;
-      // sleeps for frame time (in milliseconds)
-      int shouldSleep = (len/16) - elapsed.GetMilliSeconds();
-      writeDelay.Delay(shouldSleep);
+#if defined(P_MACOSX)
+      // Mac OS X's esd has a big input buffer so we need to simulate
+      // writing data out at the correct rate.
+      writeDelay.Delay(len/16);
+#endif
       return (TRUE);
     }
     else {
