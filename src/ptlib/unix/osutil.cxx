@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.78  2003/05/01 06:08:36  robertj
+ * Fixed concurrency problem with some time functions, thanks chad@broadmind.com
+ *
  * Revision 1.77  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -1545,7 +1548,8 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
 BOOL PTime::IsDaylightSavings()
 {
   time_t theTime = ::time(NULL);
-  return ::localtime(&theTime)->tm_isdst != 0;
+  struct tm ts;
+  return os_localtime(&theTime, &ts)->tm_isdst != 0;
 }
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
@@ -1559,7 +1563,8 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 #elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX)
   time_t t;
   time(&t);
-  struct tm  * tm = localtime(&t);
+  struct tm ts;
+  struct tm * tm = os_localtime(&t, &ts);
   int tz = tm->tm_gmtoff/60;
   if (type == StandardTime && tm->tm_isdst)
     return tz-60;
