@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.16  2003/10/23 20:43:38  dereksmithies
+ * Add fix for SDL video on Visual C. Thanks to Walter Whitlock.
+ *
  * Revision 1.15  2003/10/20 23:13:26  csoutheren
  * Restored after deletion by Damien
  *
@@ -252,7 +255,13 @@
 
 #ifdef _MSC_VER
 #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
-#define P_SDL_LIBRARY "@SDL_DIR@/Lib/SDL.lib"
+
+#ifdef _DEBUG
+#define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Debug/SDL.lib"
+#else
+#define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Release/SDL.lib"
+#endif
+
 #endif
 
 
