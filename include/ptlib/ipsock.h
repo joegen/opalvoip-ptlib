@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.9 1995/03/12 04:38:41 robertj Exp $
+ * $Id: ipsock.h,v 1.10 1995/03/14 12:41:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.9  1995/03/12 04:38:41  robertj
+ * Revision 1.10  1995/03/14 12:41:38  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.9  1995/03/12  04:38:41  robertj
  * Added more functionality.
  *
  * Revision 1.8  1995/01/02  12:28:24  robertj
@@ -59,7 +62,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        socket this returns the host name of the peer the socket is connected
        to, followed by the socket number it is connected to.
 
-       Returns: the name of the channel.
+       <H2>Returns:</H2>
+       the name of the channel.
      */
 
 
@@ -75,7 +79,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     );
     /* Get the Internet Protocol address for the specified host.
 
-       Returns: TRUE if the IP number was returned.
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
      */
 
     static PStringArray GetHostAliases(
@@ -86,7 +91,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     );
     /* Get the alias host names for the specified host.
 
-       Returns: array of strings for each alias for the host.
+       <H2>Returns:</H2>
+       array of strings for each alias for the host.
      */
 
     BOOL GetLocalAddress(
@@ -94,7 +100,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     );
     /* Get the Internet Protocol address for the local host.
 
-       Returns: TRUE if the IP number was returned.
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
      */
 
     BOOL GetPeerAddress(
@@ -103,19 +110,22 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     /* Get the Internet Protocol address for the peer host the socket is
        connected to.
 
-       Returns: TRUE if the IP number was returned.
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
      */
 
     PString GetLocalHostName();
     /* Get the host name for the local host.
 
-       Returns: Name of the host, or an empty string if an error occurs.
+       <H2>Returns:</H2>
+       Name of the host, or an empty string if an error occurs.
      */
 
     PString GetPeerHostName();
     /* Get the host name for the peer host the socket is connected to.
 
-       Returns: Name of the host, or an empty string if an error occurs.
+       <H2>Returns:</H2>
+       Name of the host, or an empty string if an error occurs.
      */
 
 
@@ -125,8 +135,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     /* Get the port number for the specified service.
     
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The $H$PTCPSocket and $H$PUDPSocket classes
-       will implement this function.
+       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       classes will implement this function.
      */
 
     virtual PString GetService(
@@ -135,8 +145,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     /* Get the service name from the port number.
     
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The $H$PTCPSocket and $H$PUDPSocket classes
-       will implement this function.
+       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       classes will implement this function.
      */
 
 
