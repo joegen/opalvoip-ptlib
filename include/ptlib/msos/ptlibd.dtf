@@ -1101,6 +1101,7 @@ EXPORTS
     ??_DPUDPSocket@@QAEXXZ @886 NONAME ;public: void __thiscall PUDPSocket::`vbase destructor'(void)
     ??_DPWinSock@@QAEXXZ @887 NONAME ;public: void __thiscall PWinSock::`vbase destructor'(void)
     ??_Sofstream@@6B@ @2299 NONAME ;const  ofstream::`local vftable'
+    ??_U@YAPAXI@Z @3091 NONAME ;void * __cdecl operator new[](unsigned int)
     ??_U@YAPAXIPBDH@Z @888 NONAME ;void * __cdecl operator%=[](unsigned int,char const *,int)
     ??_V@YAXPAX@Z @2670 NONAME ;void __cdecl operator delete[](void *)
     ?Abort@PSoundChannel@@QAEHXZ @2671 NONAME ;public: int __thiscall PSoundChannel::Abort(void)
@@ -1492,7 +1493,6 @@ EXPORTS
     ?Construct@PSoundChannel@@AAEXXZ @2680 NONAME ;private: void __thiscall PSoundChannel::Construct(void)
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @1208 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @1209 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
-    ?ConvertOSError@PChannel@@KAHHAAW4Errors@1@AAH@Z @1211 NONAME ;protected: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PChannel@@MAEHH@Z @3083 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @1213 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@MAEHH@Z @3084 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
@@ -2757,4 +2757,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ??_U@YAPAXI@Z @3091 NONAME ;void * __cdecl operator new[](unsigned int)
+    ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @3092 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
