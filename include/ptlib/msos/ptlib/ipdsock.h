@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.4  1998/11/30 02:55:14  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:30:07  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@
 #ifndef _PIPDATAGRAMSOCKET
 
 
-#include "../../common/ptlib/ipdsock.h"
+#include "../../ipdsock.h"
 };
 
 
