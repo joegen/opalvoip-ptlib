@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.45 1996/01/23 13:17:38 robertj Exp $
+ * $Id: contain.cxx,v 1.46 1996/01/24 14:43:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.46  1996/01/24 14:43:19  robertj
+ * Added initialisers to string dictionaries.
+ *
  * Revision 1.45  1996/01/23 13:17:38  robertj
  * Added Replace() function to strings.
  * String searching algorithm rewrite.
@@ -1394,6 +1397,56 @@ PString & PStringArray::operator[](PINDEX index)
   if ((*theArray)[index] == NULL)
     (*theArray)[index] = PNEW PString;
   return *(PString *)(*theArray)[index];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+POrdinalToString::POrdinalToString(PINDEX count, const Initialiser * init)
+{
+  while (count-- > 0) {
+    SetAt(init->key, init->value);
+    init++;
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PStringToOrdinal::PStringToOrdinal(PINDEX count,
+                                   const Initialiser * init,
+                                   BOOL caseless)
+{
+  while (count-- > 0) {
+    if (caseless)
+      SetAt(PCaselessString(init->key), init->value);
+    else
+      SetAt(init->key, init->value);
+    init++;
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PStringToString::PStringToString(PINDEX count,
+                                 const Initialiser * init,
+                                 BOOL caselessKeys,
+                                 BOOL caselessValues)
+{
+  while (count-- > 0) {
+    if (caselessValues)
+      if (caselessKeys)
+        SetAt(PCaselessString(init->key), PCaselessString(init->value));
+      else
+        SetAt(init->key, PCaselessString(init->value));
+    else
+      if (caselessKeys)
+        SetAt(PCaselessString(init->key), init->value);
+      else
+        SetAt(init->key, init->value);
+    init++;
+  }
 }
 
 
