@@ -1,16 +1,16 @@
 /*
- * $Id: httpsvc.h,v 1.14 1997/08/21 12:44:26 robertj Exp $
+ * $Id: httpsvc.h,v 1.15 1997/08/28 13:56:34 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
- * Revision 1.14  1997/08/21 12:44:26  robertj
+ * Revision 1.15  1997/08/28 13:56:34  robertj
  * Fixed bug where HTTP directory was not processed for macros.
  *
- * Revision 1.13  1997/08/08 11:13:45  robertj
- * Added virtual for substituting random symbols in OEM files.
+ * Revision 1.13  1997/08/20 08:48:18  craigs
+ * Added PHTTPServiceDirectory & PHTTPServiceString
  *
  * Revision 1.12  1997/07/26 11:38:18  robertj
  * Support for overridable pages in HTTP service applications.
@@ -106,7 +106,7 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     static PHTTPServiceProcess & Current();
 
-    virtual void SubstituteEquivalSequence(const PString &, PString &)
+    virtual void SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
     { }
 
   protected:
@@ -292,13 +292,28 @@ PDECLARE_CLASS(PServiceHTML, PHTML)
     BOOL CheckSignature();
     static BOOL CheckSignature(const PString & html);
 
-    static BOOL ProcessMacros(PString & text,
+    static BOOL ProcessMacros(PHTTPRequest & request,
+                              PString & text,
                               const PString & filename,
                               BOOL needSignature);
 };
 
 
 ///////////////////////////////////////////////////////////////
+
+PDECLARE_CLASS(PServiceHTTPString, PHTTPString)
+  public:
+    PServiceHTTPString(const PURL & url, const PString & string)
+      : PHTTPString(url, string)
+      { }
+
+    PServiceHTTPString(const PURL & url, const PString & string, const PHTTPAuthority & auth)
+      : PHTTPString(url, string, auth)
+      { }
+
+    PString LoadText(PHTTPRequest &);
+};
+
 
 PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
   public:
@@ -311,19 +326,20 @@ PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
     BOOL needSignature;
 };
 
-
-///////////////////////////////////////////////////////////////
-
 PDECLARE_CLASS(PServiceHTTPDirectory, PHTTPDirectory)
   public:
-    PServiceHTTPDirectory(const PURL & url, const PDirectory & dir, BOOL needSig = FALSE)
-      : PHTTPDirectory(url, dir) { needSignature = needSig; }
+    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, BOOL needSig = FALSE)
+      : PHTTPDirectory(url, dirname) { needSignature = needSig; }
+
+    PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, const PHTTPAuthority & auth, BOOL needSig = FALSE)
+      : PHTTPDirectory(url, dirname, auth) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
   protected:
     BOOL needSignature;
 };
+
 
 
 #endif
