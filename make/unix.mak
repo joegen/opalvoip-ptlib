@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.109  2001/12/05 06:26:17  rogerh
+# Make Darwin and Carbon use only static libaries.
+#
 # Revision 1.108  2001/11/27 22:42:13  robertj
 # Changed to make system to better support non-shared library building.
 #
@@ -839,8 +842,9 @@ STDCCFLAGS	+= -m486
 else
 ENDIAN		:= PBIG_ENDIAN
 endif
-  
-P_USE_RANLIB		:= 1
+
+P_SHAREDLIB	:= 0 
+P_USE_RANLIB	:= 1
 
 CC              := cc
 CPLUS           := c++
@@ -866,7 +870,8 @@ STDCCFLAGS	+= -DNO_LONG_DOUBLE
 # 
 LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carbon
   
-P_USE_RANLIB		:= 1
+P_SHAREDLIB	:= 0 
+P_USE_RANLIB	:= 1
 
 CC              := cc
 CPLUS           := c++
