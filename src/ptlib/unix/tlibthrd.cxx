@@ -438,3 +438,18 @@ BOOL PSemaphore::WillBlock() const
 {
   return currentCount == 0;
 }
+
+
+PMutex::PMutex()
+  : PSemaphore(1, 1)
+{
+}
+
+
+PSyncPoint::PSyncPoint()
+  : PSemaphore(0, 1)
+{
+}
+
+
+
