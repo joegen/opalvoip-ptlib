@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.36  2001/06/23 00:32:15  robertj
+ * Added parameter to be able to set REUSEADDR on listener socket.
+ *
  * Revision 1.35  2001/03/04 02:24:44  robertj
  * Removed default OnControl() from http service as cannot get port number.
  *
@@ -200,8 +203,16 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void OnConfigChanged() = 0;
     virtual BOOL Initialise(const char * initMsg) = 0;
 
-    BOOL ListenForHTTP(WORD port, PINDEX stackSize = 0x4000);
-    BOOL ListenForHTTP(PSocket * listener, PINDEX stackSize = 0x4000);
+    BOOL ListenForHTTP(
+      WORD port,
+      PSocket::Reusability reuse = PSocket::AddressIsExclusive,
+      PINDEX stackSize = 0x4000
+    );
+    BOOL ListenForHTTP(
+      PSocket * listener,
+      PSocket::Reusability reuse = PSocket::AddressIsExclusive,
+      PINDEX stackSize = 0x4000
+    );
 
     virtual PString GetPageGraphic();
     void GetPageHeader(PHTML &);
