@@ -17,9 +17,12 @@
  * the License for the specific language governing rights and limitations
  * under the License.
  *
- * The Original Code is Portable Windows Library.
+ * The Original Code is ASN Parser.
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions of this code were written with the assisance of funding from
+ * Vovida Networks, Inc. http://www.vovida.com.
  *
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
@@ -27,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.14  1999/06/09 06:58:09  robertj
+ * Adjusted heading comments.
+ *
  * Revision 1.13  1999/06/09 02:07:49  robertj
  * Fixed backward compatibility of generated template code with G++ 2.7.x
  *
