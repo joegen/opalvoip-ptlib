@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.16 1996/08/17 10:00:22 robertj Exp $
+ * $Id: dict.h,v 1.17 1997/06/08 04:49:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.17  1997/06/08 04:49:11  robertj
+ * Fixed non-template class descendent order.
+ *
  * Revision 1.16  1996/08/17 10:00:22  robertj
  * Changes for Windows DLL support.
  *
@@ -522,14 +525,14 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_SET(cls, K, initDelObj) \
+#define PSET(cls, K) \
   PDECLARE_CLASS(cls, PAbstractSet) \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractSet(dummy, c) \
       { reference->deleteObjects = c->reference->deleteObjects; } \
   public: \
-    inline cls(BOOL initialDeleteObjects = initDelObj) \
+    inline cls(BOOL initialDeleteObjects = FALSE) \
       : PAbstractSet() { AllowDeleteObjects(initialDeleteObjects); } \
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
@@ -541,8 +544,19 @@ PDECLARE_CLASS(PSet, PAbstractSet)
         { return Contains(key); } \
     virtual const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
+  }
 
-#define PSET(cls, K) PDECLARE_SET(cls, K, FALSE) }
+#define PDECLARE_SET(cls, K, initDelObj) \
+ PSET(cls##_PTemplate, K); \
+ PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    inline cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    inline cls(BOOL initialDeleteObjects = initDelObj) \
+      : cls##_PTemplate() { AllowDeleteObjects(initialDeleteObjects); } \
+    inline virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
 #endif  // PHAS_TEMPLATES
@@ -1057,7 +1071,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_DICTIONARY(cls, K, D) \
+#define PDICTIONARY(cls, K, D) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
   private: \
     PObject * GetAt(const PObject & key) const \
@@ -1080,10 +1094,23 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (const K &)AbstractGetKeyAt(index); } \
     D & GetDataAt(PINDEX index) const \
       { return (D &)AbstractGetDataAt(index); } \
+  }
 
-#define PDICTIONARY(cls, K, D) PDECLARE_DICTIONARY(cls, K, D) }
+#define PDECLARE_DICTIONARY(cls, K, D) \
+  PDICTIONARY(cls##_PTemplate, K, D); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
-#define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
+
+
+#define PORDINAL_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
   private: \
     PObject * GetAt(PINDEX idx) const \
@@ -1092,6 +1119,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return PAbstractDictionary::GetAt(key); } \
     BOOL SetAt(const PObject & key, PObject * obj) \
       { return PAbstractDictionary::SetAt(key, obj); } \
+    BOOL SetAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetAt(idx, obj); } \
     BOOL SetDataAt(PINDEX idx, PObject * obj) \
       { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
@@ -1108,16 +1137,25 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (POrdinalKey *)PAbstractDictionary::GetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
      {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}\
-    BOOL SetAt(PINDEX idx, PObject * obj) \
-      { return PAbstractDictionary::SetAt(idx, obj); } \
     inline virtual BOOL SetAt(const K & key, PINDEX ordinal) \
       { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
     inline PINDEX GetDataAt(PINDEX index) const \
       { return (POrdinalKey &)AbstractGetDataAt(index); } \
+  }
 
-#define PORDINAL_DICTIONARY(cls, K) PDECLARE_ORDINAL_DICTIONARY(cls, K) }
+#define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
+  PORDINAL_DICTIONARY(cls##_PTemplate, K); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
 #endif // PHAS_TEMPLATES
