@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
+ * $Id: args.h,v 1.6 1994/11/26 03:44:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Revision 1.6  1994/11/26 03:44:19  robertj
+ * Documentation.
+ *
+ * Revision 1.6  1994/11/24  11:48:26  robertj
+ * Documentation.
+ *
+ * Revision 1.5  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.4  1994/08/22  00:46:48  robertj
@@ -33,70 +39,191 @@
 #endif
 
 
-PCLASS PArgList {
+PDECLARE_CLASS(PArgList, PObject)
+/* This class allows the parsing of a set of program arguments. This translates
+   the standard argc/argv style variables passed into the main() function into
+   a set of options (preceded by a '-' character) and parameters.
+*/
+
   public:
     PArgList();
-    PArgList(int theArgc, char ** theArgv, const char * argumentSpec = NULL);
-    PArgList(int theArgc, char ** theArgv, const PString & argumentSpec);
-      // Create an argument list object
+    PArgList(
+      int theArgc,     // Count of argument strings in theArgv
+      char ** theArgv, // An array of strings constituting the arguments
+      const char * argumentSpecPtr = NULL
+      /* The specification C string for argument options. See description for
+         details.
+       */
+    );
+    PArgList(
+      int theArgc,     // Count of argument strings in theArgv
+      char ** theArgv, // An array of strings constituting the arguments
+      const PString & argumentSpecStr
+      /* The specification string for argument options. See description for
+         details.
+       */
+    );
+    /* Create an argument list object given the standard arguments and a
+       specification for options. The program arguments are parsed from this
+       into options and parameters.
+       
+       The specification string consists of case significant letters for each
+       option. If the letter is followed by the ':' character then the option
+       has an associated string. This string must be in the argument or in the
+       next argument.
+     */
 
-    void SetArgs(int argc, char ** argv);
-      // Set the internal arguments list.
+    void SetArgs(
+      int theArgc,     // Count of argument strings in theArgv
+      char ** theArgv  // An array of strings constituting the arguments
+    );
+      // Set the internal copy of the program arguments.
 
-    void Parse(const char * theArgumentSpec);
-    void Parse(const PString & theArgumentSpec);
-      // Parse the standard C program arguments into an argument list
+    void Parse(
+      const char * theArgumentSpec
+      /* The specification string for argument options. See description for
+         details.
+       */
+    );
+    void Parse(
+      const PString & theArgumentSpec
+      /* The specification string for argument options. See description for
+         details.
+       */
+    );
+    /* Parse the standard C program arguments into an argument of options and
+       parameters.
+       
+       The specification string consists of case significant letters for each
+       option. If the letter is followed by the ':' character then the option
+       has an associated string. This string must be in the argument or in the
+       next argument.
+     */
 
-    PINDEX GetOptionCount(char option) const;
-    PINDEX GetOptionCount(const char * option) const;
-      // Return count of the number of times the option was specified on the
-      // command line.
+    PINDEX GetOptionCount(
+      char option  // Character letter code for the option
+    ) const;
+    PINDEX GetOptionCount(
+      const char * option // String letter code for the option
+    ) const;
+    /* Get the count of the number of times the option was specified on the
+       command line.
+       Returns: option repeat count.
+     */
 
-    BOOL HasOption(char option) const;
-    BOOL HasOption(const char * option) const;
-      // Return TRUE if the option was specified on the command line.
+    BOOL HasOption(
+      char option  // Character letter code for the option
+    ) const;
+    BOOL HasOption(
+      const char * option // String letter code for the option
+    ) const;
+    /* Get the whether the option was specified on the command line.
+       Returns: TRUE if the option was present.
+     */
 
-    PString GetOptionString(char option, const char * dflt = NULL) const;
-    PString GetOptionString(const char * option, const char * dflt = NULL) const;
-      // Return the string associated with an option e.g. -ofile or -o file
-      // would return "file".
+    PString GetOptionString(
+      char option,              // Character letter code for the option
+      const char * dflt = NULL  // Default value of the option string
+    ) const;
+    PString GetOptionString(
+      const char * option,      // String letter code for the option
+      const char * dflt = NULL  // Default value of the option string
+    ) const;
+    /* Get the string associated with an option e.g. -ofile or -o file
+       would return the string "file". An option may have an associated string
+       if it had a ':' character folowing it in the specification string passed
+       to the Parse() function.
+       Returns: the options associated string.
+     */
 
     PINDEX GetCount() const;
-      // Return number of arguments (not including options and option values)
+    /* Get the number of parameters that may be obtained via the GetParameter()
+       function. Note that this does not include options and option strings.
+       Returns: count of parameters.
+     */
 
-    PString GetParameter(PINDEX num) const;
-    PString operator[](PINDEX num) const;
-      // Return the argument at the specified index
+    PString GetParameter(
+      PINDEX num   // Number of the parameter to retrieve.
+    ) const;
+    /* Get the parameter that was parsed in the argument list.
+       Returns: parameter string at the specified index.
+     */
 
-    void Shift(int sh);
-    void operator<<(int sh);
-    void operator>>(int sh);
-      // Shift arguments by specified amount
+    PString operator[](
+      PINDEX num   // Number of the parameter to retrieve.
+    ) const;
+    /* Get the parameter that was parsed in the argument list. The argument
+       list object can thus be treated as an "array" of parameters.
+       Returns: parameter string at the specified index.
+     */
+
+    void Shift(
+      int sh // Number of parameters to shift forward through list
+    );
+    /* Shift the parameters by the specified amount. This allows the parameters
+       to be parsed at the same position in the argument list "array".
+     */
+
+    void operator<<(
+      int sh // Number of parameters to shift forward through list
+    );
+    /* Shift the parameters by the specified amount. This allows the parameters
+       to be parsed at the same position in the argument list "array".
+     */
+
+    void operator>>(
+      int sh // Number of parameters to shift backward through list
+    );
+    /* Shift the parameters by the specified amount. This allows the parameters
+       to be parsed at the same position in the argument list "array".
+     */
 
 
-    virtual void IllegalArgumentIndex(PINDEX idx) const;
-      // Called when access to illegal argument index made.
+    virtual void IllegalArgumentIndex(
+      PINDEX idx // Number of the parameter that was accessed.
+    ) const;
+    /* This function is called when access to illegal parameter index is made
+       in the GetParameter function. The default behaviour is to output a
+       message to the standard $H$PError stream.
+     */
 
-    virtual void UnknownOption (char option) const;
-      // Called when unknown option encountered.
+    virtual void UnknownOption(
+      char option   // Option that was illegally placed on command line.
+    ) const;
+    /* This function is called when an unknown option was specified on the
+       command line. The default behaviour is to output a message to the
+       standard $H$PError stream.
+     */
 
-    virtual void MissingArgument (char option) const;
-      // Called when option argument missing.
+    virtual void MissingArgument(
+      char option  // Option for which the associated string was missing.
+    ) const;
+    /* This function is called when an option that requires an associated
+       string was specified on the command line but no associated string was
+       provided. The default behaviour is to output a message to the standard
+       $H$PError stream.
+     */
 
 
   protected:
-    void ParseProgName(const PString & argv0);
-      // Parse the program name out of the argument list
-
-
     // Member variables
     int     arg_count;
+    // The original program argument count as provided by main().
+
     char ** arg_values;
-           
+    // The original program argument list as provided by main().
+
     PString      argumentSpec;
-    PStringArray argumentList;
+    // The specification for options
+
     PIntArray    optionCount;
+    // The count of the number of times an option appeared in the command line.
+
+    PStringArray argumentList;
+    // The array of associated strings to options.
+
     PINDEX       shift;
+    // Shift count for the parameters in the argument list.
 };
 
 
