@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.46  1998/11/16 07:23:15  robertj
+ * More PPC GNU compatibility.
+ *
  * Revision 1.45  1998/11/16 06:50:40  robertj
  * Fixed PPC GNU compiler compatibility.
  *
@@ -692,6 +695,7 @@ static BOOL FindSpliceBlock(const PRegularExpression & regex,
 }
 
 
+
 void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PString block;
@@ -1072,11 +1076,12 @@ PServiceMacro::PServiceMacro(const char * name)
 #define EMPTY
 
 #define CREATE_MACRO(name, request, args) \
-  static const class PServiceMacro_##name : public PServiceMacro { \
+  class PServiceMacro_##name : public PServiceMacro { \
     public: \
       PServiceMacro_##name() : PServiceMacro(#name) { } \
       PString Translate(PHTTPRequest & request, const PString & args) const; \
-  } serviceMacro_##name; \
+  }; \
+  static const PServiceMacro_##name serviceMacro_##name; \
   PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args) const
 
 
