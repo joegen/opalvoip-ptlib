@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.6  2004/04/14 06:58:00  csoutheren
+ * Fixed PAtomicInteger and PSmartPointer to use real atomic operations
+ *
  * Revision 1.5  2004/04/12 03:35:26  csoutheren
  * Fixed problems with non-recursuve mutexes and critical sections on
  * older compilers and libc
@@ -126,8 +129,8 @@ class PAtomicInteger
       inline PAtomicInteger(long v = 0)
         : value(v) { }
       BOOL IsZero() const                 { return value == 0; }
-      inline long operator++()            { InterlockedIncrement(&value); return value;}
-      inline long operator--()            { InterlockedDecrement(&value); return value;}
+      inline long operator++()            { return InterlockedIncrement(&value); }
+      inline long operator--()            { return InterlockedDecrement(&value); }
       inline operator long () const       { return value; }
       inline void SetValue(long v)        { value = v; }
     protected:
@@ -137,8 +140,8 @@ class PAtomicInteger
       inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline int operator++()            { __atomic_add(&value, 1); return value;}
-      inline int unsigned operator--()   {  __atomic_add(&value, -1); return value;}
+      inline int operator++()            { return __exchange_and_add(&value, 1) + 1; }
+      inline int unsigned operator--()   { return __exchange_and_add(&value, -1) - 1; }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
