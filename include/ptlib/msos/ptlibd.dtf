@@ -368,8 +368,12 @@ EXPORTS
     ??0P_YUV411P_YUV420P@@QAE@ABVPString@@0II@Z @4075 NONAME ;public: __thiscall P_YUV411P_YUV420P::P_YUV411P_YUV420P(class PString const &,class PString const &,unsigned int,unsigned int)
     ??0P_YUV411P_YUV420P_Registration@@QAE@XZ @4076 NONAME ;public: __thiscall P_YUV411P_YUV420P_Registration::P_YUV411P_YUV420P_Registration(void)
     ??0P_YUV420P_RGB24@@QAE@ABVPString@@0II@Z @4077 NONAME ;public: __thiscall P_YUV420P_RGB24::P_YUV420P_RGB24(class PString const &,class PString const &,unsigned int,unsigned int)
+    ??0P_YUV420P_RGB24F@@QAE@ABVPString@@0II@Z @4289 NONAME ;public: __thiscall P_YUV420P_RGB24F::P_YUV420P_RGB24F(class PString const &,class PString const &,unsigned int,unsigned int)
+    ??0P_YUV420P_RGB24F_Registration@@QAE@XZ @4290 NONAME ;public: __thiscall P_YUV420P_RGB24F_Registration::P_YUV420P_RGB24F_Registration(void)
     ??0P_YUV420P_RGB24_Registration@@QAE@XZ @4078 NONAME ;public: __thiscall P_YUV420P_RGB24_Registration::P_YUV420P_RGB24_Registration(void)
     ??0P_YUV420P_RGB32@@QAE@ABVPString@@0II@Z @4079 NONAME ;public: __thiscall P_YUV420P_RGB32::P_YUV420P_RGB32(class PString const &,class PString const &,unsigned int,unsigned int)
+    ??0P_YUV420P_RGB32F@@QAE@ABVPString@@0II@Z @4291 NONAME ;public: __thiscall P_YUV420P_RGB32F::P_YUV420P_RGB32F(class PString const &,class PString const &,unsigned int,unsigned int)
+    ??0P_YUV420P_RGB32F_Registration@@QAE@XZ @4292 NONAME ;public: __thiscall P_YUV420P_RGB32F_Registration::P_YUV420P_RGB32F_Registration(void)
     ??0P_YUV420P_RGB32_Registration@@QAE@XZ @4080 NONAME ;public: __thiscall P_YUV420P_RGB32_Registration::P_YUV420P_RGB32_Registration(void)
     ??0P_YUV420P_YUV411P@@QAE@ABVPString@@0II@Z @4062 NONAME ;public: __thiscall P_YUV420P_YUV411P::P_YUV420P_YUV411P(class PString const &,class PString const &,unsigned int,unsigned int)
     ??0P_YUV420P_YUV411P_Registration@@QAE@XZ @4063 NONAME ;public: __thiscall P_YUV420P_YUV411P_Registration::P_YUV420P_YUV411P_Registration(void)
@@ -559,8 +563,12 @@ EXPORTS
     ??1P_YUV411P_YUV420P@@UAE@XZ @4089 NONAME ;public: virtual __thiscall P_YUV411P_YUV420P::~P_YUV411P_YUV420P(void)
     ??1P_YUV411P_YUV420P_Registration@@UAE@XZ @4090 NONAME ;public: virtual __thiscall P_YUV411P_YUV420P_Registration::~P_YUV411P_YUV420P_Registration(void)
     ??1P_YUV420P_RGB24@@UAE@XZ @4091 NONAME ;public: virtual __thiscall P_YUV420P_RGB24::~P_YUV420P_RGB24(void)
+    ??1P_YUV420P_RGB24F@@UAE@XZ @4293 NONAME ;public: virtual __thiscall P_YUV420P_RGB24F::~P_YUV420P_RGB24F(void)
+    ??1P_YUV420P_RGB24F_Registration@@UAE@XZ @4294 NONAME ;public: virtual __thiscall P_YUV420P_RGB24F_Registration::~P_YUV420P_RGB24F_Registration(void)
     ??1P_YUV420P_RGB24_Registration@@UAE@XZ @4092 NONAME ;public: virtual __thiscall P_YUV420P_RGB24_Registration::~P_YUV420P_RGB24_Registration(void)
     ??1P_YUV420P_RGB32@@UAE@XZ @4093 NONAME ;public: virtual __thiscall P_YUV420P_RGB32::~P_YUV420P_RGB32(void)
+    ??1P_YUV420P_RGB32F@@UAE@XZ @4295 NONAME ;public: virtual __thiscall P_YUV420P_RGB32F::~P_YUV420P_RGB32F(void)
+    ??1P_YUV420P_RGB32F_Registration@@UAE@XZ @4296 NONAME ;public: virtual __thiscall P_YUV420P_RGB32F_Registration::~P_YUV420P_RGB32F_Registration(void)
     ??1P_YUV420P_RGB32_Registration@@UAE@XZ @4094 NONAME ;public: virtual __thiscall P_YUV420P_RGB32_Registration::~P_YUV420P_RGB32_Registration(void)
     ??1P_YUV420P_YUV411P@@UAE@XZ @4064 NONAME ;public: virtual __thiscall P_YUV420P_YUV411P::~P_YUV420P_YUV411P(void)
     ??1P_YUV420P_YUV411P_Registration@@UAE@XZ @4065 NONAME ;public: virtual __thiscall P_YUV420P_YUV411P_Registration::~P_YUV420P_YUV411P_Registration(void)
@@ -1294,8 +1302,12 @@ EXPORTS
     ??_7P_YUV411P_YUV420P@@6B@ @4103 NONAME ;const  P_YUV411P_YUV420P::`vftable'
     ??_7P_YUV411P_YUV420P_Registration@@6B@ @4104 NONAME ;const  P_YUV411P_YUV420P_Registration::`vftable'
     ??_7P_YUV420P_RGB24@@6B@ @4105 NONAME ;const  P_YUV420P_RGB24::`vftable'
+    ??_7P_YUV420P_RGB24F@@6B@ @4297 NONAME ;const  P_YUV420P_RGB24F::`vftable'
+    ??_7P_YUV420P_RGB24F_Registration@@6B@ @4298 NONAME ;const  P_YUV420P_RGB24F_Registration::`vftable'
     ??_7P_YUV420P_RGB24_Registration@@6B@ @4106 NONAME ;const  P_YUV420P_RGB24_Registration::`vftable'
     ??_7P_YUV420P_RGB32@@6B@ @4107 NONAME ;const  P_YUV420P_RGB32::`vftable'
+    ??_7P_YUV420P_RGB32F@@6B@ @4299 NONAME ;const  P_YUV420P_RGB32F::`vftable'
+    ??_7P_YUV420P_RGB32F_Registration@@6B@ @4300 NONAME ;const  P_YUV420P_RGB32F_Registration::`vftable'
     ??_7P_YUV420P_RGB32_Registration@@6B@ @4108 NONAME ;const  P_YUV420P_RGB32_Registration::`vftable'
     ??_7P_YUV420P_YUV411P@@6B@ @4066 NONAME ;const  P_YUV420P_YUV411P::`vftable'
     ??_7P_YUV420P_YUV411P_Registration@@6B@ @4067 NONAME ;const  P_YUV420P_YUV411P_Registration::`vftable'
@@ -1864,7 +1876,9 @@ EXPORTS
     ?Convert@P_RGB32_YUV420P@@UAEHPBEPAEPAH@Z @4114 NONAME ;public: virtual int __thiscall P_RGB32_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV411P_YUV420P@@UAEHPBEPAEPAH@Z @4115 NONAME ;public: virtual int __thiscall P_YUV411P_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV420P_RGB24@@UAEHPBEPAEPAH@Z @4116 NONAME ;public: virtual int __thiscall P_YUV420P_RGB24::Convert(unsigned char const *,unsigned char *,int *)
+    ?Convert@P_YUV420P_RGB24F@@UAEHPBEPAEPAH@Z @4301 NONAME ;public: virtual int __thiscall P_YUV420P_RGB24F::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV420P_RGB32@@UAEHPBEPAEPAH@Z @4117 NONAME ;public: virtual int __thiscall P_YUV420P_RGB32::Convert(unsigned char const *,unsigned char *,int *)
+    ?Convert@P_YUV420P_RGB32F@@UAEHPBEPAEPAH@Z @4302 NONAME ;public: virtual int __thiscall P_YUV420P_RGB32F::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV420P_YUV411P@@UAEHPBEPAEPAH@Z @4068 NONAME ;public: virtual int __thiscall P_YUV420P_YUV411P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV422_YUV420P@@UAEHPBEPAEPAH@Z @4119 NONAME ;public: virtual int __thiscall P_YUV422_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV422_YUV422@@UAEHPBEPAEPAH@Z @3850 NONAME ;public: virtual int __thiscall P_YUV422_YUV422::Convert(unsigned char const *,unsigned char *,int *)
@@ -1897,7 +1911,9 @@ EXPORTS
     ?Create@P_RGB32_RGB24_Registration@@UBEPAVPColourConverter@@II@Z @3779 NONAME ;public: virtual class PColourConverter * __thiscall P_RGB32_RGB24_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_RGB32_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @4121 NONAME ;public: virtual class PColourConverter * __thiscall P_RGB32_YUV420P_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_YUV411P_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @4122 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV411P_YUV420P_Registration::Create(unsigned int,unsigned int)const 
+    ?Create@P_YUV420P_RGB24F_Registration@@UBEPAVPColourConverter@@II@Z @4303 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV420P_RGB24F_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_YUV420P_RGB24_Registration@@UBEPAVPColourConverter@@II@Z @4123 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV420P_RGB24_Registration::Create(unsigned int,unsigned int)const 
+    ?Create@P_YUV420P_RGB32F_Registration@@UBEPAVPColourConverter@@II@Z @4304 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV420P_RGB32F_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_YUV420P_RGB32_Registration@@UBEPAVPColourConverter@@II@Z @4124 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV420P_RGB32_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_YUV420P_YUV411P_Registration@@UBEPAVPColourConverter@@II@Z @4069 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV420P_YUV411P_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_YUV422_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @4126 NONAME ;public: virtual class PColourConverter * __thiscall P_YUV422_YUV420P_Registration::Create(unsigned int,unsigned int)const 
@@ -2473,6 +2489,7 @@ EXPORTS
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1630 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
     ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1631 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
     ?GetVideoFormat@PVideoDevice@@UBE?AW4VideoFormat@1@XZ @3335 NONAME ;public: virtual enum PVideoDevice::VideoFormat  __thiscall PVideoDevice::GetVideoFormat(void)const 
+    ?GetVideoPlayer@PVideoChannel@@UAEPAVPVideoOutputDevice@@XZ @4305 NONAME ;public: virtual class PVideoOutputDevice * __thiscall PVideoChannel::GetVideoPlayer(void)
     ?GetVideoReader@PVideoChannel@@UAEPAVPVideoInputDevice@@XZ @4285 NONAME ;public: virtual class PVideoInputDevice * __thiscall PVideoChannel::GetVideoReader(void)
     ?GetVolume@PDirectory@@QBE?AVPCaselessString@@XZ @1632 NONAME ;public: class PCaselessString  __thiscall PDirectory::GetVolume(void)const 
     ?GetVolume@PFilePath@@QBE?AVPCaselessString@@XZ @1633 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetVolume(void)const 
@@ -3368,7 +3385,7 @@ EXPORTS
     ?WriteTo@PIPDatagramSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @2292 NONAME ;public: virtual int __thiscall PIPDatagramSocket::WriteTo(void const *,int,class PIPSocket::Address const &,unsigned short)
     ?WriteTo@PIPXSocket@@UAEHPBXHABVAddress@1@G@Z @2293 NONAME ;public: virtual int __thiscall PIPXSocket::WriteTo(void const *,int,class PIPXSocket::Address const &,unsigned short)
     ?Yield@PThread@@SAXXZ @2294 NONAME ;public: static void __cdecl PThread::Yield(void)
-    ?YUV420PtoRGB@PStandardColourConverter@@IBEHPBEPAEPAHI@Z @4275 NONAME ;protected: int __thiscall PStandardColourConverter::YUV420PtoRGB(unsigned char const *,unsigned char *,int *,unsigned int)const 
+    ?YUV420PtoRGB@PStandardColourConverter@@IBEHPBEPAEPAHIH@Z @4306 NONAME ;protected: int __thiscall PStandardColourConverter::YUV420PtoRGB(unsigned char const *,unsigned char *,int *,unsigned int,int)const 
     ?_main@PProcess@@UAEHPAX@Z @2295 NONAME ;public: virtual int __thiscall PProcess::_main(void *)
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
