@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.12  2000/03/03 00:37:42  robertj
+# Fixed problem for when have GUI environment variable set, always builds GUI!
+#
 # Revision 1.11  2000/02/24 11:02:11  craigs
 # Fixed problems with PW make
 #
@@ -53,11 +56,11 @@
 
 
 include $(PWLIBDIR)/make/defaultgui.mak
-include $(PWLIBDIR)/make/$(GUI).mak
+include $(PWLIBDIR)/make/$(GUI_TYPE).mak
 
-GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
+GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI_TYPE)
 
-PWLIB           = pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PWLIB           = pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 #
 # add GUI directory to include path
@@ -76,8 +79,8 @@ endif
 #  rules for resource compilation
 #
 PWRC_DIR	= $(PWLIBDIR)/tools/pwrc
-PWRC		= $(PWRC_DIR)/obj_$(GUI)_$(PLATFORM_TYPE)_r/pwrc
-PWRC_CMD	= $(PWRC) -a $(GUI)
+PWRC		= $(PWRC_DIR)/obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_r/pwrc
+PWRC_CMD	= $(PWRC) -a $(GUI_TYPE)
 
 #
 # if we are using a resource file, then define the required files
