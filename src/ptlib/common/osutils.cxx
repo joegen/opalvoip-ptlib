@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.63 1996/05/09 12:19:00 robertj Exp $
+ * $Id: osutils.cxx,v 1.64 1996/05/18 09:18:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.64  1996/05/18 09:18:33  robertj
+ * Added mutex to timer list.
+ *
  * Revision 1.63  1996/05/09 12:19:00  robertj
  * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
  *
@@ -262,12 +265,8 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 PTimer::~PTimer()
 {
   PAssert(!inTimeout, "Timer destroyed in OnTimeout()");
-  if (state == Running) {
-    PProcess::Current()->GetTimerList()->Remove(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
-#endif
-  }
+  if (state == Running)
+    PProcess::Current()->GetTimerList()->RemoveTimer(this);
 }
 
 
@@ -280,34 +279,22 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
-  if (state == Running && !inTimeout) {
-    PProcess::Current()->GetTimerList()->Remove(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
-#endif
-  }
+  if (state == Running && !inTimeout)
+    PProcess::Current()->GetTimerList()->RemoveTimer(this);
 
   PTimeInterval::operator=(resetTime);
   oneshot = once;
   state = (*this) != 0 ? Running : Stopped;
 
-  if (state == Running && !inTimeout) {
-    PProcess::Current()->GetTimerList()->Append(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
-#endif
-  }
+  if (state == Running && !inTimeout)
+    PProcess::Current()->GetTimerList()->AppendTimer(this);
 }
 
 
 void PTimer::Stop()
 {
-  if (state == Running && !inTimeout) {
-    PProcess::Current()->GetTimerList()->Remove(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
-#endif
-  }
+  if (state == Running && !inTimeout)
+    PProcess::Current()->GetTimerList()->RemoveTimer(this);
   state = Stopped;
   SetInterval(0);
 }
@@ -316,12 +303,8 @@ void PTimer::Stop()
 void PTimer::Pause()
 {
   if (state == Running) {
-    if (!inTimeout) {
-      PProcess::Current()->GetTimerList()->Remove(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-      PProcess::Current()->SignalTimerChange();
-#endif
-    }
+    if (!inTimeout)
+      PProcess::Current()->GetTimerList()->RemoveTimer(this);
     state = Paused;
   }
 }
@@ -330,12 +313,8 @@ void PTimer::Pause()
 void PTimer::Resume()
 {
   if (state == Paused) {
-    if (!inTimeout) {
-      PProcess::Current()->GetTimerList()->Append(this);
-#if defined(P_PLATFORM_HAS_THREADS)
-      PProcess::Current()->SignalTimerChange();
-#endif
-    }
+    if (!inTimeout)
+      PProcess::Current()->GetTimerList()->AppendTimer(this);
     state = Running;
   }
 }
@@ -382,8 +361,31 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PTimerList
+
+void PTimerList::AppendTimer(PTimer * timer)
+{
+  mutex.Wait();
+  PInternalTimerList::Append(timer);
+  mutex.Signal();
+  PProcess::Current()->SignalTimerChange();
+}
+
+
+void PTimerList::RemoveTimer(PTimer * timer)
+{
+  mutex.Wait();
+  PInternalTimerList::Remove(timer);
+  mutex.Signal();
+  PProcess::Current()->SignalTimerChange();
+}
+
+
 PTimeInterval PTimerList::Process()
 {
+  mutex.Wait();
+
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime = now - lastSample;
   if (now < lastSample)
@@ -395,6 +397,8 @@ PTimeInterval PTimerList::Process()
     if (((PTimer *)GetAt(i))->Process(sampleTime, minTimeLeft))
       RemoveAt(i--);
   }
+
+  mutex.Signal();
 
   return minTimeLeft;
 }
