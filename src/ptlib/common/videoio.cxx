@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.14  2001/05/22 23:38:45  robertj
+ * Fixed bug in PVideoOutputDevice, removed redundent SetFrameSize.
+ *
  * Revision 1.13  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -401,11 +404,6 @@ PVideoOutputDevice::PVideoOutputDevice()
 BOOL PVideoOutputDevice::Redraw(const void * /*frame*/)
 {
   return FALSE;
-}
-
-
-void PVideoOutputDevice::SetFrameSize(int /*_width*/, int /*_height*/) 
-{
 }
 
 
