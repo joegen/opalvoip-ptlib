@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.46  2000/11/14 08:28:44  robertj
+ * Fixed bug in base64 encoder, overwriting memory buffer.
+ *
  * Revision 1.45  2000/05/05 10:08:29  robertj
  * Fixed some GNU compiler warnings
  *
@@ -860,7 +863,7 @@ static const char Binary2Base64[65] =
 
 void PBase64::OutputBase64(const BYTE * data)
 {
-  char * out = encodedString.GetPointer((encodeLength&~255) + 256);
+  char * out = encodedString.GetPointer(((encodeLength+7)&~255) + 256);
 
   out[encodeLength++] = Binary2Base64[data[0] >> 2];
   out[encodeLength++] = Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
