@@ -168,8 +168,8 @@ EXPORTS
     ??0PTime@@QAE@HHHHHHH@Z @146 NONAME ;public: __thiscall PTime::PTime(int,int,int,int,int,int,int)
     ??0PTime@@QAE@XZ @147 NONAME ;public: __thiscall PTime::PTime(void)
     ??0PTimeInterval@@QAE@ABVPString@@@Z @2264 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)
-    ??0PTimeInterval@@QAE@H@Z @148 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(int)
     ??0PTimeInterval@@QAE@JJJJH@Z @149 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(long,long,long,long,int)
+    ??0PTimeInterval@@QAE@_J@Z @2488 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(__int64)
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @151 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
     ??0PTimer@@QAE@JHHHH@Z @152 NONAME ;public: __thiscall PTimer::PTimer(long,int,int,int,int)
     ??0PTimerList@@QAE@XZ @153 NONAME ;public: __thiscall PTimerList::PTimerList(void)
@@ -1729,6 +1729,7 @@ EXPORTS
     ?Open@PDirectory@@QAEHH@Z @1457 NONAME ;public: int __thiscall PDirectory::Open(int)
     ?Open@PDynaLink@@QAEHABVPString@@@Z @1458 NONAME ;public: int __thiscall PDynaLink::Open(class PString const &)
     ?Open@PFile@@QAEHABVPFilePath@@W4OpenMode@1@H@Z @1459 NONAME ;public: int __thiscall PFile::Open(class PFilePath const &,enum PFile::OpenMode,int)
+    ?Open@PFile@@UAEHW4OpenMode@1@H@Z @2487 NONAME ;public: virtual int __thiscall PFile::Open(enum PFile::OpenMode,int)
     ?Open@PIndirectChannel@@QAEHAAVPChannel@@@Z @1461 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel &)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@0HH@Z @1462 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,class PChannel *,int,int)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@H@Z @1463 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,int)
@@ -1951,6 +1952,7 @@ EXPORTS
     ?SetAt@PAbstractSet@@UAEHHPAVPObject@@@Z @1644 NONAME ;public: virtual int __thiscall PAbstractSet::SetAt(int,class PObject *)
     ?SetAt@PAbstractSortedList@@UAEHHPAVPObject@@@Z @1645 NONAME ;public: virtual int __thiscall PAbstractSortedList::SetAt(int,class PObject *)
     ?SetAt@PArrayObjects@@UAEHHPAVPObject@@@Z @1646 NONAME ;public: virtual int __thiscall PArrayObjects::SetAt(int,class PObject *)
+    ?SetAutoDelete@PThread@@UAEXW4AutoDeleteFlag@1@@Z @2491 NONAME ;public: virtual void __thiscall PThread::SetAutoDelete(enum PThread::AutoDeleteFlag)
     ?SetBoolean@PConfig@@QAEXABVPString@@0H@Z @1647 NONAME ;public: void __thiscall PConfig::SetBoolean(class PString const &,class PString const &,int)
     ?SetBreak@PSerialChannel@@QAEXH@Z @1649 NONAME ;public: void __thiscall PSerialChannel::SetBreak(int)
     ?SetBuffers@PSoundChannel@@QAEHHH@Z @2089 NONAME ;public: int __thiscall PSoundChannel::SetBuffers(int,int)
@@ -2126,4 +2128,3 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?Open@PFile@@UAEHW4OpenMode@1@H@Z @2487 NONAME ;public: virtual int __thiscall PFile::Open(enum PFile::OpenMode,int)
