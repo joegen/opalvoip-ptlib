@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.1 1996/02/13 10:11:52 robertj Exp $
+ * $Id: ptime.cxx,v 1.2 1996/02/13 12:59:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.2  1996/02/13 12:59:32  robertj
+ * Changed GetTimeZone() so can specify standard/daylight time.
+ * Split PTime into separate module after major change to ReadFrom().
+ *
  * Revision 1.1  1996/02/13 10:11:52  robertj
  * Initial revision
  *
@@ -433,7 +437,7 @@ static int get_token(istream & strm, PString & yytext, yytype & yyval)
 {
   for (;;) {
     int ch = strm.get();
-    yytext = tolower(ch);
+    yytext = (char)tolower(ch);
 
     if (ch < 0)
       return -1;
@@ -442,15 +446,15 @@ static int get_token(istream & strm, PString & yytext, yytype & yyval)
       while (isdigit(ch = strm.get())) {
         yyval.ival *= 10;
         yyval.ival += ch - '0';
-        yytext += ch;
+        yytext += (char)ch;
       }
-      strm.putback(ch);
+      strm.putback((char)ch);
       return INTEGER;
   
     } else if (isalpha(ch)) {
       while (isalpha(ch = strm.get())) 
-        yytext += tolower(ch);
-      strm.putback(ch);
+        yytext += (char)tolower(ch);
+      strm.putback((char)ch);
   
       yyval.sval = yytext;
 
@@ -479,7 +483,7 @@ static int get_token(istream & strm, PString & yytext, yytype & yyval)
     } else if (isspace(ch)) {
       while (isspace(ch = strm.get())) 
         ;
-      strm.putback(ch);
+      strm.putback((char)ch);
     } else if (ch == '+' || ch == '-' || ch == ':') 
       return ch;
   }
@@ -688,95 +692,7 @@ void PTime::ReadFrom(istream &strm)
 }
 
 
-#if 0
-static BOOL IsTimeDateSeparator(istream &strm, const PString & sep)
-{
-  while (isspace(strm.peek()))  // Clear out white space
-    strm.get();
-
-  PINDEX pos = 0;
-  while (pos < sep.GetLength()) {
-    if (strm.eof())
-      return FALSE;
-    char c = (char)strm.peek();
-    if (c != sep[pos])
-      return FALSE;
-    strm.get();
-    pos++;
-  }
-  return TRUE;
-}
-
-void PTime::ReadFrom(istream &strm)
-{
-  *this = PTime();   // Default time in case of error
-
-  while (isspace(strm.peek()))  // Clear out white space
-    strm.get();
-
-  if (!isdigit(strm.peek()))   // No date or time?
-    return;
-
-  struct tm t;
-  memset(&t, 0, sizeof(t));
-  t.tm_mday = 1;
-  t.tm_year = 70;
-
-  int temp;       // Get first number
-  strm >> temp;
-  
-  if (IsTimeDateSeparator(strm, GetTimeSeparator())) {
-    t.tm_hour = temp;
-    strm >> t.tm_min;
-    if (IsTimeDateSeparator(strm, GetTimeSeparator()))
-      strm >> t.tm_sec;
-    if (isdigit(strm.peek())) {  // Has date?
-      strm >> t.tm_mday;
-      if (IsTimeDateSeparator(strm, GetDateSeparator())) {
-        strm >> t.tm_mon;
-        if (IsTimeDateSeparator(strm, GetDateSeparator()))
-          strm >> t.tm_year;
-      }
-    }
-  }
-  else if (IsTimeDateSeparator(strm, GetDateSeparator())) {
-    t.tm_mday = temp;
-    strm >> t.tm_mon;
-    if (IsTimeDateSeparator(strm, GetDateSeparator()))
-      strm >> t.tm_year;
-    if (isdigit(strm.peek())) {  // Has time?
-      strm >> t.tm_hour;
-      if (IsTimeDateSeparator(strm, GetTimeSeparator())) {
-        strm >> t.tm_min;
-        if (IsTimeDateSeparator(strm, GetTimeSeparator()))
-          strm >> t.tm_sec;
-      }
-    }
-  }
-  else
-    return;
-
-  switch (GetDateOrder()) {
-    case MonthDayYear :
-      temp = t.tm_mon;
-      t.tm_mon = t.tm_mday;
-      t.tm_mday = temp;
-      break;
-    case YearMonthDay :
-      temp = t.tm_year;
-      t.tm_year = t.tm_mday;
-      t.tm_mday = temp;
-    case DayMonthYear :
-      break;
-  }
-
-  if (t.tm_year < 70)
-    t.tm_year += 100;
-  t.tm_mon--;
-
-  theTime = mktime(&t);
-  PAssert(theTime != -1, PInvalidParameter);
-}
 #endif
 
-#endif
+
+// End Of File ///////////////////////////////////////////////////////////////
