@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.181  2005/01/16 20:35:41  csoutheren
+ * Fixed problem with IPv6 INADDR_ANY
+ *
  * Revision 1.180  2005/01/15 19:23:39  csoutheren
  * Fixed problem in operator *= for IP V6
  *
@@ -660,7 +663,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+static PIPSocket::Address any6(in6addr_any); 
 #endif
 
 
