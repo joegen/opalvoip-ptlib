@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.37 1995/01/15 04:56:28 robertj Exp $
+ * $Id: contain.cxx,v 1.38 1995/03/12 04:46:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.37  1995/01/15 04:56:28  robertj
+ * Revision 1.38  1995/03/12 04:46:02  robertj
+ * Fixed use of PCaselessString as dictionary key.
+ *
+ * Revision 1.37  1995/01/15  04:56:28  robertj
  * Fixed PStringStream for correct pointer calculations in output.
  *
  * Revision 1.36  1995/01/10  11:44:13  robertj
@@ -901,7 +904,7 @@ PString PString::Trim() const
 
   while (*rpos == ' ')
     rpos--;
-  return PString(lpos, rpos - lpos);
+  return PString(lpos, rpos - lpos + 1);
 }
 
 
@@ -994,7 +997,8 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
-  ::vsprintf(GetPointer(1000)+strlen(theArray), fmt, arg);
+  char * p = GetPointer(1000);
+  ::vsprintf(p+strlen(p), fmt, arg);
   PAssert(strlen(theArray) < 1000, "Single sprintf() too large");
   PAssert(MakeMinimumSize(), POutOfMemory);
   return *this;
@@ -1018,6 +1022,24 @@ PString pvsprintf(const char * fmt, va_list arg)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+PObject * PCaselessString::Clone() const
+{
+  return PNEW PCaselessString(*this);
+}
+
+
+PINDEX PCaselessString::HashFunction() const
+{
+#ifdef PHAS_UNICODE
+  return (toupper(((WORD*)theArray)[0])+
+               toupper(((WORD*)theArray)[1])+toupper(((WORD*)theArray)[2]))%23;
+#else
+  return ((BYTE)toupper(theArray[0])+
+                     (BYTE)toupper(theArray[1])+(BYTE)toupper(theArray[2]))%23;
+#endif
+}
+
 
 PObject::Comparison PCaselessString::InternalCompare(const char * cstr) const
 {
