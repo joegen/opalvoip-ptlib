@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.15  2004/06/24 23:10:27  csoutheren
+ * Require plugins to have _pwplugin suffix
+ *
  * Revision 1.14  2004/06/01 05:44:57  csoutheren
  * Added OnShutdown to allow cleanup on exit
  *
@@ -61,7 +64,7 @@
 #include <ptlib/plugin.h>
 
 template <class C>
-void PLoadPluginDirectory(C & obj, const PDirectory & directory)
+void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * suffix = NULL)
 {
   PDirectory dir = directory;
   if (!dir.Open()) {
@@ -73,8 +76,16 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory)
     PString entry = dir + dir.GetEntryName();
     if (dir.IsSubDir())
       PLoadPluginDirectory<C>(obj, entry);
-    else if (PFilePath(entry).GetType() *= PDynaLink::GetExtension()) 
-      obj.LoadPlugin(entry);
+    else {
+      PFilePath fn(entry);
+      if (
+           (fn.GetType() *= PDynaLink::GetExtension()) &&
+           (
+             (suffix == NULL) || (fn.GetTitle().Right(strlen(suffix)) *= suffix)
+           )
+         ) 
+        obj.LoadPlugin(entry);
+    }
   } while (dir.Next());
 }
 
@@ -88,13 +99,9 @@ class PPluginManager : public PObject
   PCLASSINFO(PPluginManager, PObject);
 
   public:
-    PPluginManager (); 
-    ~PPluginManager ();
-
     // functions to load/unload a dynamic plugin 
     BOOL LoadPlugin (const PString & fileName);
-    void LoadPluginDirectory (const PDirectory & dir)
-    { PLoadPluginDirectory<PPluginManager>(*this, dir); }
+    void LoadPluginDirectory (const PDirectory & dir);
   
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
