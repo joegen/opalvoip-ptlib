@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.36  2002/09/09 22:16:54  dereks
+ * update hints for spca50x camera.
+ *
  * Revision 1.35  2002/09/08 22:01:56  dereks
  * Add support for Intel PC Pro Camera, spca50x driver, Thanks Dennis Gilmore!
  *
@@ -243,7 +246,6 @@ static struct {
  */
   { "SPCA50X USB Camera",
     "Intel PC Pro Camera uses the spca50x driver",
-    HINT_ALWAYS_WORKS_320_240           |
     HINT_ONLY_WORKS_PREF_PALETTE        |
     HINT_HAS_PREF_PALETTE,
     VIDEO_PALETTE_RGB24
