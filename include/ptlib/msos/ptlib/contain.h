@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.19 1998/01/26 00:52:13 robertj Exp $
+ * $Id: contain.h,v 1.20 1998/03/09 07:15:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.20  1998/03/09 07:15:15  robertj
+ * Added support for MemCheck-32 program.
+ *
  * Revision 1.19  1998/01/26 00:52:13  robertj
  * Fixed istream << operator for PInt64, should be reference.
  *
@@ -210,6 +213,20 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #define PABSINDEX(idx) (idx)
 #define PASSERTINDEX(idx)
 
+#endif
+
+
+#ifdef PMEMCHECK32
+#ifdef _DEBUG
+#ifdef PMEMORY_CHECK
+#undef PMEMORY_CHECK
+#endif
+#define MCX_GetObjectA
+#define MCX_GetCurrentDirectoryA
+#define MCX_GetUserNameA
+#define MCX_GetPath
+#include <memcheck.h>
+#endif
 #endif
 
 
