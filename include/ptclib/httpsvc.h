@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.11 1997/06/16 14:12:55 robertj Exp $
+ * $Id: httpsvc.h,v 1.12 1997/07/26 11:38:18 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.12  1997/07/26 11:38:18  robertj
+ * Support for overridable pages in HTTP service applications.
+ *
  * Revision 1.11  1997/06/16 14:12:55  robertj
  * Changed private to protected.
  *
@@ -119,6 +122,7 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     PSemaphore httpThreadClosed;
 
   friend class PConfigPage;
+  friend class PConfigSectionsPage;
   friend class PHTTPServiceThread;
 };
 
@@ -155,6 +159,49 @@ PDECLARE_CLASS(PConfigPage, PHTTPConfig)
       const PString & section,
       const PHTTPAuthority & auth
     );
+
+    void OnLoadedText(PHTTPRequest &, PString & text);
+
+    BOOL OnPOST(
+      PHTTPServer & server,
+      const PURL & url,
+      const PMIMEInfo & info,
+      const PStringToString & data,
+      const PHTTPConnectionInfo & connectInfo
+    );
+
+    virtual BOOL Post(
+      PHTTPRequest & request,       // Information on this request.
+      const PStringToString & data, // Variables in the POST data.
+      PHTML & replyMessage          // Reply message for post.
+    );
+
+  protected:
+    virtual BOOL GetExpirationDate(
+      PTime & when          // Time that the resource expires
+    );
+
+    PHTTPServiceProcess & process;
+};
+
+
+/////////////////////////////////////////////////////////////////////
+
+PDECLARE_CLASS(PConfigSectionsPage, PHTTPConfigSectionList)
+  public:
+    PConfigSectionsPage(
+      PHTTPServiceProcess & app,
+      const PURL & url,
+      const PHTTPAuthority & auth,
+      const PString & prefix,
+      const PString & valueName,
+      const PURL & editSection,
+      const PURL & newSection,
+      const PString & newTitle,
+      PHTML & heading
+    );
+
+    void OnLoadedText(PHTTPRequest &, PString & text);
 
     BOOL OnPOST(
       PHTTPServer & server,
