@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.44  2004/06/01 05:22:43  csoutheren
+ * Restored memory check functionality
+ *
  * Revision 1.43  2004/05/19 23:34:43  csoutheren
  * Added <algorithm>
  *
@@ -196,7 +199,6 @@ and from the pre-processor options for this project"
 #endif
 
 #endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
