@@ -31,7 +31,13 @@
 #ifdef WIN32
 
 #include <errno.h>
+
+#ifndef _WIN32_WCE
 #include <winsock2.h>
+#else
+#include <winsock.h>
+#endif
+
 #include <io.h>
 
 typedef int socklen_t;
