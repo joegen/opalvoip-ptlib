@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.47  2004/02/17 10:24:04  rjongbloed
+ * Updated version number so will rebuild ASN files.
+ *
  * Revision 1.46  2004/02/17 09:38:24  csoutheren
  * Added change to remove duplicate forward declarations
  * See SourceForge bug 832245
@@ -166,7 +169,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 8
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 0
+#define BUILD_NUMBER 1
 
 
 unsigned lineNumber;
