@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.9 1996/05/09 12:14:02 robertj Exp $
+ * $Id: inetprot.h,v 1.10 1996/05/15 10:07:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.10  1996/05/15 10:07:00  robertj
+ * Added access function to set intercharacter line read timeout.
+ *
  * Revision 1.9  1996/05/09 12:14:02  robertj
  * Rewrote the "unread" buffer usage and then used it to improve ReadLine() performance.
  *
@@ -66,6 +69,8 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
    pair. A command or response line may be followed by additional data as
    determined by the protocol, but this data is "outside" the protocol
    specification as defined by this class.
+
+   The default read timeout is to 10 minutes by the constructor.
  */
 
   public:
@@ -140,6 +145,12 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        TRUE if at least len bytes were written to the channel.
      */
 
+     void SetReadLineTimeout(
+       const PTimeInterval & t
+     );
+     /* Set the maximum timeout between characters within a line. Default
+        value is 10 seconds.
+      */
 
   // New functions for class.
     BOOL WriteLine(
