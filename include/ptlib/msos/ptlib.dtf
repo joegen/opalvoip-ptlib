@@ -699,7 +699,6 @@ EXPORTS
     ?Append@PAbstractSortedList@@UAEHPAVPObject@@@Z @604 NONAME ;public: virtual int __thiscall PAbstractSortedList::Append(class PObject *)
     ?Append@PArrayObjects@@UAEHPAVPObject@@@Z @605 NONAME ;public: virtual int __thiscall PArrayObjects::Append(class PObject *)
     ?AppendElement@Table@PHashTable@@QAEHPAVPObject@@0@Z @606 NONAME ;public: int __thiscall PHashTable::Table::AppendElement(class PObject *,class PObject *)
-    ?AppendTimer@PTimerList@@QAEXPAVPTimer@@@Z @609 NONAME ;public: void __thiscall PTimerList::AppendTimer(class PTimer *)
     ?AreAllRecordBuffersFull@PSoundChannel@@QAEHXZ @2104 NONAME ;public: int __thiscall PSoundChannel::AreAllRecordBuffersFull(void)
     ?Ascend@PMultiMediaFile@@QAEHAAU_MMCKINFO@@I@Z @1996 NONAME ;public: int __thiscall PMultiMediaFile::Ascend(struct _MMCKINFO &,unsigned int)
     ?AsInt64@PString@@QBE_JI@Z @610 NONAME ;public: __int64 __thiscall PString::AsInt64(unsigned int)const 
@@ -1811,7 +1810,6 @@ EXPORTS
     ?PrintOn@PUnsignedArray@@UBEXAAVostream@@@Z @1522 NONAME ;public: virtual void __thiscall PUnsignedArray::PrintOn(class ostream &)const 
     ?PrintOn@PWaveFormat@@UBEXAAVostream@@@Z @2240 NONAME ;public: virtual void __thiscall PWaveFormat::PrintOn(class ostream &)const 
     ?PrintOn@PWORDArray@@UBEXAAVostream@@@Z @1523 NONAME ;public: virtual void __thiscall PWORDArray::PrintOn(class ostream &)const 
-    ?Process@PTimer@@AAEHABVPTimeInterval@@AAV2@@Z @1524 NONAME ;private: int __thiscall PTimer::Process(class PTimeInterval const &,class PTimeInterval &)
     ?Process@PTimerList@@QAE?AVPTimeInterval@@XZ @1525 NONAME ;public: class PTimeInterval  __thiscall PTimerList::Process(void)
     ?ProcessCommand@PServiceProcess@@AAEHPBD@Z @1526 NONAME ;private: int __thiscall PServiceProcess::ProcessCommand(char const *)
     ?PSetErrorStream@@YAXPAVostream@@@Z @1527 NONAME ;void __cdecl PSetErrorStream(class ostream *)
@@ -1889,7 +1887,6 @@ EXPORTS
     ?RemoveConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@@Z @1589 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::RemoveConfiguration(class PString const &)
     ?RemoveElement@PAbstractSortedList@@IAEXPAVElement@1@@Z @1590 NONAME ;protected: void __thiscall PAbstractSortedList::RemoveElement(class PAbstractSortedList::Element *)
     ?RemoveElement@Table@PHashTable@@QAEPAVPObject@@ABV3@@Z @1591 NONAME ;public: class PObject * __thiscall PHashTable::Table::RemoveElement(class PObject const &)
-    ?RemoveTimer@PTimerList@@QAEXPAVPTimer@@@Z @1592 NONAME ;public: void __thiscall PTimerList::RemoveTimer(class PTimer *)
     ?Rename@PFile@@QAEHABVPString@@H@Z @1593 NONAME ;public: int __thiscall PFile::Rename(class PString const &,int)
     ?Rename@PFile@@SAHABVPFilePath@@ABVPString@@H@Z @1594 NONAME ;public: static int __cdecl PFile::Rename(class PFilePath const &,class PString const &,int)
     ?Replace@PString@@QAEXABV1@0HH@Z @1595 NONAME ;public: void __thiscall PString::Replace(class PString const &,class PString const &,int,int)
@@ -2126,3 +2123,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
+    ?Construct@PTimer@@AAEXXZ @2483 NONAME ;private: void __thiscall PTimer::Construct(void)
+    ?Process@PTimer@@AAEXABVPTimeInterval@@AAV2@@Z @2484 NONAME ;private: void __thiscall PTimer::Process(class PTimeInterval const &,class PTimeInterval &)

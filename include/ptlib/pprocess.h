@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.45  2000/08/30 03:16:59  robertj
+ * Improved multithreaded reliability of the timers under stress.
+ *
  * Revision 1.44  2000/04/03 18:42:40  robertj
  * Added function to determine if PProcess instance is initialised.
  *
@@ -226,16 +229,14 @@ class PTimerList : PInternalTimerList // Want this to be private
        maximum time interval before function should be called again.
      */
 
-    void AppendTimer(PTimer * timer);
-    void RemoveTimer(PTimer * timer);
-    // Overrides for mutex
-
   private:
-    PMutex mutex;
+    PMutex listMutex, timeoutMutex;
     // Mutual exclusion for multi tasking
 
     PTimeInterval lastSample;
     // The last system timer tick value that was used to process timers.
+
+  friend class PTimer;
 };
 
 
