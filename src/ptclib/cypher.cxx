@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.6 1996/02/25 11:22:42 robertj Exp $
+ * $Id: cypher.cxx,v 1.7 1996/03/02 03:20:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.7  1996/03/02 03:20:52  robertj
+ * Fixed secured config parameters so leading/trailing blanks not significant.
+ *
  * Revision 1.6  1996/02/25 11:22:42  robertj
  * Added assertion if try and SetValidation when not pending.
  *
@@ -677,7 +680,7 @@ PString PSecureConfig::CalculateDigest(DigestType keyType) const
       key = PendingPrefix + securedKey[i];
     else
       key = securedKey[i];
-    digestor.Process(GetString(key));
+    digestor.Process(GetString(key).Trim());
   }
   return digestor.Complete();
 }
