@@ -26,7 +26,10 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Log: sound.cxx,v $
+ * $Log: sunaudio.cxx,v $
+ * Revision 1.1  1999/02/25 03:45:00  robertj
+ * Sound driver implementation changes for various unix platforms.
+ *
  * Revision 1.1  1999/02/22 13:24:47  robertj
  * Added first cut sound implmentation.
  *
@@ -36,7 +39,7 @@
 
 #include <ptlib.h>
 
-#include <sys/soundcard.h>
+#include <sys/audioio.h>
 
 
 PSound::PSound(unsigned channels,
@@ -159,17 +162,7 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   Abort();
 
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
-  int arg = numChannels == 2;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)))
-    return FALSE;
-
   PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
-  arg = bitsPerSample == 16 ? AFMT_S16_LE : AFMT_S8;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)))
-    return FALSE;
-
-  arg = sampleRate;
-  return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg));
 }
 
 
@@ -178,22 +171,11 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   Abort();
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
-  int arg = 1;
-  while (size < (PINDEX)(1 << arg))
-    arg++;
-  arg |= count << 16;
-  return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg));
 }
 
 
 BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  int arg;
-  if (!ConvertOSError(ioctl(os_handle, SNDCTL_DSP_GETBLKSIZE, &arg)))
-    return FALSE;
-
-  count = arg >> 16;
-  size = 1 << (arg&0xffff);
   return TRUE;
 }
 
@@ -219,17 +201,11 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
-  audio_buf_info info;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info)))
-    return FALSE;
-
-  return info.fragments == info.fragstotal;
 }
 
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
-  return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
 }
 
 
@@ -245,31 +221,16 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 
 BOOL PSoundChannel::StartRecording()
 {
-  fd_set fds;
-  FD_ZERO(&fds);
-  FD_SET(os_handle, &fds);
-  struct timeval timeout = {0, 0};
-  return ConvertOSError(::select(1, &fds, NULL, NULL, &timeout));
 }
 
 
 BOOL PSoundChannel::IsRecordBufferFull()
 {
-  audio_buf_info info;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
-    return FALSE;
-
-  return info.fragments > 0;
 }
 
 
 BOOL PSoundChannel::AreAllRecordBuffersFull()
 {
-  audio_buf_info info;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
-    return FALSE;
-
-  return info.fragments == info.fragstotal;
 }
 
 
@@ -292,7 +253,6 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannel::Abort()
 {
-  return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_RESET, NULL));
 }
 
 
