@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.75  2002/04/01 09:14:09  rogerh
+# Add noshared build targets
+#
 # Revision 1.74  2002/02/25 16:23:16  rogerh
 # Test for GCC 3 in unix.mak and not it common.mak so -DGCC3 can be set
 #
@@ -350,27 +353,31 @@ all :: debuglibs debugdepend debug optlibs optdepend opt
 
 help:
 	@echo "The following targets are available:"
-	@echo "    make debug       Make debug version of application"
-	@echo "    make opt         Make optimised version of application"
-	@echo "    make both        Make both versions of application"
+	@echo "  make debug         Make debug version of application"
+	@echo "  make opt           Make optimised version of application"
+	@echo "  make both          Make both versions of application"
 	@echo
-	@echo "    make debugclean  Remove debug files"
-	@echo "    make optclean    Remove optimised files"
-	@echo "    make clean       Remove both debug and optimised files"
+	@echo "  make debugnoshared Make static debug version of application"
+	@echo "  make optnoshared   Make static optimised version of application"
+	@echo "  make bothnoshared  Make static both versions of application"
 	@echo
-	@echo "    make debugdepend Create debug dependency files"
-	@echo "    make optdepend   Create optimised dependency files"
-	@echo "    make bothdepend  Create both debug and optimised dependency files"
+	@echo "  make debugclean    Remove debug files"
+	@echo "  make optclean      Remove optimised files"
+	@echo "  make clean         Remove both debug and optimised files"
 	@echo
-	@echo "    make debuglibs   Make debug libraries project depends on"
-	@echo "    make optlibs     Make optimised libraries project depends on"
-	@echo "    make bothlibs    Make both debug and optimised libraries project depends on"
+	@echo "  make debugdepend   Create debug dependency files"
+	@echo "  make optdepend     Create optimised dependency files"
+	@echo "  make bothdepend    Create both debug and optimised dependency files"
 	@echo
-	@echo "    make all         Create debug & optimised dependencies & libraries"
+	@echo "  make debuglibs     Make debug libraries project depends on"
+	@echo "  make optlibs       Make optimised libraries project depends on"
+	@echo "  make bothlibs      Make both debug and optimised libraries project depends on"
 	@echo
-	@echo "    make version     Display version for project"
-	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
-	@echo "    make release     Package up optimised version int tar.gz file"
+	@echo "  make all           Create debug & optimised dependencies & libraries"
+	@echo
+	@echo "  make version       Display version for project"
+	@echo "  make tagbuild      Do a CVS tag of the source, and bump build number"
+	@echo "  make release       Package up optimised version int tar.gz file"
 
 
 ifdef DEBUG
