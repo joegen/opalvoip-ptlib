@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.12  2001/10/02 00:56:04  robertj
+ * Fixed problem with autonumering enumerated types.
+ *
  * Revision 1.11  2001/01/16 14:00:17  craigs
  * Changed MIN and MAX tokens to avoid namespace conflicts under BeOS
  *
@@ -931,7 +934,9 @@ Enumeration
   | Enumeration ',' EnumerationItem
       {
 	$1->Append($3);
-	$3->SetAutoNumber((*$1)[1]);
+        PINDEX sz = $1->GetSize();
+        if (sz > 1)
+          $3->SetAutoNumber((*$1)[sz-2]);
 	$$ = $1;
       }
   ;
