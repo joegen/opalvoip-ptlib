@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.2  2000/07/25 13:14:05  robertj
+ * Got the video capture stuff going!
+ *
  * Revision 1.1  2000/07/15 09:47:34  robertj
  * Added video I/O device classes.
  *
@@ -57,10 +60,12 @@ class PVideoDevice : public PObject
 
     enum ColourFormat {
       Grey,
+      Gray = Grey,
       RGB24,
       RGB32,
       YUV422,
       RGB565,
+      MJPEG,
       NumColourFormats
     };
 
@@ -93,13 +98,17 @@ class PVideoDevice : public PObject
       */
     virtual BOOL Close() = 0;
 
-    /**Start the video device I/O.
+    /**Start the video device I/O capture.
       */
     virtual BOOL Start() = 0;
 
-    /**Start the video device I/O.
+    /**Stop the video device I/O capture.
       */
     virtual BOOL Stop() = 0;
+
+    /**Determine if the video device I/O capture is in progress.
+      */
+    virtual BOOL IsCapturing() = 0;
 
 
     /**Get the device name of the open device.
@@ -275,9 +284,13 @@ class PVideoInputDevice : public PVideoDevice
       */
     virtual BOOL Start();
 
-    /**Start the video device I/O.
+    /**Stop the video device I/O capture.
       */
     virtual BOOL Stop();
+
+    /**Determine if the video device I/O capture is in progress.
+      */
+    virtual BOOL IsCapturing();
 
     /**Get a list of all of the drivers available.
       */
