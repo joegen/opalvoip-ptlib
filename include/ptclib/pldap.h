@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.5  2003/04/07 12:00:04  robertj
+ * Fixed search function returning an error if can't find anything for filter.
+ *
  * Revision 1.4  2003/04/01 07:05:29  robertj
  * Added ability to specify host:port in opening an LDAP server
  *
@@ -303,6 +306,7 @@ class PLDAPSession : public PObject
         int              msgid;
         struct ldapmsg * result;
         struct ldapmsg * message;
+        BOOL             found;
         BOOL             completed;
 
       friend class PLDAPSession;
