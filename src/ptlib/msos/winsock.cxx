@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.20 1996/05/15 10:23:08 robertj Exp $
+ * $Id: winsock.cxx,v 1.21 1996/06/01 04:19:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.21  1996/06/01 04:19:34  robertj
+ * Added flush to PSocket destructor as needs to use Write() at that level.
+ *
  * Revision 1.20  1996/05/15 10:23:08  robertj
  * Changed millisecond access functions to get 64 bit integer.
  * Added timeout to accept function.
@@ -108,6 +111,7 @@ PSocket::PSocket()
 
 PSocket::~PSocket()
 {
+  flush();
   Close();
 }
 
