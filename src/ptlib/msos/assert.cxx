@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.13 1996/11/10 21:02:08 robertj Exp $
+ * $Id: assert.cxx,v 1.14 1996/11/16 10:51:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.14  1996/11/16 10:51:51  robertj
+ * Changed assert to display message and break if in debug mode service.
+ *
  * Revision 1.13  1996/11/10 21:02:08  robertj
  * Fixed bug in assertion when as a service, string buffer not big enough.
  *
@@ -102,8 +105,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
   int err = errno;
 #endif
 
-  if (PProcess::Current()->IsDescendant(PServiceProcess::Class()) &&
-                              !((PServiceProcess*)PProcess::Current())->debugMode) {
+  if (PProcess::Current()->IsDescendant(PServiceProcess::Class())) {
     if (msg == NULL)
       msg = "";
     static const char fmt[] = "Assertion fail in file %s, line %u %s - code = %lu";
@@ -112,6 +114,10 @@ void PAssertFunc(const char * file, int line, const char * msg)
                  file, line, msg != NULL ? msg : "", err);
     PSystemLog::Output(PSystemLog::Fatal, buf);
     delete [] buf;
+#ifdef _MSC_VER
+    if (((PServiceProcess*)PProcess::Current())->debugMode)
+      __asm int 3;
+#endif
     return;
   }
 
