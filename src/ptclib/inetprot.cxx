@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.41  1998/11/30 04:52:02  robertj
+ * New directory structure
+ *
  * Revision 1.40  1998/11/03 01:03:09  robertj
  * Fixed problem with multiline response that is non-numeric.
  *
@@ -163,9 +166,9 @@
 #endif
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <inetprot.h>
-#include <mime.h>
+#include <ptlib/sockets.h>
+#include <ptclib/inetprot.h>
+#include <ptclib/mime.h>
 
 
 static const PString CRLF = "\r\n";
