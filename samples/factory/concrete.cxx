@@ -2,21 +2,20 @@
 
 #include "abstract.h"
 
-class ConcreteClass : public AbstractClass
+class MyConcreteClass : public MyAbstractClass
 {
   public:
     PString Function()
     { return "Concrete"; }
 };
 
-PAbstractFactory<AbstractClass, ConcreteClass> concreteFactory("concrete");
-PINSTANTIATE_FACTORY(AbstractClass)
+PAbstractFactory<MyAbstractClass, MyConcreteClass> concreteFactory("concrete");
 
-class Concrete2Class : public AbstractClass
+class MyConcrete2Class : public MyAbstractClass
 {
   public:
     PString Function()
     { return "Concrete2"; }
 };
 
-PAbstractFactory<AbstractClass, Concrete2Class> concrete2Factory("concrete2");
+PAbstractFactory<MyAbstractClass, MyConcrete2Class> concrete2Factory("concrete2");

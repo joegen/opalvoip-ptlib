@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.106  2004/06/30 12:17:05  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.105  2004/06/16 07:48:12  csoutheren
  * Added assert to clarify usage of default scheme
  *
@@ -413,62 +417,6 @@
 #define	DEFAULT_H323RAS_PORT    1719
 #define	DEFAULT_SIP_PORT        5060
 
-/*
-struct schemeStruct {
-  const char * name;
-  BOOL hasUsername;
-  BOOL hasPassword;
-  BOOL hasHostPort;
-  BOOL defaultToUserIfNoAt;
-  BOOL defaultHostToLocal;
-  BOOL hasQuery;
-  BOOL hasParameters;
-  BOOL hasFragments;
-  BOOL hasPath;
-  BOOL relativeImpliesScheme;
-  WORD defaultPort;
-};
-
-#define DEFAULT_SCHEME 0
-#define FILE_SCHEME    1
-
-static schemeStruct const SchemeTable[] = {
-//  scheme       user   pass   host   @def   defhost query  params frags  path   rel    port
-  { "http",      TRUE,  TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
-  { "https",     FALSE, FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
-  { "gopher",    FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
-  { "wais",      FALSE, FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
-  { "nntp",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
-  { "prospero",  FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
-  { "rtspu",     FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
-  { "ftp",       TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
-  { "telnet",    TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
-  { "mailto",    FALSE, FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "news",      FALSE, FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "h323",      TRUE,  FALSE, TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
-  { "sip",       TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
-  { "tel",       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { "fax",       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { "callto",    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { NULL,        FALSE, FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
-};
-
-static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
-{
-  PINDEX i;
-  for (i = 0; SchemeTable[i].name != NULL; i++) {
-    if (scheme == SchemeTable[i].name)
-      return &SchemeTable[i];
-  }
-  return NULL;
-}
-
-*/
-
-PINSTANTIATE_FACTORY(PURLScheme)
-
 class PURLLegacyScheme : public PURLScheme
 {
   public:
@@ -519,7 +467,7 @@ class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
       defaultPort           = port; \
     } \
 }; \
-static PAbstractSingletonFactory<PURLScheme, PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName ); \
+  static PFactory<PURLScheme>::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
 
 DEFINE_LEGACY_URL_SCHEME(http,      TRUE,  TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT )
 DEFINE_LEGACY_URL_SCHEME(file,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0)
@@ -742,11 +690,11 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   if (url[pos] == ':') {
 
     // get the scheme information, or get the default scheme
-    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(url.Left(pos));
+    schemeInfo = PFactory<PURLScheme>::CreateInstance(url.Left(pos));
     if (schemeInfo == NULL && defaultScheme == NULL) {
-      PGenericFactory<PURLScheme>::KeyList_T keyList = PGenericFactory<PURLScheme>::GetKeyList();
+      PFactory<PURLScheme>::KeyList_T keyList = PFactory<PURLScheme>::GetKeyList();
       if (keyList.size() != 0)
-        schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(keyList[0]);
+        schemeInfo = PFactory<PURLScheme>::CreateInstance(keyList[0]);
     }
     if (schemeInfo != NULL)
       url.Delete(0, pos+1);
@@ -754,11 +702,11 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
 
   // if we could not match a scheme, then use the specified default scheme
   if (schemeInfo == NULL && defaultScheme != NULL)
-    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(defaultScheme);
+    schemeInfo = PFactory<PURLScheme>::CreateInstance(defaultScheme);
 
   // if that still fails, then use the global default scheme
   if (schemeInfo == NULL)
-    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+    schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
 
   // if that fails, then there is nowehere to go
   PAssert(schemeInfo != NULL, "Default scheme not available");
@@ -1010,9 +958,9 @@ PString PURL::AsString(UrlFormat fmt) const
   //const schemeStruct * schemeInfo = GetSchemeInfo(scheme);
   //if (schemeInfo == NULL)
   //  schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
-  const PURLScheme * schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(scheme);
+  const PURLScheme * schemeInfo = PFactory<PURLScheme>::CreateInstance(scheme);
   if (schemeInfo == NULL)
-    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+    schemeInfo = PFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
 
   return schemeInfo->AsString(fmt, *this);
 }
