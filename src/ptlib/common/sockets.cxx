@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.2 1994/08/21 23:43:02 robertj Exp $
+ * $Id: sockets.cxx,v 1.3 1994/11/28 12:38:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.2  1994/08/21 23:43:02  robertj
+ * Revision 1.3  1994/11/28 12:38:49  robertj
+ * Added DONT and WONT states.
+ *
+ * Revision 1.2  1994/08/21  23:43:02  robertj
  * Some implementation.
  *
  * Revision 1.1  1994/08/01  03:39:05  robertj
@@ -155,8 +158,16 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
               state = StateDo;
               break;
 
+            case DONT:
+              state = StateDont;
+              break;
+
             case WILL:
               state = StateWill;
+              break;
+
+            case WONT:
+              state = StateWont;
               break;
 
             default:
@@ -173,8 +184,18 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
           state = StateNormal;
           break;
 
+        case StateDont:
+          OnDont(*src);
+          state = StateNormal;
+          break;
+
         case StateWill:
           OnWill(*src);
+          state = StateNormal;
+          break;
+
+        case StateWont:
+          OnWont(*src);
           state = StateNormal;
           break;
 
@@ -214,6 +235,21 @@ IMPLEMENT_SEND_CMD(Do,   DO)
 IMPLEMENT_SEND_CMD(Dont, DONT)
 
 
+void PTelnetSocket::OnDo(BYTE code)
+{
+  if (debug)
+    PError << "DO " << (int)code << endl;
+  SendWont(code);
+}
+
+
+void PTelnetSocket::OnDont(BYTE code)
+{
+  if (debug)
+    PError << "DONT " << (int)code << endl;
+}
+
+
 void PTelnetSocket::OnWill(BYTE code)
 {
   if (debug)
@@ -222,11 +258,10 @@ void PTelnetSocket::OnWill(BYTE code)
 }
 
 
-void PTelnetSocket::OnDo(BYTE code)
+void PTelnetSocket::OnWont(BYTE code)
 {
   if (debug)
-    PError << "DO " << (int)code << endl;
-  SendWont(code);
+    PError << "WONT " << (int)code << endl;
 }
 
 
