@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.h,v $
+ * Revision 1.3  2002/08/05 05:40:45  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.2  2002/06/27 03:53:35  robertj
  * Cleaned up documentation and added Compare() function.
  *
@@ -37,6 +40,10 @@
 
 #ifndef _PMEMFILE
 #define _PMEMFILE
+
+#ifdef __GNUC__
+#pragma interface
+#endif
 
 
 /**This class is used to allow a block of memory to substitute for a disk file.

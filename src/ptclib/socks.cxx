@@ -1,13 +1,14 @@
 /*
- * main.cxx
+ * socks.cxx
  *
- * PWLib application source file for GetCyberPatrol
+ * PWLib application source file for SOCKS protocol
  *
- * Main program entry point.
- *
- * Copyright 98 Equivalence
+ * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: socks.cxx,v $
+ * Revision 1.6  2002/08/05 05:40:45  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.5  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -27,6 +28,11 @@
  */
 
 #include <ptlib.h>
+
+#ifdef __GNUC__
+#pragma implementation "socks.h"
+#endif
+
 #include <ptclib/socks.h>
 
 #define new PNEW
