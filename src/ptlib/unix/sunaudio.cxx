@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
+ * Revision 1.8  2002/03/27 06:53:47  robertj
+ * iSome more implementation, thanks Raimo Ruokonen
+ *
  * Revision 1.7  2002/02/09 00:52:01  robertj
  * Slight adjustment to API and documentation for volume functions.
  *
@@ -165,9 +168,18 @@ BOOL PSoundChannel::Open(const PString & device,
                          unsigned bitsPerSample)
 {
   Close();
+  if (!ConvertOSError(os_handle = ::open(device, (dir == Player ? O_WRONLY : O_RDONLY) ,0)))
+     return FALSE;
 
-  if (!ConvertOSError(os_handle = ::open(device, dir == Player ? O_RDONLY : O_WRONLY)))
-    return FALSE;
+  direction = dir;
+  if (dir == Player) {
+    int	flag = fcntl(os_handle, F_GETFL, 0)| O_NONBLOCK| O_NDELAY;
+
+    if (fcntl(os_handle, F_SETFL, flag) < 0) {
+      PTRACE(1,"F_SETFL fcntl ERROR");
+      return FALSE;
+    }
+  }
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
@@ -181,20 +193,63 @@ BOOL PSoundChannel::Close()
 
 BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
-                              unsigned bitsPerSample)
-{
-  Abort();
-
+                              unsigned bitsPerSample){
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
   PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
+
+  audio_info_t audio_info;
+  int err;
+
+  AUDIO_INITINFO(&audio_info);		// Change only the values needed below
+  if (direction == Player){
+    mSampleRate = audio_info.play.sample_rate = sampleRate;	// Output settings
+    mNumChannels = audio_info.play.channels = numChannels;
+    mBitsPerSample = audio_info.play.precision = bitsPerSample;
+    audio_info.play.encoding = AUDIO_ENCODING_LINEAR; 
+    audio_info.play.port &= AUDIO_HEADPHONE;
+    audio_info.play.port &= (~AUDIO_SPEAKER);	// No speaker output
+  } else {				//  Recorder
+    mSampleRate = audio_info.record.sample_rate = sampleRate;	// Input settings
+    mNumChannels = audio_info.record.channels = numChannels;
+    mBitsPerSample = audio_info.record.precision = bitsPerSample;
+    audio_info.record.encoding = AUDIO_ENCODING_LINEAR;
+    audio_info.record.port &= AUDIO_MICROPHONE;
+    audio_info.record.port &= (~AUDIO_LINE_IN);
+  }
+  err=::ioctl(os_handle,AUDIO_SETINFO,&audio_info);	// The actual setting of the parameters
+  if(err==EINVAL || err==EBUSY)
+     return FALSE;
+
+  err = ::ioctl(os_handle, AUDIO_GETINFO, &audio_info);	// Let's recheck the configuration...
+  if (direction == Player){
+    actualSampleRate = audio_info.play.sample_rate;
+//    PAssert(actualSampleRate==sampleRate && audio_info.play.precision==bitsPerSample && audio_info.play.encoding==AUDIO_ENCODING_LINEAR, PInvalidParameter);
+  }else{
+    actualSampleRate = audio_info.record.sample_rate;
+//    PAssert(actualSampleRate==sampleRate && audio_info.record.precision==bitsPerSample && audio_info.record.encoding==AUDIO_ENCODING_LINEAR, PInvalidParameter);
+  }
+  return TRUE;
 }
 
 
 BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
-  Abort();
-
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
+
+  audio_info_t audio_info;
+  int err;
+
+  AUDIO_INITINFO(&audio_info);		// Change only the values needed below
+  if (direction == Player)
+    audio_info.play.buffer_size = count*size;	// man audio says there is no way to set the buffer count... This doesn't affect the actual buffer size on Solaris ?
+  else
+    audio_info.record.buffer_size = count*size;		// Recorder
+
+  err = ioctl(os_handle,AUDIO_SETINFO,&audio_info);	// The actual setting of the parameters
+  if (err == EINVAL || err == EBUSY)
+    return FALSE;
+
+  return TRUE;
 }
 
 
@@ -204,9 +259,17 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-BOOL PSoundChannel::Write(const void * buffer, PINDEX length)
+BOOL PSoundChannel::Write(const void * buf, PINDEX len)
 {
-  return PChannel::Write(buffer, length);
+  return PChannel::Write(buf, len);
+
+/* Implementation based on OSS PSoundChannel::Write. This works, but no difference on sound when compared to the basic implementation...
+    while (!ConvertOSError(err=::write(os_handle, (void *)buf, len)))
+      if (GetErrorCode() != Interrupted){
+	        return FALSE;
+	}
+    return TRUE;
+*/
 }
 
 
