@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.13  2001/09/10 02:51:22  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.12  2001/06/01 00:53:59  robertj
  * Added certificate constructor that takes a PBYTEArray
  *
@@ -284,8 +288,8 @@ class PSSLChannel : public PIndirectChannel
     virtual BOOL Write(const void * buf, PINDEX len);
     virtual BOOL Close();
     virtual BOOL Shutdown(ShutdownValue) { return TRUE; }
-    virtual PString GetErrorText() const;
-    virtual BOOL ConvertOSError(int error);
+    virtual PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
+    virtual BOOL ConvertOSError(int error, ErrorGroup group = LastGeneralError);
 
     // New functions
     /**Accept a new inbound connection (server).
@@ -351,14 +355,7 @@ class PSSLChannel : public PIndirectChannel
 
     PSSLContext * GetContext() const { return context; }
 
-    /**This callback is executed when the SSL read function requires data.
-       Normally, it just calls read on the underlying channel but it can be
-       used to intercept data when requred
-
-       @return
-       Returns TRUE if data is available.
-     */
-    virtual BOOL RawSSLRead(PChannel * chan, void * buf, PINDEX & len);
+    virtual BOOL RawSSLRead(void * buf, PINDEX & len);
 
   protected:
     /**This callback is executed when the Open() function is called with

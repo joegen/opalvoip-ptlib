@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.33  2001/09/10 02:51:22  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.32  2001/06/04 10:13:08  robertj
  * Added compare function to compare value of os_handle.
  * Added has function based on os_handle value.
@@ -609,25 +613,44 @@ class PChannel : public PObject, public iostream {
       /// Miscellaneous error.
       Miscellaneous
     };
+
+    /**Error groups.
+       To aid in multithreaded applications where reading and writing may be
+       happening simultaneously, read and write errors are separated from
+       other errors.
+      */
+    enum ErrorGroup {
+      LastReadError,      /// Error during Read() operation
+      LastWriteError,     /// Error during Write() operation
+      LastGeneralError,   /// Error during other operation, eg Open()
+      NumErrorGroups
+    };
+
     /** Get normalised error code.
       Return the error result of the last file I/O operation in this object.
       @return Normalised error code.
       */
-    Errors GetErrorCode() const;
+    Errors GetErrorCode(
+      ErrorGroup group = NumErrorGroups   /// Error group to get
+    ) const;
 
     /** Get OS errro code.
       Return the operating system error number of the last file I/O
       operation in this object.
       @return Operating System error code.
       */
-    int GetErrorNumber() const;
+    int GetErrorNumber(
+      ErrorGroup group = NumErrorGroups   /// Error group to get
+    ) const;
 
       /** Get error message description.
         Return a string indicating the error message that may be displayed to
        the user. The error for the last I/O operation in this object is used.
       @return Operating System error description string.
        */
-    virtual PString GetErrorText() const;
+    virtual PString GetErrorText(
+      ErrorGroup group = NumErrorGroups   /// Error group to get
+    ) const;
 
       /** Get error message description.
         Return a string indicating the error message that may be displayed to
@@ -647,7 +670,12 @@ class PChannel : public PObject, public iostream {
        
        @return TRUE if there was no error.
      */
-    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
+    static BOOL ConvertOSError(
+      int libcReturnValue,
+      Errors & lastError,
+      int & osError
+    );
+
 
   protected:
     PChannel(const PChannel &);
@@ -661,8 +689,19 @@ class PChannel : public PObject, public iostream {
        
        @return TRUE if there was no error.
      */
-    virtual BOOL ConvertOSError(int error);
+    virtual BOOL ConvertOSError(
+      int libcReturnValue,
+      ErrorGroup group = LastGeneralError /// Error group to set
+    );
 
+    /**Set error values to those specified.
+       Return TRUE if errorCode is NoError, FALSE otherwise
+      */
+    BOOL SetErrorValues(
+      Errors errorCode,   /// Error code to translate.
+      int osError,        /// OS error number to translate.
+      ErrorGroup group = LastGeneralError /// Error group to set
+    );
 
     /** Read a character with specified timeout.
       This reads a single character from the channel waiting at most the
@@ -689,9 +728,9 @@ class PChannel : public PObject, public iostream {
     /// The operating system file handle return by standard open() function.
     int os_handle;
     /// The platform independant error code.
-    Errors lastError;
+    Errors lastErrorCode[NumErrorGroups+1];
     /// The operating system error number (eg as returned by errno).
-    int osError;
+    int lastErrorNumber[NumErrorGroups+1];
     /// Number of byte last read by the Read() function.
     PINDEX lastReadCount;
     /// Number of byte last written by the Write() function.
