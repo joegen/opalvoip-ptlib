@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.5  2003/05/07 02:40:58  dereks
+ * Fix to allow it to exit when the ::Terminate method called.
+ *
  * Revision 1.4  2003/04/28 14:30:02  craigs
  * Started rearranging code
  *
@@ -318,7 +321,6 @@ void PSDLDisplayThread::Terminate()
   PTRACE(3, "PSDL\tRequesting SDL thread termination");
 
   PWaitAndSignal m(mutex);
-
   // delete any pending frames
   if (nextEncFrame != NULL)
     delete nextEncFrame;
@@ -329,6 +331,7 @@ void PSDLDisplayThread::Terminate()
 
   // now signal the thread to finish
   threadRunning = FALSE;
+  commandSync.Signal();
 }
 
 void PSDLDisplayThread::RequestCloseWindow(BOOL isEncoding)
