@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.55  2002/10/17 07:17:42  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.54  2002/10/10 04:43:43  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -527,6 +530,27 @@ class PProcess : public PThread
       const PString & username  /// New effective user
     );
 
+    /**Get the maximum file handle value for the process.
+       For some platforms this is meaningless.
+
+       @return
+       user name of processes owner.
+     */
+    int GetMaxHandles() const;
+
+    /**Set the maximum number of file handles for the process.
+       For unix systems the user must be run with the approriate privileges
+       before this function can set the value above the system limit.
+
+       For some platforms this is meaningless.
+
+       @return
+       TRUE if successfully set the maximum file hadles.
+      */
+    BOOL SetMaxHandles(
+      int newLimit  /// New limit on file handles
+    );
+
     /**Get the default file to use in PConfig instances.
       */
     virtual PString GetConfigurationFile();
@@ -671,6 +695,9 @@ class PProcess : public PThread
 
     PTime programStartTime;
     // time at which process was intantiated, i.e. started
+
+    int maxHandles;
+    // Maximum number of file handles process can open.
 
 #if !defined(P_PLATFORM_HAS_THREADS)
 
