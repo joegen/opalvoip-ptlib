@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.12  2000/04/10 17:30:42  robertj
+ * Added [] operator for char access on ASN string classes.
+ *
  * Revision 1.11  2000/02/29 06:32:12  robertj
  * Added ability to remove optional field in sequence, thanks Dave Harvey.
  *
@@ -489,6 +492,7 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     operator const PString &() const { return value; }
     const PString & GetValue() const { return value; }
     void SetValue(const PString & v) { operator=(v); }
+    char operator[](PINDEX idx) const { return value[idx]; }
 
     void SetCharacterSet(ConstraintType ctype, const char * charSet);
     void SetCharacterSet(ConstraintType ctype, unsigned firstChar = 0, unsigned lastChar = 255);
