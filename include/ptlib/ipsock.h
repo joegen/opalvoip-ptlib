@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.75  2005/02/13 23:01:35  csoutheren
+ * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
+ * address range as RFC1918
+ *
  * Revision 1.74  2005/02/07 12:12:33  csoutheren
  * Expanded interface list routines to include IPV6 addresses
  * Added IPV6 to GetLocalAddress
@@ -447,26 +451,7 @@ class PIPSocket : public PSocket
         //    172.16.0.0  - 172.31.255.255
         //    192.168.0.0 - 192.168.255.255
         // For IPV6 this is specified as any address having "1111 1110 1” for the first nine bits
-        BOOL IsRFC1918() const 
-        { 
-#if P_HAS_IPV6
-          if (version == 6) 
-            return IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six);
-#endif
-          return (Byte1() == 10)
-                  ||
-                  (
-                    (Byte1() == 172)
-                    &&
-                    (Byte2() >= 16) && (Byte2() <= 31)
-                  )
-                  ||
-                  (
-                    (Byte1() == 192) 
-                    &&
-                    (Byte2() == 168)
-                  );
-        }
+        BOOL IsRFC1918() const ;
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
