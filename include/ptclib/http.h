@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.23 1997/01/12 04:15:19 robertj Exp $
+ * $Id: http.h,v 1.24 1997/03/28 04:40:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.24  1997/03/28 04:40:22  robertj
+ * Added tags for cookies.
+ *
  * Revision 1.23  1997/01/12 04:15:19  robertj
  * Globalised MIME tag strings.
  *
@@ -335,6 +338,8 @@ PDECLARE_CLASS(PHTTP, PInternetProtocol)
     static const PCaselessString ProxyAuthorizationTag;
     static const PCaselessString ProxyAuthenticateTag;
     static const PCaselessString ForwardedTag;
+    static const PCaselessString SetCookieTag;
+    static const PCaselessString CookieTag;
 
 
   protected:
