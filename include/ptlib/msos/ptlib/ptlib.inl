@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.1 1994/04/01 14:38:42 robertj Exp $
+ * $Id: ptlib.inl,v 1.2 1994/06/25 12:13:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,21 +8,36 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.1  1994/04/01 14:38:42  robertj
- * Initial revision
+ * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Synchronisation.
  *
+ * Revision 1.1  1994/04/01  14:38:42  robertj
+ * Initial revision
  */
+
+#include "../../common/osutil.inl"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-PINLINE PMilliseconds PTimer::Tick()
+#ifdef _WINDOWS
+
+PINLINE PTimeInterval PTimer::Tick()
+  { return GetTickCount(); }
+
+PINLINE unsigned PTimer::Resolution()
+  { return 55; }
+
+#else
+
+PINLINE PTimeInterval PTimer::Tick()
   { return clock()*CLOCKS_PER_SEC/1000; }
 
 PINLINE unsigned PTimer::Resolution()
   { return 1000/CLOCKS_PER_SEC; }
 
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,22 +56,26 @@ PINLINE BOOL PDirectory::Restart(int scanMask)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PFilePath
+
+PINLINE PString PFilePath::GetVolume() const
+  { return Left(Find(':')+1); }
+
+PINLINE PString PFilePath::GetPath() const
+  { return operator()(Find(':')+1, FindLast('\\')); }
+
+PINLINE PString PFilePath::GetTitle() const
+  { return operator()(FindLast('\\')+1, FindLast('.')-1); }
+
+PINLINE PString PFilePath::GetType() const
+  { return operator()(FindLast('.'), P_MAX_INDEX); }
+
+PINLINE PString PFilePath::GetFileName() const
+  { return operator()(FindLast('\\')+1, P_MAX_INDEX); }
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PFile
-
-PINLINE PString PFile::GetVolume() const
-  { return fullname(0, fullname.Find(':')); }
-
-PINLINE PString PFile::GetPath() const
-  { return fullname(fullname.Find(':')+1, fullname.FindLast('\\')); }
-
-PINLINE PString PFile::GetTitle() const
-  { return fullname(fullname.FindLast('\\')+1, fullname.FindLast('.')-1); }
-
-PINLINE PString PFile::GetType() const
-  { return fullname(fullname.FindLast('.'), P_MAX_INDEX); }
-
-PINLINE PString PFile::GetFileName() const
-  { return fullname(fullname.FindLast('\\')+1, P_MAX_INDEX); }
 
 PINLINE BOOL PFile::Exists(const PString & name)
   { return _access(name, 0) == 0; }
@@ -66,6 +85,28 @@ PINLINE BOOL PFile::Remove(const PString & name)
 
 PINLINE BOOL PFile::Rename(const PString & oldname, const PString & newname)
   { return rename(oldname, newname) == 0; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PThread
+
+PINLINE PThread * PThread::Current()
+  { return PProcess::Current()->currentThread; }
+
+PINLINE BOOL PThread::IsTerminated() const
+  { return status == Terminated; }
+
+PINLINE void PThread::Resume()
+  { Suspend(FALSE); }
+
+PINLINE BOOL PThread::IsSuspended() const
+  { return suspendCount > 0; }
+
+PINLINE void PThread::SetPriority(Priority priorityLevel)
+  { basePriority = priorityLevel; }
+
+PINLINE PThread::Priority PThread::GetPriority() const
+  { return basePriority; }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
