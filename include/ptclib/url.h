@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.27  2004/06/01 07:32:45  csoutheren
+ * Removed warning on Linux
+ *
  * Revision 1.26  2004/06/01 07:28:44  csoutheren
  * Changed URL parsing to use abstract factory code
  *
@@ -383,8 +386,9 @@ class PURL : public PObject
 };
 
 
-class PURLScheme
+class PURLScheme : public PObject
 {
+  PCLASSINFO(PURLScheme, PObject);
   public:
     virtual PString GetName() const = 0;
     virtual BOOL Parse(const PString & url, PURL & purl) const = 0;
