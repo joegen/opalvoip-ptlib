@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.100  2000/04/27 02:43:45  robertj
+ * Fixed warning about signedness mismatch.
+ *
  * Revision 1.99  2000/04/19 00:13:52  robertj
  * BeOS port changes.
  *
@@ -1359,7 +1362,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
-  if (strspn(dotNotation, "0123456789.") != dotNotation.GetLength())
+  if (::strspn(dotNotation, "0123456789.") < ::strlen(dotNotation))
     s_addr = 0;
   else {
     s_addr = inet_addr((const char *)dotNotation);
