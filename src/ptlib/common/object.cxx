@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.65  2003/02/11 08:05:55  robertj
+ * Fixed problems in dumping memory leaks and statistics as PMemoryHeap
+ *   is flagged deleted too early, thanks Diego Tártara
+ *
  * Revision 1.64  2003/02/06 21:03:13  dereks
  * Patch from Klaus Kaempf to fix warning message on compiling with gcc 3.x Thanks!
  *
@@ -445,12 +449,12 @@ PMemoryHeap::PMemoryHeap()
 
 PMemoryHeap::~PMemoryHeap()
 {
-  isDestroyed = TRUE;
-
   if (leakDumpStream != NULL) {
     InternalDumpStatistics(*leakDumpStream);
     InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
   }
+
+  isDestroyed = TRUE;
 
 #if defined(_WIN32)
   DeleteCriticalSection(&mutex);
