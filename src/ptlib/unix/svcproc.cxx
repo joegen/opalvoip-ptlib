@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.31  1999/08/17 09:29:22  robertj
+ * Added long name versions of parameters.
+ *
  * Revision 1.30  1999/08/12 12:12:47  robertj
  * GCC 2.95 compatibility.
  *
@@ -204,7 +207,17 @@ int PServiceProcess::_main(void *)
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
 
-  args.Parse("vdchxpktl:u:g:");
+  args.Parse("v-version."
+             "d-daemon."
+             "c-console."
+             "h-help."
+             "x-execute."
+             "p-pid-file."
+             "k-kill."
+             "t-terminate."
+             "l-log-file:"
+             "u-uid:"
+             "g-gid:");
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
@@ -257,21 +270,21 @@ int PServiceProcess::_main(void *)
 
   if (helpAndExit) {
     PError << "usage: [-c] -v|-d|-h|-x" << endl
-           << "        -h       output this help message and exit" << endl
-           << "        -v       display version information and exit" << endl
+           << "  -h --help           output this help message and exit" << endl
+           << "  -v --version        display version information and exit" << endl
 #ifndef BE_THREADS
-           << "        -d       run as a daemon" << endl
+           << "  -d --daemon         run as a daemon" << endl
 #endif
-           << "        -u uid   set user id to run as" << endl
-           << "        -g gid   set group id to run as" << endl
+           << "  -u --uid uid        set user id to run as" << endl
+           << "  -g --gid gid        set group id to run as" << endl
 #ifdef _PATH_VARRUN
-           << "        -p       do not write pid file" << endl
-           << "        -t       terminate process in pid file" << endl
-           << "        -k       kill process in pid file" << endl
+           << "  -p --pid-file       do not write pid file" << endl
+           << "  -t --terminate      terminate process in pid file" << endl
+           << "  -k --kill           kill process in pid file" << endl
 #endif
-           << "        -c       output messages to stdout rather than syslog" << endl
-           << "        -l file  output messages to file rather than syslog" << endl
-           << "        -x       execute as a normal program" << endl;
+           << "  -c --console        output messages to stdout rather than syslog" << endl
+           << "  -l --log-file file  output messages to file rather than syslog" << endl
+           << "  -x --execute        execute as a normal program" << endl;
     return 0;
   }
 
