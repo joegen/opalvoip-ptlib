@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.88  2003/12/19 04:30:24  csoutheren
+ * Changed GetLastReadCount and GetLastWriteCount to be virtual
+ *
  * Revision 1.87  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -496,17 +499,11 @@ PINLINE void PChannel::SetReadTimeout(const PTimeInterval & time)
 PINLINE PTimeInterval PChannel::GetReadTimeout() const
   { return readTimeout; }
 
-PINLINE PINDEX PChannel::GetLastReadCount() const
-  { return lastReadCount; }
-
 PINLINE void PChannel::SetWriteTimeout(const PTimeInterval & time)
   { writeTimeout = time; }
 
 PINLINE PTimeInterval PChannel::GetWriteTimeout() const
   { return writeTimeout; }
-
-PINLINE PINDEX PChannel::GetLastWriteCount() const
-  { return lastWriteCount; }
 
 PINLINE int PChannel::GetHandle() const
   { return os_handle; }
