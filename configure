@@ -2563,6 +2563,8 @@ cat >>confdefs.h <<\_ACEOF
 #define PNO_LONG_DOUBLE
 _ACEOF
 
+elif test ${OSTYPE} = Darwin ; then
+  STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
 fi
 
 echo "$as_me:$LINENO: checking if readdir_r has 2 parms" >&5
