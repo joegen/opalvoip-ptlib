@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: bsdaudio.cxx,v $
+ * Revision 1.2  1999/09/03 02:01:07  robertj
+ * Added missing functions so will at least link!
+ *
  * Revision 1.1  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
  *
@@ -126,6 +129,12 @@ PSoundChannel::~PSoundChannel()
 }
 
 
+BOOL PSoundChannel::Close()
+{
+  return PChannel::Close();
+}
+
+
 PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
   PStringArray array;
@@ -183,6 +192,12 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
+BOOL PSoundChannel::Write(const void * buffer, PINDEX length)
+{
+  return FALSE;
+}
+
+
 BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 {
   Abort();
@@ -209,6 +224,12 @@ BOOL PSoundChannel::HasPlayCompleted()
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
+}
+
+
+BOOL PSoundChannel::Read(void * buffer, PINDEX length)
+{
+  return PChannel::Read(buffer, length);
 }
 
 
