@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipe.cxx,v $
+ * Revision 1.4  2004/04/03 06:54:30  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.3  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -248,14 +251,15 @@ BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
 BOOL PPipeChannel::Close()
 {
   if (IsOpen()) {
+    os_handle = -1;
     if (hToChild != INVALID_HANDLE_VALUE)
       CloseHandle(hToChild);
     if (hFromChild != INVALID_HANDLE_VALUE)
       CloseHandle(hFromChild);
     if (hStandardError != INVALID_HANDLE_VALUE)
       CloseHandle(hStandardError);
-    TerminateProcess(info.hProcess, 1);
-    os_handle = -1;
+    if (!TerminateProcess(info.hProcess, 1))
+      return FALSE;
   }
   return TRUE;
 }

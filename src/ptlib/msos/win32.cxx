@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.134  2004/04/03 06:54:30  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.133  2004/02/23 23:52:20  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -1882,15 +1885,14 @@ PDebugStream::PDebugStream()
 
 PDebugStream::Buffer::Buffer()
 {
-  setb(buffer, &buffer[sizeof(buffer)-2]);
-  unbuffered(FALSE);
-  setp(base(), ebuf());
+  setg(buffer, buffer, &buffer[sizeof(buffer)-2]);
+  setp(buffer, &buffer[sizeof(buffer)-2]);
 }
 
 
 int PDebugStream::Buffer::overflow(int c)
 {
-  int bufSize = out_waiting();
+  int bufSize = pptr() - pbase();
 
   if (c != EOF) {
     *pptr() = (char)c;
