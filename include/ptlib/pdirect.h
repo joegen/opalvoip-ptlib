@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.6 1994/01/03 04:42:23 robertj Exp $
+ * $Id: pdirect.h,v 1.7 1994/01/13 03:17:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.6  1994/01/03 04:42:23  robertj
+ * Revision 1.7  1994/01/13 03:17:55  robertj
+ * Added functions to get the name of the volume the directory is contained in
+ *    and a function to determine if the directory is a root directory of the
+ *    volume (ie is does not have a parent directory).
+ *
+ * Revision 1.6  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.5  1993/12/31  06:45:38  robertj
@@ -82,6 +87,13 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
     // New member functions
     PString GetPath() const;
       // Return the full, unambigous, path name for the directory
+
+    PString GetVolume() const;
+      // Return the volume name that the directory is in.
+
+    BOOL IsRoot() const;
+      // Return TRUE if the directory is the root directory of a volume.
+      
 
     BOOL Change() const;
     PINLINE static BOOL Change(const PString & p);
