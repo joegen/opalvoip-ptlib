@@ -1,11 +1,14 @@
 /*
- * $Id: snmpclnt.cxx,v 1.2 1996/09/20 12:20:19 robertj Exp $
+ * $Id: snmpclnt.cxx,v 1.3 1996/10/08 13:06:24 robertj Exp $
  *
  * SNMP Client Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.3  1996/10/08 13:06:24  robertj
+ * Fixed SNMP timeout (GNU compatibility).
+ *
  * Revision 1.2  1996/09/20 12:20:19  robertj
  * Used read timeout instead of member variable.
  *
@@ -34,7 +37,7 @@ PSNMPClient::PSNMPClient(PINDEX retry, PINDEX timeout)
    version(SNMP_VERSION),
    retryMax(retry)
 {
-  SetReadTimeout(timeout*1000);
+  SetReadTimeout(PTimeInterval(0, timeout));
 }
 
 
@@ -44,7 +47,7 @@ PSNMPClient::PSNMPClient(const PString & host, PINDEX retry, PINDEX timeout)
    version(SNMP_VERSION),
    retryMax(retry)
 {
-  SetReadTimeout(timeout*1000);
+  SetReadTimeout(PTimeInterval(0, timeout));
   Open(PNEW PUDPSocket(host, SNMP_PORT));
   requestId = rand() % 0x7fffffff;
 }
