@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.4 1995/01/09 12:33:44 robertj Exp $
+ * $Id: pstring.h,v 1.5 1995/01/10 11:43:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.4  1995/01/09 12:33:44  robertj
+ * Revision 1.5  1995/01/10 11:43:41  robertj
+ * Removed PString parameter in stdarg function for GNU C++ compatibility.
+ *
+ * Revision 1.4  1995/01/09  12:33:44  robertj
  * Removed unnecesary return value from I/O functions.
  * Changed function names due to Mac port.
  *
@@ -681,10 +684,6 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
       const char * cfmt,    // C string for output format.
       ...                   // Extra parameters for $B$sprintf()$B$ call.
     );
-    PString & sprintf(
-      PString fmt,          // String for output format.
-      ...                   // Extra parameters for $B$sprintf()$B$ call.
-    );
     /* Concatenate a formatted output to the string. This is identical to the
        standard C library $B$sprintf()$B$ function, but appends its output
        to the string.
@@ -701,10 +700,6 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
     friend PString psprintf(
       const char * cfmt,    // C string for output format.
-      ...                   // Extra parameters for $B$sprintf()$B$ call.
-    );
-    friend PString psprintf(
-      PString fmt,          // String for output format.
       ...                   // Extra parameters for $B$sprintf()$B$ call.
     );
     /* Produce formatted output as a string. This is identical to the standard
