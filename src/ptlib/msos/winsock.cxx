@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.26 1996/10/26 01:43:18 robertj Exp $
+ * $Id: winsock.cxx,v 1.27 1996/10/31 12:39:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.27  1996/10/31 12:39:30  robertj
+ * Fixed bug in byte order of port numbers in IPX protocol.
+ *
  * Revision 1.26  1996/10/26 01:43:18  robertj
  * Removed translation of IP address to host order DWORD. Is ALWAYS net order.
  *
@@ -624,7 +627,7 @@ BOOL PIPXSocket::GetLocalAddress(Address & addr, WORD & portNum)
     return FALSE;
 
   AssignAddress(addr, sip);
-  portNum = sip.sa_socket;
+  portNum = Net2Host(sip.sa_socket);
   return TRUE;
 }
 
@@ -649,7 +652,7 @@ BOOL PIPXSocket::GetPeerAddress(Address & addr, WORD & portNum)
     return FALSE;
 
   AssignAddress(addr, sip);
-  portNum = sip.sa_socket;
+  portNum = Net2Host(sip.sa_socket);
   return TRUE;
 }
 
@@ -681,7 +684,7 @@ BOOL PIPXSocket::Connect(const Address & addr)
   memset(&sip, 0, sizeof(sip));
   sip.sa_family = AF_IPX;
   AssignAddress(sip, addr);
-  sip.sa_socket  = port;  // set the port
+  sip.sa_socket  = Host2Net(port);  // set the port
   if (ConvertOSError(os_connect((struct sockaddr *)&sip, sizeof(sip))))
     return TRUE;
 
@@ -709,12 +712,12 @@ BOOL PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
     sockaddr_ipx sip;
     memset(&sip, 0, sizeof(sip));
     sip.sa_family = AF_IPX;
-    sip.sa_socket = port;       // set the port
+    sip.sa_socket = Host2Net(port);       // set the port
 
     if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sip, sizeof(sip)))) {
       int size = sizeof(sip);
       if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sip, &size))) {
-        port = sip.sa_socket;
+        port = Net2Host(sip.sa_socket);
         return TRUE;
       }
     }
@@ -734,7 +737,7 @@ BOOL PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
   int recvResult = os_recvfrom(buf, len, 0, (struct sockaddr *)&sip, &addrLen);
   if (ConvertOSError(recvResult)) {
     AssignAddress(addr, sip);
-    port = sip.sa_socket;
+    port = Net2Host(sip.sa_socket);
 
     lastReadCount = recvResult;
   }
@@ -750,7 +753,7 @@ BOOL PIPXSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WOR
   sockaddr_ipx sip;
   sip.sa_family = AF_IPX;
   AssignAddress(sip, addr);
-  sip.sa_socket = port;
+  sip.sa_socket = Host2Net(port);
   int sendResult = os_sendto(buf, len, 0, (struct sockaddr *)&sip, sizeof(sip));
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
