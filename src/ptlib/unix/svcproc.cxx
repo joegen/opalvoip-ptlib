@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.47  2001/03/28 05:36:14  robertj
+ * Added milliseconds to system log time output.
+ *
  * Revision 1.46  2001/03/24 00:49:02  robertj
  * Added status indication command for services
  *
@@ -181,7 +184,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
       out = new ofstream(systemLogFile, ios::app);
 
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss ");
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
     PString threadName = PThread::Current()->GetThreadName();
     if (!threadName)
       *out << setw(15) << threadName.Left(15);
