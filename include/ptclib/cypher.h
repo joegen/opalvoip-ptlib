@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.6 1996/03/17 05:47:00 robertj Exp $
+ * $Id: cypher.h,v 1.7 1996/07/15 10:29:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.7  1996/07/15 10:29:38  robertj
+ * Changed memory block cypher conversion functions to be void *.
+ * Changed key types to be structures rather than arrays to avoid pinter/reference confusion by compilers.
+ *
  * Revision 1.6  1996/03/17 05:47:00  robertj
  * Changed secured config to allow for expiry dates.
  *
@@ -60,16 +64,20 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
       const PBYTEArray & data  // Data block to be part of the MD5
     );
     void Process(
-      const BYTE * dataBlock,  // Pointer to data to be part of the MD5
+      const void * dataBlock,  // Pointer to data to be part of the MD5
       PINDEX length            // Length of the data block.
     );
     // Incorporate the specified data into the message digest.
 
-    typedef BYTE Code[16];
+    class Code {
+      private:
+        PUInt32l value[4];
+      friend class PMessageDigest5;
+    };
 
     PString Complete();
     void Complete(
-      Code result   // The resultant 128 bit MD5 code
+      Code & result   // The resultant 128 bit MD5 code
     );
     /* Complete the message digest and return the magic number result.
        The parameterless form returns the MD5 code as a Base64 string.
@@ -84,30 +92,30 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
     );
     static void Encode(
       const PString & str,     // String to be encoded to MD5
-      Code result              // The resultant 128 bit MD5 code
+      Code & result            // The resultant 128 bit MD5 code
     );
     static PString Encode(
       const char * cstr        // C String to be encoded to MD5
     );
     static void Encode(
       const char * cstr,       // C String to be encoded to MD5
-      Code result              // The resultant 128 bit MD5 code
+      Code & result            // The resultant 128 bit MD5 code
     );
     static PString Encode(
       const PBYTEArray & data  // Data block to be encoded to MD5
     );
     static void Encode(
       const PBYTEArray & data, // Data block to be encoded to MD5
-      Code result              // The resultant 128 bit MD5 code
+      Code & result            // The resultant 128 bit MD5 code
     );
     static PString Encode(
-      const BYTE * dataBlock,  // Pointer to data to be encoded to MD5
+      const void * dataBlock,  // Pointer to data to be encoded to MD5
       PINDEX length            // Length of the data block.
     );
     static void Encode(
-      const BYTE * dataBlock,  // Pointer to data to be encoded to MD5
+      const void * dataBlock,  // Pointer to data to be encoded to MD5
       PINDEX length,           // Length of the data block.
-      Code result              // The resultant 128 bit MD5 code
+      Code & result            // The resultant 128 bit MD5 code
     );
     /* Encode the data in memory to and MD5 hash value.
     
@@ -131,6 +139,18 @@ PDECLARE_CLASS(PCypher, PObject)
  */
 
   public:
+    enum BlockChainMode {
+      ElectronicCodebook,
+        ECB = ElectronicCodebook,
+      CypherBlockChaining,
+        CBC = CypherBlockChaining,
+      OutputFeedback,
+        OFB = OutputFeedback,
+      CypherFeedback,
+        CFB = CypherFeedback,
+      NumBlockChainModes
+    };
+
   // New functions for class
     PString Encode(
       const PString & str       // Clear text string to be encoded.
@@ -205,12 +225,14 @@ PDECLARE_CLASS(PCypher, PObject)
 
   protected:
     PCypher(
-      PINDEX blockSize      // Size of encryption blocks (in bits)
+      PINDEX blockSize,          // Size of encryption blocks (in bits)
+      BlockChainMode chainMode   // Block chain mode
     );
     PCypher(
-      PINDEX blockSize,     // Size of encryption blocks (in bits)
-      const BYTE * keyData, // Key for the encryption/decryption algorithm.
-      PINDEX keyLength      // Length of the key.
+      const void * keyData,    // Key for the encryption/decryption algorithm.
+      PINDEX keyLength,        // Length of the key.
+      PINDEX blockSize,        // Size of encryption blocks (in bits)
+      BlockChainMode chainMode // Block chain mode
     );
     /* Create a new encryption object instance.
      */
@@ -222,21 +244,22 @@ PDECLARE_CLASS(PCypher, PObject)
     // Initialise the encoding/decoding sequence.
 
     virtual void EncodeBlock(
-      const BYTE * in,    // Pointer to clear n bit block.
-      BYTE * out          // Pointer to coded n bit block.
+      const void * in,    // Pointer to clear n bit block.
+      void * out          // Pointer to coded n bit block.
     ) = 0;
     // Encode an n bit block of memory according to the encryption algorithm.
 
 
     virtual void DecodeBlock(
-      const BYTE * in,  // Pointer to coded n bit block.
-      BYTE * out        // Pointer to clear n bit block.
+      const void * in,  // Pointer to coded n bit block.
+      void * out        // Pointer to clear n bit block.
     ) = 0;
     // Dencode an n bit block of memory according to the encryption algorithm.
 
 
     PBYTEArray key;
     PINDEX blockSize;
+    BlockChainMode chainMode;
 };
 
 
@@ -249,11 +272,16 @@ PDECLARE_CLASS(PTEACypher, PCypher)
  */
 
   public:
-    typedef BYTE Key[16];
+    struct Key {
+      BYTE value[16];
+    };
 
-    PTEACypher();
     PTEACypher(
-      const BYTE * keyData  // Key for the encryption/decryption algorithm.
+      BlockChainMode chainMode = ElectronicCodebook
+    );
+    PTEACypher(
+      const Key & keyData,     // Key for the encryption/decryption algorithm.
+      BlockChainMode chainMode = ElectronicCodebook   // Block chain mode
     );
     /* Create a new TEA encryption object instance. The parameterless version
        automatically generates a new, random, key.
@@ -261,18 +289,18 @@ PDECLARE_CLASS(PTEACypher, PCypher)
 
 
     void SetKey(
-      const BYTE * newKey    // Variable to take the key used by cypher.
+      const Key & newKey    // Variable to take the key used by cypher.
     );
     // Set the key used by this encryption method.
 
     void GetKey(
-      Key newKey    // Variable to take the key used by cypher.
+      Key & newKey    // Variable to take the key used by cypher.
     ) const;
     // Get the key used by this encryption method.
 
 
     static void GenerateKey(
-      Key newKey    // Variable to take the newly generated key.
+      Key & newKey    // Variable to take the newly generated key.
     );
     // Generate a new key suitable for use for encryption using random data.
 
@@ -284,14 +312,14 @@ PDECLARE_CLASS(PTEACypher, PCypher)
     // Initialise the encoding/decoding sequence.
 
     virtual void EncodeBlock(
-      const BYTE * in,  // Pointer to clear n bit block.
-      BYTE * out        // Pointer to coded n bit block.
+      const void * in,  // Pointer to clear n bit block.
+      void * out        // Pointer to coded n bit block.
     );
     // Encode an n bit block of memory according to the encryption algorithm.
 
     virtual void DecodeBlock(
-      const BYTE * in,  // Pointer to coded n bit block.
-      BYTE * out        // Pointer to clear n bit block.
+      const void * in,  // Pointer to coded n bit block.
+      void * out        // Pointer to clear n bit block.
     );
     // Dencode an n bit block of memory according to the encryption algorithm.
 
@@ -309,12 +337,12 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
   public:
     PSecureConfig(
-      const PTEACypher::Key productKey,     // Key to decrypt validation code.
-      const PStringArray  & securedKeys,    // List of secured keys.
+      const PTEACypher::Key & productKey,    // Key to decrypt validation code.
+      const PStringArray    & securedKeys,   // List of secured keys.
       Source src = Application        // Standard source for the configuration.
     );
     PSecureConfig(
-      const PTEACypher::Key productKey,     // Key to decrypt validation code.
+      const PTEACypher::Key & productKey,   // Key to decrypt validation code.
       const char * const * securedKeyArray, // List of secured keys.
       PINDEX count,                         // Number of secured keys in list.
       Source src = Application        // Standard source for the configuration.
@@ -365,7 +393,7 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
      */
 
     void GetProductKey(
-      PTEACypher::Key productKey  // Variable to receive the product key.
+      PTEACypher::Key & productKey  // Variable to receive the product key.
     ) const;
     /* Get the pending prefix name in the configuration file section.
 
