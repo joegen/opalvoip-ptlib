@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.69  2001/03/21 06:29:31  robertj
+ * Fixed bug in calling OnConfigChanged after service macros are loaded,
+ *   should be before so state can be changed before the macros translated.
+ *
  * Revision 1.68  2001/03/19 02:41:53  robertj
  * Made sure HTTP listener thread is shut down in OnStop().
  *
@@ -614,14 +618,14 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
   PSYSTEMLOG(Debug3, "Post to " << request.url << '\n' << data);
   BOOL retval = PHTTPConfig::Post(request, data, reply);
 
+  if (request.code == PHTTP::OK)
+    process.BeginRestartSystem();
+
   PServiceHTML::ProcessMacros(request, reply,
                               GetURL().AsString(PURL::PathOnly).Mid(1),
                               PServiceHTML::LoadFromFile);
-
   OnLoadedText(request, reply);
 
-  if (request.code == PHTTP::OK)
-    process.BeginRestartSystem();
   return retval;
 }
 
