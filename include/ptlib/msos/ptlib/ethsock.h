@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.4  1998/11/20 03:17:42  robertj
+ * Split rad and write buffers to separate pools.
+ *
  * Revision 1.3  1998/09/24 03:30:01  robertj
  * Added open software license.
  *
@@ -44,6 +47,8 @@ class PWin32PacketDriver;
 class PWin32SnmpLibrary;
 class PWin32PacketBuffer;
 
+PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
+
 
 #include "../../common/ptlib/ethsock.h"
   public:
@@ -54,8 +59,8 @@ class PWin32PacketBuffer;
     PWin32PacketDriver * driver;
     PWin32SnmpLibrary  * snmp;
     PString              interfaceName;
-    PINDEX               numBuffers;
-    PWin32PacketBuffer * buffers;
+    PWin32PackBufArray   readBuffers;
+    PWin32PackBufArray   writeBuffers;
 };
 
 
