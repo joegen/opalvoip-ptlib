@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.37  2002/04/09 02:30:18  robertj
+ * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+ *
  * Revision 1.36  2002/01/26 23:55:55  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -178,7 +181,7 @@ class PChannelStreamBuffer : public streambuf {
     virtual int overflow(int=EOF);
     virtual int underflow();
     virtual int sync();
-#if defined(__MWERKS__) || defined(GCC3)
+#if defined(__MWERKS__) || __GNUC__ >= 3
     virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
 #else
     virtual streampos seekoff(streamoff, ios::seek_dir, int);

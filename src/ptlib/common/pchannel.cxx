@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.18  2002/04/09 02:30:18  robertj
+ * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+ *
  * Revision 1.17  2002/01/26 23:57:45  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -166,7 +169,7 @@ int PChannelStreamBuffer::sync()
 
 
 streampos PChannelStreamBuffer::seekoff(streamoff off,
-#if defined(__MWERKS__) || defined(GCC3)
+#if defined(__MWERKS__) || __GNUC__ >= 3
                                         ios::seekdir dir, ios::openmode)
 #else
                                         ios::seek_dir dir, int)

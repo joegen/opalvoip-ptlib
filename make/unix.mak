@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.124  2002/04/09 02:30:18  robertj
+# Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+#
 # Revision 1.123  2002/04/02 15:07:02  rogerh
 # Specify path to expat header and library if expat is in /usr/local.
 # Required for FreeBSD. Reported by Vlad Marchenko <vlad@infonet.com.ua>
@@ -981,16 +984,6 @@ endif
 
 ifndef RANLIB
 RANLIB := ranlib
-endif
-
-
-# We want to be GCC 3.0 compatible
-ifeq ($(shell $(CPLUS) --version | sed 's/\..*//'),3)
-USE_GCC3 = 1
-endif
-
-ifdef USE_GCC3
-STDCCFLAGS	+= -DGCC3 -D__USE_STL__
 endif
 
 

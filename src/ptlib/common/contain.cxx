@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.111  2002/04/09 02:30:18  robertj
+ * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+ *
  * Revision 1.110  2002/02/15 04:30:39  robertj
  * Added PString::Empty() to return the primordial empty string. Saves on a
  *   couple of memory allocations for every empty string ever used.
@@ -2147,7 +2150,7 @@ int PStringStream::Buffer::sync()
 }
 
 streampos PStringStream::Buffer::seekoff(streamoff off,
-#if defined(__MWERKS__) || defined(GCC3)
+#if defined(__MWERKS__) || __GNUC__ >= 3
                                  ios::seekdir dir, ios::openmode mode)
 #else
                                  ios::seek_dir dir, int mode)
