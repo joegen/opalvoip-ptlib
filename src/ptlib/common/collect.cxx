@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.22 1996/03/26 00:52:38 robertj Exp $
+ * $Id: collect.cxx,v 1.23 1996/05/26 03:46:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.23  1996/05/26 03:46:24  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.22  1996/03/26 00:52:38  robertj
  * Fixed bug in dictionary decrementing size when removing element even if already removed.
  *
@@ -405,7 +408,7 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
 
 PObject * PAbstractList::GetAt(PINDEX index) const
 {
-  return SetCurrent(index) ? info->lastElement->data : NULL;
+  return SetCurrent(index) ? info->lastElement->data : (PObject *)NULL;
 }
 
 
@@ -639,7 +642,7 @@ PObject * PAbstractSortedList::RemoveAt(PINDEX index)
   Element * node = info->root->OrderSelect(index+1);
   PObject * data = node->data;
   RemoveElement(node);
-  return reference->deleteObjects ? NULL : data;
+  return reference->deleteObjects ? (PObject *)NULL : data;
 }
 
 
@@ -1398,7 +1401,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 PObject * PAbstractDictionary::GetAt(const PObject & key) const
 {
   Element * element = hashTable->GetElementAt(key);
-  return element != NULL ? element->data : NULL;
+  return element != NULL ? element->data : (PObject *)NULL;
 }
 
 
