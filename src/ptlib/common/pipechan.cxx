@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.4  1998/10/26 09:11:06  robertj
+ * Added ability to separate out stdout from stderr on pipe channels.
+ *
  * Revision 1.3  1998/09/23 06:22:31  robertj
  * Added open source copyright license.
  *
@@ -51,28 +54,36 @@
 PBASEARRAY(PConstCharStarArray, const char *);
 
 PPipeChannel::PPipeChannel(const PString & subProgram,
-                const PStringArray & arguments, OpenMode mode, BOOL searchPath)
+                           const PStringArray & arguments,
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate)
 {
   PConstCharStarArray args(arguments.GetSize()+1);
   PINDEX i;
   for (i = 0; i < arguments.GetSize(); i++)
     args[i] = arguments[i];
   args[i] = NULL;
-  Construct(subProgram, args, mode, searchPath);
+  Construct(subProgram, args, mode, searchPath, stderrSeparate);
 }
 
 
 PPipeChannel::PPipeChannel(const PString & subProgram,
-                                                OpenMode mode, BOOL searchPath)
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate)
 {
-  Construct(subProgram, NULL, mode, searchPath);
+  Construct(subProgram, NULL, mode, searchPath, stderrSeparate);
 }
 
 
 PPipeChannel::PPipeChannel(const PString & subProgram,
-                const char * const * arguments, OpenMode mode, BOOL searchPath)
+                           const char * const * arguments,
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate)
 {
-  Construct(subProgram, arguments, mode, searchPath);
+  Construct(subProgram, arguments, mode, searchPath, stderrSeparate);
 }
 
 
