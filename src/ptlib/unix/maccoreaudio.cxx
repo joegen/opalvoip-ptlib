@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.4  2003/03/03 09:04:23  rogerh
+ * Add changes from Shawn. Plus I added some os_handle fixes.
+ *
  * Revision 1.3  2003/03/02 06:44:51  rogerh
  * More updates from Shawn.
  *
@@ -130,7 +133,8 @@ void PSoundChannel::Construct()
   caCBData = NULL;
   caConverterRef = NULL;
 
-  os_handle = 0;  // pretends to be a loopback device?
+  os_handle = -1; // set channel closed.
+0;  // set to a non negative value so IsOpen() returns true
 }
 
 
@@ -391,6 +395,8 @@ BOOL PSoundChannel::Open(const PString & device,
     return FALSE;
   }
 
+  os_handle = 0;  // tell PChannel (and IsOpen()) that the channel is open.
+
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
@@ -452,37 +458,41 @@ BOOL PSoundChannel::Close()
 {
   OSStatus theStatus;
 
-  if (direction == Player) {
-    AudioDeviceStop(caDevID, PlaybackIOProc);
-    AudioDeviceRemoveIOProc(caDevID, PlaybackIOProc);
-  }
-  else {
-    AudioDeviceStop(caDevID, RecordIOProc);
-    AudioDeviceRemoveIOProc(caDevID, RecordIOProc);
-  }
-
-  if (caConverterRef) {
-    theStatus = AudioConverterDispose((AudioConverterRef)caConverterRef);
-    if (theStatus != 0) {
-      PTRACE(1, "AudioConverterDispose failed");
+  if (caDevID > 0) {
+    if (direction == Player) {
+      AudioDeviceStop(caDevID, PlaybackIOProc);
+      AudioDeviceRemoveIOProc(caDevID, PlaybackIOProc);
     }
-    caConverterRef = NULL;
+    else {
+      AudioDeviceStop(caDevID, RecordIOProc);
+      AudioDeviceRemoveIOProc(caDevID, RecordIOProc);
+    }
+    caDevID = -1;
+    
+    if (caConverterRef) {
+      theStatus = AudioConverterDispose((AudioConverterRef)caConverterRef);
+      if (theStatus != 0) {
+	PTRACE(1, "AudioConverterDispose failed");
+      }
+      caConverterRef = NULL;
+    }
+    
+    if (caCBData) {
+      free(caCBData);
+      caCBData = NULL;
+    }
+
+    if (caBuf) {
+      free(caBuf);
+      caBuf = NULL;
+    }
+
+    pthread_mutex_destroy(&caMutex);
+    pthread_cond_destroy(&caCond);
   }
 
-  if (caCBData) {
-    free(caCBData);
-    caCBData = NULL;
-  }
-
-  if (caBuf) {
-    free(caBuf);
-    caBuf = NULL;
-  }
-
-  pthread_mutex_destroy(&caMutex);
-  pthread_cond_destroy(&caCond);
-
-  return PChannel::Close();
+  os_handle = -1;  // tell PChannel (and IsOpen()) that the channel is closed.
+  return TRUE;
 }
 
 
