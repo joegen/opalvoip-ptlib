@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.10 1995/06/17 11:12:29 robertj Exp $
+ * $Id: dict.h,v 1.11 1996/01/23 13:11:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.11  1996/01/23 13:11:12  robertj
+ * Mac Metrowerks compiler support.
+ *
  * Revision 1.10  1995/06/17 11:12:29  robertj
  * Documentation update.
  *
@@ -798,7 +801,8 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
       : PAbstractDictionary(dummy, c) { }
 
   private:
-    PObject * GetAt(const PObject &) const { return NULL; }
+    PObject * GetAt(const PObject & key) const
+      { return PAbstractDictionary::GetAt(key); }
 };
 
 
@@ -954,11 +958,16 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       : PAbstractDictionary(dummy, c) { }
 
   private:
-    PObject * GetAt(PINDEX) const { return NULL; }
-    PObject * GetAt(const PObject &) const { return NULL; }
-    BOOL SetAt(PINDEX, PObject *) { return FALSE; }
-    BOOL SetAt(const PObject &, PObject *) { return FALSE; }
-    BOOL SetDataAt(PINDEX, PObject *) { return FALSE; }
+    PObject * GetAt(PINDEX idx) const
+      { return PAbstractDictionary::GetAt(idx); }
+    PObject * GetAt(const PObject & key) const
+      { return PAbstractDictionary::GetAt(key); }
+    BOOL SetAt(PINDEX idx, PObject * obj)
+      { return PAbstractDictionary::SetAt(idx, obj); }
+    BOOL SetAt(const PObject & key, PObject * obj)
+      { return PAbstractDictionary::SetAt(key, obj); }
+    BOOL SetDataAt(PINDEX idx, PObject * obj)
+      { return PAbstractDictionary::SetDataAt(idx, obj); }
 };
 
 
@@ -1008,6 +1017,17 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 #define PDECLARE_DICTIONARY(cls, K, D) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
+  private: \
+    PObject * GetAt(PINDEX idx) const \
+      { return PAbstractDictionary::GetAt(idx); } \
+    PObject * GetAt(const PObject & key) const \
+      { return PAbstractDictionary::GetAt(key); } \
+    BOOL SetAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetAt(idx, obj); } \
+    BOOL SetAt(const PObject & key, PObject * obj) \
+      { return PAbstractDictionary::SetAt(key, obj); } \
+    BOOL SetDataAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
@@ -1029,6 +1049,17 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 #define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
+  private: \
+    PObject * GetAt(PINDEX idx) const \
+      { return PAbstractDictionary::GetAt(idx); } \
+    PObject * GetAt(const PObject & key) const \
+      { return PAbstractDictionary::GetAt(key); } \
+    BOOL SetAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetAt(idx, obj); } \
+    BOOL SetAt(const PObject & key, PObject * obj) \
+      { return PAbstractDictionary::SetAt(key, obj); } \
+    BOOL SetDataAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
@@ -1043,10 +1074,6 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (POrdinalKey *)PAbstractDictionary::GetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
      {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}\
-    inline virtual BOOL SetAt(PINDEX idx, PObject * obj) \
-      { return PAbstractDictionary::SetAt(idx, obj); } \
-    inline virtual BOOL SetAt(const PObject & key, PObject * obj) \
-      { return PAbstractDictionary::SetAt(key, obj); } \
     inline virtual BOOL SetAt(const K & key, PINDEX ordinal) \
       { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); } \
     inline const K & GetKeyAt(PINDEX index) const \
