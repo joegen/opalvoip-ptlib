@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psharedptr.h,v $
+ * Revision 1.2  2004/10/01 08:08:50  csoutheren
+ * Added Reset and auto_ptr conversions
+ *
  * Revision 1.1  2004/10/01 07:17:18  csoutheren
  * Added PSharedptr class
  *
@@ -60,6 +63,9 @@ class PSharedPtr : public PContainer
       : PContainer(c)
     { CopyContents(c); } 
 
+    PSharedPtr(std::auto_ptr<element_type> & v)
+    { ptr = v.release(); }
+
     PSharedPtr & operator=(const PSharedPtr & c) 
     { AssignContents(c); return *this; } 
 
@@ -74,6 +80,9 @@ class PSharedPtr : public PContainer
 
     T * Get() const
     { return ptr; }
+
+    void Reset() const
+    { AssignContents(PSharedPtr()); }
 
     T & operator*() const
     { return *ptr; }
