@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.22  2001/08/06 19:35:27  rogerh
+# Include the relevent header file based on the version of OpenBSD.
+# Submitted by Marius Aamodt Eriksen <marius@umich.edu>
+#
 # Revision 1.21  2001/07/30 07:45:54  robertj
 # Added "all" target with double colon.
 #
@@ -117,8 +121,8 @@ endif
 
 
 # override P_SHAREDLIB for specific targets
-optshared   debugshared   bothshared   : P_SHAREDLIB=1
-optnoshared debugnoshared bothnoshared : P_SHAREDLIB=0
+optshared   debugshared   bothshared   :: P_SHAREDLIB=1
+optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # all these targets are just passed to all subdirectories
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
