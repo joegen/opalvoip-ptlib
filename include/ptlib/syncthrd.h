@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.8  2002/04/30 06:21:54  robertj
+ * Fixed PReadWriteMutex class to implement text book algorithm!
+ *
  * Revision 1.7  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -288,8 +291,15 @@ class PReadWriteMutex : public PObject
     void EndWrite();
 
   protected:
-    PMutex starvationPreventer;
-    PIntCondMutex readers;
+    PMutex   readMutex;
+    PMutex   readerCountMutex;
+    unsigned readerCount;
+
+    PMutex   writeMutex;
+    PMutex   writerCountMutex;
+    unsigned writerCount;
+
+    PMutex   starvationPreventer;
 };
 
 
