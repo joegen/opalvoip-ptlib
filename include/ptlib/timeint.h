@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.11 1995/01/18 09:01:32 robertj Exp $
+ * $Id: timeint.h,v 1.12 1995/03/14 12:42:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.11  1995/01/18 09:01:32  robertj
+ * Revision 1.12  1995/03/14 12:42:50  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.11  1995/01/18  09:01:32  robertj
  * Documentation.
  *
  * Revision 1.10  1995/01/09  12:29:41  robertj
@@ -60,8 +63,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
    (found in the standard C header file limits.h) milliseconds. This is
    approximately 596 hours for 32 bit integers.
    
-   There is a constant, $B$PMaxTimeInterval$B$ which defines the maximum
-   number of milliseconds that a time interval may be.
+   There is a constant, <CODE>PMaxTimeInterval</CODE> which defines the
+   maximum number of milliseconds that a time interval may be.
  */
 
   public:
@@ -75,11 +78,14 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     /* Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-          $F$ PTimeInterval(120000)
+
+       <PRE><CODE>
+              PTimeInterval(120000)
               PTimeInterval(60000, 60)
               PTimeInterval(60000, 0, 1)
               PTimeInterval(0, 60, 1)
-              PTimeInterval(0, 0, 2) $F$
+              PTimeInterval(0, 0, 2)
+       </CODE></PRE>
      */
 
 
@@ -88,7 +94,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     /* Create a new copy of the time interval. It is the responsibility of the
        called to delete the object.
        
-       Returns: new time interval on heap.
+       <H2>Returns:</H2>
+       new time interval on heap.
      */
 
     virtual Comparison Compare(
@@ -97,7 +104,9 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     /* Rank the two time intervals. This ranks the intervals as you would
        expect for two integers.
        
-       Returns: $B$EqualTo$B$, $B$LessThan$B$ or $B$GreaterThan$B$.
+       <H2>Returns:</H2>
+       <CODE>EqualTo</CODE>, <CODE>LessThan</CODE> or <CODE>GreaterThan</CODE>
+       depending on their relative rank.
      */
 
     virtual void PrintOn(
@@ -119,31 +128,36 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     long GetMilliseconds() const;
     /* Get the number of milliseconds for the time interval.
     
-       Returns: long integer number of milliseconds.
+       <H2>Returns:</H2>
+       long integer number of milliseconds.
      */
 
     long GetSeconds() const;
     /* Get the number of whole seconds for the time interval.
     
-       Returns: long integer number of seconds.
+       <H2>Returns:</H2>
+       long integer number of seconds.
      */
 
     long GetMinutes() const;
     /* Get the number of whole minutes for the time interval.
     
-       Returns: integer number of minutes.
+       <H2>Returns:</H2>
+       integer number of minutes.
      */
 
     int GetHours() const;
     /* Get the number of whole hours for the time interval.
     
-       Returns: integer number of hours.
+       <H2>Returns:</H2>
+       integer number of hours.
      */
 
     int GetDays() const;
     /* Get the number of whole days for the time interval.
     
-       Returns: integer number of days.
+       <H2>Returns:</H2>
+       integer number of days.
      */
 
 
@@ -157,11 +171,13 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     /* Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-          $F$ SetInterval(120000)
+       <PRE><CODE>
+              SetInterval(120000)
               SetInterval(60000, 60)
               SetInterval(60000, 0, 1)
               SetInterval(0, 60, 1)
-              SetInterval(0, 0, 2) $F$
+              SetInterval(0, 0, 2)
+       </CODE></PRE>
      */
 
     PTimeInterval operator+(
@@ -169,7 +185,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     ) const;
     /* Add the two time intervals yielding a third time interval.
     
-       Returns: sum of the time intervals.
+       <H2>Returns:</H2>
+       sum of the time intervals.
      */
 
     PTimeInterval & operator+=(
@@ -177,7 +194,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     );
     /* Add the second time interval to the first time interval.
     
-       Returns: reference to first time interval.
+       <H2>Returns:</H2>
+       reference to first time interval.
      */
 
     PTimeInterval operator-(
@@ -185,7 +203,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     ) const;
     /* Subtract the two time intervals yielding a third time interval.
     
-       Returns: difference of the time intervals.
+       <H2>Returns:</H2>
+       difference of the time intervals.
      */
 
     PTimeInterval & operator-=(
@@ -193,7 +212,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     );
     /* Subtract the second time interval from the first time interval.
     
-       Returns: reference to first time interval.
+       <H2>Returns:</H2>
+       reference to first time interval.
      */
 
     BOOL operator==(
@@ -206,7 +226,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are equal.
+       <H2>Returns:</H2>
+       TRUE if intervals are equal.
      */
 
     BOOL operator!=(
@@ -219,7 +240,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are not equal.
+       <H2>Returns:</H2>
+       TRUE if intervals are not equal.
      */
 
     BOOL operator> (
@@ -232,7 +254,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are greater than.
+       <H2>Returns:</H2>
+       TRUE if intervals are greater than.
      */
 
     BOOL operator>=(
@@ -245,7 +268,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are greater than or equal.
+       <H2>Returns:</H2>
+       TRUE if intervals are greater than or equal.
      */
 
     BOOL operator< (
@@ -258,7 +282,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are less than.
+       <H2>Returns:</H2>
+       TRUE if intervals are less than.
      */
 
     BOOL operator<=(
@@ -271,7 +296,8 @@ PDECLARE_CLASS(PTimeInterval, PObject)
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       Returns: TRUE if intervals are less than or equal.
+       <H2>Returns:</H2>
+       TRUE if intervals are less than or equal.
      */
 
 
