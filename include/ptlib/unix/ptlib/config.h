@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.2 1995/04/04 18:31:51 craigs Exp $
+ * $Id: config.h,v 1.3 1995/07/09 00:34:59 craigs Exp $
  */
 
 #ifndef _PCONFIG
@@ -20,6 +20,7 @@ PLIST(PXConfig, PXConfigSection);
     PFilePath  filename;
     PXConfig * config;
     BOOL       dirty;
+    BOOL       saveOnExit;
 };
 
 
