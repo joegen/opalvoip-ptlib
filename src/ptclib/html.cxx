@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.13 1996/08/19 13:40:31 robertj Exp $
+ * $Id: html.cxx,v 1.14 1997/06/16 13:18:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.14  1997/06/16 13:18:03  robertj
+ * Set Is() function to be const as it should have been.
+ *
  * Revision 1.13  1996/08/19 13:40:31  robertj
  * Fixed incorrect formatting of HTML tags (cosmetic only).
  *
@@ -143,7 +146,7 @@ PHTML & PHTML::operator=(const PHTML &)
 }
 
 
-BOOL PHTML::Is(ElementInSet elmt)
+BOOL PHTML::Is(ElementInSet elmt) const
 {
   return (elementSet[elmt>>3]&(1<<(elmt&7))) != 0;
 }
