@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.32  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.31  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -863,7 +866,7 @@ class PVideoInputDevice : public PVideoDevice
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/videoio.h"
+#include "msos/ptlib/videoio.h"
 #else
 #include "unix/ptlib/videoio.h"
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.32  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.31  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -124,31 +127,12 @@
  *
  */
 
-#ifndef _PPROCESS
-
-#include <ptlib/syncpoint.h>
-
-#ifndef _WIN32_WCE
-extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
-#else
-extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#define _PPROCESS_PLATFORM_INCLUDE
-#include "../../pprocess.h"
-
-#endif
-#ifdef _PPROCESS_PLATFORM_INCLUDE
-#undef _PPROCESS_PLATFORM_INCLUDE
-
   public:
     ~PProcess();
-
-#if defined(P_PLATFORM_HAS_THREADS)
 
     void SignalTimerChange();
     // Signal to the timer thread that a change was made.
@@ -185,11 +169,5 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
 #else
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
 #endif
-
-#endif
-
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

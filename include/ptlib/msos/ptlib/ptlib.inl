@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.21  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.20  1999/07/06 04:46:00  robertj
  * Fixed being able to case an unsigned to a PTimeInterval.
  * Improved resolution of PTimer::Tick() to be millisecond accurate.
@@ -152,26 +155,16 @@ PINLINE BOOL PFile::Exists(const PFilePath & name)
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#if defined(_WIN32)
-
 PINLINE void PThread::Sleep(const PTimeInterval & delay)
   { ::Sleep(delay.GetInterval()); }
 
-#else
+PINLINE PThread::PThread()
+  { }
 
-PINLINE BOOL PThread::IsOnlyThread() const
-  { return link == this; }
+PINLINE PThreadIdentifier PThread::GetThreadId() const
+  { return threadId; }
 
-PINLINE void PThread::AllocateStack(PINDEX stackSize)
-  { stackTop = (stackBase = (char NEAR *)_nmalloc(stackSize)) + stackSize; }
-
-PINLINE void PThread::ClearBlock()
-  { isBlocked = NULL; }
-
-PINLINE BOOL PThread::IsNoLongerBlocked()
-  { return !isBlocked(blocker); }
-
-#endif
-
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
+  { return ::GetCurrentThreadId(); }
 
 // End Of File ///////////////////////////////////////////////////////////////

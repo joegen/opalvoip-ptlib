@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.8  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.7  2001/10/03 03:11:35  robertj
  * Changed to use only a single instance of SNMP library to avoid memory leak.
  *
@@ -51,24 +54,8 @@
  *
  */
 
-#ifndef _PETHSOCKET
-
-class PWin32PacketDriver;
-class PWin32SnmpLibrary;
-class PWin32PacketBuffer;
-
-PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PEthSocket
-
-#define _PETHSOCKET_PLATFORM_INCLUDE
-#include "../../ethsock.h"
-
-#endif
-#ifdef _PETHSOCKET_PLATFORM_INCLUDE
-#undef _PETHSOCKET_PLATFORM_INCLUDE
 
   public:
   // Overrides from class PChannel
@@ -79,8 +66,5 @@ PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
     PString              interfaceName;
     PWin32PackBufArray   readBuffers;
     PWin32PackBufArray   writeBuffers;
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.11  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.10  2002/03/03 00:13:24  yurik
  * Added include for cevfw.h
  *
@@ -58,24 +61,8 @@
  *
  */
 
-#ifndef _PVIDEOIO
-
-#ifndef _WIN32_WCE
-#include <vfw.h>
-#else
-#include <cevfw.h>
-#endif
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
-
-#define _PVIDEOIO_PLATFORM_INCLUDE
-#include "../../videoio.h"
-
-#endif
-#ifdef _PVIDEOIO_PLATFORM_INCLUDE
-#undef _PVIDEOIO_PLATFORM_INCLUDE
 
   public:
     virtual BOOL SetColourFormat(const PString & colourFormat);
@@ -102,8 +89,5 @@
     BOOL          isCapturingNow;
 
   friend class PVideoInputThread;
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

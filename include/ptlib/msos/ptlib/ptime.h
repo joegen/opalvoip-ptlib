@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.7  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.6  2003/06/29 03:48:24  ykiryanov
  * Added include <ptlib/wince/time.h>
  *
@@ -51,19 +54,8 @@
  *
  */
 
-#ifndef _PTIME
-
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
-
-#ifdef _WIN32_WCE
-#include <ptlib/wince/time.h>
-#endif
-
-#include "../../ptime.h"
-
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

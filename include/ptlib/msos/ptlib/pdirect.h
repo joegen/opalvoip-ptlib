@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.9  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.8  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -59,46 +62,15 @@
  *
  */
 
-#ifndef _PDIRECTORY
-
-
-#include <direct.h>
-#if !defined(_WIN32)
-#include <dos.h>
-#endif
-
-const char PDIR_SEPARATOR = '\\';
-
-const PINDEX P_MAX_PATH = _MAX_PATH;
-
-typedef PCaselessString PFilePathString;
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
-#define _PDIRECTORY_PLATFORM_INCLUDE
-#include "../../pdirect.h"
-
-#endif
-#ifdef _PDIRECTORY_PLATFORM_INCLUDE
-#undef _PDIRECTORY_PLATFORM_INCLUDE
-
   protected:
-#if defined(_WIN32)
     HANDLE hFindFile;
     WIN32_FIND_DATA fileinfo;
-#else
-    struct find_t fileinfo;
-#endif
-
     BOOL Filtered();
 
   public:
     static PString CreateFullPath(const PString & path, BOOL isDirectory);
-
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////
