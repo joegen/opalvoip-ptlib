@@ -24,12 +24,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.2  2004/04/18 12:37:40  csoutheren
+ * Modified to detect sem_wait etc on Linux systems
+ *
  * Revision 1.1  2004/04/11 03:02:07  csoutheren
  * Initial version
  *
  */
 
   // Unix specific critical section implementation
+#ifdef P_HAS_SEMAPHORES
   sem_t sem;
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
