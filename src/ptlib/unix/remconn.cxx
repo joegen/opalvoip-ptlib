@@ -15,7 +15,21 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
+#if defined(P_LINUX)
 #include <linux/if.h>
+#define HAS_IFREQ
+#endif
+
+#if defined(P_SUN4)
+#include <net/if.h>
+#include <sys/sockio.h>
+
+extern "C" int ioctl(int, int, void *);
+extern "C" int socket(int, int, int);
+
+#define HAS_IFREQ
+#endif
 
 #include "uerror.h"
 
@@ -314,7 +328,7 @@ void PXRemoteThread::KillPipeChannel()
 //
 static int PPPDeviceExists(const char * devName)
 {
-#ifdef P_LINUX
+#if defined(HAS_IFREQ)
   int skfd;
   struct ifreq ifr;
 
