@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.18  2001/08/07 03:20:39  robertj
+ * Fixed close of DLL so flagged as closed, thanks Stefan Ditscheid.
+ *
  * Revision 1.17  1998/09/24 03:30:51  robertj
  * Added open software license.
  *
@@ -1008,8 +1011,10 @@ BOOL PDynaLink::Open(const PString & name)
 
 void PDynaLink::Close()
 {
-  if (_hDLL != NULL)
+  if (_hDLL != NULL) {
     FreeLibrary(_hDLL);
+    _hDLL = NULL;
+  }
 }
 
 
