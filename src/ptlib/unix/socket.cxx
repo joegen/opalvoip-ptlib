@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.59  2001/03/07 23:37:59  robertj
+ * Fixed slow down in UDP packet send, thanks Dmitriy Reka
+ *
  * Revision 1.58  2001/03/07 06:56:36  yurik
  * Made adjustment for BONE platforms as requested by Jac Goudsmit
  *
@@ -559,7 +562,9 @@ BOOL PSocket::os_sendto(
   else
     writeResult = ::send(os_handle, (char *)buf, len, flags);
   if (writeResult > 0) {
+#ifndef P_PTHREADS
     PThread::Yield();
+#endif
     lastWriteCount = writeResult;
     return TRUE;
   }
