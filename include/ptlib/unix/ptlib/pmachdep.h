@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.41  2001/01/16 11:52:46  rogerh
+ * Add patch from Jac Goudsmit <jac_goudsmit@yahoo.com> for BONE in BeOS 5
+ *
  * Revision 1.40  2000/06/21 01:01:21  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -338,6 +341,7 @@ struct servent * getservbyname(const char *, const char *);
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
 #elif __BEOS__
 
 #include <errno.h>
@@ -348,10 +352,14 @@ struct servent * getservbyname(const char *, const char *);
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
 typedef int socklen_t;
-#define INADDR_NONE INADDR_BROADCAST
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
 
+#ifdef BE_BONE
+#include <bone/arpa/inet.h>
+#else
+#define INADDR_NONE INADDR_BROADCAST
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_MACOSX)
