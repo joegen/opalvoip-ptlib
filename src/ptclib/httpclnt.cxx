@@ -24,6 +24,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.31  2002/12/03 22:38:35  robertj
+ * Removed get document that just returns a content length as the chunked
+ *   transfer encoding makes this very dangerous.
+ * Added GetTextDocument() to get a URL content into a PString.
+ * Added a version pf PostData() that gets the reponse content into a PString.
+ * Added ReadContentBody() that takes a PString, not just PBYTEArray.
+ * Fixed bug where conten-encoding must be checked even if there is a
+ *   full content length MIME field.
+ *
  * Revision 1.30  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -396,29 +405,45 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
+BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
+{
+  BOOL ok = InternalReadContentBody(replyMIME, body);
+  body.SetSize(body.GetSize()+1);
+  return ok;
+}
+
+
 BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
-  if (replyMIME.Contains(ContentLengthTag)) {
-    PINDEX length = replyMIME.GetInteger(ContentLengthTag);
-    body.SetSize(length);
-    return ReadBlock(body.GetPointer(), length);
-  }
+  return InternalReadContentBody(replyMIME, body);
+}
 
-  if (!replyMIME.Contains(TransferEncodingTag)) {
+
+BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray & body)
+{
+  PCaselessString encoding = replyMIME(TransferEncodingTag);
+
+  if (encoding != ChunkedTag) {
+    if (replyMIME.Contains(ContentLengthTag)) {
+      PINDEX length = replyMIME.GetInteger(ContentLengthTag);
+      body.SetSize(length);
+      return ReadBlock(body.GetPointer(), length);
+    }
+
+    if (encoding.IsEmpty()) {
+      lastResponseCode = -1;
+      lastResponseInfo = "Unknown Transfer-Encoding extension";
+      return FALSE;
+    }
+
     // Must be raw, read to end file variety
     static const PINDEX ChunkSize = 2048;
     PINDEX bytesRead = 0;
-    while (ReadBlock(body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
+    while (ReadBlock((char *)body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
       bytesRead += GetLastReadCount();
 
     body.SetSize(bytesRead + GetLastReadCount());
     return GetErrorCode(LastReadError) == NoError;
-  }
-
-  if (!(replyMIME(TransferEncodingTag) *= ChunkedTag)) {
-    lastResponseCode = -1;
-    lastResponseInfo = "Unknown Transfer-Encoding extension";
-    return FALSE;
   }
 
   // HTTP1.1 chunked format
@@ -435,7 +460,7 @@ BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
       break;
 
     // Read the chunk
-    if (!ReadBlock(body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
+    if (!ReadBlock((char *)body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
       return FALSE;
     bytesRead+= chunkLength;
 
@@ -455,19 +480,15 @@ BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 }
 
 
-BOOL PHTTPClient::GetDocument(const PURL & url,
-                              PINDEX & contentLength,
-                              BOOL persist)
+BOOL PHTTPClient::GetTextDocument(const PURL & url,
+                                  PString & document,
+                                  BOOL persist)
 {
   PMIMEInfo outMIME, replyMIME;
   if (!GetDocument(url, outMIME, replyMIME, persist))
     return FALSE;
 
-  if (replyMIME.Contains(ContentLengthTag))
-    contentLength = (PINDEX)replyMIME[ContentLengthTag].AsUnsigned();
-  else
-    contentLength = P_MAX_INDEX;
-  return TRUE;
+  return ReadContentBody(replyMIME, document);
 }
 
 
@@ -502,6 +523,20 @@ BOOL PHTTPClient::PostData(const PURL & url,
   }
 
   return ExecuteCommand(POST, url, outMIME, data, replyMIME, persist) == RequestOK;
+}
+
+
+BOOL PHTTPClient::PostData(const PURL & url,
+                           PMIMEInfo & outMIME,
+                           const PString & data,
+                           PMIMEInfo & replyMIME,
+                           PString & body,
+                           BOOL persist)
+{
+  if (!PostData(url, outMIME, data, replyMIME, persist))
+    return FALSE;
+
+  return ReadContentBody(replyMIME, body);
 }
 
 
