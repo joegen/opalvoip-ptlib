@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.11  2002/01/16 03:49:23  dereks
+ * Add new test image.
+ *
  * Revision 1.10  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -68,7 +71,7 @@
 #include <ptlib/videoio.h>
 
 
-#define NUM_PATTERNS 4
+#define NUM_PATTERNS 5
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,6 +244,9 @@ BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*byte
        break;
      case 3:
        GrabBlankImage(destFrame);
+       break;
+     case 4:
+       GrabOriginalMovingBlocksFrame(destFrame);
        break;
      default:
        GrabNTSCTestFrame(destFrame);
@@ -576,7 +582,47 @@ void PFakeVideoInputDevice::GrabBlankImage(BYTE *resFrame)
                           200,200,200); //a light grey colour.                                                             
 }
 
- 
+void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
+{
+  unsigned w=0;
+  unsigned h=0;
+  GetFrameSize(w,h);
+  int width  = w;
+  int height = h;
+
+  int wi,hi,colourIndex,colourNumber;
+  int framesize = width*height;
+
+  static int gCount=0;
+  gCount++;
+
+  memset(frame,64,framesize + (framesize/2));
+  return;
+  colourIndex = gCount/10;
+  colourNumber= (colourIndex/10)%7;   //Every 10 seconds, coloured background blocks move.
+  
+  for(hi=0; hi<height; hi++)               //slow moving group of lines going upwards.
+    for(wi=0; wi<width; wi++) 
+      if ( (wi>width/3)&&(wi<width*2/3)&&
+	   ( ((gCount+hi)%height)<16)&&
+	   ( (hi%4)<2)                     )
+	frame[(hi*width)+wi] = (u_char) 16;
+      else
+	frame[(hi*width)+wi] = (u_char)(((colourNumber+((wi*7)/width))%7)*35) +26;
+
+  for(hi=1; hi<=height; hi++)                 //fast moving block going downwards.
+    for(wi=width/9; wi<(2*width/9); wi++) 
+      if(  (( (gCount*4)+hi)%height)<20)
+	frame[((height-hi)*width)+wi] = (u_char) 16;
+
+  int halfWidth  = width/2;
+  int halfHeight = height/2;
+  for(hi=1; hi<halfHeight; hi++)  
+    for(wi=0; wi<halfWidth; wi++)
+      frame[framesize+(hi*halfWidth)+wi] = (BYTE)(((((hi*7)/halfHeight)+colourNumber)%7)*35)+26;
+}
+
+
 BOOL PFakeVideoInputDevice::GetVFlipState() 
 {
   return doVFlip;
