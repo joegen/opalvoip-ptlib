@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.54  2004/06/01 05:21:38  csoutheren
+ * Added conversions between std::string and PString, and vector<PString> and PStringArray
+ *
  * Revision 1.53  2004/05/04 11:10:36  rjongbloed
  * Fixed usage of MakeEmpty() with PStringStream.
  *
@@ -233,6 +236,9 @@ PINLINE PString::PString(const PString & str)
 
 PINLINE PString::PString(int, const PString * str)
   : PCharArray(*str) { }
+
+PINLINE PString::PString(const std::string & str)
+  : PCharArray(PString(str.c_str())) { }
 
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
