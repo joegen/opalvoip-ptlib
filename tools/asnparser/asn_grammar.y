@@ -1,13 +1,16 @@
 %{
 
 /*
- * $Id: asn_grammar.y,v 1.1 1997/12/13 09:17:47 robertj Exp $
+ * $Id: asn_grammar.y,v 1.2 1998/05/21 04:21:46 robertj Exp $
  *
  * ASN Grammar
  *
  * Copyright 1997 by Equivalence Pty. Ltd.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.2  1998/05/21 04:21:46  robertj
+ * Implementing more of the ASN spec.
+ *
  * Revision 1.1  1997/12/13 09:17:47  robertj
  * Initial revision
  *
@@ -19,6 +22,7 @@
 extern int yylex();
 
 extern int IdentifierTokenContext;
+extern int BraceTokenContext;
 extern int InMacroContext;
 extern int HasObjectTypeMacro;
 extern int InMIBContext;
@@ -37,6 +41,9 @@ int UnnamedFieldCount = 1;
 %token BSTRING
 %token CSTRING
 %token HSTRING
+
+%token STRING_BRACE
+%token BITSTRING_BRACE
 
 %token ABSENT           
 %token ABSTRACT_SYNTAX  
@@ -155,7 +162,7 @@ int UnnamedFieldCount = 1;
 %type <sval> MibIndexType MibDescrPart MibReferPart
 
 %type <slst> DefinitiveIdentifier DefinitiveObjIdComponentList SymbolList
-%type <slst> ObjIdComponentList BitIdentifierList CharSyms CharacterStringList
+%type <slst> ObjIdComponentList BitIdentifierList CharSyms
 %type <slst> MibIndexTypes MibIndexPart
 
 %type <tval> Type DefinedType UsefulType SelectionType CharacterStringType 
@@ -172,11 +179,12 @@ int UnnamedFieldCount = 1;
 %type <vval> Value DefinedValue ReferencedValue BuiltinValue BitStringValue BooleanValue 
 %type <vval> CharacterStringValue ChoiceValue NamedValue RestrictedCharacterStringValue
 %type <vval> NullValue ObjectIdentifierValue RealValue NumericRealValue SpecialRealValue 
-%type <vval> AssignedIdentifier ExceptionIdentification ExceptionSpec
-%type <vval> LowerEndpoint LowerEndValue UpperEndpoint UpperEndValue
-%type <vval> MibDefValPart
+%type <vval> AssignedIdentifier ExceptionIdentification ExceptionSpec CharacterStringList
+%type <vval> LowerEndpoint LowerEndValue UpperEndpoint UpperEndValue Quadruple Tuple
+%type <vval> MibDefValPart SequenceValue SequenceOfValue
 
-%type <vlst> ComponentValueList SequenceValue SetValue MibVarPart MibVarTypes
+%type <vlst> ComponentValueList
+%type <vlst> MibVarPart MibVarTypes
 
 %type <nval> NamedNumber EnumerationItem NamedBit
 
@@ -473,12 +481,14 @@ ValueAssignment
   : IDENTIFIER Type
       {
 	IdentifierTokenContext = $2->GetIdentifierTokenContext();
+	BraceTokenContext = $2->GetBraceTokenContext();
       }
     ASSIGNMENT Value
       {
 	$5->SetValueName($1);
 	Module->AddValue($5);
 	IdentifierTokenContext = IDENTIFIER;
+	BraceTokenContext = '{';
       }
   ;
 
@@ -488,10 +498,12 @@ ValueSetTypeAssignment
 	$2->SetName($1);
 	Module->AddType($2);
 	IdentifierTokenContext = $2->GetIdentifierTokenContext();
+	BraceTokenContext = $2->GetBraceTokenContext();
       }
     ASSIGNMENT ValueSet
       {
 	IdentifierTokenContext = IDENTIFIER;
+	BraceTokenContext = '{';
       }
   ;
 
@@ -568,12 +580,10 @@ BuiltinValue
   | ObjectIdentifierValue
 /*| OctetStringValue  equivalent to BitStringValue */
   | RealValue 
-/*!!!!
   | SequenceValue 
-  | SequenceOfValue 
-*/
+  | SequenceOfValue
 /*| SetValue	      synonym to SequenceValue */
-/*| SetOfValue 	      synonym to SequenceOfValue */
+/*| SetOfValue	      synonym to SequenceOfValue */
 /*| TaggedValue	      synonym to Value */
     { }
   ;
@@ -680,11 +690,11 @@ Enumeration
 	$$ = new NamedNumberList;
 	$$->Append($1);
       }
-  | EnumerationItem ',' Enumeration
+  | Enumeration ',' EnumerationItem
       {
-	$3->InsertAt(0, $1);
-	$1->SetAutoNumber((*$3)[1]);
-	$$ = $3;
+	$1->Append($3);
+	$3->SetAutoNumber((*$1)[1]);
+	$$ = $1;
       }
   ;
 
@@ -771,11 +781,11 @@ BitStringValue
       {
 	$$ = new BitStringValue($1);
       }
-  | '{' BitIdentifierList '}' 
+  | BITSTRING_BRACE BitIdentifierList '}' 
       {
 	$$ = new BitStringValue($2);
       }
-  | '{'  '}'
+  | BITSTRING_BRACE  '}'
       {
 	$$ = new BitStringValue;
       }
@@ -888,14 +898,15 @@ ComponentType
 SequenceValue
   : '{' ComponentValueList '}' 
       {
-	$$ = $2;
+	$$ = new SequenceValue($2);
       }
   | '{'  '}'
       {
-	$$ = new ValuesList;
+	$$ = new SequenceValue;
       }
   ;
 
+/* synonym to SequenceValue
 SetValue
   : '{' ComponentValueList '}' 
       {
@@ -906,6 +917,7 @@ SetValue
 	$$ = new ValuesList;
       }
   ;
+*/
 
 ComponentValueList
   : NamedValue
@@ -928,7 +940,13 @@ SequenceOfType
 
 SequenceOfValue
   : '{' ValueList '}' 
+      {
+	$$ = NULL;
+      }
   | '{'  '}'
+      {
+	$$ = NULL;
+      }
   ;
 
 ValueList
@@ -956,10 +974,18 @@ SetOfType
       }
   ;
 
+/* synonym to SequenceOfValue
 SetOfValue
   : '{' ValueList '}'   
+      {
+	$$ = NULL;
+      }
   | '{'  '}'
+      {
+	$$ = NULL;
+      }
   ;
+*/
 
 ChoiceType
   : CHOICE '{' AlternativeTypeLists '}'
@@ -1199,23 +1225,14 @@ RestrictedCharacterStringValue
 	$$ = new CharacterStringValue($1);
       }
   | CharacterStringList
-      {
-	$$ = new CharacterStringValue($1);
-      }
   | Quadruple
-      {
-	$$ = new CharacterStringValue;
-      }
   | Tuple
-      {
-	$$ = new CharacterStringValue;
-      }
   ;
 
 CharacterStringList
-  : '{' CharSyms '}'
+  : STRING_BRACE CharSyms '}'
       {
-	$$ = $2;
+	$$ = new CharacterStringValue($2);
       }
   ;
 
@@ -1240,11 +1257,21 @@ CharsDefn
   ;
 
 Quadruple
-  :  '{'  INTEGER  ','  INTEGER  ','  INTEGER  ','  INTEGER '}'
+  :  STRING_BRACE  INTEGER  ','  INTEGER  ','  INTEGER  ','  INTEGER '}'
+      {
+	if ($2 != 0 || $4 != 0 || $6 > 255 || $8 > 255)
+	  PError << StdError(Warning) << "Illegal value in Character Quadruple" << endl;
+	$$ = new CharacterValue((BYTE)$2, (BYTE)$4, (BYTE)$6, (BYTE)$8);
+      }
   ;
 
 Tuple
-  :  '{' INTEGER ',' INTEGER '}'
+  :  STRING_BRACE INTEGER ',' INTEGER '}'
+      {
+	if ($2 > 255 || $4 > 255)
+	  PError << StdError(Warning) << "Illegal value in Character Tuple" << endl;
+	$$ = new CharacterValue((BYTE)$2, (BYTE)$4);
+      }
   ;
 
 UnrestrictedCharacterStringType
