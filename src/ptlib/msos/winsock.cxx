@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.22 1996/07/27 04:03:29 robertj Exp $
+ * $Id: winsock.cxx,v 1.23 1996/08/08 10:06:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.23  1996/08/08 10:06:07  robertj
+ * Fixed incorrect value in write, causes incorrect output if send is split.
+ *
  * Revision 1.22  1996/07/27 04:03:29  robertj
  * Created static version of ConvertOSError().
  *
@@ -190,8 +193,7 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
     return FALSE;
 
   while (len > 0) {
-    int sendResult = ::send(os_handle,
-                  ((const char *)buf)+lastWriteCount, len - lastWriteCount, 0);
+    int sendResult = ::send(os_handle, ((char *)buf)+lastWriteCount, len, 0);
     if (!ConvertOSError(sendResult))
       return FALSE;
     lastWriteCount += sendResult;
