@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.32  2000/04/18 06:01:01  robertj
+ * Fixed integer overflow bug in PTime addition functions, thanks Ian MacDonald
+ *
  * Revision 1.31  2000/04/05 02:50:17  robertj
  * Added microseconds to PTime class.
  *
@@ -614,14 +617,14 @@ void PTime::ReadFrom(istream & strm)
 
 PTime PTime::operator+(const PTimeInterval & t) const
 {
-  PInt64 msecs = theTime*1000 + t.GetMilliSeconds();
+  PInt64 msecs = (PInt64)theTime*1000 + t.GetMilliSeconds();
   return PTime((time_t)(msecs/1000), (long)(msecs%1000)*1000);
 }
 
 
 PTime & PTime::operator+=(const PTimeInterval & t)
 {
-  PInt64 msecs = theTime*1000 + t.GetMilliSeconds();
+  PInt64 msecs = (PInt64)theTime*1000 + t.GetMilliSeconds();
   theTime = (time_t)(msecs/1000);
   microseconds = (long)(msecs%1000)*1000;
   return *this;
