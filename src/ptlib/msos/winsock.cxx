@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.57  2003/10/28 23:36:22  csoutheren
+ * Changed to use ws2_32.lib or wsock32.lib depending on use of QoS
+ *
  * Revision 1.56  2003/10/27 08:01:52  csoutheren
  * Removed use of GetAddressByName when using Winsock2
  *
@@ -223,6 +226,12 @@
 
 #include <wsipx.h>
 #include <wsnwlink.h>
+
+#ifdef P_HAS_QOS
+#pragma comment(lib, "ws2_32.lib")
+#else
+#pragma comment(lib, "wsock32.lib")
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // PWinSock
