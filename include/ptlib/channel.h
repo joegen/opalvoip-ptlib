@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.4 1994/07/17 10:46:06 robertj Exp $
+ * $Id: channel.h,v 1.5 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.4  1994/07/17 10:46:06  robertj
+ * Revision 1.5  1994/08/21 23:43:02  robertj
+ * Moved meta-string transmitter from PModem to PChannel.
+ * Added common entry point to convert OS error to PChannel error.
+ *
+ * Revision 1.4  1994/07/17  10:46:06  robertj
  * Unix support changes.
  *
  * Revision 1.3  1994/07/02  03:03:49  robertj
@@ -31,7 +35,9 @@
 
 class PChannel;
 
-PCLASS PChannelStreamBuffer : public streambuf {
+PCLASS PChannelStreamBuffer : public PObject, public streambuf {
+  PCLASSINFO(PChannelStreamBuffer, PObject)
+
   public:
     PChannelStreamBuffer(const PChannelStreamBuffer & sbuf);
     PChannelStreamBuffer & operator=(const PChannelStreamBuffer & sbuf);
@@ -99,14 +105,14 @@ PCLASS PChannel : public PContainer, public iostream {
     PINDEX GetLastReadCount() const;
       // Return the number of bytes read by the last Read() call.
 
-    PString ReadString(PINDEX len);
-      // Read up to len bytes into a string from the channel. This function may
-      // block as for Read().
-
     virtual int ReadChar();
       // Read a single 8 bit byte from the channel. If one was not available
       // within the readtimeout period then the function returns with a -1
       // return value.
+
+    PString ReadString(PINDEX len);
+      // Read up to len bytes into a string from the channel. This function may
+      // block as for Read().
 
     virtual BOOL ReadAsync(void * buf, PINDEX len);
       // Begin an asynchronous read from channel. The read timeout is used as
@@ -141,16 +147,16 @@ PCLASS PChannel : public PContainer, public iostream {
     PINDEX GetLastWriteCount() const;
       // Return the number of bytes written by the last Write() call.
 
-    BOOL WriteString(const PString & str);
-      // Write a string to the channel. This function will block until the
-      // requested number of characters are written or the write timeout is
-      // reached.
-
     BOOL WriteChar(int c);
       // Write a single character to the channel. This function will block
       // until the requested number of characters are written or the write
       // timeout is reached. Note that this asserts if the value is not in the
       // range 0..255.
+
+    BOOL WriteString(const PString & str);
+      // Write a string to the channel. This function will block until the
+      // requested number of characters are written or the write timeout is
+      // reached.
 
     virtual BOOL WriteAsync(void * buf, PINDEX len);
       // Begin an asynchronous write from channel. The write timeout is used as
@@ -164,6 +170,37 @@ PCLASS PChannel : public PContainer, public iostream {
       // timed out. The original pointer to the buffer passed in WriteAsync()
       // is passed in here and the len parameter is the actual number of
       // characters written.
+
+
+    BOOL SendCommandString(const PString & command);
+      // Send a command meta-string. A meta-string is a string of characters
+      // that may contain escaped commands. The escape command is the \ as in
+      // the C language. The escape commands are:
+      //    \a    alert (ascii value 7)
+      //    \b    backspace (ascii value 8)
+      //    \f    formfeed (ascii value 12)
+      //    \n    newline (ascii value 10)
+      //    \r    return (ascii value 13)
+      //    \t    horizontal tab (ascii value 9)
+      //    \v    vertical tab (ascii value 11)
+      //    \\    backslash
+      //    \ooo  where ooo is octal number (ascii value ooo)
+      //    \xhh  where hh is hex number (ascii value 0xhh)
+      //    \0    null character (ascii zero)
+      //    \dns  delay for n seconds
+      //    \dnm  delay for n milliseconds
+      //    \s    characters following this, up to a \w command or the end of
+      //          string, are to be sent to modem
+      //    \wns  characters following this, up to a \s, \d or another \w or
+      //          the end of the string are expected back from the modem. If
+      //          the string is not received within n seconds, a failed command
+      //          is registered. The exception to this is if the command is at
+      //          the end of the string or the next character in the string is
+      //          the \s, \d or \w in which case all characters are ignored
+      //          from the modem until n seconds of no data.
+      //    \wnm  as for above but timeout is in milliseconds
+
+    void AbortCommandString();
 
 
     virtual BOOL Close();
@@ -185,15 +222,24 @@ PCLASS PChannel : public PContainer, public iostream {
     };
     Errors GetErrorCode() const;
       // Return the error result of the last file I/O operation in this object.
+
     int GetErrorNumber() const;
       // Return the operating system error number of the last file I/O
       // operation in this object.
+
     PString GetErrorText() const;
       // Return a string indicating the error message that may be displayed to
       // the user. The error for the last I/O operation in this object is used.
 
 
   protected:
+    BOOL ConvertOSError(int error);
+      // Convert an operating system error into platform independent error.
+      // This will set the lastError and osError member variables for access
+      // by GetErrorCode() and GetErrorNumber(). Returns TRUE if there was
+      // no error.
+
+
     // Member variables
     int os_handle;
       // The operating system file handle return by standard open() function.
@@ -224,5 +270,10 @@ PCLASS PChannel : public PContainer, public iostream {
     // New functions for class
     void Construct();
       // Complete platform dependent construction.
+
+    // Member variables
+    BOOL abortCommandString;
+      // Flag to abort the transmission of a command in SendCommandString().
+
 
 // Class declaration continued in platform specific header file ///////////////
