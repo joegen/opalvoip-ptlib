@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.103  2001/10/09 08:58:33  robertj
+# Added "make help" target for displaying the usual build targets, is default
+#   target unless overridden by applications Makefile
+#
 # Revision 1.102  2001/08/11 08:04:06  rogerh
 # Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
 #
@@ -441,20 +445,28 @@ $(STANDARD_TARGETS) :: default_target
 
 else
 
-default_target :
+default_target : help
+
+help:
 	@echo "The following targets are available:"
 	@echo "    make debug       Make debug version of application"
 	@echo "    make opt         Make optimised version of application"
 	@echo "    make both        Make both versions of application"
-	@echo "    make release     Package up optimised version int tar.gz file"
-	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
-	@echo "    make clean       Remove both debug and optimised files"
+	@echo
 	@echo "    make debugclean  Remove debug files"
 	@echo "    make optclean    Remove optimised files"
+	@echo "    make clean       Remove both debug and optimised files"
+	@echo
 	@echo "    make debugdepend Create debug dependency files"
 	@echo "    make optdepend   Create optimised dependency files"
 	@echo "    make bothdepend  Create both debug and optimised dependency files"
+	@echo
 	@echo "    make all         Create debug & optimised dependencies & libraries"
+	@echo "    make libs        Make libraries project depends on"
+	@echo
+	@echo "    make version     Display version for project"
+	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
+	@echo "    make release     Package up optimised version int tar.gz file"
 
 endif
 
