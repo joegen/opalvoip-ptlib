@@ -1,9 +1,14 @@
 /*
- * RemConn.CXX
+ * $Id: remconn.cxx,v 1.7 1996/10/31 12:39:53 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
+ *
+ * $Log: remconn.cxx,v $
+ * Revision 1.7  1996/10/31 12:39:53  robertj
+ * Added RCS keywords.
+ *
  */
 
 #include <ptlib.h>
