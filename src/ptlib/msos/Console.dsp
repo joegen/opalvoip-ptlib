@@ -248,6 +248,7 @@ SOURCE=..\common\sound.cxx
 # Begin Source File
 
 SOURCE=.\sound_win32.cxx
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -260,10 +261,12 @@ SOURCE=..\common\vconvert.cxx
 # Begin Source File
 
 SOURCE=..\common\vfakeio.cxx
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\vfw.cxx
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -644,7 +647,7 @@ SOURCE=..\..\..\include\ptbuildopts.h.in
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\Work\pwlib\include
+InputDir=\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -659,7 +662,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\Work\pwlib\include
+InputDir=\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
