@@ -26,6 +26,10 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.28  2002/02/20 02:37:26  dereks
+ * Initial release of Firewire camera support for linux.
+ * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+ *
  * Revision 1.27  2002/02/03 19:55:57  dereks
  * *** empty log message ***
  *
@@ -974,5 +978,141 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
   return TRUE;
 }
 
+/*
+ * The following functions converts video from IEEE 1394 cameras into
+ * YUV420P format. The video format of IEEE 1394 cameras can be found
+ *  at Section 2.1.3 of
+http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pdf
+ * 320x240 and 160x120 resolutions are used.
+ *
+ *
+ * UYVY422 is just a byte permutation of YUV422. I believe this is not
+ * due to endian problem
+ *
+ * These functions should accept arbitrary size of image.
+ */
 
+
+PSTANDARD_COLOUR_CONVERTER(UYVY422,YUV420P)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  unsigned int row,column;
+  unsigned char *y = dstFrameBuffer;  //Initialise y,u,v here, to stop compiler warnings.
+  unsigned char *u = dstFrameBuffer + dstFrameWidth*dstFrameHeight;
+  unsigned char *v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4);
+  const unsigned char *src = srcFrameBuffer;
+
+  for(row=0; row < PMIN(srcFrameHeight, dstFrameHeight); row+=2) {
+    y = dstFrameBuffer + dstFrameWidth*row;
+    u = dstFrameBuffer + dstFrameWidth*dstFrameHeight + dstFrameWidth*row/4;
+    v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4) + dstFrameWidth*row/4;
+    src = srcFrameBuffer + row*srcFrameWidth*2;
+    for(column=0; column < PMIN(srcFrameWidth, dstFrameWidth); column+=2) {
+      *(u++) = (unsigned char)(((int)src[0] + src[srcFrameWidth*2])/2);
+      *(y++) = src[1];
+      *(v++) = (unsigned char)(((int)src[2] + src[2+srcFrameWidth*2])/2);
+      *(y++) = src[3];
+      src += 4;
+    }
+    for(column = PMIN(srcFrameWidth, dstFrameWidth);
+	column < dstFrameWidth; column+=2) {
+      *(u++) = BLACK_U;
+      *(y++) = BLACK_Y;
+      *(v++) = BLACK_V;
+      *(y++) = BLACK_Y;
+    }
+    y = dstFrameBuffer + dstFrameWidth*(row+1);
+    src = srcFrameBuffer + (row+1)*srcFrameWidth*2;
+    for(column=0; column < PMIN(srcFrameWidth,dstFrameWidth); column+=2) {
+      src++;
+      *(y++) = *(src++);
+      src++;
+      *(y++) = *(src++);
+    }
+    for(column = PMIN(srcFrameWidth, dstFrameWidth);
+	column < dstFrameWidth; column+=2) {
+      *(y++) = BLACK_Y;
+      *(y++) = BLACK_Y;
+    }
+  }
+  for(row = PMIN(srcFrameHeight, dstFrameHeight);
+      row < dstFrameHeight; row+=2) {
+    for(column = 0; column < dstFrameWidth; column+=2) {
+      *(u++) = BLACK_U;
+      *(y++) = BLACK_Y;
+      *(v++) = BLACK_V;
+      *(y++) = BLACK_Y;
+    }
+    for(column = 0; column < dstFrameWidth; column+=2) {
+      *(y++) = BLACK_Y;
+      *(y++) = BLACK_Y;
+    }
+  }
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  unsigned int row,column;
+  unsigned char *y = dstFrameBuffer;  //Initialise y,u,v here, to stop compiler warnings.
+  unsigned char *u = dstFrameBuffer + dstFrameWidth*dstFrameHeight;
+  unsigned char *v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4);
+  const unsigned char *src = srcFrameBuffer;
+
+  for(row=0; row < PMIN(srcFrameHeight, dstFrameHeight); row+=2) {
+    y = dstFrameBuffer + dstFrameWidth*row;
+    u = dstFrameBuffer + dstFrameWidth*dstFrameHeight + dstFrameWidth*row/4;
+    v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4) + dstFrameWidth*row/4;
+    src = srcFrameBuffer + row*srcFrameWidth*3;
+    for(column=0; column < PMIN(srcFrameWidth, dstFrameWidth); column+=2) {
+      *(u++) = (unsigned char)(((unsigned int)src[0] + src[3] + src[srcFrameWidth*3] + src[3+srcFrameWidth*3])/4);
+      *(y++) = src[1];
+      *(v++) = (unsigned char)(((unsigned int)src[2] + src[5] + src[srcFrameWidth*3] +src[3+srcFrameWidth*3])/4);
+      *(y++) = src[4];
+      src += 6;
+    }
+    for(column = PMIN(srcFrameWidth, dstFrameWidth);
+	column < dstFrameWidth; column+=2) {
+      *(u++) = BLACK_U;
+      *(y++) = BLACK_Y;
+      *(v++) = BLACK_V;
+      *(y++) = BLACK_Y;
+    }
+    y = dstFrameBuffer + dstFrameWidth*(row+1);
+    src = srcFrameBuffer + (row+1)*srcFrameWidth*3;
+    for(column=0; column < PMIN(srcFrameWidth, dstFrameWidth); column++) {
+      src++;
+      *(y++) = *(src++);
+      src++;
+    }
+    for(column = PMIN(srcFrameWidth, dstFrameWidth);
+	column < dstFrameWidth; column++)
+      *(y++) = BLACK_Y;
+  }
+  for(row = PMIN(srcFrameHeight, dstFrameHeight);
+      row<dstFrameHeight; row+=2) {
+    for(column = 0; column < dstFrameWidth; column+=2) {
+      *(u++) = BLACK_U;
+      *(y++) = BLACK_Y;
+      *(v++) = BLACK_V;
+      *(y++) = BLACK_Y;
+    }
+    for(column = 0; column < dstFrameWidth; column+=2) {
+      *(y++) = BLACK_Y;
+      *(y++) = BLACK_Y;
+    }
+  }
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+ 
 // End Of File ///////////////////////////////////////////////////////////////
