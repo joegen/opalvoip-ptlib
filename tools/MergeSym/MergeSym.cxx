@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.11  2003/10/30 11:27:12  rjongbloed
+ * Fixed ability to specify partial path for -x parameter.
+ *
  * Revision 1.10  2003/02/11 07:00:17  robertj
  * Added copying def file to a backup version before alteration from read only.
  *
@@ -79,7 +82,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 1)
+  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 2)
 {
 }
 
@@ -134,18 +137,14 @@ void MergeSym::Main()
     PStringArray file_list = args.GetOptionString('x').Lines();
     for (PINDEX ext_index = 0; ext_index < file_list.GetSize(); ext_index++) {
       PString base_ext_filename = file_list[ext_index];
-      PFilePath ext_filename = base_ext_filename;
-      if (ext_filename.GetType().IsEmpty())
-        ext_filename.SetType(".def");
+      PString ext_filename = base_ext_filename;
+      if (PFilePath(ext_filename).GetType().IsEmpty())
+        ext_filename += ".def";
 
       PINDEX previous_def_symbols_size = def_symbols.GetSize();
 
       for (PINDEX inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
-        PString trial_filename;
-        if (include_path[inc_index].IsEmpty())
-          trial_filename = ext_filename;
-        else
-          trial_filename = PDirectory(include_path[inc_index]) + ext_filename.GetFileName();
+        PString trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
         if (args.HasOption('v'))
           cout << "\nTrying " << trial_filename << " ..." << flush;
         PTextFile ext;
