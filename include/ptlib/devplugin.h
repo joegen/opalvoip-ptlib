@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: devplugin.h,v $
+ * Revision 1.1.2.3  2003/10/28 02:45:21  dereksmithies
+ * Fix warning about space between slash and newline.
+ *
  * Revision 1.1.2.2  2003/10/20 03:25:12  dereksmithies
  * Fix GetFunction method so it is guaranteed to generate good results.
  *
@@ -66,7 +69,7 @@ PDECLARE_STATIC_PLUGIN_CLASS_START(classT, baseT) \
     static PString GetType() \
       { return typeT; } \
     BOOL GetFunction(const PString & name, PDynaLink::Function & func) \
-    { \ 
+    { \
       void * p = NULL; \
       if (name *= "Create")         { p = (void *)&Create;          } else\
       if (name *= "GetType")        { p = (void *)&GetType;         } else\
