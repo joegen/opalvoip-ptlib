@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.88  1999/02/26 04:10:39  robertj
+ * More BeOS port changes
+ *
  * Revision 1.87  1999/02/25 03:43:35  robertj
  * Fixed warning when PINDEX is unsigned.
  *
@@ -644,16 +647,24 @@ BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
 
 BOOL PSocket::GetOption(int option, int & value)
 {
+#ifdef __BEOS__
+  return FALSE;
+#else
   socklen_t valSize = sizeof(value);
   return ConvertOSError(::getsockopt(os_handle,
                                 SOL_SOCKET, option, (char *)&value, &valSize));
+#endif
 }
 
 
 BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize)
 {
+#ifdef __BEOS__
+  return FALSE;
+#else
   return ConvertOSError(::getsockopt(os_handle,
                             SOL_SOCKET, option, (char *)valuePtr, (socklen_t *)&valueSize));
+#endif
 }
 
 
@@ -665,9 +676,11 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
+#ifndef __BEOS__
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
+#endif
 
   return 0;
 }
@@ -675,9 +688,11 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
+#ifndef __BEOS__
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
+#endif
 
   return psprintf("%u", proto);
 }

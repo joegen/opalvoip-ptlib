@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.38  1999/02/26 04:10:39  robertj
+ * More BeOS port changes
+ *
  * Revision 1.37  1999/02/22 13:26:54  robertj
  * BeOS port changes.
  *
@@ -106,7 +109,16 @@ int PSocket::os_close()
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
+#ifdef __BEOS__
+  // abort any I/O block using this os_handle
+  PProcess::Current().PXAbortIOBlock(handle);
+
+  int retval = ::closesocket(os_handle);
+  os_handle = -1;
+  return retval;
+#else
   return PXClose();
+#endif
 }
 
 int PSocket::os_socket(int af, int type, int protocol)
@@ -132,7 +144,7 @@ int PSocket::os_socket(int af, int type, int protocol)
         !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
       ::close(handle);
 #else
-	!ConvertOSError(setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &i, sizeof(int)))) {
+	!ConvertOSError(::setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &cmd, sizeof(int)))) {
       ::closesocket(handle);
 #endif
       return -1;
@@ -363,14 +375,16 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
     return FALSE;
   }
 
+#ifndef __BEOS__
   // attempt to read out of band data
   char buffer[32];
   int ooblen;
   while ((ooblen = ::recv(os_handle, buffer, sizeof(buffer), MSG_OOB)) > 0) 
     OnOutOfBand(buffer, ooblen);
+#endif // !__BEOS__
 
     // attempt to read non-out of band data
-  if (ConvertOSError(lastReadCount = ::read(os_handle, (char *)buf, maxLen)))
+  if (ConvertOSError(lastReadCount = ::recv(os_handle, (char *)buf, maxLen, 0)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -417,8 +431,11 @@ BOOL PSocket::os_sendto(
 
   // attempt to read data
   int writeResult;
-  if ((writeResult =
-         ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)) > 0) {
+  if (addr != NULL)
+    writeResult = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
+  else
+    writeResult = ::send(os_handle, (char *)buf, len, flags);
+  if (writeResult > 0) {
     PThread::Yield();
     lastWriteCount = writeResult;
     return TRUE;
@@ -433,8 +450,11 @@ BOOL PSocket::os_sendto(
   }
 
   // attempt to read data
-  if (ConvertOSError(lastWriteCount =
-         ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)))
+  if (addr != NULL)
+    lastWriteCount = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
+  else
+    lastWriteCount = ::send(os_handle, (char *)buf, len, flags);
+  if (ConvertOSError(lastWriteCount))
     return lastWriteCount > 0;
 
   return FALSE;
