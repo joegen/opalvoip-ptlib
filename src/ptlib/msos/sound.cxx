@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.32  2002/08/05 01:22:59  robertj
+ * Fixed possible range error on SetVolume(), thanks Sonya Cooper-Hull
+ *
  * Revision 1.31  2002/02/08 09:59:45  robertj
  * Slight adjustment to API and documentation for volume functions.
  * Added implementation for volume function on play, still needs recording.
@@ -1423,6 +1426,8 @@ BOOL PSoundChannel::SetVolume(unsigned newVolume)
     return SetErrorValues(NotOpen, EBADF);
 
   DWORD rawVolume = newVolume*65536/100;
+  if (rawVolume > 65535)
+    rawVolume = 65535;
 
   if (direction == Recorder) {
     // Does not appear to be an input volume!!
