@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.87  2000/01/06 14:09:42  robertj
+ * Fixed problems with starting up timers,losing up to 10 seconds
+ *
  * Revision 1.86  1999/11/18 02:22:53  robertj
  * Fixed bug in GetErrorText() occasionally returning incorrect empty string, thanks Ulrich Findeisen
  *
@@ -1128,8 +1131,8 @@ void PProcess::HouseKeepingThread::Main()
     DWORD delay;
     if (nextTimer == PMaxTimeInterval)
       delay = INFINITE;
-    else if (nextTimer > 10000)
-      delay = 10000;
+    else if (nextTimer > 1000)
+      delay = 1000;
     else
       delay = nextTimer.GetInterval();
 
