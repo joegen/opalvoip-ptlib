@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.31  2004/11/01 23:16:59  ykiryanov
+ * Added macro declaring sound plugin to be static for BeOS
+ *
  * Revision 1.30  2003/12/28 02:03:18  csoutheren
  * Fixed problem with GetLastReadCount/GetLastWriteCount  on Windows sound devices
  *
@@ -140,6 +143,8 @@
 
 #if defined(_WIN32)
 PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_WindowsMultimedia);
+#elif defined(__BEOS__)
+PWLIB_STATIC_LOAD_PLUGIN(PSoundChannelBeOS);
 #endif
 
 
