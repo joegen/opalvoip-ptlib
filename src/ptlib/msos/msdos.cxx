@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.9 1995/04/01 08:06:03 robertj Exp $
+ * $Id: msdos.cxx,v 1.10 1995/06/17 00:59:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
+ * Revision 1.10  1995/06/17 00:59:21  robertj
+ * Moved PPipeChannel::Execute from common dos/windows to individual files.
+ *
  * Revision 1.9  1995/04/01 08:06:03  robertj
  * Fixed yield for straight DOS and QUICKWIN systems.
  *
@@ -40,6 +43,7 @@
 #include "ptlib.h"
 
 #include <bios.h>
+#include <fcntl.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -433,6 +437,32 @@ PStringList PSerialChannel::GetPortNames()
   return ports;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+BOOL PPipeChannel::Execute()
+{
+  if (hasRun)
+    return FALSE;
+
+  flush();
+  if (os_handle >= 0) {
+    _close(os_handle);
+    os_handle = -1;
+  }
+
+  if (!ConvertOSError(system(subProgName)))
+    return FALSE;
+
+  if (!fromChild.IsEmpty()) {
+    os_handle = _open(fromChild, _O_RDONLY);
+    if (!ConvertOSError(os_handle))
+      return FALSE;
+  }
+
+  return TRUE;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
