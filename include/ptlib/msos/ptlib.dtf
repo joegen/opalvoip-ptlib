@@ -2033,7 +2033,6 @@ EXPORTS
     ?Move@PFile@@SAHABVPFilePath@@0H@Z @1443 NONAME ;public: static int __cdecl PFile::Move(class PFilePath const &,class PFilePath const &,int)
     ?Move@PWin32OidBuffer@@QAEXPAEK@Z @1934 NONAME ;public: void __thiscall PWin32OidBuffer::Move(unsigned char *,unsigned long)
     ?Next@PDirectory@@QAEHXZ @1444 NONAME ;public: int __thiscall PDirectory::Next(void)
-    ?nil@@3VElement@PAbstractSortedList@@A @1445 NONAME ;class PAbstractSortedList::Element  nil
     ?OnContinue@PServiceProcess@@UAEXXZ @1446 NONAME ;public: virtual void __thiscall PServiceProcess::OnContinue(void)
     ?OnControl@PServiceProcess@@UAEXXZ @1447 NONAME ;public: virtual void __thiscall PServiceProcess::OnControl(void)
     ?OnOpen@PIndirectChannel@@MAEHXZ @1448 NONAME ;protected: virtual int __thiscall PIndirectChannel::OnOpen(void)
