@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.65  2002/03/18 05:02:27  robertj
+ * Added functions to set component parts of URL.
+ * Fixed output of parameters when more than one ';' involved.
+ *
  * Revision 1.64  2001/11/09 05:46:14  robertj
  * Removed double slash on sip URL.
  * Fixed extra : if have username but no password.
@@ -331,7 +335,7 @@ static const schemeStruct & GetSchemeInfo(const PString & scheme)
 
 PURL::PURL()
 {
-  scheme = "http";
+  scheme = schemeInfo[0].name;
   port   = 0;
 }
 
@@ -351,48 +355,19 @@ PURL::PURL(const PString & str)
 PObject::Comparison PURL::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PURL::Class()), PInvalidCast);
-  const PURL & other = (const PURL &)obj;
-  Comparison c = scheme.Compare(other.scheme);
-  if (c == EqualTo) {
-    c = username.Compare(other.username);
-    if (c == EqualTo) {
-      c = password.Compare(other.password);
-      if (c == EqualTo) {
-        c = hostname.Compare(other.hostname);
-        if (c == EqualTo) {
-          c = pathStr.Compare(other.pathStr);
-          if (c == EqualTo) {
-            c = parameters.Compare(other.parameters);
-            if (c == EqualTo) {
-              c = fragment.Compare(other.fragment);
-              if (c == EqualTo)
-                c = queryStr.Compare(other.queryStr);
-            }
-          }
-        }
-      }
-    }
-  }
-  return c;
+  return urlString.Compare(((const PURL &)obj).urlString);
 }
 
 
 PINDEX PURL::HashFunction() const
 {
-  return ((BYTE)toupper(scheme[0]) +
-          (BYTE)toupper(username[0]) +
-          (BYTE)toupper(password[0]) +
-          (BYTE)toupper(hostname[0]) +
-          (BYTE)toupper(pathStr[0]) +
-          (BYTE)toupper(parameters[0]) +
-          (BYTE)toupper(fragment[0]) +
-          (BYTE)toupper(queryStr[0]))%41;
+  return urlString.HashFunction();
 }
 
 
 void PURL::PrintOn(ostream & stream) const
 {
-  stream << AsString(FullURL);
+  stream << urlString;
 }
 
 
@@ -501,7 +476,7 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 void PURL::Parse(const char * cstr)
 {
   hostname = PCaselessString();
-  pathStr = username = password = parameters = fragment = queryStr = PString();
+  pathStr = username = password = fragment = PString::Empty();
   path.SetSize(0);
   queryVars.RemoveAll();
   port = 0;
@@ -531,7 +506,7 @@ void PURL::Parse(const char * cstr)
   // if there is no scheme, then default to http for the local
   // on the default port
   if (scheme.IsEmpty()) {
-    scheme   = "http";
+    scheme = schemeInfo[0].name;
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
       url.Delete(0, 2);
   } else {
@@ -605,17 +580,14 @@ void PURL::Parse(const char * cstr)
   // chop off any trailing query
   pos = url.Find('?');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    queryStr = url(pos+1, P_MAX_INDEX);
+    SplitQueryVars(url(pos+1, P_MAX_INDEX), queryVars);
     url.Delete(pos, P_MAX_INDEX);
-    SplitQueryVars(queryStr, queryVars);
   }
 
   // chop off any trailing parameters
   pos = url.Find(';');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    PString paramStr = url(pos+1, P_MAX_INDEX);
-    SplitVars(paramStr, paramVars, ';', '=');
-    parameters = UntranslateString(paramStr, PathTranslation);
+    SplitVars(url(pos+1, P_MAX_INDEX), paramVars, ';', '=');
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -627,86 +599,226 @@ void PURL::Parse(const char * cstr)
   }
 
   // the hierarchy is what is left
-  pathStr = url;
-  path = url.Tokenise("/", TRUE);
-  if (path.GetSize() > 0 && path[0].IsEmpty()) 
-    path.RemoveAt(0);
-  for (pos = 0; pos < path.GetSize(); pos++) {
-    path[pos] = UntranslateString(path[pos], PathTranslation);
-    if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
-      path.RemoveAt(pos--);
-      path.RemoveAt(pos--);
-    }
-  }
+  SetPathStr(url);
 }
 
 
 PString PURL::AsString(UrlFormat fmt) const
 {
+  PINDEX i;
   PStringStream str;
 
-  if (fmt == FullURL || fmt == HostPortOnly) {
+  switch (fmt) {
+    case FullURL :
+      return urlString;
 
-    // if the scheme is empty, assume http
-    if (!scheme) {
-      str << scheme << ':';
-      const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+    case HostPortOnly :
+      if (!scheme) {
+        str << scheme << ':';
+        const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
-      if (schemeInfo.hasDoubleSlash)
-        str << "//";
+        if (schemeInfo.hasDoubleSlash)
+          str << "//";
 
-      if (schemeInfo.type == Other) 
-        str << pathStr;
-      else {
-        if (schemeInfo.type == HostOnly)
-          str << hostname;
-
-        if (schemeInfo.type == UserPasswordHostPort) {
-          if (!username) {
-            str << TranslateString(username, LoginTranslation);
-            if (!password)
-              str << ':' << TranslateString(password, LoginTranslation);
-            str << '@';
-          }
-        }
-
-        if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
-          if (hostname.IsEmpty())
-            str = PString();
-          else {
+        if (schemeInfo.type == Other) 
+          str << pathStr;
+        else {
+          if (schemeInfo.type == HostOnly)
             str << hostname;
-            if (port != schemeInfo.defaultPort)
-              str << ':' << port;
+
+          if (schemeInfo.type == UserPasswordHostPort) {
+            if (!username) {
+              str << TranslateString(username, LoginTranslation);
+              if (!password)
+                str << ':' << TranslateString(password, LoginTranslation);
+              str << '@';
+            }
+          }
+
+          if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
+            if (hostname.IsEmpty())
+              str = PString();
+            else {
+              str << hostname;
+              if (port != schemeInfo.defaultPort)
+                str << ':' << port;
+            }
           }
         }
       }
-    }
-    if (fmt == HostPortOnly)
-      return str;
-  }
+      break;
 
-  PINDEX count = path.GetSize();
-  if (count > 0) {
-    str << '/';
-    for (PINDEX i = 0; i < count; i++) {
-      str << TranslateString(path[i], PathTranslation);
-      if (i < count-1)
+    case URIOnly :
+      if (!path.IsEmpty()) {
+        PINDEX count = path.GetSize();
         str << '/';
-    }
-  }
+        for (i = 0; i < count; i++) {
+          str << TranslateString(path[i], PathTranslation);
+          if (i < count-1)
+            str << '/';
+        }
+      }
 
-  if (fmt == FullURL || fmt == URIOnly) {
-    if (!parameters)
-      str << ";" << TranslateString(parameters, PathTranslation);
+      if (!fragment)
+        str << "#" << TranslateString(fragment, PathTranslation);
 
-    if (!queryStr)
-      str << "?" << queryStr;
+      if (!paramVars.IsEmpty())
+        str << ';' << GetParameters();
 
-    if (!fragment)
-      str << "#" << TranslateString(fragment, PathTranslation);
+      if (!queryVars.IsEmpty())
+        str << '?' << GetQuery();
   }
 
   return str;
+}
+
+
+void PURL::SetScheme(const PString & s)
+{
+  scheme = s;
+  Recalculate();
+}
+
+
+void PURL::SetUserName(const PString & u)
+{
+  username = u;
+  Recalculate();
+}
+
+
+void PURL::SetPassword(const PString & p)
+{
+  password = p;
+  Recalculate();
+}
+
+
+void PURL::SetHostName(const PString & h)
+{
+  hostname = h;
+  Recalculate();
+}
+
+
+void PURL::SetPort(WORD newPort)
+{
+  port = newPort;
+  Recalculate();
+}
+
+
+void PURL::SetPathStr(const PString & p)
+{
+  pathStr = p;
+
+  path = pathStr.Tokenise("/", TRUE);
+
+  if (path.GetSize() > 0 && path[0].IsEmpty()) 
+    path.RemoveAt(0);
+
+  for (PINDEX i = 0; i < path.GetSize(); i++) {
+    path[i] = UntranslateString(path[i], PathTranslation);
+    if (i > 0 && path[i] == ".." && path[i-1] != "..") {
+      path.RemoveAt(i--);
+      path.RemoveAt(i--);
+    }
+  }
+
+  Recalculate();
+}
+
+
+void PURL::SetPath(const PStringArray & p)
+{
+  path = p;
+
+  pathStr.Empty();
+  for (PINDEX i = 0; i < path.GetSize(); i++)
+    pathStr += '/' + path[i];
+
+  Recalculate();
+}
+
+
+PString PURL::GetParameters() const
+{
+  PStringStream str;
+
+  for (PINDEX i = 0; i < paramVars.GetSize(); i++) {
+    if (i > 0)
+      str << ';';
+    str << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
+    PString data = paramVars.GetDataAt(i);
+    if (!data)
+      str << '=' << TranslateString(data, QueryTranslation);
+  }
+
+  return str;
+}
+
+
+void PURL::SetParameters(const PString & parameters)
+{
+  SplitVars(parameters, paramVars, ';', '=');
+  Recalculate();
+}
+
+
+void PURL::SetParamVars(const PStringToString & p)
+{
+  paramVars = p;
+  Recalculate();
+}
+
+
+void PURL::SetParamVar(const PString & key, const PString & data)
+{
+  if (data.IsEmpty())
+    paramVars.RemoveAt(key);
+  else
+    paramVars.SetAt(key, data);
+  Recalculate();
+}
+
+
+PString PURL::GetQuery() const
+{
+  PStringStream str;
+
+  for (PINDEX i = 0; i < queryVars.GetSize(); i++) {
+    if (i > 0)
+      str << '&';
+    str << TranslateString(queryVars.GetKeyAt(i), QueryTranslation)
+        << '='
+        << TranslateString(queryVars.GetDataAt(i), QueryTranslation);
+  }
+
+  return str;
+}
+
+
+void PURL::SetQuery(const PString & queryStr)
+{
+  SplitQueryVars(queryStr, queryVars);
+  Recalculate();
+}
+
+
+void PURL::SetQueryVars(const PStringToString & q)
+{
+  queryVars = q;
+  Recalculate();
+}
+
+
+void PURL::SetQueryVar(const PString & key, const PString & data)
+{
+  if (data.IsEmpty())
+    queryVars.RemoveAt(key);
+  else
+    queryVars.SetAt(key, data);
+  Recalculate();
 }
 
 
@@ -719,6 +831,15 @@ BOOL PURL::OpenBrowser(const PString & url)
   MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
 #endif
   return FALSE;
+}
+
+
+void PURL::Recalculate()
+{
+  if (scheme.IsEmpty())
+    scheme = schemeInfo[0].name;
+
+  urlString = AsString(HostPortOnly) + AsString(URIOnly);
 }
 
 
