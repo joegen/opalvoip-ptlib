@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.65  2001/02/21 04:33:46  robertj
+ * Fixed GNU warning.
+ *
  * Revision 1.64  2001/02/20 02:32:41  robertj
  * Added PServiceMacro version that can do substitutions on blocks of HTML.
  *
@@ -1701,7 +1704,6 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
     }
 
     pos = 0;
-    len;
     while (text.FindRegEx(MacroRegEx, pos, len, pos)) {
       PCaselessString cmd;
       PString args;
