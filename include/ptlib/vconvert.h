@@ -26,6 +26,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.10  2001/11/28 04:41:28  robertj
+ * Added synonym colour class for equivalent colour format strings.
+ * Allowed for setting ancestor classes in PCOLOUR_CONVERTER() macro.
+ *
  * Revision 1.9  2001/05/14 05:10:38  robertj
  * Fixed problems with video colour converters registration, could not rely
  *   on static PList being initialised before all registration instances.
@@ -219,22 +223,22 @@ class PColourConverter : public PObject
       unsigned height   /// Height of frame (used for both src and dst)
     );
 
-    /**Return the output frame size
+    /**Get the output frame size.
       */
-    BOOL GetDstFrameSize(unsigned &w, unsigned &h) const;
+    BOOL GetDstFrameSize(
+      unsigned & width, /// Width of destination frame
+      unsigned & height /// Height of destination frame
+    ) const;
 
-    /**Return the input frame size
+    /**Get the input frame size.
       */
-    BOOL GetSrcFrameSize(unsigned &w, unsigned &h) const;
+    BOOL GetSrcFrameSize(
+      unsigned & width, /// Width of source frame
+      unsigned & height /// Height of source frame
+    ) const;
 
 
   protected:
-    virtual BOOL SimpleConvert(
-      const BYTE * srcFrameBuffer,  /// Frame store for source pixels
-      BYTE * dstFrameBuffer,        /// Frame store for destination pixels
-      PINDEX * bytesReturned        /// Bytes written to dstFrameBuffer
-    );
-
     PString  srcColourFormat;
     PString  dstColourFormat;
     unsigned srcFrameWidth;
@@ -258,23 +262,69 @@ class PColourConverter : public PObject
    converter. It declares everything needs so only the body of the Convert()
    function need be added.
   */
-#define PCOLOUR_CONVERTER(cls,src,dst) \
-class cls : public PColourConverter { \
+#define PCOLOUR_CONVERTER2(cls,ancestor,src,dst) \
+class cls : public ancestor { \
   public: \
   cls(const PString & srcFmt, const PString & dstFmt, unsigned w, unsigned h) \
-    : PColourConverter(srcFmt, dstFmt, w, h) { } \
+    : ancestor(srcFmt, dstFmt, w, h) { } \
   virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
 }; \
-class cls##_Registration : public PColourConverterRegistration { \
+static class cls##_Registration : public PColourConverterRegistration { \
   public: \
   cls##_Registration() \
     : PColourConverterRegistration(src,dst) { } \
   virtual PColourConverter * Create(unsigned w, unsigned h) const; \
-} cls##_registration_instance; \
+} p_##cls##_registration_instance; \
 PColourConverter * cls##_Registration::Create(unsigned w, unsigned h) const \
   { PINDEX tab = Find('\t'); return new cls(Left(tab), Mid(tab+1), w, h); } \
 BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
 
+
+/**Declare a colour converter class with Convert() function.
+   This should only be used once and at the global scope level for each
+   converter. It declares everything needs so only the body of the Convert()
+   function need be added.
+  */
+#define PCOLOUR_CONVERTER(cls,src,dst) \
+        PCOLOUR_CONVERTER2(cls,PColourConverter,src,dst)
+
+
+
+/**Define synonym colour format converter.
+   This is a class that defines for which no conversion is required between
+   the specified colour format names.
+  */
+class PSynonymColour : public PColourConverter {
+  public:
+    PSynonymColour(
+      const PString & srcFmt,
+      const PString & dstFmt,
+      unsigned w, unsigned h
+    ) : PColourConverter(srcFmt, dstFmt, w, h) { }
+    virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL);
+};
+
+
+/**Define synonym colour format registration.
+   This is a class that defines for which no conversion is required between
+   the specified colour format names.
+  */
+class PSynonymColourRegistration : public PColourConverterRegistration {
+  public:
+    PSynonymColourRegistration(
+      const char * srcFmt,
+      const char * dstFmt
+    ) : PColourConverterRegistration(srcFmt,dstFmt) { }
+  virtual PColourConverter * Create(unsigned w, unsigned h) const;
+};
+
+
+/**Define synonym colour format.
+   This is a class that defines for which no conversion is required between
+   the specified colour format names.
+  */
+#define PSYNONYM_COLOUR_CONVERTER(from,to) \
+  static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
 
 // End of file ///////////////////////////////////////////////////////////////
