@@ -12,7 +12,7 @@ Contents
 	5.	Using PWLib
 	6.	Platform Specific Issues
 	7.	Conclusion
-        8.      Licensing
+	8.	Licensing
 
 
 
@@ -430,6 +430,15 @@ to the following restrictions:
 4. This notice may not be removed or altered.
 
 
+The in-band DTMF decoding code was taken from FreeBSD's dtmfdecode.c
+application written by Poul-Henning Kamp. It has the following
+license:
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <phk@FreeBSD.org> wrote this file.  As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
+ * ----------------------------------------------------------------------------
 
 ================================================================================
 Equivalence Pty. Ltd.
