@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.42  1999/03/02 05:41:59  robertj
+ * More BeOS changes
+ *
  * Revision 1.41  1999/02/26 04:10:39  robertj
  * More BeOS port changes
  *
@@ -446,12 +449,10 @@ void PProcess::CommonDestruct()
 //  Non-PTHREAD based routines
 //
 
-#ifndef P_PTHREADS
-
-#include "tlibcoop.cxx"
-
-#else
-
+#ifdef P_PTHREADS
 #include "tlibthrd.cxx"
-
+#elif defined(BE_THREADS)
+#include "tlibbe.cxx"
+#else
+#include "tlibcoop.cxx"
 #endif

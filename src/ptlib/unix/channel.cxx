@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.25  1999/03/02 05:41:59  robertj
+ * More BeOS changes
+ *
  * Revision 1.24  1999/02/22 13:26:53  robertj
  * BeOS port changes.
  *
@@ -236,7 +239,7 @@ BOOL PChannel::PXClose()
   os_handle = -1;
   PX_iostreamMutex.Signal();
 
-#ifndef P_PTHREADS
+#if !defined(P_PTHREADS) && !defined(BE_THREADS)
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 

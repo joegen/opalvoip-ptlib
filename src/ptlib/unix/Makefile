@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.41  1999/03/02 05:41:59  robertj
+# More BeOS changes
+#
 # Revision 1.40  1999/02/25 03:44:58  robertj
 # Sound driver implementation changes for various unix platforms.
 #
@@ -182,6 +185,10 @@ endif
 
 ifeq ($(OSTYPE),solaris)
 SOUND_SOURCE = sunaudio.cxx
+endif
+
+ifeq ($(OSTYPE),beos)
+SOUND_SOURCE = beaudio.cxx
 endif
 
 
