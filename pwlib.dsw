@@ -131,6 +131,24 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name Console
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "pwtest"=.\pwtest\pwtest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name PWLib
+    End Project Dependency
 }}}
 
 ###############################################################################
