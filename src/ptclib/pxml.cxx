@@ -99,6 +99,22 @@ PXML::~PXML()
   delete rootElement;
 }
 
+PXML::PXML(const PXML & xml)
+{
+  Construct();
+
+  options      = xml.options;
+  loadFromFile = xml.loadFromFile;
+  loadFilename = xml.loadFilename;
+  version      = xml.version;
+  encoding     = xml.encoding;
+  standAlone   = xml.standAlone;
+
+  PXMLElement * oldRootElement = xml.rootElement;
+  if (oldRootElement != NULL)
+    rootElement = (PXMLElement *)oldRootElement->Clone(NULL);
+}
+
 void PXML::Construct()
 {
   rootElement    = NULL;
@@ -115,6 +131,13 @@ BOOL PXML::IsDirty() const
     return FALSE;
 
   return rootElement->IsDirty();
+}
+
+PCaselessString PXML::GetDocumentType() const
+{ 
+  if (rootElement == NULL)
+    return PCaselessString();
+  return rootElement->GetName();
 }
 
 BOOL PXML::LoadFile(const PFilePath & fn, int _options)
@@ -153,9 +176,13 @@ BOOL PXML::Load(const PString & data, int _options)
   XML_SetDoctypeDeclHandler  (parser, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
 
   int done = 1;
-  XML_Parse(parser, (const char *)data, data.GetLength(), done);
+  if (XML_Parse(parser, (const char *)data, data.GetLength(), done) != 0)
+    return TRUE;
 
-  return TRUE;
+  XML_Error err = XML_GetErrorCode(parser);
+  const char * errorStr = XML_ErrorString(err);
+  PTRACE(2, "XML\tXML parse error " << errorStr << ": line " << XML_GetCurrentLineNumber(parser) << ", col " << XML_GetCurrentColumnNumber(parser));
+  return FALSE;
 }
 
 BOOL PXML::Save(int _options)
@@ -345,6 +372,11 @@ void PXMLData::SetString(const PString & str, BOOL setDirty)
     SetDirty();
 }
 
+PXMLObject * PXMLData::Clone(PXMLElement * _parent) const
+{
+  return new PXMLData(_parent, value);
+}
+
 ///////////////////////////////////////////////////////
 
 PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
@@ -358,13 +390,26 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
 PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX start) const
 {
   PINDEX idx;
-  for (idx = start; idx < subObjects.GetSize(); idx++) {
+  PINDEX size = subObjects.GetSize();
+  PINDEX count = 0;
+  for (idx = 0; idx < size; idx++) {
     if (subObjects[idx].IsElement()) {
-      if ( ((PXMLElement &)subObjects[idx]).GetName() *= name)
-        return (PXMLElement *)&subObjects[idx];
+      PXMLElement & subElement = ((PXMLElement &)subObjects[idx]);
+      if (subElement.GetName() *= name) {
+        if (count++ == start)
+          return (PXMLElement *)&subObjects[idx];
+      }
     }
   }
   return NULL;
+}
+
+PXMLObject * PXMLElement::GetElement(PINDEX idx) const
+{
+  if (idx >= subObjects.GetSize())
+    return NULL;
+
+  return &subObjects[idx];
 }
 
 PString PXMLElement::GetAttribute(const PCaselessString & key)
@@ -434,6 +479,21 @@ void PXMLElement::AddSubObject(PXMLObject * elem, BOOL setDirty)
   subObjects.SetAt(subObjects.GetSize(), elem);
   if (setDirty)
     SetDirty();
+}
+
+PXMLObject * PXMLElement::Clone(PXMLElement * _parent) const
+{
+  PXMLElement * elem = new PXMLElement(_parent);
+
+  elem->SetName(name);
+  elem->attributes = attributes;
+  elem->dirty      = dirty;
+
+  PINDEX idx;
+  for (idx = 0; idx < subObjects.GetSize(); idx++)
+    elem->AddSubObject(subObjects[idx].Clone(elem), FALSE);
+
+  return elem;
 }
 
 ///////////////////////////////////////////////////////
