@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.79  2002/01/10 06:36:58  robertj
+ * Fixed possible resource leak under Solaris, thanks Joegen Baclor
+ *
  * Revision 1.78  2001/12/17 11:06:46  robertj
  * Removed assert on NULL PThread::Current(), can occur if thread from other
  *   subsystem to pwlib
@@ -464,6 +467,7 @@ void PThread::Restart()
 
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
+  pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
 #ifdef P_LINUX
   /*
