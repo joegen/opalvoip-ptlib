@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.3  1999/01/31 10:14:07  robertj
+ * Changed about dialog to be full company name
+ *
  * Revision 1.2  1999/01/31 08:10:33  robertj
  * Fixed PConfig file save, out by one error in array subscript.
  *
@@ -407,11 +410,8 @@ BOOL PIpAccessControlList::Load(PConfig & cfg)
 
 BOOL PIpAccessControlList::Load(PConfig & cfg, const PString & baseName)
 {
-  PINDEX count = cfg.GetInteger(baseName & "Array Size");
-  if (count == 0)
-    return Add(INADDR_ANY, INADDR_ANY, TRUE);  // Match all
-
   BOOL ok = TRUE;
+  PINDEX count = cfg.GetInteger(baseName & "Array Size");
   for (PINDEX i = 1; i <= count; i++) {
     if (!Add(cfg.GetString(baseName & PString(PString::Unsigned, i))))
       ok = FALSE;
