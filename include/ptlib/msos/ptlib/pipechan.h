@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.8  1998/11/30 02:55:22  robertj
+ * New directory structure
+ *
  * Revision 1.7  1998/10/26 09:11:30  robertj
  * Added ability to separate out stdout from stderr on pipe channels.
  *
@@ -54,7 +57,7 @@
 
 #ifndef _PPIPECHANNEL
 
-#include "..\..\common\ptlib/pipechan.h"
+#include "..\..\pipechan.h"
   public:
     virtual BOOL IsOpen() const;
   protected:
