@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.25  2004/02/15 03:04:52  rjongbloed
+ * Fixed problem with PSortedList nil variable and assignment between instances,
+ *   pointed out by Ben Lear.
+ *
  * Revision 1.24  2004/02/09 06:23:32  csoutheren
  * Added fix for gcc 3.3.1 problem. Apparently, it is unable to correctly resolve
  * a function argument that is a reference to a const pointer. Changing the argument
@@ -1004,12 +1008,13 @@ class PAbstractSortedList : public PCollection
       PObject * data;
       PINDEX subTreeSize;
       enum { Red, Black } colour;
-    } nil;
+    };
 
     struct Info {
       Element * root;
       Element * lastElement;
       PINDEX    lastIndex;
+      Element   nil;
     } * info;
 
     // New functions for class
