@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.130  2003/11/05 05:56:08  csoutheren
+ * Added #pragma to include required libs
+ *
  * Revision 1.129  2003/10/27 03:29:11  csoutheren
  * Added support for QoS
  *    Thanks to Henry Harrison of AliceStreet
@@ -474,6 +477,8 @@
 #include <ptlib/msos/ptlib/debstrm.h>
 #include <winsock2.h>
 #include<ws2tcpip.h>
+
+#pragma comment(lib, "mpr.lib")
 
 #define new PNEW
 
