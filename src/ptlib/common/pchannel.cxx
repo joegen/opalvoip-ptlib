@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.32  2004/07/03 03:00:46  rjongbloed
+ * Fixed MSVC warning
+ *
  * Revision 1.31  2004/07/03 01:48:28  rjongbloed
  * Fixed memory leak caused by buggy iostream, can't do init twice. Thanks Norbert Bartalsky
  *
@@ -248,6 +251,10 @@ streampos PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
 #endif
 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+
 PChannel::PChannel()
   : iostream(new PChannelStreamBuffer(this)),
     readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
@@ -258,6 +265,10 @@ PChannel::PChannel()
   lastReadCount = lastWriteCount = 0;
   Construct();
 }
+
+#ifdef _MSC_VER
+#pragma warning(default:4355)
+#endif
 
 
 PChannel::~PChannel()
