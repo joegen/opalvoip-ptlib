@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.123  2002/11/19 10:28:50  robertj
+ * Changed PFilePath so can be empty string, indicating illegal path.
+ *
  * Revision 1.122  2002/09/23 07:17:24  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -724,14 +727,15 @@ void PDirectory::Close()
 
 PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 {
+  if (path.IsEmpty() && !isDirectory)
+    return path;
+
 #ifdef _WIN32_WCE //doesn't support Current Directory so the path suppose to be full
   PString fullpath=path;
   PINDEX len = fullpath.GetLength();
 
 #else
   PString partialpath = path;
-  if (path.IsEmpty())
-    partialpath = ".";
 
   LPSTR dummy;
   PString fullpath;
