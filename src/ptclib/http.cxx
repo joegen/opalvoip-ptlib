@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.46 1997/07/14 11:47:10 robertj Exp $
+ * $Id: http.cxx,v 1.47 1997/11/10 12:40:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.47  1997/11/10 12:40:20  robertj
+ * Fixed illegal character set for URL's.
+ *
  * Revision 1.46  1997/07/14 11:47:10  robertj
  * Added "const" to numerous variables.
  *
@@ -317,19 +320,18 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 {
   PString xlat = str;
 
-  PString unsafeChars = ";/?:@=&#%+";
-  if (type != QueryTranslation)
-    unsafeChars += ' ';
+  if (type == QueryTranslation) {
+    PINDEX space = (PINDEX)-1;
+    while ((space = xlat.Find(' ', space+1)) != P_MAX_INDEX)
+      xlat[space] = '+';
+  }
+
+  static const char safeChars[] =
+        "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$-_.!*'(),+";
 
   PINDEX pos = (PINDEX)-1;
-  while ((pos = xlat.FindOneOf(unsafeChars, pos+1)) != P_MAX_INDEX)
+  while ((pos += 1+strspn(&xlat[pos+1], safeChars)) < xlat.GetLength())
     xlat.Splice(psprintf("%%%02X", xlat[pos]), pos, 1);
-
-  if (type == QueryTranslation) {
-    pos = (PINDEX)-1;
-    while ((pos = xlat.Find(' ', pos+1)) != P_MAX_INDEX)
-      xlat[pos] = '+';
-  }
 
   return xlat;
 }
