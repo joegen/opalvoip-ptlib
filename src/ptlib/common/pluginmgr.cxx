@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.14  2004/04/22 11:43:48  csoutheren
+ * Factored out functions useful for loading dynamic libraries
+ *
  * Revision 1.13  2004/04/14 08:12:04  csoutheren
  * Added support for generic plugin managers
  *
@@ -73,6 +76,16 @@
 
 //////////////////////////////////////////////////////
 
+PStringArray PPluginManager::GetPluginDirs()
+{
+  PString env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+  if (env == NULL)
+    env = P_DEFAULT_PLUGIN_DIR;
+
+  // split into directories on correct seperator
+  return env.Tokenise(DIR_SEP, TRUE);
+}
+
 PPluginManager & PPluginManager::GetPluginManager()
 {
   static PMutex mutex;
@@ -81,13 +94,9 @@ PPluginManager & PPluginManager::GetPluginManager()
   PWaitAndSignal m(mutex);
 
   if (systemPluginMgr == NULL) {
-    systemPluginMgr = new PPluginManager;
-    PString env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
-    if (env == NULL)
-      env = P_DEFAULT_PLUGIN_DIR;
-
     // split into directories on correct seperator
-    PStringArray dirs = env.Tokenise(DIR_SEP, TRUE);
+    PStringArray dirs = GetPluginDirs();
+    systemPluginMgr = new PPluginManager;
     PINDEX i;
     for (i = 0; i < dirs.GetSize(); i++) 
       systemPluginMgr->LoadPluginDirectory(dirs[i]);
@@ -155,28 +164,6 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
   return FALSE;
 }
 
-
-void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
-{
-  PDirectory dir = directory;
- 
-  if (!dir.Open()) {
-    PTRACE(4, "Cannot open plugin directory " << dir);
-    return;
-  }
- 
-  PTRACE(4, "Enumerating plugin directory " << dir);
-
-  do {
-    PString entry = dir + dir.GetEntryName();
-    if (dir.IsSubDir())
-      LoadPluginDirectory(entry);
-    else if (PFilePath(entry).GetType() *= PDynaLink::GetExtension()) 
-      LoadPlugin(entry);
-  } while (dir.Next());
-}
-
-  
 PStringList PPluginManager::GetPluginTypes() const
 {
   PWaitAndSignal n(serviceListMutex);
