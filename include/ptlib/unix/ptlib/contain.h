@@ -74,6 +74,6 @@ typedef int		      INT;
 //  include common declarations
 //
 
-#include "../../common/contain.h"
+#include "../../common/ptlib/contain.h"
 
 #endif
