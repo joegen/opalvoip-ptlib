@@ -25,6 +25,10 @@ void FindIP::Main()
   cout << "Find IP - Find the IP address of your NAT box" << endl;
   PString ip;
 
+  if (get_ip("http://dnscheck.blueyonder.co.uk:888/cgi-bin/checker.pl",ip)) {
+    cout << ip << endl;
+  }
+
   if (get_ip("http://checkip.dyndns.org:8245/",ip)) {
     cout << ip << endl;
   }
@@ -48,8 +52,7 @@ void FindIP::Main()
 
 BOOL FindIP::get_ip(PString server_url, PString &ip_address){
 
-  cout << "----------------------------------------" << endl;
-  cout << "Connecting to " << server_url << endl;
+  cout << "Trying " << server_url << " - " << flush;
 
   BOOL result = FALSE;
 
@@ -66,7 +69,8 @@ BOOL FindIP::get_ip(PString server_url, PString &ip_address){
       PINDEX pos,len;
       if (html.FindRegEx(regex, pos, len)) {
         ip_address = html.Mid(pos,len);
-        cout << "Your real IP is " << ip_address << endl;
+        cout << "IP obtained." << endl;
+        //cout << "Your real IP is " << ip_address << endl;
 	result = TRUE;
       }
     } else {
@@ -75,7 +79,6 @@ BOOL FindIP::get_ip(PString server_url, PString &ip_address){
   } else {
     cout << "Could not get page from server." << endl;
   }
-  cout << "----------------------------------------" << endl;
   return result;
 }
 
