@@ -412,14 +412,9 @@ PXMLObject * PXMLElement::GetElement(PINDEX idx) const
   return &subObjects[idx];
 }
 
-PString PXMLElement::GetAttribute(const PCaselessString & key)
+PString PXMLElement::GetAttribute(const PCaselessString & key) const
 {
   return attributes(key);
-}
-
-BOOL PXMLElement::GetAttribute(const PCaselessString & key) const
-{
-  return attributes.Contains(key);
 }
 
 void PXMLElement::SetAttribute(const PCaselessString & key,
@@ -495,6 +490,20 @@ PXMLObject * PXMLElement::Clone(PXMLElement * _parent) const
 
   return elem;
 }
+
+PString PXMLElement::GetData() const
+{
+  PString str;
+  PINDEX idx;
+  for (idx = 0; idx < subObjects.GetSize(); idx++) {
+    if (subObjects[idx].IsData()) {
+      PXMLData & dataElement = ((PXMLData &)subObjects[idx]);
+      str = str & dataElement.GetString();
+    }
+  }
+  return str;
+}
+
 
 ///////////////////////////////////////////////////////
 
