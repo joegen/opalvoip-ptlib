@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.13  1998/11/20 03:17:43  robertj
+ * Split rad and write buffers to separate pools.
+ *
  * Revision 1.12  1998/11/19 05:18:48  robertj
  * Added route table manipulation functions to PIPSocket class.
  *
@@ -266,8 +269,9 @@ class PWin32PacketSYS : public PWin32PacketDriver
 
 /////////////////////////////////////////////////////////////////////////////
 
-class PWin32PacketBuffer
+class PWin32PacketBuffer : public PBYTEArray
 {
+  PCLASSINFO(PWin32PacketBuffer, PBYTEArray)
   public:
     enum Statuses {
       Uninitialised,
@@ -275,9 +279,8 @@ class PWin32PacketBuffer
       Completed
     };
 
-    PWin32PacketBuffer();
+    PWin32PacketBuffer(PINDEX sz);
 
-    void SetSize(PINDEX sz);
     PINDEX GetData(void * buf, PINDEX size);
     PINDEX PutData(const void * buf, PINDEX length);
     HANDLE GetEvent() const { return overlap.hEvent; }
@@ -294,7 +297,6 @@ class PWin32PacketBuffer
   protected:
     Statuses         status;
     PWin32Overlapped overlap;
-    PBYTEArray       data;
     DWORD            count;
 };
 
@@ -826,7 +828,8 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
 
   RegistryKey bindRegistry(devKey + "Bindings", RegistryKey::ReadOnly);
   PString binding;
-  for (PINDEX idx = 0; bindRegistry.EnumValue(idx, binding); idx++) {
+  PINDEX idx = 0;
+  while (bindRegistry.EnumValue(idx++, binding)) {
     if (binding.Left(6) *= "MSTCP\\") {
       RegistryKey mstcpRegistry("HKEY_LOCAL_MACHINE\\Enum\\Network\\" + binding, RegistryKey::ReadOnly);
       PString str;
@@ -1090,15 +1093,18 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PEthSocket::PEthSocket(PINDEX nBuffers, PINDEX size)
+PEthSocket::PEthSocket(PINDEX nReadBuffers, PINDEX nWriteBuffers, PINDEX size)
+  : readBuffers(min(nReadBuffers, MAXIMUM_WAIT_OBJECTS)),
+    writeBuffers(min(nWriteBuffers, MAXIMUM_WAIT_OBJECTS))
 {
   driver = PWin32PacketDriver::Create();
   snmp = new PWin32SnmpLibrary;
 
-  numBuffers = min(nBuffers, MAXIMUM_WAIT_OBJECTS);
-  buffers = new PWin32PacketBuffer[nBuffers];
-  for (PINDEX i = 0; i < nBuffers; i++)
-    buffers[i].SetSize(size);
+  PINDEX i;
+  for (i = 0; i < nReadBuffers; i++)
+    readBuffers.SetAt(i, new PWin32PacketBuffer(size));
+  for (i = 0; i < nWriteBuffers; i++)
+    writeBuffers.SetAt(i, new PWin32PacketBuffer(size));
 
   filterType = TypeAll;
 }
@@ -1108,7 +1114,6 @@ PEthSocket::~PEthSocket()
 {
   Close();
 
-  delete [] buffers;
   delete driver;
   delete snmp;
 }
@@ -1265,7 +1270,7 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
   }
 
   static const DWORD MediumValues[NumMediumTypes] = {
-    NdisMedium802_3, NdisMediumWan
+    0xffffffff, NdisMedium802_3, NdisMediumWan, 0xffffffff
   };
 
   for (int type = Medium802_3; type < NumMediumTypes; type++) {
@@ -1286,12 +1291,13 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
   }
 
   PINDEX idx;
+  PINDEX numBuffers = readBuffers.GetSize();
 
   do {
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
 
     for (idx = 0; idx < numBuffers; idx++) {
-      PWin32PacketBuffer & buffer = buffers[idx];
+      PWin32PacketBuffer & buffer = readBuffers[idx];
       if (buffer.InProgress()) {
         if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
           if (!buffer.ReadComplete(*driver))
@@ -1324,12 +1330,12 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
     }
 
     idx = result - WAIT_OBJECT_0;
-    if (!buffers[idx].ReadComplete(*driver))
+    if (!readBuffers[idx].ReadComplete(*driver))
       return ConvertOSError(-1);
 
-  } while (!buffers[idx].IsType(filterType));
+  } while (!readBuffers[idx].IsType(filterType));
 
-  lastReadCount = buffers[idx].GetData(data, length);
+  lastReadCount = readBuffers[idx].GetData(data, length);
   return TRUE;
 }
 
@@ -1343,10 +1349,11 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
   }
 
   HANDLE handles[MAXIMUM_WAIT_OBJECTS];
+  PINDEX numBuffers = writeBuffers.GetSize();
 
   PINDEX idx;
   for (idx = 0; idx < numBuffers; idx++) {
-    PWin32PacketBuffer & buffer = buffers[idx];
+    PWin32PacketBuffer & buffer = writeBuffers[idx];
     if (buffer.InProgress()) {
       if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
         if (!buffer.WriteComplete(*driver))
@@ -1366,26 +1373,20 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
     return ConvertOSError(-1);
 
   idx = result - WAIT_OBJECT_0;
-  if (!buffers[idx].WriteComplete(*driver))
+  if (!writeBuffers[idx].WriteComplete(*driver))
     return ConvertOSError(-1);
 
-  lastWriteCount = buffers[idx].PutData(data, length);
-  return ConvertOSError(buffers[idx].WriteAsync(*driver) ? 0 : -1);
+  lastWriteCount = writeBuffers[idx].PutData(data, length);
+  return ConvertOSError(writeBuffers[idx].WriteAsync(*driver) ? 0 : -1);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PWin32PacketBuffer::PWin32PacketBuffer()
+PWin32PacketBuffer::PWin32PacketBuffer(PINDEX sz)
+  : PBYTEArray(sz)
 {
   status = Uninitialised;
-  count = 0;
-}
-
-
-void PWin32PacketBuffer::SetSize(PINDEX sz)
-{
-  data.SetSize(sz);
   count = 0;
 }
 
@@ -1395,7 +1396,7 @@ PINDEX PWin32PacketBuffer::GetData(void * buf, PINDEX size)
   if (count > (DWORD)size)
     count = size;
 
-  memcpy(buf, data, count);
+  memcpy(buf, theArray, count);
 
   return count;
 }
@@ -1403,9 +1404,9 @@ PINDEX PWin32PacketBuffer::GetData(void * buf, PINDEX size)
 
 PINDEX PWin32PacketBuffer::PutData(const void * buf, PINDEX length)
 {
-  count = min(data.GetSize(), length);
+  count = min(GetSize(), length);
 
-  memcpy(data.GetPointer(), buf, count);
+  memcpy(theArray, buf, count);
 
   return count;
 }
@@ -1417,7 +1418,7 @@ BOOL PWin32PacketBuffer::ReadAsync(PWin32PacketDriver & pkt)
     return FALSE;
 
   status = Uninitialised;
-  if (!pkt.BeginRead(data.GetPointer(), data.GetSize(), count, overlap))
+  if (!pkt.BeginRead(theArray, GetSize(), count, overlap))
     return FALSE;
 
   if (pkt.GetLastError() == ERROR_SUCCESS)
@@ -1449,7 +1450,7 @@ BOOL PWin32PacketBuffer::WriteAsync(PWin32PacketDriver & pkt)
     return FALSE;
 
   status = Uninitialised;
-  if (!pkt.BeginWrite(data, count, overlap))
+  if (!pkt.BeginWrite(theArray, count, overlap))
     return FALSE;
 
   if (pkt.GetLastError() == ERROR_SUCCESS)
@@ -1481,7 +1482,7 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
   if (filterType == PEthSocket::TypeAll)
     return TRUE;
 
-  const PEthSocket::Frame * frame = (const PEthSocket::Frame *)(const BYTE *)data;
+  const PEthSocket::Frame * frame = (const PEthSocket::Frame *)theArray;
 
   WORD len_or_type = ntohs(frame->snap.length);
   if (len_or_type > sizeof(*frame))
