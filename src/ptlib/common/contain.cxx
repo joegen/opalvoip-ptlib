@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.146  2004/03/20 04:20:34  rjongbloed
+ * Fixed some VxWorks port issues especially underrrun memory access in
+ *   the PString::FindLast function,, thanks Eize Slange
+ *
  * Revision 1.145  2004/02/23 00:44:38  csoutheren
  * A completely different, other regex include hack to avoid requiring
  * the sources when using a header-file only environment
@@ -1447,10 +1451,9 @@ PINDEX PString::HashFunction() const
   // Mark Allen Weiss, with limit of only executing over first 8 characters to
   // increase speed when dealing with large strings.
 
-  PINDEX i = 0;
   PINDEX hash = 0;
-  while (i < 8 && theArray[i] != 0)
-    hash = (hash << 5) ^ tolower(theArray[i++]) ^ hash;
+  for (PINDEX i = 0; i < 8 && theArray[i] != 0; i++)
+    hash = (hash << 5) ^ tolower(theArray[i]) ^ hash;
   return PABSINDEX(hash)%127;
 }
 
@@ -1806,7 +1809,8 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
     strSum += toupper(theArray[offset+clen]);
-    strSum -= toupper(theArray[offset++]);
+    strSum -= toupper(theArray[offset]);
+    offset++;
   }
 
   return P_MAX_INDEX;
@@ -1841,9 +1845,6 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
   if (clen > len)
     return P_MAX_INDEX;
 
-  if (offset == 0)
-    return P_MAX_INDEX;
-
   if (offset > len - clen)
     offset = len - clen;
 
@@ -1855,14 +1856,15 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
   }
 
   // search for a matching substring
-  while (offset >= 0) {
-    if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
-      return offset;
-    strSum += toupper(theArray[--offset]);
+  while (strSum != cstrSum || InternalCompare(offset, clen, cstr) != EqualTo) {
+    if (offset == 0)
+      return P_MAX_INDEX;
+    --offset;
+    strSum += toupper(theArray[offset]);
     strSum -= toupper(theArray[offset+clen]);
   }
 
-  return P_MAX_INDEX;
+  return offset;
 }
 
 
@@ -2283,14 +2285,14 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
+  PINDEX len = theArray != NULL ? GetLength() : 0;
 #ifdef P_TORNADO
   // The library provided with tornado 2.0 does not have the implementation
   // for vsnprintf
   // as workaround, just use a array size of 2000
   PAssert(SetSize(2000), POutOfMemory);
-  ::vsprintf(theArray, fmt, arg);
+  ::vsprintf(theArray+len, fmt, arg);
 #else
-  PINDEX len = theArray != NULL ? GetLength() : 0;
   PINDEX size = 0;
   do {
     size += 1000;
