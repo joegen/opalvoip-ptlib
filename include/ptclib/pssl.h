@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.17  2002/03/28 07:26:36  robertj
+ * Added Diffie-Hellman parameters wrapper class.
+ *
  * Revision 1.16  2001/12/13 09:15:20  robertj
  * Added function to get private key as ray DER binary data or as base64 string.
  *
@@ -90,6 +93,7 @@ struct ssl_st;
 struct ssl_ctx_st;
 struct x509_st;
 struct evp_pkey_st;
+struct dh_st;
 
 enum PSSLFileTypes {
   PSSLFileTypePEM,
@@ -313,6 +317,72 @@ class PSSLCertificate : public PObject
 };
 
 
+/**Diffie-Hellman parameters for SSL.
+   This class embodies a set of Diffie Helman parameters as used by
+   PSSLContext and PSSLChannel classes.
+  */
+class PSSLDiffieHellman : public PObject
+{
+  PCLASSINFO(PSSLDiffieHellman, PObject);
+  public:
+    /**Create an empty set of Diffie-Hellman parameters.
+      */
+    PSSLDiffieHellman();
+
+    /**Create a new set of Diffie-Hellman parameters given the file.
+       The type of the file can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    PSSLDiffieHellman(
+      const PFilePath & dhFile, /// Diffie-Hellman parameters file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+    );
+
+    /**Create a set of Diffie-Hellman parameters.
+      */
+    PSSLDiffieHellman(
+      const BYTE * pData, /// P data
+      PINDEX pSize,       /// Size of P data
+      const BYTE * gData, /// G data
+      PINDEX gSize        /// Size of G data
+    );
+
+    /**Create a copy of the Diffie-Hellman parameters.
+      */
+    PSSLDiffieHellman(
+      const PSSLDiffieHellman & dh
+    );
+
+    /**Create a copy of the Diffie-Hellman parameters.
+      */
+    PSSLDiffieHellman & operator=(
+      const PSSLDiffieHellman & dh
+    );
+
+    /**Destroy and release storage for Diffie-Hellman parameters.
+      */
+    ~PSSLDiffieHellman();
+
+    /**Get internal OpenSSL DH structure.
+      */
+    operator dh_st *() const { return dh; }
+
+    /**Load Diffie-Hellman parameters from file.
+       The type of the file can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    BOOL Load(
+      const PFilePath & dhFile, /// Diffie-Hellman parameters file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+    );
+
+  protected:
+    dh_st * dh;
+};
+
+
 /**Context for SSL channels.
    This class embodies a common environment for all connections made via SSL
    using the PSSLChannel class. It includes such things as the version of SSL
@@ -358,10 +428,16 @@ class PSSLContext {
       const PSSLCertificate & certificate
     );
 
-    /**Use the private key file specified.
+    /**Use the private key specified.
       */
     BOOL UsePrivateKey(
       const PSSLPrivateKey & key
+    );
+
+    /**Use the Diffie-Hellman parameters specified.
+      */
+    BOOL UseDiffieHellman(
+      const PSSLDiffieHellman & dh
     );
 
     /**Set the available ciphers to those listed.
