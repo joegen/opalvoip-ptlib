@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.45  1998/10/13 14:14:09  robertj
+ * Added thread ID to log.
+ * Added heap debug display to service menus.
+ *
  * Revision 1.44  1998/09/24 03:30:57  robertj
  * Added open software license.
  *
@@ -191,6 +195,12 @@
 
 static HINSTANCE hInstance;
 
+#define DATE_WIDTH    72
+#define THREAD_WIDTH  48
+#define LEVEL_WIDTH   32
+#define PROTO_WIDTH   40
+#define ACTION_WIDTH  48
+
 enum {
   SvcCmdDebug,
   SvcCmdTray,
@@ -324,7 +334,9 @@ void PSystemLog::Output(Level level, const char * msg)
       "Debug3"
     };
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t") << levelName[level+1] << '\t' << msg;
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t")
+         << (void *)PThread::Current() << '\t'
+         << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
       *out << " - error = " << err << endl;
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
@@ -364,7 +376,7 @@ void PSystemLog::Output(Level level, const char * msg)
       EVENTLOG_INFORMATION_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
-                levelType[level+1],     // event type
+                levelType[level+1],   // event type
                 (WORD)(level+1),      // event category
                 0x1000,               // event ID
                 NULL,                 // current user's SID
@@ -444,7 +456,14 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 
 int PServiceProcess::_main(void * arg)
 {
+#ifdef PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+#ifdef PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+
   hInstance = (HINSTANCE)arg;
 
   debugMode = FALSE;
@@ -563,6 +582,11 @@ enum {
   CutMenuID,
   DeleteMenuID,
   SelectAllMenuID,
+#ifdef _DEBUG
+  MarkMenuID,
+  DumpMenuID,
+  StatsMenuID,
+#endif
   SvcCmdBaseMenuID = 1000,
   LogLevelBaseMenuID = 2000
 };
@@ -592,6 +616,12 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
   AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+#ifdef _DEBUG
+  AppendMenu(menu, MF_STRING, MarkMenuID, "&Mark Memory");
+  AppendMenu(menu, MF_STRING, DumpMenuID, "&Dump Memory");
+  AppendMenu(menu, MF_STRING, StatsMenuID, "&Statistics");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+#endif
   AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
   AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
 
@@ -645,7 +675,14 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                                hInstance,
                                NULL);
     SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 128000, 0);
-    DWORD tabs[] = { 72, 108, 132, 172, 204, 240, 272 };
+    static const DWORD tabs[] = {
+      DATE_WIDTH,
+      DATE_WIDTH+THREAD_WIDTH,
+      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH,
+      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH,
+      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH,
+      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH+32  // Stanard tab width
+    };
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(tabs), (LPARAM)tabs);
   }
 
@@ -661,6 +698,10 @@ LPARAM WINAPI PServiceProcess::StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam,
 
 LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _DEBUG
+  static DWORD allocationNumber;
+#endif
+
   switch (msg) {
     case WM_CREATE :
       controlWindow = hWnd;
@@ -731,6 +772,20 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         case HideMenuID :
           ShowWindow(hWnd, SW_HIDE);
           break;
+
+#ifdef _DEBUG
+        case MarkMenuID :
+          allocationNumber = PMemoryHeap::GetAllocationRequest();
+          break;
+
+        case DumpMenuID :
+          PMemoryHeap::DumpObjectsSince(allocationNumber);
+          break;
+
+        case StatsMenuID :
+          PMemoryHeap::DumpStatistics();
+          break;
+#endif
 
         case CopyMenuID :
           if (debugWindow != NULL && debugWindow != (HWND)-1)
