@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.37 1998/08/20 06:01:02 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.38 1998/09/18 01:47:23 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.38  1998/09/18 01:47:23  robertj
+ * Fixed bug that made files with signature on first line fail on unix systems.
+ *
  * Revision 1.37  1998/08/20 06:01:02  robertj
  * Improved internationalisation, registrationpage override.
  *
@@ -898,7 +901,8 @@ PString PServiceHTML::CalculateSignature(const PString & out,
   PINDEX p1 = 0;
   PINDEX p2;
   while ((p2 = out.FindOneOf("\r\n", p1)) != P_MAX_INDEX) {
-    digestor.Process(out(p1, p2-1));
+    if (p2 > p1)
+      digestor.Process(out(p1, p2-1));
     digestor.Process("\r\n", 2);
     p1 = p2 + 1;
     if (out[p2] == '\r' && out[p1] == '\n') // CR LF pair
