@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.49 1996/11/04 03:40:22 robertj Exp $
+ * $Id: sockets.cxx,v 1.50 1996/11/10 21:08:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.50  1996/11/10 21:08:31  robertj
+ * Added host name caching.
+ *
  * Revision 1.49  1996/11/04 03:40:22  robertj
  * Moved address printer from inline to source.
  *
@@ -162,20 +165,9 @@
 
 #include <ctype.h>
 
-
 #if defined(_WIN32) || defined(WINDOWS)
 static PWinSock dummyForWinSock; // Assure winsock is initialised
-static struct hostent * fixed_gethostbyaddr(const char * a, int s, int p)
-{
-  struct hostent * ent = gethostbyaddr(a, s, p);
-  if (ent != NULL && ent->h_addr_list[0] != NULL)
-    ent->h_addr_list[1] = NULL;
-  return ent;
-}
-#else
-#define fixed_gethostbyaddr gethostbyaddr
 #endif
-
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
@@ -475,6 +467,205 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 
 //////////////////////////////////////////////////////////////////////////////
+// IP Caching
+
+PDECLARE_CLASS(PIPCacheData, PObject)
+  public:
+    PIPCacheData(struct hostent * ent);
+    const PString & GetHostName() const { return hostname; }
+    const PIPSocket::Address & GetHostAddress() const { return address; }
+    const PStringArray & GetHostAliases() const { return aliases; }
+    BOOL HasAged() const;
+  private:
+    PString            hostname;
+    PIPSocket::Address address;
+    PStringArray       aliases;
+    PTime              birthDate;
+};
+
+PIPCacheData::PIPCacheData(struct hostent * host_info)
+{
+  PAssertNULL(host_info);
+
+  hostname = host_info->h_name;
+  memcpy(&address, host_info->h_addr, sizeof(address));
+
+  PINDEX count = 0;
+  PINDEX i;
+  for (i = 0; host_info->h_aliases[i] != NULL; i++)
+    aliases[count++] = host_info->h_aliases[i];
+
+  for (i = 0; host_info->h_addr_list[i] != NULL; i++)
+    aliases[count++] = inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]);
+}
+
+
+BOOL PIPCacheData::HasAged() const
+{
+  static PTimeInterval retirement(0, 0, 5); // 5 minutes
+  PTime now;
+  PTimeInterval age = now - birthDate;
+  return age > retirement;
+}
+
+
+PDICTIONARY(PHostByName_private, PCaselessString, PIPCacheData);
+
+class PHostByName : PHostByName_private
+{
+  public:
+    BOOL GetHostName(const PString & name, PString & hostname);
+    BOOL GetHostAddress(const PString & name, PIPSocket::Address & address);
+    BOOL GetHostAliases(const PString & name, PStringArray & aliases);
+  private:
+    PIPCacheData * GetHost(const PString & name);
+    PSemaphore mutex;
+} pHostByName;
+
+
+BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL)
+    hostname = host->GetHostName();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & address)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL)
+    address = host->GetHostAddress();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL)
+    aliases = host->GetHostAliases();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+PIPCacheData * PHostByName::GetHost(const PString & name)
+{
+  mutex.Wait();
+
+  PCaselessString key = name;
+  PIPCacheData * host = GetAt(key);
+  if (host == NULL || host->HasAged()) {
+    struct hostent * host_info = ::gethostbyname(name);
+    if (host_info != NULL)
+      host = new PIPCacheData(host_info);
+    else
+      host = NULL;
+    SetAt(key, host);
+  }
+
+  return host;
+}
+
+
+PDECLARE_CLASS(PIPCacheKey, PObject)
+  public:
+    PIPCacheKey(PIPSocket::Address addr)
+      { hash = (addr.Byte1() + addr.Byte2() + addr.Byte3())%41; }
+    PObject * Clone() const
+    { return new PIPCacheKey(*this); }
+    PINDEX HashFunction() const
+      { return hash; }
+  private:
+    PINDEX hash;
+};
+
+PDICTIONARY(PHostByAddr_private, PIPCacheKey, PIPCacheData);
+
+class PHostByAddr : PHostByAddr_private
+{
+  public:
+    BOOL GetHostName(const PIPSocket::Address & addr, PString & hostname);
+    BOOL GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address);
+    BOOL GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
+  private:
+    PIPCacheData * GetHost(const PIPSocket::Address & addr);
+    PSemaphore mutex;
+} pHostByAddr;
+
+
+BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostname)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL)
+    hostname = host->GetHostName();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL)
+    address = host->GetHostAddress();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL)
+    aliases = host->GetHostAliases();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
+{
+  mutex.Wait();
+
+  PIPCacheKey key = addr;
+  PIPCacheData * host = GetAt(key);
+  if (host == NULL || host->HasAged()) {
+    struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+    if (host_info == NULL)
+      host = NULL;
+    else {
+#if defined(_WIN32) || defined(WINDOWS)
+      if (host_info->h_addr_list[0] != NULL)
+        host_info->h_addr_list[1] = NULL;
+#endif
+      host = new PIPCacheData(host_info);
+    }
+    SetAt(key, host);
+  }
+
+  return host;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
 PIPSocket::PIPSocket()
@@ -487,12 +678,8 @@ PString PIPSocket::GetName() const
   PString name;
   sockaddr_in address;
   int size = sizeof(address);
-  if (getpeername(os_handle, (struct sockaddr *)&address, &size) == 0) {
-    struct hostent * host_info = gethostbyaddr(
-           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
-    name = host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
-    name += ":" + PString(PString::Unsigned, ntohs(address.sin_port));
-  }
+  if (getpeername(os_handle, (struct sockaddr *)&address, &size) == 0)
+    name = GetHostName(address.sin_addr) + psprintf(":%u", ntohs(address.sin_port));
   return name;
 }
 
@@ -509,21 +696,16 @@ PString PIPSocket::GetHostName()
 
 PString PIPSocket::GetHostName(const PString & hostname)
 {
-  struct hostent * host_info;
-
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
   if (temp != 0)
-    host_info = ::gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
-  else
-    host_info = ::gethostbyname(hostname);
+    return GetHostName(temp);
 
-  if (host_info != NULL && host_info->h_name)
-    return host_info->h_name;
-  else if (temp != 0)
-    return temp;
-  else
-    return hostname;
+  PString canonicalname;
+  if (pHostByName.GetHostName(hostname, canonicalname))
+    return canonicalname;
+
+  return hostname;
 }
 
 
@@ -531,18 +713,18 @@ PString PIPSocket::GetHostName(const Address & addr)
 {
   if (addr == 0)
     return addr;
-  struct hostent * host_info =
-                ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
-  if (host_info != NULL && host_info->h_name)
-    return host_info->h_name;
-  else
-    return addr;
+
+  PString hostname;
+  if (pHostByAddr.GetHostName(addr, hostname))
+    return hostname;
+
+  return addr;
 }
 
 
 BOOL PIPSocket::GetHostAddress(Address & addr)
 {
-  return GetHostAddress(GetHostName(), addr);
+  return pHostByName.GetHostAddress(GetHostName(), addr);
 }
 
 
@@ -552,37 +734,12 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
     return FALSE;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  long temp;
-  if ((temp = inet_addr((const char *)hostname)) != -1) {
-    memcpy(&addr, &temp, sizeof(addr));
+  addr = hostname;
+  if (addr != 0)
     return TRUE;
-  }
 
   // otherwise lookup the name as a host name
-  struct hostent * host_info;
-  if ((host_info = ::gethostbyname(hostname)) == NULL)
-    return FALSE;
-
-  memcpy(&addr, host_info->h_addr, sizeof(addr));
-  return TRUE;
-}
-
-
-static void BuildAliases(struct hostent * host_info, PStringArray & aliases)
-{
-  if (host_info == NULL)
-    return;
-
-  PINDEX count = aliases.GetSize();
-  PINDEX i;
-  for (i = 0; host_info->h_aliases[i] != NULL; i++)
-    aliases[count++] = host_info->h_aliases[i];
-
-  for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
-    PIPSocket::Address temp;
-    memcpy(&temp, host_info->h_addr_list[i], sizeof(temp));
-    aliases[count++] = temp;
-  }
+  return pHostByName.GetHostAddress(hostname, addr);
 }
 
 
@@ -591,12 +748,11 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   PStringArray aliases;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  Address temp = hostname;
-  if (temp != INADDR_NONE)
-    BuildAliases(fixed_gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
-                 aliases);
+  Address addr = hostname;
+  if (addr != 0)
+    pHostByAddr.GetHostAliases(addr, aliases);
   else
-    BuildAliases(::gethostbyname(hostname), aliases);
+    pHostByName.GetHostAliases(hostname, aliases);
 
   return aliases;
 }
@@ -605,8 +761,8 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
   PStringArray aliases;
-  BuildAliases(fixed_gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
-               aliases);
+
+  pHostByAddr.GetHostAliases(addr, aliases);
 
   return aliases;
 }
@@ -621,46 +777,23 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
     return TRUE;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  DWORD temp = inet_addr((const char *)hostname);
-  if (temp == 16777343)  // Is 127.0.0.1
+  Address addr = hostname;
+  if (addr == 16777343)  // Is 127.0.0.1
     return TRUE;
-
-  struct hostent * ent;
-  if (temp != INADDR_NONE)
-    ent = fixed_gethostbyaddr((const char *)&temp, 4, PF_INET);
-  else {
-    if (isdigit(hostname[0]))
-      return FALSE;
-    ent = ::gethostbyname(hostname);
-  }
-  if (ent == NULL)
+  if (addr == (DWORD)-1)
     return FALSE;
 
-  if (memcmp(ent->h_addr, "\x7f\0\0\1", ent->h_length) == 0)
-    return TRUE;
-
-  PINDEX count = 0;
-  while (ent->h_addr_list[count] != NULL)
-    count++;
-
-  PBYTEArray itsHost(count*ent->h_length);
-
-  for (PINDEX i = 0; i < count; i++)
-    memcpy(itsHost.GetPointer()+i*ent->h_length, ent->h_addr_list[i], ent->h_length);
-
-  char myname[64];
-  if (gethostname(myname, sizeof(myname)-1) != 0)
+  PStringArray itsAliases = GetHostAliases(hostname);
+  if (itsAliases.IsEmpty())
     return FALSE;
 
-  ent = ::gethostbyname(myname);
-  if (ent == NULL)
+  PStringArray myAliases = GetHostAliases(GetHostName());
+  if (myAliases.IsEmpty())
     return FALSE;
 
-  for (PINDEX mine = 0; ent->h_addr_list[mine] != NULL; mine++) {
-    for (PINDEX its = 0; its < count; its++) {
-      if (memcmp(ent->h_addr_list[mine],
-                 &itsHost[its*ent->h_length],
-                 ent->h_length) == 0)
+  for (PINDEX mine = 0; mine < myAliases.GetSize(); mine++) {
+    for (PINDEX its = 0; its < itsAliases.GetSize(); its++) {
+      if (myAliases[mine] *= itsAliases[its])
         return TRUE;
     }
   }
@@ -720,27 +853,27 @@ BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 
 PString PIPSocket::GetLocalHostName()
 {
+  PString name;
+
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
-    return PString();
+  if (ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&address, &size)))
+    name = GetHostName(address.sin_addr);
 
-  struct hostent * host_info = gethostbyaddr(
-           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
-  return host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
+  return name;
 }
 
 
 PString PIPSocket::GetPeerHostName()
 {
+  PString name;
+
   sockaddr_in address;
   int size = sizeof(address);
-  if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
-    return PString();
+  if (ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&address, &size)))
+    name = GetHostName(address.sin_addr);
 
-  struct hostent * host_info = gethostbyaddr(
-           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
-  return host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
+  return name;
 }
 
 
@@ -837,7 +970,7 @@ PIPSocket::Address::Address(const Address & addr)
 PIPSocket::Address::Address(const PString & dotNotation)
 {
   s_addr = inet_addr((const char *)dotNotation);
-  if (s_addr == (u_long)-1L)
+  if (s_addr == INADDR_NONE)
     s_addr = 0;
 }
 
