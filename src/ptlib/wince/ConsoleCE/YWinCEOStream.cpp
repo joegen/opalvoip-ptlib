@@ -8,6 +8,8 @@
 //Yuriy Gorvitovskiy 23.06.00
 #include "ptlib.h"
 
+#pragma init_seg(lib)
+
 YWinCEOStream cerr;
 YWinCEOStream cout;
 
