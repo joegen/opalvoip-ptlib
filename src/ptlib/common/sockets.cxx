@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.5 1995/01/02 12:28:25 robertj Exp $
+ * $Id: sockets.cxx,v 1.6 1995/01/03 09:37:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.5  1995/01/02 12:28:25  robertj
+ * Revision 1.6  1995/01/03 09:37:52  robertj
+ * Added constructor to open TCP socket.
+ *
+ * Revision 1.5  1995/01/02  12:28:25  robertj
  * Documentation.
  * Added more socket functions.
  *
@@ -117,6 +120,12 @@ PTCPSocket::PTCPSocket(WORD newPort)
   port = newPort;
 }
 
+PTCPSocket::PTCPSocket(const PString & address, WORD port)
+{
+  Open(address, port);
+}
+
+
 BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 {
   // close the port if it is already open
@@ -151,8 +160,8 @@ BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 
   // make the socket non-blocking
 #ifndef WIN32
-  long cmd = 1;
-#ifdef WINDOWS
+  DWORD cmd = 1;
+#ifdef _WINDOWS
   ::ioctlsocket (os_handle, FIONBIO, &cmd);
 #else
   ::ioctl (os_handle, FIONBIO, &cmd);
@@ -239,9 +248,9 @@ PTelnetSocket::PTelnetSocket(WORD newPort)
 
 
 PTelnetSocket::PTelnetSocket(const PString & address, WORD port)
+  : PTCPSocket(address, port)
 {
   Construct();
-  Open(address, port);
 }
 
 
