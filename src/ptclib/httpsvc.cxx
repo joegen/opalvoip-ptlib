@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.2 1996/06/28 13:21:30 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.3 1996/07/15 10:36:48 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.3  1996/07/15 10:36:48  robertj
+ * Added registration info to bottom of order form so can be faxed to us.
+ *
  * Revision 1.2  1996/06/28 13:21:30  robertj
  * Fixed nesting problem in tables.
  * Fixed PConfig page always restarting.
@@ -312,7 +315,8 @@ PString POrderPage::LoadText(PHTTPRequest &)
   html << PHTML::HiddenField("product", process.GetName())
        << PHTML::HiddenField("digest",  sconf.CalculatePendingDigest());
 
-  for (PINDEX i = 0; i < securedKeys.GetSize(); i++) 
+  PINDEX i;
+  for (i = 0; i < securedKeys.GetSize(); i++) 
     html << PHTML::HiddenField(securedKeys[i],
                               sconf.GetString(prefix + securedKeys[i]).Trim());
 
@@ -357,7 +361,14 @@ PString POrderPage::LoadText(PHTTPRequest &)
       << PHTML::Paragraph()
       << PHTML::SubmitButton("Send Order Now")
       << PHTML::Form()
-      << PHTML::Body();
+      << PHTML::Paragraph()
+      << PHTML::Small()
+      << PHTML::PreFormat()
+      << '"' << process.GetName() << "\" "
+      << sconf.CalculatePendingDigest();
+  for (i = 0; i < securedKeys.GetSize(); i++) 
+    html << " \"" << sconf.GetString(prefix + securedKeys[i]).Trim() << '"';
+  html << PHTML::PreFormat() << PHTML::Small() << PHTML::Body();
 
   return html;
 }
