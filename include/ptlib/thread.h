@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.1 1994/06/25 11:55:15 robertj Exp $
+ * $Id: thread.h,v 1.2 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.1  1994/06/25 11:55:15  robertj
+ * Revision 1.2  1994/07/02 03:03:49  robertj
+ * Added restartable threads.
+ *
+ * Revision 1.1  1994/06/25  11:55:15  robertj
  * Initial revision
  *
  */
@@ -47,6 +50,10 @@ PDECLARE_CLASS(PThread, PObject)
 
     virtual void Main() = 0;
       // User override function for the main execution routine of the thread.
+
+    virtual void Restart();
+      // Restart a terminated thread using the same stack priority etc that
+      // was current when the thread terminated.
 
     virtual void Terminate();
       // Terminate the thread. It is highly recommended that this is not used
