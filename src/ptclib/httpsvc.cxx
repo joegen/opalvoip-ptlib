@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.48  1998/11/30 05:37:46  robertj
+ * New directory structure
+ *
  * Revision 1.47  1998/11/24 23:05:14  robertj
  * Fixed extra *** in demo message
  *
@@ -182,8 +185,9 @@
 #endif
 
 #include <ptlib.h>
-#include <httpsvc.h>
-#include <sockets.h>
+#include <ptclib/httpsvc.h>
+#include <ptlib/sockets.h>
+
 
 #define new PNEW
 
