@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.13  2003/09/17 09:00:59  csoutheren
+ * Moved PSmartPointer and PNotifier into seperate files
+ * Added detection for system regex libraries on all platforms
+ *
  * Revision 1.12  2003/07/29 11:25:23  csoutheren
  * Added support for system swab function
  *
@@ -256,6 +260,12 @@
 
 #undef P_DYNALINK
 
+/////////////////////////////////////////////////
+//
+// Regex library
+//
+
+#undef P_REGEX
 
 /////////////////////////////////////////////////
 //
