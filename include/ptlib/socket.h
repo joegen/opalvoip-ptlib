@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.20 1996/03/18 13:33:12 robertj Exp $
+ * $Id: socket.h,v 1.21 1996/03/31 08:52:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.21  1996/03/31 08:52:36  robertj
+ * Added socket shutdown function.
+ *
  * Revision 1.20  1996/03/18 13:33:12  robertj
- * FireDoorV10
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
  * Revision 1.19  1996/03/03 07:37:58  robertj
  * Added Reusability clause to the Listen() function on sockets.
@@ -182,6 +185,22 @@ PDECLARE_CLASS(PSocket, PChannel)
        <H2>Returns:</H2>
        TRUE if the option was successfully retreived.
      */
+
+    enum ShutdownValue {
+      ShutdownRead         = 0,
+      ShutdownWrite        = 1,
+      ShutdownReadAndWrite = 2
+    };
+
+    BOOL Shutdown(
+      ShutdownValue option
+    );
+    /* Close one or both of the data streams associated with a socket 
+
+       <H2>Returns:</H2>
+       TRUE if the shutdown was performed
+     */
+    
 #endif
 
     PDECLARE_CLASS(SelectList, PSocketList)
