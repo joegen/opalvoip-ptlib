@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.164  2003/10/27 09:48:47  csoutheren
+ * Changed use of P_HAS_QOS to ensure that setsockopt is still used
+ * for diffserv if available. Thanks to Henry Harrison
+ *
  * Revision 1.163  2003/10/27 03:46:15  csoutheren
  * Added ifdef to disable QoS code on systems that do not support it
  *
@@ -2826,8 +2830,6 @@ BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
 
 BOOL PUDPSocket::ApplyQoS()
 {
-#if P_HAS_QOS
-
 #ifdef _WIN32_WCE
     return FALSE;   //QoS not supported
 #endif
@@ -2863,6 +2865,8 @@ BOOL PUDPSocket::ApplyQoS()
         DSCPval = (char)qosSpec.GetDSCP();
 
 #ifdef _WIN32
+#if P_HAS_QOS
+
     BOOL usesetsockopt = FALSE;
 
     OSVERSIONINFO versInfo;
@@ -2916,7 +2920,9 @@ BOOL PUDPSocket::ApplyQoS()
     if (!usesetsockopt)
         return retval;
 
-#endif
+#endif	// P_HAS_QOS
+#endif	// _WIN32
+
     unsigned int setDSCP = DSCPval<<2;
 
     int rv = 0;
@@ -2942,8 +2948,6 @@ BOOL PUDPSocket::ApplyQoS()
         return FALSE;
     }
     
-#endif P_HAS_QOS
-
     return TRUE;
 }
 
