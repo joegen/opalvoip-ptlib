@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.40  2002/05/02 14:19:32  rogerh
+ * Handle Big Endian systems correctly.
+ * Patch submitted by andi@fischlustig.de
+ *
  * Revision 1.39  2002/02/11 07:21:46  rogerh
  * Fix some non portable code which which seeks out /dev/dsp devices and only
  * worked on Linux. (char device for /dev/dsp is 14 on Linux, 30 on FreeBSD)
@@ -635,7 +639,11 @@ BOOL PSoundChannel::Setup()
                      << ", bytes       = " << info.bytes);
 
       mBitsPerSample = entry.bitsPerSample;
+#if PBYTE_ORDER == PLITTLE_ENDIAN
       arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
+#else
+      arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_BE : AFMT_S8;
+#endif
       if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val)) {
 
         mNumChannels = entry.numChannels;
