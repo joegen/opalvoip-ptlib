@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.9 1995/03/12 04:59:58 robertj Exp $
+ * $Id: ptlib.inl,v 1.10 1995/04/22 00:52:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.10  1995/04/22 00:52:55  robertj
+ * Added GetDirectory() function to PFilePath.
+ *
  * Revision 1.9  1995/03/12 04:59:58  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -90,9 +93,16 @@ PINLINE BOOL PDirectory::Restart(int scanMask)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PFilePath
+
+PINLINE PDirectory PFilePath::GetDirectory() const
+  { return Left(FindLast('\\')); }
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-PINLINE BOOL PFile::Exists(const PString & name)
+PINLINE BOOL PFile::Exists(const PFilePath & name)
   { return _access(name, 0) == 0; }
 
 
