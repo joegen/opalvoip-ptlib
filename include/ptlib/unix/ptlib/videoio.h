@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.10  2001/08/06 07:27:21  rogerh
+ * Make a note of the new location of a header file, but do not use it yet.
+ *
  * Revision 1.9  2001/08/03 04:21:51  dereks
  * Add colour/size conversion for YUV422->YUV411P
  * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
@@ -72,6 +75,9 @@
 #endif
 
 #if defined(P_OPENBSD)
+/* In OpenBSD 2.9 and later the Meteor API header file has been renamed.
+   #include <dev/ic/bt8xx.h>
+ */
 #include <i386/ioctl_meteor.h>
 #endif
 
