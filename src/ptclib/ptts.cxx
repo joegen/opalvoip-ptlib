@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.12  2004/06/30 12:17:05  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.11  2004/06/19 09:02:32  csoutheren
  * Added rate and volume to keep Festival happy
  *
@@ -148,7 +152,7 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PString voice;
 };
 
-static PAbstractFactory<PTextToSpeech, PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI");
+static PFactory<PTextToSpeech>::Worker<PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI", false);
 
 int * PTextToSpeech_SAPI::refCount;
 PMutex PTextToSpeech_SAPI::refMutex;
@@ -389,7 +393,7 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PString voice;
 };
 
-static PAbstractFactory<PTextToSpeech, PTextToSpeech_Festival> festivalTTSFactory("Festival");
+static PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Festival", false);
 
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
@@ -557,6 +561,5 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
 #endif
 }
 
-PINSTANTIATE_FACTORY(PTextToSpeech)
 
 // End Of File ///////////////////////////////////////////////////////////////

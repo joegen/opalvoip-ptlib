@@ -3,7 +3,7 @@
 
 #include <ptlib.h>
 
-class AbstractClass 
+class MyAbstractClass 
 {
   public:
     virtual PString Function() = 0;
