@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.15 1996/03/31 08:44:10 robertj Exp $
+ * $Id: dict.h,v 1.16 1996/08/17 10:00:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.16  1996/08/17 10:00:22  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.15  1996/03/31 08:44:10  robertj
  * Added RemoveAt() function to remove entries from dictionaries.
  *
@@ -217,7 +220,7 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
 
 
     // Member variables
-    PCLASS Element {
+    class PEXPORT Element {
       public:
         PObject * key;
         PObject * data;
@@ -1071,8 +1074,6 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (D &)GetRefAt(key); } \
     virtual PObject * RemoveAt(const K & key) \
       { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; } \
-    PObject * GetAt(PINDEX idx) const \
-      { return PAbstractDictionary::GetAt(idx); } \
     virtual D * GetAt(const K & key) const \
       { return (D *)PAbstractDictionary::GetAt(key); } \
     const K & GetKeyAt(PINDEX index) const \
