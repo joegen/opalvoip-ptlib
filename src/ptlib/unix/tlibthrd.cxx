@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.66  2001/07/09 13:23:37  rogerh
+ * Fix a subtle bug in semaphore wait which showed up on FreeBSD
+ *
  * Revision 1.65  2001/05/29 00:49:18  robertj
  * Added ability to put in a printf %x in thread name to get thread object
  *   address into user settable thread name.
@@ -1070,7 +1073,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   ::gettimeofday(&finishTime, NULL);
   finishTime.tv_sec += waitTime.GetSeconds();
   finishTime.tv_usec += waitTime.GetMilliSeconds() % 1000L;
-  if (finishTime.tv_usec > 1000000) {
+  if (finishTime.tv_usec >= 1000000) {
     finishTime.tv_usec -= 1000000;
     finishTime.tv_sec++;
   }
