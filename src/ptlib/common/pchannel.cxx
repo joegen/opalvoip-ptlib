@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.25  2004/02/24 11:19:32  rjongbloed
+ * Fixed seekpos() function on channel to read data when seeking beyond end of corrent stream.
+ *
  * Revision 1.24  2003/12/19 04:31:27  csoutheren
  * Changed GetLastReadCount and GetLastWriteCount to be virtual
  *
@@ -204,11 +207,10 @@ streampos PChannelStreamBuffer::seekoff(streamoff off,
 
   // If we have an input stream and the buffer is empty then force a read so
   // we can seek ahead.
-  if (eback() != NULL && egptr() == gptr()) {
+  if (egptr() == gptr()) {
     int c = underflow();
     if (c == EOF)
       return EOF;
-    sputbackc((char)c);
   }
 
   while (off-- > 0) {
