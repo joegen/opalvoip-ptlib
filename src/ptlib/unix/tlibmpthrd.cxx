@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibmpthrd.cxx,v $
+ * Revision 1.2  2002/02/19 07:28:02  rogerh
+ * PXAbortIO -> PXAbortBlock. Submitted by Peter Johnson <paj@mac.com>
+ *
  * Revision 1.1  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -125,7 +128,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   return retval;
 }
 
-void PThread::PXAbortIO() const
+void PThread::PXAbortBlock() const
 {
   BYTE ch;
   ::write(unblockPipe[1], &ch, 1);
@@ -658,7 +661,7 @@ void PThread::WaitForTermination() const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
-  PXAbortIO();
+  PXAbortBlock();
 
   while (!IsTerminated()) {
     PAssert(PX_signature == kMPThreadSig, "bad signature in living thread");
@@ -677,7 +680,7 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   PAssert(Current() != this, "Waiting for self termination!");
   
   //PTRACE(1, "tlibthrd\tWaitForTermination(delay)");
-  PXAbortIO();
+  PXAbortBlock();
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
