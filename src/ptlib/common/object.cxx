@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.78  2004/07/01 11:41:30  csoutheren
+ * Fixed compile and run problems on Linux
+ *
  * Revision 1.77  2004/06/30 12:17:06  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -275,6 +278,8 @@
 //
  */
 
+#pragma implementation "pfactory.h"
+
 #include <ptlib.h>
 #include <ctype.h>
 #ifdef _WIN32
@@ -293,6 +298,11 @@ PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
   return factories;
 }
 
+PMutex & PFactoryBase::GetFactoriesMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
 
 PFactoryBase::FactoryMap::~FactoryMap()
 {
@@ -300,7 +310,6 @@ PFactoryBase::FactoryMap::~FactoryMap()
   for (entry = begin(); entry != end(); ++entry)
     delete entry->second;
 }
-
 
 void PAssertFunc(const char * file,
                  int line,
