@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.13  2000/06/26 11:17:19  robertj
+# Nucleus++ port (incomplete).
+#
 # Revision 1.12  2000/04/26 02:50:12  robertj
 # Fixed build of correct GUI directory.
 #
@@ -65,10 +68,18 @@
 #
 #
 
+ifeq ($(OSTYPE),Nucleus)
+TARGETDIR=Nucleus++
+else
+TARGETDIR=unix
+endif
 
-SUBDIRS := src/ptlib/unix tools/asnparser
+SUBDIRS := src/ptlib/$(TARGETDIR)
+ifneq ($(OSTYPE),Nucleus)
+SUBDIRS += tools/asnparser
 
 include make/defaultgui.mak
+endif
 
 ifdef GUI_TYPE
 SUBDIRS += src/pwlib/$(GUI_TYPE)
@@ -120,8 +131,7 @@ bothdepend :
 	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) bothdepend ;)
 
 ptlib:
-	$(MAKE) -C src/ptlib/unix both
-
+	$(MAKE) -C src/ptlib/$(TARGETDIR) both
 
 docs: 
 	doc++ --dir html --tables pwlib.dxx
