@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.21  2000/07/02 14:18:27  craigs
+ * Fixed various problems with buffer handling
+ *
  * Revision 1.20  2000/07/02 05:49:43  craigs
  * Really fixed race condition in OSS open
  *
@@ -110,7 +113,6 @@
 #if defined(P_OPENBSD) || defined(P_NETBSD)
 #include <soundcard.h>
 #endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
@@ -379,6 +381,9 @@ BOOL PSoundChannel::Setup()
   } else {
     PTRACE(6, "OSS\tInitialising " << device << "(" << (void *)(&entry) << ")");
 
+    // enable full duplex (maybe)
+    ::ioctl(os_handle, SNDCTL_DSP_SETDUPLEX, 0);
+
     stat = FALSE;
 
   // must always set paramaters in the following order:
@@ -392,20 +397,32 @@ BOOL PSoundChannel::Setup()
     // reset the device first so it will accept the new parms
     if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_RESET, &arg))) {
 
+      // set the write fragment size (applies to sound output only)
       arg = val = entry.fragmentValue;
-      //if (ConvertOSError(ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg)) || (arg != val)) {
-      ::ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg); {
+      ::ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg); 
 
-        arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
-        if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val)) {
+      audio_buf_info info;
+      ::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info);
+      PTRACE(6, "OSS\tOutput: fragments = " << info.fragments
+                     << ", total frags = " << info.fragstotal
+                     << ", frag size   = " << info.fragsize
+                     << ", bytes       = " << info.bytes);
 
-          arg = val = (entry.numChannels == 2) ? 1 : 0;
-          if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val)) {
+      ::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info);
+      PTRACE(6, "OSS\tInput: fragments = " << info.fragments
+                     << ", total frags = " << info.fragstotal
+                     << ", frag size   = " << info.fragsize
+                     << ", bytes       = " << info.bytes);
 
-            arg = val = entry.sampleRate;
-            if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val)) 
-              stat = TRUE;
-          }
+      arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
+      if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val)) {
+
+        arg = val = (entry.numChannels == 2) ? 1 : 0;
+        if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val)) {
+
+          arg = val = entry.sampleRate;
+          if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val)) 
+            stat = TRUE;
         }
       }
     }
@@ -483,14 +500,20 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 
   if (os_handle > 0) {
     PTRACE(6, "OSS\tRead start");
-    while (!ConvertOSError(::read(os_handle, (void *)buf, len))) {
+    int stat;
+    while (!ConvertOSError(stat = ::read(os_handle, (void *)buf, len))) {
       if (GetErrorCode() != Interrupted) {
         PTRACE(6, "OSS\tRead failed");
         return FALSE;
       }
       PTRACE(6, "OSS\tRead interrupted");
     }
-    PTRACE(6, "OSS\tRead completed");
+
+    if (stat != len)
+      PTRACE(6, "OSS\tRead completed short - " << stat << " vs " << len);
+    else
+      PTRACE(6, "OSS\tRead completed");
+
     return TRUE;
   }
 
@@ -560,6 +583,11 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     lastError = NotOpen;
     return FALSE;
   }
+
+  PINDEX totalSize = size * count;
+
+  //size = 16;
+  //count = (totalSize + 15) / 16;
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
   int arg = 1;
