@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.11  2004/04/09 05:54:41  csoutheren
+ * Added ability for application to specify plugin directorories, or to specify directories by environment variable
+ *
  * Revision 1.10  2004/03/23 04:43:42  csoutheren
  * Modified plugin manager to allow code modules to be notified when plugins
  * are loaded or unloaded
@@ -44,14 +47,6 @@
 #include <ptlib.h>
 #include <ptlib/pluginmgr.h>
 
-#ifndef	P_DEFAULT_PLUGIN_DIR
-#  ifdef  _WIN32
-#    define	P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
-#  else
-#    define	P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
-#  endif
-#endif
-
 //////////////////////////////////////////////////////
 
 PPluginManager & PPluginManager::GetPluginManager()
@@ -63,7 +58,10 @@ PPluginManager & PPluginManager::GetPluginManager()
 
   if (systemPluginMgr == NULL) {
     systemPluginMgr = new PPluginManager;
-    systemPluginMgr->LoadPluginDirectory(P_DEFAULT_PLUGIN_DIR);
+    PStringArray dirs = PProcess::Current().GetPluginDirectories();
+    PINDEX i;
+    for (i = 0; i < dirs.GetSize(); i++) 
+      systemPluginMgr->LoadPluginDirectory(dirs[i]);
   }
 
   return *systemPluginMgr;
