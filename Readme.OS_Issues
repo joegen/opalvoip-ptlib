@@ -66,6 +66,10 @@ localtime_r() and gm_time() are missing.
 So in osutil.cxx I have implemented os_localtime() and os_gmtime()
 with localtime() and gm_time() which may not be thread safe.
 
+There is no audio support due to a lack of documentation and hardware.
+
+There is no video support due to a lack of documentation and hardware.
+
 
 3. Help Required 
 ----------------
