@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.41  2002/10/17 07:17:42  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.40  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -563,9 +566,9 @@ class PSocket : public PChannel
     );
     static int os_select(
       int maxfds,
-      fd_set & readfds,
-      fd_set & writefds,
-      fd_set & exceptfds,
+      fd_set * readfds,
+      fd_set * writefds,
+      fd_set * exceptfds,
       const PIntArray & allfds,
       const PTimeInterval & timeout
     );
@@ -579,6 +582,76 @@ class PSocket : public PChannel
 // Include platform dependent part of class
 #include <ptlib/socket.h>
 };
+
+
+// Utility classes
+
+class P_fd_set {
+  public:
+    P_fd_set();
+    P_fd_set(SOCKET fd);
+    ~P_fd_set()
+      {
+        delete set;
+      }
+
+    P_fd_set & operator=(SOCKET fd);
+    P_fd_set & operator+=(SOCKET fd);
+    P_fd_set & operator-=(SOCKET fd);
+
+    void Zero()
+      {
+        FD_ZERO(set);
+      }
+
+    BOOL IsPresent(SOCKET fd) const
+      {
+        return FD_ISSET(fd, set);
+      }
+
+    operator fd_set*() const
+      {
+        return set;
+      }
+
+  private:
+    void Construct();
+
+    SOCKET max_fd;
+    fd_set * set;
+};
+
+
+class P_timeval {
+  public:
+    P_timeval();
+    P_timeval(const PTimeInterval & time)
+      {
+        operator=(time);
+      }
+
+    P_timeval & operator=(const PTimeInterval & time);
+
+    operator timeval*()
+      {
+        return infinite ? NULL : &tval;
+      }
+
+    timeval * operator->()
+      {
+        return &tval;
+      }
+
+    timeval & operator*()
+      {
+        return tval;
+      }
+
+  private:
+    struct timeval tval;
+    BOOL infinite;
+};
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.84  2002/10/17 07:17:42  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.83  2002/01/26 23:55:55  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -814,6 +817,9 @@ PINLINE const PString & PProcess::GetName() const
 
 PINLINE const PFilePath & PProcess::GetFile() const
   { return executableFile; }
+
+PINLINE int PProcess::GetMaxHandles() const
+  { return maxHandles; }
 
 PINLINE PTimerList * PProcess::GetTimerList()
   { return &timers; }
