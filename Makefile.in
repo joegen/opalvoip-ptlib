@@ -27,7 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.7  2003/07/28 14:09:34  dsandras
+# Make sure permissions are correct on include/ptlib/unix/ptlib.
+#
 # Revision 1.6  2003/07/28 09:08:21  dsandras
+#
 # Fixed same kind of things for "make uninstall".
 #
 # Revision 1.5  2003/07/28 09:05:04  dsandras
@@ -189,8 +193,7 @@ install:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptclib/CVS/
 	(cd $(DESTDIR)$(PREFIX)/@libdir@; ln -s $(PTLIB_FILE) libpt.@SHAREDLIBEXT@)
 	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h
-	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/share/pwlib/make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	(cd $(DESTDIR)$(PREFIX)/share/pwlib; ln -s ../../include/pwlib include)
+	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/share/pwlib/make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/ 
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ 
