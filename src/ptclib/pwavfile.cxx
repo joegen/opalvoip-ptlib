@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.22  2002/05/23 03:59:55  robertj
+ * Changed G.723.1 WAV file so every frame is 24 bytes long.
+ *
  * Revision 1.21  2002/05/21 01:59:54  robertj
  * Removed the enum which made yet another set of magic numbers for audio
  *   formats, now uses the WAV file format numbers.
@@ -267,19 +270,22 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
   // The Microsoft && VivoActive G.2723.1 codec cannot do SID frames
   const BYTE * frame = (const BYTE *)buf;
   while (len > 0) {
-    unsigned frameType = *frame&3;
     static PINDEX FrameSize[4] = { 24, 20, 4, 1 };
+    PINDEX frameSize = FrameSize[*frame&3];
 
-    if (len < FrameSize[frameType])
+    if (len < frameSize)
       return FALSE;
 
-    static PINDEX WriteSize[4] = { 24, 20, 24, 24 };
-    static const BYTE silence[24] = { 0 };
-    if (!PFile::Write(frameType < 2 ? frame : silence, WriteSize[frameType]))
+    BYTE writebuf[24];
+    memcpy(writebuf, frame, frameSize);
+    if (frameSize < 24)
+      memset(&writebuf[frameSize], 0, 24-frameSize);
+
+    if (!PFile::Write(writebuf, sizeof(writebuf)))
       return FALSE;
 
-    frame += FrameSize[frameType];
-    len -= FrameSize[frameType];
+    frame += frameSize;
+    len -= frameSize;
   }
 
   return TRUE;
