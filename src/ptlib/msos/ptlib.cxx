@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.49  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.48  1999/06/14 07:59:38  robertj
  * Enhanced tracing again to add options to trace output (timestamps etc).
  *
@@ -192,7 +195,7 @@
 #include <sys\stat.h>
 #include <crtdbg.h>
 
-#ifndef P_USE_INLINES
+#if !P_USE_INLINES
 #include <ptlib/osutil.inl>
 #include <ptlib/ptlib.inl>
 #endif
