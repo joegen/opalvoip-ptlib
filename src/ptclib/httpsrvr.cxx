@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.12 1997/10/03 13:39:25 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.13 1997/10/30 10:22:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.13  1997/10/30 10:22:04  robertj
+ * Added multiple user basic authorisation scheme.
+ *
  * Revision 1.12  1997/10/03 13:39:25  robertj
  * Fixed race condition on socket close in Select() function.
  *
@@ -702,6 +705,57 @@ BOOL PHTTPSimpleAuth::Validate(const PHTTPRequest &,
   PString user, pass;
   DecodeBasicAuthority(authInfo, user, pass);
   return username == user && password == pass;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPMultiSimpAuth
+
+PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_)
+  : realm(realm_)
+{
+  PAssert(!realm, "Must have a realm!");
+}
+
+
+PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_,
+                                       const PStringToString & users_)
+  : realm(realm_), users(users_)
+{
+  PAssert(!realm, "Must have a realm!");
+}
+
+
+PObject * PHTTPMultiSimpAuth::Clone() const
+{
+  return PNEW PHTTPMultiSimpAuth(realm, users);
+}
+
+
+BOOL PHTTPMultiSimpAuth::IsActive() const
+{
+  return !users.IsEmpty();
+}
+
+
+PString PHTTPMultiSimpAuth::GetRealm(const PHTTPRequest &) const
+{
+  return realm;
+}
+
+
+BOOL PHTTPMultiSimpAuth::Validate(const PHTTPRequest &,
+                                  const PString & authInfo) const
+{
+  PString user, pass;
+  DecodeBasicAuthority(authInfo, user, pass);
+  return users.Contains(user) && users[user] == pass;
+}
+
+
+void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & password)
+{
+  users.SetAt(username, password);
 }
 
 
