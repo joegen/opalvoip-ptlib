@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.2  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.1  2000/11/09 00:28:34  dereks
  * Initial release. Required for implementation of PVideoChannel.
  *
@@ -38,38 +42,24 @@
 #pragma interface
 
 ///////////////////////////////////////////////////////////////////////////////
-// declare type for sound handle dictionary
-
-#ifdef __BEOS__
-class PVideoInput;
-class PVideoPlayer;
-#endif
+// declare type for videoChannel.
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideo
 
 #include "../../video.h"
   public:
-    BOOL Close();
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
+    virtual BOOL Close();
+
+    virtual PString GetName() const;
+      // Return the name of the channel.
+
+    PString GetErrorText() const;
+    // Get a text form of the last error encountered.
   
   protected:
-    BOOL  Setup();
-
     static PMutex dictMutex;
 
-    Directions direction;
-    PString device;
-    BOOL isInitialised;
-
-#ifdef __BEOS__
-    PVideoInput* mpInput;
-    PVideoPlayer* mpOutput;
-    unsigned mNumChannels;
-    unsigned mSampleRate;
-    unsigned mBitsPerSample;
-#endif
 };
 
 

@@ -189,6 +189,10 @@ SOURCE=.\ptlib.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\pvidchan.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\regex.cxx
 # ADD CPP /W2 /D "__STDC__" /D "STDC_HEADERS"
 # SUBTRACT CPP /YX /Yc /Yu

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.6  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.5  2000/11/09 00:20:58  robertj
  * Added qcif size constants
  *
@@ -43,13 +47,15 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
+#include <ptlib/vfakeio.h>
+#include <ptlib/vconvert.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
 
 PVideoDevice::PVideoDevice(VideoFormat videofmt,
-                           unsigned channel,
+                           int channel,
                            ColourFormat colourFmt)
 {
   lastError = 0;
@@ -74,16 +80,25 @@ PVideoDevice::VideoFormat PVideoDevice::GetVideoFormat() const
   return videoFormat;
 }
 
+PStringList PVideoDevice::GetDeviceNames() const
+{
+  PStringList list;
 
-unsigned PVideoDevice::GetNumChannels() const
+  list.AppendString("Video Device raw.");
+
+  return list;  
+}
+
+
+int PVideoDevice::GetNumChannels()
 {
   return 1;
 }
 
 
-BOOL PVideoDevice::SetChannel(unsigned channelNum)
+BOOL PVideoDevice::SetChannel(int channelNum)
 {
-  if (channelNum >= GetNumChannels())
+  if (channelNum >= (int)GetNumChannels())
     return FALSE;
 
   channelNumber = channelNum;
@@ -91,7 +106,7 @@ BOOL PVideoDevice::SetChannel(unsigned channelNum)
 }
 
 
-unsigned PVideoDevice::GetChannel() const
+int PVideoDevice::GetChannel() const
 {
   return channelNumber;
 }
@@ -126,7 +141,7 @@ unsigned PVideoDevice::GetFrameRate() const
 BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
                                       unsigned & minHeight,
                                       unsigned & maxWidth,
-                                      unsigned & maxHeight) const
+                                      unsigned & maxHeight) 
 {
   minWidth = minHeight = 1;
   maxWidth = maxHeight = UINT_MAX;
@@ -157,14 +172,44 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) const
+BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) 
 {
   width = frameWidth;
   height = frameHeight;
   return IsOpen();
 }
 
+  ///Colour format bit per pixel table.
+static struct {
+    int intColourFormat;
+    int bitsPerPixel;
+   } colourFormatBPPTab[PVideoDevice::NumColourFormats] = {
+       {  /*Grey   */  0,   8 },  
+       {  /*RGB32  */  1,  32 }, 
+       {  /*RGB24  */  2,  24 }, 
+       {  /*RGB565 */  3,  16 },
+       {  /*RGB555 */  4,  16 },
+       {  /*YUV422 */  5,  16 },
+       {  /*YUV422P*/  6,  16 },
+       {  /*YUV411 */  7,  12 },
+       {  /*YUV411P*/  8,  12 },
+       {  /*YUV420 */  9,  12 },
+       {  /*YUV420P*/ 10,  12 },
+       {  /*YUV410 */ 11,   0 },
+       {  /*YUV410P*/ 12,  10 }
+    };
 
+
+unsigned PVideoDevice::CalcFrameSize(unsigned width, unsigned height, int colourFormat)
+{
+   return width * height * colourFormatBPPTab[colourFormat].bitsPerPixel/8;
+}
+ 
+
+BOOL PVideoDevice::Close()
+{
+  return TRUE;  
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
@@ -178,6 +223,5 @@ BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
   frame.SetSize(returned);
   return TRUE;
 }
-
 
 // End Of File ///////////////////////////////////////////////////////////////
