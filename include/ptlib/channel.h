@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.15 1995/08/12 22:28:22 robertj Exp $
+ * $Id: channel.h,v 1.16 1996/01/23 13:09:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.16  1996/01/23 13:09:14  robertj
+ * Mac Metrowerks compiler support.
+ *
  * Revision 1.15  1995/08/12 22:28:22  robertj
  * Work arounf for  GNU bug: can't have private copy constructor with multiple inheritance.
  *
@@ -88,7 +91,11 @@ PCLASS PChannelStreamBuffer : public PObject, public streambuf {
     virtual int overflow(int=EOF);
     virtual int underflow();
     virtual int sync();
+#ifdef __MWERKS__
+    virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
+#else
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
+#endif
 
   private:
     // Member variables
