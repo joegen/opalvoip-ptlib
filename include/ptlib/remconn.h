@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.3 1996/04/23 11:33:04 robertj Exp $
+ * $Id: remconn.h,v 1.4 1996/08/11 07:03:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.4  1996/08/11 07:03:45  robertj
+ * Changed remote connection to late bind DLL.
+ *
  * Revision 1.3  1996/04/23 11:33:04  robertj
  * Added username and password.
  *
@@ -54,6 +57,7 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
 
     enum Status {
       Idle,
+      Connected,
       InProgress,
       LineBusy,
       NoDialTone,
@@ -61,7 +65,7 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       PortInUse,
       NoNameOrNumber,
       GeneralFailure,
-      Connected,
+      NotInstalled,
       NumStatuses
     };
     Status GetStatus() const;
