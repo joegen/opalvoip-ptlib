@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.38 1996/10/26 01:42:51 robertj Exp $
+ * $Id: win32.cxx,v 1.39 1996/11/04 03:36:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.39  1996/11/04 03:36:31  robertj
+ * Added extra error message for UDP packet truncated.
+ *
  * Revision 1.38  1996/10/26 01:42:51  robertj
  * Added more translations for winsock error codes to standard error codes.
  *
@@ -468,6 +471,10 @@ BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
       case WSAEINTR :
         osError = EINTR;
         break;
+      case WSAEMSGSIZE :
+        osError |= 0x40000000;
+        lastError = BufferTooSmall;
+        return FALSE;
       case WSAEWOULDBLOCK :
       case WSAETIMEDOUT :
         osError |= 0x40000000;
