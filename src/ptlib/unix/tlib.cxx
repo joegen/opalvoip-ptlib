@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.50  2000/04/09 18:19:23  rogerh
+ * Add my changes for NetBSD support.
+ *
  * Revision 1.49  2000/04/06 12:19:49  rogerh
  * Add Mac OS X support submitted by Kevin Packard
  *
@@ -186,7 +189,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif

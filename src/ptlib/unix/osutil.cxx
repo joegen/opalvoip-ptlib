@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.53  2000/04/09 18:19:23  rogerh
+ * Add my changes for NetBSD support.
+ *
  * Revision 1.52  2000/04/06 12:11:32  rogerh
  * MacOS X support submitted by Kevin Packard
  *
@@ -135,7 +138,7 @@
 #define P_USE_LANGINFO
 #endif
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 #define P_USE_STRFTIME
 
 #include <sys/param.h>
@@ -468,7 +471,7 @@ PString PDirectory::GetVolume() const
     }
     fclose(fp);
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 
     struct statfs * mnt;
     int count = getmntinfo(&mnt, MNT_NOWAIT);
@@ -492,7 +495,7 @@ PString PDirectory::GetVolume() const
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 
   struct statfs fs;
 
@@ -1210,7 +1213,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
   time_t t;
   time(&t);
   struct tm  * tm = localtime(&t);

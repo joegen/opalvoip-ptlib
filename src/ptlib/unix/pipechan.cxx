@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.26  2000/04/09 18:19:23  rogerh
+ * Add my changes for NetBSD support.
+ *
  * Revision 1.25  2000/04/06 12:11:32  rogerh
  * MacOS X support submitted by Kevin Packard
  *
@@ -220,7 +223,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(__BEOS__) || defined(P_MACOSX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX)
     extern char ** environ;
 #define __environ environ
 #endif
