@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.37  2004/03/23 04:48:42  csoutheren
+ * Improved ability to start VXML scripts as needed
+ *
  * Revision 1.36  2003/11/12 20:38:16  csoutheren
  * Fixed problem with incorrect sense of ContentLength header detection thanks to Andreas Sikkema
  *
@@ -190,6 +193,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   listening       = FALSE;
   activeGrammar   = NULL;
   currentNode     = NULL;
+  emptyAction     = TRUE;
 
   SetTextToSpeech(_tts, autoDelete);
 
@@ -1050,6 +1054,13 @@ BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, 
   return TRUE;
 }
 
+void PVXMLSession::SetPause(BOOL _pause)
+{
+  incomingChannel->SetPause(_pause);
+  outgoingChannel->SetPause(_pause);
+}
+
+
 
 BOOL PVXMLSession::IsPlaying() const
 {
@@ -1439,6 +1450,7 @@ PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
   recording   = FALSE;
   frameLen    = frameOffs = 0;
   silentCount = 20;         // wait 20 frames before playing the OGM
+  paused      = FALSE;
 }
 
 
@@ -1623,8 +1635,8 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 
   } else {
 
-    // if we are in a delay, then do nothing
-    if (delayTimer.IsRunning())
+    // if we are paused or in a delay, then do nothing
+    if (paused || delayTimer.IsRunning())
       ;
 
     // if we are returning silence frames, then decrement the frame count
