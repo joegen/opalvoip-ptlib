@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.77  2002/06/25 04:13:07  robertj
+# Added symbol NODEPS so dependency files are not included, very useful for
+#   when they get corrupted so don;t have to manually delete them.
+#
 # Revision 1.76  2002/04/08 00:41:50  robertj
 # Added dependency build to "make libs" target.
 #
@@ -691,7 +695,9 @@ endif
 #
 ######################################################################
 
+ifndef NODEPS
 -include $(DEPDIR)/*.dep
+endif
 
 
 # End of common.mak
