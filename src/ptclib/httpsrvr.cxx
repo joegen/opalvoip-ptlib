@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.26  1999/04/21 01:58:08  robertj
+ * Fixed problem with reading data for request using second form of PHTTPRequestInfo constructor.
+ *
  * Revision 1.25  1998/11/30 04:51:59  robertj
  * New directory structure
  *
@@ -880,7 +883,7 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd,
   isPersistant      = persist;
   isProxyConnection = proxy;
 
-  entityBodyLength  = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
+  CalculateEntityBodyLength();
 }
 
 
@@ -912,6 +915,12 @@ void PHTTPConnectionInfo::Construct(PHTTPServer & server, int major, int minor)
   }
 #endif
 
+  CalculateEntityBodyLength();
+}
+
+
+void PHTTPConnectionInfo::CalculateEntityBodyLength()
+{
   // if the client specified a persistant connection, then use the
   // ContentLength field. If there is no content length field, then
   // assume a ContentLength of zero and close the connection.
@@ -920,7 +929,8 @@ void PHTTPConnectionInfo::Construct(PHTTPServer & server, int major, int minor)
   // If the client didn't specify a persistant connection, then use the
   // ContentLength if there is one or read until end of file if there isn't
   if (!isPersistant)
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, (command == PHTTP::POST) ? -2 : 0);
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
+                                           (command == PHTTP::POST) ? -2 : 0);
   else {
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
     if (entityBodyLength < 0) {
