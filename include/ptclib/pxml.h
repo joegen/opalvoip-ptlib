@@ -73,6 +73,8 @@ class PXML : public PObject
     BOOL Save(PString & data, int options = -1);
     BOOL SaveFile(const PFilePath & fn, int options = -1);
 
+    void RemoveAll();
+
     void SetOptions(int _options)
       { options = _options; }
 
