@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.117  1999/02/23 07:11:27  robertj
+ * Improved trace facility adding trace levels and #define to remove all trace code.
+ *
  * Revision 1.116  1998/11/30 12:45:54  robertj
  * Fissioned into pchannel.cxx and pconfig.cxx
  *
@@ -416,21 +419,84 @@ ostream & PGetErrorStream()
 
 void PSetErrorStream(ostream * s)
 {
-  PErrorStream = s;
+  PErrorStream = s != NULL ? s : &cerr;
 }
 
 
 static ostream * PTraceStream = &cerr;
-
-ostream & PGetTraceStream()
-{
-  return *PTraceStream;
-}
-
+static BOOL PTraceBlockEnable;
+static unsigned PTraceLevel = 0;
+static unsigned PIndentLevel = 0;
 
 void PSetTraceStream(ostream * s)
 {
-  PTraceStream = s;
+  PTraceStream = s != NULL ? s : &cerr;
+}
+
+
+void PSetTraceBlock(BOOL enable)
+{
+  PTraceBlockEnable = enable;
+}
+
+
+void PSetTraceLevel(unsigned level)
+{
+  PTraceLevel = level;
+}
+
+
+BOOL PCanTrace(unsigned level)
+{
+  return level <= PTraceLevel;
+}
+
+
+static PMutex TraceMutex;
+
+ostream & PBeginTrace(const char * fileName, int lineNum)
+{
+  TraceMutex.Wait();
+
+  return *PTraceStream << fileName << '(' << lineNum << ") ";
+}
+
+
+ostream & PEndTrace(ostream & s)
+{
+  s << '\n' << flush;
+
+  TraceMutex.Signal();
+
+  return s;
+}
+
+
+PTraceBlock::PTraceBlock(const char * fileName, int lineNum, const char * traceName)
+  : file(fileName), line(lineNum), name(traceName)
+{
+  PIndentLevel += 2;
+
+  if (PTraceBlockEnable) {
+    ostream & s = PBeginTrace(file, line);
+    for (unsigned i = 0; i < PIndentLevel; i++)
+      s << '=';
+    s << "> " << name << PEndTrace;
+  }
+}
+
+
+PTraceBlock::~PTraceBlock()
+{
+  if (PTraceBlockEnable) {
+    ostream & s = PBeginTrace(file, line);
+    s << '<';
+    for (unsigned i = 0; i < PIndentLevel; i++)
+      s << '=';
+    s << ' ' << name << PEndTrace;
+  }
+
+  PIndentLevel -= 2;
 }
 
 
