@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.9 1996/08/17 09:54:34 robertj Exp $
+ * $Id: array.h,v 1.10 1997/06/08 04:49:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.10  1997/06/08 04:49:10  robertj
+ * Fixed non-template class descendent order.
+ *
  * Revision 1.9  1996/08/17 09:54:34  robertj
  * Optimised RemoveAll() for object arrays.
  *
@@ -222,6 +225,10 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     /* Construct a new dynamic array of elements of the specified type.
      */
 
+    virtual PObject * Clone() const
+      { return PNEW PBaseArray<T>(*this, GetSize()); }
+
+
     BOOL SetAt(
       PINDEX index,   // Position in the array to set the new value.
       T val           // Value to set in the array.
@@ -338,9 +345,9 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
  */
 #define PBASEARRAY(cls, T) typedef PBaseArray<T> cls
 
-#else
+#else // PHAS_TEMPLATES
 
-#define PDECLARE_BASEARRAY(cls, T) \
+#define PBASEARRAY(cls, T) \
   typedef T P_##cls##_Base_Type; \
   PDECLARE_CLASS(cls, PAbstractArray) \
   public: \
@@ -356,19 +363,28 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     inline P_##cls##_Base_Type GetAt(PINDEX index) const \
       { PASSERTINDEX(index); return index < GetSize() ? \
           ((P_##cls##_Base_Type*)theArray)[index] : (P_##cls##_Base_Type)0; } \
-    inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
-      { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline P_##cls##_Base_Type operator[](PINDEX index) const \
       { PASSERTINDEX(index); return GetAt(index); } \
     inline P_##cls##_Base_Type & operator[](PINDEX index) \
       { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory); \
         return ((P_##cls##_Base_Type *)theArray)[index]; } \
+    inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
+      { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline operator P_##cls##_Base_Type const *() const \
       { return (P_##cls##_Base_Type const *)theArray; } \
+  }
 
-#define PBASEARRAY(cls, T) PDECLARE_BASEARRAY(cls, T) }
+#define PDECLARE_BASEARRAY(cls, T) \
+  PBASEARRAY(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+    cls(PINDEX initialSize = 0) \
+      : cls##_PTemplate(initialSize) { } \
+    cls(T const * buffer, PINDEX length) \
+      : cls##_PTemplate(buffer, length) { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(*this, GetSize()); } \
 
-#endif
+#endif // PHAS_TEMPLATES
 
 
 PBASEARRAY(PCharArray, char);
@@ -692,7 +708,7 @@ PDECLARE_CLASS(PArray, PArrayObjects)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_ARRAY(cls, T) \
+#define PARRAY(cls, T) \
   PDECLARE_CLASS(cls, PArrayObjects) \
   protected: \
     inline cls(int dummy, const cls * c) \
@@ -705,8 +721,19 @@ PDECLARE_CLASS(PArray, PArrayObjects)
     inline T & operator[](PINDEX index) const\
       { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); \
                                            return *(T *)(*theArray)[index]; } \
+  }
 
-#define PARRAY(cls, T) PDECLARE_ARRAY(cls, T) }
+#define PDECLARE_ARRAY(cls, T) \
+  PARRAY(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    inline cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    inline cls(PINDEX initialSize = 0) \
+      : cls##_PTemplate(initialSize) { } \
+    inline virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 #endif // PHAS_TEMPLATES
 
