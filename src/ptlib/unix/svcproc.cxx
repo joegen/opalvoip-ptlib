@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.82  2003/01/14 04:43:21  robertj
+ * Improved output on error in getting service status.
+ *
  * Revision 1.81  2002/12/12 00:54:29  robertj
  * Fixed issue with setting max file handles causing a log file to be created
  *   as root (real uid) rather than as the user determined by the -u arg.
@@ -568,10 +571,14 @@ int PServiceProcess::InitialiseService()
     }
 
     if (args.HasOption('s')) {
-      cout << "Process at " << pid << " is ";
-      if (kill(pid, 0) != 0)
-        cout << "not ";
-      cout << "running." << endl;
+      cout << "Process at " << pid << ' ';
+      if (kill(pid, 0) == 0)
+        cout << "is running.";
+      else if (errno == ESRCH)
+        cout << "does not exist.";
+      else
+        cout << " status could not be determined, error: " << strerror(errno);
+      cout << endl;
       return 0;
     }
 
