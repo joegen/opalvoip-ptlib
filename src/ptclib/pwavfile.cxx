@@ -28,6 +28,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.15  2001/10/16 13:27:37  rogerh
+ * Add support for writing G.723.1 WAV files.
+ * MS Windows can play G.723.1 WAV Files in Media Player and Sound Recorder.
+ * Sound Recorder can also convert them to normal PCM format WAV files.
+ * Thanks go to M.Stoychev <M.Stoychev@cnsys.bg> for sample WAV files.
+ *
  * Revision 1.14  2001/10/15 11:48:15  rogerh
  * Add GetFormat to return the format of a WAV file
  *
@@ -117,13 +123,15 @@ PWAVFile::PWAVFile(OpenMode mode, int opts)
 }
 
 
-PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts)
+PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, WaveType type)
   : PFile(name, mode, opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
 
   if (!IsOpen()) return; 
+
+  waveType = type;
 
   // Try and process the WAV file header information.
   // Either ProcessHeader() or GenerateHeader() must be called.
@@ -232,7 +240,7 @@ off_t PWAVFile::GetPosition() const
 unsigned PWAVFile::GetFormat() const
 {
   if (isValidWAV)
-    return waveFormat;
+    return format;
   else
     return 0;
 }
@@ -316,49 +324,49 @@ BOOL PWAVFile::ProcessHeader() {
   }
 
   // Read the RIFF chunk.
-  char    label_riff[4]; // ascii RIFF
-  PInt32l len_after;     // length of data to follow
-  char    label_wave[4]; // ascii WAVE
+  char    hdr_label_riff[4]; // ascii RIFF
+  PInt32l hdr_len_after;     // length of data to follow
+  char    hdr_label_wave[4]; // ascii WAVE
   int     size_riff_chunk = 12;
 
   // Use PFile::Read as we do not want to use our PWAVFile::Read code
   // as that does some byte swapping
-  RETURN_ON_READ_FAILURE(PFile::Read(label_riff,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&len_after,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(label_wave,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(hdr_label_riff,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_len_after,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(hdr_label_wave,4), 4);
 
   // check if labels are correct
-  if (strncmp(label_riff, WAV_LABEL_RIFF, strlen(WAV_LABEL_RIFF))) {
+  if (strncmp(hdr_label_riff, WAV_LABEL_RIFF, strlen(WAV_LABEL_RIFF))) {
     PTRACE(1,"Not RIFF");
     return (FALSE);
   }
 
-  if (strncmp(label_wave, WAV_LABEL_WAVE, strlen(WAV_LABEL_WAVE))) {
+  if (strncmp(hdr_label_wave, WAV_LABEL_WAVE, strlen(WAV_LABEL_WAVE))) {
     PTRACE(1,"Not WAVE");
     return (FALSE);
   }
 
   // Read the FORMAT chunk.
-  char    label_fmt[4];     // fmt_ in ascii
-  PInt32l len_format;       // length of format chunk
-  PInt16l format;           // Format 0x01 = PCM, 0x42 = Microsoft G.723.1
-			    //        0x111 = VivoActive G.723.1
-  PInt16l num_channels;     // Channels 0x01 = mono, 0x02 = stereo
-  PInt32l samples_per_sec;  // Sample Rate in Hz
-  PInt32l bytes_per_sec;    // Bytes Per Second
-  PInt16l bytes_per_sample; // Bytes Per Sample, 1,2 or 4
-  PInt16l bits_per_sample;  // Bits Per Sample, 1,2 or 4
+  char    hdr_label_fmt[4];     // fmt_ in ascii
+  PInt32l hdr_len_format;       // length of format chunk
+  PInt16l hdr_format;           // Format 0x01 = PCM, 0x42 = Microsoft G.723.1
+                                //        0x111 = VivoActive G.723.1
+  PInt16l hdr_num_channels;     // Channels 0x01 = mono, 0x02 = stereo
+  PInt32l hdr_samples_per_sec;  // Sample Rate in Hz
+  PInt32l hdr_bytes_per_sec;    // Average bytes Per Second
+  PInt16l hdr_bytes_per_sample; // Bytes Per Sample, eg 2
+  PInt16l hdr_bits_per_sample;  // Bits Per Sample, eg 16
 
-  RETURN_ON_READ_FAILURE(PFile::Read(label_fmt,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&len_format,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&format,2), 2);
-  RETURN_ON_READ_FAILURE(PFile::Read(&num_channels,2), 2);
-  RETURN_ON_READ_FAILURE(PFile::Read(&samples_per_sec,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&bytes_per_sec,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&bytes_per_sample,2), 2);
-  RETURN_ON_READ_FAILURE(PFile::Read(&bits_per_sample,2), 2);
+  RETURN_ON_READ_FAILURE(PFile::Read(hdr_label_fmt,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_len_format,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_format,2), 2);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_num_channels,2), 2);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_samples_per_sec,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_bytes_per_sec,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_bytes_per_sample,2), 2);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_bits_per_sample,2), 2);
 
-  int size_format_chunk = (int)len_format + 8;
+  int size_format_chunk = (int)hdr_len_format + 8;
 
   // The spec allows for extra bytes at the end of the FORMAT chunk
   // Use the len_format field from FORMAT to determine where to move to
@@ -369,7 +377,7 @@ BOOL PWAVFile::ProcessHeader() {
   }
 
   // check if labels are correct
-  if (strncmp(label_fmt, WAV_LABEL_FMT_, strlen(WAV_LABEL_FMT_)) ) {
+  if (strncmp(hdr_label_fmt, WAV_LABEL_FMT_, strlen(WAV_LABEL_FMT_)) ) {
     PTRACE(1,"Not FMT");
     return (FALSE);
   }
@@ -386,12 +394,12 @@ BOOL PWAVFile::ProcessHeader() {
   int size_fact_chunk = 0;
 
   if (strncmp(chunk_title, WAV_LABEL_FACT, 4)==0) {
-    char    label_fact[4];  // ascii fact
-    PInt32l len_fact;       // length of fact
+    char    hdr_label_fact[4];  // ascii fact
+    PInt32l hdr_len_fact;       // length of fact
 
-    RETURN_ON_READ_FAILURE(PFile::Read(label_fact,4), 4);
-    RETURN_ON_READ_FAILURE(PFile::Read(&len_fact,4), 4);
-    size_fact_chunk = (int)len_fact + 8;
+    RETURN_ON_READ_FAILURE(PFile::Read(hdr_label_fact,4), 4);
+    RETURN_ON_READ_FAILURE(PFile::Read(&hdr_len_fact,4), 4);
+    size_fact_chunk = (int)hdr_len_fact + 8;
 
     // The spec allows for extra bytes in the FACT chunk which contain
     // information relating to the format of the audio. This is mainly
@@ -407,37 +415,40 @@ BOOL PWAVFile::ProcessHeader() {
 
 
   // Read the DATA chunk.
-  char    label_data[4];  // ascii data
-  PInt32l data_len;       // length of data
+  char    hdr_label_data[4];  // ascii data
+  PInt32l hdr_data_len;       // length of data
   int     size_data_chunk = 8;
 
-  RETURN_ON_READ_FAILURE(PFile::Read(label_data,4), 4);
-  RETURN_ON_READ_FAILURE(PFile::Read(&data_len,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(hdr_label_data,4), 4);
+  RETURN_ON_READ_FAILURE(PFile::Read(&hdr_data_len,4), 4);
 
-  if (strncmp(label_data, WAV_LABEL_DATA, strlen(WAV_LABEL_DATA))) {
+  if (strncmp(hdr_label_data, WAV_LABEL_DATA, strlen(WAV_LABEL_DATA))) {
     PTRACE(1,"Not DATA");
     return (FALSE);
   }
 
-  // set the class variables
-  waveFormat    = format;
-  numChannels   = num_channels;
-  sampleRate    = samples_per_sec;
-  bitsPerSample = bits_per_sample;
+  // set the class variables for the Get methods.
+  format        = hdr_format;
+  numChannels   = hdr_num_channels;
+  sampleRate    = hdr_samples_per_sec;
+  bitsPerSample = hdr_bits_per_sample;
   lenHeader     = size_riff_chunk + size_format_chunk
 		  + size_fact_chunk + size_data_chunk;
-  lenData       = data_len;
+  lenData       = hdr_data_len;
 
   return (TRUE);
 
 }
 
 
-// Generates a 8000Hz, mono, 16-bit sample WAV header.  When it is
-// called with lenData < 0, it will write the header as if the lenData
-// is LONG_MAX minus header length.
-// Note: If it returns FALSE, the file may be left in inconsistent
-// state.
+// Generates the wave file header.
+// Two types of header are supported.
+// a) PCM data, set to 8000Hz, mono, 16-bit samples
+// b) G.723.1 data
+// When this function is called with lenData < 0, it will write the header
+// as if the lenData is LONG_MAX minus header length.
+// Note: If it returns FALSE, the file may be left in inconsistent state.
+
 BOOL PWAVFile::GenerateHeader()
 {
   if (IsOpen() == FALSE) {
@@ -451,11 +462,34 @@ BOOL PWAVFile::GenerateHeader()
     return (FALSE);
   }
 
-  // only deal with the following format (and set class variables)
-  lenHeader = 44;
-  numChannels = 1;
-  sampleRate = 8000;
-  bitsPerSample = 16;
+
+  // local variables
+  int len_format = 0;
+  int averageBytesPerSec = 0;
+  int bytesPerSample = 0;
+
+
+  // Set the file parameters.
+  if (waveType == PCM_WavFile) {
+    lenHeader   = 44;
+    len_format  = 16;   // size of the FORMAT chunk;
+    format      = 0x01; // PCM type
+    numChannels = 1;
+    sampleRate  = 8000;
+    bytesPerSample = 2;
+    bitsPerSample  = 16;
+    averageBytesPerSec = sampleRate * bytesPerSample;
+  }
+  if (waveType == G7231_WavFile) {
+    lenHeader   = 60;
+    len_format  = 20;    // size of the FORMAT chunk;
+    format      = 0x111; // VivoActive G.723.1 (0x42 is the MS G.723.1 code)
+    numChannels = 1;
+    sampleRate  = 8000;
+    bytesPerSample = 24; // There are 24 bytes in a G.723.1 frame
+    bitsPerSample  = 0;
+    averageBytesPerSec = 800; // Windows Sound Recorder requires this value
+  }
 
   // length of audio data is set to a large value if lenData does not
   // contain a valid (non negative) number. We must then write out real values
@@ -469,40 +503,60 @@ BOOL PWAVFile::GenerateHeader()
   }
   
   // Write the RIFF chunk.
-  PInt32l len_after = audioData + (lenHeader - 8);
+  PInt32l hdr_len_after = audioData + (lenHeader - 8);
 
   // Use PFile::Write as we do not want to use our PWAVFile::Write code
   // as that does some byte swapping
   if (!PFile::Write(WAV_LABEL_RIFF,4) ||
-      !PFile::Write(&len_after,4) ||
+      !PFile::Write(&hdr_len_after,4) ||
       !PFile::Write(WAV_LABEL_WAVE,4))
     return FALSE;
 
+
   // Write the FORMAT chunk
-  PInt32l len_format = 16;    // length is 16, exclude label_fmt and len_format
-  PInt16l format = 0x01;      // Format 0x01 = PCM
-  PInt16l num_channels = (WORD)numChannels;
-  PInt32l sample_per_sec = sampleRate;
-  PInt16l bits_per_sample = (WORD)bitsPerSample;
-  // These are calculated from the above configuration.
-  PInt16l bytes_per_sample = (WORD)(bitsPerSample >> 3);
-  PInt32l bytes_per_sec = sample_per_sec * bytes_per_sample;
+  PInt32l hdr_len_format       = len_format; //excludes label_fmt and len_format
+  PInt16l hdr_format           = (WORD)format;
+  PInt16l hdr_num_channels     = (WORD)numChannels;
+  PInt32l hdr_sample_per_sec   = sampleRate;
+  PInt16l hdr_bits_per_sample  = (WORD)bitsPerSample;
+  PInt16l hdr_bytes_per_sample = (WORD)bytesPerSample;
+  PInt32l hdr_average_bytes_per_sec = averageBytesPerSec;
   
   if (!PFile::Write(WAV_LABEL_FMT_,4) ||
-      !PFile::Write(&len_format,4) ||
-      !PFile::Write(&format,2) ||
-      !PFile::Write(&num_channels,2) ||
-      !PFile::Write(&sample_per_sec,4) ||
-      !PFile::Write(&bytes_per_sec,4) ||
-      !PFile::Write(&bytes_per_sample,2) ||
-      !PFile::Write(&bits_per_sample,2))
+      !PFile::Write(&hdr_len_format,4) ||
+      !PFile::Write(&hdr_format,2) ||
+      !PFile::Write(&hdr_num_channels,2) ||
+      !PFile::Write(&hdr_sample_per_sec,4) ||
+      !PFile::Write(&hdr_average_bytes_per_sec,4) ||
+      !PFile::Write(&hdr_bytes_per_sample,2) ||
+      !PFile::Write(&hdr_bits_per_sample,2))
     return FALSE;
 
+  // The format chunk then has extra data for G.723.1 files
+  if (waveType == G7231_WavFile) {
+    PInt16l hdr_format_data1 = 1;
+    PInt16l hdr_format_data2 = 480;
+    if (!PFile::Write(&hdr_format_data1,2) ||
+        !PFile::Write(&hdr_format_data2,2))
+      return FALSE;
+  }
+
+
+  // Write the FACT chunk. (only for G.723.1 files)
+  if (waveType == G7231_WavFile) {
+    PInt32l hdr_fact_len  = 4; // length is 4, exclude label_fact and fact_len
+    PInt32l hdr_fact_data = 0; // fact chunk data. Should be number of samples.
+    if (!PFile::Write(WAV_LABEL_FACT,4) ||
+        !PFile::Write(&hdr_fact_len,4) ||
+        !PFile::Write(&hdr_fact_data,4))
+        return FALSE;
+  }
+
   // Write the DATA chunk.
-  PInt32l data_len = audioData;
+  PInt32l hdr_data_len = audioData;
 
   if (!PFile::Write(WAV_LABEL_DATA,4) ||
-      !PFile::Write(&data_len,4))
+      !PFile::Write(&hdr_data_len,4))
       return FALSE;
 
   isValidWAV = TRUE;
@@ -530,14 +584,14 @@ BOOL PWAVFile::UpdateHeader()
 
   // Write out the 'len_after' field
   PFile::SetPosition(4);
-  PInt32l len_after;
-  len_after = (lenHeader - 8) + lenData; // size does not include first 8 bytes
-  if (!PFile::Write(&len_after,4)) return (FALSE);
+  PInt32l hdr_len_after = (lenHeader - 8) + lenData; // size does not include
+						     // first 8 bytes
+  if (!PFile::Write(&hdr_len_after,4)) return (FALSE);
 
   // Write out the 'data_len' field
   PFile::SetPosition(lenHeader - 4);
-  PInt32l data_len = lenData;
-  if (!PFile::Write(&data_len,4)) return (FALSE);
+  PInt32l hdr_data_len = lenData;
+  if (!PFile::Write(&hdr_data_len,4)) return (FALSE);
 
   header_needs_updating = FALSE;
 
