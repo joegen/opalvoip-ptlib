@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.5 1995/03/12 04:59:59 robertj Exp $
+ * $Id: serchan.h,v 1.6 1996/08/08 10:09:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.6  1996/08/08 10:09:12  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.5  1995/03/12 04:59:59  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -29,7 +32,7 @@
 
 #ifndef _PSERIALCHANNEL
 
-#include "..\..\common\serchan.h"
+#include "..\..\common\ptlib/serchan.h"
   public:
     // Overrides from class PChannel
     virtual PString GetName() const;
