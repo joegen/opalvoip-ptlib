@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.24  1999/08/24 13:40:56  craigs
+ * Fixed problem with condwait destorys failing on linux
+ *
  * Revision 1.23  1999/08/23 05:33:45  robertj
  * Made last threading changes Linux only.
  *
@@ -596,10 +599,11 @@ PSemaphore::~PSemaphore()
 {
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-  PAssertOS(pthread_cond_destroy(&condVar) == 0);
 #ifdef P_LINUX
+  pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else
+  PAssertOS(pthread_cond_destroy(&condVar) == 0);
   PAssertOS(pthread_mutex_destroy(&mutex) == 0);
 #endif
 }
