@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.34  1998/12/15 09:01:10  robertj
+ * Fixed 8 byte alignment problem in memory leak check code for sparc.
+ *
  * Revision 1.33  1998/11/30 05:33:00  robertj
  * Fixed duplicate debug stream class, ther can be only one.
  *
@@ -140,6 +143,7 @@
 #include <ptlib/debstrm.h>
 #else
 #include <strstream.h>
+#include <signal.h>
 #endif
 
 void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
@@ -195,7 +199,7 @@ void operator delete(void * ptr)
 DWORD PMemoryHeap::allocationBreakpoint;
 
 const char PMemoryHeap::Header::GuardBytes[] =
-  { '\x11', '\x55', '\xaa', '\xee', '\xaa', '\x55', '\x11' };
+  { '\x55', '\xaa', '\xee', '\xaa', '\x55' };
 
 
 PMemoryHeap::Wrapper::Wrapper()
