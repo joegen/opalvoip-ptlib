@@ -25,6 +25,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -63,6 +66,8 @@ CLEAN :
 	-@erase "$(INTDIR)\svcproc.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vfw.obj"
+	-@erase "$(INTDIR)\videoio.obj"
 	-@erase "$(INTDIR)\win32.obj"
 	-@erase "$(INTDIR)\wincfg.obj"
 	-@erase "$(INTDIR)\winserial.obj"
@@ -75,40 +80,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"Lib/PTLib.bsc" 
 BSC32_SBRS= \
@@ -139,6 +111,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\sockets.obj" \
 	"$(INTDIR)\sound.obj" \
 	"$(INTDIR)\svcproc.obj" \
+	"$(INTDIR)\vfw.obj" \
+	"$(INTDIR)\videoio.obj" \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
@@ -210,6 +184,10 @@ CLEAN :
 	-@erase "$(INTDIR)\svcproc.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vfw.obj"
+	-@erase "$(INTDIR)\vfw.sbr"
+	-@erase "$(INTDIR)\videoio.obj"
+	-@erase "$(INTDIR)\videoio.sbr"
 	-@erase "$(INTDIR)\win32.obj"
 	-@erase "$(INTDIR)\win32.sbr"
 	-@erase "$(INTDIR)\wincfg.obj"
@@ -227,40 +205,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -287,6 +232,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\sockets.sbr" \
 	"$(INTDIR)\sound.sbr" \
 	"$(INTDIR)\svcproc.sbr" \
+	"$(INTDIR)\vfw.sbr" \
+	"$(INTDIR)\videoio.sbr" \
 	"$(INTDIR)\win32.sbr" \
 	"$(INTDIR)\wincfg.sbr" \
 	"$(INTDIR)\winserial.sbr" \
@@ -323,6 +270,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\sockets.obj" \
 	"$(INTDIR)\sound.obj" \
 	"$(INTDIR)\svcproc.obj" \
+	"$(INTDIR)\vfw.obj" \
+	"$(INTDIR)\videoio.obj" \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
@@ -334,6 +283,36 @@ LIB32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -784,6 +763,40 @@ SOURCE=.\svcproc.cxx
 
 
 "$(INTDIR)\svcproc.obj"	"$(INTDIR)\svcproc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+
+
+!ENDIF 
+
+SOURCE=.\vfw.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\vfw.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\vfw.obj"	"$(INTDIR)\vfw.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+
+
+!ENDIF 
+
+SOURCE=..\common\videoio.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\videoio.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\videoio.obj"	"$(INTDIR)\videoio.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
