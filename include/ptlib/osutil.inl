@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.69  1999/03/09 03:08:39  robertj
+ * Changes for new documentation system
+ *
  * Revision 1.68  1998/11/30 08:57:17  robertj
  * Fixed problem where if += is used on PFilePath, it no longer may be normalised.
  *
@@ -478,17 +481,17 @@ PINLINE PChannel * PIndirectChannel::GetWriteChannel() const
 // PDirectory
 
 PINLINE PDirectory::PDirectory()
-  : PFILE_PATH_STRING(".") { Construct(); }
+  : PFilePathString(".") { Construct(); }
 
 PINLINE PDirectory::PDirectory(const char * cpathname)  
-  : PFILE_PATH_STRING(cpathname) { Construct(); }
+  : PFilePathString(cpathname) { Construct(); }
   
 PINLINE PDirectory::PDirectory(const PString & pathname)
-  : PFILE_PATH_STRING(pathname) { Construct(); }
+  : PFilePathString(pathname) { Construct(); }
   
 
 PINLINE void PDirectory::DestroyContents()
-  { Close(); PFILE_PATH_STRING::DestroyContents(); }
+  { Close(); PFilePathString::DestroyContents(); }
 
 PINLINE void PDirectory::CloneContents(const PDirectory * d)
   { CopyContents(*d); }
@@ -512,13 +515,13 @@ PINLINE PFilePath::PFilePath()
   { }
 
 PINLINE PFilePath::PFilePath(const PFilePath & path)
-  : PFILE_PATH_STRING(path) { }
+  : PFilePathString(path) { }
 
 PINLINE PFilePath & PFilePath::operator=(const char * cstr)
   { return operator=(PString(cstr)); }
 
 PINLINE PFilePath & PFilePath::operator=(const PFilePath & path)
-  { PFILE_PATH_STRING::operator=(path); return *this; }
+  { PFilePathString::operator=(path); return *this; }
 
 PINLINE PFilePath & PFilePath::operator+=(const PString & str)
   { operator=(*this + str); return *this; }

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.7  1999/03/09 03:08:39  robertj
+ * Changes for new documentation system
+ *
  * Revision 1.6  1998/11/30 02:55:21  robertj
  * New directory structure
  *
@@ -67,7 +70,7 @@ const char PDIR_SEPARATOR = '\\';
 
 const PINDEX P_MAX_PATH = _MAX_PATH;
 
-#define PFILE_PATH_STRING PCaselessString
+typedef PCaselessString PFilePathString;
 
 
 #include "../../pdirect.h"
