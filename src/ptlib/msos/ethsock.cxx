@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.17  1999/04/18 12:58:39  robertj
+ * MSVC 5 backward compatibility
+ *
  * Revision 1.16  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -84,6 +87,18 @@
 #include <ptlib/sockets.h>
 #include <snmp.h>
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Stuff from snmp.h
+
+#ifndef RFC1157VarBindList
+typedef RFC1157VarBind SnmpVarBind;
+typedef RFC1157VarBindList SnmpVarBindList;
+typedef LONG AsnInteger32;
+#define SNMP_PDU_GET ASN_RFC1157_GETREQUEST
+#define SNMP_PDU_GETNEXT ASN_RFC1157_GETNEXTREQUEST
+#pragma message("Later version of snmp.h required!")
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Stuff from ndis.h
@@ -187,8 +202,8 @@ class PWin32SnmpLibrary : public PDynaLink
     PString GetInterfaceName(int ifNum);
 
   private:
-    PFNSNMPEXTENSIONINIT Init;
-    PFNSNMPEXTENSIONQUERY Query;
+    BOOL (WINAPI *Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
+    BOOL (WINAPI *Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
 
     HANDLE hEvent;
     AsnObjectIdentifier baseOid;
@@ -358,21 +373,27 @@ PWin32AsnAny::~PWin32AsnAny()
     case ASN_OCTETSTRING :
       SnmpUtilMemFree(asnValue.string.stream);
       break;
+#ifdef ASN_BITS
     case ASN_BITS :
       SnmpUtilMemFree(asnValue.bits.stream);
       break;
+#endif
     case ASN_OBJECTIDENTIFIER :
       SnmpUtilMemFree(asnValue.object.ids);
       break;
     case ASN_SEQUENCE :
       SnmpUtilMemFree(asnValue.sequence.stream);
       break;
+#ifdef ASN_IPADDRESS
     case ASN_IPADDRESS :
       SnmpUtilMemFree(asnValue.address.stream);
       break;
+#endif
+#ifdef ASN_OPAQUE
     case ASN_OPAQUE :
       SnmpUtilMemFree(asnValue.arbitrary.stream);
       break;
+#endif
   }
 }
 
@@ -389,11 +410,16 @@ BOOL PWin32AsnAny::GetInteger(AsnInteger & i)
 
 BOOL PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
 {
+#ifdef ASN_IPADDRESS
   if (asnType != ASN_IPADDRESS)
     return FALSE;
 
   memcpy(&addr, asnValue.address.stream, sizeof(addr));
   return TRUE;
+#else
+  addr = 0;
+  return FALSE;
+#endif
 }
 
 
@@ -573,7 +599,9 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
   while (GetNextOid(oid, value)) {
     if (!(baseOid *= oid))
       break;
+#ifdef ASN_IPADDRESS
     if (value.asnType != ASN_IPADDRESS)
+#endif
       break;
 
     oid[9] = 2;
