@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.18  2003/05/16 17:49:18  shawn
+ * Audio code for CoreAudio of Mac OS X now uses multiple playback buffers.
+ *
  * Revision 1.17  2003/03/21 11:05:34  rogerh
  * Audio changes for Mac OS X from Shawn.
  *
@@ -184,15 +187,18 @@ class JRingBuffer;
 #endif
 
 #ifdef P_MACOSX
-    int caDevID;
-    unsigned caNumChannels;
+    int caDevID;               // the CoreAdudio Device ID
+    unsigned caNumChannels;    // number of channels the device has
 
-    unsigned int chunkSamples;
+    unsigned int chunkSamples; // number of samples each chunk has
+    void *caCBData;            // pointer to various data for CA callbacks
+                               // including caBufLen, caBuf, and so on
 
-    void *caCBData;
     int caBufLen;
-    short *caBuf;
-    void *caConverterRef;
+    char *caBuf;
+    char *consumerOffset, *producerOffset;
+
+    void *caConverterRef;      // sample rate converter reference
     pthread_mutex_t caMutex;
     pthread_cond_t caCond;
 #endif
