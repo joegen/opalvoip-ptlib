@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.9  2001/11/28 04:39:25  robertj
+ * Fixed MSVC warning
+ *
  * Revision 1.8  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -217,7 +220,7 @@ BOOL PFakeVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 }
 
 
-BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
+BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*bytesReturned*/)
 {
      grabCount++;
 
