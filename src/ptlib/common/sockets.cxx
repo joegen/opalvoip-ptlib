@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.48 1996/10/26 01:41:09 robertj Exp $
+ * $Id: sockets.cxx,v 1.49 1996/11/04 03:40:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.49  1996/11/04 03:40:22  robertj
+ * Moved address printer from inline to source.
+ *
  * Revision 1.48  1996/10/26 01:41:09  robertj
  * Compensated for Win'95 gethostbyaddr bug.
  *
@@ -856,6 +859,12 @@ PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 PIPSocket::Address::operator PString() const
 {
   return inet_ntoa(*this);
+}
+
+
+ostream & operator<<(ostream & s, PIPSocket::Address & a)
+{
+  return s << inet_ntoa(a);
 }
 
 
