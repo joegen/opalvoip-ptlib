@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.19  1999/11/30 00:22:54  robertj
+ * Updated documentation for doc++
+ *
  * Revision 1.18  1999/09/03 15:08:38  robertj
  * Fixed typo in ancestor class name
  *
@@ -91,8 +94,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // The abstract array class
 
-class PArrayObjects;
-
 /**This class contains a variable length array of arbitrary memory blocks.
    These can be anything from individual bytes to large structures. Note that
    that does {\bf not} include class objects that require construction or
@@ -117,8 +118,6 @@ class PArrayObjects;
 class PAbstractArray : public PContainer
 {
   PCONTAINERINFO(PAbstractArray, PContainer);
-
-  friend class PArrayObjects;
 
   public:
   /**@name Construction */
@@ -271,6 +270,8 @@ class PAbstractArray : public PContainer
 
     /// Flag indicating the array was allocated on the heap.
     BOOL allocatedDynamically;
+
+  friend class PArrayObjects;
 };
 
 
@@ -446,6 +447,7 @@ template <class T> class PBaseArray : public PAbstractArray
     BOOL Concatenate(
       const PBaseArray & array  /// Other array to concatenate
     ) { return PAbstractArray::Concatenate(array); }
+  //@}
 };
 
 /*Declare a dynamic array base type.
@@ -1144,7 +1146,8 @@ information.
 
 
 #define PARRAY(cls, T) \
-  PDECLARE_CLASS(cls, PArrayObjects) \
+  class cls : public PArrayObjects { \
+  PCLASSINFO(cls, PArrayObjects); \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PArrayObjects(dummy, c) { } \

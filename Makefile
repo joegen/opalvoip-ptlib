@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.9  1999/11/30 00:22:54  robertj
+# Updated documentation for doc++
+#
 # Revision 1.8  1999/06/09 16:09:20  robertj
 # Fixed tarball construction not include windows directories
 #
@@ -107,7 +110,7 @@ ptlib:
 
 
 docs: 
-	doc++ -d html -a -f pwlib.dxx
+	doc++ --dir html --tables pwlib.dxx
 
 
 ifdef HAS_GUI
