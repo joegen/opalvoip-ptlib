@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.61  2001/02/14 02:30:59  robertj
+ * Moved HTTP Service Macro facility to public API so can be used by apps.
+ * Added ability to specify the service macro keyword, defaults to "macro".
+ * Added machine macro to get the OS version and hardware.
+ *
  * Revision 1.60  2001/01/15 06:17:56  robertj
  * Set HTTP resource members to private to assure are not modified by
  *   dscendents in non-threadsafe manner.
@@ -243,6 +248,7 @@ static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);
 PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   : PServiceProcess(inf.manufacturerName, inf.productName,
                     inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber),
+    macroKeyword("macro"),
     productKey(inf.productKey),
     securedKeys(inf.securedKeyCount, inf.securedKeys),
     signatureKey(inf.signatureKey),
@@ -1111,22 +1117,6 @@ static BOOL ExtractVariables(const PString & args,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#undef new
-
-class PServiceMacro : public PObject
-{
-  public:
-    PServiceMacro(const char * name);
-    PServiceMacro(const PCaselessString & name);
-    Comparison Compare(const PObject & obj) const;
-    virtual PString Translate(PHTTPRequest & request, const PString & args) const;
-  protected:
-    const char * macroName;
-    PServiceMacro * link;
-    static PServiceMacro * list;
-  friend class PServiceMacros_list;
-};
-
 PServiceMacro * PServiceMacro::list;
 
 
@@ -1183,19 +1173,7 @@ PServiceMacros_list::PServiceMacros_list()
 }
 
 
-#define EMPTY
-
-#define CREATE_MACRO(name, request, args) \
-  class PServiceMacro_##name : public PServiceMacro { \
-    public: \
-      PServiceMacro_##name() : PServiceMacro(#name) { } \
-      PString Translate(PHTTPRequest & request, const PString & args) const; \
-  }; \
-  static const PServiceMacro_##name serviceMacro_##name; \
-  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args) const
-
-
-CREATE_MACRO(Header,request,EMPTY)
+PCREATE_SERVICE_MACRO(Header,request,P_EMPTY)
 {
   PString hdr = PHTTPServiceProcess::Current().GetPageGraphic();
   PServiceHTML::ProcessMacros(request, hdr, "header.html",
@@ -1204,31 +1182,31 @@ CREATE_MACRO(Header,request,EMPTY)
 }
 
 
-CREATE_MACRO(Copyright,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(Copyright,P_EMPTY,P_EMPTY)
 {
   return PHTTPServiceProcess::Current().GetCopyrightText();
 }
 
 
-CREATE_MACRO(ProductName,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(ProductName,P_EMPTY,P_EMPTY)
 {
   return PHTTPServiceProcess::Current().GetProductName();
 }
 
 
-CREATE_MACRO(Manufacturer,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(Manufacturer,P_EMPTY,P_EMPTY)
 {
   return PHTTPServiceProcess::Current().GetManufacturer();
 }
 
 
-CREATE_MACRO(Version,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(Version,P_EMPTY,P_EMPTY)
 {
   return PHTTPServiceProcess::Current().GetVersion(TRUE);
 }
 
 
-CREATE_MACRO(BuildDate,EMPTY,args)
+PCREATE_SERVICE_MACRO(BuildDate,P_EMPTY,args)
 {
   const PTime & date = PHTTPServiceProcess::Current().GetCompilationDate();
   if (args.IsEmpty())
@@ -1238,62 +1216,69 @@ CREATE_MACRO(BuildDate,EMPTY,args)
 }
 
 
-CREATE_MACRO(OS,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(OS,P_EMPTY,P_EMPTY)
 {
   return PHTTPServiceProcess::Current().GetOSClass() &
          PHTTPServiceProcess::Current().GetOSName();
 }
 
 
-CREATE_MACRO(LongDateTime,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(Machine,P_EMPTY,P_EMPTY)
+{
+  return PHTTPServiceProcess::Current().GetOSVersion() + '-' +
+         PHTTPServiceProcess::Current().GetOSHardware();
+}
+
+
+PCREATE_SERVICE_MACRO(LongDateTime,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::LongDateTime);
 }
 
 
-CREATE_MACRO(LongDate,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(LongDate,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::LongDate);
 }
 
 
-CREATE_MACRO(LongTime,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(LongTime,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::LongTime);
 }
 
 
-CREATE_MACRO(MediumDateTime,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(MediumDateTime,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::MediumDateTime);
 }
 
 
-CREATE_MACRO(MediumDate,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(MediumDate,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::MediumDate);
 }
 
 
-CREATE_MACRO(ShortDateTime,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(ShortDateTime,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::ShortDateTime);
 }
 
 
-CREATE_MACRO(ShortDate,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(ShortDate,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::ShortDate);
 }
 
 
-CREATE_MACRO(ShortTime,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(ShortTime,P_EMPTY,P_EMPTY)
 {
   return PTime().AsString(PTime::ShortTime);
 }
 
 
-CREATE_MACRO(Time,EMPTY,args)
+PCREATE_SERVICE_MACRO(Time,P_EMPTY,args)
 {
   PTime now;
   if (args.IsEmpty())
@@ -1303,7 +1288,7 @@ CREATE_MACRO(Time,EMPTY,args)
 }
 
 
-CREATE_MACRO(LocalHost,request,EMPTY)
+PCREATE_SERVICE_MACRO(LocalHost,request,P_EMPTY)
 {
   if (request.localAddr != 0)
     return PIPSocket::GetHostName(request.localAddr);
@@ -1312,7 +1297,7 @@ CREATE_MACRO(LocalHost,request,EMPTY)
 }
 
 
-CREATE_MACRO(LocalIP,request,EMPTY)
+PCREATE_SERVICE_MACRO(LocalIP,request,P_EMPTY)
 {
   if (request.localAddr != 0)
     return request.localAddr;
@@ -1321,7 +1306,7 @@ CREATE_MACRO(LocalIP,request,EMPTY)
 }
 
 
-CREATE_MACRO(LocalPort,request,EMPTY)
+PCREATE_SERVICE_MACRO(LocalPort,request,P_EMPTY)
 {
   if (request.localPort != 0)
     return psprintf("%u", request.localPort);
@@ -1330,7 +1315,7 @@ CREATE_MACRO(LocalPort,request,EMPTY)
 }
 
 
-CREATE_MACRO(PeerHost,request,EMPTY)
+PCREATE_SERVICE_MACRO(PeerHost,request,P_EMPTY)
 {
   if (request.origin != 0)
     return PIPSocket::GetHostName(request.origin);
@@ -1339,7 +1324,7 @@ CREATE_MACRO(PeerHost,request,EMPTY)
 }
 
 
-CREATE_MACRO(PeerIP,request,EMPTY)
+PCREATE_SERVICE_MACRO(PeerIP,request,P_EMPTY)
 {
   if (request.origin != 0)
     return request.origin;
@@ -1348,7 +1333,7 @@ CREATE_MACRO(PeerIP,request,EMPTY)
 }
 
 
-CREATE_MACRO(RegInfo,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(RegInfo,P_EMPTY,P_EMPTY)
 {
   PString subs;
   DigestSecuredKeys(PHTTPServiceProcess::Current(), subs, NULL);
@@ -1364,25 +1349,25 @@ static PString GetRegInfo(const char * info)
   return sconf.GetString(info, sconf.GetString(pending+info));
 }
 
-CREATE_MACRO(RegUser,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(RegUser,P_EMPTY,P_EMPTY)
 {
   return GetRegInfo("Name");
 }
 
 
-CREATE_MACRO(RegCompany,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(RegCompany,P_EMPTY,P_EMPTY)
 {
   return GetRegInfo("Company");
 }
 
 
-CREATE_MACRO(RegEmail,EMPTY,EMPTY)
+PCREATE_SERVICE_MACRO(RegEmail,P_EMPTY,P_EMPTY)
 {
   return GetRegInfo("EMail");
 }
 
 
-CREATE_MACRO(Registration,EMPTY,args)
+PCREATE_SERVICE_MACRO(Registration,P_EMPTY,args)
 {
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
   PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
@@ -1424,7 +1409,7 @@ CREATE_MACRO(Registration,EMPTY,args)
 }
 
 
-CREATE_MACRO(InputsFromQuery,request,EMPTY)
+PCREATE_SERVICE_MACRO(InputsFromQuery,request,P_EMPTY)
 {
   PStringToString vars = request.url.GetQueryVars();
   PStringStream subs;
@@ -1435,7 +1420,7 @@ CREATE_MACRO(InputsFromQuery,request,EMPTY)
 }
 
 
-CREATE_MACRO(Query,request,args)
+PCREATE_SERVICE_MACRO(Query,request,args)
 {
   if (args.IsEmpty())
     return request.url.GetQuery();
@@ -1450,7 +1435,7 @@ CREATE_MACRO(Query,request,args)
 }
 
 
-CREATE_MACRO(Get,request,args)
+PCREATE_SERVICE_MACRO(Get,request,args)
 {
   PString variable, value;
   if (ExtractVariables(args, variable, value)) {
@@ -1469,13 +1454,13 @@ CREATE_MACRO(Get,request,args)
 }
 
 
-CREATE_MACRO(URL,request,EMPTY)
+PCREATE_SERVICE_MACRO(URL,request,P_EMPTY)
 {
   return request.url.AsString();
 }
 
 
-CREATE_MACRO(Include,EMPTY,args)
+PCREATE_SERVICE_MACRO(Include,P_EMPTY,args)
 {
   PString text;
 
@@ -1489,7 +1474,7 @@ CREATE_MACRO(Include,EMPTY,args)
 }
 
 
-CREATE_MACRO(SignedInclude,EMPTY,args)
+PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 {
   PString text;
 
@@ -1564,33 +1549,26 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
     }
   }
 
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+
+  PRegularExpression MacroRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")[ \t\r\n]+(-?[^-])+-->?",
+                                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
   PINDEX pos = 0;
-  for (;;) {
-    pos = text.Find("!--#equival", pos);
-    if (pos == P_MAX_INDEX)
-      break;
-    PINDEX end = text.Find("--", pos+3);
-    if (end == P_MAX_INDEX)
-      break;
-
-    PString include = text(pos+12, end-1).Trim();
-
-    if (text[pos-1] == '<')
-      pos--;
-    end += 2;
-    if (text[end] == '>')
-      end++;
+  PINDEX len;
+  while (text.FindRegEx(MacroRegEx, pos, len, pos)) {
+    PString macro = text(text.FindOneOf(" \t\r\n", pos)+1, text.Find("--", pos+3)-1).Trim();
 
     PString subs;
-    if (!PHTTPServiceProcess::Current().SubstituteEquivalSequence(request, include, subs)) {
-      PCaselessString cmd = include.Left(include.Find(' '));
+    if (!process.SubstituteEquivalSequence(request, macro, subs)) {
+      PCaselessString cmd = macro.Left(macro.FindOneOf(" \t\r\n"));
       static PServiceMacros_list ServiceMacros;
       PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd));
       if (idx != P_MAX_INDEX)
-        subs = ServiceMacros[idx].Translate(request, include.Mid(cmd.GetLength()).LeftTrim());
+        subs = ServiceMacros[idx].Translate(request, macro.Mid(cmd.GetLength()).LeftTrim());
     }
 
-    text.Splice(subs, pos, end-pos);
+    text.Splice(subs, pos, len);
   }
 
   return TRUE;
