@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.26 1997/01/12 04:23:43 robertj Exp $
+ * $Id: ptlib.cxx,v 1.27 1997/04/27 05:50:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.27  1997/04/27 05:50:26  robertj
+ * DLL support.
+ *
  * Revision 1.26  1997/01/12 04:23:43  robertj
  * Fixed PDirectory::IsRoot() so works with UNC's
  *
@@ -111,8 +114,18 @@
 #endif
 
 
-PEXPORT PProcess * PSTATIC PProcessInstance;
-PEXPORT ostream * PSTATIC PErrorStream = &cerr;
+static ostream * PErrorStream = &cerr;
+
+ostream & PGetErrorStream()
+{
+  return *PErrorStream;
+}
+
+
+void PSetErrorStream(ostream * s)
+{
+  PErrorStream = s;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -548,7 +561,7 @@ BOOL PTextFile::WriteLine(const PString & str)
 
 int PProcess::_main(int argc, char ** argv, char **)
 {
-  PErrorStream = &cerr;
+  PSetErrorStream(&cerr);
   PreInitialise(argc, argv);
 
 #if !defined(_WIN32) && defined(_MSC_VER) && defined(_WINDOWS)
@@ -563,7 +576,6 @@ int PProcess::_main(int argc, char ** argv, char **)
 
   return terminationValue;
 }
-
 
 
 // End Of File ///////////////////////////////////////////////////////////////
