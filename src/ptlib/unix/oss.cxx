@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.26  2001/08/21 12:33:25  rogerh
+ * Make loopback mode actually work. Added the AudioDelay class from OpenMCU
+ * and made Read() return silence when the buffer is empty.
+ *
  * Revision 1.25  2001/05/14 06:33:19  rogerh
  * Add exit cases to loopback mode polling loops to allow the sound channel
  * to close properly when a connection closes.
@@ -129,6 +133,65 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+class AudioDelay : public PObject
+{
+  PCLASSINFO(AudioDelay, PObject);
+
+  public:
+    AudioDelay();
+    BOOL Delay(int time);
+    void Restart();
+    int  GetError();
+
+  protected:
+    PTime  previousTime;
+    BOOL   firstTime;
+    int    error;
+};
+
+#define MIN_HEADROOM    30
+#define MAX_HEADROOM    60
+    
+AudioDelay::AudioDelay()
+{
+  firstTime = TRUE;
+  error = 0;
+}
+    
+void AudioDelay::Restart()
+{
+  firstTime = TRUE;
+}
+  
+BOOL AudioDelay::Delay(int frameTime)
+{
+  if (firstTime) {
+    firstTime = FALSE;
+    previousTime = PTime();
+    return TRUE;
+  }
+
+  error += frameTime;
+
+  PTime now;
+  PTimeInterval delay = now - previousTime;
+  error -= (int)delay.GetMilliSeconds();
+  previousTime = now;
+
+  if (error > 0)
+#ifdef P_LINUX
+    usleep(error * 1000);
+#else
+    PThread::Current()->Sleep(error);
+#endif
+
+  return error <= -frameTime;
+
+  //if (headRoom > MAX_HEADROOM)
+  //  PThread::Current()->Sleep(headRoom - MIN_HEADROOM);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
 class SoundHandleEntry : public PObject {
@@ -155,6 +218,11 @@ PDICTIONARY(SoundHandleDict, PString, SoundHandleEntry);
 
 static char buffer[LOOPBACK_BUFFER_SIZE];
 static int  startptr, endptr;
+static unsigned int bufferLen;
+static PMutex audioBufferMutex;
+AudioDelay readDelay;
+AudioDelay writeDelay;
+
 
 PMutex PSoundChannel::dictMutex;
 
@@ -338,6 +406,7 @@ BOOL PSoundChannel::Open(const PString & _device,
     // open the device in read/write mode always
     if (_device == "loopback") {
       startptr = endptr = 0;
+      bufferLen = 0;
       os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
     }
     else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) 
@@ -509,20 +578,29 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     return TRUE;
   }
 
-  int index = 0;
+  // Write to the Circular Buffer
 
-  while (len > 0) {
-    len--;
+  // Do a sleep to simulate the amount of time the hardware would take
+  // to write out this data.
+  writeDelay.Delay(len/16);
+
+  // Obtain the audioBufferMutex. Release it at the end of this function.
+  PWaitAndSignal muxex(audioBufferMutex);
+
+  // Check if there is space to write the audio.
+  if (bufferLen + len > LOOPBACK_BUFFER_SIZE) {
+    PTRACE(1,"buffer is full. Cannot write\n");
+    return TRUE; // the write failed, but we return OK
+  }
+
+  unsigned int index = 0;
+  while (index < len) {
     buffer[endptr++] = ((char *)buf)[index++];
     if (endptr == LOOPBACK_BUFFER_SIZE)
       endptr = 0;
-    while (((startptr - 1) == endptr) || ((endptr==LOOPBACK_BUFFER_SIZE - 1) && (startptr==0))) {
-      usleep(1000);
-      if (os_handle != 0) { // check if the loopback audio has been closed
-        return FALSE;
-      }
-    }
   }
+  PTRACE(1,"Write. Buffer was "<<bufferLen<<" and goes up by "<<len);
+  bufferLen = bufferLen + len;
   return TRUE;
 }
 
@@ -552,21 +630,42 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 
   // os_handle = 0 indicated loopback mode
 
-  int index = 0;
 
-  while (len > 0) {
-    // wait for data to arrive in the input buffer
-    while (startptr == endptr) {
-      usleep(1000);
-      if (os_handle != 0) { // check if the loopback audio has been closed
-        return FALSE;
-      }
-    }
-    len--;
-    ((char *)buf)[index++]=buffer[startptr++];
+  // Read from the Circular Buffer
+
+  // This sleep simulates the time taken to read from real hardware
+  readDelay.Delay(len/16);
+
+
+  // Obtain the audioBufferMutex. Release it at the end of this function.
+  PWaitAndSignal mutex(audioBufferMutex);
+
+  // If there is no data in the buffer, we output silence
+  if (bufferLen == 0) {
+    PTRACE(1,"all zero\n");
+    memset(buf, 0, len);
+    return TRUE;
+  }
+
+  // There may not be enough audio data in the buffer, so find out
+  // how much we can copy.
+  unsigned int copy = ((len < bufferLen) ? len : bufferLen);
+
+  for (unsigned int index = 0; index < copy; index++) {
+    ((char *)buf)[index]=buffer[startptr++];
     if (startptr == LOOPBACK_BUFFER_SIZE)
       startptr = 0;
-  } 
+  }
+  PTRACE(1,"Read - buffer len is "<<bufferLen<< " and goes down by "<<copy);
+  bufferLen = bufferLen - copy;
+
+
+  // If there was some data in the buffer, but not enough for the
+  // amount required, use the data in the buffer followed by silence.
+  if (copy < len) {
+    memset(&(((char *)buf)[copy]), 0, len - copy);
+  }
+
   return TRUE;
 }
 
