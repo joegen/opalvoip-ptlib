@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.9  2002/02/20 02:37:26  dereks
+ * Initial release of Firewire camera support for linux.
+ * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+ *
  * Revision 1.8  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -68,6 +72,9 @@
 
 #include <ptlib/videoio.h>
 #include <ptlib/vfakeio.h>
+#ifdef TRY_1394DC
+#include <ptlib/videoio1394dc.h>
+#endif
 
 /**A class representing a video channel. This class is provided mainly for
    the playback or recording of video on the system.

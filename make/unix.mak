@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.118  2002/02/20 02:37:26  dereks
+# Initial release of Firewire camera support for linux.
+# Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+#
 # Revision 1.117  2002/01/31 07:25:29  robertj
 # Backed out someones changes which did not include platform in library name
 #   thus making it impossible to have multiple platform builds using the
@@ -585,6 +589,10 @@ STDCCFLAGS	+= -fPIC
 endif # PROG
 endif # P_SHAREDLIB
 
+ifdef TRY_1394DC
+ENDLDLIBS	+= -lraw1394 -ldc1394_control
+STDCCFLAGS	+= -DTRY_1394DC
+endif
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
