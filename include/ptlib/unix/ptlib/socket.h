@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.16  2002/10/17 09:50:10  craigs
+ * Added typedef for SOCKET to allow compilation on Linux
+ *
  * Revision 1.15  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -100,6 +103,8 @@
 #else
 #include <sys/time.h>
 #endif
+
+typedef	int SOCKET;
 
 
 ///////////////////////////////////////////////////////////////////////////////
