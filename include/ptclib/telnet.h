@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.15 1995/06/17 00:47:38 robertj Exp $
+ * $Id: telnet.h,v 1.16 1995/06/17 11:13:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
+ * Revision 1.16  1995/06/17 11:13:32  robertj
+ * Documentation update.
+ *
  * Revision 1.15  1995/06/17 00:47:38  robertj
  * Changed overloaded Open() calls to 3 separate function names.
  * More logical design of port numbers and service names.
@@ -124,7 +127,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
