@@ -47,7 +47,7 @@ PDECLARE_CLASS(PXConfigSection, PCaselessString)
 
 #define	new PNEW
 
-static BOOL ReadConfigFile (PFilePath & filename, PXConfig & config)
+static BOOL ReadConfigFile (const PFilePath & filename, PXConfig & config)
 
 {
   PINDEX len;
@@ -139,6 +139,19 @@ static BOOL LocateFile(const PString & baseName,
 // Create a new configuration object
 //
 ////////////////////////////////////////////////////////////
+
+PConfig::PConfig(int, const PString & name)
+  : defaultSection("Options")
+{
+  config = new PXConfig;
+  config->AllowDeleteObjects();
+  dirty      = FALSE;
+  saveOnExit = TRUE;
+
+  PFilePath readFilename;
+  LocateFile(name, readFilename, filename);
+  ReadConfigFile(readFilename, *config);
+}
 
 void PConfig::Construct(Source src)
 {
