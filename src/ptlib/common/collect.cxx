@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.6 1994/08/21 23:43:02 robertj Exp $
+ * $Id: collect.cxx,v 1.7 1994/09/25 10:49:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.6  1994/08/21 23:43:02  robertj
+ * Revision 1.7  1994/09/25 10:49:09  robertj
+ * Removed redundent PAssertNULL.
+ *
+ * Revision 1.6  1994/08/21  23:43:02  robertj
  * Fixed bug in lists when inserting element.
  *
  * Revision 1.5  1994/07/27  05:58:07  robertj
@@ -57,7 +60,6 @@ void PCollection::RemoveAll()
 void PArrayObjects::DestroyContents()
 {
   if (reference->deleteObjects) {
-    PAssertNULL(theArray);
     for (PINDEX i = 0; i < theArray.GetSize(); i++) {
       if (theArray[i] != NULL)
         delete theArray[i];
