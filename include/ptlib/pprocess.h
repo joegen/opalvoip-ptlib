@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.43  2000/02/29 12:26:14  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.42  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -296,6 +299,22 @@ class PProcess : public PThread
     /**Terminate the process. Usually only used in abnormal abort situation.
      */
     virtual void Terminate();
+
+    /** Get the name of the thread. Thread names are a optional debugging aid.
+
+       @return
+       current thread name.
+     */
+    virtual PString GetThreadName() const;
+
+    /** Change the name of the thread. Thread names are a optional debugging aid.
+
+       @return
+       current thread name.
+     */
+    virtual void SetThreadName(
+      const PString & name        /// New name for the thread.
+    );
   //@}
 
   /**@name Process information functions */
