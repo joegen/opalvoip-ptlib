@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.6 1995/01/14 06:19:37 robertj Exp $
+ * $Id: serchan.h,v 1.7 1995/03/14 12:42:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.6  1995/01/14 06:19:37  robertj
+ * Revision 1.7  1995/03/14 12:42:33  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.6  1995/01/14  06:19:37  robertj
  * Documentation
  *
  * Revision 1.5  1994/08/23  11:32:52  robertj
@@ -73,7 +76,8 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
       const PString & port,
       /* The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         $B$GetPortNames()$B$ can be used to find the platforms serial ports.
+         <A><CODE>GetPortNames()</CODE></A> can be used to find the platforms
+         serial ports.
        */
       DWORD speed = 0,
       /* Serial port speed or baud rate. The actual values possible here are
@@ -86,8 +90,8 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
        */
       Parity parity = DefaultParity,
       /* Parity for serial port. The actual values possible here are platform
-         dependent, but $B$NoParity$B$, $B$OddParity$B$ and $B$EvenParity$B$
-         should always be legal.
+         dependent, but <CODE>NoParity</CODE>, <CODE>OddParity</CODE> and
+         <CODE>EvenParity</CODE> should always be legal.
        */
       BYTE stop = 0,
       /* Number of stop bits for serial port. The actual values possible here
@@ -113,7 +117,8 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
       const PString & port,
       /* The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         $B$GetPortNames()$B$ can be used to find the platforms serial ports.
+         <A><CODE>GetPortNames()</CODE></A> can be used to find the platforms
+         serial ports.
        */
       DWORD speed = 0,
       /* Serial port speed or baud rate. The actual values possible here are
@@ -126,8 +131,8 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
        */
       Parity parity = DefaultParity,
       /* Parity for serial port. The actual values possible here are platform
-         dependent, but $B$NoParity$B$, $B$OddParity$B$ and $B$EvenParity$B$
-         should always be legal.
+         dependent, but <CODE>NoParity</CODE>, <CODE>OddParity</CODE> and
+         <CODE>EvenParity</CODE> should always be legal.
        */
       BYTE stop = 0,
       /* Number of stop bits for serial port. The actual values possible here
@@ -153,13 +158,15 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     );
     /* Set the speed (baud rate) of the serial channel.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     DWORD GetSpeed() const;
     /* Get the speed (baud rate) of the serial channel.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     BOOL SetDataBits(
@@ -167,13 +174,15 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     );
     /* Set the data bits (5, 6, 7 or 8) of the serial port.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     BYTE GetDataBits() const;
     /* Get the data bits (5, 6, 7 or 8) of the serial port.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     BOOL SetParity(
@@ -181,13 +190,15 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     );
     /* Set the parity of the serial port.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     Parity GetParity() const;
     /* Get the parity of the serial port.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     BOOL SetStopBits(
@@ -195,13 +206,15 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     );
     /* Set the stop bits (1 or 2) of the serial port.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     BYTE GetStopBits() const;
     /* Get the stop bits (1 or 2) of the serial port.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     BOOL SetInputFlowControl(
@@ -210,14 +223,16 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     /* Set the flow control (handshaking) protocol of the input to the serial
        port.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     FlowControl GetInputFlowControl() const;
     /* Get the flow control (handshaking) protocol of the input to the serial
        port.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     BOOL SetOutputFlowControl(
@@ -226,14 +241,16 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
     /* Set the flow control (handshaking) protocol of the output to the serial
        port.
 
-       Returns: TRUE if the change was successfully made.
+       <H2>Returns:</H2>
+       TRUE if the change was successfully made.
      */
 
     FlowControl GetOutputFlowControl() const;
     /* Get the flow control (handshaking) protocol of the output from the
        serial port.
 
-       Returns: current setting.
+       <H2>Returns:</H2>
+       current setting.
      */
 
     virtual void SaveSettings(
@@ -250,7 +267,7 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
 
     void ClearDTR();
     /* Clear the Data Terminal Ready signal of the serial port. This is
-       equivalent to $F$SetDTR(FALSE)$F$.
+       equivalent to <CODE>SetDTR(FALSE)</CODE>.
      */
 
     void SetRTS(
@@ -260,7 +277,7 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
 
     void ClearRTS();
     /* Clear the Request To Send signal of the serial port. This is equivalent
-       to $F$SetRTS(FALSE)$F$.
+       to <CODE>SetRTS(FALSE)</CODE>.
      */
 
     void SetBreak(
@@ -270,31 +287,35 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
 
     void ClearBreak();
     /* Clear the break condition of the serial port. This is equivalent to
-       $F$SetBreak(FALSE)$F$.
+       <CODE>SetBreak(FALSE)</CODE>.
      */
 
     BOOL GetCTS();
     /* Get the Clear To Send signal of the serial port.
     
-       Returns: TRUE if the CTS signal is asserted.
+       <H2>Returns:</H2>
+       TRUE if the CTS signal is asserted.
      */
 
     BOOL GetDSR();
     /* Get the Data Set Ready signal of the serial port.
     
-       Returns: TRUE if the DSR signal is asserted.
+       <H2>Returns:</H2>
+       TRUE if the DSR signal is asserted.
      */
 
     BOOL GetDCD();
     /* Get the Data Carrier Detect signal of the serial port.
     
-       Returns: TRUE if the DCD signal is asserted.
+       <H2>Returns:</H2>
+       TRUE if the DCD signal is asserted.
      */
 
     BOOL GetRing();
     /* Get the Ring Indicator signal of the serial port.
     
-       Returns: TRUE if the RI signal is asserted.
+       <H2>Returns:</H2>
+       TRUE if the RI signal is asserted.
      */
 
     static PStringList GetPortNames();
@@ -303,7 +324,8 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
        computer. For example under unix it may be "ttyS0", under MS-DOS or
        NT it would be "COM1" and for the Macintosh it could be "Modem".
 
-       Returns: list of strings for possible serial ports.
+       <H2>Returns:</H2>
+       list of strings for possible serial ports.
      */
 
 
