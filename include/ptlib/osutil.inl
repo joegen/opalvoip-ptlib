@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.18 1994/07/27 05:58:07 robertj Exp $
+ * $Id: osutil.inl,v 1.19 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.18  1994/07/27 05:58:07  robertj
+ * Revision 1.19  1994/08/21 23:43:02  robertj
+ * Added "remove on close" feature for temporary files.
+ * Added "force" option to Remove/Rename etc to override write protection.
+ * Removed default argument when of PString type (MSC crashes).
+ *
+ * Revision 1.18  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.17  1994/07/21  12:33:49  robertj
@@ -254,6 +259,9 @@ PINLINE PChannel::Errors PChannel::GetErrorCode() const
 PINLINE int PChannel::GetErrorNumber() const
   { return osError; }
 
+PINLINE void PChannel::AbortCommandString()
+  { abortCommandString = TRUE; }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
@@ -302,13 +310,13 @@ PINLINE PFilePath::PFilePath()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PFile::PFile()
-  { os_handle = -1; }
+  { os_handle = -1; removeOnClose = FALSE; }
 
 PINLINE PFile::PFile(OpenMode mode, int opts)
-  { os_handle = -1; Open(mode, opts); }
+  { os_handle = -1; removeOnClose = FALSE; Open(mode, opts); }
 
 PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
-  { os_handle = -1; Open(name, mode, opts); }
+  { os_handle = -1; removeOnClose = FALSE; Open(name, mode, opts); }
 
 PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
   { return path.Compare(((const PFile &)obj).path); }
@@ -322,17 +330,20 @@ PINLINE void PFile::CloneContents(const PFile * f)
 PINLINE BOOL PFile::Exists() const
   { return Exists(path); }
 
-PINLINE BOOL PFile::Access(OpenMode mode) const
-  { return Access(path, mode); }
+PINLINE BOOL PFile::Access(OpenMode mode)
+  { return ConvertOSError(Access(path, mode) ? 0 : -1); }
 
-PINLINE BOOL PFile::Remove()
-  { Close(); return Remove(path); }
+PINLINE BOOL PFile::Remove(BOOL force)
+  { Close(); return ConvertOSError(Remove(path, force) ? 0 : -1); }
 
-PINLINE BOOL PFile::Copy(const PString & newname)
-  { return Copy(path, newname); }
+PINLINE BOOL PFile::Copy(const PString & newname, BOOL force)
+  { return ConvertOSError(Copy(path, newname, force) ? 0 : -1); }
 
-PINLINE BOOL PFile::GetInfo(PFileInfo & info) const
-  { return GetInfo(path, info); }
+PINLINE BOOL PFile::GetInfo(PFileInfo & info)
+  { return ConvertOSError(GetInfo(path, info) ? 0 : -1); }
+
+PINLINE BOOL PFile::SetPermissions(int permissions)
+  { return ConvertOSError(SetPermissions(path, permissions) ? 0 : -1); }
 
 
 PINLINE const PFilePath & PFile::GetFilePath() const
@@ -356,12 +367,6 @@ PINLINE BOOL PFile::IsEndOfFile() const
 
 PINLINE PTextFile::PTextFile()
   { }
-
-PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
-  : PFile(mode, opts) { }
-
-PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
-  : PFile(name, mode, opts) { }
 
 PINLINE void PTextFile::DestroyContents()
   { PFile::DestroyContents(); }
@@ -477,6 +482,18 @@ PINLINE PModem::Status PModem::GetStatus() const
 
 #ifdef _PCONFIG
 
+PINLINE PConfig::PConfig(Source src)
+  : defaultSection("Options") { Construct(src); }
+
+PINLINE PConfig::PConfig(Source src, const PString & section)
+  : defaultSection(section) { Construct(src); }
+
+PINLINE PConfig::PConfig(const PFilePath & filename)
+  : defaultSection("Options") { Construct(filename); }
+
+PINLINE PConfig::PConfig(const PFilePath & filename, const PString & section)
+  : defaultSection(section) { Construct(filename); }
+
 PINLINE void PConfig::SetDefaultSection(const PString & section)
   { defaultSection = section; }
 
@@ -491,6 +508,9 @@ PINLINE void PConfig::DeleteSection()
 
 PINLINE void PConfig::DeleteKey(const PString & key)
   { DeleteKey(defaultSection, key); }
+
+PINLINE PString PConfig::GetString(const PString & key)
+  { return GetString(defaultSection, key, PString()); }
 
 PINLINE PString PConfig::GetString(const PString & key, const PString & dflt)
   { return GetString(defaultSection, key, dflt); }
