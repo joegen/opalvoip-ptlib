@@ -2621,6 +2621,7 @@ EXPORTS
     ?SetPortA@PSocket@@QAEXABVPString@@@Z @2183 NONAME ;public: void __thiscall PSocket::SetPortA(class PString const &)
     ?SetPortA@PSocket@@QAEXG@Z @2184 NONAME ;public: void __thiscall PSocket::SetPortA(unsigned short)
     ?SetPosition@PFile@@QAEHJW4FilePositionOrigin@1@@Z @2185 NONAME ;public: int __thiscall PFile::SetPosition(long,enum PFile::FilePositionOrigin)
+    ?setprecision@@YA?AV__SMANIP_int@@H@Z @3087 NONAME ;class __SMANIP_int  __cdecl setprecision(int)
     ?SetPriority@PThread@@UAEXW4Priority@1@@Z @2186 NONAME ;public: virtual void __thiscall PThread::SetPriority(enum PThread::Priority)
     ?SetReadChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @2187 NONAME ;public: int __thiscall PIndirectChannel::SetReadChannel(class PChannel *,int)
     ?SetReadTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @2188 NONAME ;public: void __thiscall PChannel::SetReadTimeout(class PTimeInterval const &)
@@ -2745,6 +2746,7 @@ EXPORTS
     ?_main@PProcess@@UAEHPAX@Z @2295 NONAME ;public: virtual int __thiscall PProcess::_main(void *)
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
+    ?__setprecision@@YAAAVios@@AAV1@H@Z @3088 NONAME ;class ios & __cdecl __setprecision(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
     _PTimeGetChar@4 @2967 NONAME ;_PTimeGetChar@4
     _PTimeGetDateOrder@0 @2971 NONAME ;_PTimeGetDateOrder@0
@@ -2753,5 +2755,5 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?setprecision@@YA?AV__SMANIP_int@@H@Z @3087 NONAME ;class __SMANIP_int  __cdecl setprecision(int)
-    ?__setprecision@@YAAAVios@@AAV1@H@Z @3088 NONAME ;class ios & __cdecl __setprecision(class ios &,int)
+    ?GetLevel@PTrace@@SAIXZ @3089 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
+    ?GetOptions@PTrace@@SAIXZ @3090 NONAME ;public: static unsigned int __cdecl PTrace::GetOptions(void)
