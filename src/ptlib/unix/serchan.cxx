@@ -270,6 +270,30 @@ BOOL PSerialChannel::SetSpeed(DWORD speed)
 }
 
 
+DWORD PSerialChannel::GetSpeed() const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return 0;
+}
+
+BYTE PSerialChannel::GetStopBits() const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return 0;
+}
+
+BYTE PSerialChannel::GetDataBits() const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return 0;
+}
+
+PSerialChannel::Parity PSerialChannel::GetParity() const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return 0;
+}
+
 BOOL PSerialChannel::SetDataBits(BYTE data)
 {
   int flags;
