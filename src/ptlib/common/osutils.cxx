@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.40 1996/01/02 12:52:47 robertj Exp $
+ * $Id: osutils.cxx,v 1.41 1996/01/03 11:09:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,8 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.40  1996/01/02 12:52:47  robertj
- * Added thread for timers.
- * Fixed bug in cooperative threading semaphores.
+ * Revision 1.41  1996/01/03 11:09:35  robertj
+ * Added Universal Time and Time Zones to PTime class.
  *
  * Revision 1.39  1995/12/23 03:40:40  robertj
  * Changed version number system
@@ -195,7 +194,9 @@ void PTimeInterval::SetInterval(long millisecs,
 
 #if defined(_PTIME)
 
-PTime::PTime(int second, int minute, int hour, int day, int month, int year)
+PTime::PTime(int second, int minute, int hour,
+             int day,    int month,  int year,
+             PTime::TimeZone zone)
 {
   struct tm t;
   PAssert(second >= 0 && second <= 59, PInvalidParameter);
@@ -212,6 +213,8 @@ PTime::PTime(int second, int minute, int hour, int day, int month, int year)
   t.tm_year = year-1900;
   theTime = mktime(&t);
   PAssert(theTime != -1, PInvalidParameter);
+  if (zone == UTC)
+    theTime -= GetTimeZone();
 }
 
 
@@ -316,14 +319,14 @@ void PTime::ReadFrom(istream &strm)
 }
 
 
-PString PTime::AsString(TimeFormat format) const
+PString PTime::AsString(TimeFormat format, TimeZone zone) const
 {
   PString fmt, dsep;
 
   PString tsep = GetTimeSeparator();
   BOOL is12hour = GetTimeAMPM();
 
-  switch (format) {
+  switch (format & 7) {
     case LongDateTime :
     case LongTime :
     case MediumDateTime :
@@ -351,7 +354,7 @@ PString PTime::AsString(TimeFormat format) const
       break;
   }
 
-  switch (format) {
+  switch (format & 7) {
     case LongDateTime :
     case MediumDateTime :
     case ShortDateTime :
@@ -362,7 +365,7 @@ PString PTime::AsString(TimeFormat format) const
       break;
   }
 
-  switch (format) {
+  switch (format & 7) {
     case LongDateTime :
     case LongDate :
       fmt += "wwww ";
@@ -412,6 +415,9 @@ PString PTime::AsString(TimeFormat format) const
       break;
   }
 
+  if (zone == UTC)
+    fmt += "u";
+
   return AsString(fmt);
 }
 
@@ -421,9 +427,11 @@ PString PTime::AsString(const char * format) const
   PAssert(format != NULL, PInvalidParameter);
 
   BOOL is12hour = strchr(format, 'a') != NULL;
+  BOOL isUTC    = strchr(format, 'u') != NULL || strchr(format, 'g') != NULL;
 
   PString str;
-  struct tm * t = localtime(&theTime);
+  time_t realTime = theTime + (isUTC ? 0 : GetTimeZone());
+  struct tm * t = localtime(&realTime);
   PINDEX repeatCount;
 
   while (*format != '\0') {
@@ -436,6 +444,12 @@ PString PTime::AsString(const char * format) const
           str += GetTimeAM();
         else
           str += GetTimePM();
+        break;
+
+      case 'g' :
+      case 'u' :
+        while (*format == 'g' || *format == 'u')
+          ++format;
         break;
 
       case 'h' :
@@ -460,7 +474,8 @@ PString PTime::AsString(const char * format) const
       case 'w' :
         while (*++format == 'w')
           repeatCount++;
-        str += GetDayName((Weekdays)t->tm_wday, repeatCount <= 3);
+        str += GetDayName((Weekdays)t->tm_wday,
+                                    repeatCount <= 3 ? Abbreviated : FullName);
         break;
 
       case 'M' :
@@ -469,7 +484,8 @@ PString PTime::AsString(const char * format) const
         if (repeatCount < 3)
           str += psprintf("%0*u", repeatCount, t->tm_mon+1);
         else
-          str += GetMonthName((Months)(t->tm_mon+1), repeatCount == 3);
+          str += GetMonthName((Months)(t->tm_mon+1),
+                                    repeatCount == 3 ? Abbreviated : FullName);
         break;
 
       case 'd' :
@@ -485,6 +501,13 @@ PString PTime::AsString(const char * format) const
           str += psprintf("%02u", t->tm_year%100);
         else
           str += psprintf("%04u", t->tm_year+1900);
+        break;
+
+      case 'z' :
+        while (*++format == 'z')
+          ;
+        str += GetTimeZoneString(
+                         IsDaylightSavings() ? DaylightSavings : StandardTime);
         break;
 
       default :
@@ -696,8 +719,6 @@ void PProcess::TimerThread::Main()
 
 void PProcess::SignalTimerChange()
 {
-  if (timerThread == (void *)-1)
-    return;
   if (timerThread == NULL)
     timerThread = PNEW TimerThread;
   timerThread->semaphore.Signal();
@@ -2140,8 +2161,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 PProcess::~PProcess()
 {
 #if defined(P_PLATFORM_HAS_THREADS)
-  if (timerThread != (void *)-1)
-    delete timerThread;
+  delete timerThread;
 #endif
 }
 
