@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.20  2004/05/17 06:05:20  csoutheren
+ * Changed "make docs" to use doxygen
+ * Added new config file and main page
+ *
  * Revision 1.19  2003/04/15 07:08:36  robertj
  * Changed read and write from streams for base array classes so operates in
  *   the same way for both PIntArray and PArray<int> etc
@@ -385,6 +389,9 @@ class PXMLRPCStructBase : public PObject {
       extras \
       arraytype & instance; \
     } pxmlrpcvar_##variable
+#ifdef DOCPLUSPLUS
+}
+#endif
 
 
 #define PXMLRPC_STRUCT_END() \
@@ -471,7 +478,6 @@ class PXMLRPCStructBase : public PObject {
                              PObject * CreateObject() const { return new type; })
 
 
-
 #define PXMLRPC_FUNC_NOARG_NOREPLY(name) \
   BOOL name() { return MakeRequest(#name); }
 
@@ -486,16 +492,25 @@ class PXMLRPCStructBase : public PObject {
   PXMLRPC_STRUCT_BEGIN(name##_in)
 
 
+#ifdef DOCPLUSPLUS
+{
+#endif
 #define PXMLRPC_FUNC_MULTI_REPLY(name) \
   }; PXMLRPC_STRUCT_BEGIN(name##_out)
 
 
+#ifdef DOCPLUSPLUS
+{
+#endif
 #define PXMLRPC_FUNC_NO_ARGS(name) \
   }; \
   BOOL name(name##_out & reply) \
     { return MakeRequest(#name, name##_in(), reply); }
 
 
+#ifdef DOCPLUSPLUS
+{
+#endif
 #define PXMLRPC_FUNC_STRUCT_ARG(name) \
   }; \
   class name##_in_carrier : public PXMLRPCStructBase { \
@@ -513,6 +528,9 @@ class PXMLRPCStructBase : public PObject {
     { return MakeRequest(#name, name##_in_carrier(args), reply); }
 
 
+#ifdef DOCPLUSPLUS
+{
+#endif
 #define PXMLRPC_FUNC_NORM_ARGS(name) \
   }; \
   BOOL name(const name##_in & args, name##_out & reply) \

@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.11  2004/05/17 06:05:20  csoutheren
+ * Changed "make docs" to use doxygen
+ * Added new config file and main page
+ *
  * Revision 1.10  2004/04/22 11:43:47  csoutheren
  * Factored out functions useful for loading dynamic libraries
  *
@@ -189,5 +193,9 @@ class mgr : public PPluginModuleManager\
 {\
   public: \
     static mgr & GetManager();\
+
+#ifdef DOCPLUSPLUS
+}
+#endif
 
 #endif // ifndef _PLUGINMGR_H
