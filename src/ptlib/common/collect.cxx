@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.25 1996/08/08 10:08:43 robertj Exp $
+ * $Id: collect.cxx,v 1.26 1996/08/17 09:55:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.26  1996/08/17 09:55:23  robertj
+ * Optimised RemoveAll() for object arrays.
+ *
  * Revision 1.25  1996/08/08 10:08:43  robertj
  * Directory structure changes for common files.
  *
@@ -125,6 +128,18 @@ void PArrayObjects::DestroyContents()
     }
   }
   delete theArray;
+}
+
+
+void PArrayObjects::RemoveAll()
+{
+  if (reference->deleteObjects) {
+    for (PINDEX i = 0; i < theArray->GetSize(); i++) {
+      if ((*theArray)[i] != NULL)
+        delete (*theArray)[i];
+    }
+  }
+  SetSize(0);
 }
 
 
