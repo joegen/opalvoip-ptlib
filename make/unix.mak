@@ -32,6 +32,19 @@ ENDIAN		:= PBIG_ENDIAN
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
 
 endif
+LIB_SUFFIX	= linuxpic
+ifdef PROG
+OBJ_SUFFIX	= linux
+else
+OBJ_SUFFIX	= linuxpic
+ifdef SHAREDLIB
+endif
+else
+OBJ_SUFFIX	= linux
+OBJ_SUFFIX	= linux
+endif
+STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
+endif
 
 endif # FreeBSD
 #
@@ -45,6 +58,9 @@ ifdef P_SUN4
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4 -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 
 
+OBJ_SUFFIX	= sun4
+# Sparc Sun 4x, using gcc 2.7.2
+
 endif
 
 ifdef P_SOLARIS
@@ -52,6 +68,8 @@ else
 # Sparc Solaris 2.x, using gcc 2.6.3
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
+OBJ_SUFFIX	= solaris
+
 endif
 
 endif # solaris
@@ -65,12 +83,16 @@ ifdef P_ULTRIX
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX  -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 
+OBJ_SUFFIX	= ultrix
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
 endif
 
 ifdef P_HPUX
 ####################################################
 
 ifeq ($(OSTYPE),hpux)
+
+OBJ_SUFFIX	= hpux
 
 endif
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
@@ -124,7 +146,7 @@ LDFLAGS		:= $(LDFLAGS) -s
 
 endif # DEBUG
 
-OBJDIR		:= obj_$(LIBID)
+OBJDIR		:= obj_$(OBJ_SUFFIX)_$(LIBID)
 
 LIBDIR		= $(PWLIBDIR)/lib
 COMMONDIR	= $(PWLIBDIR)/common
@@ -144,9 +166,18 @@ OS		= unix
 #
 # set name of the PT library
 #
+ifndef LIB_SUFFIX
+LIB_SUFFIX	= $(OBJ_SUFFIX)
+endif
 OSDIR		= $(PWLIBDIR)/$(OS)
-PTLIB		= pt$(LIBID)_$(OS)
+PTLIB		= pt_$(OS)_$(LIB_SUFFIX)_$(LIBID)
+
+ifndef SHAREDLIB
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
+else
+PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
+endif
+
 VPATH_CXX	:= $(VPATH_CXX) $(OSDIR)/src 
 VPATH_H		:= $(VPATH_H) $(OSDIR)/include
 
@@ -159,39 +190,6 @@ STDCCFLAGS	:= -I$(OSDIR)/include $(STDCCFLAGS)
 # add OS library
 #
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
-
-ifdef fred
-
-##########################################################################
-#
-#  set up common
-#
-
-VPATH_CXX	:= $(VPATH_CXX) $(COMMONDIR)/src 
-VPATH_H		:= $(VPATH_H) $(COMMONDIR)
-
-vpath %.cxx $(VPATH_CXX)
-vpath %.h   $(VPATH_H)
-vpath %.o   $(OBJDIR)
-
-#
-# add common directory to include path - must be after PW and PT directories
-#
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(COMMONDIR)
-
-#
-# add any trailing libraries
-#
-LDLIBS		:= $(LDLIBS) $(ENDLDLIBS)
-
-#
-# define rule for .cxx files
-#
-$(OBJDIR)/%.o : %.cxx 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
-
-endif
 
 
 # End of unix.mak

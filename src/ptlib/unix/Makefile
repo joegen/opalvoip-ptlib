@@ -2,8 +2,12 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.11 1996/06/19 01:56:26 craigs Exp $
+# $Id: Makefile,v 1.12 1996/06/29 11:37:28 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.12  1996/06/29 11:37:28  craigs
+# Added unix system type to object directories
+# Added support for Linux shared libraries
+#
 # Revision 1.11  1996/06/19 01:56:26  craigs
 # Added uhttpsvc to the list
 #
@@ -63,10 +67,10 @@ SOURCES		= switch.cxx \
 		  uappsock.cxx \
 		  uhtml.cxx \
 		  ucypher.cxx \
-		  switch.cxx \
 		  uhttp.cxx \
 		  uicmp.cxx \
 		  uhttpsvc.cxx \
+		  uhttpform.cxx \
 		  ../../common/src/object.cxx \
 		  ../../common/src/contain.cxx \
 		  ../../common/src/osutils.cxx \
@@ -83,11 +87,11 @@ include unix.mak
 
 all:	$(PTLIB_FILE)
 
-#$(OBJDIR)/switch.o: ./switch.cxx
-#	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-#	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
-
-OBJS	:= $(OBJS) $(OBJDIR)/switch.o
+ifdef REQUIRES_SEPARATE_SWITCH 
+$(OBJDIR)/switch.o: ./switch.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+endif
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
@@ -122,6 +126,20 @@ include common.mak
 
 #######################################################
 
+
+ifdef SHAREDLIB
+$(PTLIB_FILE): $(PTLIB_FILE).1
+	@if [ ! -e $(PTLIB_FILE) ] ; then ln -s $(PTLIB_FILE).1 $(PTLIB_FILE) ; fi
+
+$(PTLIB_FILE).1: $(PTLIB_FILE).1.0
+	@if [ ! -e $(PTLIB_FILE).1 ] ; then ln -s $(PTLIB_FILE).1.0 $(PTLIB_FILE).1 ; fi
+
+$(PTLIB_FILE).1.0: $(OBJS)
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	gcc -shared -Wl,-soname,$(PTLIB_FILE).1 -o $(PTLIB_FILE).1.0 $(OBJS)
+
+else
+
 $(PTLIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 ifndef RANLIB
@@ -129,6 +147,11 @@ ifndef RANLIB
 else
 	ar rc $(PTLIB_FILE) $(OBJS)
 	ranlib $(PTLIB_FILE)
+endif
+
+
+	@if [ ! -e $(LIBDIR)/lib$(PTLIB).so.1 ] ; then ln -s $(PTLIB_FILE) $(LIBDIR)/lib$(PTLIB).so.1
+	@if [ ! -e $(LIBDIR)/lib$(PTLIB).so ] ; then ln -s $(LIBDIR)/lib$(PTLIB).so.1 $(LIBDIR)/lib$(PTLIB).so
 endif
 
 
