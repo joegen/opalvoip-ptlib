@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.9 1996/03/03 07:36:44 robertj Exp $
+ * $Id: html.h,v 1.10 1996/03/10 13:14:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.10  1996/03/10 13:14:53  robertj
+ * Simplified some of the classes and added catch all string for attributes.
+ *
  * Revision 1.9  1996/03/03 07:36:44  robertj
  * Added missing public's to standard character attribute classes.
  *
@@ -72,9 +75,17 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     ~PHTML();
 
+    PHTML & operator=(
+      const PHTML & html    // HTML to copy
+    );
+    /* Copy the data from the source HTML string into the current HTML
+       string.
+     */
+
 
   // New functions for class.
     enum ElementInSet {
+      InHTML,
       InHead,
       InBody,
       InTitle,
@@ -130,19 +141,26 @@ PDECLARE_CLASS(PHTML, PStringStream)
         enum OptionalCRLF { NoCRLF, OpenCRLF, CloseCRLF, BothCRLF };
         Element(
           const char * nam,
+          const char * att,
           ElementInSet elmt,
           ElementInSet req,
           OptionalCRLF opt
-        ) { name = nam; inElement = elmt; reqElement = req; crlf = opt; }
+        ) { name = nam; attr= att; inElement = elmt; reqElement = req; crlf = opt; }
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * name;
+        const char * attr;
         ElementInSet inElement;
         ElementInSet reqElement;
         OptionalCRLF crlf;
       friend ostream & operator<<(ostream & strm, const Element & elmt)
         { elmt.Output((PHTML&)strm); return strm; }
+    };
+
+    class HTML : public Element {
+      public:
+        HTML(const char * attr = NULL);
     };
 
     class Head : public Element {
@@ -154,7 +172,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     class Body : public Element {
       public:
-        Body();
+        Body(const char * attr = NULL);
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -172,82 +190,30 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     class Banner : public Element {
       public:
-        Banner();
+        Banner(const char * attr = NULL);
     };
 
-    enum ClearCodes {
-      ClearDefault, ClearLeft, ClearRight, ClearAll, ClearEn, ClearPixels,
-      NumClearCodes
-    };
-    class ClearedElement : public Element {
-      protected:
-        ClearedElement(const char * nam,
-                       ElementInSet elmt,
-                       ElementInSet req,
-                       OptionalCRLF opt,
-                       ClearCodes clear,
-                       int distance);
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        ClearCodes clearCode;
-        int clearDistance;
-    };
-
-    enum AlignCodes {
-      AlignDefault, AlignLeft, AlignCentre, AlignCenter = AlignCentre,
-      AlignRight, AlignJustify, AlignTop, AlignBottom, AlignDecimal,
-      NumAlignCodes
-    };
-    enum NoWrapCodes {
-      WrapWords,
-      NoWrap
-    };
-    class ComplexElement : public ClearedElement {
-      protected:
-        ComplexElement(const char * nam,
-                       ElementInSet elmt,
-                       ElementInSet req,
-                       OptionalCRLF opt,
-                       AlignCodes align,
-                       NoWrapCodes noWrap,
-                       ClearCodes clear,
-                       int distance);
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        AlignCodes alignCode;
-        BOOL noWrapFlag;
-    };
-
-    class Division : public ClearedElement {
+    class Division : public Element {
       public:
-        Division(ClearCodes clear = ClearDefault, int distance = 1);
+        Division(const char * attr = NULL);
     };
 
-    class Heading : public ComplexElement {
+    class Heading : public Element {
       public:
         Heading(int number,
                 int sequence = 0,
                 int skip = 0,
-                AlignCodes align = AlignDefault,
-                NoWrapCodes noWrap = WrapWords,
-                ClearCodes clear = ClearDefault,
-                int distance = 1);
+                const char * attr = NULL);
         Heading(int number,
                 const char * image,
                 int sequence = 0,
                 int skip = 0,
-                AlignCodes align = AlignDefault,
-                NoWrapCodes noWrap = WrapWords,
-                ClearCodes clear = ClearDefault,
-                int distance = 1);
+                const char * attr = NULL);
         Heading(int number,
                 const PString & imageStr,
                 int sequence = 0,
                 int skip = 0,
-                AlignCodes align = AlignDefault,
-                NoWrapCodes noWrap = WrapWords,
-                ClearCodes clear = ClearDefault,
-                int distance = 1);
+                const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -256,50 +222,52 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int seqNum, skipSeq;
     };
 
-    class BreakLine : public ClearedElement {
+    class BreakLine : public Element {
       public:
-        BreakLine(ClearCodes clear = ClearDefault, int distance = 1);
+        BreakLine(const char * attr = NULL);
     };
 
-    class Paragraph : public ComplexElement {
+    class Paragraph : public Element {
       public:
-        Paragraph(AlignCodes align = AlignDefault,
-                  NoWrapCodes noWrap = WrapWords,
-                  ClearCodes clear = ClearDefault, int distance = 1);
+        Paragraph(const char * attr = NULL);
     };
 
-    class PreFormat : public ClearedElement {
+    class PreFormat : public Element {
       public:
         PreFormat(int widthInChars = 0,
-                  ClearCodes clear = ClearDefault,
-                  int distance = 1);
+                  const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         int width;
     };
 
-    class Anchor : public Element {
+    class HotLink : public Element {
       public:
-        Anchor(const char * href = NULL);
-        Anchor(const PString & hrefStr);
+        HotLink(const char * href = NULL, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * hrefString;
     };
 
-    class ImageElement : public ComplexElement {
+    class Target : public Element {
+      public:
+        Target(const char * name = NULL, const char * attr = NULL);
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * nameString;
+    };
+
+    class ImageElement : public Element {
       protected:
         ImageElement(const char * nam,
+                     const char * attr,
                      ElementInSet elmt,
                      ElementInSet req,
                      OptionalCRLF opt,
-                     const char * image,
-                     AlignCodes align,
-                     NoWrapCodes noWrap,
-                     ClearCodes clear,
-                     int distance);
+                     const char * image);
         virtual void AddAttr(PHTML & html) const;
         const char * srcString;
     };
@@ -307,24 +275,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
     class Image : public ImageElement {
       public:
         Image(const char * src,
-              AlignCodes align = AlignDefault,
               int width = 0,
-              int height = 0);
+              int height = 0,
+              const char * attr = NULL);
         Image(const char * src,
               const char * alt,
-              AlignCodes align = AlignDefault,
               int width = 0,
-              int height = 0);
-        Image(const PString & srcStr,
-              const char * alt = NULL,
-              AlignCodes align = AlignDefault,
-              int width = 0,
-              int height = 0);
-        Image(const PString & srcStr,
-              const PString & altStr,
-              AlignCodes align = AlignDefault,
-              int width = 0,
-              int height = 0);
+              int height = 0,
+              const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -334,246 +292,180 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     class HRule : public ImageElement {
       public:
-        HRule(const char * image = NULL,
-              ClearCodes clear = ClearDefault,
-              int distance = 1);
-        HRule(const PString & imageStr,
-              ClearCodes clear = ClearDefault,
-              int distance = 1);
+        HRule(const char * image = NULL, const char * attr = NULL);
     };
 
     class Note : public ImageElement {
       public:
-        Note(const char * image = NULL,
-             ClearCodes clear = ClearDefault,
-             int distance = 1);
-        Note(const PString & imageStr,
-             ClearCodes clear = ClearDefault,
-             int distance = 1);
+        Note(const char * image = NULL, const char * attr = NULL);
     };
 
-    class Address : public ComplexElement {
+    class Address : public Element {
       public:
-        Address(NoWrapCodes noWrap = WrapWords,
-                ClearCodes clear = ClearDefault,
-                int distance = 1);
+        Address(const char * attr = NULL);
     };
 
-    class BlockQuote : public ComplexElement {
+    class BlockQuote : public Element {
       public:
-        BlockQuote(NoWrapCodes noWrap = WrapWords,
-                   ClearCodes clear = ClearDefault,
-                   int distance = 1);
+        BlockQuote(const char * attr = NULL);
     };
 
     class Credit : public Element {
       public:
-        Credit();
+        Credit(const char * attr = NULL);
     };
 
     class SetTab : public Element {
       public:
-        SetTab(const char * id);
-        SetTab(const PString & idStr);
+        SetTab(const char * id, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * ident;
     };
 
-    class Tab : public ComplexElement {
+    class Tab : public Element {
       public:
-        Tab(int indent,
-            AlignCodes align = AlignDefault,
-            char decimal = '\0');
-        Tab(const char * id,
-            AlignCodes align = AlignDefault,
-            char decimal = '\0');
-        Tab(const PString & idStr,
-            AlignCodes align = AlignDefault,
-            char decimal = '\0');
+        Tab(int indent, const char * attr = NULL);
+        Tab(const char * id, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * ident;
         int indentSize;
-        char decimalPoint;
     };
 
 
     class Bold : public Element {
-      public: Bold() : Element("B", InBold, InBody, NoCRLF) { }
+      public: Bold() : Element("B", NULL, InBold, InBody, NoCRLF) { }
     };
     class Italic : public Element {
-      public: Italic() : Element("I", InItalic, InBody, NoCRLF) { }
+      public: Italic() : Element("I", NULL, InItalic, InBody, NoCRLF) { }
     };
     class TeleType : public Element {
-      public: TeleType() : Element("TT", InTeleType, InBody, NoCRLF) { }
+      public: TeleType() : Element("TT", NULL, InTeleType, InBody, NoCRLF) { }
     };
     class Underline : public Element {
-      public: Underline() : Element("U", InUnderline, InBody, NoCRLF) { }
+      public: Underline() : Element("U", NULL, InUnderline, InBody, NoCRLF) { }
     };
     class StrikeThrough : public Element {
-      public: StrikeThrough() : Element("S",InStrikeThrough,InBody,NoCRLF) { }
+      public: StrikeThrough()
+                      : Element("S", NULL, InStrikeThrough, InBody, NoCRLF) { }
     };
     class Big : public Element {
-      public: Big() : Element("BIG", InBig, InBody, NoCRLF) { }
+      public: Big() : Element("BIG", NULL, InBig, InBody, NoCRLF) { }
     };
     class Small : public Element {
-      public: Small() : Element("SMALL", InSmall, InBody, NoCRLF) { }
+      public: Small() : Element("SMALL", NULL, InSmall, InBody, NoCRLF) { }
     };
     class Subscript : public Element {
-      public: Subscript() : Element("SUB", InSubscript, InBody, NoCRLF) { }
+      public: Subscript()
+                        : Element("SUB", NULL, InSubscript, InBody, NoCRLF) { }
     };
     class Superscript : public Element {
-      public: Superscript() : Element("SUP", InSuperscript, InBody, NoCRLF) { }
+      public: Superscript()
+                      : Element("SUP", NULL, InSuperscript, InBody, NoCRLF) { }
     };
     class Emphasis : public Element {
-      public: Emphasis() : Element("EM", InEmphasis, InBody, NoCRLF) { }
+      public: Emphasis() : Element("EM", NULL, InEmphasis, InBody, NoCRLF) { }
     };
     class Cite : public Element {
-      public: Cite() : Element("CITE", InCite, InBody, NoCRLF) { }
+      public: Cite() : Element("CITE", NULL, InCite, InBody, NoCRLF) { }
     };
     class Strong : public Element {
-      public: Strong() : Element("STRONG", InStrong, InBody, NoCRLF) { }
+      public: Strong() : Element("STRONG", NULL, InStrong, InBody, NoCRLF) { }
     };
     class Code : public Element {
-      public: Code() : Element("CODE", InCode, InBody, NoCRLF) { }
+      public: Code() : Element("CODE", NULL, InCode, InBody, NoCRLF) { }
     };
     class Sample : public Element {
-      public: Sample() : Element("SAMP", InSample, InBody, NoCRLF) { }
+      public: Sample() : Element("SAMP", NULL, InSample, InBody, NoCRLF) { }
     };
     class Keyboard : public Element {
-      public: Keyboard() : Element("KBD", InKeyboard, InBody, NoCRLF) { }
+      public: Keyboard() : Element("KBD", NULL, InKeyboard, InBody, NoCRLF) { }
     };
     class Variable : public Element {
-      public: Variable() : Element("VAR", InVariable, InBody, NoCRLF) { }
+      public: Variable() : Element("VAR", NULL, InVariable, InBody, NoCRLF) { }
     };
     class Definition : public Element {
-      public: Definition() : Element("DFN", InDefinition, InBody, NoCRLF) { }
+      public: Definition()
+                       : Element("DFN", NULL, InDefinition, InBody, NoCRLF) { }
     };
     class Quote : public Element {
-      public: Quote() : Element("Q", InQuote, InBody, NoCRLF) { }
+      public: Quote() : Element("Q", NULL, InQuote, InBody, NoCRLF) { }
     };
     class Author : public Element {
-      public: Author() : Element("AU", InAuthor, InBody, NoCRLF) { }
+      public: Author() : Element("AU", NULL, InAuthor, InBody, NoCRLF) { }
     };
     class Person : public Element {
-      public: Person() : Element("PERSON", InPerson, InBody, NoCRLF) { }
+      public: Person() : Element("PERSON", NULL, InPerson, InBody, NoCRLF) { }
     };
     class Acronym : public Element {
-      public: Acronym() : Element("ACRONYM", InAcronym, InBody, NoCRLF) { }
+      public: Acronym():Element("ACRONYM", NULL, InAcronym, InBody, NoCRLF) { }
     };
     class Abbrev : public Element {
-      public: Abbrev() : Element("ABBREV", InAbbrev, InBody, NoCRLF) { }
+      public: Abbrev() : Element("ABBREV", NULL, InAbbrev, InBody, NoCRLF) { }
     };
     class InsertedText : public Element {
-      public: InsertedText() : Element("INS",InInsertedText,InBody,NoCRLF) { }
+      public: InsertedText()
+                     : Element("INS", NULL, InInsertedText, InBody, NoCRLF) { }
     };
     class DeletedText : public Element {
-      public: DeletedText() : Element("DEL", InDeletedText, InBody, NoCRLF) { }
+      public: DeletedText()
+                      : Element("DEL", NULL, InDeletedText, InBody, NoCRLF) { }
     };
 
 
-    enum CompactCodes {
-      NotCompact,
-      Compact
-    };
-    class ListElement : public ClearedElement {
-      protected:
-        ListElement(
-          const char * nam,
-          CompactCodes compact = NotCompact,
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        BOOL compactFlag;
-    };
-
-    enum PlainCodes {
-      NotPlain,
-      Plain
-    };
-    enum ListWrapCodes {
-      WrapDefault, WrapVert, WrapHoriz
-    };
-    class UnorderedList : public ListElement {
+    class SimpleList : public Element {
       public:
-        UnorderedList(
-          PlainCodes plain = NotPlain,
-          ListWrapCodes wrap = WrapDefault,
-          CompactCodes compact = NotCompact,
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        SimpleList(const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
-      private:
-        BOOL plainFlag;
-        ListWrapCodes wrapColumn;
     };
 
-    class OrderedList : public ListElement {
+    class BulletList : public Element {
       public:
-        OrderedList(
-          BOOL contSeq = FALSE,
-          int seqNum = 0,
-          CompactCodes compact = NotCompact,
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        BulletList(const char * attr = NULL);
+    };
+
+    class OrderedList : public Element {
+      public:
+        OrderedList(int seqNum = 0, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        BOOL continueSeq;
         int sequenceNum;
     };
 
-    class DefinitionList : public ListElement {
+    class DefinitionList : public Element {
       public:
-        DefinitionList(
-          CompactCodes compact = NotCompact,
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        DefinitionList(const char * attr = NULL);
     };
 
     class ListHeading : public Element {
       public:
-        ListHeading();
+        ListHeading(const char * attr = NULL);
     };
 
-    class ListItem : public ClearedElement {
+    class ListItem : public Element {
       public:
-        ListItem(
-          int skip = 0,
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        ListItem(int skip = 0, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         int skipSeq;
     };
 
-    class DefinitionTerm : public ClearedElement {
+    class DefinitionTerm : public Element {
       public:
-        DefinitionTerm(
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        DefinitionTerm(const char * attr = NULL);
       protected:
         virtual void Output(PHTML & html) const;
     };
 
-    class DefinitionItem : public ClearedElement {
+    class DefinitionItem : public Element {
       public:
-        DefinitionItem(
-          ClearCodes clear = ClearDefault,
-          int distance = 1
-        );
+        DefinitionItem(const char * attr = NULL);
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -585,38 +477,25 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
     class Table : public Element {
       public:
-        Table(BorderCodes border = NoBorder);
+        Table(const char * attr = NULL);
+        Table(BorderCodes border, const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         BOOL borderFlag;
     };
 
-    class TableElement : public Element {
-      public:
-        TableElement(
-          const char * nam,
-          ElementInSet elmt,
-          OptionalCRLF opt,
-          const char * attr
-        );
-      protected:
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        const char * attributes;
-    };
-
-    class TableRow : public TableElement {
+    class TableRow : public Element {
       public:
         TableRow(const char * attr = NULL);
     };
 
-    class TableHeader : public TableElement {
+    class TableHeader : public Element {
       public:
         TableHeader(const char * attr = NULL);
     };
 
-    class TableData : public TableElement {
+    class TableData : public Element {
       public:
         TableData(const char * attr = NULL);
     };
@@ -629,30 +508,6 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * action = NULL,
           const char * encoding = NULL,
           const char * script = NULL
-        );
-        Form(
-          const PString & methodStr,
-          const char * action = NULL,
-          const char * mimeType = NULL,
-          const char * script = NULL
-        );
-        Form(
-          const PString & methodStr,
-          const PString & actionStr,
-          const char * mimeType = NULL,
-          const char * script = NULL
-        );
-        Form(
-          const PString & methodStr,
-          const PString & actionStr,
-          const PString & mimeType,
-          const char * script = NULL
-        );
-        Form(
-          const PString & actionStr,
-          const PString & methodStr,
-          const PString & mimeType,
-          const PString & script
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -671,40 +526,31 @@ PDECLARE_CLASS(PHTML, PStringStream)
       protected:
         FieldElement(
           const char * nam,
+          const char * attr,
           ElementInSet elmt,
           OptionalCRLF opt,
-          DisableCodes disabled,
-          const char * error
+          DisableCodes disabled
         );
         virtual void AddAttr(PHTML & html) const;
       private:
         BOOL disabledFlag;
-        const char * errorString;
     };
 
-    enum MultipleCodes {
-      SingleSelect,
-      MultipleSelect
-    };
     class Select : public FieldElement {
       public:
         Select(
           const char * fname = NULL,
-          MultipleCodes multiple = SingleSelect,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         Select(
-          const PString & fnameStr,
-          MultipleCodes multiple = SingleSelect,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * fname,
+          DisableCodes disabled,
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * nameString;
-        BOOL multipleFlag;
     };
 
     enum SelectionCodes {
@@ -714,9 +560,20 @@ PDECLARE_CLASS(PHTML, PStringStream)
     class Option : public FieldElement {
       public:
         Option(
-          SelectionCodes select = NotSelected,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
+        );
+        Option(
+          SelectionCodes select,
+          const char * attr = NULL
+        );
+        Option(
+          DisableCodes disabled,
+          const char * attr = NULL
+        );
+        Option(
+          SelectionCodes select,
+          DisableCodes disabled,
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -728,11 +585,11 @@ PDECLARE_CLASS(PHTML, PStringStream)
       protected:
         FormField(
           const char * nam,
+          const char * attr,
           ElementInSet elmt,
           OptionalCRLF opt,
-          const char * fname,
           DisableCodes disabled,
-          const char * error
+          const char * fname
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -743,15 +600,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         TextArea(
           const char * fname,
-          int rows = 0, int cols = 0,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         TextArea(
-          const PString & fnameStr,
-          int rows = 0, int cols = 0,
+          const char * fname,
+          int rows, int cols,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -765,7 +621,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * type,
           const char * fname,
           DisableCodes disabled,
-          const char * error
+          const char * attr
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -778,33 +634,28 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           int size,
           const char * init = NULL,
-          int maxLength = 0,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         InputText(
-          const PString & fnameStr,
+          const char * fname,
           int size,
-          const char * init = NULL,
-          int maxLength = 0,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          DisableCodes disabled,
+          const char * attr = NULL
         );
         InputText(
-          const char * fnameStr,
+          const char * fname,
           int size,
-          const PString & init,
-          int maxLength = 0,
+          int maxLength,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         InputText(
-          const PString & fnameStr,
+          const char * fname,
           int size,
-          const PString & init,
-          int maxLength = 0,
+          const char * init,
+          int maxLength,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         InputText(
@@ -814,7 +665,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * init,
           int maxLength,
           DisableCodes disabled,
-          const char * error
+          const char * attr
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -828,33 +679,28 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           int size,
           const char * init = NULL,
-          int maxLength = 0, 
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputPassword(
-          const PString & fnameStr,
-          int size,
-          const char * init = NULL,
-          int maxLength = 0, 
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         InputPassword(
           const char * fname,
           int size,
-          const PString & initStr,
-          int maxLength = 0, 
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          DisableCodes disabled,
+          const char * attr = NULL
         );
         InputPassword(
-          const PString & fnameStr,
+          const char * fname,
           int size,
-          const PString & initStr,
-          int maxLength = 0, 
+          int maxLength,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
+        );
+        InputPassword(
+          const char * fname,
+          int size,
+          const char * init,
+          int maxLength,
+          DisableCodes disabled = Enabled,
+          const char * attr = NULL
         );
     };
 
@@ -866,15 +712,18 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         CheckBox(
           const char * fname,
-          CheckedCodes check = UnChecked,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         CheckBox(
-          const PString & fnameStr,
-          CheckedCodes check = UnChecked,
+          const char * fname,
+          DisableCodes disabled,
+          const char * attr = NULL
+        );
+        CheckBox(
+          const char * fname,
+          CheckedCodes check,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         CheckBox(
@@ -882,7 +731,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           CheckedCodes check,
           DisableCodes disabled,
-          const char * error
+          const char * attr
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -894,30 +743,20 @@ PDECLARE_CLASS(PHTML, PStringStream)
         RadioButton(
           const char * fname,
           const char * value,
-          CheckedCodes check = UnChecked,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        RadioButton(
-          const PString & fnameStr,
-          const char * value,
-          CheckedCodes check = UnChecked,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
         RadioButton(
           const char * fname,
-          const PString & value,
-          CheckedCodes check = UnChecked,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * value,
+          DisableCodes disabled,
+          const char * attr = NULL
         );
         RadioButton(
-          const PString & fnameStr,
-          const PString & value,
-          CheckedCodes check = UnChecked,
+          const char * fname,
+          const char * value,
+          CheckedCodes check,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -929,15 +768,10 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         InputRange(
           const char * fname,
-          int min, int max, int value = 0,
+          int min, int max,
+          int value = 0,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputRange(
-          const PString & fnameStr,
-          int min, int max, int value = 0,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -951,25 +785,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           const char * accept = NULL,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputFile(
-          const PString & fnameStr,
-          const char * accept = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputFile(
-          const char * fname,
-          const PString & acceptStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputFile(
-          const PString & fnameStr,
-          const PString & acceptStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
@@ -983,25 +799,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputImage(
-          const PString & fname,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputImage(
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputImage(
-          const PString & fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         InputImage(
@@ -1009,7 +807,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           const char * src,
           DisableCodes disabled,
-          const char * error
+          const char * attr
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -1022,25 +820,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputScribble(
-          const PString & fname,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputScribble(
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        InputScribble(
-          const PString & fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
     };
 
@@ -1051,65 +831,16 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const PString & titleStr,
-          const char * fname = NULL,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const char * title,
-          const PString & fnameStr,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const PString & titleStr,
-          const PString & fnameStr,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const char * title,
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const PString & titleStr,
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const char * title,
-          const PString & fnameStr,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        ResetButton(
-          const PString & titleStr,
-          const PString & fnameStr,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
       protected:
         ResetButton(
           const char * type,
           const char * title,
-          const char * fname,
-          const char * src,
-          DisableCodes disabled,
-          const char * error
+          const char * fname = NULL,
+          const char * src = NULL,
+          DisableCodes disabled = Enabled,
+          const char * attr = NULL
         );
         virtual void AddAttr(PHTML & html) const;
       private:
@@ -1123,56 +854,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const PString & titleStr,
-          const char * fname = NULL,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const char * title,
-          const PString & fnameStr,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const PString & titleStr,
-          const PString & fnameStr,
-          const char * src = NULL,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const char * title,
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const PString & titleStr,
-          const char * fname,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const char * title,
-          const PString & fnameStr,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
-        );
-        SubmitButton(
-          const PString & titleStr,
-          const PString & fnameStr,
-          const PString & srcStr,
-          DisableCodes disabled = Enabled,
-          const char * error = NULL
+          const char * attr = NULL
         );
     };
 
