@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.1 1995/03/14 12:45:16 robertj Exp $
+ * $Id: doswin.cxx,v 1.2 1995/03/14 13:31:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,12 +8,18 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
- * Revision 1.1  1995/03/14 12:45:16  robertj
- * Initial revision
+ * Revision 1.2  1995/03/14 13:31:36  robertj
+ * Implemented DOS pipe channel.
  *
+// Revision 1.1  1995/03/14  12:45:16  robertj
+// Initial revision
+//
  */
 
 #include "ptlib.h"
+
+#include <fcntl.h>
+#include <sys/stat.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,11 +141,43 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 void PPipeChannel::Construct(const PString & subProgram,
                 const char * const * arguments, OpenMode mode, BOOL searchPath)
 {
+  if (searchPath || subProgram.FindOneOf(":\\/") != P_MAX_INDEX)
+    subProgName = subProgram;
+  else
+    subProgName = ".\\" + subProgram;
+  if (arguments != NULL) {
+    while (*arguments != NULL) {
+      subProgName += " ";
+      if (strchr(*arguments, ' ') == NULL)
+        subProgName += *arguments;
+      else {
+        PString quote = '"';
+        subProgName += quote + *arguments + quote;
+      }
+    }
+  }
+  
+  if (mode != ReadOnly) {
+    toChild = PFilePath("pwpc", NULL);
+    os_handle = _open(toChild,_O_WRONLY|_O_CREAT|_O_BINARY,S_IREAD|S_IWRITE);
+    if (!ConvertOSError(os_handle))
+      return;
+    subProgName += '<' + toChild;
+  }
+
+  if (mode != WriteOnly) {
+    fromChild = PFilePath("pwpc", NULL);
+    subProgName += '>' + fromChild;
+  }
+
+  if (mode == ReadOnly)
+    Execute();
 }
 
 
 void PPipeChannel::DestroyContents()
 {
+  Close();
 }
 
 
@@ -151,32 +189,75 @@ void PPipeChannel::CloneContents(const PPipeChannel *)
 
 void PPipeChannel::CopyContents(const PPipeChannel & chan)
 {
+  toChild = chan.toChild;
+  fromChild = chan.fromChild;
+  hasRun = chan.hasRun;
 }
 
 
-BOOL PPipeChannel::Read(void * buffer, PINDEX len)
+BOOL PPipeChannel::Read(void * buffer, PINDEX amount)
 {
-  return FALSE;
+  if (!hasRun)
+    Execute();
+
+  flush();
+  lastReadCount = _read(GetHandle(), buffer, amount);
+  return ConvertOSError(lastReadCount) && lastReadCount > 0;
 }
       
 
-BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
+BOOL PPipeChannel::Write(const void * buffer, PINDEX amount)
 {
-  return FALSE;
+  if (hasRun) {
+    osError = EBADF;
+    lastError = NotOpen;
+    return FALSE;
+  }
+
+  flush();
+  lastWriteCount = _write(GetHandle(), buffer, amount);
+  return ConvertOSError(lastWriteCount) && lastWriteCount >= amount;
 }
 
 
 BOOL PPipeChannel::Close()
 {
-  if (IsOpen()) {
-    os_handle = -1;
-  }
+  if (!hasRun)
+    Execute();
+
+  if (os_handle >= 0)
+    _close(os_handle);
+
+  PFile::Remove(toChild);
+  PFile::Remove(fromChild);
   return TRUE;
 }
 
 
 BOOL PPipeChannel::Execute()
 {
+  if (hasRun)
+    return FALSE;
+
+  if (os_handle >= 0) {
+    _close(os_handle);
+    os_handle = -1;
+  }
+
+#if defined(_WINDOWS)
+  if (WinExec(subProgName, SW_HIDE) < 32)
+    return FALSE;
+#else
+  if (!ConvertOSError(system(subProgName)))
+    return FALSE;
+#endif
+
+  if (!fromChild.IsEmpty()) {
+    os_handle = _open(fromChild, _O_RDONLY);
+    if (!ConvertOSError(os_handle))
+      return FALSE;
+  }
+
   return TRUE;
 }
 
