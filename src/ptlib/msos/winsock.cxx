@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.63  2004/05/06 11:28:30  rjongbloed
+ * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
+ *
  * Revision 1.62  2004/04/27 09:53:27  rjongbloed
  *  Fixed ability to break of a PSocket::Select call under linux when a socket
  *    is closed by another thread.
@@ -296,14 +299,14 @@ const char * PWinSock::GetProtocolName() const
 void P_fd_set::Construct()
 {
   max_fd = UINT_MAX;
-  set = new fd_set;
+  set = (fd_set *)malloc(sizeof(fd_set));
 }
 
 
 void P_fd_set::Zero()
 {
-  PAssertNULL(set);
-  FD_ZERO(set);
+  if (PAssertNULL(set) != NULL)
+    FD_ZERO(set);
 }
 
 
