@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.13  2000/06/29 00:39:29  robertj
+ * Fixed bug when PWaveFormat is assigned to itself.
+ *
  * Revision 1.12  2000/05/22 07:17:50  robertj
  * Fixed missing initialisation of format data block in Win32 PSound::Load().
  *
@@ -287,6 +290,9 @@ PWaveFormat::PWaveFormat(const PWaveFormat & fmt)
 
 PWaveFormat & PWaveFormat::operator=(const PWaveFormat & fmt)
 {
+  if (this == &fmt)
+    return *this;
+
   if (waveFormat != NULL)
     free(waveFormat);
 
