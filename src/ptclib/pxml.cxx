@@ -190,6 +190,8 @@ BOOL PXML::Load(const PString & data, int _options)
   errorCol    = XML_GetCurrentColumnNumber(parser);
   errorLine   = XML_GetCurrentLineNumber(parser);
 
+  XML_ParserFree(parser);
+
   return FALSE;
 }
 
