@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.18 1996/01/24 14:43:15 robertj Exp $
+ * $Id: pstring.h,v 1.19 1996/02/08 12:19:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.19  1996/02/08 12:19:16  robertj
+ * Added new operators to PString for case insensitive compare and spaced concatenate.
+ *
  * Revision 1.18  1996/01/24 14:43:15  robertj
  * Added initialisers to string dictionaries.
  *
@@ -444,6 +447,130 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
      */
 
 
+    PString operator&(
+      const PString & str   // String to concatenate.
+    ) const;
+    /* Concatenate two strings to produce a third. The original strings are
+       not modified, an entirely new unique reference to a string is created.
+       
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
+    PString operator&(
+      const char * cstr  // C string to concatenate.
+    ) const;
+    /* Concatenate a C string to a PString to produce a third. The original
+       string is not modified, an entirely new unique reference to a string
+       is created. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
+
+       <CODE>        myStr = aStr & "fred";</CODE>
+
+       This function differes from oeprator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
+    PString operator&(
+      char ch   // Character to concatenate.
+    ) const;
+    /* Concatenate a single character to a PString to produce a third. The
+       original string is not modified, an entirely new unique reference to a
+       string is created. The <CODE>ch</CODE> parameter is typically a
+       literal, eg:
+
+       <CODE>        myStr = aStr & '!';</CODE>
+
+       This function differes from oeprator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
+    PINLINE friend PString operator&(
+      const char * cstr,    // C string to be concatenated to.
+      const PString & str   // String to concatenate.
+    );
+    /* Concatenate a PString to a C string to produce a third. The original
+       string is not modified, an entirely new unique reference to a string
+       is created. The <CODE>cstr</CODE> parameter is typically a literal
+       string, eg:
+
+       <CODE>        myStr = "fred" & aStr;</CODE>
+
+       This function differes from oeprator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
+    PINLINE friend PString operator&(
+      char  c,              // Character to be concatenated to.
+      const PString & str   // String to concatenate.
+    );
+    /* Concatenate a PString to a single character to produce a third. The
+       original string is not modified, an entirely new unique reference to a
+       string is created. The <CODE>c</CODE> parameter is typically a literal,
+       eg:
+
+       <CODE>        myStr = '!' & aStr;</CODE>
+
+       This function differes from oeprator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
+    PString & operator&=(
+      const PString & str   // String to concatenate.
+    );
+    /* Concatenate a string to another string, modifiying that string.
+
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
+     */
+
+    PString & operator&=(
+      const char * cstr  // C string to concatenate.
+    );
+    /* Concatenate a C string to a PString, modifiying that string. The
+       <CODE>cstr</CODE> parameter is typically a literal string, eg:
+
+       <CODE>        myStr &= "fred";</CODE>
+
+       This function differes from oeprator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
+     */
+
+
+    BOOL operator*=(
+      const PString & str  // PString object to compare against.
+    ) const;
+    /* Compare two strings using case insensitive comparison.
+
+       <H2>Returns:</H2>
+       TRUE if equal.
+     */
+
     BOOL operator==(
       const PObject & str  // PString object to compare against.
     ) const;
@@ -510,6 +637,19 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        TRUE if greater than or equal.
      */
 
+
+    BOOL operator*=(
+      const char * cstr  // C string to compare against.
+    ) const;
+    /* Compare a PString to a C string using a case insensitive compare
+       function. The <CODE>cstr</CODE> parameter is typically a literal string,
+       eg:
+
+       <CODE>        if (myStr == "fred")</CODE>
+
+       <H2>Returns:</H2>
+       TRUE if equal.
+     */
 
     BOOL operator==(
       const char * cstr  // C string to compare against.
