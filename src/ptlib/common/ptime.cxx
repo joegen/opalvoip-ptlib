@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.14 1996/10/26 01:40:12 robertj Exp $
+ * $Id: ptime.cxx,v 1.15 1997/01/03 04:40:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.15  1997/01/03 04:40:03  robertj
+ * Changed default time so if no year goes to last 12 months rather than current year.
+ *
  * Revision 1.14  1996/10/26 01:40:12  robertj
  * Fixed bug in time parser that caused endless looping.
  *
@@ -607,7 +610,7 @@ void PTime::ReadFrom(istream &strm)
   int year = -1;
   int hours = -1;
   int minutes = -1;
-  int seconds = 0;
+  int seconds = -1;
   int zone = 0;
   BOOL zoneSet = FALSE;
   int dow = -1;
@@ -757,21 +760,35 @@ void PTime::ReadFrom(istream &strm)
 
   // fill in the missing bits
   PTime now;
-  if (year < 0) 
-    year = now.GetYear();
-  if (month < 0)
-    month = now.GetMonth();
-  if (day < 0)
-    day = now.GetDay();
-
-  
-  if (hours < 0)
-    hours = 0;
-  if (minutes < 0)
-    minutes = 0;
   if (seconds < 0)
     seconds = 0;
+  if (minutes < 0)
+    minutes = 0;
+  if (hours < 0)
+    hours = 0;
+  if (day < 0)
+    day = now.GetDay();
+  if (month < 0)
+    month = now.GetMonth();
+  if (year < 0) {
+    year = now.GetYear();
+    if (month > now.GetMonth() ||
+          (month == now.GetMonth() &&
+            (day > now.GetDay() ||
+              (day == now.GetDay() &&
+                (hours > now.GetHour() ||
+                  (hours == now.GetHour() &&
+                   minutes > now.GetMinute()
+                  )
+                )
+              )
+            )
+          )
+       )
+      year--;
+  }
 
+  
   // if no zone was set, then use the current local zone
   if (!zoneSet) 
     zone = Local;
