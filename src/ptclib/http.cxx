@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.9 1996/02/13 13:09:17 robertj Exp $
+ * $Id: http.cxx,v 1.10 1996/02/19 13:48:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,13 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.10  1996/02/19 13:48:28  robertj
+ * Put multiple uses of literal strings into const variables.
+ * Fixed URL parsing so that the unmangling of strings occurs correctly.
+ * Moved nested classes from PHTTPForm.
+ * Added overwrite option to AddResource().
+ * Added get/set string to PHTTPString resource.
+ *
  * Revision 1.9  1996/02/13 13:09:17  robertj
  * Added extra parameters to callback function in PHTTPResources, required
  *   by descendants to make informed decisions on data being loaded.
@@ -113,6 +120,42 @@ void PURL::ReadFrom(istream & stream)
 }
 
 
+static void UnmangleString(PString & str)
+{
+  PINDEX pos = (PINDEX)-1;
+  while ((pos = str.Find('+', pos+1)) != P_MAX_INDEX)
+    str[pos] = ' ';
+
+  pos = (PINDEX)-1;
+  while ((pos = str.Find('%', pos+1)) != P_MAX_INDEX) {
+    int digit1 = str[pos+1];
+    int digit2 = str[pos+2];
+    if (isxdigit(digit1) && isxdigit(digit2)) {
+      str[pos] = (char)(
+            (isdigit(digit2) ? (digit2-'0') : (toupper(digit2)-'A'+10)) +
+           ((isdigit(digit1) ? (digit1-'0') : (toupper(digit1)-'A'+10)) << 4));
+      str.Delete(pos+1, 2);
+    }
+  }
+}
+
+
+static void SplitVars(const PString & queryStr, PStringToString & queryVars)
+{
+  PStringArray tokens = queryStr.Tokenise("&=", TRUE);
+  for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
+    PCaselessString key = tokens[i];
+    UnmangleString(key);
+    PString data = tokens[i+1];
+    UnmangleString(data);
+    if (queryVars.Contains(key))
+      queryVars.SetAt(key, queryVars[key] + ',' + data);
+    else
+      queryVars.SetAt(key, data);
+  }
+}
+
+
 void PURL::Parse(const char * cstr)
 {
   scheme = hostname = PCaselessString();
@@ -128,24 +171,13 @@ void PURL::Parse(const char * cstr)
   static PString reservedChars = "=;/#?";
   PINDEX pos;
 
-  pos = (PINDEX)-1;
-  while ((pos = url.Find('%', pos+1)) != P_MAX_INDEX) {
-    int digit1 = url[pos+1];
-    int digit2 = url[pos+2];
-    if (isxdigit(digit1) && isxdigit(digit2)) {
-      url[pos] = (char)(
-            (isdigit(digit2) ? (digit2-'0') : (toupper(digit2)-'A'+10)) +
-           ((isdigit(digit1) ? (digit1-'0') : (toupper(digit1)-'A'+10)) << 4));
-      url.Delete(pos+1, 2);
-    }
-  }
-
   // determine if the URL has a scheme
   if (isalpha(url[0])) {
     for (pos = 0; url[pos] != '\0' &&
                           reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
       if (url[pos] == ':') {
         scheme = url.Left(pos);
+        UnmangleString(scheme);
         url.Delete(0, pos+1);
         break;
       }
@@ -167,6 +199,8 @@ void PURL::Parse(const char * cstr)
         username = url(2, pos-1);
         password = url(pos+1, pos2-1);
       }
+      UnmangleString(username);
+      UnmangleString(password);
       url.Delete(0, pos2+1);
     }
 
@@ -182,6 +216,7 @@ void PURL::Parse(const char * cstr)
       hostname = url.Left(pos2);
       port = (WORD)url(pos2+1, pos).AsInteger();
     }
+    UnmangleString(hostname);
     url.Delete(0, pos+1);
   }
 
@@ -189,6 +224,7 @@ void PURL::Parse(const char * cstr)
   pos = url.FindLast('#');
   if (pos != P_MAX_INDEX && pos > 0) {
     fragment = url(pos+1, P_MAX_INDEX);
+    UnmangleString(fragment);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -196,21 +232,15 @@ void PURL::Parse(const char * cstr)
   pos = url.FindLast('?');
   if (pos != P_MAX_INDEX && pos > 0) {
     queryStr = url(pos+1, P_MAX_INDEX);
-    PStringArray tokens = queryStr.Tokenise("&=", TRUE);
-    for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-      PCaselessString key = tokens[i];
-      if (queryVars.Contains(key))
-        queryVars.SetAt(key, queryVars[key] + "," + tokens[i+1]);
-      else
-        queryVars.SetAt(key, tokens[i+1]);
-    }
     url.Delete(pos, P_MAX_INDEX);
+    SplitVars(queryStr, queryVars);
   }
 
   // chop off any trailing parameters
   pos = url.FindLast(';');
   if (pos != P_MAX_INDEX && pos > 0) {
     parameters = url(pos+1, P_MAX_INDEX);
+    UnmangleString(parameters);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -223,6 +253,7 @@ void PURL::Parse(const char * cstr)
   if (path.GetSize() > 0 && path[path.GetSize()-1].IsEmpty())
     path.RemoveAt(path.GetSize()-1);
   for (pos = 0; pos < path.GetSize(); pos++) {
+    UnmangleString(path[pos]);
     if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
       path.RemoveAt(pos--);
       path.RemoveAt(pos--);
@@ -306,21 +337,29 @@ PObject::Comparison PHTTPSpace::Compare(const PObject & obj) const
 }
 
 
-BOOL PHTTPSpace::AddResource(PHTTPResource * res)
+BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 {
   PAssert(res != NULL, PInvalidParameter);
   const PStringArray & path = res->GetURL().GetPath();
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (node->resource != NULL)
+      return FALSE;   // Already a resource in tree in partial path
+
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       pos = node->children.Append(PNEW PHTTPSpace(path[i], node));
+
     node = &node->children[pos];
-    if (node->resource != NULL)
-      return FALSE;   // Already a resource in tree in partial path
   }
+
   if (!node->children.IsEmpty())
     return FALSE;   // Already a resource in tree further down path.
+
+  if (overwrite == ErrorOnExist && node->resource != NULL)
+    return FALSE;   // Already a resource in tree at leaf
+
+  delete node->resource;
   node->resource = res;
   return TRUE;
 }
@@ -334,10 +373,13 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       return FALSE;
+
     node = &node->children[pos];
-    if (node->resource != NULL && i < path.GetSize()-1)
+
+    if (node->resource != NULL)
       return FALSE;
   }
+
   if (!node->children.IsEmpty())
     return FALSE;   // Still a resource in tree further down path.
 
@@ -364,15 +406,19 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       return NULL;
+
     node = &node->children[pos];
+
     if (node->resource != NULL)
       return node->resource;
   }
+
   for (i = 0; i < PARRAYSIZE(HTMLIndexFiles); i++) {
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(HTMLIndexFiles[i]));
     if (pos != P_MAX_INDEX)
       return node->children[pos].resource;
   }
+
   return NULL;
 }
 
@@ -391,6 +437,7 @@ static const PCaselessString MIMEVersionStr = "MIME-Version";
 static const PCaselessString ServerStr = "Server";
 static const PCaselessString ExpiresStr = "Expires";
 static const PCaselessString WWWAuthenticateStr = "WWW-Authenticate";
+static const PCaselessString IfModifiedSinceStr = "If-Modified-Since";
 
 PHTTPSocket::PHTTPSocket(WORD port)
   : PApplicationSocket(NumCommands, HTTPCommands, port)
@@ -523,18 +570,9 @@ BOOL PHTTPSocket::ProcessCommand()
       return OnHEAD(url, mimeInfo);
   }
 
-  // Must be a POST
+  // Must be a POST, break the string into string/value pairs separated by &
   PStringToString postData;
-
-  // break the string into string/value pairs separated by &
-  tokens = entityBody.Tokenise("&=", TRUE);
-  for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-    PCaselessString key = tokens[i];
-    if (postData.Contains(key))
-      postData.SetAt(key, postData[key] + "," + tokens[i+1]);
-    else
-      postData.SetAt(key, tokens[i+1]);
-  }
+  SplitVars(entityBody, postData);
   return OnPOST(url, mimeInfo, postData);
 }
 
@@ -576,7 +614,6 @@ BOOL PHTTPSocket::OnPOST(const PURL & url,
     OnError(NotFound, url.AsString());
   else
     resource->OnPOST(*this, url, info, data);
-PThread::Current()->Sleep(500);
   return FALSE;
 }
 
@@ -646,34 +683,19 @@ BOOL PHTTPSocket::OnError(StatusCode code, const PString & extra)
     return FALSE;
   }
 
-#if !defined(_MSC_VER) || _MSC_VER > 800
   PHTML reply;
   reply << PHTML::Title()
         << statusInfo->code
-        << " "
+        << ' '
         << statusInfo->text
         << PHTML::Body()
         << PHTML::Heading(1)
         << statusInfo->code
-        << " "
+        << ' '
         << statusInfo->text
         << PHTML::Heading(1)
         << extra
         << PHTML::Body();
-#else
-  PStringStream reply;
-  reply << "<TITLE>"
-        << statusInfo->code
-        << " "
-        << statusInfo->text
-        << "</TITLE><BODY><H1>"
-        << statusInfo->code
-        << " "
-        << statusInfo->text
-        << "</H1>"
-        << extra
-        << "</BODY>";
-#endif
 
   headers.SetAt(ContentTypeStr, "text/html");
   PINDEX len = reply.GetLength();
@@ -710,7 +732,7 @@ PString PHTTPSimpleAuth::GetRealm() const
 BOOL PHTTPSimpleAuth::Validate(const PString & authInfo) const
 {
   PString decoded;
-  if (authInfo(0, 5) == PCaselessString("Basic "))
+  if (authInfo(0, 5) *= "Basic ")
     decoded = PBase64::Decode(authInfo(6, P_MAX_INDEX));
   else
     decoded = PBase64::Decode(authInfo);
@@ -763,8 +785,8 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
   if (!CheckAuthority(socket, info))
     return;
 
-  PString modSinceDate = info.GetString("If-Modified-Since", "");
-  if (!modSinceDate.IsEmpty() && !IsModifiedSince(PTime(modSinceDate))) {
+  if (info.Contains(IfModifiedSinceStr) &&
+                           !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) {
     socket.OnError(PHTTPSocket::NotModified, url.AsString());
     return;
   }
@@ -843,21 +865,20 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     return TRUE;
 
   // if this is an authorisation request...
-  PString authInfo = info.GetString("Authorization", "");
-  if (authInfo.IsEmpty()) {
+  if (info.Contains(PString("Authorization"))) {
+    if (authority->Validate(info["Authorization"]))
+      return TRUE;
+
+    socket.OnError(PHTTPSocket::Forbidden, "");
+  }
+  else {
     // it must be a request for authorisation
     PMIMEInfo reply;
     socket.SetDefaultMIMEInfo(reply);
     reply.SetAt(WWWAuthenticateStr,
                               "Basic realm=\"" + authority->GetRealm() + "\"");
     socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
-    return FALSE;
   }
-
-  if (authority->Validate(authInfo))
-    return TRUE;
-
-  socket.OnError(PHTTPSocket::Forbidden, "");
   return FALSE;
 }
 
@@ -1045,15 +1066,12 @@ PHTTPFile::PHTTPFile(const PURL & url,
 }
 
 
-BOOL PHTTPFile::LoadHeaders(const PURL & url,
+BOOL PHTTPFile::LoadHeaders(const PURL &,
                             const PMIMEInfo &,
                             PHTTPSocket::StatusCode & code,
                             PMIMEInfo &,
                             PINDEX & contentSize)
 {
-  if (baseURL != url)
-    return PHTTPSocket::NotFound;
-
   if (!file.Open(PFile::ReadOnly)) {
     code = PHTTPSocket::NotFound;
     return FALSE;
@@ -1158,7 +1176,6 @@ BOOL PHTTPDirectory::LoadHeaders(const PURL & url,
     return TRUE;
   }
 
-#if !defined(_MSC_VER) || _MSC_VER > 800
   contentType = "text/html";
   PHTML reply = "Directory of " + url.AsString();
   PDirectory dir = realPath;
@@ -1181,7 +1198,6 @@ BOOL PHTTPDirectory::LoadHeaders(const PURL & url,
   }
   reply << PHTML::Body();
   fakeIndex = reply;
-#endif
 
   return TRUE;
 }
@@ -1199,133 +1215,112 @@ PString PHTTPDirectory::LoadText()
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPForm
 
-PHTTPForm::PHTTPForm(const PURL & url)
-  : PHTTPString(url)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url, PHTTPAuthority & auth)
-  : PHTTPString(url, auth)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url, const PString & html)
-  : PHTTPString(url, html)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url, const PString & html, PHTTPAuthority & auth)
-  : PHTTPString(url, html, auth)
-{
-}
-
-
-PHTTPForm::Field::Field(const char * nam, const char * titl)
+PHTTPField::PHTTPField(const char * nam, const char * titl)
   : name(nam), title(titl != NULL ? titl : nam)
 {
-  PINDEX pos = 0;
-  while ((pos = name.Find(' ', pos)) != P_MAX_INDEX)
-    name[pos] = '+';
+  notInHTML = TRUE;
 }
 
-PObject::Comparison PHTTPForm::Field::Compare(const PObject & obj) const
+PObject::Comparison PHTTPField::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(Field::Class()), PInvalidCast);
-  return name.Compare(((const Field &)obj).name);
+  PAssert(obj.IsDescendant(PHTTPField::Class()), PInvalidCast);
+  return name.Compare(((const PHTTPField &)obj).name);
 }
 
 
-BOOL PHTTPForm::Field::Validated(const PString &, PStringStream &) const
+BOOL PHTTPField::Validated(const PString &, PStringStream &) const
 {
   return TRUE;
 }
 
 
-PHTTPForm::StringField::StringField(const char * name,
-                                    PINDEX siz,
-                                    const char * initVal)
-  : Field(name), value(initVal)
+PHTTPStringField::PHTTPStringField(const char * name,
+                                   PINDEX siz,
+                                   const char * initVal)
+  : PHTTPField(name), value(initVal != NULL ? initVal : "")
 {
   size = siz;
 }
 
 
-PHTTPForm::StringField::StringField(const char * name,
-                                    const char * title,
-                                    PINDEX siz,
-                                    const char * initVal)
-  : Field(name, title), value(initVal)
+PHTTPStringField::PHTTPStringField(const char * name,
+                                   const char * title,
+                                   PINDEX siz,
+                                   const char * initVal)
+  : PHTTPField(name, title), value(initVal != NULL ? initVal : "")
 {
   size = siz;
 }
 
 
-PHTML::Element PHTTPForm::StringField::GetHTML() const
+void PHTTPStringField::GetHTML(PHTML & html)
 {
-  return PHTML::InputText(name, size, value);
+  html << PHTML::InputText(name, size, value);
+  notInHTML = FALSE;
 }
 
 
-void PHTTPForm::StringField::SetValue(const PString & val)
+void PHTTPStringField::SetValue(const PString & val)
 {
   value = val;
 }
 
 
-PString PHTTPForm::StringField::GetValue() const
+PString PHTTPStringField::GetValue() const
 {
   return value;
 }
 
 
-PHTTPForm::PasswordField::PasswordField(const char * name,
-                                        PINDEX siz,
-                                        const char * initVal)
-  : StringField(name, siz, initVal)
+PHTTPPasswordField::PHTTPPasswordField(const char * name,
+                                       PINDEX siz,
+                                       const char * initVal)
+  : PHTTPStringField(name, siz, initVal)
 {
 }
 
 
-PHTTPForm::PasswordField::PasswordField(const char * name,
-                                        const char * title,
-                                        PINDEX siz,
-                                        const char * initVal)
-  : StringField(name, title, siz, initVal)
+PHTTPPasswordField::PHTTPPasswordField(const char * name,
+                                       const char * title,
+                                       PINDEX siz,
+                                       const char * initVal)
+  : PHTTPStringField(name, title, siz, initVal)
 {
 }
 
 
-PHTML::Element PHTTPForm::PasswordField::GetHTML() const
+void PHTTPPasswordField::GetHTML(PHTML & html)
 {
-  return PHTML::InputPassword(name, size, value);
+  html << PHTML::InputPassword(name, size, value);
+  notInHTML = FALSE;
 }
 
 
-PHTTPForm::IntegerField::IntegerField(const char * nam,
-                                      int lo, int hig,
-                                      int initVal,
-                                      const char * unit)
-  : Field(nam), units(unit)
-{
-  low = lo;
-  high = hig;
-  value = initVal;
-}
-
-PHTTPForm::IntegerField::IntegerField(const char * nam,
-                                      const char * titl,
-                                      int lo, int hig,
-                                      int initVal,
-                                      const char * unit)
-  : Field(nam, titl), units(unit)
+PHTTPIntegerField::PHTTPIntegerField(const char * nam,
+                                     int lo, int hig,
+                                     int initVal,
+                                     const char * unit)
+  : PHTTPField(nam), units(unit != NULL ? unit : "")
 {
   low = lo;
   high = hig;
   value = initVal;
 }
 
+PHTTPIntegerField::PHTTPIntegerField(const char * nam,
+                                     const char * titl,
+                                     int lo, int hig,
+                                     int initVal,
+                                     const char * unit)
+  : PHTTPField(nam, titl), units(unit != NULL ? unit : "")
+{
+  low = lo;
+  high = hig;
+  value = initVal;
+}
 
-BOOL PHTTPForm::IntegerField::Validated(const PString & newVal,
+
+BOOL PHTTPIntegerField::Validated(const PString & newVal,
                                                      PStringStream & msg) const
 {
   int val = newVal.AsInteger();
@@ -1338,58 +1333,83 @@ BOOL PHTTPForm::IntegerField::Validated(const PString & newVal,
 }
 
 
-PHTML::Element PHTTPForm::IntegerField::GetHTML() const
+void PHTTPIntegerField::GetHTML(PHTML & html)
 {
-  return PHTML::InputRange(name, low, high, value);
+  html << PHTML::InputRange(name, low, high, value) << "  " << units;
+  notInHTML = FALSE;
 }
 
 
-void PHTTPForm::IntegerField::SetValue(const PString & val)
+void PHTTPIntegerField::SetValue(const PString & val)
 {
   value = val.AsInteger();
 }
 
 
-PString PHTTPForm::IntegerField::GetValue() const
+PString PHTTPIntegerField::GetValue() const
 {
   return PString(PString::Signed, value);
 }
 
 
-PHTTPForm::BooleanField::BooleanField(const char * name, BOOL initVal)
-  : Field(name)
+PHTTPBooleanField::PHTTPBooleanField(const char * name, BOOL initVal)
+  : PHTTPField(name)
 {
   value = initVal;
 }
 
-PHTTPForm::BooleanField::BooleanField(const char * name,
-                                      const char * title,
-                                      BOOL initVal)
-  : Field(name, title)
+PHTTPBooleanField::PHTTPBooleanField(const char * name,
+                                     const char * title,
+                                     BOOL initVal)
+  : PHTTPField(name, title)
 {
   value = initVal;
 }
 
 
-PHTML::Element PHTTPForm::BooleanField::GetHTML() const
+void PHTTPBooleanField::GetHTML(PHTML & html)
 {
-  return PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
+  html << PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
+  notInHTML = FALSE;
 }
 
 
-void PHTTPForm::BooleanField::SetValue(const PString & val)
+void PHTTPBooleanField::SetValue(const PString & val)
 {
   value = val[0] != 'F';
 }
 
 
-PString PHTTPForm::BooleanField::GetValue() const
+PString PHTTPBooleanField::GetValue() const
 {
   return (value ? "T" : "F");
 }
 
 
-void PHTTPForm::Add(Field * fld)
+PHTTPForm::PHTTPForm(const PURL & url)
+  : PHTTPString(url)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url, const PHTTPAuthority & auth)
+  : PHTTPString(url, auth)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url, const PString & html)
+  : PHTTPString(url, html)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url,
+                     const PString & html,
+                     const PHTTPAuthority & auth)
+  : PHTTPString(url, html, auth)
+{
+}
+
+
+void PHTTPForm::Add(PHTTPField * fld)
 {
   PAssertNULL(fld);
   PAssert(!fieldNames[fld->GetName()], "Field already on form!");
@@ -1398,38 +1418,43 @@ void PHTTPForm::Add(Field * fld)
 }
 
 
-void PHTTPForm::BuildHTML(const char * heading, BOOL complete)
+void PHTTPForm::BuildHTML(const char * heading)
 {
   PHTML html = heading;
-  BuildHTML(html, complete);
+  BuildHTML(html);
 }
 
 
-void PHTTPForm::BuildHTML(const PString & heading, BOOL complete)
+void PHTTPForm::BuildHTML(const PString & heading)
 {
   PHTML html = heading;
-  BuildHTML(html, complete);
+  BuildHTML(html);
 }
 
 
-void PHTTPForm::BuildHTML(PHTML & html, BOOL complete)
+void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
 {
-  html << PHTML::Form("POST")
-       << PHTML::Table();
+  if (!html.Is(PHTML::InForm))
+    html << PHTML::Form("POST");
+
+  html << PHTML::Table();
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    html << PHTML::TableRow()
-         << PHTML::TableData("align=right")
-         << fields[fld].GetTitle()
-         << PHTML::TableData("align=left")
-         << fields[fld].GetHTML();
+    if (fields[fld].NotYetInHTML()) {
+      html << PHTML::TableRow()
+           << PHTML::TableData("align=right")
+           << fields[fld].GetTitle()
+           << PHTML::TableData("align=left");
+      fields[fld].GetHTML(html);
+    }
   }
-  html << PHTML::Table()
-       << PHTML::Paragraph()
-       << "    " << PHTML::SubmitButton("Accept")
-       << "    " << PHTML::ResetButton("Reset")
-       << PHTML::Form();
+  html << PHTML::Table();
+  if (option != InsertIntoForm)
+    html << PHTML::Paragraph()
+         << "    " << PHTML::SubmitButton("Accept")
+         << "    " << PHTML::ResetButton("Reset")
+         << PHTML::Form();
 
-  if (complete) {
+  if (option == CompleteHTML) {
     html << PHTML::Body();
     string = html;
   }
@@ -1446,7 +1471,7 @@ PHTTPSocket::StatusCode PHTTPForm::Post(const PURL &,
 
   BOOL good = TRUE;
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    Field & field = fields[fld];
+    PHTTPField & field = fields[fld];
     const PCaselessString & name = field.GetName();
     if (data.Contains(name) && !field.Validated(data[name], msg))
       good = FALSE;
@@ -1456,7 +1481,7 @@ PHTTPSocket::StatusCode PHTTPForm::Post(const PURL &,
     return PHTTPSocket::BadRequest;
 
   for (fld = 0; fld < fields.GetSize(); fld++) {
-    Field & field = fields[fld];
+    PHTTPField & field = fields[fld];
     const PCaselessString & name = field.GetName();
     if (data.Contains(name))
       field.SetValue(data[name]);
@@ -1479,7 +1504,7 @@ PHTTPConfig::PHTTPConfig(const PURL & url,
 
 PHTTPConfig::PHTTPConfig(const PURL & url,
                          const PString & sect,
-                         PHTTPAuthority & auth)
+                         const PHTTPAuthority & auth)
   : PHTTPForm(url, auth), section(sect)
 {
 }
@@ -1496,7 +1521,7 @@ PHTTPConfig::PHTTPConfig(const PURL & url,
 PHTTPConfig::PHTTPConfig(const PURL & url,
                          const PString & html,
                          const PString & sect,
-                         PHTTPAuthority & auth)
+                         const PHTTPAuthority & auth)
   : PHTTPForm(url, html, auth), section(sect)
 {
 }
@@ -1513,9 +1538,13 @@ PHTTPSocket::StatusCode PHTTPConfig::Post(const PURL & url,
 
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    Field & field = fields[fld];
-    if (data.Contains(field.GetName()))
-      cfg.SetString(field.GetTitle(), field.GetValue());
+    PHTTPField & field = fields[fld];
+    if (data.Contains(field.GetName())) {
+      if (&field == keyField)
+        cfg.SetString(field.GetValue(), valField->GetValue());
+      else if (&field != valField)
+        cfg.SetString(field.GetTitle(), field.GetValue());
+    }
   }
 
   return PHTTPSocket::OK;
@@ -1526,9 +1555,19 @@ void PHTTPConfig::SetConfigValues()
 {
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    Field & field = fields[fld];
+    PHTTPField & field = fields[fld];
     field.SetValue(cfg.GetString(field.GetTitle(), field.GetValue()));
   }
+}
+
+
+void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
+                                  PHTTPField * valFld)
+{
+  keyField = PAssertNULL(keyFld);
+  Add(keyFld);
+  valField = PAssertNULL(valFld);
+  Add(valFld);
 }
 
 
