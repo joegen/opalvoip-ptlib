@@ -5166,7 +5166,7 @@ EXPORTS
     ?RemoveAll@PAbstractSortedList@@UAEXXZ @3181 NONAME
     ?RemoveAll@PArrayObjects@@UAEXXZ @3182 NONAME
     ?RemoveAll@PCollection@@UAEXXZ @3183 NONAME
-    ?RemoveAll@PSafeCollection@@UAEXXZ @3184 NONAME
+    ?RemoveAll@PSafeCollection@@UAEXH@Z @7616 NONAME
     ?RemoveAt@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UAEPAVPIPCacheData@@ABVPCaselessString@@@Z @3185 NONAME
     ?RemoveAt@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAEPAVPIPCacheData@@ABVPIPCacheKey@@@Z @3186 NONAME
     ?RemoveAt@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UAEPAVNest@PReadWriteMutex@@ABVPOrdinalKey@@@Z @3187 NONAME
