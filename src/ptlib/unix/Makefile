@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.104  2003/02/04 22:51:20  robertj
+# Added basic SOAP support, thanks Andreas Sikkema
+#
 # Revision 1.103  2003/02/04 07:41:10  craigs
 # Added stun elements
 #
@@ -485,6 +488,7 @@ ifdef HAS_EXPAT
 PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
+		  $(COMPONENT_SRC_DIR)/psoap.cxx \
 		  $(COMPONENT_SRC_DIR)/vxml.cxx
 endif
 
