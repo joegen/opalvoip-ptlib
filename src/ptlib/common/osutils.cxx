@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.112  1998/11/03 03:44:05  robertj
+ * Fixed missng strings on multiple parameters of same letter.
+ *
  * Revision 1.111  1998/11/02 10:13:01  robertj
  * Removed GNU warning.
  *
@@ -1688,7 +1691,7 @@ BOOL PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
 
   if (offset != 0 &&
         (canHaveOptionString[idx] == 1 || argumentArray[arg][offset] != '\0')) {
-    optionString[idx] = argumentArray[arg].Mid(offset);
+    optionString[idx] += argumentArray[arg].Mid(offset);
     return TRUE;
   }
 
