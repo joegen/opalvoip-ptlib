@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.59  2001/07/30 07:45:54  robertj
+# Added "all" target with double colon.
+#
 # Revision 1.58  2001/07/27 14:39:12  robertj
 # Allowed libs target to have multiple definitions
 #
@@ -403,6 +406,9 @@ endif # else ifdef DEBUG
 # Main targets for build management
 #
 ######################################################################
+
+all :: debugdepend debug optdepend opt
+
 
 ifdef DEBUG
 
