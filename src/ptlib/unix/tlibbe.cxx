@@ -237,8 +237,7 @@ BOOL PThread::IsSuspended() const
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(),
-  PLogicError);
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
   autoDelete = deletion == AutoDeleteThread;
 }
 
