@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.79  2000/05/05 10:42:04  robertj
+# Fixed support for older FreeBSD (location of sysctrl).
+#
 # Revision 1.78  2000/04/19 00:13:52  robertj
 # BeOS port changes.
 #
@@ -428,7 +431,7 @@ STDCCFLAGS	+= -m486
 endif
 
 ifndef OSRELEASE
-OSRELEASE	:= $(shell /sbin/sysctl -n kern.osreldate)
+OSRELEASE	:= $(shell sysctl -n kern.osreldate)
 endif
 
 STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
