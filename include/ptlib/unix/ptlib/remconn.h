@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.3 1996/08/03 12:08:19 craigs Exp $
+ * $Id: remconn.h,v 1.4 1996/09/21 05:42:12 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.4  1996/09/21 05:42:12  craigs
+ * Changes for new common files, PConfig changes and signal handling
+ *
  * Revision 1.3  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -27,9 +30,11 @@ class PXRemoteThread;
 
 #include "../../common/ptlib/remconn.h"
   protected:
-    PString          pppDeviceName;
-    PXRemoteThread * remoteThread;
-    BOOL             wasConnected;
+    PString        pppDeviceName;
+    PPipeChannel * pipeChannel;
+    BOOL           wasConnected;
+    Status         status;
+    PString        deviceStr;
 };
 
 #endif

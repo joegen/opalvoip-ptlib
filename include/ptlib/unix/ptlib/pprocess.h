@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.5 1996/08/03 12:08:19 craigs Exp $
+ * $Id: pprocess.h,v 1.6 1996/09/21 05:42:12 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.6  1996/09/21 05:42:12  craigs
+ * Changes for new common files, PConfig changes and signal handling
+ *
  * Revision 1.5  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -41,14 +44,18 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
   public:
     friend class PApplication;
     friend class PServiceProcess;
+    friend void PXSignalHandler(int);
 
     PString GetHomeDir ();
     char ** GetEnvp() const;
     char ** GetArgv() const;
     int     GetArgc() const;
+    void    PXSetupProcess();
 
     friend void PXSigHandler(int);
-    void PXSetupProcess();
+    virtual void PXOnSignal(int);
+    virtual void PXOnAsyncSignal(int);
+
     virtual void PXOnSigHup();
     virtual void PXOnSigInt();
     virtual void PXOnSigQuit();
@@ -64,8 +71,11 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
 
   protected:
+    void         PXCheckSignals();
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
     PXFdDict     ioBlocks[3];
+
+    int pxSignals;
 
   private:
     char **envp;
