@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.30  2003/04/08 05:08:41  craigs
+ * Fixed problems with additional spaces being included with metasequences
+ *
  * Revision 1.29  2003/04/02 09:13:55  rogerh
  * Add type casts because the variable 'expat' is now a void *
  *
@@ -215,19 +218,12 @@ void PXMLParser::AddCharacterData(const char * data, int len)
 
   if (lastElement != NULL) {
     PAssert(!lastElement->IsElement(), "lastElement set by non-data element");
-    if ((options & NoIgnoreWhiteSpace) == 0)
-      str = str.Trim();
-    lastElement->SetString(lastElement->GetString() & str, FALSE);
+    lastElement->SetString(lastElement->GetString() + str, FALSE);
   } else {
-    if ((options & NoIgnoreWhiteSpace) == 0) {
-      str = str.Trim();
-      if (str.IsEmpty()) 
-        return;
-    }
     PXMLData * newElement = new PXMLData(currentElement, str);
     currentElement->AddSubObject(newElement, FALSE);
     lastElement = newElement;
-  }
+  } 
 }
 
 
@@ -961,7 +957,10 @@ PString PXMLElement::GetData() const
   for (idx = 0; idx < subObjects.GetSize(); idx++) {
     if (!subObjects[idx].IsElement()) {
       PXMLData & dataElement = ((PXMLData &)subObjects[idx]);
-      str = str & dataElement.GetString();
+      PStringArray lines = dataElement.GetString().Lines();
+      PINDEX j;
+      for (j = 0; j < lines.GetSize(); j++)
+        str = str & lines[j];
     }
   }
   return str;
