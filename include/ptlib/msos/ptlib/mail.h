@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.4 1995/07/02 01:22:47 robertj Exp $
+ * $Id: mail.h,v 1.5 1995/08/12 22:54:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.5  1995/08/12 22:54:26  robertj
+ * GUI interface additions for mail.
+ *
  * Revision 1.4  1995/07/02 01:22:47  robertj
  * Changed mail to use CMC then MAPI if available.
  *
@@ -45,9 +48,12 @@
 #include "../../common/mail.h"
 
   protected:
-    DWORD  sessionId;
-    DWORD  lastError;
-    UINT   hUserInterface;
+    DWORD    sessionId;
+    DWORD    lastError;
+    unsigned hUserInterface;
+
+    BOOL LogOnCommonInterface(const char * username,
+                                  const char * password, const char * service);
 
 #if P_HAS_CMC
     PDECLARE_CLASS(CMCDLL, PDynaLink)
