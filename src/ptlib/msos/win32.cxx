@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.57 1998/03/05 12:48:37 robertj Exp $
+ * $Id: win32.cxx,v 1.58 1998/03/09 11:17:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.58  1998/03/09 11:17:38  robertj
+ * FAT32 compatibility
+ *
  * Revision 1.57  1998/03/05 12:48:37  robertj
  * Fixed bug in get free space on volume.
  * Added cluster size.
@@ -437,8 +440,43 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 }
 
 
+typedef BOOL (*GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
+                                       PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+                                       PULARGE_INTEGER lpTotalNumberOfBytes,
+                                       PULARGE_INTEGER lpTotalNumberOfFreeBytes);
+ 
+
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
+  OSVERSIONINFO os;
+  os.dwOSVersionInfoSize = sizeof(os);
+  if (GetVersionEx(&os) &&
+      os.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
+      os.dwBuildNumber > 1000) {
+    HMODULE hLib = LoadLibrary("KERNEL32.DLL");
+    if (hLib == NULL)
+      return FALSE;
+    GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
+                            (GetDiskFreeSpaceExType)GetProcAddress(hLib, "GetDiskFreeSpaceExA");
+    if (GetDiskFreeSpaceEx != NULL) {
+      ULARGE_INTEGER freeBytesAvailableToCaller;
+      ULARGE_INTEGER totalNumberOfBytes; 
+      ULARGE_INTEGER totalNumberOfFreeBytes;
+      if (GetDiskFreeSpaceEx(*this,
+                             &freeBytesAvailableToCaller,
+                             &totalNumberOfBytes,
+                             &totalNumberOfFreeBytes)) {
+        total = totalNumberOfBytes.QuadPart;
+        free = totalNumberOfFreeBytes.QuadPart;
+        clusterSize = 4096;
+        FreeLibrary(hLib);
+        return TRUE;
+      }
+    }
+    FreeLibrary(hLib);
+    return FALSE;
+  }
+
   PString root;
   if ((*this)[1] == ':')
     root = Left(3);
