@@ -429,6 +429,7 @@ default_video=yes
 default_alsa=yes
 default_http=yes
 default_httpsvc=yes
+default_soap=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -456,6 +457,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_alsa=yes
   default_http=yes
   default_httpsvc=no
+  default_soap=no
 fi
 
 
@@ -680,7 +682,9 @@ fi
 
 dnl #########################################################################
 dnl check to see if plugins enabled
-dnl MSWIN Plugin Support,,P_HAS_PLUGINS
+
+dnl MSWIN_DISPLAY plugins,Plugin Support
+dnl MSWIN_DEFINE  plugins,P_HAS_PLUGINS
 
 plugins="no"
 AC_MSG_CHECKING(if plugins support needs to be compiled)
@@ -831,6 +835,7 @@ dnl ########################################################################
 dnl look for OpenLDAP (requires SASL)
 
 dnl MSWIN_DISPLAY    openldap,Open LDAP
+dnl MSWIN_IF_FEATURE openldap,sasl
 dnl MSWIN_CHECK_FILE openldap,include\ldap.h|OpenLDAP,P_LDAP=1
 dnl MSWIN_DIR_SYMBOL openldap,LDAP_DIR
 dnl MSWIN_CHECK_DIR  openldap,..\openldap\
@@ -1070,14 +1075,26 @@ AC_SUBST(HAS_EXPAT)
 dnl ########################################################################
 dnl handle modules dependent on Expat
 
-dnl MSWIN VXML Support,,P_VXML
-dnl MSWIN Jabber Support,,P_JABBER
-dnl MSWIN XMLRPC Support,,P_XMLRPC
-dnl MSWIN SOAP Support,,P_SOAP
+dnl MSWIN_DISPLAY    vxml,VXML
+dnl MSWIN_DEFINE     vxml,P_VXML
+dnl MSWIN_IF_FEATURE vxml,expat
+
+dnl MSWIN_DISPLAY    jabber,Jabber
+dnl MSWIN_DEFINE     jabber,P_JABBER
+dnl MSWIN_IF_FEATURE jabber,expat
+
+dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
+dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
+dnl MSWIN_IF_FEATURE xmlrpc,expat
+
+dnl MSWIN_DISPLAY    soap,SOAP
+dnl MSWIN_DEFINE     soap,P_SOAP
+dnl MSWIN_IF_FEATURE soap,expat
 
 HAS_VXML=
 HAS_JABBER=
 HAS_XMLRPC=
+HAS_SOAP=
 if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(VXML disabled as Expat is disabled)
   AC_MSG_NOTICE(Jabber disabled as Expat is disabled)
@@ -1127,6 +1144,21 @@ else
     AC_MSG_NOTICE(XMLRPC disabled)
   else
     AC_DEFINE(P_XMLRPC, 1)
+  fi
+  
+  dnl ########################################################################
+  dnl SOAP
+
+  AC_ARG_ENABLE(soap,
+         [  --disable-soap         disable SOAP support])
+
+  if test "${enable_soap}z" = "z" ; then
+    enable_soap=$default_soap
+  fi
+  if test "$enable_soap" = "no" ; then
+    AC_MSG_NOTICE(SOAP disabled)
+  else
+    AC_DEFINE(P_SOAP, 1)
   fi
 fi
 
@@ -1340,7 +1372,8 @@ AC_SUBST(USE_SHM_VIDEO_DEVICES)
 dnl ########################################################################
 dnl check for enabling ASN support
 
-dnl MSWIN ASN Support,,P_ASN
+dnl MSWIN_DISPLAY    asn,ASN Support
+dnl MSWIN_DEFINE     asn,P_ASN
 
 AC_ARG_ENABLE(asn,
        [  --disable-asn           disable ASN decoding/encoding support])
@@ -1361,7 +1394,8 @@ AC_SUBST(HAS_ASN)
 dnl ########################################################################
 dnl check for enabling STUN support
 
-dnl MSWIN ASN Support,,P_STUN
+dnl MSWIN_DISPLAY    stun,STUN Support
+dnl MSWIN_DEFINE     stun,P_STUN
 
 AC_ARG_ENABLE(stun,
        [  --disable-stun          disable STUN protocol support])
@@ -1382,7 +1416,8 @@ AC_SUBST(HAS_STUN)
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
 
-dnl MSWIN ASN Support,,P_PIPECHAN
+dnl MSWIN_DISPLAY    pipechan,pipe channel Support
+dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
 
 AC_ARG_ENABLE(pipechan,
        [  --disable-pipechan      disable pipechannel support])
@@ -1424,7 +1459,8 @@ AC_SUBST(HAS_DTMF)
 dnl ########################################################################
 dnl check for enabling WAVFILE support
 
-dnl MSWIN WAVFILE Support,,P_WAVFILE
+dnl MSWIN_DISPLAY    wavfile,WAV file support
+dnl MSWIN_DEFINE     wavfile,P_WAVFILE
 
 AC_ARG_ENABLE(wavfile,
        [  --disable-wavfile       disable WAVFILE support])
@@ -1445,7 +1481,8 @@ AC_SUBST(HAS_WAVFILE)
 dnl ########################################################################
 dnl check for enabling SOCKS support
 
-dnl MSWIN SOCKS Support,,P_SOCKS
+dnl MSWIN_DISPLAY    socks,SOCKS protocol support
+dnl MSWIN_DEFINE     socks,P_SOCKS
 
 AC_ARG_ENABLE(socks,
        [  --disable-socks         disable SOCKS protocol support])
@@ -1466,7 +1503,8 @@ AC_SUBST(HAS_SOCKS)
 dnl ########################################################################
 dnl check for enabling FTP support
 
-dnl MSWIN FTP Support,,P_FTP
+dnl MSWIN_DISPLAY    ftp,FTP protocol support
+dnl MSWIN_DEFINE     ftp,P_FTP
 
 AC_ARG_ENABLE(rtp,
        [  --disable-ftp           disable FTP support])
@@ -1487,7 +1525,8 @@ AC_SUBST(HAS_FTP)
 dnl ########################################################################
 dnl check for enabling SNMP support
 
-dnl MSWIN ASNMP Support,,P_SNMP
+dnl MSWIN_DISPLAY    snmp,SNMP protocol support
+dnl MSWIN_DEFINE     snmp,P_SNMP
 
 AC_ARG_ENABLE(snmp,
        [  --disable-snmp          disable SNMP protocol support])
@@ -1508,7 +1547,8 @@ AC_SUBST(HAS_SNMP)
 dnl ########################################################################
 dnl check for enabling TELNET support
 
-dnl MSWIN TELNET Support,,P_TELNET
+dnl MSWIN_DISPLAY    telnet,Telnet protocol support
+dnl MSWIN_DEFINE     telnet,P_TELNET
 
 AC_ARG_ENABLE(telnet,
        [  --disable-telnet        disable Telnet protocol support])
@@ -1529,7 +1569,8 @@ AC_SUBST(HAS_TELNET)
 dnl ########################################################################
 dnl check for enabling REMCONN support
 
-dnl MSWIN REMCONN Support,,P_REMCONN
+dnl MSWIN_DISPLAY    remconn,remote connection support
+dnl MSWIN_DEFINE     remconn,P_REMCONN
 
 AC_ARG_ENABLE(remconn,
        [  --disable-remconn       disable remote connection support])
@@ -1550,7 +1591,8 @@ AC_SUBST(HAS_REMCONN)
 dnl ########################################################################
 dnl check for enabling serial port handling
 
-dnl MSWIN Serial Support,,P_SERIAL
+dnl MSWIN_DISPLAY    serial,Serial Support
+dnl MSWIN_DEFINE     serial,P_SERIAL
 
 AC_ARG_ENABLE(serial,
        [  --disable-serial        disable serial port support])
@@ -1571,7 +1613,8 @@ AC_SUBST(HAS_SERIAL)
 dnl ########################################################################
 dnl check for POP3/SMTP support
 
-dnl MSWIN POP3SMTP Support,,P_POP3SMTP
+dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
+dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
 
 AC_ARG_ENABLE(pop3smtp,
        [  --disable-pop3smtp      disable POP3/SMTP support])
@@ -1592,7 +1635,8 @@ AC_SUBST(HAS_POP3SMTP)
 dnl ########################################################################
 dnl check for HTTP support
 
-dnl MSWIN HTTP Support,,P_HTTP
+dnl MSWIN_DISPLAY    http,HTTP Support
+dnl MSWIN_DEFINE     http,P_HTTP
 
 AC_ARG_ENABLE(http,
        [  --disable-http          disable HTTP support])
@@ -1613,7 +1657,8 @@ AC_SUBST(HAS_HTTP)
 dnl ########################################################################
 dnl check for HTTPSVC support
 
-dnl MSWIN HTTP service Support,,P_HTTPSVC
+dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
+dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
 
 AC_ARG_ENABLE(httpsvc,
        [  --disable-httpsvc       disable HTTP service support])
@@ -1634,7 +1679,8 @@ AC_SUBST(HAS_HTTPSVC)
 dnl ########################################################################
 dnl check for sound support
 
-dnl MSWIN Sound Support,,P_AUDIO
+dnl MSWIN_DISPLAY audio,Sound support
+dnl MSWIN_DEFINE  audio,P_AUDIO
 
 AC_ARG_ENABLE(audio,
        [  --disable-audio         disable audio support])
