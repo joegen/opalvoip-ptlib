@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.50  2002/10/16 11:29:05  rogerh
+ * remove redundant #include.
+ *
  * Revision 1.49  2002/10/14 22:41:35  rogerh
  * Wrap _THREAD_SAFE to remove a warning if is already defined.
  *
@@ -230,7 +233,6 @@ typedef int socklen_t;
 #define P_THREAD_SAFE_CLIB
 
 #include <pthread.h>
-#include <resolv.h> /* for pthread's h_errno */
 #endif
 
 #include <stdlib.h>
