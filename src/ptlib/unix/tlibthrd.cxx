@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.94  2002/10/10 03:09:48  robertj
+ * Fixed high load race condition when starting threads.
+ *
  * Revision 1.93  2002/10/05 05:22:43  robertj
  * Fixed adding GetThreadId() function.
  *
@@ -554,6 +557,7 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_WaitSemMutex);
 #endif
 
+  pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 }
 
@@ -911,6 +915,13 @@ void PThread::PX_ThreadEnd(void * arg)
   // a race condition, the thread ID cannot be zeroed before the if!
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
+
+    // Added this to guarantee that the thread creation (PThread::Restart)
+    // has completed before we delete the thread. This can occur on very
+    // high load situations and a very short run on the thread.
+    pthread_mutex_lock(&thread->PX_suspendMutex);
+
+    // Now should be safe to delete the thread!
     delete thread;
   }
   else
