@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.16  2001/01/24 04:36:56  robertj
+ * Added more bulletproofing to ASN structures to obey constraints.
+ *
  * Revision 1.15  2000/10/26 11:09:07  robertj
  * More bullet proofing of PER decoder, changed bit type to be unsigned.
  *
@@ -269,6 +272,7 @@ class PASN_Integer : public PASN_ConstrainedObject
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
+    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -420,12 +424,11 @@ class PASN_BitString : public PASN_ConstrainedObject
     void Clear(unsigned bit);
     void Invert(unsigned bit);
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
-
     virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
+    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -471,12 +474,11 @@ class PASN_OctetString : public PASN_ConstrainedObject
     PINDEX GetSize() const { return value.GetSize(); }
     BOOL SetSize(PINDEX newSize) { return value.SetSize(newSize); }
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
-
     virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
+    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -510,6 +512,7 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
 
+    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
@@ -797,6 +800,7 @@ class PASN_Array : public PASN_ConstrainedObject
     virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
 
+    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL IsPrimitive() const;
