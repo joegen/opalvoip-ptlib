@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.23  2001/12/06 22:15:09  dereks
+ * Additional debugging lines
+ *
  * Revision 1.22  2001/11/30 00:14:46  dereks
  * Fix frame rate limitation.
  *
@@ -554,6 +557,7 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
+  PTRACE(5, "PVideoInputDevice\t SetFrameSize " << width <<"x"<<height << " Initiated.");
   if (!PVideoDevice::SetFrameSize(width, height)) {
     PTRACE(3,"PVideoInputDevice\t SetFrameSize "<<width<<"x"<<height<<" FAILED");
     return FALSE;
@@ -761,56 +765,57 @@ void PVideoInputDevice::ClearMapping()
 BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 						unsigned height)
 {
-    struct video_window vwin;
-    
-    if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
-	PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK  for  320x240 ");
-	return TRUE;
-      }
+  struct video_window vwin;
 
-    if (HINT(HINT_ALWAYS_WORKS_640_480) &&  (width==640) && (height==480) ) {
-	PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK for 640x480 ");
-	return TRUE;
-      }
-
-    if (HINT(HINT_CGWIN_FAILS)) {
-      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize fails for size "<<width<<"x"<<height);
-      return FALSE;
-    }
-
-    // Request current hardware frame size
-    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
-      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
-      return FALSE;
-    }
-
-    // Request the width and height
-    vwin.width  = width;
-    vwin.height = height;
-    
-    // The only defined flags appear to be as status indicators
-    // returned in the CGWIN call.  At least the bttv driver fails
-    // when flags isn't zero.  Check the driver hints for clearing
-    // the flags.
-    if (HINT(HINT_CSWIN_ZERO_FLAGS)) {
-	PTRACE(1,"PVideoInputDevice\t VerifyHardwareFrameSize: Clearing flags field");
-	vwin.flags = 0;
-    }
-    
-    ::ioctl(videoFd, VIDIOCSWIN, &vwin);
-    
-    // Read back settings to be careful about existing (broken) V4L drivers
-    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
-      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
-	return FALSE;
-    }
-
-    if ((vwin.width != width) || (vwin.height != height)) {
-      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize Size mismatch.");
-      return FALSE;
-    }
-
+  if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK  for  320x240 ");
     return TRUE;
+  }
+    
+  if (HINT(HINT_ALWAYS_WORKS_640_480) &&  (width==640) && (height==480) ) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK for 640x480 ");
+    return TRUE;
+  }
+     
+  if (HINT(HINT_CGWIN_FAILS)) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize fails for size "
+            << width << "x" << height);
+    return FALSE;
+  }
+  
+  // Request current hardware frame size
+  if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
+    return FALSE;
+  }
+
+  // Request the width and height
+  vwin.width  = width;
+  vwin.height = height;
+  
+  // The only defined flags appear to be as status indicators
+  // returned in the CGWIN call.  At least the bttv driver fails
+  // when flags isn't zero.  Check the driver hints for clearing
+  // the flags.
+  if (HINT(HINT_CSWIN_ZERO_FLAGS)) {
+    PTRACE(1,"PVideoInputDevice\t VerifyHardwareFrameSize: Clearing flags field");
+    vwin.flags = 0;
+  }
+  
+  ::ioctl(videoFd, VIDIOCSWIN, &vwin);
+  
+  // Read back settings to be careful about existing (broken) V4L drivers
+  if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
+    return FALSE;
+  }
+  
+  if ((vwin.width != width) || (vwin.height != height)) {
+    PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize Size mismatch.");
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 int PVideoInputDevice::GetBrightness() 
