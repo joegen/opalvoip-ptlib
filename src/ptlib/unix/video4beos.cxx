@@ -24,6 +24,9 @@
  * Contributor(s): Jac Goudsmit <jac@be.com>.
  *
  * $Log: video4beos.cxx,v $
+ * Revision 1.2  2002/04/05 21:54:58  rogerh
+ * Add SsetVideoChannelFormat - Reminded by Yuri
+ *
  * Revision 1.1  2001/07/09 06:16:15  yurik
  * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
  *
@@ -156,5 +159,12 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 {
 	return FALSE;
 }
-    
+ 
+
+BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat)
+{
+	return TRUE;
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
