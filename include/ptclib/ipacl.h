@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.5  2002/02/13 02:07:14  robertj
+ * Added const to IsAllowed() function
+ *
  * Revision 1.4  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -276,10 +279,10 @@ class PIpAccessControlList : public PIpAccessControlList_base
      */
     BOOL IsAllowed(
       PTCPSocket & socket           // Socket to test
-    );
+    ) const;
     BOOL IsAllowed(
       PIPSocket::Address address    // IP Address to test
-    );
+    ) const;
 
   private:
     BOOL InternalLoadHostsAccess(const PString & daemon, const char * file, BOOL allow);
