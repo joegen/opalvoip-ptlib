@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.27  2001/03/09 06:31:22  robertj
+ * Added ability to set default PConfig file or path to find it.
+ *
  * Revision 1.26  2000/10/19 04:17:04  craigs
  * Changed to allow writing of config files whilst config file is open
  *
@@ -407,11 +410,8 @@ static BOOL LocateFile(const PString & baseName,
                        PFilePath & readFilename,
                        PFilePath & filename)
 {
-  PFilePath userFile;
-
   // check the user's home directory first
-  filename = readFilename = PProcess::Current().PXGetHomeDir() +
-             APP_CONFIG_DIR + baseName + EXTENSION;
+  filename = readFilename = PProcess::Current().GetConfigurationFile();
   if (PFile::Exists(filename))
     return TRUE;
 
@@ -420,6 +420,31 @@ static BOOL LocateFile(const PString & baseName,
   readFilename = SYS_CONFIG_DIR + baseName + EXTENSION;
   return PFile::Exists(readFilename);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+PString PProcess::GetConfigurationFile()
+{
+  if (configurationPaths.IsEmpty()) {
+    configurationPaths.AppendString(PXGetHomeDir() + APP_CONFIG_DIR);
+    configurationPaths.AppendString(SYS_CONFIG_DIR);
+  }
+
+  // See if explicit filename
+  if (configurationPaths.GetSize() == 1 && !PDirectory::Exists(configurationPaths[0]))
+    return configurationPaths[0];
+
+  PString iniFilename = executableFile.GetTitle() + ".INI";
+
+  for (PINDEX i = 0; i < configurationPaths.GetSize(); i++) {
+    PFilePath cfgFile = PDirectory(configurationPaths[i]) + iniFilename;
+    if (PFile::Exists(cfgFile))
+      return cfgFile;
+  }
+
+  return PDirectory(configurationPaths[0]) + iniFilename;
+}
+
 
 ////////////////////////////////////////////////////////////
 //
@@ -530,16 +555,8 @@ void PConfig::Construct(Source src,
   // look up file name to read, and write
   if (src == PConfig::System)
     LocateFile(SYS_CONFIG_NAME, readFilename, filename);
-  else {
-    if (appname.IsEmpty())
-      name = PProcess::Current().GetName();
-    else
-      name = appname;
-    if (!LocateFile(name, readFilename, filename)) {
-      name = PProcess::Current().GetFile().GetTitle();
-      LocateFile(name, readFilename, filename);
-    }
-  }
+  else
+    filename = readFilename = PProcess::Current().GetConfigurationFile();
 
   // get, or create, the configuration
   config = configDict->GetFileConfigInstance(filename, readFilename);
