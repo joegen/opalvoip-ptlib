@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.64  2001/02/20 02:32:41  robertj
+ * Added PServiceMacro version that can do substitutions on blocks of HTML.
+ *
  * Revision 1.63  2001/02/15 01:12:15  robertj
  * Moved some often repeated HTTP service code into PHTTPServiceProcess.
  *
@@ -1196,24 +1199,31 @@ static BOOL ExtractVariables(const PString & args,
 PServiceMacro * PServiceMacro::list;
 
 
-PServiceMacro::PServiceMacro(const char * name)
+PServiceMacro::PServiceMacro(const char * name, BOOL isBlock)
 {
   macroName = name;
+  isMacroBlock = isBlock;
   link = list;
   list = this;
 }
 
 
-PServiceMacro::PServiceMacro(const PCaselessString & name)
+PServiceMacro::PServiceMacro(const PCaselessString & name, BOOL isBlock)
 {
   macroName = name;
+  isMacroBlock = isBlock;
 }
 
 
 PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
-  int cmp = strcasecmp(macroName, ((const PServiceMacro &)obj).macroName);
+  const PServiceMacro & other = (const PServiceMacro &)obj;
+
+  if (isMacroBlock != other.isMacroBlock)
+    return isMacroBlock ? GreaterThan : LessThan;
+
+  int cmp = strcasecmp(macroName, other.macroName);
   if (cmp < 0)
     return LessThan;
   if (cmp > 0)
@@ -1222,7 +1232,7 @@ PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 }
 
 
-PString PServiceMacro::Translate(PHTTPRequest &, const PString &) const
+PString PServiceMacro::Translate(PHTTPRequest &, const PString &, const PString &) const
 {
   return PString();
 };
@@ -1569,6 +1579,40 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 }
 
 
+PCREATE_SERVICE_MACRO_BLOCK(IfInURL,request,args,block)
+{
+  if (request.url.AsString().Find(args) != P_MAX_INDEX)
+    return block;
+
+  return PString();
+}
+
+
+PCREATE_SERVICE_MACRO_BLOCK(IfNotInURL,request,args,block)
+{
+  if (request.url.AsString().Find(args) == P_MAX_INDEX)
+    return block;
+
+  return PString();
+}
+
+
+static void SplitCmdAndArgs(const PString & text, PINDEX pos, PCaselessString & cmd, PString & args)
+{
+  static const char whitespace[] = " \t\r\n";
+  PString macro = text(text.FindOneOf(whitespace, pos)+1, text.Find("--", pos+3)-1).Trim();
+  PINDEX endCmd = macro.FindOneOf(whitespace);
+  if (endCmd == P_MAX_INDEX) {
+    cmd = macro;
+    args = PString();
+  }
+  else {
+    cmd = macro.Left(endCmd);
+    args = macro.Mid(endCmd+1).LeftTrim();
+  }
+}
+
+
 BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
                                  PString & text,
                                  const PString & defaultFile,
@@ -1616,27 +1660,65 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
     }
   }
 
+  static PServiceMacros_list ServiceMacros;
+
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+
+  PRegularExpression StartBlockRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")"
+                                     "start[ \t\r\n]+(-?[^-])+-->?",
+                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PRegularExpression MacroRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")[ \t\r\n]+(-?[^-])+-->?",
                                 PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
-  PINDEX pos = 0;
-  PINDEX len;
-  while (text.FindRegEx(MacroRegEx, pos, len, pos)) {
-    PString macro = text(text.FindOneOf(" \t\r\n", pos)+1, text.Find("--", pos+3)-1).Trim();
+  BOOL substitedMacro;
+  do {
+    substitedMacro = FALSE;
 
-    PString subs;
-    if (!process.SubstituteEquivalSequence(request, macro, subs)) {
-      PCaselessString cmd = macro.Left(macro.FindOneOf(" \t\r\n"));
-      static PServiceMacros_list ServiceMacros;
-      PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd));
-      if (idx != P_MAX_INDEX)
-        subs = ServiceMacros[idx].Translate(request, macro.Mid(cmd.GetLength()).LeftTrim());
+    PINDEX pos = 0;
+    PINDEX len;
+    while (text.FindRegEx(StartBlockRegEx, pos, len, pos)) {
+      PString substitution;
+
+      PCaselessString cmd;
+      PString args;
+      SplitCmdAndArgs(text, pos, cmd, args);
+      PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, TRUE));
+      if (idx != P_MAX_INDEX) {
+        PRegularExpression EndBlockRegEx("<?!--#(equival|" + process.GetMacroKeyword() + ")"
+                                         "end[ \t\r\n]+" + cmd + "(-?[^-])*-->?",
+                                         PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+        PINDEX endpos, endlen;
+        if (text.FindRegEx(EndBlockRegEx, endpos, endlen, pos+len)) {
+          PINDEX startpos = pos+len;
+          len = endpos-pos + endlen;
+          substitution = ServiceMacros[idx].Translate(request, args, text(startpos, endpos-1));
+          substitedMacro = TRUE;
+        }
+      }
+
+      text.Splice(substitution, pos, len);
     }
 
-    text.Splice(subs, pos, len);
-  }
+    pos = 0;
+    len;
+    while (text.FindRegEx(MacroRegEx, pos, len, pos)) {
+      PCaselessString cmd;
+      PString args;
+      SplitCmdAndArgs(text, pos, cmd, args);
+
+      PString substitution;
+      if (!process.SubstituteEquivalSequence(request, cmd & args, substitution)) {
+        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, FALSE));
+        if (idx != P_MAX_INDEX) {
+          substitution = ServiceMacros[idx].Translate(request, args, PString());
+          substitedMacro = TRUE;
+        }
+      }
+
+      text.Splice(substitution, pos, len);
+    }
+  } while (substitedMacro);
 
   return TRUE;
 }
