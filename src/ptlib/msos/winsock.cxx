@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.8 1996/01/23 13:25:48 robertj Exp $
+ * $Id: winsock.cxx,v 1.9 1996/02/15 14:53:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.9  1996/02/15 14:53:36  robertj
+ * Added Select() function to PSocket.
+ *
  * Revision 1.8  1996/01/23 13:25:48  robertj
  * Moved Accept from platform independent code.
  *
@@ -37,7 +40,6 @@
 
 #include <ptlib.h>
 #include <sockets.h>
-
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
@@ -146,6 +148,23 @@ int PSocket::_Close()
   int err = closesocket(os_handle);
   os_handle = -1;
   return err;
+}
+
+
+int PSocket::os_select(int maxfds,
+                       fd_set & readfds,
+                       fd_set & writefds,
+                       fd_set & exceptfds,
+                       const PTimeInterval & timeout)
+{
+  struct timeval tv_buf;
+  struct timeval * tv = NULL;
+  if (timeout != PMaxTimeInterval) {
+    tv = &tv_buf;
+    tv->tv_usec = timeout.GetMilliseconds()%1000*1000;
+    tv->tv_sec = timeout.GetSeconds();
+  }
+  return select(maxfds, &readfds, &writefds, &exceptfds, tv);
 }
 
 
