@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.46 1996/01/24 14:43:19 robertj Exp $
+ * $Id: contain.cxx,v 1.47 1996/01/28 02:53:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.47  1996/01/28 02:53:40  robertj
+ * Added assert into all Compare functions to assure comparison between compatible objects.
+ * Fixed bug in Find() function, subset sum calculation added one to many bytes.
+ *
  * Revision 1.46  1996/01/24 14:43:19  robertj
  * Added initialisers to string dictionaries.
  *
@@ -324,6 +328,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 
 PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PAbstractArray::Class()), PInvalidCast);
   const PAbstractArray & array = (const PAbstractArray &)obj;
 
   if (elementSize < array.elementSize)
@@ -636,6 +641,7 @@ void PString::ReadFrom(istream &strm)
 
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PString::Class()), PInvalidCast);
   return InternalCompare(0, P_MAX_INDEX, ((const PString &)obj).theArray);
 }
 
@@ -867,8 +873,8 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
   while (offset+clen < len) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
-    strSum -= theArray[offset++];
     strSum += theArray[offset+clen];
+    strSum -= theArray[offset++];
   }
 
   return P_MAX_INDEX;
