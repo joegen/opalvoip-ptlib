@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.14  1998/10/13 14:06:15  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.13  1998/09/23 06:21:31  robertj
  * Added open source copyright license.
  *
@@ -103,11 +106,10 @@ class PSystemLog : public PObject, public iostream {
     };
     // Type of log message.
 
-    PSystemLog(Level level)
-      { logLevel = level; init(new PSystemLog::Buffer(this)); }
+    PSystemLog(Level level) { logLevel = level; buffer.log = this; init(&buffer); }
+    // Create a system log stream
 
-    ~PSystemLog()
-      { flush(); delete rdbuf(); }
+    ~PSystemLog() { flush(); }
     // Destroy the string stream, deleting the stream buffer
 
     static void Output(
@@ -124,14 +126,12 @@ class PSystemLog : public PObject, public iostream {
 
     class Buffer : public streambuf {
       public:
-        Buffer(PSystemLog * l) { log = l; }
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-      private:
-        PString string;
         PSystemLog * log;
-    };
+        PString string;
+    } buffer;
     friend class Buffer;
 
     Level logLevel;
