@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.18  1998/11/30 21:51:41  robertj
+ * New directory structure.
+ *
  * Revision 1.17  1998/11/03 02:30:38  robertj
  * Fixed emeory leak of environment.
  *
@@ -39,8 +42,10 @@
 
 #pragma implementation "config.h"
 
-#include "ptlib.h"
-#include "pprocess.h"
+#include <ptlib.h>
+
+
+#include "../common/pconfig.cxx"
 
 
 #define SYS_CONFIG_NAME		"pwlib"
@@ -692,5 +697,4 @@ void PConfig::SetString(const PString & theSection,
 }
 
 
-#undef NEW
-
+///////////////////////////////////////////////////////////////////////////////
