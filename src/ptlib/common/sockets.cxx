@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.163  2003/10/27 03:46:15  csoutheren
+ * Added ifdef to disable QoS code on systems that do not support it
+ *
  * Revision 1.162  2003/10/27 03:22:44  csoutheren
  * Added handling for QoS
  *   Thanks to Henry Harrison of AliceStreet
@@ -550,6 +553,8 @@
 
 #include <ctype.h>
 
+#if P_HAS_QOS
+
 #ifdef _WIN32
 #include <winbase.h>
 #include <winreg.h>
@@ -577,10 +582,9 @@ void CALLBACK CompletionRoutine(DWORD dwError,
                                 DWORD dwFlags);
                                 
 
-
 #endif	// _WIN32_WCE
-
 #endif	// _WIN32
+#endif // P_HAS_QOS
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
@@ -2822,6 +2826,8 @@ BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
 
 BOOL PUDPSocket::ApplyQoS()
 {
+#if P_HAS_QOS
+
 #ifdef _WIN32_WCE
     return FALSE;   //QoS not supported
 #endif
@@ -2936,6 +2942,8 @@ BOOL PUDPSocket::ApplyQoS()
         return FALSE;
     }
     
+#endif P_HAS_QOS
+
     return TRUE;
 }
 
@@ -3114,6 +3122,8 @@ BOOL PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef P_HAS_QOS
+
 #ifdef _WIN32
 #ifndef _WIN32_WCE
 
@@ -3164,12 +3174,9 @@ PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen
     bufLen = sizeof(*qos)+sizeof(qosdestaddr);
 }
 
-#endif
-#endif
+#endif // _WIN32
+#endif // _WIN32_WCE
 
-
-
-  
-
+#endif // P_HAS_QOS
 
 // End Of File ///////////////////////////////////////////////////////////////
