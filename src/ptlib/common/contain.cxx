@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.145  2004/02/23 00:44:38  csoutheren
+ * A completely different, other regex include hack to avoid requiring
+ * the sources when using a header-file only environment
+ *
  * Revision 1.144  2004/02/23 00:26:05  csoutheren
  * Finally, a generic and elegant fix for the regex include hacks.  Thanks to Roger Hardiman
  *
@@ -540,6 +544,14 @@
 #ifdef __NUCLEUS_PLUS__
 extern "C" int vsprintf(char *, const char *, va_list);
 #endif
+
+#if P_REGEX
+#include <regex.h>
+#else
+#include "regex/regex.h"
+#endif
+
+#define	regexpression	((regex_t *)expression)
 
 #if !P_USE_INLINES
 #include "ptlib/contain.inl"
@@ -2930,8 +2942,8 @@ PRegularExpression & PRegularExpression::operator =(const PRegularExpression & f
 PRegularExpression::~PRegularExpression()
 {
   if (expression != NULL) {
-    regfree(expression);
-    delete expression;
+    regfree(regexpression);
+    delete regexpression;
   }
 }
 
@@ -2945,7 +2957,7 @@ PRegularExpression::ErrorCodes PRegularExpression::GetErrorCode() const
 PString PRegularExpression::GetErrorText() const
 {
   PString str;
-  regerror(lastError, expression, str.GetPointer(256), 256);
+  regerror(lastError, regexpression, str.GetPointer(256), 256);
   return str;
 }
 
@@ -2962,15 +2974,15 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
   flagsSaved   = flags;
 
   if (expression != NULL) {
-    regfree(expression);
-    delete (regex_t *)expression;
+    regfree(regexpression);
+    delete regexpression;
     expression = NULL;
   }
   if (pattern == NULL || *pattern == '\0')
     lastError = BadPattern;
   else {
     expression = new regex_t;
-    lastError = regcomp(expression, pattern, flags);
+    lastError = regcomp(regexpression, pattern, flags);
   }
   return lastError == NoError;
 }
@@ -3005,7 +3017,7 @@ BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len
 
   regmatch_t match;
 
-  ((PRegularExpression*)this)->lastError = regexec(expression, cstr, 1, &match, flags);
+  ((PRegularExpression*)this)->lastError = regexec(regexpression, cstr, 1, &match, flags);
   if (lastError != NoError)
     return FALSE;
 
@@ -3057,7 +3069,7 @@ BOOL PRegularExpression::Execute(const char * cstr,
   else
     count = 1;
 
-  ((PRegularExpression*)this)->lastError = regexec(expression, cstr, count, matches, flags);
+  ((PRegularExpression*)this)->lastError = regexec(regexpression, cstr, count, matches, flags);
 
   if (lastError == NoError) {
     starts.SetMinSize(count);
