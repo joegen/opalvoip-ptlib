@@ -2,6 +2,58 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.15
+------------
+	Added option to rename imported module names in ASN parser, allows
+	generated code #include filename matching to what would be generated
+	elsewhere by the applications make system.
+
+	Added ability to remove optional field in ASN sequence.
+
+	Added simple static play functions for sound files.
+
+	Added constructor to do PString conversion to PTimeInterval parsing
+	the string as for stream I/O.
+
+	Added parameter so get/setsockopt can have other levels to SOL_SOCKET.
+
+	Fixed error in check for SIOCGHWADDR define. Caused compile errors on
+	Solaris 2.6 systems (but not 2.5 or 2.7!)
+
+	Fixed problem with connect() call not timing out according to the
+	readTimeout value of the channel.
+
+	Removed ptclib/proto directory. Its purpose was ost in time and causes
+	more problems now than it is worth.
+
+	Added named threads to tracing function.
+
+	Fixed handling of NULL pointer on current thread in PTRACE output.
+
+	Fixed infinite recursion on PProcess::Current() = NULL assertion.
+
+	Added function to determine if PProcess instance has been initialised
+	yet for use by static objects etc.
+
+	Fixed problem with asserts generating continuous output when input is 
+	redirected and especially when EOF is read.
+
+	Added the ability to get a stack dump on assert on unix systems by
+	calling gdb on the fly.
+
+	Changes to build system to make GUI selection under Unix systems
+	easier.
+
+	Changed DEBUG build to always be static libraries, an opt build will
+	use the shared libraries.
+
+	More OpenBSD support changes.
+
+	Some BeOS port changes.
+
+	Some VxWorks port changes, stil not complete.
+
+
 Release 1.14
 ------------
 	Added new improved random number generator. Mainly due to discovered
