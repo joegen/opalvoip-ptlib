@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.5  2004/01/18 11:13:08  dereksmithies
+ * Tidy up code & make more clear. Guarantee that tables of names are populated.
+ *
  * Revision 1.4  2003/12/07 21:03:32  dominance
  * bttv of 2.4.23 doesn't seem to need anymore the hinting workaround.
  *
@@ -290,83 +293,83 @@ static struct {
 };
 
 #define HINT(h) ((driver_hints[hint_index].hints & h) ? TRUE : FALSE)
-
-// this is used to get more userfriendly names:
-static PMutex mutex;
-static PDictionary<PString, PString> *dico = NULL;
-
 #define MAJOR(a) (int)((unsigned short) (a) >> 8)
-#define MINOR(a) (int)((unsigned short) (a) & 0xFF)
-
-// Now, the userfriendly translation functions:
-static PString to_userfriendly(PString devname)
-{
-  PWaitAndSignal m(mutex);
-
-  // trying to find the pretty name
-
-  PString Result;
-
-  int fd = ::open((const char *)devname, O_RDONLY);
-  if(fd < 0)
-    if(errno != EBUSY)
-      return devname;
-    else if (dico != NULL)
-      { // it is possible that we're trying to check an already opened device!
-	for(PINDEX i = 0; i < dico->GetSize(); i++)
-	  {
-	    if(dico->GetDataAt(i) == devname)
-	      {
-		Result = dico->GetKeyAt(i);
-		return Result;
-	      }
-	  }
-	return devname;
-      }
-
-  struct video_capability videocap;
-  if (::ioctl(fd, VIDIOCGCAP, &videocap) < 0)
-    {
-      ::close(fd);
-      return devname;
-    }
+#define MINOR(a) (int)((unsigned short) (a) & 0xFF) 
+// this is used to get more userfriendly names:
+class V4LNames : public PObject
+{ 
+   PCLASSINFO(V4LNames, PObject);
+public:
+  V4LNames();
   
-  ::close(fd);
-  PString ufname(videocap.name); // got it!!!
- 
-  // now, store it to be able to open it when asked
-  if(dico == NULL)
-    dico = new PDictionary<PString, PString>;
+  PString GetUserFriendly(PString devName);
 
-  // do you know how long I tracked that silly copy-needed thingie!? Beware!
-  PString *cpy_devname = new PString(devname);
-  dico->SetAt(ufname, cpy_devname);
+  PString GetDeviceName(PString    userName);
 
-  return ufname;
-}
+  PStringList GetInputDeviceNames();
 
-static PString from_userfriendly(PString ufname)
+protected:
+  void  AddUserDeviceName(PString userName, PString devName);
+
+  PString BuildUserFriendly(PString devname);
+
+  void PopulateDictionary();
+
+  void ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid);
+
+  PMutex          mutex;
+  PStringToString deviceKey;
+  PStringToString userKey;
+  PStringList     inputDeviceNames;
+};
+
+V4LNames::V4LNames()
 {
-  PWaitAndSignal m(mutex);
+  PDirectory   procvideo("/proc/video/dev");
+  PString      entry;
+  PStringList  devlist;
+  
+  if (procvideo.Exists()) {
+    if (procvideo.Open(PFileInfo::RegularFile)) {
+      do {
+        entry = procvideo.GetEntryName();
+	if ((entry.Left(5) == "video") || (entry.Left(7) == "capture")) {
+	  PString thisDevice = "/dev/video" + entry.Right(1);
+	  int videoFd = ::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
 
-  PString devname, *testname;
-  PString Result;
+	  if ((videoFd > 0) || (errno == EBUSY)){
+	      BOOL valid = FALSE;
+	      struct video_capability  videoCaps;
+	      if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 &&
+		  (videoCaps.type & VID_TYPE_CAPTURE) != 0)
+		valid = TRUE;
+              if (videoFd >= 0)
+	         close(videoFd); 
+	      if(valid)
+		inputDeviceNames += thisDevice;
+	    }
+	}
+      } while (procvideo.Next());
+    }   
+  } 
+  if (inputDeviceNames.GetSize() == 0) {
+    POrdinalToString vid;
+    ReadDeviceDirectory("/dev/", vid);
 
-  if(dico == NULL)
-    return ufname;
-
-  testname = dico->GetAt(ufname);
-
-  if(testname == NULL)
-    Result = ufname;
-  else
-    Result = *testname;
-
-  return Result;
+    for (PINDEX i = 0; i < vid.GetSize(); i++) {
+      PINDEX cardnum = vid.GetKeyAt(i);
+      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
+      if ((fd >= 0) || (errno == EBUSY)) {
+	if (fd >= 0)
+	  ::close(fd);
+	inputDeviceNames += vid[cardnum];
+      }
+    }
+  }
+  PopulateDictionary();
 }
 
-
-static void CollectVideoDevices (PDirectory devdir, POrdinalToString & vid)
+void  V4LNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
 {
   if (!devdir.Open())
     return;
@@ -375,7 +378,7 @@ static void CollectVideoDevices (PDirectory devdir, POrdinalToString & vid)
     PString filename = devdir.GetEntryName();
     PString devname = devdir + filename;
     if (devdir.IsSubDir())
-      CollectVideoDevices(devname, vid);
+      ReadDeviceDirectory(devname, vid);
     else {
 
       PFileInfo info;
@@ -388,8 +391,9 @@ static void CollectVideoDevices (PDirectory devdir, POrdinalToString & vid)
 	    if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
 
 	      PINDEX num = MINOR(s.st_rdev);
-	      if (num <= 63 && num >= 0) 
+	      if (num <= 63 && num >= 0) {
 		vid.SetAt(num, devname);
+	      }
 	    }
 	  }
 	}
@@ -398,6 +402,100 @@ static void CollectVideoDevices (PDirectory devdir, POrdinalToString & vid)
   } while (devdir.Next());
 }
 
+void V4LNames::PopulateDictionary()
+{
+  PINDEX i, j;
+  PStringToString tempList;
+
+  for (i = 0; i < inputDeviceNames.GetSize(); i++) {
+    PString ufname = BuildUserFriendly(inputDeviceNames[i]);
+    tempList.SetAt(inputDeviceNames[i], ufname);
+  }
+
+  for (i = 0; i < tempList.GetSize(); i++) {
+    PString userName = tempList.GetDataAt(i); 
+    AddUserDeviceName(userName, tempList.GetKeyAt(i));
+
+    PINDEX matches = 1;    
+    for (j = i + 1; j < tempList.GetSize(); j++) {
+      if (tempList.GetDataAt(j) == userName) {
+	matches++;
+        PStringStream bod;
+        bod << userName << " (" << i << ")";
+        AddUserDeviceName(bod, tempList.GetKeyAt(j));
+	tempList.RemoveAt(j);
+        j--;
+      }
+    }
+  }
+}
+
+PString V4LNames::GetUserFriendly(PString devName)
+{
+  PWaitAndSignal m(mutex);
+
+  
+  PString result= deviceKey(devName);
+  if (result.IsEmpty())
+    return devName;
+
+  return result;
+}
+
+PString V4LNames::GetDeviceName(PString userName)
+{
+  PWaitAndSignal m(mutex);
+
+  PString result= userKey(userName);
+  if (result.IsEmpty())
+    return userName;
+
+  return result;
+}
+
+void V4LNames::AddUserDeviceName(PString userName, PString devName)
+{
+  userKey.SetAt(userName, devName);
+  deviceKey.SetAt(devName, userName);
+}
+
+PString V4LNames::BuildUserFriendly(PString devname)
+{
+  PString Result;
+
+  int fd = ::open((const char *)devname, O_RDONLY);
+  if(fd < 0) {
+    return devname;
+  }
+
+  struct video_capability videocap;
+  if (::ioctl(fd, VIDIOCGCAP, &videocap) < 0)  {
+      ::close(fd);
+      return devname;
+    }
+  
+  ::close(fd);
+  PString ufname(videocap.name);  
+
+  return ufname;
+}
+
+PStringList V4LNames::GetInputDeviceNames()
+{
+  PWaitAndSignal m(mutex);
+  PStringList result;
+  for (PINDEX i = 0; i < userKey.GetSize(); i++)
+    result += userKey.GetKeyAt(i);
+ 
+  return result;
+}
+
+static 
+V4LNames & GetNames()
+{
+  static V4LNames names;
+  return names;
+} 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputV4lDevice
@@ -451,7 +549,7 @@ BOOL PVideoInputV4lDevice::Open(const PString & devName, BOOL startImmediate)
 
   // check if it is a userfriendly name, and if so, get the real device name
 
-  PString deviceName = from_userfriendly(devName);
+  PString deviceName = GetNames().GetDeviceName(devName);
   videoFd = ::open((const char *)deviceName, O_RDWR);
   if (videoFd < 0) {
     PTRACE(1,"PVideoInputV4lDevice::Open failed : "<< ::strerror(errno));
@@ -574,71 +672,7 @@ BOOL PVideoInputV4lDevice::IsCapturing()
 
 PStringList PVideoInputV4lDevice::GetInputDeviceNames()
 {
-  PDirectory   procvideo("/proc/video/dev");
-  PString      entry;
-  PStringList  devlist;
-  
-  if (procvideo.Exists()) {
-    if (procvideo.Open(PFileInfo::RegularFile)) {
-      do {
-        entry = procvideo.GetEntryName();
-
-	if ((entry.Left(5) == "video") || (entry.Left(7) == "capture")) {
-	  PString thisDevice = "/dev/video" + entry.Right(1);
-	  int videoFd = ::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
-	  if (videoFd > 0)
-	    {
-	      BOOL valid = FALSE;
-	      struct video_capability  videoCaps;
-	      if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 &&
-		  (videoCaps.type & VID_TYPE_CAPTURE) != 0)
-		valid = TRUE;
-	      close(videoFd); // this is to make to_userfriendly happy!
-	      if(valid)
-		{
-		  PString ufname = to_userfriendly(thisDevice);
-		  if(from_userfriendly(ufname) == thisDevice)
-		    devlist.AppendString(to_userfriendly(thisDevice));
-		  else
-		    { // we know dico can't be NULL there
-		      PString altname = ufname+ " (2)";
-		      int i = 2;
-		      mutex.Wait();
-		      while(dico->Contains(altname))
-			{
-			  i++;
-			  altname = ufname+ " ("+(PString)i+")";
-			}
-		      PString *cpy_devname = new PString(thisDevice);
-		      dico->SetAt(altname, cpy_devname);
-		      mutex.Signal();
-		    }
-		}
-	    }
-	  else if (errno == EBUSY)
-	    devlist.AppendString(to_userfriendly(thisDevice));
-	}
-      } while (procvideo.Next());
-    }   
-    
-  }
-  else {
-
-    POrdinalToString vid;
-    CollectVideoDevices("/dev/", vid);
-
-    for (PINDEX i = 0; i < vid.GetSize(); i++) {
-      PINDEX cardnum = vid.GetKeyAt(i);
-
-      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
-      if (fd >= 0 || errno == EBUSY) {
-	::close(fd);
-	devlist.AppendString(to_userfriendly(vid[cardnum]));
-      }
-    }
-  }
-   
-  return devlist;
+  return GetNames().GetInputDeviceNames();
 }
 
 BOOL PVideoInputV4lDevice::SetVideoFormat(VideoFormat newFormat)
