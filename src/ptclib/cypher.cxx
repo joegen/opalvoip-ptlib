@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.1 1996/01/23 13:05:58 robertj Exp $
+ * $Id: cypher.cxx,v 1.2 1996/01/28 02:49:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.2  1996/01/28 02:49:00  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ * Added the secure configuration mechanism for protecting applications.
+ *
  * Revision 1.1  1996/01/23 13:05:58  robertj
  * Initial revision
  *
@@ -77,7 +81,7 @@ PMessageDigest5::PMessageDigest5()
  (a) += (b); \
 
 
-void PMessageDigest5::Transform(PConstMemoryPointer block)
+void PMessageDigest5::Transform(const BYTE * block)
 {
   DWORD a = state[0];
   DWORD b = state[1];
@@ -86,7 +90,7 @@ void PMessageDigest5::Transform(PConstMemoryPointer block)
 
   DWORD x[16];
   for (PINDEX i = 0; i < 16; i++)
-    x[i] = PUInt32l(block);
+    x[i] = PUInt32l(&block);
 
   /* Round 1 */
   FF(a, b, c, d, x[ 0], S11, 0xd76aa478); /* 1 */
@@ -190,7 +194,7 @@ void PMessageDigest5::Process(const PString & str)
 
 void PMessageDigest5::Process(const char * cstr)
 {
-  Process((PConstMemoryPointer)cstr, strlen(cstr));
+  Process((const BYTE *)cstr, strlen(cstr));
 }
 
 
@@ -200,7 +204,7 @@ void PMessageDigest5::Process(const PBYTEArray & data)
 }
 
 
-void PMessageDigest5::Process(PConstMemoryPointer data, PINDEX length)
+void PMessageDigest5::Process(const BYTE * data, PINDEX length)
 {
   // Compute number of bytes mod 64
   PINDEX index = (PINDEX)((count >> 3) & 0x3F);
@@ -239,8 +243,8 @@ void PMessageDigest5::Complete(Code result)
 {
   // Put the count into bytes platform independently
   BYTE countBytes[sizeof(count)];
-  PMemoryPointer bufptr = countBytes;
-  PUInt64l(count).Put(bufptr);
+  BYTE * bufptr = countBytes;
+  PUInt64l(count).Put(&bufptr);
 
   // Pad out to 56 mod 64.
   PINDEX index = (PINDEX)((count >> 3) & 0x3f);
@@ -256,8 +260,10 @@ void PMessageDigest5::Complete(Code result)
   Process(countBytes, sizeof(countBytes));
 
   // Store state in digest
-  for (PINDEX i = 0; i < PARRAYSIZE(state); i++)
-    PUInt32l(state[i]).Put(result);
+  for (PINDEX i = 0; i < PARRAYSIZE(state); i++) {
+    PUInt32l l = state[i];
+    l.Put(&result);
+  }
 
   // Zeroize sensitive information.
   memset(this, 0, sizeof(*this));
@@ -278,13 +284,13 @@ void PMessageDigest5::Encode(const PString & str, Code result)
 
 PString PMessageDigest5::Encode(const char * cstr)
 {
-  return Encode((PConstMemoryPointer)cstr, strlen(cstr));
+  return Encode((const BYTE *)cstr, strlen(cstr));
 }
 
 
 void PMessageDigest5::Encode(const char * cstr, Code result)
 {
-  Encode((PConstMemoryPointer)cstr, strlen(cstr), result);
+  Encode((const BYTE *)cstr, strlen(cstr), result);
 }
 
 
@@ -300,7 +306,7 @@ void PMessageDigest5::Encode(const PBYTEArray & data, Code result)
 }
 
 
-PString PMessageDigest5::Encode(PConstMemoryPointer data, PINDEX length)
+PString PMessageDigest5::Encode(const BYTE * data, PINDEX length)
 {
   Code result;
   Encode(data, length, result);
@@ -308,7 +314,7 @@ PString PMessageDigest5::Encode(PConstMemoryPointer data, PINDEX length)
 }
 
 
-void PMessageDigest5::Encode(PConstMemoryPointer data, PINDEX len, Code result)
+void PMessageDigest5::Encode(const BYTE * data, PINDEX len, Code result)
 {
   PMessageDigest5 stomach;
   stomach.Process(data, len);
@@ -327,7 +333,7 @@ PCypher::PCypher(PINDEX blkSize)
 
 
 PCypher::PCypher(PINDEX blkSize, const BYTE * keyData, PINDEX keyLength)
-  : blockSize(blkSize), key(keyData, keyLength)
+  : key(keyData, keyLength), blockSize(blkSize)
 {
 }
 
@@ -504,10 +510,10 @@ void PTEACypher::Initialise(BOOL)
 }
 
 
-void PTEACypher::EncodeBlock(PConstMemoryPointer in, PMemoryPointer out)
+void PTEACypher::EncodeBlock(const BYTE * in, BYTE * out)
 {
-  PUInt32b low(in);
-  PUInt32b high(in);
+  PUInt32b low(&in);
+  PUInt32b high(&in);
   DWORD y = low;
   DWORD z = high;
   DWORD sum = 0;
@@ -518,15 +524,15 @@ void PTEACypher::EncodeBlock(PConstMemoryPointer in, PMemoryPointer out)
   }
   (DWORD &)low = y;
   (DWORD &)high = z;
-  low.Put(out);
-  high.Put(out);
+  low.Put(&out);
+  high.Put(&out);
 }
 
 
-void PTEACypher::DecodeBlock(PConstMemoryPointer in, PMemoryPointer out)
+void PTEACypher::DecodeBlock(const BYTE * in, BYTE * out)
 {
-  PUInt32b low(in);
-  PUInt32b high(in);
+  PUInt32b low(&in);
+  PUInt32b high(&in);
   DWORD y = low;
   DWORD z = high;
   DWORD sum = TEADelta<<5;
@@ -537,8 +543,48 @@ void PTEACypher::DecodeBlock(PConstMemoryPointer in, PMemoryPointer out)
   }
   (DWORD &)low = y;
   (DWORD &)high = z;
-  low.Put(out);
-  high.Put(out);
+  low.Put(&out);
+  high.Put(&out);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSecureConfig
+
+PSecureConfig::PSecureConfig(const char * encryptPhrase,
+                             const char * const * securedKeys,
+                             PINDEX count,
+                             const char * securedSection,
+                             Source src)
+  : PConfig(securedSection, src), securedKey(count, securedKeys)
+{
+  PMessageDigest5::Encode(encryptPhrase, cryptKey);
+}
+
+
+void PSecureConfig::SetValidation(const char * validationKey)
+{
+  SetString(validationKey, CalculateValidation());
+}
+
+
+BOOL PSecureConfig::IsValid(const char * validationKey)
+{
+  return GetString(validationKey) == CalculateValidation();
+}
+
+
+PString PSecureConfig::CalculateValidation()
+{
+  PMessageDigest5 digestor;
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
+    digestor.Process(GetString(securedKey[i]));
+  PMessageDigest5::Code digest;
+  digestor.Complete(digest);
+
+  PTEACypher crypt(cryptKey);
+  return crypt.Encode(digest, sizeof(digest));
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
