@@ -2,7 +2,54 @@ Portable Windows Library Modification History
 =============================================
 
 
-Release 1.15
+Release 1.1pl16
+------------
+	Added PConfigArgs class so can save program arguments to config files.
+
+	Removed static global ojects that require construction as they cause
+	phantom memory leaks when using the GNU compiler.
+
+	Added microseconds to string output of PTime.
+
+	Added strcasecmp macro, BSDish version of stricmp.
+
+	Added mutex to PSoundChannel buffer structure to avoid rare but quite
+	possible multi-threading crashes.
+
+	Added tcp.h to get TCP_NODELAY for setsockopt call to pmachdep.h.
+
+	Fixed missing default on PTopLevelWindow::Show() function.
+
+	Fixed support for older FreeBSD (location of sysctrl program).
+
+	Added variables for standard programs ar and ranlib, plus making the
+	use of ranlib optional according to another variable.
+
+	Fixed bug in restarting free running timers, would not always happen.
+
+	Fixed problem with stream output width in PTimeInterval.
+
+	Fixed uninitialised microseconds on some PTime constructors.
+
+	Added display of thread name in SystemLog.
+
+	Fixed problem where lastReadCount was not zeroed if no read occurred
+	in a PChannel.
+
+	Added OSS unix implementation for PlayFile command.
+
+	Fixed race condition causing asserts in ballon help.
+
+	Added directory search path argument for external DEF files in 
+	MergeSym. This allows correct building of DLLs that use ptlib.dll.
+
+	Fixed bug for symbols in external DEF file actively removed from 
+	merged DEF file in MergeSym.
+
+	Fixed production error for ValueSet in asn parser.
+
+
+Release 1.1pl15
 ------------
 	Added option to rename imported module names in ASN parser, allows
 	generated code #include filename matching to what would be generated
