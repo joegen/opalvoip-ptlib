@@ -219,6 +219,14 @@ SOURCE=.\svcproc.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=.\vfw.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\videoio.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32.cxx
 # End Source File
 # Begin Source File
@@ -404,6 +412,10 @@ SOURCE=..\..\..\Include\PtLib\Timer.h
 
 SOURCE=..\..\..\Include\PtLib\Udpsock.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\videoio.h
+# End Source File
 # End Group
 # Begin Group "MSOS"
 
@@ -543,6 +555,10 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\timer.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptlib\msos\ptlib\udpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\videoio.h
 # End Source File
 # End Group
 # End Group
