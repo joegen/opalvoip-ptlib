@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.11  2000/04/26 01:03:46  robertj
+# Removed tarfile creation target, this is done differently now.
+#
 # Revision 1.10  2000/02/04 19:32:16  craigs
 # Added targets for unshared libraries etc
 #
@@ -132,33 +135,6 @@ ptlib:
 
 docs: 
 	doc++ --dir html --tables pwlib.dxx
-
-
-ifdef HAS_GUI
-GUI_SOURCES = include/pwlib.h \
-	$(shell find include/pwclib -name CVS -prune -o -type f -print) \
-	$(shell find src/pwclib -name CVS -prune -o -type f -print) \
-	$(shell find include/pwlib -name CVS -prune -o -name mswin -prune -o -type f -print) \
-	$(shell find src/pwlib -name CVS -prune -o -name mswin -prune -o -type f -print) \
-	$(shell $(MAKE) --no-print-directory -C tools/pwrc tarfiles)
-endif
-
-TAR_SOURCES = Readme.txt History.txt mpl-1.0.htm Makefile include/ptlib.h \
-	$(shell find make -name CVS -prune -o -type f -print) \
-	$(shell find include/ptclib -name CVS -prune -o -type f -print) \
-	$(shell find src/ptclib -name CVS -prune -o -name proto -prune -o -type f -print) \
-	$(shell find include/ptlib -name CVS -prune -o -name msos -prune -o -type f -print) \
-	$(shell find src/ptlib -name CVS -prune -o -name msos -prune -o -type f -print) \
-	$(shell $(MAKE) --no-print-directory -C tools/asnparser tarfiles)
-
-CWD = $(notdir $(shell pwd))
-
-tarball:
-	( cd .. ; tar zcf pwlib_min.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES)) )
-
-tarballs:
-	( cd .. ; tar zcf pwlib_min.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES)) ; \
-	  tar zcf pwlib_full.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES) $(GUI_SOURCES)) )
 
 
 # End of Makefile
