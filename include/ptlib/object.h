@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.97  2004/04/09 00:56:35  csoutheren
+ * Fixed problem with new class name code
+ *
  * Revision 1.96  2004/04/09 00:42:58  csoutheren
  * Changed Unix build to use slightly different method for
  * keep class names, as GCC does not use actual class names for typeinfo
@@ -796,7 +799,7 @@ of compatibility with documentation systems.
     static inline const char * Class() \
       { return PCLASSNAME(cls); } \
     virtual BOOL InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, PCLASSNAME()) == 0 || par::InternalIsDescendant(clsName); } \
+      { return strcmp(clsName, PCLASSNAME(cls)) == 0 || par::InternalIsDescendant(clsName); } \
 
 #else // P_HAS_TYPEINFO
 
@@ -866,7 +869,7 @@ class PObject {
 
        @return pointer to C string literal.
      */      
-    static inline const char * Class()    { return PCLASSNAME(); }
+    static inline const char * Class()    { return PCLASSNAME(PObject); }
 
     /** Get the current dynamic type of the object instance.
 
