@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.24  1998/11/30 12:31:46  robertj
+ * Removed redundent conditionals.
+ *
  * Revision 1.23  1998/11/14 01:11:45  robertj
  * PPC linux GNU compatibility.
  *
@@ -106,8 +109,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
-
-#if defined(_PTIMEINTERVAL)
 
 PTimeInterval::PTimeInterval(long millisecs,
                              long seconds,
@@ -213,13 +214,8 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
 }
 
 
-#endif
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
-
-#if defined(_PTIME)
 
 static time_t p_mktime(struct tm * t, int zone)
 {
@@ -864,9 +860,6 @@ void PTime::ReadFrom(istream &strm)
 
   theTime = p_mktime(&t, zone);
 }
-
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
