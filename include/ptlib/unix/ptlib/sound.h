@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.6  2000/04/19 00:13:52  robertj
+ * BeOS port changes.
+ *
  * Revision 1.5  1999/07/19 01:34:22  craigs
  * Rewite to compensate for linux OSS sensitivity to ioctl order.
  *
@@ -66,6 +69,11 @@ class PSoundHandleEntry : public PObject {
 
 PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
 
+#ifdef __BEOS__
+class PSoundInput;
+class PSoundPlayer;
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
 
@@ -84,6 +92,14 @@ PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
     Directions direction;
     PString device;
     BOOL isInitialised;
+
+#ifdef __BEOS__
+    PSoundInput* mpInput;
+    PSoundPlayer* mpOutput;
+    unsigned mNumChannels;
+    unsigned mSampleRate;
+    unsigned mBitsPerSample;
+#endif
 };
 
 

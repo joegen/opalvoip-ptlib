@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.78  2000/04/19 00:13:52  robertj
+# BeOS port changes.
+#
 # Revision 1.77  2000/04/11 21:22:08  robertj
 # Made CC compiler explicitly gcc on Solaris systems.
 #
@@ -549,6 +552,8 @@ endif
 
 STDCCFLAGS	+= -Wno-multichar
 
+MEMORY_CHECK := 0
+
 endif # beos
 
 
@@ -699,7 +704,11 @@ PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
 ifdef	DEBUG
 
-STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
+ifndef MEMORY_CHECK
+MEMORY_CHECK := 1
+endif
+
+STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=$(MEMORY_CHECK)
 LDFLAGS		+= $(DEBLDFLAGS)
 
 else
