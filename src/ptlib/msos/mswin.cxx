@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.6 1994/08/04 13:24:27 robertj Exp $
+ * $Id: mswin.cxx,v 1.7 1994/08/22 00:18:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.6  1994/08/04 13:24:27  robertj
+ * Revision 1.7  1994/08/22 00:18:02  robertj
+ * Fixed bug in serial comms timers.
+ *
+ * Revision 1.6  1994/08/04  13:24:27  robertj
  * Added DCB so can set paraemters on closed channel.
  *
  * Revision 1.5  1994/07/27  06:00:10  robertj
@@ -181,7 +184,8 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  readTimer = readTimeout;
+  if (readTimeout != PMaxTimeInterval)
+    readTimer = readTimeout;
   if (IsReadBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsReadBlocked, this);
 
@@ -217,7 +221,8 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
     return FALSE;
   }
 
-  writeTimer = writeTimeout;
+  if (writeTimeout != PMaxTimeInterval)
+    writeTimer = writeTimeout;
   if (IsWriteBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsWriteBlocked, this);
 
