@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.13  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.12  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -67,20 +71,6 @@
  *
  */
 
-#ifndef _PSERIALCHANNEL
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#define _PSERIALCHANNEL_PLATFORM_INCLUDE
-#include "../../serchan.h"
-
-#endif
-#ifdef _PSERIALCHANNEL_PLATFORM_INCLUDE
-#undef _PSERIALCHANNEL_PLATFORM_INCLUDE
-
-
   public:
     BOOL Close();
 
@@ -94,8 +84,5 @@
     BYTE   dataBits;
     Parity parityBits;
     BYTE   stopBits;
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.29  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.28  2003/02/26 02:01:10  robertj
  * Fixed compatibility with a MIPS compiler, Thanks Eize Slange
  *
@@ -139,5 +143,16 @@ PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
 
 PINLINE PString PChannel::GetName() const
   { return channelName; }
+
+PINLINE PThreadIdentifier PThread::GetThreadId() const
+  { return PX_threadId; }
+
+#ifndef VX_TASKS
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
+  { return ::pthread_self(); }
+#else
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
+  { return ::taskIdSelf(); }
+#endif // !VX_TASKS
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.12  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.11  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -67,38 +71,14 @@
  *
  */
 
-#ifndef _PDIRECTORY
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <dirent.h>
-#include <limits.h>
-
-#define PDIR_SEPARATOR '/'
-
-#define P_MAX_PATH    (_POSIX_PATH_MAX)
-
-typedef PString PFilePathString;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
-
-#define _PDIRECTORY_PLATFORM_INCLUDE
-#include "../../pdirect.h"
-
-#endif
-#ifdef _PDIRECTORY_PLATFORM_INCLUDE
-#undef _PDIRECTORY_PLATFORM_INCLUDE
 
   protected:
     DIR           * directory;
     PFileInfo     * entryInfo;
     struct dirent * entryBuffer;
 
-#endif
-
-
 // End Of File ////////////////////////////////////////////////////////////////
+

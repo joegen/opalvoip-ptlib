@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.27  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.26  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -114,26 +118,10 @@
  *
  */
 
-#ifndef _PPROCESS
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <ptlib/syncpoint.h>
-
 PDICTIONARY(PXFdDict, POrdinalKey, PThread);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
-
-#define _PPROCESS_PLATFORM_INCLUDE
-#include "../../pprocess.h"
-
-#endif
-#ifdef _PPROCESS_PLATFORM_INCLUDE
-#undef _PPROCESS_PLATFORM_INCLUDE
 
   public:
     friend class PApplication;
@@ -240,8 +228,5 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
   protected:
     PXFdDict     ioBlocks[3];
 #endif
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

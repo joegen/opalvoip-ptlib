@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.20  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.19  2003/01/06 18:41:08  rogerh
  * Add NetBSD patches, taken from the NetBSD pkg patches.
  * Submitted by Andreas Wrede
@@ -98,10 +102,6 @@
  *
  */
 
-
-#ifndef _PVIDEOIO
-
-
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
 #include <linux/videodev.h>     /* change this to "videodev2.h" for v4l2 */
 #endif
@@ -119,14 +119,6 @@
 #include <i386/ioctl_meteor.h>
 #endif
 #endif
-
-
-#define _PVIDEOIO_PLATFORM_INCLUDE
-#include "../../videoio.h"
-
-#endif
-#ifdef _PVIDEOIO_PLATFORM_INCLUDE
-#undef _PVIDEOIO_PLATFORM_INCLUDE
 
   public:
     virtual BOOL SetVideoFormat(VideoFormat videoFormat);
@@ -203,9 +195,5 @@
     PINDEX frameBytes;
     int    mmap_size;
 #endif
-
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.7  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.6  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -52,12 +56,6 @@
  *
  */
 
-#ifndef _PFILE
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
 #include <sys/stat.h>
 
 #define	_read(fd,vp,st)		::read(fd, vp, (size_t)st)
@@ -66,19 +64,9 @@
 #define	_lseek(fd,off,w)	::lseek(fd, (off_t)off, w)
 #define _close(fd)		::close(fd)
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-#define _PFILE_PLATFORM_INCLUDE
-#include "../../file.h"
-
-#endif
-#ifdef _PFILE_PLATFORM_INCLUDE
-#undef _PFILE_PLATFORM_INCLUDE
-
-
-#endif
-
+// nothing to do
 
 // End Of File ////////////////////////////////////////////////////////////////

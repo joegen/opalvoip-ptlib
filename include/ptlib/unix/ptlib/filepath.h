@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.7  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.6  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -49,26 +53,9 @@
  *
  */
 
-#ifndef _PFILEPATH
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <ptlib/pdirect.h>
-
 ///////////////////////////////////////////////////////////////////////////////
 // File Specification
 
-#define _PFILEPATH_PLATFORM_INCLUDE
-#include "../../filepath.h"
-
-#endif
-#ifdef _PFILEPATH_PLATFORM_INCLUDE
-#undef _PFILEPATH_PLATFORM_INCLUDE
-
-
-#endif
-
+// nothing to do
 
 // End Of File ////////////////////////////////////////////////////////////////
