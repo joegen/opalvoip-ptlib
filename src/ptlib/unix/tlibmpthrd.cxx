@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibmpthrd.cxx,v $
+ * Revision 1.3  2002/02/19 07:40:59  rogerh
+ * Remove PMutex destructor for Carbon.
+ *
  * Revision 1.2  2002/02/19 07:28:02  rogerh
  * PXAbortIO -> PXAbortBlock. Submitted by Peter Johnson <paj@mac.com>
  *
@@ -766,10 +769,6 @@ BOOL PSemaphore::WillBlock() const
 
 PMutex::PMutex()
   : PSemaphore(1, 1)
-{
-}
-
-PMutex::~PMutex()
 {
 }
 
