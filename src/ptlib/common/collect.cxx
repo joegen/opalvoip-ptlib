@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.59  2002/12/02 04:27:37  robertj
+ * Added extra bullet proofing for some pathological conditions.
+ *
  * Revision 1.58  2002/11/12 08:57:18  robertj
  * Changed scope of PAbstraSortedList::Element class so descendant classes
  *   can get at it.
@@ -550,7 +553,10 @@ BOOL PAbstractList::Remove(const PObject * obj)
 
 PObject * PAbstractList::RemoveAt(PINDEX index)
 {
-  PAssert(SetCurrent(index), PInvalidArrayIndex);
+  if (!SetCurrent(index)) {
+    PAssertAlways(PInvalidArrayIndex);
+    return NULL;
+  }
 
   Element * elmt = info->lastElement;
 
@@ -839,6 +845,9 @@ BOOL PAbstractSortedList::Remove(const PObject * obj)
 PObject * PAbstractSortedList::RemoveAt(PINDEX index)
 {
   Element * node = info->root->OrderSelect(index+1);
+  if (node == &Element::nil)
+    return NULL;
+
   PObject * data = node->data;
   RemoveElement(node);
   return reference->deleteObjects ? (PObject *)NULL : data;
@@ -953,6 +962,10 @@ PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 void PAbstractSortedList::RemoveElement(Element * node)
 {
   PAssertNULL(node);
+
+  // Don't try an remove one of the special leaf nodes!
+  if (node == &Element::nil)
+    return;
 
   if (node->data != NULL && reference->deleteObjects)
     delete node->data;
