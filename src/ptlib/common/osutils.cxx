@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.225  2004/06/03 12:47:59  csoutheren
+ * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
+ *
  * Revision 1.224  2004/06/01 05:22:44  csoutheren
  * Restored memory check functionality
  *
@@ -1818,6 +1821,8 @@ static PProcess * PProcessInstance;
 int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
+
+INSTANTIATE_FACTORY(PProcessStartup)
 
 typedef std::map<PString, PProcessStartup *> PProcessStartupList;
 
