@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.5  2001/09/20 05:38:25  robertj
+ * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
+ * Also prevented semaphore from being created if subclass does not use it.
+ *
  * Revision 1.4  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -57,6 +61,15 @@
 #ifdef _PSYNCPOINT_PLATFORM_INCLUDE
 #undef _PSYNCPOINT_PLATFORM_INCLUDE
 
+#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
+  public:
+    virtual void Wait();
+    virtual BOOL Wait(const PTimeInterval & timeout);
+    virtual void Signal();
+    virtual BOOL WillBlock() const;
+  private:
+    unsigned signalCount;
+#endif
 
 #endif
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.15  2001/09/20 05:38:25  robertj
+ * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
+ * Also prevented semaphore from being created if subclass does not use it.
+ *
  * Revision 1.14  2001/09/19 17:37:47  craigs
  * Added support for nested mutexes under Linux
  *
@@ -90,29 +94,23 @@
 #undef _PMUTEX_PLATFORM_INCLUDE
 
 #if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
-    ~PMutex();
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
     virtual BOOL WillBlock() const;
-  protected:
 
+  protected:
 #if defined(P_PTHREADS)
 #ifndef P_HAS_RECURSIVE_MUTEX
     pthread_t ownerThreadId;
     PINDEX lockCount;
 #endif
-#endif
-
-#if defined(P_PTHREADS) && defined(P_HAS_SEMAPHORES)
-    pthread_mutex_t mutex;
-#endif
-
-#if defined(BE_THREADS)
+#elif defined(BE_THREADS)
     int32 benaphoreCount;
 #endif
 
 #endif
+
 
 #endif
 
