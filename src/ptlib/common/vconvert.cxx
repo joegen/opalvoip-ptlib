@@ -26,6 +26,10 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.39  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.38  2004/11/07 06:28:00  rjongbloed
  * Removed warnings about unused parameters in SBGGR8 conversion functions. Left one
  *   in (flip vertical) as it should be implemented but wasn't.
@@ -906,7 +910,7 @@ static inline int clip(int a, int limit) {
 BOOL PStandardColourConverter::SBGGR8toYUV420P(const BYTE * src,
 					       BYTE * dst,
 					       PINDEX * bytesReturned,
-					       BOOL     flipVertical) const
+					       BOOL     /*flipVertical*/) const
 {
 #define USE_SBGGR8_NATIVE 1 // set to 0 to use the double conversion algorithm (Bayer->RGB->YUV420P)
   
