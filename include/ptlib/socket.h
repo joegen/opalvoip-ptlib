@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.26 1998/08/25 14:07:42 robertj Exp $
+ * $Id: socket.h,v 1.27 1998/08/27 00:46:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.27  1998/08/27 00:46:58  robertj
+ * Resolved signedness problems with various GNU libraries.
+ *
  * Revision 1.26  1998/08/25 14:07:42  robertj
  * Added getprotobyxxx wrapper functions.
  *
@@ -205,7 +208,7 @@ PDECLARE_CLASS(PSocket, PChannel)
     BOOL GetOption(
       int option,
       void * valuePtr,
-      int valueSize
+      PINDEX valueSize
     );
     /* Get options on the socket. These options are defined as Berkeley socket
        options of the class SOL_SOCKET.
@@ -422,26 +425,26 @@ PDECLARE_CLASS(PSocket, PChannel)
     int os_socket(int af, int type, int proto);
     int os_connect(
       struct sockaddr * sin,
-      int size
+      PINDEX size
     );
     int os_recvfrom(
       void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * from,
-      int * fromlen
+      PINDEX * fromlen
     );
     int os_sendto(
       const void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * to,
-      int tolen
+      PINDEX tolen
     );
     int os_accept(
       int sock,
       struct sockaddr * addr,
-      int * size,
+      PINDEX * size,
       const PTimeInterval & timeout
     );
     static int os_select(
