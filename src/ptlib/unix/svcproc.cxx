@@ -6,6 +6,8 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <fstream.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "uerror.h"
 
@@ -105,7 +107,7 @@ int PServiceProcess::_main(void *)
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
 
-  args.Parse("vdchxpkl:");
+  args.Parse("vdchxpktl:u:g:");
 
   const char * statusToStr[NumCodeStatuses] = { "Alpha", "Beta", "Release" };
 
@@ -121,13 +123,13 @@ int PServiceProcess::_main(void *)
   }
 
 #ifdef _PATH_VARRUN
-  if (args.HasOption('k')) {
+  if (args.HasOption('k') || args.HasOption('t')) {
     PString pidfilename = _PATH_VARRUN + GetFile().GetFileName() + ".pid";
     ifstream pidfile(pidfilename);
     if (pidfile.is_open()) {
       int pid;
       pidfile >> pid;
-      if (kill(pid, SIGTERM) == 0)
+      if (kill(pid, args.HasOption('t') ? SIGTERM : SIGKILL) == 0)
         return 0;
       PError << "Could not kill process " << pid << " - " << strerror(errno) << endl;
     }
@@ -145,7 +147,7 @@ int PServiceProcess::_main(void *)
   else if (!args.HasOption('d') && !args.HasOption('x')) {
     PError << "error: must specify one of -v, -h, "
 #ifdef _PATH_VARRUN
-              "-k, "
+              "-t, -k, "
 #endif
               "-d or -x" << endl;
     helpAndExit = TRUE;
@@ -166,11 +168,14 @@ int PServiceProcess::_main(void *)
   if (helpAndExit) {
     PError << "usage: [-c] -v|-d|-h|-x" << endl
            << "        -h       output this help message and exit" << endl
-           << "        -v    display version information and exit" << endl
-           << "        -d    run as a daemon" << endl
+           << "        -v       display version information and exit" << endl
+           << "        -d       run as a daemon" << endl
+           << "        -u uid   set user id to run as" << endl
+           << "        -g gid   set group id to run as" << endl
 #ifdef _PATH_VARRUN
-           << "        -p    do not write pid file" << endl
-           << "        -k    kill process in pid file" << endl
+           << "        -p       do not write pid file" << endl
+           << "        -t       terminate process in pid file" << endl
+           << "        -k       kill process in pid file" << endl
 #endif
            << "        -c       output messages to stdout rather than syslog" << endl
            << "        -l file  output messages to file rather than syslog" << endl
@@ -183,6 +188,50 @@ int PServiceProcess::_main(void *)
     openlog((const char *)GetName(), LOG_PID, LOG_DAEMON);
   else if (systemLogFile == "-")
     PError << "All output for " << GetName() << " is to console." << endl;
+
+  // Set the uid we are running under
+  if (args.HasOption('u')) {
+    PString uidstr = args.GetOptionString('u');
+    if (uidstr.IsEmpty())
+      uidstr = "nobody";
+    int uid;
+    if (strspn(uidstr, "0123456789") == uidstr.GetLength())
+      uid = uidstr.AsInteger();
+    else {
+      struct passwd * pw = getpwnam(uidstr);
+      if (pw == NULL) {
+        PError << "Could not find user \"" << uidstr << '"' << endl;
+        return 1;
+      }
+      uid = pw->pw_uid;
+    }
+    if (setuid(uid) != 0) {
+      PError << "Could not set UID to \"" << uidstr << '"' << endl;
+      return 1;
+    }
+  }
+
+  // Set the gid we are running under
+  if (args.HasOption('g')) {
+    PString gidstr = args.GetOptionString('g');
+    if (gidstr.IsEmpty())
+      gidstr = "nobody";
+    int gid;
+    if (strspn(gidstr, "0123456789") == gidstr.GetLength())
+      gid = gidstr.AsInteger();
+    else {
+      struct group * gr = getgrnam(gidstr);
+      if (gr == NULL) {
+        PError << "Could not find group \"" << gidstr << '"' << endl;
+        return 1;
+      }
+      gid = gr->gr_gid;
+    }
+    if (setgid(gid) != 0) {
+      PError << "Could not set GID to \"" << gidstr << '"' << endl;
+      return 1;
+    }
+  }
 
   // Run as a daemon, ie fork
   if (args.HasOption('d')) {
