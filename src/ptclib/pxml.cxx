@@ -354,25 +354,25 @@ void PXML::PrintOn(ostream & strm) const
   }
 }
 
-PString CreateStartTag(const PString & text)
+PString PXML::CreateStartTag(const PString & text)
 {
   return '<' + text + '>';
 }
 
 
-PString CreateEndTag(const PString & text)
+PString PXML::CreateEndTag(const PString & text)
 {
   return "</" + text + '>';
 }
 
 
-PString CreateTagNoData(const PString & text)
+PString PXML::CreateTagNoData(const PString & text)
 {
   return '<' + text + "/>";
 }
 
 
-PString CreateTag(const PString & text, const PString & data)
+PString PXML::CreateTag(const PString & text, const PString & data)
 {
   return CreateStartTag(text) + data + CreateEndTag(text);
 }
