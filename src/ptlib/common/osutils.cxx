@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.161  2001/04/14 04:53:01  yurik
+ * Got rid of init_seg pragma and added process shutdown flag
+ *
  * Revision 1.160  2001/03/23 20:28:54  yurik
  * Got rid of pragma warning for WinCE port
  *
@@ -536,10 +539,6 @@
  *
  */
 
-#ifdef _WIN32_WCE
-#pragma init_seg(lib)
-#endif
-
 #include <ptlib.h>
 #include <ptlib/svcproc.h>
 
@@ -699,6 +698,12 @@ static PMutex & PTraceMutex()
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
+#ifdef _WIN32_WCE
+  PProcess & process = PProcess::Current();
+  if( process.isShuttingDown )
+    return *PTraceStream;
+#endif
+
   PTraceMutex().Wait();
 
   if (level == UINT_MAX)
@@ -771,6 +776,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 ostream & PTrace::End(ostream & s)
 {
+#ifdef _WIN32_WCE
+  PProcess & process = PProcess::Current();
+  if( process.isShuttingDown )
+    return *PTraceStream;
+#endif
+
   /* Only output if there is something to output, this prevents some blank trace
      entries from appearing under some patholgical conditions. Unfortunately if
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
