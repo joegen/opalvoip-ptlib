@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.68  2001/01/24 02:51:15  robertj
+# Changed definition of list of files for make clean to more correct position
+#   as expected by common.mak
+#
 # Revision 1.67  2001/01/04 18:13:32  rogerh
 # Tidy up the Makefile when building video4bsd.cxx
 #
@@ -357,6 +361,8 @@ SOURCES	= \
 
 OBJS	= $(OBJDIR)/regex.o
 
+CLEAN_FILES = $(GETDATE_SOURCE)
+
 
 #######################################################
 
@@ -375,7 +381,6 @@ $(OBJDIR)/switch.o: ./switch.cxx
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
-CLEAN_FILES	:= $(CLEAN_FILES) $(LIBDIR)/$(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
