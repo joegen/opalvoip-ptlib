@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.20 1996/05/09 12:16:06 robertj Exp $
+ * $Id: ptime.h,v 1.21 1997/01/12 04:21:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.21  1997/01/12 04:21:40  robertj
+ * Added IsPast() and IsFuture() functions for time comparison.
+ *
  * Revision 1.20  1996/05/09 12:16:06  robertj
  * Fixed syntax error found by Mac platform.
  *
@@ -241,6 +244,21 @@ PDECLARE_CLASS(PTime, PObject)
        <H2>Returns:</H2>
        integer from 1..366.
      */
+
+    BOOL IsPast() const;
+    /* Determine if the time is in the past or in the future.
+
+       <H2>Returns:</H2>
+       TRUE if time is before the current real time.
+     */
+
+    BOOL IsFuture() const;
+    /* Determine if the time is in the past or in the future.
+
+       <H2>Returns:</H2>
+       TRUE if time is after the current real time.
+     */
+
 
     static BOOL IsDaylightSavings();
     /* Get flag indicating daylight savings is current.
