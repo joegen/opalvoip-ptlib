@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.88  2003/12/29 07:15:31  csoutheren
+# Fixed problem with creating statically linked executables
+#
 # Revision 1.87  2003/11/02 15:57:56  shawn
 # remove -static for Mac OS X
 #
@@ -268,9 +271,19 @@ STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
 endif
 
 ifneq ($(P_SHAREDLIB),1)
+
 ifneq ($(OSTYPE),Darwin) # Mac OS X does not really support -static
 LDFLAGS += -static
 endif
+
+ifneq ($(P_STATIC_LDFLAGS),)
+LDFLAGS += $(P_STATIC_LDFLAGS)
+endif
+
+ifneq ($(P_STATIC_ENDLDLIBS),)
+ENDLDLIBS += $(P_STATIC_ENDLDLIBS)
+endif
+
 endif
 
 #  clean whitespace out of source file list
