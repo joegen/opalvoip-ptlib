@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.60  2001/03/12 02:35:20  robertj
+ * Fixed PDirectory::Exists so only returns TRUE if a directory and not file.
+ *
  * Revision 1.59  2001/02/23 07:16:36  rogerh
  * Darwin (MACOS X) does not have thread safe localtime_t() and gmtime_r()
  * functions. Use the unsafe localtime() and gmtime() calls for now.
@@ -448,6 +451,17 @@ BOOL PDirectory::GetInfo(PFileInfo & info) const
   info = *entryInfo;
   return TRUE;
 }
+
+
+BOOL PDirectory::Exists(const PString & p)
+{
+  struct stat sbuf;
+  if (stat((const char *)p, &sbuf) != 0)
+    return FALSE;
+
+  return S_ISDIR(sbuf.st_mode);
+}
+
 
 BOOL PDirectory::Create(const PString & p, int perm)
 {
