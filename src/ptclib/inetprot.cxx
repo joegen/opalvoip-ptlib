@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.21 1996/06/03 11:58:43 robertj Exp $
+ * $Id: inetprot.cxx,v 1.22 1996/07/15 10:33:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.22  1996/07/15 10:33:14  robertj
+ * Changed memory block base64 conversion functions to be void *.
+ *
  * Revision 1.21  1996/06/03 11:58:43  robertj
  * Fixed bug in reading successive UnRead() calls getting save in wrong order.
  *
@@ -670,8 +673,9 @@ void PBase64::OutputBase64(const BYTE * data)
 }
 
 
-void PBase64::ProcessEncoding(const BYTE * data, PINDEX length)
+void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
 {
+  const BYTE * data = (const BYTE *)dataPtr;
   while (saveCount < 3) {
     saveTriple[saveCount++] = *data++;
     if (--length <= 0)
@@ -746,7 +750,7 @@ PString PBase64::Encode(const PBYTEArray & data)
 }
 
 
-PString PBase64::Encode(const BYTE * data, PINDEX length)
+PString PBase64::Encode(const void * data, PINDEX length)
 {
   PBase64 encoder;
   encoder.ProcessEncoding(data, length);
@@ -844,7 +848,7 @@ PBYTEArray PBase64::GetDecodedData()
 }
 
 
-BOOL PBase64::GetDecodedData(BYTE * dataBlock, PINDEX length)
+BOOL PBase64::GetDecodedData(void * dataBlock, PINDEX length)
 {
   if (decodeSize > length) {
     decodeSize = length;
@@ -874,7 +878,7 @@ BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
 }
 
 
-BOOL PBase64::Decode(const PString & str, BYTE * dataBlock, PINDEX length)
+BOOL PBase64::Decode(const PString & str, void * dataBlock, PINDEX length)
 {
   PBase64 decoder;
   decoder.ProcessDecoding(str);
