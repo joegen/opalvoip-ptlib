@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.36  2000/12/18 11:41:01  robertj
+ * Fixed bug in auto-generated HTML in non-array composite fields
+ *
  * Revision 1.35  2000/12/18 07:14:30  robertj
  * Added ability to have fixed length array fields.
  * Fixed regular expressions so can have single '-' in field name.
@@ -583,7 +586,7 @@ PHTTPField * PHTTPCompositeField::NewField() const
 void PHTTPCompositeField::GetHTMLTag(PHTML & html) const
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
-    if (i != 0)
+    if (i != 0 && html.Is(PHTML::InTable))
       html << PHTML::TableData("NOWRAP");
     fields[i].GetHTMLTag(html);
   }
