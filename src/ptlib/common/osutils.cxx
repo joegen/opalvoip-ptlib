@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.227  2004/06/30 12:17:06  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.226  2004/06/03 13:30:58  csoutheren
  * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
  * Added documentaton on new PINSTANTIATE_FACTORY macro
@@ -1827,8 +1831,6 @@ int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
 
-PINSTANTIATE_FACTORY(PProcessStartup)
-
 typedef std::map<PString, PProcessStartup *> PProcessStartupList;
 
 int PProcess::_main(void *)
@@ -1908,7 +1910,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   // PProcessStartup abstract factory
   PProcessStartupList & startups = GetPProcessStartupList();
   {
-    PProcessStartup * levelSet = PGenericFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
+    PProcessStartup * levelSet = PFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
     if (levelSet != NULL) 
       levelSet->OnStartup();
     else {

@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.23  2004/06/30 12:17:06  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.22  2004/06/24 23:10:28  csoutheren
  * Require plugins to have _pwplugin suffix
  *
@@ -306,7 +310,6 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
   OnLoadPlugin(dll, code);
 }
 
-PINSTANTIATE_FACTORY(PPluginModuleManager)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -324,10 +327,10 @@ class PluginLoaderStartup : public PProcessStartup
         mgr.LoadPluginDirectory(dirs[i]);
 
       // now load the plugin module managers
-      PGenericFactory<PPluginModuleManager>::KeyList_T keyList = PGenericFactory<PPluginModuleManager>::GetKeyList();
-      PGenericFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
+      PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
+      PFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
       for (r = keyList.begin(); r != keyList.end(); ++r) {
-        PPluginModuleManager * mgr = PGenericFactory<PPluginModuleManager>::CreateInstance(*r);
+        PPluginModuleManager * mgr = PFactory<PPluginModuleManager>::CreateInstance(*r);
         if (mgr == NULL) {
           PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
         } else {
@@ -351,4 +354,4 @@ class PluginLoaderStartup : public PProcessStartup
     std::vector<PPluginModuleManager *> managers;
 };
 
-PAbstractSingletonFactory<PProcessStartup, PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader");
+PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
