@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.6 1996/02/13 12:57:05 robertj Exp $
+ * $Id: inetprot.h,v 1.7 1996/03/16 04:35:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.7  1996/03/16 04:35:32  robertj
+ * Redesigned response codes to be more flexible.
+ *
  * Revision 1.6  1996/02/13 12:57:05  robertj
  * Added access to the last response in an application socket.
  *
@@ -164,11 +167,14 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
      */
 
     void UnRead(
-      int ch            // Individual character to be returned.
+      int ch                // Individual character to be returned.
     );
     void UnRead(
-      void * buffer,    // Characters to be put back into data stream.
-      PINDEX len        // Number of characters to be returned.
+      const PString & str   // String to be put back into data stream.
+    );
+    void UnRead(
+      const void * buffer,  // Characters to be put back into data stream.
+      PINDEX len            // Number of characters to be returned.
     );
     /* Put back the characters into the data stream so that the next
        <A>Read()</A> function call will return them first.
@@ -243,7 +249,7 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
 
     BOOL ReadResponse();
     BOOL ReadResponse(
-      PString & code,  // Response code for command response.
+      int & code,      // Response code for command response.
       PString & info   // Extra information available after response code.
     );
     /* Read a response code followed by a text string describing the response
@@ -265,7 +271,7 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        TRUE if the response was completely read without a socket error.
      */
 
-    char ExecuteCommand(
+    int ExecuteCommand(
       PINDEX cmdNumber,      // Number of command to write.
       const PString & param  // Extra parameters required by the command.
     );
@@ -281,7 +287,7 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        First character of response string or '\0' if a socket error occurred.
      */
 
-    PINDEX GetLastResponseCode() const;
+    int GetLastResponseCode() const;
     /* Return the code associated with the last response received by the
        socket.
 
@@ -298,6 +304,22 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
 
 
   protected:
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
+    /* Parse a response line string into a response code and any extra info
+       on the line. Results are placed into the member variables
+       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
+
+       The default bahaviour looks for a space or a '-' and splits the code
+       and info either side of that character, then returns FALSE.
+
+       <H2>Returns:</H2>
+       Position of continuation character in response, 0 if no continuation
+       lines are possible.
+     */
+
+
     PStringArray commandNames;
     // Names of each of the command codes.
 
@@ -315,7 +337,7 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
     BOOL newLineToCRLF;
     // Translate \n characters to CR/LF pairs.
 
-    PString lastResponseCode;
+    int     lastResponseCode;
     PString lastResponseInfo;
     // Responses
 
