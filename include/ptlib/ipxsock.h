@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.5  1998/11/30 02:50:58  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/23 06:20:47  robertj
  * Added open source copyright license.
  *
@@ -46,7 +49,7 @@
 
 
 #ifndef _PSOCKET
-#include <socket.h>
+#include <ptlib/socket.h>
 #endif
 
 PDECLARE_CLASS(PIPXSocket, PSocket)
