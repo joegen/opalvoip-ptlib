@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.82  2001/11/23 00:55:18  robertj
+ * Changed PWaitAndSignal so works inside const functions.
+ *
  * Revision 1.81  2001/11/14 06:06:26  robertj
  * Added functions on PTimer to get reset value and restart timer to it.
  *
@@ -757,8 +760,8 @@ PINLINE PArgList & PArgList::operator>>(int sh)
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-PINLINE PWaitAndSignal::PWaitAndSignal(PSemaphore & sem, BOOL wait)
-  : semaphore(sem)
+PINLINE PWaitAndSignal::PWaitAndSignal(const PSemaphore & sem, BOOL wait)
+  : semaphore((PSemaphore &)sem) // Break const (naughty but necessary)
   {
     if (wait)
       semaphore.Wait();
