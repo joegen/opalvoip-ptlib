@@ -737,12 +737,6 @@ EXPORTS
     ??3?$PList@VPTimer@@@@SAXPAXPBDH@Z @3995 NONAME ;public: static void __cdecl PList<class PTimer>::operator delete(void *,char const *,int)
     ??3?$POrdinalDictionary@VPString@@@@SAXPAX@Z @420 NONAME ;public: static void __cdecl POrdinalDictionary<class PString>::operator delete(void *)
     ??3?$POrdinalDictionary@VPString@@@@SAXPAXPBDH@Z @3996 NONAME ;public: static void __cdecl POrdinalDictionary<class PString>::operator delete(void *,char const *,int)
-    ??3?$PScalarArray@F@@SAXPAX@Z @4762 NONAME ;public: static void __cdecl PScalarArray<short>::operator delete(void *)
-    ??3?$PScalarArray@G@@SAXPAX@Z @4763 NONAME ;public: static void __cdecl PScalarArray<unsigned short>::operator delete(void *)
-    ??3?$PScalarArray@H@@SAXPAX@Z @4764 NONAME ;public: static void __cdecl PScalarArray<int>::operator delete(void *)
-    ??3?$PScalarArray@I@@SAXPAX@Z @4765 NONAME ;public: static void __cdecl PScalarArray<unsigned int>::operator delete(void *)
-    ??3?$PScalarArray@J@@SAXPAX@Z @4766 NONAME ;public: static void __cdecl PScalarArray<long>::operator delete(void *)
-    ??3?$PScalarArray@K@@SAXPAX@Z @4767 NONAME ;public: static void __cdecl PScalarArray<unsigned long>::operator delete(void *)
     ??3?$PSet@VPString@@@@SAXPAX@Z @2986 NONAME ;public: static void __cdecl PSet<class PString>::operator delete(void *)
     ??3?$PSet@VPString@@@@SAXPAXPBDH@Z @3997 NONAME ;public: static void __cdecl PSet<class PString>::operator delete(void *,char const *,int)
     ??3?$PSortedList@VPString@@@@SAXPAX@Z @421 NONAME ;public: static void __cdecl PSortedList<class PString>::operator delete(void *)
@@ -1598,12 +1592,6 @@ EXPORTS
     ?Class@?$PList@VPThread@@@@SAPBDXZ @942 NONAME ;public: static char const * __cdecl PList<class PThread>::Class(void)
     ?Class@?$PList@VPTimer@@@@SAPBDXZ @943 NONAME ;public: static char const * __cdecl PList<class PTimer>::Class(void)
     ?Class@?$POrdinalDictionary@VPString@@@@SAPBDXZ @944 NONAME ;public: static char const * __cdecl POrdinalDictionary<class PString>::Class(void)
-    ?Class@?$PScalarArray@F@@SAPBDXZ @4781 NONAME ;public: static char const * __cdecl PScalarArray<short>::Class(void)
-    ?Class@?$PScalarArray@G@@SAPBDXZ @4782 NONAME ;public: static char const * __cdecl PScalarArray<unsigned short>::Class(void)
-    ?Class@?$PScalarArray@H@@SAPBDXZ @4783 NONAME ;public: static char const * __cdecl PScalarArray<int>::Class(void)
-    ?Class@?$PScalarArray@I@@SAPBDXZ @4784 NONAME ;public: static char const * __cdecl PScalarArray<unsigned int>::Class(void)
-    ?Class@?$PScalarArray@J@@SAPBDXZ @4785 NONAME ;public: static char const * __cdecl PScalarArray<long>::Class(void)
-    ?Class@?$PScalarArray@K@@SAPBDXZ @4786 NONAME ;public: static char const * __cdecl PScalarArray<unsigned long>::Class(void)
     ?Class@?$PSet@VPString@@@@SAPBDXZ @2992 NONAME ;public: static char const * __cdecl PSet<class PString>::Class(void)
     ?Class@?$PSortedList@VPString@@@@SAPBDXZ @945 NONAME ;public: static char const * __cdecl PSortedList<class PString>::Class(void)
     ?Class@?$PStringDictionary@VPOrdinalKey@@@@SAPBDXZ @946 NONAME ;public: static char const * __cdecl PStringDictionary<class POrdinalKey>::Class(void)
@@ -1840,12 +1828,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1106 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PThread>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPTimer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1107 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PTimer>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$POrdinalDictionary@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1108 NONAME ;public: virtual enum PObject::Comparison  __thiscall POrdinalDictionary<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@F@@UBE?AW4Comparison@PObject@@ABV3@@Z @4787 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<short>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@G@@UBE?AW4Comparison@PObject@@ABV3@@Z @4788 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned short>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @4789 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<int>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@I@@UBE?AW4Comparison@PObject@@ABV3@@Z @4790 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned int>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@J@@UBE?AW4Comparison@PObject@@ABV3@@Z @4791 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<long>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@K@@UBE?AW4Comparison@PObject@@ABV3@@Z @4792 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned long>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PSet@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2996 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSet<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PSortedList@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1109 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSortedList<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PStringDictionary@VPOrdinalKey@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1110 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringDictionary<class POrdinalKey>::CompareObjectMemoryDirect(class PObject const &)const 
@@ -2202,12 +2184,6 @@ EXPORTS
     ?GetClass@?$PList@VPThread@@@@UBEPBDI@Z @1340 NONAME ;public: virtual char const * __thiscall PList<class PThread>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPTimer@@@@UBEPBDI@Z @1341 NONAME ;public: virtual char const * __thiscall PList<class PTimer>::GetClass(unsigned int)const 
     ?GetClass@?$POrdinalDictionary@VPString@@@@UBEPBDI@Z @1342 NONAME ;public: virtual char const * __thiscall POrdinalDictionary<class PString>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@F@@UBEPBDI@Z @4797 NONAME ;public: virtual char const * __thiscall PScalarArray<short>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@G@@UBEPBDI@Z @4798 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned short>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@H@@UBEPBDI@Z @4799 NONAME ;public: virtual char const * __thiscall PScalarArray<int>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@I@@UBEPBDI@Z @4800 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned int>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@J@@UBEPBDI@Z @4801 NONAME ;public: virtual char const * __thiscall PScalarArray<long>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@K@@UBEPBDI@Z @4802 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned long>::GetClass(unsigned int)const 
     ?GetClass@?$PSet@VPString@@@@UBEPBDI@Z @2998 NONAME ;public: virtual char const * __thiscall PSet<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PSortedList@VPString@@@@UBEPBDI@Z @1343 NONAME ;public: virtual char const * __thiscall PSortedList<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PStringDictionary@VPOrdinalKey@@@@UBEPBDI@Z @1344 NONAME ;public: virtual char const * __thiscall PStringDictionary<class POrdinalKey>::GetClass(unsigned int)const 
@@ -2744,12 +2720,6 @@ EXPORTS
     ?IsClass@?$PList@VPThread@@@@UBEHPBD@Z @1687 NONAME ;public: virtual int __thiscall PList<class PThread>::IsClass(char const *)const 
     ?IsClass@?$PList@VPTimer@@@@UBEHPBD@Z @1688 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsClass(char const *)const 
     ?IsClass@?$POrdinalDictionary@VPString@@@@UBEHPBD@Z @1689 NONAME ;public: virtual int __thiscall POrdinalDictionary<class PString>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@F@@UBEHPBD@Z @4803 NONAME ;public: virtual int __thiscall PScalarArray<short>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@G@@UBEHPBD@Z @4804 NONAME ;public: virtual int __thiscall PScalarArray<unsigned short>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@H@@UBEHPBD@Z @4805 NONAME ;public: virtual int __thiscall PScalarArray<int>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@I@@UBEHPBD@Z @4806 NONAME ;public: virtual int __thiscall PScalarArray<unsigned int>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@J@@UBEHPBD@Z @4807 NONAME ;public: virtual int __thiscall PScalarArray<long>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@K@@UBEHPBD@Z @4808 NONAME ;public: virtual int __thiscall PScalarArray<unsigned long>::IsClass(char const *)const 
     ?IsClass@?$PSet@VPString@@@@UBEHPBD@Z @3001 NONAME ;public: virtual int __thiscall PSet<class PString>::IsClass(char const *)const 
     ?IsClass@?$PSortedList@VPString@@@@UBEHPBD@Z @1690 NONAME ;public: virtual int __thiscall PSortedList<class PString>::IsClass(char const *)const 
     ?IsClass@?$PStringDictionary@VPOrdinalKey@@@@UBEHPBD@Z @1691 NONAME ;public: virtual int __thiscall PStringDictionary<class POrdinalKey>::IsClass(char const *)const 
@@ -2889,12 +2859,6 @@ EXPORTS
     ?IsDescendant@?$PList@VPThread@@@@UBEHPBD@Z @1783 NONAME ;public: virtual int __thiscall PList<class PThread>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPTimer@@@@UBEHPBD@Z @1784 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsDescendant(char const *)const 
     ?IsDescendant@?$POrdinalDictionary@VPString@@@@UBEHPBD@Z @1785 NONAME ;public: virtual int __thiscall POrdinalDictionary<class PString>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@F@@UBEHPBD@Z @4809 NONAME ;public: virtual int __thiscall PScalarArray<short>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@G@@UBEHPBD@Z @4810 NONAME ;public: virtual int __thiscall PScalarArray<unsigned short>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@H@@UBEHPBD@Z @4811 NONAME ;public: virtual int __thiscall PScalarArray<int>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@I@@UBEHPBD@Z @4812 NONAME ;public: virtual int __thiscall PScalarArray<unsigned int>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@J@@UBEHPBD@Z @4813 NONAME ;public: virtual int __thiscall PScalarArray<long>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@K@@UBEHPBD@Z @4814 NONAME ;public: virtual int __thiscall PScalarArray<unsigned long>::IsDescendant(char const *)const 
     ?IsDescendant@?$PSet@VPString@@@@UBEHPBD@Z @3003 NONAME ;public: virtual int __thiscall PSet<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@?$PSortedList@VPString@@@@UBEHPBD@Z @1786 NONAME ;public: virtual int __thiscall PSortedList<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@?$PStringDictionary@VPOrdinalKey@@@@UBEHPBD@Z @1787 NONAME ;public: virtual int __thiscall PStringDictionary<class POrdinalKey>::IsDescendant(char const *)const 
