@@ -1,0 +1,605 @@
+/*
+ * pdns.cxx
+ *
+ * PWLib library for DNS lookup services
+ *
+ * Copyright 2003 Equivalence
+ *
+ * $Log: pdns.cxx,v $
+ * Revision 1.3  2003/04/15 08:14:32  craigs
+ * Added single string form of GetSRVRecords
+ *
+ * Revision 1.2  2003/04/15 08:05:19  craigs
+ * Added Unix implementation
+ *
+ * Revision 1.1  2003/04/15 04:06:35  craigs
+ * Initial version
+ *
+ */
+
+#ifdef __GNUC__
+#pragma implementation "pdns.h"
+#endif
+
+#include <ptlib.h>
+
+#include <ptclib/pdns.h>
+#include <ptclib/random.h>
+
+#ifdef WIN32
+#include <windns.h>
+#else
+#define	P_HAS_RESOLVER	1
+#endif
+
+#if P_HAS_RESOLVER
+#include <resolv.h>
+#include <arpa/nameser.h>
+#endif
+
+/////////////////////////////////////////////////
+
+PDNS::Record::Record()
+{ 
+  used = FALSE; 
+}
+
+/////////////////////////////////////////////////
+
+
+#ifdef P_HAS_RESOLVER
+
+#define	DNS_STATUS		int
+#define	DNS_TYPE_SRV		T_SRV
+#define	DNS_TYPE_MX		T_MX
+#define	DNS_TYPE_A		T_A
+#define	DnsFreeRecordList	0
+#define	DNS_QUERY_STANDARD	0
+
+typedef struct _DnsAData {
+  DWORD IpAddress;
+} DNS_A_DATA;
+
+typedef struct {
+  char   pNameExchange[MAXDNAME];
+  WORD   wPreference;
+
+} DNS_MX_DATA;
+
+typedef struct {
+  char pNameHost[MAXDNAME];
+} DNS_PTR_DATA;
+
+typedef struct _DnsSRVData {
+  public:
+    char   pNameTarget[MAXDNAME];
+    WORD   wPriority;
+    WORD   wWeight;
+    WORD   wPort;
+
+} DNS_SRV_DATA;
+
+typedef struct _DnsRecordFlags
+{
+    unsigned   Section     : 2;
+    unsigned   Delete      : 1;
+    unsigned   CharSet     : 2;
+    unsigned   Unused      : 3;
+    unsigned   Reserved    : 24;
+} DNS_RECORD_FLAGS;
+
+typedef enum _DnsSection
+{
+  DnsSectionQuestion,
+  DnsSectionAnswer,
+  DnsSectionAuthority,
+  DnsSectionAddtional,
+} DNS_SECTION;
+
+
+class DnsRecord {
+  public:
+    DnsRecord * pNext;
+    char        pName[MAXDNAME];
+    WORD        wType;
+    WORD        wDataLength;
+
+    union {
+      DWORD               DW;     // flags as DWORD
+      DNS_RECORD_FLAGS    S;      // flags as structure
+    } Flags;
+
+    union {
+      DNS_A_DATA   A;
+      DNS_MX_DATA  MX;
+      DNS_PTR_DATA NS;
+      DNS_SRV_DATA SRV;
+    } Data;
+};
+
+typedef DnsRecord * PDNS_RECORD;
+
+static BOOL GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
+{
+  int len = dn_expand(reply, replyEnd, cp, buff, MAXDNAME);
+  if (len < 0)
+    return FALSE;
+  cp += len;
+  return TRUE;
+}
+
+static BOOL ProcessDNSRecords(
+		const BYTE * reply,
+	        const BYTE * replyEnd,
+		      BYTE * cp,
+		    PINDEX anCount,
+		    PINDEX nsCount,
+		    PINDEX arCount,
+	       PDNS_RECORD * results)
+{
+  PDNS_RECORD lastRecord = NULL;
+  PDNS_RECORD newRecord  = NULL;
+
+  PINDEX rrCount = anCount + nsCount + arCount;
+  nsCount += anCount;
+  arCount += nsCount;
+
+  PINDEX i;
+  for (i = 0; i < rrCount; i++) {
+
+    if (newRecord == NULL) 
+      newRecord = new DnsRecord;
+
+    memset(newRecord, 0, sizeof(DnsRecord));
+
+    if (i < anCount)
+      newRecord->Flags.S.Section = DnsSectionAnswer;
+    else if (i < nsCount)
+      newRecord->Flags.S.Section = DnsSectionAuthority;
+    else if (i < arCount)
+      newRecord->Flags.S.Section = DnsSectionAddtional;
+
+    // get the name
+    if (!GetDN(reply, replyEnd, cp, newRecord->pName)) {
+      delete newRecord;
+      return FALSE;
+    }
+
+    // get other common parts of the record
+    u_short   type;
+    u_short   dnsClass;
+    u_int32_t ttl;
+    u_short   dlen;
+
+    GETSHORT(type,     cp);
+    GETSHORT(dnsClass, cp);
+    GETLONG (ttl,      cp);
+    GETSHORT(dlen,     cp);
+
+    newRecord->wType = type;
+
+    BYTE * data = cp;
+    cp += dlen;
+    BOOL ok = TRUE;
+
+    switch (type) {
+      case T_SRV:
+        GETSHORT(newRecord->Data.SRV.wPriority, data);
+        GETSHORT(newRecord->Data.SRV.wWeight, data);
+        GETSHORT(newRecord->Data.SRV.wPort, data);
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.SRV.pNameTarget)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      case T_MX:
+        GETSHORT(newRecord->Data.MX.wPreference,  data);
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.MX.pNameExchange)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      case T_A:
+        GETLONG(newRecord->Data.A.IpAddress, data);
+        break;
+
+      case T_NS:
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.NS.pNameHost)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      default:
+        ok = FALSE;
+        break;
+    }
+
+    if (ok) {
+      if (*results == NULL)
+        *results = newRecord;
+
+      newRecord->pNext = NULL;
+
+      if (lastRecord != NULL)
+        lastRecord->pNext = newRecord;
+
+      lastRecord = newRecord;
+      newRecord = NULL;
+    }
+  }
+
+  delete newRecord;
+
+  return TRUE;
+}
+
+void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
+{
+  while (rec != NULL) {
+    PDNS_RECORD next = rec->pNext;
+    delete rec;
+    rec = next;
+  }
+}
+
+DNS_STATUS DnsQuery_A(const char * service,
+		      WORD requestType,
+		      DWORD options,
+		      void *,
+		      PDNS_RECORD * results,
+		      void *)
+{
+  if (results == NULL)
+    return -1;
+
+  *results = NULL;
+
+  res_init();
+
+  union {
+    HEADER hdr;
+    BYTE buf[PACKETSZ];
+  } reply;
+
+  int replyLen = res_search(service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
+
+  if (replyLen < 1)
+    return -1;
+
+  BYTE * replyStart = reply.buf;
+  BYTE * replyEnd   = reply.buf + replyLen;
+  BYTE * cp         = reply.buf + sizeof(HEADER);
+
+  // ignore questions in response
+  unsigned i;
+  for (i = 0; i < ntohs(reply.hdr.qdcount); i++) {
+    char qName[MAXDNAME];
+    if (!GetDN(replyStart, replyEnd, cp, qName))
+      return -1;
+    cp += QFIXEDSZ;
+  }
+
+  if (!ProcessDNSRecords(replyStart,
+		         replyEnd,
+			 cp,
+		 	 ntohs(reply.hdr.ancount),
+			 ntohs(reply.hdr.nscount),
+			 ntohs(reply.hdr.arcount),
+	 		 results)) {
+    DnsRecordListFree(*results, 0);
+    return -1;
+  }
+
+  return 0;
+}
+
+
+#endif
+
+/////////////////////////////////////////////////
+
+PObject::Comparison PDNS::SRVRecord::Compare(const PObject & obj) const
+{
+  PDNS::SRVRecord & other = (PDNS::SRVRecord &)obj;
+  if (priority < other.priority)
+    return LessThan;
+  else if (priority > other.priority)
+    return GreaterThan;
+  if (weight < other.weight)
+    return LessThan;
+  else if (weight > other.weight)
+    return GreaterThan;
+  return EqualTo;
+}
+
+void PDNS::SRVRecord::PrintOn(ostream & strm) const
+{
+  strm << "host=" << hostName << ":" << port << "(" << hostAddress << "), "
+       << "priority=" << priority << ", "
+       << "weight=" << weight;
+}
+
+/////////////////////////////////////////////////
+
+void PDNS::SRVRecordList::PrintOn(ostream & strm) const
+{
+  PINDEX i;
+  for (i = 0; i < GetSize(); i++) 
+    strm << (*this)[i] << endl;
+}
+
+PDNS::SRVRecord * PDNS::SRVRecordList::GetFirst()
+{
+  if (GetSize() == 0)
+    return NULL;
+
+  // create a list of all prioities, to save time
+  priPos = 0;
+  priList.SetSize(0);
+
+  PINDEX i;
+  if (GetSize() > 0) {
+    priList.SetSize(1);
+    WORD lastPri = (*this)[0].priority;
+    priList[0] = lastPri;
+    (*this)[0].used = FALSE;
+    for (i = 1; i < GetSize(); i++) {
+      (*this)[i].used = FALSE;
+      if ((*this)[i].priority != lastPri) {
+        priList.SetSize(priPos+1);
+        lastPri = (*this)[i].priority;
+        priList[priPos] = lastPri;
+      }
+    }
+  }
+  
+  priPos = 0;
+  return GetNext();
+}
+
+PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
+{
+  if (priList.GetSize() == 0)
+    return NULL;
+
+  while (priPos < priList.GetSize()) {
+
+    WORD currentPri = priList[priPos];
+
+    // find first record at current priority
+    PINDEX firstPos;
+    for (firstPos = 0; (firstPos < GetSize()) && ((*this)[firstPos].priority != currentPri); firstPos++) 
+      ;
+    if (firstPos == GetSize())
+      return NULL;
+
+    // calculate total of all unused weights at this priority
+    unsigned totalWeight = (*this)[firstPos].weight;
+    PINDEX i = firstPos + 1;
+    PINDEX count = 0;
+    while (i < GetSize() && ((*this)[i].priority == currentPri)) {
+      if (!(*this)[i].used) {
+        totalWeight += (*this)[i].weight;
+        count ++;
+      }
+    }
+
+    // if no matches found, go to the next priority level
+    if (count == 0) {
+      priPos++;
+      continue;
+    }
+
+    // selected the correct item
+    if (totalWeight > 0) {
+      unsigned targetWeight = PRandom::Number() % (totalWeight+1);
+      totalWeight = 0;
+      for (i = 0; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
+        if (!(*this)[i].used) {
+          totalWeight += (*this)[i].weight;
+          if (totalWeight >= targetWeight) {
+            (*this)[i].used = TRUE;
+            return &(*this)[i];
+  	  }
+        }
+      }
+    }
+
+    // pick a random item at this priority
+    PINDEX j = firstPos + ((count == 0) ? 0 : (PRandom::Number() % (count-1)) );
+    count = 0;
+    for (i = 0; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
+      if (!(*this)[i].used) {
+        if (count == j) {
+          (*this)[i].used = TRUE;
+          return &(*this)[i];
+	      }
+        count++;
+      }
+    }
+
+    // go to the next priority level
+    priPos++;
+  }
+
+  return NULL;
+}
+
+///////////////////////////////////////////////////////
+
+BOOL PDNS::GetSRVRecords(const PString & _service,
+                         const PString & type,
+		                     const PString & domain,
+		                     SRVRecordList & recordList)
+{
+
+  if (_service.IsEmpty())
+    return FALSE;
+
+  PString service;
+  if (_service[0] != '_')
+    service = PString("_") + _service;
+  else
+    service = _service;
+
+  service += PString("._") + type + "." + domain;
+
+  return GetSRVRecords(service, recordList);
+}
+
+BOOL PDNS::GetSRVRecords(const PString & service, PDNS::SRVRecordList & recordList)
+{
+  recordList.RemoveAll();
+
+  PDNS_RECORD results = NULL;
+  DNS_STATUS status = DnsQuery_A((const char *)service, 
+                                 DNS_TYPE_SRV, 
+                                 DNS_QUERY_STANDARD, 
+                                 NULL, 
+                                 &results, 
+                                 NULL);
+  if (status != 0)
+    return FALSE;
+
+  // find SRV records
+  PDNS_RECORD dnsRecord = results;
+  while (dnsRecord != NULL) {
+    if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_SRV)) {
+      SRVRecord * record = new SRVRecord();
+      record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
+      record->port     = results->Data.SRV.wPort;
+      record->priority = results->Data.SRV.wPriority;
+      record->weight   = results->Data.SRV.wWeight;
+
+      // see if any A records match this hostname
+      PDNS_RECORD aRecord = results;
+      while (aRecord != NULL) {
+        if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+          record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
+          break;
+        }
+        aRecord = aRecord->pNext;
+      }
+
+      // if no A record found, then get address the hard way
+      if (aRecord == NULL)
+        PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
+
+      // add record to the list
+      recordList.Append(record);
+    }
+    dnsRecord = dnsRecord->pNext;
+  }
+
+  if (results != NULL)
+    DnsRecordListFree(results, DnsFreeRecordList);
+
+  return recordList.GetSize() != 0;
+}
+
+///////////////////////////////////////////////////////
+
+PObject::Comparison PDNS::MXRecord::Compare(const PObject & obj) const
+{
+  PDNS::MXRecord & other = (PDNS::MXRecord &)obj;
+  if (preference < other.preference)
+    return LessThan;
+  else if (preference > other.preference)
+    return GreaterThan;
+  return EqualTo;
+}
+
+void PDNS::MXRecord::PrintOn(ostream & strm) const
+{
+  strm << "host=" << hostName << "(" << hostAddress << "), "
+       << "preference=" << preference;
+}
+
+///////////////////////////////////////////////////////
+
+BOOL PDNS::GetMXRecords(const PString & domain, MXRecordList & recordList)
+{
+  if (domain.IsEmpty())
+    return FALSE;
+
+  recordList.RemoveAll();
+
+  PDNS_RECORD results = NULL;
+  DNS_STATUS status = DnsQuery_A((const char *)domain, 
+                                 DNS_TYPE_MX, 
+                                 DNS_QUERY_STANDARD, 
+                                 NULL, 
+                                 &results, 
+                                 NULL);
+  if (status != 0)
+    return FALSE;
+
+  // find MX records
+  PDNS_RECORD dnsRecord = results;
+  while (dnsRecord != NULL) {
+    if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_MX)) {
+      MXRecord * record = new MXRecord();
+      record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);
+      record->preference = dnsRecord->Data.MX.wPreference;
+
+      // see if any A records match this hostname
+      PDNS_RECORD aRecord = results;
+      while (aRecord != NULL) {
+        if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+          record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
+          break;
+        }
+        aRecord = aRecord->pNext;
+      }
+
+      // if no A record found, then get address the hard way
+      if (aRecord == NULL)
+        PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
+
+      // add record to the list
+      recordList.Append(record);
+    }
+    dnsRecord = dnsRecord->pNext;
+  }
+
+  if (results != NULL)
+    DnsRecordListFree(results, DnsFreeRecordList);
+
+  return recordList.GetSize() != 0;
+}
+
+///////////////////////////////////////////////////////
+
+void PDNS::MXRecordList::PrintOn(ostream & strm) const
+{
+  PINDEX i;
+  for (i = 0; i < GetSize(); i++) 
+    strm << (*this)[i] << endl;
+}
+
+PDNS::MXRecord * PDNS::MXRecordList::GetFirst()
+{
+  PINDEX i;
+  for (i = 0; i < GetSize(); i++) 
+    (*this)[i].used = FALSE;
+
+  lastIndex = 0;
+
+  return GetNext();
+}
+
+PDNS::MXRecord * PDNS::MXRecordList::GetNext()
+{
+  if (GetSize() == 0)
+    return NULL;
+
+  if (lastIndex >= GetSize())
+    return NULL;
+
+  return (PDNS::MXRecord *)GetAt(lastIndex++);
+}
+
+///////////////////////////////////////////////////////
