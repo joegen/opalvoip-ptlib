@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pethsock.cxx,v $
+ * Revision 1.5  2001/10/03 03:13:05  robertj
+ * Changed to allow use of NULL pointer to indicate address of all zeros.
+ *
  * Revision 1.4  1998/11/30 04:58:52  robertj
  * New directory structure
  *
@@ -52,7 +55,10 @@ PEthSocket::Address::Address()
 
 PEthSocket::Address::Address(const BYTE * addr)
 {
-  memcpy(b, PAssertNULL(addr), sizeof(b));
+  if (addr != NULL)
+    memcpy(b, addr, sizeof(b));
+  else
+    memset(b, 0, sizeof(b));
 }
 
 
@@ -105,6 +111,24 @@ PEthSocket::Address & PEthSocket::Address::operator=(const PString & str)
   }
 
   return *this;
+}
+
+
+BOOL PEthSocket::Address::operator==(const BYTE * eth) const
+{
+  if (eth != NULL)
+    return memcmp(b, eth, sizeof(b)) == 0;
+  else
+    return ls.l == 0 && ls.s == 0;
+}
+
+
+BOOL PEthSocket::Address::operator!=(const BYTE * eth) const
+{
+  if (eth != NULL)
+    return memcmp(b, eth, sizeof(b)) != 0;
+  else
+    return ls.l != 0 || ls.s != 0;
 }
 
 
