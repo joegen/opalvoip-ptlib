@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.62  2004/05/13 14:54:57  csoutheren
+ * Implement PProcess startup and shutdown handling using abstract factory classes
+ *
  * Revision 1.61  2003/11/25 08:28:13  rjongbloed
  * Removed ability to have platform without threads, win16 finally deprecated
  *
@@ -223,6 +226,7 @@
 
 #include <ptlib/mutex.h>
 #include <ptlib/syncpoint.h>
+#include <ptlib/pfactory.h>
 
 
 /**Create a process.
@@ -778,6 +782,21 @@ class PProcess : public PThread
 #include "unix/ptlib/pprocess.h"
 #endif
 };
+
+/*
+ *  one instance of this class (or any descendants) will be instantiated
+ *  via PGenericFactory<PProessStartup> "main" has been started, and then
+ *  the OnStartup() function will be called. The OnShutdown function will
+ *  be called after main exits, and then the instance will be destroyed
+ */
+class PProcessStartup : public PObject
+{
+  public:
+    virtual void OnStartup()  { }
+    virtual void OnShutdown() { }
+};
+
+typedef PGenericFactory<PProcessStartup> PProcessStartupFactory;
 
 #endif
 
