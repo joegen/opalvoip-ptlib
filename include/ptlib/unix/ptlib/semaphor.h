@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.10  1999/10/22 10:18:49  craigs
+ * Changed semaphore.h inclusion to be dependent upon P_HAS_SEMAPHORE
+ *
  * Revision 1.9  1999/09/23 06:52:16  robertj
  * Changed PSemaphore to use Posix semaphores.
  *
@@ -62,9 +65,7 @@
 
 #include <ptlib/thread.h>
 
-
-#if defined(P_PTHREADS)
-#define P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
 #include <semaphore.h>
 #endif
 
