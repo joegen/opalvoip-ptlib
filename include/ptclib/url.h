@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.23  2002/12/10 04:40:34  robertj
+ * Added test function for URL being empty.
+ *
  * Revision 1.22  2002/11/20 00:50:09  robertj
  * Fixed correct interpretation of url re double slashes as per latest RFC,
  *   including file: mapping and relative paths. Probably still more to do.
@@ -325,6 +328,10 @@ class PURL : public PObject
 
     /// Set the Query (?) field of the URL as a string dictionary.
     void SetQueryVar(const PString & key, const PString & data);
+
+    /// Return TRUE if the URL is an empty string.
+    BOOL IsEmpty() const { return urlString.IsEmpty(); }
+
 
     /**Open the URL in a browser.
 
