@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.24  1998/11/24 03:41:32  robertj
+# Fixed problem where failed make depend leaves bad .dep files behind
+#
 # Revision 1.23  1998/11/22 10:41:02  craigs
 # New GUI build system - for sure!
 #
@@ -40,9 +43,10 @@
 
 ######################################################################
 #
-# common rule
+# common rules
 #
 ######################################################################
+
 
 VPATH_CXX	:= $(VPATH_CXX) 
 VPATH_H		:= $(VPATH_H) $(COMMONDIR) 
@@ -135,6 +139,8 @@ endif
 # common rules for creating dependencies
 #
 ######################################################################
+
+.DELETE_ON_ERROR : depend
 
 depend: $(DEPS)
 	@echo Created dependencies.
