@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.91 1998/03/20 03:18:17 robertj Exp $
+ * $Id: osutils.cxx,v 1.92 1998/03/29 06:16:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.92  1998/03/29 06:16:45  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.91  1998/03/20 03:18:17  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -1817,17 +1820,49 @@ void PThread::Yield()
 #if defined(_PPROCESS)
 
 static PProcess * PProcessInstance;
+int PProcess::argc;
+char ** PProcess::argv;
+char ** PProcess::envp;
 
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : manufacturer(manuf), productName(name)
 {
   PProcessInstance = this;
+  terminationValue = 0;
+
   majorVersion = major;
   minorVersion = minor;
   status = stat;
   buildNumber = build;
+
+  arguments.SetArgs(argc-1, argv+1);
+
+  executableFile = PString(argv[0]);
+  if (!PFile::Exists(executableFile))
+    executableFile += ".exe";
+
+  if (productName.IsEmpty())
+    productName = executableFile.GetTitle().ToLower();
+
+  InitialiseProcessThread();
+
   Construct();
+}
+
+
+int PProcess::_main()
+{
+  Main();
+  return terminationValue;
+}
+
+
+void PProcess::PreInitialise(int c, char ** v, char ** e)
+{
+  argc = c;
+  argv = v;
+  envp = e;
 }
 
 
@@ -1842,23 +1877,6 @@ PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PProcess::Class()), PInvalidCast);
   return productName.Compare(((const PProcess &)obj).productName);
-}
-
-
-void PProcess::PreInitialise(int argc, char ** argv)
-{
-  terminationValue = 0;
-
-  arguments.SetArgs(argc-1, argv+1);
-
-  executableFile = PString(argv[0]);
-  if (!PFile::Exists(executableFile))
-    executableFile += ".exe";
-
-  if (productName.IsEmpty())
-    productName = executableFile.GetTitle().ToLower();
-
-  InitialiseProcessThread();
 }
 
 
