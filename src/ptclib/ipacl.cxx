@@ -8,6 +8,10 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.11  2002/07/16 09:58:51  robertj
+ * Fixed compatibility with unix htonl(), use platform independent function!
+ * Allow number of bits of 32 to be a full mask, ie a single host ip.
+ *
  * Revision 1.10  2002/07/16 08:00:49  robertj
  * Fixed correct endian-ness of mask when specifed in bits.
  *
@@ -226,10 +230,10 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
     mask = postSlash;
   else {
     unsigned bits = postSlash.AsUnsigned();
-    if (bits >= 32)
-      mask = ::htonl(bits);
+    if (bits > 32)
+      mask = PSocket::Host2Net(bits);
     else
-      mask = ::htonl(0xffffffff << (32 - bits));
+      mask = PSocket::Host2Net(0xffffffff << (32 - bits));
   }
 
   if (mask == 0)
