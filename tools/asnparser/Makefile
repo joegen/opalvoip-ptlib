@@ -1,10 +1,7 @@
 PROG		= asnparser
 SOURCES		= asn_grammar.cxx asn_lex.cxx main.cxx
 
-DEBUG = 1
-
-
-include ~/pwlib/lib/ptlib.mak
+include ~/pwlib/make/ptlib.mak
 
 asn_grammar.cxx: asn_grammar.y
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
