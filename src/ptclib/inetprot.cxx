@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.48  2000/11/27 00:58:06  robertj
+ * Fixed crash if used PBase64::ProcessEncoding() with zero length.
+ *
  * Revision 1.47  2000/11/16 07:16:58  robertj
  * Fixed maximum line length of base64 output to be 76 columns not 304.
  *
@@ -884,10 +887,13 @@ void PBase64::OutputBase64(const BYTE * data)
 
 void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
 {
+  if (length == 0)
+    return;
+
   const BYTE * data = (const BYTE *)dataPtr;
   while (saveCount < 3) {
     saveTriple[saveCount++] = *data++;
-    if (--length <= 0)
+    if (--length == 0)
       return;
   }
 
