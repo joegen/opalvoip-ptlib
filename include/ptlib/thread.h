@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.14 1995/12/10 11:44:32 robertj Exp $
+ * $Id: thread.h,v 1.15 1996/03/02 03:15:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.15  1996/03/02 03:15:51  robertj
+ * Added automatic deletion of thread object instances on thread completion.
+ *
  * Revision 1.14  1995/12/10 11:44:32  robertj
  * Fixed bug in non-platform threads and semaphore timeouts.
  *
@@ -105,9 +108,21 @@ PDECLARE_CLASS(PThread, PObject)
     };
     // Codes for thread priorities.
 
+    enum AutoDeleteFlag {
+      AutoDeleteThread,   // Automatically delete thread object on termination.
+      NoAutoDeleteThread  // Don't delete thread as it may not be on heap.
+    };
+    enum InitialSuspension {
+      StartSuspended,     // Start the thread initially suspended.
+      StartImmediate      // Start the thread as soon as possible.
+    };
+
     PThread(
       PINDEX stackSize,                 // Size of stack to use for thread.
-      BOOL startSuspended = TRUE,       // Thread does not execute immediately.
+      AutoDeleteFlag deletion,
+        // Automatically delete PThread instance on termination of thread.
+      InitialSuspension start = StartSuspended,
+        // Thread does not execute immediately.
       Priority priorityLevel = NormalPriority  // Initial priority of thread.
     );
     /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
@@ -122,7 +137,12 @@ PDECLARE_CLASS(PThread, PObject)
 
        If synchronisation is required between threads then the use of
        semaphores is essential.
-       
+
+       If the <CODE>deletion</CODE> is set to <CODE>AutoDeleteThread</CODE>
+       then the PThread is assumed to be allocated with the new operator and
+       may be freed using the delete operator as soon as the thread is
+       terminated or executes to completion (usually the latter).
+
        The stack size specified is <EM>not</EM> simply in bytes. It is a value
        that is multiplied by a factor into bytes depending on the target
        platform. For example a Unix system with a RISC processor may use
@@ -283,6 +303,9 @@ PDECLARE_CLASS(PThread, PObject)
 
     PThread & operator=(const PThread &) { return *this; }
     // Empty assignment operator to prevent copying of thread instances.
+
+    BOOL autoDelete;
+    // Automatically delete the thread on completion.
 
 #ifndef P_PLATFORM_HAS_THREADS
     void AllocateStack(
