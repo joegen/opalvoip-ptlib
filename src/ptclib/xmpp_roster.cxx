@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_roster.cxx,v $
+ * Revision 1.2  2004/04/26 04:17:19  rjongbloed
+ * Fixed GNU warnings
+ *
  * Revision 1.1  2004/04/26 01:51:58  rjongbloed
  * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
  *
@@ -141,6 +144,8 @@ PXMLElement * XMPP::Roster::Item::AsXML(PXMLElement * parent) const
       break;
     case XMPP::Roster::Both:
       s = "both";
+      break;
+    default :
       break;
   }
 

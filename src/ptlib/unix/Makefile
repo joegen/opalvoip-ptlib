@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.127  2004/04/26 04:17:19  rjongbloed
+# Fixed GNU warnings
+#
 # Revision 1.126  2004/04/24 06:13:06  rjongbloed
 # Changed XMPP code to only be compiled if have EXPAT
 #
@@ -605,7 +608,8 @@ PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/psoap.cxx \
 		  $(COMPONENT_SRC_DIR)/vxml.cxx \
 		  $(COMPONENT_SRC_DIR)/xmpp.cxx \
-		  $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx
+		  $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
+		  $(COMPONENT_SRC_DIR)/xmpp_roster.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
