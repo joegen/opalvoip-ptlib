@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.17  2000/05/11 02:05:54  craigs
+ * Fixed problem with PLayFile not recognizing wait flag
+ *
  * Revision 1.16  2000/05/10 02:10:44  craigs
  * Added implementation for PlayFile command
  *
@@ -204,14 +207,14 @@ BOOL PSound::Play()
 }
 
 
-BOOL PSound::PlayFile(const PFilePath & file, BOOL /*wait*/)
+BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 {
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
     return FALSE;
 
-  return channel.PlayFile(file, TRUE);
+  return channel.PlayFile(file, wait);
 }
 
 
@@ -632,6 +635,9 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
   }
 
   file.Close();
+
+  if (wait)
+    return WaitForPlayCompletion();
 
   return TRUE;
 }
