@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.8  2000/01/19 03:38:12  robertj
+ * Fixed support for parsing multiple IMPORTS
+ *
  * Revision 1.7  1999/07/22 06:48:54  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -538,9 +541,13 @@ SymbolsFromModule
 
 
 GlobalModuleReference
-  : MODULEREFERENCE AssignedIdentifier
+  : MODULEREFERENCE
       {
-	delete $2;
+	ReferenceTokenContext = TYPEREFERENCE;
+      }
+    AssignedIdentifier
+      {
+	delete $3;
       }
   ;
 
