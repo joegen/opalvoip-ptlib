@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.5 1996/06/28 13:22:09 robertj Exp $
+ * $Id: inetmail.cxx,v 1.6 1996/07/27 04:12:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.6  1996/07/27 04:12:45  robertj
+ * Redesign and reimplement of mail sockets.
+ *
  * Revision 1.5  1996/06/28 13:22:09  robertj
  * Changed SMTP incoming message handler so can tell when started, processing or ended message.
  *
@@ -86,7 +89,7 @@ void PSMTPSocket::ServerReset()
 {
   eightBitMIME = FALSE;
   sendCommand = WasMAIL;
-  fromName = PString();
+  fromAddress = PString();
   toNames.RemoveAll();
 }
 
@@ -130,7 +133,7 @@ BOOL PSMTPSocket::BeginMessage(const PString & from,
                                const PString & to,
                                BOOL useEightBitMIME)
 {
-  fromName = from;
+  fromAddress = from;
   toNames.RemoveAll();
   toNames.AppendString(to);
   eightBitMIME = useEightBitMIME;
@@ -142,7 +145,7 @@ BOOL PSMTPSocket::BeginMessage(const PString & from,
                                const PStringList & toList,
                                BOOL useEightBitMIME)
 {
-  fromName = from;
+  fromAddress = from;
   toNames = toList;
   eightBitMIME = useEightBitMIME;
   return _BeginMessage();
@@ -165,11 +168,11 @@ BOOL PSMTPSocket::_BeginMessage()
     haveHello = TRUE;
   }
 
-  if (fromName[0] != '"' && fromName.Find(' ') != P_MAX_INDEX)
-    fromName = '"' + fromName + '"';
-  if (fromName.Find('@') == P_MAX_INDEX)
-    fromName += '@' + GetLocalHostName();
-  if (ExecuteCommand(MAIL, "FROM:<" + fromName + '>') != '2')
+  if (fromAddress[0] != '"' && fromAddress.Find(' ') != P_MAX_INDEX)
+    fromAddress = '"' + fromAddress + '"';
+  if (fromAddress.Find('@') == P_MAX_INDEX)
+    fromAddress += '@' + GetLocalHostName();
+  if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>') != '2')
     return FALSE;
 
   for (PINDEX i = 0; i < toNames.GetSize(); i++) {
@@ -356,9 +359,11 @@ void PSMTPSocket::OnEXPN(const PCaselessString &)
 }
 
 
-static PINDEX ExtractName(const PCaselessString & args,
-                          const PCaselessString & subCmd,
-                          PString & name, PString & host)
+static PINDEX ParseMailPath(const PCaselessString & args,
+                            const PCaselessString & subCmd,
+                            PString & name,
+                            PString & domain,
+                            PString & forwardList)
 {
   PINDEX colon = args.Find(':');
   if (colon == P_MAX_INDEX)
@@ -372,32 +377,37 @@ static PINDEX ExtractName(const PCaselessString & args,
   if (leftAngle == P_MAX_INDEX)
     return 0;
 
-  PINDEX finishQuote = P_MAX_INDEX;
+  PINDEX finishQuote;
   PINDEX startQuote = args.Find('"', leftAngle);
-  if (startQuote == P_MAX_INDEX)
-    finishQuote = startQuote = leftAngle+1;
+  if (startQuote == P_MAX_INDEX) {
+    colon = args.Find(':', leftAngle);
+    if (colon == P_MAX_INDEX)
+      colon = leftAngle;
+    finishQuote = startQuote = colon+1;
+  }
   else {
     finishQuote = args.Find('"', startQuote+1);
     if (finishQuote == P_MAX_INDEX)
       finishQuote = startQuote;
+    colon = args.Find(':', leftAngle);
+    if (colon > startQuote)
+      colon = leftAngle;
   }
 
-  PINDEX at = args.Find('@', finishQuote);
-  if (at == P_MAX_INDEX)
-    at = finishQuote;
-
-  PINDEX rightAngle = args.Find('>', at);
+  PINDEX rightAngle = args.Find('>', finishQuote);
   if (rightAngle == P_MAX_INDEX)
     return 0;
 
-  if (at == finishQuote)
-    at = rightAngle-1;
+  PINDEX at = args.Find('@', finishQuote);
+  if (at > rightAngle)
+    at = rightAngle;
 
   if (startQuote == finishQuote)
-    finishQuote = rightAngle;
+    finishQuote = at;
 
   name = args(startQuote, finishQuote-1);
-  host = args(at, rightAngle-1);
+  domain = args(at+1, rightAngle-1);
+  forwardList = args(leftAngle+1, colon-1);
 
   return rightAngle+1;
 }
@@ -406,30 +416,48 @@ static PINDEX ExtractName(const PCaselessString & args,
 void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
 {
   PCaselessString toName;
-  PCaselessString toHost;
-  if (ExtractName(recipient, "to", toName, toHost) == 0)
+  PCaselessString toDomain;
+  PCaselessString forwardList;
+  if (ParseMailPath(recipient, "to", toName, toDomain, forwardList) == 0)
     WriteResponse(501, "Syntax error.");
-  else if (toName.Find(':') != P_MAX_INDEX)
-    WriteResponse(550, "Cannot do forwarding.");
   else {
-    PString expandedName;
-    switch (LookUpName(toName, expandedName)) {
-      case ValidUser :
-        WriteResponse(250, "Recipient " + toName + " Ok");
+    switch (ForwardDomain(toDomain, forwardList)) {
+      case CannotForward :
+        WriteResponse(550, "Cannot do forwarding.");
+        break;
+
+      case WillForward :
+        if (!forwardList.IsEmpty())
+          forwardList += ":";
+        forwardList += toName;
+        if (!toDomain.IsEmpty())
+          forwardList += "@" + toDomain;
         toNames.AppendString(toName);
-        toHosts.AppendString(toHost);
+        toDomains.AppendString(forwardList);
         break;
 
-      case AmbiguousUser :
-        WriteResponse(553, "User ambiguous.");
-        break;
+      case LocalDomain :
+      {
+        PString expandedName;
+        switch (LookUpName(toName, expandedName)) {
+          case ValidUser :
+            WriteResponse(250, "Recipient " + toName + " Ok");
+            toNames.AppendString(toName);
+            toDomains.AppendString("");
+            break;
 
-      case UnknownUser :
-        WriteResponse(550, "User unknown.");
-        break;
+          case AmbiguousUser :
+            WriteResponse(553, "User ambiguous.");
+            break;
 
-      default :
-        WriteResponse(550, "Error verifying user.");
+          case UnknownUser :
+            WriteResponse(550, "User unknown.");
+            break;
+
+          default :
+            WriteResponse(550, "Error verifying user.");
+        }
+      }
     }
   }
 }
@@ -465,16 +493,18 @@ void PSMTPSocket::OnSOML(const PCaselessString & sender)
 
 void PSMTPSocket::OnSendMail(const PCaselessString & sender)
 {
-  if (!fromName.IsEmpty()) {
+  if (!fromAddress.IsEmpty()) {
     WriteResponse(503, "Sender already specified.");
     return;
   }
 
-  PINDEX extendedArgPos = ExtractName(sender, "from", fromName, fromHost);
-  if (extendedArgPos == 0) {
+  PString fromDomain;
+  PINDEX extendedArgPos = ParseMailPath(sender, "from", fromAddress, fromDomain, fromPath);
+  if (extendedArgPos == 0 || fromAddress.IsEmpty()) {
     WriteResponse(501, "Syntax error.");
     return;
   }
+  fromAddress += fromDomain;
 
   if (extendedHello) {
     PINDEX equalPos = sender.Find('=', extendedArgPos);
@@ -483,7 +513,7 @@ void PSMTPSocket::OnSendMail(const PCaselessString & sender)
     eightBitMIME = (body == "BODY" && mime == "8BITMIME");
   }
 
-  PString response = "Sender " + fromName;
+  PString response = "Sender " + fromAddress;
   if (eightBitMIME)
     response += " and 8BITMIME";
   WriteResponse(250, response + " Ok");
@@ -492,7 +522,7 @@ void PSMTPSocket::OnSendMail(const PCaselessString & sender)
 
 void PSMTPSocket::OnDATA()
 {
-  if (fromName.IsEmpty()) {
+  if (fromAddress.IsEmpty()) {
     WriteResponse(503, "Need a valid MAIL command.");
     return;
   }
@@ -503,27 +533,30 @@ void PSMTPSocket::OnDATA()
   }
 
   // Ok, everything is ready to start the message.
+  if (!WriteResponse(354,
+        eightBitMIME ? "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'."
+                     : "Enter mail, terminate with '.' alone on a line."))
+    return;
+
+  endMIMEDetectState = eightBitMIME ? StuffIdle : DontStuff;
+
   BOOL ok = TRUE;
-  PCharArray buffer;
-  MessagePosition position = MessageStart;
-  if (eightBitMIME) {
-    WriteResponse(354,
-                "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'.");
-    endMIMEDetectState = StuffIdle;
-    while (ok && OnMIMEData(buffer)) {
-      ok = HandleMessage(buffer, position);
-      position = MessagePart;
-    }
-  }
-  else {
-    WriteResponse(354, "Enter mail, terminate with '.' alone on a line.");
-    while (ok && OnTextData(buffer)) {
-      ok = HandleMessage(buffer, position);
-      position = MessagePart;
+  BOOL completed = FALSE;
+  BOOL starting = TRUE;
+
+  while (ok && !completed) {
+    PCharArray buffer;
+    if (eightBitMIME)
+      ok = OnMIMEData(buffer, completed);
+    else
+      ok = OnTextData(buffer, completed);
+    if (ok) {
+      ok = HandleMessage(buffer, starting, completed);
+      starting = FALSE;
     }
   }
 
-  if (ok && HandleMessage(buffer, MessageEnd))
+  if (ok)
     WriteResponse(250, "Message received Ok.");
   else
     WriteResponse(554, "Message storage failed.");
@@ -537,22 +570,32 @@ BOOL PSMTPSocket::OnUnknown(const PCaselessString & command)
 }
 
 
-BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
+BOOL PSMTPSocket::OnTextData(PCharArray & buffer, BOOL & completed)
 {
   PString line;
   while (ReadLine(line)) {
-    line += '\n';
-    PINDEX size = buffer.GetSize();
     PINDEX len = line.GetLength();
-    memcpy(buffer.GetPointer(size + len) + size, (const char *)line, len);
-    if (size + len > messageBufferSize)
+    if (len == 1 && line[0] == '.') {
+      completed = TRUE;
+      return TRUE;
+    }
+
+    PINDEX start = (len > 1 && line[0] == '.' && line[1] == '.') ? 1 : 0;
+    PINDEX size = buffer.GetSize();
+    len -= start;
+    memcpy(buffer.GetPointer(size + len + 2) + size,
+           ((const char *)line)+start, len);
+    size += len;
+    buffer[size++] = '\r';
+    buffer[size++] = '\n';
+    if (size > messageBufferSize)
       return TRUE;
   }
   return FALSE;
 }
 
 
-BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer)
+BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer, BOOL & completed)
 {
   PINDEX count = 0;
   int c;
@@ -597,8 +640,10 @@ BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer)
         break;
 
       case StuffCRLFdotCR :
-        if (c == '\n')
-          return FALSE;
+        if (c == '\n') {
+          completed = TRUE;
+          return TRUE;
+        }
         buffer[count++] = '.';
         buffer[count++] = '\r';
         buffer[count++] = (char)c;
@@ -617,15 +662,22 @@ BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer)
 }
 
 
-PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(
-                               const PCaselessString &, PString & expandedName)
+PSMTPSocket::ForwardResult PSMTPSocket::ForwardDomain(PCaselessString & userDomain,
+                                                      PCaselessString & forwardDomainList)
+{
+  return userDomain.IsEmpty() && forwardDomainList.IsEmpty() ? LocalDomain : CannotForward;
+}
+
+
+PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(const PCaselessString &,
+                                                  PString & expandedName)
 {
   expandedName = PString();
   return LookUpError;
 }
 
 
-BOOL PSMTPSocket::HandleMessage(PCharArray &, MessagePosition)
+BOOL PSMTPSocket::HandleMessage(PCharArray &, BOOL, BOOL)
 {
   return FALSE;
 }
@@ -904,10 +956,11 @@ void PPOP3Socket::OnSTAT()
 void PPOP3Socket::OnLIST(PINDEX msg)
 {
   if (msg == 0) {
-    WriteResponse(okResponse,
-            PString(PString::Unsigned, messageSizes.GetSize()) + " messages.");
+    WriteResponse(okResponse, psprintf("%u messages.", messageSizes.GetSize()));
     for (PINDEX i = 0; i < messageSizes.GetSize(); i++)
-      WriteLine(psprintf("%u %u", i, messageSizes[i-1]));
+      if (!messageDeletions[i])
+        WriteLine(psprintf("%u %u", i+1, messageSizes[i]));
+    WriteLine(".");
   }
   else if (msg < 1 || msg > messageSizes.GetSize())
     WriteResponse(errResponse, "No such message.");
@@ -935,8 +988,10 @@ void PPOP3Socket::OnDELE(PINDEX msg)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse, "No such message.");
-  else
+  else {
     messageDeletions[msg-1] = TRUE;
+    WriteResponse(okResponse, "Message marked for deletion.");
+  }
 }
 
 
@@ -945,7 +1000,7 @@ void PPOP3Socket::OnTOP(PINDEX msg, PINDEX count)
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse, "No such message.");
   else {
-    WriteResponse(okResponse, PString());
+    WriteResponse(okResponse, "Top of message");
     stuffingState = StuffIdle;
     HandleSendMessage(msg, messageIDs[msg-1], count);
     stuffingState = DontStuff;
@@ -959,8 +1014,10 @@ void PPOP3Socket::OnUIDL(PINDEX msg)
   if (msg == 0) {
     WriteResponse(okResponse,
               PString(PString::Unsigned, messageIDs.GetSize()) + " messages.");
-    for (PINDEX i = 1; i <= messageIDs.GetSize(); i++)
-      WriteLine(PString(PString::Unsigned, i) & messageIDs[i-1]);
+    for (PINDEX i = 0; i < messageIDs.GetSize(); i++)
+      if (!messageDeletions[i])
+        WriteLine(PString(PString::Unsigned, i+1) & messageIDs[i]);
+    WriteLine(".");
   }
   else if (msg < 1 || msg > messageSizes.GetSize())
     WriteResponse(errResponse, "No such message.");
