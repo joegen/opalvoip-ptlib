@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.53  2001/04/20 05:41:35  craigs
+ * Added ability to set core dump size from command line under Linux
+ *
  * Revision 1.52  2001/04/20 05:08:42  robertj
  * Removed dump of thread in SEGV signal, it does not work.
  *
@@ -149,6 +152,9 @@
 
 #include "uerror.h"
 
+#ifdef P_LINUX
+#include <sys/resource.h>
+#endif
 
 #define new PNEW
 
@@ -319,7 +325,8 @@ int PServiceProcess::InitialiseService()
              "s-status."
              "l-log-file:"
              "u-uid:"
-             "g-gid:");
+             "g-gid:"
+             "C-core-size:");
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
@@ -430,8 +437,11 @@ int PServiceProcess::InitialiseService()
             "  -c --console        output messages to stdout rather than syslog\n"
             "  -l --log-file file  output messages to file or directory instead of syslog\n"
             "  -x --execute        execute as a normal program\n"
-            "  -i --ini-file       Set the ini file to use, may be explicit file or\n"
+            "  -i --ini-file       set the ini file to use, may be explicit file or\n"
             "                      a ':' separated set of directories to search.\n"
+#ifdef P_LINUX
+            "  -C --core-size      set the maximum core file size\n"
+#endif
          << endl;
     return 0;
   }
@@ -483,6 +493,25 @@ int PServiceProcess::InitialiseService()
               " - " << strerror(errno) << endl;
       return 1;
     }
+  }
+
+  // set the core file size
+  if (args.HasOption('C')) {
+#ifdef P_LINUX
+    struct rlimit rlim;
+    if (getrlimit(RLIMIT_CORE, &rlim) != 0) 
+      cout << "Could not get current core file size : error = " << errno << endl;
+    else {
+      int v = args.GetOptionString('C').AsInteger();
+      rlim.rlim_cur = v;
+      if (setrlimit(RLIMIT_CORE, &rlim) != 0) 
+        cout << "Could not set current core file size to " << v << " : error = " << errno << endl;
+      else {
+        getrlimit(RLIMIT_CORE, &rlim);
+        cout << "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max << endl;
+      }
+    }
+#endif
   }
 
   // open the system logger for this program
