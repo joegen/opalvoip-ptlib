@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.4  2002/08/02 05:42:10  robertj
+ * Fixed confusion between in and out MIME.
+ * Improved trace logging and error reporting.
+ *
  * Revision 1.3  2002/07/12 05:51:35  craigs
  * Added structs to XMLRPC response types
  *
@@ -481,55 +485,56 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & respons
 
   // do the request
   PHTTPClient client;
-  PMIMEInfo outMIME, inMIME;
-  outMIME.SetAt("Server",              url.GetHostName());
-  outMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
+  PMIMEInfo sendMIME, replyMIME;
+  sendMIME.SetAt("Server",              url.GetHostName());
+  sendMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
 
   // apply the timeout
   client.SetReadTimeout(timeout);
 
   // do the request
-  BOOL ok = client.PostData(url, inMIME, requestXML, outMIME);
+  BOOL ok = client.PostData(url, sendMIME, requestXML, replyMIME);
 
   // get length of response
   PINDEX contentLength;
-  if (outMIME.Contains(PHTTP::ContentLengthTag))
-    contentLength = (PINDEX)outMIME[PHTTP::ContentLengthTag].AsUnsigned();
-  else
+  if (replyMIME.Contains(PHTTP::ContentLengthTag))
+    contentLength = (PINDEX)replyMIME[PHTTP::ContentLengthTag].AsUnsigned();
+  else if (ok)
     contentLength = P_MAX_INDEX;
+  else
+    contentLength = 0;
 
   // read the response
-  PString reply = client.ReadString(contentLength);
-  if (reply.IsEmpty()) {
-    response.SetFault(PXMLRPCResponse::CannotReadResponseContentBody, 
-                      "Cannot read response content body");
-    PTRACE(2, "RPCXML\t" << response.GetFaultText());
-    return FALSE;
-  }
+  PString replyBody = client.ReadString(contentLength);
 
   // make sure the request worked
-  if (!ok) {
+  if (!ok || replyBody.IsEmpty()) {
     PStringStream txt;
-    txt << "HTTP POST failed: " 
-        << client.GetLastResponseCode() 
-        << " " 
-        << client.GetLastResponseInfo() 
-        << "\n" 
-        << outMIME 
-        << "\n" 
-        << reply;
+    txt << "HTTP POST failed: "
+        << client.GetLastResponseCode() << ' '
+        << client.GetLastResponseInfo() << '\n'
+        << replyMIME << '\n'
+        << replyBody;
     response.SetFault(PXMLRPCResponse::HTTPPostFailed, txt);
     PTRACE(2, "RPCXML\t" << response.GetFaultText());
     return FALSE;
   }
 
   // parse the response
-  if (!response.Load(reply)) {
+  if (!response.Load(replyBody)) {
     PStringStream txt;
     txt << "Error parsing response XML ("
         << response.GetErrorLine() 
         << ") :" 
-        << response.GetErrorString();
+        << response.GetErrorString() << '\n';
+
+    PStringArray lines = replyBody.Lines();
+    for (int offset = -2; offset <= 2; offset++) {
+      int line = response.GetErrorLine() + offset;
+      if (line >= 0 && line < lines.GetSize())
+        txt << lines[(PINDEX)line] << '\n';
+    }
+
     response.SetFault(PXMLRPCResponse::CannotParseResponseXML, txt);
     PTRACE(2, "RPCXML\t" << response.GetFaultText());
     return FALSE;
