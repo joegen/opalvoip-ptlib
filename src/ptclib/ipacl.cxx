@@ -1,13 +1,32 @@
 /*
  * ipacl.cxx
  *
- * PWLib application source file for rcsd
+ * IP Access Control Lists
  *
- * Main program entry point.
+ * Portable Windows Library
  *
- * Copyright 1998 Equivalence Pty. Ltd.
+ * Copyright (c) 2002 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.14  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.13  2002/07/16 10:05:01  robertj
  * Fixed GNU warning
  *
