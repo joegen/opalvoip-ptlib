@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2002/12/04 00:16:18  robertj
+ * Large enhancement to create automatically encoding and decoding structures
+ *   using macros to build a class.
+ *
  * Revision 1.3  2002/10/04 05:16:44  craigs
  * Changed for new XMLRPC code
  *
@@ -28,8 +32,11 @@
 
     http://www.mirrorproject.com/xmlrpc mirror.Random
 
-    http://www.newsisfree.com/xmlrpc.php
-
+    http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoString "A test!"
+    -i http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoInteger 12
+    -f http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoFloat 3.121
+    -s http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStruct first 1st second 2nd third 3rd
+    --echo-struct http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStruct
     -s http://10.0.2.13:6666/RPC2 Function1 key value
 
 
@@ -40,7 +47,27 @@
 
 #include <ptclib/pxmlrpc.h>
 
+
+PXML_STRUCT_BEGIN(NestedStruct)
+    PXML_STRING  (NestedStruct, PString, another_string);
+    PXML_INTEGER (NestedStruct, int, another_integer);
+PXML_STRUCT_END()
+
+PXML_STRUCT_BEGIN(TestStruct)
+    PXML_STRING  (TestStruct, PString, a_string);
+    PXML_INTEGER (TestStruct, int, an_integer);
+    PXML_BOOLEAN (TestStruct, BOOL, a_boolean);
+    PXML_DOUBLE  (TestStruct, double, a_float);
+    PXML_DATETIME(TestStruct, PTime, a_date);
+    PXML_BINARY  (TestStruct, PBYTEArray, a_binary);
+    PXML_STRUCT  (TestStruct, NestedStruct, nested_struct);
+PXML_STRUCT_END()
+ 
+
 PCREATE_PROCESS(XMLRPCApp);
+
+
+/////////////////////////////////////////////////////////////////////////////
 
 XMLRPCApp::XMLRPCApp()
   : PProcess("Equivalence", "XMLRPCApp", 1, 0, AlphaCode, 1)
@@ -49,12 +76,16 @@ XMLRPCApp::XMLRPCApp()
 
 void XMLRPCApp::Main()
 {
+  PINDEX i;
   PArgList & args = GetArguments();
 
-  args.Parse("t."
-             "o:"
-             "s."
-             "d."
+  args.Parse("d-debug."
+             "f-float."
+             "i-integer."
+             "o-output:"
+             "s-struct."
+             "t-trace."
+             "-echo-struct."
              );
 
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -71,25 +102,47 @@ void XMLRPCApp::Main()
   PXMLRPC rpc(url);
 
   PXMLRPCBlock request(method);
-
-  if (args.HasOption('s')) {
-    PStringToString dict;
-    PINDEX i;
-    for (i = 2; (i+1) < args.GetCount(); i += 2) {
-      PString key   = args[i];
-      PString value = args[i+1];
-      dict.SetAt(key, value);
-    }
-
-    request.AddStruct(dict);
-  }
-
-  if (args.HasOption('d')) {
-    cout << "Request = " << request;
-    return;
-  }
-
   PXMLRPCBlock response;
+
+  if (args.HasOption("echo-struct")) {
+    TestStruct ts;
+    ts.a_string = "A string!";
+    ts.an_integer = 12;
+    ts.a_float = 3.14159;
+    ts.a_boolean = TRUE;
+    ts.a_date = PTime() - PTimeInterval(0, 0, 0, 0, 5);
+    ts.a_binary.SetSize(10);
+    for (i = 0; i < 10; i++)
+      ts.a_binary[i] = (BYTE)(i+1);
+    ts.nested_struct.another_string = "Another string!";
+    ts.nested_struct.another_integer = 345;
+    request.AddParam(ts);
+  }
+  else {
+    if (args.HasOption('s')) {
+      PStringToString dict;
+      for (i = 2; (i+1) < args.GetCount(); i += 2) {
+        PString key   = args[i];
+        PString value = args[i+1];
+        dict.SetAt(key, value);
+      }
+
+      request.AddStruct(dict);
+    }
+    else {
+      for (i = 2; i < args.GetCount(); i++) {
+        if (args.HasOption('i'))
+          request.AddParam(args[i].AsInteger());
+        else if (args.HasOption('f'))
+          request.AddParam(args[i].AsReal());
+        else
+          request.AddParam(args[i]);
+      }
+    }
+  }
+
+  if (args.HasOption('d'))
+    cout << "Request = " << request << endl;
 
   if (!rpc.MakeRequest(request, response)) {
     PError << "Error in request (" 
@@ -102,16 +155,33 @@ void XMLRPCApp::Main()
 
   // scan through the response and print it out
   cout << "Response" << endl;
-  PINDEX i;
   for (i = 0; i < response.GetParamCount(); i++) {
     cout << "  " << i << ": ";
     PString type;
     PString val;
     if (response.GetParam(i, type, val)) {
-      cout << type << " = " << val << endl;
-    } else {
-      cout << "error" << endl;
+      cout << type << " = ";
+      if (type != "struct")
+        cout << val;
+      else {
+        PStringToString dict;
+        response.GetParam(i, dict);
+        cout << '\n' << dict;
+      }
     }
+    else
+      cout << "error: " << response.GetFaultText();
+    cout << endl;
+  }
+
+  if (args.HasOption("echo-struct")) {
+    TestStruct ts;
+    ts.a_date = PTime(0);
+    if (response.GetParam(0, ts))
+      cout << "Parsed response:\n" << ts;
+    else
+      cout << "Failed to parse resonse: " << response.GetFaultText();
+    cout << endl;
   }
 }
 
