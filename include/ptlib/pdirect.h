@@ -18,23 +18,41 @@
 // File System
 
 enum PFileTypes {
-  Regular = 1,
-  Link = 2,
-  SubDirectory = 4,
-  CharDevice = 8,
-  BlockDevice = 16,
-  Fifo = 32,
-  Socket = 64,
-  Unknown = 256
+  PRegularFile = 1,
+  PSymbolicLink = 2,
+  PSubDirectory = 4,
+  PCharDevice = 8,
+  PBlockDevice = 16,
+  PFifo = 32,
+  PSocket = 64,
+  PUnknownFileType = 256
 };
 
-#define PAllFiles ((PFileTypes)(Regular|Link|SubDirectory|CharDevice|BlockDevice|Fifo|Socket))
-
-#define PDefaultPerms ((PPermissions)(UserRead|UserWrite|UserExecute|GroupRead|GroupExecute|WorldRead|WorldExecute))
-
+#define PAllFiles (PRegularFile|PSymbolicLink|PSubDirectory| \
+                       PCharDevice|PBlockDevice|PFifo|PSocket|PUnknownFileType)
 
 
-DECLARE_CLASS(PDirectory,PContainer)
+enum PPermissions {
+  PUserRead = 1,
+  PUserWrite = 2,
+  PUserExecute = 4,
+  PGroupRead = 8,
+  PGroupWrite = 16,
+  PGroupExecute = 32,
+  PWorldRead = 64,
+  PWorldWrite = 128,
+  PWorldExecute = 256,
+};
+
+#define PAllPermissions (PUserRead|PUserWrite|PUserExecute|PGroupRead| \
+                PGroupWrite|PGroupExecute|PWorldRead|PWorldWrite|PWorldExecute)
+
+#define PDefaultPerms (PUserRead|PUserWrite|PUserExecute| \
+                             PGroupRead|PGroupExecute|PWorldRead|PWorldExecute)
+
+
+
+DECLARE_CLASS(PDirectory, PContainer)
 
   public:
     PDirectory();
@@ -55,23 +73,23 @@ DECLARE_CLASS(PDirectory,PContainer)
     PString GetPath() const;
       // Return the full, unambigous, path name for the directory
 
-    BOOL Change();
+    BOOL Change() const;
     inline static BOOL Change(const PString & p);
       // Change to the specified directory.
       
-    BOOL Create(PPermissions perm = PDefaultPerms);
-    inline static BOOL Create(const PString & p,PPermissions perm = PDefaultPerms);
+    BOOL Create(int perm = PDefaultPerms) const;
+    inline static BOOL Create(const PString & p, int perm = PDefaultPerms);
       // Create a new directory with the specified permissions
       
-    BOOL Remove();
+    BOOL Remove() const;
     inline static BOOL Remove(const PString & p);
       // Delete the specified directory.
       
 
-    BOOL Open(PFileTypes scanMask = PAllFiles);
+    BOOL Open(int scanMask = PAllFiles);
       // Open the directory for scanning its list of files.
       
-    BOOL Restart(PFileTypes scanMask = PAllFiles);
+    BOOL Restart(int scanMask = PAllFiles);
       // Restart file list scan from the beginning of directory.
       
     BOOL Next();
@@ -97,8 +115,8 @@ DECLARE_CLASS(PDirectory,PContainer)
     void Construct();
       // Common constructor code
 
-    PString     path;
-    PFileTypes  theScanMask;
+    PString path;
+    int     scanMask;
 
 
 // Class declaration continued in platform specific header file ///////////////
