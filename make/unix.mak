@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.176  2003/09/08 21:11:09  dereksmithies
+# Remove hardcoded path from make file. Thanks Damien Sandras.
+#
 # Revision 1.175  2003/07/24 22:01:42  dereksmithies
 # Add fixes from Peter Nixon  for fixing install problems. Thanks.
 #
@@ -966,7 +969,7 @@ endif
 #STDCCFLAGS     += -fno-implement-inlines
 
 # add OS directory to include path
-STDCCFLAGS	+= -I$(UNIX_INC_DIR) -I/usr/include/pwlib
+STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 
 
 # add library directory to library path and include the library
