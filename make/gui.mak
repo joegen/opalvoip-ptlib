@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.9  2000/01/25 04:38:52  robertj
+# Another fix for shared libraries
+#
 # Revision 1.8  2000/01/25 04:05:23  robertj
 # Fixed make files for GUI systems and moved object directories to lib directory.
 #
@@ -58,9 +61,9 @@ GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
 PWLIB           = pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 ifndef SHAREDLIB
-PWLIB_FILE      = $(LIBDIR)/lib$(PWLIB).a
+PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).a
 else
-PWLIB_FILE      = $(LIBDIR)/lib$(PWLIB).so
+PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).so
 endif
 
 #
