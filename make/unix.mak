@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.161  2003/03/06 08:58:48  rogerh
+# P_MACOSX now carries the OSRELEASE. Use this to enable better threads
+# support on Darwin 6.4. Submitted by Shawn.
+#
 # Revision 1.160  2003/03/05 21:13:32  dereks
 # Fix make support for 1394AVC. Thanks Damien Sandras.
 #
@@ -1154,8 +1158,20 @@ endif # hpux
 ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
- 
-STDCCFLAGS      += -DNO_LONG_DOUBLE -DP_MACOSX
+
+ifndef OSRELEASE
+OSRELEASE       := $(subst .,,$(shell uname -r))
+else
+OSRELEASE	:= $(subst .,,$(OSRELEASE))
+endif
+
+ifeq ($(OSRELEASE), 55)
+NO_IPv6		= 1
+endif
+
+STDCCFLAGS      += -DP_MACOSX=$(OSRELEASE)
+
+STDCCFLAGS      += -DNO_LONG_DOUBLE
 #STDCCFLAGS	+= -D_BSD_WCHAR_T_DEFINED_
 ENDLDLIBS       += -framework AudioToolbox -framework CoreAudio
 # ENDLDLIBS	+= -framework CoreServices
