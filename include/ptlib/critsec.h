@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.3  2004/04/12 00:36:04  csoutheren
+ * Added new class PAtomicInteger and added Windows implementation
+ *
  * Revision 1.2  2004/04/11 03:20:41  csoutheren
  * Added Unix implementation of PCriticalSection
  *
@@ -104,6 +107,48 @@ class PEnterAndLeave {
     PCriticalSection & critSec;
 };
 
+
+/** This class implements ain integer that can be atomically 
+  * incremented and decremented
+  */
+
+class PAtomicInteger 
+{
+#ifdef _WIN32
+    public:
+      inline PAtomicInteger(unsigned v = 0)
+        : value(v) { }
+      BOOL IsZero() const                { return value == 0; }
+      inline operator++()                { InterlockedIncrement(&value); }
+      inline operator--()                { InterlockedDecrement(&value); }
+      inline operator unsigned () const  { return value; }
+    protected:
+      long value;
+#elif P_HAS_ATOMIC_INT
+    public:
+      inline PAtomicInteger(unsigned v = 0)
+        : value(v) { }
+      BOOL IsZero() const                { return value == 0; }
+      inline operator++()                { __atomic_add(&cont.reference->count, 1); }
+      inline operator--()                {  __atomic_add(&cont.reference->count, -1); }
+      inline operator unsigned () const  { return value; }
+    protected:
+      _Atomic_word value;
+#else 
+#define PCONTAINER_USES_CRITSEC 1
+    protected:
+      PCriticalSection critSec;
+    public:
+      inline PAtomicInteger(unsigned v = 0)
+        : value(v) { }
+      BOOL IsZero() const                { return value == 0; }
+      inline operator++()                { PEnterAndLeave m(critsec); value++; }
+      inline operator--()                { PEnterAndLeave m(critsec); value--; }
+      inline operator unsigned () const  { return value; }
+    protected:
+      unsigned value;
+#endif
+};
 
 #endif
 
