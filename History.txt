@@ -4,6 +4,9 @@ Portable Windows Library Modification History
 
 Release 1.14
 ------------
+	Added new improved random number generator. Mainly due to discovered
+	inadaquacies in the MSVC run time version of rand().
+
 	Added support for producing shared libraries.
 
 	Added optimisation to array comparisons if referencing same array.
