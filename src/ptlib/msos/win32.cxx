@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.108.1.1  2001/10/26 04:16:25  craigs
+ * Changed housekeeping thread priority to Normal, and added name for debugging
+ *
  * Revision 1.108  2001/06/01 04:03:05  yurik
  * Removed dependency on obsolete function
  *
@@ -1288,7 +1291,7 @@ PThread * PThread::Current()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, LowPriority)
+  : PThread(1000, NoAutoDeleteThread, NormalPriority, "PWLib Housekeeper")
 {
   Resume();
 }
