@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.44  2004/04/09 06:52:17  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.43  2004/04/03 23:53:09  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -811,9 +815,6 @@ void PMessageDigest5::Complete(Code & codeResult)
 
 #pragma comment(lib, P_SSL_LIB1)
 #pragma comment(lib, P_SSL_LIB2)
-#pragma comment(linker, "/delayload:ssleay32.dll")
-#pragma comment(linker, "/delayload:libeay32.dll")
-#pragma comment(lib, "Delayimp.lib")
 
 #endif
 
