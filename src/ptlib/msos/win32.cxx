@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.34 1996/07/27 04:05:31 robertj Exp $
+ * $Id: win32.cxx,v 1.35 1996/08/08 10:03:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.35  1996/08/08 10:03:43  robertj
+ * Fixed static error text returned when no osError value.
+ *
  * Revision 1.34  1996/07/27 04:05:31  robertj
  * Created static version of ConvertOSError().
  * Created static version of GetErrorText().
@@ -375,6 +378,7 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     };
     if (osError == 0)
       return PString();
+    osError = errors[lastError];
   }
 
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
