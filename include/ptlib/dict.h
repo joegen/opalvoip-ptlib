@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.29  2002/10/04 01:47:29  robertj
+ * Added various increment and decrement operators to POrdinalKey.
+ *
  * Revision 1.28  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -143,6 +146,10 @@ class POrdinalKey : public PObject
     PINLINE POrdinalKey(
       PINDEX newKey   /// Ordinal index value to use as a key.
     );
+
+    /**Operator to assign the ordinal.
+      */
+    PINLINE POrdinalKey & operator=(PINDEX);
   //@}
 
   /**@name Overrides from class PObject */
@@ -183,6 +190,30 @@ class POrdinalKey : public PObject
     /** Operator so that a POrdinalKey can be used as a PINDEX value.
      */
     PINLINE operator PINDEX() const;
+
+    /**Operator to pre-increment the ordinal.
+      */
+    PINLINE PINDEX operator++();
+
+    /**Operator to post-increment the ordinal.
+      */
+    PINLINE PINDEX operator++(int);
+
+    /**Operator to pre-decrement the ordinal.
+      */
+    PINLINE PINDEX operator--();
+
+    /**Operator to post-decrement the ordinal.
+      */
+    PINLINE PINDEX operator--(int);
+
+    /**Operator to add the ordinal.
+      */
+    PINLINE POrdinalKey & operator+=(PINDEX);
+
+    /**Operator to subtract from the ordinal.
+      */
+    PINLINE POrdinalKey & operator-=(PINDEX );
   //@}
 
   private:
