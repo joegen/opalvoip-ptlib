@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.28  2002/12/20 08:43:42  robertj
+ * Fixed incorrect header length for MS-GSM, thanks Martijn Roest & Kanchana
+ *
  * Revision 1.27  2002/07/12 01:25:25  craigs
  * Repaired reintroduced problem with SID frames in WAV files
  *
@@ -599,7 +602,7 @@ BOOL PWAVFile::GenerateHeader()
 
     case fmt_GSM :
       lenHeader   = 48;
-      len_format  = 20;   // size of the FORMAT chunk;
+      len_format  = 16;   // size of the FORMAT chunk;
       numChannels = 1;
       sampleRate  = 8000;
       bytesPerSample = 33;
