@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.35  2001/01/03 01:20:13  robertj
+ * Fixed error in BlockEncode, should ByteAlign() even on zero length strings.
+ *
  * Revision 1.34  2000/10/26 11:09:16  robertj
  * More bullet proofing of PER decoder, changed bit type to be unsigned.
  *
@@ -3693,10 +3696,11 @@ void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 {
   PAssert(byteOffset != P_MAX_INDEX, PLogicError);
 
+  ByteAlign();
+
   if (nBytes == 0)
     return;
 
-  ByteAlign();
   if (byteOffset+nBytes >= GetSize())
     SetSize(byteOffset+nBytes+10);
 
