@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.137  2002/11/01 23:56:11  robertj
+ * Fixed GNu compatibility isse with IPv6
+ *
  * Revision 1.136  2002/11/01 03:32:08  robertj
  * More IPv6 fixes, thanks Sébastien Josset.
  *
@@ -2307,7 +2310,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 #if P_HAS_IPV6
 
   Psockaddr sa;
-  socklen_t size = sa.GetSize();
+  PINDEX size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
     return FALSE;
 
@@ -2369,7 +2372,7 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 #if P_HAS_IPV6
 
   Psockaddr sa;
-  socklen_t size = sa.GetSize();
+  PINDEX size = sa.GetSize();
   if (os_recvfrom(buf, len, 0, sa, &size)) {
     addr = sa.GetIP();
     port = sa.GetPort();
