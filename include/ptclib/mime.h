@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.4 1996/01/28 14:14:30 robertj Exp $
+ * $Id: mime.h,v 1.5 1996/02/25 03:04:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.5  1996/02/25 03:04:32  robertj
+ * Added decoding of Base64 to a block of memory instead of PBYTEArray.
+ *
  * Revision 1.4  1996/01/28 14:14:30  robertj
  * Further implementation of secure config.
  *
@@ -253,16 +256,16 @@ PDECLARE_CLASS(PBase64, PObject)
 
 
     static PString Encode(
-      const PString & str     // String to be encoded to MD5
+      const PString & str     // String to be encoded to Base64
     );
     static PString Encode(
-      const char * cstr       // C String to be encoded to MD5
+      const char * cstr       // C String to be encoded to Base64
     );
     static PString Encode(
-      const PBYTEArray & data // Data block to be encoded to MD5
+      const PBYTEArray & data // Data block to be encoded to Base64
     );
     static PString Encode(
-      const BYTE * dataBlock, // Pointer to data to be encoded to MD5
+      const BYTE * dataBlock, // Pointer to data to be encoded to Base64
       PINDEX length           // Length of the data block.
     );
     // Encode the data in memory to Base 64 data returnin the string.
@@ -283,6 +286,10 @@ PDECLARE_CLASS(PBase64, PObject)
        TRUE if block was last in the Base64 encoded string.
      */
 
+    BOOL GetDecodedData(
+      BYTE * dataBlock,    // Pointer to data to be decoded from base64
+      PINDEX length        // Length of the data block.
+    );
     PBYTEArray GetDecodedData();
     /* Get the data decoded so far from the Base64 strings processed.
     
@@ -300,12 +307,17 @@ PDECLARE_CLASS(PBase64, PObject)
      */
 
 
+    static PString Decode(
+      const PString & str // Encoded base64 string to be decoded.
+    );
     static BOOL Decode(
       const PString & str, // Encoded base64 string to be decoded.
       PBYTEArray & data    // Converted binary data from base64.
     );
-    static PString Decode(
-      const PString & str // Encoded base64 string to be decoded.
+    static BOOL Decode(
+      const PString & str, // Encoded base64 string to be decoded.
+      BYTE * dataBlock,    // Pointer to data to be decoded from base64
+      PINDEX length        // Length of the data block.
     );
     /* Convert a printable text string to binary data using the Internet MIME
        standard base 64 content transfer encoding.
