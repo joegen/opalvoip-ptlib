@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.46  2002/08/30 07:58:27  craigs
+ * Added fix for when sound cards are already open, thanks to Damien Sandras
+ *
  * Revision 1.45  2002/08/15 19:57:38  rogerh
  * Linux defvs mode is detected with /dev/.devfsd
  *
@@ -578,8 +581,16 @@ BOOL PSoundChannel::Open(const PString & _device,
       bufferLen = 0;
       os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
     }
-    else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) 
-      return FALSE;
+
+    // open the device in non-blocking mode to avoid hang if already open
+    os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
+    if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
+      return ConvertOSError(os_handle);
+    }
+
+    // switch to blocking mode
+    DWORD cmd = 0;
+    ::ioctl(os_handle, FIONBIO, &cmd);
 
     // add the device to the dictionary
     SoundHandleEntry * entry = PNEW SoundHandleEntry;
