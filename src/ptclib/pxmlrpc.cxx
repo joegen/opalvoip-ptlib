@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.6  2002/08/13 01:54:47  craigs
+ * Fixed memory leak on PXMLRPCRequest class
+ *
  * Revision 1.5  2002/08/06 01:04:03  robertj
  * Fixed missing pragma interface/implementation
  *
@@ -49,6 +52,11 @@ PXMLRPCRequest::PXMLRPCRequest(const PString & method)
   rootElement = new PXMLElement(NULL, "methodCall");
   rootElement->AddChild(         new PXMLElement  (rootElement, "methodName", method));
   rootElement->AddChild(params = new PXMLRPCParams(rootElement));
+}
+
+PXMLRPCRequest::~PXMLRPCRequest()
+{
+  delete rootElement;
 }
 
 ////////////////////////////////////////////////////////
