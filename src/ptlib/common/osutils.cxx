@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.158  2001/03/02 22:29:08  yurik
+ * New pragma for WinCE related port which enables (de)construction of library static objects be before applications'
+ * Eliminated nasty access violation stemmed from using static PMutex object in PTrace code. Thanks to Yuriy Gorvitovskiy.
+ *
  * Revision 1.157  2001/02/22 22:31:44  robertj
  * Changed PProcess version display to show build number even if zero.
  *
@@ -531,6 +535,9 @@
 
 #include <ctype.h>
 
+#ifdef _WIN32_WCE
+#pragma init_seg(lib)
+#endif
 
 class PSimpleThread : public PThread
 {
@@ -676,7 +683,6 @@ BOOL PTrace::CanTrace(unsigned level)
 {
   return level <= PTraceLevelThreshold;
 }
-
 
 static PMutex & PTraceMutex()
 {
