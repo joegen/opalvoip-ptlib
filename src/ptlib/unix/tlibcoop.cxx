@@ -4,6 +4,8 @@
 
 void PProcess::Construct()
 {
+  CommonConstruct();
+
   ioBlocks[0].AllowDeleteObjects(FALSE);
   ioBlocks[1].AllowDeleteObjects(FALSE);
   ioBlocks[2].AllowDeleteObjects(FALSE);
@@ -12,6 +14,7 @@ void PProcess::Construct()
 
 PProcess::~PProcess()
 {
+  CommonDestruct();
 }
 
 void PProcess::PXAbortIOBlock(int fd) 
