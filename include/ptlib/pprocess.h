@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.63  2004/05/18 06:01:06  csoutheren
+ * Deferred plugin loading until after main has executed by using abstract factory classes
+ *
  * Revision 1.62  2004/05/13 14:54:57  csoutheren
  * Implement PProcess startup and shutdown handling using abstract factory classes
  *
@@ -785,12 +788,14 @@ class PProcess : public PThread
 
 /*
  *  one instance of this class (or any descendants) will be instantiated
- *  via PGenericFactory<PProessStartup> "main" has been started, and then
+ *  via PGenericFactory<PProessStartup> one "main" has been started, and then
  *  the OnStartup() function will be called. The OnShutdown function will
- *  be called after main exits, and then the instance will be destroyed
+ *  be called after main exits, and the instances will be destroyed if they
+ *  are not singletons
  */
 class PProcessStartup : public PObject
 {
+  PCLASSINFO(PProcessStartup, PObject)
   public:
     virtual void OnStartup()  { }
     virtual void OnShutdown() { }
