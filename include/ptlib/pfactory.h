@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.20  2005/01/04 07:44:02  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.19  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -398,42 +402,22 @@ class PFactory : PFactoryBase
   private:
     PFactory(const PFactory &) {}
     void operator=(const PFactory &) {}
-
-#ifdef _WIN32
-  public:
-    static int factoryLoader;
-#endif
 };
-
-#ifdef _WIN32
-
-namespace PWLibFactoryLoader { 
-
-template <class AbstractType, typename KeyType>
-class Loader
-{
-  public:
-    Loader()
-    { PFactory<AbstractType, KeyType>::factoryLoader = 1; }
-};
-};
-
 
 //
-//  this macro is used to declare the static member variable used to force factories to instantiate
+//  this macro is used to initialise the static member variable used to force factories to instantiate
 //
+#define PLOAD_FACTORY_DECLARE(AbstractType, KeyType) \
+namespace PWLibFactoryLoader { extern int AbstractType##_##KeyType; }
+
 #define PLOAD_FACTORY(AbstractType, KeyType) \
-namespace PWLibFactoryLoader { \
-static Loader<AbstractType, KeyType> AbstractType##_##KeyType##; \
-}; 
+PWLibFactoryLoader::AbstractType##_##KeyType = 1;
 
 //
 //  this macro is used to instantiate a static variable that accesses the static member variable 
 //  in a factory forcing it to load
 //
 #define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
-int PFactory<AbstractType, KeyType>::factoryLoader;
-
-#endif // _WIN32
+namespace PWLibFactoryLoader { int AbstractType##_##KeyType; }; 
 
 #endif // _PFACTORY_H
