@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.22  2001/06/14 02:14:12  robertj
+ * Added functions to encode and decode another ASN type that is inside
+ *   an octet string, useful for ANY or EXTERNAL types etc.
+ *
  * Revision 1.21  2001/04/30 06:47:04  robertj
  * Fixed problem with en/decoding more than 16 extension fields in a sequence.
  *
@@ -514,6 +518,9 @@ class PASN_OctetString : public PASN_ConstrainedObject
 
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+
+    BOOL DecodeSubType(PASN_Object &);
+    void EncodeSubType(const PASN_Object &);
 
   protected:
     PBYTEArray value;

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.45  2001/06/14 02:14:12  robertj
+ * Added functions to encode and decode another ASN type that is inside
+ *   an octet string, useful for ANY or EXTERNAL types etc.
+ *
  * Revision 1.44  2001/05/29 00:59:16  robertj
  * Fixed excessive padding on constrained strings.
  *
@@ -1848,6 +1852,22 @@ BOOL PPER_Stream::OctetStringDecode(PASN_OctetString & value)
 void PPER_Stream::OctetStringEncode(const PASN_OctetString & value)
 {
   value.EncodePER(*this);
+}
+
+
+BOOL PASN_OctetString::DecodeSubType(PASN_Object & obj)
+{
+  PPER_Stream stream = GetValue();
+  return obj.Decode(stream);
+}
+
+
+void PASN_OctetString::EncodeSubType(const PASN_Object & obj)
+{
+  PPER_Stream stream;
+  obj.Encode(stream);
+  stream.CompleteEncoding();
+  SetValue(stream);
 }
 
 
