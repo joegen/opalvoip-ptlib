@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.99  2004/03/23 05:08:21  csoutheren
+ * Fixed problem with use of ShellExecuteEx function
+ *
  * Revision 1.98  2004/03/13 06:30:52  rjongbloed
  * Virtualised parse function.
  *
@@ -1107,7 +1110,7 @@ BOOL PURL::OpenBrowser(const PString & url)
   sei.lpVerb = TEXT("open");
   sei.lpFile = url;
 
-  if (ShellExecuteEx(&sei) >= 32)
+  if (ShellExecuteEx(&sei) != 0)
     return TRUE;
 
 #ifndef _WIN32_WCE
