@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.35  2003/05/14 01:12:53  rjongbloed
+ * Fixed test for SID frames in record silence detection on G.723.1A
+ *
  * Revision 1.34  2003/04/23 11:54:53  craigs
  * Added ability to record audio
  *
@@ -804,7 +807,7 @@ BOOL PVXMLSession::OnUserInput(const PString & str)
   // record
   if (recording) {
     if (recordDTMFTerm)
-	    RecordEnd();
+      RecordEnd();
     return TRUE;
   } 
 
@@ -819,22 +822,22 @@ BOOL PVXMLSession::OnUserInput(const PString & str)
 
 BOOL PVXMLSession::TraverseRecord()
 {
-	if (currentNode->IsElement()) {
-
-		PString strName;
-		PXMLElement * element = (PXMLElement *)currentNode;
-
-		// Get the name (name)
-		if (element->HasAttribute("name"))
-			strName = element->GetAttribute("name");
-		else if (element->HasAttribute("id"))
-			strName = element->GetAttribute("id");
-
-		// Get the destination filename (dest)
-		PString strDest("c:\\temp.wav");
-		if (element->HasAttribute("dest")) 
-			strDest = element->GetAttribute("dest");
-
+  if (currentNode->IsElement()) {
+    
+    PString strName;
+    PXMLElement * element = (PXMLElement *)currentNode;
+    
+    // Get the name (name)
+    if (element->HasAttribute("name"))
+      strName = element->GetAttribute("name");
+    else if (element->HasAttribute("id"))
+      strName = element->GetAttribute("id");
+    
+    // Get the destination filename (dest)
+    PString strDest("c:\\temp.wav");
+    if (element->HasAttribute("dest")) 
+      strDest = element->GetAttribute("dest");
+    
     // see if we need a beep
     if (element->GetAttribute("beep").ToLower() *= "true") {
       PBYTEArray beepData;
@@ -842,36 +845,36 @@ BOOL PVXMLSession::TraverseRecord()
       if (beepData.GetSize() != 0)
         PlayData(beepData);
     }
-
-		// For some reason, if the file is there the create 
-		// seems to fail. 
-		PFile::Remove(strDest);
-		PFilePath file(strDest);
-
-		// Get max record time (maxtime)
-		PTimeInterval maxTime = PMaxTimeInterval;
-		if (element->HasAttribute("maxtime")) 
+    
+    // For some reason, if the file is there the create 
+    // seems to fail. 
+    PFile::Remove(strDest);
+    PFilePath file(strDest);
+    
+    // Get max record time (maxtime)
+    PTimeInterval maxTime = PMaxTimeInterval;
+    if (element->HasAttribute("maxtime")) 
       maxTime = StringToTime(element->GetAttribute("maxtime"));
-
-		// Get terminating silence duration (finalsilence)
-		PTimeInterval termTime(3000);
-		if (element->HasAttribute("finalsilence")) 
-			termTime = StringToTime(element->GetAttribute("finalsilence"));
-
-		// Get dtmf term (dtmfterm)
-		BOOL dtmfTerm = TRUE;
-		if (element->HasAttribute("dtmfterm"))
-			dtmfTerm = !(element->GetAttribute("dtmfterm").ToLower() *= "false");
-
+    
+    // Get terminating silence duration (finalsilence)
+    PTimeInterval termTime(3000);
+    if (element->HasAttribute("finalsilence")) 
+      termTime = StringToTime(element->GetAttribute("finalsilence"));
+    
+    // Get dtmf term (dtmfterm)
+    BOOL dtmfTerm = TRUE;
+    if (element->HasAttribute("dtmfterm"))
+      dtmfTerm = !(element->GetAttribute("dtmfterm").ToLower() *= "false");
+    
     // create a semaphore, and then wait for the recording to terminate
-		StartRecording(file, dtmfTerm, maxTime, termTime);
-		recordSync.Wait(maxTime);
-
+    StartRecording(file, dtmfTerm, maxTime, termTime);
+    recordSync.Wait(maxTime);
+    
     // when this returns, we are done
-		EndRecording();
-	}
-
-	return TRUE;
+    EndRecording();
+  }
+  
+  return TRUE;
 }
 
 PString PVXMLSession::GetXMLError() const
@@ -1884,9 +1887,13 @@ void PVXMLChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
   memset(frameBuffer.GetPointer()+1, 0, 3);
 }
 
-BOOL PVXMLChannelG7231::IsSilenceFrame(const void * /*buf*/, PINDEX len) const
+BOOL PVXMLChannelG7231::IsSilenceFrame(const void * buf, PINDEX len) const
 {
-  return len = 4;
+  if (len == 4)
+    return TRUE;
+  if (buf == NULL)
+    return FALSE;
+  return ((*(const BYTE *)buf)&3) == 2;
 }
 
 ///////////////////////////////////////////////////////////////
