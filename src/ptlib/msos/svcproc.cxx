@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.3 1996/05/30 11:49:10 robertj Exp $
+ * $Id: svcproc.cxx,v 1.4 1996/06/10 09:54:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.4  1996/06/10 09:54:08  robertj
+ * Fixed Win95 service install bug (typo!)
+ *
  * Revision 1.3  1996/05/30 11:49:10  robertj
  * Fixed crash on exit bug.
  *
@@ -373,11 +376,11 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 {
   HKEY key;
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
-                   "SOFTWARE\\Microsoft\\Windows\\CurentVersion\\Run",
-                   &key)) != ERROR_SUCCESS)
+                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           &key)) != ERROR_SUCCESS)
     return FALSE;
 
-  error = RegSetValueEx(key, svc->GetName(), 0, REG_EXPAND_SZ,
+  error = RegSetValueEx(key, svc->GetName(), 0, REG_SZ,
          (LPBYTE)(const char *)svc->GetFile(), svc->GetFile().GetLength() + 1);
 
   RegCloseKey(key);
@@ -389,7 +392,7 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 {
   PString name =
-         "SOFTWARE\\Microsoft\\Windows\\CurentVersion\\Run\\" + svc->GetName();
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\" + svc->GetName();
   error = RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
 
   return error == ERROR_SUCCESS;
