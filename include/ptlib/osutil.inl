@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.32 1995/12/10 11:32:44 robertj Exp $
+ * $Id: osutil.inl,v 1.33 1995/12/23 03:49:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.33  1995/12/23 03:49:46  robertj
+ * Chnaged version numbers.
+ * Added directory constructor from C string literal.
+ *
  * Revision 1.32  1995/12/10 11:32:44  robertj
  * Added extra user information to processes and applications.
  *
@@ -319,6 +323,9 @@ PINLINE void PChannel::AbortCommandString()
 
 PINLINE PDirectory::PDirectory()
   : PFILE_PATH_STRING(".") { Construct(); }
+
+PINLINE PDirectory::PDirectory(const char * cpathname)  
+  : PFILE_PATH_STRING(cpathname) { Construct(); }
   
 PINLINE PDirectory::PDirectory(const PString & pathname)
   : PFILE_PATH_STRING(pathname) { Construct(); }
@@ -647,9 +654,6 @@ PINLINE const PString & PProcess::GetManufacturer() const
 
 PINLINE const PString & PProcess::GetName() const
   { return productName; }
-
-PINLINE const PString & PProcess::GetVersion() const
-  { return version; }
 
 PINLINE const PFilePath & PProcess::GetFile() const
   { return executableFile; }
