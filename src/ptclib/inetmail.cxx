@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.16  2000/11/10 01:08:11  robertj
+ * Added content transfer encoding and automatic base64 translation.
+ *
  * Revision 1.15  2000/11/09 06:01:58  robertj
  * Added MIME version and content disposition to RFC822 class.
  *
@@ -1117,22 +1120,21 @@ PRFC822Channel::PRFC822Channel(Direction direction)
 {
   writeHeaders = direction == Sending;
   writePartHeaders = FALSE;
+  base64 = NULL;
 }
 
 
 PRFC822Channel::~PRFC822Channel()
 {
   Close();
+  delete base64;
 }
 
 
 BOOL PRFC822Channel::Close()
 {
   flush();
-
-  for (PINDEX i = 0; i < boundaries.GetSize(); i++)
-    *this << "\n--" << boundaries[i] << "--\n";
-
+  NextPart(""); // Flush out all the parts
   return PIndirectChannel::Close();
 }
 
@@ -1161,6 +1163,9 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
     if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
       return FALSE;
 
+    if (base64 != NULL)
+      base64->StartEncoding();
+
     writeHeaders = FALSE;
   }
 
@@ -1174,10 +1179,18 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
     if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
       return FALSE;
 
+    if (base64 != NULL)
+      base64->StartEncoding();
+
     writePartHeaders = FALSE;
   }
 
-  return PIndirectChannel::Write(buf, len);
+  if (base64 == NULL)
+    return PIndirectChannel::Write(buf, len);
+
+  base64->ProcessEncoding(buf, len);
+  PString str = base64->GetEncodedString();
+  return PIndirectChannel::Write(str.GetPointer(), str.GetLength());
 }
 
 
@@ -1193,9 +1206,8 @@ BOOL PRFC822Channel::OnOpen()
 
 void PRFC822Channel::NewMessage(Direction direction)
 {
-  for (PINDEX i = 0; i < boundaries.GetSize(); i++)
-    *this << "\n--" << boundaries[i] << "--\n";
-  flush();
+
+  NextPart(""); // Flush out all the parts
 
   boundaries.RemoveAll();
   headers.RemoveAll();
@@ -1238,7 +1250,12 @@ BOOL PRFC822Channel::MultipartMessage(const PString & boundary)
 
 void PRFC822Channel::NextPart(const PString & boundary)
 {
-  flush();
+  PBase64 * oldBase64 = base64;
+
+  if (base64 != NULL) {
+    base64 = NULL;
+    *this << oldBase64->CompleteEncoding() << '\n';
+  }
 
   while (boundaries.GetSize() > 0) {
     if (boundaries[0] == boundary)
@@ -1247,7 +1264,11 @@ void PRFC822Channel::NextPart(const PString & boundary)
     boundaries.RemoveAt(0);
   }
 
+  flush();
+
+  base64 = oldBase64;
   writePartHeaders = boundaries.GetSize() > 0;
+  partHeaders.RemoveAll();
 }
 
 
@@ -1287,9 +1308,24 @@ void PRFC822Channel::SetContentType(const PString & contentType)
 }
 
 
-void PRFC822Channel::SetContentAttachment(const PString & filename)
+void PRFC822Channel::SetContentAttachment(const PFilePath & file)
 {
-  SetHeaderField(ContentDispositionTag, "attachment; filename=\"" + filename + '"');
+  PString name = file.GetFileName();
+  SetHeaderField(ContentDispositionTag, "attachment; filename=\"" + name + '"');
+  SetHeaderField(ContentTypeTag,
+                 PMIMEInfo::GetContentType(file.GetType())+"; name=\"" + name + '"');
+}
+
+
+void PRFC822Channel::SetTransferEncoding(const PString & encoding, BOOL autoTranslate)
+{
+  SetHeaderField(ContentTransferEncodingTag, encoding);
+  if ((encoding *= "base64") && autoTranslate)
+    base64 = new PBase64;
+  else {
+    delete base64;
+    base64 = NULL;
+  }
 }
 
 
