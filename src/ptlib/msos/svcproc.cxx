@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.10 1996/10/08 13:04:43 robertj Exp $
+ * $Id: svcproc.cxx,v 1.11 1996/10/14 03:09:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.11  1996/10/14 03:09:58  robertj
+ * Fixed major bug in debug outpuit locking up (infinite loop)
+ * Changed menus so cannot start service if in debug mode
+ *
  * Revision 1.10  1996/10/08 13:04:43  robertj
  * Rewrite to use standard window isntead of console window.
  *
@@ -393,6 +397,12 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       for (int i = 0; i < PSystemLog::NumLogLevels; i++)
         CheckMenuItem((HMENU)wParam, 2000+i, MF_BYCOMMAND|MF_UNCHECKED);
       CheckMenuItem((HMENU)wParam, 2000+GetLogLevel(), MF_BYCOMMAND|MF_CHECKED);
+
+      int enableItems = MF_BYCOMMAND|(debugMode ? MF_GRAYED : MF_ENABLED);
+      EnableMenuItem((HMENU)wParam, 1000+SvcCmdStart, enableItems);
+      EnableMenuItem((HMENU)wParam, 1000+SvcCmdStop, enableItems);
+      EnableMenuItem((HMENU)wParam, 1000+SvcCmdPause, enableItems);
+      EnableMenuItem((HMENU)wParam, 1000+SvcCmdResume, enableItems);
       break;
     }
 
@@ -478,7 +488,9 @@ void PServiceProcess::DebugOutput(const char * out)
   SendMessage(debugWindow, EM_SETSEL, max, max);
   char * lf;
   while ((lf = strchr(out, '\n')) != NULL) {
-    if (*(lf-1) != '\r') {
+    if (*(lf-1) == '\r')
+      out = lf+1;
+    else {
       *lf++ = '\0';
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
