@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.12  1998/10/15 05:41:49  robertj
+ * New memory leak check code.
+ *
  * Revision 1.11  1998/09/24 03:30:48  robertj
  * Added open software license.
  *
@@ -72,6 +75,8 @@
 #include <xcmcmsxt.h>
 #endif
 
+
+#define new PNEW
 
 
 //////////////////////////////////////////////////////////////////////////////
