@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.57  2002/02/01 01:17:36  robertj
+ * Fixed bug in encoding empty strings (H.450 issue), thanks Frans Dams, Frank Derks et al.
+ *
  * Revision 1.56  2002/01/30 08:40:55  robertj
  * Fixed incorrect decode function in BER string decode, thanks ct_dev@sohu.com
  *
@@ -2077,6 +2080,12 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
   if (ConstrainedLengthDecode(strm, len) < 0)
     return FALSE;
 
+  if (len == 0) { // 10.9.3.3
+    value.SetSize(1);
+    value[0] = '\0';
+    return TRUE;
+  }
+
   unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
   unsigned totalBits = upperLimit*nBits;
 
@@ -2113,11 +2122,15 @@ void PASN_ConstrainedString::EncodePER(PPER_Stream & strm) const
   PINDEX len = value.GetSize()-1;
   ConstrainedLengthEncode(strm, len);
 
+  if (len == 0) // 10.9.3.3
+    return;
+
   unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
   unsigned totalBits = upperLimit*nBits;
 
   if (constraint == Unconstrained ||
             (lowerLimit == (int)upperLimit ? (totalBits > 16) : (totalBits >= 16))) {
+    // 26.5.7
     if (nBits == 8) {
       strm.BlockEncode((const BYTE *)(const char *)value, len);
       return;
