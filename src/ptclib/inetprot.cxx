@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.16 1996/03/26 00:58:46 robertj Exp $
+ * $Id: inetprot.cxx,v 1.17 1996/03/31 08:57:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
- * Revision 1.16  1996/03/26 00:58:46  robertj
- * Fixed ParseResponse() return value.
+ * Revision 1.17  1996/03/31 08:57:34  robertj
+ * Changed MIME type for no extension from binary to text.
+ * Added flush of data before sending a command.
+ * Added version of WriteCommand() and ExecteCommand() without argument string.
  *
  * Revision 1.15  1996/03/18 13:33:13  robertj
  * Fixed incompatibilities to GNU compiler where PINDEX != int.
@@ -284,7 +286,6 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
 
   if (count > 0)
     str = PString(line, count);
-
   return gotEndOfLine;
 }
 
@@ -312,7 +313,14 @@ void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
 }
 
 
-BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
+BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber)
+{
+  if (cmdNumber >= commandNames.GetSize())
+    return FALSE;
+  return WriteLine(commandNames[cmdNumber]);
+}
+
+BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber, const PString & param)
 {
   if (cmdNumber >= commandNames.GetSize())
     return FALSE;
@@ -325,8 +333,10 @@ BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
 
 BOOL PApplicationSocket::ReadCommand(PINDEX & num, PString & args)
 {
-  if (!ReadLine(args))
-    return FALSE;
+  do {
+    if (!ReadLine(args))
+      return FALSE;
+  } while (args.IsEmpty());
 
   PINDEX endCommand = args.Find(' ');
   if (endCommand == P_MAX_INDEX)
@@ -410,16 +420,21 @@ PINDEX PApplicationSocket::ParseResponse(const PString & line)
 }
 
 
-int PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
+int PApplicationSocket::ExecuteCommand(PINDEX cmd)
+{
+  return ExecuteCommand(cmd, PString());
+}
+
+
+int PApplicationSocket::ExecuteCommand(PINDEX cmd,
                                        const PString & param)
 {
-  if (!WriteCommand(cmdNumber, param))
-    return -1;
-
-  if (!ReadResponse())
-    return -1;
-
-  return lastResponseCode;
+  PTimeInterval oldTimeout = GetReadTimeout();
+  SetReadTimeout(0);
+  while (ReadChar() >= 0)
+    ;
+  SetReadTimeout(oldTimeout);
+  return WriteCommand(cmd, param) && ReadResponse() ? lastResponseCode : -1;
 }
 
 
@@ -560,10 +575,14 @@ void PMIMEInfo::SetAssociation(const PStringToString & allTypes, BOOL merge)
 }
 
 
-PString PMIMEInfo::GetContentType(const PString & fileType)
+PString PMIMEInfo::GetContentType(const PString & fType)
 {
-  if (contentTypes.GetAt(PCaselessString(fileType)) != NULL)
-    return contentTypes[fileType];
+  if (fType.IsEmpty())
+    return "text/plain";
+
+  if (contentTypes.Contains(fType))
+    return contentTypes[fType];
+
   return "application/octet-stream";
 }
 
