@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.21  2001/11/14 06:06:26  robertj
+ * Added functions on PTimer to get reset value and restart timer to it.
+ *
  * Revision 1.20  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -202,6 +205,14 @@ class PTimer : public PTimeInterval
        TRUE if timer paused.
      */
     BOOL IsPaused() const;
+
+    /** Restart a timer continuing from the time it was initially.
+     */
+    void Reset();
+
+    /** Get the time this timer was set to initially.
+     */
+    const PTimeInterval & GetResetTime() const;
   //@}
 
   /**@name Notification functions */
