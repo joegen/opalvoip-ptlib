@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2003/04/17 00:03:23  craigs
+ * Changed default port from 6666 to 8000 to remove conflicts with other programs
+ * that use that port by default
+ *
  * Revision 1.2  2002/10/23 15:58:18  craigs
  * Fixed problem with parsing requests, and added sample return value
  *
@@ -22,7 +26,7 @@
 
 PCREATE_PROCESS(Xmlrpcsrvr);
 
-const WORD DefaultHTTPPort = 6666;
+const WORD DefaultHTTPPort = 8000;
 
 
 Xmlrpcsrvr::Xmlrpcsrvr()
