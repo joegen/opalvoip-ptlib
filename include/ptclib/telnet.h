@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.16 1995/06/17 11:13:32 robertj Exp $
+ * $Id: telnet.h,v 1.17 1996/08/08 10:08:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
+ * Revision 1.17  1996/08/08 10:08:54  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.16  1995/06/17 11:13:32  robertj
  * Documentation update.
  *
@@ -62,6 +65,8 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
+
+#include <sockets.h>
 
 
 PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
