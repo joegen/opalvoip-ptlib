@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.16  1998/10/30 11:22:14  robertj
+ * Added constructors that take strings as well as const char *'s.
+ *
  * Revision 1.15  1998/10/30 05:24:29  robertj
  * Added return value to << and >> operators for shifting arguments.
  *
@@ -93,9 +96,25 @@ PDECLARE_CLASS(PArgList, PObject)
 
   public:
     PArgList(
-      const char * theArgStr = NULL,   // A string constituting the arguments
+      const char * theArgPtr = NULL,   // A string constituting the arguments
       const char * argumentSpecPtr = NULL,
       /* The specification C string for argument options. See description for
+         details.
+       */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
+    );
+    PArgList(
+      const PString & theArgStr,   // A string constituting the arguments
+      const char * argumentSpecPtr = NULL,
+      /* The specification C string for argument options. See description for
+         details.
+       */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
+    );
+    PArgList(
+      const PString & theArgStr,   // A string constituting the arguments
+      const PString & argumentSpecStr,
+      /* The specification string for argument options. See description for
          details.
        */
       BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
