@@ -16,10 +16,10 @@
 #ifndef _INC_ERRNO
 #define _INC_ERRNO
 
+#ifdef  __cplusplus
+
 #include <winbase.h>
 
-
-#ifdef  __cplusplus
 extern "C" {
 #endif
 
