@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.49  2000/03/17 03:45:40  craigs
+ * Fixed problem with connect call hanging
+ *
  * Revision 1.48  2000/02/17 23:47:40  robertj
  * Fixed error in check for SIOCGHWADDR define, thanks Markus Storm.
  *
@@ -165,36 +168,53 @@ int PSocket::os_socket(int af, int type, int protocol)
   int handle;
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
-    // make the socket non-blocking and close on exec
-#ifndef __BEOS__
-#ifndef P_PTHREADS
-    DWORD cmd = 1;
-#endif
-#else
+#ifdef __BEOS__
+// The BEOS implementation assumes a non-threaded system. Oh well!
     int cmd = -1;
-#endif
-
-    if (
-#ifndef __BEOS__
-#ifndef P_PTHREADS
-        !ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
-#endif
-        !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
-      ::close(handle);
-#else
-	!ConvertOSError(::setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &cmd, sizeof(int)))) {
+    if (!ConvertOSError(::setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &cmd, sizeof(int)))) {
       ::closesocket(handle);
-#endif
       return -1;
     }
-//PError << "socket " << handle << " created" << endl;
+#else
+
+#ifndef P_PTHREADS
+// non PThread unixes need non-blocking sockets
+    DWORD cmd = 1;
+    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) {
+        !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
+      ::close(handle);
+      return -1;
+    }
+#endif
+#endif
+
+    // close socket on exec
+    if (!ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
+      ::close(handle);
+      return -1;
+    }
   }
   return handle;
 }
 
 int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
+  // need to use non-blocking form of connect, so we can abort it if it fails
+  // but only if not in PThreads, as non-PThreads versions are already non-blocking
+
+#ifdef P_PTHREADS
+  DWORD cmd = 1;
+  if (!ConvertOSError(::ioctl(os_handle, FIONBIO, &cmd)))
+    return -1;
+#endif
+
   int val = ::connect(os_handle, addr, size);
+
+#ifdef P_PTHREADS
+  cmd = 0;
+  if (!ConvertOSError(::ioctl(os_handle, FIONBIO, &cmd)))
+    return -1;
+#endif
 
   if (val == 0)
     return 0;
@@ -202,8 +222,15 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   if (errno != EINPROGRESS)
     return -1;
 
-  // wait for the connect to occur, or not
-  val = PThread::Current()->PXBlockOnIO(os_handle, PXConnectBlock, readTimeout);
+  // use the os_select call, as that will be aborted by a thread close, whereas PXBlockOnIO cannot
+  fd_set writeFds, emptyFds;
+  FD_ZERO(&writeFds);
+  FD_ZERO(&emptyFds);
+  FD_SET(os_handle, &writeFds);
+  PIntArray handles;
+  handles.SetAt(0, os_handle);
+
+  val = os_select(os_handle+1, emptyFds, writeFds, emptyFds, handles, writeTimeout);
 
   // check the response
   if (val < 0)
@@ -214,7 +241,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return -1;
   }
 
-#ifndef __BEOS__
+//#ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
@@ -223,10 +250,10 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return 0;
 
   errno = optval;
-#endif //!__BEOS__
+//#endif //!__BEOS__
+
   return -1;
 }
-
 
 int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
                        const PTimeInterval & timeout)

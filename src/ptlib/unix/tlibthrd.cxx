@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.35  2000/03/17 03:45:40  craigs
+ * Fixed problem with connect call hanging
+ *
  * Revision 1.34  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -293,12 +296,15 @@ void PThread::InitialiseProcessThread()
 {
   PX_origStackSize    = 0;
   autoDelete          = FALSE;
-  PX_waitingSemaphore = NULL;
   PX_threadId         = pthread_self();
   PX_suspendCount     = 0;
   ::pipe(termPipe);
 
+#ifndef P_HAS_SEMAPHORES
+  PX_waitingSemaphore = NULL;
   PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
+#endif
+
   PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
@@ -317,8 +323,10 @@ PThread::PThread(PINDEX stackSize,
   PX_origStackSize = stackSize;
   autoDelete       = (deletion == AutoDeleteThread);
 
+#ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
   pthread_mutex_init(&PX_WaitSemMutex, NULL);
+#endif
 
   PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
@@ -337,8 +345,13 @@ PThread::~PThread()
   ::close(termPipe[0]);
   ::close(termPipe[1]);
 
-  PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
-  PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
+#ifndef P_HAS_SEMAPHORES
+  //PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
+  pthread_mutex_destroy(&PX_WaitSemMutex);
+#endif
+
+  //PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
+  pthread_mutex_destroy(&PX_suspendMutex);
 }
 
 
@@ -382,11 +395,14 @@ void * PThread::PX_ThreadStart(void * arg)
 
   // if we are not supposed to start suspended, then don't wait
   // if we are supposed to start suspended, then wait for a resume
-  PAssertOS(pthread_mutex_lock(&thread->PX_suspendMutex) == 0);
-  if (thread->PX_suspendCount ==  0) 
-    PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
-  else {
-    PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
+
+  //PAssertOS(pthread_mutex_lock(&thread->PX_suspendMutex) == 0);
+  //if (thread->PX_suspendCount ==  0) 
+  //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
+  //else {
+  //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
+
+  if (thread->PX_suspendCount != 0) {
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
@@ -459,7 +475,9 @@ void PThread::Terminate()
   if (PX_origStackSize <= 0)
     return;
 
-  PAssert(!IsTerminated(), "Cannot terminate a thread which is already terminated");
+  if (IsTerminated())
+    return;
+
   if (Current() == this)
     pthread_exit(NULL);
   else {
