@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.131  2003/11/08 01:43:05  rjongbloed
+ * Fixed race condition that could start two housekeeping threads, thanks Ted Szoczei
+ *
  * Revision 1.130  2003/11/05 05:56:08  csoutheren
  * Added #pragma to include required libs
  *
@@ -1414,10 +1417,12 @@ void PProcess::HouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
+  deleteThreadMutex.Wait();
   if (houseKeeper == NULL)
     houseKeeper = new HouseKeepingThread;
   else
     houseKeeper->breakBlock.Signal();
+  deleteThreadMutex.Signal();
 }
 
 
