@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.40  2002/07/17 08:02:53  robertj
+ * Allowed for adjustable copyright holder
+ *
  * Revision 1.39  2002/02/05 22:53:14  robertj
  * Changed default for HTTP listener to reuse addresses.
  *
@@ -221,6 +224,10 @@ class PHTTPServiceProcess : public PServiceProcess
       const char * gifFilename;   // File name for the products GIF file
       int gifWidth;               // Size of GIF image, if zero then none is used
       int gifHeight;              //   in the generated HTML.
+
+      const char * copyrightHolder;   // Name of copyright holder
+      const char * copyrightHomePage; // Home page for copyright holder
+      const char * copyrightEmail;    // E-Mail address for copyright holder
     };
 
     PHTTPServiceProcess(const Info & inf);
@@ -286,6 +293,9 @@ class PHTTPServiceProcess : public PServiceProcess
     PString    manufacturersEmail;
     PString    productNameHTML;
     PString    gifHTML;
+    PString    copyrightHolder;
+    PString    copyrightHomePage;
+    PString    copyrightEmail;
 
     void ShutdownListener();
     void BeginRestartSystem();
