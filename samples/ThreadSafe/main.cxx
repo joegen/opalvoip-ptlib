@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2004/10/14 12:31:46  rjongbloed
+ * Added synchronous mode for safe collection RemoveAll() to wait until all objects
+ *   have actually been deleted before returning.
+ *
  * Revision 1.7  2004/09/07 11:32:02  rjongbloed
  * Changed function name in PSafeCollection to something more standard for collections
  *
@@ -94,9 +98,9 @@ ThreadSafe::ThreadSafe()
 
 ThreadSafe::~ThreadSafe()
 {
-  unsorted.RemoveAll();
-  sorted.RemoveAll();
-  sparse.RemoveAll();
+  unsorted.RemoveAll(TRUE);
+  sorted.RemoveAll(TRUE);
+  sparse.RemoveAll(TRUE);
 }
 
 void ThreadSafe::Usage()
@@ -135,10 +139,8 @@ void ThreadSafe::Main()
     Test2(args);
   else if (args.HasOption('3'))
     Test3(args);
-  else Usage();
-
-  PTrace::ClearOptions(0);
-  PTrace::SetLevel(0);
+  else
+    Usage();
 }
 
 
