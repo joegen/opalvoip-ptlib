@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.28 1996/02/25 03:10:55 robertj Exp $
+ * $Id: sockets.cxx,v 1.29 1996/02/25 11:30:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.29  1996/02/25 11:30:08  robertj
+ * Changed Listen so can do a listen on a socket that is connected.
+ *
  * Revision 1.28  1996/02/25 03:10:55  robertj
  * Moved some socket functions to platform dependent code.
  *
@@ -634,20 +637,24 @@ BOOL PTCPSocket::Connect(const PString & host)
 
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
 {
-  // close the port if it is already open
-  if (IsOpen())
-    Close();
+  if (!IsOpen()) {
+    // make sure we have a port
+    if (newPort != 0)
+      port = newPort;
 
-  // make sure we have a port
-  if (newPort != 0)
-    port = newPort;
+    // attempt to create a socket
+    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
+      return FALSE;
 
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
-    return FALSE;
+    // bind it to a port
+    if (!_Bind()) {
+      _Close();
+      return FALSE;
+    }
+  }
 
   // attempt to listen
-  if (_Bind() && ConvertOSError(::listen(os_handle, queueSize)))
+  if (ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
 
   _Close();
@@ -759,10 +766,6 @@ BOOL PUDPSocket::Connect(const PString & host)
 
 BOOL PUDPSocket::Listen(unsigned, WORD newPort)
 {
-  // close the port if it is already open
-  if (IsOpen())
-    Close();
-
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
