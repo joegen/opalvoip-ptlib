@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.4  2003/04/01 07:05:29  robertj
+ * Added ability to specify host:port in opening an LDAP server
+ *
  * Revision 1.3  2003/03/31 09:02:43  robertj
  * Added missing return for error number.
  *
@@ -71,7 +74,11 @@ class PLDAPSession : public PObject
       */
     ~PLDAPSession();
 
-    /**Open the LDAP session to the specified server
+    /**Open the LDAP session to the specified server.
+       The server name string is of the form hostip[:port] where hostip is a
+       host name or IP address and the :port is an optional port number. If
+       not present then the port variable is used. If that is also zero then
+       the default port of 369 is used.
       */
     BOOL Open(
       const PString & server,
