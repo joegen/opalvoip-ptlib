@@ -13,12 +13,13 @@
 #define TYPES_H
 
 #include <stdlib.h>
-#include <ptlib/contain.h>
-
 #ifndef _OFF_T_DEFINED
 typedef long off_t;
 #define _OFF_T_DEFINED
 #endif
+
+#ifdef __cplusplus
+#include <ptlib/contain.h>
 
 typedef DWORD  SERVICE_STATUS_HANDLE;
 typedef struct _SERVICE_STATUS {
@@ -33,4 +34,5 @@ typedef struct _SERVICE_STATUS {
 
 #define HAVE_STRING_H 1
 
+#endif 
 #endif  /* TYPES_H */
