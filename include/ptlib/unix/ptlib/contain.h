@@ -57,9 +57,10 @@ typedef unsigned short	   WORD;
 typedef	int    	           PInt32;	// 32 bit
 typedef unsigned int 	   DWORD;
 
-#define P_HAS_INT64
+#ifdef P_HAS_INT64
 typedef signed long long   PInt64;
 typedef unsigned long long PUInt64;	// 8 bytes
+#endif
 
 typedef size_t 		      PINDEX;
 typedef int		      INT;
