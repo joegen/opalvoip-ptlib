@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.37 1996/03/31 09:06:41 robertj Exp $
+ * $Id: sockets.cxx,v 1.38 1996/04/15 10:59:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.38  1996/04/15 10:59:41  robertj
+ * Opened socket on UDP sockets so ReadFrom/WriteTo work when no Connect/Listen.
+ *
  * Revision 1.37  1996/03/31 09:06:41  robertj
  * Added socket shutdown function.
  *
@@ -838,12 +841,14 @@ void PTCPSocket::OnOutOfBand(const void *, PINDEX)
 PUDPSocket::PUDPSocket(WORD newPort)
   : PIPSocket(newPort)
 {
+  ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
 }
 
 
 PUDPSocket::PUDPSocket(const PString & service)
   : PIPSocket("udp", service)
 {
+  ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
 }
 
 
@@ -864,12 +869,10 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 BOOL PUDPSocket::Connect(const PString & host)
 {
   // close the port if it is already open
-  if (IsOpen())
-    Close();
-
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
-    return FALSE;
+  if (!IsOpen())
+    // attempt to create a socket
+    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
+      return FALSE;
 
   // attempt to connect
   if (_Connect(host))
@@ -886,9 +889,11 @@ BOOL PUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
   if (newPort != 0)
     port = newPort;
 
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
-    return FALSE;
+  // close the port if it is already open
+  if (!IsOpen())
+    // attempt to create a socket
+    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
+      return FALSE;
 
   // attempt to listen
   if (_Bind(reuse))
