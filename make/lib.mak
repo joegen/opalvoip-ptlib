@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.26  2002/02/01 11:11:27  rogerh
+# Use .$(MAJOR_VERSION) with soname (instead of hard coding .1)
+#
 # Revision 1.25  2002/01/31 06:55:22  robertj
 # Removed redundant inclusion of ssl, is already in unix.mak
 #
@@ -135,10 +138,10 @@ endif
 # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
 # directly and passing it the equivalent arguments...jpd@louisiana.edu
 ifeq ($(OSTYPE),solaris)
-LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).1
+LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).$(MAJOR_VERSION)
 LD = ld
 else
-LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).1
+LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).$(MAJOR_VERSION)
 LD = $(CPLUS)
 endif
 
