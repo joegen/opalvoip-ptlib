@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.6  1999/02/06 05:49:44  robertj
+ * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ *
  * Revision 1.5  1998/11/30 21:52:03  robertj
  * New directory structure.
  *
@@ -52,7 +55,7 @@
 
 #ifndef RTLD_LAZY
 #message "No implementation for dynamic library functions"
-#endif
+#else
 
 PDynaLink::PDynaLink()
 {
@@ -111,3 +114,9 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
   func = (Function &)p;
   return TRUE;
 }
+
+#endif
+
+
+// End of file
+

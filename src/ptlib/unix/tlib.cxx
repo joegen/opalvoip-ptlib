@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.39  1999/02/06 05:49:44  robertj
+ * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ *
  * Revision 1.38  1999/01/11 12:10:39  robertj
  * Improved operating system version display.
  *
@@ -174,6 +177,17 @@ extern "C" int select(int width,
 			fd_set *exceptfds,
 			struct timeval *timeout);
 #endif
+
+
+#if defined(__BEOS__)
+__pid_t wait3 (__WAIT_STATUS __stat_loc,
+			   int __options, struct rusage * __usage)
+{
+	return 0; // Don't know yet what to do 
+}
+#endif
+
+
 
 PString PProcess::GetOSClass()
 {
