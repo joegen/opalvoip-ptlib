@@ -284,7 +284,7 @@ void PXML::AddCharacterData(const char * data, int len)
   PString str(data, len);
 
   if (lastElement != NULL) {
-    PAssert(lastElement->IsData(), "lastElement set by non-data element");
+    PAssert(!lastElement->IsElement(), "lastElement set by non-data element");
     if ((options & NoIgnoreWhiteSpace) == 0)
       str = str.Trim();
     lastElement->SetString(lastElement->GetString() & str, FALSE);
@@ -392,6 +392,24 @@ void PXMLObject::SetDirty()
     parent->SetDirty();
 }
 
+PXMLObject * PXMLObject::GetNextObject()
+{
+	if (parent == NULL)
+		return NULL;
+
+  // find our index in our parent's list
+  PINDEX idx = parent->FindObject(this);
+  if (idx == P_MAX_INDEX)
+    return NULL;
+
+  // get the next object
+  ++idx;
+  if (idx >= parent->GetSize())
+    return NULL;
+
+  return (*parent).GetElement(idx);
+}
+
 ///////////////////////////////////////////////////////
 
 PXMLData::PXMLData(PXMLElement * _parent, const PString & _value)
@@ -443,6 +461,12 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PSt
   dirty = FALSE;
   AddSubObject(new PXMLData(this, data));
 }
+
+PINDEX PXMLElement::FindObject(PXMLObject * ptr) const
+{
+  return subObjects.GetObjectsIndex(ptr);
+}
+
 
 PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX start) const
 {
@@ -581,7 +605,7 @@ PString PXMLElement::GetData() const
   PString str;
   PINDEX idx;
   for (idx = 0; idx < subObjects.GetSize(); idx++) {
-    if (subObjects[idx].IsData()) {
+    if (!subObjects[idx].IsElement()) {
       PXMLData & dataElement = ((PXMLData &)subObjects[idx]);
       str = str & dataElement.GetString();
     }
