@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.51  2000/04/05 02:55:11  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.50  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -943,6 +946,15 @@ BOOL PConsoleChannel::Close()
 //
 //  PTime
 //
+
+PTime::PTime()
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  theTime = tv.tv_sec;
+  microseconds = tv.tv_usec;
+}
+
 
 BOOL PTime::GetTimeAMPM()
 {
