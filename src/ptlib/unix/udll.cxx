@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.9  2000/03/10 08:21:17  rogerh
+ * Add correct OpenBSD support
+ *
  * Revision 1.8  2000/03/09 18:41:53  rogerh
  * Workaround for OpenBSD. This breaks the functionality on OpenBSD but
  * gains us a clean compilation. We can return to this problem later.
@@ -87,14 +90,15 @@ PString PDynaLink::GetExtension()
 
 BOOL PDynaLink::Open(const PString & name)
 {
-#if defined(P_OPENBSD)
-#warning PDynaLink::Open not defined for this system
-  return FALSE;
-#else
   Close();
+
+#if defined(P_OPENBSD)
+  dllHandle = dlopen((char *)(const char *)name, RTLD_LAZY);
+#else
   dllHandle = dlopen((const char *)name, RTLD_LAZY);
-  return IsLoaded();
 #endif
+
+  return IsLoaded();
 }
 
 void PDynaLink::Close()
@@ -116,20 +120,20 @@ BOOL PDynaLink::GetFunction(PINDEX, Function &)
 
 BOOL PDynaLink::GetFunction(const PString & name, Function & func)
 {
-#if defined(P_OPENBSD)
-#warning PDynaLink::GetFunction not defined for this system
-  return FALSE;
-#else
   if (dllHandle == NULL)
     return FALSE;
 
+#if defined(P_OPENBSD)
+  void * p = dlsym(dllHandle, (char *)(const char *)name);
+#else
   void * p = dlsym(dllHandle, (const char *)name);
+#endif
+
   if (p == NULL)
     return FALSE;
 
   func = (Function &)p;
   return TRUE;
-#endif
 }
 
 #endif
