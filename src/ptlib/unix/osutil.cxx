@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.59  2001/02/23 07:16:36  rogerh
+ * Darwin (MACOS X) does not have thread safe localtime_t() and gmtime_r()
+ * functions. Use the unsafe localtime() and gmtime() calls for now.
+ *
  * Revision 1.58  2001/02/13 06:59:57  robertj
  * Fixed problem with operator= in PDirectory class, part of larger change previously made.
  *
@@ -1307,27 +1311,39 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 }
 
 // note that PX_tm is local storage inside the PTime instance
+
 #ifdef P_PTHREADS
 struct tm * PTime::os_localtime(const time_t * clock, struct tm * ts)
 {
+#ifdef P_MACOSX
+#warning LOCALTIME_R NOT DEFINED
+  return ::localtime(clock);
+#else
   return ::localtime_r(clock, ts);
+#endif
+}
 #else
 struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
 {
   return ::localtime(clock);
-#endif
 }
+#endif
 
 #ifdef P_PTHREADS
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm * ts)
 {
+#ifdef P_MACOSX
+#warning GMTIME_R NOT DEFINED
+  return ::gmtime(clock);
+#else
   return ::gmtime_r(clock, ts);
+#endif
+}
 #else
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
 {
   return ::gmtime(clock);
-#endif
 }
-
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
