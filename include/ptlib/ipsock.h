@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.18 1996/02/08 12:11:19 robertj Exp $
+ * $Id: ipsock.h,v 1.19 1996/02/25 03:00:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.19  1996/02/25 03:00:31  robertj
+ * Added operator<< to PIPSocket::Address.
+ * Moved some socket functions to platform dependent code.
+ *
  * Revision 1.18  1996/02/08 12:11:19  robertj
  * Added GetPeerAddress that returns a port.
  *
@@ -138,6 +142,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         BYTE Byte2() const;
         BYTE Byte3() const;
         BYTE Byte4() const;
+      friend ostream & operator<<(ostream & s, Address & a)
+        { return s << (PString)a; }
     };
 
     static BOOL GetAddress(
@@ -309,15 +315,6 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
   protected:
 #ifdef P_HAS_BERKELEY_SOCKETS
-    BOOL _Socket(
-      int type  // Type of socket to open.
-    );
-    /* Create a socket using the specified protocol.
-
-       <H2>Returns:</H2>
-       TRUE if successful.
-     */
-
     BOOL _Connect(
       const PString & host  // IP number of remote host to connect to.
     );
