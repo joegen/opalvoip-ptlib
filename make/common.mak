@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.72  2002/02/18 07:39:04  robertj
+# Changed version number increment to more portable expr function.
+#
 # Revision 1.71  2002/01/28 10:33:20  rogerh
 # use CPLUS instead of gcc. Makes it work on Mac OS X
 #
@@ -601,7 +604,7 @@ tagbuild ::
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Pre-tagging check in for $(CVS_TAG)." $(VERSION_FILE)
 	cvs tag -c $(CVS_TAG)
-	let BLD=$(BUILD_NUMBER)+1 ; \
+	BLD=`expr $(BUILD_NUMBER) + 1` ; \
 	echo "Incrementing to build number $$BLD"; \
 	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
