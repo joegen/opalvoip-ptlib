@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.25  2003/12/14 10:01:03  rjongbloed
+ * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
+ *
  * Revision 1.24  2003/11/18 06:46:59  csoutheren
  * Changed to support video input plugins
  *
@@ -137,6 +140,9 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     /** Is the device a camera, and obtain video
      */
     static PStringList GetInputDeviceNames();
+
+    virtual PStringList GetDeviceNames() const
+      { return GetInputDeviceNames(); }
 
     /**Open the device given the device name.
       */
