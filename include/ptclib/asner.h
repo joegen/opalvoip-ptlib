@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.43  2004/04/18 04:33:35  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.42  2003/12/14 10:21:29  rjongbloed
  * Fixed bug in length incorrectlty decoded from ASN and (apparently) rare circumstances. Thanks pangxg@hotmail.com.
  * Cleaned up return values to be BOOL rather than int for some functions.
@@ -499,11 +503,11 @@ class PASN_ObjectId : public PASN_Object
     void SetValue(const PUnsignedArray & numbers) { value = numbers; }
     void SetValue(const unsigned * numbers, PINDEX size);
 
-    BOOL operator==(const char * dotstr) const;
-    BOOL operator!=(const char * dotstr) const      { return !operator==(dotstr); }
-    BOOL operator==(const PString & dotstr) const   { return  operator==((const char *)dotstr); }
-    BOOL operator!=(const PString & dotstr) const   { return !operator==((const char *)dotstr); }
-    BOOL operator==(const PASN_ObjectId & id) const { return value == id.value; }
+    bool operator==(const char * dotstr) const;
+    bool operator!=(const char * dotstr) const      { return !operator==(dotstr); }
+    bool operator==(const PString & dotstr) const   { return  operator==((const char *)dotstr); }
+    bool operator!=(const PString & dotstr) const   { return !operator==((const char *)dotstr); }
+    bool operator==(const PASN_ObjectId & id) const { return value == id.value; }
 
     PINDEX GetSize() const { return value.GetSize(); }
     unsigned operator[](PINDEX idx) const { return value[idx]; }
@@ -547,7 +551,7 @@ class PASN_BitString : public PASN_ConstrainedObject
     unsigned GetSize() const { return totalBits; }
     BOOL SetSize(unsigned nBits);
 
-    BOOL operator[](PINDEX bit) const;
+    bool operator[](PINDEX bit) const;
     void Set(unsigned bit);
     void Clear(unsigned bit);
     void Invert(unsigned bit);
