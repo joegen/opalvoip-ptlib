@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov (openh323@kiryanov.com), Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.9  2002/02/09 00:52:01  robertj
+ * Slight adjustment to API and documentation for volume functions.
+ *
  * Revision 1.8  2002/02/07 20:57:21  dereks
  * add SetVolume and GetVolume methods to PSoundChannel
  *
@@ -1955,13 +1958,13 @@ BOOL PSoundChannel::IsOpen() const
 
 
 
-BOOL PSoundChannel::SetVolume(int newVal)
+BOOL PSoundChannel::SetVolume(unsigned newVolume)
 {
   cerr << __FILE__<< "PSoundChannel :: SetVolume called in error. Please fix" << endl;
   return FALSE;
 }
 
-BOOL  PSoundChannel::GetVolume(int &devVol)
+BOOL  PSoundChannel::GetVolume(unsigned & volume)
 {
   cerr << __FILE__<< "PSoundChannel :: GetVolume called in error. Please fix" << endl;
   return FALSE;
