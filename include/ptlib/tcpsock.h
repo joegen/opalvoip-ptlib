@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.12 1995/06/17 11:13:31 robertj Exp $
+ * $Id: tcpsock.h,v 1.13 1995/12/10 11:43:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.13  1995/12/10 11:43:34  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.12  1995/06/17 11:13:31  robertj
  * Documentation update.
  *
@@ -110,6 +113,24 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the
        <A>PIPSocket::SetPort()</A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number. This is an
+       "accepting" socket. When a "listening" socket has a pending connection
+       to make, this will accept a connection made by the "connecting" socket
+       created to establish a link.
+
+       The port that the socket uses is the one used in the <A>Listen()</A>
+       command of the <CODE>socket</CODE> parameter.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
