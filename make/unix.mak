@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.168  2003/04/17 07:29:27  robertj
+# Fixed solaris link problem
+#
 # Revision 1.167  2003/04/17 00:05:04  craigs
 # Added patches from Hugo Santos mainly for Darwin compatibility
 #
@@ -485,7 +488,7 @@ ifeq ($(MACHTYPE),x86)
 DEBUG_FLAG	:= -gstabs+
 endif
 
-ENDLDLIBS	+="-lsocket -lnsl -ldl -lposix4" ;;
+ENDLDLIBS	+="-lsocket -lnsl -ldl -lposix4"
 
 # Sparc Solaris 2.x, using gcc 2.x
 CC		:= gcc
