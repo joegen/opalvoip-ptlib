@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.36  2004/09/21 13:01:08  dsandras
+ * Added conversion from sbggr to rgb thanks to an anonymous patcher.
+ *
  * Revision 1.35  2003/11/23 22:17:35  dsandras
  * Added YUV420P to BGR24 and BGR32 conversion.
  *
@@ -158,6 +161,7 @@
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
+PSYNONYM_COLOUR_CONVERTER(SBGGR8,  SBGGR8);
 PSYNONYM_COLOUR_CONVERTER(Grey,   Grey);
 PSYNONYM_COLOUR_CONVERTER(GreyF,  GreyF);
 PSYNONYM_COLOUR_CONVERTER(RGB24,  RGB24);
@@ -185,6 +189,14 @@ class PStandardColourConverter : public PColourConverter
       unsigned w, unsigned h
     ) : PColourConverter(srcFmt, dstFmt, w, h) { }
 
+    BOOL SBGGR8toRGB(
+      const BYTE * srgb,
+      BYTE * rgb,
+      PINDEX * bytesReturned,
+      unsigned rgbIncrement,
+      BOOL flipVertical,
+      BOOL flipBR
+    ) const;
     void GreytoYUV420PSameSize(
       const BYTE * rgb,
       BYTE * yuv,
@@ -877,6 +889,90 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 
 #define LIMIT(x) (unsigned char) (((x > 0xffffff) ? 0xff0000 : ((x <= 0xffff) ? 0 : x & 0xff0000)) >> 16)
 
+BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
+                                            BYTE * dst,
+                                            PINDEX * bytesReturned,
+                                            unsigned rgbIncrement,
+					    BOOL     flipVertical,
+                                            BOOL     flipBR) const
+{
+  if (src == dst || flipVertical)
+    return FALSE;
+
+    long int i;
+    const BYTE *rawpt;
+    BYTE *scanpt;
+    long int size;
+
+    rawpt = src;
+    scanpt = dst;
+    long int WIDTH = srcFrameWidth, HEIGHT = srcFrameHeight;
+    size = WIDTH*HEIGHT;
+
+    for ( i = 0; i < size; i++ ) {
+	if ( (i/WIDTH) % 2 == 0 ) {
+	    if ( (i % 2) == 0 ) {
+		/* B */
+		if ( (i > WIDTH) && ((i % WIDTH) > 0) ) {
+		    *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
+				 *(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* R */
+		    *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
+				 *(rawpt+WIDTH)+*(rawpt-WIDTH))/4;	/* G */
+		    *scanpt++ = *rawpt;					/* B */
+		} else {
+		    /* first line or left column */
+		    *scanpt++ = *(rawpt+WIDTH+1);		/* R */
+		    *scanpt++ = (*(rawpt+1)+*(rawpt+WIDTH))/2;	/* G */
+		    *scanpt++ = *rawpt;				/* B */
+		}
+	    } else {
+		/* (B)G */
+		if ( (i > WIDTH) && ((i % WIDTH) < (WIDTH-1)) ) {
+		    *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* R */
+		    *scanpt++ = *rawpt;					/* G */
+		    *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* B */
+		} else {
+		    /* first line or right column */
+		    *scanpt++ = *(rawpt+WIDTH);	/* R */
+		    *scanpt++ = *rawpt;		/* G */
+		    *scanpt++ = *(rawpt-1);	/* B */
+		}
+	    }
+	} else {
+	    if ( (i % 2) == 0 ) {
+		/* G(R) */
+		if ( (i < (WIDTH*(HEIGHT-1))) && ((i % WIDTH) > 0) ) {
+		    *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* R */
+		    *scanpt++ = *rawpt;					/* G */
+		    *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* B */
+		} else {
+		    /* bottom line or left column */
+		    *scanpt++ = *(rawpt+1);		/* R */
+		    *scanpt++ = *rawpt;			/* G */
+		    *scanpt++ = *(rawpt-WIDTH);		/* B */
+		}
+	    } else {
+		/* R */
+		if ( i < (WIDTH*(HEIGHT-1)) && ((i % WIDTH) < (WIDTH-1)) ) {
+		    *scanpt++ = *rawpt;					/* R */
+		    *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
+				 *(rawpt-WIDTH)+*(rawpt+WIDTH))/4;	/* G */
+		    *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
+				 *(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* B */
+		} else {
+		    /* bottom line or right column */
+		    *scanpt++ = *rawpt;				/* R */
+		    *scanpt++ = (*(rawpt-1)+*(rawpt-WIDTH))/2;	/* G */
+		    *scanpt++ = *(rawpt-WIDTH-1);		/* B */
+		}
+	    }
+	}
+	rawpt++;
+    }
+
+  return TRUE;
+}
+
 BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned,
@@ -973,6 +1069,10 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   return TRUE;
 }
 
+PSTANDARD_COLOUR_CONVERTER(SBGGR8,RGB24)
+{
+  return SBGGR8toRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip, FALSE);
+}
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)
 {
