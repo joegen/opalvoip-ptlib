@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.93  2000/10/20 05:31:53  robertj
+ * Added function to change auto delete flag on a thread.
+ *
  * Revision 1.92  2000/08/25 08:07:48  robertj
  * Added Windows 2000 to operating system reporting.
  *
@@ -1051,6 +1054,29 @@ BOOL PThread::IsSuspended() const
   PAssert(!IsTerminated(), "Operation on terminated thread");
   SuspendThread(threadHandle);
   return ResumeThread(threadHandle) > 1;
+}
+
+
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+
+  PProcess & process = PProcess::Current();
+
+  if (autoDelete && deletion != AutoDeleteThread) {
+    process.deleteThreadMutex.Wait();
+    process.autoDeleteThreads.DisallowDeleteObjects();
+    process.autoDeleteThreads.Remove(this);
+    process.autoDeleteThreads.AllowDeleteObjects();
+    process.deleteThreadMutex.Signal();
+  }
+  else if (!autoDelete && deletion == AutoDeleteThread) {
+    process.deleteThreadMutex.Wait();
+    process.autoDeleteThreads.Append(this);
+    process.deleteThreadMutex.Signal();
+  }
+
+  autoDelete = deletion == AutoDeleteThread;
 }
 
 
