@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.22  2003/10/27 03:22:44  csoutheren
+ * Added handling for QoS
+ *   Thanks to Henry Harrison of AliceStreet
+ *
  * Revision 1.21  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -102,6 +106,8 @@
 #pragma interface
 #endif
 
+#include <ptlib/qos.h>
+ 
 /**
    A socket channel that uses the UDP transport on the Internet Protocol.
  */
@@ -116,10 +122,18 @@ class PUDPSocket : public PIPDatagramSocket
        a "listening" socket is specified then the channel is also opened.
      */
     PUDPSocket(
+      WORD port                 /// Port number to use for the connection.
+    );
+    PUDPSocket(
+       PQoS * qos,              /// Pointer to a QOS structure for the connection
       WORD port = 0             /// Port number to use for the connection.
     );
     PUDPSocket(
       const PString & service   /// Service name to use for the connection.
+    );
+    PUDPSocket(
+      const PString & service,   /// Service name to use for the connection.
+      PQoS * qos = NULL          /// Pointer to a QOS structure for the connection
     );
     PUDPSocket(
       const PString & address,  /// Address of remote machine to connect to.
@@ -156,7 +170,7 @@ class PUDPSocket : public PIPDatagramSocket
 
   /**@name New functions for class */
   //@{
-    /** Set the address to use for connectionless Write().
+    /** Set the address to use for connectionless Write() or Windows QoS
      */
     void SetSendAddress(
       const Address & address,    /// IP address to send packets.
@@ -168,6 +182,13 @@ class PUDPSocket : public PIPDatagramSocket
     void GetSendAddress(
       Address & address,    /// IP address to send packets.
       WORD & port           /// Port to send packets.
+    );
+
+
+    /** Change the QOS spec for the socket and try to apply the changes
+     */
+    virtual BOOL ModifyQoSSpec(
+      PQoS * qos            /// QoS specification to use
     );
 
     /** Get the address of the sender in the last connectionless Read().
@@ -189,6 +210,12 @@ class PUDPSocket : public PIPDatagramSocket
       int ipAdressFamily
     );
 
+    // Create a QOS-enabled socket
+    virtual int OpenSocketGQOS(int af, int type, int proto);
+
+    // Modify the QOS settings
+    virtual BOOL ApplyQoS();
+
     virtual const char * GetProtocolName() const;
 
     Address sendAddress;
@@ -197,6 +224,7 @@ class PUDPSocket : public PIPDatagramSocket
     Address lastReceiveAddress;
     WORD    lastReceivePort;
 
+    PQoS    qosSpec;
 
 // Include platform dependent part of class
 #ifdef _WIN32
