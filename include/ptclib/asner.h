@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.33  2002/11/26 23:29:18  robertj
+ * Added missing const to DecodeSubType() function.
+ *
  * Revision 1.32  2002/11/06 22:47:23  robertj
  * Fixed header comment (copyright etc)
  *
@@ -565,7 +568,7 @@ class PASN_OctetString : public PASN_ConstrainedObject
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
 
-    BOOL DecodeSubType(PASN_Object &);
+    BOOL DecodeSubType(PASN_Object &) const;
     void EncodeSubType(const PASN_Object &);
 
   protected:
