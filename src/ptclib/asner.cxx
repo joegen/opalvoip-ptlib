@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.87  2004/07/11 12:33:47  csoutheren
+ * Added guards against illegal PDU values causing crashes
+ *
  * Revision 1.86  2004/04/22 07:54:01  csoutheren
  * Fix problem with VS.net asserting on in isprint when chars outside normal range
  *
@@ -332,6 +335,12 @@ static PINDEX CountBits(unsigned range)
   while (nBits < (sizeof(unsigned)*8) && range > (unsigned)(1 << nBits))
     nBits++;
   return nBits;
+}
+
+inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = 1000000)
+{
+  // a 1mbit PDU has got to be an error
+  return (0 <= offset && offset < upper);
 }
 
 
@@ -2598,7 +2607,8 @@ void PASN_Stream::PrintOn(ostream & strm) const
 
 void PASN_Stream::SetPosition(PINDEX newPos)
 {
-  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+  if (!CheckByteOffset(byteOffset))
+    return;
 
   if (newPos > GetSize())
     byteOffset = GetSize();
@@ -2638,7 +2648,7 @@ void PASN_Stream::CompleteEncoding()
 
 BYTE PASN_Stream::ByteDecode()
 {
-  if (byteOffset >= GetSize())
+  if (!CheckByteOffset(byteOffset, GetSize()))
     return 0;
 
   bitOffset = 8;
@@ -2648,7 +2658,8 @@ BYTE PASN_Stream::ByteDecode()
 
 void PASN_Stream::ByteEncode(unsigned value)
 {
-  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+  if (!CheckByteOffset(byteOffset))
+    return;
 
   if (bitOffset != 8) {
     bitOffset = 8;
@@ -2662,14 +2673,14 @@ void PASN_Stream::ByteEncode(unsigned value)
 
 unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 {
-  if (nBytes == 0 || bufptr == NULL)
+  if (nBytes == 0 || bufptr == NULL || !CheckByteOffset(byteOffset, nBytes))
     return 0;
 
   ByteAlign();
 
   if (byteOffset+nBytes > (unsigned)GetSize()) {
     nBytes = GetSize() - byteOffset;
-    if (nBytes == 0)
+    if (nBytes <= 0)
       return 0;
   }
 
@@ -2681,7 +2692,8 @@ unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 
 void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 {
-  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+  if (!CheckByteOffset(byteOffset, GetSize()))
+    return;
 
   if (nBytes == 0)
     return;
@@ -2698,7 +2710,8 @@ void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 
 void PASN_Stream::ByteAlign()
 {
-  PAssert(byteOffset != P_MAX_INDEX, PLogicError);
+  if (!CheckByteOffset(byteOffset, GetSize()))
+    return;
 
   if (bitOffset != 8) {
     bitOffset = 8;
