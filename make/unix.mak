@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.48  1999/08/24 01:58:29  robertj
+# Added normalisation of sun4 architecture MACHTYPE to be sparc.
+#
 # Revision 1.47  1999/08/09 12:46:07  robertj
 # Added support for libc5 and libc6 compiles under Linux (libc6 uses pthreads).
 #
@@ -149,6 +152,10 @@ endif
 
 ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 OSTYPE := solaris
+endif
+
+ifneq (,$(findstring $(MACHTYPE),sun4))
+MACHTYPE := sparc
 endif
 
 ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc i686-pc-linux-gnu))
