@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.11 2000/08/25 08:11:02 robertj Exp $
+ * $Id: pssl.cxx,v 1.12 2000/08/25 13:56:46 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.12  2000/08/25 13:56:46  robertj
+ * Fixed some GNU warnings
+ *
  * Revision 1.11  2000/08/25 08:11:02  robertj
  * Fixed OpenSSL support so can operate as a server channel.
  *
@@ -138,13 +141,14 @@ static int VerifyCallBack(int ok, X509_STORE_CTX * ctx)
 {
   X509 * err_cert = X509_STORE_CTX_get_current_cert(ctx);
   //int err         = X509_STORE_CTX_get_error(ctx);
-  int depth       = X509_STORE_CTX_get_error_depth(ctx);
 
   // get the subject name, just for verification
   char buf[256];
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
 
-  PTRACE(1, "Verify callback depth " << depth << " : cert name = " << buf);
+  PTRACE(1, "Verify callback depth "
+         << X509_STORE_CTX_get_error_depth(ctx)
+         << " : cert name = " << buf);
 
   return ok;
 }
@@ -223,7 +227,7 @@ BOOL PSSLContext::SetCAFile(const PFilePath & caFile)
 }
 
 
-static DetermineFileType(const PFilePath & filename, int fileType)
+static int DetermineFileType(const PFilePath & filename, int fileType)
 {
   if (fileType >= 0)
     return fileType;
