@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.21  2001/02/22 05:27:14  robertj
+ * Added "nicer" version of GetDocument in HTTP client class.
+ *
  * Revision 1.20  1999/05/13 04:59:24  robertj
  * Increased amount of buffering on output request write.
  *
@@ -331,6 +334,22 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     return TRUE;
 
   return lastError == NoError;
+}
+
+
+BOOL PHTTPClient::GetDocument(const PURL & url,
+                              PINDEX & contentLength,
+                              BOOL persist)
+{
+  PMIMEInfo outMIME, replyMIME;
+  if (!GetDocument(url, outMIME, replyMIME, persist))
+    return FALSE;
+
+  if (replyMIME.Contains(ContentLengthTag))
+    contentLength = (PINDEX)replyMIME[ContentLengthTag].AsUnsigned();
+  else
+    contentLength = P_MAX_INDEX;
+  return TRUE;
 }
 
 
