@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.37  2001/10/02 00:56:14  robertj
+ * Fixed problem with autonumering enumerated types.
+ *
  * Revision 1.36  2001/08/06 01:39:02  robertj
  * Added assignement operator with RHS of PASN_BMPString to classes
  *   descended from PASN_BMPString.
@@ -293,7 +296,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 2)
+  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 3)
 {
 }
 
