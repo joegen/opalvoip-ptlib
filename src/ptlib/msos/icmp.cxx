@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.13  1999/08/08 09:29:37  robertj
+ * Changed Success to PingSuccess to avoid namespace collision with X define of the same name
+ *
  * Revision 1.12  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -240,7 +243,7 @@ BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 
   switch (reply->Status) {
     case IP_SUCCESS :
-      info.status = Success;
+      info.status = PingSuccess;
       break;
 
     case IP_DEST_NET_UNREACHABLE :
@@ -285,7 +288,7 @@ BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 
   free(reply);
 
-  return info.status == Success;
+  return info.status == PingSuccess;
 }
 
 
@@ -295,7 +298,7 @@ PICMPSocket::PingInfo::PingInfo(WORD id)
   sequenceNum = 0;
   ttl = 255;
   buffer = NULL;
-  status = Success;
+  status = PingSuccess;
 }
 
 
