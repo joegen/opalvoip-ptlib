@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.31  2000/04/03 18:41:27  robertj
+ * Fixed BeOS compatibility problem with openlog() function.
+ *
  * Revision 1.30  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -382,7 +385,7 @@ class PDirectory : public PFilePathString
        @return
        TRUE if directory created.
      */
-    PINLINE static BOOL Create(
+    static BOOL Create(
       const PString & p,   /// Directory file path.
       int perm = PFileInfo::DefaultDirPerms    /// Permission on new directory.
     );
