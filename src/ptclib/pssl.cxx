@@ -5,8 +5,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.5 1997/05/04 02:50:54 craigs Exp $
+ * $Id: pssl.cxx,v 1.6 1998/01/26 02:50:17 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.6  1998/01/26 02:50:17  robertj
+ * GNU Support
+ *
  * Revision 1.5  1997/05/04 02:50:54  craigs
  * Added support for client and server sertificates
  *
@@ -67,7 +70,10 @@
 #endif
 
 #include <ptlib.h>
-#include "pssl.h"
+
+#ifdef P_SSL
+
+#include <pssl.h>
 #include "buffer.h"
 #include "crypto.h"
 
@@ -602,5 +608,8 @@ int verify_callback(int ok, X509 * xs, X509 * xi, int depth, int error)
 }
 
 };
+
+#endif
+
 
 #endif
