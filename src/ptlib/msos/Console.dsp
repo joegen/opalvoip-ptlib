@@ -184,6 +184,170 @@ SOURCE=.\winsock.cxx
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Args.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Array.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Channel.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Config.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Contain.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Dict.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Dynalink.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Ethsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\File.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\filepath.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Icmpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Indchan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Ipdsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\ipsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\ipxsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Lists.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Mail.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\mutex.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\object.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Pdirect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Pipechan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\pprocess.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Pstring.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Ptime.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Remconn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\semaphor.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Serchan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Sfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\socket.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\sockets.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\spxsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Svcproc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\syncpoint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\syncthrd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Tcpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Textfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\thread.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Timeint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Timer.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtLib\Udpsock.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
