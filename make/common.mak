@@ -27,6 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.93  2004/04/29 14:07:07  csoutheren
+# Changed install target to use $(INSTALL)
+# Various makefile cleanups and verified install and uninstall targets
+# Removed some vestiges of old GUI code
+#
 # Revision 1.92  2004/04/24 06:26:03  rjongbloed
 # Fixed very bizarre problem with GNU GCC 3.4.0 and generating dependencies,
 #   cannot have -g and -M on the command line at the same time!
@@ -264,11 +269,7 @@ LIBDIRS += $(PWLIBDIR)
 
 
 ifndef OBJDIR
-ifneq   (,$(GUI_TYPE))
-OBJDIR	=	./$(PW_OBJBASE)
-else
 OBJDIR	=	./$(PT_OBJBASE)
-endif
 endif
 
 vpath %.cxx $(VPATH_CXX)
@@ -281,9 +282,6 @@ vpath %.gch $(PWLIBDIR)/include
 # add common directory to include path - must be after PW and PT directories
 #
 STDCCFLAGS	+= -I$(PWLIBDIR)/include
-ifdef PWLIB_GUI_FLAG
-STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
-endif
 
 ifneq ($(P_SHAREDLIB),1)
 
@@ -364,10 +362,8 @@ ifdef BUILDFILES
 OBJS += $(OBJDIR)/buildnum.o
 endif
 
-TARGET_LIBS	= $(PW_LIBDIR)/$(PTLIB_FILE)
-ifneq (,$(GUI_TYPE))
-TARGET_LIBS	:= $(TARGET_LIBS) $(PW_LIBDIR)/$(PWLIB_FILE)
-endif
+TARGET_LIBS	= $(PWLIBDIR)/lib/$(PTLIB_FILE)
+
 # distinguish betweek building and using pwlib
 ifeq (,$(wildcard $(PWLIBDIR)/src))
 TARGET_LIBS     = $(SYSLIBDIR)/$(PTLIB_FILE)
@@ -392,21 +388,11 @@ $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
 endif
 
-ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI)))
-$(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) debug
-endif
-
 else
 
 ifneq (,$(wildcard $(PWLIBDIR)/src/ptlib/unix))
 $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
-endif
-
-ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI)))
-$(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) opt
 endif
 
 endif
@@ -731,44 +717,6 @@ buildnum.c:
 #endif
 
 endif
-
-
-######################################################################
-#
-# rules for creating PW resources
-#
-######################################################################
-
-ifneq (,$(GUI_TYPE))
-ifdef RESOURCE
-
-$(RESOBJS) : $(RESCXX) $(RESCODE)
-
-$(RESCXX) : $(RESHDR)
-
-TMPRSRC	= resource.tmp
-
-$(RESCXX) $(RESCODE): $(RESHDR)
-
-$(RESHDR): $(RESOURCE)
-	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
-	$(PWRC_CMD) -v $(RCFLAGS) $(RESOURCE)
-	@if test -e $(TMPRSRC) && diff $(RESHDR) $(TMPRSRC) >/dev/null 2>&1 ; \
-		then cp $(TMPRSRC) $(RESHDR) ; \
-		else rm -f $(TMPRSRC) ;  fi
-
-$(RESOURCE) : $(PWRC)
-
-$(PWRC) :
-	$(MAKE) REALGUI=$(PWLIB_GUI) -C $(PWRC_DIR) opt
-
-endif
-
-showgui:
-	@echo PWLIB_GUI    = $(PWLIB_GUI)
-	@echo PWLIB_GUIDIR = $(PWLIB_GUIDIR)
-endif
-
 
 ######################################################################
 #

@@ -27,7 +27,7 @@ AC_SUBST(INSTALLPREFIX)
 
 dnl ########################################################################
 dnl set LIBDIR accordingly
-LIBDIR="${libdir}"
+LIBDIR=${libdir}
 AC_SUBST(LIBDIR)
 
 
@@ -1052,6 +1052,7 @@ AC_SUBST(STDCXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
+AC_PROG_INSTALL
 
 AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])
