@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.9  2002/02/08 00:57:33  dereks
+ * Modify PTRACE level to reduce debug information to reasonable level.
+ *
  * Revision 1.8  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -273,7 +276,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 
   int frameWidth  = GetGrabWidth();
   int frameHeight = GetGrabHeight();
-  PTRACE(3,"Video\t data direct:: camera-->render, size "
+  PTRACE(6,"Video\t data direct:: camera-->render, size "
 	 << frameWidth << "x" << frameHeight );
   
   SetRenderFrameSize( frameWidth, frameHeight);
