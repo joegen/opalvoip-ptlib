@@ -137,6 +137,10 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.9  2003/03/17 07:53:04  robertj
+ * Removed canCaptureVideo variable as this is really a virtual function to
+ *   distinguish PVideoOutputDevice from PVideoInputDevice, it is not dynamic.
+ *
  * Revision 1.8  2002/08/21 00:00:31  dereks
  * Patches from Ryutaroh, to improve firewire (linux only) support. Many thanks.
  *
@@ -320,7 +324,6 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
     }
   }
 
-  SetCanCaptureVideo(TRUE);
   frameHeight = 240;
   frameWidth = 320;
   colourFormat = "UYVY422";
