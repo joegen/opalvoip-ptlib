@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.9  2004/02/15 22:10:10  anoncvs_net-mud
+ * Applied patch from Frédéric Crozat <fcrozat@mandrakesoft.com> for buggy
+ * Quickcam driver.
+ *
  * Revision 1.8  2004/02/12 08:09:51  csoutheren
  * Patch for ALSA driver, thanks to Julien Puydt
  *
@@ -208,6 +212,7 @@ PCREATE_VIDINPUT_PLUGIN(V4L, PVideoInputV4lDevice);
 #define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
 #define HINT_FORCE_LARGE_SIZE               0x0100  /// driver does not work in small video size.
 #define HINT_FORCE_DEPTH_16                 0x0200  /// CPiA cameras return a wrong value for the depth, and if you try to use that wrong value, it fails.
+#define HINT_FORCE_DBLBUF                   0x0400  /// Force double buffering on quickcam express
 
 static struct {
   char     *name_regexp;        // String used to match the driver name
@@ -244,6 +249,13 @@ static struct {
       HINT_HAS_PREF_PALETTE,
       VIDEO_PALETTE_YUV420P },
 
+  /** Quickcam Express (qc-usb driver) */
+  { "Logitech USB Camera",
+    "Quickcam Express (qc-usb driver)",
+    NULL,
+    HINT_FORCE_DBLBUF,
+    0},
+  
   /** Sony Vaio Motion Eye camera
       Linux kernel 2.4.7 has meye.c driver module.
    */
@@ -625,6 +637,19 @@ BOOL PVideoInputV4lDevice::Open(const PString & devName, BOOL startImmediate)
     }
   }
 
+
+  // Force double-buffering with buggy Quickcam driver.
+  if (HINT (HINT_FORCE_DBLBUF)) {
+
+#define QC_IOCTLBASE            220
+#define VIDIOCQCGCOMPATIBLE     _IOR ('v',QC_IOCTLBASE+10,int)  /* Get enable workaround for bugs, bitfield */
+#define VIDIOCQCSCOMPATIBLE     _IOWR('v',QC_IOCTLBASE+10,int)  /* Set enable workaround for bugs, bitfield */
+
+    int reg = 2; /* enable double buffering */
+    ::ioctl (videoFd, VIDIOCQCSCOMPATIBLE, &reg);
+  }
+
+    
   // set height and width
   frameHeight = PMIN (videoCapability.maxheight, QCIFHeight);
   frameWidth  = PMIN (videoCapability.maxwidth, QCIFWidth);
