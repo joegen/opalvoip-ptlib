@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.4  1998/11/30 02:55:12  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:30:04  robertj
  * Added open software license.
  *
@@ -44,7 +47,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File Specification
 
-#include "../../common/ptlib/filepath.h"
+#include "../../filepath.h"
 };
 
 
