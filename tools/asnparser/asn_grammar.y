@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.11  2001/01/16 14:00:17  craigs
+ * Changed MIN and MAX tokens to avoid namespace conflicts under BeOS
+ *
  * Revision 1.10  2000/05/08 08:55:44  robertj
  * Fixed production error for ValueSet, thanks Huang-Ming Huang
  *
@@ -174,8 +177,8 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %token INTERSECTION     
 %token ISO646String
 %token MACRO
-%token MAX              
-%token MIN              
+%token MAX_t
+%token MIN_t
 %token MINUS_INFINITY
 %token NOTATION
 %token NULL_VALUE
@@ -1417,7 +1420,7 @@ UpperEndpoint
 
 LowerEndValue
   : Value 
-  | MIN
+  | MIN_t
       {
 	$$ = new MinValue;
       }
@@ -1425,7 +1428,7 @@ LowerEndValue
 
 UpperEndValue
   : Value 
-  | MAX
+  | MAX_t
       {
 	$$ = new MaxValue;
       }
