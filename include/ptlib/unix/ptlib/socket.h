@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.2 1995/01/23 22:59:51 craigs Exp $
+ * $Id: socket.h,v 1.3 1995/12/08 13:15:21 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.3  1995/12/08 13:15:21  craigs
+ * Added new header file
+ *
  * Revision 1.2  1995/01/23 22:59:51  craigs
  * Changes for HPUX and Sun 4
  *
@@ -28,6 +31,7 @@
 #include <sys/socket.h>
 #include <signal.h>
 #include <netdb.h>
+#include <netinet/in.h>
 
 #if defined (P_SUN4)
 extern "C" int socket(int, int, int);
