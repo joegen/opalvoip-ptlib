@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.8 1996/09/14 13:09:15 robertj Exp $
+ * $Id: mime.h,v 1.9 1997/02/05 11:53:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.9  1997/02/05 11:53:11  robertj
+ * Changed construction of MIME dictionary to be delayed untill it is used.
+ *
  * Revision 1.8  1996/09/14 13:09:15  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -142,7 +145,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
     static void SetAssociation(
       const PString & fileType,         // File type (extension) to match.
       const PString & contentType       // MIME content type string.
-    ) { contentTypes.SetAt(fileType, contentType); }
+    ) { GetContentTypes().SetAt(fileType, contentType); }
     /* Set an association between a file type and a MIME content type. The
        content type is then sent for any file in the directory sub-tree that
        has the same extension.
@@ -191,7 +194,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
      */
 
   private:
-    static PStringToString contentTypes;
+    static PStringToString & GetContentTypes();
 };
 
 
