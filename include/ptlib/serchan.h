@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.8 1995/06/17 11:13:18 robertj Exp $
+ * $Id: serchan.h,v 1.9 1995/07/31 12:15:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.9  1995/07/31 12:15:46  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.8  1995/06/17 11:13:18  robertj
  * Documentation update.
  *
@@ -48,7 +51,7 @@ class PConfig;
 ///////////////////////////////////////////////////////////////////////////////
 // Serial Channel
 
-PDECLARE_CONTAINER(PSerialChannel, PChannel)
+PDECLARE_CLASS(PSerialChannel, PChannel)
 /* This class defines an I/O channel that communicates via a serial port. This
    is usually an RS-232 port.
  */
@@ -112,6 +115,9 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
        standard variables in the configuration file. Note that it assumed that
        the correct configuration file section is already set.
      */
+
+    ~PSerialChannel();
+    // Close the serial channel on destruction.
 
 
     // New functions for class
