@@ -28,7 +28,7 @@ STDCCFLAGS      := -I$(GUIDIR)/include $(STDCCFLAGS)
 #
 # add OS library
 #
-LDLIBS	:= $(GUILIBS) $(LDLIBS)
+LDLIBS	:= -l$(PWLIB) $(GUILIB) $(LDLIBS)
 
 
 #
