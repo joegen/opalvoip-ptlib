@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.38  2003/04/03 23:21:34  robertj
+ * Added reversed RGB byte order versions (BGR24), thanks Damien Sandras
+ *
  * Revision 1.37  2003/03/21 04:09:33  robertj
  * Changed PPM video output device so you can specify the full format of the
  *   output file uinng printf command for the frame number eg %u or %03i or
@@ -368,6 +371,8 @@ static struct {
 } colourFormatBPPTab[] = {
   { "RGB24",   24 },
   { "RGB24F",  24 },
+  { "BGR24",   24 },
+  { "BGR24F",  24 },
   { "RGB32",   32 },
   { "RGB32F",  32 },
   { "YUV422",  16 },
