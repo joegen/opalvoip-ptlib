@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.111  2003/01/20 10:13:18  rogerh
+ * NetBSD thread changes
+ *
  * Revision 1.110  2003/01/20 10:05:46  rogerh
  * NetBSD thread changes
  *
@@ -695,7 +698,7 @@ void PX_SuspendSignalHandler(int)
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
-#if !( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
+#if !( defined(P_NETBSD) && defined(P_NO_CANCEL) )
     pthread_testcancel();
 #endif
   }
@@ -878,7 +881,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
     if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
       break;
 
-#if !( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
+#if !( defined(P_NETBSD) && defined(P_NO_CANCEL) )
     pthread_testcancel();
 #endif
 
@@ -934,7 +937,7 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
-#if ( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
+#if ( defined(P_NETBSD) && defined(P_NO_CANCEL) )
   pthread_kill(PX_threadId,SIGKILL);
 #else
   pthread_cancel(PX_threadId);

@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.155  2003/01/20 10:13:18  rogerh
+# NetBSD thread changes
+#
 # Revision 1.154  2003/01/20 08:54:01  rogerh
 # Use new native pthreads in NetBSD -current.
 #
@@ -897,7 +900,6 @@ USE_NATIVE_THREADS := 1
 
 ifdef P_PTHREADS
 ifdef USE_NATIVE_THREADS
-STDCCFLAGS += -DP_NETBSD_NATIVE
 LDLIBS  += -lpthread
 else
 ifdef USE_PTH_THREADS
@@ -906,6 +908,7 @@ STDCCFLAGS += -I/usr/pkg/include
 LDFLAGS += -L/usr/pkg/lib
 LDLIBS  += -lpthread
 else
+STDCCFLAGS += -DP_NO_CANCEL
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
