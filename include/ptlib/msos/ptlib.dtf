@@ -2006,10 +2006,6 @@ EXPORTS
     ?RecordFile@PSoundChannel@@QAEHABVPFilePath@@@Z @2109 NONAME ;public: int __thiscall PSoundChannel::RecordFile(class PFilePath const &)
     ?RecordSound@PSoundChannel@@QAEHAAVPSound@@@Z @2110 NONAME ;public: int __thiscall PSoundChannel::RecordSound(class PSound &)
     ?Redraw@PVideoChannel@@UAEHPBX@Z @2539 NONAME ;public: virtual int __thiscall PVideoChannel::Redraw(void const *)
-    ?regcomp@@YAHPAUre_pattern_buffer@@PBDH@Z @1562 NONAME ;int __cdecl regcomp(struct re_pattern_buffer *,char const *,int)
-    ?regerror@@YAIHPBUre_pattern_buffer@@PADI@Z @1563 NONAME ;unsigned int __cdecl regerror(int,struct re_pattern_buffer const *,char *,unsigned int)
-    ?regexec@@YAHPBUre_pattern_buffer@@PBDIQAUregmatch_t@@H@Z @1564 NONAME ;int __cdecl regexec(struct re_pattern_buffer const *,char const *,unsigned int,struct regmatch_t * const,int)
-    ?regfree@@YAXPAUre_pattern_buffer@@@Z @1565 NONAME ;void __cdecl regfree(struct re_pattern_buffer *)
     ?Release@PWaveBuffer@@AAEKXZ @2069 NONAME ;private: unsigned long __thiscall PWaveBuffer::Release(void)
     ?Remove@PAbstractDictionary@@EAEHPBVPObject@@@Z @1566 NONAME ;private: virtual int __thiscall PAbstractDictionary::Remove(class PObject const *)
     ?Remove@PAbstractList@@UAEHPBVPObject@@@Z @1567 NONAME ;public: virtual int __thiscall PAbstractList::Remove(class PObject const *)
@@ -2045,17 +2041,6 @@ EXPORTS
     ?Resume@PThread@@UAEXXZ @1602 NONAME ;public: virtual void __thiscall PThread::Resume(void)
     ?Resume@PTimer@@QAEXXZ @1603 NONAME ;public: void __thiscall PTimer::Resume(void)
     ?Resume@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1604 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Resume(class PServiceProcess *)
-    ?re_comp@@YAPADPBD@Z @1605 NONAME ;char * __cdecl re_comp(char const *)
-    ?re_compile_fastmap@@YAHPAUre_pattern_buffer@@@Z @2190 NONAME ;int __cdecl re_compile_fastmap(struct re_pattern_buffer *)
-    ?re_compile_pattern@@YAPBDPBDHPAUre_pattern_buffer@@@Z @1606 NONAME ;char const * __cdecl re_compile_pattern(char const *,int,struct re_pattern_buffer *)
-    ?re_exec@@YAHPBD@Z @1607 NONAME ;int __cdecl re_exec(char const *)
-    ?re_match@@YAHPAUre_pattern_buffer@@PBDHHPAUre_registers@@@Z @1608 NONAME ;int __cdecl re_match(struct re_pattern_buffer *,char const *,int,int,struct re_registers *)
-    ?re_match_2@@YAHPAUre_pattern_buffer@@PBDH1HHPAUre_registers@@H@Z @1609 NONAME ;int __cdecl re_match_2(struct re_pattern_buffer *,char const *,int,char const *,int,int,struct re_registers *,int)
-    ?re_search@@YAHPAUre_pattern_buffer@@PBDHHHPAUre_registers@@@Z @1610 NONAME ;int __cdecl re_search(struct re_pattern_buffer *,char const *,int,int,int,struct re_registers *)
-    ?re_search_2@@YAHPAUre_pattern_buffer@@PBDH1HHHPAUre_registers@@H@Z @1611 NONAME ;int __cdecl re_search_2(struct re_pattern_buffer *,char const *,int,char const *,int,int,int,struct re_registers *,int)
-    ?re_set_registers@@YAXPAUre_pattern_buffer@@PAUre_registers@@IPAH2@Z @1612 NONAME ;void __cdecl re_set_registers(struct re_pattern_buffer *,struct re_registers *,unsigned int,int *,int *)
-    ?re_set_syntax@@YAII@Z @1613 NONAME ;unsigned int __cdecl re_set_syntax(unsigned int)
-    ?re_syntax_options@@3IA @2191 NONAME ;unsigned int  re_syntax_options
     ?Right@PString@@QBE?AV1@H@Z @1614 NONAME ;public: class PString  __thiscall PString::Right(int)const 
     ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @1615 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @1616 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
