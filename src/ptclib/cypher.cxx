@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.10 1996/03/17 05:47:19 robertj Exp $
+ * $Id: cypher.cxx,v 1.11 1996/04/09 03:32:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.11  1996/04/09 03:32:45  robertj
+ * Fixed bug in registration so now works in time zones other than Eastern Australia.
+ *
+ * Revision 1.11  1996/04/08 05:18:38  robertj
+ * Fixed bug in registering programs in a different time zone.
+ *
  * Revision 1.10  1996/03/17 05:47:19  robertj
  * Changed secured config to allow for expiry dates.
  *
@@ -680,8 +686,9 @@ BOOL PSecureConfig::ValidatePending()
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return FALSE;
 
-  PTime expiryDate(0,0,0,1,info[sizeof(code)]&15,(info[sizeof(code)]>>4)+1996);
-  PString expiry = expiryDate.AsString(PTime::RFC1123);
+  PTime expiryDate(0, 0, 0,
+            1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
+  PString expiry = expiryDate.AsString("d MMM yyyy", PTime::GMT);
 
   const BYTE * infoptr = &info[sizeof(code)+1];
   PUInt32b optionBits(&infoptr);
