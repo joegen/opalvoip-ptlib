@@ -21,9 +21,13 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Derek Smithies (derek@indranet.co.nz)
+ *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.15  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.14  2001/03/08 23:08:28  robertj
  * Fixed incorrect usage of VIDIOCSYNC, thanks Thorsten Westheider
  *
@@ -82,12 +86,67 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Linux Video4Linux Driver Hints Tables.
+//
+// In an ideal API, we wouldn't need these hints on setup.  There are enough
+// wrinkles it seems we have to provide a static list of hints for known
+// issues.
+
+#define HINT_CSWIN_ZERO_FLAGS               0x0001
+#define HINT_CSPICT_ALWAYS_WORKS            0x0002
+#define HINT_CGPICT_DOESNT_SET_PALETTE      0x0004
+#define HINT_HAS_PREF_PALETTE               0x0008
+
+static struct {
+  char     *name_regexp;        // String used to match the driver name
+  char     *name;               // String used for ptrace output
+  unsigned hints;               // Hint flags
+  int      pref_palette;        // Preferred palette.
+} driver_hints[] = {
+
+    /**Philips usb web cameras
+    
+       Native format is 420.  Use 420P as it's closer to 411P
+     */
+    
+  { "^Philips [0-9]+ webcam$",
+    "Philips USB webcam",
+    HINT_HAS_PREF_PALETTE,
+    VIDEO_PALETTE_YUV420P },
+  
+  /**Brooktree based capture boards.
+
+     The current bttv driver doesn't fail CSPICT calls with unsupported
+     palettes.  It also doesn't return a useful value from CGPICT calls
+     to readback the palette.
+   */
+  { "^BT8(4|7)8",
+    "Brooktree BT848 and BT878 based capture boards",
+    HINT_CSWIN_ZERO_FLAGS |
+    HINT_CSPICT_ALWAYS_WORKS |
+    HINT_CGPICT_DOESNT_SET_PALETTE |
+    HINT_HAS_PREF_PALETTE,
+    VIDEO_PALETTE_YUV411P },
+
+  /** Default device with no special settings
+   */
+  { "",
+    "V4L Supported Device",
+    0,
+    0 }
+
+};
+
+#define HINT(h) ((driver_hints[hint_index].hints & h) ? TRUE : FALSE)
+
+///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
 
 PVideoInputDevice::PVideoInputDevice()
 {
   videoFd       = -1;
   canMap        = -1;
+  hint_index    = PARRAYSIZE(driver_hints) - 1;
 }
 
 
@@ -129,6 +188,23 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     return FALSE;
   }
   
+  hint_index = PARRAYSIZE(driver_hints) - 1;
+  PString driver_name = videoCapability.name;
+
+  // Scan the hint table, looking for regular expression matches with
+  // drivers we hold hints for.
+  PINDEX tbl;
+  for (tbl = 0; tbl < PARRAYSIZE(driver_hints); tbl ++) {
+    PRegularExpression regexp;
+    regexp.Compile(driver_hints[tbl].name_regexp, PRegularExpression::Extended);
+
+    if (driver_name.FindRegEx(regexp) != P_MAX_INDEX) {
+      PTRACE(1,"PVideoInputDevice::Open: Found driver hints: " << driver_hints[tbl].name);
+      hint_index = tbl;
+      break;
+    }
+  }
+
   // set height and width
   frameHeight = videoCapability.maxheight;
   frameWidth  = videoCapability.maxwidth;
@@ -139,12 +215,12 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     videoFd = -1;
     return FALSE;
   } 
-    
+  
   if (!SetVideoFormat(videoFormat)) {
     ::close (videoFd);
     videoFd = -1;
     return FALSE;
-  }	 
+  }
   return TRUE;    
 }
 
@@ -307,7 +383,7 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 
   ClearMapping();
 
-  // get picture information
+  // get current picture information
   struct video_picture pictureInfo;
   if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
     PTRACE(1,"PVideoInputDevice::Get pict info failed : "<< ::strerror(errno));
@@ -320,21 +396,36 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 
   // set the information
   if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0) {
-    PTRACE(1,"PVideoInputDevice::Set pict info failed : "<< ::strerror(errno));    
+    PTRACE(1,"PVideoInputDevice::Set pict info failed : "<< ::strerror(errno));
     return FALSE;
   }
   
-  // Some V4L drivers are lax about returning errors on VIDIOCSPICT
-  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
-    PTRACE(1,"PVideoInputDevice::Get pict info failed : "<< ::strerror(errno));
-    return FALSE;
-  }
+  // Some drivers always return success for CSPICT, and can't
+  // read the current palette back in CGPICT.  We can't do much
+  // more than just check to see if there is a preferred palette,
+  // and fail if the request isn't the preferred palette.
   
-  if (pictureInfo.palette != colourFormatCode)
-    return FALSE;
+  if (HINT(HINT_CSPICT_ALWAYS_WORKS) &&
+      HINT(HINT_CGPICT_DOESNT_SET_PALETTE) &&
+      HINT(HINT_HAS_PREF_PALETTE)) {
+      if (colourFormatCode != driver_hints[hint_index].pref_palette)
+	  return FALSE;
+  }
 
+  // Some V4L drivers can't use CGPICT to check for errors.
+  if (!HINT(HINT_CGPICT_DOESNT_SET_PALETTE)) {
+
+      if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
+	  PTRACE(1,"PVideoInputDevice::Get pict info failed : "<< ::strerror(errno));
+	  return FALSE;
+      }
+      
+      if (pictureInfo.palette != colourFormatCode)
+	  return FALSE;
+  }
+  
   // set the new information
-  return SetFrameSize(frameWidth, frameHeight);
+  return SetFrameSizeConverter(frameWidth, frameHeight, FALSE);
 }
 
 
@@ -373,7 +464,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   
   if (!VerifyHardwareFrameSize(width, height))
     return FALSE;
-  
+
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
@@ -432,21 +523,56 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   }
 
   // device does not support memory mapping - use normal read
+  // take care over signals.
   if (canMap == 0) {
-    if ((PINDEX)::read(videoFd, buffer, frameBytes) != frameBytes)
-      return FALSE;
+
+    ssize_t ret;
+
+    ret = -1;
+    while (ret < 0) {
+      ret = ::read(videoFd, buffer, frameBytes);
+      if ((ret < 0) && (errno == EINTR))
+	continue;
+    
+      if (ret < 0) {
+	PTRACE(1,"PVideoInputDevice::GetFrameData read() failed");
+	return FALSE;
+      }
+      
+    }
+
+    if ((unsigned) ret != frameBytes) {
+      PTRACE(1,"PVideoInputDevice::GetFrameData read() returned a short read");
+      // Not a completely fatal. Maybe it should return FALSE instead of a partial
+      // image though?
+      // return FALSE;
+    }
+    
     if (converter != NULL)
       return converter->ConvertInPlace(buffer, bytesReturned);
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
     return TRUE;
   }
-
+  
   // device does support memory mapping, get data
 
-  // wait for the frame to load
-  ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
-
+  // wait for the frame to load.  Careful about signals.
+  int ret = -1;
+  while (ret < 0) {
+    ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
+    if ((ret < 0) && (errno == EINTR))
+      continue;
+    
+    if (ret < 0) {
+      PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (CSYNC failed)");
+      canMap = 0;
+      ::munmap(videoBuffer, frame.size);
+      videoBuffer = NULL;
+      return FALSE;
+    }
+  }
+  
   // If converting on the fly do it from frame store to output buffer, otherwise do
   // straight copy.
   if (converter != NULL)
@@ -456,7 +582,6 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
   }
-  
   
   // trigger capture of next frame in this buffer.
   // fallback to read() on errors.
@@ -480,7 +605,7 @@ void PVideoInputDevice::ClearMapping()
     if (videoBuffer != NULL)
       ::munmap(videoBuffer, frame.size);
   }
-
+  
   canMap = -1;
   videoBuffer = NULL;
 }
@@ -498,6 +623,16 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
     // Request the width and height
     vwin.width  = width;
     vwin.height = height;
+    
+    // The only defined flags appear to be as status indicators
+    // returned in the CGWIN call.  At least the bttv driver fails
+    // when flags isn't zero.  Check the driver hints for clearing
+    // the flags.
+    if (HINT(HINT_CSWIN_ZERO_FLAGS)) {
+	PTRACE(1,"PVideoInputDevice::VerifyHardwareFrameSize: Clearing flags field");
+	vwin.flags = 0;
+    }
+    
     ::ioctl(videoFd, VIDIOCSWIN, &vwin);
     
     // Read back settings to be careful about existing (broken) V4L drivers
@@ -509,5 +644,6 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 
     return TRUE;
 }
-    
+
+
 // End Of File ///////////////////////////////////////////////////////////////
