@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.19 1995/12/10 11:42:23 robertj Exp $
+ * $Id: sockets.cxx,v 1.20 1995/12/23 03:42:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.20  1995/12/23 03:42:53  robertj
+ * Unix portability issues.
+ *
  * Revision 1.19  1995/12/10 11:42:23  robertj
  * Numerous fixes for sockets.
  *
@@ -72,6 +75,9 @@
 
 #include <ptlib.h>
 #include <sockets.h>
+
+#include <ctype.h>
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -350,15 +356,6 @@ PIPSocket::Address::Address(const PString & dotNotation)
 }
 
 
-PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
-{
-  S_un.S_un_b.s_b1 = b1;
-  S_un.S_un_b.s_b2 = b2;
-  S_un.S_un_b.s_b3 = b3;
-  S_un.S_un_b.s_b4 = b4;
-}
-
-
 PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
 {
   s_addr = addr.s_addr;
@@ -429,8 +426,7 @@ BOOL PTCPSocket::Connect(const PString & host)
   if (_Connect(host))
     return TRUE;
 
-  closesocket(os_handle);
-  os_handle = -1;
+  _Close();
   return FALSE;
 }
 
@@ -449,8 +445,7 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
   if (_Bind() && ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
 
-  closesocket(os_handle);
-  os_handle = -1;
+  _Close();
   return FALSE;
 }
 
