@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.76  2002/10/23 04:26:27  robertj
+ * Fixed extra debug levels in system log dump.
+ *
  * Revision 1.75  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -256,6 +259,9 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_INFO,    // LogInfo,    
   LOG_DEBUG,   // LogDebug
   LOG_DEBUG,
+  LOG_DEBUG,
+  LOG_DEBUG,
+  LOG_DEBUG,
   LOG_DEBUG
 };
 #endif // !P_VXWORKS
@@ -268,7 +274,10 @@ static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
   "Info",
   "Debug",
   "Debug2",
-  "Debug3"
+  "Debug3",
+  "Debug4",
+  "Debug5",
+  "Debug6",
 };
 
 #ifdef P_MAC_MPTHREADS
