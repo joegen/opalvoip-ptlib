@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.23  2002/05/28 13:05:26  robertj
+ * Fixed PTimer::SetInterval so it restarts timer as per operator=()
+ *
  * Revision 1.22  2002/04/09 00:09:10  robertj
  * Improved documentation on PTimer usage.
  *
@@ -179,6 +182,25 @@ class PTimer : public PTimeInterval
 
   /**@name Control functions */
   //@{
+    /** Set the value of the time interval. The time interval, in milliseconds,
+       is the sum of all of the parameters. For example all of the following
+       are equivalent:
+\begin{verbatim}
+              SetInterval(120000)
+              SetInterval(60000, 60)
+              SetInterval(60000, 0, 1)
+              SetInterval(0, 60, 1)
+              SetInterval(0, 0, 2)
+\end{verbatim}
+     */
+    virtual void SetInterval(
+      PInt64 milliseconds = 0,  /// Number of milliseconds for interval.
+      long seconds = 0,         /// Number of seconds for interval.
+      long minutes = 0,         /// Number of minutes for interval.
+      long hours = 0,           /// Number of hours for interval.
+      int days = 0              /// Number of days for interval.
+    );
+
     /** Start a timer in continous cycle mode. Whenever the timer runs out it
        is automatically reset to the time specified. Thus, it calls the
        notification function every time interval.
