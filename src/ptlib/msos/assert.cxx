@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.11 1996/07/27 04:08:13 robertj Exp $
+ * $Id: assert.cxx,v 1.12 1996/10/08 13:00:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.12  1996/10/08 13:00:46  robertj
+ * Changed default for assert to be ignore, not abort.
+ *
  * Revision 1.11  1996/07/27 04:08:13  robertj
  * Changed SystemLog to be stream based rather than printf based.
  *
@@ -92,8 +95,6 @@ void PAssertFunc(const char * file, int line, const char * msg)
 {
 #if defined(_WIN32)
   DWORD err = GetLastError();
-  static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
-  WaitForSingleObject(mutex, INFINITE);
 #else
   int err = errno;
 #endif
@@ -104,8 +105,13 @@ void PAssertFunc(const char * file, int line, const char * msg)
     sprintf(buf, "Assertion fail in file %s, line %u %s - code = %lu",
                  file, line, msg != NULL ? msg : "", err);
     PSystemLog::Output(PSystemLog::Fatal, buf);
-    _exit(100);
+    return;
   }
+
+#if defined(_WIN32)
+  static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
+  WaitForSingleObject(mutex, INFINITE);
+#endif
 
   for (;;) {
     cerr << "Assertion fail: File " << file << ", Line " << line << endl;
@@ -116,7 +122,6 @@ void PAssertFunc(const char * file, int line, const char * msg)
     switch (cin.get()) {
       case 'A' :
       case 'a' :
-      case EOF :
         cerr << "Aborted" << endl;
         _exit(100);
         
@@ -132,6 +137,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
       case 'I' :
       case 'i' :
+      case EOF :
         cerr << "Ignored" << endl;
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
