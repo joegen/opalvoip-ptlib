@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.28  2000/06/26 13:14:46  robertj
+ * Nucleus++ port.
+ *
  * Revision 1.27  2000/03/21 21:23:23  robertj
  * Added option to rename imported module names, allows include filename matching.
  *
@@ -455,11 +458,11 @@ Constraint::Constraint(ConstraintElementBase * elmt)
 }
 
 
-Constraint::Constraint(ConstraintElementList * std, BOOL extend, ConstraintElementList * ext)
+Constraint::Constraint(ConstraintElementList * stnd, BOOL extend, ConstraintElementList * ext)
 {
-  if (std != NULL) {
-    standard = *std;
-    delete std;
+  if (stnd != NULL) {
+    standard = *stnd;
+    delete stnd;
   }
   extendable = extend;
   if (ext != NULL) {
@@ -1761,16 +1764,16 @@ const char * NullType::GetAncestorClass() const
 
 /////////////////////////////////////////////////////////
 
-SequenceType::SequenceType(TypesList * std,
+SequenceType::SequenceType(TypesList * stnd,
                            BOOL extend,
                            TypesList * ext,
                            unsigned tagNum)
   : TypeBase(tagNum)
 {
-  if (std != NULL) {
-    numFields = std->GetSize();
-    fields = *std;
-    delete std;
+  if (stnd != NULL) {
+    numFields = stnd->GetSize();
+    fields = *stnd;
+    delete stnd;
   }
   else
     numFields = 0;
@@ -2194,10 +2197,10 @@ SetOfType::SetOfType(TypeBase * base, Constraint * constraint)
 
 /////////////////////////////////////////////////////////
 
-ChoiceType::ChoiceType(TypesList * std,
+ChoiceType::ChoiceType(TypesList * stnd,
                        BOOL extendable,
                        TypesList * extensions)
-  : SequenceType(std, extendable, extensions, Tag::IllegalUniversalTag)
+  : SequenceType(stnd, extendable, extensions, Tag::IllegalUniversalTag)
 {
 }
 
