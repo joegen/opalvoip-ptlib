@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.1 1994/12/12 09:59:35 robertj Exp $
+ * $Id: lists.h,v 1.2 1994/12/21 11:53:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
- * Revision 1.1  1994/12/12 09:59:35  robertj
+ * Revision 1.2  1994/12/21 11:53:12  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.1  1994/12/12  09:59:35  robertj
  * Initial revision
  *
  */
@@ -236,7 +239,8 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> PDECLARE_CLASS(PList, PAbstractList)
+template <class T>
+PDECLARE_CLASS(PList, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -312,7 +316,8 @@ template <class T> PDECLARE_CLASS(PList, PAbstractList)
 #define PLIST(cls, T) typedef PList<T> cls;
 
 
-template <class T> PDECLARE_CLASS(PQueue, PAbstractList)
+template <class T>
+PDECLARE_CLASS(PQueue, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a first in first out
    queue. The functions in this class primarily do all the appropriate casting of types.
@@ -400,7 +405,8 @@ template <class T> PDECLARE_CLASS(PQueue, PAbstractList)
 #define PQUEUE(cls, T) typedef PQueue<T> cls
 
 
-template <class T> PDECLARE_CLASS(PStack, PAbstractList)
+template <class T>
+PDECLARE_CLASS(PStack, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a last in first out
    stack. The functions in this class primarily do all the appropriate casting
@@ -796,7 +802,8 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> PDECLARE_CLASS(PSortedList, PAbstractSortedList)
+template <class T>
+PDECLARE_CLASS(PSortedList, PAbstractSortedList)
 /* This template class maps the PAbstractSortedList to a specific object type.
    The functions in this class primarily do all the appropriate casting of
    types.
