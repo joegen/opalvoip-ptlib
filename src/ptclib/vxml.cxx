@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.36  2003/11/12 20:38:16  csoutheren
+ * Fixed problem with incorrect sense of ContentLength header detection thanks to Andreas Sikkema
+ *
  * Revision 1.35  2003/05/14 01:12:53  rjongbloed
  * Fixed test for SID frames in record silence detection on G.723.1A
  *
@@ -419,7 +422,7 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
       }
 
       // get the length of the data
-      if (!replyMIME.Contains(PHTTPClient::ContentLengthTag))
+      if (replyMIME.Contains(PHTTPClient::ContentLengthTag))
         contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag].AsUnsigned();
       else
         contentLength = P_MAX_INDEX;
