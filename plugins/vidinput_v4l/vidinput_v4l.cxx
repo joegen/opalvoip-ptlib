@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.7  2004/02/06 22:21:17  dominance
+ * fixed device detection when refreshing the device list. Patch supplied by PUYDT Julien <julien.puydt@laposte.net>. Thanks to Damien Sandras to point out this and for Julien to provide the fix this fast!
+ *
  * Revision 1.6  2004/01/18 14:22:12  dereksmithies
  * Use names that are substrings of the actual device name, to open the device.
  *
@@ -303,16 +306,18 @@ class V4LNames : public PObject
 { 
    PCLASSINFO(V4LNames, PObject);
 public:
-  V4LNames();
+  V4LNames() {/* nothing */};
+
+  void Update ();
   
   PString GetUserFriendly(PString devName);
 
-  PString GetDeviceName(PString    userName);
+  PString GetDeviceName(PString userName);
 
   PStringList GetInputDeviceNames();
 
 protected:
-  void  AddUserDeviceName(PString userName, PString devName);
+  void AddUserDeviceName(PString userName, PString devName);
 
   PString BuildUserFriendly(PString devname);
 
@@ -326,7 +331,8 @@ protected:
   PStringList     inputDeviceNames;
 };
 
-V4LNames::V4LNames()
+void
+V4LNames::Update()
 {
   PDirectory   procvideo("/proc/video/dev");
   PString      entry;
@@ -458,8 +464,15 @@ PString V4LNames::GetDeviceName(PString userName)
 
 void V4LNames::AddUserDeviceName(PString userName, PString devName)
 {
-  userKey.SetAt(userName, devName);
-  deviceKey.SetAt(devName, userName);
+  if (userName != devName) { // must be a real userName!
+    userKey.SetAt(userName, devName);
+    deviceKey.SetAt(devName, userName);
+  } else { // we didn't find a good userName
+    if (!deviceKey.Contains (devName)) { // never met before: fallback
+      userKey.SetAt(userName, devName);
+      deviceKey.SetAt(devName, userName);
+    } // no else: we already know the pair
+  }
 }
 
 PString V4LNames::BuildUserFriendly(PString devname)
@@ -497,6 +510,7 @@ static
 V4LNames & GetNames()
 {
   static V4LNames names;
+  names.Update();
   return names;
 } 
 
