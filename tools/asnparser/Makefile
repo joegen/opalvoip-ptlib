@@ -1,5 +1,5 @@
 PROG		= asnparser
-SOURCES		= main.cxx asn_grammar.cxx asn_lex.cxx
+SOURCES		= asn_grammar.cxx asn_lex.cxx main.cxx
 
 DEBUG = 1
 
