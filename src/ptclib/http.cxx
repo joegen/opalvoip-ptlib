@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.110  2004/08/31 23:40:51  csoutheren
+ * Fixed problem with absolute file paths in URLs
+ *
  * Revision 1.109  2004/07/14 13:15:45  rjongbloed
  * Fixed minor bug where a URL is "non-empty" if requires a host but has none.
  *   eg could end up with "sip:" or "http://:80" which are illegal.
@@ -957,7 +960,7 @@ PFilePath PURL::AsFilePath() const
   }
   else {
     if (hostname != "localhost")
-      str << hostname;
+      str << PDIR_SEPARATOR << hostname;
     for (PINDEX i = 0; i < path.GetSize(); i++)
       str << PDIR_SEPARATOR << path[i];
   }
