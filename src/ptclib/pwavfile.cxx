@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.6  2001/07/20 07:09:12  rogerh
+ * We need to byte swap on more then just Linux and BeOS.
+ *
  * Revision 1.5  2001/07/20 04:14:47  robertj
  * Fixed swab implementation on Linux alpha
  *
@@ -51,7 +54,7 @@
 #include <ptlib.h>
 
 
-#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__))
+#if PBYTE_ORDER==PBIG_ENDIAN
 void swab(void * void_from, void * void_to, register size_t len)
 {
   register const char * from = (const char *)void_from;
