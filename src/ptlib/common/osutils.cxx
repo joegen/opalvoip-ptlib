@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.214  2004/04/12 07:33:46  csoutheren
+ * Temporarily disabled removal of empty TRACE output on Linux
+ *
  * Revision 1.213  2004/04/03 08:22:21  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -939,13 +942,16 @@ ostream & PTrace::End(ostream & s)
      must suffer with blank lines in that case.
    */
   ::streambuf & rb = *s.rdbuf();
+#ifndef P_LINUX
   if (((s.flags()&ios::unitbuf) != 0) ||
 #ifdef __USE_STL__
           rb.pubseekoff(0, ios::cur, ios::out) > 0
 #else
           rb.out_waiting() > 0
 #endif
-      ) {
+      )
+#endif
+    {
     if ((PTraceOptions&SystemLogStream) != 0) {
       // Get the trace level for this message and set the stream width to that
       // level so that the PSystemLog can extract the log level back out of the
