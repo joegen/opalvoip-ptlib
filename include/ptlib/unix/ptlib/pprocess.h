@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.2 1996/01/26 11:06:31 craigs Exp $
+ * $Id: pprocess.h,v 1.3 1996/04/15 10:50:48 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.3  1996/04/15 10:50:48  craigs
+ * Last revision prior to release of MibMaster
+ *
  * Revision 1.2  1996/01/26 11:06:31  craigs
  * Added signal handlers
  *
@@ -22,6 +25,8 @@
 #ifndef _PPROCESS
 
 #pragma interface
+
+PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -46,6 +51,15 @@
     virtual void PXOnSigPipe();
     virtual void PXOnSigTerm();
     virtual void PXOnSigChld();
+
+    void PXAbortIOBlock(int fd);
+
+    static void PXShowSystemWarning(PINDEX code);
+    static void PXShowSystemWarning(PINDEX code, const PString & str);
+
+  protected:
+    virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
+    PXFdDict     ioBlocks[3];
 
   private:
     char **envp;

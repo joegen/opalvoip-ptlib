@@ -16,14 +16,6 @@
 #include <localeinfo.h>
 #endif
 
-PINLINE void PThread::AllocateStack(PINDEX stackSize)
-  { stackBase = (char *)malloc(5*stackSize); }
-
-PINLINE void PThread::ClearBlock()
-  { blockHandle = -1; }
-
-///////////////////////////////////////////////////////////////////////////////
-
 PINLINE PProcess * PProcess::Current()
   { return PProcessInstance; }
 
@@ -47,27 +39,11 @@ PINLINE unsigned PTimer::Resolution()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE long PTime::GetTimeZone() const
-#if defined(P_HPUX9)
-#warning No timezone
-  { return 0; }
-#elif defined(P_SUN4)
-#warning No timezone
-  { return 0; }
-#else
-  { return timezone - (IsDaylightSavings() ? 1 : 0); }
-#endif
 
-PINLINE PString PTime::GetTimeZoneString(PTime::TimeZoneType type) const
-#if defined(P_HPUX9)
-#warning No timezone name
-  { return PString(); }
-#elif defined(P_SUN4)
-#warning No timezone name
-  { return PString(); }
-#else
-  { return PString((type == StandardTime) ? tzname[0] : tzname[1]); }
-#endif
+PINLINE PTime::PTime()
+{
+  theTime = time(NULL);
+}
 
 PINLINE BOOL PTime::GetTimeAMPM()
 #if defined(P_HPUX9)
@@ -151,29 +127,10 @@ PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL force)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE DWORD PSerialChannel::GetSpeed() const
-  { return baudRate; }
-
-PINLINE BYTE PSerialChannel::GetDataBits() const
-  { return dataBits; }
-
-PINLINE PSerialChannel::Parity PSerialChannel::GetParity() const
-  { return parityBits; }
-
-PINLINE BYTE PSerialChannel::GetStopBits() const
-  { return stopBits; }
-
-///////////////////////////////////////////////////////////////////////////////
-
 PINLINE void PChannel::Construct()
   { os_handle = -1; }
 
 PINLINE PString PChannel::GetName() const
   { return channelName; }
-
-///////////////////////////////////////////////////////////////////////////////
-
-PINLINE BOOL PPipeChannel::CanReadAndWrite()
-  { return TRUE; }
 
 // End Of File ///////////////////////////////////////////////////////////////
