@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.45.2.1  2004/07/04 02:02:40  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.45  2004/01/28 08:53:02  csoutheren
  * Fixed missing delete[] operator. Thanks to Borko Jandras
  *
@@ -577,14 +582,6 @@ class PSocket : public PChannel
       PSocket & listener,
       struct sockaddr * addr,
       PINDEX * size
-    );
-    static int os_select(
-      int maxfds,
-      fd_set * readfds,
-      fd_set * writefds,
-      fd_set * exceptfds,
-      const PIntArray & allfds,
-      const PTimeInterval & timeout
     );
 
 
