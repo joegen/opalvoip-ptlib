@@ -31,15 +31,23 @@
 #include <ctype.h>
 
 #if defined(P_LINUX)
+
 #if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
 #else
 #define P_USE_LANGINFO
 #endif
+
 #elif defined(P_HPUX9) 
 #define P_USE_LANGINFO
+
+#elif defined(P_SOLARIS) 
+#define P_USE_LANGINFO
+#include <sys/timeb.h>
+
 #elif defined(P_SUN4)
 #include <sys/timeb.h>
+
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -597,7 +605,7 @@ PDirectory PFilePath::GetDirectory() const
 
 PString PTime::GetTimeSeparator()
 {
-#if defined(P_LINUX) || defined(P_HPUX9)
+#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(T_FMT);
 #  elif defined(P_LINUX)
@@ -620,7 +628,7 @@ PString PTime::GetTimeSeparator()
 
 PTime::DateOrder PTime::GetDateOrder()
 {
-#if defined(P_LINUX) || defined(P_HPUX9)
+#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  elif defined(P_LINUX)
@@ -653,7 +661,7 @@ PString PTime::GetDateSeparator()
 {
 #if defined(P_SUN4)
   return PString("/");
-#elif defined(P_LINUX) || defined(P_HPUX9)
+#elif defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
 #  elif defined(P_LINUX)
@@ -746,7 +754,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_SUN4)
+#elif defined(P_SUN4) || defined(P_SOLARIS)
   struct timeb tb;
   ftime(&tb);
   if (type == StandardTime || tb.dstflag == 0)
@@ -761,17 +769,12 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SUN4)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
     return PString();
   else
     return PString(str);
-#elif defined(P_SUN4)
-  char buffer[10];
-  struct tm * timestruct = localtime(time(NULL)); 
-  strftime(buffer, 20, "%Z", &tm);
-  return PString(buffer);
 #else
 #warning No timezone name information
   return PString(); 
