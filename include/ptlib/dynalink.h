@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.6  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.5  1999/02/16 08:07:11  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -51,83 +54,101 @@
 #endif
 
 
-class PDynaLink : public PObject
-{
-  PCLASSINFO(PDynaLink, PObject)
-/* A dynamic link library. This allows the loading at run time of code
+/**A dynamic link library. This allows the loading at run time of code
    modules for use by an application.
  */
+class PDynaLink : public PObject
+{
+  PCLASSINFO(PDynaLink, PObject);
 
   public:
-    PDynaLink();
-    PDynaLink(
-      const PString & name    // Name of the dynamically loadable module.
-    );
-    /* Create a new dyna-link, loading the specified module. The first,
+  /**@name Construction */
+  //@{
+    /**Create a new dyna-link, loading the specified module. The first,
        parameterless, form does load a library.
      */
-
-    ~PDynaLink();
-    /* Destroy the dyna-link, freeing the module.
+    PDynaLink();
+    /**Create a new dyna-link, loading the specified module. The first,
+       parameterless, form does load a library.
      */
-
-
-  // New functions for class
-    static PString GetExtension();
-    /* Get the extension used by this platform for dynamic link libraries.
-
-       <H2>Returns:</H2>
-       String for file extension.
-     */
-
-    BOOL Open(
-      const PString & name    // Name of the dynamically loadable module.
+    PDynaLink(
+      const PString & name    /// Name of the dynamically loadable module.
     );
+
+    /**Destroy the dyna-link, freeing the module.
+     */
+    ~PDynaLink();
+  //@}
+
+  /**@name Load/Unload function */
+  //@{
     /* Open a new dyna-link, loading the specified module.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the library was loaded.
      */
+    BOOL Open(
+      const PString & name    /// Name of the dynamically loadable module.
+    );
 
+    /**Close the dyna-link library.
+     */
     void Close();
-    /* Close the dyna-link library.
-     */
 
+    /**Dyna-link module is loaded and may be accessed.
+     */
     BOOL IsLoaded() const;
-    /* Dyna-link module is loaded and may be accessed.
-     */
 
-    PString GetName(
-      BOOL full = FALSE  // Flag for full or short path name
-    ) const;
-    /* Get the name of the loaded library. If the library is not loaded
+    /**Get the name of the loaded library. If the library is not loaded
        this may return an empty string.
 
-       If <CODE>full</CODE> is TRUE then the full pathname of the library
+       If #full# is TRUE then the full pathname of the library
        is returned otherwise only the name part is returned.
 
-       <H2>Returns:</H2>
+       @return
        String for the library name.
      */
+    PString GetName(
+      BOOL full = FALSE  /// Flag for full or short path name
+    ) const;
 
+    /**Get the extension used by this platform for dynamic link libraries.
 
+       @return
+       String for file extension.
+     */
+    static PString GetExtension();
+  //@}
+
+  /**@name DLL entry point functions */
+  //@{
+    /// Primitive pointer to a function for a dynamic link module.
     typedef void (*Function)();
-    // Primitive pointer to a function for a dynamic link module.
 
 
-    BOOL GetFunction(
-      PINDEX index,    // Ordinal number of the function to get.
-      Function & func  // Refrence to point to function to get.
-    );
-    BOOL GetFunction(
-      const PString & name,  // Name of the function to get.
-      Function & func        // Refrence to point to function to get.
-    );
-    /* Get a pointer to the function in the dynamically loadable module.
+    /**Get a pointer to the function in the dynamically loadable module.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if function was found.
      */
+    BOOL GetFunction(
+      PINDEX index,    /// Ordinal number of the function to get.
+      Function & func  /// Refrence to point to function to get.
+    );
 
+    /**Get a pointer to the function in the dynamically loadable module.
+
+       @return
+       TRUE if function was found.
+     */
+    BOOL GetFunction(
+      const PString & name,  /// Name of the function to get.
+      Function & func        /// Refrence to point to function to get.
+    );
+  //@}
+
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.9  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.8  1999/02/16 08:20:48  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -63,20 +66,25 @@
 #endif
 
 
-class PICMPSocket : public PIPDatagramSocket
-{
-  PCLASSINFO(PICMPSocket, PIPDatagramSocket)
-/* Create a socket channel that uses allows ICMP commands in the Internal
+/**Create a socket channel that uses allows ICMP commands in the Internal
    Protocol.
  */
+class PICMPSocket : public PIPDatagramSocket
+{
+  PCLASSINFO(PICMPSocket, PIPDatagramSocket);
 
   public:
-    PICMPSocket();
-    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+  /**@name Construction */
+  //@{
+    /**Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
      */
+    PICMPSocket();
+  //@}
 
-
+  /**@name Status & Information */
+  //@{
+    /// Results of ICMP operation.
     enum PingStatus {
       Success,
       NetworkUnreachable,
@@ -92,43 +100,70 @@ class PICMPSocket : public PIPDatagramSocket
       NumStatuses
     };
 
+    /// Information used by and obtained by the ping operation.
     class PingInfo {
       public:
+        /// Create Ping information structure.
         PingInfo(WORD id = (WORD)PProcess::Current().GetProcessID());
 
-        // Supplied data
-        WORD identifier;         // Arbitrary identifier for the ping.
-        WORD sequenceNum;        // Sequence number for ping packet.
-        BYTE ttl;                // Time To Live for packet.
-        const BYTE * buffer;     // Send buffer (if NULL, defaults to 32 bytes).
-        PINDEX bufferSize;       // Size of buffer (< 64k).
+        /**@name Supplied data */
+        //@{
+        /// Arbitrary identifier for the ping.
+        WORD identifier;         
+        /// Sequence number for ping packet.
+        WORD sequenceNum;        
+        /// Time To Live for packet.
+        BYTE ttl;                
+        /// Send buffer (if NULL, defaults to 32 bytes).
+        const BYTE * buffer;     
+        /// Size of buffer (< 64k).
+        PINDEX bufferSize;       
+        //@}
 
-        // Returned data
-        PTimeInterval delay;     // Time for packet to make trip.
-        Address remoteAddr;      // Source address of reply packet.
-        Address localAddr;       // Destination address of reply packet.
-        PingStatus status;       // Status of the last ping operation
+        /**@name Returned data */
+        //@{
+        /// Time for packet to make trip.
+        PTimeInterval delay;     
+        /// Source address of reply packet.
+        Address remoteAddr;      
+        /// Destination address of reply packet.
+        Address localAddr;       
+        /// Status of the last ping operation
+        PingStatus status;       
+        //@}
     };
+  //@}
 
-    BOOL Ping(
-      const PString & host   // Host to send ping.
-    );
-    BOOL Ping(
-      const PString & host,   // Host to send ping.
-      PingInfo & info         // Information on the ping and reply.
-    );
-    /* Send an ECHO_REPLY message to the specified host and wait for a reply
+  /**@name Ping */
+  //@{
+    /**Send an ECHO_REPLY message to the specified host and wait for a reply
        to be sent back.
 
-       <H2>Returns:</H2>
+       @return
        FALSE if host not found or no response.
      */
+    BOOL Ping(
+      const PString & host   /// Host to send ping.
+    );
+    /**Send an ECHO_REPLY message to the specified host and wait for a reply
+       to be sent back.
 
+       @return
+       FALSE if host not found or no response.
+     */
+    BOOL Ping(
+      const PString & host,   /// Host to send ping.
+      PingInfo & info         /// Information on the ping and reply.
+    );
+  //@}
 
   protected:
     const char * GetProtocolName() const;
     virtual BOOL OpenSocket();
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.49  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.48  1999/02/16 08:07:11  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -200,128 +203,133 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract container class
 
+/** Abstract class to embody the base functionality of a {\it container}.
+
+Fundamentally, a container is an object that contains other objects. There
+are two main areas of support for tha that are provided by this class. The
+first is simply to keep a count of the number of things that the container
+contains. The current size is stored and accessed by members of this class.
+The setting of size is determined by the semantics of the descendent class
+and so is a pure function.
+
+The second area of support is for reference integrity. When an instance of
+a container is copied to another instance, the two instance contain the
+same thing. There can therefore be multiple references to the same things.
+When one reference is destroyed this must {\bf not} destroy the contained
+object as it may be referenced by another instance of a container class.
+To this end a reference count is provided by the PContainer class. This
+assures that the container only destroys the objects it contains when there
+are no more references to them.
+
+In support of this, descendent classes must provide a #DestroyContents()#
+function. As the normal destructor cannot be used, this function will free
+the memory or unlock the resource the container is wrapping.
+*/
 class PContainer : public PObject
 {
-  PCLASSINFO(PContainer, PObject)
-/* Abstract class to embody the base functionality of a <I>container</I>.
-
-   Fundamentally, a container is an object that contains other objects. There
-   are two main areas of support for tha that are provided by this class. The
-   first is simply to keep a count of the number of things that the container
-   contains. The current size is stored and accessed by members of this class.
-   The setting of size is determined by the semantics of the descendent class
-   and so is a pure function.
-
-   The second area of support is for reference integrity. When an instance of
-   a container is copied to another instance, the two instance contain the
-   same thing. There can therefore be multiple references to the same things.
-   When one reference is destroyed this must <EM>not</EM> destroy the contained
-   object as it may be referenced by another instance of a container class.
-   To this end a reference count is provided by the PContainer class. This
-   assures that the container only destroys the objects it contains when there
-   are no more references to them.
-
-   In support of this, descendent classes must provide a DestroyContents()
-   function. As the normal destructor cannot be used, this function will free
-   the memory or unlock the resource the container is wrapping.
- */
+  PCLASSINFO(PContainer, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+    /**Create a new unique container.
+     */
     PContainer(
-      PINDEX initialSize = 0  // Initial number of things in the container.
+      PINDEX initialSize = 0  /// Initial number of things in the container.
     );
-    // Create a new unique container.
 
-    PContainer(
-      const PContainer & cont  // Container to create a new reference from.
-    );
-    /* Create a new container referencing the same contents as the container
+    /**Create a new refernce to container.
+       Create a new container referencing the same contents as the container
        specified in the parameter.
      */
+    PContainer(
+      const PContainer & cont  /// Container to create a new reference from.
+    );
 
-    PContainer & operator=(const PContainer & cont);
-    /* Set the current container to reference the same thing as the container
+    /**Assign one container reference to another.
+       Set the current container to reference the same thing as the container
        specified in the parameter.
 
        Note that the old contents of the container is dereferenced and if
        it was unique, destroyed using the DestroyContents() function.
      */
+    PContainer & operator=(
+      const PContainer & cont  /// Container to create a new reference from.
+    );
 
+    /**Destroy the container class.
+       This will decrement the reference count on the contents and if unique,
+       will destroy it using the #DestroyContents()# function.
+     */
     virtual ~PContainer();
-    /* Destroy the container class. This will decrement the reference count
-       on the contents and if unique, will destroy it using the
-       DestroyContents() function.
+  //@}
+
+  /**@name Common functions for containers */
+  //@{
+    /**Get the current size of the container.
+       This represents the number of things the container contains. For some
+       types of containers this will always return 1.
+
+       @return number of objects in container.
      */
-
-
-  // New functions for class
     virtual PINDEX GetSize() const;
-    /* Get the current size of the container. This represents the number of
-       things the container contains. For some types of containers this will
-       always return 1.
 
-       <H2>Returns:</H2>
-       number of objects in container.
-     */
-
-    virtual BOOL SetSize(
-      PINDEX newSize  // New size for the container.
-    ) = 0;
-    /* Set the new current size of the container. The exact behavious of this
-       is determined by the descendent class. For instance an array class would
-       reallocate memory to make space for the new number of elements.
+    /**Set the new current size of the container.
+       The exact behavious of this is determined by the descendent class. For
+       instance an array class would reallocate memory to make space for the
+       new number of elements.
 
        Note for some types of containers this does not do anything as they
        inherently only contain one item. The function returns TRUE always and
        the new value is ignored.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the size was successfully changed. The value FALSE usually
        indicates failure due to insufficient memory.
      */
+    virtual BOOL SetSize(
+      PINDEX newSize  /// New size for the container.
+    ) = 0;
 
-    BOOL SetMinSize(
-      PINDEX minSize  // Possible, new size for the container.
-    );
-    /* This function will set the size of the object to be at least the size
-       specified. The SetSize() function is always called, either with the
+    /**Set the minimum size of container.
+       This function will set the size of the object to be at least the size
+       specified. The #SetSize()# function is always called, either with the
        new value or the previous size, whichever is the larger.
      */
+    BOOL SetMinSize(
+      PINDEX minSize  /// Possible, new size for the container.
+    );
 
-    virtual BOOL IsEmpty() const;
-    /* Determine if the container is empty, that is there are no objects in its
-       contents.
+    /**Determine if the container is empty.
+       Determine if the container that this object references contains any
+       elements.
 
-       <H2>Returns:</H2>
-       TRUE if <A>GetSize()</A> returns zero.
+       @return TRUE if #GetSize()# returns zero.
      */
+    virtual BOOL IsEmpty() const;
 
-    BOOL IsUnique() const;
-    /* Determine if this instance is the one and only reference to the
+    /**Determine if container is unique reference.
+       Determine if this instance is the one and only reference to the
        container contents.
 
-       <H2>Returns:</H2>
-       TRUE if the reference count is one.
+       @return TRUE if the reference count is one.
      */
+    BOOL IsUnique() const;
 
-    virtual BOOL MakeUnique();
-    /* Make this instance to be the one and only reference to the container
+    /**Make this instance to be the one and only reference to the container
        contents. This implicitly does a clone of the contents of the container
        to make a unique reference. If the instance was already unique then
        the function does nothing.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the instance was already unique.
      */
-
+    virtual BOOL MakeUnique();
+  //@}
 
   protected:
-    PContainer(
-      int dummy,        // Dummy to prevent accidental use of the constructor.
-      const PContainer * cont  // Container class to clone.
-    );
-    /* Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does <EM>not</EM>
+    /**Constructor used in support of the Clone() function. This creates a
+       new unique reference of a copy of the contents. It does {\bf not}
        create another reference.
 
        The dummy parameter is there to prevent the contructor from being
@@ -330,11 +338,14 @@ class PContainer : public PObject
        be silently cloned and the copy used instead of the container expected
        leading to unpredictable results.
      */
+    PContainer(
+      int dummy,        /// Dummy to prevent accidental use of the constructor.
+      const PContainer * cont  /// Container class to clone.
+    );
 
-    virtual void DestroyContents() = 0;
-    /* Destroy the container contents. This function must be defined by the
+    /**Destroy the container contents. This function must be defined by the
        descendent class to do the actual destruction of the contents. It is
-       automatically declared when the PDECLARE_CONTAINER() macro is used.
+       automatically declared when the #PDECLARE_CONTAINER()# macro is used.
 
        For all descendent classes not immediately inheriting off the PContainer
        itself, the implementation of DestroyContents() should always call its
@@ -342,10 +353,10 @@ class PContainer : public PObject
        container classes, such as arrays, are descended from as memory leaks
        will occur.
      */
+    virtual void DestroyContents() = 0;
 
-    void CopyContents(const PContainer & c);
-    /* Copy the container contents. This copies the contents from one reference
-       to another. It is automatically declared when the PDECLARE_CONTAINER()
+    /**Copy the container contents. This copies the contents from one reference
+       to another. It is automatically declared when the #PDECLARE_CONTAINER()#
        macro is used.
        
        No duplication of contents occurs, for instance if the container is an
@@ -353,31 +364,32 @@ class PContainer : public PObject
        block itself.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should <EM>not</EM> be called.
+       the ancestor function should {\bf not} be called.
      */
+    void CopyContents(const PContainer & c);
 
-    void CloneContents(const PContainer * src);
-    /* Create a duplicate of the container contents. This copies the contents
+    /**Create a duplicate of the container contents. This copies the contents
        from one container to another, unique container. It is automatically
-       declared when the PDECLARE_CONTAINER() macro is used.
+       declared when the #PDECLARE_CONTAINER()# macro is used.
        
        This class will duplicate the contents completely, for instance if the
        container is an array, the actual array memory is copied, not just the
-       pointer. If the container contains objects that descend from PObject,
+       pointer. If the container contains objects that descend from #PObject#,
        they too should also be cloned and not simply copied.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should <EM>not</EM> be called.
+       the ancestor function should {\bf not} be called.
        
-       <B><EM>Note well</EM></B>, the logic of the function must be able to
+       {\it {\bf Note well}}, the logic of the function must be able to
        accept the passed in parameter to clone being the same instance as the
-       destination object, ie during execution <CODE>this == src</CODE>.
+       destination object, ie during execution #this == src#.
      */
+    void CloneContents(const PContainer * src);
 
-    void Destruct();
-    /* Internal function called from container destructors. This will
-       conditionally call DestroyContents() to destroy the container contents.
+    /**Internal function called from container destructors. This will
+       conditionally call #DestroyContents()# to destroy the container contents.
      */
+    void Destruct();
 
 
     class Reference {
@@ -392,18 +404,18 @@ class PContainer : public PObject
 
 
 
-/*$MACRO PCONTAINERINFO(cls, par)
+/**Macro to declare funtions required in a container.
    This macro is used to declare all the functions that should be implemented
    for a working container class. It will also define some inline code for
    some standard function behaviour.
 
    This may be used when multiple inheritance requires a special class
-   declaration. Normally, the <A>PDECLARE_CONTAINER</A> macro would be used,
+   declaration. Normally, the #PDECLARE_CONTAINER# macro would be used,
    which includes this macro in it.
 
    The default implementation for contructors, destructor, the assignment
    operator and the MakeUnique() function is as follows:
-   <PRE><CODE>
+\begin{verbatim}
         cls(const cls & c)
           : par(c)
         {
@@ -435,10 +447,10 @@ class PContainer : public PObject
           CloneContents(c);
           return FALSE;
         }
-    </PRE></CODE>
-    Then the DestroyContents(), CloneContents() and CopyContents() functions
+\end{verbatim}
+    Then the #DestroyContents()#, #CloneContents()# and #CopyContents()# functions
     are declared and must be implemented by the programmer. See the
-    <A>PContainer</A> class for more information on these functions.
+    #PContainer# class for more information on these functions.
  */
 #define PCONTAINERINFO(cls, par) \
     PCLASSINFO(cls, par) \
@@ -456,25 +468,24 @@ class PContainer : public PObject
     void CopyContents(const cls & c); \
 
 
-/*$MACRO PDECLARE_CONTAINER(cls, par)
-   This macro is used to declare a descendent of <A>PContainer</A> class. It
+/**Declare a container class.
+   This macro is used to declare a descendent of #PContainer# class. It
    declares all the functions that should be implemented for a working
-   container class.
+   container class. This is not recommended for use as it is not compatible
+   with automatic documentation systems.
 
-   See the <A>PCONTAINERINFO</A> macro for more information.
+   See the #PCONTAINERINFO# macro for more information.
  */
 #define PDECLARE_CONTAINER(cls, par) \
                              class cls : public par { PCONTAINERINFO(cls, par)
+//}  Match previous brace in doc++ */
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract collection of objects class
 
-class PCollection : public PContainer
-{
-  PCLASSINFO(PCollection, PContainer)
-/* A collection is a container that collects together descendents of the
-   <A>PObject</A> class. The objects contained in the collection are always
+/**A collection is a container that collects together descendents of the
+   #PObject# class. The objects contained in the collection are always
    pointers to objects, not the objects themselves. The life of an object in
    the collection should be carefully considered. Typically, it is allocated
    by the user of the collection when it is added. The collection then
@@ -501,200 +512,196 @@ class PCollection : public PContainer
    last location or an end of the list, incurring an overhead.
 
    All collection classes implement a base set of functions, though they may
-   be meaningless or degenerative in some collection types eg <A>Insert()</A>
-   for <A>PSortedList</A> will degenerate to be the same as <A>Append()</A>.
+   be meaningless or degenerative in some collection types eg #Insert()#
+   for #PSortedList# will degenerate to be the same as #Append()#.
  */
+class PCollection : public PContainer
+{
+  PCLASSINFO(PCollection, PContainer);
 
   public:
-    PCollection(
-      PINDEX initialSize = 0  // Initial number of things in the collection.
-    );
-    /* Create a new collection
+  /**@name Construction */
+  //@{
+    /**Create a new collection
      */
+    PCollection(
+      PINDEX initialSize = 0  /// Initial number of things in the collection.
+    );
+  //@}
 
-    // Overrides from class PObject
-    virtual void PrintOn(
-      ostream &strm   // Output stream to print the collection.
-    ) const;
-    /* Print the collection on the stream. This simply executes the
-       <A>PObject::PrintOn()</A> function on each element in the
+  /**@name Overrides from class PObject */
+  //@{
+    /**Print the collection on the stream. This simply executes the
+       #PObject::PrintOn()# function on each element in the
        collection.
 
-       <H2>Returns:</H2>
-       the stream printed to.
+       @return the stream printed to.
      */
+    virtual void PrintOn(
+      ostream &strm   /// Output stream to print the collection.
+    ) const;
+  //@}
 
-    // New functions for class
-    virtual PINDEX Append(
-      PObject * obj   // New object to place into the collection.
-    ) = 0;
-    /* Append a new object to the collection.
+  /**@name Common functions for collections */
+  //@{
+    /**Append a new object to the collection.
     
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object at the "end" of the collection at
-       all. For example, in a <A>PSortedList</A> the object is placed in the
+       all. For example, in a #PSortedList# the object is placed in the
        correct ordinal position in the list.
 
-       <H2>Returns:</H2>
-       index of the newly added object.
+       @return index of the newly added object.
      */
-
-    virtual PINDEX Insert(
-      const PObject & before,   // Object value to insert before.
-      PObject * obj             // New object to place into the collection.
+    virtual PINDEX Append(
+      PObject * obj   /// New object to place into the collection.
     ) = 0;
-    /* Insert a new object immediately before the specified object. If the
+
+    /**Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the <A>Append()</A> function is performed.
+       the #Append()# function is performed.
        
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object before the specified object at
-       all. For example, in a <A>PSortedList</A> the object is placed in the
+       all. For example, in a #PSortedList# the object is placed in the
        correct ordinal position in the list.
 
        Note that the object values are compared for the search of the
-       <CODE>before</CODE> parameter, not the pointers. So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
+       #before# parameter, not the pointers. So the objects in the
+       collection must correctly implement the #PObject::Compare()#
        function.
 
-       <H2>Returns:</H2>
-       index of the newly inserted object.
+       @return index of the newly inserted object.
      */
-
-    virtual PINDEX InsertAt(
-      PINDEX index,   // Index position in collection to place the object.
-      PObject * obj   // New object to place into the collection.
+    virtual PINDEX Insert(
+      const PObject & before,   /// Object value to insert before.
+      PObject * obj             /// New object to place into the collection.
     ) = 0;
-    /* Insert a new object at the specified ordinal index. If the index is
+
+    /**Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the <A>Append()</A> function is performed.
+       equivalent of the #Append()# function is performed.
 
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object at the specified index at all.
-       For example, in a <A>PSortedList</A> the object is placed in the correct
+       For example, in a #PSortedList# the object is placed in the correct
        ordinal position in the list.
 
-       <H2>Returns:</H2>
-       index of the newly inserted object.
+       @return index of the newly inserted object.
      */
-
-    virtual BOOL Remove(
-      const PObject * obj   // Existing object to remove from the collection.
+    virtual PINDEX InsertAt(
+      PINDEX index,   /// Index position in collection to place the object.
+      PObject * obj   /// New object to place into the collection.
     ) = 0;
-    /* Remove the object from the collection. If the AllowDeleteObjects option
+
+    /**Remove the object from the collection. If the AllowDeleteObjects option
        is set then the object is also deleted.
 
        Note that the comparison for searching for the object in collection is
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       <H2>Returns:</H2>
-       TRUE if the object was in the collection.
+       @return TRUE if the object was in the collection.
      */
-
-    virtual PObject * RemoveAt(
-      PINDEX index   // Index position in collection to place the object.
+    virtual BOOL Remove(
+      const PObject * obj   /// Existing object to remove from the collection.
     ) = 0;
-    /* Remove the object at the specified ordinal index from the collection.
+
+    /**Remove the object at the specified ordinal index from the collection.
        If the AllowDeleteObjects option is set then the object is also deleted.
 
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       <H2>Returns:</H2>
-       pointer to the object being removed, or NULL if it was deleted.
+       @return pointer to the object being removed, or NULL if it was deleted.
      */
+    virtual PObject * RemoveAt(
+      PINDEX index   /// Index position in collection to place the object.
+    ) = 0;
 
-    virtual void RemoveAll();
-    /* Remove all of the elements in the collection. This operates by
-       continually calling <A>RemoveAt()</A> until there are no objects left.
+    /**Remove all of the elements in the collection. This operates by
+       continually calling #RemoveAt()# until there are no objects left.
 
        The objects are removed from the last, at index
-       <CODE>(GetSize()-1)</CODE> toward the first at index zero.
+       #(GetSize()-1)# toward the first at index zero.
      */
+    virtual void RemoveAll();
 
-    virtual BOOL SetAt(
-      PINDEX index,   // Index position in collection to set.
-      PObject * val   // New value to place into the collection.
-    ) = 0;
-    /* Set the object at the specified ordinal position to the new value. This
+    /**Set the object at the specified ordinal position to the new value. This
        will overwrite the existing entry. If the AllowDeleteObjects option is
        set then the old object is also deleted.
 
        The exact semantics depends on the specific type of the collection. For
-       some, eg <A>PSortedList</A>, the object inserted will not stay at the
+       some, eg #PSortedList#, the object inserted will not stay at the
        ordinal position. Also the exact behaviour when the index is greater
        than the size of the collection depends on the collection type, eg in
        an array collection the array is expanded to accommodate the new index,
        whereas in a list it will return FALSE.
 
-       <H2>Returns:</H2>
-       TRUE if the object was successfully added.
+       @return TRUE if the object was successfully added.
      */
+    virtual BOOL SetAt(
+      PINDEX index,   /// Index position in collection to set.
+      PObject * val   /// New value to place into the collection.
+    ) = 0;
 
-    virtual PObject * GetAt(
-      PINDEX index  // Index position in the collection of the object.
-    ) const = 0;
-    /* Get the object at the specified ordinal position. If the index was
+    /**Get the object at the specified ordinal position. If the index was
        greater than the size of the collection then NULL is returned.
 
-       <H2>Returns:</H2>
-       pointer to object at the specified index.
+       @return pointer to object at the specified index.
      */
-
-    virtual PINDEX GetObjectsIndex(
-      const PObject * obj
+    virtual PObject * GetAt(
+      PINDEX index  /// Index position in the collection of the object.
     ) const = 0;
-    /* Search the collection for the specific instance of the object. The
+
+    /**Search the collection for the specific instance of the object. The
        object pointers are compared, not the values. The fastest search
        algorithm is employed depending on the collection type.
 
-       <H2>Returns:</H2>
-       ordinal index position of the object, or P_MAX_INDEX.
+       @return ordinal index position of the object, or P_MAX_INDEX.
      */
-
-    virtual PINDEX GetValuesIndex(
-      const PObject & obj
+    virtual PINDEX GetObjectsIndex(
+      const PObject * obj  /// Object to search for.
     ) const = 0;
-    /* Search the collection for the specified value of the object. The object
+
+    /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
+       collection must correctly implement the #PObject::Compare()#
        function. The fastest search algorithm is employed depending on the
        collection type.
 
-       <H2>Returns:</H2>
-       ordinal index position of the object, or P_MAX_INDEX.
+       @return ordinal index position of the object, or P_MAX_INDEX.
      */
+    virtual PINDEX GetValuesIndex(
+      const PObject & obj  /// Object to search for.
+    ) const = 0;
 
-    void AllowDeleteObjects(
-      BOOL yes = TRUE   // New value for flag for deleting objects
-    );
-    /* Allow or disallow the deletion of the objects contained in the
+    /**Allow or disallow the deletion of the objects contained in the
        collection. If TRUE then whenever an object is removed, overwritten or
        the colelction is deleted due to all references being destroyed, the
        object is deleted.
 
        For example:
-              <PRE><CODE>
+\begin{verbatim}
               coll.SetAt(2, new PString("one"));
               coll.SetAt(2, new PString("Two"));
-              </PRE></CODE>
+\end{verbatim}
        would automatically delete the string containing "one" on the second
        call to SetAt().
      */
+    void AllowDeleteObjects(
+      BOOL yes = TRUE   /// New value for flag for deleting objects
+    );
 
-    void DisallowDeleteObjects();
-    /* Disallow the deletion of the objects contained in the collection. See
-       the <A>AllowDeleteObjects()</A> function for more details.
+    /**Disallow the deletion of the objects contained in the collection. See
+       the #AllowDeleteObjects()# function for more details.
      */
+    void DisallowDeleteObjects();
+  //@}
 
   protected:
-    PCollection(
-      int dummy,        // Dummy to prevent accidental use of the constructor.
-      const PCollection * coll  // Collection class to clone.
-    );
-    /* Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does <EM>not</EM>
+    /**Constructor used in support of the Clone() function. This creates a
+       new unique reference of a copy of the contents. It does {\bf not}
        create another reference.
 
        The dummy parameter is there to prevent the contructor from being
@@ -703,6 +710,10 @@ class PCollection : public PContainer
        be silently cloned and the copy used instead of the container expected
        leading to unpredictable results.
      */
+    PCollection(
+      int dummy,        /// Dummy to prevent accidental use of the constructor.
+      const PCollection * coll  /// Collection class to clone.
+    );
 };
 
 

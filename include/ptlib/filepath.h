@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.15  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.14  1999/02/16 08:07:11  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -81,35 +84,41 @@
 #endif
 
 
+#ifdef DOC_PLUS_PLUS
+/** Base string type for a file path.
+    For platforms where filenames are case significant (eg Unix) this class
+    is a synonym for #PString#. If it is for a platform where case is not
+    significant (eg Win32, Mac) then this is a synonym for #PCaselessString#.
+ */
+class PFilePathString : public PString { };
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // File Specification
 
-class PFilePath : public PFILE_PATH_STRING
-{
-  PCLASSINFO(PFilePath, PFILE_PATH_STRING)
-/* This class describes a full description for a file on the particular
+/**This class describes a full description for a file on the particular
    platform. This will always uniquely identify the file on currently mounted
    volumes.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is <A>PString</A>. For other
-   platforms, the ancestor class is <A>PCaselessString</A>.
+   case sensitive, eg Unix, the ancestor is #PString#. For other
+   platforms, the ancestor class is #PCaselessString#.
  */
+class PFilePath : public PFilePathString
+{
+  PCLASSINFO(PFilePath, PFilePathString);
 
   public:
+  /**@name Construction */
+  //@{
+    /**Create a file specification object.
+     */
     PFilePath();
-    PFilePath(
-      const char * cstr   // Partial C string for file name.
-    );
-    PFilePath(
-      const PString & str // Partial PString for file name.
-    );
-    PFilePath(
-      const PFilePath & path // Previous path for file name.
-    );
-    /* Create a file specification object with the specified file name.
+
+    /**Create a file specification object with the specified file name.
     
-       The string passed in may be a full or partial specifiaction for a file
+       The string passed in may be a full or partial specification for a file
        as determined by the platform. It is unusual for this to be a literal
        string, unless only the file title is specified, as that would be
        platform specific.
@@ -117,27 +126,41 @@ class PFilePath : public PFILE_PATH_STRING
        The partial file specification is translated into a canonical form
        which always absolutely references the file.
      */
-
     PFilePath(
-      const char * prefix,  // Prefix string for file title.
-      const char * dir      // Directory in which to place the file.
+      const char * cstr   /// Partial C string for file name.
     );
-    /* Create a file spec object with a generated temporary name. The first
+
+    /**Create a file specification object with the specified file name.
+    
+       The string passed in may be a full or partial specification for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
+
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
+     */
+    PFilePath(
+      const PString & str /// Partial PString for file name.
+    );
+
+    /**Create a file specification object with the specified file name.
+     */
+    PFilePath(
+      const PFilePath & path /// Previous path for file name.
+    );
+
+    /**Create a file spec object with a generated temporary name. The first
        parameter is a prefix for the filename to which a unique number is
        appended. The second parameter is the directory in which the file is to
        be placed. If this is NULL a system standard directory is used.
      */
+    PFilePath(
+      const char * prefix,  /// Prefix string for file title.
+      const char * dir      /// Directory in which to place the file.
+    );
 
-    PFilePath & operator=(
-      const char * cstr // Partial "C" string for file name.
-    );
-    PFilePath & operator=(
-      const PString & str // Partial PString for file name.
-    );
-    PFilePath & operator=(
-      const PFilePath & path // Previous path for file name.
-    );
-    /* Change the file specification object to the specified file name.
+    /**Change the file specification object to the specified file name.
 
        The string passed in may be a full or partial specifiaction for a file
        as determined by the platform. It is unusual for this to be a literal
@@ -147,73 +170,98 @@ class PFilePath : public PFILE_PATH_STRING
        The partial file specification is translated into a canonical form
        which always absolutely references the file.
      */
-
-    PFilePath & operator+=(
-      const PString & str   // String to concatenate.
+    PFilePath & operator=(
+      const char * cstr /// Partial "C" string for file name.
     );
-    /* Concatenate a string to another string, modifiying that string.
+    /**Change the file specification object to the specified file name.
 
-       <H2>Returns:</H2>
+       The string passed in may be a full or partial specifiaction for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
+
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
+     */
+    PFilePath & operator=(
+      const PString & str /// Partial PString for file name.
+    );
+    /**Change the file specification object to the specified file name.
+     */
+    PFilePath & operator=(
+      const PFilePath & path /// Previous path for file name.
+    );
+  //@}
+
+  /**@name Path addition functions */
+  //@{
+    /**Concatenate a string to the file path, modifiying that path.
+
+       @return
        reference to string that was concatenated to.
      */
-
     PFilePath & operator+=(
-      const char * cstr  // C string to concatenate.
+      const PString & str   /// String to concatenate.
     );
-    /* Concatenate a C string to a PString, modifiying that string. The
-       <CODE>cstr</CODE> parameter is typically a literal string, eg:
 
-       <CODE>        myStr += "fred";</CODE>
+    /**Concatenate a C string to a path, modifiying that path. The
+       #cstr# parameter is typically a literal string, eg:
+\begin{verbatim}
+        myStr += "fred";
+\end{verbatim}
 
-       <H2>Returns:</H2>
+       @return
        reference to string that was concatenated to.
      */
+    PFilePath & operator+=(
+      const char * cstr  /// C string to concatenate.
+    );
 
+    /**Concatenate a single character to a path. The #ch#
+       parameter is typically a literal, eg:
+\begin{verbatim}
+        myStr += '!';
+\end{verbatim}
+
+       @return
+       new string with concatenation of the object and parameter.
+     */
     PFilePath & operator+=(
       char ch   // Character to concatenate.
     );
-    /* Concatenate a single character to a PString. The <CODE>ch</CODE>
-       parameter is typically a literal, eg:
+  //@}
 
-       <CODE>        myStr += '!';</CODE>
-
-       <H2>Returns:</H2>
-       new string with concatenation of the object and parameter.
-     */
-
-
-
-  // New member functions
-    PFILE_PATH_STRING GetVolume() const;
-    /* Get the drive/volume name component of the full file specification. This
+  /**@name Path decoding access functions */
+  //@{
+    /**Get the drive/volume name component of the full file specification. This
        is very platform specific. For example in DOS & NT it is the drive
        letter followed by a colon ("C:"), for Macintosh it is the volume name
        ("Untitled") and for Unix it is empty ("").
        
-       <H2>Returns:</H2>
+       @return
        string for the volume name part of the file specification..
      */
+    PFilePathString GetVolume() const;
       
-    PFILE_PATH_STRING GetPath() const;
-    /* Get the directory path component of the full file specification. This
+    /**Get the directory path component of the full file specification. This
        will include leading and trailing directory separators. For example
        on DOS this could be "\SRC\PWLIB\", for Macintosh ":Source:PwLib:" and
        for Unix "/users/equivalence/src/pwlib/".
 
-       <H2>Returns:</H2>
+       @return
        string for the path part of the file specification.
      */
+    PFilePathString GetPath() const;
 
-    PFILE_PATH_STRING GetTitle() const;
-    /* Get the title component of the full file specification, eg for the DOS
+    /**Get the title component of the full file specification, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" this would be "FRED".
 
-       <H2>Returns:</H2>
+       @return
        string for the title part of the file specification.
      */
+    PFilePathString GetTitle() const;
 
-    PFILE_PATH_STRING GetType() const;
-    /* Get the file type of the file. Note that on some platforms this may
+    /**Get the file type of the file. Note that on some platforms this may
        actually be part of the full name string. eg for DOS file
        "C:\SRC\PWLIB\FRED.TXT" this would be ".TXT" but on the Macintosh this
        might be "TEXT".
@@ -221,54 +269,67 @@ class PFilePath : public PFILE_PATH_STRING
        Note there are standard translations from file extensions, eg ".TXT"
        and some Macintosh file types, eg "TEXT".
 
-       <H2>Returns:</H2>
+       @return
        string for the type part of the file specification.
      */
+    PFilePathString GetType() const;
 
-    PFILE_PATH_STRING GetFileName() const;
-    /* Get the actual directory entry name component of the full file
+    /**Get the actual directory entry name component of the full file
        specification. This may be identical to
-       <CODE>GetTitle() + GetType()</CODE> or simply <CODE>GetTitle()</CODE>
+       #GetTitle() + GetType()# or simply #GetTitle()#
        depending on the platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this
        would be "FRED.TXT".
 
-       <H2>Returns:</H2>
+       @return
        string for the file name part of the file specification.
      */
+    PFilePathString GetFileName() const;
 
-    PDirectory GetDirectory() const;
-    /* Get the the directory that the file is contained in.  This may be 
-       identical to <CODE>GetVolume() + GetPath()</CODE> depending on the 
+    /**Get the the directory that the file is contained in.  This may be 
+       identical to #GetVolume() + GetPath()# depending on the 
        platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this would be 
        "C:\SRC\PWLIB\".
 
-       Note that for Unix platforms, this returns the <EM>physical</EM> path
+       Note that for Unix platforms, this returns the {\bf physical} path
        of the directory. That is all symlinks are resolved. Thus the directory
-       returned may not be the same as the value of <CODE>GetPath()</CODE>.
+       returned may not be the same as the value of #GetPath()#.
 
-       <H2>Returns:</H2>
+       @return
        Directory that the file is contained in.
      */
+    PDirectory GetDirectory() const;
 
-    void SetType(
-      const PFILE_PATH_STRING & type  // New type of the file.
-    );
-    /* Set the type component of the full file specification, eg for the DOS
+    /**Set the type component of the full file specification, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" would become "C:\SRC\PWLIB\FRED.TXT".
      */
-
-
-    static BOOL IsValid(
-      char c
+    void SetType(
+      const PFilePathString & type  /// New type of the file.
     );
-    static BOOL IsValid(
-      const PString & str
-    );
-    /* Test if the character is valid in a filename.
+  //@}
 
-       <H2>Returns:</H2>
+  /**@name Miscellaneous functions */
+  //@{
+    /**Test if the character is valid in a filename.
+
+       @return
        TRUE if the character is valid for a filename.
      */
+    static BOOL IsValid(
+      char c    /// Character to test for validity.
+    );
 
+    /**Test if all the characters are valid in a filename.
+
+       @return
+       TRUE if the character is valid for a filename.
+     */
+    static BOOL IsValid(
+      const PString & str   /// String to test for validity.
+    );
+  //@}
+
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
