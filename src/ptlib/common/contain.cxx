@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.100  2001/04/23 03:13:16  robertj
+ * Changed PString hash function to better one, thanks Patrick Koorevaar
+ *
  * Revision 1.99  2001/04/18 04:10:15  robertj
  * Removed hash function for caseless strings as confuses mixed dictionaries.
  *
@@ -1106,11 +1109,15 @@ PObject::Comparison PString::Compare(const PObject & obj) const
 
 PINDEX PString::HashFunction() const
 {
+  // Hash function from "Data Structures and Algorithm Analysis in C++" by
+  // Mark Allen Weiss, with limit of only executing over first 8 characters to
+  // increase speed when dealing with large strings.
+
   PINDEX i = 0;
-  PINDEX sum = 0;
+  PINDEX hash = 0;
   while (i < 8 && theArray[i] != 0)
-    sum += theArray[i++];
-  return sum%23;
+    hash = (hash << 5) ^ theArray[i++] ^ hash;
+  return hash%123;
 }
 
 
