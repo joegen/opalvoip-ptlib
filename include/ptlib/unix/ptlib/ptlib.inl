@@ -28,6 +28,11 @@ PINLINE char ** PProcess::GetArgv() const
 PINLINE int PProcess::GetArgc() const
   { return argc; }
 
+PINLINE DWORD PProcess::GetProcessID() const
+{
+  return (DWORD)getpid();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE unsigned PTimer::Resolution()
