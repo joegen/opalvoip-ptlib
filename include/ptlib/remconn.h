@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.8 1998/01/26 00:34:51 robertj Exp $
+ * $Id: remconn.h,v 1.9 1998/02/03 06:28:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.9  1998/02/03 06:28:46  robertj
+ * Added more error codes.
+ *
  * Revision 1.8  1998/01/26 00:34:51  robertj
  * Added parameter to PRemoteConnection to open only if already connected.
  * Added function to PRemoteConnection to get at OS error code.
@@ -79,6 +82,8 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       NoAnswer,
       PortInUse,
       NoNameOrNumber,
+      AccessDenied,
+      HardwareFailure,
       GeneralFailure,
       ConnectionLost,
       NotInstalled,
