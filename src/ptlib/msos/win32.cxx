@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.25 1996/04/17 12:09:30 robertj Exp $
+ * $Id: win32.cxx,v 1.26 1996/04/29 12:23:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.26  1996/04/29 12:23:22  robertj
+ * Fixed ability to access GDI stuff from subthreads.
+ * Added function to return process ID.
+ *
  * Revision 1.25  1996/04/17 12:09:30  robertj
  * Added service dependencies.
  * Started win95 support.
@@ -1631,8 +1635,10 @@ void PThread::RegisterWithProcess(BOOL terminating)
 {
   PProcess * process = PProcess::Current();
 
-  if (!terminating)
-    AttachThreadInput(threadId, ((PThread*)process)->threadId, TRUE);
+  if (!terminating) {
+    PAssertOS(AttachThreadInput(threadId, ((PThread*)process)->threadId,TRUE));
+    PAssertOS(AttachThreadInput(((PThread*)process)->threadId, threadId,TRUE));
+  }
 
   process->threadMutex.Wait();
   process->activeThreads.SetAt(threadId, terminating ? NULL : this);
@@ -1707,6 +1713,12 @@ PString PProcess::GetUserName() const
   ::GetUserName(username.GetPointer((PINDEX)size), &size);
   username.MakeMinimumSize();
   return username;
+}
+
+
+DWORD PProcess::GetProcessID() const
+{
+  return GetCurrentProcessId();
 }
 
 
