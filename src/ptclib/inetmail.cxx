@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.14  2000/11/09 05:50:23  robertj
+ * Added RFC822 aware channel class for doing internet mail.
+ *
  * Revision 1.13  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -125,9 +128,13 @@ BOOL PSMTPClient::OnOpen()
 BOOL PSMTPClient::Close()
 {
   BOOL ok = TRUE;
+
+  if (sendingData)
+    ok = EndMessage();
+
   if (IsOpen() && haveHello) {
     SetReadTimeout(60000);
-    ok = ExecuteCommand(QUIT, "") == '2';
+    ok = ExecuteCommand(QUIT, "")/100 != 2 && ok;
   }
   return PInternetProtocol::Close() && ok;
 }
@@ -167,7 +174,7 @@ BOOL PSMTPClient::_BeginMessage()
   }
 
   if (!haveHello) {
-    if (ExecuteCommand(EHLO, localHost) == '2')
+    if (ExecuteCommand(EHLO, localHost)/100 == 2)
       haveHello = extendedHello = TRUE;
   }
 
@@ -175,7 +182,7 @@ BOOL PSMTPClient::_BeginMessage()
     extendedHello = FALSE;
     if (eightBitMIME)
       return FALSE;
-    if (ExecuteCommand(HELO, localHost) != '2')
+    if (ExecuteCommand(HELO, localHost)/100 != 2)
       return FALSE;
     haveHello = TRUE;
   }
@@ -184,20 +191,21 @@ BOOL PSMTPClient::_BeginMessage()
     fromAddress = '"' + fromAddress + '"';
   if (!localHost && fromAddress.Find('@') == P_MAX_INDEX)
     fromAddress += '@' + localHost;
-  if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>') != '2')
+  if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>')/100 != 2)
     return FALSE;
 
   for (PINDEX i = 0; i < toNames.GetSize(); i++) {
     if (!peerHost && toNames[i].Find('@') == P_MAX_INDEX)
       toNames[i] += '@' + peerHost;
-    if (ExecuteCommand(RCPT, "TO:<" + toNames[i] + '>') != '2')
+    if (ExecuteCommand(RCPT, "TO:<" + toNames[i] + '>')/100 != 2)
       return FALSE;
   }
 
-  if (ExecuteCommand(DATA, PString()) != '3')
+  if (ExecuteCommand(DATA, PString())/100 != 3)
     return FALSE;
 
   stuffingState = StuffIdle;
+  sendingData = TRUE;
   return TRUE;
 }
 
@@ -205,9 +213,13 @@ BOOL PSMTPClient::_BeginMessage()
 BOOL PSMTPClient::EndMessage()
 {
   flush();
+
   stuffingState = DontStuff;
+  sendingData = FALSE;
+
   if (!WriteString(CRLFdotCRLF))
     return FALSE;
+
   return ReadResponse() && lastResponseCode/100 == 2;
 }
 
@@ -1075,6 +1087,224 @@ void PPOP3Server::HandleSendMessage(PINDEX, const PString &, PINDEX)
 
 void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 {
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PRFC822Channel
+
+const char PRFC822Channel::FromTag[] = "From";
+const char PRFC822Channel::ToTag[] = "To";
+const char PRFC822Channel::CCTag[] = "cc";
+const char PRFC822Channel::BCCTag[] = "bcc";
+const char PRFC822Channel::SubjectTag[] = "Subject";
+const char PRFC822Channel::DateTag[] = "Date";
+const char PRFC822Channel::ReturnPathTag[] = "Return-Path";
+const char PRFC822Channel::ReceivedTag[] = "Received";
+const char PRFC822Channel::MessageIDTag[] = "Message-ID";
+const char PRFC822Channel::MailerTag[] = "X-Mailer";
+const char PRFC822Channel::ContentTypeTag[] = "Content-Type";
+const char PRFC822Channel::ContentTransferEncodingTag[] = "Content-Transfer-Encoding";
+
+
+PRFC822Channel::PRFC822Channel(Direction direction)
+{
+  writeHeaders = direction == Sending;
+  writePartHeaders = FALSE;
+}
+
+
+PRFC822Channel::~PRFC822Channel()
+{
+  Close();
+}
+
+
+BOOL PRFC822Channel::Close()
+{
+  flush();
+
+  for (PINDEX i = 0; i < boundaries.GetSize(); i++)
+    *this << "\n--" << boundaries[i] << "--\n";
+
+  return PIndirectChannel::Close();
+}
+
+
+BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
+{
+  flush();
+
+  if (writeHeaders) {
+    if (!headers.HasKey(FromTag) || !headers.HasKey(ToTag))
+      return FALSE;
+
+    if (!headers.HasKey(DateTag))
+      headers.SetAt(DateTag, PTime().AsString());
+    if (writePartHeaders)
+      headers.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundaries[0]+'"');
+    else if (!headers.HasKey(ContentTypeTag))
+      headers.SetAt(ContentTypeTag, "text/plain");
+
+    PStringStream hdr;
+    hdr << ::setfill('\r') << headers;
+    if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
+      return FALSE;
+
+    writeHeaders = FALSE;
+  }
+
+  if (writePartHeaders) {
+    if (!partHeaders.HasKey(ContentTypeTag))
+      partHeaders.SetAt(ContentTypeTag, "text/plain");
+
+    PStringStream hdr;
+    hdr << "\n--"  << boundaries[0] << '\n'
+        << ::setfill('\r') << partHeaders;
+    if (!PIndirectChannel::Write(hdr.GetPointer(), hdr.GetLength()))
+      return FALSE;
+
+    writePartHeaders = FALSE;
+  }
+
+  return PIndirectChannel::Write(buf, len);
+}
+
+
+BOOL PRFC822Channel::OnOpen()
+{
+  if (writeHeaders)
+    return TRUE;
+
+  *this >> headers;
+  return !bad();
+}
+
+
+void PRFC822Channel::NewMessage(Direction direction)
+{
+  for (PINDEX i = 0; i < boundaries.GetSize(); i++)
+    *this << "\n--" << boundaries[i] << "--\n";
+  flush();
+
+  boundaries.RemoveAll();
+  headers.RemoveAll();
+  partHeaders.RemoveAll();
+  writeHeaders = direction == Sending;
+  writePartHeaders = FALSE;
+}
+
+
+PString PRFC822Channel::MultipartMessage()
+{
+  PString boundary;
+
+  do {
+    boundary.sprintf("PWLib.%u.%u", time(NULL), rand());
+  } while (!MultipartMessage(boundary));
+
+  return boundary;
+}
+
+
+BOOL PRFC822Channel::MultipartMessage(const PString & boundary)
+{
+  writePartHeaders = TRUE;
+  for (PINDEX i = 0; i < boundaries.GetSize(); i++) {
+    if (boundaries[i] == boundary)
+      return FALSE;
+  }
+
+  if (boundaries.GetSize() > 0) {
+    partHeaders.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundary+'"');
+    flush();
+    writePartHeaders = TRUE;
+  }
+
+  boundaries.InsertAt(0, new PString(boundary));
+  return TRUE;
+}
+
+
+void PRFC822Channel::NextPart(const PString & boundary)
+{
+  flush();
+
+  while (boundaries.GetSize() > 0) {
+    if (boundaries[0] == boundary)
+      break;
+    *this << "\n--" << boundaries[0] << "--\n";
+    boundaries.RemoveAt(0);
+  }
+
+  writePartHeaders = boundaries.GetSize() > 0;
+}
+
+
+void PRFC822Channel::SetFromAddress(const PString & fromAddress)
+{
+  SetHeaderField(FromTag, fromAddress);
+}
+
+
+void PRFC822Channel::SetToAddress(const PString & toAddress)
+{
+  SetHeaderField(ToTag, toAddress);
+}
+
+
+void PRFC822Channel::SetCC(const PString & ccAddress)
+{
+  SetHeaderField(CCTag, ccAddress);
+}
+
+
+void PRFC822Channel::SetBCC(const PString & bccAddress)
+{
+  SetHeaderField(BCCTag, bccAddress);
+}
+
+
+void PRFC822Channel::SetSubject(const PString & subject)
+{
+  SetHeaderField(SubjectTag, subject);
+}
+
+
+void PRFC822Channel::SetContentType(const PString & contentType)
+{
+  SetHeaderField(ContentTypeTag, contentType);
+}
+
+
+void PRFC822Channel::SetHeaderField(const PString & name, const PString & value)
+{
+  if (writePartHeaders)
+    partHeaders.SetAt(name, value);
+  else if (writeHeaders)
+    headers.SetAt(name, value);
+  else
+    PAssertAlways(PLogicError);
+}
+
+
+BOOL PRFC822Channel::SendWithSMTP(const PString & hostname)
+{
+  PSMTPClient * smtp = new PSMTPClient;
+  smtp->Connect(hostname);
+  return SendWithSMTP(smtp);
+}
+
+
+BOOL PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
+{
+  if (!Open(smtp))
+    return FALSE;
+
+  if (!headers.HasKey(FromTag) || !headers.HasKey(ToTag))
+    return FALSE;
+
+  return smtp->BeginMessage(headers[FromTag], headers[ToTag]);
 }
 
 
