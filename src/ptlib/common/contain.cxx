@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.14 1994/04/01 14:01:11 robertj Exp $
+ * $Id: contain.cxx,v 1.15 1994/04/03 08:34:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.14  1994/04/01 14:01:11  robertj
+ * Revision 1.15  1994/04/03 08:34:18  robertj
+ * Added help and focus functionality.
+ *
+ * Revision 1.14  1994/04/01  14:01:11  robertj
  * Streams and stuff.
  *
  * Revision 1.13  1994/03/07  07:47:00  robertj
@@ -700,20 +703,22 @@ PStringArray
     
   PINDEX token = 0;
   PINDEX p1 = 0;
-  PINDEX p2 = FindOneOf(separators, p1);
+  PINDEX p2 = FindOneOf(separators);
 
-  if (p2 == 0 && onePerSeparator) // first character is a token separator
-    token++;                      // make first string in array empty
+  if (p2 == 0 && onePerSeparator) { // first character is a token separator
+    token++;                        // make first string in array empty
+    p1 = 1;
+    p2 = FindOneOf(separators, 1);
+  }
 
   while (p2 != P_MAX_INDEX) {
+    tokens[token++] = operator()(p1, p2-1);
+
     // Get next separator. If not one token per separator then continue
     // around loop to skip over all the consecutive separators.
     do {
       p1 = p2 + 1;
     } while ((p2 = FindOneOf(separators, p1)) == p1 && !onePerSeparator);
-
-    if (p2 != P_MAX_INDEX)
-      tokens[token++] = operator()(p1, p2-1);
   }
 
   if (p1 < GetLength() || onePerSeparator)         // Last token (if has one)
@@ -917,9 +922,8 @@ PINDEX PCaselessString::Find(char ch, PINDEX offset) const
   if (offset > len)
     offset = len;
   char *cpos = theArray+offset;
-  int chl = tolower(ch);
   int chu = toupper(ch);
-  while (isupper(*cpos) ? *cpos == chu : *cpos == chl) {
+  while (toupper(*cpos) != chu) {
     if (*cpos++ == '\0')
       return P_MAX_INDEX;
   }
@@ -937,9 +941,8 @@ PINDEX PCaselessString::Find(const char *cstr, PINDEX offset) const
 PINDEX PCaselessString::FindLast(char ch) const
 {
   char *cpos = theArray+GetLength()-1;
-  int chl = tolower(ch);
   int chu = toupper(ch);
-  while (isupper(*cpos) ? *cpos == chu : *cpos == chl) {
+  while (toupper(*cpos) != chu) {
     if (--cpos == theArray)
       return P_MAX_INDEX;
   }
