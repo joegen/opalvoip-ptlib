@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.24  2001/08/16 20:12:25  yurik
+ * Fixed duplicate ordinal - ifdef'd ce code
+ *
  * Revision 1.23  2001/08/15 22:15:27  yurik
  * First cut of Windows CE port  to support gatekeeper
  *
@@ -346,6 +349,8 @@ class PWin32PacketSYS : public PWin32PacketDriver
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32_WCE
+
 class PWin32PacketCe : public PWin32PacketDriver
 {
   public:
@@ -368,6 +373,8 @@ class PWin32PacketCe : public PWin32PacketDriver
 	PStringArray netMasks;
 	PStringArray interfaces;
 };
+
+#endif // _WIN32_WCE
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -565,7 +572,6 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & v
 
   return any.GetIpAddress(value);
 }
-
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
 {
@@ -1240,6 +1246,7 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32_WCE
 PWin32PacketCe::PWin32PacketCe()
 {
 	PString str, driver, ipAddress, netMask;
@@ -1289,7 +1296,7 @@ BOOL PWin32PacketCe::EnumInterfaces(PINDEX idx, PString & name)
 }
 
 
-BOOL PWin32PacketCe::BindInterface(const PString & interfaceName)
+BOOL PWin32PacketCe::BindInterface(const PString &)
 {
 	return TRUE;
 }
@@ -1308,16 +1315,18 @@ BOOL PWin32PacketCe::EnumIpAddress(PINDEX idx,
 }
 
 
-BOOL PWin32PacketCe::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
+BOOL PWin32PacketCe::BeginRead(void *, DWORD, DWORD & , PWin32Overlapped &)
 {
   return TRUE;
 }
 
 
-BOOL PWin32PacketCe::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
+BOOL PWin32PacketCe::BeginWrite(const void *, DWORD, PWin32Overlapped &)
 {
   return TRUE;
 }
+
+#endif // _WIN32_WCE
 
 ///////////////////////////////////////////////////////////////////////////////
 
