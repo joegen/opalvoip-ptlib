@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.18  2003/10/30 11:23:53  rjongbloed
+ * Added direcetory name for Speech API under Windows.
+ * Added automatic inclusion of Winsock2 library.
+ *
  * Revision 1.17  2003/10/27 03:42:15  csoutheren
  * Added support for QoS detection
  *
@@ -102,7 +106,9 @@
 #if defined(_MSC_VER) && P_HAS_IPV6
 #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
 #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
+#define P_WINSOCK2_LIBRARY "ws2_32.lib"
 #endif
+
 
 /////////////////////////////////////////////////
 //
@@ -116,7 +122,9 @@
 
 #if defined(_MSC_VER) && P_HAS_QOS
 #pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
+#define P_WINSOCK2_LIBRARY "ws2_32.lib"
 #endif
+
 
 /////////////////////////////////////////////////
 //
@@ -247,7 +255,7 @@
 
 #undef P_DNS 
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && P_DNS
 #pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
 #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 #endif
@@ -261,6 +269,17 @@
 
 #undef P_SAPI 
 
+#if defined(_MSC_VER) && P_SAPI
+#pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
+#pragma include_alias(<sapi.h>, <@SAPI_DIR@/include/sapi.h>)
+#pragma include_alias(<sapiddk.h>, <@SAPI_DIR@/include/sapiddk.h>)
+#pragma include_alias(<SPError.h>, <@SAPI_DIR@/include/SPError.h>)
+#pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
+
+#define P_SAPI_LIBRARY "@SAPI_DIR@/Lib/i386/sapi.lib"
+#endif
+
+
 
 /////////////////////////////////////////////////
 //
@@ -269,7 +288,7 @@
 
 #undef P_SDL
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && P_SDL
 #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
 
 #ifdef _DEBUG
