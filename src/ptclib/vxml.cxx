@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.7  2002/07/17 08:34:25  craigs
+ * Fixed deadlock problems
+ *
  * Revision 1.6  2002/07/17 06:08:23  craigs
  * Added additional "sayas" classes
  *
@@ -325,7 +328,7 @@ PString PVXMLDialog::GetVar(const PString & ostr) const
   if (pos != P_MAX_INDEX) {
     PString scope = str.Left(pos);
     if (!(scope *= "dialog"))
-      return vxml.GetVar(str);
+      return vxml.GetVar(ostr);
 
     str = str.Mid(pos+1);
   }
@@ -483,7 +486,7 @@ PString PVXMLFormItem::GetVar(const PString & ostr) const
       return PVXMLElement::GetVar(str);
   }
 
-  return parentDialog.GetVar(str);
+  return parentDialog.GetVar(ostr);
 }
 
 void PVXMLFormItem::SetVar(const PString & ostr, const PString & val)
@@ -683,14 +686,14 @@ BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
 
 void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay)
 {
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(queueMutex);
   PTRACE(3, "OpalVXML\tEnqueueing file " << fn << " for playing");
   playQueue.Enqueue(new PVXMLQueueFilenameItem(fn, repeat, delay));
 }
 
 void PVXMLOutgoingChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(queueMutex);
   PTRACE(3, "OpalVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   playQueue.Enqueue(new PVXMLQueueDataItem(data, repeat, delay));
 }
@@ -716,6 +719,7 @@ void PVXMLOutgoingChannel::FlushQueue()
   if (GetBaseReadChannel() != NULL)
     PIndirectChannel::Close();
 
+  PWaitAndSignal m(queueMutex);
   PVXMLQueueItem * qItem;
   while ((qItem = playQueue.Dequeue()) != NULL)
     delete qItem;
@@ -723,6 +727,8 @@ void PVXMLOutgoingChannel::FlushQueue()
 
 BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 {
+  PWaitAndSignal m(channelMutex);
+
   // Create the frame buffer using the amount of bytes the codec wants to
   // read. Different codecs use different read sizes.
   frameBuffer.SetMinSize(1024); //amount);
@@ -739,8 +745,6 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 
   } else {
 
-    channelMutex.Wait();
-
     // if we are in a delay, then do nothing
     if (delayTimer.IsRunning())
       ;
@@ -754,19 +758,27 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
       doSilence = FALSE;
 
     // if no queued data, then re-evaluate the VXML
-    else if (playQueue.GetSize() == 0) {
-      channelMutex.Signal();
-      vxml.Execute();
-      channelMutex.Wait();
-    }
-
-    // otherwise queue the next data item
     else {
-      PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-      qItem->Play(*this);
-      doSilence = FALSE;
-      totalData = 0;
-      playing = TRUE;
+      PINDEX qSize;
+      {
+        PWaitAndSignal m(queueMutex);
+        qSize = playQueue.GetSize();
+      }
+
+      if (qSize == 0)
+        vxml.Execute();
+
+      // otherwise queue the next data item
+      else {
+        {
+          PWaitAndSignal m(queueMutex);
+          PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
+          qItem->Play(*this);
+        }
+        doSilence = FALSE;
+        totalData = 0;
+        playing = TRUE;
+      }
     }
 
     // if not doing silence, try and read more data
@@ -785,15 +797,19 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
         PIndirectChannel::Close();
 
         // get the item that was just playing
-        PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-        PAssertNULL(qItem);
+        PINDEX delay;
+        {
+          PWaitAndSignal m(queueMutex);
+          PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
+          PAssertNULL(qItem);
 
-        // get the delay time BEFORE deleting the info
-        PINDEX delay = qItem->delay;
+          // get the delay time BEFORE deleting the info
+          delay = qItem->delay;
 
-        // if the repeat count is zero, then dequeue entry 
-        if (--qItem->repeat == 0)
-          delete playQueue.Dequeue();
+          // if the repeat count is zero, then dequeue entry 
+          if (--qItem->repeat == 0)
+            delete playQueue.Dequeue();
+        }
 
         // if delay required, then setup the delay
         if (delay != 0) {
@@ -802,14 +818,17 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
         }
 
         // if no delay, re-evaluate VXML script
-        else if (playQueue.GetSize() == 0) {
-          channelMutex.Signal();
-          vxml.Execute();
-          channelMutex.Wait();
+        else {
+          PINDEX qSize;
+          {
+            PWaitAndSignal m(queueMutex);
+            qSize = playQueue.GetSize();
+          }
+          if (qSize == 0)
+            vxml.Execute();
         }
       }
     }
-    channelMutex.Signal();
   }
   
   // start silence frame if required
