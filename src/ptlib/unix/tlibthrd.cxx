@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.54  2001/02/20 00:21:14  robertj
+ * Fixed major bug in PSemapahore::WillBlock(), thanks Tomas Heran.
+ *
  * Revision 1.53  2000/12/21 12:36:32  craigs
  * Removed potential to stop threads twice
  *
@@ -926,7 +929,12 @@ void PSemaphore::Signal()
 BOOL PSemaphore::WillBlock() const
 {
 #ifdef P_HAS_SEMAPHORES
-  return sem_trywait((sem_t *)&semId) != 0;
+  if (sem_trywait((sem_t *)&semId) == 0) {
+    PAssertOS(errno == EAGAIN);
+    return TRUE;
+  }
+  PAssertOS(sem_post((sem_t *)&semId) == 0);
+  return FALSE;
 #else
   return currentCount == 0;
 #endif
