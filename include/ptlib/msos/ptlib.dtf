@@ -1169,6 +1169,8 @@ EXPORTS
     ?GetLastWriteCount@PChannel@@QBEHXZ @1047 NONAME ;public: int __thiscall PChannel::GetLastWriteCount(void)const 
     ?GetLength@PFile@@QBEJXZ @1048 NONAME ;public: long __thiscall PFile::GetLength(void)const 
     ?GetLength@PString@@QBEHXZ @1049 NONAME ;public: int __thiscall PString::GetLength(void)const 
+    ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1975 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &)
+    ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1976 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &,unsigned short &)
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@@Z @1052 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &)
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@AAG@Z @1053 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &,unsigned short &)
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1054 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
@@ -1232,6 +1234,8 @@ EXPORTS
     ?GetParent@PDirectory@@QBE?AV1@XZ @1104 NONAME ;public: class PDirectory  __thiscall PDirectory::GetParent(void)const 
     ?GetParity@PSerialChannel@@QBE?AW4Parity@1@XZ @1105 NONAME ;public: enum PSerialChannel::Parity  __thiscall PSerialChannel::GetParity(void)const 
     ?GetPath@PFilePath@@QBE?AVPCaselessString@@XZ @1106 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetPath(void)const 
+    ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1977 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &)
+    ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1978 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &,unsigned short &)
     ?GetPeerAddress@PIPXSocket@@QAEHAAVAddress@1@@Z @1109 NONAME ;public: int __thiscall PIPXSocket::GetPeerAddress(class PIPXSocket::Address &)
     ?GetPeerAddress@PIPXSocket@@QAEHAAVAddress@1@AAG@Z @1110 NONAME ;public: int __thiscall PIPXSocket::GetPeerAddress(class PIPXSocket::Address &,unsigned short &)
     ?GetPeerHostName@PIPSocket@@QAE?AVPString@@XZ @1111 NONAME ;public: class PString  __thiscall PIPSocket::GetPeerHostName(void)
@@ -1962,7 +1966,5 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1975 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &)
-    ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1976 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &,unsigned short &)
-    ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1977 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &)
-    ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1978 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &,unsigned short &)
+    ?AsString@Address@PIPSocket@@QBE?AVPString@@XZ @1979 NONAME ;public: class PString  __thiscall PIPSocket::Address::AsString(void)const 
+    ?Clone@PTCPSocket@@UBEPAVPObject@@XZ @1980 NONAME ;public: virtual class PObject * __thiscall PTCPSocket::Clone(void)const 
