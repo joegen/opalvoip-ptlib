@@ -846,6 +846,7 @@ EXPORTS
     ?Compile@PRegularExpression@@QAEHABVPString@@H@Z @774 NONAME ;public: int __thiscall PRegularExpression::Compile(class PString const &,int)
     ?Compile@PRegularExpression@@QAEHPBDH@Z @775 NONAME ;public: int __thiscall PRegularExpression::Compile(char const *,int)
     ?CompleteIO@PWin32PacketDriver@@QAEHAAKAAVPWin32Overlapped@@@Z @1878 NONAME ;public: int __thiscall PWin32PacketDriver::CompleteIO(unsigned long &,class PWin32Overlapped &)
+    ?Concatenate@PAbstractArray@@QAEHABV1@@Z @2216 NONAME ;public: int __thiscall PAbstractArray::Concatenate(class PAbstractArray const &)
     ?Condition@PIntCondMutex@@UAEHXZ @776 NONAME ;public: virtual int __thiscall PIntCondMutex::Condition(void)
     ?Connect@PEthSocket@@UAEHABVPString@@@Z @1879 NONAME ;public: virtual int __thiscall PEthSocket::Connect(class PString const &)
     ?Connect@PIPSocket@@UAEHABVAddress@1@@Z @777 NONAME ;public: virtual int __thiscall PIPSocket::Connect(class PIPSocket::Address const &)
@@ -1937,4 +1938,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?Concatenate@PAbstractArray@@QAEHABV1@@Z @2216 NONAME ;public: int __thiscall PAbstractArray::Concatenate(class PAbstractArray const &)
+    ?CloneContents@PDirectory@@IAEXPBV1@@Z @2217 NONAME ;protected: void __thiscall PDirectory::CloneContents(class PDirectory const *)
+    ?CopyContents@PArrayObjects@@IAEXABV1@@Z @2218 NONAME ;protected: void __thiscall PArrayObjects::CopyContents(class PArrayObjects const &)
