@@ -1,11 +1,16 @@
 /*
- * CONTAIN.INL
+ * $Id: contain.inl,v 1.3 1993/07/14 12:49:16 robertj Exp $
  *
  * Portable Windows Library
  *
  * PContainer Inline Function Definitions
  *
  * Copyright 1993 Equivalence
+ *
+ * $Log: contain.inl,v $
+ * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Fixed RCS keywords.
+ *
  */
 
 

@@ -1,11 +1,16 @@
 /*
- * OSUTIL.INL
+ * $Id: osutil.inl,v 1.3 1993/07/14 12:49:16 robertj Exp $
  *
  * Portable Windows Library
  *
  * Operating System Classes Inline Function Definitions
  *
  * Copyright 1993 Equivalence
+ *
+ * $Log: osutil.inl,v $
+ * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Fixed RCS keywords.
+ *
  */
 
 
