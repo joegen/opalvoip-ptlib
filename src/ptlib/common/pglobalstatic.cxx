@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.2  2005/01/04 08:09:42  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.1  2005/01/04 07:44:03  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -33,20 +36,24 @@
 #ifndef _PGLOBALSTATIC_CXX
 #define _PGLOBALSTATIC_CXX
 
+#include <ptbuildopts.h>
 #include <ptlib/plugin.h>
 
 
 //
-// Load static video modules as required for Windows
+// Load static video modules as required 
 //
-#if defined(_WIN32) && defined(P_VIDEO) && ! defined(NO_VIDEO_CAPTURE)
+#if defined(P_VIDEO) && ! defined(NO_VIDEO_CAPTURE)
 
   #include <ptlib/videoio.h>
 
-  PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_VideoForWindows)
   PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_FakeVideo);
   PWLIB_STATIC_LOAD_PLUGIN(PVideoOutputDevice_NULLOutput);
   PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_WindowsMultimedia);
+
+  #if defined(_WIN32) 
+    PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_VideoForWindows)
+  #endif
 
 #endif
 
