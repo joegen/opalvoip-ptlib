@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.5 1996/04/15 10:50:13 craigs Exp $
+# $Id: Makefile,v 1.6 1996/04/17 11:12:20 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.6  1996/04/17 11:12:20  craigs
+# Latest version pre mibmaster release 1.0
+#
 # Revision 1.5  1996/04/15 10:50:13  craigs
 # Last revision prior to release of MibMaster
 #
@@ -45,14 +48,14 @@ SOURCES		= osutil.cxx \
 		  uhtml.cxx \
 		  ucypher.cxx \
 		  switch.cxx \
+		  uhttp.cxx \
 		  ../../common/src/object.cxx \
 		  ../../common/src/contain.cxx \
 		  ../../common/src/osutils.cxx \
 		  ../../common/src/sockets.cxx \
 		  ../../common/src/pmain.cxx \
 		  ../../common/src/ptime.cxx \
-#		  uhttp.cxx \
-#		  ../../common/src/collect.cxx \
+		  ../../common/src/collect.cxx \
 
 #######################################################
 
@@ -67,18 +70,6 @@ $(OBJDIR)/switch.o: ./switch.cxx
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 
 OBJS	:= $(OBJS) $(OBJDIR)/switch.o
-
-$(OBJDIR)/collect.o: ../../common/src/collect.cxx 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
-
-OBJS	:= $(OBJS) $(OBJDIR)/collect.o
-
-$(OBJDIR)/uhttp.o: ./uhttp.cxx 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
-
-OBJS	:= $(OBJS) $(OBJDIR)/uhttp.o
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
