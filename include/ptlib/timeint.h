@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.18  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.17  1998/09/23 06:21:43  robertj
  * Added open source copyright license.
  *
@@ -89,7 +92,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Difference between two system times
 
-PDECLARE_CLASS(PTimeInterval, PObject)
+class PTimeInterval : public PObject
+{
+  PCLASSINFO(PTimeInterval, PObject)
 /* This class defines an arbitrary time interval to millisecond accuracy. The
    interval can be both positive and negative.
    

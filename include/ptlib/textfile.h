@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: textfile.h,v $
+ * Revision 1.14  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.13  1998/09/23 06:21:39  robertj
  * Added open source copyright license.
  *
@@ -75,7 +78,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Text Files
 
-PDECLARE_CLASS(PTextFile, PFile)
+class PTextFile : public PFile
+{
+  PCLASSINFO(PTextFile, PFile)
 /* A class representing a a structured file that is portable accross CPU
    architectures. Essentially this will normalise the end of line character
    which differs fromplatform to platform.

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: spxsock.h,v $
+ * Revision 1.4  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.3  1998/11/30 02:51:59  robertj
  * New directory structure
  *
@@ -47,7 +50,9 @@
 #include <ptlib/ipxsock.h>
 
 
-PDECLARE_CLASS(PSPXSocket, PIPXSocket)
+class PSPXSocket : public PIPXSocket
+{
+  PCLASSINFO(PSPXSocket, PIPXSocket)
 /* Create a socket channel that uses the SPX transport over the IPX
    Protocol.
  */
