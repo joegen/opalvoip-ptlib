@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.4 1994/03/07 07:38:19 robertj Exp $
+ * $Id: timer.h,v 1.5 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.4  1994/03/07 07:38:19  robertj
+ * Revision 1.5  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.4  1994/03/07  07:38:19  robertj
  * Major enhancementsacross the board.
  *
  * Revision 1.3  1994/01/03  04:42:23  robertj
@@ -25,7 +28,6 @@
 
 #define _PTIMER
 
-class PTextApplication;
 class PTimer;
 
 
@@ -34,7 +36,7 @@ PDECLARE_CLASS(PTimerList, PAbstractSortedList)
     PTimerList();
       // Create a new timer list
 
-    PMilliseconds Process();
+    PTimeInterval Process();
       // Check all the created timers against the Tick() function value (since
       // some arbitrary base time) and despatch to their callback functions if
       // they have expired. The return value is the number of milliseconds
@@ -47,7 +49,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
   // A class representing a system timer.
 
   public:
-    PTimer(PTextApplication * app, long milliseconds = 0,
+    PTimer(long milliseconds = 0,
                    int seconds = 0,int minutes = 0,int hours = 0,int days = 0);
       // Create a new timer object
  
@@ -85,7 +87,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     BOOL IsPaused() const;
       // Return TRUE if the timer is currently paused.
 
-    static PMilliseconds Tick();
+    static PTimeInterval Tick();
       // Return the number of milliseconds since some arbtrary point in time.
 
     static unsigned Resolution();
@@ -102,19 +104,23 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
 
 
     // Member variables
-    PTextApplication * owner;
-      // The application that the timer is running in.
-
-    PMilliseconds targetTime;
+    PTimerList * owner;
+      // List of timers that this timer is placed into/out of
+      
+    PTimeInterval targetTime;
       // The system timer tick value that the next timeout will occur.
 
     BOOL oneshot;
       // Timer operates once then stops.
 
-    enum { stopped, running, paused } state;
+    enum { Stopped, Running, Paused } state;
       // Timer state
 
-    PMilliseconds pauseLeft;
+    BOOL inTimeout;
+      // Timer is currently executing its OnTimeout() function. This is to
+      // prevent recursive calls when timer is in free running mode.
+
+    PTimeInterval pauseLeft;
       // The amount of time left when the Pause() function was called, used
       // when Resume() is subsequently called.
 

@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.1 1994/04/20 12:17:44 robertj Exp $
+ * $Id: filepath.h,v 1.2 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
- * Revision 1.1  1994/04/20 12:17:44  robertj
+ * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.1  1994/04/20  12:17:44  robertj
  * Initial revision
  *
  */
@@ -32,23 +35,32 @@ PDECLARE_CLASS(PFilePath, PString)
     // New member functions
     PString GetVolume() const;
       // Get the drive/volume name component of the full file specification.
-      // Note this may not be relevent on some platforms and returns "".
+      // Note this may not be relevent on some platforms and returns "" eg for
+      // unix filesystems.
       
     PString GetPath() const;
-      // Get the directory path component of the full file specification.
+      // Get the directory path component of the full file specification. This
+      // will include leading and trailing directory separators.
 
     PString GetTitle() const;
-      // Get the title component of the full file specification.
+      // Get the title component of the full file specification, eg for the DOS
+      // file "c:\fred.dat" this would be "fred"
 
     PString GetType() const;
-      // Get the file type component of the full file specification. Note that
-      // on some platforms this may not actually be part of the GetFullName()
-      // string.
+      // Get the file type of the file. Note that on some platforms this may
+      // actually be part of the full name string. eg for DOS file
+      // "c:\fred.txt" this would be ".txt" but on the Macintosh this might be
+      // "TEXT".
 
     PString GetFileName() const;
       // Get the actual directory entry name component of the full file
       // specification. This may be identical to GetName()+GetType() or
-      // simply GetName() depending on the platform.
+      // simply GetName() depending on the platform. eg for DOS file
+      // "c:\fred.txt" this would be "fred.txt".
+
+    void SetType(const PString & type);
+      // Set the type component of the full file specification, eg for the DOS
+      // file "c:\fred.dat" would become "c:\fred.txt"
 
 
 // Class declaration continued in platform specific header file ///////////////

@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.27 1994/04/20 12:17:44 robertj Exp $
+ * $Id: pwlib.h,v 1.28 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.27  1994/04/20 12:17:44  robertj
+ * Revision 1.28  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.27  1994/04/20  12:17:44  robertj
  * Made pwlib.h common
  *
  */
@@ -490,8 +493,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef P_USE_INLINES
+#if defined(P_USE_INLINES)
 #include <pwlib.inl>
+#include <graphics.inl>
+#include <interact.inl>
 #endif
 
 #endif // _PWLIB_H

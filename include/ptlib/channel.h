@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.1 1994/04/20 12:17:44 robertj Exp $
+ * $Id: channel.h,v 1.2 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.1  1994/04/20 12:17:44  robertj
+ * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.1  1994/04/20  12:17:44  robertj
  * Initial revision
  *
  */
@@ -33,13 +36,13 @@ PCLASS PChannelStreamBuffer : public streambuf {
       // Construct the streambuf for standard streams on the channel
 
     virtual int overflow(int=EOF);
-      // Function to flush the output buffer to the file
+      // Function to flush the output buffer to the stream.
 
     virtual int underflow();
-      // Function to refill the input buffer from the file
+      // Function to refill the input buffer from the stream.
 
     virtual int sync();
-      // Function to refill the input buffer from the file
+      // Function to flush input and output buffer of the stream.
 
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
       // Function to seek a location in the file
@@ -68,30 +71,95 @@ PCLASS PChannel : public PContainer, public iostream {
     // New functions for class
     virtual BOOL IsOpen() const = 0;
       // Return TRUE if the channel is currently open.
-      
-    virtual BOOL Read(void * buf, PINDEX len) = 0;
-      // Low level read from the channel. This function will block until the
-      // requested number of characters were read.
 
-    virtual int ReadChar() = 0;
+    virtual PString GetName() const = 0;
+      // Return the name of the channel.
+
+
+    void SetReadTimeout(PTimeInterval time);
+      // Set the timeout for read operations. This may be zero for immediate
+      // return of data through to PMaxMilliseconds which will wait forever
+      // for the read request to be filled. Note that this function may not
+      // be available for all channels.
+
+    PTimeInterval GetReadTimeout() const;
+      // Get the current read timeout.
+
+    virtual BOOL Read(void * buf, PINDEX len) = 0;
+      // Low level read from the channel. This function may block until the
+      // requested number of characters were read or the read timeout was
+      // reached. The return value indicates that at least one character was
+      // read from the channel.
+
+    PINDEX GetLastReadCount() const;
+      // Return the number of bytes read by the last Read() call.
+
+    PString ReadString(PINDEX len);
+      // Read up to len bytes into a string from the channel. This function may
+      // block as for Read().
+
+    virtual int ReadChar();
       // Read a single 8 bit byte from the channel. If one was not available
-      // then the function returns immediately with a -1 return value.
+      // within the readtimeout period then the function returns with a -1
+      // return value.
+
+    virtual BOOL ReadAsync(void * buf, PINDEX len);
+      // Begin an asynchronous read from channel. The read timeout is used as
+      // in other read operations, in this case calling the OnReadComplete()
+      // function. Note that if the channel is not capable of asynchronous
+      // read then this will do a sychronous read is in the Read() function
+      // with the addition of calling the OnReadComplete() before returning.
+      // The return value is TRUE if the read was sucessfully queued.
+
+    virtual void OnReadComplete(void * buf, PINDEX len);
+      // User callback function for when a ReadAsync() call has completed or
+      // timed out. The original pointer to the buffer passed in ReadAsync()
+      // is passed in here and the len parameter as the actual number of
+      // characters read.
+
+
+    void SetWriteTimeout(PTimeInterval time);
+      // Set the timeout for write operations. This may be zero for immediate
+      // return of data through to PMaxMilliseconds which will wait forever
+      // for the write request to be completed. Note that this function may not
+      // be available for all channels.
+
+    PTimeInterval GetWriteTimeout() const;
+      // Get the current write timeout.
 
     virtual BOOL Write(const void * buf, PINDEX len) = 0;
       // Low level write to the channel. This function will block until the
-      // requested number of characters were written.
+      // requested number of characters are written or the write timeout is
+      // reached. The return value is TRUE if at least len bytes were written
+      // to the channel.
 
-    virtual BOOL WriteChar(char c) = 0;
-      // Write a single character to the channel. This function does not block
-      // and will return FALSE if it could not write the character.
+    PINDEX GetLastWriteCount() const;
+      // Return the number of bytes written by the last Write() call.
 
-    virtual PINDEX GetInputAvailable() = 0;
-      // Return the number of characters that may be read from the channel
-      // without causing the Read() function to block.
+    BOOL WriteString(const PString & str);
+      // Write a string to the channel. This function will block until the
+      // requested number of characters are written or the write timeout is
+      // reached.
 
-    virtual PINDEX GetOutputAvailable() = 0;
-      // Return the number of characters that may be written to the channel
-      // without causing the Write() function to block.
+    BOOL WriteChar(int c);
+      // Write a single character to the channel. This function will block
+      // until the requested number of characters are written or the write
+      // timeout is reached. Note that this asserts if the value is not in the
+      // range 0..255.
+
+    virtual BOOL WriteAsync(void * buf, PINDEX len);
+      // Begin an asynchronous write from channel. The write timeout is used as
+      // in other write operations, in this case calling the OnWriteComplete()
+      // function. Note that if the channel is not capable of asynchronous
+      // write then this will do a sychronous write as in the Write() function
+      // with the addition of calling the OnWriteComplete() before returning.
+
+    virtual void OnWriteComplete(void * buf, PINDEX len);
+      // User callback function for when a WriteAsync() call has completed or
+      // timed out. The original pointer to the buffer passed in WriteAsync()
+      // is passed in here and the len parameter is the actual number of
+      // characters written.
+
 
     virtual BOOL Close() = 0;
       // Close the channel.
@@ -99,29 +167,50 @@ PCLASS PChannel : public PContainer, public iostream {
 
     enum Errors {
       NoError,
-      FileNotFound,
-      FileExists,
-      DiskFull,
-      AccessDenied,
-      DeviceInUse,
+      NotFound,     // Open fail due to device or file not found
+      FileExists,   // Open fail due to file already existing
+      DiskFull,     // Write fail due to disk full
+      AccessDenied, // Operation fail due to insufficient privilege
+      DeviceInUse,  // Open fail due to device already open for exclusive use
+      BadParameter, // Operation fail due to bad parameters
+      NoMemory,     // Operation fail due to insufficient memory
+      NotOpen,      // Operation fail due to channel not being open yet
+      Timeout,      // Operation failed due to a timeout
       Miscellaneous
     };
     Errors GetErrorCode() const;
       // Return the error result of the last file I/O operation in this object.
+    int GetErrorNumber() const;
+      // Return the operating system error number of the last file I/O
+      // operation in this object.
     PString GetErrorText() const;
       // Return a string indicating the error message that may be displayed to
       // the user. The error for the last I/O operation in this object is used.
 
 
   protected:
-    // New member functions
-    virtual BOOL FlushStreams();
-      // Flush stream based descendents of PDiskFile
-
-
     // member variables
-    int os_errno;
+    Errors lastError;
+      // The platform independant error code.
+
+    int osError;
       // The operating system error number (eg as returned by errno).
+
+    PINDEX lastReadCount;
+      // Number of byte last read by the Read() function.
+
+    PINDEX lastWriteCount;
+      // Number of byte last written by the Write() function.
+
+    PTimeInterval readTimeout;
+      // Timeout for read operations.
+
+    PTimeInterval writeTimeout;
+      // Timeout for write operations.
+
+  private:
+    // Overrides from class PContainer
+    virtual BOOL SetSize(PINDEX newSize);
 };
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.11 1994/04/20 12:17:44 robertj Exp $
+ * $Id: pdirect.h,v 1.12 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.11  1994/04/20 12:17:44  robertj
+ * Revision 1.12  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.11  1994/04/20  12:17:44  robertj
  * Split name into PFilePath
  *
  * Revision 1.10  1994/04/11  14:16:27  robertj
@@ -113,7 +116,7 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
 
 
     BOOL Change() const;
-    PINLINE static BOOL Change(const PString & p);
+    static BOOL Change(const PString & p);
       // Change to the specified directory.
       
     BOOL Create(int perm = PDefaultPerms) const;
