@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.25 1997/07/08 13:07:07 robertj Exp $
+ * $Id: object.cxx,v 1.26 1998/05/30 13:27:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.26  1998/05/30 13:27:02  robertj
+ * Changed memory check code so global statics are not included in leak check.
+ *
  * Revision 1.25  1997/07/08 13:07:07  robertj
  * DLL support.
  *
@@ -203,9 +206,11 @@ struct PointerArenaStruct {
   const char * fileName;
   int          line;
   const char * className;
-  BYTE         allocationLevel;
+  BYTE         afterMain;
   char         guard[sizeof(GuardBytes)];
 };
+
+BOOL PMainExecuted;
 
 
 #ifndef __BORLANDC__
@@ -226,24 +231,25 @@ PMemoryCheck::~PMemoryCheck()
   PMemChkOut.setf(ios::uppercase);
   void ** entry = pointerHashTable;
   for (size_t i = 0; i < PointerTableSize; i++, entry++) {
-    if (*entry != NULL) {
-#if !defined(_WIN32)
-      if (firstLeak) {
-        firstLeak = FALSE;
-        PMemChkOut << "\nMemory leaks detected, press Enter to display . . .";
-        PMemChkOut.flush();
-        cin.get();
-      }
-#endif
+    if (*entry != NULL ) {
       PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
-      PMemChkOut << "Pointer @" << (void *)(*entry)
-             << " [" << arena->size << ']';
-      if (arena->className != NULL)
-        PMemChkOut << " \"" << arena->className << '"';
-      PMemChkOut << " not deallocated.";
-      if (arena->fileName != NULL)
-        PMemChkOut << " PNEW: " << arena->fileName << '(' << arena->line << ')';
-      PMemChkOut << endl;
+      if (!arena->afterMain) {
+#if !defined(_WIN32)
+        if (firstLeak) {
+          firstLeak = FALSE;
+          PMemChkOut << "\nMemory leaks detected, press Enter to display . . .";
+          PMemChkOut.flush();
+          cin.get();
+        }
+#endif
+        PMemChkOut << "Pointer @" << (void *)(*entry) << " [" << arena->size << ']';
+        if (arena->className != NULL)
+          PMemChkOut << " \"" << arena->className << '"';
+        PMemChkOut << " not deallocated.";
+        if (arena->fileName != NULL)
+          PMemChkOut << " PNEW: " << arena->fileName << '(' << arena->line << ')';
+        PMemChkOut << endl;
+      }
     }
   }
 
@@ -314,6 +320,7 @@ void * PObject::MemoryCheckAllocate(size_t nSize,
   arena->fileName  = file;
   arena->line      = line;
   arena->className = className;
+  arena->afterMain = PMainExecuted;
   memcpy(arena->guard, GuardBytes, sizeof(GuardBytes));
   memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
 
