@@ -407,6 +407,13 @@ PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
     name = _name;
 }
 
+PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PString & data)
+ : PXMLObject(_parent), name(_name)
+{
+  dirty = FALSE;
+  AddSubObject(new PXMLData(this, data));
+}
+
 PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX start) const
 {
   PINDEX idx;
@@ -505,11 +512,23 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
   }
 }
 
-void PXMLElement::AddSubObject(PXMLObject * elem, BOOL setDirty)
+PXMLObject * PXMLElement::AddSubObject(PXMLObject * elem, BOOL setDirty)
 {
   subObjects.SetAt(subObjects.GetSize(), elem);
   if (setDirty)
     SetDirty();
+
+  return elem;
+}
+
+PXMLElement * PXMLElement::AddChild(PXMLElement * elem, BOOL dirty)
+{
+  return (PXMLElement *)AddSubObject(elem, dirty);
+}
+
+PXMLData * PXMLElement::AddChild(PXMLData * elem, BOOL dirty)
+{
+  return (PXMLData *)AddSubObject(elem, dirty);
 }
 
 PXMLObject * PXMLElement::Clone(PXMLElement * _parent) const
