@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.134  2003/07/28 18:44:01  dsandras
+ * Make use of the libc regex on Linux.
+ *
  * Revision 1.133  2003/05/14 00:48:33  rjongbloed
  * Added constructor to string lists/arrays etc that takes a single PString.
  * Fixed bug in doing a MakeUnique on a container, it would lose the
@@ -511,7 +514,11 @@ extern "C" int vsprintf(char *, const char *, va_list);
 #endif
 
 #if !P_MACOS
+#ifdef  P_LINUX
+#include <regex.h>
+#else
 #include "regex/regex.h"
+#endif
 #endif
 
 #if !P_USE_INLINES

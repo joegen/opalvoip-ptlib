@@ -27,7 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.114  2003/07/28 18:44:01  dsandras
+# Make use of the libc regex on Linux.
+#
 # Revision 1.113  2003/05/22 12:41:42  dsandras
+#
 # Check if TRY_1394AVC/DC=1 to compile support for it or not.
 #
 # Revision 1.112  2003/04/28 08:37:06  craigs
@@ -598,7 +602,9 @@ SOURCES	= \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
 ifneq ($(OSTYPE),Carbon)
+ifneq ($(OSTYPE),linux)
 OBJS	= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
+endif
 endif
 
 CLEAN_FILES = $(GETDATE_SOURCE)
