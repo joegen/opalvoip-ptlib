@@ -275,10 +275,6 @@ SOURCE=..\common\pvidchan.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\pwavfile.cxx
-# End Source File
-# Begin Source File
-
 SOURCE=.\remconn.cxx
 # End Source File
 # Begin Source File
@@ -661,10 +657,6 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\udpsock.h
 SOURCE=..\..\..\include\ptlib\msos\ptlib\videoio.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=..\..\..\include\ptlib\pwavfile.h
-# End Source File
 # End Group
 # Begin Group "Inlines"
 
