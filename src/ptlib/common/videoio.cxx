@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.25  2002/01/14 02:59:41  robertj
+ * Added preferred colour format selection, thanks Walter Whitlock
+ *
  * Revision 1.24  2002/01/08 01:32:20  robertj
  * Tidied up some PTRACE debug output.
  *
@@ -221,8 +224,23 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
     converter = NULL;
   }
   
+  if (!preferredColourFormat.IsEmpty()) {
+    PTRACE(4,"PVidDev\tSetColourFormatConverter, want " << colourFmt << " trying " << preferredColourFormat);
+    if (SetColourFormat(preferredColourFormat)) {
+      PTRACE(4,"PVidDev\tSetColourFormatConverter set camera to native "<< preferredColourFormat);
+      converter = PColourConverter::Create(preferredColourFormat, colourFmt, frameWidth, frameHeight);
+      if (converter != NULL) {
+        // set converter properties that depend on this color format
+        if (SetColourFormat(preferredColourFormat)) {
+          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for converted " << colourFmt << " camera using " << preferredColourFormat);
+          return TRUE;
+        }
+      } 
+    }
+  }
+  
   if (SetColourFormat(colourFmt)) {
-    PTRACE(3, "PVidDev\tSetColourFormatConverter success for " << colourFmt);    
+    PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << colourFmt);    
     return TRUE;
   }
   
@@ -245,8 +263,11 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
       PTRACE(4,"PVidDev\tSetColourFormatConverter set camera to "<< formatToTry);
       converter = PColourConverter::Create(formatToTry, colourFmt, frameWidth, frameHeight);
       if (converter != NULL) {
-	PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " camera using " << formatToTry);
-        return TRUE;
+        // set converter properties that depend on this color format
+        if (SetColourFormat(formatToTry)) {
+          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for converted " << colourFmt << " camera using " << formatToTry);
+          return TRUE;
+        }
       } 
     } 
     knownFormatIdx++;
