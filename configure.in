@@ -4,6 +4,8 @@ AC_CONFIG_SUBDIRS(plugins)
 
 AC_PROG_CXX
 
+AC_LANG(C++)
+
 dnl ########################################################################
 dnl set the PWLIB directory to the current directory
 
@@ -60,7 +62,7 @@ OSTYPE=
 
 case "$target_os" in
   linux*)          OSTYPE=linux ;  
-                   OSRELEASE=`uname -r` ;
+                   OSRELEASE="\"`uname -r`\"";
 		   OS_TAG="P_LINUX" ;
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
                    ;;
@@ -68,21 +70,21 @@ case "$target_os" in
   freebsd* )       OSTYPE=FreeBSD ;
 		   OS_TAG="P_FREEBSD" ;
                    if test "x$OSRELEASE" = "x"; then
-                     OSRELEASE=`sysctl -n kern.osreldate` ;
+                     OSRELEASE="`sysctl -n kern.osreldate`" ;
                    fi
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
 		   OS_TAG="P_OPENBSD" ;
-                   OSRELEASE=`sysctl -n kern.osrevision` ;
+                   OSRELEASE="`sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   netbsd* )        OSTYPE=NetBSD ;
 		   OS_TAG="P_NETBSD" ;
-                   OSRELEASE=`/sbin/sysctl -n kern.osrevision` ;
+                   OSRELEASE="`/sbin/sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
@@ -95,14 +97,14 @@ case "$target_os" in
 
   darwin* )	   OSTYPE=Darwin ;
 		   OS_TAG="P_MACOSX" ;
-		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
+		   OSRELEASE="`uname -r | sed 's/\.//g'`" ;
                    SHAREDLIBEXT="dylib";
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
-  		   OSRELEASE="${OSTYPE}_`uname -r`" ;
+  		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
 		   AC_MSG_WARN("OS $target_os not recognized - proceed with caution!") ;
 		   ;;
 esac
@@ -159,7 +161,7 @@ AC_SUBST(OSTYPE,    $OSTYPE)
 AC_SUBST(OSRELEASE, $OSRELEASE)
 AC_SUBST(TARGETDIR, $TARGETDIR)
 
-AC_DEFINE_UNQUOTED($OS_TAG, "$OSRELEASE")
+AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
 
 AC_DEFINE(PHAS_TEMPLATES, 1)
 
@@ -201,29 +203,29 @@ AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
 
 dnl ########################################################################
 dnl look for compile flags
-AC_LANG(C++)
+AC_LANG_PUSH(C++)
 
-dnl AC_MSG_CHECKING(if compiler accepts -fno-rtti)
-dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-dnl $CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
-dnl if test $? = 0 ; then
-dnl   AC_MSG_RESULT(yes)
-dnl   STDCCFLAGS="$STDCCFLAGS -fno-rtti"
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
+AC_MSG_CHECKING(if compiler accepts -fno-rtti)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CXX $CFLAGS -fno-rtti -c conftest.cc > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+else
+  AC_MSG_RESULT(no)
+fi
 
 GCSECTIONS=0
 
 AC_MSG_CHECKING(if linker accepts --gc-sections)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CC $CFLAGS -Wl,--gc-sections conftest.c > /dev/null 2>&1
+$CXX $CFLAGS -Wl,--gc-sections conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
 
   AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
   AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CC $CFLAGS -ffunction-sections -c conftest.c > /dev/null 2>&1
+  $CXX $CFLAGS -ffunction-sections -c conftest.cc > /dev/null 2>&1
   if test $? = 0 ; then
     AC_MSG_RESULT(yes)
     STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
@@ -234,7 +236,7 @@ if test $? = 0 ; then
 
   AC_MSG_CHECKING(if compiler accepts -fdata-sections)
   AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CC $CFLAGS -fdata-sections -c conftest.c > /dev/null 2>&1
+  $CXX $CFLAGS -fdata-sections -c conftest.cc > /dev/null 2>&1
   if test $? = 0 ; then
     AC_MSG_RESULT(yes)
     STDCCFLAGS="$STDCCFLAGS -fdata-sections"
@@ -243,26 +245,30 @@ if test $? = 0 ; then
     AC_MSG_RESULT(no)
   fi
 
-  AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
-  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CPLUSPLUS $CFLAGS -fvtable-gc -c conftest.c > /dev/null 2>&1
-  if test $? = 0 ; then
-    AC_MSG_RESULT(yes)
-    STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
-    GCSECTIONS=1
-  else
-    AC_MSG_RESULT(no)
-  fi
+  dnl as much as this flag would help, there is no known linker
+  dnl that can handle pwlib when it has been compiled with it
+  dnl AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
+  dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  dnl $CXX $CFLAGS -fvtable-gc -c conftest.cc > /dev/null 2>&1
+  dnl if test $? = 0 ; then
+  dnl   AC_MSG_RESULT(yes)
+  dnl   STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
+  dnl   GCSECTIONS=1
+  dnl else
+  dnl   AC_MSG_RESULT(no)
+  dnl fi
 
   if test $GCSECTIONS = 1; then
     if test "${OSTYPE}" != "Darwin" ; then
-      LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+      P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -Wl,--gc-sections"
     fi
   fi
 
 else
   AC_MSG_RESULT(no)
 fi
+
+AC_LANG_POP(C++)
 
 dnl ########################################################################
 dnl check for long double
@@ -301,16 +307,38 @@ fi
 
 dnl ########################################################################
 dnl check for regex library
-AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
-if test "x$HAS_REGEX" != "x" ; then
-  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
+
+dnl yes this test needs to be outside the if below
+dnl because autoconf needs to initialise stuff. without this
+dnl all sorts of strange things happen
+AC_CHECK_HEADERS(regex.h, HAS_REGEX=yes)
+
+AC_ARG_ENABLE(internalregex,
+        [  --enable-internalregex  force internal regex library],
+        internalregex=$enableval)
+if test "$internalregex" = "yes" ; then
+  AC_MSG_NOTICE(Forcing use of internal regex library)
+else
+  if test "$HAS_REGEX" = "yes" ; then
+    AC_CHECK_FUNC(regcomp, HAS_REGEX=yes)
+    if test "$HAS_REGEX" = "yes" ; then
+      AC_MSG_CHECKING([if <regex.h> defines re_pattern_buffer])
+      AC_TRY_COMPILE([#include <regex.h>],
+                    [typedef struct re_pattern_buffer regex_t;], HAS_REGEX=yes)
+      if test "$HAS_REGEX" = "yes" ; then
+        AC_MSG_RESULT(yes)
+        AC_SUBST(HAS_REGEX, 1)
+        AC_DEFINE(P_REGEX, 1, "Regex library found")
+      else
+        AC_MSG_RESULT(yes)
+      fi
+    fi
+  fi
 fi
-AC_SUBST(HAS_REGEX)
-AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
 
 
 dnl ########################################################################
-dnl check for dynamic library code (dlopen end friends)
+dnl check for dynamic library code (dlopen and friends)
 
 dnl MSWIN DLL Support,,P_DYNALINK
 
@@ -487,7 +515,7 @@ dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
-AC_ARG_ENABLE(openldap,
+AC_ARG_ENABLE(openssl,
        [  --disable-openssl       disable OpenSSL support in PWLIB],
        openssl=$enableval)
 
@@ -515,7 +543,7 @@ else
   dnl is installed in the standard system dirs. And also see if
   dnl if it works using crazy RedHat checks
   if test "${SSLHDR:-unset}" = "unset" ; then
-    AC_CHECK_HEADERS(openssl/ssl.h,SSLDIR=1)
+    AC_CHECK_HEADERS(openssl/ssl.h,SSLHDR=1)
     if test "${SSLHDR:-unset}" = "unset" ; then
       AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
       AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
@@ -524,16 +552,13 @@ int main(int argc,char **argv){}]],SSLHDR=1)
       if test ${SSLHDR:-unset} != "unset" ; then
         AC_MSG_RESULT(yes)
         SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        P_STATIC_LDFLAGS="-L/usr/kerberos/lib"
+        P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
         P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
       else
         AC_MSG_RESULT(no)
       fi
     fi
   fi
-
-  AC_SUBST(P_STATIC_ENDLDLIBS)
-  AC_SUBST(P_STATIC_LDFLAGS)
 
   dnl if we have not found OpenSSL so far, then look for it in 
   dnl several standard places, and check for crazy RedHat install too
@@ -570,7 +595,7 @@ int main(int argc,char **argv){}]])
             SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
             SSLINCLUDEDIR="${openssl_dir}/include"
             SSLLIBDIR="${openssl_dir}/lib"
-            P_STATIC_LDFLAGS="-L/usr/kerberos/lib"
+            P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
             P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
             break
           else
@@ -595,6 +620,9 @@ int main(int argc,char **argv){}]])
     ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
   fi
 fi
+
+AC_SUBST(P_STATIC_ENDLDLIBS)
+AC_SUBST(P_STATIC_LDFLAGS)
 
 dnl ########################################################################
 dnl look for expat XML parser
