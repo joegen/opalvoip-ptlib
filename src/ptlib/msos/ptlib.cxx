@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.21 1996/01/02 12:56:49 robertj Exp $
+ * $Id: ptlib.cxx,v 1.22 1996/01/23 13:23:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.22  1996/01/23 13:23:51  robertj
+ * Fixed bug in PFileInfo for if path ends in directory separator.
+ *
  * Revision 1.21  1996/01/02 12:56:49  robertj
  * Fixed copy of directories.
  *
@@ -392,8 +395,14 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
+  PString fn = name;
+  PINDEX pos = fn.GetLength()-1;
+  while (PDirectory::IsSeparator(fn[pos]))
+    pos--;
+  fn.Delete(pos+1, P_MAX_INDEX);
+
   struct stat s;
-  if (stat(name, &s) != 0)
+  if (stat(fn, &s) != 0)
     return FALSE;
 
   info.created =  (s.st_ctime < 0) ? 0 : s.st_ctime;
