@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.186  2004/04/21 03:47:36  ykiryanov
+# Added libdl.so to library list for BeOS
+#
 # Revision 1.185  2004/04/12 03:35:27  csoutheren
 # Fixed problems with non-recursuve mutexes and critical sections on
 # older compilers and libc
@@ -572,7 +575,7 @@ BE_BONE := 1
 # in pwlib.
 #MEDIA_KIT_UPDATE := 1
 
-SYSLIBS     += -lbe -lmedia -lgame -lroot
+SYSLIBS     += -lbe -lmedia -lgame -lroot -ldl
 
 ifdef BE_THREADS
 STDCCFLAGS	+= -DBE_THREADS
