@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpserv.cxx,v $
+ * Revision 1.3  1998/11/30 04:52:09  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/23 06:22:42  robertj
  * Added open source copyright license.
  *
@@ -36,7 +39,7 @@
  */
 
 #include <ptlib.h>
-#include <psnmp.h>
+#include <ptclib/psnmp.h>
 
 
 BOOL PSNMPServer::SendGetResponse (PSNMPVarBindingList &)
