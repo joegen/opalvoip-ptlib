@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.h,v $
+ * Revision 1.24  2005/03/19 02:52:53  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
+ *
  * Revision 1.23  2002/11/06 22:47:23  robertj
  * Fixed header comment (copyright etc)
  *
@@ -220,6 +223,7 @@ class PHTML : public PStringStream
           ElementInSet req,
           OptionalCRLF opt
         ) { name = nam; attr= att; inElement = elmt; reqElement = req; crlf = opt; }
+        virtual ~Element() { }
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
