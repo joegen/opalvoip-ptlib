@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.15  1998/10/30 05:24:29  robertj
+ * Added return value to << and >> operators for shifting arguments.
+ *
  * Revision 1.14  1998/10/29 05:35:14  robertj
  * Fixed porblem with GetCount() == 0 if do not call Parse() function.
  *
@@ -258,14 +261,14 @@ PDECLARE_CLASS(PArgList, PObject)
        to be parsed at the same position in the argument list "array".
      */
 
-    void operator<<(
+    PArgList & operator<<(
       int sh // Number of parameters to shift forward through list
     );
     /* Shift the parameters by the specified amount. This allows the parameters
        to be parsed at the same position in the argument list "array".
      */
 
-    void operator>>(
+    PArgList & operator>>(
       int sh // Number of parameters to shift backward through list
     );
     /* Shift the parameters by the specified amount. This allows the parameters
