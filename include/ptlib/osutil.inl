@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.10 1994/01/13 03:14:51 robertj Exp $
+ * $Id: osutil.inl,v 1.11 1994/03/07 07:45:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.10  1994/01/13 03:14:51  robertj
+ * Revision 1.11  1994/03/07 07:45:40  robertj
+ * Major upgrade
+ *
+ * Revision 1.10  1994/01/13  03:14:51  robertj
  * Added AsString() function to convert a time to a string.
  *
  * Revision 1.9  1994/01/03  04:42:23  robertj
@@ -135,6 +138,13 @@ PINLINE PTime PTime::operator-(const PTimeInterval & t) const
 
 PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
   { theTime -= t.Seconds(); return *this; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimerList
+
+PINLINE PTimerList::PTimerList()
+  : PAbstractSortedList() { DisallowDeleteObjects(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,6 +275,49 @@ PINLINE size_t PStructuredFile::GetStructureSize()
 PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
   { structureSize = newSize; }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PArgList
+
+PINLINE BOOL PArgList::HasOption(char option) const
+  { return GetOptionCount(option) != 0; }
+
+PINLINE BOOL PArgList::HasOption(const char * option) const
+  { return GetOptionCount(option) != 0; }
+
+PINLINE PINDEX PArgList::GetCount() const
+  { return arg_count-shift; }
+
+PINLINE PString PArgList::operator[](PINDEX num) const
+  { return GetParameter(num); }
+
+PINLINE void PArgList::operator<<(int sh)
+  { Shift(sh); }
+
+PINLINE void PArgList::operator>>(int sh)
+  { Shift(-sh); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTextApplication
+
+PINLINE PTextApplication::~PTextApplication()
+  { }
+
+PINLINE const PArgList & PTextApplication::GetArguments() const
+  { return arguments; }
+
+PINLINE PString PTextApplication::GetAppName() const
+  { return applicationName; }
+
+PINLINE const PFile & PTextApplication::GetAppFile() const
+  { return applicationFile; }
+
+PINLINE void PTextApplication::AddTimer(PTimer * timer)
+  { timers.Append(timer); }
+
+PINLINE void PTextApplication::RemoveTimer(PTimer * timer)
+  { timers.Remove(timer); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
