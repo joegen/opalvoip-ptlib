@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.16  2004/05/02 17:06:42  ykiryanov
+ * Ifdefd inclusion of algorithm for BeOS
+ *
  * Revision 1.15  2004/05/02 08:37:56  rjongbloed
  * Fixed loading of plug ins when multiple plug in class sets used. Especially H.323 codecs.
  *
@@ -59,7 +62,9 @@
 #include <ptlib.h>
 #include <ptlib/pluginmgr.h>
 
+#ifndef __BEOS__
 #include <algorithm>
+#endif
 
 #ifndef	P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
