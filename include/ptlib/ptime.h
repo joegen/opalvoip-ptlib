@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.32  2002/12/10 04:45:14  robertj
+ * Added support in PTime for ISO 8601 format.
+ *
  * Revision 1.31  2002/10/29 00:07:03  robertj
  * Added IsValid() function to indicate that a PTime is set correctly.
  *
@@ -482,6 +485,10 @@ class PTime : public PObject
     enum TimeFormat {
       /// Internet standard format.
       RFC1123,
+      /// Short form ISO standard format.
+      ShortISO8601,
+      /// Long form ISO standard format.
+      LongISO8601,
       /// Date with weekday, full month names and time with seconds.
       LongDateTime,
       /// Date with weekday, full month names and no time.
