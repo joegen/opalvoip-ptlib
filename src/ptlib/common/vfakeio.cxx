@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.3  2001/03/02 06:52:33  yurik
+ * Got rid of unknown for WinCE pragma
+ *
  * Revision 1.2  2000/12/19 23:58:14  robertj
  * Fixed MSVC compatibility issues.
  *
@@ -34,7 +37,9 @@
  *
  */
 
+#ifndef _WIN32_WCE
 #pragma implementation "vfakeio.h"
+#endif
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
