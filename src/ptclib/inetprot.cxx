@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.17 1996/03/31 08:57:34 robertj Exp $
+ * $Id: inetprot.cxx,v 1.18 1996/05/09 12:14:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.18  1996/05/09 12:14:04  robertj
+ * Rewrote the "unread" buffer usage and then used it to improve ReadLine() performance.
+ *
  * Revision 1.17  1996/03/31 08:57:34  robertj
  * Changed MIME type for no extension from binary to text.
  * Added flush of data before sending a command.
@@ -129,29 +132,30 @@ void PApplicationSocket::Construct()
   readLineTimeout = PTimeInterval(0, 10);   // 10 seconds
   stuffingState = DontStuff;
   newLineToCRLF = TRUE;
+  unReadCount = 0;
 }
 
 
 BOOL PApplicationSocket::Read(void * buf, PINDEX len)
 {
-  PINDEX numUnRead = unReadBuffer.GetSize();
-  if (numUnRead >= len) {
-    memcpy(buf, unReadBuffer, len);
-    if (numUnRead > len)
-      memcpy(unReadBuffer.GetPointer(), &unReadBuffer[len], numUnRead - len);
-    unReadBuffer.SetSize(numUnRead - len);
-    lastReadCount = len;
-    return TRUE;
+  lastReadCount = PMIN(unReadCount, len);
+  const char * unReadPtr = ((const char *)unReadBuffer)+unReadCount;
+  char * bufptr = (char *)buf;
+  while (unReadCount > 0 && len > 0) {
+    *bufptr++ = *--unReadPtr;
+    unReadCount--;
+    len--;
   }
 
-  if (numUnRead > 0) {
-    memcpy(buf, unReadBuffer, numUnRead);
+  if (unReadCount == 0)
     unReadBuffer.SetSize(0);
+
+  if (len > 0) {
+    PINDEX saveCount = lastReadCount;
+    PTCPSocket::Read(bufptr, len);
+    lastReadCount += saveCount;
   }
 
-  PTCPSocket::Read(((char *)buf) + numUnRead, len - numUnRead);
-
-  lastReadCount += numUnRead;
   return lastReadCount > 0;
 }
 
@@ -251,6 +255,13 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
   SetReadTimeout(readLineTimeout);
 
   while (c >= 0 && !gotEndOfLine) {
+    if (unReadCount == 0) {
+      char readAhead[1000];
+      SetReadTimeout(0);
+      if (PTCPSocket::Read(readAhead, sizeof(readAhead)))
+        UnRead(readAhead, GetLastReadCount());
+      SetReadTimeout(readLineTimeout);
+    }
     switch (c) {
       case '\b' :
       case '\177' :
@@ -292,24 +303,24 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
 
 void PApplicationSocket::UnRead(int ch)
 {
-  PINDEX size = unReadBuffer.GetSize();
-  unReadBuffer.SetSize(size+1);
-  unReadBuffer[size] = (char)ch;
+  unReadBuffer.SetSize((unReadCount+256)&-256);
+  unReadBuffer[unReadCount++] = (char)ch;
 }
 
 
 void PApplicationSocket::UnRead(const PString & str)
 {
-  PINDEX size = unReadBuffer.GetSize();
-  PINDEX len = str.GetLength();
-  memcpy(unReadBuffer.GetPointer(size+len)+size, (const char *)str, len);
+  UnRead((const char *)str, str.GetLength());
 }
 
 
 void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
 {
-  PINDEX size = unReadBuffer.GetSize();
-  memcpy(unReadBuffer.GetPointer(size+len)+size, buffer, len);
+  char * unreadptr = unReadBuffer.GetPointer((unReadCount+len+255)&-256);
+  const char * bufptr = ((const char *)buffer)+len;
+  unReadCount += len;
+  while (len-- > 0)
+    *unreadptr++ = *--bufptr;
 }
 
 
