@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.83  2003/09/17 09:02:14  csoutheren
+ * Removed memory leak detection code
+ *
  * Revision 1.82  2003/01/14 04:43:21  robertj
  * Improved output on error in getting service status.
  *
@@ -498,17 +501,11 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(4);
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
-#endif
   debugMode = FALSE;
 
   // parse arguments so we can grab what we want
