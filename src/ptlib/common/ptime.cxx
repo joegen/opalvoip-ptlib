@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.19 1998/01/04 07:24:32 robertj Exp $
+ * $Id: ptime.cxx,v 1.20 1998/01/26 00:48:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.20  1998/01/26 00:48:30  robertj
+ * Removed days from PTimeInterval PrintOn(), can get it back by using negative precision.
+ * Fixed Y2K problem in parsing dates.
+ *
  * Revision 1.19  1998/01/04 07:24:32  robertj
  * Added operating system specific versions of gmtime and localtime.
  *
@@ -100,17 +104,18 @@ void PTimeInterval::PrintOn(ostream & strm) const
 {
   PInt64 ms = milliseconds;
 
-  int decs = strm.precision();
-  if (decs > 3)
-    decs = 3;
-
+  int precision = strm.precision();
   strm.fill('0');
 
   BOOL hadPrevious = FALSE;
-  long tmp = (long)(ms/86400000);
-  if (tmp > 0) {
-    strm << tmp << ':';
-    hadPrevious = TRUE;
+  long tmp;
+
+  if (precision < 0) {
+    tmp = (long)(ms/86400000);
+    if (tmp > 0) {
+      strm << tmp << ':';
+      hadPrevious = TRUE;
+    }
   }
 
   tmp = (long)(ms%86400000)/3600000;
@@ -133,8 +138,13 @@ void PTimeInterval::PrintOn(ostream & strm) const
     strm.width(2);
   strm << (long)(ms%60000)/1000;
 
-  if (decs > 0)
-    strm << '.' << setw(decs) << (int)(ms%1000);
+  if (precision != 0) {
+    if (precision < 0)
+      precision = -precision;
+    if (precision > 3)
+      precision = 3;
+    strm << '.' << setw(precision) << (int)(ms%1000);
+  }
 }
 
 
@@ -667,7 +677,9 @@ void PTime::ReadFrom(istream &strm)
             token = get_token(strm, yytext, yyval);
             if (token == INTEGER) {
               year = yyval.ival;
-              if (year < 100)
+              if (year < 70)
+                year += 2000;
+              else if (year < 100)
                 year += 1900;
               token = get_token(strm, yytext, yyval);
             }
@@ -710,7 +722,9 @@ void PTime::ReadFrom(istream &strm)
             day = tmp;
           else if (year < 0) {
             year = tmp;
-            if (year < 100)
+            if (year < 70)
+              year += 2000;
+            else if (year < 100)
               year += 1900;
           }
           else
