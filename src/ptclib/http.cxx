@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.16 1996/03/16 05:00:26 robertj Exp $
+ * $Id: http.cxx,v 1.17 1996/03/17 05:48:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.17  1996/03/17 05:48:07  robertj
+ * FireDoorV10
+ *
  * Revision 1.16  1996/03/16 05:00:26  robertj
  * Added ParseReponse() for splitting reponse line into code and info.
  * Added client side support for HTTP socket.
@@ -322,12 +325,14 @@ PString PURL::AsString(UrlFormat fmt) const
     if (!scheme.IsEmpty())
       str << scheme << ':';
     if (!username.IsEmpty() || !password.IsEmpty() ||
-                                           !hostname.IsEmpty() || port != 80) {
-      str << "//";
+                                             !hostname.IsEmpty() || port != 0) {
+      str << "//" << username;
+      if (!password.IsEmpty())
+        str << ':' << password;
       if (!username.IsEmpty() || !password.IsEmpty())
-        str << username << ':' << password << '@';
+        str << '@';
       if (hostname.IsEmpty())
-        str << "localhost";
+        str << PIPSocket::GetHostName();
       else
         str << hostname;
       if (!(scheme == "http" && port == 80) &&
@@ -898,6 +903,7 @@ PHTTPResource::PHTTPResource(const PURL & url)
   : baseURL(url)
 {
   authority = NULL;
+  hitCount = 0;
 }
 
 
@@ -905,6 +911,7 @@ PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
   : baseURL(url), contentType(type)
 {
   authority = NULL;
+  hitCount = 0;
 }
 
 
@@ -914,6 +921,7 @@ PHTTPResource::PHTTPResource(const PURL & url,
   : baseURL(url), contentType(type)
 {
   authority = (PHTTPAuthority *)auth.Clone();
+  hitCount = 0;
 }
 
 
@@ -948,6 +956,8 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
     delete request;
     return;
   }
+
+  hitCount++;
 
   if (!request->outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
     request->outMIME.SetAt(ContentTypeStr, contentType);
