@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.7 1995/02/05 00:48:09 robertj Exp $
+ * $Id: pstring.h,v 1.8 1995/03/12 04:44:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.7  1995/02/05 00:48:09  robertj
+ * Revision 1.8  1995/03/12 04:44:39  robertj
+ * Fixed use of PCaselessString as dictionary key.
+ *
+ * Revision 1.7  1995/02/05  00:48:09  robertj
  * Fixed template version.
  *
  * Revision 1.6  1995/01/15  04:50:20  robertj
@@ -917,11 +920,34 @@ PDECLARE_CLASS(PCaselessString, PString)
      */
 
 
+    PCaselessString & operator=(const char * cstr);
     PCaselessString & operator=(const PString & str);
     /* Set the current instance to reference the same string as the $B$str$B$
        parameter. The previous reference is decremented and if no more
        references to the string are present, the string buffer is released. A
        PCaselessString may also be provided to this operator.
+     */
+
+
+  // Overrides from class PObject
+    virtual PObject * Clone() const;
+    /* Make a complete duplicate of the string. Note that the data in the
+       array of characters is duplicated as well and the new object is a
+       unique reference to that data.
+     */
+
+    virtual PINDEX HashFunction() const;
+    /* Calculate a hash value for use in sets and dictionaries.
+    
+       The hash function for strings will produce a value based on the sum of
+       the first three characters of the string. This is a fairly basic
+       function and make no assumptions about the string contents. A user may
+       descend from PString and override the hash function if they can take
+       advantage of the types of strings being used, eg if all strings start
+       with the letter 'A' followed by 'B or 'C' then the current hash function
+       will not perform very well.
+
+       Returns: hash value for string.
      */
 
 
