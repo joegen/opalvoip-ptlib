@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.47  1999/06/13 13:54:07  robertj
+ * Added PConsoleChannel class for access to stdin/stdout/stderr.
+ *
  * Revision 1.46  1999/06/09 02:05:20  robertj
  * Added ability to open file as standard input, output and error streams.
  *
@@ -718,21 +721,6 @@ BOOL PFile::Open(OpenMode mode, int opts)
         opts = Create;
       break;
 
-    case StandardInput :
-      path = "\\\\.\\StandardInput";
-      os_handle = 0;
-      return TRUE;
-
-    case StandardOutput :
-      path = "\\\\.\\StandardOutput";
-      os_handle = 1;
-      return TRUE;
-
-    case StandardError :
-      path = "\\\\.\\StandardError";
-      os_handle = 2;
-      return TRUE;
-
     default :
       PAssertAlways(PInvalidParameter);
   }
@@ -787,6 +775,68 @@ BOOL PTextFile::WriteLine(const PString & str)
   return WriteString(str) && WriteChar('\n');
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+PConsoleChannel::PConsoleChannel()
+{
+}
+
+
+PConsoleChannel::PConsoleChannel(ConsoleType type)
+{
+  Open(type);
+}
+
+
+BOOL PConsoleChannel::Open(ConsoleType type)
+{
+  switch (type) {
+    case StandardInput :
+      os_handle = 0;
+      return TRUE;
+
+    case StandardOutput :
+      os_handle = 1;
+      return TRUE;
+
+    case StandardError :
+      os_handle = 2;
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+
+PString PConsoleChannel::GetName() const
+{
+  return "\\\\.\\Console";
+}
+
+
+BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
+{
+  flush();
+  lastReadCount = _read(os_handle, buffer, length);
+  return ConvertOSError(lastReadCount) && lastReadCount > 0;
+}
+
+
+BOOL PConsoleChannel::Write(const void * buffer, PINDEX length)
+{
+  flush();
+  lastWriteCount = _write(os_handle, buffer, length);
+  return ConvertOSError(lastWriteCount) && lastWriteCount >= length;
+}
+
+
+BOOL PConsoleChannel::Close()
+{
+  os_handle = -1;
+  return TRUE;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

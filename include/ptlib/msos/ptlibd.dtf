@@ -1705,6 +1705,7 @@ EXPORTS
     ?GetDayOfYear@PTime@@QBEHXZ @1437 NONAME ;public: int __thiscall PTime::GetDayOfYear(void)const 
     ?GetDays@PTimeInterval@@QBEHXZ @1438 NONAME ;public: int __thiscall PTimeInterval::GetDays(void)const 
     ?GetDCD@PSerialChannel@@QAEHXZ @1439 NONAME ;public: int __thiscall PSerialChannel::GetDCD(void)
+    ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @3005 NONAME ;public: static class PString  __cdecl PSoundChannel::GetDefaultDevice(enum PSoundChannel::Directions)
     ?GetDefaultSection@PConfig@@QBE?AVPString@@XZ @1440 NONAME ;public: class PString  __thiscall PConfig::GetDefaultSection(void)const 
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringArray@@W4Directions@1@@Z @2685 NONAME ;public: static class PStringArray  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
     ?GetDirectory@PFilePath@@QBE?AVPDirectory@@XZ @1441 NONAME ;public: class PDirectory  __thiscall PFilePath::GetDirectory(void)const 
@@ -2685,4 +2686,22 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @3005 NONAME ;public: static class PString  __cdecl PSoundChannel::GetDefaultDevice(enum PSoundChannel::Directions)
+    ??0PConsoleChannel@@QAE@W4ConsoleType@0@@Z @3006 NONAME ;public: __thiscall PConsoleChannel::PConsoleChannel(enum PConsoleChannel::ConsoleType)
+    ??0PConsoleChannel@@QAE@XZ @3007 NONAME ;public: __thiscall PConsoleChannel::PConsoleChannel(void)
+    ??1PConsoleChannel@@UAE@XZ @3008 NONAME ;public: virtual __thiscall PConsoleChannel::~PConsoleChannel(void)
+    ??3PConsoleChannel@@SAXPAX@Z @3009 NONAME ;public: static void __cdecl PConsoleChannel::operator delete(void *)
+    ??_7PConsoleChannel@@6Biostream@@@ @3010 NONAME ;const  PConsoleChannel::`vftable'{for `iostream'}
+    ??_7PConsoleChannel@@6BPObject@@@ @3011 NONAME ;const  PConsoleChannel::`vftable'{for `PObject'}
+    ??_8PConsoleChannel@@7Bistream@@@ @3012 NONAME ;const  PConsoleChannel::`vbtable'{for `istream'}
+    ??_8PConsoleChannel@@7Bostream@@@ @3013 NONAME ;const  PConsoleChannel::`vbtable'{for `ostream'}
+    ??_DPConsoleChannel@@QAEXXZ @3014 NONAME ;public: void __thiscall PConsoleChannel::`vbase destructor'(void)
+    ?Class@PConsoleChannel@@SAPBDXZ @3015 NONAME ;public: static char const * __cdecl PConsoleChannel::Class(void)
+    ?Close@PConsoleChannel@@UAEHXZ @3016 NONAME ;public: virtual int __thiscall PConsoleChannel::Close(void)
+    ?CompareObjectMemoryDirect@PConsoleChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @3017 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConsoleChannel::CompareObjectMemoryDirect(class PObject const &)const 
+    ?GetClass@PConsoleChannel@@UBEPBDI@Z @3018 NONAME ;public: virtual char const * __thiscall PConsoleChannel::GetClass(unsigned int)const 
+    ?GetName@PConsoleChannel@@UBE?AVPString@@XZ @3019 NONAME ;public: virtual class PString  __thiscall PConsoleChannel::GetName(void)const 
+    ?IsClass@PConsoleChannel@@UBEHPBD@Z @3020 NONAME ;public: virtual int __thiscall PConsoleChannel::IsClass(char const *)const 
+    ?IsDescendant@PConsoleChannel@@UBEHPBD@Z @3021 NONAME ;public: virtual int __thiscall PConsoleChannel::IsDescendant(char const *)const 
+    ?Open@PConsoleChannel@@UAEHW4ConsoleType@1@@Z @3022 NONAME ;public: virtual int __thiscall PConsoleChannel::Open(enum PConsoleChannel::ConsoleType)
+    ?Read@PConsoleChannel@@UAEHPAXH@Z @3023 NONAME ;public: virtual int __thiscall PConsoleChannel::Read(void *,int)
+    ?Write@PConsoleChannel@@UAEHPBXH@Z @3024 NONAME ;public: virtual int __thiscall PConsoleChannel::Write(void const *,int)
