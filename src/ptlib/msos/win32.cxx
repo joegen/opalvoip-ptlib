@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.116  2001/11/23 06:59:00  robertj
+ * Added PProcess::SetUserName() function for effective user changes.
+ *
  * Revision 1.115  2001/10/26 04:20:25  craigs
  * Changed housekeeping thread to be Normal priority to avoide starvation
  * of PTimer dependent threads
@@ -1518,6 +1521,14 @@ PString PProcess::GetUserName() const
   username.MakeMinimumSize();
   return username;
 }
+
+
+BOOL PProcess::SetUserName(const PString & /*username*/)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
 
 DWORD PProcess::GetProcessID() const
 {
