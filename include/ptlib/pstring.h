@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.70  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.69  2004/04/03 06:54:22  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -2639,7 +2642,7 @@ template <class K> class PStringDictionary : public PAbstractDictionary
   public: \
     inline cls() \
       : PAbstractDictionary() { } \
-    inline virtual PObject * Clone() const \
+    inline PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline PString & operator[](const K & key) const \
       { return (PString &)GetRefAt(key); } \
@@ -2649,11 +2652,11 @@ template <class K> class PStringDictionary : public PAbstractDictionary
       { return AbstractContains(key); } \
     virtual PString * RemoveAt(const K & key) \
       { PString * s = GetAt(key); AbstractSetAt(key, NULL); return s; } \
-    inline virtual PString * GetAt(const K & key) const \
+    virtual PString * GetAt(const K & key) const \
       { return (PString *)AbstractGetAt(key); } \
-    inline virtual BOOL SetDataAt(PINDEX index, const PString & str) \
+    virtual BOOL SetDataAt(PINDEX index, const PString & str) \
       { return PAbstractDictionary::SetDataAt(index,PNEW PString(str));} \
-    inline virtual BOOL SetAt(const K & key, const PString & str) \
+    virtual BOOL SetAt(const K & key, const PString & str) \
       { return AbstractSetAt(key, PNEW PString(str)); } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
