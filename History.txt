@@ -2,6 +2,17 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.13
+------------
+	Fixed alignment problem in debug memory check code (especially with
+	sparc architecture).
+
+	Fixed problem in timers startup condition in short duration (< 10 second)
+	timers, timing out immediately.
+
+	Improved some of the documentation especially the root web page.
+
+
 Release 1.12
 ------------
 	Made static form of ConvertOSError public scope.
