@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.14 1995/12/10 11:35:21 robertj Exp $
+ * $Id: socket.h,v 1.15 1995/12/23 03:46:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.15  1995/12/23 03:46:54  robertj
+ * Fixed portability issue with closingh sockets.
+ *
  * Revision 1.14  1995/12/10 11:35:21  robertj
  * Numerous fixes for sockets.
  *
@@ -139,6 +142,11 @@ PDECLARE_CLASS(PSocket, PChannel)
     inline static DWORD Net2Host(DWORD v);
       // Convert from network to host byte order
 #endif
+
+
+  protected:
+    int _Close();
+    // Close the socket without setting errors.
 
 
 // Class declaration continued in platform specific header file ///////////////
