@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.39 1996/04/29 12:20:01 robertj Exp $
+ * $Id: sockets.cxx,v 1.40 1996/05/15 10:18:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.40  1996/05/15 10:18:48  robertj
+ * Added ICMP protocol socket, getting common ancestor to UDP.
+ * Added timeout to accept function.
+ *
  * Revision 1.39  1996/04/29 12:20:01  robertj
  * Fixed GetHostAliases() so doesn't overwrite names with IP numbers.
  *
@@ -795,7 +799,8 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   address.sin_family = AF_INET;
   int size = sizeof(address);
   if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size)))
+                                          (struct sockaddr *)&address, &size,
+                                           socket.GetReadTimeout())))
     return FALSE;
 
   port = ((PIPSocket &)socket).GetPort();
@@ -842,41 +847,35 @@ void PTCPSocket::OnOutOfBand(const void *, PINDEX)
 
 #ifdef P_HAS_BERKELEY_SOCKETS
 
-PUDPSocket::PUDPSocket(WORD newPort)
-  : PIPSocket(newPort)
+PIPDatagramSocket::PIPDatagramSocket(WORD newType, WORD newPort)
+  : PIPSocket(newPort), sockType(newType)
 {
-  ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
+  protocol = 0;
 }
 
-
-PUDPSocket::PUDPSocket(const PString & service)
-  : PIPSocket("udp", service)
+PIPDatagramSocket::PIPDatagramSocket(WORD newType, const char * proto, const PString & service)
+  : PIPSocket(proto, service), sockType(newType)
 {
-  ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
+  protocol = 0;
 }
 
-
-PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
-  : PIPSocket(newPort)
+PIPDatagramSocket::PIPDatagramSocket(WORD newType, const char * protocolName)
+  : sockType(newType)
 {
-  Connect(address);
+  struct protoent * p = ::getprotobyname(protocolName);
+  protocol = (p == NULL) ? 0 : p->p_proto;
 }
 
-
-PUDPSocket::PUDPSocket(const PString & address, const PString & service)
-  : PIPSocket("udp", service)
+BOOL PIPDatagramSocket::_Socket()
 {
-  Connect(address);
+  return ConvertOSError(os_handle = os_socket(AF_INET, sockType, protocol));
 }
 
-
-BOOL PUDPSocket::Connect(const PString & host)
+BOOL PIPDatagramSocket::Connect(const PString & host)
 {
   // close the port if it is already open
-  if (!IsOpen())
-    // attempt to create a socket
-    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
-      return FALSE;
+  if (!IsOpen() && !_Socket())
+    return FALSE;
 
   // attempt to connect
   if (_Connect(host))
@@ -887,7 +886,7 @@ BOOL PUDPSocket::Connect(const PString & host)
 }
 
 
-BOOL PUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
+BOOL PIPDatagramSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
   // make sure we have a port
   if (newPort != 0)
@@ -896,7 +895,7 @@ BOOL PUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
   // close the port if it is already open
   if (!IsOpen())
     // attempt to create a socket
-    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
+    if (!_Socket())
       return FALSE;
 
   // attempt to listen
@@ -908,10 +907,37 @@ BOOL PUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 }
 
 
-BOOL PUDPSocket::Accept(PSocket &)
+BOOL PIPDatagramSocket::Accept(PSocket &)
 {
   PAssertAlways("Illegal operation.");
   return FALSE;
+}
+
+PUDPSocket::PUDPSocket(WORD newPort)
+  : PIPDatagramSocket(SOCK_DGRAM, newPort)
+{
+  _Socket();
+}
+
+
+PUDPSocket::PUDPSocket(const PString & service)
+  : PIPDatagramSocket(SOCK_DGRAM, "udp", service)
+{
+  _Socket();
+}
+
+
+PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
+  : PIPDatagramSocket(SOCK_DGRAM, newPort)
+{
+  Connect(address);
+}
+
+
+PUDPSocket::PUDPSocket(const PString & address, const PString & service)
+  : PIPDatagramSocket(SOCK_DGRAM, "udp", service)
+{
+  Connect(address);
 }
 
 
@@ -925,7 +951,6 @@ PString PUDPSocket::GetServiceByPort(WORD port) const
 {
   return PIPSocket::GetServiceByPort("udp", port);
 }
-
 
 #endif
 
