@@ -6,15 +6,33 @@
  * Copyright 2003 Equivalence
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.2  2003/04/15 08:05:19  craigs
+ * Added Unix implementation
+ *
  * Revision 1.1  2003/04/15 04:06:35  craigs
  * Initial version
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "pdns.h"
+#endif
+
 #include <ptlib.h>
 
 #include <ptclib/pdns.h>
 #include <ptclib/random.h>
+
+#ifdef WIN32
+#include <windns.h>
+#else
+#define	P_HAS_RESOLVER	1
+#endif
+
+#if P_HAS_RESOLVER
+#include <resolv.h>
+#include <arpa/nameser.h>
+#endif
 
 /////////////////////////////////////////////////
 
@@ -22,6 +40,261 @@ PDNS::Record::Record()
 { 
   used = FALSE; 
 }
+
+/////////////////////////////////////////////////
+
+
+#ifdef P_HAS_RESOLVER
+
+#define	DNS_STATUS		int
+#define	DNS_TYPE_SRV		T_SRV
+#define	DNS_TYPE_MX		T_MX
+#define	DNS_TYPE_A		T_A
+#define	DnsFreeRecordList	0
+#define	DNS_QUERY_STANDARD	0
+
+typedef struct _DnsAData {
+  DWORD IpAddress;
+} DNS_A_DATA;
+
+typedef struct {
+  char   pNameExchange[MAXDNAME];
+  WORD   wPreference;
+
+} DNS_MX_DATA;
+
+typedef struct {
+  char pNameHost[MAXDNAME];
+} DNS_PTR_DATA;
+
+typedef struct _DnsSRVData {
+  public:
+    char   pNameTarget[MAXDNAME];
+    WORD   wPriority;
+    WORD   wWeight;
+    WORD   wPort;
+
+} DNS_SRV_DATA;
+
+typedef struct _DnsRecordFlags
+{
+    unsigned   Section     : 2;
+    unsigned   Delete      : 1;
+    unsigned   CharSet     : 2;
+    unsigned   Unused      : 3;
+    unsigned   Reserved    : 24;
+} DNS_RECORD_FLAGS;
+
+typedef enum _DnsSection
+{
+  DnsSectionQuestion,
+  DnsSectionAnswer,
+  DnsSectionAuthority,
+  DnsSectionAddtional,
+} DNS_SECTION;
+
+
+class DnsRecord {
+  public:
+    DnsRecord * pNext;
+    char        pName[MAXDNAME];
+    WORD        wType;
+    WORD        wDataLength;
+
+    union {
+      DWORD               DW;     // flags as DWORD
+      DNS_RECORD_FLAGS    S;      // flags as structure
+    } Flags;
+
+    union {
+      DNS_A_DATA   A;
+      DNS_MX_DATA  MX;
+      DNS_PTR_DATA NS;
+      DNS_SRV_DATA SRV;
+    } Data;
+};
+
+typedef DnsRecord * PDNS_RECORD;
+
+static BOOL GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
+{
+  int len = dn_expand(reply, replyEnd, cp, buff, MAXDNAME);
+  if (len < 0)
+    return FALSE;
+  cp += len;
+  return TRUE;
+}
+
+static BOOL ProcessDNSRecords(
+		const BYTE * reply,
+	        const BYTE * replyEnd,
+		      BYTE * cp,
+		    PINDEX anCount,
+		    PINDEX nsCount,
+		    PINDEX arCount,
+	       PDNS_RECORD * results)
+{
+  PDNS_RECORD lastRecord = NULL;
+  PDNS_RECORD newRecord  = NULL;
+
+  PINDEX rrCount = anCount + nsCount + arCount;
+  nsCount += anCount;
+  arCount += nsCount;
+
+  PINDEX i;
+  for (i = 0; i < rrCount; i++) {
+
+    if (newRecord == NULL) 
+      newRecord = new DnsRecord;
+
+    memset(newRecord, 0, sizeof(DnsRecord));
+
+    if (i < anCount)
+      newRecord->Flags.S.Section = DnsSectionAnswer;
+    else if (i < nsCount)
+      newRecord->Flags.S.Section = DnsSectionAuthority;
+    else if (i < arCount)
+      newRecord->Flags.S.Section = DnsSectionAddtional;
+
+    // get the name
+    if (!GetDN(reply, replyEnd, cp, newRecord->pName)) {
+      delete newRecord;
+      return FALSE;
+    }
+
+    // get other common parts of the record
+    u_short   type;
+    u_short   dnsClass;
+    u_int32_t ttl;
+    u_short   dlen;
+
+    GETSHORT(type,     cp);
+    GETSHORT(dnsClass, cp);
+    GETLONG (ttl,      cp);
+    GETSHORT(dlen,     cp);
+
+    newRecord->wType = type;
+
+    BYTE * data = cp;
+    cp += dlen;
+    BOOL ok = TRUE;
+
+    switch (type) {
+      case T_SRV:
+        GETSHORT(newRecord->Data.SRV.wPriority, data);
+        GETSHORT(newRecord->Data.SRV.wWeight, data);
+        GETSHORT(newRecord->Data.SRV.wPort, data);
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.SRV.pNameTarget)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      case T_MX:
+        GETSHORT(newRecord->Data.MX.wPreference,  data);
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.MX.pNameExchange)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      case T_A:
+        GETLONG(newRecord->Data.A.IpAddress, data);
+        break;
+
+      case T_NS:
+        if (!GetDN(reply, replyEnd, data, newRecord->Data.NS.pNameHost)) {
+          delete newRecord;
+          return FALSE;
+        }
+        break;
+
+      default:
+        ok = FALSE;
+        break;
+    }
+
+    if (ok) {
+      if (*results == NULL)
+        *results = newRecord;
+
+      newRecord->pNext = NULL;
+
+      if (lastRecord != NULL)
+        lastRecord->pNext = newRecord;
+
+      lastRecord = newRecord;
+      newRecord = NULL;
+    }
+  }
+
+  delete newRecord;
+
+  return TRUE;
+}
+
+void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
+{
+  while (rec != NULL) {
+    PDNS_RECORD next = rec->pNext;
+    delete rec;
+    rec = next;
+  }
+}
+
+DNS_STATUS DnsQuery_A(const char * service,
+		      WORD requestType,
+		      DWORD options,
+		      void *,
+		      PDNS_RECORD * results,
+		      void *)
+{
+  if (results == NULL)
+    return -1;
+
+  *results = NULL;
+
+  res_init();
+
+  union {
+    HEADER hdr;
+    BYTE buf[PACKETSZ];
+  } reply;
+
+  int replyLen = res_search(service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
+
+  if (replyLen < 1)
+    return -1;
+
+  BYTE * replyStart = reply.buf;
+  BYTE * replyEnd   = reply.buf + replyLen;
+  BYTE * cp         = reply.buf + sizeof(HEADER);
+
+  // ignore questions in response
+  unsigned i;
+  for (i = 0; i < ntohs(reply.hdr.qdcount); i++) {
+    char qName[MAXDNAME];
+    if (!GetDN(replyStart, replyEnd, cp, qName))
+      return -1;
+    cp += QFIXEDSZ;
+  }
+
+  if (!ProcessDNSRecords(replyStart,
+		         replyEnd,
+			 cp,
+		 	 ntohs(reply.hdr.ancount),
+			 ntohs(reply.hdr.nscount),
+			 ntohs(reply.hdr.arcount),
+	 		 results)) {
+    DnsRecordListFree(*results, 0);
+    return -1;
+  }
+
+  return 0;
+}
+
+
+#endif
 
 /////////////////////////////////////////////////
 
@@ -159,6 +432,7 @@ BOOL PDNS::GetSRVRecords(const PString & _service,
 		                     const PString & domain,
 		                     SRVRecordList & recordList)
 {
+
   if (_service.IsEmpty())
     return FALSE;
 
@@ -170,7 +444,8 @@ BOOL PDNS::GetSRVRecords(const PString & _service,
 
   service += PString("._") + type + "." + domain;
 
-#ifdef WIN32
+  recordList.RemoveAll();
+
   PDNS_RECORD results = NULL;
   DNS_STATUS status = DnsQuery_A((const char *)service, 
                                  DNS_TYPE_SRV, 
@@ -214,80 +489,7 @@ BOOL PDNS::GetSRVRecords(const PString & _service,
   if (results != NULL)
     DnsRecordListFree(results, DnsFreeRecordList);
 
-  return TRUE;
-
-#else
-
-#if 0
-
-  PBYTEArray reply(1024);
-  int replyLen = res_query(service, C_IN, T_SRV, (u_char *)(const BYTE *)reply, reply.GetSize());
-  if (replyLen <= 0) {
-    PError << "Cannot resolve service " << service << endl;
-    return FALSE;
-  }
-  reply.SetSize(replyLen);
-
-  cout << "Reply is " << endl << hex << reply << dec << endl;
-
-  char buffer[1024];
-  const BYTE * p = reply + sizeof(HEADER);
-
-  // ignore first record - it returns what we passed in
-  int len = dn_expand(reply, reply + replyLen, p, buffer, sizeof(buffer));
-  if (len < 0) {
-    PError << "SRV record is weird" << endl;
-    return FALSE;
-  }
-  p += len;
-  p += 4;
-
-  while (p < reply + replyLen) {
-    len = dn_expand(reply, reply + replyLen, p, buffer, sizeof(buffer));
-    if (len < 0) {
-      PError << "Failed to parse hostname at 0x" << hex << (p - reply) << dec << endl;
-      break;
-    }
-
-    p += len;
-
-    int type = (p[0] << 8) | p[1];
-    p += 2;
-
-    //int dnsClass = (p[0] << 8) | p[1];
-    p += 2;
-
-    //int ttl = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-    p += 4;
-
-    int size = (p[0] << 8) | p[1];
-    p += 2;
-
-    PString hostName(buffer);
-
-    if (type == T_SRV) {
-      len = dn_expand(reply, reply + replyLen, p + 6, buffer, sizeof(buffer));
-      if (len < 0) {
-        PError << "Failed to parse T_SRV hostname at 0x" << hex << ((p + 6) - reply) << dec << endl;
-        break;
-      }
-
-      SRVRecord * record = new SRVRecord();
-      record->host     = PString(buffer);
-      record->port     = (WORD)((p[4] << 8) | p[5]);
-      record->priority = (WORD)((p[0] << 8) | p[1]);
-      record->weight   = (WORD)((p[2] << 8) | p[3]);
-
-      recordList.Append(record);
-    }
-  
-    p += size;
-  }
-
-  return serviceList.GetSize() != 0;
-#endif
-  return NULL
-#endif
+  return recordList.GetSize() != 0;
 }
 
 ///////////////////////////////////////////////////////
@@ -315,7 +517,8 @@ BOOL PDNS::GetMXRecords(const PString & domain, MXRecordList & recordList)
   if (domain.IsEmpty())
     return FALSE;
 
-#ifdef WIN32
+  recordList.RemoveAll();
+
   PDNS_RECORD results = NULL;
   DNS_STATUS status = DnsQuery_A((const char *)domain, 
                                  DNS_TYPE_MX, 
@@ -357,82 +560,7 @@ BOOL PDNS::GetMXRecords(const PString & domain, MXRecordList & recordList)
   if (results != NULL)
     DnsRecordListFree(results, DnsFreeRecordList);
 
-  return TRUE;
-
-#else
-
-#if 0
-
-  PBYTEArray reply(1024);
-  int replyLen = res_query(service, C_IN, T_SRV, (u_char *)(const BYTE *)reply, reply.GetSize());
-  if (replyLen <= 0) {
-    PError << "Cannot resolve service " << service << endl;
-    return FALSE;
-  }
-  reply.SetSize(replyLen);
-
-  cout << "Reply is " << endl << hex << reply << dec << endl;
-
-  char buffer[1024];
-  const BYTE * p = reply + sizeof(HEADER);
-
-  // ignore first record - it returns what we passed in
-  int len = dn_expand(reply, reply + replyLen, p, buffer, sizeof(buffer));
-  if (len < 0) {
-    PError << "SRV record is weird" << endl;
-    return FALSE;
-  }
-  p += len;
-  p += 4;
-
-  while (p < reply + replyLen) {
-    len = dn_expand(reply, reply + replyLen, p, buffer, sizeof(buffer));
-    if (len < 0) {
-      PError << "Failed to parse hostname at 0x" << hex << (p - reply) << dec << endl;
-      break;
-    }
-
-    p += len;
-
-    int type = (p[0] << 8) | p[1];
-    p += 2;
-
-    //int dnsClass = (p[0] << 8) | p[1];
-    p += 2;
-
-    //int ttl = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-    p += 4;
-
-    int size = (p[0] << 8) | p[1];
-    p += 2;
-
-    PString hostName(buffer);
-
-    if (type == T_SRV) {
-      len = dn_expand(reply, reply + replyLen, p + 6, buffer, sizeof(buffer));
-      if (len < 0) {
-        PError << "Failed to parse T_SRV hostname at 0x" << hex << ((p + 6) - reply) << dec << endl;
-        break;
-      }
-
-      Service * service = new Service();
-      service->host     = PString(buffer);
-      service->port     = (WORD)((p[4] << 8) | p[5]);
-      service->priority = (WORD)((p[0] << 8) | p[1]);
-      service->weight   = (WORD)((p[2] << 8) | p[3]);
-
-      serviceList.Append(service);
-    }
-  
-    p += size;
-  }
-
-  return serviceList.GetSize() != 0;
-#endif
-
-  return NULL;
-
-#endif
+  return recordList.GetSize() != 0;
 }
 
 ///////////////////////////////////////////////////////
