@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.59 1996/05/26 03:46:27 robertj Exp $
+ * $Id: contain.cxx,v 1.60 1996/08/08 10:08:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.60  1996/08/08 10:08:45  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.59  1996/05/26 03:46:27  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -226,12 +229,12 @@
  * Fixed header comment for RCS.
  */
 
-#include <contain.h>
+#include <ptlib.h>
 
 #include <ctype.h>
 
 #if !defined(P_USE_INLINES)
-#include "contain.inl"
+#include "ptlib/contain.inl"
 #endif
 
 
