@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.26 1996/05/23 10:02:13 robertj Exp $
+ * $Id: http.cxx,v 1.27 1996/05/26 03:46:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.27  1996/05/26 03:46:42  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.26  1996/05/23 10:02:13  robertj
  * Added common function for GET and HEAD commands.
  * Fixed status codes to be the actual status code instead of sequential enum.
@@ -522,7 +525,8 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
   const PStringArray & path = url.GetPath();
 
   PHTTPSpace * node = this;
-  for (PINDEX i = 0; i < path.GetSize(); i++) {
+  PINDEX i;
+  for (i = 0; i < path.GetSize(); i++) {
     if (path[i].IsEmpty())
       break;
 
@@ -1554,7 +1558,8 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 {
   const PStringArray & path = request.url.GetPath();
   PFilePath realPath = basePath;
-  for (PINDEX i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
+  PINDEX i;
+  for (i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
     realPath += path[i] + PDIR_SEPARATOR;
 
   if (i < path.GetSize())
@@ -2125,7 +2130,8 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   }
 
   BOOL good = TRUE;
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+  PINDEX fld;
+  for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     const PCaselessString & name = field.GetName();
     if (data.Contains(name) && !field.Validated(data[name], msg))
