@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.9 1993/12/24 04:20:52 robertj Exp $
+ * $Id: contain.cxx,v 1.10 1993/12/31 06:53:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.9  1993/12/24 04:20:52  robertj
+ * Revision 1.10  1993/12/31 06:53:02  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.9  1993/12/24  04:20:52  robertj
  * Mac CFront port.
  *
  * Revision 1.8  1993/12/16  00:51:46  robertj
@@ -2043,6 +2046,10 @@ PObject * PAbstractDictionary::GetAt(const PObject & key) const
   return element != NULL ? element->data : NULL;
 }
 
+
+#ifndef P_USE_INLINES
+#include "../contain.inl"
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
