@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.93  2002/10/19 06:12:20  robertj
+ * Moved P_fd_set::Zero() from platform independent to platform dependent
+ *   code as Win32 implementation is completely different from Unix.
+ *
  * Revision 1.92  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -300,6 +304,13 @@ void P_fd_set::Construct()
 {
   max_fd = PProcess::Current().GetMaxHandles();
   set = (fd_set *)new char[(max_fd+7)>>3];
+}
+
+
+void P_fd_set::Zero()
+{
+  PAssertNULL(set);
+  memset(set, 0, (max_fd+7)>>3);
 }
 
 
