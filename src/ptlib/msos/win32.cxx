@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.140  2004/10/31 22:22:06  csoutheren
+ * Added pragma to include ole32.lib for static builds
+ *
  * Revision 1.139  2004/10/23 10:50:28  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -511,6 +514,9 @@
 #ifndef _WIN32_WCE
 #pragma comment(lib, "mpr.lib")
 #endif
+
+// needed for CoInitialize
+#pragma comment(lib, "ole32.lib")
 
 #define new PNEW
 
@@ -1144,7 +1150,11 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   process.SignalTimerChange();
 
+  ::CoInitialize(NULL);
+
   thread->Main();
+
+  CoUninitialize();
 
   return 0;
 }
