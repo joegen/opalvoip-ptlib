@@ -1,6 +1,11 @@
 AC_INIT(include/ptlib.h)
 
 dnl ########################################################################
+dnl set te PWLIB directory to the current directory
+
+AC_SUBST(PWLIBDIR, `pwd`)
+
+dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
 
 AC_CANONICAL_TARGET()
@@ -28,8 +33,9 @@ case "$target_os" in
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
   darwin* )	   OSTYPE=Darwin ;
-		   OSRELEASE=`uname -r` ;
-                   STDCCFLAGS="-DP_MACOSX=$OSRELEASE -DNO_LONG_DOUBLE";;
+		   OSRELEASE='$(subst .,,$(shell uname -r))' ;
+                   STDCCFLAGS='-DP_MACOSX=$(OSRELEASE) -DNO_LONG_DOUBLE' ;
+                   SHAREDLIBEXT="dylib";;
 
   * )		   OSTYPE="$target_os" ;
   		   OSRELEASE=`uname -r` ;
@@ -67,10 +73,19 @@ AC_SUBST(OSTYPE,    $OSTYPE)
 AC_SUBST(OSRELEASE, $OSRELEASE)
 
 dnl ########################################################################
+dnl set the shared library extension, if not already set
+
+if test "x${SHAREDLIBEXT}" = "x" ; then
+  SHAREDLIBEXT="so"
+fi
+AC_SUBST(SHAREDLIBEXT, $SHAREDLIBEXT)
+AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
+
+dnl ########################################################################
 dnl check the endianness
 
 AC_C_BIGENDIAN()
-if test ${WORDS_BIGENDIAN:-unset} != "unset" ; then
+if test ${ac_cv_c_bigendian} = yes ; then
   PBYTE_ORDER=PBIG_ENDIAN
 else
   PBYTE_ORDER=PLITTLE_ENDIAN
@@ -115,9 +130,6 @@ if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
   ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
 fi
 
-dnl ifeq ($(OSTYPE),linux)
-dnl ENDLDLIBS	+= -lresolv	# only linux needs -lresolv
-dnl endif
 
 dnl ########################################################################
 dnl look for OpenSSL
@@ -172,11 +184,16 @@ fi
 
 dnl ########################################################################
 dnl check for pthreads library
-AC_CHECK_LIB(pthread, pthread_create, HAVE_PTHREADS=1, HAVE_PTHREADS=)
+AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
 
-if test "${HAVE_PTHREADS:=unset}" != unset ; then
-  AC_DEFINE(P_PTHREADS,       1, "PThreads found")
-  AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
+if test ${HAS_PTHREADS} = yes ; then
+  AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+  dnl
+  dnl posix semaphore support in darwin/macosx is broken
+  dnl 
+  if test ${OSTYPE} != Darwin ; then
+    AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
+  fi
   ENDLDLIBS="$ENDLDLIBS -lpthread"
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 fi
@@ -184,7 +201,7 @@ fi
 dnl ########################################################################
 dnl check for dynamic library code (dlopen end friends)
 LIBS=""
-AC_SEARCH_LIBS(dlopen, dl, HAVE_DYNALINK=$LIBS)
+AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
   AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
 fi
@@ -192,10 +209,12 @@ fi
 dnl ########################################################################
 dnl look for IPV6 functions
 
-AC_CHECK_HEADERS(netinet6/in6.h, HAS_IPV6=1)
-AC_CHECK_HEADERS(linux/in6.h, HAS_IPV6=1)
+AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
+[AC_TRY_COMPILE([#include <sys/types.h>
+                 #include <netinet/in.h>],
+                 [struct in6_addr s], HAS_IPV6=yes, HAS_IPV6=no)])
 
-if test "${HAS_IPV6:-unset}" != "unset" ; then
+if test $HAS_IPV6 = yes ; then
   AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
 fi
 
@@ -212,7 +231,10 @@ dnl output make directives
 
 dnl resolver needs to be at the end
 if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
-  ENDLDLIBS="$ENDLDLIBS $HAVE_RESOLVER"
+  # Darwin does not needs -lresolv
+  if test ${OSTYPE} != Darwin ; then
+    ENDLDLIBS="$ENDLDLIBS $HAVE_RESOLVER"
+  fi
 fi
 
 dnl dl needs to be at the end
