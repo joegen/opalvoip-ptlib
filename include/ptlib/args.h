@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.6 1994/11/26 03:44:19 robertj Exp $
+ * $Id: args.h,v 1.7 1994/12/05 11:15:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.6  1994/11/26 03:44:19  robertj
+ * Revision 1.7  1994/12/05 11:15:13  robertj
+ * Documentation.
+ *
+ * Revision 1.6  1994/11/26  03:44:19  robertj
  * Documentation.
  *
  * Revision 1.6  1994/11/24  11:48:26  robertj
@@ -86,7 +89,7 @@ PDECLARE_CLASS(PArgList, PObject)
        */
     );
     void Parse(
-      const PString & theArgumentSpec
+      const PString & theArgumentStr
       /* The specification string for argument options. See description for
          details.
        */
@@ -101,44 +104,48 @@ PDECLARE_CLASS(PArgList, PObject)
      */
 
     PINDEX GetOptionCount(
-      char option  // Character letter code for the option
+      char optionChar  // Character letter code for the option
     ) const;
     PINDEX GetOptionCount(
-      const char * option // String letter code for the option
+      const char * optionStr // String letter code for the option
     ) const;
     /* Get the count of the number of times the option was specified on the
        command line.
+
        Returns: option repeat count.
      */
 
     BOOL HasOption(
-      char option  // Character letter code for the option
+      char optionChar  // Character letter code for the option
     ) const;
     BOOL HasOption(
-      const char * option // String letter code for the option
+      const char * optionStr // String letter code for the option
     ) const;
     /* Get the whether the option was specified on the command line.
+
        Returns: TRUE if the option was present.
      */
 
     PString GetOptionString(
-      char option,              // Character letter code for the option
+      char optionChar,          // Character letter code for the option
       const char * dflt = NULL  // Default value of the option string
     ) const;
     PString GetOptionString(
-      const char * option,      // String letter code for the option
+      const char * optionStr,   // String letter code for the option
       const char * dflt = NULL  // Default value of the option string
     ) const;
     /* Get the string associated with an option e.g. -ofile or -o file
        would return the string "file". An option may have an associated string
        if it had a ':' character folowing it in the specification string passed
        to the Parse() function.
+
        Returns: the options associated string.
      */
 
     PINDEX GetCount() const;
     /* Get the number of parameters that may be obtained via the GetParameter()
        function. Note that this does not include options and option strings.
+
        Returns: count of parameters.
      */
 
@@ -146,6 +153,7 @@ PDECLARE_CLASS(PArgList, PObject)
       PINDEX num   // Number of the parameter to retrieve.
     ) const;
     /* Get the parameter that was parsed in the argument list.
+
        Returns: parameter string at the specified index.
      */
 
@@ -154,6 +162,7 @@ PDECLARE_CLASS(PArgList, PObject)
     ) const;
     /* Get the parameter that was parsed in the argument list. The argument
        list object can thus be treated as an "array" of parameters.
+
        Returns: parameter string at the specified index.
      */
 
