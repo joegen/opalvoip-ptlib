@@ -1,10 +1,9 @@
 //
-// (c) Yuri Kiryanov, openh323@kiryanov.com
-// for Openh323, www.Openh323.org
-//
-// Windows CE Port
-// Stdlib.h extension 
+// (c) 2000 Yuri Kiryanov, openh323@kiryanov.com
+// and Yuriy Gorvitovskiy
 // 
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
+// PWLib extras
 
 #ifndef __STDLIBX_H__
 #define __STDLIBX_H__
@@ -12,14 +11,13 @@
 #include <stdlib.h>
 #include <winsock.h>
 #include <errno.h>
-#include <io.h>
 #include <tchar.h>
 #include <wceatl.h>
 #include <atlconv.h>
-#include <afxwin.h>
 #include <winnetwk.h>
 #include <mmsystemx.h>
-#include <winsock.h>
+
+#include <afxwin.h>
 
 #define assert(e) 
 inline void abort() { exit(3); }
@@ -28,6 +26,7 @@ inline void abort() { exit(3); }
 inline char *getenv( const char *varname ) { return NULL; };
 inline int putenv( const char *envstring ) { return -1; };
 
+#if _WIN32_WCE < 300
 inline void* calloc(size_t num, size_t size)
 {
 	void *ptr = malloc(num*size);
@@ -35,6 +34,7 @@ inline void* calloc(size_t num, size_t size)
 		memset(ptr, 0, num*size);
 	return ptr;
 }
+#endif
 
 int		_mkdir(const char *);
 int		_rmdir(const char *);
@@ -46,7 +46,6 @@ char *	_mktemp (char *temp);
 int		remove(const char *);
 int		_chmod( const char *filename, int pmode );
 int		rename( const char *oldname, const char *newname );
-int 		_sopen(const char *, int, int, ...);
 
 #define _S_IREAD        0000400         /* read permission, owner */
 #define _S_IWRITE       0000200         /* write permission, owner */
@@ -111,76 +110,16 @@ int 		_sopen(const char *, int, int, ...);
 #define _SH_DENYWR      0x20    /* deny write mode */
 #define _SH_DENYRD      0x30    /* deny read mode */
 #define _SH_DENYNO      0x40    /* deny none mode */
-
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
-/* declare reference to errno */
-
-#define errno			GetLastError()
-#define set_errno(err)	SetLastError( err)
-
-/* Error Codes */
-
-#define EPERM           1
-#define ENOENT          2
-#define ESRCH           3
-#define EINTR           4
-#define EIO             5
-#define ENXIO           6
-#define E2BIG           7
-#define ENOEXEC         8
-#define EBADF           9
-#define ECHILD          10
-#define EAGAIN          11
-#define ENOMEM          12
-#define EACCES          13
-#define EFAULT          14
-#define EBUSY           16
-#define EEXIST          17
-#define EXDEV           18
-#define ENODEV          19
-#define ENOTDIR         20
-#define EISDIR          21
-#define EINVAL          22
-#define ENFILE          23
-#define EMFILE          24
-#define ENOTTY          25
-#define EFBIG           27
-#define ENOSPC          28
-#define ESPIPE          29
-#define EROFS           30
-#define EMLINK          31
-#define EPIPE           32
-#define EDOM            33
-#define ERANGE          34
-#define EDEADLK         36
-
-#ifndef ENAMETOOLONG
-#define ENAMETOOLONG    38
-#endif
-
-#define ENOLCK          39
-#define ENOSYS          40
-#ifndef ENAMETOOLONG
-#define ENOTEMPTY       41
-#endif
-
-#define EILSEQ          42
-#define EDEADLOCK       EDEADLK
-
-#ifdef  __cplusplus
-}
-#endif
-
 long	_lseek(int, long, int);
+
 int		_close(int);
 int		_read(int, void *, unsigned int);
 int		_write(int, const void *, unsigned int);
 int		_open( const char *filename, int oflag , int pmode );
 int		_chsize( int handle, long size );
+int              _sopen(const char *, int, int, ...);
 
+#if _WIN32_WCE < 300
 inline int isprint(int c) { return _istprint(c);}
 inline int isxdigit(int c) { return _istxdigit(c); }
 inline int isspace( int c ) { return _istspace(c); }
@@ -195,12 +134,16 @@ inline int ispunct( int c ) { return _istpunct(c); }
 long			strtol( const char *nptr, char **endptr, int base );
 unsigned long	strtoul( const char *nptr, char **endptr, int base );
 double			strtod( const char *nptr, char **endptr );
+#endif
 char *			_i64toa (__int64 val,char *buf,int radix);
 char *			_ui64toa (unsigned __int64 val,char *buf,int radix);
-__int64			_atoi64(const char *nptr);
 
+#if _WIN32_WCE < 300
+__int64			_atoi64(const char *nptr);
 const char *	strrchr(const char *, int);
 size_t strspn( const char *string, const char *strCharSet );
+#endif
+
 int stricmp( const unsigned short*string1, const char* string2 );
 
 LONG RegOpenKeyEx( HKEY hKey, const char* lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult );
