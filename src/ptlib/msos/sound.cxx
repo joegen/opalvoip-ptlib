@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.20  2001/07/01 02:45:01  yurik
+ * WinCE compiler wants implicit cast to format
+ *
  * Revision 1.19  2001/05/04 09:38:07  robertj
  * Fixed problem with some WAV files having small WAVEFORMATEX chunk.
  *
@@ -799,15 +802,17 @@ BOOL PSoundChannel::OpenDevice(unsigned id)
   bufferByteOffset = P_MAX_INDEX;
   bufferIndex = 0;
 
+  WAVEFORMATEX* format = (WAVEFORMATEX*) waveFormat;
+  
   switch (direction) {
     case Player :
-      osError = waveOutOpen(&hWaveOut, id, waveFormat,
-                            (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveOutOpen(&hWaveOut, id, format,
+                            (DWORD) hEventDone, 0, CALLBACK_EVENT);
       break;
 
     case Recorder :
-      osError = waveInOpen(&hWaveIn, id, waveFormat,
-                           (DWORD)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveInOpen(&hWaveIn, id, format,
+                           (DWORD) hEventDone, 0, CALLBACK_EVENT);
       break;
   }
 
