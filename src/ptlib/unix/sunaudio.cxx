@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
+ * Revision 1.3  1999/06/28 09:28:02  robertj
+ * Portability issues, especially n BeOS (thanks Yuri!)
+ *
  * Revision 1.2  1999/03/02 04:34:10  robertj
  * Fixed header comments
  *
@@ -134,6 +137,12 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
   array[1] = "/dev/dsp";
 
   return array;
+}
+
+
+PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
+{
+  return "/dev/audio";
 }
 
 

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.46  1999/06/28 09:28:02  robertj
+# Portability issues, especially n BeOS (thanks Yuri!)
+#
 # Revision 1.45  1999/06/21 00:57:10  robertj
 # Fixed inclusion of getdate.tab.c to clean files.
 #
@@ -197,6 +200,10 @@ endif
 
 ifeq ($(OSTYPE),solaris)
 SOUND_SOURCE = sunaudio.cxx
+endif
+
+ifeq ($(OSTYPE),FreeBSD)
+SOUND_SOURCE = bsdaudio.cxx
 endif
 
 ifeq ($(OSTYPE),beos)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.44  1999/06/28 09:28:02  robertj
+ * Portability issues, especially n BeOS (thanks Yuri!)
+ *
  * Revision 1.43  1999/05/13 04:44:18  robertj
  * Added SIGHUP and SIGWINCH handlers to increase and decrease the log levels.
  *
@@ -197,7 +200,7 @@ extern "C" int select(int width,
 
 PString PProcess::GetOSClass()
 {
-#ifndef __BEOS_
+#ifndef __BEOS__
   return PString("Unix");
 #else
   return PString("Be,Inc.");

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.47  1999/06/28 09:28:02  robertj
+ * Portability issues, especially n BeOS (thanks Yuri!)
+ *
  * Revision 1.46  1999/06/26 08:21:12  robertj
  * Fixed bug in PFilePath::SetType finding dots outside of file name in path.
  *
@@ -236,7 +239,7 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
-#ifdef P_SOLARIS
+#if defined(P_SOLARIS) || defined(__BEOS__)
   return strtoll(theArray, &dummy, base);
 #else
   return strtoq(theArray, &dummy, base);
@@ -246,7 +249,7 @@ PInt64 PString::AsInt64(unsigned base) const
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
-#ifdef P_SOLARIS
+#if defined(P_SOLARIS) || defined(__BEOS__)
   return strtoull(theArray, &dummy, base);
 #else
   return strtouq(theArray, &dummy, base);
