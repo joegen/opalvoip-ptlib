@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.18 1997/03/18 21:23:26 robertj Exp $
+ * $Id: svcproc.h,v 1.19 1997/07/08 13:00:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.19  1997/07/08 13:00:57  robertj
+ * DLL support.
+ *
  * Revision 1.18  1997/03/18 21:23:26  robertj
  * Fix service manager falsely accusing app of crashing if OnStart() is slow.
  *
@@ -147,6 +150,21 @@
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
 };
+
+#if defined(_MSC_VER) && !defined(_WIN32)
+extern "C" int __argc;
+extern "C" char ** __argv;
+#endif
+
+#ifdef __BORLANDC__
+#define __argc _argc
+#define __argv _argv
+#endif
+
+#undef PCREATE_PROCESS
+#define PCREATE_PROCESS(cls) \
+  extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
+    { static cls instance; return ((PProcess*)&instance)->_main(__argc, __argv, (char **)hInst); }
 
 
 #endif
