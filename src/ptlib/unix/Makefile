@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.32  1998/11/22 10:44:10  craigs
+# New GUI build system - for sure!
+#
 # Revision 1.31  1998/11/22 08:11:28  craigs
 # Changed for new GUI build mechanism
 #
@@ -208,21 +211,6 @@ distsrc:
 include common.mak
 
 #######################################################
-
-
-######################################################################
-#
-# setup the lib directory
-#
-######################################################################
-
-unixlibdir:
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
-	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
-	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
-
-
 
 ifdef SHAREDLIB
 $(PTLIB_FILE): $(PTLIB_FILE).1
