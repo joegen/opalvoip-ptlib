@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.36  2002/01/26 23:58:15  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.35  2001/11/27 02:20:20  robertj
  * Fixed problem with a read ro write blocking until connect completed, it
  *   really should return an error as the caller is doing a bad thing.
@@ -154,12 +157,6 @@ static PMutex iostreamMutex;
 #define IOSTREAM_MUTEX_WAIT()
 #define IOSTREAM_MUTEX_SIGNAL()
 #endif
-
-
-ios::ios(const ios &)
-{
-  PAssertAlways("Cannot copy ios");
-}
 
 
 void PChannel::Construct()
