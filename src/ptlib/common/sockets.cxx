@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.52 1996/11/16 10:49:03 robertj Exp $
+ * $Id: sockets.cxx,v 1.53 1996/11/30 12:08:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.53  1996/11/30 12:08:17  robertj
+ * Added Connect() variant so can set the local port number on link.
+ *
  * Revision 1.52  1996/11/16 10:49:03  robertj
  * Fixed missing const in PIPSocket::Address stream output operator..
  *
@@ -898,6 +901,12 @@ BOOL PIPSocket::Connect(const PString & host)
 
 BOOL PIPSocket::Connect(const Address & addr)
 {
+  return Connect(0, addr);
+}
+
+
+BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
+{
   // close the port if it is already open
   if (IsOpen())
     Close();
@@ -911,6 +920,17 @@ BOOL PIPSocket::Connect(const Address & addr)
 
   // attempt to connect
   sockaddr_in sin;
+  if (localPort != 0) {
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family = AF_INET;
+    sin.sin_addr.s_addr = htonl(INADDR_ANY);
+    sin.sin_port        = htons(localPort);       // set the port
+    if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
+      os_close();
+      return FALSE;
+    }
+  }
+
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
   sin.sin_port   = htons(port);  // set the port
