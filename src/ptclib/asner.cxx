@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.6 1998/02/03 06:28:27 robertj Exp $
+ * $Id: asner.cxx,v 1.7 1998/03/05 12:49:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.7  1998/03/05 12:49:50  robertj
+ * MemCheck fixes.
+ *
  * Revision 1.6  1998/02/03 06:28:27  robertj
  * Fixed length calculation of integers in BER.
  * Added new function to read a block with minimum number of bytes.
@@ -1577,7 +1580,7 @@ PString PASN_BMPString::GetValue() const
   PString str;
   for (PINDEX i = 0; i < value.GetSize(); i++) {
     if (value[i] < 256)
-      str += PString((char)value[i]);
+      str += (char)value[i];
   }
   return str;
 }
