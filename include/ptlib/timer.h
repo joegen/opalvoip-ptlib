@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.12 1995/06/17 11:13:36 robertj Exp $
+ * $Id: timer.h,v 1.13 1996/05/18 09:18:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
+ * Revision 1.13  1996/05/18 09:18:37  robertj
+ * Added mutex to timer list.
+ *
  * Revision 1.12  1995/06/17 11:13:36  robertj
  * Documentation update.
  *
@@ -53,42 +56,6 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
-
-
-class PTimer;
-
-
-PDECLARE_CLASS(PTimerList, PAbstractList)
-/* This class defines a list of <A>PTimer</A> objects. It is primarily used
-   internally by the library and the user should never create an instance of
-   it. The <A>PProcess</A> instance for the application maintains an instance
-   of all of the timers created so that it may decrements them at regular
-   intervals.
- */
-
-  public:
-    PTimerList();
-    // Create a new timer list
-
-    PTimeInterval Process();
-    /* Decrement all the created timers and dispatch to their callback
-       functions if they have expired. The <A>PTimer::Tick()</A> function
-       value is used to determine the time elapsed since the last call to
-       Process().
-
-       The return value is the number of milliseconds until the next timer
-       needs to be despatched. The function need not be called again for this
-       amount of time, though it can (and usually is).
-       
-       <H2>Returns:</H2>
-       maximum time interval before function should be called again.
-     */
-
-  private:
-    PTimeInterval lastSample;
-    // The last system timer tick value that was used to process timers.
-};
-
 
 PDECLARE_CLASS(PTimer, PTimeInterval)
 /* A class representing a system timer. The time interval ancestor value is
