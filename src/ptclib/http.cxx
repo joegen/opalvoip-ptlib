@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.76  2002/11/20 01:01:49  robertj
+ * Fixed GNU compatibility
+ *
  * Revision 1.75  2002/11/20 00:49:37  robertj
  * Fixed correct interpretation of url re double slashes as per latest RFC,
  *   including file: mapping and relative paths. Probably still more to do.
@@ -391,7 +394,8 @@ PURL::PURL(const PFilePath & filePath)
   PStringArray pathArray = filePath.GetDirectory().GetPath();
   hostname = pathArray[0];
 
-  for (PINDEX i = 1; i < pathArray.GetSize(); i++)
+  PINDEX i;
+  for (i = 1; i < pathArray.GetSize(); i++)
     pathArray[i-1] = pathArray[i];
   pathArray[i-1] = filePath.GetFileName();
 
