@@ -130,38 +130,13 @@ system for all of the various unix systems.
     directory to your PATH environment variable (so PWRC, MergeSym and 
     ASNParser tools can be found).
 
-2a. If you have OpenSSL installed and compiled on your system then you
-    can define the following environment variables to get SSL support:
-    
-        OPENSSLFLAG=1
-        OPENSSLDIR=c:\somewhere\openssl
-        OPENSSLLIBS=ssleay32.lib libeay32.lib
+2.  The build should automatically create a file pwlib/include/ptbuildopts.h
+    via the configure.exe program that should be in the pwlib directory. If
+    you have any problems try running the program directly from a command
+    line.
 
-    If you have NOT included these variables then you will get a warning
-    during the build. YOu can safely ignore this warning.
-
-2b. If you have EXPAT installed and compiled on your system then you
-    can define the following environment variables to get XML support:
-    
-        EXPATFLAG=1
-        EXPATDIR=c:\somewhere\expat
-        EXPATLIBS=expat.lib
-
-    If you have NOT included these variables then you will get a warning
-    during the build. YOu can safely ignore this warning.
-
-2c. If you have OPenLDAP installed and compiled on your system then you
-    can define the following environment variables to get LDAP support:
-    
-        OPENLDAPFLAG=1
-        OPENLDAPDIR=c:\somewhere\openldap
-        OPENLDAPLIBS=openldap.lib
-
-    If you have NOT included these variables then you will get a warning
-    during the build. You can safely ignore this warning.
-
-    There are additional notes in the "Platform Specific Issues" on how to
-    compile OpenLDAP in a manner suitable for use by PWLib under Windows.
+    Note there are additional notes in the "Platform Specific Issues" on how
+    to compile OpenLDAP in a manner suitable for use by PWLib under Windows.
 
 3.  In VisualStudio v5/6 open the pwlib.dsw file in the pwlib top directory.
     If you have the minimum library it will come up with several requests to
@@ -220,7 +195,8 @@ MSDevWizard will not build in VisualStudio v7 and so is not included as a projec
 
 2.	Build the debug and release versions of the PWLib library as follows:
 		cd ~/pwlib
-		make both
+                ./configure
+		make
 	This may take some time. Note, you will need bison and flex for this to
 	compile, most unix systems have these. WARNING: there is a bug in most 
 	of the bison.simple files. See below for details.
@@ -229,7 +205,8 @@ MSDevWizard will not build in VisualStudio v7 and so is not included as a projec
 	program (eg FreeBSD users), you will need to install GNU Make first
 	and then use
 		cd ~/pwlib
-		gmake both
+                ./configure
+		gmake
 
 
 	If you are getting huge numbers of errors during the compile, then it 
