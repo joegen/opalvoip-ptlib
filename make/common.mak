@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.50  2000/11/02 04:46:42  craigs
+# Added support for buildnum.h file for version numbers
+#
 # Revision 1.49  2000/10/01 01:08:10  craigs
 # Fixed problems with Motif build
 #
@@ -275,18 +278,24 @@ RELEASEBASEDIR=$(PROG)
 endif
 
 ifndef VERSION
+
 ifndef VERSION_FILE
-ifneq (,$(wildcard custom.cxx))
-VERSION_FILE := custom.cxx
-endif
-ifneq (,$(wildcard version.h))
-VERSION_FILE := version.h
-endif
+  ifneq (,$(wildcard buildnum.h))
+    VERSION_FILE := buildnum.h
+  else
+    ifneq (,$(wildcard custom.cxx))
+      VERSION_FILE := custom.cxx
+    else
+      ifneq (,$(wildcard version.h))
+        VERSION_FILE := version.h
+      endif
+    endif
+  endif
 endif
 
 ifdef VERSION_FILE
 MAJOR_VERSION:=$(strip $(subst \#define,, $(subst MAJOR_VERSION,,\
-			$(shell grep "define *MAJOR_VERSION" $(VERSION_FILE)))))
+			$(shell grep "define *MAJOR_VERSION *" $(VERSION_FILE)))))
 MINOR_VERSION:=$(strip $(subst \#define,, $(subst MINOR_VERSION,,\
 			$(shell grep "define *MINOR_VERSION" $(VERSION_FILE)))))
 BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
