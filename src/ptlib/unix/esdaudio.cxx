@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.8  2002/10/08 12:39:24  rogerh
+ * Rearrange code to stop a type cast warning
+ *
  * Revision 1.7  2002/02/26 21:19:55  rogerh
  * Return the correct number of bytes in the Read() method. This fixes
  * the bug where esound audio made you sound like a robot.
@@ -302,11 +305,12 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     // see if it is a silence frame
 
     PINDEX i = 0;
+    PINDEX num_samples = len/sizeof(short);
     while (1) {
       if (((short *)buf)[i++] != 0) {
 	break;
       }
-      if (i >= len/sizeof(short))
+      if (i >= num_samples)
 	return (TRUE);
     }
 
