@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.71 1996/06/28 13:22:43 robertj Exp $
+ * $Id: osutils.cxx,v 1.72 1996/07/15 10:36:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.72  1996/07/15 10:36:12  robertj
+ * Fixed bug in timer on startup, getting LARGE times timing out prematurely.
+ *
  * Revision 1.71  1996/06/28 13:22:43  robertj
  * Rewrite of timers to make OnTimeout more thread safe.
  *
@@ -413,9 +416,14 @@ PTimeInterval PTimerList::Process()
 
   mutex.Wait();
   PTimeInterval now = PTimer::Tick();
-  PTimeInterval sampleTime = now - lastSample;
-  if (now < lastSample)
-    sampleTime += PMaxTimeInterval;
+  PTimeInterval sampleTime;
+  if (lastSample == 0)
+    sampleTime = 0;
+  else {
+    sampleTime = now - lastSample;
+    if (now < lastSample)
+      sampleTime += PMaxTimeInterval;
+  }
   lastSample = now;
 
   for (i = 0; i < GetSize(); i++)
@@ -1340,6 +1348,9 @@ void PThread::Suspend(BOOL susp)
 void PThread::Sleep(const PTimeInterval & time)
 {
   sleepTimer = time;
+  if (time == PMaxTimeInterval)
+    sleepTimer.Stop();
+
   switch (status) {
     case Running : // Suspending itself, yield to next thread
       status = Sleeping;
@@ -1418,7 +1429,7 @@ void PThread::Yield()
         break;
 
       case Sleeping :
-        if (!thread->sleepTimer.IsRunning()) {
+        if (thread->sleepTimer != 0) {
           if (thread->IsSuspended())
             thread->status = Suspended;
           else
