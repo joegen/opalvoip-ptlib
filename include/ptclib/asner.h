@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.11  2000/02/29 06:32:12  robertj
+ * Added ability to remove optional field in sequence, thanks Dave Harvey.
+ *
  * Revision 1.10  1999/08/09 13:02:45  robertj
  * dded ASN compiler #defines for backward support of pre GCC 2.9 compilers.
  * Added ASN compiler #defines to reduce its memory footprint.
@@ -703,6 +706,7 @@ class PASN_Sequence : public PASN_Object
 
     BOOL HasOptionalField(PINDEX opt) const;
     void IncludeOptionalField(PINDEX opt);
+    void RemoveOptionalField(PINDEX opt);
 
     virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
