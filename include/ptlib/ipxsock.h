@@ -1,5 +1,5 @@
 /*
- * $Id: ipxsock.h,v 1.1 1996/09/14 13:00:56 robertj Exp $
+ * $Id: ipxsock.h,v 1.2 1996/09/19 11:43:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.2  1996/09/19 11:43:45  robertj
+ * Added packet type.
+ *
  * Revision 1.1  1996/09/14 13:00:56  robertj
  * Initial revision
  *
@@ -115,6 +118,16 @@ PDECLARE_CLASS(PIPXSocket, PSocket)
 
 
   // New functions for class
+    BOOL SetPacketType(
+      int type    // IPX packet type for this socket.
+    );
+    /* Sets the packet type for datagrams sent by this socket.
+
+       <H2>Returns:</H2>
+       TRUE if the type was successfully set.
+     */
+
+
     static PString GetHostName(
       const Address & addr    // Hosts IP address to get name for
     );
