@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.6 1996/09/16 12:57:45 robertj Exp $
+ * $Id: inetmail.h,v 1.7 1996/12/21 01:24:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.7  1996/12/21 01:24:15  robertj
+ * Added missing open message to pop server.
+ *
  * Revision 1.6  1996/09/16 12:57:45  robertj
  * Removed redundant functions.
  *
@@ -285,6 +288,8 @@ PDECLARE_CLASS(PSMTPServer, PSMTP)
 
 
   protected:
+    BOOL OnOpen();
+
     virtual void OnHELO(
       const PCaselessString & remoteHost  // Name of remote host.
     );
