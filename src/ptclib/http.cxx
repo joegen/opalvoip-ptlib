@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.42 1997/03/28 04:40:24 robertj Exp $
+ * $Id: http.cxx,v 1.43 1997/04/06 07:46:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.43  1997/04/06 07:46:09  robertj
+ * Fixed bug where URL has more than special character ('?', '#' etc).
+ *
  * Revision 1.42  1997/03/28 04:40:24  robertj
  * Added tags for cookies.
  *
@@ -469,7 +472,7 @@ void PURL::Parse(const char * cstr)
   }
 
   // chop off any trailing fragment
-  pos = url.FindLast('#');
+  pos = url.Find('#');
   if (pos != P_MAX_INDEX && pos > 0) {
     fragment = url(pos+1, P_MAX_INDEX);
     UnmangleString(fragment);
@@ -477,7 +480,7 @@ void PURL::Parse(const char * cstr)
   }
 
   // chop off any trailing query
-  pos = url.FindLast('?');
+  pos = url.Find('?');
   if (pos != P_MAX_INDEX && pos > 0) {
     queryStr = url(pos+1, P_MAX_INDEX);
     url.Delete(pos, P_MAX_INDEX);
@@ -485,7 +488,7 @@ void PURL::Parse(const char * cstr)
   }
 
   // chop off any trailing parameters
-  pos = url.FindLast(';');
+  pos = url.Find(';');
   if (pos != P_MAX_INDEX && pos > 0) {
     parameters = url(pos+1, P_MAX_INDEX);
     UnmangleString(parameters);
