@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.7  2004/01/17 17:40:57  csoutheren
+ * Changed to only attempt loading of files with the correct library file extension
+ * Changed to handle plugins without a register function
+ *
  * Revision 1.6  2004/01/17 16:02:59  dereksmithies
  * make test for plugin names case insensitive.
  *
@@ -114,14 +118,14 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
         // declare local pointer to register function
         void (*triggerRegister)(PPluginManager *);
 
-        if (!dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) {
+        // call the register function (if present)
+        if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
+          (*triggerRegister)(this);
+        else {
           PTRACE(3, "Failed to find the registration-triggering function in " << fileName);
         }
 
-        // call the register function and add the plugin to the list of plugins
-        (*triggerRegister)(this);
         pluginList.Append(new PPluginDynamic(dll));
-        return TRUE;
       }
     }
   }
@@ -149,8 +153,8 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
     PString entry = dir + dir.GetEntryName();
     if (dir.IsSubDir())
       LoadPluginDirectory(entry);
-    else
-      (void)LoadPlugin(entry);
+    else if (PFilePath(entry).GetType() *= PDynaLink::GetExtension()) 
+      LoadPlugin(entry);
   } while (dir.Next());
 }
 
