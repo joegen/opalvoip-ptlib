@@ -1,6 +1,7 @@
 LIBRARY ptlib
 EXPORTS
     ??0?$PArray@VPString@@@@QAE@ABV0@@Z @1 NONAME ;public: __thiscall PArray<class PString>::PArray<class PString>(class PArray<class PString> const &)
+    ??0?$PArray@VPString@@@@QAE@H@Z @2598 NONAME ;public: __thiscall PArray<class PString>::PArray<class PString>(int)
     ??0?$PBaseArray@D@@QAE@ABV0@@Z @2 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(class PBaseArray<char> const &)
     ??0?$PBaseArray@D@@QAE@H@Z @3 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(int)
     ??0?$PBaseArray@E@@QAE@H@Z @2192 NONAME ;public: __thiscall PBaseArray<unsigned char>::PBaseArray<unsigned char>(int)
