@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.25  1999/09/28 00:08:59  robertj
+ * Fixed some comment typoes
+ *
  * Revision 1.24  1999/09/28 00:07:54  robertj
  * Fixed some comment typoes
  *
@@ -204,13 +207,13 @@ class PTCPSocket : public PIPSocket
     virtual BOOL Listen(
       unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
       WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
     );
     virtual BOOL Listen(
       const Address & bind,     /// Local interface address to bind to.
       unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
       WORD port = 0,            /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
     );
 
     /** Open a socket to a remote host on the specified port number. This is an
