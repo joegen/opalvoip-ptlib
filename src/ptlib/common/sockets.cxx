@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.73 1998/08/25 14:07:43 robertj Exp $
+ * $Id: sockets.cxx,v 1.74 1998/08/27 00:58:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.74  1998/08/27 00:58:42  robertj
+ * Resolved signedness problems with various GNU libraries.
+ *
  * Revision 1.73  1998/08/25 14:07:43  robertj
  * Added getprotobyxxx wrapper functions.
  *
@@ -291,16 +294,16 @@ BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
 
 BOOL PSocket::GetOption(int option, int & value)
 {
-  int valSize = sizeof(value);
+  socklen_t valSize = sizeof(value);
   return ConvertOSError(::getsockopt(os_handle,
                                 SOL_SOCKET, option, (char *)&value, &valSize));
 }
 
 
-BOOL PSocket::GetOption(int option, void * valuePtr, int valueSize)
+BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize)
 {
   return ConvertOSError(::getsockopt(os_handle,
-                            SOL_SOCKET, option, (char *)valuePtr, &valueSize));
+                            SOL_SOCKET, option, (char *)valuePtr, (socklen_t *)&valueSize));
 }
 
 
@@ -876,7 +879,7 @@ PString PIPSocket::GetName() const
 {
   PString name;
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (getpeername(os_handle, (struct sockaddr *)&address, &size) == 0)
     name = GetHostName(address.sin_addr) + psprintf(":%u", ntohs(address.sin_port));
   return name;
@@ -970,7 +973,7 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 BOOL PIPSocket::GetLocalAddress(Address & addr)
 {
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
@@ -982,7 +985,7 @@ BOOL PIPSocket::GetLocalAddress(Address & addr)
 BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 {
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (!ConvertOSError(::getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
@@ -994,7 +997,7 @@ BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 BOOL PIPSocket::GetPeerAddress(Address & addr)
 {
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
@@ -1006,7 +1009,7 @@ BOOL PIPSocket::GetPeerAddress(Address & addr)
 BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 {
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (!ConvertOSError(::getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
@@ -1021,7 +1024,7 @@ PString PIPSocket::GetLocalHostName()
   PString name;
 
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&address, &size)))
     name = GetHostName(address.sin_addr);
 
@@ -1034,7 +1037,7 @@ PString PIPSocket::GetPeerHostName()
   PString name;
 
   sockaddr_in address;
-  int size = sizeof(address);
+  socklen_t size = sizeof(address);
   if (ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&address, &size)))
     name = GetHostName(address.sin_addr);
 
@@ -1122,7 +1125,7 @@ BOOL PIPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
     sin.sin_port        = htons(port);       // set the port
 
     if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
-      int size = sizeof(sin);
+      socklen_t size = sizeof(sin);
       if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
         port = ntohs(sin.sin_port);
         return TRUE;
@@ -1281,7 +1284,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 
   sockaddr_in address;
   address.sin_family = AF_INET;
-  int size = sizeof(address);
+  PINDEX size = sizeof(address);
   if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
                                           (struct sockaddr *)&address, &size,
                                            socket.GetReadTimeout())))
@@ -1325,7 +1328,7 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
   lastReadCount = 0;
 
   sockaddr_in sockAddr;
-  int addrLen = sizeof(sockAddr);
+  PINDEX addrLen = sizeof(sockAddr);
   if (os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen)) {
     addr = sockAddr.sin_addr;
     port = ntohs(sockAddr.sin_port);
