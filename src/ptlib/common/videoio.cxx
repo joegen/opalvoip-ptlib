@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.47  2004/04/03 23:53:10  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.46  2004/01/18 14:25:58  dereksmithies
  * New methods to make the opening of video input devices easier.
  *
@@ -1050,7 +1055,7 @@ PStringList PVideoInputDevice::GetDriversDeviceNames(const PString &driverName,
   if (descr != NULL)
     return PStringList(descr->GetDeviceNames());
   else
-    return PStringList::PStringList();
+    return PStringList();
 }
 
 PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName,
@@ -1136,7 +1141,7 @@ PStringList PVideoOutputDevice::GetDriversDeviceNames(const PString &driverName,
   if (descr != NULL)
     return PStringList(descr->GetDeviceNames());
   else
-    return PStringList::PStringList();
+    return PStringList();
 }
 
 PVideoOutputDevice * PVideoOutputDevice::CreateDevice(const PString &driverName,
