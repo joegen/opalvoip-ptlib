@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.28  1999/10/14 08:23:20  robertj
+ * Fixed display of decimals in milliseconds when precision other than 3.
+ *
  * Revision 1.27  1999/08/08 12:39:24  robertj
  * Fixed bug in display of PTimeIntervals larger than 24 hours.
  *
@@ -191,8 +194,21 @@ void PTimeInterval::PrintOn(ostream & strm) const
     strm.width(2);
   strm << (long)(ms%60000)/1000;
 
-  if (precision > 0)
-    strm << '.' << setw(precision) << (int)(ms%1000);
+  switch (precision) {
+    case 1 :
+      strm << '.' << (int)(ms%1000)/100;
+      break;
+
+    case 2 :
+      strm << '.' << setw(2) << (int)(ms%1000)/10;
+      break;
+
+    case 3 :
+      strm << '.' << setw(3) << (int)(ms%1000);
+
+    default :
+      break;
+  }
 
   strm.fill(prevFill);
 }
