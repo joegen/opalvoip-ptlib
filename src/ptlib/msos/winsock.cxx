@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.36 1998/08/06 00:55:21 robertj Exp $
+ * $Id: winsock.cxx,v 1.37 1998/08/21 05:27:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.37  1998/08/21 05:27:31  robertj
+ * Fixed bug where write streams out to non-stream socket.
+ *
  * Revision 1.36  1998/08/06 00:55:21  robertj
  * Fixed conversion of text to IPX address, was swapping nibbles.
  *
@@ -195,17 +198,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 BOOL PSocket::Write(const void * buf, PINDEX len)
 {
   flush();
-  lastWriteCount = 0;
-
-  while (len > 0) {
-    int sendResult = os_sendto(((char *)buf)+lastWriteCount, len, 0, NULL, 0);
-    if (!ConvertOSError(sendResult))
-      return FALSE;
-    lastWriteCount += sendResult;
-    len -= sendResult;
-  }
-
-  return lastWriteCount >= len;
+  return os_sendto(((char *)buf)+lastWriteCount, len, 0, NULL, 0);
 }
 
 
@@ -337,6 +330,8 @@ BOOL PSocket::os_recvfrom(void * buf,
                           struct sockaddr * from,
                           int * fromlen)
 {
+  lastReadCount = 0;
+
   if (readTimeout != PMaxTimeInterval) {
     DWORD available;
     if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
@@ -378,20 +373,27 @@ BOOL PSocket::os_sendto(const void * buf,
                         struct sockaddr * to,
                         int tolen)
 {
+  lastWriteCount = 0;
+
   if (readTimeout != PMaxTimeInterval) {
     fd_set_class writefds = os_handle;
     timeval_class tv = writeTimeout;
     int selval = ::select(0, NULL, &writefds, NULL, &tv);
     if (selval < 0)
-      return -1;
+      return FALSE;
 
     if (selval == 0) {
       errno = EAGAIN;
-      return -1;
+      return FALSE;
     }
   }
 
-  return ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
+  int sendResult = ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
+  if (!ConvertOSError(sendResult))
+    return FALSE;
+
+  lastReadCount = sendResult;
+  return TRUE;
 }
 
 
