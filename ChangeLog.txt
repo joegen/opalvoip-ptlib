@@ -1,0 +1,199 @@
+[cvs] / openh323 / pwlib / src / ptlib / common / getdate.y
+
+Revision 1.18 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue May 18 12:15:11 2004 UTC (6 weeks, 2 days ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, PREVIOUS, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.17: +1 -1 lines 
+Diff to previous 1.17 
+Fixed bug in using relative times eg "1 month ago".
+
+[cvs] / openh323 / pwlib / src / ptlib / common / ptime.cxx
+
+Revision 1.47 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Sun Jun 6 08:50:08 2004 UTC (3 weeks, 5 days ago) by rjongbloed 
+CVS Tags: v1_7_3, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.46: +6 -3 lines 
+Diff to previous 1.46 
+Fixed rounding error in microsoeconds stream output, was not properly cascaded
+  along other time elements (hour min etc) so as doing rounding properly is
+  hideously difficult, truncated instead, thanks Marco Turconi
+
+[cvs] / openh323 / pwlib / src / ptlib / common / sockets.cxx
+
+Revision 1.173 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:37:51 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.172: +15 -114 lines 
+Diff to previous 1.172 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+  is closed by another thread.
+
+[cvs] / openh323 / pwlib / src / ptlib / msos / ptlib.cxx
+
+Revision 1.72 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Jun 22 11:07:23 2004 UTC (9 days, 22 hours ago) by rjongbloed 
+CVS Tags: HEAD 
+Changes since 1.71: +8 -1 lines 
+Diff to previous 1.71 
+Fixed incorrect test for error on _sopen return value, thanks Brian Coverstone
+
+[cvs] / openh323 / pwlib / src / ptlib / msos / sound_win32.cxx
+
+Revision 1.7.2.1 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Thu Jun 24 13:11:30 2004 UTC (7 days, 20 hours ago) by csoutheren 
+Branch: crs_vxml_devel 
+Changes since 1.7: +52 -29 lines 
+Diff to previous 1.7 
+Fixed possible deadlock in Win32 audio routines
+Thanks to Vyacheslav E. Andrejev (bug 949236)
+
+Revision 1.7 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Fri Apr 9 06:52:18 2004 UTC (2 months, 3 weeks ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, v1_7_0, PREVIOUS, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.6: +4 -3 lines 
+Diff to previous 1.6 
+Removed #pargma linker command for /delayload of DLL as documentations sais that
+  you cannot do this.
+
+[cvs] / openh323 / pwlib / src / ptlib / msos / winsock.cxx
+
+Revision 1.62 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 09:53:27 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_1 
+Changes since 1.61: +68 -14 lines 
+Diff to previous 1.61 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+   is closed by another thread.
+
+[cvs] / openh323 / pwlib / src / ptlib / unix / channel.cxx
+
+Revision 1.40 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:37:51 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Changes since 1.39: +7 -0 lines 
+Diff to previous 1.39 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+  is closed by another thread.
+
+[cvs] / openh323 / pwlib / src / ptlib / unix / config.cxx
+
+Revision 1.36 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Sat Apr 3 23:55:59 2004 UTC (2 months, 4 weeks ago) by csoutheren 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, v1_7_0, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Changes since 1.35: +10 -5 lines 
+Diff to previous 1.35 
+Added fix for PConfig environment variables under Linux
+  Thanks to Michal Zygmuntowicz
+
+[cvs] / openh323 / pwlib / src / ptlib / unix / socket.cxx
+
+Revision 1.104 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:37:51 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_1 
+Changes since 1.103: +68 -25 lines 
+Diff to previous 1.103 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+  is closed by another thread.
+
+[cvs] / openh323 / pwlib / src / ptlib / unix / tlibthrd.cxx 
+
+Revision 1.133 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Thu Jun 24 11:29:44 2004 UTC (7 days, 23 hours ago) by csoutheren 
+CVS Tags: HEAD 
+Changes since 1.132: +32 -1 lines 
+Diff to previous 1.132 
+Changed to use pthread_mutex_timedlock for more efficient mutex wait operations
+Thanks to Michal Zygmuntowicz
+
+Revision 1.130 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:36:47 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_1_1, v1_7_1, crs_custom_20_may_2004 
+Changes since 1.129: +10 -2 lines 
+Diff to previous 1.129 
+Fixed occassional crash on exit due to level 5 trace in PProcess
+  destructor that needs an undestructed PProcess.
+Added some more logging for unblocking threads.
+
+ 
+[cvs] / openh323 / pwlib / src / ptclib / cypher.cxx
+
+Revision 1.45 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Jun 29 12:22:22 2004 UTC (2 days, 22 hours ago) by rjongbloed 
+CVS Tags: HEAD 
+Changes since 1.44: +7 -3 lines 
+Diff to previous 1.44 
+Fixed incorrect usage of result (now object rather than scalar), thanks Michal Zygmuntowicz
+
+Revision 1.44 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Fri Apr 9 06:52:17 2004 UTC (2 months, 3 weeks ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, v1_7_0, crs_custom_20_may_2004, PREVIOUS, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.43: +5 -3 lines 
+Diff to previous 1.43 
+Removed #pargma linker command for /delayload of DLL as documentations sais that
+  you cannot do this.  
+
+[cvs] / openh323 / pwlib / src / ptclib / html.cxx
+
+Revision 1.21 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Mon Apr 12 05:42:25 2004 UTC (2 months, 2 weeks ago) by csoutheren 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, v1_7_0, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.20: +5 -2 lines 
+Diff to previous 1.20 
+Fixed problem with radio buttons
+
+[cvs] / openh323 / pwlib / src / ptclib / http.cxx
+
+Revision 1.101 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Sun Apr 4 00:21:47 2004 UTC (2 months, 4 weeks ago) by csoutheren 
+CVS Tags: v1_7_1_1, v1_7_1, v1_7_0, crs_custom_20_may_2004 
+Changes since 1.100: +4 -0 lines 
+Diff to previous 1.100 
+FIxed problem with some URL parsing
+
+[cvs] / openh323 / pwlib / src / ptclib / psoap.cxx
+
+Revision 1.8 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Sat Apr 24 01:06:32 2004 UTC (2 months, 1 week ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Branch point for: crs_vxml_devel 
+Changes since 1.7: +14 -6 lines 
+Diff to previous 1.7 
+Apploed  patch that impliments a number of checks to avoid segfaults when dealing with
+  various clients. Thanks Ben Lear
+
+[cvs] / openh323 / pwlib / include / ptlib / socket.h
+
+Revision 1.46 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:37:50 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_1 
+Changes since 1.45: +3 -8 lines 
+Diff to previous 1.45 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+  is closed by another thread.
+
+[cvs] / openh323 / pwlib / include / ptlib / unix / ptlib / channel.h
+
+Revision 1.24 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Tue Apr 27 04:37:50 2004 UTC (2 months ago) by rjongbloed 
+CVS Tags: v1_7_3, v1_7_2, v1_7_1_1, v1_7_1, crs_custom_20_may_2004, PREVIOUS, HEAD, CURRENT 
+Changes since 1.23: +6 -0 lines 
+Diff to previous 1.23 
+Fixed ability to break of a PSocket::Select call under linux when a socket
+  is closed by another thread.
+
+[cvs] / openh323 / pwlib / include / ptlib / msos / ptlib / sound_win32.h
+
+Revision 1.2.2.1 - (download), view (text) (markup) (annotate) - [select for diffs] 
+ Thu Jun 24 13:11:30 2004 UTC (8 days, 2 hours ago) by csoutheren 
+Branch: crs_vxml_devel 
+Changes since 1.2: +6 -0 lines 
+Diff to previous 1.2 
+Fixed possible deadlock in Win32 audio routines
+Thanks to Vyacheslav E. Andrejev (bug 949236)
+
