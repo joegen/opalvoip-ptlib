@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.9 1996/05/23 10:03:20 robertj Exp $
+ * $Id: assert.cxx,v 1.10 1996/05/30 11:48:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.10  1996/05/30 11:48:28  robertj
+ * Fixed press a key to continue to only require one key.
+ *
  * Revision 1.9  1996/05/23 10:03:20  robertj
  * Windows 95 support.
  *
@@ -65,6 +68,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   cerr.flush();
 
   HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+  SetConsoleMode(in, ENABLE_PROCESSED_INPUT);
   FlushConsoleInputBuffer(in);
   char dummy;
   DWORD readBytes;
