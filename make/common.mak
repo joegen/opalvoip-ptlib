@@ -154,6 +154,9 @@ shared:
 bothshared:
 	$(MAKE) DEBUG= shared; $(MAKE) DEBUG=1 shared
 
+bothdepend:
+	$(MAKE) DEBUG= depend; $(MAKE) DEBUG=1 depend
+
 alllibs:
 	$(MAKE) both
 	$(MAKE) bothshared
