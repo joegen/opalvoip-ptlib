@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.72  2001/06/23 00:32:15  robertj
+ * Added parameter to be able to set REUSEADDR on listener socket.
+ *
  * Revision 1.71  2001/05/07 23:27:06  robertj
  * Added SO_LINGER setting to HTTP sockets to help with clearing up sockets
  *   when the application exits, which prevents new run of app as "port in use".
@@ -374,24 +377,28 @@ const char * PHTTPServiceProcess::GetServiceDependencies() const
 #endif
 
 
-BOOL PHTTPServiceProcess::ListenForHTTP(WORD port, PINDEX stackSize)
+BOOL PHTTPServiceProcess::ListenForHTTP(WORD port,
+                                        PSocket::Reusability reuse,
+                                        PINDEX stackSize)
 {
   if (httpListeningSocket != NULL &&
       httpListeningSocket->GetPort() == port &&
       httpListeningSocket->IsOpen())
     return TRUE;
 
-  return ListenForHTTP(new PTCPSocket(port), stackSize);
+  return ListenForHTTP(new PTCPSocket(port), reuse, stackSize);
 }
 
 
-BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, PINDEX stackSize)
+BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener,
+                                        PSocket::Reusability reuse,
+                                        PINDEX stackSize)
 {
   if (httpListeningSocket != NULL)
     ShutdownListener();
 
   httpListeningSocket = PAssertNULL(listener);
-  if (!httpListeningSocket->Listen())
+  if (!httpListeningSocket->Listen(5, 0, reuse))
     return FALSE;
 
   if (stackSize > 1000)
