@@ -38,8 +38,9 @@ case "$target_os" in
                    STDCCFLAGS="$STDCCFLAGS -DP_OPENBSD=$OSRELEASE" ;;
 
   netbsd* )        OSTYPE=NetBSD ;
+                   OSRELEASE=`/sbin/sysctl -n kern.osrevision` ;
 		   ENDLDLIBS="-lossaudio" ;
-                   STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
+                   STDCCFLAGS="$STDCCFLAGS -DP_NETBSD=$OSRELEASE" ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
                    OSRELEASE='$(subst 5.,,$(shell uname -r))' ;
