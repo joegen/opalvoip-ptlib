@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.11 1998/02/03 10:02:35 robertj Exp $
+ * $Id: url.h,v 1.12 1998/02/16 00:12:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.12  1998/02/16 00:12:53  robertj
+ * Added function to open a URL in a browser.
+ *
  * Revision 1.11  1998/02/03 10:02:35  robertj
  * Added ability to get scheme, host and port from URL as a string.
  *
@@ -171,6 +174,17 @@ PDECLARE_CLASS(PURL, PObject)
     PStringToString GetQueryVars() const        { return queryVars; }
 
     void SetPort(WORD newPort)                  { port = newPort; }
+
+    static BOOL OpenBrowser(
+      const PString & url   // URL to open
+    );
+    /* Open the URL in a browser.
+
+       <H2>Returns:</H2>
+       The browser was successfully opened. This does not mean the URL exists and was
+       displayed.
+     */
+
 
   protected:
     PCaselessString scheme;
