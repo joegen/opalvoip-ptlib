@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.6 1996/09/14 13:09:34 robertj Exp $
+ * $Id: icmp.cxx,v 1.7 1996/10/29 13:27:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,86 +8,113 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
- * Revision 1.6  1996/09/14 13:09:34  robertj
- * Major upgrade:
- *   rearranged sockets to help support IPX.
- *   added indirect channel class and moved all protocols to descend from it,
- *   separating the protocol from the low level byte transport.
- *
- * Revision 1.5  1996/08/11 06:52:14  robertj
- * Oops
- *
- * Revision 1.4  1996/08/07 13:40:57  robertj
- * Fixed sparc memory alignment problem from int 64
- *
- * Revision 1.3  1996/06/03 10:03:10  robertj
- * Changed ping to return more parameters.
- *
- * Revision 1.2  1996/05/30 10:08:51  robertj
- * Fixed bug in ping (checksum incorrect).
- *
- * Revision 1.1  1996/05/15 21:11:35  robertj
- * Initial revision
+ * Revision 1.7  1996/10/29 13:27:17  robertj
+ * Change ICMP to use DLL rather than Winsock
  *
  */
 
 #include <ptlib.h>
 #include <sockets.h>
 
+///////////////////////////////////////////////////////////////
+//
+// Definitions for Microsft ICMP library
+//
 
-#define	MAX_IP_LEN	60
-#define	MAX_ICMP_LEN	76
-#define	ICMP_DATA_LEN	(64-8)
-#define	RX_BUFFER_SIZE	(MAX_IP_LEN+MAX_ICMP_LEN+ICMP_DATA_LEN)
+// return values from IcmpSendEcho
 
-#define	ICMP_ECHO	8
-
-
-typedef struct {
-  BYTE   type;
-  BYTE   code;
-  WORD   checksum;
-
-  WORD   id;
-  WORD   sequence;
-
-  PInt64 sendtime;
-  BYTE   data[ICMP_DATA_LEN-sizeof(PInt64)];
-} ICMPPacket;
-
-
-typedef struct {
-  BYTE verIhl;
-  BYTE typeOfService;
-  BYTE totalLength;
-  WORD identification;
-  WORD fragOff;
-  BYTE timeToLive;
-  BYTE protocol;
-  WORD checksum;
-  BYTE sourceAddr[4];
-  BYTE destAddr[4];
-} IPHdr;
+#define IP_STATUS_BASE				11000
+#define IP_SUCCESS					0
+#define IP_BUF_TOO_SMALL			(IP_STATUS_BASE + 1)
+#define IP_DEST_NET_UNREACHABLE		(IP_STATUS_BASE + 2)
+#define IP_DEST_HOST_UNREACHABLE	(IP_STATUS_BASE + 3)
+#define IP_DEST_PROT_UNREACHABLE	(IP_STATUS_BASE + 4)
+#define IP_DEST_PORT_UNREACHABLE	(IP_STATUS_BASE + 5)
+#define IP_NO_RESOURCES				(IP_STATUS_BASE + 6)
+#define IP_BAD_OPTION				(IP_STATUS_BASE + 7)
+#define IP_HW_ERROR					(IP_STATUS_BASE + 8)
+#define IP_PACKET_TOO_BIG			(IP_STATUS_BASE + 9)
+#define IP_REQ_TIMED_OUT			(IP_STATUS_BASE + 10)
+#define IP_BAD_REQ					(IP_STATUS_BASE + 11)
+#define IP_BAD_ROUTE				(IP_STATUS_BASE + 12)
+#define IP_TTL_EXPIRED_TRANSIT		(IP_STATUS_BASE + 13)
+#define IP_TTL_EXPIRED_REASSEM		(IP_STATUS_BASE + 14)
+#define IP_PARAM_PROBLEM			(IP_STATUS_BASE + 15)
+#define IP_SOURCE_QUENCH			(IP_STATUS_BASE + 16)
+#define IP_OPTION_TOO_BIG			(IP_STATUS_BASE + 17)
+#define IP_BAD_DESTINATION			(IP_STATUS_BASE + 18)
+#define IP_ADDR_DELETED				(IP_STATUS_BASE + 19)
+#define IP_SPEC_MTU_CHANGE			(IP_STATUS_BASE + 20)
+#define IP_MTU_CHANGE				(IP_STATUS_BASE + 21)
+#define IP_UNLOAD					(IP_STATUS_BASE + 22)
+#define IP_GENERAL_FAILURE			(IP_STATUS_BASE + 50)
+#define MAX_IP_STATUS				IP_GENERAL_FAILURE
+#define IP_PENDING					(IP_STATUS_BASE + 255)
 
 
-static WORD CalcChecksum(void * p, PINDEX len)
-{
-  WORD * ptr = (WORD *)p;
-  DWORD sum = 0;
-  while (len > 1) {
-    sum += *ptr++;
-    len-=2;
-  }
+// ICMP request options structure
 
-  if (len > 0) {
-    WORD t = *(BYTE *)ptr;
-    sum += t;
-  }
+typedef struct ip_info {
+     u_char Ttl;               /* Time To Live (used for traceroute) */
+     u_char Tos;               /* Type Of Service (usually 0) */
+     u_char Flags;             /* IP header flags (usually 0) */
+     u_char OptionsSize;       /* Size of options data (usually 0, max 40) */
+     u_char FAR *OptionsData;  /* Options data buffer */
+} IPINFO;
 
-  sum = (sum >> 16) + (sum & 0xffff);
-  sum += (sum >> 16);
-  return (WORD)~sum;
-}
+//
+// ICMP reply data
+//
+// The reply buffer will have an array of ICMP_ECHO_REPLY
+// structures, followed by options and the data in ICMP echo reply
+// datagram received. You must have room for at least one ICMP
+// echo reply structure, plus 8 bytes for an ICMP header.
+// 
+
+typedef struct icmp_echo_reply {
+     u_long Address;         /* source address */
+     u_long Status;          /* IP status value (see below) */
+     u_long RTTime;          /* Round Trip Time in milliseconds */
+     u_short DataSize;       /* reply data size */
+     u_short Reserved;    
+     void FAR *Data;         /* reply data buffer */
+     struct ip_info Options; /* reply options */
+} ICMPECHO;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+//
+// create an ICMP "handle"
+// returns INVALID_HANDLE_VALUE on error 
+//
+//
+
+HANDLE PASCAL IcmpCreateFile(void);
+
+
+//
+// close a handle allocated by IcmpCreateFile
+// returns FALSE on error
+//
+
+BOOL PASCAL IcmpCloseHandle(HANDLE handle);
+
+DWORD PASCAL IcmpSendEcho(
+     HANDLE   handle,           /* handle returned from IcmpCreateFile() */
+     u_long   destAddr,         /* destination IP address (in network order) */
+     void   * sendBuffer,       /* pointer to buffer to send */
+     WORD     sendLength,       /* length of data in buffer */
+     IPINFO * requestOptions,   /* see structure definition above */
+     void   * replyBuffer,      /* structure definitionm above */
+     DWORD    replySize,        /* size of reply buffer */
+     DWORD    timeout           /* time in milliseconds to wait for reply */
+);
+
+#ifdef __cplusplus
+};
+#endif
 
 
 PICMPSocket::PICMPSocket()
@@ -95,6 +122,30 @@ PICMPSocket::PICMPSocket()
   OpenSocket();
 }
 
+BOOL PICMPSocket::IsOpen() const
+{
+  return icmpHandle != NULL;
+}
+
+
+BOOL PICMPSocket::OpenSocket()
+{
+  return (icmpHandle = IcmpCreateFile()) != NULL;
+}
+
+
+BOOL PICMPSocket::Close()
+{
+  if (icmpHandle != NULL) 
+    return IcmpCloseHandle(icmpHandle);
+  else
+	return TRUE;
+}
+
+const char * PICMPSocket::GetProtocolName() const
+{
+  return "icmp";
+}
 
 BOOL PICMPSocket::Ping(const PString & host)
 {
@@ -105,15 +156,6 @@ BOOL PICMPSocket::Ping(const PString & host)
 
 BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
-  if (!WritePing(host, info))
-    return FALSE;
-
-  return ReadPing(info);
-}
-
-
-BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
-{
   // find address of the host
   PIPSocket::Address addr;
   if (!GetHostAddress(host, addr)) {
@@ -121,81 +163,38 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
     return FALSE;
   }
 
-  // create the ICMP packet
-  ICMPPacket packet;
+  BYTE sendBuffer[64];
+  IPINFO requestOptions;
+  BYTE replyBuffer[256];
 
-  // clear the packet including data area
-  memset(&packet, 0, sizeof(packet));
+  memset(&requestOptions, 0, sizeof(requestOptions));
+  memset(sendBuffer,     0, sizeof(sendBuffer));
+  memset(replyBuffer,    0, sizeof(replyBuffer));
 
-  packet.type     = ICMP_ECHO;
-  packet.sequence = info.sequenceNum;
-  packet.id       = info.identifier;
+  requestOptions.Ttl = 255;
 
-  // set the send time
-  packet.sendtime = PTimer::Tick().GetMilliSeconds();
+  if (IcmpSendEcho(
+	         icmpHandle, 
+	         addr,
+             sendBuffer, sizeof(sendBuffer),   
+             &requestOptions,      
+             replyBuffer, sizeof(replyBuffer), 
+             GetReadTimeout().GetInterval()) == 0)
+    return FALSE;
 
-  // calculate the checksum
-  packet.checksum = CalcChecksum(&packet, sizeof(packet));
+  ICMPECHO * reply = (ICMPECHO *)replyBuffer;
 
-  // send the packet
-  return WriteTo(&packet, sizeof(packet), addr, 0);
-}
+  if (reply->Status != IP_SUCCESS)
+    return FALSE;
 
+  info.remoteAddr = Address((in_addr&)reply->Address);
+  GetHostAddress(info.localAddr);
+  info.delay.SetInterval(reply->RTTime);
 
-BOOL PICMPSocket::ReadPing(PingInfo & info)
-{
-  // receive a packet
-  BYTE packet[RX_BUFFER_SIZE];
-  IPHdr      * ipHdr;
-  ICMPPacket * icmpPacket;
-  WORD port;
-  PInt64 now;
-
-  for (;;) {
-    if (!ReadFrom(packet, sizeof(packet), info.remoteAddr, port))
-      return FALSE;
-    now  = PTimer::Tick().GetMilliSeconds();
-    ipHdr      = (IPHdr *)packet;
-    icmpPacket = (ICMPPacket *)(packet + ((ipHdr->verIhl & 0xf) << 2));
-    if (info.identifier == (WORD)icmpPacket->id)
-      break;
-  }
-
-  info.remoteAddr = Address(ipHdr->sourceAddr[0], ipHdr->sourceAddr[1],
-                            ipHdr->sourceAddr[2], ipHdr->sourceAddr[3]);
-  info.localAddr  = Address(ipHdr->destAddr[0], ipHdr->destAddr[1],
-                            ipHdr->destAddr[2], ipHdr->destAddr[3]);
-
-  // calc round trip time. Be careful, as unaligned "long long" ints
-  // can cause problems on some platforms
-#ifdef P_SUN4
-  PInt64 then;
-  BYTE * pthen = (BYTE *)&then;
-  BYTE * psendtime = (BYTE *)&icmpPacket->sendtime;
-  memcpy(pthen, psendtime, sizeof(PInt64));
-  info.delay.SetInterval(now - then);
-#else
-  info.delay.SetInterval(now - icmpPacket->sendtime);
-#endif
-
-  info.sequenceNum = icmpPacket->sequence;
+  // leave these two fields unchanged
+  //info.identifier   = 
+  //info.sequenceNum  = 
   return TRUE;
 }
-
-
-BOOL PICMPSocket::OpenSocket()
-{
-  struct protoent * p = ::getprotobyname(GetProtocolName());
-  if (p == NULL)
-    return ConvertOSError(-1);
-  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_RAW, p->p_proto));
-}
-
-
-const char * PICMPSocket::GetProtocolName() const
-{
-  return "icmp";
-}
-
 
 // End Of File ///////////////////////////////////////////////////////////////
