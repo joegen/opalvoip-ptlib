@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.37  1999/01/22 00:30:46  robertj
+# Yet more build environment changes.
+#
 # Revision 1.36  1999/01/21 08:27:18  robertj
 # Added tarfiles target
 #
@@ -136,64 +139,60 @@
 COMPONENT_SRC_DIR	= ../../ptclib
 PROTOCOLS_SRC_DIR	= ../../ptclib/proto
 COMMON_SRC_DIR		= ../common
-VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
+VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) $(PROTOCOLS_SRC_DIR)
 
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-ifneq (,$(wildcard ../../pwclib/proto))
+ifneq (,$(wildcard ../../ptclib/proto))
 
 PROTO_SOURCES	= \
-		  $(PROTOCOLS_SRC_DIR)/httpsvc.cxx \
-		  $(PROTOCOLS_SRC_DIR)/pssl.cxx \
-		  $(PROTOCOLS_SRC_DIR)/snmpclnt.cxx \
-		  $(PROTOCOLS_SRC_DIR)/snmpserv.cxx \
-		  $(PROTOCOLS_SRC_DIR)/psnmp.cxx \
-		  $(PROTOCOLS_SRC_DIR)/pasn.cxx \
-		  $(PROTOCOLS_SRC_DIR)/httpform.cxx \
-		  $(PROTOCOLS_SRC_DIR)/httpclnt.cxx \
-		  $(PROTOCOLS_SRC_DIR)/httpsrvr.cxx \
-		  $(PROTOCOLS_SRC_DIR)/http.cxx \
-		  $(PROTOCOLS_SRC_DIR)/html.cxx \
-		  $(PROTOCOLS_SRC_DIR)/ftpclnt.cxx \
-		  $(PROTOCOLS_SRC_DIR)/ftpsrvr.cxx \
-		  $(PROTOCOLS_SRC_DIR)/ftp.cxx \
-		  $(PROTOCOLS_SRC_DIR)/inetmail.cxx \
-		  $(PROTOCOLS_SRC_DIR)/inetprot.cxx \
-		  $(PROTOCOLS_SRC_DIR)/telnet.cxx
+	$(PROTOCOLS_SRC_DIR)/httpsvc.cxx \
+	$(PROTOCOLS_SRC_DIR)/pssl.cxx \
+	$(PROTOCOLS_SRC_DIR)/snmpclnt.cxx \
+	$(PROTOCOLS_SRC_DIR)/snmpserv.cxx \
+	$(PROTOCOLS_SRC_DIR)/psnmp.cxx \
+	$(PROTOCOLS_SRC_DIR)/pasn.cxx \
+	$(PROTOCOLS_SRC_DIR)/httpform.cxx \
+	$(PROTOCOLS_SRC_DIR)/httpclnt.cxx \
+	$(PROTOCOLS_SRC_DIR)/httpsrvr.cxx \
+	$(PROTOCOLS_SRC_DIR)/http.cxx \
+	$(PROTOCOLS_SRC_DIR)/html.cxx \
+	$(PROTOCOLS_SRC_DIR)/ftpclnt.cxx \
+	$(PROTOCOLS_SRC_DIR)/ftpsrvr.cxx \
+	$(PROTOCOLS_SRC_DIR)/ftp.cxx \
+	$(PROTOCOLS_SRC_DIR)/inetmail.cxx \
+	$(PROTOCOLS_SRC_DIR)/inetprot.cxx \
+	$(PROTOCOLS_SRC_DIR)/telnet.cxx
 endif
 
 
-COMMON_SOURCES	= \
-		  $(COMPONENT_SRC_DIR)/modem.cxx \
-		  $(COMPONENT_SRC_DIR)/cypher.cxx \
-		  $(COMPONENT_SRC_DIR)/socks.cxx \
-		  $(COMPONENT_SRC_DIR)/asner.cxx \
-		  uicmp.cxx \
-		  $(COMMON_SRC_DIR)/sockets.cxx \
-		  socket.cxx \
-		  svcproc.cxx \
-		  remconn.cxx \
-		  config.cxx \
-		  udll.cxx \
-		  $(COMMON_SRC_DIR)/ptime.cxx \
-		  pipechan.cxx \
-		  serchan.cxx \
-		  $(COMMON_SRC_DIR)/sfile.cxx \
-		  channel.cxx \
-		  osutil.cxx \
-		  $(COMMON_SRC_DIR)/osutils.cxx \
-		  tlib.cxx \
-		  switch.cxx \
-		  assert.cxx \
-		  $(COMMON_SRC_DIR)/collect.cxx \
-		  $(COMMON_SRC_DIR)/contain.cxx \
-		  $(COMMON_SRC_DIR)/object.cxx   # must be last module
+SOURCES	= $(PROTO_SOURCES) \
+	  $(COMPONENT_SRC_DIR)/modem.cxx \
+	  $(COMPONENT_SRC_DIR)/cypher.cxx \
+	  $(COMPONENT_SRC_DIR)/socks.cxx \
+	  $(COMPONENT_SRC_DIR)/asner.cxx \
+	  uicmp.cxx \
+	  $(COMMON_SRC_DIR)/sockets.cxx \
+	  socket.cxx \
+	  svcproc.cxx \
+	  remconn.cxx \
+	  config.cxx \
+	  udll.cxx \
+	  $(COMMON_SRC_DIR)/ptime.cxx \
+	  pipechan.cxx \
+	  serchan.cxx \
+	  $(COMMON_SRC_DIR)/sfile.cxx \
+	  channel.cxx \
+	  osutil.cxx \
+	  $(COMMON_SRC_DIR)/osutils.cxx \
+	  tlib.cxx \
+	  switch.cxx \
+	  assert.cxx \
+	  $(COMMON_SRC_DIR)/collect.cxx \
+	  $(COMMON_SRC_DIR)/contain.cxx \
+	  $(COMMON_SRC_DIR)/object.cxx   # must be last module
 
-TAR_SOURCES = Makefile $(COMMON_SOURCES) ../common/regex.cxx ../common/pethsock.cxx
-
-
-SOURCES = $(PROTO_SOURCES) $(COMMON_SOURCES)
 OBJS	= $(OBJDIR)/regex.o
 
 
@@ -262,10 +261,6 @@ links:
 	ln -snf $(PWLIBDIR)/make make
 	ln -snf $(UNIX_INC_DIR)/ptlib unix_include
 	ln -snf $(PWLIBDIR)/include/ptlib common_include
-
-
-tarfiles:
-	@echo $(patsubst %, src/ptlib/unix/%, $(TAR_SOURCES))
 
 
 # End of Makefile
