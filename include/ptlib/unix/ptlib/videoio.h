@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.16  2002/01/16 03:36:51  dereks
+ * Add variable to match each VIDIOCMCAPTURE with a VIDIOCSYNC
+ *
  * Revision 1.15  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -155,6 +158,11 @@
     PINDEX hint_index;
     BYTE * videoBuffer;
     PINDEX frameBytes;
+
+   /** Ensure each ::ioctl(VIDIOMCAPTURE) is matched by a ::ioctl(VIDIOCSYNC).
+    */
+    BOOL   pendingSync[2];
+
     int    currentFrame;
     struct video_mbuf frame;
     struct video_mmap frameBuffer[2];
