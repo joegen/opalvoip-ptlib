@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.3 1993/07/14 12:49:16 robertj Exp $
+ * $Id: osutil.inl,v 1.4 1993/08/21 01:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Revision 1.4  1993/08/21 01:50:33  robertj
+ * Made Clone() function optional, default will assert if called.
+ *
+ * Revision 1.3  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
@@ -22,9 +25,6 @@ inline PDirectory::PDirectory()
 inline PDirectory::PDirectory(const PString & pathname)
   : path(pathname) { Construct(); }
   
-
-inline PObject * PDirectory::Clone() const
-  { return new PDirectory(path); }
 
 inline PObject::Comparison PDirectory::Compare(const PObject & obj) const
   { return path.Compare(((const PDirectory &)obj).path); }
