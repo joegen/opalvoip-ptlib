@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.44  1999/04/18 12:58:39  robertj
+ * MSVC 5 backward compatibility
+ *
  * Revision 1.43  1999/03/09 10:30:17  robertj
  * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
  *
@@ -685,7 +688,7 @@ PCLASSINFO macro.
 */
 #define PNEW  new (__FILE__, __LINE__)
 
-#ifdef __GNUC__
+#if !defined(_MSC_VER) || _MSC_VER<1200
 #define PSPECIAL_DELETE_FUNCTION
 #else
 #define PSPECIAL_DELETE_FUNCTION \
@@ -721,11 +724,13 @@ inline void * operator new[](size_t nSize, const char * file, int line)
 void operator delete(void * ptr);
 void operator delete[](void * ptr);
 
+#if defined(_MSC_VER) && _MSC_VER>=1200
 inline void operator delete(void * ptr, const char *, int)
   { PMemoryHeap::Deallocate(ptr, NULL); }
 
 inline void operator delete[](void * ptr, const char *, int)
   { PMemoryHeap::Deallocate(ptr, NULL); }
+#endif
 #endif
 
 
