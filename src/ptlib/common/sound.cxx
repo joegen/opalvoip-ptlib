@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.8  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.7  2004/04/03 23:53:10  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -63,6 +66,18 @@
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
+PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
+{
+  return PSoundChannel::CreateChannel(type);
+}
+
+namespace PWLib {
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PSoundChannel> > soundChannelFactoryAdapter("PSoundChannel", TRUE);
+};
+
+namespace PWLibStupidWindowsHacks {
+  int loadSoundStuff;
+};
 
 PStringList PSoundChannel::GetDriverNames(PPluginManager * _pluginMgr)
 {

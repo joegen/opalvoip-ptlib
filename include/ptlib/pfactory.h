@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.19  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.18  2004/07/12 09:17:20  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -218,17 +221,17 @@ class PFactory : PFactoryBase
             delete singletonInstance;
         }
 
-        Abstract_T * CreateInstance()
+        Abstract_T * CreateInstance(const Key_T & key)
         {
           if (!isSingleton)
-            return Create();
+            return Create(key);
 
           if (singletonInstance == NULL)
-            singletonInstance = Create();
+            singletonInstance = Create(key);
           return singletonInstance;
         }
 
-        virtual Abstract_T * Create() const { return singletonInstance; }
+        virtual Abstract_T * Create(const Key_T & /*key*/) const { return singletonInstance; }
 
         bool         isDynamic;
         bool         isSingleton;
@@ -249,7 +252,7 @@ class PFactory : PFactoryBase
         }
 
       protected:
-        virtual Abstract_T * Create() const { return new _Concrete_T; }
+        virtual Abstract_T * Create(const Key_T & /*key*/) const { return new _Concrete_T; }
     };
 
     typedef std::map<_Key_T, WorkerBase *> KeyMap_T;
@@ -368,7 +371,7 @@ class PFactory : PFactoryBase
       PWaitAndSignal m(mutex);
       typename KeyMap_T::const_iterator entry = keyMap.find(key);
       if (entry != keyMap.end())
-        return entry->second->CreateInstance();
+        return entry->second->CreateInstance(key);
       return NULL;
     }
 

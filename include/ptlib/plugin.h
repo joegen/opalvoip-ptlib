@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.9  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.8  2004/06/21 10:40:02  csoutheren
  * Fixed problem with dynamic plugins
  *
@@ -36,6 +39,47 @@
 
 #ifndef _PLUGIN_H
 #define _PLUGIN_H
+
+//////////////////////////////////////////////////////
+//
+//  these templates implement an adapter to make the old style device plugins appear in the new factory system
+//
+
+#include <ptlib/pfactory.h>
+
+template <class _Abstract_T, typename _Key_T = PString>
+class PDevicePluginFactory : public PFactory<_Abstract_T, _Key_T>
+{
+  public:
+    class Worker : public PFactory<_Abstract_T, _Key_T>::WorkerBase 
+    {
+      public:
+        Worker(const _Key_T & key, bool singleton = false)
+          : PFactory<_Abstract_T, _Key_T>::WorkerBase(singleton)
+        {
+          PFactory<_Abstract_T, _Key_T>::Register(key, this);
+        }
+
+      protected:
+        virtual _Abstract_T * Create(const Key_T & key) const;
+    };
+};
+
+class PDevicePluginAdapterBase
+{
+  public:
+    PDevicePluginAdapterBase()
+    { }
+    virtual void CreateFactory(const PString & device) = 0;
+};
+
+template <class DeviceBase>
+class PDevicePluginAdapter : public PDevicePluginAdapterBase
+{
+  public:
+    void CreateFactory(const PString & device)
+    { new PDevicePluginFactory<DeviceBase>::Worker(device, TRUE); }
+};
 
 #define PWLIB_PLUGIN_API_VERSION 0
 
@@ -106,15 +150,16 @@ extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
 //  static plugins. They are made more complex by the arcane behaviour
 //  of the Windows link system that requires an external reference in the
 //  object module before it will instantiate any globals in in it
-//  The non-Windows version is much simpler - just use declare a
-//  function with attribute (( constructor )) and it will get called on startup
 //
 
 #define PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 class PPlugin_##serviceType##_##serviceName##_Registration { \
   public: \
     PPlugin_##serviceType##_##serviceName##_Registration(PPluginManager * pluginMgr) \
-    { pluginMgr->RegisterService(#serviceName, #serviceType, descriptor); } \
+    { \
+      static PDevicePluginFactory<serviceType>::Worker factory(#serviceName); \
+      pluginMgr->RegisterService(#serviceName, #serviceType, descriptor); \
+    } \
     int kill_warning; \
 }; \
 
