@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.4 1993/07/16 14:40:55 robertj Exp $
+ * $Id: contain.inl,v 1.5 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.4  1993/07/16 14:40:55  robertj
+ * Revision 1.5  1993/08/27 18:17:47  robertj
+ * Fixed bugs in PSortedList default size.
+ *
+ * Revision 1.4  1993/07/16  14:40:55  robertj
  * Added PString constructor for individual characters.
  * Added string to C style literal format.
  *
@@ -188,7 +191,7 @@ inline PArrayObjects::~PArrayObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractList::PAbstractList()
-  : PCollection(0), head(NULL), tail(NULL), lastElement(NULL), lastIndex(0) { }
+  : head(NULL), tail(NULL), lastElement(NULL), lastIndex(0) { }
 
 inline PAbstractList::~PAbstractList()
  { DestroyContents(); }
@@ -200,7 +203,7 @@ inline PListElement::PListElement(PObject * theData)
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractSortedList::PAbstractSortedList()
-  : PCollection(), root(NULL), lastElement(NULL), lastIndex(0) { }
+  : root(NULL), lastElement(NULL), lastIndex(0) { }
 
 inline PAbstractSortedList::~PAbstractSortedList()
   { DestroyContents(); }
