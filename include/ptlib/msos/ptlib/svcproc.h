@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.10 1996/08/08 10:09:16 robertj Exp $
+ * $Id: svcproc.h,v 1.11 1996/08/09 11:17:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.11  1996/08/09 11:17:26  robertj
+ * Moved log macro to platform dependent header.
+ *
  * Revision 1.10  1996/08/08 10:09:16  robertj
  * Directory structure changes for common files.
  *
@@ -119,6 +122,9 @@
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
 };
+
+
+#define PSYSTEMLOG(l, v) PSystemLog(PSystemLog::l) << v
 
 
 #if defined(_WIN32) || !defined(_WINDLL)
