@@ -175,7 +175,6 @@ implementation has quite a lot implemented but is by no means complete. A motif
 implementation is in the works but has not progressed very far.
 
 
-
 Conclusion
 ----------
 
@@ -189,7 +188,7 @@ it and use it all the time, and we don't want to get into any religious wars of
 this class library over that one.
 
 
-==============================================================
+================================================================================
 Equivalence Pty. Ltd.
 Home of FireDoor, MibMaster & PhonePatch
 
