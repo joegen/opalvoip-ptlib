@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.7 1994/09/25 10:43:57 robertj Exp $
+ * $Id: ptlib.h,v 1.8 1995/03/12 04:44:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
- * Revision 1.7  1994/09/25 10:43:57  robertj
+ * Revision 1.8  1995/03/12 04:44:56  robertj
+ * Added dynamic link libraries.
+ *
+ * Revision 1.7  1994/09/25  10:43:57  robertj
  * Added pipe channel.
  *
  * Revision 1.6  1994/08/23  11:32:52  robertj
@@ -136,6 +139,12 @@
 // PProcess
 
 #include <process.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDynaLink
+
+#include <dynalink.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
