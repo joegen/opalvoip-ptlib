@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.65 1997/06/08 04:48:04 robertj Exp $
+ * $Id: contain.cxx,v 1.66 1997/07/08 13:14:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.66  1997/07/08 13:14:41  robertj
+ * Fixed bug where freeing null pointer.
+ *
  * Revision 1.65  1997/06/08 04:48:04  robertj
  * Added regular expressions.
  *
@@ -248,10 +251,8 @@
 
 #include <ctype.h>
 
-extern "C" {
 #define __STDC__ 1
 #include "regex.h"
-};
 
 
 #if !defined(P_USE_INLINES)
@@ -366,8 +367,10 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 
 void PAbstractArray::DestroyContents()
 {
-  PFREE(theArray);
-  theArray = NULL;
+  if (theArray != NULL) {
+    PFREE(theArray);
+    theArray = NULL;
+  }
 }
 
 
