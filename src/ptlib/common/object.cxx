@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.75  2004/06/17 22:02:51  csoutheren
+ * Added check to prevent allocationBreakpoint from causing unintentional break every 2^32 memory allocations
+ *
  * Revision 1.74  2004/06/01 05:22:43  csoutheren
  * Restored memory check functionality
  *
@@ -488,7 +491,7 @@ void operator delete[](void * ptr)
 }
 
 
-DWORD PMemoryHeap::allocationBreakpoint;
+DWORD PMemoryHeap::allocationBreakpoint = 0;
 char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
 
 
@@ -623,7 +626,7 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
     firstRealObject = allocationRequest;
 
-  if (allocationRequest == allocationBreakpoint) {
+  if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint) {
 #ifdef _WIN32
     __asm int 3;
 #else
@@ -690,7 +693,7 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
     return NULL;
   }
 
-  if (mem->allocationRequest == mem->allocationBreakpoint) {
+  if (mem->allocationBreakpoint != 0 && mem->allocationRequest == mem->allocationBreakpoint) {
 #ifdef _WIN32
     __asm int 3;
 #else
