@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2003/04/29 00:57:21  dereks
+ * Add user interface, option setting for format/input/fake. Works on Linux.
+ *
  * Revision 1.2  2003/04/28 14:30:21  craigs
  * Started rearranging code
  *
@@ -37,70 +40,181 @@
 #include "version.h"
 
 
-PCREATE_PROCESS(Vidtest);
+PCREATE_PROCESS(VidTest);
 
 #include  <ptlib/video.h>
 #include  <ptclib/vsdl.h>
 
-Vidtest::Vidtest()
+VidTest::VidTest()
   : PProcess("Equivalence", "vidtest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
 {
 }
 
 
-void Vidtest::Main()
+void VidTest::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse("-videodevice:");
+  args.Parse("-videodevice:"
+             "-videoformat:"         "-no-videoformat."
+             "-videoinput:"          "-no-videoinput."
+#if PTRACING
+             "o-output:"             "-no-output."
+             "t-trace."              "-no-trace."
+#endif
+	     );
+
+#if PTRACING
+  PTrace::Initialise(args.GetOptionCount('t'),
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
 
   PString videoDevice = args.GetOptionString("videodevice");
   if (videoDevice.IsEmpty()) {
     cout << "Available video input devices:" << endl;
-    PStringArray devs = PVideoInputDevice().GetDeviceNames();
+    PStringArray devs = PVideoInputDevice().GetDeviceNames() + "fake";
     PINDEX i;
     for (i = 0; i < devs.GetSize(); i++)
       cout << "   " << devs[i] << endl;
     return;
   }
 
-  PVideoInputDevice grabber;
-  if (!grabber.Open(videoDevice, FALSE)) {
+  PVideoInputDevice * grabber;
+  if (videoDevice *= "fake")
+    grabber = new PFakeVideoInputDevice();
+  else
+    grabber = new PVideoInputDevice();
+
+  if (!grabber->Open(videoDevice, FALSE)) {
     PError << "Cannot open device " << videoDevice << endl;
     return;
   }
 
-  if (!grabber.SetVideoFormat(PVideoDevice::NTSC)) {
-    PTRACE(3, "Failed to set format");
+  BOOL videoIsPal = TRUE;
+  if (args.HasOption("videoformat"))
+    videoIsPal = args.GetOptionString("videoformat") *= "pal";
+
+  if (!grabber->SetVideoFormat(videoIsPal ? PVideoDevice::PAL : PVideoDevice::NTSC)) {
+    PError << "Failed to set format" << endl;
     return;
   }
 
-  if (!grabber.SetFrameRate(30)) {
-    PTRACE(3, "Failed to set framerate");
+  PINDEX videoInput = 0;
+  if (args.HasOption("videoinput")) 
+    videoInput = args.GetOptionString("videoinput").AsInteger();
+  
+  if (!grabber->SetChannel(videoInput)) {
+    PError << "Failed to set channel to " << videoInput << endl;
     return;
   }
 
-  PVideoChannel * channel = new PVideoChannel;
-  channel->AttachVideoReader(&grabber);
+  if (!grabber->SetColourFormatConverter("YUV420P") ) {
+    PError << "Failed to set format to yuv420p" << endl;
+    return;
+    }
 
-  grabber.Start();
+  PINDEX newFrameRate = videoIsPal ? 25 : 30;
+  if (!grabber->SetFrameRate(newFrameRate)) {
+    PError <<  "Failed to set framerate" << newFrameRate << endl;
+    return;
+  }
 
+  if  (!grabber->SetFrameSizeConverter(352, 288, FALSE)) {
+    PError <<  "Failed to set framesize to " << 352  << "x" << 288 << endl;
+    return;
+  }
+
+  channel = new PVideoChannel;
+  channel->AttachVideoReader(grabber);
+
+  grabber->Start();
+
+  PThread * userInterfaceThread = new UserInterfaceThread(*this);
+  
   BOOL isEncoding = TRUE;
   PSDLDisplayThread * sdlThread = new PSDLDisplayThread(FALSE);
   PSDLVideoDevice * display = new PSDLVideoDevice("VideoTest", isEncoding, sdlThread);
 
-  display->SetFrameSize(channel->GetGrabWidth(), channel->GetGrabHeight());
+  PINDEX width = channel->GetGrabWidth();
+  PINDEX height = channel->GetGrabHeight();
+  PINDEX bytesInFrame = (width * height * 3) >> 1;
+  unsigned char dataBuffer[bytesInFrame];
+
+  display->SetFrameSize(width, height);
   display->SetColourFormatConverter("YUV420P");
 
   channel->AttachVideoPlayer(display);
 
-  cout << "Displaying video" << endl;
 
-  char ch;
-  cin >> ch;
+  for( ;; ) {
+    channel->Read(dataBuffer, bytesInFrame);
+    channel->Write((const void *)dataBuffer, 0);
+     if (!exitFlag.WillBlock())
+      break;
+ }
+
+  userInterfaceThread->Terminate();
+  userInterfaceThread->WaitForTermination();
+  delete userInterfaceThread;
+
+  delete channel;
+
+  sdlThread->Terminate();
+  sdlThread->WaitForTermination();
+  delete sdlThread;
+
 
   cout << "Closing down" << endl;
 }
+
+void VidTest::HandleUserInterface()
+{
+  PConsoleChannel console(PConsoleChannel::StandardInput);
+
+  PTRACE(2, "VidTest\tTESTING interface thread started.");
+
+  PStringStream help;
+  help << "Select:\n"
+          "  J   : Flip video input top to bottom\n"
+          "  Q   : Exit program\n"
+          "  X   : Exit program\n";
+
+  for (;;) {
+
+    // display the prompt
+    cout << "(testing) Command ? " << flush;
+
+    // terminate the menu loop if console finished
+    char ch = (char)console.peek();
+    if (console.eof()) {
+      cout << "\nConsole gone - menu disabled" << endl;
+      return;
+    }
+
+    console >> ch;
+    switch (tolower(ch)) {
+    case 'j' :
+      if (!channel->ToggleVFlipInput())
+	cout << "\nCould not toggle Vflip state of video input device" << endl;
+      break;
+
+    case 'x' :
+    case 'q' :
+      cout << "Exiting." << endl;
+      exitFlag.Signal();
+      console.ignore(INT_MAX, '\n');
+      return;
+      break;
+    case '?' :
+    default:
+      cout << help << endl;
+      break;
+
+    } // end switch
+  } // end for
+}
+
 
 
 // End of File ///////////////////////////////////////////////////////////////
