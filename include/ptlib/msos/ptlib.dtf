@@ -880,6 +880,7 @@ EXPORTS
     ?AsString@PTime@@QBE?AVPString@@ABV2@H@Z @613 NONAME ;public: class PString  __thiscall PTime::AsString(class PString const &,int)const 
     ?AsString@PTime@@QBE?AVPString@@PBDH@Z @614 NONAME ;public: class PString  __thiscall PTime::AsString(char const *,int)const 
     ?AsString@PTime@@QBE?AVPString@@W4TimeFormat@1@H@Z @615 NONAME ;public: class PString  __thiscall PTime::AsString(enum PTime::TimeFormat,int)const 
+    ?AsString@PTimeInterval@@QBE?AVPString@@HW4Formats@1@H@Z @3041 NONAME ;public: class PString  __thiscall PTimeInterval::AsString(int,enum PTimeInterval::Formats,int)const 
     ?AsUnsigned64@PString@@QBE_KI@Z @616 NONAME ;public: unsigned __int64 __thiscall PString::AsUnsigned64(unsigned int)const 
     ?AsUnsigned@PString@@QBEKI@Z @617 NONAME ;public: unsigned long __thiscall PString::AsUnsigned(unsigned int)const 
     ?Attach@PAbstractArray@@QAEXPBXH@Z @618 NONAME ;public: void __thiscall PAbstractArray::Attach(void const *,int)
@@ -1444,6 +1445,7 @@ EXPORTS
     ?GetExtension@PDynaLink@@SA?AVPString@@XZ @1008 NONAME ;public: static class PString  __cdecl PDynaLink::GetExtension(void)
     ?GetFileName@PFilePath@@QBE?AVPCaselessString@@XZ @1010 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetFileName(void)const 
     ?GetFilter@PEthSocket@@QAEHAAIAAG@Z @1896 NONAME ;public: int __thiscall PEthSocket::GetFilter(unsigned int &,unsigned short &)
+    ?GetFormat@PWAVFile@@QBEIXZ @3040 NONAME ;public: unsigned int __thiscall PWAVFile::GetFormat(void)const 
     ?GetFrame@PVideoInputDevice@@UAEHAAVPBYTEArray@@@Z @2439 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrame(class PBYTEArray &)
     ?GetFrameData@PFakeVideoInputDevice@@UAEHPAEPAH@Z @2555 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetFrameData(unsigned char *,int *)
     ?GetFrameData@PVideoInputDevice@@UAEHPAEPAH@Z @2440 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrameData(unsigned char *,int *)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.25  2001/10/16 07:44:06  robertj
+ * Added AsString() function to PTimeInterval.
+ *
  * Revision 1.24  2001/07/10 02:55:16  robertj
  * Added unary minus operator
  *
@@ -189,6 +192,21 @@ class PTimeInterval : public PObject
     virtual void ReadFrom(
       istream & strm    /// I/O stream to input the time interval from.
     );
+  //@}
+
+  /**@name Conversion functions */
+  //@{
+    enum Formats {
+      NormalFormat,
+      IncludeDays,
+      SecondsOnly
+    };
+
+    PString AsString(
+      int decimals = 3,
+      Formats format = NormalFormat,
+      int width = 1
+    ) const;
   //@}
 
   /**@name Access functions */
