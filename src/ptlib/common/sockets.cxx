@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.154  2003/04/07 11:57:56  robertj
+ * Allowed for full integer numeric form of IP address read from a stream.
+ *
  * Revision 1.153  2003/04/03 08:43:23  robertj
  * Added IPv4 mapping into IPv6, thanks Sebastien Josset
  *
@@ -2248,11 +2251,16 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
 /// Not IPv6 ready !!!!!!!!!!!!!
   char dot1, dot2, dot3;
   unsigned b1, b2, b3, b4;
-  s >> b1 >> dot1 >> b2 >> dot2 >> b3 >> dot3 >> b4;
-  if (!s && (dot1 != '.' || dot2 != '.' || dot3 != '.'))
-    s.clear(ios::failbit);
-
-  a = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
+  s >> b1;
+  if (!s.fail()) {
+    if (s.peek() != '.')
+      a = ::htons(b1);
+    else {
+      s >> dot1 >> b2 >> dot2 >> b3 >> dot3 >> b4;
+      if (!s.fail() && dot1 == '.' && dot2 == '.' && dot3 == '.')
+        a = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
+    }
+  }
   return s;
 }
 
