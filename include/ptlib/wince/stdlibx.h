@@ -37,6 +37,17 @@ inline void* calloc(size_t num, size_t size)
 		memset(ptr, 0, num*size);
 	return ptr;
 }
+
+inline int isprint(int c) { return _istprint(c);}
+inline int isxdigit(int c) { return _istxdigit(c); }
+inline int isspace( int c ) { return _istspace(c); }
+inline int isupper( int c ) { return _istupper(c); }
+inline int islower( int c ) { return _istlower(c); }
+inline int isalnum( int c ) { return _istalnum(c); }
+inline int isalpha( int c ) { return _istalpha(c); }
+inline int iscntrl( int c ) { return _istcntrl(c); }
+inline int isdigit( int c ) { return _istdigit(c); }
+inline int ispunct( int c ) { return _istpunct(c); }
 #endif
 
 int		_mkdir(const char *);
@@ -123,17 +134,6 @@ int		_chsize( int handle, long size );
 int              _sopen(const char *, int, int, ...);
 
 #if _WIN32_WCE < 300
-inline int isprint(int c) { return _istprint(c);}
-inline int isxdigit(int c) { return _istxdigit(c); }
-inline int isspace( int c ) { return _istspace(c); }
-inline int isupper( int c ) { return _istupper(c); }
-inline int islower( int c ) { return _istlower(c); }
-inline int isalnum( int c ) { return _istalnum(c); }
-inline int isalpha( int c ) { return _istalpha(c); }
-inline int iscntrl( int c ) { return _istcntrl(c); }
-inline int isdigit( int c ) { return _istdigit(c); }
-inline int ispunct( int c ) { return _istpunct(c); }
-
 long			strtol( const char *nptr, char **endptr, int base );
 unsigned long	strtoul( const char *nptr, char **endptr, int base );
 double			strtod( const char *nptr, char **endptr );
@@ -177,6 +177,17 @@ DWORD GetPrivateProfileString( const char* lpAppName, const char* lpKeyName,
 BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
   const char* lpString, const char* );
 
+#else // !__cplusplus
+int isprint(int c);
+int isxdigit(int c);
+int isspace( int c );
+int isupper( int c );
+int islower( int c );
+int isalnum( int c );
+int isalpha( int c );
+int iscntrl( int c );
+int isdigit( int c );
+int ispunct( int c );
 #endif // __cplusplus
 
 #endif
