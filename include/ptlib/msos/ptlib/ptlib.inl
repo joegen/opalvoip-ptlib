@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.3 1994/07/02 03:18:09 robertj Exp $
+ * $Id: ptlib.inl,v 1.4 1994/07/21 12:35:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,10 +8,13 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.3  1994/07/02 03:18:09  robertj
- * Multi-threading support.
- * Fixed bug in time intervals being signed.
+ * Revision 1.4  1994/07/21 12:35:18  robertj
+ * *** empty log message ***
  *
+# Revision 1.3  1994/07/02  03:18:09  robertj
+# Multi-threading support.
+# Fixed bug in time intervals being signed.
+#
 # Revision 1.2  1994/06/25  12:13:01  robertj
 # Synchronisation.
 #
@@ -94,26 +97,24 @@ PINLINE BOOL PFile::Rename(const PString & oldname, const PString & newname)
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-PINLINE PThread * PThread::Current()
-  { return PProcess::Current()->currentThread; }
-
-PINLINE BOOL PThread::IsTerminated() const
-  { return status == Terminated; }
-
-PINLINE void PThread::Resume()
-  { Suspend(FALSE); }
-
-PINLINE BOOL PThread::IsSuspended() const
-  { return suspendCount > 0; }
-
-PINLINE void PThread::SetPriority(Priority priorityLevel)
-  { basePriority = priorityLevel; }
-
-PINLINE PThread::Priority PThread::GetPriority() const
-  { return basePriority; }
-
 PINLINE BOOL PThread::IsOnlyThread() const
   { return link == this; }
+
+PINLINE void PThread::AllocateStack(PINDEX stackSize)
+  { stackBase = (char NEAR *)_nmalloc(stackSize); }
+
+PINLINE void PThread::ClearBlock()
+  { isBlocked = NULL; }
+
+PINLINE BOOL PThread::CheckBlock()
+  { return !isBlocked(blocker); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+PINLINE void PProcess::OperatingSystemYield()
+  { }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
