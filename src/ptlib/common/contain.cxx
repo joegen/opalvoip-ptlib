@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.101  2001/04/24 02:39:18  robertj
+ * Fixed problem with new string hash function giving negative indexes.
+ *
  * Revision 1.100  2001/04/23 03:13:16  robertj
  * Changed PString hash function to better one, thanks Patrick Koorevaar
  *
@@ -1117,7 +1120,7 @@ PINDEX PString::HashFunction() const
   PINDEX hash = 0;
   while (i < 8 && theArray[i] != 0)
     hash = (hash << 5) ^ theArray[i++] ^ hash;
-  return hash%123;
+  return PABSINDEX(hash)%123;
 }
 
 
