@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.161  2003/05/27 08:53:11  dsandras
+ * Added test error case when the host lookup fails for IPv6.
+ *
  * Revision 1.160  2003/05/21 09:34:44  rjongbloed
  * Name lookup support for IPv6, thanks again Sébastien Josset
  *
@@ -831,7 +834,7 @@ PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
   }
 
   // Fill Host primary informations
-  hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN) 
+  hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN)
   if (addr_info->ai_addr != NULL)
     address = PIPSocket::Address(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
 
@@ -968,6 +971,9 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct addrinfo hints = { AI_CANONNAME, PF_UNSPEC };
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     mutex.Wait();
+
+    if (localErrNo != NETDB_SUCCESS)
+      return NULL;
     host = new PIPCacheData(res, name);
     freeaddrinfo(res);
 #else // P_HAS_IPV6
