@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.13 1994/07/21 12:33:49 robertj Exp $
+ * $Id: osutils.cxx,v 1.14 1994/07/25 03:39:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.13  1994/07/21 12:33:49  robertj
+ * Revision 1.14  1994/07/25 03:39:22  robertj
+ * Fixed problems with C++ temporary variables.
+ *
+ * Revision 1.13  1994/07/21  12:33:49  robertj
  * Moved cooperative threads to common.
  *
  * Revision 1.12  1994/07/17  10:46:06  robertj
@@ -585,6 +588,7 @@ void PChannel::CopyContents(const PChannel & c)
 {
   init(c.rdbuf());
   ((PChannelStreamBuffer*)rdbuf())->channel = this;
+  os_handle = c.os_handle;
 }
 
 
@@ -903,7 +907,8 @@ static const char PortOutputFlow[] = "PortOutputFlow";
 
 BOOL PSerialChannel::Open(PConfig & cfg)
 {
-  return Open(cfg.GetString(PortName, PSerialChannel::GetPortNames()[0]),
+  PString defPort = GetPortNames()[0];
+  return Open(cfg.GetString(PortName, defPort),
               cfg.GetInteger(PortSpeed, 9600),
               (BYTE)cfg.GetInteger(PortDataBits, 8),
               (PSerialChannel::Parity)cfg.GetInteger(PortParity, 1),
@@ -1469,25 +1474,29 @@ void PConfig::SetBoolean(const char * section, const char * key, BOOL value)
 
 long PConfig::GetInteger(const char * section, const char * key, long dflt)
 {
-  return GetString(section, key, psprintf("%li", dflt)).AsInteger();
+  PString str(PString::Signed, dflt);
+  return GetString(section, key, str).AsInteger();
 }
 
 
 void PConfig::SetInteger(const char * section, const char * key, long value)
 {
-  SetString(section, key, psprintf("%li", value));
+  PString str(PString::Signed, value);
+  SetString(section, key, str);
 }
 
 
 double PConfig::GetReal(const char * section, const char * key, double dflt)
 {
-  return GetString(section, key, psprintf("%f", dflt)).AsReal();
+  PString str(PString::Decimal, dflt);
+  return GetString(section, key, str).AsReal();
 }
 
 
 void PConfig::SetReal(const char * section, const char * key, double value)
 {
-  SetString(section, key, psprintf("%f", value));
+  PString str(PString::Decimal, value);
+  SetString(section, key, str);
 }
 
 
