@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.12  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.11  2001/03/07 06:57:32  yurik
  * Changed email to current one
  *
@@ -90,7 +93,7 @@ PThread::PThread(PINDEX stackSize,
 
   priority = priorities[priorityLevel];
 
-  PString str("PWLT");
+  PString str("PWLT ");
   str += threadName;
   #ifdef DEBUG_THREADS
   PError << "::spawn_thread(" << str << "), priority:" << priority << endl;
@@ -478,11 +481,15 @@ int PThread::PXBlockOnIO(int maxHandles,
 
 void PProcess::Construct()
 {
+  houseKeeper=NULL;
+
   CreateConfigFilesDictionary();
+  
+  CommonConstruct();
 }
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(256*1024, NoAutoDeleteThread, LowPriority)
+  : PThread(256*1024 , NoAutoDeleteThread, LowPriority, "HouseKeepingThread")
 {
   Resume();
 }

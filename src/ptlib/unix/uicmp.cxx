@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.13  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.12  2001/03/07 07:00:17  yurik
  * #ifdef'd setsockopt IPPROTO_IP for BeOS
  *
@@ -184,7 +187,7 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
   packet.sequence   = info.sequenceNum;
   packet.id         = info.identifier;
 
-  #ifndef __BEOS__
+  #ifndef BE_BONELESS
   if (info.ttl != 0) {
     char ttl = (char)info.ttl;
     if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
@@ -263,7 +266,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 
 BOOL PICMPSocket::OpenSocket()
 {
-#ifndef __BEOS__
+#ifndef BE_BONELESS
   struct protoent * p = ::getprotobyname(GetProtocolName());
   if (p == NULL)
     return ConvertOSError(-1);

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.62  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.61  2001/05/29 03:35:16  craigs
  * Changed to not tempnam to avoid linker warning on new Linux systems
  *
@@ -191,6 +194,8 @@
 #elif defined(P_SUN4)
 #include <sys/timeb.h>
 
+#elif defined(__BEOS__)
+#define P_USE_STRFTIME
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -1283,7 +1288,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(__BEOS__)
   time_t t;
   time(&t);
   struct tm  * tm = localtime(&t);

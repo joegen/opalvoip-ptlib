@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.64  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.63  2001/06/19 12:09:13  rogerh
  * Mac OS X change
  *
@@ -199,12 +202,12 @@ int PSocket::os_close()
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
-#if defined(__BEOS__) && !defined(BE_BONE) // Jac's platform
-#ifndef BE_THREADS
+#if defined(__BEOS__) && !defined(BE_THREADS)
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(os_handle);
 #endif
 
+#ifdef BE_BONELESS
   int retval = ::closesocket(os_handle);
   os_handle = -1;
   return retval;
@@ -268,6 +271,11 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
     return -1;
+
+  if (val == 0) {
+    errno = ECONNREFUSED;
+    return -1;
+  }
 
 #ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
@@ -982,6 +990,48 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 #else
 
+#if 0
+	// Most of this code came from the source code for the "route" command
+	// so it should work on other platforms too.
+	// However, it is not complete (the "address-for-interface" function doesn't exist) and not tested!
+	
+	route_table_req_t reqtable;
+	route_req_t *rrtp;
+	int i,ret;
+	
+	ret = get_route_table(&amp;reqtable);
+	if (ret  0)
+	{
+		return FALSE;
+	}
+	
+	for (i=reqtable.cnt, rrtp = reqtable.rrtp;i0;i--, rrtp++)
+	{
+		//the datalink doesn't save addresses/masks for host and default
+		//routes, so the route_req_t may not be filled out completely
+		if (rrtp-flags &amp; RTF_DEFAULT) {
+			//the IP default route is 0/0
+			((struct sockaddr_in *)&amp;rrtp-dst)-sin_addr.s_addr = 0;
+			((struct sockaddr_in *)&amp;rrtp-mask)-sin_addr.s_addr = 0;
+	
+		} else if (rrtp-flags &amp; RTF_HOST) {
+			//host routes are addr/32
+			((struct sockaddr_in *)&amp;rrtp-mask)-sin_addr.s_addr = 0xffffffff;
+		}
+	
+	    RouteEntry * entry = new RouteEntry(/* address_for_interface(rrtp-iface) */);
+	    entry-net_mask = rrtp-mask;
+	    entry-destination = rrtp-dst;
+	    entry-interfaceName = rrtp-iface;
+	    entry-metric = rrtp-refcnt;
+	    table.Append(entry);
+	}
+	
+	free(reqtable.rrtp);
+		
+	return TRUE;
+#endif // 0
+ 
 #warning Platform requires implemetation of GetRouteTable()
   return FALSE;
 
