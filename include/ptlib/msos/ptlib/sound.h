@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.8  1999/09/23 04:28:43  robertj
+ * Allowed some Win32 only access to wave format in sound channel
+ *
  * Revision 1.7  1999/05/24 03:02:32  robertj
  * Added include for compiling under different environments.
  *
@@ -60,13 +63,17 @@
 // PSound
 
 
-class PWaveFormat
+class PWaveFormat : public PObject
 {
+    PCLASSINFO(PWaveFormat, PObject)
   public:
     PWaveFormat();
     ~PWaveFormat();
     PWaveFormat(const PWaveFormat & fmt);
     PWaveFormat & operator=(const PWaveFormat & fmt);
+
+    void PrintOn(ostream &) const;
+    void ReadFrom(istream &);
 
     void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
     void SetFormat(const void * data, PINDEX size);
@@ -134,6 +141,7 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
     PString GetErrorText() const;
     // Get a text form of the last error encountered.
 
+    BOOL SetFormat(const PWaveFormat & format);
 
   protected:
     PString     deviceName;
