@@ -127,9 +127,6 @@ PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL force)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE void PSerialChannel::Construct()
-  { }
-
 PINLINE DWORD PSerialChannel::GetSpeed() const
   { return baudRate; }
 
