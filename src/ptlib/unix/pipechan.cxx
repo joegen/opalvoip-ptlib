@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.29  2001/08/12 06:32:04  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.28  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -229,7 +232,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined (P_AIX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX)
     extern char ** environ;
 #define __environ environ
 #endif
@@ -339,7 +342,7 @@ BOOL PPipeChannel::IsRunning() const
 
 int PPipeChannel::WaitForTermination()
 {
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) || defined(P_MACOS)
   if (kill (childPid, 0) == 0) {
     while (wait3(NULL, WUNTRACED, NULL) != childPid)
       ;
@@ -355,7 +358,7 @@ int PPipeChannel::WaitForTermination()
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) || defined(P_MACOS)
   PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
   if (kill (childPid, 0) == 0) {
     while (wait3(NULL, WUNTRACED, NULL) != childPid)
