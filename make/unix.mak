@@ -29,6 +29,13 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.63  2000/03/08 06:54:03  rogerh
+# Add support for bash shell on FreeBSD
+# 1) support bash OSTYPE which is of the form os+version eg freebsd3.4
+# 2) Fixed problem where bash has HOSTTYPE of i386, and was matching the
+#    ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux)) test as 'i386' is a
+#    substring of 'i386-linux'
+#
 # Revision 1.62  2000/03/03 00:37:42  robertj
 # Fixed problem for when have GUI environment variable set, always builds GUI!
 #
@@ -178,9 +185,11 @@ ifndef MACHTYPE
 MACHTYPE := $(shell uname -m)
 endif
 
-ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux))
+ifneq (,$(findstring linux,$(HOSTTYPE)))
+ifneq (,$(findstring $(HOSTTYPE),i386 i486))
 OSTYPE   := linux
 MACHTYPE := x86
+endif
 endif
 
 ifeq ($(OSTYPE),mklinux)
@@ -194,6 +203,11 @@ endif
 
 ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 OSTYPE := solaris
+endif
+
+#Convert bash shell OSTYPE of 'freebsd3.4' to 'FreeBSD'
+ifneq (,$(findstring freebsd,$(OSTYPE)))
+OSTYPE := FreeBSD
 endif
 
 ifneq (,$(findstring $(MACHTYPE),sun4))
