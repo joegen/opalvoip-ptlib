@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.29  2003/02/20 23:32:00  robertj
+ * More RTEMS support patches, thanks Sebastian Meyer.
+ *
  * Revision 1.28  2002/12/20 08:43:42  robertj
  * Fixed incorrect header length for MS-GSM, thanks Martijn Roest & Kanchana
  *
@@ -137,10 +140,14 @@
 #include <ptlib.h>
 #include <ptclib/pwavfile.h>
 
-
 #if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__) \
-                                 || defined(P_SOLARIS) )
+                                 || defined(P_SOLARIS) || defined(P_RTEMS))
+#ifdef P_RTEMS
+extern "C" {
+void swab(const void * void_from, void * void_to, int len)
+#else
 void swab(const void * void_from, void * void_to, register size_t len)
+#endif
 {
   register const char * from = (const char *)void_from;
   register char * to = (char *)void_to;
@@ -152,6 +159,9 @@ void swab(const void * void_from, void * void_to, register size_t len)
     len -= 2;
   }
 }
+#ifdef P_RTEMS
+}
+#endif
 #endif
 
 
