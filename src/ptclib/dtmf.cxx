@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.5  2002/02/12 10:21:56  rogerh
+ * Stop sending '?' when a bad DTMF tone is detected.
+ *
  * Revision 1.4  2002/01/24 11:14:45  rogerh
  * Back out robert's change. It did not work (no sign extending)
  * and replace it with a better solution which should be happy on both big
@@ -118,7 +121,7 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
 		if (s != so) {
 			nn = 0;
 			so = s;
-		} else if (nn++ == 520 && key[s]) {
+		} else if ((nn++ == 520) && (key[s] != '?')) {
 			PTRACE(1,"Got 16bit PCM DTMF " << key[s]);
 			keyString = keyString + key[s];
 		}
