@@ -293,7 +293,7 @@ fi
 
 
 dnl ########################################################################
-dnl Speach
+dnl Speech
 
 dnl MSWIN Speech API,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
 
