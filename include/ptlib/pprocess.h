@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.38  1998/11/30 02:51:00  robertj
+ * New directory structure
+ *
  * Revision 1.37  1998/10/18 14:28:44  robertj
  * Renamed argv/argc to eliminate accidental usage.
  *
@@ -143,7 +146,7 @@
 #pragma interface
 #endif
 
-#include <mutex.h>
+#include <ptlib/mutex.h>
 
 
 /*$MACRO PCREATE_PROCESS(cls)
