@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.23 1994/08/04 12:57:10 robertj Exp $
+ * $Id: contain.cxx,v 1.24 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.23  1994/08/04 12:57:10  robertj
+ * Revision 1.24  1994/08/21 23:43:02  robertj
+ * Added object serialisation classes.
+ * Changed parameter before variable argument list to NOT be a reference.
+ *
+ * Revision 1.23  1994/08/04  12:57:10  robertj
  * Rewrite of memory check code.
  *
  * Revision 1.22  1994/08/01  03:40:28  robertj
@@ -316,10 +320,184 @@ istream & PObject::ReadFrom(istream & strm)
 }
 
 
+PINDEX PObject::PreSerialise(PSerialiser &)
+{
+  return 0;
+}
+
+
+PSerialiser & PObject::Serialise(PSerialiser & serial)
+{
+  return serial;
+}
+
+
 PINDEX PObject::HashFunction() const
 {
   return 0;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Serialisation support
+
+PSerialRegistration * PSerialRegistration::creatorHashTable[HashTableSize];
+
+PINDEX PSerialRegistration::HashFunction(const char * className)
+{
+  PINDEX hash = (BYTE)className[0];
+  if (className[0] != '\0') {
+    hash += (BYTE)className[1];
+    if (className[1] != '\0')
+      hash += (BYTE)className[2];
+  }
+  return hash%HashTableSize;
+}
+
+
+PSerialRegistration::PSerialRegistration(const char * clsNam,
+                                                  PSerialCreatorFunction func)
+  : className(clsNam), creator(func)
+{
+  clash = NULL;
+
+  PINDEX hash = HashFunction(className);
+  if (creatorHashTable[hash] != NULL)
+    creatorHashTable[hash]->clash = this;
+  creatorHashTable[hash] = this;
+}
+
+
+PSerialCreatorFunction PSerialRegistration::GetCreator(const char * clsNam)
+{
+  PINDEX hash = HashFunction(clsNam);
+  PSerialRegistration * reg = creatorHashTable[hash];
+  while (reg != NULL) {
+    if (strcmp(reg->className, clsNam) == 0)
+      return reg->creator;
+  }
+  return NULL;
+}
+
+
+PSerialiser::PSerialiser(ostream & strm)
+  : stream(strm)
+{
+}
+
+
+PSerialiser & PSerialiser::operator<<(PObject & obj)
+{
+  return obj.Serialise(*this);
+}
+
+
+PTextSerialiser::PTextSerialiser(ostream & strm, PObject & data)
+  : PSerialiser(strm)
+{
+  data.Serialise(*this);
+}
+
+
+PSerialiser & PTextSerialiser::operator<<(char)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(unsigned char)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(signed char)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(short)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(unsigned short)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(int)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(unsigned int)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(long)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(unsigned long)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(float)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(double)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(long double)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(const char *)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(const unsigned char *)
+  { return *this; }
+
+PSerialiser & PTextSerialiser::operator<<(const signed char *)
+  { return *this; }
+
+
+PBinarySerialiser::PBinarySerialiser(ostream & strm, PObject & data)
+  : PSerialiser(strm)
+{
+  data.PreSerialise(*this);
+  stream << classesUsed;
+  data.Serialise(*this);
+}
+
+
+PSerialiser & PBinarySerialiser::operator<<(char)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(unsigned char)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(signed char)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(short)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(unsigned short)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(int)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(unsigned int)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(long)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(unsigned long)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(float)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(double)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(long double)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(const char *)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(const unsigned char *)
+  { return *this; }
+
+PSerialiser & PBinarySerialiser::operator<<(const signed char *)
+  { return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1040,7 +1218,7 @@ PString & PString::sprintf(const char * fmt, ...)
 }
 
 
-PString & PString::sprintf(const PString & fmt, ...)
+PString & PString::sprintf(PString fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -1066,12 +1244,12 @@ PString psprintf(const char * fmt, ...)
 }
 
 
-PString psprintf(const PString & fmt, ...)
+PString psprintf(PString fmt, ...)
 {
   PString str;
   va_list args;
   va_start(args, fmt);
-  return str.vsprintf(fmt, args);
+  return str.vsprintf((const char *)fmt, args);
 }
 
 
@@ -1261,6 +1439,13 @@ PStringStream & PStringStream::operator=(const PString & str)
   PString::operator=(str);
   rdbuf()->sync();
   return *this;
+}
+
+
+PStringStream::~PStringStream()
+{
+  delete (PStringStreamBuffer *)rdbuf();
+  init(NULL);
 }
 
 
