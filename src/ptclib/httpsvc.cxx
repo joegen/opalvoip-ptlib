@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.24 1997/11/04 06:02:46 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.25 1997/11/10 12:40:05 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.25  1997/11/10 12:40:05  robertj
+ * Changed SustituteEquivalSequence so can override standard macros.
+ *
  * Revision 1.24  1997/11/04 06:02:46  robertj
  * Allowed help gif file name to overridable in PServiceHTML, so can be in subdirectory.
  *
@@ -278,8 +281,9 @@ void PHTTPServiceProcess::AddUnregisteredText(PHTML &)
 }
 
 
-void PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
+BOOL PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
 {
+  return FALSE;
 }
 
 
@@ -870,11 +874,12 @@ static void ReplaceIncludes(PHTTPRequest & request, PString & text)
 
     PString subs;
     PCaselessString cmd = text(pos+12, end-1).Trim();
-    if (cmd == "header") {
+    if (process.SubstituteEquivalSequence(request, cmd, subs))
+      ;
+    else if (cmd == "header") {
       subs = process.GetPageGraphic();
       ReplaceIncludes(request, subs);
     }
-
     else if (cmd == "copyright")
       subs = process.GetCopyrightText();
     else if (cmd == "os")
@@ -910,8 +915,7 @@ static void ReplaceIncludes(PHTTPRequest & request, PString & text)
                                    ? "Register Now!" : "View Registration")
           << PHTML::HotLink();
       subs = out;
-    } else 
-      process.SubstituteEquivalSequence(request, cmd, subs);
+    }
 
     text.Splice(subs, pos, end-pos+3);
   }
