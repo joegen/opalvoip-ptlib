@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.11 1996/03/12 11:30:00 robertj Exp $
+ * $Id: html.h,v 1.12 1996/04/14 02:52:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.12  1996/04/14 02:52:02  robertj
+ * Added hidden fields to HTML.
+ *
  * Revision 1.11  1996/03/12 11:30:00  robertj
  * Fixed resetting of HTML output using operator=.
  *
@@ -633,6 +636,19 @@ PDECLARE_CLASS(PHTML, PStringStream)
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * typeString;
+    };
+
+    class HiddenField : public InputField {
+      public:
+        HiddenField(
+          const char * fname,
+          const char * value,
+          const char * attr = NULL
+        );
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * valueString;
     };
 
     class InputText : public InputField {
