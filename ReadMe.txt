@@ -111,6 +111,16 @@ This library is multi-platform, however there are only two major build systems
 that are used. The Microsoft DevStudio environment for Windows and the GNU make
 system for all of the various unix systems.
 
+SPECIAL NOTE FOR MSVC 6 USERS:
+------------------------------
+If you are using MSVC 6 then please run the "msvc6_upgrade.bat" script in the 
+PWLIB top directory before continuing. If you skip this step, you will not
+be able to compile PWLib on MSVC 6. If you change the build environment to bypass 
+this step, then DLL versions of PWLib will not function correctly. For more 
+information, please see:
+
+http://www.voxgratia.org/docs/pwlib_windows.html#msvc_headers 
+
 
 4.1. For Windows
 ----------------
@@ -118,7 +128,7 @@ system for all of the various unix systems.
 Note that more complete instructions can be found at the following URL, but here 
 are the basics:
 
-	http://www.postincrement.com/openh323/windows_build.html
+	http://www.voxgratia.org/docs/pwlib_windows.html 
 
 1.  Note you will need the bison and flex tools to compile some parts of the
     system. You can get a copy from http://www.openh323.org/bin/flexbison.zip,
