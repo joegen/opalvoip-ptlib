@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.48  2004/08/15 06:45:48  rjongbloed
+ * Disabled warning about conversion from int to bool type.
+ *
  * Revision 1.47  2004/06/30 12:17:04  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -200,6 +203,7 @@ and from the pre-processor options for this project"
 #pragma warning(disable:4711)  // auto inlining warning
 #pragma warning(disable:4786)  // identifier was truncated to '255' characters in the debug information
 #pragma warning(disable:4097)  // typedef synonym for class
+#pragma warning(disable:4800)  // forcing value to bool 'true' or 'false' (performance warning)
 
 #if _MSC_VER>=800
 #define PHAS_TEMPLATES
