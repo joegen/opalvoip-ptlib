@@ -29,8 +29,13 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.31 2002/03/28 07:26:25 robertj Exp $
+ * $Id: pssl.cxx,v 1.32 2002/04/02 16:17:28 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.32  2002/04/02 16:17:28  robertj
+ * Fixed bug where returned TRUE when read count 0 or write count not len
+ *   which is not according to Read()/Write() semantics. Could cause high CPU
+ *   loops when sockets shutdown.
+ *
  * Revision 1.31  2002/03/28 07:26:25  robertj
  * Added Diffie-Hellman parameters wrapper class.
  *
@@ -959,8 +964,8 @@ BOOL PSSLChannel::Read(void * buf, PINDEX len)
 
     int readResult = SSL_read(ssl, (char *)buf, len);
     lastReadCount = readResult;
-    returnValue = readResult >= 0;
-    if (!returnValue && GetErrorCode(LastReadError) == NoError)
+    returnValue = readResult > 0;
+    if (readResult < 0 && GetErrorCode(LastReadError) == NoError)
       ConvertOSError(-1, LastReadError);
   }
 
@@ -987,8 +992,8 @@ BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 
     int writeResult = SSL_write(ssl, (const char *)buf, len);
     lastWriteCount = writeResult;
-    returnValue = writeResult >= 0;
-    if (!returnValue && GetErrorCode(LastWriteError) == NoError)
+    returnValue = writeResult >= len;
+    if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
       ConvertOSError(-1, LastWriteError);
   }
 
