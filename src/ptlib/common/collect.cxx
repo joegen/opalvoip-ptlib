@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.56  2002/06/12 09:40:58  robertj
+ * Fixed printing of a dictionary to utilise the stream fill character between
+ *   each dictiionary element, as per general container semantics.
+ *
  * Revision 1.55  2002/04/26 05:40:21  robertj
  * Removed assumption that GetAt() on a dictionary will automatically convert
  *   the index to a POrdinalyKey. This breaks the PCollection semantics for
@@ -1667,8 +1671,18 @@ PObject & PAbstractDictionary::GetRefAt(const PObject & key) const
 
 void PAbstractDictionary::PrintOn(ostream &strm) const
 {
-  for (PINDEX  i = 0; i < GetSize(); i++)
-    strm << AbstractGetKeyAt(i) << '=' << AbstractGetDataAt(i) << endl;
+  char separator = strm.fill();
+  if (separator == ' ')
+    separator = '\n';
+
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    if (i > 0)
+      strm << separator;
+    strm << AbstractGetKeyAt(i) << '=' << AbstractGetDataAt(i);
+  }
+
+  if (separator == '\n')
+    strm << separator;
 }
 
 
