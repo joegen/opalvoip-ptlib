@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.86  2002/10/14 21:42:37  rogerh
+ * Only use malloc.h on Windows
+ *
  * Revision 1.85  2002/10/10 04:43:43  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -308,7 +311,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 #include <string.h>
 #ifdef __USE_STL__
 #include <string>
