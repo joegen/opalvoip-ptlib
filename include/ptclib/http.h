@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.38  1999/04/21 01:58:08  robertj
+ * Fixed problem with reading data for request using second form of PHTTPRequestInfo constructor.
+ *
  * Revision 1.37  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -181,14 +184,20 @@ class PHTTPSpace : public PContainer
   PCONTAINERINFO(PHTTPSpace, PContainer)
   public:
     /// Constructor for HTTP URL Name Space
+
     PHTTPSpace();
 
 
   // New functions for class.
     enum AddOptions {
+
       ErrorOnExist,
+
       Overwrite
+
     };
+
+
 
     /** Add a new resource to the URL space. If there is already a resource at
        the location in the tree, or that location in the tree is already in
@@ -738,6 +747,8 @@ class PHTTPConnectionInfo : public PObject
     long GetEntityBodyLength() const  { return entityBodyLength; }
 
   protected:
+    void CalculateEntityBodyLength();
+
     PHTTP::Commands command;
     PURL      url;
     PMIMEInfo mimeInfo;
