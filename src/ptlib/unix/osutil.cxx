@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.35  1998/11/05 09:05:55  craigs
+ * Changed directory routines to use reenttrant functions, and added PDirectory::GetParent
+ *
  * Revision 1.34  1998/09/24 07:39:49  robertj
  * Removed file that only had #pragma implmentation for PTextFile and nothing else.
  *
@@ -117,8 +120,12 @@ static PString CanonicaliseDirectory (const PString & path)
 
   // if the path does not start with a slash, then the current directory
   // must be prepended
-  if (path.IsEmpty() || path[0] != '/') 
-    PAssertOS (getcwd(canonical_path.GetPointer(P_MAX_PATH), P_MAX_PATH));
+  if (path.IsEmpty() || path[0] != '/')  {
+    char *p = getcwd(NULL, 0);
+    PAssertOS (p != NULL);
+    canonical_path = PString(p);
+    runtime_free(p);
+  }
 
   // if the path doesn't end in a slash, add one
   if (canonical_path[canonical_path.GetLength()-1] != '/')
@@ -277,14 +284,10 @@ BOOL PDirectory::Next()
 
   do {
     do {
-#ifdef P_PHTREADS
-      struct dirent dirEnt;
-      if ((entry = ::readdir_r(directory, &dirEnt)) == NULL)
+      if (::readdir_r(directory, (struct dirent *)dirb, &entry) != 0)
         return FALSE;
-#else
-      if ((entry = ::readdir(directory)) == NULL)
+      if (entry == NULL)
         return FALSE;
-#endif
     } while (strcmp(entry->d_name, "." ) == 0 ||
              strcmp(entry->d_name, "..") == 0);
 
@@ -387,6 +390,13 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   return TRUE;
 }
 
+PDirectory PDirectory::GetParent() const
+{
+  if (IsRoot())
+    return *this;
+  
+  return *this + "..";
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -414,7 +424,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
     char * tmp = tempnam(NULL, "PWL");
     PAssert(tmp != NULL, POperatingSystemError);
     path = PString(tmp);
-    free(tmp);
+    runtime_free(tmp);
   }
 
   int oflags = 0;
@@ -662,7 +672,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
   if (dir == NULL) {
     n = tempnam(NULL, prefix);
     *this = CanonicaliseFilename(n);
-    free (n);
+    runtime_free (n);
   } else {
     PDirectory s(dir);
     PString p = s + prefix + "XXXXXX";
@@ -976,3 +986,4 @@ BOOL PURL::OpenBrowser(const PString & url)
 
 
 // End Of File ///////////////////////////////////////////////////////////////
+
