@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.4 1994/11/19 00:18:26 robertj Exp $
+ * $Id: contain.h,v 1.5 1995/01/06 10:47:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.4  1994/11/19 00:18:26  robertj
+ * Revision 1.5  1995/01/06 10:47:08  robertj
+ * Added 64 bit integer.
+ *
+ * Revision 1.4  1994/11/19  00:18:26  robertj
  * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
  *
  * Revision 1.3  1994/07/02  03:18:09  robertj
@@ -50,13 +53,30 @@
 #define PCLASS class
 #endif
 
+
 #define PSTATIC __near
 
-typedef int            BOOL;  // type returned by expresion (i != j)
-typedef unsigned char  BYTE;  // 8 bit quantity
-typedef unsigned short WORD;  // 16 bit quantity
-typedef unsigned long  DWORD; // 32 bit quantity
+
+class PInteger64 {
+  public:
+    PInteger64() { }
+    PInteger64(unsigned long l) : low(l), high(0) { }
+    operator unsigned long() const { return high != 0 ? 0xffffffff : low; }
+    unsigned long GetLow() const { return low; }
+    unsigned long GetHigh() const { return high; }
+    void SetLow(unsigned long l) { low = l; }
+    void SetHigh(unsigned long h) { high = h; }
+  private:
+    unsigned long low, high;
+};
+
+
+typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
+typedef unsigned short WORD;  // 16 bit unsigned integer quantity
+typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
+typedef PInteger64     QWORD; // 64 bit unsigned integer quantity
 typedef long           INT;   // Integer that is the same size as a void *
+typedef int            BOOL;  // type returned by expresion (i != j)
 
 
 #ifdef _MSC_VER
