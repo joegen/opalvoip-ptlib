@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.194  2002/06/15 02:16:36  robertj
+ * Fixed bug (from rev 1.190) so can now use PTimer::Reset() after the timer
+ *   had previously expired (resetTiem was being zeroed), thanks Ted Szoczei
+ *
  * Revision 1.193  2002/06/05 12:29:15  craigs
  * Changes for gcc 3.1
  *
@@ -1051,7 +1055,7 @@ void PTimer::Stop()
 {
   timerList->processingMutex.Wait();
   state = Stopped;
-  SetInterval(0);
+  milliseconds = 0;
   BOOL isCurrentTimer = this == timerList->currentTimer;
   timerList->processingMutex.Signal();
 
@@ -1120,7 +1124,7 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
       }
       else {
         if (oneshot) {
-          SetInterval(0);
+          milliseconds = 0;
           state = Stopped;
         }
         else {
