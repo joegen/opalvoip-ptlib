@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.4  2003/04/28 14:30:02  craigs
+ * Started rearranging code
+ *
  * Revision 1.3  2003/04/28 08:33:00  craigs
  * Linux SDL includes are in a SDL directory, but Windows is not
  *
@@ -86,6 +89,7 @@ void PSDLVideoFrame::Initialise(unsigned newWidth,
   memcpy(data, _data, size);
 }
 
+///////////////////////////////////////////////////////////////////////
 
 PSDLVideoDevice::PSDLVideoDevice(const PString & _remoteName,
 			                                      BOOL _isEncoding, 
@@ -173,11 +177,14 @@ PStringList PSDLVideoDevice::GetDeviceNames() const
 PSDLDisplayThread::PSDLDisplayThread(BOOL _videoPIP)
 	: PThread(1000, NoAutoDeleteThread, LowPriority, "SDL display")
 {
+  threadRunning = TRUE;
+
 	PINDEX i;
+
   for (i = 0; i < 2; i++) {
-    width[i] = 0;
-    height[i] = 0;
-    overlay[i] = NULL;
+    width[i]         = 0;
+    height[i]        = 0;
+    overlay[i]       = NULL;
     displayPosn[i].x = 0;
     displayPosn[i].y = 0;
     displayPosn[i].w = 0;
@@ -190,8 +197,7 @@ PSDLDisplayThread::PSDLDisplayThread(BOOL _videoPIP)
   closeEncWindow = FALSE;
   closeRecWindow = FALSE;
   
-  screen     = NULL;
-  threadOpen = TRUE;
+  screen            = NULL;
   displayIsShutDown = FALSE;
 
   nextEncFrame = NULL;
@@ -204,16 +210,71 @@ PSDLDisplayThread::~PSDLDisplayThread()
 {
 }
 
+
+void PSDLDisplayThread::Main()
+{
+  // initialise the SDL library
+  if (::SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+    PTRACE(0, "Couldn't initialize SDL: " << ::SDL_GetError());
+    return;      
+  }
+
+  PSDLVideoFrame * frame;
+
+  PThread::Current()->SetPriority(LowestPriority);
+  PTRACE(3, "PSDL\tMain loop is underway, with SDL screen initialised");
+
+  for (;;) {
+
+    // wait for a new command to be given
+    commandSync.Wait();
+
+    // if to terminate, do it now
+    if (!IsOpen())
+      break;
+
+    // output next frame
+    WriteOutDisplay();
+
+    frame = GetNextFrame(TRUE);
+    Redraw(TRUE, frame);
+    if (frame != NULL)
+      delete frame;
+    
+    ProcessSDLEvents();
+
+    frame = GetNextFrame(FALSE);
+    Redraw(FALSE, frame);
+    if (frame != NULL)
+      delete frame;
+    
+    ProcessSDLEvents();
+    
+    if (closeRecWindow) {
+      CloseWindow(FALSE);     
+      ProcessSDLEvents();
+    }
+
+    if (closeEncWindow) {
+      CloseWindow(TRUE);
+      ProcessSDLEvents();
+    }
+  }
+
+  CloseWindow(TRUE);
+  CloseWindow(FALSE);
+  PTRACE(3, "PSDL\tEnd of sdl display loop");
+}
+
 BOOL PSDLDisplayThread::AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding)
 {
   PTRACE(3, "PSDL\tAddFrame runs here for frame " << *newFrame  << " " << GetDirName(isEncoding));
 
-  accessLock.Wait();
+  PWaitAndSignal m(mutex);
 
   if (!IsOpen()) { //This frame not wanted, as the display thread is closed.
     PTRACE(2, "PSDL\tDelete unwanted " << GetDirName(isEncoding) << " frame");
     delete newFrame;
-    accessLock.Signal();
     return FALSE;
   }
 
@@ -232,14 +293,14 @@ BOOL PSDLDisplayThread::AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding)
   *frameQ = newFrame;
   PTRACE(4, "PSDL\tAdd new " << GetDirName(isEncoding) << " frame");
 
-  accessLock.Signal();
-  readFlag.Signal();
+  commandSync.Signal();
   return TRUE;
 }
 
 BOOL PSDLDisplayThread::IsOpen()
 {
-  return threadOpen;
+  return threadRunning;
+;
 }
 
 BOOL PSDLDisplayThread::ScreenIsOpen()
@@ -254,44 +315,42 @@ BOOL PSDLDisplayThread::DisplayIsShutDown()
 
 void PSDLDisplayThread::Terminate()
 {
-  PTRACE(3, "PSDL\tSdl has been told to terminate. Set flags to close");
-  accessLock.Wait();
-  
+  PTRACE(3, "PSDL\tRequesting SDL thread termination");
+
+  PWaitAndSignal m(mutex);
+
+  // delete any pending frames
   if (nextEncFrame != NULL)
     delete nextEncFrame;
-
   if (nextRcvFrame != NULL)
     delete nextRcvFrame;
-
   nextEncFrame = NULL;
   nextRcvFrame = NULL;
 
-  threadOpen = FALSE;
-
-  accessLock.Signal();
-  readFlag.Signal();
+  // now signal the thread to finish
+  threadRunning = FALSE;
 }
 
 void PSDLDisplayThread::RequestCloseWindow(BOOL isEncoding)
 {
   PTRACE(3, "PSDL\tRequest: Close window " << GetDirName(isEncoding) << " video");
 
-  accessLock.Wait();
+  PWaitAndSignal m(mutex);
 
   if (isEncoding)
     closeEncWindow = TRUE;
   else
     closeRecWindow = TRUE;
 
-  accessLock.Signal();
-  readFlag.Signal();
+  commandSync.Signal();
 }
 
 void PSDLDisplayThread::RequestOpenWindow(BOOL isEncoding)
 {
   PTRACE(3, "PSDL\tRequest: Open window " << GetDirName(isEncoding) << " video");
 
-  PWaitAndSignal m(accessLock);
+  PWaitAndSignal m(mutex);
+
   if (isEncoding)
     closeEncWindow = FALSE;
   else
@@ -302,12 +361,10 @@ void PSDLDisplayThread::RequestOpenWindow(BOOL isEncoding)
 PSDLVideoFrame * PSDLDisplayThread::GetNextFrame(BOOL isEncoding)
 {
   PSDLVideoFrame *res;
-  accessLock.Wait();
+  PWaitAndSignal m(mutex);
 
-  if (!IsOpen()) {
-    accessLock.Signal();
+  if (!IsOpen())
     return FALSE;
-  }
 
   PSDLVideoFrame **frameQ;
 
@@ -318,19 +375,8 @@ PSDLVideoFrame * PSDLDisplayThread::GetNextFrame(BOOL isEncoding)
 
   res = *frameQ;
   *frameQ = NULL;
-  accessLock.Signal();  
 
   return res;
-}
-
-BOOL PSDLDisplayThread::InitialiseSdl()
-{
-  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-    PTRACE(0,"Couldn't initialize SDL: " << SDL_GetError());
-    return FALSE;      
-    }
-  PTRACE(6, "PSDL\thas just initialised SDL for Video usage");
-  return TRUE;
 }
 
 BOOL PSDLDisplayThread::ResizeScreen(unsigned newWidth, unsigned newHeight)
@@ -346,11 +392,11 @@ BOOL PSDLDisplayThread::ResizeScreen(unsigned newWidth, unsigned newHeight)
   
   WriteOutDisplay();
 
-  screen = SDL_SetVideoMode(newWidth, newHeight, 0, SDL_SWSURFACE | SDL_RESIZABLE );
+  screen = ::SDL_SetVideoMode(newWidth, newHeight, 0, SDL_SWSURFACE | SDL_RESIZABLE );
   
   if (!ScreenIsOpen()) {
-    PTRACE(0,"Could not open screen to display window: " << SDL_GetError());
-    SDL_Quit();
+    PTRACE(0,"Could not open screen to display window: " << ::SDL_GetError());
+    ::SDL_Quit();
     return FALSE;
   }
   
@@ -362,7 +408,7 @@ void PSDLDisplayThread::InitDisplayPosn()
 {
   PTRACE(6, "PSDL\tInitDisplayPosition now");
 
-  SDL_Surface * currentSurface = SDL_GetVideoSurface();
+  SDL_Surface * currentSurface = ::SDL_GetVideoSurface();
   if (currentSurface != NULL)
     InitDisplayPosn(currentSurface->w, currentSurface->h);
 }
@@ -401,11 +447,11 @@ void PSDLDisplayThread::CloseScreen(void)
   if (screen != NULL) {    
     PTRACE(3,"PSDL\t close the SDL display screen.");
 
-    SDL_FreeSurface(screen);
+    ::SDL_FreeSurface(screen);
     screen = NULL;
     oldScreenWidth = 0;
     oldScreenHeight = 0;
-    SDL_Quit();
+    ::SDL_Quit();
   } 
 }
 
@@ -423,7 +469,7 @@ BOOL PSDLDisplayThread::CreateOverlay(BOOL isEncoding)
   //AT this stage, we decide that we need a new overlay.
   //Get rid of the old overlay, then make the new overlay.    
   if (overlay[dispIndex] != NULL) 
-    SDL_FreeYUVOverlay(overlay[dispIndex]);
+    ::SDL_FreeYUVOverlay(overlay[dispIndex]);
 
   if ((w == 0) || (h == 0)) { //An overlay of size 0x0 is meaningless.
     overlay[dispIndex]= NULL;
@@ -431,10 +477,10 @@ BOOL PSDLDisplayThread::CreateOverlay(BOOL isEncoding)
     return TRUE;
   }
   
-  overlay[dispIndex] = SDL_CreateYUVOverlay(w, h, SDL_IYUV_OVERLAY, screen);
+  overlay[dispIndex] = ::SDL_CreateYUVOverlay(w, h, SDL_IYUV_OVERLAY, screen);
  
   if (overlay[dispIndex] == NULL) {
-    PTRACE(1, "PSDL\t Could not open overlay to display window: " << SDL_GetError());
+    PTRACE(1, "PSDL\t Could not open overlay to display window: " << ::SDL_GetError());
     return FALSE;
   }
   
@@ -473,7 +519,7 @@ void PSDLDisplayThread::CloseWindow(BOOL isEncoding)
 
   if(overlay[dispIndex] != NULL) {
     PTRACE(3, "PSDL\tClose the overlay for window " << dispIndex);
-    SDL_FreeYUVOverlay(overlay[dispIndex]);
+    ::SDL_FreeYUVOverlay(overlay[dispIndex]);
     overlay[dispIndex] = NULL;    
   }
   
@@ -489,7 +535,7 @@ void PSDLDisplayThread::CloseWindow(BOOL isEncoding)
 }
 
 
-void PSDLDisplayThread::ProcessSdlEvents(void) 
+void PSDLDisplayThread::ProcessSDLEvents(void) 
 {
   if (!ScreenIsOpen()) {
     PTRACE(6, "PSDL\t Screen not open, so dont process events");
@@ -497,7 +543,7 @@ void PSDLDisplayThread::ProcessSdlEvents(void)
   }
 
   SDL_Event event;  
-  while (SDL_PollEvent(&event)) {
+  while (::SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {//User selected cross
       
       PTRACE(3, "PSDL\t user selected cross on window, close window");
@@ -560,7 +606,7 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
   }
 
   unsigned char * base = frame->GetDataPointer();
-  SDL_LockYUVOverlay(yuvOverlay);
+  ::SDL_LockYUVOverlay(yuvOverlay);
 
   PINDEX pixelsFrame = yuvOverlay->w * yuvOverlay->h;
   PINDEX pixelsQuartFrame = pixelsFrame >> 2;
@@ -568,9 +614,9 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
   memcpy(yuvOverlay->pixels[1], base + pixelsFrame,                    pixelsQuartFrame);
   memcpy(yuvOverlay->pixels[2], base + pixelsFrame + pixelsQuartFrame, pixelsQuartFrame);
 
-  SDL_UnlockYUVOverlay(yuvOverlay);
+  ::SDL_UnlockYUVOverlay(yuvOverlay);
 
-  SDL_DisplayYUVOverlay(yuvOverlay, displayPosn + dispIndex );    
+  ::SDL_DisplayYUVOverlay(yuvOverlay, displayPosn + dispIndex );    
 
   PTRACE(6, "PSDL\tFinish the redraw for window " << GetDirName(isEncoding));
 
@@ -582,19 +628,19 @@ void PSDLDisplayThread::WriteOutDisplay(void)
 #ifdef PTRACING
   PINDEX i;
   for(i = 0; i < 2; i++) {
-    PTRACE(6, "PSDL\t" << i << " display x,y=" << displayPosn[i].x << " "
-	   << displayPosn[i].y );
+    PTRACE(6, "PSDL\t" << i << " display x,y=" << displayPosn[i].x << " " << displayPosn[i].y );
   
-    PTRACE(6, "PSDL\t" << i << " display w,h=" << displayPosn[i].w << " "
-	 << displayPosn[i].h );
+    PTRACE(6, "PSDL\t" << i << " display w,h=" << displayPosn[i].w << " " << displayPosn[i].h );
   
     PTRACE(6, "PSDL\t" << i << " actual  w,h = " << width[i] << " x " << height[i]);
 
     PStringStream str;
+
     if (overlay[i] != NULL)
       str << (void *) overlay[i] << "  size is " << overlay[i]->w << " x " << overlay[i]->h;
     else
       str << "NULL";
+
     PTRACE(6, "PSDL\t Window:" << i << " Overlay  is "  << str);
   }
 
@@ -608,49 +654,6 @@ unsigned PSDLDisplayThread::GetDisplayIndex(BOOL isEncoding)
     return EncodeIndex;
   else
     return RemoteIndex;
-}
-
-void PSDLDisplayThread::Main()
-{
-  PSDLVideoFrame *frame;
-  InitialiseSdl();
-  PThread::Current()->SetPriority(LowestPriority);
-  PTRACE(3, "PSDL\tMain loop is underway, with SDL screen initialised");
-
-  do {
-    readFlag.Wait();
-
-    WriteOutDisplay();
-    frame = GetNextFrame(TRUE);
-    Redraw(TRUE, frame);
-    if (frame != NULL)
-      delete frame;
-    
-    ProcessSdlEvents();
-
-    frame = GetNextFrame(FALSE);
-    Redraw(FALSE, frame);
-    if (frame != NULL)
-      delete frame;
-    
-    ProcessSdlEvents();
-    
-    if (closeRecWindow) {
-      CloseWindow(FALSE);     
-      ProcessSdlEvents();
-    }
-
-    if (closeEncWindow) {
-      CloseWindow(TRUE);
-      ProcessSdlEvents();
-    }
-
-  }
-  while (IsOpen());
-
-  CloseWindow(TRUE);
-  CloseWindow(FALSE);
-  PTRACE(3, "PSDL\tEnd of sdl display loop");
 }
 
 ///////////////////////////////////////////////////
