@@ -182,15 +182,17 @@ BOOL PXML::Load(const PString & data, int _options)
   XML_SetDoctypeDeclHandler  (parser, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
 
   int done = 1;
-  if (XML_Parse(parser, (const char *)data, data.GetLength(), done) != 0)
+  BOOL stat = XML_Parse(parser, (const char *)data, data.GetLength(), done) != 0;
+
+  XML_ParserFree(parser);
+
+  if (stat)
     return TRUE;
 
   XML_Error err = XML_GetErrorCode(parser);
   errorString = PString(XML_ErrorString(err));
   errorCol    = XML_GetCurrentColumnNumber(parser);
   errorLine   = XML_GetCurrentLineNumber(parser);
-
-  XML_ParserFree(parser);
 
   return FALSE;
 }
