@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.29  2004/04/03 06:54:21  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.28  2004/03/02 10:29:59  rjongbloed
  * Changed base array declaration macro to be consistent with the
  *   object array one, thanks Guilhem Tardy
@@ -556,12 +559,11 @@ template <class T> class PBaseArray : public PAbstractArray
    information.
  */
 #define PDECLARE_BASEARRAY(cls, T) \
-  PBASEARRAY(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
-      : cls##_PTemplate(initialSize) { } \
+      : PBaseArray<T>(initialSize) { } \
     cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
-      : cls##_PTemplate(buffer, length, dynamic) { } \
+      : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
