@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.3 1995/12/08 13:15:21 craigs Exp $
+ * $Id: socket.h,v 1.4 1996/01/26 11:06:31 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.4  1996/01/26 11:06:31  craigs
+ * Added destructor
+ *
  * Revision 1.3  1995/12/08 13:15:21  craigs
  * Added new header file
  *
@@ -46,6 +49,8 @@ extern "C" int recv(int s, void *buf, int len, int flags);
 // PSocket
 
 #include "../../common/socket.h"
+  public:
+    ~PSocket();
 };
 
 #endif
