@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.90  2004/04/03 06:54:22  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.89  2003/09/17 09:00:59  csoutheren
  * Moved PSmartPointer and PNotifier into seperate files
  * Added detection for system regex libraries on all platforms
@@ -331,40 +334,42 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
 #ifdef _WIN32
-#include <malloc.h>
+  #include <malloc.h>
 #endif
+
 #include <string.h>
+
 #ifdef __USE_STL__
-#include <string>
-#include <iomanip>
-#include <iostream>
-#if (__GNUC__ >= 3)
-#include <sstream>
+  #include <string>
+  #include <iomanip>
+  #include <iostream>
+  #if (__GNUC__ >= 3)
+    #include <sstream>
+  #else
+    #include <strstream>
+  #endif
+  using namespace std;
 #else
-#include <strstream>
-#endif
-#else
-#if (__GNUC__ >= 3)
-#include <iostream>
-#ifndef __MWERKS__
-#include <iomanip>
-#endif
-#else
-#include <iostream.h>
-#ifndef __MWERKS__
-#include <iomanip.h>
-#endif
-#endif
+  #if (__GNUC__ >= 3)
+    #include <iostream>
+    #ifndef __MWERKS__
+      #include <iomanip>
+    #endif
+  #else
+    #include <iostream.h>
+    #ifndef __MWERKS__
+      #include <iomanip.h>
+    #endif
+  #endif
 #endif
 
 #ifdef _WIN32_WCE
-#include <stdlibx.h>
+  #include <stdlibx.h>
 #endif
 
-#if (__GNUC__ >= 3)
-using namespace std;
-#else
+#if (__GNUC__ < 3)
 typedef long _Ios_Fmtflags;
 #endif
 
