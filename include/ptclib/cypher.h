@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.3 1996/01/28 14:16:11 robertj Exp $
+ * $Id: cypher.h,v 1.4 1996/02/25 02:52:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.4  1996/02/25 02:52:46  robertj
+ * Further secure config development.
+ *
  * Revision 1.3  1996/01/28 14:16:11  robertj
  * Further implementation of secure config.
  *
@@ -300,14 +303,23 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
   public:
     PSecureConfig(
-      const char * const * securedKeys,   // List of secured keys.
-      PINDEX count,                       // Number of secured keys in list.
-      Source src = Application      // Standard source for the configuration.
+      const PStringArray  & securedKeys, // List of secured keys.
+      Source src = Application        // Standard source for the configuration.
     );
     PSecureConfig(
-      const char * const * securedKeys,   // List of secured keys.
+      const char * const * securedKeyArray, // List of secured keys.
+      PINDEX count,                      // Number of secured keys in list.
+      Source src = Application        // Standard source for the configuration.
+    );
+    PSecureConfig(
+      const PStringArray  & securedKeys, // List of secured keys.
+      const PString & securedSection,  // Section for secured key values
+      Source src = Application        // Standard source for the configuration.
+    );
+    PSecureConfig(
+      const char * const * securedKeyArray,  // List of secured keys.
       PINDEX count,                       // Number of secured keys in list.
-      const PString & securedSection,     // Section for secured key values
+      const PString & securedSection,  // Section for secured key values
       Source src = Application        // Standard source for the configuration.
     );
     /* Create a secured configuration. The default section for the
@@ -316,28 +328,73 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
 
   // New functions for class
-    void SetValidation(
-      const char * validationKey = "Validation" // Key to store validation.
+    const PStringArray & GetSecuredKeys() const { return securedKey; }
+    /* Get the list of secured keys in the configuration file section.
+
+       <H2>Returns:</H2>
+       Array of  strings for the secured keys.
+     */
+
+    BOOL SetValidation();
+    BOOL SetValidation(
+      const PString & validationKey    // Key to store validation.
     );
     /* Set the configuration file key with an encoded validation of all of the
        values attached to the keys specified in the constructor.
-     */
-
-    BOOL IsValid(
-      const char * validationKey = "Validation" // Key validation stored in.
-    );
-    /* Check the current values attached to the keys specified in the
-       constructor against an encoded validation key.
 
        <H2>Returns:</H2>
        TRUE if secure key values are valid.
      */
 
+    void UnsetValidation();
+    void UnsetValidation(
+      const PString & validationKey    // Key to store validation.
+    );
+    /* Set the configuration file key with an encoded validation of all of the
+       values attached to the keys specified in the constructor.
+     */
+
+    enum ValidationState {
+      Defaults,
+      Pending,
+      IsValid,
+      Invalid
+    };
+    ValidationState GetValidation() const;
+    ValidationState GetValidation(
+      const PString & validationKey    // Key validation stored in.
+    ) const;
+    /* Check the current values attached to the keys specified in the
+       constructor against an encoded validation key.
+
+       <H2>Returns:</H2>
+       State of the validation keys.
+     */
+
+    enum DigestType {
+      PendingKeys,
+      SecuredKeys
+    };
+
+    PString CalculateDigest(DigestType keyType) const;
+    /* Calculate the MD5 digest for all of the secured keys data in the
+       configuration file.
+
+       <H2>Returns:</H2>
+       Base64 string for MD5 encoding of data.
+     */
+
+    PString CalculateValidation(DigestType keyType) const;
+    /* Calculate the validation string for the secured keys data in the
+       configuration file.
+
+       <H2>Returns:</H2>
+       Base64 string for MD5 encoding of data.
+     */
+
 
   protected:
-    PString CalculateValidation();
-
-    PStringArray    securedKey;
+    PStringArray securedKey;
 };
 
 
