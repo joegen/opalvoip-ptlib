@@ -1,6 +1,6 @@
 
 /*
- * $Id: ipsock.h,v 1.3 1996/08/03 12:08:19 craigs Exp $
+ * $Id: ipsock.h,v 1.4 1997/10/03 14:47:07 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.4  1997/10/03 14:47:07  craigs
+ * Fixed ifdef guard
+ *
  * Revision 1.3  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -23,7 +26,7 @@
  *
  */
 
-#ifndef _IPSOCKET
+#ifndef _PIPSOCKET
 
 #pragma interface
 
