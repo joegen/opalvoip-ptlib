@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.7 1997/02/05 11:51:15 robertj Exp $
+ * $Id: svcproc.h,v 1.8 1997/07/08 13:02:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.8  1997/07/08 13:02:32  robertj
+ * DLL support.
+ *
  * Revision 1.7  1997/02/05 11:51:15  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -49,7 +52,7 @@
 #pragma interface
 #endif
 
-class PEXPORT PSystemLog : public PObject, public iostream {
+class PSystemLog : public PObject, public iostream {
   PCLASSINFO(PSystemLog, PObject)
 
   public:
@@ -82,7 +85,7 @@ class PEXPORT PSystemLog : public PObject, public iostream {
     PSystemLog(const PSystemLog &) { }
     PSystemLog & operator=(const PSystemLog &) { return *this; }
 
-    class PEXPORT Buffer : public streambuf {
+    class Buffer : public streambuf {
       public:
         Buffer(PSystemLog * l) { log = l; }
         virtual int overflow(int=EOF);
