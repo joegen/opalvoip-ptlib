@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.8 1995/03/14 12:40:58 robertj Exp $
+ * $Id: args.h,v 1.9 1995/06/17 11:12:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
+ * Revision 1.9  1995/06/17 11:12:17  robertj
+ * Documentation update.
+ *
  * Revision 1.8  1995/03/14 12:40:58  robertj
  * Updated documentation to use HTML codes.
  *
@@ -150,8 +153,8 @@ PDECLARE_CLASS(PArgList, PObject)
 
     PINDEX GetCount() const;
     /* Get the number of parameters that may be obtained via the
-       <A><CODE>GetParameter()</CODE><A> function. Note that this does not
-       include options and option strings.
+       <A>GetParameter()<A> function. Note that this does not include options
+       and option strings.
 
        <H2>Returns:</H2>
        count of parameters.
