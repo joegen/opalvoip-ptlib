@@ -2946,7 +2946,7 @@ EXPORTS
     ?Listen@PTCPSocket@@UAEHABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @3056 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PTCPSocket@@UAEHIGW4Reusability@PSocket@@@Z @1904 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Load@PSound@@QAEHABVPFilePath@@@Z @2700 NONAME ;public: int __thiscall PSound::Load(class PFilePath const &)
-    ?LockReadOnly@PSafeObject@@QAEHXZ @4434 NONAME ;public: int __thiscall PSafeObject::LockReadOnly(void)
+    ?LockReadOnly@PSafeObject@@QBEHXZ @4452 NONAME ;public: int __thiscall PSafeObject::LockReadOnly(void)const 
     ?LockReadWrite@PSafeObject@@QAEHXZ @4435 NONAME ;public: int __thiscall PSafeObject::LockReadWrite(void)
     ?LogOff@PMail@@UAEHXZ @1907 NONAME ;public: virtual int __thiscall PMail::LogOff(void)
     ?LogOn@PMail@@QAEHABVPString@@00@Z @1908 NONAME ;public: int __thiscall PMail::LogOn(class PString const &,class PString const &,class PString const &)
@@ -3435,7 +3435,7 @@ EXPORTS
     ?underflow@Buffer@PSystemLog@@UAEHXZ @2259 NONAME ;public: virtual int __thiscall PSystemLog::Buffer::underflow(void)
     ?underflow@PChannelStreamBuffer@@MAEHXZ @2260 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::underflow(void)
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @2261 NONAME ;public: virtual void __thiscall PArgList::UnknownOption(class PString const &)const 
-    ?UnlockReadOnly@PSafeObject@@QAEXXZ @4450 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)
+    ?UnlockReadOnly@PSafeObject@@QBEXXZ @4453 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)const 
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @4451 NONAME ;public: void __thiscall PSafeObject::UnlockReadWrite(void)
     ?UnSerialise@PObject@@UAEXAAVPUnSerialiser@@@Z @2263 NONAME ;public: virtual void __thiscall PObject::UnSerialise(class PUnSerialiser &)
     ?Validate@PMemoryHeap@@SA?AW4Validation@1@PAXPBDPAVostream@@@Z @4051 NONAME ;public: static enum PMemoryHeap::Validation  __cdecl PMemoryHeap::Validate(void *,char const *,class ostream *)
