@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.12  2001/06/14 02:09:20  robertj
+ * Corrected support for ASN object class type reference constructs
+ *   ie TYPE-IDENTIFIER.&Type encoded as octet string.
+ *
  * Revision 1.11  2000/03/21 21:23:24  robertj
  * Added option to rename imported module names, allows include filename matching.
  *
@@ -876,6 +880,8 @@ class ObjectClassFieldType : public TypeBase
     ObjectClassFieldType(PString * objclass, PString * field);
     virtual const char * GetAncestorClass() const;
     void PrintOn(ostream &) const;
+    virtual TypeBase * FlattenThisType(const TypeBase & parent);
+    virtual BOOL IsPrimitiveType() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
     virtual BOOL CanReferenceType() const;
     virtual BOOL ReferencesType(const TypeBase & type);
