@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.11  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.10  1998/09/23 06:19:24  robertj
  * Added open source copyright license.
  *
@@ -70,7 +73,9 @@
 #endif
 
 
-PDECLARE_CLASS(PMessageDigest5, PObject)
+class PMessageDigest5 : public PObject
+{
+  PCLASSINFO(PMessageDigest5, PObject)
 /* A class to produce a Message Digest for a block of text/data using the
    MD5 algorithm as defined in RFC1321 by Ronald Rivest of MIT Laboratory
    for Computer Science and RSA Data Security, Inc.
@@ -161,7 +166,9 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
 
 
 
-PDECLARE_CLASS(PCypher, PObject)
+class PCypher : public PObject
+{
+  PCLASSINFO(PCypher, PObject)
 /* This abstract class defines an encryption/decryption algortihm. A
    specific algorithm is implemented in a descendent class.
  */
@@ -295,7 +302,9 @@ PDECLARE_CLASS(PCypher, PObject)
 };
 
 
-PDECLARE_CLASS(PTEACypher, PCypher)
+class PTEACypher : public PCypher
+{
+  PCLASSINFO(PTEACypher, PCypher)
 /* This class implements the Tiny Encryption Algorithm by David Wheeler and
    Roger Needham at Cambridge University.
 
@@ -361,7 +370,9 @@ PDECLARE_CLASS(PTEACypher, PCypher)
 
 
 
-PDECLARE_CLASS(PSecureConfig, PConfig)
+class PSecureConfig : public PConfig
+{
+  PCLASSINFO(PSecureConfig, PConfig)
 /* This class defines a set of configuration keys which may be secured by an
    encrypted hash function. Thus values contained in keys specified by this
    class cannot be changed without invalidating the hash function.

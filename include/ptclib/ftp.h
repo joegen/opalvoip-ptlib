@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.10  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.9  1998/11/30 02:50:45  robertj
  * New directory structure
  *
@@ -71,7 +74,9 @@
 #include <ptlib/sockets.h>
 
 
-PDECLARE_CLASS(PFTP, PInternetProtocol)
+class PFTP : public PInternetProtocol
+{
+  PCLASSINFO(PFTP, PInternetProtocol)
   public:
     // FTP commands
     enum Commands { 
@@ -110,7 +115,9 @@ PDECLARE_CLASS(PFTP, PInternetProtocol)
 };
 
 
-PDECLARE_CLASS(PFTPClient, PFTP)
+class PFTPClient : public PFTP
+{
+  PCLASSINFO(PFTPClient, PFTP)
   public:
     PFTPClient();
     // Declare an FTP client socket.
@@ -239,7 +246,9 @@ PDECLARE_CLASS(PFTPClient, PFTP)
 };
 
 
-PDECLARE_CLASS(PFTPServer, PFTP)
+class PFTPServer : public PFTP
+{
+  PCLASSINFO(PFTPServer, PFTP)
   public:
     enum { MaxIllegalPasswords = 3 };
 

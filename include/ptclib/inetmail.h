@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.10  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.9  1998/11/30 02:50:51  robertj
  * New directory structure
  *
@@ -82,7 +85,9 @@ class PSocket;
 //////////////////////////////////////////////////////////////////////////////
 // PSMTP
 
-PDECLARE_CLASS(PSMTP, PInternetProtocol)
+class PSMTP : public PInternetProtocol
+{
+  PCLASSINFO(PSMTP, PInternetProtocol)
 /* A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
@@ -124,7 +129,9 @@ PDECLARE_CLASS(PSMTP, PInternetProtocol)
 };
 
 
-PDECLARE_CLASS(PSMTPClient, PSMTP)
+class PSMTPClient : public PSMTP
+{
+  PCLASSINFO(PSMTPClient, PSMTP)
 /* A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
@@ -208,7 +215,9 @@ PDECLARE_CLASS(PSMTPClient, PSMTP)
 };
 
 
-PDECLARE_CLASS(PSMTPServer, PSMTP)
+class PSMTPServer : public PSMTP
+{
+  PCLASSINFO(PSMTPServer, PSMTP)
 /* A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
@@ -437,7 +446,9 @@ PDECLARE_CLASS(PSMTPServer, PSMTP)
 //////////////////////////////////////////////////////////////////////////////
 // PPOP3
 
-PDECLARE_CLASS(PPOP3, PInternetProtocol)
+class PPOP3 : public PInternetProtocol
+{
+  PCLASSINFO(PPOP3, PInternetProtocol)
 /* A TCP/IP socket for the Post Office Protocol version 3.
 
    When acting as a client, the procedure is to make the connection to a
@@ -508,7 +519,9 @@ PDECLARE_CLASS(PPOP3, PInternetProtocol)
 };
 
 
-PDECLARE_CLASS(PPOP3Client, PPOP3)
+class PPOP3Client : public PPOP3
+{
+  PCLASSINFO(PPOP3Client, PPOP3)
 /* A TCP/IP socket for the Post Office Protocol version 3.
 
    When acting as a client, the procedure is to make the connection to a
@@ -635,7 +648,9 @@ PDECLARE_CLASS(PPOP3Client, PPOP3)
 };
 
 
-PDECLARE_CLASS(PPOP3Server, PPOP3)
+class PPOP3Server : public PPOP3
+{
+  PCLASSINFO(PPOP3Server, PPOP3)
 /* A TCP/IP socket for the Post Office Protocol version 3.
 
     When acting as a server, a descendant class would be created to override

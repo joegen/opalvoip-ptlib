@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psnmp.h,v $
+ * Revision 1.6  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.5  1998/11/30 02:50:55  robertj
  * New directory structure
  *
@@ -74,12 +77,12 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PSNMPVarBindingList
-//     A list of object IDs and their values
-//
 
-PDECLARE_CLASS (PSNMPVarBindingList, PObject)
+class PSNMPVarBindingList : public PObject
+{
+  PCLASSINFO(PSNMPVarBindingList, PObject)
+/* A list of object IDs and their values
+ */
   public:
 
     void Append(const PString & objectID);
@@ -101,12 +104,12 @@ PDECLARE_CLASS (PSNMPVarBindingList, PObject)
 };
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PSNMP
-//     A descendant of PUDPSocket which can perform SNMP calls
-//
 
-PDECLARE_CLASS(PSNMP, PIndirectChannel)
+class PSNMP : public PIndirectChannel
+{
+  PCLASSINFO(PSNMP, PIndirectChannel)
+/* A descendant of PUDPSocket which can perform SNMP calls
+ */
   public:
     enum ErrorType {
        // Standard RFC1157 errors
@@ -211,11 +214,12 @@ PDECLARE_CLASS(PSNMP, PIndirectChannel)
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PSNMPClient
-//
 
-PDECLARE_CLASS(PSNMPClient, PSNMP)
+class PSNMPClient : public PSNMP
+{
+  PCLASSINFO(PSNMPClient, PSNMP)
+/* Class which gets SNMP data
+ */
   public:
     PSNMPClient(const PString & host,
                 PINDEX retryMax = 5,
@@ -272,11 +276,12 @@ PDECLARE_CLASS(PSNMPClient, PSNMP)
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PSNMPServer
-//
 
-PDECLARE_CLASS(PSNMPServer, PSNMP)
+class PSNMPServer : public PSNMP
+{
+  PCLASSINFO(PSNMPServer, PSNMP)
+/* Class which supplies SNMP data
+ */
   public:
 
     virtual void OnGetRequest     (PSNMPVarBindingList & vars);
@@ -287,3 +292,6 @@ PDECLARE_CLASS(PSNMPServer, PSNMP)
 };
 
 #endif
+
+
+// End of File.

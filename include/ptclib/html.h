@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.h,v $
+ * Revision 1.19  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.18  1998/09/23 06:19:27  robertj
  * Added open source copyright license.
  *
@@ -96,7 +99,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
 
-PDECLARE_CLASS(PHTML, PStringStream)
+class PHTML : public PStringStream
+{
+  PCLASSINFO(PHTML, PStringStream)
 /* This class describes a HyperText markup Language string as used by the
    World Wide Web and the <A>PURL</A> and <A>PHTTPSocket</A> class.
    
