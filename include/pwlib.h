@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.32 1994/08/23 11:32:52 robertj Exp $
+ * $Id: pwlib.h,v 1.33 1994/10/23 04:53:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.32  1994/08/23 11:32:52  robertj
+ * Revision 1.33  1994/10/23 04:53:25  robertj
+ * Added PPixel subclasses
+ *
+ * Revision 1.32  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.31  1994/08/22  00:46:48  robertj
@@ -127,6 +130,12 @@
 // PPixels
 
 #include <pixels.h>
+#include <pixels1.h>
+#include <pixels2.h>
+#include <pixels4.h>
+#include <pixels8.h>
+#include <pixels24.h>
+#include <pixels32.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
