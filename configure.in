@@ -43,7 +43,7 @@ AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
 AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
 AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
 
-echo "PTLib version is ${PWLIB_VERSION}"
+AC_MSG_NOTICE("PTLib version is ${PWLIB_VERSION}");
 
 dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
@@ -86,7 +86,7 @@ case "$target_os" in
   * )		   OSTYPE="$target_os" ;
   		   OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_UNKNOWN=$OSTYPE_$OSRELEASE" ;
-		   echo "OS $target_os not recognized - proceed with caution!" ;;
+		   AC_MSG_WARN("OS $target_os not recognized - proceed with caution!") ;;
 esac
 
 MACHTYPE=
@@ -119,12 +119,12 @@ case "$target_cpu" in
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
    * )		   MACHTYPE=$target_cpu ;
-		   echo "CPU $target_cpu not recognized - proceed with caution!" ;;
+		   AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!") ;;
 esac
 
-echo "OSTYPE set to $OSTYPE";
-echo "OSRELEASE set to $OSRELEASE";
-echo "MACHTYPE set to $MACHTYPE";
+AC_MSG_NOTICE("OSTYPE set to $OSTYPE");
+AC_MSG_NOTICE("OSRELEASE set to $OSRELEASE");
+AC_MSG_NOTICE("MACHTYPE set to $MACHTYPE");
 
 AC_SUBST(MACHTYPE,  $MACHTYPE)
 AC_SUBST(OSTYPE,    $OSTYPE)
@@ -271,16 +271,21 @@ dnl check for dynamic library code (dlopen end friends)
 dnl MSWIN DLL Support,,P_DYNALINK
 
 LIBS=""
+HAS_LIBDL=no
 if test ${OSTYPE} = Darwin ; then
   AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
 else
-  AC_CHECK_HEADERS(dlfcn.h, P_DYNALINK=1)
-  if test "u${P_DYNALINK:-nset}" != "unset" ; then
-    AC_DEFINE(P_DYNALINK, 1, "dlopen found")
-  else
-    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
-    if test ${HAS_LIBDL} = yes ; then
+  AC_CHECK_HEADERS(dlfcn.h, HAS_DLFCN=yes, HAS_DLFCN=no)
+  if test "$HAS_DLFCN" = yes ; then
+    AC_MSG_CHECKING(if dlopen is available)
+    AC_TRY_COMPILE([#include <dlfcn.h>],
+                    [void * p = dlopen("lib", 0);], HAS_DLOPEN=yes, HAS_DLOPEN=no)
+    if test "$HAS_DLOPEN" = no ; then
+      AC_MSG_RESULT(no)
+    else
+      AC_MSG_RESULT(yes)
       AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+      AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
     fi
   fi
 fi
@@ -620,7 +625,7 @@ AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
 AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
 if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux/BSD video capture")
-  echo "No Video Capture support"
+  AC_MSG_NOTICE("No Video Capture support")
 fi
 
 
