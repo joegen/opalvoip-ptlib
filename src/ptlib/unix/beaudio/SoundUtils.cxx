@@ -1,14 +1,12 @@
-/*******************************************************************************
-/
-/	File:			SoundUtils.cpp
-/
-/   Description:	Utility functions for handling audio data.
-/
-/	Copyright 1998-1999, Be Incorporated, All Rights Reserved
-/
-*******************************************************************************/
+//
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
+//
+// Portions: 1998-1999, Be Incorporated
+//
 
 #include "SoundUtils.h"
+#include "math.h"
 
 // These two conversions seem to pop up all the time in media code.
 // I guess it's the curse of microsecond resolution... ;-)
