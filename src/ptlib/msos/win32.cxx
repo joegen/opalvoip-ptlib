@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.73  1998/11/02 10:07:20  robertj
+ * Added capability of pip output to go to stdout/stderr.
+ *
  * Revision 1.72  1998/10/31 12:50:47  robertj
  * Removed ability to start threads immediately, race condition with vtable (Main() function).
  * Rearranged PPipChannel functions to help with multi-platform-ness.
@@ -826,6 +829,11 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   if (mode == WriteOnly)
     hFromChild = NULL;
+  else if (mode == ReadWriteStd) {
+    hFromChild = NULL;
+    startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+  }
   else {
     PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 0));
     if (stderrSeparate)
@@ -851,10 +859,13 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   if (startup.hStdInput != INVALID_HANDLE_VALUE)
     CloseHandle(startup.hStdInput);
-  if (startup.hStdOutput != INVALID_HANDLE_VALUE)
-    CloseHandle(startup.hStdOutput);
-  if (startup.hStdOutput != startup.hStdError)
-    CloseHandle(startup.hStdError);
+
+  if (mode != ReadWriteStd) {
+    if (startup.hStdOutput != INVALID_HANDLE_VALUE)
+      CloseHandle(startup.hStdOutput);
+    if (startup.hStdOutput != startup.hStdError)
+      CloseHandle(startup.hStdError);
+  }
 
   return IsOpen();
 }
