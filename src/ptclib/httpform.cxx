@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.20 1998/02/03 06:26:09 robertj Exp $
+ * $Id: httpform.cxx,v 1.21 1998/03/20 03:16:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.21  1998/03/20 03:16:43  robertj
+ * Fixed bug in beaing able to reset a check box field.
+ *
  * Revision 1.20  1998/02/03 06:26:09  robertj
  * Fixed propagation of inital values in arrays subfields.
  * Fixed problem where hidden fields were being relaced with default values from PHTTPForm.
@@ -1135,7 +1138,8 @@ PHTTPField * PHTTPBooleanField::NewField() const
 
 void PHTTPBooleanField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::CheckBox(fullName, value ? PHTML::Checked : PHTML::UnChecked);
+  html << PHTML::HiddenField(fullName, "FALSE")
+       << PHTML::CheckBox(fullName, value ? PHTML::Checked : PHTML::UnChecked);
 }
 
 
