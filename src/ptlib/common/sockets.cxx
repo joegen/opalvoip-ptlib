@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.87  1999/02/25 03:43:35  robertj
+ * Fixed warning when PINDEX is unsigned.
+ *
  * Revision 1.86  1999/02/23 07:19:22  robertj
  * Added [] operator PIPSocket::Address to get the bytes out of an IP address.
  *
@@ -1279,7 +1282,8 @@ PIPSocket::Address::operator PString() const
 
 BYTE PIPSocket::Address::operator[](PINDEX idx) const
 {
-  PAssert(idx >= 0 && idx <= 3, PInvalidParameter);
+  PASSERTINDEX(idx);
+  PAssert(idx <= 3, PInvalidParameter);
   return ((BYTE *)this)[idx];
 }
 
