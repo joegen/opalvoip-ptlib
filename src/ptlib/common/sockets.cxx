@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.15 1995/06/04 12:45:33 robertj Exp $
+ * $Id: sockets.cxx,v 1.16 1995/06/17 00:47:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.16  1995/06/17 00:47:01  robertj
+ * Changed overloaded Open() calls to 3 separate function names.
+ * More logical design of port numbers and service names.
+ *
  * Revision 1.15  1995/06/04 12:45:33  robertj
  * Added application layer protocol sockets.
  * Slight redesign of port numbers on sockets.
@@ -62,19 +66,21 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PSocket
-
-BOOL PSocket::Open(const PString &)
-{
-  PAssertAlways(PLogicError);
-  return FALSE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
 #ifdef P_HAS_BERKELEY_SOCKETS
+
+PIPSocket::PIPSocket(WORD portNum)
+{
+  port = portNum;
+}
+
+
+PIPSocket::PIPSocket(const char * protocol, const char * service)
+{
+  port = GetPortByService(protocol, service);
+}
+
 
 PString PIPSocket::GetName() const
 {
@@ -182,47 +188,55 @@ PString PIPSocket::GetPeerHostName()
 }
 
 
-#endif
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PTCPSocket
-
-#ifdef P_HAS_BERKELEY_SOCKETS
-
-PTCPSocket::PTCPSocket(WORD newPort)
+void PIPSocket::SetPort(WORD newPort)
 {
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
   port = newPort;
 }
 
 
-PTCPSocket::PTCPSocket(const PString & service)
+void PIPSocket::SetPort(const PString & service)
 {
-  SetPort(service);
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  port = GetPortByService(service);
+  if (port == 0)
+    port = (WORD)service.AsInteger();
 }
 
 
-PTCPSocket::PTCPSocket(const PString & address, WORD port)
+WORD PIPSocket::GetPort() const
 {
-  SetPort(port);
-  Open(address);
+  return port;
 }
 
 
-PTCPSocket::PTCPSocket(const PString & address, const PString & service)
+PString PIPSocket::GetService() const
 {
-  SetPort(service);
-  Open(address);
+  return GetServiceByPort(port);
 }
 
 
-PTCPSocket::PTCPSocket(PSocket & socket)
+WORD PIPSocket::GetPortByService(const char * protocol, const char * service)
 {
-  Open(socket);
+  struct servent * serv = ::getservbyname(service, protocol);
+  if (serv != NULL)
+    return ntohs(serv->s_port);
+  else
+    return 0;
 }
 
 
-BOOL PTCPSocket::Open(const PString & host)
+PString PIPSocket::GetServiceByPort(const char * protocol, WORD port)
+{
+  struct servent * serv = ::getservbyport(port, protocol);
+  if (serv != NULL)
+    return PString(serv->s_name);
+  else
+    return PString();
+}
+
+
+BOOL PIPSocket::_Socket(int type)
 {
   // close the port if it is already open
   if (IsOpen())
@@ -231,25 +245,9 @@ BOOL PTCPSocket::Open(const PString & host)
   // make sure we have a port
   PAssert(port != 0, "Cannot open socket without setting port");
 
-  // attempt to lookup the host name
-  Address ipnum;
-  if (!GetAddress(host, ipnum))
-    return FALSE;
-
   // attempt to create a socket
-  if (!ConvertOSError(os_handle = ::socket(AF_INET, SOCK_STREAM, 0)))
+  if (!ConvertOSError(os_handle = ::socket(AF_INET, type, 0)))
     return FALSE;
-
-  // attempt to connect
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  address.sin_port = htons(port);  // set the port
-  address.sin_addr = ipnum;
-  if (!ConvertOSError(::connect(os_handle,
-                              (struct sockaddr *)&address, sizeof(address)))) {
-    Close();
-    return FALSE;
-  }
 
   // make the socket non-blocking
 #if !defined(_WIN32)
@@ -265,29 +263,93 @@ BOOL PTCPSocket::Open(const PString & host)
 }
 
 
-BOOL PTCPSocket::Open(WORD newPort)
+BOOL PIPSocket::_Connect(const PString & host)
 {
-  // close the port if it is already open
-  if (IsOpen())
-    Close();
-
-  // make sure we have a port
-  if (newPort != 0)
-    port = newPort;
-  PAssert(port != 0, "Cannot open socket without setting port");
-
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = ::socket(AF_INET, SOCK_STREAM, 0)))
+  // attempt to lookup the host name
+  Address ipnum;
+  if (!GetAddress(host, ipnum))
     return FALSE;
 
+  // attempt to connect
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  address.sin_port = htons(port);  // set the port
+  address.sin_addr = ipnum;
+  return ConvertOSError(::connect(os_handle,
+                               (struct sockaddr *)&address, sizeof(address)));
+}
+
+
+BOOL PIPSocket::_Listen(unsigned queueSize)
+{
   // attempt to listen
   sockaddr_in sin;
   sin.sin_family = AF_INET;
   sin.sin_port = htons(port);  // set the port
   memset(&sin.sin_addr, 0, sizeof(sin.sin_addr));
 
-  if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))) &&
-      ConvertOSError(::listen(os_handle, 5)))
+  if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
+    return FALSE;
+
+  return ConvertOSError(::listen(os_handle, queueSize));
+}
+
+
+BOOL PIPSocket::Accept(PSocket & socket)
+{
+  // attempt to create a socket
+  return ConvertOSError(os_handle = ::accept(socket.GetHandle(), NULL, 0));
+}
+
+
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PTCPSocket
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+
+PTCPSocket::PTCPSocket(WORD newPort)
+  : PIPSocket(newPort)
+{
+}
+
+
+PTCPSocket::PTCPSocket(const PString & service)
+  : PIPSocket("tcp", service)
+{
+}
+
+
+PTCPSocket::PTCPSocket(const PString & address, WORD newPort)
+  : PIPSocket(newPort)
+{
+  Connect(address);
+}
+
+
+PTCPSocket::PTCPSocket(const PString & address, const PString & service)
+  : PIPSocket("tcp", service)
+{
+  Connect(address);
+}
+
+
+PTCPSocket::PTCPSocket(PSocket & socket)
+{
+  Accept(socket);
+}
+
+
+BOOL PTCPSocket::Connect(const PString & host)
+{
+  // attempt to create a socket
+  if (!_Socket(SOCK_STREAM))
+    return FALSE;
+
+  // attempt to connect
+  if (_Connect(host))
     return TRUE;
 
   Close();
@@ -295,10 +357,22 @@ BOOL PTCPSocket::Open(WORD newPort)
 }
 
 
-BOOL PTCPSocket::Open(PSocket & socket)
+BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
 {
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+
   // attempt to create a socket
-  return ConvertOSError(os_handle = ::accept(socket.GetHandle(), NULL, 0));
+  if (!_Socket(SOCK_STREAM))
+    return FALSE;
+
+  // attempt to listen
+  if (_Listen(queueSize))
+    return TRUE;
+
+  Close();
+  return FALSE;
 }
 
 
@@ -316,23 +390,15 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 }
 
 
-WORD PTCPSocket::GetPort(const PString & serviceName) const
+WORD PTCPSocket::GetPortByService(const PString & serviceName) const
 {
-  struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
-  if (service != NULL)
-    return ntohs(service->s_port);
-  else
-    return 0;
+  return PIPSocket::GetPortByService("tcp", serviceName);
 }
 
 
-PString PTCPSocket::GetService(WORD port) const
+PString PTCPSocket::GetServiceByPort(WORD port) const
 {
-  struct servent * service = ::getservbyport(port, "tcp");
-  if (service != NULL)
-    return PString(service->s_name);
-  else
-    return PString();
+  return PIPSocket::GetServiceByPort("tcp", port);
 }
 
 
@@ -344,32 +410,90 @@ void PTCPSocket::OnOutOfBand(const void *, PINDEX)
 }
 
 
-void PTCPSocket::SetPort(WORD newPort)
+//////////////////////////////////////////////////////////////////////////////
+// PUDPSocket
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+
+PUDPSocket::PUDPSocket(WORD newPort)
+  : PIPSocket(newPort)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = newPort;
 }
 
 
-void PTCPSocket::SetPort(const PString & service)
+PUDPSocket::PUDPSocket(const PString & service)
+  : PIPSocket("udp", service)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = GetPort(service);
-  if (port == 0)
-    port = (WORD)service.AsInteger();
 }
 
 
-WORD PTCPSocket::GetPort() const
+PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
+  : PIPSocket(newPort)
 {
-  return port;
+  Connect(address);
 }
 
 
-PString PTCPSocket::GetService() const
+PUDPSocket::PUDPSocket(const PString & address, const PString & service)
+  : PIPSocket("udp", service)
 {
-  return GetService(port);
+  Connect(address);
 }
+
+
+PUDPSocket::PUDPSocket(PSocket & socket)
+{
+  Accept(socket);
+}
+
+
+BOOL PUDPSocket::Connect(const PString & host)
+{
+  // attempt to create a socket
+  if (!_Socket(SOCK_DGRAM))
+    return FALSE;
+
+  // attempt to connect
+  if (_Connect(host))
+    return TRUE;
+
+  Close();
+  return FALSE;
+}
+
+
+BOOL PUDPSocket::Listen(unsigned queueSize, WORD newPort)
+{
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+
+  // attempt to create a socket
+  if (!_Socket(SOCK_DGRAM))
+    return FALSE;
+
+  // attempt to listen
+  if (_Listen(queueSize))
+    return TRUE;
+
+  Close();
+  return FALSE;
+}
+
+
+WORD PUDPSocket::GetPortByService(const PString & serviceName) const
+{
+  return PIPSocket::GetPortByService("udp", serviceName);
+}
+
+
+PString PUDPSocket::GetServiceByPort(WORD port) const
+{
+  return PIPSocket::GetServiceByPort("udp", port);
+}
+
+
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -386,7 +510,7 @@ PTelnetSocket::PTelnetSocket(const PString & address)
   : PTCPSocket("telnet")
 {
   Construct();
-  Open(address);
+  Connect(address);
 }
 
 
@@ -419,11 +543,11 @@ void PTelnetSocket::Construct()
 #define PTelnetError if (debug) PError << "PTelnetSocket: "
 #define PDebugError if (debug) PError
 
-BOOL PTelnetSocket::Open(const PString & host)
+BOOL PTelnetSocket::Connect(const PString & host)
 {
-  PTelnetError << "open" << endl;
+  PTelnetError << "Connect" << endl;
 
-  if (!PTCPSocket::Open(host))
+  if (!PTCPSocket::Connect(host))
     return FALSE;
 
   SendDo(SuppressGoAhead);
@@ -433,15 +557,9 @@ BOOL PTelnetSocket::Open(const PString & host)
 }
 
 
-BOOL PTelnetSocket::Open(WORD newPort)
+BOOL PTelnetSocket::Accept(PSocket & sock)
 {
-  return PTCPSocket::Open(newPort);
-}
-
-
-BOOL PTelnetSocket::Open(PSocket & sock)
-{
-  if (!PTCPSocket::Open(sock))
+  if (!PTCPSocket::Accept(sock))
     return FALSE;
 
   SendDo(SuppressGoAhead);
@@ -1231,760 +1349,6 @@ void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)
 {
   PTelnetError << "out of band data received of length " << length << endl;
   synchronising++;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PApplicationSocket
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       WORD port)
-  : PTCPSocket(port), commandNames(cmdCount, cmdNames)
-{
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & service)
-  : PTCPSocket(service), commandNames(cmdCount, cmdNames)
-{
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & address,
-                                       WORD port)
-  : PTCPSocket(address, port), commandNames(cmdCount, cmdNames)
-{
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       const PString & address,
-                                       const PString & service)
-  : PTCPSocket(address, service), commandNames(cmdCount, cmdNames)
-{
-}
-
-
-PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
-                                       char const * const * cmdNames,
-                                       PSocket & socket)
-  : PTCPSocket(socket), commandNames(cmdCount, cmdNames)
-{
-}
-
-
-BOOL PApplicationSocket::WriteLine(const PString & line)
-{
-  if (line.FindOneOf("\r\n") == P_MAX_INDEX)
-    return WriteString(line + "\r\n");
-
-  PStringArray lines = line.Lines();
-  for (PINDEX i = 0; i < lines.GetSize(); i++)
-    if (!WriteString(lines[i] + "\r\n"))
-      return FALSE;
-
-  return TRUE;
-}
-
-
-BOOL PApplicationSocket::ReadLine(PString & str)
-{
-  PCharArray line(100);
-  PINDEX count = 0;
-  int c;
-  while ((c = ReadChar()) >= 0) {
-    switch (c) {
-      case '\b' :
-      case '\177' :
-        if (count > 0)
-          count--;
-        break;
-
-      case '\r' :
-      case '\n' :
-        if (count > 0) {
-          str = PString(line, count);
-          return TRUE;
-        }
-        break;
-
-      default :
-        if (count >= line.GetSize())
-          line.SetSize(count + 100);
-        line[count++] = (char)c;
-    }
-  }
-
-  if (count > 0)
-    str = PString(line, count);
-  else
-    str = PString();
-
-  return FALSE;
-}
-
-
-BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
-{
-  if (cmdNumber >= commandNames.GetSize())
-    return FALSE;
-  return WriteLine(commandNames[cmdNumber] + " " + param);
-}
-
-
-PINDEX PApplicationSocket::ReadCommand(PString & args)
-{
-  if (!ReadLine(args))
-    return P_MAX_INDEX;
-
-  PINDEX endCommand = args.Find(' ');
-  if (endCommand == P_MAX_INDEX)
-    endCommand = args.GetLength();
-  PCaselessString cmd = args.Left(endCommand);
-
-  PINDEX num = commandNames.GetValuesIndex(cmd);
-  if (num != P_MAX_INDEX)
-    args = args.Mid(endCommand);
-
-  return num;
-}
-
-
-BOOL PApplicationSocket::WriteResponse(unsigned code, const PString & info)
-{
-  return WriteResponse(psprintf("%03u", code), info);
-}
-
-
-BOOL PApplicationSocket::WriteResponse(const PString & code,
-                                       const PString & info)
-{
-  if (info.FindOneOf("\r\n") == P_MAX_INDEX)
-    return WriteString(code + ' ' + info + "\r\n");
-
-  PStringArray lines = info.Lines();
-  for (PINDEX i = 0; i < lines.GetSize()-1; i++)
-    if (!WriteString(code + '-' + lines[i] + "\r\n"))
-      return FALSE;
-
-  return WriteString(code + ' ' + lines[i] + "\r\n");
-}
-
-
-BOOL PApplicationSocket::ReadResponse()
-{
-  return ReadResponse(lastResponseCode, lastResponseInfo);
-}
-
-
-BOOL PApplicationSocket::ReadResponse(PString & code, PString & info)
-{
-  PString line;
-  if (!ReadLine(line))
-    return FALSE;
-
-  PINDEX endCode = line.FindOneOf(" -", 1);
-  if (endCode == P_MAX_INDEX) {
-    code = line;
-    info = PString();
-    return TRUE;
-  }
-
-  code = line.Left(endCode);
-  info = line.Mid(endCode+1);
-
-  while (line[endCode] == '-') {
-    info += '\n';
-    if (!ReadLine(line))
-      return FALSE;
-    info += line.Mid(endCode+1);
-  }
-
-  return TRUE;
-}
-
-
-char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
-                                        const PString & param)
-{
-  if (!WriteCommand(cmdNumber, param))
-    return '\0';
-
-  if (!ReadResponse())
-    return '\0';
-
-  return lastResponseCode[0];
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PSMTPSocket
-
-static char const * SMTPCommands[PSMTPSocket::NumCommands] = {
-  "HELO", "EHLO", "QUIT", "HELP", "NOOP",
-  "TURN", "RSET", "VRFY", "EXPN", "RCPT",
-  "MAIL", "SEND", "SAML", "SOML", "DATA"
-};
-
-
-PSMTPSocket::PSMTPSocket()
-  : PApplicationSocket(NumCommands, SMTPCommands, "smtp")
-{
-  Reset();
-}
-
-
-PSMTPSocket::PSMTPSocket(const PString & address)
-  : PApplicationSocket(NumCommands, SMTPCommands, address, "smtp")
-{
-  Reset();
-}
-
-
-PSMTPSocket::PSMTPSocket(PSocket & socket)
-  : PApplicationSocket(NumCommands, SMTPCommands, socket)
-{
-  Reset();
-}
-
-
-void PSMTPSocket::Reset()
-{
-  haveHello = FALSE;
-  extendedHello = FALSE;
-  sendingData = FALSE;
-  eightBitMIME = FALSE;
-  sendCommand = WasMAIL;
-  fromName = PString();
-  toNames.RemoveAll();
-  messageBufferSize = 30000;
-}
-
-
-BOOL PSMTPSocket::Write(const void * buf, PINDEX len)
-{
-  if (!sendingData)
-    return PApplicationSocket::Write(buf, len);
-
-  const char * base = (const char *)buf;
-  const char * current = base;
-  while (len-- > 0) {
-    switch (stuffingState) {
-      case GotNothing :
-        switch (*current) {
-          case '\r' :
-            stuffingState = GotCR;
-            break;
-          case '\n' :
-            if (!eightBitMIME) {
-              if (current > base)
-                if (!PApplicationSocket::Write(base, current - base))
-                  return FALSE;
-              if (!PApplicationSocket::Write("\r", 1))
-                return FALSE;
-              base = current;
-            }
-        }
-        break;
-
-      case GotCR :
-        stuffingState = *current != '\n' ? GotNothing : GotCRLF;
-        break;
-
-      case GotCRLF :
-        if (*current == '.') {
-          if (current > base)
-            if (!PApplicationSocket::Write(base, current - base))
-              return FALSE;
-          if (!PApplicationSocket::Write(".", 1))
-            return FALSE;
-          base = current;
-        }
-        // Then do default state
-
-      default :
-        stuffingState = GotNothing;
-        break;
-    }
-    current++;
-  }
-  return FALSE;
-}
-
-
-BOOL PSMTPSocket::BeginMessage(const PString & from,
-                               const PString & to,
-                               BOOL useEightBitMIME)
-{
-  fromName = from;
-  toNames.RemoveAll();
-  toNames.AppendString(to);
-  eightBitMIME = useEightBitMIME;
-  return _BeginMessage();
-}
-
-
-BOOL PSMTPSocket::BeginMessage(const PString & from,
-                               const PStringList & toList,
-                               BOOL useEightBitMIME)
-{
-  fromName = from;
-  toNames = toList;
-  eightBitMIME = useEightBitMIME;
-  return _BeginMessage();
-}
-
-
-BOOL PSMTPSocket::_BeginMessage()
-{
-  if (!haveHello) {
-    if (ExecuteCommand(EHLO, GetLocalHostName()) == '2')
-      haveHello = extendedHello = TRUE;
-  }
-
-  if (!haveHello) {
-    extendedHello = FALSE;
-    if (eightBitMIME)
-      return FALSE;
-    if (ExecuteCommand(HELO, GetLocalHostName()) != '2')
-      return FALSE;
-    haveHello = TRUE;
-  }
-
-  for (PINDEX i = 0; i < toNames.GetSize(); i++) {
-    if (toNames[i].Find('@') == P_MAX_INDEX)
-      toNames[i] += GetPeerHostName();
-    if (ExecuteCommand(RCPT, toNames[i]) != '2')
-      return FALSE;
-  }
-
-  if (fromName.Find('@') == P_MAX_INDEX)
-    fromName += GetLocalHostName();
-  if (ExecuteCommand(MAIL, fromName) != '2')
-    return FALSE;
-
-  if (ExecuteCommand(DATA, PString()) != '3')
-    return FALSE;
-
-  sendingData = TRUE;
-  stuffingState = GotNothing;
-  return TRUE;
-}
-
-
-BOOL PSMTPSocket::EndMessage()
-{
-  sendingData = FALSE;
-  return PApplicationSocket::Write("\r\n.\r\n", 5);
-}
-
-
-BOOL PSMTPSocket::ProcessCommand()
-{
-  PString args;
-  switch (ReadCommand(args)) {
-    case HELO :
-      OnHELO(args);
-      break;
-    case EHLO :
-      OnEHLO(args);
-      break;
-    case QUIT :
-      OnQUIT();
-      return FALSE;
-    case NOOP :
-      OnNOOP();
-      break;
-    case TURN :
-      OnTURN();
-      break;
-    case RSET :
-      OnRSET();
-      break;
-    case VRFY :
-      OnVRFY(args);
-      break;
-    case EXPN :
-      OnEXPN(args);
-      break;
-    case RCPT :
-      OnRCPT(args);
-      break;
-    case MAIL :
-      OnMAIL(args);
-      break;
-    case SEND :
-      OnSEND(args);
-      break;
-    case SAML :
-      OnSAML(args);
-      break;
-    case SOML :
-      OnSOML(args);
-      break;
-    case DATA :
-      OnDATA();
-      break;
-    default :
-      return OnUnknown(args);
-  }
-
-  return TRUE;
-}
-
-
-void PSMTPSocket::OnHELO(const PCaselessString & remoteHost)
-{
-  extendedHello = FALSE;
-  Reset();
-
-  PCaselessString peer = GetPeerHostName();
-
-  PString response = GetLocalHostName() + " Hello " + peer + ", ";
-
-  if (remoteHost == peer)
-    response += ", pleased to meet you.";
-  else if (remoteHost.IsEmpty())
-    response += "why do you wish to remain anonymous?";
-  else
-    response += "why do you wish to call yourself \"" + remoteHost + "\"?";
-
-  WriteResponse(250, response);
-}
-
-
-void PSMTPSocket::OnEHLO(const PCaselessString & remoteHost)
-{
-  extendedHello = TRUE;
-  Reset();
-
-  PCaselessString peer = GetPeerHostName();
-
-  PString response = GetLocalHostName() + " Hello " + peer + ", ";
-
-  if (remoteHost == peer)
-    response += ", pleased to meet you.";
-  else if (remoteHost.IsEmpty())
-    response += "why do you wish to remain anonymous?";
-  else
-    response += "why do you wish to call yourself \"" + remoteHost + "\"?";
-
-  WriteResponse(250, response +
-               "\nHELP\nVERB\nONEX\nMULT\nEXPN\nTICK\n8BITMIME\n");
-}
-
-
-void PSMTPSocket::OnQUIT()
-{
-  WriteResponse(221, GetLocalHostName() + " closing connection, goodbye.");
-  Close();
-}
-
-
-void PSMTPSocket::OnHELP()
-{
-  WriteResponse(214, "No help here.");
-}
-
-
-void PSMTPSocket::OnNOOP()
-{
-  WriteResponse(250, "Ok");
-}
-
-
-void PSMTPSocket::OnTURN()
-{
-  WriteResponse(502, "I don't do that yet. Sorry.");
-}
-
-
-void PSMTPSocket::OnRSET()
-{
-  Reset();
-  WriteResponse(250, "Reset state.");
-}
-
-
-void PSMTPSocket::OnVRFY(const PCaselessString & name)
-{
-  PString expandedName;
-  switch (LookUpName(name, expandedName)) {
-    case AmbiguousUser :
-      WriteResponse(553, "User ambiguous.");
-      break;
-
-    case ValidUser :
-      WriteResponse(250, expandedName);
-      break;
-
-    case UnknownUser :
-      WriteResponse(550, "String does not match anything.");
-      break;
-
-    default :
-      WriteResponse(550, "Error verifying user.");
-  }
-}
-
-
-void PSMTPSocket::OnEXPN(const PCaselessString &)
-{
-  WriteResponse(502, "I don't do that. Sorry.");
-}
-
-
-static PINDEX ExtractName(const PCaselessString & args,
-                          const PCaselessString & subCmd,
-                          PString & name)
-{
-  PINDEX colon = args.Find(':');
-  if (colon == P_MAX_INDEX)
-    return 0;
-
-  PCaselessString word = args.Left(colon).Trim();
-  if (subCmd != word)
-    return 0;
-
-  PINDEX leftAngle = args.Find('<', colon);
-  if (leftAngle == P_MAX_INDEX)
-    return 0;
-
-  PINDEX rightAngle = args.Find('>', leftAngle);
-  if (rightAngle == P_MAX_INDEX)
-    return 0;
-
-  name = args(leftAngle+1, rightAngle-1);
-  return rightAngle+1;
-}
-
-
-void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
-{
-  PCaselessString toName;
-  if (ExtractName(recipient, "to", toName) == 0)
-    WriteResponse(501, "Syntax error.");
-  else if (toName.Find(':') != P_MAX_INDEX)
-    WriteResponse(550, "Cannot do forwarding.");
-  else {
-    PString expandedName;
-    switch (LookUpName(toName, expandedName)) {
-      case ValidUser :
-        WriteResponse(553, "Recipient " + toName + " Ok");
-        toNames.AppendString(toName);
-        break;
-
-      case AmbiguousUser :
-        WriteResponse(553, "User ambiguous.");
-        break;
-
-      case UnknownUser :
-        WriteResponse(550, "User unknown.");
-        break;
-
-      default :
-        WriteResponse(550, "Error verifying user.");
-    }
-  }
-}
-
-
-void PSMTPSocket::OnMAIL(const PCaselessString & sender)
-{
-  sendCommand = WasMAIL;
-  OnSendMail(sender);
-}
-
-
-void PSMTPSocket::OnSEND(const PCaselessString & sender)
-{
-  sendCommand = WasSEND;
-  OnSendMail(sender);
-}
-
-
-void PSMTPSocket::OnSAML(const PCaselessString & sender)
-{
-  sendCommand = WasSAML;
-  OnSendMail(sender);
-}
-
-
-void PSMTPSocket::OnSOML(const PCaselessString & sender)
-{
-  sendCommand = WasSOML;
-  OnSendMail(sender);
-}
-
-
-void PSMTPSocket::OnSendMail(const PCaselessString & sender)
-{
-  if (!fromName.IsEmpty()) {
-    WriteResponse(503, "Sender already specified.");
-    return;
-  }
-
-  PINDEX extendedArgPos = ExtractName(sender, "from", fromName);
-  if (extendedArgPos == 0) {
-    WriteResponse(501, "Syntax error.");
-    return;
-  }
-
-  if (extendedHello) {
-    PINDEX equalPos = sender.Find('=', extendedArgPos);
-    PCaselessString body = sender(extendedArgPos, equalPos).Trim();
-    PCaselessString mime = sender.Mid(equalPos+1).Trim();
-    eightBitMIME = (body == "BODY" && mime == "8BITMIME");
-  }
-
-  PString response = "Sender " + fromName;
-  if (eightBitMIME)
-    response += " and 8BITMIME";
-  WriteResponse(250, response + " Ok");
-}
-
-
-void PSMTPSocket::OnDATA()
-{
-  if (fromName.IsEmpty()) {
-    WriteResponse(503, "Need a valid MAIL command.");
-    return;
-  }
-
-  if (toNames.GetSize() == 0) {
-    WriteResponse(503, "Need a valid RCPT command.");
-    return;
-  }
-
-  // Ok, everything is ready to start the message.
-  stuffingState = GotNothing;
-  BOOL ok = TRUE;
-  PCharArray buffer;
-  if (eightBitMIME) {
-    WriteResponse(354,
-                "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'.");
-    while (ok && OnMimeData(buffer))
-      ok = HandleMessage(buffer, FALSE);
-  }
-  else {
-    WriteResponse(354, "Enter mail, terminate with '.' alone on a line.");
-    while (ok && OnTextData(buffer))
-      ok = HandleMessage(buffer, FALSE);
-  }
-
-  if (ok && HandleMessage(buffer, TRUE))
-    WriteResponse(250, "Message received Ok.");
-  else
-    WriteResponse(554, "Message storage failed.");
-}
-
-
-BOOL PSMTPSocket::OnUnknown(const PCaselessString & command)
-{
-  WriteResponse(500, "Command \"" + command + "\" unrecognised.");
-  return TRUE;
-}
-
-
-PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(
-                               const PCaselessString &, PString & expandedName)
-{
-  expandedName = PString();
-  return LookUpError;
-}
-
-
-BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
-{
-  PString line;
-  while (line != ".") {
-    if (!ReadLine(line))
-      return FALSE;
-    if (line.GetLength() > 1 && line[0] == '.' && line[1] == '.')
-      line.Delete(0, 1);
-    line += '\n';
-    PINDEX size = buffer.GetSize();
-    PINDEX len = line.GetLength();
-    memcpy(buffer.GetPointer(size + len) + size, (const char *)line, len);
-    if (size + len > messageBufferSize)
-      return TRUE;
-  }
-  return FALSE;
-}
-
-
-BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
-{
-  int count = 0;
-  int c;
-  while ((c = ReadChar()) >= 0) {
-    if (count >= buffer.GetSize())
-      buffer.SetSize(count + 100);
-    switch (stuffingState) {
-      case GotNothing :
-        buffer[count++] = (char)c;
-        break;
-
-      case GotCR :
-        stuffingState = c != '\n' ? GotNothing : GotCRLF;
-        buffer[count++] = (char)c;
-        break;
-
-      case GotCRLF :
-        if (c == '.')
-          stuffingState = GotCRLFdot;
-        else {
-          stuffingState = GotNothing;
-          buffer[count++] = (char)c;
-        }
-        break;
-
-      case GotCRLFdot :
-        switch (c) {
-          case '\r' :
-            stuffingState = GotCRLFdotCR;
-            break;
-
-          case '.' :
-            stuffingState = GotNothing;
-            buffer[count++] = (char)c;
-            break;
-
-          default :
-            stuffingState = GotNothing;
-            buffer[count++] = '.';
-            buffer[count++] = (char)c;
-        }
-        break;
-
-      case GotCRLFdotCR :
-        if (c == '\n')
-          return FALSE;
-        buffer[count++] = '.';
-        buffer[count++] = '\r';
-        buffer[count++] = (char)c;
-        stuffingState = GotNothing;
-    }
-    if (count > messageBufferSize) {
-      buffer.SetSize(messageBufferSize);
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
-
-BOOL PSMTPSocket::HandleMessage(PCharArray &, BOOL)
-{
-  return FALSE;
 }
 
 
