@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.11  2004/06/19 09:02:32  csoutheren
+ * Added rate and volume to keep Festival happy
+ *
  * Revision 1.10  2004/06/19 07:18:59  csoutheren
  * Change TTS engine registration to use abstract factory code
  *
@@ -392,6 +395,8 @@ PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
   PWaitAndSignal m(mutex);
   usingFile = opened = FALSE;
+  rate = 8000;
+  volume = 100;
 }
 
 
