@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.22  2004/01/27 10:50:29  csoutheren
+ * Added versio information to ptbuildopts.h
+ *
  * Revision 1.21  2003/12/02 08:34:44  rogerhardiman
  * Tidy some comments
  *
@@ -369,6 +372,11 @@
 // various functions
 //
 #undef USE_SYSTEM_SWAB
+
+#undef	PWLIB_MAJOR
+#undef	PWLIB_MINOR
+#undef	PWLIB_BUILD
+#undef	PWLIB_VERSION
 
 #endif // _PT_BUILDOPTS_H
 
