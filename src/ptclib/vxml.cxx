@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.23  2002/08/30 07:33:16  craigs
+ * Added extra initialisations
+ *
  * Revision 1.22  2002/08/30 05:05:54  craigs
  * Added changes for PVXMLGrammar from Alexander Kovatch
  *
@@ -178,6 +181,8 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   forceEnd        = FALSE;
   textToSpeech    = NULL;
   listening       = FALSE;
+  activeGrammar   = NULL;
+  currentNode     = NULL;
 
   SetTextToSpeech(_tts, autoDelete);
 
@@ -723,7 +728,10 @@ void PVXMLSession::DialogExecute(PThread &, INT)
 	}
 
 	// if the current node has children, then process the first child
-  if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
+  if (currentNode == NULL)
+    ;
+
+  else if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
     currentNode = ((PXMLElement *)currentNode)->GetElement(0);
 
 	// else process the next sibling
