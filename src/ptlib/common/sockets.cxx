@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.17 1995/07/02 01:21:23 robertj Exp $
+ * $Id: sockets.cxx,v 1.18 1995/10/14 15:11:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.18  1995/10/14 15:11:31  robertj
+ * Added internet address to string conversion functionality.
+ *
  * Revision 1.17  1995/07/02 01:21:23  robertj
  * Added static functions to get the current host name/address.
  *
@@ -90,7 +93,7 @@ PString PIPSocket::GetName() const
   PString name;
   sockaddr_in address;
   int size = sizeof(address);
-  if (getpeername(os_handle,(struct sockaddr*)&address,&size) == 0){
+  if (getpeername(os_handle, (struct sockaddr *)&address, &size) == 0) {
     struct hostent * host_info = gethostbyaddr(
            (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
     name = host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
@@ -164,7 +167,7 @@ BOOL PIPSocket::GetLocalAddress(Address & addr)
   if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
-  memcpy(&addr, &address.sin_addr, sizeof(address.sin_addr));
+  addr = address.sin_addr;
   return TRUE;
 }
 
@@ -176,7 +179,7 @@ BOOL PIPSocket::GetPeerAddress(Address & addr)
   if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
     return FALSE;
 
-  memcpy(&addr, &address.sin_addr, sizeof(address.sin_addr));
+  addr = address.sin_addr;
   return TRUE;
 }
 
@@ -318,6 +321,58 @@ BOOL PIPSocket::Accept(PSocket & socket)
 {
   // attempt to create a socket
   return ConvertOSError(os_handle = ::accept(socket.GetHandle(), NULL, 0));
+}
+
+
+PIPSocket::Address::Address()
+{
+  s_addr = inet_addr("127.0.0.1");
+}
+
+
+PIPSocket::Address::Address(const in_addr & addr)
+{
+  s_addr = addr.s_addr;
+}
+
+
+PIPSocket::Address::Address(const Address & addr)
+{
+  s_addr = addr.s_addr;
+}
+
+
+PIPSocket::Address::Address(const PString & dotNotation)
+{
+  s_addr = inet_addr((const char *)dotNotation);
+  if (s_addr == (u_long)-1L)
+    s_addr = 0;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
+{
+  s_addr = addr.s_addr;
+  return *this;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
+{
+  s_addr = addr.s_addr;
+  return *this;
+}
+
+
+PIPSocket::Address::operator PString() const
+{
+  return inet_ntoa(*this);
+}
+
+
+PIPSocket::Address::operator DWORD() const
+{
+  return ntohl(s_addr);
 }
 
 
