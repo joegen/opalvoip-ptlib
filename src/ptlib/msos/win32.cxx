@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.78  1998/12/04 10:10:47  robertj
+ * Added virtual for determining if process is a service. Fixes linkage problem.
+ *
  * Revision 1.77  1998/11/30 07:31:18  robertj
  * New directory structure
  * Fission of file into pipe.cxx, winserial.cxx and wincfg.cxx
@@ -1153,6 +1156,12 @@ PString PProcess::GetUserName() const
 DWORD PProcess::GetProcessID() const
 {
   return GetCurrentProcessId();
+}
+
+
+BOOL PProcess::IsServiceProcess() const
+{
+  return FALSE;
 }
 
 
