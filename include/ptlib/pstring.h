@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.62  2004/01/16 13:24:37  csoutheren
+ * Changed PString::Empty to be thread-safe
+ * Fixed PContainer::SetMinSize and PAbstractArray::SetSize, thanks to 123@call2ua.com
+ * Fixed PString::FindLast, thanks to Andreas Sikkema
+ *
  * Revision 1.61  2003/12/13 23:08:46  csoutheren
  * Changed PRegularExpression to allow a copy constructor and operator =
  *
@@ -286,7 +291,7 @@ PDECLARE_CLASS(PString, PCharArray);
   //@{
     /**Return an empty string.
       */
-    static const PString & Empty();
+    static PString Empty();
 
     /**Construct an empty string. This will have one character in it which is
        the '\0' character.
