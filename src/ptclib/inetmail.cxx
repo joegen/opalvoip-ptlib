@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.12  1998/11/30 04:52:01  robertj
+ * New directory structure
+ *
  * Revision 1.11  1998/09/23 06:22:18  robertj
  * Added open source copyright license.
  *
@@ -69,8 +72,8 @@
 #endif
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <inetmail.h>
+#include <ptlib/sockets.h>
+#include <ptclib/inetmail.h>
 
 
 static const PString CRLF = "\r\n";
