@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.12 1996/12/01 07:01:28 robertj Exp $
+ * $Id: remconn.cxx,v 1.13 1997/01/12 04:14:39 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.13  1997/01/12 04:14:39  robertj
+ * Added ability to add/change new connections.
+ *
  * Revision 1.12  1996/12/01 07:01:28  robertj
  * Changed debugging asserts to simple PError output.
  *
@@ -39,6 +42,9 @@ PDECLARE_CLASS(PRASDLL, PDynaLink)
   DWORD (FAR PASCAL *GetConnectStatus)(HRASCONN,LPRASCONNSTATUS);
   DWORD (FAR PASCAL *EnumConnections)(LPRASCONN,LPDWORD,LPDWORD);
   DWORD (FAR PASCAL *EnumEntries)(LPTSTR,LPTSTR,LPRASENTRYNAME,LPDWORD,LPDWORD);
+  DWORD (FAR PASCAL *GetEntryProperties)(LPTSTR, LPTSTR, LPRASENTRY, LPDWORD, LPBYTE, LPDWORD);
+  DWORD (FAR PASCAL *SetEntryProperties)(LPTSTR, LPTSTR, LPRASENTRY, DWORD, LPBYTE, DWORD);
+  DWORD (FAR PASCAL *ValidateEntryName)(LPTSTR, LPTSTR);
 } Ras;
 
 PRASDLL::PRASDLL()
@@ -54,6 +60,10 @@ PRASDLL::PRASDLL()
       !GetFunction("RasEnumConnectionsA", (Function &)EnumConnections) ||
       !GetFunction("RasEnumEntriesA", (Function &)EnumEntries))
     Close();
+
+  GetFunction("RasGetEntryPropertiesA", (Function &)GetEntryProperties);
+  GetFunction("RasSetEntryPropertiesA", (Function &)SetEntryProperties);
+  GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
 }
 
 
@@ -302,6 +312,156 @@ PStringArray PRemoteConnection::GetAvailableNames()
     delete [] entries;
 
   return array;
+}
+
+
+PRemoteConnection::Status
+      PRemoteConnection::GetConfiguration(Configuration & config)
+{
+  return GetConfiguration(remoteName, config);
+}
+
+
+static DWORD MyRasGetEntryProperties(const char * name, PBYTEArray & entrybuf)
+{
+  LPRASENTRY entry = (LPRASENTRY)entrybuf.GetPointer(sizeof(RASENTRY));
+  entry->dwSize = sizeof(RASENTRY);
+
+  DWORD entrySize = sizeof(RASENTRY);
+  DWORD error = Ras.GetEntryProperties(NULL, (char *)name, entry, &entrySize, NULL, 0);
+  if (error == ERROR_BUFFER_TOO_SMALL) {
+    entry = (LPRASENTRY)entrybuf.GetPointer(entrySize);
+    error == Ras.GetEntryProperties(NULL, (char *)name, entry, &entrySize, NULL, 0);
+  }
+
+  return error;
+}
+
+
+PRemoteConnection::Status
+      PRemoteConnection::GetConfiguration(const PString & name,
+                                          Configuration & config)
+{
+  if (!Ras.IsLoaded() || Ras.GetEntryProperties == NULL)
+    return NotInstalled;
+
+  PBYTEArray entrybuf;
+  switch (MyRasGetEntryProperties(name, entrybuf)) {
+    case 0 :
+      break;
+
+    case ERROR_CANNOT_FIND_PHONEBOOK_ENTRY :
+      return NoNameOrNumber;
+
+    default :
+      return GeneralFailure;
+  }
+
+  LPRASENTRY entry = (LPRASENTRY)(const BYTE *)entrybuf;
+
+  config.device = entry->szDeviceType + PString("/") + entry->szDeviceName;
+
+  if ((entry->dwfOptions&RASEO_UseCountryAndAreaCodes) == 0)
+    config.phoneNumber = entry->szLocalPhoneNumber;
+  else
+    config.phoneNumber = psprintf("+%u ", entry->dwCountryCode) +
+                      entry->szAreaCode + PString(' ') + entry->szLocalPhoneNumber;
+
+  if ((entry->dwfOptions&RASEO_SpecificIpAddr) == 0)
+    config.ipAddress = "";
+  else
+    config.ipAddress = psprintf("%u.%u.%u.%u",
+                                entry->ipaddr.a, entry->ipaddr.b,
+                                entry->ipaddr.c, entry->ipaddr.d);
+  if ((entry->dwfOptions&RASEO_SpecificNameServers) == 0)
+    config.dnsAddress = "";
+  else
+    config.dnsAddress = psprintf("%u.%u.%u.%u",
+                                 entry->ipaddrDns.a, entry->ipaddrDns.b,
+                                 entry->ipaddrDns.c, entry->ipaddrDns.d);
+
+  config.script = entry->szScript;
+  
+  config.subEntries = entry->dwSubEntries;
+  config.dialAllSubEntries = entry->dwDialMode == RASEDM_DialAll;
+
+  return Connected;
+}
+
+
+PRemoteConnection::Status
+      PRemoteConnection::SetConfiguration(const Configuration & config, BOOL create)
+{
+  return SetConfiguration(remoteName, config, create);
+}
+
+
+PRemoteConnection::Status
+      PRemoteConnection::SetConfiguration(const PString & name,
+                                          const Configuration & config,
+                                          BOOL create)
+{
+  if (!Ras.IsLoaded() || Ras.SetEntryProperties == NULL || Ras.ValidateEntryName == NULL)
+    return NotInstalled;
+
+  PBYTEArray entrybuf;
+  switch (MyRasGetEntryProperties(name, entrybuf)) {
+    case 0 :
+      break;
+
+    case ERROR_CANNOT_FIND_PHONEBOOK_ENTRY :
+      if (!create)
+        return NoNameOrNumber;
+      if (Ras.ValidateEntryName(NULL, (char *)(const char *)name) != 0)
+        return GeneralFailure;
+      break;
+
+    default :
+      return GeneralFailure;
+  }
+
+  LPRASENTRY entry = (LPRASENTRY)(const BYTE *)entrybuf;
+
+  PINDEX barpos = config.device.Find('/');
+  if (barpos == P_MAX_INDEX)
+    strncpy(entry->szDeviceName, config.device, sizeof(entry->szDeviceName)-1);
+  else {
+    strncpy(entry->szDeviceType, config.device.Left(barpos),  sizeof(entry->szDeviceType)-1);
+    strncpy(entry->szDeviceName, config.device.Mid(barpos+1), sizeof(entry->szDeviceName)-1);
+  }
+
+  strncpy(entry->szLocalPhoneNumber, config.phoneNumber, sizeof(entry->szLocalPhoneNumber)-1);
+
+  PStringArray dots = config.ipAddress.Tokenise('.');
+  if (dots.GetSize() != 4)
+    entry->dwfOptions &= ~RASEO_SpecificIpAddr;
+  else {
+    entry->dwfOptions |= RASEO_SpecificIpAddr;
+    entry->ipaddr.a = (BYTE)dots[0].AsInteger();
+    entry->ipaddr.b = (BYTE)dots[1].AsInteger();
+    entry->ipaddr.c = (BYTE)dots[2].AsInteger();
+    entry->ipaddr.d = (BYTE)dots[3].AsInteger();
+  }
+  dots = config.dnsAddress.Tokenise('.');
+  if (dots.GetSize() != 4)
+    entry->dwfOptions &= ~RASEO_SpecificNameServers;
+  else {
+    entry->dwfOptions |= RASEO_SpecificNameServers;
+    entry->ipaddrDns.a = (BYTE)dots[0].AsInteger();
+    entry->ipaddrDns.b = (BYTE)dots[1].AsInteger();
+    entry->ipaddrDns.c = (BYTE)dots[2].AsInteger();
+    entry->ipaddrDns.d = (BYTE)dots[3].AsInteger();
+  }
+
+  strncpy(entry->szScript, config.script, sizeof(entry->szScript-1));
+
+  entry->dwDialMode = config.dialAllSubEntries ? RASEDM_DialAll : RASEDM_DialAsNeeded;
+
+  if (Ras.SetEntryProperties(NULL, (char *)(const char *)name,
+                             entry, entrybuf.GetSize(), NULL, 0) != 0)
+    return GeneralFailure;
+
+  return Connected;
 }
 
 
