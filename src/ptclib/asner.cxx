@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.3 1997/12/11 10:36:22 robertj Exp $
+ * $Id: asner.cxx,v 1.4 1997/12/18 05:07:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.4  1997/12/18 05:07:56  robertj
+ * Fixed bug in choice name display.
+ * Added function to get choice discriminator name.
+ * Fixed bug in encoding extensions.
+ *
  * Revision 1.3  1997/12/11 10:36:22  robertj
  * Support for new ASN parser.
  *
@@ -344,7 +349,7 @@ static PINDEX GetIntegerDataLength(int value)
   while (shift > 8 && ((value >> shift)&0x1ff) == (value < 0 ? 0x1ff : 0))
     shift -= 8;
 
-  return (shift+1)/8;
+  return (shift+9)/8;
 }
 
 
@@ -454,15 +459,18 @@ static POrdinalToString BuildNamesDict(const PString & nameSpec)
 {
   POrdinalToString names;
 
-  PStringArray nameList = nameSpec.Tokenise(' ');
+  PStringArray nameList = nameSpec.Tokenise(' ', FALSE);
 
   int num = 0;
   for (PINDEX i = 0; i < nameList.GetSize(); i++) {
-    PINDEX equalPos = nameList[i].Find('=');
-    if (equalPos != P_MAX_INDEX)
-      num = (int)nameList[i].Mid(equalPos+1).AsInteger();
-    names.SetAt(POrdinalKey(num), nameList[i].Left(equalPos));
-    num++;
+    const PString & thisName = nameList[i];
+    if (!thisName) {
+      PINDEX equalPos = thisName.Find('=');
+      if (equalPos != P_MAX_INDEX)
+        num = (int)thisName.Mid(equalPos+1).AsInteger();
+      names.SetAt(POrdinalKey(num), thisName.Left(equalPos));
+      num++;
+    }
   }
 
   return names;
@@ -477,7 +485,7 @@ PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
     names(BuildNamesDict(nameSpec))
 {
   PAssert(nEnums > 0, PInvalidParameter);
-  PAssert(val >= 0 && val < nEnums, PInvalidParameter);
+  PAssert(val < nEnums, PInvalidParameter);
   value = val;
   numEnums = nEnums;
 }
@@ -571,7 +579,7 @@ void PPER_Stream::EnumerationEncode(const PASN_Enumeration & value)
     BOOL extended = value >= value.GetMaximum();
     SingleBitEncode(extended);
     if (extended) {
-      SmallUnsignedEncode(value+1);
+      SmallUnsignedEncode(1+value);
       UnsignedEncode(value, value);
       return;
     }
@@ -688,7 +696,7 @@ void PASN_ObjectId::SetValue(const PString & dotstr)
   PStringArray parts = dotstr.Tokenise('.');
   value.SetSize(parts.GetSize());
   for (PINDEX i = 0; i < parts.GetSize(); i++)
-    value[i] = parts[i].AsInteger();
+    value[i] = parts[i].AsUnsigned();
 }
 
 
@@ -1372,7 +1380,8 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
 
   value.SetSize(len+1);
 
-  for (PINDEX i = 0; i < len; i++) {
+  PINDEX i;
+  for (i = 0; i < len; i++) {
     if (nBits >= canonicalSetBits && canonicalSetBits > 4)
       value[i] = (char)strm.MultiBitDecode(nBits);
     else
@@ -1756,6 +1765,18 @@ void PASN_Choice::SetTag(unsigned newTag, TagClass tagClass)
   delete choice;
   if (CreateObject())
     choice->SetTag(newTag, tagClass);
+}
+
+
+PString PASN_Choice::GetTagName() const
+{
+  if (tag == UINT_MAX)
+    return "<uninitialised>";
+
+  if (names.Contains(tag))
+    return names[tag];
+
+  return PString(PString::Unsigned, tag);
 }
 
 
@@ -2152,8 +2173,15 @@ void PASN_Sequence::PreambleEncodePER(PPER_Stream & strm) const
   // X.691 Section 18
 
   if (extendable) {
-    strm.SingleBitEncode(extensionMap.GetSize() > 0);  // 18.1
-    ((PASN_Sequence*)this)->totalExtensions = 0;
+    BOOL hasExtensions = FALSE;
+    for (PINDEX i = 0; i < extensionMap.GetSize(); i++) {
+      if (extensionMap[i]) {
+        hasExtensions = TRUE;
+        break;
+      }
+    }
+    strm.SingleBitEncode(hasExtensions);  // 18.1
+    ((PASN_Sequence*)this)->totalExtensions = hasExtensions ? -1 : 0;
   }
   optionMap.Encode(strm);  // 18.2
 }
@@ -2177,10 +2205,10 @@ BOOL PASN_Sequence::NoExtensionsToDecode(PPER_Stream & strm)
 
 BOOL PASN_Sequence::NoExtensionsToEncode(PPER_Stream & strm)
 {
-  if (extensionMap.GetSize() == 0)
+  if (totalExtensions == 0)
     return TRUE;
 
-  if (totalExtensions == 0) {
+  if (totalExtensions < 0) {
     totalExtensions = extensionMap.GetSize();
     strm.SmallUnsignedEncode(totalExtensions-1);
     extensionMap.Encode(strm);
@@ -2248,7 +2276,7 @@ void PASN_Sequence::UnknownExtensionsEncodePER(PPER_Stream & strm) const
   if (((PASN_Sequence*)this)->NoExtensionsToEncode(strm))
     return;
 
-  PINDEX i;
+  int i;
   for (i = knownExtensions; i < totalExtensions; i++) {
     if (extensionMap[i])
       fields[i].Encode(strm);
