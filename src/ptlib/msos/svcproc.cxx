@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.29 1997/11/04 06:01:45 robertj Exp $
+ * $Id: svcproc.cxx,v 1.30 1997/12/18 05:05:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.30  1997/12/18 05:05:45  robertj
+ * Added Edit menu.
+ *
  * Revision 1.29  1997/11/04 06:01:45  robertj
  * Fix of "service hung at startup" message for NT service.
  *
@@ -417,6 +420,17 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 }
 
 
+enum {
+  ExitMenuID = 100,
+  HideMenuID,
+  CopyMenuID,
+  CutMenuID,
+  DeleteMenuID,
+  SelectAllMenuID,
+  SvcCmdBaseMenuID = 1000,
+  LogLevelBaseMenuID = 2000
+};
+
 BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 {
   if (controlWindow == NULL) {
@@ -436,28 +450,36 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 
     HMENU menubar = CreateMenu();
     HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, 101, "&Hide");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdVersion, "&Version");
+    AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
     AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu, MF_STRING, 100, "E&xit");
+    AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
     AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
 
     menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdInstall, "&Install");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdRemove, "&Remove");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdDeinstall, "&Deinstall");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdStart, "&Start");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdStop, "S&top");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdPause, "&Pause");
-    AppendMenu(menu, MF_STRING, 1000+SvcCmdResume, "R&esume");
+    AppendMenu(menu, MF_STRING, CopyMenuID, "&Copy");
+    AppendMenu(menu, MF_STRING, CutMenuID, "C&ut");
+    AppendMenu(menu, MF_STRING, DeleteMenuID, "&Delete");
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, SelectAllMenuID, "&Select All");
+    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Edit");
+
+    menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdRemove, "&Remove");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdDeinstall, "&Deinstall");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStart, "&Start");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "S&top");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdPause, "&Pause");
+    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdResume, "R&esume");
     AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
 
     menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Fatal, "&Fatal Error");
-    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Error, "&Error");
-    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Warning, "&Warning");
-    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Info, "&Information");
-    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Debug, "&Debug");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal, "&Fatal Error");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Error, "&Error");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Warning, "&Warning");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Info, "&Information");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug, "&Debug");
     AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
 
     if (CreateWindow(GetName(),
@@ -479,7 +501,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                                       ES_MULTILINE|ES_READONLY,
                                0, 0, 0, 0,
                                controlWindow,
-                               (HMENU)200,
+                               (HMENU)10,
                                hInstance,
                                NULL);
     SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 128000, 0);
@@ -516,34 +538,64 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
       int enableItems = MF_BYCOMMAND|(debugMode ? MF_ENABLED : MF_GRAYED);
       for (int i = 0; i < PSystemLog::NumLogLevels; i++) {
-        CheckMenuItem((HMENU)wParam, 2000+i, MF_BYCOMMAND|MF_UNCHECKED);
-        EnableMenuItem((HMENU)wParam, 2000+i, enableItems);
+        CheckMenuItem((HMENU)wParam, LogLevelBaseMenuID+i, MF_BYCOMMAND|MF_UNCHECKED);
+        EnableMenuItem((HMENU)wParam, LogLevelBaseMenuID+i, enableItems);
       }
-      CheckMenuItem((HMENU)wParam, 2000+GetLogLevel(), MF_BYCOMMAND|MF_CHECKED);
+      CheckMenuItem((HMENU)wParam, LogLevelBaseMenuID+GetLogLevel(), MF_BYCOMMAND|MF_CHECKED);
 
       enableItems = MF_BYCOMMAND|(debugMode ? MF_GRAYED : MF_ENABLED);
-      EnableMenuItem((HMENU)wParam, 1000+SvcCmdStart, enableItems);
-      EnableMenuItem((HMENU)wParam, 1000+SvcCmdStop, enableItems);
-      EnableMenuItem((HMENU)wParam, 1000+SvcCmdPause, enableItems);
-      EnableMenuItem((HMENU)wParam, 1000+SvcCmdResume, enableItems);
+      EnableMenuItem((HMENU)wParam, SvcCmdBaseMenuID+SvcCmdStart, enableItems);
+      EnableMenuItem((HMENU)wParam, SvcCmdBaseMenuID+SvcCmdStop, enableItems);
+      EnableMenuItem((HMENU)wParam, SvcCmdBaseMenuID+SvcCmdPause, enableItems);
+      EnableMenuItem((HMENU)wParam, SvcCmdBaseMenuID+SvcCmdResume, enableItems);
+
+      DWORD start, finish;
+      if (debugWindow != NULL)
+        SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
+      else
+        start = finish = 0;
+      enableItems = MF_BYCOMMAND|(start == finish ? MF_GRAYED : MF_ENABLED);
+      EnableMenuItem((HMENU)wParam, CopyMenuID, enableItems);
+      EnableMenuItem((HMENU)wParam, CutMenuID, enableItems);
+      EnableMenuItem((HMENU)wParam, DeleteMenuID, enableItems);
       break;
     }
 
     case WM_COMMAND :
       switch (wParam) {
-        case 101 :
-          ShowWindow(hWnd, SW_HIDE);
-          break;
-
-        case 100 :
+        case ExitMenuID :
           DestroyWindow(hWnd);
           break;
 
+        case HideMenuID :
+          ShowWindow(hWnd, SW_HIDE);
+          break;
+
+        case CopyMenuID :
+          if (debugWindow != NULL)
+            SendMessage(debugWindow, WM_COPY, 0, 0);
+          break;
+
+        case CutMenuID :
+          if (debugWindow != NULL)
+            SendMessage(debugWindow, WM_CUT, 0, 0);
+          break;
+
+        case DeleteMenuID :
+          if (debugWindow != NULL)
+            SendMessage(debugWindow, WM_CLEAR, 0, 0);
+          break;
+
+        case SelectAllMenuID :
+          if (debugWindow != NULL)
+            SendMessage(debugWindow, EM_SETSEL, 0, -1);
+          break;
+
         default :
-          if (wParam >= 1000 && wParam < 1000+NumSvcCmds)
-            ProcessCommand(ServiceCommandNames[wParam-1000]);
-          if (wParam >= 2000 && wParam < 2000+PSystemLog::NumLogLevels)
-            SetLogLevel((PSystemLog::Level)(wParam-2000));
+          if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds)
+            ProcessCommand(ServiceCommandNames[wParam-SvcCmdBaseMenuID]);
+          if (wParam >= LogLevelBaseMenuID && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
+            SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
       }
       break;
 
@@ -569,9 +621,12 @@ void PServiceProcess::DebugOutput(const char * out)
   int max = isWin95 ? 32000 : 128000;
   while (GetWindowTextLength(debugWindow)+len >= max) {
     SendMessage(debugWindow, WM_SETREDRAW, FALSE, 0);
+    DWORD start, finish;
+    SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
     SendMessage(debugWindow, EM_SETSEL, 0,
                 SendMessage(debugWindow, EM_LINEINDEX, 1, 0));
     SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"");
+    SendMessage(debugWindow, EM_SETSEL, start, finish);
     SendMessage(debugWindow, WM_SETREDRAW, TRUE, 0);
   }
 
