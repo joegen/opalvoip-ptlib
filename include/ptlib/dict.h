@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.11 1996/01/23 13:11:12 robertj Exp $
+ * $Id: dict.h,v 1.12 1996/01/24 14:43:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.12  1996/01/24 14:43:11  robertj
+ * Added initialisers to string dictionaries.
+ *
  * Revision 1.11  1996/01/23 13:11:12  robertj
  * Mac Metrowerks compiler support.
  *
@@ -992,7 +995,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       : POrdinalDictionary<K>(dummy, c) { } \
   public: \
     cls() \
-      : PDictionary<K>() { } \
+      : POrdinalDictionary<K>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
