@@ -78,7 +78,6 @@ class PXML : public PObject
 
     void PrintOn(ostream & strm) const;
 
-
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(PINDEX idx) const;
     PINDEX        GetNumElements() const; 
@@ -97,9 +96,9 @@ class PXML : public PObject
     virtual void AddCharacterData(const char * data, int len);
     virtual void XmlDecl(const char * version, const char * encoding, int standAlone);
     virtual void StartDocTypeDecl(const char * docTypeName,
-		                  const char * sysid,
-				  const char * pubid,
-				  int hasInternalSubSet);
+		                              const char * sysid,
+				                          const char * pubid,
+				                          int hasInternalSubSet);
     virtual void EndDocTypeDecl();
 
      // static methods to create XML tags
@@ -144,6 +143,12 @@ class PXMLObject : public PObject {
     PXMLElement * GetParent()
       { return parent; }
 
+    void SetParent(PXMLElement * newParent)
+    { 
+      PAssert(parent == NULL, "Cannot reparent PXMLElement");
+      parent = newParent;
+    }
+
     virtual void PrintOn(ostream & strm, int indent, int options) const = 0;
 
     virtual BOOL IsElement() const { return FALSE; }
@@ -187,6 +192,7 @@ class PXMLElement : public PXMLObject {
   PCLASSINFO(PXMLElement, PXMLObject);
   public:
     PXMLElement(PXMLElement * _parent, const char * name = NULL);
+    PXMLElement(PXMLElement * _parent, const PString & name, const PString & data);
 
     BOOL IsElement() const { return TRUE; }
 
@@ -201,7 +207,10 @@ class PXMLElement : public PXMLObject {
     PINDEX GetSize() const
       { return subObjects.GetSize(); }
 
-    void AddSubObject(PXMLObject * elem, BOOL dirty = TRUE);
+    PXMLObject  * AddSubObject(PXMLObject * elem, BOOL dirty = TRUE);
+
+    PXMLElement * AddChild    (PXMLElement * elem, BOOL dirty = TRUE);
+    PXMLData    * AddChild    (PXMLData    * elem, BOOL dirty = TRUE);
 
     void SetAttribute(const PCaselessString & key,
 		              const PString & value,
