@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.4 1994/07/21 12:35:18 robertj Exp $
+ * $Id: mswin.cxx,v 1.5 1994/07/27 06:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.4  1994/07/21 12:35:18  robertj
+ * Revision 1.5  1994/07/27 06:00:10  robertj
+ * Backup
+ *
+ * Revision 1.4  1994/07/21  12:35:18  robertj
  * *** empty log message ***
  *
  * Revision 1.3  1994/07/17  11:01:04  robertj
@@ -683,11 +686,8 @@ PStringList PConfig::GetSections()
 }
 
 
-PStringList PConfig::GetKeys(const char * section) const
+PStringList PConfig::GetKeys(const PString & section) const
 {
-  if (section == NULL)
-    section = defaultSection;
-
   PStringList keys;
   PString buf;
   char * ptr = buf.GetPointer(10000);
@@ -700,39 +700,36 @@ PStringList PConfig::GetKeys(const char * section) const
 }
 
 
-void PConfig::DeleteSection(const char * section)
+void PConfig::DeleteSection(const PString & section)
 {
-  if (section == NULL)
-    section = defaultSection;
-
   PAssert(WritePrivateProfileString(section,
                               NULL, NULL, configFile), POperatingSystemError);
 }
 
 
-void PConfig::DeleteKey(const char * section, const char * key)
+void PConfig::DeleteKey(const PString & section, const PString & key)
 {
-  PAssert(WritePrivateProfileString(PAssertNULL(section),
-                  PAssertNULL(key), NULL, configFile), POperatingSystemError);
+  PAssert(WritePrivateProfileString(section,
+                               key, NULL, configFile), POperatingSystemError);
 }
 
 
-PString PConfig::GetString(const char * section,
-                                          const char * key, const char * dflt)
+PString PConfig::GetString(const PString & section,
+                                    const PString & key, const PString & dflt)
 {
   PString str;
-  GetPrivateProfileString(PAssertNULL(section), PAssertNULL(key),
-                    PAssertNULL(dflt), str.GetPointer(1000), 999, configFile);
+  GetPrivateProfileString(section, key,
+                                 dflt, str.GetPointer(1000), 999, configFile);
   str.MakeMinimumSize();
   return str;
 }
 
 
-void PConfig::SetString(const char * section,
-                                         const char * key, const char * value)
+void PConfig::SetString(const PString & section,
+                                   const PString & key, const PString & value)
 {
-  PAssert(WritePrivateProfileString(PAssertNULL(section), PAssertNULL(key),
-                      PAssertNULL(value), configFile), POperatingSystemError);
+  PAssert(WritePrivateProfileString(section, key,
+                                   value, configFile), POperatingSystemError);
 }
 
 

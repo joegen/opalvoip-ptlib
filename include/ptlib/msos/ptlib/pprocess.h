@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.3 1994/07/21 12:35:18 robertj Exp $
+ * $Id: pprocess.h,v 1.4 1994/07/27 06:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.3  1994/07/21 12:35:18  robertj
+ * Revision 1.4  1994/07/27 06:00:10  robertj
+ * Backup
+ *
+ * Revision 1.3  1994/07/21  12:35:18  robertj
  * *** empty log message ***
  *
  * Revision 1.2  1994/07/02  03:18:09  robertj
@@ -37,10 +40,14 @@
 extern PProcess * PSTATIC PProcessInstance;
 
 inline PProcess::PProcess()
-  { PProcessInstance = this; }
+  {
+    PProcessInstance = this;
+  }
 
 inline PProcess * PProcess::Current()
-  { return PProcessInstance; }
+  {
+    return PProcessInstance;
+  }
 
 
 #endif
