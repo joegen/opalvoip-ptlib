@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.18  2002/02/25 08:01:02  robertj
+ * Changed to utilise preferred colour format, thanks Martijn Roest
+ *
  * Revision 1.17  2002/01/15 23:52:07  robertj
  * Fixed some incorrect table entries for colout formats, thanks Martijn Roest
  *
@@ -781,7 +784,10 @@ BOOL PVideoInputDevice::InitialiseCapture()
   if (!SetFrameRate(frameRate))
     return FALSE;
 
-  return SetColourFormat(colourFormat);
+  if (preferredColourFormat.IsEmpty())
+    return SetColourFormat(colourFormat);
+
+  return SetColourFormat(preferredColourFormat);
 }
 
 
