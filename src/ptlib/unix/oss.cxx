@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.16  2000/05/10 02:10:44  craigs
+ * Added implementation for PlayFile command
+ *
  * Revision 1.15  2000/05/02 08:30:26  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -613,7 +616,24 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
     return FALSE;
   }
 
-  return FALSE;
+  PFile file(filename, PFile::ReadOnly);
+  if (!file.IsOpen())
+    return FALSE;
+
+  for (;;) {
+    BYTE buffer[256];
+    if (!file.Read(buffer, 256))
+      break;
+    PINDEX len = file.GetLastReadCount();
+    if (len == 0)
+      break;
+    if (!Write(buffer, len))
+      break;
+  }
+
+  file.Close();
+
+  return TRUE;
 }
 
 
