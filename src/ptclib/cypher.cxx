@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.22 1998/01/26 02:49:14 robertj Exp $
+ * $Id: cypher.cxx,v 1.23 1998/02/16 00:14:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.23  1998/02/16 00:14:36  robertj
+ * Fixed ability to register in one stage instead of always having to use 2.
+ *
  * Revision 1.22  1998/01/26 02:49:14  robertj
  * GNU support.
  *
@@ -694,13 +697,13 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
     allEmpty = FALSE;
   }
 
+  PString vkey = GetString(securityKey);
   if (allEmpty)
-    return GetBoolean(pendingPrefix + securityKey) ? Pending : Defaults;
+    return (!vkey || GetBoolean(pendingPrefix + securityKey)) ? Pending : Defaults;
 
   PMessageDigest5::Code code;
   digestor.Complete(code);
 
-  PString vkey = GetString(securityKey);
   if (vkey.IsEmpty())
     return Invalid;
 
