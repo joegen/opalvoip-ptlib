@@ -24,9 +24,12 @@
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
  *
- * Contributor(s): Yuri Kiryanov, BeVox Group, yk@altavista.net.
+ * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.11  2001/03/07 06:57:32  yurik
+ * Changed email to current one
+ *
  * Revision 1.10  2001/01/16 12:32:06  rogerh
  * Remove duplicate SetAutoDelete() function. Submitted by
  * Jac Goudsmit <jac_goudsmit@yahoo.com>
