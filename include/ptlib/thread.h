@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.9 1995/01/16 09:42:13 robertj Exp $
+ * $Id: thread.h,v 1.10 1995/03/14 12:42:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.9  1995/01/16 09:42:13  robertj
+ * Revision 1.10  1995/03/14 12:42:49  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.9  1995/01/16  09:42:13  robertj
  * Documentation.
  *
  * Revision 1.8  1994/09/25  10:45:22  robertj
@@ -46,13 +49,13 @@
 // PThread
 
 PDECLARE_CLASS(PThread, PObject)
-/* This class defines a thread of execution in the system. A $I$thread$I$ is
+/* This class defines a thread of execution in the system. A <I>thread</I> is
    an independent flow of processor instructions. This differs from a
-   $I$process$I$ which also embodies a program address space and resource
+   <I>process</I> which also embodies a program address space and resource
    allocation. So threads can share memory and resources as they run in the
    context of a given process. A process always contains at least one thread.
-   This is reflected in this library by the $H$PProcess class being descended
-   from the PThread class.
+   This is reflected in this library by the <A>PProcess</A> class being
+   descended from the PThread class.
 
    The implementation of a thread is platform dependent. Not all platforms
    support concurrent threads within a process or even concurrent processes!
@@ -66,13 +69,13 @@ PDECLARE_CLASS(PThread, PObject)
    them using a cooperative co-routine technique. This requires that each
    thread of execution within a process, voluntarily yields control to other
    threads. This will occur if the thread is blocked inside an I/O function
-   on a $H$PChannel or when the $H$PThread::Yield() function is explicitly
-   called.
+   on a <A>PChannel</A> or when the <A>PThread::Yield()</A> function is
+   explicitly called.
    
-   Note that this is $U$cooperative$U$. An endless loop will stop all threads
-   in a process, possibly all processes on some platforms. If a lengthy
-   operation is to take place that does not involve blocking I/O, eg pure
-   computation or disk file I/O, then it is the responsiblity of the
+   Note that this is <EM>cooperative</EM>. An endless loop will stop all
+   threads in a process, possibly all processes on some platforms. If a
+   lengthy operation is to take place that does not involve blocking I/O,
+   eg pure computation or disk file I/O, then it is the responsiblity of the
    programmer to assure enough yielding for background threads to execute.
  */
 
@@ -92,20 +95,20 @@ PDECLARE_CLASS(PThread, PObject)
       BOOL startSuspended = FALSE,  // Thread does not execute immediately.
       Priority priorityLevel = NormalPriority  // Initial priority of thread.
     );
-    /* Create a new thread instance. Unless the $B$startSuspended$B$ parameter
-       is TRUE, the threads $B$Main()$B$ function is called to execute the
-       code for the thread.
+    /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
+       parameter is TRUE, the threads <A><CODE>Main()</CODE></A> function is
+       called to execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
        never be predicted. Thus never assume that on return from this
        constructor that the thread has executed any code at all. The only
-       guarentee is that it will $U$not$U$ be executed if the thread is
+       guarentee is that it will <EM>not</EM> be executed if the thread is
        started suspended.
 
        If synchronisation is required between threads then the use of
        semaphores is essential.
        
-       The stack size specified is $U$not$U$ simply in bytes. It is a value
+       The stack size specified is <EM>not</EM> simply in bytes. It is a value
        that is multiplied by a factor into bytes depending on the target
        platform. For example a Unix system with a RISC processor may use
        significantly more stack than an MS-DOS platform. These sizes are
@@ -115,12 +118,12 @@ PDECLARE_CLASS(PThread, PObject)
      */
 
     ~PThread();
-    /* Destroy the thread, this simply calls the $B$Terminate()$B$ function
-       with all its restrictions and penalties. See that function for more
-       information.
+    /* Destroy the thread, this simply calls the
+       <A><CODE>Terminate()</CODE></A> function with all its restrictions and
+       penalties. See that function for more information.
        
        Note that the correct way for a thread to terminate is to return from
-       the $B$Main()$B$ function.
+       the <A><CODE>Main()</CODE></A> function.
      */
 
 
@@ -132,7 +135,8 @@ PDECLARE_CLASS(PThread, PObject)
        current codes thread is and this static function provides that
        information.
 
-       Returns: pointer to current thread.
+       <H2>Returns:</H2>
+       pointer to current thread.
      */
 
     virtual void Main() = 0;
@@ -159,15 +163,16 @@ PDECLARE_CLASS(PThread, PObject)
        called causing at the very least the possiblity of memory leaks.
 
        Note that the correct way for a thread to terminate is to return from
-       the $B$Main()$B$ function or self terminate by calling $B$Terminate()$B$
-       within the context of the thread which can then assure that all
-       resources are cleaned up.
+       the <A><CODE>Main()</CODE></A> function or self terminate by calling
+       <A><CODE>Terminate()</CODE></A> within the context of the thread which
+       can then assure that all resources are cleaned up.
      */
 
     virtual BOOL IsTerminated() const;
     /* Determine if the thread has been terminated or ran to completion.
 
-       Returns: TRUE if the thread has been terminated.
+       <H2>Returns:</H2>
+       TRUE if the thread has been terminated.
      */
 
     virtual void Suspend(
@@ -175,25 +180,29 @@ PDECLARE_CLASS(PThread, PObject)
     );
     /* Suspend or resume the thread.
     
-       If $B$susp$B$ is TRUE this increments an internal count of suspensions
-       that must be matched by an equal number of calls to $B$Resume()$B$ or
-       $F$Suspend(FALSE)$F$ before the thread actually executes again.
+       If <CODE>susp</CODE> is TRUE this increments an internal count of
+       suspensions that must be matched by an equal number of calls to
+       <A><CODE>Resume()</CODE></A> or <CODE>Suspend(FALSE)</CODE> before the
+       thread actually executes again.
 
-       If $B$susp$B$ is FALSE then this decrements the internal count of
+       If <CODE>susp</CODE> is FALSE then this decrements the internal count of
        suspensions. If the count is <= 0 then the thread will run. Note that
        the thread will not be suspended until an equal number of
-       $F$Suspend(TRUE)$F$ calls are made.
+       <CODE>Suspend(TRUE)</CODE> calls are made.
      */
 
     virtual void Resume();
-    // Resume thread execution, this is identical to $F$Suspend(FALSE)$F$.
+    /* Resume thread execution, this is identical to
+       <CODE>Suspend(FALSE)</CODE>.
+     */
 
     virtual BOOL IsSuspended() const;
     /* Determine if the thread is currently suspended. This checks the
        suspension count and if greater than zero returns TRUE for a suspended
        thread.
 
-       Returns: TRUE if thread is suspended.
+       <H2>Returns:</H2>
+       TRUE if thread is suspended.
      */
 
     virtual void Sleep(
@@ -211,7 +220,8 @@ PDECLARE_CLASS(PThread, PObject)
     virtual Priority GetPriority() const;
     /* Get the current priority of the thread in the current process.
 
-       Returns: current thread priority.
+       <H2>Returns:</H2>
+       current thread priority.
      */
 
     static void Yield();
@@ -219,7 +229,7 @@ PDECLARE_CLASS(PThread, PObject)
        function does nothing. Note that on most platforms the threading is
        cooperative and this function must be called for other threads to run
        at all. There may be an implicit call to Yield within the I/O functions
-       of $H$PChannel classes. This is so when a thread is I/O blocked then
+       of <A>PChannel</A> classes. This is so when a thread is I/O blocked then
        other threads can, as far as possible, continue to run.
        
        If the platform directly supports multiple threads then this function
@@ -244,7 +254,8 @@ PDECLARE_CLASS(PThread, PObject)
 
        This function is not present for platforms that support threads.
        
-       Returns: TRUE if the thread is no longer blocked.
+       <H2>Returns:</H2>
+       TRUE if the thread is no longer blocked.
      */
 #endif
 
@@ -261,7 +272,7 @@ PDECLARE_CLASS(PThread, PObject)
     );
     /* Allocate the stack for the thread.
 
-       The stack size specified is $U$not$U$ simply in bytes. It is a value
+       The stack size specified is <EM>not</EM> simply in bytes. It is a value
        that is multiplied by a factor into bytes depending on the target
        platform. For example a Unix system with a RISC processor may use
        significantly more stack than an MS-DOS platform. These sizes are
@@ -281,7 +292,7 @@ PDECLARE_CLASS(PThread, PObject)
      */
 
     void BeginThread();
-    /* Function to start $B$Main()$B$ and exit when completed.
+    /* Function to start <A><CODE>Main()</CODE></A> and exit when completed.
 
        This function is not present for platforms that support threads.
      */
@@ -290,8 +301,9 @@ PDECLARE_CLASS(PThread, PObject)
       PThread * from    // Thread being switched from.
     );
     /* Do the machinations needed to jump to the current thread. This is a
-       platform dependent function that utilises the standard C $B$setjmp()$B$
-       and $B$longjmp()$B$ functions to implement the co-routines.
+       platform dependent function that utilises the standard C
+       <CODE>setjmp()</CODE> and <CODE>longjmp()</CODE> functions to implement
+       the co-routines.
     
        This function is not present for platforms that support threads.
      */
@@ -309,21 +321,22 @@ PDECLARE_CLASS(PThread, PObject)
        been scheduled has its dynamic priority increased so that next time
        the scheduler is looking for a thread to run it has a better chance of
        executing. Once a thread is executed the dynamic priority is set back
-       to the base priority as set by $B$SetPriority()$B$.
+       to the base priority as set by <A><CODE>SetPriority()</CODE></A>.
 
        This variable is not present for platforms that support threads.
      */
 
     int suspendCount;
-    /* The threads count of calls to $B$Suspend()$B$ or $B$Resume()$B$. If <=0
-       then can run, if >0 means suspended and is not to be scheduled.
+    /* The threads count of calls to <A><CODE>Suspend()</CODE></A> or
+       <A><CODE>Resume()</CODE></A>. If <=0 then can run, if >0 means
+       suspended and is not to be scheduled.
 
        This variable is not present for platforms that support threads.
      */
 
     PTimer sleepTimer;
     /* Time for thread to remain asleep. Thread is not scheduled while this
-       is running after a $B$Sleep()$B$ call.
+       is running after a <A><CODE>Sleep()</CODE></A> call.
 
        This variable is not present for platforms that support threads.
      */
@@ -346,7 +359,7 @@ PDECLARE_CLASS(PThread, PObject)
       Sleeping,         // Thread is sleeping until sleepTimer is up.
       Suspended,        // Thread is currently suspended.
       Blocked,          // Thread is currently blocked, eg in I/O.
-      SuspendedBlock,   // Thread is blocked $U$and$U$ suspended.
+      SuspendedBlock,   // Thread is blocked <EM>and</EM> suspended.
       Terminating,      // Thread is terminating but has not died yet.
       Terminated        // Thread has terminated.
     } status;
