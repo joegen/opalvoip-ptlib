@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.4  2002/02/26 00:42:13  robertj
+ * Fixed MSVC warning.
+ *
  * Revision 1.3  2002/02/25 11:05:02  rogerh
  * New Delay code which solves the accumulated error problem. Based on ideas
  * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
@@ -68,7 +71,7 @@ BOOL PAdaptiveDelay::Delay(int frameTime)
 
   // Calculate the sleep time so we delay until the target time
   PTimeInterval delay = targetTime - PTime();
-  int sleep_time = delay.GetMilliSeconds();
+  int sleep_time = (int)delay.GetMilliSeconds();
 
   if (sleep_time > 0)
 #ifdef P_LINUX
