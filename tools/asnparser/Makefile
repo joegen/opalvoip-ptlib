@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.12  2004/06/01 07:32:46  csoutheren
+# Removed warning on Linux
+#
 # Revision 1.11  2003/07/28 18:29:41  dsandras
 # Patch to help with make -jN thanks to Alexander Larsson <alexl@redhat.com>.
 #
@@ -68,4 +71,7 @@ asn_lex.cxx: asn_lex.l
 
 asnparser.txt:	asnparser.1
 		nroff -man $< | col -b > $@
+
+test:
+	./obj_linux_x86_d/asnparser -s2 -m H225 -r MULTIMEDIA-SYSTEM-CONTROL=H245 -c h225.asn
 
