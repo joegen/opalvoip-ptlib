@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.2  2000/07/25 13:14:07  robertj
+ * Got the video capture stuff going!
+ *
  * Revision 1.1  2000/07/15 09:47:35  robertj
  * Added video I/O device classes.
  *
@@ -37,18 +40,27 @@
 
 #include "../../videoio.h"
   protected:
+    virtual BOOL SetFrameSize(unsigned width, unsigned height);
+    virtual BOOL SetColourFormat(ColourFormat colourFormat);
+
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
     static LRESULT CALLBACK VideoHandler(HWND hWnd, LPVIDEOHDR vh);
     LRESULT HandleVideo(LPVIDEOHDR vh);
+    BOOL InitialiseCapture();
+    void HandleCapture();
+
+    PThread     * captureThread;
+    PSyncPoint    threadStarted;
 
     HWND          hCaptureWindow;
-    CAPDRIVERCAPS driverCaps;
-    PBYTEArray    bitmapInfoBuffer;
-    BITMAPINFO *  bitmapInfo;
+
     PSyncPoint    frameAvailable;
     LPBYTE        lastFramePtr;
     unsigned      lastFrameSize;
+    PMutex        lastFrameMutex;
+
+  friend class PVideoInputThread;
 };
 
 
