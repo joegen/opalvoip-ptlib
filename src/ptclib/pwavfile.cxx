@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.5  2001/07/20 04:14:47  robertj
+ * Fixed swab implementation on Linux alpha
+ *
  * Revision 1.4  2001/07/20 03:30:59  robertj
  * Minor cosmetic changes to new PWAVFile class.
  *
@@ -49,14 +52,15 @@
 
 
 #if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__))
-void swab(register char * from, register char * to, register size_t len)
+void swab(void * void_from, void * void_to, register size_t len)
 {
+  register const char * from = (const char *)void_from;
+  register char * to = (char *)void_to;
+
   while (len > 1) {
-    char b = from[0];
-    to[0] = from[1];
-    to[1] = b;
-    from += 2;
-    to += 2;
+    char b = *from++;
+    *to++ = *from++;
+    *to++ = b;
     len -= 2;
   }
 }
