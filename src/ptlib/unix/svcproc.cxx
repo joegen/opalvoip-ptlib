@@ -16,11 +16,14 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_ERR,     // LogError,   
   LOG_WARNING, // LogWarning, 
   LOG_INFO,    // LogInfo,    
+  LOG_DEBUG,   // LogDebug
+  LOG_DEBUG,
+  LOG_DEBUG
 };
 
 #ifdef P_PTHREADS
 
-static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t logMutex = {{ PTHREAD_MUTEX_INITIALIZER }};
 
 #endif
 
