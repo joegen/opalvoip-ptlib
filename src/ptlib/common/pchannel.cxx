@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.16  2001/11/13 04:13:22  robertj
+ * Added ability to adjust size of ios buffer on PChannels.
+ *
  * Revision 1.15  2001/09/27 10:23:42  craigs
  * CHanged ReadString to allow read until end of input with P_MAX_INDEX arg
  *
@@ -91,16 +94,17 @@ PChannelStreamBuffer::PChannelStreamBuffer(PChannel * chan)
 }
 
 
+BOOL PChannelStreamBuffer::SetBufferSize(PINDEX newSize)
+{
+  return input.SetSize(newSize) && output.SetSize(newSize);
+}
+
+
 int PChannelStreamBuffer::overflow(int c)
 {
   if (pbase() == NULL) {
-    if (eback() == 0)
-      setp(buffer, &buffer[sizeof(buffer)]);
-    else {
-      char * halfway = &buffer[sizeof(buffer)/2];
-      setp(buffer, halfway);
-      setg(halfway, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
-    }
+    char * p = output.GetPointer(1024);
+    setp(p, p+output.GetSize());
   }
 
   int bufSize = pptr() - pbase();
@@ -122,13 +126,9 @@ int PChannelStreamBuffer::overflow(int c)
 int PChannelStreamBuffer::underflow()
 {
   if (eback() == NULL) {
-    if (pbase() == 0)
-      setg(buffer, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
-    else {
-      char * halfway = &buffer[sizeof(buffer)/2];
-      setp(buffer, halfway);
-      setg(halfway, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
-    }
+    char * p = input.GetPointer(1024);
+    char * e = p+input.GetSize();
+    setg(p, e, e);
   }
 
   if (gptr() != egptr())
@@ -323,6 +323,12 @@ BOOL PChannel::WriteAsync(const void * buf, PINDEX len)
 
 void PChannel::OnWriteComplete(const void *, PINDEX)
 {
+}
+
+
+BOOL PChannel::SetBufferSize(PINDEX newSize)
+{
+  return ((PChannelStreamBuffer *)rdbuf())->SetBufferSize(newSize);
 }
 
 
