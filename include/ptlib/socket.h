@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.10 1995/06/04 12:36:37 robertj Exp $
+ * $Id: socket.h,v 1.11 1995/06/17 00:44:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.11  1995/06/17 00:44:35  robertj
+ * More logical design of port numbers and service names.
+ * Changed overloaded Open() calls to 3 separate function names.
+ *
  * Revision 1.10  1995/06/04 12:36:37  robertj
  * Slight redesign of port numbers on sockets.
  *
@@ -58,34 +62,54 @@ PDECLARE_CLASS(PSocket, PChannel)
  */
 
   public:
-    virtual BOOL Open(
+    virtual BOOL Connect(
       const PString & address   // Address of remote machine to connect to.
     ) = 0;
-    virtual BOOL Open(
-      WORD port = 0             // Port number to use for the connection.
-    ) = 0;
-    virtual BOOL Open(
-      PSocket & socket          // Listening socket making the connection.
-    ) = 0;
-    /* Open a socket to a remote host on the specified port number.
-    
-       The first form creates a "connecting" socket which is typically the
-       client or initiator of a communications channel. This connects to a
-       "listening" socket at the other end of the communications channel.
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
 
-       The second form creates a "listening" socket which may be used for
-       server based applications. A "connecting" socket begins a connection by
-       initiating a connection to this socket. An active socket of this type
-       is then used to generate other "accepting" sockets which establish a
-       two way communications channel with the "connecting" socket.
+       The port number as defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function.
 
-       The third form opens an "accepting" socket. When a "listening" socket
-       has a pending connection to make, this will accept a connection made
-       by the "connecting" socket created to establish a link.
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
+      WORD port = 0            // Port number to use for the connection.
+    ) = 0;
+    /* Listen on a socket for a remote host on the specified port number. This
+       may be used for server based applications. A "connecting" socket begins
+       a connection by initiating a connection to this socket. An active socket
+       of this type is then used to generate other "accepting" sockets which
+       establish a two way communications channel with the "connecting" socket.
 
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function is used.
+       <A><CODE>SetPort()</CODE></A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    ) = 0;
+    /* Open a socket to a remote host on the specified port number. This is an
+       "accepting" socket. When a "listening" socket has a pending connection
+       to make, this will accept a connection made by the "connecting" socket
+       created to establish a link.
+
+       The port that the socket uses is the one used in the <A>Listen()</A>
+       command of the <CODE>socket</CODE> parameter.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
