@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.47  2004/06/06 08:50:08  rjongbloed
+ * Fixed rounding error in microsoeconds stream output, was not properly cascaded
+ *   along other time elements (hour min etc) so as doing rounding properly is
+ *   hideously difficult, truncated instead, thanks Marco Turconi
+ *
  * Revision 1.46  2004/04/03 08:22:22  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -654,13 +659,13 @@ PString PTime::AsString(const char * format, int zone) const
           repeatCount++;
         switch (repeatCount) {
           case 1 :
-            str << ((microseconds+50000)/100000);
+            str << (microseconds/100000);
             break;
           case 2 :
-            str << setw(2) << ((microseconds+5000)/10000);
+            str << setw(2) << (microseconds/10000);
             break;
           case 3 :
-            str << setw(3) << ((microseconds+500)/1000);
+            str << setw(3) << (microseconds/1000);
             break;
           default :
             str << setw(6) << microseconds;
