@@ -2008,7 +2008,7 @@ case "$target_os" in
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
-  solaris* | sunos ) OSTYPE=solaris ;
+  solaris* | sunos* ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
