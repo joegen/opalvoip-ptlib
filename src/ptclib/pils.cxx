@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.cxx,v $
+ * Revision 1.3  2003/04/07 13:05:20  robertj
+ * Workaround for Microsoft IP address specification wierdness.
+ *
  * Revision 1.2  2003/03/31 12:18:43  robertj
  * Fixed pragma implementation
  *
@@ -43,6 +46,25 @@
 
 
 #if P_LDAP
+
+// Microsoft in their infinite wisdom save the IP address as an little endian
+// integer from a 32 bit integer that was in network byte order (big endian)
+// which causes immense confusion. Reading into a PIPSocket::Address does not
+// work as it assumes that any integer forms would be in host order.
+istream & operator>>(istream & s, PILSSession::MSIPAddress & a)
+{
+  DWORD u;
+  s >> u;
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+  a = u;
+#else
+  a = PIPSocket::Address((BYTE)(u>>24),(BYTE)(u>>16),(BYTE)(u>>8),(BYTE)u);
+#endif
+
+  return s;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
