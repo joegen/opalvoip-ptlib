@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.129  2000/02/17 11:34:28  robertj
+ * Changed PTRACE output to help line up text after filename output.
+ *
  * Revision 1.128  2000/01/06 14:09:42  robertj
  * Fixed problems with starting up timers,losing up to 10 seconds
  *
@@ -530,7 +533,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       *Stream << setprecision(3) << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
 
     if ((Options&Thread) != 0)
-      *Stream << PThread::Current() << '\t';
+      *Stream << hex << setfill('0')
+              << setw(7) << (unsigned)PThread::Current()
+              << dec << setfill(' ') << '\t';
   }
 
   if ((Options&TraceLevel) != 0)
@@ -548,7 +553,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
         file = fileName;
     }
 
-    *Stream << file << '(' << lineNum << ")\t";
+    *Stream << setw(16) << file << '(' << lineNum << ")\t";
   }
 
   return *Stream;
