@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.7  1998/12/15 12:41:07  robertj
+ * Fixed signal handling so can now ^C a pthread version.
+ *
  * Revision 1.6  1998/11/05 09:45:04  robertj
  * Removed StartImmediate option in thread construction.
  *
@@ -87,7 +90,9 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
   }
 
-  return ::select(handle+1, read_fds, write_fds, exception_fds, tptr);
+  int retval = ::select(handle+1, read_fds, write_fds, exception_fds, tptr);
+  PProcess::Current().PXCheckSignals();
+  return retval;
 }
 
 
@@ -104,6 +109,15 @@ void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
+  // In this thread we really do want these signals
+  sigset_t blockedSignals;
+  sigemptyset(&blockedSignals);
+  sigaddset(&blockedSignals, SIGHUP);
+  sigaddset(&blockedSignals, SIGINT);
+  sigaddset(&blockedSignals, SIGQUIT);
+  sigaddset(&blockedSignals, SIGTERM);
+  PAssert(pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
+
   for (;;) {
     PTimeInterval waitTime = process.timers.Process();
     if (waitTime == PMaxTimeInterval)
@@ -118,6 +132,10 @@ void PProcess::Construct()
   // make sure we don't get upset by resume signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
+  sigaddset(&blockedSignals, SIGHUP);
+  sigaddset(&blockedSignals, SIGINT);
+  sigaddset(&blockedSignals, SIGQUIT);
+  sigaddset(&blockedSignals, SIGTERM);
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssert(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
 
@@ -128,7 +146,7 @@ void PProcess::Construct()
   PAssert(setrlimit(RLIMIT_NOFILE, &rl) == 0, "setrlimit failed");
 
   // initialise the housekeeping thread
-  housekeepingThread = NULL;
+  housekeepingThread = PNEW HouseKeepingThread;
 
   CommonConstruct();
 }
@@ -196,6 +214,10 @@ void * PThread::PX_ThreadStart(void * arg)
   // block RESUME_SIG
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
+  sigaddset(&blockedSignals, SIGHUP);
+  sigaddset(&blockedSignals, SIGINT);
+  sigaddset(&blockedSignals, SIGQUIT);
+  sigaddset(&blockedSignals, SIGTERM);
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssert(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
 
@@ -237,9 +259,6 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PProcess::SignalTimerChange()
 {
-  if (housekeepingThread == NULL)
-    housekeepingThread = PNEW HouseKeepingThread;
-
   timerChangeSemaphore.Signal();
 }
 
@@ -379,7 +398,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
     }
   }
   while (::select(0, NULL, NULL, NULL, tptr) != 0)
-    ;
+    PProcess::Current().PXCheckSignals();
 }
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
@@ -416,8 +435,11 @@ void PSemaphore::Wait()
   PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
 
   queuedLocks++;
-  while (currentCount == 0) 
-    PAssert(pthread_cond_wait(&condVar, &mutex) == 0, "pthread_cond_wait failed");
+  while (currentCount == 0) {
+    int err = pthread_cond_wait(&condVar, &mutex);
+    PProcess::Current().PXCheckSignals();
+    PAssert(err == 0, "pthread_cond_wait failed");
+  }
 
   queuedLocks--;
   currentCount--;
@@ -440,13 +462,15 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
 
   queuedLocks++;
   while (currentCount == 0) {
-    int t = pthread_cond_timedwait(&condVar, &mutex, &absTime);
-    if ((t == ETIME) || (t == ETIMEDOUT)) {
+    int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
+    PProcess::Current().PXCheckSignals();
+    if (err == ETIME || err == ETIMEDOUT) {
       queuedLocks--;
       pthread_mutex_unlock(&mutex);
       return FALSE;
-    } else
-      PAssert(t == 0, "pthread_cond_timedwait failed");
+    }
+    else
+      PAssert(err == 0, "pthread_cond_timedwait failed");
   }
   currentCount--;
   queuedLocks--;
