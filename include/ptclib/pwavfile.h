@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.15  2004/11/08 04:07:40  csoutheren
+ * Fixed crash opportunity under some conditions
+ * Fixed incorrect WAV file type display
+ *
  * Revision 1.14  2004/07/15 03:12:41  csoutheren
  * Migrated changes from crs_vxnml_devel branch into main trunk
  *
@@ -477,7 +481,7 @@ class PWAVFile : public PFile
       *Return a string that describes the WAV format
       */
     PString GetFormatString() const
-    { if (formatHandler == NULL) return PString("N/A"); else return formatHandler->GetFormat(); }
+    { if (formatHandler == NULL) return PString("N/A"); else return formatHandler->GetFormatString(); }
 
     /**
       * enable autoconversion between PCM-16 and the native format

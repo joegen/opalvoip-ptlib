@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.35  2004/11/08 04:07:40  csoutheren
+ * Fixed crash opportunity under some conditions
+ * Fixed incorrect WAV file type display
+ *
  * Revision 1.34  2004/07/19 12:32:25  csoutheren
  * Removed vestigial debug comment
  *
@@ -354,7 +358,8 @@ BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 
 BOOL PWAVFile::Close()
 {
-  formatHandler->OnStop();
+  if (formatHandler != NULL) 
+    formatHandler->OnStop();
 
   if (header_needs_updating)
     UpdateHeader();
