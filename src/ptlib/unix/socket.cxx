@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.95  2002/10/22 07:42:52  robertj
+ * Added extra debugging for file handle and thread leak detection.
+ *
  * Revision 1.94  2002/10/22 06:53:38  craigs
  * Fixed signed/unsigned problem in GetRoutTable thanks to Thomas Jalsovsky
  *
@@ -298,6 +301,7 @@
 #include <sys/sysctl.h>
 #endif
 
+int PX_NewHandle(const char *, int);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -369,7 +373,7 @@ static int SetNonBlocking(int fd)
 int PSocket::os_socket(int af, int type, int protocol)
 {
   // attempt to create a socket
-  return SetNonBlocking(::socket(af, type, protocol));
+  return SetNonBlocking(PX_NewHandle(GetClass(), ::socket(af, type, protocol)));
 }
 
 

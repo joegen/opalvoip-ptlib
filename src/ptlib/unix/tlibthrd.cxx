@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.99  2002/10/22 07:42:52  robertj
+ * Added extra debugging for file handle and thread leak detection.
+ *
  * Revision 1.98  2002/10/18 03:05:39  robertj
  * Fixed thread leak caused by fixing the thread crash a few revisions back,
  *   caused by strange pthreads behaviour, at least under Linux.
@@ -362,6 +365,9 @@
 #endif
 
 
+int PX_NewHandle(const char *, int);
+
+
 #define PAssertPTHREAD(func, args) \
   { \
     unsigned threadOpRetry = 0; \
@@ -568,11 +574,14 @@ PThread::PThread(PINDEX stackSize,
 #else
   PAssertOS(::pipe(unblockPipe) == 0);
 #endif
+  PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 
   // new thread is actually started the first time Resume() is called.
   PX_firstTimeStart = TRUE;
 
   traceBlockIndentLevel = 0;
+
+  PTRACE(5, "PWLib\tCreated thread " << threadName);
 }
 
 
@@ -581,8 +590,8 @@ PThread::~PThread()
   if (!IsTerminated()) 
     Terminate();
 
-  ::close(unblockPipe[0]);
-  ::close(unblockPipe[1]);
+  PAssertOS(::close(unblockPipe[0]) == 0);
+  PAssertOS(::close(unblockPipe[1]) == 0);
 
 #ifndef P_HAS_SEMAPHORES
   pthread_mutex_destroy(&PX_WaitSemMutex);
@@ -590,6 +599,8 @@ PThread::~PThread()
 
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
+
+  PTRACE(5, "PWLib\tDestroyed thread " << threadName);
 }
 
 
@@ -909,13 +920,22 @@ void * PThread::PX_ThreadStart(void * arg)
 
   PProcess & process = PProcess::Current();
 
+  PINDEX newHighWaterMark = 0;
+  static PINDEX highWaterMark = 0;
+
   // add thread to thread list
   process.threadMutex.Wait();
   process.activeThreads.SetAt((unsigned)threadId, thread);
+  if (process.activeThreads.GetSize() > highWaterMark)
+    newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
   process.threadMutex.Signal();
+
+  PTRACE_IF(4, newHighWaterMark > 0, "PWLib\tThread high water mark set: " << newHighWaterMark);
 
   // make sure the cleanup routine is called when the thread exits
   pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
+
+  PTRACE(5, "PWLib\tStarted thread " << thread->threadName);
 
   // now call the the thread main routine
   thread->Main();
@@ -937,6 +957,8 @@ void PThread::PX_ThreadEnd(void * arg)
     PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
     return;
   }
+
+  PTRACE(5, "PWLib\tEnded thread " << thread->threadName);
 
   // remove this thread from the active thread list
   PProcess & process = PProcess::Current();
