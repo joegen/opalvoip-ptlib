@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.108  2004/07/08 00:57:29  csoutheren
+ * Added check for EINTR on connect
+ * Thanks to Alex Vishnev
+ *
  * Revision 1.107  2004/07/03 23:50:42  csoutheren
  * Removed warnings under Solaris
  *
@@ -419,7 +423,10 @@ int PSocket::os_socket(int af, int type, int protocol)
 
 BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
-  int val = ::connect(os_handle, addr, size);
+  int val;
+  do {
+    val = ::connect(os_handle, addr, size);
+  } while (val != 0 && errno == EINTR);
   if (val == 0 || errno != EINPROGRESS)
     return ConvertOSError(val);
 
