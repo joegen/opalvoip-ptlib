@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.6 1995/06/17 00:48:01 robertj Exp $
+ * $Id: udpsock.h,v 1.7 1995/06/17 11:13:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
+ * Revision 1.7  1995/06/17 11:13:41  robertj
+ * Documentation update.
+ *
  * Revision 1.6  1995/06/17 00:48:01  robertj
  * Implementation.
  *
@@ -70,7 +73,7 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
@@ -89,7 +92,7 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
 
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
