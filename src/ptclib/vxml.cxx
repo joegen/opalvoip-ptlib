@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.30  2002/12/03 22:39:14  robertj
+ * Removed get document that just returns a content length as the chunked
+ *   transfer encoding makes this very dangerous.
+ *
  * Revision 1.29  2002/11/19 10:36:30  robertj
  * Added functions to set anf get "file:" URL. as PFilePath and do the right
  *   things with platform dependent directory components.
@@ -1683,9 +1687,8 @@ void PVXMLQueueURLItem::Play(PVXMLOutgoingChannel & outgoingChannel)
   // open the resource
   PHTTPClient * client = new PHTTPClient;
   PMIMEInfo outMIME, replyMIME;
-  PINDEX contentLength;
-  int code = client->GetDocument(url, contentLength);
-  if ((code != 200) || (contentLength == 0)) 
+  int code = client->GetDocument(url, outMIME, replyMIME, FALSE);
+  if ((code != 200) || (replyMIME(PHTTP::TransferEncodingTag) *= PHTTP::ChunkedTag))
     delete client;
   else {
     outgoingChannel.SetReadChannel(client, TRUE);
