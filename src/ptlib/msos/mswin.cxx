@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.8 1994/10/23 05:41:29 robertj Exp $
+ * $Id: mswin.cxx,v 1.9 1995/01/09 12:28:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.8  1994/10/23 05:41:29  robertj
+ * Revision 1.9  1995/01/09 12:28:00  robertj
+ * Added implementation for PConfig::Environment
+ *
+ * Revision 1.8  1994/10/23  05:41:29  robertj
  * Fixed config file bugs.
  *
  * Revision 1.7  1994/08/22  00:18:02  robertj
@@ -680,28 +683,51 @@ PStringList PConfig::GetSections()
 PStringList PConfig::GetKeys(const PString & section) const
 {
   PStringList keys;
-  PString buf;
-  char * ptr = buf.GetPointer(10000);
-  GetPrivateProfileString(section, NULL, "", ptr, 9999, configFile);
-  while (*ptr != '\0') {
-    keys.AppendString(ptr);
-    ptr += strlen(ptr)+1;
+
+  if (configFile.IsEmpty()) {
+    char ** ptr = _environ;
+    while (*ptr != NULL) {
+      PString buf = *ptr++;
+      keys.AppendString(buf.Left(buf.Find('=')));
+    }
   }
+  else {
+    PString buf;
+    char * ptr = buf.GetPointer(10000);
+    GetPrivateProfileString(section, NULL, "", ptr, 9999, configFile);
+    while (*ptr != '\0') {
+      keys.AppendString(ptr);
+      ptr += strlen(ptr)+1;
+    }
+  }
+
   return keys;
 }
 
 
 void PConfig::DeleteSection(const PString & section)
 {
-  PAssert(WritePrivateProfileString(section,
-                              NULL, NULL, configFile), POperatingSystemError);
+  if (configFile.IsEmpty())
+    return;
+
+  PAssert(!section.IsEmpty(), PInvalidParameter);
+  PAssertOS(WritePrivateProfileString(section, NULL, NULL, configFile));
 }
 
 
 void PConfig::DeleteKey(const PString & section, const PString & key)
 {
-  PAssert(WritePrivateProfileString(section,
-                               key, NULL, configFile), POperatingSystemError);
+  PAssert(!key.IsEmpty(), PInvalidParameter);
+
+  if (configFile.IsEmpty()) {
+    PString str = key;
+    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
+    _putenv(str + "=");
+  }
+  else {
+    PAssert(!section.IsEmpty(), PInvalidParameter);
+    PAssertOS(WritePrivateProfileString(section, key, NULL, configFile));
+  }
 }
 
 
@@ -709,9 +735,24 @@ PString PConfig::GetString(const PString & section,
                                     const PString & key, const PString & dflt)
 {
   PString str;
-  GetPrivateProfileString(section, key,
-                                 dflt, str.GetPointer(1000), 999, configFile);
-  str.MakeMinimumSize();
+
+  PAssert(!key.IsEmpty(), PInvalidParameter);
+
+  if (configFile.IsEmpty()) {
+    PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+    char * env = getenv(key);
+    if (env != NULL)
+      str = env;
+    else
+      str = dflt;
+  }
+  else {
+    PAssert(!section.IsEmpty(), PInvalidParameter);
+    GetPrivateProfileString(section, key, dflt,
+                                        str.GetPointer(1000), 999, configFile);
+    str.MakeMinimumSize();
+  }
+
   return str;
 }
 
@@ -719,8 +760,17 @@ PString PConfig::GetString(const PString & section,
 void PConfig::SetString(const PString & section,
                                    const PString & key, const PString & value)
 {
-  PAssert(WritePrivateProfileString(section, key,
-                                   value, configFile), POperatingSystemError);
+  PAssert(!key.IsEmpty(), PInvalidParameter);
+
+  if (configFile.IsEmpty()) {
+    PString str = key;
+    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
+    _putenv(str + "=" + value);
+  }
+  else {
+    PAssert(!section.IsEmpty(), PInvalidParameter);
+    PAssertOS(WritePrivateProfileString(section, key, value, configFile));
+  }
 }
 
 
