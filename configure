@@ -1049,7 +1049,7 @@ case "$target_os" in
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
-		   OSRELEASE="5.$OSVER" ;
+                   OSRELEASE='$(subst 5.,,$(shell uname -r))' ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
   darwin* )	   OSTYPE=Darwin ;
