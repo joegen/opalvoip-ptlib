@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2004/04/04 13:24:19  rjongbloed
+ * Changes to support native C++ Run Time Type Information
+ *
  * Revision 1.5  2003/10/27 22:12:56  dereksmithies
  * Add more good changes to get Compare method work. Thanks to Gene Small
  *
@@ -58,7 +61,7 @@ TestObject::~TestObject()
 
 PObject::Comparison TestObject::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, TestObject), PInvalidCast);
   unsigned othervalue = ((const TestObject &)obj).value;
       
   if (value < othervalue)
