@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.17 1996/01/28 02:50:27 robertj Exp $
+ * $Id: object.cxx,v 1.18 1996/03/26 00:55:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.18  1996/03/26 00:55:20  robertj
+ * Added keypress before dumping memory leaks.
+ *
  * Revision 1.17  1996/01/28 02:50:27  robertj
  * Added missing bit shift operators to 64 bit integer class.
  * Added assert into all Compare functions to assure comparison between compatible objects.
@@ -147,10 +150,16 @@ static ostream & operator<<(ostream & out, void * ptr)
 
 static void DumpMemoryLeaks()
 {
+  BOOL firstLeak = TRUE;
   PError.setf(ios::uppercase);
   void ** entry = PointerHashTable;
   for (size_t i = 0; i < PointerTableSize; i++, entry++) {
     if (*entry != NULL) {
+      if (firstLeak) {
+        firstLeak = FALSE;
+        PError << "Press Enter to show memory leaks...";
+        getchar();
+      }
       PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
       PError << "Pointer @" << (void *)(*entry)
              << " [" << arena->size << ']';
