@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.44  2003/12/14 10:01:02  rjongbloed
+ * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
+ *
  * Revision 1.43  2003/11/23 22:17:35  dsandras
  * Added YUV420P to BGR24 and BGR32 conversion.
  *
@@ -1029,7 +1032,7 @@ PStringList PVideoInputDevice::GetDriverNames(PPluginManager *_pluginMgr)
   return pluginMgr->GetPluginsProviding(videoInputPluginBaseClass);
 }
 
-PStringList PVideoInputDevice::GetDeviceNames(const PString &driverName,
+PStringList PVideoInputDevice::GetDriversDeviceNames(const PString &driverName,
                                                              PPluginManager *_pluginMgr)
 {
   PPluginManager *pluginMgr =
@@ -1087,7 +1090,7 @@ PStringList PVideoOutputDevice::GetDriverNames(PPluginManager *_pluginMgr)
   return pluginMgr->GetPluginsProviding(videoOutputPluginBaseClass);
 }
 
-PStringList PVideoOutputDevice::GetDeviceNames(const PString &driverName,
+PStringList PVideoOutputDevice::GetDriversDeviceNames(const PString &driverName,
                                                              PPluginManager *_pluginMgr)
 {
   PPluginManager *pluginMgr =

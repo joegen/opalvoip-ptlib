@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.37  2003/12/14 10:01:02  rjongbloed
+ * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
+ *
  * Revision 1.36  2003/12/03 03:47:56  dereksmithies
  * Add fix so video output devices compile and run correctly.
  * Thanks to Craig Southeren.
@@ -620,7 +623,7 @@ class PVideoOutputDevice : public PVideoDevice
     /**
        Return video devices that correspond to the specified name
     */
-    static PStringList GetDeviceNames(
+    static PStringList GetDriversDeviceNames(
                                      const PString &driverName,
                                      PPluginManager * pluginMgr = NULL
                                      );
@@ -672,14 +675,8 @@ class PVideoOutputDevice : public PVideoDevice
     /**Stop the video device I/O display.
       */
     virtual BOOL Stop() { return TRUE; }
-
-  protected:
-    // this ensures that this function cannot be called on any PVideoInputDevice unless it has
-    // been specifically implemented by that class. This will help ensure that video input plugins 
-    // get propagated
-    virtual PStringList GetDeviceNames() const
-    { return PVideoDevice::GetDeviceNames(); }
 };
+
 
 #ifdef SHOULD_BE_MOVED_TO_PLUGIN
 
@@ -811,7 +808,7 @@ class PVideoInputDevice : public PVideoDevice
     /**
        Return video devices that correspond to the specified name
     */
-    static PStringList GetDeviceNames(
+    static PStringList GetDriversDeviceNames(
                                      const PString &driverName,
                                      PPluginManager * pluginMgr = NULL
                                      );
@@ -886,13 +883,6 @@ class PVideoInputDevice : public PVideoDevice
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual BOOL TestAllFormats() = 0;
-
-  protected:
-    // this ensures that this function cannot be called on any PVideoInputDevice unless it has
-    // been specifically implemented by that class. This will help ensure that video input plugins 
-    // get propagated
-    virtual PStringList GetDeviceNames() const
-    { return PVideoDevice::GetDeviceNames(); }
 };
 
 ////////////////////////////////////////////////////////
