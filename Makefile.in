@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.20  2004/04/20 10:02:46  csoutheren
+# Remove usage of asnparser from the Makefile
+#
 # Revision 1.19  2004/04/13 11:48:36  csoutheren
 # asnparser no longer built by default
 #
@@ -245,7 +248,6 @@ endif
 	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib.h       $(DESTDIR)$(PREFIX)/include/
-	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
 	cp -rf make/*.mak    $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	cp make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
@@ -258,7 +260,7 @@ endif
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ $(DESTDIR)$(LIBDIR)/pwlib/
-	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
+	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so 
 
 
 # End of Makefile.in
