@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.11 1998/04/14 03:42:41 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.12 1998/06/13 12:28:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.12  1998/06/13 12:28:04  robertj
+ * Added shutdown to client command if no content length specified.
+ *
  * Revision 1.11  1998/04/14 03:42:41  robertj
  * Fixed error code propagation in HTTP client.
  *
@@ -189,8 +192,11 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime)
 {
-  if (WriteCommand(cmd, url, outMIME, dataBody))
+  if (WriteCommand(cmd, url, outMIME, dataBody)) {
+    if (!outMIME.Contains(ContentLengthTag))
+      Shutdown(ShutdownWrite);
     ReadResponse(replyMime);
+  }
   else {
     lastResponseCode = -1;
     lastResponseInfo = GetErrorText();
