@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.55 1996/03/05 14:05:51 robertj Exp $
+ * $Id: osutils.cxx,v 1.56 1996/03/12 11:30:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.56  1996/03/12 11:30:50  robertj
+ * Moved PProcess destructor to platform dependent code.
+ *
  * Revision 1.55  1996/03/05 14:05:51  robertj
  * Fixed some more bugs in scheduling.
  *
@@ -1875,15 +1878,6 @@ PProcess::PProcess(const char * manuf, const char * name,
   status = stat;
   buildNumber = build;
   Construct();
-}
-
-
-PProcess::~PProcess()
-{
-#if defined(P_PLATFORM_HAS_THREADS)
-  if (timerThread != (PThread *)-1)
-    delete timerThread;
-#endif
 }
 
 
