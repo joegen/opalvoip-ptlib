@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.126.2.1  2004/07/04 02:02:44  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.126  2004/03/24 02:37:04  csoutheren
  * Fixed problem with incorrect usage of sem_timedwait
  *
@@ -626,6 +631,8 @@ PProcess::~PProcess()
     delete housekeepingThread;
   }
   CommonDestruct();
+  
+  PTRACE(5, "PWLib\tDestroyed process " << this);
 }
 
 
@@ -722,7 +729,8 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
+  if (this != &PProcess::Current())
+    PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
 }
 
 
@@ -1316,6 +1324,7 @@ void PThread::PXAbortBlock() const
 {
   BYTE ch;
   ::write(unblockPipe[1], &ch, 1);
+  PTRACE(6, "PWLib\tUnblocking I/O fd=" << unblockPipe[0] << " thread=" << GetThreadName());
 }
 
 
@@ -1625,6 +1634,28 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   PTime finishTime;
   finishTime += waitTime;
 
+#if P_PTHREADS_XPG6
+
+  struct timespec absTime;
+  absTime.tv_sec = finishTime.GetTimeInSeconds();
+  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+  
+#ifdef P_HAS_RECURSIVE_MUTEX
+  return pthread_mutex_timedlock(&mutex, &absTime) == 0;
+#else
+  
+  if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
+    return FALSE;
+	
+  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
+    "PMutex acquired whilst locked by another thread");
+	
+  ownerThreadId = currentThreadId;
+  return TRUE;
+#endif
+  
+#else // P_PTHREADS_XPG6
+
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
 #ifndef P_HAS_RECURSIVE_MUTEX
@@ -1642,6 +1673,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   } while (PTime() < finishTime);
 
   return FALSE;
+#endif // P_PTHREADS_XPG6
 }
 
 

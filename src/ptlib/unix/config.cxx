@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.35.4.1  2004/07/04 02:02:44  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.35  2003/03/17 08:10:59  robertj
  * Fixed bug with parsing lines with no equal sign
  *
@@ -576,8 +581,10 @@ void PConfig::Construct(Source src,
   PFilePath filename, readFilename;
 
   // handle cnvironment configs differently
-  if (src == PConfig::Environment) 
+  if (src == PConfig::Environment) {
     config = configDict->GetEnvironmentInstance();
+	return;
+  }
 
   // look up file name to read, and write
   if (src == PConfig::System)
