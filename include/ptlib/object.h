@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.57  2000/01/05 00:29:12  robertj
+ * Fixed alignment problems in memory checking debug functions.
+ *
  * Revision 1.56  1999/11/30 00:22:54  robertj
  * Updated documentation for doc++
  *
@@ -705,6 +708,17 @@ class PMemoryHeap {
 
 #pragma pack(1)
     struct Header {
+      enum {
+        NumGuardBytes = (sizeof(Header *) +
+                         sizeof(Header *) +
+                         sizeof(const char *) +
+                         sizeof(const char *) +
+                         sizeof(size_t) +
+                         sizeof(DWORD) +
+                         sizeof(WORD) +
+                         sizeof(BYTE))%sizeof(void *) + sizeof(void *)
+      };
+
       Header     * prev;
       Header     * next;
       const char * className;
@@ -713,8 +727,9 @@ class PMemoryHeap {
       DWORD        request;
       WORD         line;
       BYTE         flags;
-      static const char GuardBytes[9];
-      char         guard[sizeof(GuardBytes)];
+      char         guard[NumGuardBytes];
+
+      static char GuardBytes[NumGuardBytes];
     };
 #pragma pack()
 
