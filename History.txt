@@ -2,6 +2,28 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.11
+------------
+	Fixed error display for sound channels.
+
+	Added Windows version of PIPSocket::GetInterfaceTable() function.
+
+	Changed PTRACE so will output to system log in PServiceProcess 
+	applications.
+
+	Fixed name space problem with PSYSTEMLOG() macro.
+
+	Allowed some Win32 only access to custom wave format in sound channel.
+
+	Changed PSemaphore to use Posix semaphores.
+
+	ASN Parser: Optimised CreateObject() switch statements, collapsing 
+	common cases.
+
+	ASN Parser: Fixed failure to put "using namespace" in every 
+	generated .cxx file.
+
+
 Release 1.10
 ------------
 	Fixed usage of inlines in optimised version. Was not inlined.
