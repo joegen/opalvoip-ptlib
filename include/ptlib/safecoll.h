@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.3  2002/08/29 06:51:11  robertj
+ * Added optimisiation, separate mutex for toBeRemoved list.
+ *
  * Revision 1.2  2002/05/06 00:44:45  robertj
  * Made the lock/unlock read only const so can be used in const functions.
  *
@@ -323,8 +326,9 @@ class PSafeCollection : public PObject
     PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
     PCollection * collection;
-    PAbstractList toBeRemoved;
     PMutex        collectionMutex;
+    PAbstractList toBeRemoved;
+    PMutex        removalMutex;
     PTimer        deleteObjectsTimer;
 
   friend class PSafePtrBase;
