@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.48 1996/01/28 14:12:22 robertj Exp $
+ * $Id: contain.cxx,v 1.49 1996/02/03 11:08:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.49  1996/02/03 11:08:51  robertj
+ * Changed memcpy to memove to guarentee string operations will work correctly
+ *    when moving overlapping strings around eg in PString::Splice().
+ *
  * Revision 1.48  1996/01/28 14:12:22  robertj
  * Fixed bug in Tokenise() for first token empty and PINDEX unsigned.
  *
@@ -405,7 +409,7 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 #ifdef PHAS_UNICODE
 #define PSTRING_COPY(d, s, l) UnicodeCopy((WORD *)(d), (s), (l))
 #define PSTRING_MOVE(d, doff, s, soff, l) \
-            memcpy(((WORD*)(d))+(doff), ((WORD*)(s))+(soff), (l)*sizeof(WORD))
+            memmove(((WORD*)(d))+(doff), ((WORD*)(s))+(soff), (l)*sizeof(WORD))
 static void UnicodeCopy(WORD * theArray, char * src, size_t len)
 {
   while (len-- > 0)
@@ -413,7 +417,7 @@ static void UnicodeCopy(WORD * theArray, char * src, size_t len)
 }
 #else
 #define PSTRING_COPY(d, s, l) memcpy((d), (s), (l))
-#define PSTRING_MOVE(d, doff, s, soff, l) memcpy((d)+(doff), (s)+(soff), (l))
+#define PSTRING_MOVE(d, doff, s, soff, l) memmove((d)+(doff), (s)+(soff), (l))
 #endif
 
 PString::PString(const char * cstr)
@@ -937,10 +941,15 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 {
   PAssertNULL(cset);
-  while (*cset != '\0') {
-    PINDEX pos = Find(*cset++, offset);
-    if (pos != P_MAX_INDEX)
-      return pos;
+  PINDEX len = GetLength();
+  while (offset < len) {
+    const char * p = cset;
+    while (*p != '\0') {
+      if (InternalCompare(offset, *p) == EqualTo)
+        return offset;
+      p++;
+    }
+    offset++;
   }
   return P_MAX_INDEX;
 }
@@ -972,18 +981,10 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
   else {
     MakeUnique();
     PINDEX clen = strlen(PAssertNULL(cstr));
-    SetSize(slen+clen-len);
-    if (clen < len)
-      PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len);
-    else if (clen > len) {
-#ifdef PHAS_UNICODE
-      for (PINDEX i = slen+clen-len-1; i >= clen; i--)
-        ((WORD *)theArray)[i] = ((WORD *)theArray)[i-(clen - len)];
-#else
-      for (PINDEX i = slen+clen-len-1; i >= clen; i--)
-        theArray[i] = theArray[i-(clen - len)];
-#endif
-    }
+    if (clen > len)
+      SetSize(slen+clen-len+1);
+    if (pos+len < slen)
+      PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len+1);
     PSTRING_COPY(theArray+pos, cstr, clen);
   }
 }
