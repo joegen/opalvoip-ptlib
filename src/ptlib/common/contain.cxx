@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.161  2004/06/08 01:29:00  csoutheren
+ * Removed memory leak on VS.net caused by unobvious iostream allocation
+ *
  * Revision 1.160  2004/05/28 23:59:23  csoutheren
  * Added guards for negative offsets and lengths in various PString functions
  *
@@ -2660,7 +2663,9 @@ PStringStream::PStringStream(const char * cstr)
 PStringStream::~PStringStream()
 {
   delete (PStringStream::Buffer *)rdbuf();
+#ifdef _WIN32
   init(NULL);
+#endif
 }
 
 
