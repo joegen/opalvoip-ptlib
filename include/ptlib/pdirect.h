@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.25 1997/01/12 04:22:21 robertj Exp $
+ * $Id: pdirect.h,v 1.26 1997/03/31 11:34:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.26  1997/03/31 11:34:00  robertj
+ * Fixed default permissions for directories , different from that for files.
+ *
  * Revision 1.25  1997/01/12 04:22:21  robertj
  * Added function to get disk size and free space.
  *
@@ -149,7 +152,8 @@ PDECLARE_CLASS(PFileInfo, PObject)
       UserWrite = 128,    // File has owner write permission
       UserRead = 256,     // File has owner read permission
       AllPermissions = 0x1ff,   // All possible permissions.
-      DefaultPerms = 0x1A4
+      DefaultPerms = UserRead|UserWrite|GroupRead|WorldRead,
+      DefaultDirPerms = DefaultPerms|UserExecute|GroupExecute|WorldExecute
       // Owner read & write plus group and world read permissions.
     };
     // File access permissions for the file.
@@ -288,11 +292,11 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
      */
       
     BOOL Create(
-      int perm = PFileInfo::DefaultPerms    // Permission on new directory.
+      int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
     ) const;
     PINLINE static BOOL Create(
       const PString & p,   // Directory file path.
-      int perm = PFileInfo::DefaultPerms    // Permission on new directory.
+      int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
     );
     /* Create a new directory with the specified permissions. The parameterless
        version changes to the name contained in the object instance. The static
