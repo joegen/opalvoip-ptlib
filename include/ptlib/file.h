@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.20 1994/08/23 11:32:52 robertj Exp $
+ * $Id: file.h,v 1.21 1994/12/21 11:52:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.20  1994/08/23 11:32:52  robertj
+ * Revision 1.21  1994/12/21 11:52:54  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.20  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.19  1994/08/22  00:46:48  robertj
@@ -84,138 +87,350 @@
 // Binary Files
 
 PDECLARE_CONTAINER(PFile, PChannel)
+/* This class represents a disk file. This is a particular type of I/O channel
+   that has certain attributes. All platforms have a disk file, though exact
+   details of naming convertions etc may be different.
+
+   The basic model for files is that they are a named sequence of bytes that
+   persists within a directory structure. The transfer of data to and from
+   the file is made at a current position in the file. This may be set to
+   random locations within the file.
+ */
 
   public:
     PFile();
-      // Create a file object but do not open it. It does not initially
-      // have a valid file name.
+    /* Create a file object but do not open it. It does not initially have a
+       valid file name. However, an attempt to open file file using the
+       $B$Open()$B$ function will generate a unique temporary file.
+     */
 
     enum OpenMode {
-      ReadOnly, 
-      WriteOnly, 
-      ReadWrite
+      ReadOnly,     // File can be read but not written.
+      WriteOnly,    // File can be written but not read.
+      ReadWrite     // File can be both read and written.
     };
-    enum OpenOptions {
-      ModeDefault = -1, // File option depends on the OpenMode parameter
-      MustExist = 0,    // File open fails if file does not exist
-      Create = 1,       // File is created if it does not exist
-      Truncate = 2,     // File is set to zero length if it already exists
-      Exclusive = 4,    // File open fails if file already exists
-      Temporary = 8     // File is temporary and is to be deleted when closed
-    };
+    /* When a file is opened, it may restrict the access available to
+       operations on the object instance. A value from this enum is passed to
+       the $B$Open()$B$ function to set the mode.
+     */
 
-    PFile(OpenMode mode, int opts = ModeDefault);
-      // Create a unique temporary file name, and open the file for reading
-      // and writing, creating the file. The file is initially empty.
-      
-    PFile(const PFilePath & name,
-                           OpenMode mode = ReadWrite, int opts = ModeDefault);
-      // Create a file object with name and open it in the specified mode.
-      
+    enum OpenOptions {
+      ModeDefault = -1, // File options depend on the OpenMode parameter.
+      MustExist = 0,    // File open fails if file does not exist.
+      Create = 1,       // File is created if it does not exist.
+      Truncate = 2,     // File is set to zero length if it already exists.
+      Exclusive = 4,    // File open fails if file already exists.
+      Temporary = 8     // File is temporary and is to be deleted when closed.
+    };
+    /* When a file is opened, a number of options may be associated with the
+       open file. These describe what action to take on opening the file and
+       what to do on closure. A value from this enum is passed to the
+       $B$Open()$B$ function to set the options.
+
+       The $B$ModeDefault$B$ option will use the following values:
+          $U$Mode$U$          $U$Options$U$
+          ReadOnly      MustExist
+          WriteOnly     Create | Truncate
+          ReadWrite     Create
+     */
+
+    PFile(
+      OpenMode mode,          // Mode in which to open the file.
+      int opts = ModeDefault  // $H$OpenOptions for open operation.
+    );
+    /* Create a unique temporary file name, and open the file in the specified
+       mode and using the specified options. Note that opening a new, unique,
+       temporary file name in ReadOnly mode will always fail. This would only
+       be usefull in a mode and options that will create the file.
+
+       The $B$IsOpen()$B$ function may be used after object construction to
+       determine if the file was successfully opened.
+     */
+
+    PFile(
+      const PFilePath & name,     // Name of file to open.
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // $H$OpenOptions for open operation.
+    );
+    /* Create a file object with the specified name and open it in the
+       specified mode and with the specified options.
+
+       The $B$IsOpen()$B$ function may be used after object construction to
+       determine if the file was successfully opened.
+     */
+
 
     // Overrides from class PObject
-    Comparison Compare(const PObject & obj) const;
-      // Return TRUE if the two objects refer to the same file. This is
-      // essentially if they have the same full path name.
+    Comparison Compare(
+      const PObject & obj   // Other file to compare against.
+    ) const;
+    /* Determine the relative rank of the two objects. This is essentially the
+       string comparison of the $H$PFilePath names of the files.
+
+       Returns: relative rank of the file paths.
+     */
 
 
-    // Overrides from class PChannel
+  // Overrides from class PChannel
     virtual PString GetName() const;
-      // Return the name of the channel.
+    /* Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in $H$PFile type channels.
 
-    virtual BOOL Read(void * buf, PINDEX len);
-      // Low level read from the channel. This function will block until the
-      // requested number of characters were read.
+       Returns: the name of the channel.
+     */
 
-    virtual BOOL Write(const void * buf, PINDEX len);
-      // Low level write to the channel. This function will block until the
-      // requested number of characters were written.
+    virtual BOOL Read(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
+    );
+    /* Low level read from the file channel. The read timeout is ignored for
+       file I/O. The GetLastReadCount() function returns the actual number
+       of bytes read.
+
+       The GetErrorCode() function should be consulted after Read() returns
+       FALSE to determine what caused the failure.
+
+       Returns: TRUE indicates that at least one character was read from the
+                channel. FALSE means no bytes were read due to timeout or
+                some other I/O error.
+     */
+
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Low level write to the file channel. The write timeout is ignored for
+       file I/O. The GetLastWriteCount() function returns the actual number
+       of bytes written.
+
+       The GetErrorCode() function should be consulted after Write() returns
+       FALSE to determine what caused the failure.
+
+       Returns TRUE if at least len bytes were written to the channel.
+     */
 
     virtual BOOL Close();
-      // Close the channel.
+    // Close the file channel.
 
 
-    // New member functions
+  // New member functions
     const PFilePath & GetFilePath() const;
-      // Return the file path.
+    /* Get the full path name of the file. The $H$PFilePath object describes
+       the full file name specification for the particular platform.
+
+       Returns: the name of the file.
+     */
 
     void SetFilePath(const PString & str);
-      // Set the name of the file object. This has no effect if the file is
-      // currently open.
+    /* Set the full path name of the file. The $H$PFilePath object describes
+       the full file name specification for the particular platform.
+     */
 
 
     BOOL Exists() const;
-    PINLINE static BOOL Exists(const PString & name);
-      // Return TRUE if the file exists.
+    static BOOL Exists(
+      const PString & name  // Name of file to see if exists.
+    );
+    /* Determine if the file actually exists within the platforms file system.
+
+       The first form uses the file path specification associated with the
+       instance of the object. The second static function uses an arbitrary
+       file specified by name.
+
+       Returns: TRUE if the file exists.
+     */
+
+    BOOL Access(
+      OpenMode mode         // Mode in which the file open would be done.
+    );
+    static BOOL Access(
+      const PString & name, // Name of file to have its access checked.
+      OpenMode mode         // Mode in which the file open would be done.
+    );
+    /* Determine if the file may be opened in the specified mode. This would
+       check the current access rights to the file for the mode. For example,
+       for a file that is read only, using mode == ReadWrite would return
+       FALSE but mode == ReadOnly would return TRUE.
+
+       The first form uses the file path specification associated with the
+       instance of the object. The second static function uses an arbitrary
+       file specified by name.
+
+       Returns: TRUE if a file open would succeed.
+     */
       
-    BOOL Access(OpenMode mode);
-    static BOOL Access(const PString & name, OpenMode mode);
-      // Return TRUE if the file may be opened in the specified mode
+    BOOL Remove(
+      BOOL force = FALSE      // Force deletion even if file is protected.
+    );
+    static BOOL Remove(
+      const PString & name,   // Name of file to delete.
+      BOOL force = FALSE      // Force deletion even if file is protected.
+    );
+    /* Delete the specified file. If $B$force$B$ is FALSE and the file is
+       protected against being deleted then the function fails. If $B$force$B$
+       is TRUE then the protection is ignored. What constitutes file deletion
+       protection is platform dependent, eg on DOS is the Read Only attribute
+       and on a Novell network it is a Delete trustee right. Some protection
+       may not be able to overridden with the $B$force$B$ parameter at all, eg
+       on a Unix system and you are not the owner of the file.
+
+       The first form uses the file path specification associated with the
+       instance of the object. The second static function uses an arbitrary
+       file specified by name.
+
+       Returns: TRUE if the file was deleted.
+     */
       
-    BOOL Remove(BOOL force = FALSE);
-    static BOOL Remove(const PString & name, BOOL force = FALSE);
-      // Delete the specified file.
-      
-    BOOL Rename(const PString & newname, BOOL force = FALSE);
-    static BOOL Rename(const PString & oldname,
-                                 const PString & newname, BOOL force = FALSE);
-      // Change the specified files name. Note that this object then refers to
-      // the new filename.
+    BOOL Rename(
+      const PString & newname,  // New name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    static BOOL Rename(
+      const PString & oldname,  // Old name of the file.
+      const PString & newname,  // New name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    /* Change the specified files name. Depending on the platform and the
+       relationship between the new name and the old, the function may fail to
+       rename the file, eg for DOS you cannot rename where the disk drives are
+       different.
 
-    BOOL Copy(const PString & newname, BOOL force = FALSE);
-    static BOOL Copy(const PString & oldname,
-                                 const PString & newname, BOOL force = FALSE);
-      // Make a copy of the specified file. Note that this object still refers
-      // to the original file.
+       The first form uses the file path specification associated with the
+       instance of the object. The name within the instance is changed to the
+       new name if the function succeeds. The second static function uses an
+       arbitrary file specified by name.
+
+       Returns: TRUE if the file was renamed.
+     */
+
+    BOOL Copy(
+      const PString & newname,  // New name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    static BOOL Copy(
+      const PString & oldname,  // Old name of the file.
+      const PString & newname,  // New name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    /* Make a copy of the specified file.
+
+       The first form uses the file path specification associated with the
+       instance of the object. The name within the instance is changed to the
+       new name if the function succeeds. The second static function uses an
+       arbitrary file specified by name.
+
+       Returns: TRUE if the file was renamed.
+     */
 
 
-    BOOL Open(OpenMode  mode = ReadWrite, int opts = ModeDefault);
-      // Open the file in the specified mode. If the file was already open then
-      // it is closed and re-opened. If there has not been a filename attached
-      // to the file object (via SetFilePath() or a previous open) then a new
-      // unique temporary filename is generated.
+    BOOL Open(
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // Options for open operation.
+    );
+    BOOL Open(
+      const PFilePath & name,     // Name of file to open.
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // $H$OpenOptions for open operation.
+    );
+    /* Open the given file name (if specified) in the specified mode and with
+       the specified options. If the file object already has an open file then
+       it is closed.
+       
+       If there has not been a filename attached to the file object (via
+       $B$SetFilePath()$B$, the $B$name$B$ parameter or a previous open) then
+       a new unique temporary filename is generated.
 
-    BOOL Open(const PFilePath & name,
-                          OpenMode  mode = ReadWrite, int opts = ModeDefault);
-      // Open the given filename in the specified mode. If the file object
-      // already has an open file then it is closed beforehand. The opts
-      // parameter, if ModeDefault will be MustExist for mode == ReadOnly,
-      // Create|Truncate for mode == WriteOnly and Create|Exclusive for
-      // mode == ReadWrite.
+       Returns: TRUE if the file was successfully opened.
+     */
       
     int GetHandle() const;
-      // Return the integer operating system handle for the file.
+    /* Get the integer operating system handle for the file.
+
+       Returns: standard C file descriptor integer.
+     */
 
     off_t GetLength() const;
-      // Get the current size of the file.
+    /* Get the current size of the file.
+
+       Returns: length of file in bytes.
+     */
       
     BOOL SetLength(off_t len);
-      // Set the size of the file, padding with 0 bytes if it would require
-      // expanding the file.
-      
+    /* Set the size of the file, padding with 0 bytes if it would require
+       expanding the file, or truncating it if being made shorter.
+
+       Returns: TRUE if the file size was changed to the length specified.
+     */
+
     enum FilePositionOrigin {
-      Start = SEEK_SET,
-      Current = SEEK_CUR,
-      End = SEEK_END
+      Start = SEEK_SET,   // Set position relative to start of file.
+      Current = SEEK_CUR, // Set position relative to current file position.
+      End = SEEK_END      // Set position relative to end of file.
     };
-    BOOL SetPosition(off_t pos, FilePositionOrigin origin = Start);
-      // Set the current active position in the file for the next read/write
-      // operation.
+    // Options for the origin in setting the file position.
+
+    BOOL SetPosition(
+      off_t pos,                         // New position to set.
+      FilePositionOrigin origin = Start  // Origin for position change.
+    );
+    /* Set the current active position in the file for the next read or write
+       operation. The $B$pos$B$ variable is a signed number which is added to
+       the specified origin. For $B$origin$B$ == PFile::Start only positive
+       values for $B$pos$B$ are meaningful. For $B$origin$B$ == PFile::End only
+       negative values for $B$pos$B$ are meaningful.
+
+       Returns: TRUE if the new file position was set.
+     */
 
     off_t GetPosition() const;
-      // Get the current active position in the file for the next read/write
-      // operation.
+    /* Get the current active position in the file for the next read or write
+       operation.
+
+       Returns: current file position relative to start of file.
+     */
 
     BOOL IsEndOfFile() const;
-      // Return TRUE if at end of file.
-      
-    BOOL GetInfo(PFileInfo & info);
-    static BOOL GetInfo(const PFilePath & name, PFileInfo & info);
-      // Get information (eg protection, timestamps) on the specified file
+    /* Determine if the current file position is at the end of the file. If
+       this is TRUE then any read operation will fail.
 
-    BOOL SetPermissions(int permissions);
-    static BOOL SetPermissions(const PFilePath & name, int permissions);
-      // Set permissions on the specified file
+       Returns: TRUE if at end of file.
+     */
+      
+    BOOL GetInfo(
+      PFileInfo & info    // $H$PFileInfo structure to receive the information.
+    );
+    static BOOL GetInfo(
+      const PFilePath & name,  // Name of file to get the information on.
+      PFileInfo & info    // $H$PFileInfo structure to receive the information.
+    );
+    /* Get information (eg protection, timestamps) on the specified file.
+
+       The first form uses the file path specification associated with the
+       instance of the object.The second static function uses an arbitrary
+       file specified by name.
+
+       Returns: TRUE if the file was renamed.
+     */
+
+    BOOL SetPermissions(
+      int permissions           // New permissions mask for the file.
+    );
+    static BOOL SetPermissions(
+      const PFilePath & name,   // Name of file to change the permission of.
+      int permissions           // New permissions mask for the file.
+    );
+    /* Set permissions on the specified file.
+
+       The first form uses the file path specification associated with the
+       instance of the object.The second static function uses an arbitrary
+       file specified by name.
+
+       Returns: TRUE if the file was renamed.
+     */
 
 
   protected:
