@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.169  2001/09/03 08:08:31  robertj
+ * Added tab so get extra "column" in trace output.
+ *
  * Revision 1.168  2001/08/20 06:56:47  robertj
  * Fixed memory leak report which isn't a memory leak.
  *
@@ -672,7 +675,7 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   }
 
   PTRACE(1, process.GetName()
-         << " Version " << process.GetVersion(TRUE)
+         << "\tVersion " << process.GetVersion(TRUE)
          << " by " << process.GetManufacturer()
          << " on " << process.GetOSClass() << ' ' << process.GetOSName()
          << " (" << process.GetOSVersion() << '-' << process.GetOSHardware() << ')');
