@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.42  2004/06/08 01:19:22  csoutheren
+ * Fixed problem with SNMP library not loading under Windows in some cases
+ *
  * Revision 1.41  2004/06/01 05:24:12  csoutheren
  * Changed loading of inetmib1.dll to use PProcessStartup to avoid crashes when it is unloaded before ~H323Endpoint is called
  *
@@ -316,7 +319,7 @@ class WinSNMPLoader : public PProcessStartup
   PCLASSINFO(WinSNMPLoader, PProcessStartup);
   public:
     void OnStartup()
-    { snmpLibrary = NULL; }
+    { }
 
     PWin32SnmpLibrary & Current()
     {
@@ -336,8 +339,10 @@ class WinSNMPLoader : public PProcessStartup
 
   protected:
     PMutex mutex;
-    PWin32SnmpLibrary * snmpLibrary;
+    static PWin32SnmpLibrary * snmpLibrary;
 };
+
+PWin32SnmpLibrary * WinSNMPLoader::snmpLibrary = NULL;
 
 static PAbstractSingletonFactory<PProcessStartup, WinSNMPLoader> winSNMPLoadedStartupFactory("WinSNMPLoader");
 
@@ -1992,9 +1997,10 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
+  PWin32SnmpLibrary & snmp = snmp.Current();
+
   PWaitAndSignal m(GetSNMPMutex());
 
-  PWin32SnmpLibrary & snmp = snmp.Current();
   table.RemoveAll();
 
   /*
