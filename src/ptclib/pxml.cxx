@@ -31,15 +31,17 @@
 // This depends on the expat XML library by Jim Clark
 // See http://www.jclark.com/xml/expat.html for more information
 
+#include <ptlib.h>
+
 #ifdef __GNUC__
 #pragma implementation "pxml.h"
 #endif
 
-#include <ptlib.h>
+#include <ptclib/pxml.h>
+
 
 #if P_EXPAT
 
-#include <ptclib/pxml.h>
 #include <expat.h>
 
 #define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
