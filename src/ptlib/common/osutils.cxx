@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.191  2002/05/31 04:10:44  robertj
+ * Fixed missing mutex in PTrace::SetStream, thanks Federico Pinna
+ *
  * Revision 1.190  2002/05/28 13:05:26  robertj
  * Fixed PTimer::SetInterval so it restarts timer as per operator=()
  *
@@ -698,15 +701,18 @@ static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
 {
-#if !defined(__NUCLEUS_PLUS__)
-  PTraceStream = s != NULL ? s : &cerr;
-#else
-
-#ifdef __NUCLEUS_PLUS__ 
-  PTraceStream = s;
+#ifndef __NUCLEUS_PLUS__
+  if (s == NULL)
+    s = &cerr;
 #endif
 
-#endif
+  if (PTraceMutex == NULL)
+    PTraceStream = s;
+  else {
+    PTraceMutex->Wait();
+    PTraceStream = s;
+    PTraceMutex->Signal();
+  }
 }
 
 
