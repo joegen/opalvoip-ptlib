@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.121  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.120  2002/05/22 07:18:46  robertj
  * Fixed bug where SO_RESUSEADDR wsa being turned ON instead of OFF when
  *   making an outgoing connection, should only be ON for listener sockets.
@@ -1004,7 +1007,7 @@ int PSocket::Select(PSocket & sock1,
   int h2 = sock2.GetHandle();
 
 #ifdef _MSC_VER
-#pragma warning(disable:4127)
+#pragma warning(disable:4018 4127)
 #endif
   fd_set readfds;
   FD_ZERO(&readfds);
@@ -1015,7 +1018,7 @@ int PSocket::Select(PSocket & sock1,
   fd_set exceptfds;
   FD_ZERO(&exceptfds);
 #ifdef _MSC_VER
-#pragma warning(default:4127)
+#pragma warning(default:4018 4127)
 #endif
 
   PIntArray allfds(4);
@@ -1089,7 +1092,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
   PIntArray allfds(2*(read.GetSize()+write.GetSize()+except.GetSize()));
 
 #ifdef _MSC_VER
-#pragma warning(disable:4127)
+#pragma warning(disable:4018 4127)
 #endif
   fd_set readfds;
   FD_ZERO(&readfds);
@@ -1131,7 +1134,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     allfds[nextfd++] = 4;
   }
 #ifdef _MSC_VER
-#pragma warning(default:4127)
+#pragma warning(default:4018 4127)
 #endif
 
   int retval = os_select(maxfds+1,readfds,writefds,exceptfds,allfds,timeout);

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.70  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.69  2002/03/10 15:37:35  robertj
  * Added milliseconds to timestamp output
  *
@@ -257,6 +260,7 @@
 #include <winuser.h>
 #include <winnls.h>
 #include <shellapi.h>
+#include <commdlg.h>
 
 #include <process.h>
 #include <fstream.h>
