@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.43  2000/09/04 03:57:58  robertj
+ * Added ability to change the persistent connection parameters (timeout etc).
+ *
  * Revision 1.42  2000/05/02 08:28:10  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -197,19 +200,16 @@ class PHTTPSpace : public PContainer
   PCONTAINERINFO(PHTTPSpace, PContainer)
   public:
     /// Constructor for HTTP URL Name Space
-
     PHTTPSpace();
 
 
   // New functions for class.
     enum AddOptions {
-
+      /// Generate error if resource already exists
       ErrorOnExist,
-
+      /// Overwrite the existing resource at URL location
       Overwrite
-
     };
-
 
 
     /** Add a new resource to the URL space. If there is already a resource at
@@ -272,6 +272,7 @@ class PHTTPSpace : public PContainer
 
   protected:
     PReadWriteMutex * mutex;
+
     class Node;
     PSORTED_LIST(ChildList, Node);
     class Node : public PString
@@ -531,29 +532,49 @@ class PHTTPConnectionInfo : public PObject
     const PMIMEInfo & GetMIME() const { return mimeInfo; }
     void SetMIME(const PString & tag, const PString & value);
 
-
-    void SetPersistance(BOOL newPersist);
     BOOL IsCompatible(int major, int minor) const;
 
     BOOL IsPersistant() const         { return isPersistant; }
+    BOOL WasPersistant() const        { return wasPersistant; }
     BOOL IsProxyConnection() const    { return isProxyConnection; }
     int  GetMajorVersion() const      { return majorVersion; }
     int  GetMinorVersion() const      { return minorVersion; }
 
     long GetEntityBodyLength() const  { return entityBodyLength; }
 
+    /**Get the maximum time a persistent connection may persist.
+      */
+    PTimeInterval GetPersistenceTimeout() const { return persistenceTimeout; }
+
+    /**Set the maximum time a persistent connection may persist.
+      */
+    void SetPersistenceTimeout(const PTimeInterval & t) { persistenceTimeout = t; }
+
+    /**Get the maximum number of transations (GET/POST etc) for persistent connection.
+       If this is zero then there is no maximum.
+      */
+    unsigned GetPersistenceMaximumTransations() const { return persistenceMaximum; }
+
+    /**Set the maximum number of transations (GET/POST etc) for persistent connection.
+       If this is zero then there is no maximum.
+      */
+    void SetPersistenceMaximumTransations(unsigned m) { persistenceMaximum = m; }
+
   protected:
     BOOL Initialise(PHTTPServer & server, PString & args);
 
     PHTTP::Commands commandCode;
-    PString   commandName;
-    PURL      url;
-    PMIMEInfo mimeInfo;
-    BOOL      isPersistant;
-    BOOL      isProxyConnection;
-    int       majorVersion;
-    int       minorVersion;
-    long      entityBodyLength;
+    PString         commandName;
+    PURL            url;
+    PMIMEInfo       mimeInfo;
+    BOOL            isPersistant;
+    BOOL            wasPersistant;
+    BOOL            isProxyConnection;
+    int             majorVersion;
+    int             minorVersion;
+    long            entityBodyLength;
+    PTimeInterval   persistenceTimeout;
+    unsigned        persistenceMaximum;
 
   friend class PHTTPServer;
 };
@@ -588,7 +609,7 @@ class PHTTPServer : public PHTTP
      */
     PHTTPServer();
     PHTTPServer(
-      const PHTTPSpace & urlSpace  // Name space to use for URLs received.
+     const PHTTPSpace & urlSpace  // Name space to use for URLs received.
     );
 
 
@@ -756,15 +777,17 @@ class PHTTPServer : public PHTTP
       const PHTTPConnectionInfo & connectInfo
     );
 
+    /**Get the connection info for this connection.
+      */
+    PHTTPConnectionInfo & GetConnectionInfo() { return connectInfo; }
 
   protected:
     void Construct();
 
+    PHTTPSpace          urlSpace;
     PHTTPConnectionInfo connectInfo;
-    PINDEX transactionCount;
-    PTimeInterval nextTimeout;
-
-    PHTTPSpace urlSpace;
+    unsigned            transactionCount;
+    PTimeInterval       nextTimeout;
 };
 
 
