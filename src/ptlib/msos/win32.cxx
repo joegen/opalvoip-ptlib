@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.5 1995/06/17 01:03:08 robertj Exp $
+ * $Id: win32.cxx,v 1.6 1995/07/02 01:26:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.6  1995/07/02 01:26:52  robertj
+ * Changed thread internal variables.
+ * Added service process support for NT.
+ *
  * Revision 1.5  1995/06/17 01:03:08  robertj
  * Added NT service process type.
  *
@@ -35,6 +39,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys\stat.h>
+#include <process.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -912,13 +917,14 @@ DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
 {
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
-  AttachThreadInput(thread->id, ((PThread*)PProcess::Current())->id, TRUE);
-  PThread::threads.SetAt(thread->id, thread);
+  AttachThreadInput(thread->threadId,
+                              ((PThread*)PProcess::Current())->threadId, TRUE);
+  PThread::threads.SetAt(thread->threadId, thread);
 
   thread->Main();
 
-  PThread::threads.SetAt(thread->id, NULL);
-  thread->handle = NULL;
+  PThread::threads.SetAt(thread->threadId, NULL);
+  thread->threadHandle = NULL;
   return 0;
 }
 
@@ -927,9 +933,9 @@ PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   originalStackSize = stackSize;
-  handle = CreateThread(NULL, stackSize, PThread::MainFunction,
-                    (LPVOID)this, startSuspended ? CREATE_SUSPENDED : 0, &id);
-  PAssertOS(handle != NULL);
+  threadHandle = CreateThread(NULL, stackSize, MainFunction,
+               (LPVOID)this, startSuspended ? CREATE_SUSPENDED : 0, &threadId);
+  PAssertOS(threadHandle != NULL);
   SetPriority(priorityLevel);
 }
 
@@ -942,37 +948,37 @@ PThread::~PThread()
 
 void PThread::Restart()
 {
-  if (handle == NULL) {
-    handle = CreateThread(NULL,
-               originalStackSize, PThread::MainFunction, (LPVOID)this, 0, &id);
-    PAssertOS(handle != NULL);
+  if (threadHandle == NULL) {
+    threadHandle = CreateThread(NULL,
+                  originalStackSize, MainFunction, (LPVOID)this, 0, &threadId);
+    PAssertOS(threadHandle != NULL);
   }
 }
 
 
 void PThread::Terminate()
 {
-  if (handle != NULL && originalStackSize > 0) {
+  if (threadHandle != NULL && originalStackSize > 0) {
     if (Current() == this)
       ExitThread(0);
     else
-      TerminateThread(handle, 1);
-    threads.SetAt(id, NULL);
-    handle = NULL;
+      TerminateThread(threadHandle, 1);
+    threads.SetAt(threadId, NULL);
+    threadHandle = NULL;
   }
 }
 
 
 BOOL PThread::IsTerminated() const
 {
-  return handle == NULL;
+  return threadHandle == NULL;
 }
 
 
 void PThread::Suspend(BOOL susp)
 {
   if (susp)
-    SuspendThread(PAssertNULL(handle));
+    SuspendThread(PAssertNULL(threadHandle));
   else
     Resume();
 }
@@ -980,14 +986,14 @@ void PThread::Suspend(BOOL susp)
 
 void PThread::Resume()
 {
-  ResumeThread(PAssertNULL(handle));
+  ResumeThread(PAssertNULL(threadHandle));
 }
 
 
 BOOL PThread::IsSuspended() const
 {
-  SuspendThread(PAssertNULL(handle));
-  return ResumeThread(handle) <= 1;
+  SuspendThread(PAssertNULL(threadHandle));
+  return ResumeThread(threadHandle) <= 1;
 }
 
 
@@ -1000,13 +1006,13 @@ void PThread::SetPriority(Priority priorityLevel)
     THREAD_PRIORITY_ABOVE_NORMAL,
     THREAD_PRIORITY_HIGHEST
   };
-  SetThreadPriority(handle, priorities[priorityLevel]);
+  SetThreadPriority(threadHandle, priorities[priorityLevel]);
 }
 
 
 PThread::Priority PThread::GetPriority() const
 {
-  switch (GetThreadPriority(handle)) {
+  switch (GetThreadPriority(threadHandle)) {
     case THREAD_PRIORITY_LOWEST :
       return LowestPriority;
     case THREAD_PRIORITY_BELOW_NORMAL :
@@ -1031,10 +1037,10 @@ void PThread::Yield()
 
 void PThread::InitialiseProcessThread()
 {
-  handle = GetCurrentThread();
-  id = GetCurrentThreadId();
+  threadHandle = GetCurrentThread();
+  threadId = GetCurrentThreadId();
   threads.DisallowDeleteObjects();
-  threads.SetAt(id, this);
+  threads.SetAt(threadId, this);
   originalStackSize = 0;
 }
 
@@ -1059,133 +1065,34 @@ void PServiceProcess::PreInitialise(int argc, char ** argv)
 {
   PProcess::PreInitialise(1, argv);
 
-  if (argc <= 1) {
-    debugMode = FALSE;
-
-    // SERVICE_STATUS members that don't change
-    status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-    status.dwServiceSpecificExitCode = 0;
-
-    static SERVICE_TABLE_ENTRY dispatchTable[] = {
-      { "", PServiceProcess::MainEntry },
-      { NULL, NULL }
-    };
-
-    dispatchTable[0].lpServiceName = GetServiceName();
-
-    if (StartServiceCtrlDispatcher(dispatchTable))
-      exit(GetTerminationValue());
-
-    SystemLog(LogFatal, "StartServiceCtrlDispatcher failed.");
-    exit(1);
-  }
-
-  if (stricmp(argv[1], "debug") == 0) {
+  if (argc > 1) {
+    ProcessCommand(argv[1]);
     debugMode = TRUE;
     return;
   }
 
-  SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-  if (schSCManager == NULL) {
-    cerr << "Could not open Service Manager." << endl;
-    exit(1);
-  }
+  debugMode = FALSE;
 
-  SC_HANDLE schService = OpenService(schSCManager,
-                                        GetServiceName(), SERVICE_ALL_ACCESS);
+  // SERVICE_STATUS members that don't change
+  status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+  status.dwServiceSpecificExitCode = 0;
 
-  for (int arg = 1; arg < argc; arg++) {
-    if (stricmp(argv[arg], "install") == 0) {
-      if (schService != NULL)
-        cerr << "Service is already installed." << endl;
-      else {
-        schService = CreateService(
-                            schSCManager,               // SCManager database
-                            GetServiceName(),           // name of service
-                            GetServiceName(),           // name to display
-                            SERVICE_ALL_ACCESS,         // desired access
-                            SERVICE_WIN32_OWN_PROCESS,  // service type
-                            SERVICE_DEMAND_START,       // start type
-                            SERVICE_ERROR_NORMAL,       // error control type
-                            argv[0],                    // service's binary
-                            NULL,                       // no load ordering group
-                            NULL,                       // no tag identifier
-                            NULL,                       // no dependencies
-                            NULL,                       // LocalSystem account
-                            NULL);                      // no password
-        if (schService == NULL) {
-          DWORD err = GetLastError();
-          cerr << "Service install failed - error code = " << err << endl;
-        }
-      }
-    }
-    else if (stricmp(argv[arg], "remove") == 0) {
-      if (schService != NULL)
-        cerr << "Service is not installed." << endl;
-      else {
-        if (!DeleteService(schService)) {
-          DWORD err = GetLastError();
-          cerr << "Service removal failed - error code = " << err << endl;
-        }
-        schService = NULL;
-      }
-    }
-    else if (stricmp(argv[arg], "start") == 0) {
-      if (schService != NULL)
-        cerr << "Service is not installed." << endl;
-      else {
-        if (!StartService(schService, 0, NULL)) {
-          DWORD err = GetLastError();
-          cerr << "Service start failed - error code = " << err << endl;
-        }
-      }
-    }
-    else if (stricmp(argv[arg], "stop") == 0) {
-      if (schService != NULL)
-        cerr << "Service is not installed." << endl;
-      else {
-        SERVICE_STATUS status;
-        if (!ControlService(schService, SERVICE_CONTROL_STOP, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service stop failed - error code = " << err << endl;
-        }
-      }
-    }
-    else if (stricmp(argv[arg], "pause") == 0) {
-      if (schService != NULL)
-        cerr << "Service is not installed." << endl;
-      else {
-        SERVICE_STATUS status;
-        if (!ControlService(schService, SERVICE_CONTROL_PAUSE, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service pause failed - error code = " << err << endl;
-        }
-      }
-    }
-    else if (stricmp(argv[arg], "resume") == 0) {
-      if (schService != NULL)
-        cerr << "Service is not installed." << endl;
-      else {
-        SERVICE_STATUS status;
-        if (!ControlService(schService, SERVICE_CONTROL_CONTINUE, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service continue failed - error code = " << err << endl;
-        }
-      }
-    }
-    else
-      cerr << "Unknown parameter \"" << *argv << "\" - ignoring." << endl;
-  }
+  static SERVICE_TABLE_ENTRY dispatchTable[] = {
+    { "", PServiceProcess::MainEntry },
+    { NULL, NULL }
+  };
 
-	if (schService != NULL)
-    CloseServiceHandle(schService);
-	if (schSCManager != NULL)
-    CloseServiceHandle(schSCManager);
-  exit(0);
+  dispatchTable[0].lpServiceName = GetServiceName();
+
+  if (StartServiceCtrlDispatcher(dispatchTable))
+    exit(GetTerminationValue());
+
+  SystemLog(LogFatal, "StartServiceCtrlDispatcher failed.");
+  exit(1);
 }
 
 
-void PServiceProcess::BoundMainEntry()
+void PServiceProcess::BeginService()
 {
   // register our service control handler:
   statusHandle = RegisterServiceCtrlHandler(GetServiceName(), ControlEntry);
@@ -1196,15 +1103,34 @@ void PServiceProcess::BoundMainEntry()
   if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 3000))
     return;
 
-  Main();
+  // create the event object. The control handler function signals
+  // this event when it receives the "stop" control code.
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (terminationEvent == NULL)
+    return;
 
+  // start the thread that performs the work of the service.
+  threadHandle = CreateThread(NULL, 4096, ThreadEntry, NULL, 0, &threadId);
+  if (threadHandle != NULL)
+    WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
+
+  CloseHandle(terminationEvent);
   ReportStatus(SERVICE_STOPPED, 0);
 }
 
 
 void PServiceProcess::MainEntry(DWORD, LPTSTR *)
 {
-  Current()->BoundMainEntry();
+  Current()->BeginService();
+}
+
+
+DWORD EXPORTED PServiceProcess::ThreadEntry(LPVOID)
+{
+  Current()->Main();
+  Current()->ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+  SetEvent(Current()->terminationEvent);
+  return 0;
 }
 
 
@@ -1317,14 +1243,18 @@ BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
 void PServiceProcess::OnPause()
 {
   if (status.dwCurrentState != SERVICE_RUNNING)
-    ReportStatus(SERVICE_RUNNING);
-  else
+    ReportStatus(status.dwCurrentState);
+  else {
+    SuspendThread(threadHandle);
     ReportStatus(SERVICE_PAUSED);
+  }
 }
 
 
 void PServiceProcess::OnContinue()
 {
+  if (status.dwCurrentState == SERVICE_PAUSED)
+    ResumeThread(threadHandle);
   ReportStatus(SERVICE_RUNNING);
 }
 
@@ -1334,12 +1264,118 @@ void PServiceProcess::OnStop()
   // Report the status, specifying the checkpoint and waithint, before
   // setting the termination event.
   ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+  SetEvent(terminationEvent);
 }
 
 
 void PServiceProcess::OnInterrogate()
 {
-  ReportStatus(SERVICE_RUNNING);
+  ReportStatus(status.dwCurrentState);
+}
+
+
+void PServiceProcess::ProcessCommand(const char * cmd)
+{
+  static const char * commandNames[] = {
+    "debug", "install", "remove", "start", "stop", "pause", "resume"
+  };
+  
+  for (PINDEX cmdNum = 0; cmdNum < PARRAYSIZE(commandNames); cmdNum++)
+    if (stricmp(cmd, commandNames[cmdNum]) != 0)
+      break;
+
+  if (cmdNum >= PARRAYSIZE(commandNames)) {
+    cerr << "Unknown command \"" << cmd << "\".\n"
+            "usage: " << GetName() << " [ ";
+    for (cmdNum = 0; cmdNum < PARRAYSIZE(commandNames)-1; cmdNum++)
+      cerr << commandNames[cmdNum] << " | ";
+    cerr << commandNames[cmdNum] << " ]" << endl;
+    exit(1);
+  }
+
+  if (cmdNum == 0) // Debug mode
+    return;
+
+  SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+  if (schSCManager == NULL) {
+    cerr << "Could not open Service Manager." << endl;
+    exit(1);
+  }
+
+  SC_HANDLE schService = OpenService(schSCManager,
+                                        GetServiceName(), SERVICE_ALL_ACCESS);
+  if (cmdNum != 1 && schService == NULL)
+    cerr << "Service is not installed." << endl;
+  else {
+    SERVICE_STATUS status;
+    switch (cmdNum) {
+      case 1 : // install
+        if (schService != NULL)
+          cerr << "Service is already installed." << endl;
+        else {
+          schService = CreateService(
+                            schSCManager,               // SCManager database
+                            GetServiceName(),           // name of service
+                            GetServiceName(),           // name to display
+                            SERVICE_ALL_ACCESS,         // desired access
+                            SERVICE_WIN32_OWN_PROCESS,  // service type
+                            SERVICE_DEMAND_START,       // start type
+                            SERVICE_ERROR_NORMAL,       // error control type
+                            GetFile(),                  // service's binary
+                            NULL,                       // no load ordering group
+                            NULL,                       // no tag identifier
+                            NULL,                       // no dependencies
+                            NULL,                       // LocalSystem account
+                            NULL);                      // no password
+          if (schService == NULL) {
+            DWORD err = GetLastError();
+            cerr << "Service install failed - error code = " << err << endl;
+          }
+        }
+        break;
+
+      case 2 : // remove
+        if (!DeleteService(schService)) {
+          DWORD err = GetLastError();
+          cerr << "Service removal failed - error code = " << err << endl;
+        }
+        schService = NULL;
+        break;
+
+      case 3 : // start
+        if (!StartService(schService, 0, NULL)) {
+          DWORD err = GetLastError();
+          cerr << "Service start failed - error code = " << err << endl;
+        }
+        break;
+
+      case 4 : // stop
+        if (!ControlService(schService, SERVICE_CONTROL_STOP, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service stop failed - error code = " << err << endl;
+        }
+        break;
+
+      case 5 : // pause
+        if (!ControlService(schService, SERVICE_CONTROL_PAUSE, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service pause failed - error code = " << err << endl;
+        }
+        break;
+
+      case 6 : // resume
+        if (!ControlService(schService, SERVICE_CONTROL_CONTINUE, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service continue failed - error code = " << err << endl;
+        }
+    }
+  }
+
+	if (schService != NULL)
+    CloseServiceHandle(schService);
+	if (schSCManager != NULL)
+    CloseServiceHandle(schSCManager);
+  exit(0);
 }
 
 
