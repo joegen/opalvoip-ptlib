@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.39  1999/05/28 14:01:22  robertj
+ * Added initialisers to string containers (list, sorted list and set).
+ *
  * Revision 1.38  1999/03/09 09:34:05  robertj
  * Fixed typo's.
  *
@@ -1748,6 +1751,19 @@ class PStringList : public PList {
 #endif
 PDECLARE_LIST(PStringList, PString);
   public:
+  /**@name Construction */
+  //@{
+    /**Create a PStringArray from the array of C strings.
+     */
+    PStringList(
+      PINDEX count,                 /// Count of strings in array
+      char const * const * strarr,  /// Array of C strings
+      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+  //@}
+
+  /**@name Operations */
+  //@{
     /** Append a string to the list.
      */
     PINDEX AppendString(
@@ -1767,6 +1783,7 @@ PDECLARE_LIST(PStringList, PString);
     PINDEX GetStringsIndex(
       const PString & str   /// String value to search for.
     ) const;
+  //@}
 };
 
 
@@ -1787,6 +1804,19 @@ class PSortedStringList : public PSortedList {
 #endif
 PDECLARE_SORTED_LIST(PSortedStringList, PString);
   public:
+  /**@name Construction */
+  //@{
+    /**Create a PStringArray from the array of C strings.
+     */
+    PSortedStringList(
+      PINDEX count,                 /// Count of strings in array
+      char const * const * strarr,  /// Array of C strings
+      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+  //@}
+
+  /**@name Operations */
+  //@{
     /** Add a string to the list.
         This will place the string in the correct position in the sorted list.
      */
@@ -1800,6 +1830,7 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     PINDEX GetStringsIndex(
       const PString & str   /// String value to search for.
     ) const;
+  //@}
 };
 
 
@@ -1824,6 +1855,19 @@ class PStringSet : public PSet {
 #endif
 PDECLARE_SET(PStringSet, PString, TRUE);
   public:
+  /**@name Construction */
+  //@{
+    /**Create a PStringArray from the array of C strings.
+     */
+    PStringSet(
+      PINDEX count,                 /// Count of strings in array
+      char const * const * strarr,  /// Array of C strings
+      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+  //@}
+
+  /**@name Operations */
+  //@{
     /** Include the spcified string value into the set. */
     void Include(
       const PString & key /// String value to add to set.
@@ -1840,6 +1884,7 @@ PDECLARE_SET(PStringSet, PString, TRUE);
     PStringSet & operator-=(
       const PString & key /// String value to remove from set.
     );
+  //@}
 };
 
 
