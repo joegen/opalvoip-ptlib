@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.8 1995/10/14 15:13:04 robertj Exp $
+ * $Id: win32.cxx,v 1.9 1995/11/21 11:53:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.9  1995/11/21 11:53:24  robertj
+ * Added timeout on semaphore wait.
+ *
  * Revision 1.8  1995/10/14 15:13:04  robertj
  * Fixed bug in WIN32 service command line parameters.
  *
@@ -1402,6 +1405,13 @@ PSemaphore::~PSemaphore()
 void PSemaphore::Wait()
 {
   WaitForSingleObject(hSemaphore, INFINITE);
+}
+
+
+BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+{
+  return WaitForSingleObject(hSemaphore,
+                                    timeout.GetMilliseconds()) != WAIT_TIMEOUT;
 }
 
 
