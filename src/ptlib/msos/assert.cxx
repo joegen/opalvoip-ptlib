@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.2 1994/06/25 12:13:01 robertj Exp $
+ * $Id: assert.cxx,v 1.3 1994/10/30 11:25:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
- * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Revision 1.3  1994/10/30 11:25:09  robertj
+ * Added error number to assert.
+ *
+ * Revision 1.2  1994/06/25  12:13:01  robertj
  * Synchronisation.
  *
 // Revision 1.1  1994/04/01  14:39:35  robertj
@@ -17,6 +20,7 @@
  */
 
 #include "ptlib.h"
+#include <errno.h>
 
 
 void PAssertFunc(const char * file, int line, const char * msg)
@@ -24,7 +28,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
   for (;;) {
     cerr << "Assertion fail: File " << file << ", Line " << line << endl;
     if (msg != NULL)
-      cerr << msg << endl;
+      cerr << msg << ": errno=" << errno << endl;
     cerr << "<A>bort, <B>reak, <I>gnore? ";
     cerr.flush();
     switch (getchar()) {
