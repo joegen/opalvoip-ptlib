@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.34  1999/06/27 02:42:10  robertj
+# Fixed BeOS compatability.
+# Fixed error of platform name not supported, needed :: on main targets.
+#
 # Revision 1.33  1999/06/09 15:41:18  robertj
 # Added better UI to make files.
 #
@@ -191,7 +195,7 @@ endif
 
 ifdef DEBUG
 
-release:
+release ::
 	$(MAKE) DEBUG= release
 
 else
@@ -221,14 +225,14 @@ endif
 
 ifndef VERSION
 
-release :
+release ::
 	@echo Must define VERSION macro or have custom.cxx file.
 
 else
 
 RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
 
-release: $(TARGET) releasefiles
+release :: $(TARGET) releasefiles
 	cp $(TARGET) $(RELEASEPROGDIR)/$(PROG)
 	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
 	rm -r $(RELEASEPROGDIR)
@@ -297,15 +301,15 @@ libs:
 
 endif
 
-both: opt debug
-clean: optclean debugclean
-bothdepend: optdepend debugdepend
+both :: opt debug
+clean :: optclean debugclean
+bothdepend :: optdepend debugdepend
 
 
-shared:
+shared ::
 	$(MAKE) SHAREDLIB=1 
 
-bothshared:
+bothshared ::
 	$(MAKE) DEBUG= shared; $(MAKE) DEBUG=1 shared
 
 
