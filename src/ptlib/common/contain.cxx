@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.97  2001/03/14 01:51:01  craigs
+ * Changed to handle CRLF at end of PString::ReadFrom as well as LF
+ *
  * Revision 1.96  2001/02/26 07:50:18  robertj
  * Updated regular expression parser to latest version from Henry Spencer.
  *
@@ -1081,6 +1084,8 @@ void PString::ReadFrom(istream &strm)
     }
   }
   *ptr = '\0';
+  if ((len > 0) && (ptr[-1] == '\r'))
+    ptr[-1] = '\0';
   PAssert(MakeMinimumSize(), POutOfMemory);
 }
 
