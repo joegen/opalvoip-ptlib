@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.17 1994/07/21 12:33:49 robertj Exp $
+ * $Id: osutil.inl,v 1.18 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.17  1994/07/21 12:33:49  robertj
+ * Revision 1.18  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.17  1994/07/21  12:33:49  robertj
  * Moved cooperative threads to common.
  *
  * Revision 1.16  1994/07/17  10:46:06  robertj
@@ -62,7 +65,7 @@
 // PTimeInterval
 
 PINLINE PObject * PTimeInterval::Clone() const
-  { return new PTimeInterval(milliseconds); }
+  { return PNEW PTimeInterval(milliseconds); }
 
 PINLINE long PTimeInterval::GetMilliseconds() const
   { return milliseconds; }
@@ -143,7 +146,7 @@ PINLINE PTime & PTime::operator=(const PTime & t)
   { theTime = t.theTime; return *this; }
 
 PINLINE PObject * PTime::Clone() const
-  { return new PTime(theTime); }
+  { return PNEW PTime(theTime); }
 
 PINLINE ostream & PTime::PrintOn(ostream & strm) const
   { return strm << AsString(); }
@@ -190,6 +193,9 @@ PINLINE PTime PTime::operator-(const PTimeInterval & t) const
 
 PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
   { theTime -= t.GetSeconds(); return *this; }
+
+PINLINE PString PTime::AsString(const PString & format) const
+  { return AsString((const char *)format); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -471,37 +477,43 @@ PINLINE PModem::Status PModem::GetStatus() const
 
 #ifdef _PCONFIG
 
-PINLINE void PConfig::SetDefaultSection(const char * section)
+PINLINE void PConfig::SetDefaultSection(const PString & section)
   { defaultSection = section; }
 
 PINLINE PString PConfig::GetDefaultSection() const
   { return defaultSection; }
 
-PINLINE void PConfig::DeleteKey(const char * key)
+PINLINE PStringList PConfig::GetKeys() const
+  { return GetKeys(defaultSection); }
+
+PINLINE void PConfig::DeleteSection()
+  { DeleteSection(defaultSection); }
+
+PINLINE void PConfig::DeleteKey(const PString & key)
   { DeleteKey(defaultSection, key); }
 
-PINLINE PString PConfig::GetString(const char * key, const char * dflt)
+PINLINE PString PConfig::GetString(const PString & key, const PString & dflt)
   { return GetString(defaultSection, key, dflt); }
 
-PINLINE void PConfig::SetString(const char * key, const char * value)
+PINLINE void PConfig::SetString(const PString & key, const PString & value)
   { SetString(defaultSection, key, value); }
 
-PINLINE BOOL PConfig::GetBoolean(const char * key, BOOL dflt)
+PINLINE BOOL PConfig::GetBoolean(const PString & key, BOOL dflt)
   { return GetBoolean(defaultSection, key, dflt); }
 
-PINLINE void PConfig::SetBoolean(const char * key, BOOL value)
+PINLINE void PConfig::SetBoolean(const PString & key, BOOL value)
   { SetBoolean(defaultSection, key, value); }
 
-PINLINE long PConfig::GetInteger(const char * key, long dflt)
+PINLINE long PConfig::GetInteger(const PString & key, long dflt)
   { return GetInteger(defaultSection, key, dflt); }
 
-PINLINE void PConfig::SetInteger(const char * key, long value)
+PINLINE void PConfig::SetInteger(const PString & key, long value)
   { SetInteger(defaultSection, key, value); }
 
-PINLINE double PConfig::GetReal(const char * key, double dflt)
+PINLINE double PConfig::GetReal(const PString & key, double dflt)
   { return GetReal(defaultSection, key, dflt); }
 
-PINLINE void PConfig::SetReal(const char * key, double value)
+PINLINE void PConfig::SetReal(const PString & key, double value)
   { SetReal(defaultSection, key, value); }
 
 
@@ -510,6 +522,9 @@ PINLINE void PConfig::SetReal(const char * key, double value)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
+
+PINLINE void PArgList::Parse(const PString & theArgumentSpec)
+  { Parse((const char *)theArgumentSpec); }
 
 PINLINE BOOL PArgList::HasOption(char option) const
   { return GetOptionCount(option) != 0; }

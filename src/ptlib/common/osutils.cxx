@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.14 1994/07/25 03:39:22 robertj Exp $
+ * $Id: osutils.cxx,v 1.15 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.14  1994/07/25 03:39:22  robertj
+ * Revision 1.15  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.14  1994/07/25  03:39:22  robertj
  * Fixed problems with C++ temporary variables.
  *
  * Revision 1.13  1994/07/21  12:33:49  robertj
@@ -1459,41 +1462,41 @@ BOOL PModem::CanRead() const
 
 #ifdef _PCONFIG
 
-BOOL PConfig::GetBoolean(const char * section, const char * key, BOOL dflt)
+BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt)
 {
   PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
   return str[0] == 'T' || str[0] == 'Y' || str.AsInteger() != 0;
 }
 
 
-void PConfig::SetBoolean(const char * section, const char * key, BOOL value)
+void PConfig::SetBoolean(const PString & section, const PString & key, BOOL value)
 {
   SetString(section, key, value ? "True" : "False");
 }
 
 
-long PConfig::GetInteger(const char * section, const char * key, long dflt)
+long PConfig::GetInteger(const PString & section, const PString & key, long dflt)
 {
   PString str(PString::Signed, dflt);
   return GetString(section, key, str).AsInteger();
 }
 
 
-void PConfig::SetInteger(const char * section, const char * key, long value)
+void PConfig::SetInteger(const PString & section, const PString & key, long value)
 {
   PString str(PString::Signed, value);
   SetString(section, key, str);
 }
 
 
-double PConfig::GetReal(const char * section, const char * key, double dflt)
+double PConfig::GetReal(const PString & section, const PString & key, double dflt)
 {
   PString str(PString::Decimal, dflt);
   return GetString(section, key, str).AsReal();
 }
 
 
-void PConfig::SetReal(const char * section, const char * key, double value)
+void PConfig::SetReal(const PString & section, const PString & key, double value)
 {
   PString str(PString::Decimal, value);
   SetString(section, key, str);
@@ -1527,6 +1530,15 @@ PArgList::PArgList(int theArgc, char ** theArgv, const char * theArgumentSpec)
     arg_values = NULL;
     arg_count  = 0;
   }
+}
+
+
+PArgList::PArgList(int theArgc, char ** theArgv, const PString & theArgumentSpec)
+{
+  // get the program name and path
+  SetArgs(theArgc, theArgv);
+  // we got an argument spec - so process them
+  Parse(theArgumentSpec);
 }
 
 
@@ -1634,32 +1646,20 @@ void PArgList::Shift(int sh)
 
 void PArgList::IllegalArgumentIndex(PINDEX idx) const
 {
-#ifdef _WINDLL
-  idx = 1;
-#else
-  cerr << "attempt to access undefined argument at index "
-       << idx << endl;
-#endif
+  PError << "attempt to access undefined argument at index "
+         << idx << endl;
 }
  
 
 void PArgList::UnknownOption(char option) const
 {
-#ifdef _WINDLL
-  option = ' ';
-#else
-  cerr << "unknown option \"" << option << "\"\n";
-#endif
+  PError << "unknown option \"" << option << "\"\n";
 }
 
 
 void PArgList::MissingArgument(char option) const
 {
-#ifdef _WINDLL
-  option = ' ';
-#else
-  cerr << "option \"" << option << "\" requires argument\n";
-#endif
+  PError << "option \"" << option << "\" requires argument\n";
 }
 
 
@@ -1892,14 +1892,6 @@ void PThread::Yield()
 // PProcess
 
 #if defined(_PPROCESS)
-
-PProcess::~PProcess()
-{
-#ifdef PMEMORY_CHECK
-  extern void PDumpMemoryLeaks();
-  PDumpMemoryLeaks();
-#endif
-}
 
 PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
