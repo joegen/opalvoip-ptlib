@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.21  2001/12/15 04:49:06  robertj
+ * Added stream I/O functions for argument list.
+ *
  * Revision 1.20  2000/05/25 11:05:31  robertj
  * Added PConfigArgs class so can save program arguments to config files.
  *
@@ -166,6 +169,22 @@ class PArgList : public PObject
          details.
        */
       BOOL optionsBeforeParams = TRUE  /// Parse options only before parameters
+    );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /**Output the string to the specified stream.
+     */
+    virtual void PrintOn(
+      ostream & strm  /// I/O stream to output to.
+    ) const;
+
+    /**Input the string from the specified stream. This will read all
+       characters until a end of line is reached, then parsing the arguments.
+     */
+    virtual void ReadFrom(
+      istream & strm  /// I/O stream to input from.
     );
   //@}
 
