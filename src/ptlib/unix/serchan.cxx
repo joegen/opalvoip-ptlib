@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.11  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.10  1998/12/21 06:08:08  robertj
  * Fixed warning on solaris x86 GNU system.
  *
@@ -50,7 +53,7 @@
 #include <sys/ioctl.h>
 
 
-#if defined(P_FREEBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW

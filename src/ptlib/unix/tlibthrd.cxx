@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.34  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.33  2000/02/29 13:18:21  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -221,7 +224,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
@@ -387,7 +390,7 @@ void * PThread::PX_ThreadStart(void * arg)
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
   int sig;
   sigwait(&waitSignals, &sig);
 #else
@@ -471,10 +474,10 @@ void PThread::Terminate()
     PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
 #endif
 
-#ifndef P_FREEBSD
-    pthread_cancel(PX_threadId);
-#else
+#if defined(P_FREEBSD) || defined(P_OPENBSD)
     pthread_kill(PX_threadId, SIGKILL);
+#else
+    pthread_cancel(PX_threadId);
 #endif
   }
 }
@@ -521,7 +524,7 @@ void PThread::Suspend(BOOL susp)
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
           int sig;
           sigwait(&waitSignals, &sig);
 #else
@@ -664,7 +667,7 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#if defined (P_LINUX) || (P_FREEBSD)
+#if defined (P_LINUX) || (P_FREEBSD) || defined(P_OPENBSD)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else
