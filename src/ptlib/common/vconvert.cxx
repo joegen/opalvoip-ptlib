@@ -26,6 +26,10 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.38  2004/11/07 06:28:00  rjongbloed
+ * Removed warnings about unused parameters in SBGGR8 conversion functions. Left one
+ *   in (flip vertical) as it should be implemented but wasn't.
+ *
  * Revision 1.37  2004/10/27 09:24:18  dsandras
  * Added patch from Nicola Orru' to convert from SBGGR8 to YUV420P. Thanks!
  *
@@ -196,17 +200,13 @@ class PStandardColourConverter : public PColourConverter
      const BYTE * srgb,
       BYTE * rgb,
       PINDEX * bytesReturned,
-      unsigned rgbIncrement,
-      BOOL flipVertical,
-      BOOL flipBR
+      BOOL flipVertical
     ) const;
     BOOL SBGGR8toRGB(
       const BYTE * srgb,
       BYTE * rgb,
       PINDEX * bytesReturned,
-      unsigned rgbIncrement,
-      BOOL flipVertical,
-      BOOL flipBR
+      BOOL flipVertical
     ) const;
     void GreytoYUV420PSameSize(
       const BYTE * rgb,
@@ -906,109 +906,111 @@ static inline int clip(int a, int limit) {
 BOOL PStandardColourConverter::SBGGR8toYUV420P(const BYTE * src,
 					       BYTE * dst,
 					       PINDEX * bytesReturned,
-					       unsigned rgbIncrement,
-					       BOOL     flipVertical,
-					       BOOL     flipBR) const
+					       BOOL     flipVertical) const
 {
-  const bool native=true; // set to false to use the double conversion algorithm (Bayer->RGB->YUV420P)
+#define USE_SBGGR8_NATIVE 1 // set to 0 to use the double conversion algorithm (Bayer->RGB->YUV420P)
   
-  if (native) {
-    // kernels for Y conversion, normalised by 2^16
-    const int kR[]={1802,9667,1802,9667,19661,9667,1802,9667,1802}; 
-    const int kG1[]={7733,9830,7733,3604,7733,3604,7733,9830,7733};
-    const int kG2[]={7733,3604,7733,9830,7733,9830,7733,3604,7733};
-    const int kB[]={4915,9667,4915,9667,7209,9667,4915,9667,4915};
-    //  const int kID[]={0,0,0,0,65536,0,0,0,0}; identity kernel, use to test
+#if USE_SBGGR8_NATIVE
 
-    int B, G, G1, G2, R;
-    unsigned const int stride = srcFrameWidth;
-    unsigned const int hSize =srcFrameHeight/2;
-    unsigned const int vSize =srcFrameWidth/2;
-    unsigned const int lastRow=srcFrameHeight-1;
-    unsigned const int lastCol=srcFrameWidth-1;
-    unsigned int i,j;
-    const BYTE *sBayer = src;
+  // kernels for Y conversion, normalised by 2^16
+  const int kR[]={1802,9667,1802,9667,19661,9667,1802,9667,1802}; 
+  const int kG1[]={7733,9830,7733,3604,7733,3604,7733,9830,7733};
+  const int kG2[]={7733,3604,7733,9830,7733,9830,7733,3604,7733};
+  const int kB[]={4915,9667,4915,9667,7209,9667,4915,9667,4915};
+  //  const int kID[]={0,0,0,0,65536,0,0,0,0}; identity kernel, use to test
 
-    //	Y = round( 0.256788 * R + 0.504129 * G + 0.097906 * B) +  16;
-    //  Y = round( 0.30 * R + 0.59 * G + 0.11 * B ) use this!
-    //	U = round(-0.148223 * R - 0.290993 * G + 0.439216 * B) + 128;
-    //	V = round( 0.439216 * R - 0.367788 * G - 0.071427 * B) + 128;
+  int B, G, G1, G2, R;
+  const int stride = srcFrameWidth;
+  unsigned const int hSize =srcFrameHeight/2;
+  unsigned const int vSize =srcFrameWidth/2;
+  unsigned const int lastRow=srcFrameHeight-1;
+  unsigned const int lastCol=srcFrameWidth-1;
+  unsigned int i,j;
+  const BYTE *sBayer = src;
 
-    // Compute U and V planes using EXACT values, reading 2x2 pixels at a time
-    BYTE *dU = dst+srcFrameHeight*srcFrameWidth;
-    BYTE *dV = dU+hSize*vSize;
-    for (i=0; i<hSize; i++) {      
-      for (j=0; j<vSize; j++) {
-	B=sBayer[0];
-	G1=sBayer[1];
-	G2=sBayer[stride];
-	R=sBayer[stride+1];
-	G=G1+G2;
-	*dU = ( (-19428 * R -19071*G +57569 * B) >> 17) + 128;
-	*dV = ( ( 57569 * R -24103*G -9362 * B) >> 17) + 128;
-	sBayer+=2;
-	dU++;
-	dV++;
-      }
-      sBayer+=stride; // skip odd lines
+  //	Y = round( 0.256788 * R + 0.504129 * G + 0.097906 * B) +  16;
+  //  Y = round( 0.30 * R + 0.59 * G + 0.11 * B ) use this!
+  //	U = round(-0.148223 * R - 0.290993 * G + 0.439216 * B) + 128;
+  //	V = round( 0.439216 * R - 0.367788 * G - 0.071427 * B) + 128;
+
+  // Compute U and V planes using EXACT values, reading 2x2 pixels at a time
+  BYTE *dU = dst+srcFrameHeight*srcFrameWidth;
+  BYTE *dV = dU+hSize*vSize;
+  for (i=0; i<hSize; i++) {      
+    for (j=0; j<vSize; j++) {
+      B=sBayer[0];
+      G1=sBayer[1];
+      G2=sBayer[stride];
+      R=sBayer[stride+1];
+      G=G1+G2;
+      *dU = (BYTE)( ( (-19428 * R -19071*G +57569 * B) >> 17) + 128 );
+      *dV = (BYTE)( ( ( 57569 * R -24103*G -9362 * B) >> 17) + 128 );
+      sBayer+=2;
+      dU++;
+      dV++;
     }
-    // Compute Y plane
-    BYTE *dY = dst;
-    sBayer=src;
-    const int * k; // kernel pointer
-    int dxLeft, dxRight; // precalculated offsets, needed for first and last column
-    const BYTE *sBayerTop, *sBayerBottom;
-    for (i=0; i<srcFrameHeight; i++) {
-      // Pointer to previous row, to the next if we are on the first one
-      sBayerTop=sBayer+(i?(-stride):stride);
-      // Pointer to next row, to the previous one if we are on the last
-      sBayerBottom=sBayer+((i<lastRow)?stride:(-stride));
-      // offset to previous column, to the next if we are on the first col
-      dxLeft=1;
-      for (j=0; j<srcFrameWidth; j++) {
-	// offset to next column, to previous if we are on the last one
-	dxRight=j<lastCol?1:(-1);
-	// find the proper kernel according to the current pixel color
-	if ( (i ^ j) & 1)  k=(j&1)?kG1:kG2; // green 1 or green 2
-	else if (!(i & 1))  k=kB; // blue
-	else /* if (!(j & 1)) */ k=kR; // red
-	
-	// apply the proper kernel to this pixel and surrounding ones
-	*dY= (BYTE)(clip( (k[0])*(int)sBayerTop[dxLeft]+
-			  (k[1])*(int)(*sBayerTop)+
-			  (k[2])*(int)sBayerTop[dxRight]+
-			  (k[3])*(int)sBayer[dxLeft]+
-			  (k[4])*(int)(*sBayer)+
-			  (k[5])*(int)sBayer[dxRight]+
-			  (k[6])*(int)sBayerBottom[dxLeft]+
-			  (k[7])*(int)(*sBayerBottom)+
-			  (k[8])*(int)sBayerBottom[dxRight], (1<<24)) >> 16);
-	dY++;
-	sBayer++;
-	sBayerTop++;
-	sBayerBottom++;
-	dxLeft=-1;
-      }
+    sBayer+=stride; // skip odd lines
+  }
+  // Compute Y plane
+  BYTE *dY = dst;
+  sBayer=src;
+  const int * k; // kernel pointer
+  int dxLeft, dxRight; // precalculated offsets, needed for first and last column
+  const BYTE *sBayerTop, *sBayerBottom;
+  for (i=0; i<srcFrameHeight; i++) {
+    // Pointer to previous row, to the next if we are on the first one
+    sBayerTop=sBayer+(i?(-stride):stride);
+    // Pointer to next row, to the previous one if we are on the last
+    sBayerBottom=sBayer+((i<lastRow)?stride:(-stride));
+    // offset to previous column, to the next if we are on the first col
+    dxLeft=1;
+    for (j=0; j<srcFrameWidth; j++) {
+      // offset to next column, to previous if we are on the last one
+      dxRight=j<lastCol?1:(-1);
+      // find the proper kernel according to the current pixel color
+      if ( (i ^ j) & 1)  k=(j&1)?kG1:kG2; // green 1 or green 2
+      else if (!(i & 1))  k=kB; // blue
+      else /* if (!(j & 1)) */ k=kR; // red
+      
+      // apply the proper kernel to this pixel and surrounding ones
+      *dY= (BYTE)(clip( (k[0])*(int)sBayerTop[dxLeft]+
+			(k[1])*(int)(*sBayerTop)+
+			(k[2])*(int)sBayerTop[dxRight]+
+			(k[3])*(int)sBayer[dxLeft]+
+			(k[4])*(int)(*sBayer)+
+			(k[5])*(int)sBayer[dxRight]+
+			(k[6])*(int)sBayerBottom[dxLeft]+
+			(k[7])*(int)(*sBayerBottom)+
+			(k[8])*(int)sBayerBottom[dxRight], (1<<24)) >> 16);
+      dY++;
+      sBayer++;
+      sBayerTop++;
+      sBayerBottom++;
+      dxLeft=-1;
     }
-    if (bytesReturned) *bytesReturned=srcFrameHeight*srcFrameWidth+2*hSize*vSize;
-    return true;
   }
-  else {
-    // shortest but less efficient (one malloc per conversion!)
-    BYTE * tempDest=(BYTE*)malloc(3*srcFrameWidth*srcFrameHeight);
-    SBGGR8toRGB(src, tempDest, bytesReturned, 3, FALSE , FALSE);
-    BOOL r = RGBtoYUV420P(tempDest, dst, bytesReturned, 3, flipVertical, flipBR);
-    free(tempDest);
-    return r;
-  }
+
+  if (bytesReturned)
+    *bytesReturned = srcFrameHeight*srcFrameWidth+2*hSize*vSize;
+
+  return true;
+
+#else //USE_SBGGR8_NATIVE
+
+  // shortest but less efficient (one malloc per conversion!)
+  BYTE * tempDest=(BYTE*)malloc(3*srcFrameWidth*srcFrameHeight);
+  SBGGR8toRGB(src, tempDest, NULL, FALSE);
+  BOOL r = RGBtoYUV420P(tempDest, dst, bytesReturned, 3, flipVertical, TRUE);
+  free(tempDest);
+  return r;
+
+#endif //USE_SBGGR8_NATIVE
 }
 
 BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
-                                            BYTE * dst,
-                                            PINDEX * bytesReturned,
-                                            unsigned rgbIncrement,
-					    BOOL     flipVertical,
-                                            BOOL     flipBR) const
+                                           BYTE       * dst,
+                                           PINDEX     * bytesReturned,
+					   BOOL         flipVertical) const
 {
   if (src == dst || flipVertical)
     return FALSE;
@@ -1024,65 +1026,68 @@ BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
     size = WIDTH*HEIGHT;
 
     for ( i = 0; i < size; i++ ) {
-	if ( (i/WIDTH) % 2 == 0 ) {
-	    if ( (i % 2) == 0 ) {
-		/* B */
-		if ( (i > WIDTH) && ((i % WIDTH) > 0) ) {
-		    *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
-				 *(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* R */
-		    *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
-				 *(rawpt+WIDTH)+*(rawpt-WIDTH))/4;	/* G */
-		    *scanpt++ = *rawpt;					/* B */
-		} else {
-		    /* first line or left column */
-		    *scanpt++ = *(rawpt+WIDTH+1);		/* R */
-		    *scanpt++ = (*(rawpt+1)+*(rawpt+WIDTH))/2;	/* G */
-		    *scanpt++ = *rawpt;				/* B */
-		}
-	    } else {
-		/* (B)G */
-		if ( (i > WIDTH) && ((i % WIDTH) < (WIDTH-1)) ) {
-		    *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* R */
-		    *scanpt++ = *rawpt;					/* G */
-		    *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* B */
-		} else {
-		    /* first line or right column */
-		    *scanpt++ = *(rawpt+WIDTH);	/* R */
-		    *scanpt++ = *rawpt;		/* G */
-		    *scanpt++ = *(rawpt-1);	/* B */
-		}
-	    }
-	} else {
-	    if ( (i % 2) == 0 ) {
-		/* G(R) */
-		if ( (i < (WIDTH*(HEIGHT-1))) && ((i % WIDTH) > 0) ) {
-		    *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* R */
-		    *scanpt++ = *rawpt;					/* G */
-		    *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* B */
-		} else {
-		    /* bottom line or left column */
-		    *scanpt++ = *(rawpt+1);		/* R */
-		    *scanpt++ = *rawpt;			/* G */
-		    *scanpt++ = *(rawpt-WIDTH);		/* B */
-		}
-	    } else {
-		/* R */
-		if ( i < (WIDTH*(HEIGHT-1)) && ((i % WIDTH) < (WIDTH-1)) ) {
-		    *scanpt++ = *rawpt;					/* R */
-		    *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
-				 *(rawpt-WIDTH)+*(rawpt+WIDTH))/4;	/* G */
-		    *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
-				 *(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* B */
-		} else {
-		    /* bottom line or right column */
-		    *scanpt++ = *rawpt;				/* R */
-		    *scanpt++ = (*(rawpt-1)+*(rawpt-WIDTH))/2;	/* G */
-		    *scanpt++ = *(rawpt-WIDTH-1);		/* B */
-		}
-	    }
-	}
-	rawpt++;
-    }
+      if ( (i/WIDTH) % 2 == 0 ) {
+	  if ( (i % 2) == 0 ) {
+	      /* B */
+	      if ( (i > WIDTH) && ((i % WIDTH) > 0) ) {
+		  *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
+				*(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* R */
+		  *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
+				*(rawpt+WIDTH)+*(rawpt-WIDTH))/4;	/* G */
+		  *scanpt++ = *rawpt;					/* B */
+	      } else {
+		  /* first line or left column */
+		  *scanpt++ = *(rawpt+WIDTH+1);		/* R */
+		  *scanpt++ = (*(rawpt+1)+*(rawpt+WIDTH))/2;	/* G */
+		  *scanpt++ = *rawpt;				/* B */
+	      }
+	  } else {
+	      /* (B)G */
+	      if ( (i > WIDTH) && ((i % WIDTH) < (WIDTH-1)) ) {
+		  *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* R */
+		  *scanpt++ = *rawpt;					/* G */
+		  *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* B */
+	      } else {
+		  /* first line or right column */
+		  *scanpt++ = *(rawpt+WIDTH);	/* R */
+		  *scanpt++ = *rawpt;		/* G */
+		  *scanpt++ = *(rawpt-1);	/* B */
+	      }
+	  }
+      } else {
+	  if ( (i % 2) == 0 ) {
+	      /* G(R) */
+	      if ( (i < (WIDTH*(HEIGHT-1))) && ((i % WIDTH) > 0) ) {
+		  *scanpt++ = (*(rawpt-1)+*(rawpt+1))/2;		/* R */
+		  *scanpt++ = *rawpt;					/* G */
+		  *scanpt++ = (*(rawpt+WIDTH)+*(rawpt-WIDTH))/2;	/* B */
+	      } else {
+		  /* bottom line or left column */
+		  *scanpt++ = *(rawpt+1);		/* R */
+		  *scanpt++ = *rawpt;			/* G */
+		  *scanpt++ = *(rawpt-WIDTH);		/* B */
+	      }
+	  } else {
+	      /* R */
+	      if ( i < (WIDTH*(HEIGHT-1)) && ((i % WIDTH) < (WIDTH-1)) ) {
+		  *scanpt++ = *rawpt;					/* R */
+		  *scanpt++ = (*(rawpt-1)+*(rawpt+1)+
+				*(rawpt-WIDTH)+*(rawpt+WIDTH))/4;	/* G */
+		  *scanpt++ = (*(rawpt-WIDTH-1)+*(rawpt-WIDTH+1)+
+				*(rawpt+WIDTH-1)+*(rawpt+WIDTH+1))/4;	/* B */
+	      } else {
+		  /* bottom line or right column */
+		  *scanpt++ = *rawpt;				/* R */
+		  *scanpt++ = (*(rawpt-1)+*(rawpt-WIDTH))/2;	/* G */
+		  *scanpt++ = *(rawpt-WIDTH-1);		/* B */
+	      }
+	  }
+      }
+      rawpt++;
+  }
+
+  if (bytesReturned)
+    *bytesReturned = scanpt - dst;
 
   return TRUE;
 }
@@ -1185,12 +1190,12 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 PSTANDARD_COLOUR_CONVERTER(SBGGR8,RGB24)
 {
-  return SBGGR8toRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, TRUE);
+  return SBGGR8toRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, doVFlip);
 }
 
 PSTANDARD_COLOUR_CONVERTER(SBGGR8,YUV420P)
 {
-  return SBGGR8toYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, TRUE);
+  return SBGGR8toYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, doVFlip);
 }
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)
