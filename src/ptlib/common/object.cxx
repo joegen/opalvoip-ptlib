@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.46  2001/02/07 04:47:49  robertj
+ * Added changes for possible random crashes in multi DLL environment
+ *   due to memory allocation wierdness, thanks Milan Dimitrijevic.
+ *
  * Revision 1.45  2001/01/25 07:14:39  robertj
  * Fixed spurios memory leak message. Usual static global problem.
  *
@@ -671,7 +675,19 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 }
 
 
-#endif
+#else // PMEMORY_CHECK
+
+void * operator new[](size_t nSize)
+{
+  return malloc(nSize);
+}
+
+void operator delete[](void * ptr)
+{
+  free(ptr);
+}
+
+#endif // PMEMORY_CHECK
 
 
 const char * PObject::GetClass(unsigned) const
