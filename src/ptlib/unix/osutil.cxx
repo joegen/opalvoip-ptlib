@@ -231,6 +231,20 @@ BOOL PDirectory::GetInfo(PFileInfo & info) const
   return TRUE;
 }
 
+BOOL PDirectory::Create(const PString & p, int perm)
+{
+  PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
+  PString str = p.Left(p.GetLength()-1);
+  return mkdir(str, perm) == 0;
+}
+
+BOOL PDirectory::Remove(const PString & p)
+{
+  PAssert(!p.IsEmpty(), "attempt to remove dir with empty name");
+  PString str = p.Left(p.GetLength()-1);
+  return rmdir(str) == 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // PFile
@@ -566,11 +580,12 @@ PString PFilePath::GetFileName() const
 
 PDirectory PFilePath::GetDirectory() const
 {
-  PDirectory curdir;
-  PDirectory::Change(GetPath());
-  PDirectory dir;
-  curdir.Change();
-  return dir;
+  int i;
+
+  if ((i = FindLast('/')) == P_MAX_INDEX)
+    return "./";
+  else
+    return Left(i);
 }
 
 
