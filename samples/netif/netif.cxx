@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: netif.cxx,v $
+ * Revision 1.3  2002/09/05 11:56:49  rogerh
+ * Fix some warnings by using PINDEX
+ *
  * Revision 1.2  2002/01/09 14:08:57  rogerh
  * Fix incorrect error message.
  *
@@ -74,7 +77,7 @@ void NetTest::Main()
   cout << "The interface table has " << if_table.GetSize()
        <<" entries" << endl;
 
-  for (unsigned int i=0; i < if_table.GetSize(); i++) {
+  for (PINDEX i=0; i < if_table.GetSize(); i++) {
     PIPSocket::InterfaceEntry if_entry = if_table[i];
     cout << i << " " << if_entry.GetName() << " "
                      << if_entry.GetAddress() << " "
@@ -96,7 +99,7 @@ void NetTest::Main()
   cout << "The route table has " << rt_table.GetSize()
        <<" entries" << endl;
 
-  for (unsigned int i=0; i < rt_table.GetSize(); i++) {
+  for (PINDEX i=0; i < rt_table.GetSize(); i++) {
     PIPSocket::RouteEntry rt_entry = rt_table[i];
     cout << i << " " << rt_entry.GetNetwork() << " "
                      << rt_entry.GetNetMask() << " "
