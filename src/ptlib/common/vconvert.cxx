@@ -25,6 +25,9 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.7  2001/03/07 01:39:56  dereks
+ * Fix image flip (top to bottom) in YUV411P to RGB24 conversion
+ *
  * Revision 1.6  2001/03/06 23:48:32  robertj
  * Fixed naming convention on video converter classes.
  *
@@ -150,17 +153,18 @@ static void RGBtoYUV411p(unsigned width, unsigned height,
                         unsigned rgbIncrement)
 {
   int planeSize = width*height;
-
+  const int halfWidth = width >> 1;
+  
   // get pointers to the data
   BYTE * yplane  = yuv;
   BYTE * uplane  = yuv + planeSize;
   BYTE * vplane  = yuv + planeSize + (planeSize >> 2);
 
-  for (int y = height-1; y >=0; y--) 
+  for (unsigned y = 0; y < height; y++) 
   {
-     BYTE * yline  = yplane + (y * width);
-     BYTE * uline  = uplane + ((y >> 1) * (width >> 1));
-     BYTE * vline  = vplane + ((y >> 1) * (width >> 1));
+    BYTE * yline  = yplane + (y * width);
+    BYTE * uline  = uplane + ((y >> 1) * halfWidth);
+    BYTE * vline  = vplane + ((y >> 1) * halfWidth);
 
     for (unsigned x = 0; x < width; x+=2) 
     {
