@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.59  2001/07/16 00:43:06  craigs
+ * Added ability to parse other transport URLs
+ *
  * Revision 1.58  2000/05/02 08:29:07  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -257,6 +260,7 @@
 #define DEFAULT_RTSP_PORT	554
 #define DEFAULT_RTSPU_PORT	554
 #define DEFAULT_PROSPERO_PORT	1525
+#define	DEFAULT_SIP_PORT		5060
 
 enum SchemeFormat {
   HostPort = 1,
@@ -288,6 +292,7 @@ static schemeStruct const schemeInfo[] = {
   { "file",      HostOnly,             TRUE },
   { "mailto",    Other, FALSE},
   { "news",      Other, FALSE},
+  { "sip",       UserPasswordHostPort, TRUE, DEFAULT_SIP_PORT },
   { NULL }
 };
 
@@ -509,7 +514,7 @@ void PURL::Parse(const char * cstr)
     if (schemeInfo.type == HostPort ||
         schemeInfo.type == UserPasswordHostPort ||
         schemeInfo.type == HostOnly) {
-      pos = url.Find('/');
+      pos = url.FindOneOf("/;?#");
       PString uphp = url.Left(pos);
       if (pos != P_MAX_INDEX)
         url.Delete(0, pos);
@@ -562,7 +567,7 @@ void PURL::Parse(const char * cstr)
 
   // chop off any trailing fragment
   pos = url.Find('#');
-  if (pos != P_MAX_INDEX && pos > 0) {
+  if (pos != P_MAX_INDEX /* && pos > 0 */) {
     fragment = url(pos+1, P_MAX_INDEX);
     UnmangleString(fragment, PathTranslation);
     url.Delete(pos, P_MAX_INDEX);
@@ -570,7 +575,7 @@ void PURL::Parse(const char * cstr)
 
   // chop off any trailing query
   pos = url.Find('?');
-  if (pos != P_MAX_INDEX && pos > 0) {
+  if (pos != P_MAX_INDEX /* && pos > 0 */) {
     queryStr = url(pos+1, P_MAX_INDEX);
     url.Delete(pos, P_MAX_INDEX);
     SplitQueryVars(queryStr, queryVars);
@@ -578,7 +583,7 @@ void PURL::Parse(const char * cstr)
 
   // chop off any trailing parameters
   pos = url.Find(';');
-  if (pos != P_MAX_INDEX && pos > 0) {
+  if (pos != P_MAX_INDEX /* && pos > 0 */) {
     parameters = url(pos+1, P_MAX_INDEX);
     UnmangleString(parameters, PathTranslation);
     url.Delete(pos, P_MAX_INDEX);
