@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.19 1996/04/29 12:22:26 robertj Exp $
+ * $Id: winsock.cxx,v 1.20 1996/05/15 10:23:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.20  1996/05/15 10:23:08  robertj
+ * Changed millisecond access functions to get 64 bit integer.
+ * Added timeout to accept function.
+ * Added ICMP protocol socket, getting common ancestor to UDP.
+ *
  * Revision 1.19  1996/04/29 12:22:26  robertj
  * Fixed detection of infinite timeout.
  *
@@ -134,7 +139,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 #pragma warning(default:4127)
 #endif
       struct timeval tv;
-      tv.tv_usec = readTimeout.GetMilliseconds()%1000*1000;
+      tv.tv_usec = (long)(readTimeout.GetMilliSeconds()%1000)*1000;
       tv.tv_sec = readTimeout.GetSeconds();
       int selval = select(0, &readfds, NULL, NULL, &tv);
       if (!ConvertOSError(selval))
@@ -173,7 +178,7 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   else if (writeTimeout == 0)
     timeout = 1;
   else
-    timeout = writeTimeout.GetMilliseconds();
+    timeout = writeTimeout.GetInterval();
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
@@ -218,8 +223,32 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 }
 
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, int * size)
+int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
+                       const PTimeInterval & timeout)
 {
+  if (timeout != PMaxTimeInterval) {
+    struct timeval tv;
+    tv.tv_usec = (long)(timeout.GetMilliSeconds()%1000)*1000;
+    tv.tv_sec = timeout.GetSeconds();
+    fd_set readfds;
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+    FD_ZERO(&readfds);
+    FD_SET(sock, &readfds);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+    switch (select(0, &readfds, NULL, NULL, &tv)) {
+      case 1 :
+        break;
+      case 0 :
+        SetLastError(WSAETIMEDOUT);
+        // Then return -1
+      default :
+        return -1;
+    }
+  }
   return ::accept(sock, addr, size);
 }
 
@@ -234,7 +263,7 @@ int PSocket::os_select(int maxfds,
   struct timeval * tv = NULL;
   if (timeout != PMaxTimeInterval) {
     tv = &tv_buf;
-    tv->tv_usec = timeout.GetMilliseconds()%1000*1000;
+    tv->tv_usec = (long)(timeout.GetMilliSeconds()%1000)*1000;
     tv->tv_sec = timeout.GetSeconds();
   }
   return select(maxfds, &readfds, &writefds, &exceptfds, tv);
@@ -313,9 +342,10 @@ BYTE PIPSocket::Address::Byte4() const
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PUDPSocket
+// PIPDatagramSocket
 
-BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
+BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
+                                                   Address & addr, WORD & port)
 {
   lastReadCount = 0;
 
@@ -325,7 +355,7 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
   else if (readTimeout == 0)
     timeout = 1;
   else
-    timeout = readTimeout.GetMilliseconds();
+    timeout = readTimeout.GetInterval();
   if (!SetOption(SO_RCVTIMEO, timeout))
     return FALSE;
 
@@ -344,7 +374,7 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 }
 
 
-BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
+BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
                                                const Address & addr, WORD port)
 {
   lastWriteCount = 0;
@@ -355,7 +385,7 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
   else if (writeTimeout == 0)
     timeout = 1;
   else
-    timeout = writeTimeout.GetMilliseconds();
+    timeout = writeTimeout.GetInterval();
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
