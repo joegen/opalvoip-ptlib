@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.11 1995/06/17 00:59:23 robertj Exp $
+ * $Id: mswin.cxx,v 1.12 1995/07/02 01:24:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.12  1995/07/02 01:24:45  robertj
+ * Added running of hidden VM for DOS program in PPipeChannel.
+ *
  * Revision 1.11  1995/06/17 00:59:23  robertj
  * Moved PPipeChannel::Execute from common dos/windows to individual files.
  *
@@ -664,30 +667,91 @@ BOOL PPipeChannel::Execute()
     os_handle = -1;
   }
 
-  if ((osError = (int)WinExec(subProgName, SW_HIDE)) < 32) {
-    switch (osError) {
-      case 0 :
-      case 8 :
-        osError = ENOMEM;
-        break;
-      case 5 :
-        osError = EACCES;
-        break;
-      case 2 :
-        break;
-      default :
-        osError += 0x4000;
-    }
-    return ConvertOSError(-2);
-  }
+  static struct {
+    DWORD pifFlags;
+    DWORD displayFlags;
+    struct {
+      DWORD offset;
+      WORD  selector;
+    } exePath, programArguments, workingDirectory;
+    WORD  desiredV86Pages;
+    WORD  minimumV86Pages;
+    WORD  foregroundPriority;
+    WORD  backgroundPriority;
+    WORD  maximumEMS;
+    WORD  minimumEMS;
+    WORD  maximumXMS;
+    WORD  minimumXMS;
+    DWORD unknown;
+    char  windowTitle[128];
+  } seb = {
+    0x40000006,  // Runs in background, runs in window, close on exit
+    0x0000001f,  // Emulate text mode, no monitor ports
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    0xffff, // desired memory
+    0xffff, // minimum memory
+    100,    // foreground priority
+    50,     // background priority
+    0x0400, // maximum EMS
+    0,      // minimum EMS
+    0x4000, // maximum XMS
+    0,      // minimum XMS
+    0,      // unknown
+    "PWLib Pipe Channel Process"
+  };
 
-  if (!fromChild.IsEmpty()) {
-    os_handle = _open(fromChild, _O_RDONLY);
-    if (!ConvertOSError(os_handle))
-      return FALSE;
-  }
+  char * commandDotCom = getenv("COMSPEC");
+  if (commandDotCom == NULL)
+    commandDotCom = "C:\\COMMAND.COM";
+  seb.exePath.selector = SELECTOROF(commandDotCom);
+  seb.exePath.offset   = OFFSETOF  (commandDotCom);
 
-  return TRUE;
+  PString commandArguments = " /c " + subProgName;
+  const char * argumentPointer = commandArguments;
+  seb.programArguments.selector = SELECTOROF(argumentPointer);
+  seb.programArguments.offset   = OFFSETOF  (argumentPointer);
+  
+  static char * currentDirectory = ".";
+  seb.workingDirectory.selector = SELECTOROF(currentDirectory);
+  seb.workingDirectory.offset   = OFFSETOF  (currentDirectory);
+
+  void (FAR * shellEntry)();
+  _asm mov  ax,1684h;  //Get Shell VXDs protected mode entry point
+  _asm mov  bx,0017h;
+  _asm int  2fh;
+  _asm mov  word ptr [shellEntry], di;
+  _asm mov  word ptr [shellEntry+2], es;
+  if (shellEntry == NULL)
+    return FALSE;
+
+  _asm lea  di, word ptr seb;
+  _asm mov  dx, 3;
+  _asm push es;
+  _asm push ss;
+  _asm pop  es;
+  shellEntry();
+  _asm pop  es;
+
+  DWORD hVirtualMachine;
+#if defined(_MSC_VER)
+  _asm _emit 66h;
+#else
+  _asm db 66h;
+#endif
+  _asm mov  word ptr hVirtualMachine, ax; // Really EAX
+  if (hVirtualMachine == 0)
+    return FALSE;
+
+  if (fromChild.IsEmpty())
+    return TRUE;
+
+  // Wait for child to complete
+  
+
+  os_handle = _open(fromChild, _O_RDONLY);
+  return ConvertOSError(os_handle);
 }
 
 
@@ -703,8 +767,7 @@ void PConfig::Construct(Source src)
 
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
-      Construct(appFile.GetVolume() +
-                              appFile.GetPath() + appFile.GetTitle() + ".INI");
+      Construct(appFile.GetDirectory() + appFile.GetTitle() + ".INI");
       break;
   }
 }
