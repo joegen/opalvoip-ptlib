@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.1 1995/03/14 12:44:11 robertj Exp $
+ * $Id: mail.h,v 1.2 1995/04/01 08:27:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
- * Revision 1.1  1995/03/14 12:44:11  robertj
+ * Revision 1.2  1995/04/01 08:27:57  robertj
+ * Added GUI support.
+ *
+ * Revision 1.1  1995/03/14  12:44:11  robertj
  * Initial revision
  *
  */
@@ -70,7 +73,7 @@ PDECLARE_CLASS(PMailSession, PObject)
        TRUE if successfully logged on.
      */
 
-    BOOL LogOff();
+    virtual BOOL LogOff();
     /* Log off from the mail system.
 
        <H2>Returns:</H2>
