@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.27  1998/01/04 08:09:23  craigs
+ * Added support for PThreads through use of reentrant system calls
+ *
  * Revision 1.26  1998/01/03 22:46:44  craigs
  * Added PThread support
  *
@@ -169,9 +172,13 @@ PString PProcess::GetHomeDir ()
   char *ptr;
   struct passwd *pw = NULL;
 
+#ifdef P_PTHREADS
   struct passwd pwd;
   char buffer[1024];
-  pw = getpwuid_r(geteuid(), &pwd, buffer, 1024);
+  pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#else
+  pw = ::getpwuid(geteuid());
+#endif
 
   if (pw != NULL && pw->pw_dir != NULL) 
     dest = pw->pw_dir;
@@ -195,9 +202,13 @@ PString PProcess::GetHomeDir ()
 PString PProcess::GetUserName() const
 
 {
+#ifdef P_PTHREADS
   struct passwd pwd;
   char buffer[1024];
-  struct passwd * pw = getpwuid_r(getuid(), &pwd, buffer, 1024);
+  struct passwd * pw = ::getpwuid_r(getuid(), &pwd, buffer, 1024);
+#else
+  struct passwd * pw = ::getpwuid(getuid());
+#endif
 
   char * ptr;
   if (pw != NULL && pw->pw_name != NULL)
