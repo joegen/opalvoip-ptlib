@@ -45,9 +45,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BlockFIFO.h"
 
 #if NDEBUG
-#define FPRINTF (void)
+#define FPRINTF(x)
 #else
-#define FPRINTF fprintf
+#define FPRINTF(x) fprintf x
 #endif
 
 //	if we decice to make the FIFO thread safe, use these macros
@@ -153,10 +153,10 @@ LEAVE_PUT
 int32 
 BBlockFIFO::BeginGet(const void **outData, size_t requestSize, bigtime_t timeout)
 {
-	if (!outData) { FPRINTF(stderr, "BAD_VALUE: outData is NULL\n"); return B_BAD_VALUE; }
+	if (!outData) { FPRINTF((stderr, "BAD_VALUE: outData is NULL\n")); return B_BAD_VALUE; }
 ENTER_GET
-//FPRINTF(stderr, "requestSize %ld  _mBlockSize %ld  _mAreaSize %ld  _mGetOff %ld\n",
-//		requestSize, _mBlockSize, _mAreaSize, _mGetOff);
+//FPRINTF((stderr, "requestSize %ld  _mBlockSize %ld  _mAreaSize %ld  _mGetOff %ld\n",
+//		requestSize, _mBlockSize, _mAreaSize, _mGetOff));
 	if (requestSize > _mBlockSize) {
 		requestSize = _mBlockSize;
 	}
@@ -216,8 +216,8 @@ LEAVE_GET
 int32 
 BBlockFIFO::BeginPut(void **outData, size_t requestSize, bigtime_t timeout)
 {
-	if (!outData) { FPRINTF(stderr, "BAD_VALUE: outData == NULL\n"); return B_BAD_VALUE; }
-	if (_mFlags & flagEndOfData) { FPRINTF(stderr, "EPERM: end of data\n"); return EPERM; }
+	if (!outData) { FPRINTF((stderr, "BAD_VALUE: outData == NULL\n")); return B_BAD_VALUE; }
+	if (_mFlags & flagEndOfData) { FPRINTF((stderr, "EPERM: end of data\n")); return EPERM; }
 ENTER_GET
 	if (requestSize > _mBufferSize) {
 		requestSize = _mBufferSize;
@@ -230,7 +230,7 @@ ENTER_GET
 	status_t err = acquire_sem_etc(_mPutSem, req, B_TIMEOUT, timeout);
 	if (err < B_OK) {
 LEAVE_PUT
-		FPRINTF(stderr, "BeginPut: acquire_sem_etc() returns %ld (req is %ld)\n", err, req);
+		FPRINTF((stderr, "BeginPut: acquire_sem_etc() returns %ld (req is %ld)\n", err, req));
 		return err;
 	}
 	*outData = _mBuffer + _mPutOff;
@@ -271,7 +271,7 @@ BBlockFIFO::CopyNextBlockOut(void *destination, size_t requestSize, bigtime_t ti
 	while (requestSize > 0) {
 		const void * ptr;
 		ssize_t got = BeginGet(&ptr, requestSize, timeout);
-		if (got < 0) { FPRINTF(stderr, "BeginGet returns %ld\n", got); return (total > 0 ? total : got); }
+		if (got < 0) { FPRINTF((stderr, "BeginGet returns %ld\n", got)); return (total > 0 ? total : got); }
 		requestSize -= got;
 		memcpy(d, ptr, got);
 		(void)EndGet();
@@ -284,7 +284,7 @@ BBlockFIFO::CopyNextBlockOut(void *destination, size_t requestSize, bigtime_t ti
 int32 
 BBlockFIFO::CopyNextBufferIn(const void *source, size_t requestSize, bigtime_t timeout, bool atEndOfData)
 {
-	if (source == 0) { FPRINTF(stderr, "BAD_VALUE: source == NULL\n"); return B_BAD_VALUE; }
+	if (source == 0) { FPRINTF((stderr, "BAD_VALUE: source == NULL\n")); return B_BAD_VALUE; }
 	if (requestSize == 0) {
 		if (atEndOfData) {
 ENTER_PUT
