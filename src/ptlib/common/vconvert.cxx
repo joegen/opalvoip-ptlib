@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.26  2002/01/08 01:32:50  robertj
+ * Tidied up some PTRACE debug output.
+ *
  * Revision 1.25  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -208,19 +211,16 @@ PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
                                             unsigned height)
 {
   PString converterName = srcColourFormat + '\t' + destColourFormat;
-  PTRACE(3,"PColourConverter\t Create(). Require "<<converterName);
 
   PColourConverterRegistration * find = RegisteredColourConvertersListHead;
   while (find != NULL) {
-    PTRACE(3,"PColourConverter\tCreate(). Test for "<< *find);
     if (*find == converterName) {
-      PTRACE(3,"PColourConverter\t Create(). Converter exists for "<<*find);
       return find->Create(width, height);
     }
     find = find->link;
   }
 
-  PTRACE(3,"PColourConverter::\t Create(). Error. Did not find "<<converterName);
+  PTRACE(2,"PColCnv\tCreate error. Did not find " << srcColourFormat << "->" << destColourFormat);
   return NULL;
 }
 
@@ -232,7 +232,9 @@ PColourConverter::PColourConverter(const PString & src,
   : srcColourFormat(src),
     dstColourFormat(dst)
 {
-  PTRACE(3,"PColourconverter constructor. "<<src<<"->"<<dst<<" "<<width<<"x"<<height);
+  PTRACE(4,"PColCnv\tPColourConverter constructed: " << src << "->" << dst << ' ' << width << 'x'<< height);
+
+  doVFlip = FALSE;
   SetFrameSize(width,height);
 }
 
@@ -241,7 +243,8 @@ BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   BOOL ok1 = SetSrcFrameSize(width, height);
   BOOL ok2 = SetDstFrameSize(width, height, FALSE);
-  PTRACE(3,"PColourConverter::SetFrameSize "<<width<<"x"<<height << ( ( ok1 && ok2 ) ? " OK" : " Failed" ) );
+  PTRACE(4,"PColCnv\tSetFrameSize: " << width << 'x' << height
+         << (ok1 && ok2 ? " OK" : " Failed"));
   return ok1 && ok2;
 }
 
@@ -251,16 +254,16 @@ BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
   srcFrameWidth = width;
   srcFrameHeight = height;
   srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
-  PTRACE(3,"PColourConvert::Src Frame Format" <<srcColourFormat);
-  PTRACE(3,"PColourConvert::SetSrcFrameSize "<< ( (srcFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
-	 <<srcFrameWidth<<"x"<<srcFrameHeight<<"-->"<<srcFrameBytes << " bytes.");
+  PTRACE(4, "PColCnv\tSetSrcFrameSize "
+         << ((srcFrameBytes != 0) ? "Succeed": "Fail") << "ed, "
+         << srcColourFormat << ' ' << srcFrameWidth << 'x' << srcFrameHeight
+         << ", " << srcFrameBytes << " bytes.");
 
   return srcFrameBytes != 0;
 }
 
 
-BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
-					  BOOL bScale)
+BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height, BOOL bScale)
 {
   dstFrameWidth  = width;
   dstFrameHeight = height;
@@ -268,9 +271,10 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
   
   dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
 
-  PTRACE(3,"PColourConvert::Dst Frame Format" <<dstColourFormat);
-  PTRACE(3,"PColourConvert::SetDstFrameSize "<< ( (dstFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
-	 <<dstFrameWidth<<"x"<<dstFrameHeight<<"-->" << dstFrameBytes<< " bytes.");
+  PTRACE(4, "PColCnv\tSetDstFrameSize "
+         << ((dstFrameBytes != 0) ? "Succeed": "Fail") << "ed, "
+         << dstColourFormat << ' ' << dstFrameWidth << 'x' << dstFrameHeight
+         << ", " << dstFrameBytes << " bytes.");
 
   return dstFrameBytes != 0;
 }
@@ -278,17 +282,17 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
 
 BOOL PColourConverter::GetSrcFrameSize(unsigned &width, unsigned &height) const
 {
-    width = srcFrameWidth;
-    height = srcFrameHeight;
-    return TRUE;
+  width = srcFrameWidth;
+  height = srcFrameHeight;
+  return TRUE;
 }
 
 
 BOOL PColourConverter::GetDstFrameSize(unsigned &width, unsigned &height) const
 {
-    width = dstFrameWidth;
-    height = dstFrameHeight;
-    return TRUE;
+  width = dstFrameWidth;
+  height = dstFrameHeight;
+  return TRUE;
 }
 
 
@@ -349,8 +353,8 @@ BOOL PSynonymColour::Convert(const BYTE *srcFrameBuffer,
 
 void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
                                                     BYTE * yuv,
-                                                      unsigned rgbIncrement,
-                                                      BOOL flip) const
+                                                    unsigned rgbIncrement,
+                                                    BOOL flip) const
 {
   const unsigned planeSize = srcFrameWidth*srcFrameHeight;
   const unsigned halfWidth = srcFrameWidth >> 1;
@@ -370,14 +374,14 @@ void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
       rgbIndex = rgb + (srcFrameWidth*(srcFrameHeight-1-y)*rgbIncrement);
 
     for (unsigned x = 0; x < srcFrameWidth; x+=2) {
-     rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
-     rgbIndex += rgbIncrement;
-     yline++;
-     rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
-     rgbIndex += rgbIncrement;
-     yline++;
-     uline++;
-     vline++;
+      rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+      rgbIndex += rgbIncrement;
+      yline++;
+      rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+      rgbIndex += rgbIncrement;
+      yline++;
+      uline++;
+      vline++;
     }
   }
 }
