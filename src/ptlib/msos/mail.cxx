@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.5 1996/02/15 14:55:01 robertj Exp $
+ * $Id: mail.cxx,v 1.6 1996/07/15 10:26:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.6  1996/07/15 10:26:31  robertj
+ * MSVC 4.1 Support
+ *
  * Revision 1.5  1996/02/15 14:55:01  robertj
  * Win16 compatibility
  *
@@ -298,7 +301,7 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
     FLAGS flags = unreadOnly ? MAPI_UNREAD_ONLY : 0;
     PINDEX count = 0;
     const char * seed = NULL;
-    char msgIdBuffer[MAPI_MESSAGEID_LENGTH];
+    char msgIdBuffer[64];
 
     while ((lastError = mapi.FindNext(sessionId, (HWND)hUserInterface,
                       NULL, seed, flags, 0, msgIdBuffer)) == SUCCESS_SUCCESS) {
