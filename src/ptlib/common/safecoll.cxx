@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.14  2004/10/14 23:01:31  csoutheren
+ * Fiuxed problem with usage of Sleep
+ *
  * Revision 1.13  2004/10/14 12:31:47  rjongbloed
  * Added synchronous mode for safe collection RemoveAll() to wait until all objects
  *   have actually been deleted before returning.
@@ -312,7 +315,7 @@ void PSafeCollection::RemoveAll(BOOL synchronous)
     // Have unfortunate busy loop here, but it should be very
     // rare that it will be here for long
     while (!DeleteObjectsToBeRemoved())
-      Sleep(100);
+      PThread::Sleep(100);
   }
 }
 
