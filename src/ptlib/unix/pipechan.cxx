@@ -40,7 +40,10 @@ void PPipeChannel::Construct(const PString & subProgram,
   const char * cmd;
   char ** args;
   PINDEX i, l;
-  PStringArray array = subProgram.Tokenise(" ", FALSE);
+
+  // must declare this array outside the scope of the block
+  // below as we want the storage to last until the exec has been done
+  PStringArray array;
 
   if (arguments != NULL) {
     for (i = 0; arguments[i] != NULL; i++)
@@ -53,16 +56,15 @@ void PPipeChannel::Construct(const PString & subProgram,
   } else {
     array = subProgram.Tokenise(" ", FALSE);
     l = array.GetSize();
-    args = new char *[l+2];
-    for (i = 0; i < l; i++) 
-      args[i+1] = array[i].GetPointer();
+    args = new char *[l+1];
+    for (i = 1; i < l; i++) 
+      args[i] = array[i].GetPointer();
     cmd     = array[0];
+    l--;
   }
   PString arg0Str = PFilePath(cmd).GetTitle();
   args[0]   = arg0Str.GetPointer();
   args[l+1] = NULL;
-
-  
 
   // fork to allow us to execute the child
   if ((childPid = vfork()) == 0) {
