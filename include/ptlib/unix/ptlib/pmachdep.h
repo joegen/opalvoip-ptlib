@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.62  2004/04/02 03:32:11  ykiryanov
+ * Added prototypes for missing dl*() functions
+ *
  * Revision 1.61  2004/02/23 20:00:15  ykiryanov
  * Fixed a typo in declaration of setegid(0
  *
@@ -419,6 +422,13 @@ typedef int socklen_t;
 #define PSETPGRP()  setpgid(0,0)
 int seteuid(uid_t euid);
 int setegid(gid_t gid);
+
+#define RTLD_NOW        0x2
+extern "C" {
+void *dlopen(const char *path, int mode);
+int dlclose(void *handle);
+void *dlsym(void *handle, const char *symbol);
+};
 
 #ifndef BE_BONELESS
 #include <bone/arpa/inet.h>
