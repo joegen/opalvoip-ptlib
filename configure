@@ -2377,9 +2377,8 @@ if test "${enable_rtti+set}" = set; then
   rtti=$enableval
 fi;
 if test "$rtti" = "yes" ; then
-  { echo "$as_me:$LINENO: Forcing use of RTTI" >&5
-echo "$as_me: Forcing use of RTTI" >&6;}
-  STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+  { echo "$as_me:$LINENO: Not disabling RTTI" >&5
+echo "$as_me: Not disabling RTTI" >&6;}
 else
   echo "$as_me:$LINENO: checking if compiler accepts -fno-rtti" >&5
 echo $ECHO_N "checking if compiler accepts -fno-rtti... $ECHO_C" >&6
