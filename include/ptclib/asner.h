@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.31  2002/10/31 05:50:49  robertj
+ * Changed to use new UTF-8/UCS-2 conversion functions on PString.
+ *
  * Revision 1.30  2002/10/10 14:37:40  rogerh
  * In two of the PASN classes make the protected members public. This
  * makes OpenH323 compile in Mac OS X 10.2.1
@@ -647,12 +650,12 @@ class PASN_BMPString : public PASN_ConstrainedObject
     PASN_BMPString(const PASN_BMPString & other);
     PASN_BMPString & operator=(const PASN_BMPString & other);
 
-    PASN_BMPString & operator=(const char * v);
-    PASN_BMPString & operator=(const PString & v) { return operator=((const char *)v); }
+    PASN_BMPString & operator=(const char * v) { return operator=(PString(v).AsUCS2()); }
+    PASN_BMPString & operator=(const PString & v) { return operator=(v.AsUCS2()); }
     PASN_BMPString & operator=(const PWORDArray & v);
     operator PString() const { return GetValue(); }
     operator PWORDArray() const { return value; }
-    PString GetValue() const;
+    PString GetValue() const { return value; }
     void GetValue(PWORDArray & v) const { v = value; }
     void SetValue(const char * v) { operator=(v); }
     void SetValue(const PString & v) { operator=((const char *)v); }
