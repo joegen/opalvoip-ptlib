@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.53  2002/01/06 05:40:47  robertj
+ * Fixed wrong number of columns in base 64 encoder, thanks Lars Güsmar
+ *
  * Revision 1.52  2001/10/03 00:25:25  robertj
  * Split out function for adding a single line of MIME info, reduces
  *    duplicated code and is useful in some other areas such as HTTP/1.1
@@ -905,7 +908,7 @@ void PBase64::OutputBase64(const BYTE * data)
   out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
   out[encodeLength++] = Binary2Base64[data[2]&0x3f];
 
-  if (++nextLine > 19) { // 76 columns
+  if (++nextLine > 18) { // 76 columns
     if (useCRLFs)
       out[encodeLength++] = '\r';
     out[encodeLength++] = '\n';
