@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psnmp.cxx,v $
+ * Revision 1.7  1998/10/13 14:06:32  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.6  1998/09/23 06:22:33  robertj
  * Added open source copyright license.
  *
@@ -79,6 +82,8 @@
 #include <ptlib.h>
 #include <psnmp.h>
 
+#define new PNEW
+
 
 static char const * const SnmpErrorCodeTable[] = 
 {
@@ -115,7 +120,7 @@ static char const * const TrapCodeToText[PSNMP::NumTrapTypes] = {
 void PSNMPVarBindingList::Append(const PString & objectID)
 {
   objectIds.AppendString(objectID);
-  values.Append(PNEW PASNNull());
+  values.Append(new PASNNull());
 }
 
 
@@ -128,7 +133,7 @@ void PSNMPVarBindingList::Append(const PString & objectID, PASNObject * obj)
 
 void PSNMPVarBindingList::AppendString(const PString & objectID, const PString & str)
 {
-  Append(objectID, PNEW PASNString(str));
+  Append(objectID, new PASNString(str));
 }
 
 
