@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.77  2001/07/10 03:45:14  robertj
+# Added queue channel and delay channel classes to ptclib.
+#
 # Revision 1.76  2001/07/09 06:16:15  yurik
 # Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
 #
@@ -363,6 +366,8 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/asner.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
 	$(COMPONENT_SRC_DIR)/modem.cxx \
+	$(COMPONENT_SRC_DIR)/qchannel.cxx \
+	$(COMPONENT_SRC_DIR)/delaychan.cxx \
 	$(COMPONENT_SRC_DIR)/cypher.cxx \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/socks.cxx \
