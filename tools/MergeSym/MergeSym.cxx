@@ -150,7 +150,7 @@ void MergeSym::Main()
     PError << "Reading library symbols..." << flush;
   PINDEX linecount = 0;
   SortedSymbolList lib_symbols;
-  PPipeChannel pipe("dumpbin /symbols " + lib_filename, PPipeChannel::ReadOnly);
+  PPipeChannel pipe("dumpbin /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
   while (!pipe.eof()) {
     char line[500];
     pipe.getline(line, sizeof(line));
@@ -163,7 +163,8 @@ void MergeSym::Main()
           strstr(namepos, "deleting destructor") == NULL) {
         int namelen = strcspn(namepos, "\r\n\t ");
         PString name(namepos, namelen);
-        if (lib_symbols.GetValuesIndex(name) == P_MAX_INDEX) {
+        if (strncmp(name, "??_C@_", 6) != 0 &&
+            lib_symbols.GetValuesIndex(name) == P_MAX_INDEX) {
           const char * unmangled = strchr(namepos+namelen, '(');
           if (unmangled == NULL)
             unmangled = name;
