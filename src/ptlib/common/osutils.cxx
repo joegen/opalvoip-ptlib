@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.75 1996/09/14 13:09:37 robertj Exp $
+ * $Id: osutils.cxx,v 1.76 1996/10/08 13:07:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.76  1996/10/08 13:07:07  robertj
+ * Fixed bug in indirect channel being reopened double deleting subchannel.
+ *
  * Revision 1.75  1996/09/14 13:09:37  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -987,11 +990,12 @@ BOOL PIndirectChannel::Open(PChannel * readChan,
 {
   if (readAutoDelete)
     delete readChannel;
+
+  if (writeAutoDelete && readChannel != writeChannel)
+    delete writeChannel;
+
   readChannel = readChan;
   readAutoDelete = autoDeleteRead;
-
-  if (writeAutoDelete)
-    delete writeChannel;
   writeChannel = writeChan;
   writeAutoDelete = autoDeleteWrite;
 
