@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.10  1999/02/16 08:10:33  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.9  1998/11/30 02:55:18  robertj
  * New directory structure
  *
@@ -87,7 +90,9 @@
                                   const char * password, const char * service);
 
 #if P_HAS_CMC
-    PDECLARE_CLASS(CMCDLL, PDynaLink)
+    class CMCDLL : public PDynaLink
+    {
+      PCLASSINFO(CMCDLL, PDynaLink)
       public:
         CMCDLL();
 
@@ -163,7 +168,9 @@
     CMCDLL cmc;
 #endif
 #if P_HAS_MAPI
-    PDECLARE_CLASS(MAPIDLL, PDynaLink)
+    class MAPIDLL : public PDynaLink
+    {
+      PCLASSINFO(MAPIDLL, PDynaLink)
       public:
         MAPIDLL();
 
