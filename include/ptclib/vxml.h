@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.7  2002/07/17 08:34:12  craigs
+ * Fixed deadlock problems
+ *
  * Revision 1.6  2002/07/17 06:08:43  craigs
  * Added additional "sayas" classes
  *
@@ -389,6 +392,7 @@ class PVXMLOutgoingChannel : public PVXMLChannel
     virtual BOOL ReadFrame(PINDEX amount)= 0;
     virtual void CreateSilenceFrame(PINDEX amount) = 0;
 
+    PMutex queueMutex;
     PVXMLQueue playQueue;
     BOOL playing;
 
