@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.9 1998/05/11 06:01:55 robertj Exp $
+ * $Id: asner.cxx,v 1.10 1998/05/21 04:26:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.10  1998/05/21 04:26:54  robertj
+ * Fixed numerous PER problems.
+ *
  * Revision 1.9  1998/05/11 06:01:55  robertj
  * Why did this compile under MSC?
  *
@@ -59,12 +62,14 @@ static PINDEX CountBits(unsigned range)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Object::PASN_Object(unsigned tag_, TagClass tagClass_, BOOL extend)
+PASN_Object::PASN_Object(unsigned theTag, TagClass theTagClass, BOOL extend)
 {
   extendable = extend;
-  tag = tag_;
-  if (tagClass_ != DefaultTagClass)
-    tagClass = tagClass_;
+
+  tag = theTag;
+
+  if (theTagClass != DefaultTagClass)
+    tagClass = theTagClass;
   else
     tagClass = ContextSpecificTagClass;
 }
@@ -95,21 +100,59 @@ PINDEX PASN_Object::GetObjectLength() const
 }
 
 
+void PASN_Object::SetConstraints(ConstraintType, MinimumValueTag lower, unsigned upper)
+{
+  SetConstraints(PartiallyConstrained, (int)lower, upper);
+}
+
+
+void PASN_Object::SetConstraints(ConstraintType, int lower, MaximumValueTag upper)
+{
+  SetConstraints(PartiallyConstrained, lower, (unsigned)upper);
+}
+
+
+void PASN_Object::SetConstraints(ConstraintType, MinimumValueTag lower, MaximumValueTag upper)
+{
+  SetConstraints(PartiallyConstrained, (int)lower, (unsigned)upper);
+}
+
+
+void PASN_Object::SetConstraints(ConstraintType, int, unsigned)
+{
+}
+
+
+void PASN_Object::SetCharacterSet(ConstraintType, const char *)
+{
+}
+
+
+void PASN_Object::SetCharacterSet(ConstraintType, unsigned, unsigned)
+{
+}
+
+
 ///////////////////////////////////////////////////////////////////////
 
-PASN_ConstrainedObject::PASN_ConstrainedObject(unsigned tag, TagClass tagClass,
-                                               int lower, unsigned upper,
-                                               ConstraintType ctype)
-  : PASN_Object(tag, tagClass, ctype == ExtendableConstraint)
+PASN_ConstrainedObject::PASN_ConstrainedObject(unsigned tag, TagClass tagClass)
+  : PASN_Object(tag, tagClass)
 {
-  SetConstraints(ctype, lower, upper);
+  constraint = Unconstrained;
+  lowerLimit = 0;
+  upperLimit =  UINT_MAX;
 }
 
 
 void PASN_ConstrainedObject::SetConstraints(ConstraintType ctype,
                                             int lower, unsigned upper)
 {
-  unconstrained = ctype == Unconstrained;
+  constraint = ctype;
+  if (constraint == Unconstrained) {
+    lower = 0;
+    upper = UINT_MAX;
+  }
+
   extendable = ctype == ExtendableConstraint;
   PAssert((lower >= 0 || upper < 0x7fffffff) &&
           (lower < 0 || (unsigned)lower <= upper), PInvalidParameter);
@@ -118,60 +161,54 @@ void PASN_ConstrainedObject::SetConstraints(ConstraintType ctype,
 }
 
 
-PASN_ConstrainedObject::ConstraintType
-              PASN_ConstrainedObject::ConstraintDecode(PPER_Stream & strm,
-                                                       unsigned * range)
+int PASN_ConstrainedObject::ConstrainedLengthDecode(PPER_Stream & strm, unsigned & length)
 {
-  if (extendable)
-    if (strm.SingleBitDecode())
-      return Unconstrained;
-
-  if (unconstrained)
-    return Unconstrained;
-
-  if (range != NULL)
-    *range = (unsigned)(upperLimit - lowerLimit) + 1;
-  return FixedConstraint;
+  // The execution order is important in the following. The SingleBitDecode() function
+  // must be called if extendable is TRUE, no matter what.
+  if ((extendable && strm.SingleBitDecode()) || constraint == Unconstrained)
+    return strm.LengthDecode(0, INT_MAX, length);
+  else
+    return strm.LengthDecode(lowerLimit, upperLimit, length);
 }
 
 
-PASN_ConstrainedObject::ConstraintType
-              PASN_ConstrainedObject::ConstraintEncode(PPER_Stream & strm,
-                                                       unsigned value,
-                                                       unsigned * range) const
+void PASN_ConstrainedObject::ConstrainedLengthEncode(PPER_Stream & strm, unsigned length) const
 {
-  if (extendable) {
-    BOOL needsExtending = value > upperLimit;
+  if (ConstraintEncode(strm, length)) // 26.4
+    strm.LengthEncode(length, 0, INT_MAX);
+  else
+    strm.LengthEncode(length, lowerLimit, upperLimit);
+}
 
-    if (!needsExtending) {
-      if (lowerLimit < 0) {
-        if ((int)value < lowerLimit)
-          needsExtending = TRUE;
-      }
-      else {
-        if (value < (unsigned)lowerLimit)
-          needsExtending = TRUE;
-      }
+
+BOOL PASN_ConstrainedObject::ConstraintEncode(PPER_Stream & strm, unsigned value) const
+{
+  if (!extendable)
+    return constraint != FixedConstraint;
+
+  BOOL needsExtending = value > upperLimit;
+
+  if (!needsExtending) {
+    if (lowerLimit < 0) {
+      if ((int)value < lowerLimit)
+        needsExtending = TRUE;
     }
-
-    strm.SingleBitEncode(needsExtending);
-    if (needsExtending)
-      return Unconstrained;
+    else {
+      if (value < (unsigned)lowerLimit)
+        needsExtending = TRUE;
+    }
   }
 
-  if (unconstrained)
-    return Unconstrained;
+  strm.SingleBitEncode(needsExtending);
 
-  if (range != NULL)
-    *range = (unsigned)(upperLimit - lowerLimit) + 1;
-  return FixedConstraint;
+  return needsExtending || constraint != FixedConstraint;
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Null::PASN_Null(unsigned tag, TagClass tagClass)
-  : PASN_Object(tag, tagClass, FALSE)
+  : PASN_Object(tag, tagClass)
 {
 }
 
@@ -215,7 +252,7 @@ void PASN_Null::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::NullDecode(PASN_Null & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -244,7 +281,7 @@ void PPER_Stream::NullEncode(const PASN_Null &)
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Boolean::PASN_Boolean(BOOL val, unsigned tag, TagClass tagClass)
-  : PASN_Object(tag, tagClass, FALSE)
+  : PASN_Object(tag, tagClass)
 {
   value = val;
 }
@@ -292,7 +329,7 @@ void PASN_Boolean::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::BooleanDecode(PASN_Boolean & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -315,6 +352,9 @@ void PBER_Stream::BooleanEncode(const PASN_Boolean & value)
 
 BOOL PPER_Stream::BooleanDecode(PASN_Boolean & value)
 {
+  if (IsAtEnd())
+    return FALSE;
+
   // X.931 Section 11
   value = (BOOL)SingleBitDecode();
   return TRUE;
@@ -330,19 +370,16 @@ void PPER_Stream::BooleanEncode(const PASN_Boolean & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Integer::PASN_Integer(unsigned tag, TagClass tagClass,
-                           int lower, unsigned upper,
-                           ConstraintType ctype,
-                           unsigned val)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
+PASN_Integer::PASN_Integer(unsigned tag, TagClass tagClass, unsigned val)
+  : PASN_ConstrainedObject(tag, tagClass)
 {
-  operator=(val);
+  value = val;
 }
 
 
 PASN_Integer & PASN_Integer::operator=(unsigned val)
 {
-  if (unconstrained)
+  if (constraint == Unconstrained)
     value = val;
   else if (val > upperLimit)
     value = upperLimit;
@@ -410,7 +447,7 @@ void PASN_Integer::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::IntegerDecode(PASN_Integer & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
     return FALSE;
 
@@ -437,58 +474,71 @@ void PBER_Stream::IntegerEncode(const PASN_Integer & value)
 
 BOOL PPER_Stream::IntegerDecode(PASN_Integer & value)
 {
-  // X.931 Sections 12
-
-  unsigned val;
-  unsigned range = 0;
-  if (value.ConstraintDecode(*this, &range) == PASN_ConstrainedObject::Unconstrained) { //  12.1
-    if (IsAtEnd())
-      return FALSE;
-    val = MultiBitDecode(LengthDecode(0, INT_MAX));
-  }
-  else if (range == 1) // 12.2.1
-    val = 0;
-  else { // 12.2.2 which devolves to 10.5
-    if (IsAtEnd())
-      return FALSE;
-    val = UnsignedDecode(range);
-  }
-  value = val + value.GetLowerLimit();
-  return TRUE;
+  return value.DecodePER(*this);
 }
 
 
 void PPER_Stream::IntegerEncode(const PASN_Integer & value)
 {
+  value.EncodePER(*this);
+}
+
+
+BOOL PASN_Integer::DecodePER(PPER_Stream & strm)
+{
   // X.931 Sections 12
 
-  int adjusted_value = value - value.GetLowerLimit();
+  if ((extendable && strm.SingleBitDecode()) || constraint != FixedConstraint) { //  12.1
+    unsigned len;
+    if (strm.LengthDecode(0, INT_MAX, len) != 0)
+      return FALSE;
+    value = strm.MultiBitDecode(len*8);
+    return TRUE;
+  }
 
-  unsigned range;
-  if (value.ConstraintEncode(*this, (int)value, &range) == PASN_ConstrainedObject::Unconstrained) { //  12.1
-    PINDEX nBits = adjusted_value == 0 ? 8 : CountBits(adjusted_value);
-    LengthEncode(nBits, 0, INT_MAX);
-    MultiBitEncode(adjusted_value, nBits);
+  if ((unsigned)lowerLimit != upperLimit)  // 12.2.1
+    return strm.UnsignedDecode(lowerLimit, upperLimit, value) == 0; // 12.2.2 which devolves to 10.5
+
+  value = lowerLimit;
+  return TRUE;
+}
+
+
+void PASN_Integer::EncodePER(PPER_Stream & strm) const
+{
+  // X.931 Sections 12
+
+  if (ConstraintEncode(strm, (int)value)) { //  12.1
+    PINDEX nBytes;
+    unsigned adjusted_value = value - lowerLimit;
+    if (adjusted_value == 0)
+      nBytes = 1;
+    else {
+      PINDEX nBits = CountBits(adjusted_value+1);
+      nBytes = (nBits+7)/8;
+    }
+    strm.LengthEncode(nBytes, 0, INT_MAX);
+    strm.MultiBitEncode(adjusted_value, nBytes*8);
     return;
   }
 
-  if (range == 1) // 12.2.1
+  if ((unsigned)lowerLimit == upperLimit) // 12.2.1
     return;
 
   // 12.2.2 which devolves to 10.5
-  UnsignedEncode(adjusted_value, range);
+  strm.UnsignedEncode(value, lowerLimit, upperLimit);
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
-                                   unsigned nEnums, BOOL extend,
+                                   unsigned maxEnum, BOOL extend,
                                    unsigned val)
   : PASN_Object(tag, tagClass, extend)
 {
   value = val;
-  numEnums = nEnums;
+  maxEnumValue = maxEnum;
 }
 
 
@@ -515,16 +565,17 @@ static POrdinalToString BuildNamesDict(const PString & nameSpec)
 
 
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
-                                   unsigned nEnums, BOOL extend,
+                                   unsigned maxEnum, BOOL extend,
                                    const PString & nameSpec,
                                    unsigned val)
   : PASN_Object(tag, tagClass, extend),
     names(BuildNamesDict(nameSpec))
 {
-  PAssert(nEnums > 0, PInvalidParameter);
-  PAssert(val < nEnums, PInvalidParameter);
+  PAssert(maxEnum > 0, PInvalidParameter);
+  maxEnumValue = maxEnum;
+
+  PAssert(val < maxEnum, PInvalidParameter);
   value = val;
-  numEnums = nEnums;
 }
 
 
@@ -570,7 +621,7 @@ void PASN_Enumeration::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::EnumerationDecode(PASN_Enumeration & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
     return FALSE;
 
@@ -597,46 +648,51 @@ void PBER_Stream::EnumerationEncode(const PASN_Enumeration & value)
 
 BOOL PPER_Stream::EnumerationDecode(PASN_Enumeration & value)
 {
-  // X.691 Section 13
-
-  if (value.IsExtendable()) {  // 13.3
-    if (SingleBitDecode()) {
-      if (IsAtEnd())
-        return FALSE;
-      value = UnsignedDecode(SmallUnsignedDecode());
-      return TRUE;
-    }
-  }
-
-  if (IsAtEnd())
-    return FALSE;
-  value = UnsignedDecode(value.GetMaximum());  // 13.2
-  return TRUE;
+  return value.DecodePER(*this);
 }
 
 
 void PPER_Stream::EnumerationEncode(const PASN_Enumeration & value)
 {
+  value.EncodePER(*this);
+}
+
+
+BOOL PASN_Enumeration::DecodePER(PPER_Stream & strm)
+{
   // X.691 Section 13
 
-  if (value.IsExtendable()) {  // 13.3
-    BOOL extended = value >= value.GetMaximum();
-    SingleBitEncode(extended);
+  if (extendable) {  // 13.3
+    if (strm.SingleBitDecode())
+      return strm.UnsignedDecode(0, strm.SmallUnsignedDecode()-1, value) == 0;
+  }
+
+  return strm.UnsignedDecode(0, maxEnumValue, value) == 0;  // 13.2
+}
+
+
+void PASN_Enumeration::EncodePER(PPER_Stream & strm) const
+{
+  // X.691 Section 13
+
+  if (extendable) {  // 13.3
+    BOOL extended = value > maxEnumValue;
+    strm.SingleBitEncode(extended);
     if (extended) {
-      SmallUnsignedEncode(1+value);
-      UnsignedEncode(value, value);
+      strm.SmallUnsignedEncode(1+value);
+      strm.UnsignedEncode(value, 0, value);
       return;
     }
   }
 
-  UnsignedEncode(value, value.GetMaximum()-1);  // 13.2
+  strm.UnsignedEncode(value, 0, maxEnumValue);  // 13.2
 }
 
 
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Real::PASN_Real(unsigned tag, TagClass tagClass, double val)
-  : PASN_Object(tag, tagClass, FALSE)
+  : PASN_Object(tag, tagClass)
 {
   value = val;
 }
@@ -682,7 +738,7 @@ void PASN_Real::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::RealDecode(PASN_Real & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
     return FALSE;
 
@@ -702,6 +758,9 @@ void PBER_Stream::RealEncode(const PASN_Real &)
 BOOL PPER_Stream::RealDecode(PASN_Real &)
 {
   // X.691 Section 14
+
+  if (IsAtEnd())
+    return FALSE;
 
   PINDEX len = MultiBitDecode(8)+1;
   PAssertAlways(PUnimplementedFunction);
@@ -723,7 +782,7 @@ void PPER_Stream::RealEncode(const PASN_Real &)
 ///////////////////////////////////////////////////////////////////////
 
 PASN_ObjectId::PASN_ObjectId(unsigned tag, TagClass tagClass)
-  : PASN_Object(tag, tagClass, FALSE)
+  : PASN_Object(tag, tagClass)
 {
 }
 
@@ -766,6 +825,14 @@ void PASN_ObjectId::SetValue(const PString & dotstr)
 }
 
 
+BOOL PASN_ObjectId::operator==(const char * dotstr) const
+{
+  PASN_ObjectId id;
+  id.SetValue(dotstr);
+  return *this == id;
+}
+
+
 PObject * PASN_ObjectId::Clone() const
 {
   PAssert(IsClass(PASN_ObjectId::Class()), PInvalidCast);
@@ -789,7 +856,7 @@ PString PASN_ObjectId::GetTypeAsString() const
 }
 
 
-BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, PINDEX dataLen)
+BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
 {
   value.SetSize(2);
 
@@ -905,7 +972,7 @@ void PASN_ObjectId::Encode(PASN_Stream & strm) const
 
 BOOL PBER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -926,7 +993,10 @@ BOOL PPER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 {
   // X.691 Section 23
 
-  PINDEX dataLen = LengthDecode(0, 255);
+  unsigned dataLen;
+  if (LengthDecode(0, 255, dataLen) < 0)
+    return FALSE;
+
   ByteAlign();
   return value.CommonDecode(*this, dataLen);
 }
@@ -945,14 +1015,11 @@ void PPER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_BitString::PASN_BitString(unsigned tag, TagClass tagClass,
-                               int lower, unsigned upper, ConstraintType ctype,
-                               PINDEX nBits)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype),
-    totalBits((int)nBits < lower ? lower : ((unsigned)nBits > upper ? upper : nBits)),
+PASN_BitString::PASN_BitString(unsigned tag, TagClass tagClass, unsigned nBits)
+  : PASN_ConstrainedObject(tag, tagClass),
+    totalBits(nBits),
     bitData((totalBits+7)/8)
 {
-  PAssert(lower >= 0, PInvalidParameter);
 }
 
 
@@ -973,21 +1040,21 @@ PASN_BitString & PASN_BitString::operator=(const PASN_BitString & other)
 }
 
 
-void PASN_BitString::SetData(PINDEX nBits, const PBYTEArray & bytes)
+void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 {
   bitData = bytes;
   totalBits = nBits;
 }
 
 
-void PASN_BitString::SetData(PINDEX nBits, const BYTE * buf, PINDEX size)
+void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 {
   bitData = PBYTEArray(buf, size);
   totalBits = nBits;
 }
 
 
-BOOL PASN_BitString::SetSize(PINDEX nBits)
+BOOL PASN_BitString::SetSize(unsigned nBits)
 {
   totalBits = nBits;
   return bitData.SetSize((nBits+7)/8);
@@ -996,30 +1063,42 @@ BOOL PASN_BitString::SetSize(PINDEX nBits)
 
 BOOL PASN_BitString::operator[](PINDEX bit) const
 {
-  if (bit < totalBits)
+  if ((unsigned)bit < totalBits)
     return (bitData[bit>>3] & (1 << (7 - (bit&7)))) != 0;
   return FALSE;
 }
 
 
-void PASN_BitString::Set(PINDEX bit)
+void PASN_BitString::Set(unsigned bit)
 {
   if (bit < totalBits)
-    bitData[bit>>3] |= 1 << (7 - (bit&7));
+    bitData[(PINDEX)(bit>>3)] |= 1 << (7 - (bit&7));
 }
 
 
-void PASN_BitString::Clear(PINDEX bit)
+void PASN_BitString::Clear(unsigned bit)
 {
   if (bit < totalBits)
-    bitData[bit>>3] &= ~(1 << (7 - (bit&7)));
+    bitData[(PINDEX)(bit>>3)] &= ~(1 << (7 - (bit&7)));
 }
 
 
-void PASN_BitString::Invert(PINDEX bit)
+void PASN_BitString::Invert(unsigned bit)
 {
   if (bit < totalBits)
-    bitData[bit>>3] ^= 1 << (7 - (bit&7));
+    bitData[(PINDEX)(bit>>3)] ^= 1 << (7 - (bit&7));
+}
+
+
+void PASN_BitString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if (totalBits < (unsigned)lowerLimit)
+      SetSize(lowerLimit);
+    else if ((unsigned)totalBits > upperLimit)
+      SetSize(upperLimit);
+  }
 }
 
 
@@ -1034,7 +1113,7 @@ void PASN_BitString::PrintOn(ostream & strm) const
 {
   BYTE mask = 0x80;
   PINDEX offset = 0;
-  for (PINDEX i = 0; i < totalBits; i++) {
+  for (unsigned i = 0; i < totalBits; i++) {
     strm << ((bitData[offset]&mask) != 0 ? '1' : '0');
     mask >>= 1;
     if (mask == 0) {
@@ -1069,10 +1148,10 @@ void PASN_BitString::Encode(PASN_Stream & strm) const
 }
 
 
-BOOL PASN_BitString::DecodeBER(PBER_Stream & strm, PINDEX len)
+BOOL PASN_BitString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   totalBits = len*8 - strm.ByteDecode();
-  PINDEX nBytes = (totalBits+7)/8;
+  unsigned nBytes = (totalBits+7)/8;
   return strm.BlockDecode(bitData.GetPointer(nBytes), nBytes) == nBytes;
 }
 
@@ -1092,15 +1171,9 @@ BOOL PASN_BitString::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 15
 
-  unsigned range = 0;
-  if (ConstraintDecode(strm, &range) == PASN_ConstrainedObject::Unconstrained) // 15.5
-    totalBits = strm.LengthDecode(0, INT_MAX);
-  else if (range == 1)
-    totalBits = upperLimit;
-  else { // 15.10
-    totalBits = strm.LengthDecode(lowerLimit, upperLimit);
-    strm.ByteAlign();
-  }
+  if (ConstrainedLengthDecode(strm, totalBits) < 0)
+    return FALSE;
+
   SetSize(totalBits);
 
   if (totalBits == 0)
@@ -1110,10 +1183,11 @@ BOOL PASN_BitString::DecodePER(PPER_Stream & strm)
     return FALSE;
 
   if (totalBits > 16) {
-    PINDEX nBytes = (totalBits+7)/8;
+    unsigned nBytes = (totalBits+7)/8;
     return strm.BlockDecode(bitData.GetPointer(), nBytes) == nBytes;   // 15.9
   }
-  else if (totalBits <= 8)
+
+  if (totalBits <= 8)
     bitData[0] = (BYTE)(strm.MultiBitDecode(totalBits) << (8-totalBits));
   else {  // 15.8
     bitData[0] = (BYTE)strm.MultiBitDecode(8);
@@ -1128,13 +1202,7 @@ void PASN_BitString::EncodePER(PPER_Stream & strm) const
 {
   // X.691 Section 15
 
-  unsigned range;
-  if (ConstraintEncode(strm, totalBits, &range) == PASN_ConstrainedObject::Unconstrained) // 15.5
-    strm.LengthEncode(totalBits, 0, INT_MAX);
-  else if (range != 1) { // 15.10
-    strm.LengthEncode(totalBits, lowerLimit, upperLimit);
-    strm.ByteAlign();
-  }
+  ConstrainedLengthEncode(strm, totalBits);
 
   if (totalBits == 0)
     return;
@@ -1152,7 +1220,7 @@ void PASN_BitString::EncodePER(PPER_Stream & strm) const
 
 BOOL PBER_Stream::BitStringDecode(PASN_BitString & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
     return FALSE;
 
@@ -1181,12 +1249,9 @@ void PPER_Stream::BitStringEncode(const PASN_BitString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_OctetString::PASN_OctetString(unsigned tag, TagClass tagClass,
-                                   int lower, unsigned upper, ConstraintType ctype)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype),
-    value(lower)
+PASN_OctetString::PASN_OctetString(unsigned tag, TagClass tagClass)
+  : PASN_ConstrainedObject(tag, tagClass)
 {
-  PAssert(lower >= 0, PInvalidParameter);
 }
 
 
@@ -1244,6 +1309,18 @@ PString PASN_OctetString::AsString() const
   if (value.IsEmpty())
     return PString();
   return PString((const char *)(const BYTE *)value, value.GetSize());
+}
+
+
+void PASN_OctetString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if (value.GetSize() < lowerLimit)
+      value.SetSize(lowerLimit);
+    else if ((unsigned)value.GetSize() > upperLimit)
+      value.SetSize(upperLimit);
+  }
 }
 
 
@@ -1311,34 +1388,34 @@ BOOL PASN_OctetString::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 16
 
-  PINDEX nBytes;
-  unsigned range = 0;
-  if (ConstraintDecode(strm, &range) == Unconstrained) // 16.3
-    nBytes = strm.LengthDecode(0, INT_MAX);
-  else if (range != 1)  // 16.8
-    nBytes = strm.LengthDecode(lowerLimit, upperLimit);
-  else {
-    switch (upperLimit) {
-      case 1 :  // 16.6
-        value[0] = (BYTE)strm.MultiBitDecode(8);
-        return TRUE;
+  unsigned nBytes;
+  if (ConstrainedLengthDecode(strm, nBytes) < 0)
+    return FALSE;
 
-      case 2 :  // 16.6
-        value.SetSize(2);
-        value[0] = (BYTE)strm.MultiBitDecode(8);
-        value[1] = (BYTE)strm.MultiBitDecode(8);
-        return TRUE;
-
-      default: // 16.7
-        nBytes = upperLimit;
-    }
-  }
   value.SetSize(nBytes);   // 16.5
 
-  if (nBytes == 0)
-    return TRUE;
+  switch (nBytes) {
+    case 0 :
+      break;
 
-  return strm.BlockDecode(value.GetPointer(), nBytes) == nBytes;
+    case 1 :  // 16.6
+      if (strm.IsAtEnd())
+        return FALSE;
+      value[0] = (BYTE)strm.MultiBitDecode(8);
+      break;
+
+    case 2 :  // 16.6
+      if (strm.IsAtEnd())
+        return FALSE;
+      value[0] = (BYTE)strm.MultiBitDecode(8);
+      value[1] = (BYTE)strm.MultiBitDecode(8);
+      break;
+
+    default: // 16.7
+      return strm.BlockDecode(value.GetPointer(), nBytes) == nBytes;
+  }
+
+  return TRUE;
 }
 
 
@@ -1347,35 +1424,30 @@ void PASN_OctetString::EncodePER(PPER_Stream & strm) const
   // X.691 Section 16
 
   PINDEX nBytes = value.GetSize();
-  unsigned range;
-  if (ConstraintEncode(strm, nBytes, &range) == PASN_ConstrainedObject::Unconstrained) // 16.3
-    strm.LengthEncode(nBytes, 0, INT_MAX);
-  else if (range != 1) // 16.8
-    strm.LengthEncode(nBytes, lowerLimit, upperLimit);
-  else {
-    switch (upperLimit) {
-      case 1 :  // 16.6
-        strm.MultiBitEncode(value[0], 8);
-        return;
+  ConstrainedLengthEncode(strm, nBytes);
 
-      case 2 :  // 16.6
-        strm.MultiBitEncode(value[0], 8);
-        strm.MultiBitEncode(value[1], 8);
-        return;
+  switch (nBytes) {
+    case 0 :  // 16.5
+      break;
 
-      default: // 16.7
-        nBytes = upperLimit;
-    }
+    case 1 :  // 16.6
+      strm.MultiBitEncode(value[0], 8);
+      break;
+
+    case 2 :  // 16.6
+      strm.MultiBitEncode(value[0], 8);
+      strm.MultiBitEncode(value[1], 8);
+      break;
+
+    default: // 16.7
+      strm.BlockEncode(value, nBytes);
   }
-
-  if (nBytes != 0)    // 16.5
-    strm.BlockEncode(value, nBytes);
 }
 
 
 BOOL PBER_Stream::OctetStringDecode(PASN_OctetString & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -1404,43 +1476,15 @@ void PPER_Stream::OctetStringEncode(const PASN_OctetString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_ConstrainedString::PASN_ConstrainedString(const char * canonicalSet, PINDEX size,
-                                               unsigned tag, TagClass tagClass,
-                                               int lower, unsigned upper,
-                                               ConstraintType ctype,
-                                               const char * set, BOOL)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
+PASN_ConstrainedString::PASN_ConstrainedString(const char * canonical, PINDEX size,
+                                               unsigned tag, TagClass tagClass)
+  : PASN_ConstrainedObject(tag, tagClass)
 {
-  PAssert(lower >= 0, PInvalidParameter);
-
-  if (size == 0)
-    canonicalSetBits = 8;
-  else
-    canonicalSetBits = CountBits(size);
-
-  if (set == NULL)
-    charSet = canonicalSet;
-  else {
-    if (*canonicalSet == '\0') {
-      PAssert(*set != '\0', PInvalidParameter);
-      charSet = set;
-    }
-    else {
-      for (PINDEX i = 0; i < size; i++) {
-        if (strchr(set, canonicalSet[i]) != NULL)
-          charSet += canonicalSet[i];
-      }
-    }
-    PAssert(!charSet.IsEmpty(), PInvalidParameter);
-  }
-
-  if (charSet.IsEmpty())
-    charSetUnalignedBits = 8;
-  else
-    charSetUnalignedBits = CountBits(charSet.GetLength());
-  charSetAlignedBits = 1;
-  while (charSetUnalignedBits > charSetAlignedBits)
-    charSetAlignedBits <<= 1;
+  canonicalSet = canonical;
+  canonicalSetSize = size;
+  canonicalSetBits = CountBits(size);
+  charSetUnalignedBits = 8;
+  charSetAlignedBits = 8;
 }
 
 
@@ -1449,10 +1493,53 @@ PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
   value = PString();
   PINDEX len = strlen(str);
   for (PINDEX i = 0; i < len; i++) {
-    if (charSet.IsEmpty() || charSet.Find(str[i]) != P_MAX_INDEX)
+    PINDEX sz = characterSet.GetSize();
+    if (sz == 0 || memchr(characterSet, str[i], sz) != NULL)
       value += str[i];
   }
   return *this;
+}
+
+
+void PASN_ConstrainedString::SetCharacterSet(ConstraintType ctype, const char * set)
+{
+  SetCharacterSet(set, strlen(set), ctype);
+}
+
+
+void PASN_ConstrainedString::SetCharacterSet(ConstraintType ctype, unsigned firstChar, unsigned lastChar)
+{
+  char buffer[256];
+  for (unsigned i = firstChar; i < lastChar; i++)
+    buffer[i] = (char)i;
+  SetCharacterSet(buffer, lastChar - firstChar + 1, ctype);
+}
+
+
+void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, ConstraintType ctype)
+{
+  if (ctype == Unconstrained)
+    characterSet.SetSize(0);
+  else {
+    characterSet.SetSize(setSize);
+    PINDEX count = 0;
+    for (PINDEX i = 0; i < setSize; i++) {
+      if (memchr(canonicalSet, *set, canonicalSetSize) != NULL)
+        characterSet[count++] = *set;
+      set++;
+    }
+    PAssert(count > 0, PInvalidParameter);
+    characterSet.SetSize(count);
+  }
+
+  if (characterSet.IsEmpty())
+    charSetUnalignedBits = 8;
+  else
+    charSetUnalignedBits = CountBits(characterSet.GetSize());
+
+  charSetAlignedBits = 1;
+  while (charSetUnalignedBits > charSetAlignedBits)
+    charSetAlignedBits <<= 1;
 }
 
 
@@ -1480,7 +1567,7 @@ void PASN_ConstrainedString::Encode(PASN_Stream & strm) const
 }
 
 
-BOOL PASN_ConstrainedString::DecodeBER(PBER_Stream & strm, PINDEX len)
+BOOL PASN_ConstrainedString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
 }
@@ -1496,15 +1583,13 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 26
 
-  PINDEX len;
-  if (ConstraintDecode(strm) == Unconstrained) // 26.4
-    len = strm.LengthDecode(0, INT_MAX);
-  else
-    len = strm.LengthDecode(lowerLimit, upperLimit);
+  unsigned len;
+  if (ConstrainedLengthDecode(strm, len) < 0)
+    return FALSE;
 
-  PINDEX nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+  unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
 
-  if (len*nBits > 16) {
+  if (constraint == Unconstrained || upperLimit*nBits > 16) {
     if (nBits == 8)
       return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
     if (strm.IsAligned())
@@ -1514,11 +1599,13 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
   value.SetSize(len+1);
 
   PINDEX i;
-  for (i = 0; i < len; i++) {
+  for (i = 0; i < (PINDEX)len; i++) {
+    if (strm.IsAtEnd())
+      return FALSE;
     if (nBits >= canonicalSetBits && canonicalSetBits > 4)
       value[i] = (char)strm.MultiBitDecode(nBits);
     else
-      value[i] = charSet[strm.MultiBitDecode(nBits)];
+      value[i] = characterSet[strm.MultiBitDecode(nBits)];
   }
   value[i] = '\0';
 
@@ -1531,14 +1618,11 @@ void PASN_ConstrainedString::EncodePER(PPER_Stream & strm) const
   // X.691 Section 26
 
   PINDEX len = value.GetSize()-1;
-  if (ConstraintEncode(strm, len) == PASN_ConstrainedObject::Unconstrained) // 26.4
-    strm.LengthEncode(len, 0, INT_MAX);
-  else
-    strm.LengthEncode(len, lowerLimit, upperLimit);
+  ConstrainedLengthEncode(strm, len);
 
-  PINDEX nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+  unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
 
-  if (len*nBits > 16) {
+  if (constraint == Unconstrained || upperLimit*nBits > 16) {
     if (nBits == 8) {
       strm.BlockEncode((const BYTE *)(const char *)value, len);
       return;
@@ -1550,15 +1634,20 @@ void PASN_ConstrainedString::EncodePER(PPER_Stream & strm) const
   for (PINDEX i = 0; i < len; i++) {
     if (nBits >= canonicalSetBits && canonicalSetBits > 4)
       strm.MultiBitEncode(value[i], nBits);
-    else
-      strm.MultiBitEncode(charSet.Find(value[i]), nBits);
+    else {
+      const void * ptr = memchr(characterSet, value[i], characterSet.GetSize());
+      PINDEX pos = 0;
+      if (ptr != NULL)
+        pos = ((const char *)ptr - (const char *)characterSet);
+      strm.MultiBitEncode(pos, nBits);
+    }
   }
 }
 
 
 BOOL PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -1587,12 +1676,13 @@ void PPER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 
 #define DEFINE_STRING_CLASS(name, set) \
   static const char name##StringSet[] = set; \
-  PASN_##name##String::PASN_##name##String(unsigned tag, TagClass tagClass, \
-                                           int lower, unsigned upper, ConstraintType ctype, \
-                                           const char * charSet, BOOL extendChars) \
-    : PASN_ConstrainedString(name##StringSet, sizeof(name##StringSet)-1, \
-                             tag, tagClass, lower, upper, ctype, charSet, extendChars) \
+  PASN_##name##String::PASN_##name##String(unsigned tag, TagClass tagClass) \
+    : PASN_ConstrainedString(name##StringSet, sizeof(name##StringSet)-1, tag, tagClass) \
     { } \
+    PASN_##name##String & PASN_##name##String::operator=(const char * str) \
+    { PASN_ConstrainedString::SetValue(str); return *this; } \
+  PASN_##name##String & PASN_##name##String::operator=(const PString & str) \
+    { PASN_ConstrainedString::SetValue(str); return *this; } \
   PObject * PASN_##name##String::Clone() const \
     { PAssert(IsClass(PASN_##name##String::Class()), PInvalidCast); \
       return new PASN_##name##String(*this); } \
@@ -1606,30 +1696,59 @@ DEFINE_STRING_CLASS(Printable, " '()+,-./0123456789:=?"
 DEFINE_STRING_CLASS(Visible,   " !\"#$%&'()*+,-./0123456789:;<=>?"
                                "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
                                "`abcdefghijklmnopqrstuvwxyz{|}~")
-DEFINE_STRING_CLASS(IA5,       "\200\001\002\003\004\005\006\007"
+DEFINE_STRING_CLASS(IA5,       "\000\001\002\003\004\005\006\007"
                                "\010\011\012\013\014\015\016\017"
                                "\020\021\022\023\024\025\026\027"
                                "\030\031\032\033\034\035\036\037"
                                " !\"#$%&'()*+,-./0123456789:;<=>?"
                                "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
                                "`abcdefghijklmnopqrstuvwxyz{|}~\177")
-DEFINE_STRING_CLASS(General,   "")
+DEFINE_STRING_CLASS(General,   "\000\001\002\003\004\005\006\007"
+                               "\010\011\012\013\014\015\016\017"
+                               "\020\021\022\023\024\025\026\027"
+                               "\030\031\032\033\034\035\036\037"
+                               " !\"#$%&'()*+,-./0123456789:;<=>?"
+                               "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                               "`abcdefghijklmnopqrstuvwxyz{|}~\177"
+                               "\200\201\202\203\204\205\206\207"
+                               "\210\211\212\213\214\215\216\217"
+                               "\220\221\222\223\224\225\226\227"
+                               "\230\231\232\233\234\235\236\237"
+                               "\240\241\242\243\244\245\246\247"
+                               "\250\251\252\253\254\255\256\257"
+                               "\260\261\262\263\264\265\266\267"
+                               "\270\271\272\273\274\275\276\277"
+                               "\300\301\302\303\304\305\306\307"
+                               "\310\311\312\313\314\315\316\317"
+                               "\320\321\322\323\324\325\326\327"
+                               "\330\331\332\333\334\335\336\337"
+                               "\340\341\342\343\344\345\346\347"
+                               "\350\351\352\353\354\355\356\357"
+                               "\360\361\362\363\364\365\366\367"
+                               "\370\371\372\373\374\375\376\377")
 
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_BMPString::PASN_BMPString(unsigned tag, TagClass tagClass,
-                               int lower, unsigned upper, ConstraintType ctype)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
+PASN_BMPString::PASN_BMPString(unsigned tag, TagClass tagClass)
+  : PASN_ConstrainedObject(tag, tagClass)
 {
-  PAssert(lower >= 0, PInvalidParameter);
+  firstChar = 0;
+  lastChar = 0xffff;
+  charSetAlignedBits = 16;
+  charSetUnalignedBits = 16;
 }
 
 
 PASN_BMPString::PASN_BMPString(const PASN_BMPString & other)
   : PASN_ConstrainedObject(other),
-    value(other.value, other.value.GetSize())
+    value(other.value, other.value.GetSize()),
+    characterSet(other.characterSet)
 {
+  firstChar = other.firstChar;
+  lastChar = other.lastChar;
+  charSetAlignedBits = other.charSetAlignedBits;
+  charSetUnalignedBits = other.charSetUnalignedBits;
 }
 
 
@@ -1638,16 +1757,69 @@ PASN_BMPString & PASN_BMPString::operator=(const PASN_BMPString & other)
   PASN_ConstrainedObject::operator=(other);
 
   value = PWORDArray(other.value, other.value.GetSize());
+  characterSet = other.characterSet;
+  firstChar = other.firstChar;
+  lastChar = other.lastChar;
+  charSetAlignedBits = other.charSetAlignedBits;
+  charSetUnalignedBits = other.charSetUnalignedBits;
 
   return *this;
 }
 
 
+BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
+{
+  if (ch < firstChar)
+    return FALSE;
+
+  if (ch > lastChar)
+    return FALSE;
+
+  if (characterSet.IsEmpty())
+    return TRUE;
+
+  const WORD * wptr = characterSet;
+  PINDEX count = characterSet.GetSize();
+  while (count-- > 0) {
+    if (*wptr == ch)
+      return TRUE;
+    wptr++;
+  }
+
+  return FALSE;
+}
+
+
 PASN_BMPString & PASN_BMPString::operator=(const PString & str)
 {
-  value.SetSize(str.GetLength());
-  for (PINDEX i = 0; i < value.GetSize(); i++)
-    value[i] = (BYTE)str[i];
+  PINDEX sz = str.GetLength();
+  value.SetSize(sz);
+
+  PINDEX count = 0;
+  for (PINDEX i = 0; i < sz; i++) {
+    WORD c = (BYTE)str[i];
+    if (IsLegalCharacter(c))
+      value[count++] = c;
+  }
+
+  value.SetSize(count);
+  return *this;
+}
+
+
+PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
+{
+  PINDEX sz = array.GetSize();
+  value.SetSize(sz);
+
+  PINDEX count = 0;
+  for (PINDEX i = 0; i < sz; i++) {
+    WORD c = array[i];
+    if (IsLegalCharacter(c))
+      value[count++] = c;
+  }
+
+  value.SetSize(count);
   return *this;
 }
 
@@ -1663,6 +1835,60 @@ PString PASN_BMPString::GetValue() const
 }
 
 
+void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const char * charSet)
+{
+  PWORDArray array(strlen(charSet));
+
+  PINDEX count = 0;
+  while (*charSet != '\0')
+    array[count++] = (BYTE)*charSet++;
+
+  SetCharacterSet(ctype, array);
+}
+
+
+void PASN_BMPString::SetCharacterSet(ConstraintType ctype, const PWORDArray & charSet)
+{
+  if (ctype == Unconstrained) {
+    firstChar = 0;
+    lastChar = 0xffff;
+    characterSet.SetSize(0);
+  }
+  else {
+    characterSet = charSet;
+
+    charSetUnalignedBits = CountBits(lastChar - firstChar + 1);
+    if (!charSet.IsEmpty()) {
+      unsigned count = 0;
+      for (PINDEX i = 0; i < charSet.GetSize(); i++) {
+        if (characterSet[i] >= firstChar && characterSet[i] <= lastChar)
+          count++;
+      }
+      count = CountBits(count);
+      if (charSetUnalignedBits > count)
+        charSetUnalignedBits = count;
+    }
+
+    charSetAlignedBits = 1;
+    while (charSetUnalignedBits > charSetAlignedBits)
+      charSetAlignedBits <<= 1;
+
+    SetValue(value);
+  }
+}
+
+
+void PASN_BMPString::SetCharacterSet(ConstraintType ctype, unsigned first, unsigned last)
+{
+  if (ctype != Unconstrained) {
+    PAssert(first < 0x10000 && last < 0x10000 && last > first, PInvalidParameter);
+    firstChar = (WORD)first;
+    lastChar = (WORD)last;
+  }
+  SetCharacterSet(ctype, characterSet);
+}
+
+
 PObject * PASN_BMPString::Clone() const
 {
   PAssert(IsClass(PASN_BMPString::Class()), PInvalidCast);
@@ -1673,21 +1899,23 @@ PObject * PASN_BMPString::Clone() const
 void PASN_BMPString::PrintOn(ostream & strm) const
 {
   int indent = strm.precision() + 2;
-  strm << ' ' << value.GetSize() << " characters {\n";
+  PINDEX sz = value.GetSize();
+  strm << ' ' << sz << " characters {\n";
   PINDEX i = 0;
-  while (i < value.GetSize()) {
+  while (i < sz) {
     strm << setw(indent) << ' ';
     PINDEX j;
     for (j = 0; j < 8; j++)
-      if (i+j < value.GetSize())
+      if (i+j < sz)
         strm << hex << setfill('0') << setw(4) << value[i+j] << ' ';
       else
         strm << "     ";
     strm << "  ";
     for (j = 0; j < 8; j++) {
-      if (i+j < value.GetSize()) {
-        if (isprint(value[i+j]))
-          strm << (char)value[i+j];
+      if (i+j < sz) {
+        WORD c = value[i+j];
+        if (c < 128 && isprint(c))
+          strm << (char)c;
         else
           strm << ' ';
       }
@@ -1723,7 +1951,7 @@ void PASN_BMPString::Encode(PASN_Stream & strm) const
 }
 
 
-BOOL PASN_BMPString::DecodeBER(PBER_Stream & strm, PINDEX len)
+BOOL PASN_BMPString::DecodeBER(PBER_Stream & strm, unsigned len)
 {
   value.SetSize(len/2);
   return strm.BlockDecode((BYTE *)value.GetPointer(len), len) == len;
@@ -1740,20 +1968,26 @@ BOOL PASN_BMPString::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 26
 
-  PINDEX len;
-  if (ConstraintDecode(strm) == Unconstrained) // 26.4
-    len = strm.LengthDecode(0, INT_MAX);
-  else
-    len = strm.LengthDecode(lowerLimit, upperLimit);
+  unsigned len;
+  if (ConstrainedLengthDecode(strm, len) < 0)
+    return FALSE;
+
   value.SetSize(len);
 
-  if (len == 1)
-    value[0] = (WORD)strm.MultiBitDecode(16);
-  else {
+  PINDEX nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+
+  if ((constraint == Unconstrained || upperLimit*nBits > 16) && strm.IsAligned())
     strm.ByteAlign();
-    for (PINDEX i = 0; i < len; i++)
-      value[i] = (WORD)strm.MultiBitDecode(16);
+
+  for (PINDEX i = 0; i < (PINDEX)len; i++) {
+    if (strm.IsAtEnd())
+      return FALSE;
+    if (characterSet.IsEmpty())
+      value[i] = (WORD)(strm.MultiBitDecode(nBits) + firstChar);
+    else
+      value[i] = characterSet[strm.MultiBitDecode(nBits)];
   }
+
   return TRUE;
 }
 
@@ -1763,24 +1997,31 @@ void PASN_BMPString::EncodePER(PPER_Stream & strm) const
   // X.691 Section 26
 
   PINDEX len = value.GetSize();
-  if (ConstraintEncode(strm, len) == PASN_ConstrainedObject::Unconstrained) // 26.4
-    strm.LengthEncode(len, 0, INT_MAX);
-  else
-    strm.LengthEncode(len, lowerLimit, upperLimit);
+  ConstrainedLengthEncode(strm, len);
 
-  if (len == 1)
-    strm.MultiBitEncode(value[0], 16);
-  else {
+  PINDEX nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+
+  if ((constraint == Unconstrained || upperLimit*nBits > 16) && strm.IsAligned())
     strm.ByteAlign();
-    for (PINDEX i = 0; i < len; i++)
-      strm.MultiBitEncode(value[i], 16);
+
+  for (PINDEX i = 0; i < len; i++) {
+    if (characterSet.IsEmpty())
+      strm.MultiBitEncode(value[i] - firstChar, nBits);
+    else {
+      for (PINDEX pos = 0; pos < characterSet.GetSize(); pos++) {
+        if (characterSet[pos] == value[i]) {
+          strm.MultiBitEncode(pos, nBits);
+          break;
+        }
+      }
+    }
   }
 }
 
 
 BOOL PBER_Stream::BMPStringDecode(PASN_BMPString & value)
 {
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(value, len))
     return FALSE;
 
@@ -1809,29 +2050,29 @@ void PPER_Stream::BMPStringEncode(const PASN_BMPString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Choice::PASN_Choice(PINDEX nChoices, BOOL extend)
+PASN_Choice::PASN_Choice(unsigned nChoices, BOOL extend)
   : PASN_Object(0, ApplicationTagClass, extend)
 {
-  maxChoices = nChoices;
+  numChoices = nChoices;
   choice = NULL;
 }
 
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
-                         PINDEX upper, BOOL extend)
+                         unsigned upper, BOOL extend)
   : PASN_Object(tag, tagClass, extend)
 {
-  maxChoices = upper;
+  numChoices = upper;
   choice = NULL;
 }
 
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
-                         PINDEX upper, BOOL extend, const PString & nameSpec)
+                         unsigned upper, BOOL extend, const PString & nameSpec)
   : PASN_Object(tag, tagClass, extend),
     names(BuildNamesDict(nameSpec))
 {
-  maxChoices = upper;
+  numChoices = upper;
   choice = NULL;
 }
 
@@ -1840,7 +2081,7 @@ PASN_Choice::PASN_Choice(const PASN_Choice & other)
   : PASN_Object(other),
     names(other.names)
 {
-  maxChoices = other.maxChoices;
+  numChoices = other.numChoices;
 
   if (other.choice != NULL)
     choice = (PASN_Object *)other.choice->Clone();
@@ -1855,7 +2096,7 @@ PASN_Choice & PASN_Choice::operator=(const PASN_Choice & other)
 
   PASN_Object::operator=(other);
 
-  maxChoices = other.maxChoices;
+  numChoices = other.numChoices;
   names = other.names;
 
   if (other.choice != NULL)
@@ -2062,37 +2303,50 @@ BOOL PASN_Choice::DecodePER(PPER_Stream & strm)
   // X.691 Section 22
   delete choice;
 
+  if (strm.IsAtEnd()) {
+    choice = NULL;
+    return FALSE;
+  }
+
+  BOOL ok = TRUE;
+
   if (extendable) {
     if (strm.SingleBitDecode()) {
-      tag = strm.SmallUnsignedDecode() + maxChoices;
-      PINDEX len = strm.LengthDecode(0, INT_MAX);
+      tag = strm.SmallUnsignedDecode() + numChoices;
+      unsigned len;
+      if (strm.LengthDecode(0, INT_MAX, len) != 0)
+        return FALSE;
       if (CreateObject()) {
         PINDEX nextPos = strm.GetPosition() + len;
-        choice->Decode(strm);
+        ok = choice->Decode(strm);
         strm.SetPosition(nextPos);
       }
       else {
-        PASN_OctetString * open_type = new PASN_OctetString(
-                              UniversalOctetString, UniversalTagClass,
-                              len, len, PASN_ConstrainedObject::FixedConstraint);
+        PASN_OctetString * open_type = new PASN_OctetString;
+        open_type->SetConstraints(PASN_ConstrainedObject::FixedConstraint, len, len);
         open_type->Decode(strm);
         if (open_type->GetSize() > 0)
           choice = open_type;
-        else
+        else {
           delete open_type;
+          ok = FALSE;
+        }
       }
-      return TRUE;
+      return ok;
     }
   }
 
-  if (maxChoices > 1)
-    tag = strm.UnsignedDecode(maxChoices);
-  else
+  if (numChoices < 2)
     tag = 0;
+  else {
+    if (strm.UnsignedDecode(0, numChoices-1, tag) < 0)
+      return FALSE;
+  }
 
   if (CreateObject())
-    choice->Decode(strm);
-  return TRUE;
+    ok = choice->Decode(strm);
+
+  return ok;
 }
 
 
@@ -2101,17 +2355,17 @@ void PASN_Choice::EncodePER(PPER_Stream & strm) const
   PAssert(tag != UINT_MAX, PLogicError);
 
   if (extendable) {
-    BOOL extended = tag >= maxChoices;
+    BOOL extended = tag >= numChoices;
     strm.SingleBitEncode(extended);
     if (extended) {
-      strm.SmallUnsignedEncode(tag - maxChoices);
+      strm.SmallUnsignedEncode(tag - numChoices);
       strm.AnyTypeEncode(choice);
       return;
     }
   }
 
-  if (maxChoices > 1)
-    strm.UnsignedEncode(tag, maxChoices);
+  if (numChoices > 1)
+    strm.UnsignedEncode(tag, 0, numChoices-1);
 
   if (choice != NULL)
     choice->Encode(strm);
@@ -2125,7 +2379,7 @@ BOOL PBER_Stream::ChoiceDecode(PASN_Choice & value)
   unsigned tag;
   PASN_Object::TagClass tagClass;
   BOOL primitive;
-  PINDEX entryLen;
+  unsigned entryLen;
   if (!HeaderDecode(tag, tagClass, primitive, entryLen))
     return FALSE;
 
@@ -2161,11 +2415,10 @@ void PPER_Stream::ChoiceEncode(const PASN_Choice & value)
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Sequence::PASN_Sequence(unsigned tag, TagClass tagClass,
-                             PINDEX nOpts, BOOL extend, PINDEX nExtend)
-  : PASN_Object(tag, tagClass, extend),
-    optionMap(UniversalBitString, UniversalTagClass,
-              nOpts, nOpts, PASN_ConstrainedObject::FixedConstraint)
+                             unsigned nOpts, BOOL extend, unsigned nExtend)
+  : PASN_Object(tag, tagClass, extend)
 {
+  optionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, nOpts, nOpts);
   knownExtensions = nExtend;
   totalExtensions = 0;
   endBasicEncoding = 0;
@@ -2206,7 +2459,7 @@ PASN_Sequence & PASN_Sequence::operator=(const PASN_Sequence & other)
 
 BOOL PASN_Sequence::HasOptionalField(PINDEX opt) const
 {
-  if (opt < optionMap.GetSize())
+  if (opt < (PINDEX)optionMap.GetSize())
     return optionMap[opt];
   else
     return extensionMap[opt - optionMap.GetSize()];
@@ -2217,11 +2470,11 @@ void PASN_Sequence::IncludeOptionalField(PINDEX opt)
 {
   PAssert(extendable, "Must be extendable type");
 
-  if (opt < optionMap.GetSize())
+  if (opt < (PINDEX)optionMap.GetSize())
     optionMap.Set(opt);
   else {
     opt -= optionMap.GetSize();
-    if (opt < extensionMap.GetSize())
+    if (opt < (PINDEX)extensionMap.GetSize())
       extensionMap.Set(opt);
   }
 }
@@ -2337,7 +2590,7 @@ BOOL PASN_Sequence::PreambleDecodeBER(PBER_Stream & strm)
 {
   fields.RemoveAll();
 
-  PINDEX len;
+  unsigned len;
   if (!strm.HeaderDecode(*this, len))
     return FALSE;
 
@@ -2375,7 +2628,7 @@ BOOL PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
     unsigned tag;
     PASN_Object::TagClass tagClass;
     BOOL primitive;
-    PINDEX entryLen;
+    unsigned entryLen;
     if (!strm.HeaderDecode(tag, tagClass, primitive, entryLen))
       return FALSE;
 
@@ -2408,8 +2661,11 @@ BOOL PASN_Sequence::PreambleDecodePER(PPER_Stream & strm)
 {
   // X.691 Section 18
 
-  if (extendable)
+  if (extendable) {
+    if (strm.IsAtEnd())
+      return FALSE;
     totalExtensions = strm.SingleBitDecode() ? -1 : 0;  // 18.1
+  }
   else
     totalExtensions = 0;
   return optionMap.Decode(strm);  // 18.2
@@ -2422,7 +2678,7 @@ void PASN_Sequence::PreambleEncodePER(PPER_Stream & strm) const
 
   if (extendable) {
     BOOL hasExtensions = FALSE;
-    for (PINDEX i = 0; i < extensionMap.GetSize(); i++) {
+    for (unsigned i = 0; i < extensionMap.GetSize(); i++) {
       if (extensionMap[i]) {
         hasExtensions = TRUE;
         break;
@@ -2474,7 +2730,10 @@ BOOL PASN_Sequence::KnownExtensionDecodePER(PPER_Stream & strm, PINDEX fld, PASN
   if (!extensionMap[fld-optionMap.GetSize()])
     return TRUE;
 
-  PINDEX len = strm.LengthDecode(0, INT_MAX);
+  unsigned len;
+  if (strm.LengthDecode(0, INT_MAX, len) != 0)
+    return FALSE;
+
   PINDEX nextExtensionPosition = strm.GetPosition() + len;
   BOOL ok = field.Decode(strm);
   strm.SetPosition(nextExtensionPosition);
@@ -2509,7 +2768,7 @@ BOOL PASN_Sequence::UnknownExtensionsDecodePER(PPER_Stream & strm)
   for (i = 0; i < fields.GetSize(); i++)
     fields.SetAt(i, new PASN_OctetString);
 
-  for (i = knownExtensions; i < extensionMap.GetSize(); i++) {
+  for (i = knownExtensions; i < (PINDEX)extensionMap.GetSize(); i++) {
     if (extensionMap[i])
       if (!fields[i-knownExtensions].Decode(strm))
         return FALSE;
@@ -2607,7 +2866,7 @@ void PPER_Stream::SequenceUnknownEncode(const PASN_Sequence & seq)
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Set::PASN_Set(unsigned tag, TagClass tagClass,
-                   PINDEX nOpts, BOOL extend, PINDEX nExtend)
+                   unsigned nOpts, BOOL extend, unsigned nExtend)
   : PASN_Sequence(tag, tagClass, nOpts, extend, nExtend)
 {
 }
@@ -2628,11 +2887,9 @@ PString PASN_Set::GetTypeAsString() const
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Array::PASN_Array(unsigned tag, TagClass tagClass,
-                       int lower, unsigned upper, ConstraintType ctype)
-  : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
+PASN_Array::PASN_Array(unsigned tag, TagClass tagClass)
+  : PASN_ConstrainedObject(tag, tagClass)
 {
-  PAssert(lower >= 0, PInvalidParameter);
 }
 
 
@@ -2669,7 +2926,7 @@ void PASN_Array::SetSize(PINDEX newSize)
 void PASN_Array::PrintOn(ostream & strm) const
 {
   int indent = strm.precision()+2;
-  strm << "{\n";
+  strm << array.GetSize() << " entries {\n";
   for (PINDEX i = 0; i < array.GetSize(); i++)
     strm << setw(indent+1) << '[' << i << "]=" << setprecision(indent) << array[i] << '\n';
   strm << setw(indent-1) << '}';
@@ -2713,7 +2970,7 @@ BOOL PBER_Stream::ArrayDecode(PASN_Array & array)
 {
   array.RemoveAll();
 
-  PINDEX len;
+  unsigned len;
   if (!HeaderDecode(array, len))
     return FALSE;
 
@@ -2744,17 +3001,17 @@ BOOL PPER_Stream::ArrayDecode(PASN_Array & array)
 {
   array.RemoveAll();
 
-  PINDEX size;
-  if (array.ConstraintDecode(*this) == PASN_ConstrainedObject::Unconstrained)
-    size = LengthDecode(0, INT_MAX);
-  else
-    size = LengthDecode(array.GetLowerLimit(), array.GetUpperLimit());
+  unsigned size;
+  if (array.ConstrainedLengthDecode(*this, size) < 0)
+    return FALSE;
 
   array.SetSize(size);
 
-  for (PINDEX i = 0; i < size; i++)
+  for (PINDEX i = 0; i < (PINDEX)size; i++) {
     if (!array[i].Decode(*this))
       return FALSE;
+  }
+
   return TRUE;
 }
 
@@ -2762,11 +3019,7 @@ BOOL PPER_Stream::ArrayDecode(PASN_Array & array)
 void PPER_Stream::ArrayEncode(const PASN_Array & array)
 {
   PINDEX size = array.GetSize();
-  if (array.ConstraintEncode(*this, size) == PASN_ConstrainedObject::Unconstrained)
-    LengthEncode(size, 0, INT_MAX);
-  else
-    LengthEncode(size, array.GetLowerLimit(), array.GetUpperLimit());
-
+  array.ConstrainedLengthEncode(*this, size);
   for (PINDEX i = 0; i < size; i++)
     array[i].Encode(*this);
 }
@@ -2853,8 +3106,7 @@ void PASN_Stream::BeginEncoding()
 {
   bitOffset = 8;
   byteOffset = 0;
-  SetSize(20);
-  memset(theArray, 0, 20);
+  *this = PBYTEArray(20);
 }
 
 
@@ -2891,11 +3143,11 @@ void PASN_Stream::ByteEncode(unsigned value)
 }
 
 
-PINDEX PASN_Stream::BlockDecode(BYTE * bufptr, PINDEX nBytes)
+unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 {
   ByteAlign();
 
-  if (byteOffset+nBytes > GetSize())
+  if (byteOffset+nBytes > (unsigned)GetSize())
     nBytes = GetSize() - byteOffset;
 
   if (nBytes == 0)
@@ -2946,6 +3198,14 @@ PBER_Stream::PBER_Stream(const PBYTEArray & bytes)
 PBER_Stream::PBER_Stream(const BYTE * buf, PINDEX size)
   : PASN_Stream(buf, size)
 {
+}
+
+
+PBER_Stream & PBER_Stream::operator=(const PBYTEArray & bytes)
+{
+  PASN_Stream::operator=(bytes);
+  ResetDecoder();
+  return *this;
 }
 
 
@@ -3077,7 +3337,7 @@ PASN_Object * PBER_Stream::CreateObject(unsigned tag,
 BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
                                PASN_Object::TagClass & tagClass,
                                BOOL & primitive,
-                               PINDEX & len)
+                               unsigned & len)
 {
   BYTE ident = ByteDecode();
   tagClass = (PASN_Object::TagClass)(ident>>6);
@@ -3118,7 +3378,7 @@ BOOL PBER_Stream::HeaderDecode(unsigned & tagVal,
 }
 
 
-BOOL PBER_Stream::HeaderDecode(PASN_Object & obj, PINDEX & len)
+BOOL PBER_Stream::HeaderDecode(PASN_Object & obj, unsigned & len)
 {
   PINDEX pos = byteOffset;
 
@@ -3185,7 +3445,16 @@ PPER_Stream::PPER_Stream(const BYTE * buf, PINDEX size, BOOL alignment)
 }
 
 
-PINDEX PPER_Stream::GetBitsLeft() const
+PPER_Stream & PPER_Stream::operator=(const PBYTEArray & bytes)
+{
+  PASN_Stream::operator=(bytes);
+  ResetDecoder();
+  aligned = TRUE;
+  return *this;
+}
+
+
+unsigned PPER_Stream::GetBitsLeft() const
 {
   return (GetSize() - byteOffset)*8 - (8 - bitOffset);
 }
@@ -3254,11 +3523,11 @@ void PPER_Stream::SingleBitEncode(BOOL value)
 }
 
 
-int PPER_Stream::MultiBitDecode(PINDEX nBits)
+int PPER_Stream::MultiBitDecode(unsigned nBits)
 {
   PAssert(nBits <= 32, PInvalidParameter);
 
-  PINDEX bitsLeft = (GetSize() - byteOffset)*8 - (8 - bitOffset);
+  unsigned bitsLeft = (GetSize() - byteOffset)*8 - (8 - bitOffset);
   if (nBits > bitsLeft)
     nBits = bitsLeft;
 
@@ -3290,16 +3559,17 @@ int PPER_Stream::MultiBitDecode(PINDEX nBits)
 }
 
 
-void PPER_Stream::MultiBitEncode(int value, PINDEX nBits)
+void PPER_Stream::MultiBitEncode(int value, unsigned nBits)
 {
   if (nBits == 0)
     return;
 
-  if (byteOffset+nBits/8+1 >= GetSize())
+  if (byteOffset+nBits/8+1 >= (unsigned)GetSize())
     SetSize(byteOffset+10);
 
   // Make sure value is in bounds of bit available.
-  value &= (1 << nBits) - 1;
+  if (nBits < sizeof(int)*8)
+    value &= ((1 << nBits) - 1);
 
   if (nBits < bitOffset) {
     bitOffset -= nBits;
@@ -3332,7 +3602,10 @@ unsigned PPER_Stream::SmallUnsignedDecode()
   if (!SingleBitDecode())
     return MultiBitDecode(6);      // 10.6.1
 
-  PINDEX len = LengthDecode(0, INT_MAX);  // 10.6.2
+  unsigned len;
+  if (LengthDecode(0, INT_MAX, len) != 0)  // 10.6.2
+    return FALSE;
+
   ByteAlign();
   return MultiBitDecode(len*8);
 }
@@ -3358,105 +3631,124 @@ void PPER_Stream::SmallUnsignedEncode(unsigned value)
 }
 
 
-PINDEX PPER_Stream::LengthDecode(int lower, int upper)
+int PPER_Stream::UnsignedDecode(unsigned lower, unsigned upper, unsigned & value)
 {
-  // X.691 section 10.9
+  // X.691 section 10.5
 
-  if (upper == lower)
-    return upper;
-
-  if (upper != INT_MAX && !aligned) {
-    PAssert(upper - lower < 0x10000, PUnimplementedFunction);  // 10.9.4.2 unsupperted
-    return lower + MultiBitDecode(CountBits(upper - lower + 1));   // 10.9.4.1
+  if (lower == upper) { // 10.5.4
+    value = lower;
+    return 0;
   }
 
-  // 10.9.3.3
-  unsigned range = upper - lower + 1;
-  if (range < 256)
-    return lower + MultiBitDecode(CountBits(range));
-  if (range <= 65536) {
-    ByteAlign();
-    return lower + MultiBitDecode(range != 256 ? 16 : 8);
+  if (IsAtEnd())
+    return -1;
+
+  unsigned range = (upper - lower) + 1;
+  unsigned nBits = CountBits(range);
+
+  if (aligned && (range == 0 || range > 255)) { // not 10.5.6 and not 10.5.7.1
+    if (nBits > 16) {                           // not 10.5.7.4
+      LengthDecode(1, (nBits+7)/8, nBits);      // 12.2.6
+      nBits *= 8;
+    }
+    else if (nBits > 8)    // not 10.5.7.2
+      nBits = 16;          // 10.5.7.3
+    ByteAlign();           // 10.7.5.2 - 10.7.5.4
   }
 
-  ByteAlign();
-  if (SingleBitDecode() == 0)
-    return lower + MultiBitDecode(7);   // 10.9.3.6
-
-  PAssert(!SingleBitDecode(), PUnimplementedFunction);  // 10.9.3.8 unsupported
-  return lower + MultiBitDecode(14);    // 10.9.3.7
+  value = MultiBitDecode(nBits) + lower;
+  return 0;
 }
 
 
-void PPER_Stream::LengthEncode(PINDEX len, int lower, int upper)
+void PPER_Stream::UnsignedEncode(int value, unsigned lower, unsigned upper)
 {
-  if (upper == lower)
+  // X.691 section 10.5
+
+  if (lower == upper) // 10.5.4
     return;
 
-  len -= lower;
-
-  if (upper != INT_MAX && !aligned) {
-    PAssert(upper - lower < 0x10000, PUnimplementedFunction);  // 10.9.4.2 unsupperted
-    MultiBitEncode(len, CountBits(upper - lower + 1));   // 10.9.4.1
-    return;
-  }
-
-  // 10.9.3.3
-  unsigned range = upper - lower + 1;
-  if (range < 256) {
-    MultiBitEncode(len, CountBits(range));
-    return;
-  }
-  if (range <= 65536) {
-    ByteAlign();
-    MultiBitEncode(len, range != 256 ? 16 : 8);
-    return;
-  }
-
-  ByteAlign();
-  if (len < 128) {
-    MultiBitEncode(len, 8);   // 10.9.3.6
-    return;
-  }
-  SingleBitEncode(TRUE);
-
-  PAssert(len < 0x2000, PUnimplementedFunction);  // 10.9.3.8 unsupported
-  MultiBitEncode(len, 15);    // 10.9.3.7
-}
-
-
-int PPER_Stream::UnsignedDecode(unsigned range)
-{
+  unsigned range = (upper - lower) + 1;
   PINDEX nBits = CountBits(range);
 
-  if (nBits >= 8 && aligned) {      // 10.5.7.1
-    if (nBits > 16)                 // not 10.5.7.4
-      nBits = LengthDecode(1, (nBits+7)/8)*8;     // 12.2.6
-    else if (nBits > 8)             // not 10.5.7.2
-      nBits = 16;                   // 10.5.7.3
-    ByteAlign();               // 10.7.5.2 - 10.7.5.4
-  }
-
-  return MultiBitDecode(nBits);
-}
-
-
-void PPER_Stream::UnsignedEncode(int value, unsigned range)
-{
-  PINDEX nBits = CountBits(range);
-
-  if (nBits >= 8 && aligned) {      // 10.5.7.1
-    if (nBits > 16) {               // not 10.5.7.4
+  if (aligned && (range == 0 || range > 255)) { // not 10.5.6 and not 10.5.7.1
+    if (nBits > 16) {                           // not 10.5.7.4
       int numBytes = value == 0 ? 1 : (((CountBits(value))+7)/8);
       LengthEncode(numBytes, 1, (nBits+7)/8);    // 12.2.6
       nBits = numBytes*8;
     }
-    else if (nBits > 8)             // not 10.5.7.2
-      nBits = 16;                   // 10.5.7.3
-    ByteAlign();                // 10.7.5.2 - 10.7.5.4
+    else if (nBits > 8)      // not 10.5.7.2
+      nBits = 16;            // 10.5.7.3
+    ByteAlign();             // 10.7.5.2 - 10.7.5.4
   }
 
-  MultiBitEncode(value, nBits);
+  MultiBitEncode(value - lower, nBits);
+}
+
+
+int PPER_Stream::LengthDecode(unsigned lower, unsigned upper, unsigned & len)
+{
+  // X.691 section 10.9
+
+  if (upper != INT_MAX && !aligned) {
+    PAssert(upper - lower < 0x10000, PUnimplementedFunction);  // 10.9.4.2 unsupported
+    return lower + MultiBitDecode(CountBits(upper - lower + 1));   // 10.9.4.1
+  }
+
+  if (upper < 65536)  // 10.9.3.3
+    return UnsignedDecode(lower, upper, len);
+
+  // 10.9.3.5
+  ByteAlign();
+  if (IsAtEnd())
+    return -1;
+
+  if (SingleBitDecode() == 0) {
+    len = MultiBitDecode(7);   // 10.9.3.6
+    return 0;
+  }
+
+  if (SingleBitDecode() == 0) {
+    len = MultiBitDecode(14);    // 10.9.3.7
+    return 0;
+  }
+
+  PAssertAlways(PUnimplementedFunction);  // 10.9.3.8 unsupported
+  return 1;
+}
+
+
+void PPER_Stream::LengthEncode(unsigned len, unsigned lower, unsigned upper)
+{
+  // X.691 section 10.9
+
+  if (upper != INT_MAX && !aligned) {
+    PAssert(upper - lower < 0x10000, PUnimplementedFunction);  // 10.9.4.2 unsupperted
+    MultiBitEncode(len - lower, CountBits(upper - lower + 1));   // 10.9.4.1
+    return;
+  }
+
+  if (upper < 65536) { // 10.9.3.3
+    UnsignedEncode(len, lower, upper);
+    return;
+  }
+
+  ByteAlign();
+
+  if (len < 128) {
+    MultiBitEncode(len, 8);   // 10.9.3.6
+    return;
+  }
+
+  SingleBitEncode(TRUE);
+
+  if (len < 0x2000) {
+    MultiBitEncode(len, 15);    // 10.9.3.7
+    return;
+  }
+
+  SingleBitEncode(TRUE);
+  PAssert(len < 0x2000, PUnimplementedFunction);  // 10.9.3.8 unsupported
 }
 
 
