@@ -299,7 +299,8 @@ EXPORTS
     ??1?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAE@XZ @277 NONAME ;public: virtual __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::~PDictionary<class PIPCacheKey,class PIPCacheData>(void)
     ??1?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UAE@XZ @278 NONAME ;public: virtual __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::~PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>(void)
     ??1?$PDictionary@VPOrdinalKey@@VPThread@@@@UAE@XZ @279 NONAME ;public: virtual __thiscall PDictionary<class POrdinalKey,class PThread>::~PDictionary<class POrdinalKey,class PThread>(void)
-    ??1?$PList@VPPluginDynamic@@@@UAE@XZ @2681 NONAME ;public: virtual __thiscall PList<class PPluginDynamic>::~PList<class PPluginDynamic>(void)
+    ??1?$PList@VPDynaLink@@@@UAE@XZ @3033 NONAME ;public: virtual __thiscall PList<class PDynaLink>::~PList<class PDynaLink>(void)
+    ??1?$PList@VPNotifier@@@@UAE@XZ @3034 NONAME ;public: virtual __thiscall PList<class PNotifier>::~PList<class PNotifier>(void)
     ??1?$PList@VPPluginService@@@@UAE@XZ @2682 NONAME ;public: virtual __thiscall PList<class PPluginService>::~PList<class PPluginService>(void)
     ??1?$PList@VPSocket@@@@UAE@XZ @280 NONAME ;public: virtual __thiscall PList<class PSocket>::~PList<class PSocket>(void)
     ??1?$PList@VPString@@@@UAE@XZ @281 NONAME ;public: virtual __thiscall PList<class PString>::~PList<class PString>(void)
@@ -614,7 +615,8 @@ EXPORTS
     ??_7?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@6B@ @624 NONAME ;const  PDictionary<class PIPCacheKey,class PIPCacheData>::`vftable'
     ??_7?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@6B@ @625 NONAME ;const  PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::`vftable'
     ??_7?$PDictionary@VPOrdinalKey@@VPThread@@@@6B@ @626 NONAME ;const  PDictionary<class POrdinalKey,class PThread>::`vftable'
-    ??_7?$PList@VPPluginDynamic@@@@6B@ @2688 NONAME ;const  PList<class PPluginDynamic>::`vftable'
+    ??_7?$PList@VPDynaLink@@@@6B@ @3035 NONAME ;const  PList<class PDynaLink>::`vftable'
+    ??_7?$PList@VPNotifier@@@@6B@ @3036 NONAME ;const  PList<class PNotifier>::`vftable'
     ??_7?$PList@VPPluginService@@@@6B@ @2689 NONAME ;const  PList<class PPluginService>::`vftable'
     ??_7?$PList@VPSocket@@@@6B@ @627 NONAME ;const  PList<class PSocket>::`vftable'
     ??_7?$PList@VPString@@@@6B@ @628 NONAME ;const  PList<class PString>::`vftable'
@@ -883,6 +885,7 @@ EXPORTS
     ?Access@PFile@@SAHABVPFilePath@@W4OpenMode@1@@Z @878 NONAME ;public: static int __cdecl PFile::Access(class PFilePath const &,enum PFile::OpenMode)
     ?Acknowledge@PSyncPointAck@@QAEXXZ @879 NONAME ;public: void __thiscall PSyncPointAck::Acknowledge(void)
     ?AddEntry@PIPCacheData@@QAEXPAUaddrinfo@@@Z @2928 NONAME ;public: void __thiscall PIPCacheData::AddEntry(struct addrinfo *)
+    ?AddNotifier@PPluginManager@@QAEXABVPNotifier@@H@Z @3037 NONAME ;public: void __thiscall PPluginManager::AddNotifier(class PNotifier const &,int)
     ?Append@PAbstractDictionary@@EAEHPAVPObject@@@Z @880 NONAME ;private: virtual int __thiscall PAbstractDictionary::Append(class PObject *)
     ?Append@PAbstractList@@UAEHPAVPObject@@@Z @881 NONAME ;public: virtual int __thiscall PAbstractList::Append(class PObject *)
     ?Append@PAbstractSet@@UAEHPAVPObject@@@Z @882 NONAME ;public: virtual int __thiscall PAbstractSet::Append(class PObject *)
@@ -938,6 +941,7 @@ EXPORTS
     ?Byte4@Address@PIPSocket@@QBEEXZ @928 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte4(void)const 
     ?CalculateFrameBytes@PVideoDevice@@SAIIIABVPString@@@Z @929 NONAME ;public: static unsigned int __cdecl PVideoDevice::CalculateFrameBytes(unsigned int,unsigned int,class PString const &)
     ?Call@DeleteObjectsTimeout_PNotifier@PSafeCollection@@UBEXAAVPObject@@H@Z @930 NONAME ;public: virtual void __thiscall PSafeCollection::DeleteObjectsTimeout_PNotifier::Call(class PObject &,int)const 
+    ?CallNotifier@PPluginManager@@IAEXAAVPDynaLink@@H@Z @3038 NONAME ;protected: void __thiscall PPluginManager::CallNotifier(class PDynaLink &,int)
     ?CanCaptureVideo@PVideoInputDevice@@UBEHXZ @931 NONAME ;public: virtual int __thiscall PVideoInputDevice::CanCaptureVideo(void)const 
     ?CanCaptureVideo@PVideoOutputDevice@@UBEHXZ @932 NONAME ;public: virtual int __thiscall PVideoOutputDevice::CanCaptureVideo(void)const 
     ?CanReadAndWrite@PPipeChannel@@SAHXZ @933 NONAME ;public: static int __cdecl PPipeChannel::CanReadAndWrite(void)
@@ -965,7 +969,8 @@ EXPORTS
     ?Clone@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEPAVPObject@@XZ @955 NONAME ;public: virtual class PObject * __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::Clone(void)const 
     ?Clone@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UBEPAVPObject@@XZ @956 NONAME ;public: virtual class PObject * __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::Clone(void)const 
     ?Clone@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEPAVPObject@@XZ @957 NONAME ;public: virtual class PObject * __thiscall PDictionary<class POrdinalKey,class PThread>::Clone(void)const 
-    ?Clone@?$PList@VPPluginDynamic@@@@UBEPAVPObject@@XZ @2702 NONAME ;public: virtual class PObject * __thiscall PList<class PPluginDynamic>::Clone(void)const 
+    ?Clone@?$PList@VPDynaLink@@@@UBEPAVPObject@@XZ @3039 NONAME ;public: virtual class PObject * __thiscall PList<class PDynaLink>::Clone(void)const 
+    ?Clone@?$PList@VPNotifier@@@@UBEPAVPObject@@XZ @3040 NONAME ;public: virtual class PObject * __thiscall PList<class PNotifier>::Clone(void)const 
     ?Clone@?$PList@VPPluginService@@@@UBEPAVPObject@@XZ @2703 NONAME ;public: virtual class PObject * __thiscall PList<class PPluginService>::Clone(void)const 
     ?Clone@?$PList@VPSocket@@@@UBEPAVPObject@@XZ @958 NONAME ;public: virtual class PObject * __thiscall PList<class PSocket>::Clone(void)const 
     ?Clone@?$PList@VPString@@@@UBEPAVPObject@@XZ @959 NONAME ;public: virtual class PObject * __thiscall PList<class PString>::Clone(void)const 
@@ -1058,7 +1063,8 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1043 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1044 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1045 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDictionary<class POrdinalKey,class PThread>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PList@VPPluginDynamic@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2707 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PPluginDynamic>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PList@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3041 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PDynaLink>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PList@VPNotifier@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3042 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PNotifier>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPPluginService@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2708 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PPluginService>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1046 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PSocket>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1047 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1397,7 +1403,8 @@ EXPORTS
     ?GetClass@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEPBDI@Z @1357 NONAME ;public: virtual char const * __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::GetClass(unsigned int)const 
     ?GetClass@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UBEPBDI@Z @1358 NONAME ;public: virtual char const * __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::GetClass(unsigned int)const 
     ?GetClass@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEPBDI@Z @1359 NONAME ;public: virtual char const * __thiscall PDictionary<class POrdinalKey,class PThread>::GetClass(unsigned int)const 
-    ?GetClass@?$PList@VPPluginDynamic@@@@UBEPBDI@Z @2721 NONAME ;public: virtual char const * __thiscall PList<class PPluginDynamic>::GetClass(unsigned int)const 
+    ?GetClass@?$PList@VPDynaLink@@@@UBEPBDI@Z @3043 NONAME ;public: virtual char const * __thiscall PList<class PDynaLink>::GetClass(unsigned int)const 
+    ?GetClass@?$PList@VPNotifier@@@@UBEPBDI@Z @3044 NONAME ;public: virtual char const * __thiscall PList<class PNotifier>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPPluginService@@@@UBEPBDI@Z @2722 NONAME ;public: virtual char const * __thiscall PList<class PPluginService>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPSocket@@@@UBEPBDI@Z @1360 NONAME ;public: virtual char const * __thiscall PList<class PSocket>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPString@@@@UBEPBDI@Z @1361 NONAME ;public: virtual char const * __thiscall PList<class PString>::GetClass(unsigned int)const 
@@ -1869,7 +1876,8 @@ EXPORTS
     ?IsClass@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEHPBD@Z @1788 NONAME ;public: virtual int __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::IsClass(char const *)const 
     ?IsClass@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UBEHPBD@Z @1789 NONAME ;public: virtual int __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::IsClass(char const *)const 
     ?IsClass@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEHPBD@Z @1790 NONAME ;public: virtual int __thiscall PDictionary<class POrdinalKey,class PThread>::IsClass(char const *)const 
-    ?IsClass@?$PList@VPPluginDynamic@@@@UBEHPBD@Z @2760 NONAME ;public: virtual int __thiscall PList<class PPluginDynamic>::IsClass(char const *)const 
+    ?IsClass@?$PList@VPDynaLink@@@@UBEHPBD@Z @3045 NONAME ;public: virtual int __thiscall PList<class PDynaLink>::IsClass(char const *)const 
+    ?IsClass@?$PList@VPNotifier@@@@UBEHPBD@Z @3046 NONAME ;public: virtual int __thiscall PList<class PNotifier>::IsClass(char const *)const 
     ?IsClass@?$PList@VPPluginService@@@@UBEHPBD@Z @2761 NONAME ;public: virtual int __thiscall PList<class PPluginService>::IsClass(char const *)const 
     ?IsClass@?$PList@VPSocket@@@@UBEHPBD@Z @1791 NONAME ;public: virtual int __thiscall PList<class PSocket>::IsClass(char const *)const 
     ?IsClass@?$PList@VPString@@@@UBEHPBD@Z @1792 NONAME ;public: virtual int __thiscall PList<class PString>::IsClass(char const *)const 
@@ -1999,7 +2007,8 @@ EXPORTS
     ?IsDescendant@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEHPBD@Z @1913 NONAME ;public: virtual int __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::IsDescendant(char const *)const 
     ?IsDescendant@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UBEHPBD@Z @1914 NONAME ;public: virtual int __thiscall PDictionary<class POrdinalKey,class PReadWriteMutex::Nest>::IsDescendant(char const *)const 
     ?IsDescendant@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEHPBD@Z @1915 NONAME ;public: virtual int __thiscall PDictionary<class POrdinalKey,class PThread>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PList@VPPluginDynamic@@@@UBEHPBD@Z @2764 NONAME ;public: virtual int __thiscall PList<class PPluginDynamic>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PList@VPDynaLink@@@@UBEHPBD@Z @3047 NONAME ;public: virtual int __thiscall PList<class PDynaLink>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PList@VPNotifier@@@@UBEHPBD@Z @3048 NONAME ;public: virtual int __thiscall PList<class PNotifier>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPPluginService@@@@UBEHPBD@Z @2765 NONAME ;public: virtual int __thiscall PList<class PPluginService>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPSocket@@@@UBEHPBD@Z @1916 NONAME ;public: virtual int __thiscall PList<class PSocket>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPString@@@@UBEHPBD@Z @1917 NONAME ;public: virtual int __thiscall PList<class PString>::IsDescendant(char const *)const 
@@ -2449,6 +2458,7 @@ EXPORTS
     ?RemoveConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@@Z @2322 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::RemoveConfiguration(class PString const &)
     ?RemoveElement@PAbstractSortedList@@IAEXPAUElement@1@@Z @3023 NONAME ;protected: void __thiscall PAbstractSortedList::RemoveElement(struct PAbstractSortedList::Element *)
     ?RemoveElement@Table@PHashTable@@QAEPAVPObject@@ABV3@@Z @2324 NONAME ;public: class PObject * __thiscall PHashTable::Table::RemoveElement(class PObject const &)
+    ?RemoveNotifier@PPluginManager@@QAEXABVPNotifier@@@Z @3049 NONAME ;public: void __thiscall PPluginManager::RemoveNotifier(class PNotifier const &)
     ?Rename@PFile@@QAEHABVPString@@H@Z @2325 NONAME ;public: int __thiscall PFile::Rename(class PString const &,int)
     ?Rename@PFile@@SAHABVPFilePath@@ABVPString@@H@Z @2326 NONAME ;public: static int __cdecl PFile::Rename(class PFilePath const &,class PString const &,int)
     ?Replace@PString@@QAEXABV1@0HH@Z @2327 NONAME ;public: void __thiscall PString::Replace(class PString const &,class PString const &,int,int)
