@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.20  2002/10/04 04:34:02  robertj
+ * Added functions for getting operating system thread identifer values.
+ *
  * Revision 1.19  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -115,6 +118,8 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+typedef DWORD PThreadIdentifer;
+
 #define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
 #undef _PTHREAD_PLATFORM_INCLUDE
@@ -125,7 +130,6 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
-    UINT GetThreadId() const { return threadId; }
 
   protected:
     HANDLE threadHandle;
@@ -171,6 +175,13 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
 inline PThread::PThread()
   { }
+
+inline PThreadIdentifer PThread::GetThreadId() const
+  { return threadId; }
+
+inline PThreadIdentifer PThread::GetCurrentThreadId()
+  { return ::GetCurrentThreadId(); }
+
 
 #endif
 
