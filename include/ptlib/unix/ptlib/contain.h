@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.22  2004/04/11 03:20:42  csoutheren
+ * Added Unix implementation of PCriticalSection
+ *
  * Revision 1.21  2004/04/09 11:54:47  csoutheren
  * Added configure.in check for STL streams, and tested with gcc 2.95.3,
  * gcc 3.3.1, and gcc 3.3.3
@@ -143,4 +146,6 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 
 #define	P_HAS_TYPEINFO	1
 #define	PCLASSNAME(cls)	(#cls)
+
+#define   PCONTAINER_USES_CRITSEC   1
 
