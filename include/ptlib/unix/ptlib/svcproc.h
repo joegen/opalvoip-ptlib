@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.10  2001/03/13 03:47:18  robertj
+ * Added ability to set pid file from command line.
+ *
  * Revision 1.9  1998/11/30 22:07:15  robertj
  * New directory structure.
  *
@@ -61,11 +64,14 @@
 #pragma interface
 
 #include "../../svcproc.h"
+  public:
+    ~PServiceProcess();
   protected:
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);
     PString systemLogFile;
+    PString pidFileToRemove;
 };
 
 #endif
