@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.h,v $
+ * Revision 1.2  2003/04/07 13:05:09  robertj
+ * Workaround for Microsoft IP address specification wierdness.
+ *
  * Revision 1.1  2003/03/31 03:35:20  robertj
  * Major addition of LDAP functionality.
  * Added ILS specialisation of LDAP.
@@ -52,6 +55,30 @@ class PILSSession : public PLDAPSession
       */
     PILSSession();
 
+    /**Special IP address class. Microsoft in their infinite wisdom save the
+       IP address as an little endian integer in the LDAP fild, but this was
+       generated from a 32 bit integer that was in network byte order (big
+       endian) which causes immense confusion. Reading directly into a
+       PIPSocket::Address does not work as it assumes that any integer forms
+       would be in host order. So we need to override the standard read
+       function so the marchalling into the RTPerson structure works.
+       All very sad.
+     */
+    class MSIPAddress : public PIPSocket::Address
+    {
+      public:
+        MSIPAddress(DWORD a = 0)                    : Address(a) { }
+        MSIPAddress(const PIPSocket::Address & a)   : Address(a) { }
+        MSIPAddress(const PString & dotNotation)    : Address(dotNotation) { }
+        MSIPAddress(PINDEX len, const BYTE * bytes) : Address(len, bytes) { }
+
+        MSIPAddress & operator=(DWORD a)                      { Address::operator=(a); return *this; }
+        MSIPAddress & operator=(const PIPSocket::Address & a) { Address::operator=(a); return *this; }
+        MSIPAddress & operator=(const PString & dotNotation)  { Address::operator=(dotNotation); return *this; }
+
+      friend istream & operator>>(istream & s, MSIPAddress & a);
+    };
+
     PLDAP_STRUCT_BEGIN(RTPerson)
        PLDAP_ATTR_SIMP(RTPerson, PString,     cn); // Must be non-empty
        PLDAP_ATTR_SIMP(RTPerson, PString,     c);
@@ -61,7 +88,7 @@ class PILSSession : public PLDAPSession
        PLDAP_ATTR_SIMP(RTPerson, PString,     rfc822Mailbox); // Must be non-empty
        PLDAP_ATTR_SIMP(RTPerson, PString,     location);
        PLDAP_ATTR_SIMP(RTPerson, PString,     comment);
-       PLDAP_ATTR_SIMP(RTPerson, PIPSocket::Address, sipAddress);
+       PLDAP_ATTR_SIMP(RTPerson, MSIPAddress, sipAddress);
        PLDAP_ATTR_SIMP(RTPerson, PWORDArray,  sport);
        PLDAP_ATTR_INIT(RTPerson, unsigned,    sflags,       0);
        PLDAP_ATTR_INIT(RTPerson, unsigned,    ssecurity,    0);
