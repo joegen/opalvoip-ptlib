@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.9 1996/09/14 13:09:26 robertj Exp $
+ * $Id: ftp.cxx,v 1.10 1997/07/14 11:47:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.10  1997/07/14 11:47:09  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.9  1996/09/14 13:09:26  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -48,7 +51,7 @@
 /////////////////////////////////////////////////////////
 //  File Transfer Protocol
 
-static const char * FTPCommands[PFTP::NumCommands] = 
+static const char * const FTPCommands[PFTP::NumCommands] = 
 {
   "USER", "PASS", "ACCT", "CWD", "CDUP", "SMNT", "QUIT", "REIN", "PORT", "PASV",
   "TYPE", "STRU", "MODE", "RETR", "STOR", "STOU", "APPE", "ALLO", "REST", "RNFR",
