@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.9  1999/01/09 03:37:28  robertj
+ * Fixed problem with closing thread waiting on semaphore.
+ * Improved efficiency of mutex to use pthread functions directly.
+ *
  * Revision 1.8  1999/01/08 01:31:03  robertj
  * Support for pthreads under FreeBSD
  *
@@ -53,6 +57,7 @@ PDECLARE_CLASS(HouseKeepingThread, PThread)
       : PThread(1000) { Resume(); }
     void Main();
 };
+
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
@@ -108,6 +113,7 @@ static void sigSuspendHandler(int)
   sigwait(&waitSignals);
 }
 
+
 void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
@@ -119,7 +125,7 @@ void HouseKeepingThread::Main()
   sigaddset(&blockedSignals, SIGINT);
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
-  PAssert(pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
+  PAssertOS(pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL) == 0);
 
   for (;;) {
     PTimeInterval waitTime = process.timers.Process();
@@ -129,6 +135,7 @@ void HouseKeepingThread::Main()
       process.timerChangeSemaphore.Wait(waitTime);
   }
 }
+
 
 void PProcess::Construct()
 {
@@ -140,13 +147,13 @@ void PProcess::Construct()
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
   sigaddset(&blockedSignals, RESUME_SIG);
-  PAssert(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
+  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
   // set the file descriptor limit to something sensible
   struct rlimit rl;
-  PAssert(getrlimit(RLIMIT_NOFILE, &rl) == 0, "getrlimit failed");
+  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   rl.rlim_cur = rl.rlim_max;
-  PAssert(setrlimit(RLIMIT_NOFILE, &rl) == 0, "setrlimit failed");
+  PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
 
   // initialise the housekeeping thread
   housekeepingThread = PNEW HouseKeepingThread;
@@ -154,56 +161,71 @@ void PProcess::Construct()
   CommonConstruct();
 }
 
+
 PProcess::~PProcess()
 {
-  CommonDestruct();
-
   if (housekeepingThread != NULL)
     delete housekeepingThread;
+  CommonDestruct();
 }
+
 
 PThread::PThread()
 {
   // see InitialiseProcessThread()
 }
 
+
 void PThread::InitialiseProcessThread()
 {
-  PX_origStackSize = 0;
-  PX_autoDelete    = FALSE;
-  PX_threadId      = pthread_self();
+  PX_origStackSize    = 0;
+  PX_autoDelete       = FALSE;
+  PX_waitingSemaphore = NULL;
+  PX_threadId         = pthread_self();
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(PX_GetThreadId(), this);
 }
 
+
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority /*priorityLevel*/)
-  : PX_origStackSize(stackSize)
 {
+  PAssert(stackSize > 0, PInvalidParameter);
+
+  PX_origStackSize = stackSize;
   PX_autoDelete  = (deletion == AutoDeleteThread);
+  PX_waitingSemaphore = NULL;
+  pthread_mutex_init(&PX_WaitSemMutex, NULL);
 
   // throw the new thread
   PX_NewThread(TRUE);
 }
 
+
 PThread::~PThread()
 {
+  if (!IsTerminated())
+    Terminate();
 //  printf("PThread destroyed\n");
+
+  PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
 }
+
 
 void PThread::PX_NewThread(BOOL startSuspended)
 {
   // initialise suspend counter and create mutex
   PX_suspendCount = startSuspended ? 1 : 0;
-  PAssert(pthread_mutex_init(&PX_suspendMutex, NULL) == 0, "mutex create failed");
+  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
   // throw the thread
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
-  PAssert(pthread_create(&PX_threadId, NULL, PX_ThreadStart, this) == 0, "thread create failed");
+  PAssertOS(pthread_create(&PX_threadId, NULL, PX_ThreadStart, this) == 0);
 }
+
 
 void * PThread::PX_ThreadStart(void * arg)
 { 
@@ -222,7 +244,7 @@ void * PThread::PX_ThreadStart(void * arg)
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
   sigaddset(&blockedSignals, RESUME_SIG);
-  PAssert(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0, "pthread_sigmask failed");
+  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
   // add thread to thread list
   process.threadMutex.Wait();
@@ -234,11 +256,11 @@ void * PThread::PX_ThreadStart(void * arg)
 
   // if we are not supposed to start suspended, then don't wait
   // if we are supposed to start suspended, then wait for a resume
-  PAssert(pthread_mutex_lock(&thread->PX_suspendMutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&thread->PX_suspendMutex) == 0);
   if (thread->PX_suspendCount ==  0) 
-    PAssert(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0, "pthread_mutex_unlock failed");
+    PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
   else {
-    PAssert(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0, "pthread_mutex_unlock failed");
+    PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
@@ -260,6 +282,7 @@ void * PThread::PX_ThreadStart(void * arg)
   return NULL;
 }
 
+
 void PProcess::SignalTimerChange()
 {
   timerChangeSemaphore.Signal();
@@ -277,7 +300,7 @@ void PThread::PX_ThreadEnd(void * arg)
   process.threadMutex.Signal();
   
   // destroy the suspend mutex
-  PAssert(pthread_mutex_destroy(&thread->PX_suspendMutex) == 0, "pthread_mutex_destroy failed");
+  PAssertOS(pthread_mutex_destroy(&thread->PX_suspendMutex) == 0);
 
   // delete the thread if required
   if (thread->PX_autoDelete) {
@@ -286,10 +309,12 @@ void PThread::PX_ThreadEnd(void * arg)
   }
 }
 
+
 unsigned PThread::PX_GetThreadId() const
 {
   return (unsigned)PX_threadId;
 }
+
 
 void PThread::Restart()
 {
@@ -297,26 +322,47 @@ void PThread::Restart()
   PX_NewThread(FALSE);
 }
 
+
 void PThread::Terminate()
 {
+  if (PX_origStackSize <= 0)
+    return;
+
   PAssert(!IsTerminated(), "Cannot terminate a thread which is already terminated");
-  if (Current() == this) {
-//    printf("self terminating thread\n");
+  if (Current() == this)
     pthread_exit(NULL);
-  } else {
-//    printf("terminated thread\n");
+  else {
+    PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
+    if (PX_waitingSemaphore != NULL) {
+      PAssertOS(pthread_mutex_lock(&PX_waitingSemaphore->mutex) == 0);
+      PX_waitingSemaphore->queuedLocks--;
+      PAssertOS(pthread_mutex_unlock(&PX_waitingSemaphore->mutex) == 0);
+      PX_waitingSemaphore = NULL;
+    }
+    PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+
     pthread_kill(PX_threadId, SIGKILL);
   }
 }
+
+
+void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
+{
+  PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
+  PX_waitingSemaphore = sem;
+  PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+}
+
 
 BOOL PThread::IsTerminated() const
 {
   return pthread_kill(PX_threadId, 0) != 0;
 }
 
+
 void PThread::Suspend(BOOL susp)
 {
-  PAssert(pthread_mutex_lock(&PX_suspendMutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
   BOOL unlock = TRUE;
 
   if (pthread_kill(PX_threadId, 0) == 0) {
@@ -329,7 +375,7 @@ void PThread::Suspend(BOOL susp)
           pthread_kill(PX_threadId, SUSPEND_SIG);
         else {
           unlock = FALSE;
-          PAssert(pthread_mutex_unlock(&PX_suspendMutex) == 0, "pthread_mutex_unlock failed");
+          PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
@@ -346,27 +392,31 @@ void PThread::Suspend(BOOL susp)
     }
   }
   if (unlock)
-    PAssert(pthread_mutex_unlock(&PX_suspendMutex) == 0, "pthread_mutex_unlock failed");
+    PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
 }
+
 
 void PThread::Resume()
 {
   Suspend(FALSE);
 }
 
+
 BOOL PThread::IsSuspended() const
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
-  PAssert(pthread_mutex_lock((pthread_mutex_t *)&PX_suspendMutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock((pthread_mutex_t *)&PX_suspendMutex) == 0);
   BOOL suspended = PX_suspendCount > 0;
-  PAssert(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0, "pthread_mutex_unlock failed");
+  PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0);
   return suspended;
 }
+
 
 void PThread::SetPriority(Priority /*priorityLevel*/)
 {
   PAssert(!IsTerminated(), "Cannot set priority of terminated thread");
 }
+
 
 PThread::Priority PThread::GetPriority() const
 {
@@ -374,10 +424,12 @@ PThread::Priority PThread::GetPriority() const
   return LowestPriority;
 }
 
+
 void PThread::Yield()
 {
   ::sleep(0);
 }
+
 
 PThread * PThread::Current()
 {
@@ -387,6 +439,7 @@ PThread * PThread::Current()
   process.threadMutex.Signal();
   return thread;
 }
+
 
 void PThread::Sleep(const PTimeInterval & timeout)
 {
@@ -403,6 +456,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
   while (::select(0, NULL, NULL, NULL, tptr) != 0)
     PProcess::Current().PXCheckSignals();
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
@@ -421,34 +477,40 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 
   //pthread_condattr_t condAttr;
   //pthread_condattr_init(&condAttr);
-  PAssert(pthread_cond_init(&condVar, NULL) == 0, "pthread_cond_init failed");
+  PAssertOS(pthread_cond_init(&condVar, NULL) == 0);
 }
+
 
 PSemaphore::~PSemaphore()
 {
-  PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-  PAssert(pthread_cond_destroy(&condVar) == 0, "pthread_cond_destroy failed");
-  PAssert(pthread_mutex_destroy(&mutex) == 0, "pthread_mutex_destroy failed");
+  PAssertOS(pthread_cond_destroy(&condVar) == 0);
+  PAssertOS(pthread_mutex_destroy(&mutex) == 0);
 }
 
 
 void PSemaphore::Wait()
 {
-  PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
   queuedLocks++;
+  PThread::Current()->PXSetWaitingSemaphore(this);
+
   while (currentCount == 0) {
     int err = pthread_cond_wait(&condVar, &mutex);
     PProcess::Current().PXCheckSignals();
-    PAssert(err == 0, "pthread_cond_wait failed");
+    PAssertOS(err == 0);
   }
 
+  PThread::Current()->PXSetWaitingSemaphore(NULL);
   queuedLocks--;
+
   currentCount--;
 
-  PAssert(pthread_mutex_unlock(&mutex) == 0, "pthread_mutex_unlock failed");
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
 }
+
 
 BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
 {
@@ -470,31 +532,37 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec = valTime.tv_sec;
   absTime.tv_nsec = valTime.tv_usec * 1000;
 
-  PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
+  PThread::Current()->PXSetWaitingSemaphore(this);
   queuedLocks++;
+
+  BOOL ok = TRUE;
   while (currentCount == 0) {
     int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     PProcess::Current().PXCheckSignals();
     if (err == ETIMEDOUT) {
-      queuedLocks--;
-      pthread_mutex_unlock(&mutex);
-      return FALSE;
+      ok = FALSE;
+      break;
     }
-    else
-      PAssert(err == 0, "pthread_cond_timedwait failed");
+    PAssertOS(err == 0);
   }
-  currentCount--;
+
+  PThread::Current()->PXSetWaitingSemaphore(NULL);
   queuedLocks--;
 
-  PAssert(pthread_mutex_unlock((pthread_mutex_t *)&mutex) == 0, "pthread_mutex_unlock failed");
+  if (ok)
+    currentCount--;
 
-  return TRUE;
+  PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&mutex) == 0);
+
+  return ok;
 }
+
 
 void PSemaphore::Signal()
 {
-  PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
   if (currentCount < maximumCount)
     currentCount++;
@@ -502,7 +570,7 @@ void PSemaphore::Signal()
   if (queuedLocks > 0) 
     pthread_cond_signal(&condVar);
 
-  PAssert(pthread_mutex_unlock(&mutex) == 0, "pthread_mutex_unlock failed");
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
 }
 
 
@@ -515,6 +583,48 @@ BOOL PSemaphore::WillBlock() const
 PMutex::PMutex()
   : PSemaphore(1, 1)
 {
+}
+
+
+void PMutex::Wait()
+{
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
+}
+
+
+BOOL PMutex::Wait(const PTimeInterval & waitTime)
+{
+  if (waitTime == PMaxTimeInterval) {
+    Wait();
+    return TRUE;
+  }
+
+  PTimeInterval sleepTime = waitTime/100;
+  if (sleepTime > 1000)
+    sleepTime = 1000;
+  int subdivision = waitTime.GetMilliSeconds()/sleepTime.GetMilliSeconds();
+  for (int count = 0; count < subdivision; count++) {
+    if (pthread_mutex_trylock(&mutex) == 0)
+      return TRUE;
+    PThread::Current()->Sleep(sleepTime);
+  }
+
+  return FALSE;
+}
+
+
+void PMutex::Signal()
+{
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+}
+
+
+BOOL PMutex::WillBlock() const
+{
+  pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
+  if (pthread_mutex_trylock(mp) != 0)
+    return TRUE;
+  return pthread_mutex_unlock(mp) != 0;
 }
 
 
