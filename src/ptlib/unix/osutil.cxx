@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.57  2001/02/13 05:15:31  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.56  2000/09/11 22:49:31  robertj
  * Fixed bug where last char was always removed in mkdir() instead of only if '/'.
  *
@@ -860,10 +865,10 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
 }
 
 
-PFilePath & PFilePath::operator=(const PString & str)
+void PFilePath::AssignContents(const PContainer & cont)
 {
-  PString::operator=(CanonicaliseFilename(str));
-  return *this;
+  PString::AssignContents(cont);
+  PString::AssignContents(CanonicaliseFilename(*this));
 }
 
 
