@@ -747,6 +747,7 @@ typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
   // the user selected an item or double clicked on an item.
 #define PMAKE_CONTROL_NOTIFY(f) ((PControlNotifyFunction)(void (PInteractor:: *)(PControl *, int))f)
 #define PCALL_CONTROL_NOTIFY(f, w, c, o) (((w)->*(f))((c), (o)))
+#define PNULL_CONTROL_NOTIFY (NULL)
 
 
 #include "../../common/control.h"
@@ -1426,6 +1427,7 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
   // The PMenuItem * parameter is a pointer to the menu item that was selected.
 #define PMAKE_MENU_NOTIFY(f) ((PMenuNotifyFunction)(void (PTopLevelWindow:: *)(PMenuItem *))f)
 #define PCALL_MENU_NOTIFY(f, w, m) (((w)->*(f))(m))
+#define PNULL_MENU_NOTIFY (NULL)
 
 
 #include "../../common/menuitem.h"
