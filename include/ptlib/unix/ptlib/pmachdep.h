@@ -3,6 +3,10 @@
 
 #include <netdb.h>
 
+#if defined(P_PTHREADS)
+#include <pthread.h>
+#endif
+
 #if defined(P_SOLARIS)
 
 #include <errno.h>
