@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.6  1999/04/22 02:37:00  robertj
+# Added history file.
+#
 # Revision 1.5  1999/03/10 04:26:57  robertj
 # More documentation changes.
 #
@@ -119,7 +122,7 @@ GUI_SOURCES = include/pwlib.h \
 	$(shell $(MAKE) --no-print-directory -C tools/pwrc tarfiles)
 endif
 
-TAR_SOURCES = Readme.txt mpl-1.0.htm Makefile include/ptlib.h \
+TAR_SOURCES = Readme.txt History.txt mpl-1.0.htm Makefile include/ptlib.h \
 	$(shell find make -name CVS -prune -o -type f -print) \
 	$(shell find include/ptclib -name CVS -prune -o -type f -print) \
 	$(shell find src/ptclib -name CVS -prune -o -name proto -prune -o -type f -print) \
