@@ -3,14 +3,6 @@
 #include <ptlib.h>
 #include <sockets.h>
 
-#include <unistd.h>
-#include <net/if.h>
-#include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
 extern PSemaphore PX_iostreamMutex;
 
 PSocket::~PSocket()
@@ -62,7 +54,9 @@ int PSocket::os_socket(int af, int type, int protocol)
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
     // make the socket non-blocking and close on exec
+#ifndef P_PTHREADS
     DWORD cmd = 1;
+#endif
     if (
 #ifndef P_PTHREADS
         !ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
@@ -121,7 +115,12 @@ int PSocket::os_select(int maxHandle,
                    fd_set & readBits,
                    fd_set & writeBits,
                    fd_set & exceptionBits,
+#ifndef P_PTHREADS
           const PIntArray & osHandles,
+#else
+          const PIntArray & ,
+#endif
+
       const PTimeInterval & timeout)
 {
   struct timeval * tptr = NULL;
@@ -152,6 +151,19 @@ int PSocket::os_select(int maxHandle,
   return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
 }
                      
+
+PIPSocket::Address::Address(DWORD dw)
+{
+  s_addr = dw;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
+{
+  s_addr = dw;
+  return *this;
+}
+
 
 PIPSocket::Address::operator DWORD() const
 {
@@ -238,37 +250,6 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   return FALSE;
 }
 
-
-/////////////////////////////////////////////////////////
-//
-//  Application
-//
-
-PDECLARE_CLASS(App, PProcess)
-  public:
-    void Main();
-};
-
-
-PCREATE_PROCESS(App);
-
-void App::Main()
-{
-  PArgList args = GetArguments();
-
-  if (args.GetCount() < 1) {
-    PError << "usage: test hostname" << endl;
-    return;
-  }
-
-   PError << args[0];
-   if (IsLocalHost(args[0]))
-     PError << " is ";
-   else
-     PError << " isn't ";
-
-  PError << " a local alias" << endl;
-}
 
 ////////////////////////////////////////////////////////////////
 //
