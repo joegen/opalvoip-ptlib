@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.11  2004/08/16 11:57:47  csoutheren
+ * More changes for VS.net
+ *
  * Revision 1.10  2004/08/16 10:55:09  csoutheren
  * Fixed problems compiling under Linux
  *
@@ -73,6 +76,8 @@ class PDevicePluginAdapterBase
   public:
     PDevicePluginAdapterBase()
     { }
+    virtual ~PDevicePluginAdapterBase()
+    { }
     virtual void CreateFactory(const PString & device) = 0;
 };
 
@@ -83,7 +88,7 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
     typedef PDevicePluginFactory<DeviceBase> Factory_T;
     typedef typename Factory_T::Worker Worker_T;
     void CreateFactory(const PString & device)
-    { new typename Worker_T::Worker(device, TRUE); }
+    { new Worker_T(device, TRUE); }
 };
 
 #define PWLIB_PLUGIN_API_VERSION 0
