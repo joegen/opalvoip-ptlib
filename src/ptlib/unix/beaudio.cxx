@@ -29,6 +29,9 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.15  2004/06/16 01:55:10  ykiryanov
+ * Added usage of lastReadCount - sound capture now works
+ *
  * Revision 1.14  2004/05/30 04:48:45  ykiryanov
  * Stable version
  *
@@ -94,6 +97,8 @@
 #include <ptlib.h>
 
 #include <ptlib/unix/ptlib/beaudio.h>
+
+#define TL (7)
 
 #define PRINT(x) do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
 
@@ -548,15 +553,15 @@ void PSound::Beep()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// P_CircularBuffer
+// CircularBuffer
 
-class P_Guard
+class Guard
 {
 private:
 	sem_id mSem;
 public:
-	P_Guard(sem_id sem) { acquire_sem(mSem=sem); }
-	~P_Guard() { release_sem(mSem); }
+	Guard(sem_id sem) { acquire_sem(mSem=sem); }
+	~Guard() { release_sem(mSem); }
 };
 
 /*
@@ -589,7 +594,7 @@ public:
 	other thread has determined that there is enough data or enough room for
 	data.
 */
-class P_CircularBuffer
+class CircularBuffer
 {
 public:
 	// Internal state for the buffer
@@ -608,7 +613,7 @@ public:
 	} State;
 
 protected:
-	friend class P_ResamplingBuffer; // needed for one of their constructors
+	friend class ResamplingBuffer; // needed for one of their constructors
 
 	BYTE		   *mBuffer;			// the buffer
 	PINDEX			mSize;				// size of the buffer in bytes
@@ -706,7 +711,7 @@ public:
 	// Reset buffer so that it can be filled again
 	void Reset(void)
 	{
-		P_Guard _(mSemInUse); // guard data integrity
+		Guard _(mSemInUse); // guard data integrity
 
 		mHead=mHeadRoom=mTail=mSizeUsed=0;
 		mTailRoom=GetSize();
@@ -714,14 +719,11 @@ public:
 	}
 
 	// Constructor
-	P_CircularBuffer(
+	CircularBuffer(
 		PINDEX size,
-		PINDEX fillthreshold=0,
-		PINDEX drainthreshold=0
-	) :
-		mFillThreshold(fillthreshold),
-		mDrainThreshold(drainthreshold),
-		mState(Empty)
+		PINDEX fillthreshold = 0,
+		PINDEX drainthreshold = 0) 
+	: mFillThreshold(fillthreshold), mDrainThreshold(drainthreshold), mState(Empty)
 	{
 		PAssert(size!=0, "Attempting to create a buffer with size 0");
 		
@@ -736,7 +738,7 @@ public:
 	}
 
 	// Destructor
-	virtual ~P_CircularBuffer()
+	virtual ~CircularBuffer()
 	{
 	  // make sure the in-use semaphore is free and stays free
 	  while (acquire_sem_etc(mSemInUse,1,B_RELATIVE_TIMEOUT,0)==B_WOULD_BLOCK)
@@ -770,7 +772,7 @@ public:
 		// reset the Flushed bit so it only stops the loop if the buffer
 		// is flushed DURING an operation
 		{
-			P_Guard _(mSemInUse);
+			Guard _(mSemInUse);
 			mState=(State)(mState & ~Flushed);
 		}
 		for(;;)
@@ -803,7 +805,7 @@ public:
 		PINDEX lTailRoom;
 		PINDEX lHead; // read only
 		{
-			P_Guard _(mSemInUse); // guard data integrity
+			Guard _(mSemInUse); // guard data integrity
 			lTail=mTail;
 			lTailRoom=mTailRoom;
 			lHead=mHead;
@@ -837,7 +839,7 @@ public:
 
 		if (needhousekeeping)
 		{
-			P_Guard _(mSemInUse);
+			Guard _(mSemInUse);
 			
 			// Copy the local values back
 			mTail=lTail;
@@ -864,7 +866,13 @@ public:
 	// Empty data out of buffer
 	void Drain(BYTE **extbuf, size_t *extsize)
 	{
-		PRINTCB(("start: head %d tail %d headroom %d tailroom %d extsize %d buffer %p this %p", mHead, mTail, mHeadRoom, mTailRoom, *extsize, mBuffer, this));
+		PTRACE(TL, "Drain: head " << mHead 
+	    << " tail " << mTail 
+	    << " headroom " << mHeadRoom 
+	    << " tailroom " << mTailRoom 
+	    << " extsize " << *extsize
+	    << " buffer " << mBuffer
+	    << " this " << this);
 
 		// Make a local copy of the queue.
 		// This is ok because there is only one filler thread and
@@ -876,7 +884,7 @@ public:
 		PINDEX lHeadRoom;
 		PINDEX lTail; // read only
 		{
-			P_Guard _(mSemInUse); // guard data integrity
+			Guard _(mSemInUse); // guard data integrity
 			lHead=mHead;
 			lHeadRoom=mHeadRoom;
 			lTail=mTail;
@@ -910,7 +918,7 @@ public:
 
 		if (needhousekeeping)
 		{
-			P_Guard _(mSemInUse);
+			Guard _(mSemInUse);
 			
 			// Copy the local values back
 			mHead=lHead;
@@ -937,7 +945,7 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class P_ResamplingBuffer : public P_CircularBuffer
+class ResamplingBuffer : public CircularBuffer
 {
 protected:
 	Resampler	   *mResampler;
@@ -957,36 +965,32 @@ protected:
 			size/mResampler->OutFrameSize());
 		done*=mResampler->OutFrameSize();
 		*extsize=todo*mResampler->InFrameSize();
+		
 		return done;
 	}
 	
 public:
 	void SetResampler(Resampler *resampler)
 	{
-		P_Guard _(mSemInUse); // guard data integrity
+		Guard _(mSemInUse); // guard data integrity
 		
 		mResampler=resampler;
 	}
 
-	P_ResamplingBuffer(
+	ResamplingBuffer(
 		Resampler *resampler,
 		PINDEX size,
 		PINDEX fillthreshold=0,
-		PINDEX drainthreshold=0
-	) :
-		P_CircularBuffer(size, fillthreshold, drainthreshold),
-		mResampler(NULL)
+		PINDEX drainthreshold=0) 
+		: CircularBuffer(size, fillthreshold, drainthreshold), mResampler(NULL)
 	{
 		SetResampler(resampler);
 	}
 
-	P_ResamplingBuffer(
+	ResamplingBuffer(
 		Resampler *resampler,
-		P_CircularBuffer *other
-	) :
-		P_CircularBuffer(
-			other->mSize, other->mFillThreshold, other->mDrainThreshold),
-		mResampler(NULL)
+		CircularBuffer *other) 
+	  : CircularBuffer(other->mSize, other->mFillThreshold, other->mDrainThreshold), mResampler(NULL)
 	{
 		SetResampler(resampler);
 	}
@@ -999,7 +1003,7 @@ static void PlayBuffer(void *cookie, void *buffer, size_t size, const media_raw_
 	// data to play.
 	DETECTVARS(buffer, size/2)
 
-	((P_CircularBuffer *)cookie)->Drain((BYTE **)&buffer, &size);
+	((CircularBuffer *)cookie)->Drain((BYTE **)&buffer, &size);
 	
 	DETECTSOUND();
 }
@@ -1011,7 +1015,7 @@ static void RecordBuffer(void *cookie, const void *buffer, size_t size, const me
 	DETECTVARS(buffer, size/2)
 	DETECTSOUND();
 
-	((P_CircularBuffer *)cookie)->Fill((const BYTE **)&buffer, &size);
+	((CircularBuffer *)cookie)->Fill((const BYTE **)&buffer, &size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1257,7 +1261,7 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 	if (result)			
 	{
 		// Create the recorder
-		mRecorder=new BMediaRecorder("PWLIB PSoundChannelBeOS recorder");
+		mRecorder=new BMediaRecorder("PWLR");
 	
 		if ((mRecorder==NULL) || (mRecorder->InitCheck()!=B_OK))
 		{
@@ -1288,7 +1292,7 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 	{
 		// Get information for the device
 		BString outname;
-		media_format xformat;
+		media_format xformat; 
 		status_t err;
 
 		if ((err=mRecorder->GetSourceAt(sourceindex, &outname, &xformat)) == B_OK)
@@ -1311,18 +1315,18 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 #endif
 	if (result)
 	{
-		// Try to connect to the source
-		if (mRecorder->ConnectSourceAt(sourceindex)!=B_OK)
-		{
-			result=FALSE;
-			PRINT(("Couldn't connect BMediaRecorder to source"));
-		}
-	}
+	  // Try to connect to the source
+	  if (mRecorder->ConnectSourceAt(sourceindex)!=B_OK)
+	  {
+		result=FALSE;
+		PRINT(("Couldn't connect BMediaRecorder to source"));
+	  }
+	} // if result
 
 	if (result)
 	{
 		// Create resampler
-		media_format format=mRecorder->Format();
+		media_format format = mRecorder->Format();
 
 		delete mResampler;
 		mResampler=new Resampler(
@@ -1345,14 +1349,14 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 #endif
 
 		// If the current buffer is not a resamplin buffer, re-create it 
-		P_ResamplingBuffer *buf=dynamic_cast<P_ResamplingBuffer*>(mBuffer);
+		ResamplingBuffer *buf = dynamic_cast<ResamplingBuffer*>(mBuffer);
 		
 		if (buf==NULL)
 		{
 			PRINT(("re-creating buffer"));
 			
-			P_CircularBuffer *old=mBuffer;
-			mBuffer=new P_ResamplingBuffer(mResampler, old);
+			CircularBuffer *old=mBuffer;
+			mBuffer=new ResamplingBuffer(mResampler, old);
 			delete old;
 		}
 		else
@@ -1382,7 +1386,6 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 		}
 	}
 
-	PRINT(("Returning %s", result?"success":"failure"));
 	return result;		
 }
 
@@ -1498,6 +1501,8 @@ unsigned PSoundChannelBeOS::GetSampleSize() const
 
 BOOL PSoundChannelBeOS::Read(void *buf, PINDEX len)
 {
+    PINDEX bufSize = len;
+
 	// Can only read from a recorder
 	if (mRecorder!=NULL)
 	{
@@ -1508,16 +1513,26 @@ BOOL PSoundChannelBeOS::Read(void *buf, PINDEX len)
 		}
 
 		// Wait until there's a buffer recorded
-		mBuffer->WaitForState(P_CircularBuffer::NotEmpty);
+		mBuffer->WaitForState(CircularBuffer::NotEmpty);
 
 #ifdef FILEDUMP
 		void *dumpbuf=buf;
 		size_t dumpsize=len;
 #endif
+        lastReadCount = 0;
 
-		// Get data from the buffer
-		mBuffer->Drain((BYTE**)&buf, (size_t*) &len);
+   		while(lastReadCount < bufSize)
+		{
+          len = bufSize - lastReadCount; 
+          if(len <= 0)
+            break;
 
+		  // Get data from the buffer
+		  mBuffer->Drain((BYTE**)&buf, (size_t*) &len);
+
+		  lastReadCount += len;
+		}
+		
 #ifdef FILEDUMP
 		if (recwriter)
 		{
@@ -1538,7 +1553,7 @@ BOOL PSoundChannelBeOS::Write(const void *buf, PINDEX len)
   	if (mPlayer!=NULL)
   	{
 		// Wait until there is space
-		mBuffer->WaitForState(P_CircularBuffer::EmptyEnough);
+		mBuffer->WaitForState(CircularBuffer::EmptyEnough);
 
   		// This function needs to update the last write count
   		// Store len before it gets modified
@@ -1620,75 +1635,76 @@ BOOL PSoundChannelBeOS::SetBuffers(PINDEX size, PINDEX count)
 
 BOOL PSoundChannelBeOS::InternalSetBuffers(PINDEX size, PINDEX threshold)
 {
-	if (mPlayer)
-	{
-		mPlayer->SetHasData(false);
-	}
-	else if (mRecorder)
-	{
-		mRecorder->Stop();
-	}
+  if (mPlayer)
+  {
+    mPlayer->SetHasData(false);
+  }
+  else if (mRecorder)
+  {
+    mRecorder->Stop();
+  }
 
-	// Delete the current buffer
-	if(mBuffer != NULL)
-        {
-          delete mBuffer;
-          mBuffer = NULL;
-        }
+  // Delete the current buffer
+  if(mBuffer != NULL)
+  {
+    delete mBuffer;
+    mBuffer = NULL;
+  }
 	
-	// Create the new buffer
-	if (size != 0)
+  // Create the new buffer
+  if (size != 0)
+  {
+    if (mRecorder)
 	{
-		if (mRecorder)
-		{
-			if (!mResampler)
-			{
-			  PRINT(("...creating default resampler"));	
-                          mResampler = new Resampler(1.0,1.0,1,1,0,1);
-			}
+      if (!mResampler)
+      {
+	    PTRACE(TL, "Creating default resampler");	
+        mResampler = new Resampler(1.0,1.0,1,1,0,1);
+      }
 
-                        PRINT(("...creating resampling buffer, size %d", size));
-			mBuffer=new P_ResamplingBuffer(mResampler, size, threshold, threshold);
-		}
-		else 
-		{
-                        PRINT(("...creating playback buffer, size %d", size));
-			mBuffer = new P_CircularBuffer(size, threshold, threshold);
-		}
-
-		// If we have a player, set the cookie again and restart it
-		if (mPlayer)
-		{
-			mPlayer->SetCookie(mBuffer);
-                          PRINT(("...tried to set player buffer cookie"));
-                        mPlayer->SetHasData(true);
-                          PRINT(("...tried to set player has data"));
- 
-		}
-		
-		// If we have a recorder, set the cookie again
-		// Note that the recorder is not restarted, even if it was running.
-		// It's not a good idea for the program to change the buffers during
-		// recording anyway because it would at least lose some data.
-		if (mRecorder)
-		{
-			if(B_OK != mRecorder->SetBufferHook(RecordBuffer, mBuffer))
-                          PRINT(("...can't set recorder buffer hook"));
- 
-		}
-		
-		return TRUE;
-	}
-
-	if (IsOpen())
+       PTRACE(TL, "Creating resampling buffer, size " << size);
+       mBuffer = new ResamplingBuffer(mResampler, size, threshold, threshold);
+       
+       // In case we use resampler, size must be set to resampled buffer size
+        
+    }
+    else 
 	{
-		PRINT(("Can't continue without buffers - closing channel"));
-		Close(); // should give errors on subsequent read/writes
-	}
+      PTRACE(TL, "Creating playback buffer, size " << size);
+      mBuffer = new CircularBuffer(size, threshold, threshold);
+    }
 
-	mBuffer = NULL;
+    // If we have a player, set the cookie again and restart it
+    if (mPlayer)
+    {
+      mPlayer->SetCookie(mBuffer);
+      PTRACE(TL, "Tried to set player buffer cookie");
+      mPlayer->SetHasData(true);
+      PTRACE(TL, "Tried to set player has data");
+    }
+		
+    // If we have a recorder, set the cookie again
+    // Note that the recorder is not restarted, even if it was running.
+    // It's not a good idea for the program to change the buffers during
+    // recording anyway because it would at least lose some data.
+    if (mRecorder)
+    {
+      if(B_OK != mRecorder->SetBufferHook(RecordBuffer, mBuffer))
+      PTRACE(TL, "Can't set recorder buffer hook");
+    }
+		
+    return TRUE;
+  }
 
-	return FALSE;
+  if (IsOpen())
+  {
+    PTRACE(TL, "Can't continue without buffers - closing channel");
+    Close(); // should give errors on subsequent read/writes
+  }
+
+  mBuffer = NULL;
+
+  return FALSE;
 }
 
 
@@ -1733,7 +1749,7 @@ BOOL PSoundChannelBeOS::PlaySound(const PSound &sound, BOOL wait)
 	while (size!=0)
 	{
 		// Wait until there is space
-		mBuffer->WaitForState(P_CircularBuffer::EmptyEnough);
+		mBuffer->WaitForState(CircularBuffer::EmptyEnough);
 		
 		// Write the data
 		mBuffer->Fill(&buf, (size_t*) &size);
@@ -1743,7 +1759,7 @@ BOOL PSoundChannelBeOS::PlaySound(const PSound &sound, BOOL wait)
 	if (wait)
 	{
 		PRINT(("Waiting for sound"));
-		mBuffer->WaitForState(P_CircularBuffer::Empty);
+		mBuffer->WaitForState(CircularBuffer::Empty);
 	}
 
 	return TRUE;
@@ -1801,7 +1817,7 @@ BOOL PSoundChannelBeOS::WaitForPlayCompletion()
 {
 	if (mPlayer!=NULL)
 	{
-		mBuffer->WaitForState(P_CircularBuffer::Empty);
+		mBuffer->WaitForState(CircularBuffer::Empty);
 	}
 
 	return TRUE;
@@ -1829,7 +1845,7 @@ BOOL PSoundChannelBeOS::RecordSound(PSound &sound)
 	}
 	
 	// Wait until buffer is filled
-	mBuffer->WaitForState(P_CircularBuffer::Full);
+	mBuffer->WaitForState(CircularBuffer::Full);
 	PRINT(("Buffer full: size=%lu",mBuffer->GetSize()));
 
 	// Stop the recorder
@@ -1922,7 +1938,7 @@ BOOL PSoundChannelBeOS::WaitForRecordBufferFull()
 		return FALSE;
 	}
 	
-	mBuffer->WaitForState(P_CircularBuffer::FullEnough);
+	mBuffer->WaitForState(CircularBuffer::FullEnough);
 		
 	return PXSetIOBlock(PXReadBlock, readTimeout);
 }
@@ -1936,7 +1952,7 @@ BOOL PSoundChannelBeOS::WaitForAllRecordBuffersFull()
 		return FALSE;
 	}
 	
-	mBuffer->WaitForState(P_CircularBuffer::Full);
+	mBuffer->WaitForState(CircularBuffer::Full);
 
 	return TRUE;
 }
