@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.52  2001/03/07 07:31:25  yurik
+ * refined BeOS constants
+ *
  * Revision 1.51  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -64,7 +67,7 @@
  * Added platform dependent function for "system configuration" directory.
  *
  * Revision 1.39  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
  *
  * Revision 1.38  1999/01/11 12:10:39  robertj
  * Improved operating system version display.
@@ -224,7 +227,7 @@ PString PProcess::GetOSClass()
 #ifndef __BEOS__
   return PString("Unix");
 #else
-  return PString("Be,Inc.");
+  return PString("<Be,Inc.'s");
 #endif
 }
 
@@ -239,7 +242,7 @@ PString PProcess::GetOSName()
   return PString(info.sysname);
 #endif
 #elif defined(__BEOS__)
-  return PString("BeOS");
+  return PString("BeOS>");
 #else
 #warning No GetOSName specified
   return PString("Unknown");
@@ -253,10 +256,7 @@ PString PProcess::GetOSHardware()
   uname(&info);
   return PString(info.machine);
 #elif defined(__BEOS__)
-  system_info info;
-  get_system_info(&info);
-  return PString(info.cpu_type <= B_CPU_PPC_686 ? "PPC" :
-  			  info.cpu_type >= B_CPU_INTEL_X86 ? "Intel" : "Wow!" );
+  return PString( getenv ("HOSTTYPE") );
 #else
 #warning No GetOSHardware specified
   return PString("unknown");
@@ -274,7 +274,7 @@ PString PProcess::GetOSVersion()
   return PString(info.release);
 #endif
 #elif defined(__BEOS__)
-  return PString("R4");
+  return PString("R5");
 #else
 #warning No GetOSVersion specified
   return PString("?.?");
