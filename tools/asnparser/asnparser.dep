@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by asnparser.mak
 
 .\asn_grammar.cxx : \
-	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\include\ptlib.h"\
 	"..\..\Include\PtLib\Args.h"\
 	"..\..\Include\PtLib\Array.h"\
@@ -72,7 +71,6 @@
 !ENDIF 
 
 .\asn_lex.cxx : \
-	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\include\ptlib.h"\
 	"..\..\Include\PtLib\Args.h"\
 	"..\..\Include\PtLib\Array.h"\
@@ -145,7 +143,6 @@
 !ENDIF 
 
 .\main.cxx : \
-	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\include\ptlib.h"\
 	"..\..\Include\PtLib\Args.h"\
 	"..\..\Include\PtLib\Array.h"\
@@ -207,7 +204,6 @@
 	
 
 .\PreCompile.cpp : \
-	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\include\ptlib.h"\
 	"..\..\Include\PtLib\Args.h"\
 	"..\..\Include\PtLib\Array.h"\

@@ -61,8 +61,11 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\pssl.obj"
+	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
+	-@erase "$(INTDIR)\shttpsvc.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
 	-@erase "$(INTDIR)\socks.obj"
@@ -77,7 +80,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -103,8 +106,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
+	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
@@ -164,10 +170,16 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.sbr"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\Psnmp.sbr"
+	-@erase "$(INTDIR)\pssl.obj"
+	-@erase "$(INTDIR)\pssl.sbr"
+	-@erase "$(INTDIR)\pxml.obj"
+	-@erase "$(INTDIR)\pxml.sbr"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\qchannel.sbr"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\random.sbr"
+	-@erase "$(INTDIR)\shttpsvc.obj"
+	-@erase "$(INTDIR)\shttpsvc.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpclnt.sbr"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -187,7 +199,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -209,8 +221,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\modem.sbr" \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
+	"$(INTDIR)\pssl.sbr" \
+	"$(INTDIR)\pxml.sbr" \
 	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
+	"$(INTDIR)\shttpsvc.sbr" \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
@@ -242,8 +257,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
+	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
@@ -305,6 +323,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Psnmp.sbr"
 	-@erase "$(INTDIR)\pssl.obj"
 	-@erase "$(INTDIR)\pssl.sbr"
+	-@erase "$(INTDIR)\pxml.obj"
+	-@erase "$(INTDIR)\pxml.sbr"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\qchannel.sbr"
 	-@erase "$(INTDIR)\random.obj"
@@ -330,7 +350,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -353,6 +373,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
 	"$(INTDIR)\pssl.sbr" \
+	"$(INTDIR)\pxml.sbr" \
 	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
 	"$(INTDIR)\shttpsvc.sbr" \
@@ -388,6 +409,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\shttpsvc.obj" \
@@ -432,6 +454,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\shttpsvc.obj"
@@ -450,7 +473,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -477,6 +500,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"..\..\..\Lib\Release\pssl.obj" \
+	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\shttpsvc.obj" \
@@ -537,7 +561,7 @@ SOURCE=..\..\Ptclib\Asner.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Asner.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) @<<
@@ -547,7 +571,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Asner.obj"	"$(INTDIR)\Asner.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) @<<
@@ -557,7 +581,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Asner.obj"	"$(INTDIR)\Asner.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) @<<
@@ -567,7 +591,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Asner.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) @<<
@@ -581,7 +605,7 @@ SOURCE=..\..\Ptclib\Cypher.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Cypher.obj"	"$(INTDIR)\Console Components.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -591,7 +615,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Cypher.obj"	"$(INTDIR)\Cypher.sbr"	"$(INTDIR)\Console Components.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -601,7 +625,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Cypher.obj"	"$(INTDIR)\Cypher.sbr"	"$(INTDIR)\Console Components.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -611,7 +635,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_SSL=1 /D P_EXPAT=0$(EXPATFLAG) /Fp"$(INTDIR)\Console Components.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\Cypher.obj"	"$(INTDIR)\Console Components.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1137,7 +1161,17 @@ SOURCE=..\..\ptclib\pssl.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
+
+"$(INTDIR)\pssl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\pssl.obj"	"$(INTDIR)\pssl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
@@ -1150,6 +1184,38 @@ SOURCE=..\..\ptclib\pssl.cxx
 
 
 "..\..\..\Lib\Release\pssl.obj" : $(SOURCE) "..\..\..\Lib\Release\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\pxml.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\pxml.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\pxml.obj"	"$(INTDIR)\pxml.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\pxml.obj"	"$(INTDIR)\pxml.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\pxml.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1223,7 +1289,17 @@ SOURCE=..\..\ptclib\shttpsvc.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
+
+"$(INTDIR)\shttpsvc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\shttpsvc.obj"	"$(INTDIR)\shttpsvc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
