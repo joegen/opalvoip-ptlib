@@ -103,47 +103,47 @@ SOURCE=..\..\Ptclib\Cypher.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Ftp.cxx
+SOURCE=..\..\Ptclib\Ftp.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Ftpclnt.cxx
+SOURCE=..\..\Ptclib\Ftpclnt.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Ftpsrvr.cxx
+SOURCE=..\..\Ptclib\Ftpsrvr.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Html.cxx
+SOURCE=..\..\Ptclib\Html.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Http.cxx
+SOURCE=..\..\Ptclib\Http.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Httpclnt.cxx
+SOURCE=..\..\Ptclib\Httpclnt.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Httpform.cxx
+SOURCE=..\..\Ptclib\Httpform.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Httpsrvr.cxx
+SOURCE=..\..\Ptclib\Httpsrvr.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Httpsvc.cxx
+SOURCE=..\..\Ptclib\Httpsvc.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Inetmail.cxx
+SOURCE=..\..\Ptclib\Inetmail.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Inetprot.cxx
+SOURCE=..\..\Ptclib\Inetprot.cxx
 # End Source File
 # Begin Source File
 
@@ -155,11 +155,11 @@ SOURCE=..\..\Ptclib\modem.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Pasn.cxx
+SOURCE=..\..\Ptclib\Pasn.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Psnmp.cxx
+SOURCE=..\..\Ptclib\Psnmp.cxx
 # End Source File
 # Begin Source File
 
@@ -167,11 +167,11 @@ SOURCE=..\..\ptclib\random.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Snmpclnt.cxx
+SOURCE=..\..\Ptclib\Snmpclnt.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Snmpserv.cxx
+SOURCE=..\..\Ptclib\Snmpserv.cxx
 # End Source File
 # Begin Source File
 
@@ -179,7 +179,7 @@ SOURCE=..\..\Ptclib\socks.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Telnet.cxx
+SOURCE=..\..\Ptclib\Telnet.cxx
 # End Source File
 # End Group
 # Begin Group "Header Files"
