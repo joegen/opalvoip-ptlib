@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.74  2002/02/25 16:23:16  rogerh
+# Test for GCC 3 in unix.mak and not it common.mak so -DGCC3 can be set
+#
 # Revision 1.73  2002/02/19 06:26:29  rogerh
 # Move $$BLD outside quotes so it gets expanded correctly
 #
@@ -191,13 +194,6 @@
 # Revision 1.21  1998/09/24 04:20:49  robertj
 # Added open software license.
 #
-
-#  set USE_GCC3 if the gcc version is 3
-#
-GCC_VER	= $(shell $(CPLUS) --version | sed 's/\..*//' )
-ifeq	($(GCC_VER),3)
-USE_GCC3 = 1
-endif
 
 ######################################################################
 #
