@@ -3,36 +3,6 @@ Microsoft Developer Studio Workspace File, Format Version 5.00
 
 ###############################################################################
 
-Project: "AlertMan"=.\Apps\AlertMan\AlertMan.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name AlertRun
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Console
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "AlertRun"=.\Apps\AlertMan\AlertRun\AlertRun.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "Console"=.\Console.dsp - Package Owner=<4>
 
 Package=<5>
@@ -68,21 +38,6 @@ Package=<5>
 
 Package=<4>
 {{{
-}}}
-
-###############################################################################
-
-Project: "MailSwitch"=.\Apps\MailSwitch\MailSwitch.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -168,7 +123,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "gethttp"=.\Apps\gethttp\gethttp.dsp - Package Owner=<4>
+Project: "pwrc"=.\pwrc\pwrc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -176,9 +131,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
 }}}
 
 ###############################################################################
