@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.3 1994/11/19 00:22:55 robertj Exp $
+ * $Id: object.h,v 1.4 1994/12/05 11:23:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.3  1994/11/19 00:22:55  robertj
+ * Revision 1.4  1994/12/05 11:23:28  robertj
+ * Fixed PWrapper macros.
+ *
+ * Revision 1.3  1994/11/19  00:22:55  robertj
  * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
  * Moved null object check in notifier to construction rather than use.
  * Added virtual to the callback function in notifier destination class.
@@ -435,13 +438,25 @@ template <class cls> class Wrap : public Wrapper {
 
 #else
 
-#define PDECLARE_WRAPPER(cls, type) \
-  PDECLARE_CLASS(cls, PWrapper) \
+#define PDECLARE_WRAPPER_CLASS(cls, par, type) \
+  PDECLARE_CLASS(cls, par) \
     public: \
-      cls(type * obj) : PWrapper(obj) { } \
-      cls * operator->() const { return (cls *)PAssertNULL(object); } \
-      cls & operator*() const { return *(cls *)PAssertNULL(object); } \
+      cls(type * obj); \
+      type * operator->() const; \
+      type & operator*() const; \
+
+#define PDECLARE_WRAPPER(cls, par, type) \
+  PDECLARE_WRAPPER_CLASS(cls, par, type) \
+    public: \
+      cls() { } \
   }
+
+#define PDEFINE_WRAPPER(cls, par, type) \
+  PINLINE cls::cls(type * obj) : par(obj) { } \
+  PINLINE type * cls::operator->() const \
+    { return (type *)PAssertNULL(object); } \
+  PINLINE type & cls::operator*() const \
+    { return *(type *)PAssertNULL(object); } \
 
 #endif
 
