@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.14 1996/06/28 13:08:41 robertj Exp $
+ * $Id: html.h,v 1.15 1996/08/17 10:00:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.15  1996/08/17 10:00:18  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.14  1996/06/28 13:08:41  robertj
  * Changed PHTML class so can create html fragments.
  * Fixed nesting problem in tables.
@@ -156,7 +159,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
     void Toggle(ElementInSet elmt);
 
 
-    class Element {
+    class PEXPORT Element {
       protected:
         enum OptionalCRLF { NoCRLF, OpenCRLF, CloseCRLF, BothCRLF };
         Element(
@@ -178,26 +181,26 @@ PDECLARE_CLASS(PHTML, PStringStream)
         { elmt.Output((PHTML&)strm); return strm; }
     };
 
-    class HTML : public Element {
+    class PEXPORT HTML : public Element {
       public:
         HTML(const char * attr = NULL);
     };
 
-    class Head : public Element {
+    class PEXPORT Head : public Element {
       public:
         Head();
       protected:
         virtual void Output(PHTML & html) const;
     };
 
-    class Body : public Element {
+    class PEXPORT Body : public Element {
       public:
         Body(const char * attr = NULL);
       protected:
         virtual void Output(PHTML & html) const;
     };
 
-    class Title : public Element {
+    class PEXPORT Title : public Element {
       public:
         Title();
         Title(const char * titleCStr);
@@ -208,17 +211,17 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * titleString;
     };
 
-    class Banner : public Element {
+    class PEXPORT Banner : public Element {
       public:
         Banner(const char * attr = NULL);
     };
 
-    class Division : public Element {
+    class PEXPORT Division : public Element {
       public:
         Division(const char * attr = NULL);
     };
 
-    class Heading : public Element {
+    class PEXPORT Heading : public Element {
       public:
         Heading(int number,
                 int sequence = 0,
@@ -242,17 +245,17 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int seqNum, skipSeq;
     };
 
-    class BreakLine : public Element {
+    class PEXPORT BreakLine : public Element {
       public:
         BreakLine(const char * attr = NULL);
     };
 
-    class Paragraph : public Element {
+    class PEXPORT Paragraph : public Element {
       public:
         Paragraph(const char * attr = NULL);
     };
 
-    class PreFormat : public Element {
+    class PEXPORT PreFormat : public Element {
       public:
         PreFormat(int widthInChars = 0,
                   const char * attr = NULL);
@@ -262,7 +265,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int width;
     };
 
-    class HotLink : public Element {
+    class PEXPORT HotLink : public Element {
       public:
         HotLink(const char * href = NULL, const char * attr = NULL);
       protected:
@@ -271,7 +274,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * hrefString;
     };
 
-    class Target : public Element {
+    class PEXPORT Target : public Element {
       public:
         Target(const char * name = NULL, const char * attr = NULL);
       protected:
@@ -280,7 +283,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * nameString;
     };
 
-    class ImageElement : public Element {
+    class PEXPORT ImageElement : public Element {
       protected:
         ImageElement(const char * nam,
                      const char * attr,
@@ -292,7 +295,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * srcString;
     };
 
-    class Image : public ImageElement {
+    class PEXPORT Image : public ImageElement {
       public:
         Image(const char * src,
               int width = 0,
@@ -310,32 +313,32 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int width, height;
     };
 
-    class HRule : public ImageElement {
+    class PEXPORT HRule : public ImageElement {
       public:
         HRule(const char * image = NULL, const char * attr = NULL);
     };
 
-    class Note : public ImageElement {
+    class PEXPORT Note : public ImageElement {
       public:
         Note(const char * image = NULL, const char * attr = NULL);
     };
 
-    class Address : public Element {
+    class PEXPORT Address : public Element {
       public:
         Address(const char * attr = NULL);
     };
 
-    class BlockQuote : public Element {
+    class PEXPORT BlockQuote : public Element {
       public:
         BlockQuote(const char * attr = NULL);
     };
 
-    class Credit : public Element {
+    class PEXPORT Credit : public Element {
       public:
         Credit(const char * attr = NULL);
     };
 
-    class SetTab : public Element {
+    class PEXPORT SetTab : public Element {
       public:
         SetTab(const char * id, const char * attr = NULL);
       protected:
@@ -344,7 +347,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * ident;
     };
 
-    class Tab : public Element {
+    class PEXPORT Tab : public Element {
       public:
         Tab(int indent, const char * attr = NULL);
         Tab(const char * id, const char * attr = NULL);
@@ -356,99 +359,99 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
-    class Bold : public Element {
+    class PEXPORT Bold : public Element {
       public: Bold() : Element("B", NULL, InBold, InBody, NoCRLF) { }
     };
-    class Italic : public Element {
+    class PEXPORT Italic : public Element {
       public: Italic() : Element("I", NULL, InItalic, InBody, NoCRLF) { }
     };
-    class TeleType : public Element {
+    class PEXPORT TeleType : public Element {
       public: TeleType() : Element("TT", NULL, InTeleType, InBody, NoCRLF) { }
     };
-    class Underline : public Element {
+    class PEXPORT Underline : public Element {
       public: Underline() : Element("U", NULL, InUnderline, InBody, NoCRLF) { }
     };
-    class StrikeThrough : public Element {
+    class PEXPORT StrikeThrough : public Element {
       public: StrikeThrough()
                       : Element("S", NULL, InStrikeThrough, InBody, NoCRLF) { }
     };
-    class Big : public Element {
+    class PEXPORT Big : public Element {
       public: Big() : Element("BIG", NULL, InBig, InBody, NoCRLF) { }
     };
-    class Small : public Element {
+    class PEXPORT Small : public Element {
       public: Small() : Element("SMALL", NULL, InSmall, InBody, NoCRLF) { }
     };
-    class Subscript : public Element {
+    class PEXPORT Subscript : public Element {
       public: Subscript()
                         : Element("SUB", NULL, InSubscript, InBody, NoCRLF) { }
     };
-    class Superscript : public Element {
+    class PEXPORT Superscript : public Element {
       public: Superscript()
                       : Element("SUP", NULL, InSuperscript, InBody, NoCRLF) { }
     };
-    class Emphasis : public Element {
+    class PEXPORT Emphasis : public Element {
       public: Emphasis() : Element("EM", NULL, InEmphasis, InBody, NoCRLF) { }
     };
-    class Cite : public Element {
+    class PEXPORT Cite : public Element {
       public: Cite() : Element("CITE", NULL, InCite, InBody, NoCRLF) { }
     };
-    class Strong : public Element {
+    class PEXPORT Strong : public Element {
       public: Strong() : Element("STRONG", NULL, InStrong, InBody, NoCRLF) { }
     };
-    class Code : public Element {
+    class PEXPORT Code : public Element {
       public: Code() : Element("CODE", NULL, InCode, InBody, NoCRLF) { }
     };
-    class Sample : public Element {
+    class PEXPORT Sample : public Element {
       public: Sample() : Element("SAMP", NULL, InSample, InBody, NoCRLF) { }
     };
-    class Keyboard : public Element {
+    class PEXPORT Keyboard : public Element {
       public: Keyboard() : Element("KBD", NULL, InKeyboard, InBody, NoCRLF) { }
     };
-    class Variable : public Element {
+    class PEXPORT Variable : public Element {
       public: Variable() : Element("VAR", NULL, InVariable, InBody, NoCRLF) { }
     };
-    class Definition : public Element {
+    class PEXPORT Definition : public Element {
       public: Definition()
                        : Element("DFN", NULL, InDefinition, InBody, NoCRLF) { }
     };
-    class Quote : public Element {
+    class PEXPORT Quote : public Element {
       public: Quote() : Element("Q", NULL, InQuote, InBody, NoCRLF) { }
     };
-    class Author : public Element {
+    class PEXPORT Author : public Element {
       public: Author() : Element("AU", NULL, InAuthor, InBody, NoCRLF) { }
     };
-    class Person : public Element {
+    class PEXPORT Person : public Element {
       public: Person() : Element("PERSON", NULL, InPerson, InBody, NoCRLF) { }
     };
-    class Acronym : public Element {
+    class PEXPORT Acronym : public Element {
       public: Acronym():Element("ACRONYM", NULL, InAcronym, InBody, NoCRLF) { }
     };
-    class Abbrev : public Element {
+    class PEXPORT Abbrev : public Element {
       public: Abbrev() : Element("ABBREV", NULL, InAbbrev, InBody, NoCRLF) { }
     };
-    class InsertedText : public Element {
+    class PEXPORT InsertedText : public Element {
       public: InsertedText()
                      : Element("INS", NULL, InInsertedText, InBody, NoCRLF) { }
     };
-    class DeletedText : public Element {
+    class PEXPORT DeletedText : public Element {
       public: DeletedText()
                       : Element("DEL", NULL, InDeletedText, InBody, NoCRLF) { }
     };
 
 
-    class SimpleList : public Element {
+    class PEXPORT SimpleList : public Element {
       public:
         SimpleList(const char * attr = NULL);
       protected:
         virtual void AddAttr(PHTML & html) const;
     };
 
-    class BulletList : public Element {
+    class PEXPORT BulletList : public Element {
       public:
         BulletList(const char * attr = NULL);
     };
 
-    class OrderedList : public Element {
+    class PEXPORT OrderedList : public Element {
       public:
         OrderedList(int seqNum = 0, const char * attr = NULL);
       protected:
@@ -457,17 +460,17 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int sequenceNum;
     };
 
-    class DefinitionList : public Element {
+    class PEXPORT DefinitionList : public Element {
       public:
         DefinitionList(const char * attr = NULL);
     };
 
-    class ListHeading : public Element {
+    class PEXPORT ListHeading : public Element {
       public:
         ListHeading(const char * attr = NULL);
     };
 
-    class ListItem : public Element {
+    class PEXPORT ListItem : public Element {
       public:
         ListItem(int skip = 0, const char * attr = NULL);
       protected:
@@ -476,14 +479,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int skipSeq;
     };
 
-    class DefinitionTerm : public Element {
+    class PEXPORT DefinitionTerm : public Element {
       public:
         DefinitionTerm(const char * attr = NULL);
       protected:
         virtual void Output(PHTML & html) const;
     };
 
-    class DefinitionItem : public Element {
+    class PEXPORT DefinitionItem : public Element {
       public:
         DefinitionItem(const char * attr = NULL);
       protected:
@@ -495,7 +498,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       NoBorder,
       Border
     };
-    class TableStart : public Element {
+    class PEXPORT TableStart : public Element {
       public:
         TableStart(const char * attr = NULL);
         TableStart(BorderCodes border, const char * attr = NULL);
@@ -507,7 +510,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
     friend class TableStart;
 
-    class TableEnd : public Element {
+    class PEXPORT TableEnd : public Element {
       public:
         TableEnd();
       protected:
@@ -515,23 +518,23 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
     friend class TableEnd;
 
-    class TableRow : public Element {
+    class PEXPORT TableRow : public Element {
       public:
         TableRow(const char * attr = NULL);
     };
 
-    class TableHeader : public Element {
+    class PEXPORT TableHeader : public Element {
       public:
         TableHeader(const char * attr = NULL);
     };
 
-    class TableData : public Element {
+    class PEXPORT TableData : public Element {
       public:
         TableData(const char * attr = NULL);
     };
 
 
-    class Form : public Element {
+    class PEXPORT Form : public Element {
       public:
         Form(
           const char * method = NULL,
@@ -552,7 +555,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       Enabled,
       Disabled
     };
-    class FieldElement : public Element {
+    class PEXPORT FieldElement : public Element {
       protected:
         FieldElement(
           const char * nam,
@@ -566,7 +569,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         BOOL disabledFlag;
     };
 
-    class Select : public FieldElement {
+    class PEXPORT Select : public FieldElement {
       public:
         Select(
           const char * fname = NULL,
@@ -587,7 +590,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       NotSelected,
       Selected
     };
-    class Option : public FieldElement {
+    class PEXPORT Option : public FieldElement {
       public:
         Option(
           const char * attr = NULL
@@ -611,7 +614,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         BOOL selectedFlag;
     };
 
-    class FormField : public FieldElement {
+    class PEXPORT FormField : public FieldElement {
       protected:
         FormField(
           const char * nam,
@@ -626,7 +629,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * nameString;
     };
 
-    class TextArea : public FormField {
+    class PEXPORT TextArea : public FormField {
       public:
         TextArea(
           const char * fname,
@@ -645,7 +648,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int numRows, numCols;
     };
 
-    class InputField : public FormField {
+    class PEXPORT InputField : public FormField {
       protected:
         InputField(
           const char * type,
@@ -658,7 +661,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * typeString;
     };
 
-    class HiddenField : public InputField {
+    class PEXPORT HiddenField : public InputField {
       public:
         HiddenField(
           const char * fname,
@@ -671,7 +674,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * valueString;
     };
 
-    class InputText : public InputField {
+    class PEXPORT InputText : public InputField {
       public:
         InputText(
           const char * fname,
@@ -716,7 +719,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int width, length;
     };
 
-    class InputPassword : public InputText {
+    class PEXPORT InputPassword : public InputText {
       public:
         InputPassword(
           const char * fname,
@@ -751,7 +754,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       UnChecked,
       Checked
     };
-    class RadioButton : public InputField {
+    class PEXPORT RadioButton : public InputField {
       public:
         RadioButton(
           const char * fname,
@@ -786,7 +789,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         BOOL checkedFlag;
     };
 
-    class CheckBox : public RadioButton {
+    class PEXPORT CheckBox : public RadioButton {
       public:
         CheckBox(
           const char * fname,
@@ -806,7 +809,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
-    class InputRange : public InputField {
+    class PEXPORT InputRange : public InputField {
       public:
         InputRange(
           const char * fname,
@@ -821,7 +824,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int minValue, maxValue, initValue;
     };
 
-    class InputFile : public InputField {
+    class PEXPORT InputFile : public InputField {
       public:
         InputFile(
           const char * fname,
@@ -835,7 +838,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * acceptString;
     };
 
-    class InputImage : public InputField {
+    class PEXPORT InputImage : public InputField {
       public:
         InputImage(
           const char * fname,
@@ -856,7 +859,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * srcString;
     };
 
-    class InputScribble : public InputImage {
+    class PEXPORT InputScribble : public InputImage {
       public:
         InputScribble(
           const char * fname,
@@ -866,7 +869,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         );
     };
 
-    class ResetButton : public InputImage {
+    class PEXPORT ResetButton : public InputImage {
       public:
         ResetButton(
           const char * title,
@@ -889,7 +892,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * titleString;
     };
 
-    class SubmitButton : public ResetButton {
+    class PEXPORT SubmitButton : public ResetButton {
       public:
         SubmitButton(
           const char * title,
