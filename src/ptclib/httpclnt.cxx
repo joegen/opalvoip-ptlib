@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.13 1998/06/13 15:03:58 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.14 1998/06/16 03:32:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.14  1998/06/16 03:32:56  robertj
+ * Changed TCP connection shutdown to be parameterised.
+ *
  * Revision 1.13  1998/06/13 15:03:58  robertj
  * More conditions for NOT shutting down write.
  *
@@ -193,12 +196,11 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PString & url,
                                 const PMIMEInfo & outMIME,
                                 const PString & dataBody,
-                                PMIMEInfo & replyMime)
+                                PMIMEInfo & replyMime,
+                                BOOL persist)
 {
   if (WriteCommand(cmd, url, outMIME, dataBody)) {
-    if (!outMIME.Contains(ContentLengthTag) &&
-	!outMIME.Contains(ProxyConnectionTag) &&
-	!outMIME.Contains(ConnectionTag))
+    if (!persist)
       Shutdown(ShutdownWrite);
     ReadResponse(replyMime);
   }
@@ -273,37 +275,40 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
 BOOL PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & outMIME,
-                              PMIMEInfo & replyMIME)
+                              PMIMEInfo & replyMIME,
+                              BOOL persist)
 {
   if (!AssureConnect(url, outMIME))
     return FALSE;
 
-  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
+  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME, persist) == OK;
 }
 
 
 BOOL PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & outMIME,
-                            PMIMEInfo & replyMIME)
+                            PMIMEInfo & replyMIME,
+                            BOOL persist)
 {
   if (!AssureConnect(url, outMIME))
     return FALSE;
 
-  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
+  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME, persist) == OK;
 }
 
 
 BOOL PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
                            const PStringToString & data,
-                           PMIMEInfo & replyMIME)
+                           PMIMEInfo & replyMIME,
+                           BOOL persist)
 {
   if (!AssureConnect(url, outMIME))
     return FALSE;
 
   PStringStream body;
   body << data;
-  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME) == OK;
+  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME, persist) == OK;
 }
 
 
