@@ -2027,7 +2027,6 @@ EXPORTS
     ?GetLogLevel@PServiceProcess@@QBE?AW4Level@PSystemLog@@XZ @1509 NONAME ;public: enum PSystemLog::Level  __thiscall PServiceProcess::GetLogLevel(void)const 
     ?GetManufacturer@PProcess@@QBEABVPString@@XZ @1510 NONAME ;public: class PString const & __thiscall PProcess::GetManufacturer(void)const 
     ?GetMaxFrameBytes@PVideoInputDevice@@UAEHXZ @3361 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetMaxFrameBytes(void)
-    ?GetMaxFrameSize@PVideoDevice@@UBEHAAI0@Z @3332 NONAME ;public: virtual int __thiscall PVideoDevice::GetMaxFrameSize(unsigned int &,unsigned int &)const 
     ?GetMedium@PEthSocket@@QAE?AW4MediumTypes@1@XZ @2381 NONAME ;public: enum PEthSocket::MediumTypes  __thiscall PEthSocket::GetMedium(void)
     ?GetMessageAttachments@PMail@@QAEHABVPString@@AAVPStringArray@@HH@Z @1511 NONAME ;public: int __thiscall PMail::GetMessageAttachments(class PString const &,class PStringArray &,int,int)
     ?GetMessageBody@PMail@@QAEHABVPString@@AAV2@H@Z @1512 NONAME ;public: int __thiscall PMail::GetMessageBody(class PString const &,class PString &,int)
@@ -2035,7 +2034,6 @@ EXPORTS
     ?GetMessageIDs@PMail@@QAE?AVPStringArray@@H@Z @1514 NONAME ;public: class PStringArray  __thiscall PMail::GetMessageIDs(int)
     ?GetMicrosecond@PTime@@QBEJXZ @3112 NONAME ;public: long __thiscall PTime::GetMicrosecond(void)const 
     ?GetMilliSeconds@PTimeInterval@@QBE_JXZ @1515 NONAME ;public: __int64 __thiscall PTimeInterval::GetMilliSeconds(void)const 
-    ?GetMinFrameSize@PVideoDevice@@UBEHAAI0@Z @3333 NONAME ;public: virtual int __thiscall PVideoDevice::GetMinFrameSize(unsigned int &,unsigned int &)const 
     ?GetMinute@PTime@@QBEHXZ @1516 NONAME ;public: int __thiscall PTime::GetMinute(void)const 
     ?GetMinutes@PTimeInterval@@QBEJXZ @1517 NONAME ;public: long __thiscall PTimeInterval::GetMinutes(void)const 
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @1518 NONAME ;public: enum PTime::Months  __thiscall PTime::GetMonth(void)const 
@@ -2854,6 +2852,7 @@ EXPORTS
     ?SetFormat@PWaveFormat@@QAEXIII@Z @2711 NONAME ;public: void __thiscall PWaveFormat::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXPBXH@Z @2916 NONAME ;public: void __thiscall PWaveFormat::SetFormat(void const *,int)
     ?SetFrameRate@PVideoDevice@@UAEHI@Z @3393 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameRate(unsigned int)
+    ?SetFrameRate@PVideoInputDevice@@MAEHI@Z @3394 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameRate(unsigned int)
     ?SetFrameSize@PVideoDevice@@UAEHII@Z @3340 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoInputDevice@@MAEHII@Z @3381 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetIgnoreAllocations@PMemoryHeap@@SAXH@Z @2163 NONAME ;public: static void __cdecl PMemoryHeap::SetIgnoreAllocations(int)
@@ -3022,4 +3021,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?SetFrameRate@PVideoInputDevice@@MAEHI@Z @3394 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameRate(unsigned int)
+    ?GetFrameSizeLimits@PVideoDevice@@UBEHAAI000@Z @3395 NONAME ;public: virtual int __thiscall PVideoDevice::GetFrameSizeLimits(unsigned int &,unsigned int &,unsigned int &,unsigned int &)const 
