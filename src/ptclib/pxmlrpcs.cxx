@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.6  2003/02/19 01:51:18  robertj
+ * Change to make it easier to set a fault from the server function handler.
+ *
  * Revision 1.5  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -176,7 +179,7 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & methodName,
   methodMutex.Signal();
 
   // create paramaters
-  PXMLRPCServerParms p(request);
+  PXMLRPCServerParms p(*this, request);
 
   // call the notifier
   notifier(p, 0);
