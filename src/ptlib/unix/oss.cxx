@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.11  2000/02/15 23:11:34  robertj
+ * Audio support for FreeBSD, thanks Roger Hardiman.
+ *
  * Revision 1.10  2000/01/08 06:41:08  craigs
  * Fixed problem whereby failure to open sound device returns TRUE
  *
@@ -68,8 +71,15 @@
 
 #include <ptlib.h>
 
+#ifdef P_LINUX
 #include <sys/soundcard.h>
 #include <sys/time.h>
+#endif
+
+#ifdef P_FREEBSD
+#include <machine/soundcard.h>
+#endif
+
 
 PSoundHandleDict PSoundChannel::handleDict;
 PMutex           PSoundChannel::dictMutex;
