@@ -183,10 +183,29 @@
 				RelativePath="..\..\ptclib\ipacl.cxx">
 			</File>
 			<File
+				RelativePath="..\..\ptclib\memfile.cxx">
+			</File>
+			<File
 				RelativePath="..\..\Ptclib\modem.cxx">
 			</File>
 			<File
 				RelativePath="..\..\ptclib\pssl.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\ptts.cxx">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions="P_SAPI=0$(SAPIFLAG)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\ptclib\pwavfile.cxx">
@@ -208,6 +227,9 @@
 			</File>
 			<File
 				RelativePath="..\..\Ptclib\socks.cxx">
+			</File>
+			<File
+				RelativePath="..\..\Ptclib\vxml.cxx">
 			</File>
 		</Filter>
 		<Filter
@@ -247,7 +269,10 @@
 				RelativePath="..\..\..\Include\PtCLib\inetprot.h">
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptclib\ipacl.h">
+				RelativePath="..\..\..\include\ptCLib\ipacl.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Include\PtcLib\memfile.h">
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\mime.h">
@@ -263,6 +288,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\pssl.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Include\PtCLib\ptts.h">
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\pwavfile.h">
@@ -290,6 +318,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\url.h">
+			</File>
+			<File
+				RelativePath="..\..\..\Include\PtCLib\vxml.h">
 			</File>
 		</Filter>
 	</Files>
