@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.93  1999/07/11 13:42:13  craigs
+ * pthreads support for Linux
+ *
  * Revision 1.92  1999/06/01 08:04:35  robertj
  * Fixed mistake from previous fix.
  *
@@ -504,9 +507,19 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       struct hostent hostEnt;
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
+
+#ifdef P_LINUX
+      ::gethostbyname_r(name,
+                        &hostEnt,
+                        buffer, REENTRANT_BUFFER_LEN,
+                        &host_info,
+      		        &localErrNo);
+#else
       host_info = ::gethostbyname_r(name,
 			 &hostEnt, buffer, REENTRANT_BUFFER_LEN,
 			 &localErrNo);
+#endif
+
 #else
       host_info = ::gethostbyname(name);
 #endif
@@ -594,8 +607,19 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       struct hostent hostEnt;
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
+
+#ifdef P_LINUX
+      ::gethostbyaddr_r((const char *)&addr, sizeof(addr),
+                        PF_INET, 
+                        &hostEnt,
+                        buffer, REENTRANT_BUFFER_LEN,
+                        &host_info,
+                        &localErrNo);
+#else
       host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
+#endif
+
 #else
       host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
