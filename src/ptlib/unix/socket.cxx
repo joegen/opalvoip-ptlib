@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.70  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.69  2001/08/16 11:58:22  rogerh
  * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -231,53 +235,36 @@ int PSocket::os_close()
 #endif
 }
 
+
+static int SetNonBlocking(int fd)
+{
+#ifdef __BEOS__
+  return fd;
+#else
+  if (fd < 0)
+    return -1;
+
+  // Set non-blocking so we can use select calls to break I/O block on close
+  int cmd = 1;
+  if (::ioctl(fd, FIONBIO, &cmd) == 0 && ::fcntl(fd, F_SETFD, 1) == 0)
+    return fd;
+
+  ::close(fd);
+  return -1;
+#endif // !__BEOS__
+}
+
+
 int PSocket::os_socket(int af, int type, int protocol)
 {
   // attempt to create a socket
-  int handle;
-  if ((handle = ::socket(af, type, protocol)) >= 0) {
-
-#ifndef __BEOS__
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
-// non PThread unixes need non-blocking sockets
-    DWORD cmd = 1;
-    if ((::ioctl(handle, FIONBIO, &cmd) != 0) ||
-        (::fcntl(handle, F_SETFD, 1) != 0)) {
-      ::close(handle);
-      return -1;
-    }
-#endif
-
-    // close socket on exec
-    if (::fcntl(handle, F_SETFD, 1) != 0) {
-      ::close(handle);
-      return -1;
-    }
-#endif // !__BEOS__
-  }
-
-  return handle;
+  return SetNonBlocking(::socket(af, type, protocol));
 }
+
 
 int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
-  // need to use non-blocking form of connect, so we can abort it if it fails
-  // but only if not in PThreads, as non-PThreads versions are already non-blocking
-
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-  DWORD cmd = 1;
-  if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
-    return -1;
-#endif
-
   int val = ::connect(os_handle, addr, size);
-
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-  cmd = 0;
-  if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
-    return -1;
-#endif
-
   if (val == 0)
     return 0;
 
@@ -306,6 +293,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   return 0;
 }
 
+
 int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
 {
   if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout())) {
@@ -314,14 +302,18 @@ int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size
   }
 
 #if defined(E_PROTO)
-  while (1) {
+  for (;;) {
     int new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size);
-    if ((new_fd >= 0) || (errno != EPROTO))
-      return new_fd;
-    //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
+    if (new_fd >= 0)
+      return SetNonBlocking(new_fd);
+
+    if (errno != EPROTO)
+      return -1;
+
+    PTRACE(3, "PWLib\tAccept on " << sock << " failed with EPROTO - retrying");
   }
 #else
-  return ::accept(listener.GetHandle(), addr, (socklen_t *)size);
+  return SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size));
 #endif
 }
 
@@ -529,7 +521,7 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 
   // attempt to read non-out of band data
   int r = ::recv(os_handle, (char *)buf, maxLen, 0);
-  if (!ConvertOSError(r))
+  if (!ConvertOSError(r, LastReadError))
     return FALSE;
 
   lastReadCount = r;
@@ -551,7 +543,7 @@ BOOL PSocket::os_recvfrom(
 
   // attempt to read non-out of band data
   int r = ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen);
-  if (!ConvertOSError(r))
+  if (!ConvertOSError(r, LastReadError))
     return FALSE;
 
   lastReadCount = r;
@@ -568,49 +560,40 @@ BOOL PSocket::os_sendto(
 {
   lastWriteCount = 0;
 
-  if (!IsOpen()) {
-    lastError     = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   // attempt to read data
-  int writeResult;
-  if (addr != NULL)
-    writeResult = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
-  else
-    writeResult = ::send(os_handle, (char *)buf, len, flags);
-  if (writeResult > 0) {
+  int result;
+  for (;;) {
+    if (addr != NULL)
+      result = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
+    else
+      result = ::send(os_handle, (char *)buf, len, flags);
+
+    if (result > 0)
+      break;
+
+    if (errno != EWOULDBLOCK)
+      return ConvertOSError(-1, LastWriteError);
+
+    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
+      return FALSE;
+  }
+
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
-    PThread::Yield();
+  PThread::Yield(); // Starvation prevention
 #endif
-    lastWriteCount = writeResult;
-    return TRUE;
-  }
 
-  if (errno != EWOULDBLOCK)
-    return ConvertOSError(-1);
-
-  if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-    return FALSE;
-
-  // attempt to read data
-  if (addr != NULL)
-    lastWriteCount = ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
-  else
-    lastWriteCount = ::send(os_handle, (char *)buf, len, flags);
-  if (ConvertOSError(lastWriteCount))
-    return lastWriteCount > 0;
-
-  return FALSE;
+  lastWriteCount = result;
+  return ConvertOSError(0, LastWriteError);
 }
 
 
 BOOL PSocket::Read(void * buf, PINDEX len)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
     return FALSE;
@@ -668,11 +651,8 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     medium = MediumWan;
     ipppInterface = TRUE;
   }
-  else {
-    lastError = NotFound;
-    osError = ENOENT;
-    return FALSE;
-  }
+  else
+    return SetErrorValues(NotFound, ENOENT);
 
 #if defined(SIO_Get_MAC_Address) && !defined(__BEOS__)
   PUDPSocket ifsock;
