@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.7 1996/08/19 13:36:03 robertj Exp $
+ * $Id: svcproc.cxx,v 1.8 1996/09/14 12:34:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.8  1996/09/14 12:34:23  robertj
+ * Fixed problem with spontaneous exit from app under Win95.
+ *
  * Revision 1.7  1996/08/19 13:36:03  robertj
  * Added "Debug" level to system log.
  *
@@ -246,14 +249,27 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
                             NULL);
 
     MSG msg;
-    msg.message = WM_QUIT+1;
-    while (msg.message != WM_QUIT && 
-           MsgWaitForMultipleObjects(1, &terminationEvent, TRUE, INFINITE, QS_ALLINPUT) == WAIT_OBJECT_0+1) {
-      while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-        if (msg.message != WM_QUIT)
-          DispatchMessage(&msg);
+    do {
+      switch (MsgWaitForMultipleObjects(1, &terminationEvent,
+                                        TRUE, INFINITE, QS_ALLINPUT)) {
+        case WAIT_OBJECT_0 :
+          msg.message = WM_QUIT;
+          break;
+
+        case WAIT_OBJECT_0+1 :
+          while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (msg.message != WM_QUIT)
+              DispatchMessage(&msg);
+          }
+          break;
+
+        default :
+          // This is a work around for '95 coming up with an erroneous error
+          if (GetLastError() != ERROR_INVALID_HANDLE ||
+              WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
+            msg.message = WM_QUIT;
       }
-    }
+    } while (msg.message != WM_QUIT);
 
     DestroyWindow(wnd);
 
