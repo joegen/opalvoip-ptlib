@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.120  1999/04/26 08:06:51  robertj
+ * Added missing function in cooperative threading.
+ *
  * Revision 1.119  1999/03/01 13:51:30  craigs
  * Fixed ugly little bug in the cooperative multithreading that meant that threads blocked
  * on timers didn't always get rescheduled.
@@ -1191,6 +1194,26 @@ void PThread::Terminate()
     prev = prev->link;
   prev->link = link;   // Unlink it from the list
   status = Terminated;
+}
+
+
+void PThread::WaitForTermination() const
+{
+  while (!IsTerminated())
+    Yield();
+}
+
+
+BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+{
+  PTimer timeout = maxWait;
+  while (!IsTerminated()) {
+    if (timeout == 0)
+      return FALSE;
+    Yield();
+  }
+
+  return TRUE;
 }
 
 
