@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.70  2001/03/26 04:55:26  robertj
+ * Made sure OnConfigChanged() is called from OnStart() function.
+ *
  * Revision 1.69  2001/03/21 06:29:31  robertj
  * Fixed bug in calling OnConfigChanged after service macros are loaded,
  *   should be before so state can be changed before the macros translated.
@@ -326,7 +329,11 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
 
 BOOL PHTTPServiceProcess::OnStart()
 {
-  return Initialise("Started");
+  if (!Initialise("Started"))
+    return FALSE;
+
+  OnConfigChanged();
+  return TRUE;
 }
 
 
