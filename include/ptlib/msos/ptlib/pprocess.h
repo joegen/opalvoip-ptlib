@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.24  1998/12/04 10:13:08  robertj
+ * Added virtual for determining if process is a service. Fixes linkage problem.
+ *
  * Revision 1.23  1998/11/30 02:55:23  robertj
  * New directory structure
  *
@@ -118,6 +121,8 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 
     void SignalTimerChange();
     // Signal to the timer thread that a change was made.
+
+    virtual BOOL IsServiceProcess() const;
 
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
