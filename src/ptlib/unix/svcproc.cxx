@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.71  2002/10/01 06:03:44  robertj
+ * Attempt to prevent recursive signals for SEGV etc
+ *
  * Revision 1.70  2002/09/06 13:29:06  robertj
  * Added missing help line for status command.
  *
@@ -835,6 +838,10 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
       PProcess::PXOnAsyncSignal(sig);
       return;
   }
+
+  signal(SIGSEGV, SIG_DFL);
+  signal(SIGFPE, SIG_DFL);
+  signal(SIGBUS, SIG_DFL);
 
   static BOOL inHandler = FALSE;
   if (inHandler)
