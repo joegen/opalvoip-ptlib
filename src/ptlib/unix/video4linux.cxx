@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.17  2001/08/20 07:01:26  robertj
+ * Fixed wierd problems with YUV411P and YUV420P formats, thanks Mark Cooke.
+ *
  * Revision 1.16  2001/08/03 04:21:51  dereks
  * Add colour/size conversion for YUV422->YUV411P
  * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
@@ -138,7 +141,7 @@ static struct {
     HINT_CSPICT_ALWAYS_WORKS |
     HINT_CGPICT_DOESNT_SET_PALETTE |
     HINT_HAS_PREF_PALETTE,
-    VIDEO_PALETTE_YUV411P },
+    VIDEO_PALETTE_YUV420P },
 
   /** Sony Vaio Motion Eye camera
       Linux kernel 2.4.7 has meye.c driver module.

@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.16  2001/08/20 07:01:26  robertj
+ * Fixed wierd problems with YUV411P and YUV420P formats, thanks Mark Cooke.
+ *
  * Revision 1.15  2001/08/16 23:17:29  robertj
  * Added 420P to 411P converter, thanks Mark Cooke.
  *
@@ -252,8 +255,8 @@ static void RGBtoYUV411p(unsigned width, unsigned height,
                          const BYTE * rgb, BYTE * yuv,
                          unsigned rgbIncrement)
 {
-  int planeSize = width*height;
-  const int halfWidth = width >> 1;
+  const unsigned planeSize = width*height;
+  const unsigned halfWidth = width >> 1;
   
   // get pointers to the data
   BYTE * yplane  = yuv;
@@ -628,14 +631,107 @@ PSTANDARD_COLOUR_CONVERTER(RGB32,RGB24)
   return TRUE;
 }
 
-// 420P is just about the same as 411P.  If someone wants to do clever
-// U/V filtering / interpolation to reposition the U/V samples with respect
-// to the Y samples, feel free.  Image quality seems prefectly fine without
-// needing that level of accuracy.
+#if 1
+// 420P SHOULD NOT BE about the same as 411P.
+//
+// I believe there's a naming snafu in openh323 here!
+//
+// This should -not- work but does....  ;-)
+//
 PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
 {
   return SimpleConvert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
 }
+
+#else
+// CORRECT DEFINITION OF 420P!!!!!!!!!!!!!!!!!!!
+
+// Consider a YUV420P image of 8x2 pixels.
+//
+// A plane of Y values    A B C D E F G H
+//                        I J K L M N O P
+//
+// A plane of U values    1   2   3   4 
+// A plane of V values    1   2   3   4 ....
+//
+// The U1/V1 samples correspond to the ABIJ pixels.
+//     U2/V2 samples correspond to the CDKL pixels.
+//
+// Consider a YUV411P image of 8x2 pixels.
+//
+// A plane of Y values as before.
+//
+// A plane of U values    1       2
+//                        3       4
+//
+// A plane of V values    1       2
+//                        3       4
+//
+// The U1/V1 samples correspond to the ABCD pixels.
+//     U2/V2 samples correspond to the EFGH pixels.
+//
+// I choose to reoganize the U and V samples by using
+// using U1 for ABCD, U3 for EFGH, U2 for IJKL, U4 for MNOP
+//
+// Possibly discarding U2/U4 completely, or using the
+// average of U1 and U2 might be easier on the compressor
+//
+PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  // Copy over the Y plane.
+  memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight * 3/2);
+  
+  unsigned linewidth = dstFrameWidth / 4;
+  
+  // Source data is the start of the U plane
+  const BYTE* src = srcFrameBuffer + srcFrameWidth * srcFrameHeight;
+  
+  // Two output lines at a time
+  BYTE *dst0 = dstFrameBuffer + dstFrameWidth * dstFrameHeight;
+  BYTE *dst1 = dst0 + linewidth;
+
+  // U plane
+  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
+    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
+      
+      *dst0++ = *src++;
+      *dst1++ = *src++;
+    }
+
+    // Skip over the 2nd line we already did.
+    dst0 += linewidth;
+    dst1 = dst0 + linewidth;
+  }
+  
+  // Source data is the start of the U plane
+  src = srcFrameBuffer + srcFrameWidth * srcFrameHeight * 5 / 4;
+  
+  // Two output lines at a time
+  dst0 = dstFrameBuffer + dstFrameWidth * dstFrameHeight * 5 / 4;
+  dst1 = dst0 + linewidth;
+  
+  // V plane
+  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
+    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
+      
+      *dst0++ = *src++;
+      *dst1++ = *src++;
+    }
+
+    // Skip over the 2nd line we already did.
+    dst0 += linewidth;
+    dst1 = dst0 + linewidth;
+  }
+  
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  
+  return TRUE;
+}
+#endif
 
 PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV411P)
 {
