@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.14  2004/03/16 01:45:17  rjongbloed
+ * Fixed locating lbrary in pre-defined search directories.
+ * Added version number to configure program.
+ * Tidied the --help display.
+ *
  * Revision 1.13  2004/03/13 02:50:56  rjongbloed
  * Fixed anomalous message where even though a feature was disabled, a "Located "
  *   directiory message is still displayed causing confusion.
@@ -74,11 +79,15 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <string>
 #include <list>
 #include <algorithm>
 #include <stdlib.h>
 #include <windows.h>
+
+
+#define VERSION "1.1"
 
 
 using namespace std;
@@ -431,25 +440,30 @@ int main(int argc, char* argv[])
     if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
-	    externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
+        externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
     }
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1); 	
       excludeDirList.push_back(dir);
       cout << "Excluding " << dir << " from feature search" << endl;
     }
+    else if (stricmp(argv[i], "-v") == 0 || stricmp(argv[i], "--version") == 0) {
+      cout << "configure version " VERSION "\n";
+      return 1;
+    }
     else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
-      cout << "usage: configure args\n"
-              "  --no-search\t\tDo not search disk for libraries.\n"
-	            "  --extern-dir=dir\t\t specify where to search disk for libraries.\n"
-              "  --exclude-dir=dir dir\t\tExclude dir from search path.\n";
+      cout << "configure version " VERSION "\n"
+              "usage: configure args\n"
+              "  --no-search           Do not search disk for libraries.\n"
+              "  --extern-dir=dir      Specify where to search disk for libraries.\n"
+              "  --exclude-dir=dir     Exclude dir from search path.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (feature->featureName[0] != '\0') {
-          cout << "  --disable-" << feature->featureName
-               << "\t\tDisable " << feature->displayName << '\n';
+            cout << "  --disable-" << feature->featureName
+                 << setw(20-feature->featureName.length()) << "Disable " << feature->displayName << '\n';
           if (!feature->checkFiles.empty())
             cout << "  --" << feature->featureName << "-dir=dir"
-                    "\tSet directory for " << feature->displayName << '\n';
+                 << setw(30-feature->featureName.length()) << "Set directory for " << feature->displayName << '\n';
         }
       }
       return 1;
@@ -478,10 +492,8 @@ int main(int argc, char* argv[])
           break;
         }
       }
-      if (!foundOne) {
+      if (!foundOne)
         foundAll = false;
-        break;
-      }
     }
   }
 
@@ -489,10 +501,11 @@ int main(int argc, char* argv[])
     // Do search of entire system
     char drives[100];
     if (!externDir){
-	    if (!GetLogicalDriveStrings(sizeof(drives), drives))
-	      strcpy(drives, "C:\\");
-    } else {
-	    strcpy(drives, externDir);	
+      if (!GetLogicalDriveStrings(sizeof(drives), drives))
+        strcpy(drives, "C:\\");
+    }
+    else {
+      strcpy(drives, externDir);	
     }
 
     const char * drive = drives;
