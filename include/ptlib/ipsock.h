@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.73  2005/02/07 00:47:17  csoutheren
+ * Changed IPV6 code to use standard IPV6 macros
+ *
  * Revision 1.72  2005/02/04 05:50:27  csoutheren
  * Extended IsRFC1918 to handle IPV6
  *
@@ -443,11 +446,8 @@ class PIPSocket : public PSocket
         BOOL IsRFC1918() const 
         { 
 #if P_HAS_IPV6
-          if (version == 6) {
-            if (this->IsV4Mapped()) 
-              return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();
-            return (Byte1() == 0xfe) && ((Byte2() & 0x80) != 0);
-          }
+          if (version == 6) 
+            return IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six);
 #endif
           return (Byte1() == 10)
                   ||
