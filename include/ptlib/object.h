@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.77  2002/04/19 00:20:51  craigs
+ * Added option to append to log file rather than create anew each time
+ *
  * Revision 1.76  2002/01/26 23:55:55  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -445,6 +448,8 @@ public:
     FileAndLine = 32,
     /// Include thread object pointer address in all trace output
     ThreadAddress = 64,
+    /// Append to log file rather than resetting every time
+    AppendToFile = 128,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with SetStream(new PSystemLog).
       */
