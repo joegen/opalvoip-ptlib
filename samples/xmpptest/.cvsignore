@@ -1,3 +1,4 @@
 obj_*_*_d Debug
 obj_*_*_r Release
 *.plg *.opt *.ncb *.Tags.WW
+*.log
