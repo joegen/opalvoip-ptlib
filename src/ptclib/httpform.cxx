@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.10 1997/07/26 11:38:20 robertj Exp $
+ * $Id: httpform.cxx,v 1.11 1997/08/04 10:41:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.11  1997/08/04 10:41:13  robertj
+ * Fixed bug in new section list page for names with special characters in them.
+ *
  * Revision 1.10  1997/07/26 11:38:20  robertj
  * Support for overridable pages in HTTP service applications.
  *
@@ -249,7 +252,7 @@ void PHTTPCompositeField::GetHTMLTag(PHTML & html)
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     if (i != 0)
-      html << PHTML::TableData();
+      html << PHTML::TableData("NOWRAP");
     fields[i].GetHTMLTag(html);
   }
 }
@@ -389,9 +392,9 @@ void PHTTPFieldArray::GetHTMLTag(PHTML & html)
   html << PHTML::TableStart();
   baseField->GetHTMLHeading(html);
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
-    html << PHTML::TableRow() << PHTML::TableData();
+    html << PHTML::TableRow() << PHTML::TableData("NOWRAP");
     fields[i].GetHTMLTag(html);
-    html << PHTML::TableData();
+    html << PHTML::TableData("NOWRAP");
     PString chkboxName = IncludeCheckBox & fields[i].GetName();
     if (i < fields.GetSize()-1)
       html << PHTML::CheckBox(chkboxName, PHTML::Checked) << " Keep";
@@ -1298,7 +1301,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
     PINDEX endpos = text.Find(FormListInclude, pos + sizeof(FormListInclude)-1);
     if (endpos == P_MAX_INDEX) {
       PHTML html = PHTML::InBody;
-      html << PHTML::Form() << PHTML::TableStart();
+      html << PHTML::Form("POST") << PHTML::TableStart();
 
       PINDEX i;
       for (i = 0; i < nameList.GetSize(); i++) {
@@ -1306,7 +1309,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           PString name = nameList[i].Mid(sectionPrefix.GetLength());
           html << PHTML::TableRow()
                << PHTML::TableData()
-               << PHTML::HotLink(editSectionLink + name)
+               << PHTML::HotLink(editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation))
                << name
                << PHTML::HotLink();
           if (!additionalValueName)
@@ -1335,7 +1338,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           PString name = nameList[i].Mid(sectionPrefix.GetLength());
           text.Splice(repeat, pos, 0);
           text.Replace("<!--#form hotlink-->",
-                       editSectionLink + name,
+                       editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation),
                        FALSE, pos);
           if (!additionalValueName)
             text.Replace("<!--#form additional-->",
