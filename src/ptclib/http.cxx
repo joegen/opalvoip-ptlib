@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.102  2004/06/01 07:28:45  csoutheren
+ * Changed URL parsing to use abstract factory code
+ *
  * Revision 1.101  2004/04/04 00:21:47  csoutheren
  * FIxed problem with some URL parsing
  *
@@ -399,7 +402,7 @@
 #define	DEFAULT_H323RAS_PORT    1719
 #define	DEFAULT_SIP_PORT        5060
 
-
+/*
 struct schemeStruct {
   const char * name;
   BOOL hasUsername;
@@ -451,11 +454,88 @@ static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
   return NULL;
 }
 
+*/
+
+class PURLLegacyScheme : public PURLScheme
+{
+  public:
+    PURLLegacyScheme(const char * _scheme)
+      : scheme(_scheme) { }
+
+    BOOL Parse(const PString & url, PURL & purl) const
+    { return purl.LegacyParse(url, this); }
+
+    PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
+    { return purl.LegacyAsString(fmt, this); }
+
+    PString GetName() const     
+    { return scheme; }
+
+    PString scheme;
+    BOOL hasUsername;
+    BOOL hasPassword;
+    BOOL hasHostPort;
+    BOOL defaultToUserIfNoAt;
+    BOOL defaultHostToLocal;
+    BOOL hasQuery;
+    BOOL hasParameters;
+    BOOL hasFragments;
+    BOOL hasPath;
+    BOOL relativeImpliesScheme;
+    WORD defaultPort;
+};
+
+
+#define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
+class PURLLegacyScheme_##schemeName : public PURLLegacyScheme \
+{ \
+  public: \
+    PURLLegacyScheme_##schemeName() \
+    : PURLLegacyScheme(#schemeName )  \
+    { \
+      hasUsername           = user; \
+      hasPassword           = pass; \
+      hasHostPort           = host; \
+      defaultToUserIfNoAt   = def; \
+      defaultHostToLocal    = defhost; \
+      hasQuery              = query; \
+      hasParameters         = params; \
+      hasFragments          = frags; \
+      hasPath               = path; \
+      relativeImpliesScheme = rel; \
+      defaultPort           = port; \
+    } \
+}; \
+static PAbstractSingletonFactory<PURLScheme, PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName ); \
+
+DEFINE_LEGACY_URL_SCHEME(http,      TRUE,  TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT )
+DEFINE_LEGACY_URL_SCHEME(file,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(https,     FALSE, FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT)
+DEFINE_LEGACY_URL_SCHEME(gopher,    FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT)
+DEFINE_LEGACY_URL_SCHEME(wais,      FALSE, FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT)
+DEFINE_LEGACY_URL_SCHEME(nntp,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(prospero,  FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtsp,      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT)
+DEFINE_LEGACY_URL_SCHEME(rtspu,     FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT)
+DEFINE_LEGACY_URL_SCHEME(ftp,       TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT)
+DEFINE_LEGACY_URL_SCHEME(telnet,    TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT)
+DEFINE_LEGACY_URL_SCHEME(mailto,    FALSE, FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(news,      FALSE, FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(h323,      TRUE,  FALSE, TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT)
+DEFINE_LEGACY_URL_SCHEME(sip,       TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT)
+DEFINE_LEGACY_URL_SCHEME(tel,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(fax,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
+DEFINE_LEGACY_URL_SCHEME(callto,    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
+
+#define DEFAULT_SCHEME "http"
+#define FILE_SCHEME    "file"
+
 //////////////////////////////////////////////////////////////////////////////
 // PURL
 
 PURL::PURL()
-  : scheme(SchemeTable[DEFAULT_SCHEME].name),
+  : //scheme(SchemeTable[DEFAULT_SCHEME].name),
+    scheme(DEFAULT_SCHEME),
     port(0),
     relativePath(FALSE)
 {
@@ -475,7 +555,8 @@ PURL::PURL(const PString & str, const char * defaultScheme)
 
 
 PURL::PURL(const PFilePath & filePath)
-  : scheme(SchemeTable[FILE_SCHEME].name),
+  : //scheme(SchemeTable[FILE_SCHEME].name),
+    scheme(FILE_SCHEME),
     port(0),
     relativePath(FALSE)
 {
@@ -638,30 +719,51 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
     pos++;
 
+  PString schemeName;
+
   // get information which tells us how to parse URL for this
   // particular scheme
-  const schemeStruct * schemeInfo = NULL;
+  PURLScheme * schemeInfo = NULL;
 
   // Determine if the URL has an explicit scheme
   if (url[pos] == ':') {
-    schemeInfo = GetSchemeInfo(url.Left(pos));
-    if (schemeInfo == NULL && defaultScheme == NULL)
-      schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+
+    // get the scheme information, or get the default scheme
+    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(url.Left(pos));
+    if (schemeInfo == NULL && defaultScheme == NULL) {
+      PGenericFactory<PURLScheme>::KeyList_T keyList = PGenericFactory<PURLScheme>::GetKeyList();
+      if (keyList.size() != 0)
+        schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(keyList[0]);
+    }
     if (schemeInfo != NULL)
       url.Delete(0, pos+1);
   }
 
-  // if we could not match a scheme, then use the default scheme
+  // if we could not match a scheme, then use the specified default scheme
   if (schemeInfo == NULL && defaultScheme != NULL)
-    schemeInfo = GetSchemeInfo(defaultScheme);
+    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(defaultScheme);
 
+  // if that still fails, then use the global default scheme
   if (schemeInfo == NULL)
-    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
 
-  scheme = schemeInfo->name;
+  //scheme = schemeInfo->name;
+  scheme = schemeInfo->GetName();
+
+  if (!schemeInfo->Parse(url, *this))
+    return FALSE;
+
+  return !IsEmpty();
+}
+
+BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo)
+{
+  PString url = _url;
+  PINDEX pos;
 
   // Super special case!
   if (scheme *= "callto") {
+
     // Actually not part of MS spec, but a lot of people put in the // into
     // the URL, so we take it out of it is there.
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
@@ -853,13 +955,15 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
     Recalculate();
   }
 
-  return !IsEmpty();
+  return TRUE;
 }
 
 
 PFilePath PURL::AsFilePath() const
 {
-  if (scheme != SchemeTable[FILE_SCHEME].name)
+  //if (scheme != SchemeTable[FILE_SCHEME].name)
+  //  return PString::Empty();
+  if (scheme != FILE_SCHEME)
     return PString::Empty();
 
   PStringStream str;
@@ -884,18 +988,26 @@ PFilePath PURL::AsFilePath() const
 
 PString PURL::AsString(UrlFormat fmt) const
 {
-  PINDEX i;
-  PStringStream str;
-
   if (fmt == FullURL)
     return urlString;
 
   if (scheme.IsEmpty())
     return PString::Empty();
 
-  const schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+  //const schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+  //if (schemeInfo == NULL)
+  //  schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+  const PURLScheme * schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(scheme);
   if (schemeInfo == NULL)
-    schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+    schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
+
+  return schemeInfo->AsString(fmt, *this);
+}
+
+PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const
+{
+  PStringStream str;
+  PINDEX i;
 
   if (fmt == HostPortOnly) {
     str << scheme << ':';
@@ -1134,8 +1246,10 @@ BOOL PURL::OpenBrowser(const PString & url)
 
 void PURL::Recalculate()
 {
+  //if (scheme.IsEmpty())
+  //  scheme = SchemeTable[DEFAULT_SCHEME].name;
   if (scheme.IsEmpty())
-    scheme = SchemeTable[DEFAULT_SCHEME].name;
+    scheme = DEFAULT_SCHEME;
 
   urlString = AsString(HostPortOnly) + AsString(URIOnly);
 }
