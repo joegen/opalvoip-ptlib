@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.83  2004/01/17 09:21:21  csoutheren
+ * Added protection against NULL ptr to PASN_Stream::BlockDecode
+ *
  * Revision 1.82  2003/08/01 02:11:38  csoutheren
  * Changed to allow easy isolation of PER, BER and XER encoding/decoding routines
  *
@@ -2648,7 +2651,7 @@ void PASN_Stream::ByteEncode(unsigned value)
 
 unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 {
-  if (nBytes == 0)
+  if (nBytes == 0 || bufptr == NULL)
     return 0;
 
   ByteAlign();
