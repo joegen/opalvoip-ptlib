@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.33 1998/01/26 01:41:19 robertj Exp $
+ * $Id: collect.cxx,v 1.34 1998/03/24 02:58:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.34  1998/03/24 02:58:52  robertj
+ * Fixed uninitialised variable in dictionary MakeUnique() function.
+ *
  * Revision 1.33  1998/01/26 01:41:19  robertj
  * GNU compatibility.
  *
@@ -1289,9 +1292,15 @@ void PHashTable::CopyContents(const PHashTable & hash)
   
 void PHashTable::CloneContents(const PHashTable * hash)
 {
+  PAssertNULL(hash);
   PINDEX sz = hash->GetSize();
+  PAssertNULL(hash->hashTable);
   PHashTable::Table * original = hash->hashTable;
+
   hashTable = PNEW PHashTable::Table(original->GetSize());
+  PAssertNULL(hashTable);
+  hashTable->lastElement = NULL;
+
   for (PINDEX i = 0; i < sz; i++) {
     original->SetLastElementAt(i);
     PObject * data = original->lastElement->data;
