@@ -3,7 +3,11 @@
 #ifndef P_PTHREADS
 
 #ifdef P_LINUX
+#ifdef JB_SP
+#define	SET_STACK	context[0].__jmpbuf[JB_SP] = (int)stackTop-16;
+#else
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
+#endif
 #define	SETJMP_PROLOG
 #include <sys/mman.h>
 #define	USE_MMAP	MAP_ANON | MAP_PRIVATE
@@ -17,7 +21,7 @@
 #ifdef P_SOLARIS
 #define	SETJMP_PROLOG	__asm__ ("ta 3"); 
 #define SET_STACK	context[1] = ((int)stackTop-1024) & ~7;
-#define	STACK_MULT	15
+#define	STACK_MULT	4
 //#define	USE_MMAP	MAP_PRIVATE | MAP_NORESERVE
 #include <sys/mman.h>
 #endif
@@ -41,7 +45,7 @@
 #endif
 
 #ifndef	STACK_MULT
-#define	STACK_MULT	5
+#define	STACK_MULT	1
 #endif
 
 static PThread * localThis;
@@ -89,7 +93,7 @@ void PThread::SwitchContext(PThread * from)
 
 void PThread::AllocateStack(PINDEX stackProtoSize)
 {
-  int stackSize = PMAX(STACK_MIN, STACK_MULT*stackProtoSize);
+  int stackSize = STACK_MULT*PMAX(STACK_MIN, stackProtoSize);
 
 #if defined(USE_MMAP)
   stackBase = (char *)mmap(0,
