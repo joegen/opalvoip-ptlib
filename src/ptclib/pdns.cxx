@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.8  2003/11/02 15:52:58  shawn
+ * added arpa/nameser_compat.h for Mac OS X 10.3 (Panther)
+ *
  * Revision 1.7  2003/04/28 23:57:40  robertj
  * Fixed Solaris compatibility
  *
@@ -72,6 +75,9 @@
 #if P_HAS_RESOLVER
 #include <arpa/nameser.h>
 #include <resolv.h>
+#if defined(P_MACOSX) && (P_MACOSX >= 700)
+#include <arpa/nameser_compat.h>
+#endif
 #endif
 
 #endif
