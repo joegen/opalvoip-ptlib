@@ -17,10 +17,6 @@
 #include <sys/socketio.h>
 #include <dlfcn.h>
 
-#if defined(SIOCGIFCOUNT)
-#define SIOCGIFNUM  SIOCGIFCOUNT
-#endif
-
 #define PSETPGRP()  setpgrp()
 
 #elif defined(P_SOLARIS)
