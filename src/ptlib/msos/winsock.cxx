@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.44  2001/09/06 02:30:31  robertj
+ * Fixed mismatched declarations, thanks Vjacheslav Andrejev
+ *
  * Revision 1.43  2001/03/20 06:57:14  robertj
  * os_accept() function changed due to unix changes re unblocking threads.
  *
@@ -289,7 +292,7 @@ class timeval_class : public timeval {
 };
 
 
-int PSocket::os_connect(struct sockaddr * addr, int size)
+int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   if (readTimeout == PMaxTimeInterval)
     return ::connect(os_handle, addr, size);
@@ -364,7 +367,7 @@ BOOL PSocket::os_recvfrom(void * buf,
                           PINDEX len,
                           int flags,
                           struct sockaddr * from,
-                          int * fromlen)
+                          PINDEX * fromlen)
 {
   lastReadCount = 0;
 
@@ -407,7 +410,7 @@ BOOL PSocket::os_sendto(const void * buf,
                         PINDEX len,
                         int flags,
                         struct sockaddr * to,
-                        int tolen)
+                        PINDEX tolen)
 {
   lastWriteCount = 0;
 
