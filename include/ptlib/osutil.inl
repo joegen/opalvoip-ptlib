@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.70  1999/07/06 04:45:59  robertj
+ * Fixed being able to case an unsigned to a PTimeInterval.
+ * Improved resolution of PTimer::Tick() to be millisecond accurate.
+ *
  * Revision 1.69  1999/03/09 03:08:39  robertj
  * Changes for new documentation system
  *
@@ -250,6 +254,9 @@
 // PTimeInterval
 
 PINLINE PTimeInterval::PTimeInterval(int millisecs)
+  : milliseconds(millisecs) { }
+
+PINLINE PTimeInterval::PTimeInterval(unsigned millisecs)
   : milliseconds(millisecs) { }
 
 PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
