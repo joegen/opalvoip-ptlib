@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.78  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.77  2002/10/30 03:14:15  robertj
  * Added tab character between time and thread in system log (for db import).
  *
@@ -478,9 +481,9 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 }
 
 
-#ifndef P_VXWORKS
 int PServiceProcess::InitialiseService()
 {
+#ifndef P_VXWORKS
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
@@ -789,11 +792,9 @@ int PServiceProcess::InitialiseService()
   ::close(STDIN_FILENO);
 
 #endif // BE_THREADS
-
+#endif // !P_VXWORKS
   return -1;
 }
-#endif // !P_VXWORKS
-
 
 int PServiceProcess::_main(void *)
 {
