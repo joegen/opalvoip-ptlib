@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.34  2001/01/15 06:17:56  robertj
+ * Set HTTP resource members to private to assure are not modified by
+ *   dscendents in non-threadsafe manner.
+ *
  * Revision 1.33  2000/09/04 03:57:58  robertj
  * Added ability to change the persistent connection parameters (timeout etc).
  *
@@ -1312,9 +1316,9 @@ PHTTPFile::PHTTPFile(const PURL & url, int)
 
 
 PHTTPFile::PHTTPFile(const PString & filename)
-  : PHTTPResource(filename), filePath(filename)
+  : PHTTPResource(filename, PMIMEInfo::GetContentType(PFilePath(filename).GetType())),
+    filePath(filename)
 {
-  SetContentType(PMIMEInfo::GetContentType(filePath.GetType()));
 }
 
 
@@ -1325,9 +1329,9 @@ PHTTPFile::PHTTPFile(const PString & filename, const PHTTPAuthority & auth)
 
 
 PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & path)
-  : PHTTPResource(url), filePath(path)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType())),
+    filePath(path)
 {
-  SetContentType(PMIMEInfo::GetContentType(path.GetType()));
 }
 
 
@@ -1342,9 +1346,9 @@ PHTTPFile::PHTTPFile(const PURL & url,
 PHTTPFile::PHTTPFile(const PURL & url,
                      const PFilePath & path,
                      const PHTTPAuthority & auth)
-  : PHTTPResource(url, PString(), auth), filePath(path)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType()), auth),
+    filePath(path)
 {
-  SetContentType(PMIMEInfo::GetContentType(filePath.GetType()));
 }
 
 
@@ -1389,7 +1393,7 @@ BOOL PHTTPFile::LoadHeaders(PHTTPRequest & request)
 
 BOOL PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
-  if (contentType(0, 4) == "text/")
+  if (GetContentType()(0, 4) == "text/")
     return PHTTPResource::LoadData(request, data);
 
   PFile & file = ((PHTTPFileRequest&)request).file;
@@ -1498,7 +1502,7 @@ BOOL PHTTPDirectory::CheckAuthority(PHTTPServer & server,
   const PStringArray & path = request.url.GetPath();
   realPath = basePath;
   PINDEX i;
-  for (i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
+  for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)
     realPath += path[i] + PDIR_SEPARATOR;
 
   // append the last path element
@@ -1556,14 +1560,15 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).fakeIndex;
   if (file.IsOpen()) {
-    contentType = PMIMEInfo::GetContentType(file.GetFilePath().GetType());
+    request.outMIME.SetAt(PHTTP::ContentTypeTag,
+                          PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();
     fakeIndex = PString();
     return TRUE;
   }
 
   // construct a directory listing
-  contentType = "text/html";
+  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
   PHTML reply("Directory of " + request.url.AsString());
   PDirectory dir = realPath;
   if (dir.Open()) {
