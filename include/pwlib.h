@@ -14,22 +14,104 @@
 #define _PWLIB_H
 
 
-#include "osutil.h"
-
-#define P_MSWINDOWS
+#include "contain.h"
 
 
 #define STRICT
 #include <windows.h>
 #include <commdlg.h>
+#include <stdlib.h>
+#include <direct.h>
+#include <sys\types.h>
+#include <sys\stat.h>
+#include <dos.h>
+#include <io.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Operating System dependent declarations
+
+
+#define PDIR_SEPARATOR '\\'
+
+#define P_MAX_PATH    (_MAX_PATH)
+
+typedef DWORD PMilliseconds;
+const PMilliseconds PMaxMilliseconds = 0xffffffff;
 
 typedef int PORDINATE;
 typedef int PDIMENSION;
 
 #define PPOINT_BASE tagPOINT
 #define PRECT_BASE tagRECT
- 
+
 #define P_NULL_WINDOW (NULL)
+
+#ifdef WIN32
+#define EXPORTED
+#else
+#define EXPORTED FAR PASCAL _export
+#endif
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTime
+
+#include "../../common/ptime.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+#include "../../common/timeint.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDirectory
+
+#include "../../common/pdirect.h"
+  protected:
+#ifdef MSDOS
+    struct find_t  fileinfo;
+#endif
+#ifdef WIN32
+    struct _finddata_t  fileinfo;
+#endif
+
+    BOOL Filtered();
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFile
+
+#include "../../common/file.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTextFile
+
+#include "../../common/textfile.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PStructuredFile
+
+#include "../../common/sfile.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConfiguration
+
+#include "../../common/config.h"
+};
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,11 +218,11 @@ typedef int PDIMENSION;
   public:
     PRealFont(PApplication * app, HFONT hFont);
       // Create a real font object given the MS-Windows GDI font handle.
-      
+
     HFONT GetHFONT() const;
       // Return a MS-Windows GDI font handle.
-      
-      
+
+
   protected:
     // New methods for class
     void Construct(HDC dc);
@@ -153,6 +235,94 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PPattern
+
+#include "../../common/pattern.h"
+  public:
+    HBITMAP GetHBITMAP() const;
+
+  protected:
+    void Construct(HBITMAP hBm);
+
+    HBITMAP hBitmap;
+    BITMAP bitmap;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PImage
+
+#include "../../common/image.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPixels
+
+#include "../../common/pixels.h"
+  public:
+    PPixels(HBITMAP hBm);
+    HBITMAP GetHBITMAP() const;
+
+  protected:
+    void Construct(HBITMAP hBm);
+    HBITMAP hBitmap;
+    BYTE depth;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPict
+
+#include "../../common/pict.h"
+  public:
+    PPict(HMETAFILE hM);
+    HMETAFILE GetHMETAFILE() const;
+
+  protected:
+    HMETAFILE hMetafile;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PCursor
+
+#include "../../common/cursor.h"
+  public:
+    HCURSOR GetHCURSOR() const;
+      // Get the MS-Windows cursor
+
+  protected:
+    HCURSOR hCursor;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PCaret
+
+#include "../../common/caret.h"
+  protected:
+    BOOL hasCaret;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIcon
+
+#include "../../common/icon.h"
+  public:
+    PIcon(HICON hIcn);
+      // Make a PIcon object from the MS-WINDOWS icon handle
+
+    HICON GetHICON() const;
+      // Get the MS-WINDOWS icon handle for the loaded icon
+
+  protected:
+    HICON hIcon;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PPalette
 
 #include "../../common/palette.h"
@@ -160,12 +330,19 @@ typedef int PDIMENSION;
     // New functions for class
     HPALETTE GetHPALETTE() const;
       // Select the palette for the specified MS-Windows device context.
-    
+
 
   protected:
     // Member variables
     HPALETTE hPalette;
       // Palette GDI object
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PCanvasState
+
+#include "../../common/canstate.h"
 };
 
 
@@ -228,6 +405,20 @@ typedef int PDIMENSION;
 // PChord
 
 #include "../../common/chord.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPixShape
+
+#include "../../common/pixshape.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPicShape
+
+#include "../../common/picshape.h"
 };
 
 
@@ -295,122 +486,47 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PDrawing
-
-#include "../../common/drawing.h"
-  public:
-    PDrawing(HMETAFILE hM);
-    HMETAFILE GetHMETAFILE() const;
-
-  protected:
-    DECLARE_CLASS(Metafile, PContainer)
-      public:
-        Metafile(HMETAFILE hMeta);
-        Metafile(const Metafile & m);
-        Metafile & operator=(const Metafile & m);
-        virtual ~Metafile();
-
-      protected:
-        virtual Comparison Compare(const PObject & obj) const;
-        virtual void DestroyContents();
-        virtual BOOL SetSize(PINDEX size);
-
-        HMETAFILE hMetafile;
-
-        friend class PDrawing;
-    };
-    Metafile metafile;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PImage
-
-#include "../../common/image.h"
-  public:
-    PImage(HBITMAP hBm);
-    HBITMAP GetHBITMAP() const;
-
-  protected:
-    DECLARE_CLASS(Bitmap, PContainer)
-      public:
-        Bitmap(HBITMAP hBm);
-        Bitmap(const Bitmap & bm);
-        Bitmap & operator=(const Bitmap & bm);
-        virtual ~Bitmap();
-
-      protected:
-        virtual Comparison Compare(const PObject & obj) const;
-        virtual void DestroyContents();
-        virtual BOOL SetSize(PINDEX size);
-
-        HBITMAP hBitmap;
-        BITMAP bitmap;
-
-        friend class PImage;
-    };
-    Bitmap bitmap;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PPattern
-
-#include "../../common/pattern.h"
-  public:
-    HBITMAP GetHBITMAP() const;
-
-  protected:
-    void Construct(HBITMAP hBm);
-
-    HBITMAP hBitmap;
-    BITMAP bitmap;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PCursor
-
-#include "../../common/cursor.h"
-  public:
-    HCURSOR GetHCURSOR() const;
-      // Get the MS-Windows cursor
-
-  protected:
-    HCURSOR hCursor;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PCaret
-
-#include "../../common/caret.h"
-  protected:
-    BOOL hasCaret;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PIcon
-
-#include "../../common/icon.h"
-  public:
-    PIcon(HICON hIcn);
-      // Make a PIcon object from the MS-WINDOWS icon handle
-
-    HICON GetHICON() const;
-      // Get the MS-WINDOWS icon handle for the loaded icon
-      
-  protected:
-    HICON hIcon;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PCanvas
 
 #include "../../common/canvas.h"
   public:
+    // Overrides from class PCanvasState
+    virtual BOOL SetPenStyle(PenStyles style);
+      // Set the pen style to be used by future drawing operations.
+
+    virtual BOOL SetPenWidth(int width);
+      // Set the pen width to be used by future drawing operations.
+
+    virtual BOOL SetPenFgColour(const PColour & colour);
+      // Set the pen foreground colour to be used by future drawing operations.
+
+    virtual BOOL SetFillPattern(const PPattern & pattern);
+      // Set the fill pattern to be used by future drawing operations.
+
+    virtual BOOL SetFillFgColour(const PColour & colour);
+      // Set the fill foreground colour to be used by future drawing operations.
+
+    virtual BOOL SetFont(const PFont & newFont);
+      // Set the font drawing tool to be used by future drawing operations.
+
+    virtual BOOL SetPolyFillMode(PolyFillMode newMode);
+      // Set the polygon fill mode to be used by future drawing operations.
+
+    virtual BOOL SetPalette(const PPalette & newPal);
+      // Set the palette drawing tool to be used by future drawing operations.
+
+    virtual BOOL SetMappingRect(const PRect & rect);
+      // Set the source rectangle to be used in the coordinate transform in
+      // future drawing operations. This is a rectangle in the world
+      // coordinates of the application.
+
+    virtual BOOL SetViewportRect(const PRect & rect);
+      // Set the destination rectangle to be used in the coordinate transform
+      // in future drawing operations. This is a rectangle in the device
+      // coordinates (pixels) of the screen, printer etc
+
+
+    // New functions for class
     virtual HDC GetHDC() const;
       // Return the MS-Windows GDI Device Context.
 
@@ -429,8 +545,11 @@ typedef int PDIMENSION;
     void MakePen();
       // Make a MS-Windows GDI pen for the canvas
 
-    void MakeBrush(const PPattern & pattern);
+    void MakeBrush();
       // Make a MS-Windows GDI brush for the canvas
+
+    void SetTransform();
+      // Set the coordinate transforms.
 
     void SetUpDrawModes(DrawingModes mode, const PColour & colour);
       // Set the MS-Windows GDI ROP mode, background colour and background mode.
@@ -452,10 +571,10 @@ typedef int PDIMENSION;
 
     HPEN hPen;
       // The MS-Windows GDI pen object
-      
+
     HBRUSH hBrush;
       // The MS-Windows GDI brush object
-      
+
     HFONT hFont;
       // The MS-Windows GDI font object
 };
@@ -541,10 +660,10 @@ typedef int PDIMENSION;
 
     void SetWndFont();
       // Set the windows font when it is created or changed.
-      
+
     void SetWndCursor();
       // Set the windows cursor when it is changed in this interactor.
-      
+
     virtual const char * GetWinClsName() const;
       // Return the MS-Windows class name string as required by CreateWindow().
 
@@ -554,7 +673,7 @@ typedef int PDIMENSION;
     virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
       // Event handler for this interactor. Translates MS-Windows messages into
       // virtual member function calls.
-      
+
     virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
       // Default MS-Windows message handler.
 
@@ -572,7 +691,7 @@ typedef int PDIMENSION;
 
 
     friend class PApplication;
-};                                     
+};
 
 #define DeadHWND ((HWND)-1)
 
@@ -1044,9 +1163,8 @@ class PResourceData;
 
     PResourceData * strings;
       // Resource strings for filling list boxes etc. Info for EnumDlgChildren.
- 
-    friend BOOL CALLBACK _export
-                              EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
+
+    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
 };
 
 
@@ -1063,7 +1181,7 @@ class PResourceData;
     virtual DWORD GetStyle() const;
       // Return the MS-Windows style used in CreateWindow().
 
-    friend BOOL CALLBACK _export EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
+    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
 };
 
 
@@ -1153,7 +1271,7 @@ class PResourceData;
       // Execute the dialog in a mode.
 
 
-  protected:      
+  protected:
     // Overrides from class PInteractor
     virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
       // Event handler for this interactor. Translates MS-Windows messages into
@@ -1195,8 +1313,8 @@ class PResourceData;
     // Overrides from class PContainer
     void DestroyContents();
       // Destroy the top level window and menu.
-      
-      
+
+
     // Overrides from class PInteractor
     void SetPosition(PORDINATE x, PORDINATE y,
                      PositionOrigin xOrigin = TopLeftScreen,
@@ -1357,8 +1475,8 @@ class PResourceData;
           { return theKey != ((const HWNDKey &)obj).theKey
                                                      ? GreaterThan : EqualTo; }
         inline PINDEX HashFunction() const
-          { return ((WORD)theKey/8)%23; }
-    
+          { return ((UINT)theKey/8)%23; }
+
       private:
         HWND theKey;
     };
@@ -1368,7 +1486,7 @@ class PResourceData;
     PLIST(NonModalDict, PDialog);
     NonModalDict NonModalDialogs;
 
-    friend LRESULT FAR PASCAL _export
+    friend LRESULT EXPORTED
                     WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
       // Core function for receiving messages. This dispatches messages to the
       // interactors found in the PApplication::CreatedWindows dictionary. Once
@@ -1378,7 +1496,7 @@ class PResourceData;
       // Called by the static function above but is now bound to the
       // application object data.
 
-    friend BOOL FAR PASCAL _export
+    friend BOOL EXPORTED
                     DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
       // Core function for receiving messages. This dispatches messages to the
       // dialogs found in the PApplication::CreatedWindows dictionary. Once
@@ -1424,9 +1542,9 @@ extern "C" char **__argv;
 
 #define DECLARE_MAIN(cls) \
   static PApplication * PApplicationInstance = NULL; \
-  LRESULT FAR PASCAL _export WndProc(HWND hW, UINT msg, WPARAM wP, LPARAM lP) \
+  LRESULT EXPORTED WndProc(HWND hW, UINT msg, WPARAM wP, LPARAM lP) \
     { return PApplicationInstance->WndProc(hW, msg, wP, lP); } \
-  BOOL FAR PASCAL _export DlgProc(HWND hW, UINT msg, WPARAM wP, LPARAM lP) \
+  BOOL EXPORTED DlgProc(HWND hW, UINT msg, WPARAM wP, LPARAM lP) \
     { return PApplicationInstance->DlgProc(hW, msg, wP, lP); } \
   extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
     { return (PApplicationInstance = new cls)->Main(hInst, __argc, __argv); }
@@ -1435,6 +1553,9 @@ extern "C" char **__argv;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+
+#include "../../common/osutil.inl"
+#include "osutil.inl"
 
 #include "../../common/pwlib.inl"
 #include "pwlib.inl"
