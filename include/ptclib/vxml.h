@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.36  2004/12/08 00:52:06  csoutheren
+ * Added GetSampleFrequency function
+ *
  * Revision 1.35  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -696,6 +699,9 @@ class PVXMLChannel : public PDelayChannel
     void SetPause(BOOL _pause) { paused = _pause; }
 
     void SetName(const PString & name) { channelName = name; }
+
+    unsigned GetSampleFrequency() const
+    { return sampleFrequency; }
 
   protected:
     PVXMLChannelInterface * vxmlInterface;
