@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.22  1998/10/13 14:13:16  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.21  1998/09/24 03:29:57  robertj
  * Added open software license.
  *
@@ -238,8 +241,8 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #endif
 
 
-#ifdef PMEMCHECK32
 #ifdef _DEBUG
+#ifdef PMEMCHECK32
 #ifdef PMEMORY_CHECK
 #undef PMEMORY_CHECK
 #endif
@@ -248,6 +251,10 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #define MCX_GetUserNameA
 #define MCX_GetPath
 #include <memcheck.h>
+#else
+#ifndef PMEMORY_CHECK
+#define PMEMORY_CHECK
+#endif
 #endif
 #endif
 
