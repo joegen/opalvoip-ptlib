@@ -5750,7 +5750,7 @@ done
 
   if test "${HAS_SDL:-unset}" != "unset" ; then
     if test "${X11LIBDIR:-unset}" == "unset" ; then
-	X11LIBDIR=/usr/lib/X11R6
+	X11LIBDIR=/usr/X11R6/lib
     fi
     echo "$as_me:$LINENO: checking for SDL_CreateYUVOverlay in -lSDL" >&5
 echo $ECHO_N "checking for SDL_CreateYUVOverlay in -lSDL... $ECHO_C" >&6
