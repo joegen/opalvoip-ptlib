@@ -22,6 +22,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30  2004/06/19 07:21:08  csoutheren
+ * Change TTS engine registration to use abstract factory code
+ * Started disentanglement of PVXMLChannel from PVXMLSession
+ * Fixed problem with VXML session closing if played data file is not exact frame size multiple
+ * Allowed PVXMLSession to be used without a VXML script
+ * Changed PVXMLChannel to handle "file:" URLs
+ * Numerous other small improvements and optimisations
+ *
  * Revision 1.29  2004/06/02 08:29:28  csoutheren
  * Added new code from Andreas Sikkema to implement various VXML features
  *
@@ -222,15 +230,29 @@ PLIST(PVXMLCache, PVXMLCacheItem);
 
 class PVXMLChannel;
 
-class PVXMLSession : public PIndirectChannel
+class PVXMLChannelInterface {
+  public:
+    virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt) = 0;
+    virtual void RecordEnd() = 0;
+    virtual void OnEndRecording(const PString & channelName) = 0;
+    virtual void Trigger() = 0;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 {
   PCLASSINFO(PVXMLSession, PIndirectChannel);
   public:
     PVXMLSession(PTextToSpeech * tts = NULL, BOOL autoDelete = FALSE);
     ~PVXMLSession();
 
+    void SetFinishWhenEmpty(BOOL v)
+    { finishWhenEmpty = v; }
+
     // new functions
     void SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
+    void SetTextToSpeech(const PString & ttsName);
 
     virtual BOOL Load(const PString & source);
     virtual BOOL LoadFile(const PFilePath & file);
@@ -244,6 +266,8 @@ class PVXMLSession : public PIndirectChannel
       PVXMLChannel * out
     );
     virtual BOOL Close();
+
+    BOOL Execute();
 
     PVXMLChannel * GetIncomingChannel() const { return incomingChannel; }
     PVXMLChannel * GetOutgoingChannel() const { return outgoingChannel; }
@@ -261,19 +285,14 @@ class PVXMLSession : public PIndirectChannel
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 
     virtual BOOL StartRecording(const PFilePath & fn, BOOL recordDTMFTerm, const PTimeInterval & recordMaxTime, const PTimeInterval & recordFinalSilence);
-    virtual void RecordEnd();
     virtual BOOL EndRecording();
     virtual BOOL IsPlaying() const;
     virtual BOOL IsRecording() const;
-
-    virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt);
 
     virtual BOOL OnUserInput(const PString & str);
 
     PString GetXMLError() const;
 
-    virtual void SetEmptyAction(BOOL v) { emptyAction = v; }
-    virtual BOOL OnEmptyAction()        { return emptyAction; }
     virtual void OnEndSession()         { }
 
     virtual PString GetVar(const PString & str) const;
@@ -285,17 +304,23 @@ class PVXMLSession : public PIndirectChannel
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
-    void AllowClearCall();
     virtual BOOL DoTransfer(const PVXMLTransferOptions &) { return TRUE; }
     virtual void OnTransfer(const PVXMLTransferResult &);
-
-    virtual BOOL DoExit()                                 { return TRUE; }
 
     void SetCallingToken( PString& token ) { callingCallToken = token; }
 
     PXMLElement * FindHandler(const PString & event);
 
+    // overrides from VXMLChannelInterface
+    PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt);
+    void OnEndRecording(const PString & channelName);
+    void RecordEnd();
+    void Trigger();
+
   protected:
+    void Initialise();
+
+    void AllowClearCall();
     void ProcessUserInput();
     void ProcessNode();
     void ProcessGrammar();
@@ -321,7 +346,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual BOOL TraverseTransfer();
 
-    friend class PVXMLChannel;
+    //friend class PVXMLChannel;
 
     PSyncPoint waitForEvent;
 
@@ -347,6 +372,8 @@ class PVXMLSession : public PIndirectChannel
     PSyncPoint    recordSync;
 
     BOOL loaded;
+    BOOL finishWhenEmpty;
+    BOOL allowFinish;
     PURL rootURL;
     BOOL emptyAction;
 
@@ -487,7 +514,7 @@ class PVXMLChannel : public PIndirectChannel
   PCLASSINFO(PVXMLChannel, PIndirectChannel);
   public:
     PVXMLChannel(
-      PVXMLSession & _vxml,
+      PVXMLChannelInterface & _vxml,
       BOOL incoming,
       const PString & fmtName,
       PINDEX frameBytes,
@@ -505,6 +532,8 @@ class PVXMLChannel : public PIndirectChannel
 
     // new functions
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
+    PWAVFile * GetWAVFile() const
+    { return wavFile; }
 
     const PString & GetFormatName() const { return formatName; }
     BOOL IsMediaPCM() const { return formatName == "PCM-16"; }
@@ -540,7 +569,7 @@ class PVXMLChannel : public PIndirectChannel
     void SetName(const PString & name) { channelName = name; }
 
   protected:
-    PVXMLSession & vxml;
+    PVXMLChannelInterface & vxmlInterface;
     BOOL isIncoming;
     PString formatName;
     unsigned sampleFrequency;
