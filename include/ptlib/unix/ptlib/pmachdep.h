@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.38  2000/05/05 07:08:01  robertj
+ * Same again for FreeBSD and Solaris
+ *
  * Revision 1.37  2000/05/05 05:06:38  robertj
  * Added tcp.h to get TCP_NODELAY for setsockopt call.
  *
@@ -146,6 +149,7 @@ typedef size_t socklen_t;
 #include <sys/sockio.h>
 #include <sys/signal.h>
 #include <net/if.h>
+#include <netinet/tcp.h>
 
 /* socklen_t is defined in FreeBSD 3.4-STABLE, 4.0-RELEASE and above */
 #if (P_FREEBSD <= 340000)
@@ -230,6 +234,7 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <net/if.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <dlfcn.h>
 #include <net/if.h>
 #include <sys/sockio.h>
