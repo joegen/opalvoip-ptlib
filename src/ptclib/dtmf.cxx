@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.12  2004/11/17 10:13:14  csoutheren
+ * Fixed compilation with gcc 4.0.0
+ *
  * Revision 1.11  2004/09/09 23:50:49  csoutheren
  * Fixed problem with duplicate definition of sinetab causing problems
  *
@@ -287,7 +290,7 @@ void PDTMFEncoder::AddTone(char _digit, unsigned len)
   else
     return;
 
-  AddTone(dtmfFreqs[digit][0], dtmfFreqs[digit][1], len);
+  AddTone(dtmfFreqs[(int)digit][0], dtmfFreqs[(int)digit][1], len);
 }
 
 void PDTMFEncoder::AddTone(const PString & str, unsigned len)
