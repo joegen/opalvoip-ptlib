@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.1 1996/01/23 13:04:20 robertj Exp $
+ * $Id: http.h,v 1.2 1996/01/26 02:24:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.2  1996/01/26 02:24:26  robertj
+ * Further implemetation.
+ *
  * Revision 1.1  1996/01/23 13:04:20  robertj
  * Initial revision
  *
@@ -171,14 +174,9 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
      */
 
 
-    PDECLARE_STRING_DICTIONARY(PostDict, PCaselessString)
-      public:
-        PostDict(const PString & str);
-    };
-
     BOOL PostData(
-      const PString & url,    // Universal Resource Locator for document.
-      const PostDict & info   // Information to be posted to the HTTP server.
+      const PString & url,          // Universal Resource Locator for document.
+      const PStringToString & data  // Information posted to the HTTP server.
     );
     /* Post the data specified to the URL.
 
@@ -246,9 +244,9 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
      */
 
     virtual void OnPOST(
-      const PURL & url,       // Universal Resource Locator for document.
-      const PMIMEInfo & info, // Extra MIME information in command.
-      const PostDict & data   // Variables provided in the POST data.
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & info,       // Extra MIME information in command.
+      const PStringToString & data  // Variables provided in the POST data.
     );
     /* Handle a POST command from a client.
 
@@ -288,10 +286,30 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
       NumStatusCodes
     };
 
-    virtual void OnError(StatusCode code, const PString & str);
-    void SendResponse(StatusCode code, 
-                      PMIMEInfo & headers,
-                 const PString & entityBody);
+    void StartResponse(
+      StatusCode code,      // Status code for the response.
+      PMIMEInfo & headers,  // MIME variables included in response.
+      PINDEX bodySize       // Size of the rest of the response.
+    );
+    /* Write a reply back to the client. This will send the properly formatted
+       reply field followed by the MIME headers which will automatically
+       include mandatory fields. Additional fields may be included into the
+       <CODE>headers</CODE> parameter beforehand.
+
+       If the major version of the request was 0.9 then this function does
+       nothing.
+     */
+
+    virtual void OnError(
+      StatusCode code,      // Status code for the error response.
+      const PString & extra // Extra information included in the response.
+    );
+    /* Write an error response for the specified code.
+
+       Depending on the <CODE>code</CODE> parameter this function will also
+       send a HTML version of the status code for display on the remote client
+       viewer.
+     */
 
 
   protected:
@@ -333,15 +351,15 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTSimpleAuth
+// PHTTPSimpleAuth
 
-PDECLARE_CLASS(PHTSimpleAuth, PHTTPAuthority)
+PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
 /* This class describes the simplest authorisation mechanism for a Universal
    Resource Locator, a fixed realm, username and password.
  */
 
   public:
-    PHTSimpleAuth(
+    PHTTPSimpleAuth(
       const PString & realm,      // Name space for the username and password.
       const PString & username,   // Username that this object wiull authorise.
       const PString & password    // Password for the above username.
@@ -394,17 +412,21 @@ PDECLARE_CLASS(PHTTPResource, PObject)
    these resources are available to the <A>PHTTPSocket</A> class.
  */
 
-  public:
+  protected:
     PHTTPResource(
-      const PURL & url                // Name of the resource in URL space.
+      const PURL & url,              // Name of the resource in URL space.
+      const PString & contentType    // MIME content type for the resource.
     );
     PHTTPResource(
-      const PURL & url,           // Name of the resource in URL space.
-      const PHTTPAuthority & auth  // Authorisation for the resource.
+      const PURL & url,              // Name of the resource in URL space.
+      const PString & contentType,   // MIME content type for the resource.
+      const PHTTPAuthority & auth    // Authorisation for the resource.
     );
     // Create a new HTTP Resource.
 
-    ~PHTTPResource();
+
+  public:
+    virtual ~PHTTPResource();
     // Destroy the HTTP Resource.
 
 
@@ -416,6 +438,19 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        The URL for this resource.
      */
 
+    const PString & GetContentType() const { return contentType; }
+    /* Get the current content type for the file.
+
+       <H2>Returns:</H2>
+       TRUE if data obtained and should be sent.
+     */
+
+    void SetContentType(
+      const PString & newType
+    ) { contentType = newType; }
+    /* Set the current content type for the file.
+     */
+
     virtual void OnGET(
       PHTTPSocket & socket,       // HTTP socket that received the request
       const PURL & url,           // Universal Resource Locator for document.
@@ -424,7 +459,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Handle the GET command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtual <A>GetData()</A> to get a memory block to be sent
+       call the virtual <A>OnLoadData()</A> to get a memory block to be sent
        to the socket.
      */
 
@@ -436,15 +471,15 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Handle the HEAD command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtual <A>GetHead()</A> to get a memory block to be sent
+       call the virtual <A>OnLoadHead()</A> to get a memory block to be sent
        to the socket.
      */
 
     virtual void OnPOST(
-      PHTTPSocket & socket,       // HTTP socket that received the request
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info,     // Extra MIME information in command.
-      const PHTTPSocket::PostDict & data // Variables in the POST data.
+      PHTTPSocket & socket,         // HTTP socket that received the request
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & info,       // Extra MIME information in command.
+      const PStringToString & data  // Variables in the POST data.
     );
     /* Handle the POST command passed from the HTTP socket.
 
@@ -454,7 +489,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
 
-    virtual PHTTPSocket::StatusCode GetData(
+    virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
       PCharArray & data,          // Data used in reply.
@@ -466,7 +501,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        TRUE if data obtained and should be sent.
      */
 
-    virtual PHTTPSocket::StatusCode GetHead(
+    virtual PHTTPSocket::StatusCode OnLoadHead(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
       PCharArray & data,          // Data used in reply.
@@ -475,7 +510,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Get the head of block of data (eg HTML) that the resource contains.
 
        The default action of this function is to return whatever the
-       <A>GetData()</A> function does.
+       <A>OnLoadData()</A> function does.
 
        <H2>Returns:</H2>
        TRUE if data obtained and should be sent.
@@ -484,7 +519,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     virtual PHTTPSocket::StatusCode Post(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & info,       // Extra MIME information in command.
-      const PHTTPSocket::PostDict & data  // Variables in the POST data.
+      const PStringToString & data  // Variables in the POST data.
     );
     /* Get a block of data (eg HTML) that the resource contains.
 
@@ -505,7 +540,64 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     PURL baseURL;
+    PString contentType;
     PHTTPAuthority * authority;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPString
+
+PDECLARE_CLASS(PHTTPString, PHTTPResource)
+/* This object describes a HyperText Transport Protocol resource which is a
+   string kept in memory. For instance a pre-calculated HTML string could be
+   set in this type of resource.
+ */
+
+  public:
+    PHTTPString(
+      const PURL & url,            // Name of the resource in URL space.
+      const PString & str          // String to return in this resource.
+    );
+    PHTTPString(
+      const PURL & url,            // Name of the resource in URL space.
+      const PString & str,         // String to return in this resource.
+      const PString & contentType  // MIME content type for the file.
+    );
+    PHTTPString(
+      const PURL & url,            // Name of the resource in URL space.
+      const PString & str,         // String to return in this resource.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    PHTTPString(
+      const PURL & url,            // Name of the resource in URL space.
+      const PString & str,         // String to return in this resource.
+      const PString & contentType, // MIME content type for the file.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    /* Contruct a new simple string resource for the HTTP space. If no MIME
+       content type is specified then a default type is used depending on the
+       file type. For example, "text/html" is used of the file type is
+       ".html" or ".htm". The default for an unknown type is "text/plain".
+     */
+
+
+  // Overrides from class PHTTPResource
+    virtual PHTTPSocket::StatusCode OnLoadData(
+      const PURL & url,           // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME,   // Extra MIME information in command.
+      PCharArray & data,          // Data used in reply.
+      PMIMEInfo & outMIME         // MIME information used in reply.
+    );
+    /* Get a block of data (eg HTML) that the resource contains.
+
+       <H2>Returns:</H2>
+       TRUE if data obtained and should be sent.
+     */
+
+
+  protected:
+    PString string;
 };
 
 
@@ -521,13 +613,34 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 
   public:
     PHTTPFile(
-      const PURL & url,       // Name of the resource in URL space.
-      const PFilePath & file  // Location of file in file system.
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file       // Location of file in file system.
     );
+    PHTTPFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PString & contentType  // MIME content type for the file.
+    );
+    PHTTPFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    PHTTPFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PString & contentType, // MIME content type for the file.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    /* Contruct a new simple file resource for the HTTP space. If no MIME
+       content type is specified then a default type is used depending on the
+       file type. For example, "text/html" is used of the file type is
+       ".html" or ".htm". The default for an unknown type is "text/plain".
+     */
 
 
   // Overrides from class PHTTPResource
-    virtual PHTTPSocket::StatusCode GetData(
+    virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
       PCharArray & data,          // Data used in reply.
@@ -539,8 +652,9 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
        TRUE if data obtained and should be sent.
      */
 
+
   protected:
-    PFilePath path;
+    PFilePath filePath;
 };
 
 
@@ -556,17 +670,41 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPResource)
    All subdirectories and files are available as URL names in the HTTP name
    space. This effectively grafts a file system directory tree onto the URL
    name space tree.
+
+   When a file is sent to the remote client the MIME content type is derived
+   from the file type or extension. A dictionary is provided for this purpose.
+   The default values placed in this dictionary are:
+      <PRE>
+      .html, .htm  =>  text/html
+      .jpg, .jpeg, .jpe  =>  text/jpeg
+      .aif, .aiff  =>  audio/aiff
+      .au, .snd  =>  audio/basic
+      .wav  =>  audio/wav
+      .gif  => image/gif
+      .tif, .tiff  =>  image/tiff
+      .xbm  => image/x-bitmap
+      .avi  =>  video/avi
+      .mpg, .mpeg  =>  video/mpeg
+      .qt, .mov  =>  video/quicktime
+      </PRE>
+   all other file types will be of MIME type "text/plain".
  */
 
   public:
     PHTTPDirectory(
-      const PURL & url,       // Name of the resource in URL space.
-      const PDirectory & file  // Location of file in file system.
+      const PURL & url,            // Name of the resource in URL space.
+      const PDirectory & dir       // Location of file in file system.
     );
+    PHTTPDirectory(
+      const PURL & url,            // Name of the resource in URL space.
+      const PDirectory & dir,      // Location of file in file system.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    // Construct a new directory resource for HTTP.
 
 
   // Overrides from class PHTTPResource
-    virtual PHTTPSocket::StatusCode GetData(
+    virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
       PCharArray & data,          // Data used in reply.
@@ -578,8 +716,9 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPResource)
        TRUE if data obtained and should be sent.
      */
 
+
   protected:
-    PDirectory path;
+    PDirectory basePath;
 };
 
 
