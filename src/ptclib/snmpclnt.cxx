@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.8  1998/11/30 04:52:07  robertj
+ * New directory structure
+ *
  * Revision 1.7  1998/10/13 14:06:34  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -51,7 +54,7 @@
  */
 
 #include <ptlib.h>
-#include <psnmp.h>
+#include <ptclib/psnmp.h>
 
 #define new PNEW
 
