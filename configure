@@ -1860,7 +1860,8 @@ MINOR_VERSION=$MINOR_VERSION
 BUILD_NUMBER=$BUILD_NUMBER
 
 
-echo "PTLib version is ${PWLIB_VERSION}"
+{ echo "$as_me:$LINENO: \"PTLib version is ${PWLIB_VERSION}\"" >&5
+echo "$as_me: \"PTLib version is ${PWLIB_VERSION}\"" >&6;};
 
 
 # Make sure we can run config.sub.
@@ -1982,7 +1983,8 @@ case "$target_os" in
   * )		   OSTYPE="$target_os" ;
   		   OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_UNKNOWN=$OSTYPE_$OSRELEASE" ;
-		   echo "OS $target_os not recognized - proceed with caution!" ;;
+		   { echo "$as_me:$LINENO: WARNING: \"OS $target_os not recognized - proceed with caution!\"" >&5
+echo "$as_me: WARNING: \"OS $target_os not recognized - proceed with caution!\"" >&2;} ;;
 esac
 
 MACHTYPE=
@@ -2015,12 +2017,16 @@ case "$target_cpu" in
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
    * )		   MACHTYPE=$target_cpu ;
-		   echo "CPU $target_cpu not recognized - proceed with caution!" ;;
+		   { echo "$as_me:$LINENO: WARNING: \"CPU $target_cpu not recognized - proceed with caution!\"" >&5
+echo "$as_me: WARNING: \"CPU $target_cpu not recognized - proceed with caution!\"" >&2;} ;;
 esac
 
-echo "OSTYPE set to $OSTYPE";
-echo "OSRELEASE set to $OSRELEASE";
-echo "MACHTYPE set to $MACHTYPE";
+{ echo "$as_me:$LINENO: \"OSTYPE set to $OSTYPE\"" >&5
+echo "$as_me: \"OSTYPE set to $OSTYPE\"" >&6;};
+{ echo "$as_me:$LINENO: \"OSRELEASE set to $OSRELEASE\"" >&5
+echo "$as_me: \"OSRELEASE set to $OSRELEASE\"" >&6;};
+{ echo "$as_me:$LINENO: \"MACHTYPE set to $MACHTYPE\"" >&5
+echo "$as_me: \"MACHTYPE set to $MACHTYPE\"" >&6;};
 
 MACHTYPE=$MACHTYPE
 
@@ -3862,6 +3868,7 @@ _ACEOF
 
 
 LIBS=""
+HAS_LIBDL=no
 if test ${OSTYPE} = Darwin ; then
 
 cat >>confdefs.h <<\_ACEOF
@@ -4006,19 +4013,64 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
- P_DYNALINK=1
+ HAS_DLFCN=yes
+else
+  HAS_DLFCN=no
 fi
 
 done
 
-  if test "u${P_DYNALINK:-nset}" != "unset" ; then
+  if test "$HAS_DLFCN" = yes ; then
+    echo "$as_me:$LINENO: checking if dlopen is available" >&5
+echo $ECHO_N "checking if dlopen is available... $ECHO_C" >&6
+    cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dlfcn.h>
+int
+main ()
+{
+void * p = dlopen("lib", 0);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  HAS_DLOPEN=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+HAS_DLOPEN=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+    if test "$HAS_DLOPEN" = no ; then
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    else
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define P_DYNALINK 1
 _ACEOF
 
-  else
-    echo "$as_me:$LINENO: checking for dlopen in -ldl" >&5
+      echo "$as_me:$LINENO: checking for dlopen in -ldl" >&5
 echo $ECHO_N "checking for dlopen in -ldl... $ECHO_C" >&6
 if test "${ac_cv_lib_dl_dlopen+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -4077,12 +4129,6 @@ if test $ac_cv_lib_dl_dlopen = yes; then
 else
   HAS_LIBDL=no
 fi
-
-    if test ${HAS_LIBDL} = yes ; then
-
-cat >>confdefs.h <<\_ACEOF
-#define P_DYNALINK 1
-_ACEOF
 
     fi
   fi
@@ -6006,7 +6052,8 @@ cat >>confdefs.h <<\_ACEOF
 #define NO_VIDEO_CAPTURE 1
 _ACEOF
 
-  echo "No Video Capture support"
+  { echo "$as_me:$LINENO: \"No Video Capture support\"" >&5
+echo "$as_me: \"No Video Capture support\"" >&6;}
 fi
 
 
