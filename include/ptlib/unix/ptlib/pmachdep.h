@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.22  1999/01/08 01:28:16  robertj
+ * Added pthreads support for FreeBSD
+ *
  * Revision 1.21  1999/01/07 03:37:15  robertj
  * dded default for pthreads, shortens command line in compile.
  *
@@ -47,17 +50,12 @@
  *
  */
 
-#ifndef PMACHDEP_H
-#define PMACHDEP_H
+#ifndef _PMACHDEP_H
+#define _PMACHDEP_H
 
-#include <netdb.h>
-
-#if defined(P_PTHREADS)
-#define P_PLATFORM_HAS_THREADS
-#include <pthread.h>
-#endif
-
+///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
+
 #include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
@@ -81,10 +79,15 @@ typedef int socklen_t;
 typedef size_t socklen_t;
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_FREEBSD)
 
 #if defined(P_PTHREADS)
 #define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+
+#include <pthread.h>
+extern "C" int sigwait(sigset_t *set);
 #endif
 
 #include <errno.h>
@@ -103,6 +106,7 @@ typedef size_t socklen_t;
 
 typedef int socklen_t;
 
+///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
 
 #include <errno.h>
@@ -142,6 +146,7 @@ int gethostname(char *, int);
 
 };
 
+///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_SUN4)
 
 #include <errno.h>
@@ -216,9 +221,18 @@ struct servent * getservbyname(const char *, const char *);
 
 #else
 
+// Other operating systems here
 
 #endif
 
+#include <netdb.h>
 
+#if defined(P_PTHREADS)
+#define P_PLATFORM_HAS_THREADS
+#include <pthread.h>
 #endif
 
+
+#endif // _PMACHDEP_H
+
+// End of file
