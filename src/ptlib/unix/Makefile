@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.43  1999/04/18 09:36:31  robertj
+# Get date grammar build.
+#
 # Revision 1.42  1999/04/16 14:37:41  craigs
 # Added build for getdate.y
 #
@@ -256,7 +259,10 @@ $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
 $(OBJDIR)/getdate.tab.o:	$(COMMON_SRC_DIR)/getdate.tab.c
-	$(CC) $(CFLAGS) $(STDCFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+
+$(DEPDIR)/getdate.tab.dep:	$(COMMON_SRC_DIR)/getdate.tab.c
+	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 $(COMMON_SRC_DIR)/getdate.tab.c:	$(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y

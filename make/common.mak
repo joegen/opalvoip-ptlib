@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.32  1999/04/18 09:36:31  robertj
+# Get date grammar build.
+#
 # Revision 1.31  1999/02/19 11:32:10  robertj
 # Improved the "release" target to build release tar files.
 #
@@ -72,6 +75,7 @@
 vpath %.cxx $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
+vpath %.dep $(DEPDIR)
 
 #
 # add common directory to include path - must be after PW and PT directories
@@ -116,6 +120,11 @@ $(DEPDIR)/%.dep : %.cxx
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
+
+$(DEPDIR)/%.dep : %.c 
+	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
+	@printf %s $(OBJDIR)/ > $@
+	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
