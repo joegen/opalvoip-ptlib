@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.129  2003/03/05 08:48:32  robertj
+ * Added PStringArray::ToCharAray() function at suggestion of Ravelli Rossano
+ *
  * Revision 1.128  2003/02/02 23:29:34  robertj
  * Fixed bug in RightTrim() (lost off last non blank char), tnanks Joerg Schoemer
  *
@@ -2524,7 +2527,15 @@ PStringArray::PStringArray(PINDEX count, char const * const * strarr, BOOL casel
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
+  if (count == P_MAX_INDEX) {
+    count = 0;
+    while (strarr[count] != NULL)
+      count++;
+  }
+
   SetSize(count);
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
@@ -2560,6 +2571,40 @@ PString & PStringArray::operator[](PINDEX index)
   if ((*theArray)[index] == NULL)
     (*theArray)[index] = new PString;
   return *(PString *)(*theArray)[index];
+}
+
+
+char ** PStringArray::ToCharArray(PCharArray * storage) const
+{
+  PINDEX i;
+
+  PINDEX mySize = GetSize();
+  PINDEX storageSize = (mySize+1)*sizeof(char *);
+  for (i = 0; i < mySize; i++)
+    storageSize += (*this)[i].GetLength()+1;
+
+  char ** storagePtr;
+  if (storage != NULL)
+    storagePtr = (char **)storage->GetPointer(storageSize);
+  else
+    storagePtr = (char **)malloc(storageSize);
+
+  if (storagePtr == NULL)
+    return NULL;
+
+  char * strPtr = (char *)&storagePtr[GetSize()+1];
+
+  for (i = 0; i < mySize; i++) {
+    storagePtr[i] = strPtr;
+    const PString & str = (*this)[i];
+    PINDEX len = str.GetLength()+1;
+    memcpy(strPtr, (const char *)str, len);
+    strPtr += len;
+  }
+
+  storagePtr[i] = NULL;
+
+  return storagePtr;
 }
 
 

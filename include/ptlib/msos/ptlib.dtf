@@ -2595,6 +2595,7 @@ EXPORTS
     ?TestAllFormats@PVideoInputDevice@@UAEHXZ @3159 NONAME ;public: virtual int __thiscall PVideoInputDevice::TestAllFormats(void)
     ?ThreadEntry@PServiceProcess@@AAEXXZ @1742 NONAME ;private: void __thiscall PServiceProcess::ThreadEntry(void)
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @1743 NONAME ;public: static class PTimeInterval  __cdecl PTimer::Tick(void)
+    ?ToCharArray@PStringArray@@QBEPAPADPAVPCharArray@@@Z @3404 NONAME ;public: char * * __thiscall PStringArray::ToCharArray(class PCharArray *)const 
     ?ToggleVFlipInput@PVideoChannel@@QAEHXZ @3160 NONAME ;public: int __thiscall PVideoChannel::ToggleVFlipInput(void)
     ?ToggleVFlipState@PFakeVideoInputDevice@@UAEHXZ @3161 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::ToggleVFlipState(void)
     ?ToggleVFlipState@PVideoDevice@@UAEHXZ @3173 NONAME ;public: virtual int __thiscall PVideoDevice::ToggleVFlipState(void)
