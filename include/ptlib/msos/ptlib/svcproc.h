@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.14 1996/10/08 13:04:53 robertj Exp $
+ * $Id: svcproc.h,v 1.15 1996/10/31 12:38:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.15  1996/10/31 12:38:56  robertj
+ * Fixed bug in window not being displayed when command line used.
+ *
  * Revision 1.14  1996/10/08 13:04:53  robertj
  * Rewrite to use standard window isntead of console window.
  *
@@ -121,7 +124,7 @@
     ProcessCommandResult ProcessCommand(const char * cmd);
     // Process command line argument for controlling the service.
 
-    BOOL CreateControlWindow();
+    BOOL CreateControlWindow(BOOL createDebugWindow);
     static LPARAM WINAPI StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LPARAM WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void RunMessageLoop();
