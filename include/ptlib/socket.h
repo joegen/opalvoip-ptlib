@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.9 1995/03/14 12:42:39 robertj Exp $
+ * $Id: socket.h,v 1.10 1995/06/04 12:36:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.10  1995/06/04 12:36:37  robertj
+ * Slight redesign of port numbers on sockets.
+ *
  * Revision 1.9  1995/03/14 12:42:39  robertj
  * Updated documentation to use HTML codes.
  *
@@ -56,8 +59,7 @@ PDECLARE_CLASS(PSocket, PChannel)
 
   public:
     virtual BOOL Open(
-      const PString & hostname,   // Remote host address.
-      WORD portnum                // Remote port number.
+      const PString & address   // Address of remote machine to connect to.
     ) = 0;
     virtual BOOL Open(
       WORD port = 0             // Port number to use for the connection.
