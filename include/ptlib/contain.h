@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.52  1999/11/30 00:22:54  robertj
+ * Updated documentation for doc++
+ *
  * Revision 1.51  1999/08/22 12:13:42  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -484,7 +487,9 @@ class PContainer : public PObject
  */
 #define PDECLARE_CONTAINER(cls, par) \
                              class cls : public par { PCONTAINERINFO(cls, par)
-//}  Match previous brace in doc++ */
+#ifdef DOC_PLUS_PLUS
+} Match previous brace in doc++
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
