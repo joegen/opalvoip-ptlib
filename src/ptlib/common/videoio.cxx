@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.2  2000/07/25 13:38:26  robertj
+ * Added frame rate parameter to video frame grabber.
+ *
  * Revision 1.1  2000/07/15 09:47:35  robertj
  * Added video I/O device classes.
  *
@@ -43,6 +46,7 @@ PVideoDevice::PVideoDevice(VideoFormat videofmt,
   videoFormat = videofmt;
   channelNumber = channel;
   colourFormat = colourFmt;
+  frameRate = 15;
   frameWidth = CIF_WIDTH;
   frameHeight = CIF_HEIGHT;
 }
@@ -90,6 +94,19 @@ BOOL PVideoDevice::SetColourFormat(ColourFormat colourFmt)
 PVideoDevice::ColourFormat PVideoDevice::GetColourFormat() const
 {
   return colourFormat;
+}
+
+
+BOOL PVideoDevice::SetFrameRate(unsigned rate)
+{
+  frameRate = rate;
+  return IsOpen();
+}
+
+
+unsigned PVideoDevice::GetFrameRate() const
+{
+  return frameRate;
 }
 
 
