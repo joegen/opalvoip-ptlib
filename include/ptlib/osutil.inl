@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.66  1998/11/01 04:56:52  robertj
+ * Added BOOl return value to Parse() to indicate there are parameters available.
+ *
  * Revision 1.65  1998/10/30 12:23:56  robertj
  * Added ability to get all key values as a dictionary.
  *
@@ -665,8 +668,8 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 PINLINE void PArgList::SetArgs(int argc, char ** argv)
   { SetArgs(PStringArray(argc, argv)); }
 
-PINLINE void PArgList::Parse(const PString & theArgumentSpec, BOOL optionsBeforeParams)
-  { Parse((const char *)theArgumentSpec, optionsBeforeParams); }
+PINLINE BOOL PArgList::Parse(const PString & theArgumentSpec, BOOL optionsBeforeParams)
+  { return Parse((const char *)theArgumentSpec, optionsBeforeParams); }
 
 PINLINE BOOL PArgList::HasOption(char option) const
   { return GetOptionCount(option) != 0; }
