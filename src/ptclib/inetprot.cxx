@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.35 1998/01/26 02:49:20 robertj Exp $
+ * $Id: inetprot.cxx,v 1.36 1998/02/03 06:20:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.36  1998/02/03 06:20:25  robertj
+ * Fixed bug in Accept() function passing on to IP Accept().
+ *
  * Revision 1.35  1998/01/26 02:49:20  robertj
  * GNU support.
  *
@@ -304,7 +307,7 @@ BOOL PInternetProtocol::Accept(PSocket & listener)
 
   PTCPSocket * s = new PTCPSocket;
   s->SetReadTimeout(readTimeout);
-  Accept(listener);
+  s->Accept(listener);
   return AttachSocket(s);
 }
 
