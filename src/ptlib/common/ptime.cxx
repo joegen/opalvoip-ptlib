@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.11 1996/07/15 12:43:01 robertj Exp $
+ * $Id: ptime.cxx,v 1.12 1996/07/27 04:11:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.12  1996/07/27 04:11:28  robertj
+ * Added bullet proofing for invlid times - especially in Western time zones.
+ *
  * Revision 1.11  1996/07/15 12:43:01  robertj
  * Fixed MSVC 4.1 compiler bug.
  *
@@ -157,6 +160,25 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
 
 #if defined(_PTIME)
 
+static time_t p_mktime(struct tm * t, int zone)
+{
+  // mktime returns GMT, calculated using input_time - timezone. However, this
+  // assumes that the input time was a local time. If the input time wasn't a
+  // local time, then we have have to add the local timezone (without daylight
+  // savings) and subtract the specified zone offset to get GMT
+  // and then subtract
+  time_t theTime = mktime(t);
+  if (theTime == (time_t)-1)
+    theTime = 0;
+  else if (zone != PTime::Local) {
+    theTime += PTime::GetTimeZone()*60;  // convert to local time
+    if (theTime > zone*60)
+      theTime -= zone*60;           // and then to GMT
+  }
+  return theTime;
+}
+
+
 PTime::PTime(const PString & str)
 {
   PStringStream s = str;
@@ -187,12 +209,7 @@ PTime::PTime(int second, int minute, int hour,
   else
     t.tm_isdst = 0;
 
-  theTime = mktime(&t);
-
-  if (zone != Local) {
-    theTime += GetTimeZone()*60;  // convert to local time
-    theTime -= zone*60;           // and then to GMT
-  }
+  theTime = p_mktime(&t, zone);
 }
 
 
@@ -759,18 +776,7 @@ void PTime::ReadFrom(istream &strm)
   else
     t.tm_isdst = 0;
 
-  // create the time
-  theTime = mktime(&t);
-
-  // mktime returns GMT, calculated using input_time - timezone. However, this
-  // assumes that the input time was a local time. If the input time wasn't a
-  // local time, then we have have to add the local timezone (without daylight
-  // savings) and subtract the specified zone offset to get GMT
-  // and then subtract
-  if (zone != Local) {
-    theTime += GetTimeZone()*60;  // convert to local time
-    theTime -= zone*60;           // and then to GMT
-  }
+  theTime = p_mktime(&t, zone);
 }
 
 
