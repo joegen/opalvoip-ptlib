@@ -310,7 +310,6 @@ typedef int PDIMENSION;
         virtual ~Bitmap();
 
       protected:
-        virtual PObject * Clone() const;
         virtual Comparison Compare(const PObject & obj) const;
         virtual void DestroyContents();
         virtual BOOL SetSize(PINDEX size);
