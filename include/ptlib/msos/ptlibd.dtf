@@ -1494,6 +1494,7 @@ EXPORTS
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @1208 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @1209 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
     ?ConvertOSError@PChannel@@MAEHH@Z @3083 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
+    ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @3092 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @1213 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@MAEHH@Z @3084 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
     ?Copy@PFile@@QAEHABVPFilePath@@H@Z @1214 NONAME ;public: int __thiscall PFile::Copy(class PFilePath const &,int)
@@ -1988,7 +1989,6 @@ EXPORTS
     ?GetWriteChannel@PIndirectChannel@@QBEPAVPChannel@@XZ @1635 NONAME ;public: class PChannel * __thiscall PIndirectChannel::GetWriteChannel(void)const 
     ?GetWriteTimeout@PChannel@@QBE?AVPTimeInterval@@XZ @1636 NONAME ;public: class PTimeInterval  __thiscall PChannel::GetWriteTimeout(void)const 
     ?GetYear@PTime@@QBEHXZ @1637 NONAME ;public: int __thiscall PTime::GetYear(void)const 
-    ?GuardBytes@Header@PMemoryHeap@@2QBDB @2692 NONAME ;public: static char const * const  PMemoryHeap::Header::GuardBytes
     ?HasAged@PIPCacheData@@QBEHXZ @1640 NONAME ;public: int __thiscall PIPCacheData::HasAged(void)const 
     ?HashFunction@PIPCacheKey@@UBEHXZ @1641 NONAME ;public: virtual int __thiscall PIPCacheKey::HashFunction(void)const 
     ?HashFunction@PObject@@UBEHXZ @1642 NONAME ;public: virtual int __thiscall PObject::HashFunction(void)const 
@@ -2757,4 +2757,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @3092 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
+    ?GuardBytes@Header@PMemoryHeap@@2PADA @3093 NONAME ;public: static char *  PMemoryHeap::Header::GuardBytes
