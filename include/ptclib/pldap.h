@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.3  2003/03/31 09:02:43  robertj
+ * Added missing return for error number.
+ *
  * Revision 1.2  2003/03/31 03:32:41  robertj
  * Major addition of functionality.
  *
@@ -382,7 +385,7 @@ class PLDAPSession : public PObject
 
     /**Get the last OpenLDAP error code.
       */
-    int GetErrorNumber() const { errorNumber; }
+    int GetErrorNumber() const { return errorNumber; }
 
     /**Get the last OpenLDAP error as text string.
       */
