@@ -24,10 +24,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.2  2000/07/26 06:13:25  robertj
+ * Added missing pragma implementation for GNU headers.
+ *
  * Revision 1.1  2000/07/26 02:40:30  robertj
  * Added video I/O devices.
  *
  */
+
+#pragma implementation "videoio.h"
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
