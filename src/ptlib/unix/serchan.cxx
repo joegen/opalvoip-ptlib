@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.23  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.22  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -212,10 +216,8 @@ BOOL PSerialChannel::Open(const PString & port,
 #endif
     
     // if kill returns 0, then the port is in use
-    if (kill(lock_pid, 0) == 0) {
-      lastError = DeviceInUse;
-      return FALSE;
-    }
+    if (kill(lock_pid, 0) == 0)
+      return SetErrorValues(DeviceInUse, EBUSY);
 
     // remove the lock file
     lockfile.Remove();

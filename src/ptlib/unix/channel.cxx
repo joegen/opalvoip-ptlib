@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.31  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.30  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -128,7 +132,15 @@
 #include "../common/pchannel.cxx"
 
 
-PMutex PX_iostreamMutex;
+#ifdef P_NEED_IOSTREAM_MUTEX
+static PMutex iostreamMutex;
+#define IOSTREAM_MUTEX_WAIT()   iostreamMutex.Wait();
+#define IOSTREAM_MUTEX_SIGNAL() iostreamMutex.Signal();
+#else
+#define IOSTREAM_MUTEX_WAIT()
+#define IOSTREAM_MUTEX_SIGNAL()
+#endif
+
 
 ios::ios(const ios &)
 {
@@ -139,7 +151,8 @@ ios::ios(const ios &)
 void PChannel::Construct()
 {
   os_handle = -1;
-  px_blockedThread = NULL;
+  px_readThread = NULL;
+  px_writeThread = NULL;
 }
 
 
@@ -154,26 +167,56 @@ void PChannel::Construct()
 
 BOOL PChannel::PXSetIOBlock(int type, const PTimeInterval & timeout)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
+  ErrorGroup group;
+  switch (type) {
+    case PXReadBlock :
+      group = LastReadError;
+      break;
+    case PXWriteBlock :
+      group = LastWriteError;
+      break;
+    default :
+      group = LastGeneralError;
   }
 
-  px_blockedThread = PThread::Current();
-  int stat = px_blockedThread->PXBlockOnIO(os_handle, type, timeout);
-  px_blockedThread = NULL;
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, group);
+
+  PThread * blockedThread = PThread::Current();
+
+  px_threadMutex.Wait();
+  if (type != PXWriteBlock) {
+    PAssert(px_readThread == NULL, "Attempt to read from multiple threads.");
+    px_readThread = blockedThread;
+  }
+  else {
+    PTRACE(4, "PWLib\tBlocking on write.");
+    px_writeMutex.Wait();
+    px_writeThread = blockedThread;
+  }
+  px_threadMutex.Signal();
+
+  int stat = blockedThread->PXBlockOnIO(os_handle, type, timeout);
+
+  px_threadMutex.Wait();
+  if (type != PXWriteBlock)
+    px_readThread = NULL;
+  else {
+    px_writeThread = NULL;
+    px_writeMutex.Signal();
+  }
+  px_threadMutex.Signal();
 
   // if select returned < 0, then covert errno into lastError and return FALSE
   if (stat < 0)
-    return ConvertOSError(stat);
+    return ConvertOSError(stat, group);
 
   // if the select succeeded, then return TRUE
   if (stat > 0) 
     return TRUE;
 
   // otherwise, a timeout occurred so return FALSE
-  lastError = Timeout;
-  return FALSE;
+  return SetErrorValues(Timeout, ETIMEDOUT, group);
 }
 
 
@@ -181,15 +224,13 @@ BOOL PChannel::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
     return FALSE;
 
-  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
+  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len), LastReadError))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -200,52 +241,58 @@ BOOL PChannel::Read(void * buf, PINDEX len)
 BOOL PChannel::Write(const void * buf, PINDEX len)
 {
   // if the os_handle isn't open, no can do
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   // flush the buffer before doing a write
-  PX_iostreamMutex.Wait();
+  IOSTREAM_MUTEX_WAIT();
   flush();
-  PX_iostreamMutex.Signal();
+  IOSTREAM_MUTEX_SIGNAL();
 
   lastWriteCount = 0;
   
   while (len > 0) {
 
-    int sendResult = ::write(os_handle, ((const char *)buf)+lastWriteCount, len);
-    if (sendResult > 0)
-      PThread::Yield();
-    else {
+    int result;
+    while ((result = ::write(os_handle, ((char *)buf)+lastWriteCount, len)) < 0) {
       if (errno != EWOULDBLOCK)
-        return ConvertOSError(sendResult);
+        return ConvertOSError(-1, LastWriteError);
 
       if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
         return FALSE;
-
-      sendResult = ::write(os_handle, ((const char *)buf)+lastWriteCount, len);
-
     }
 
-    if (!ConvertOSError(sendResult))
-      return FALSE;
-
-    lastWriteCount += sendResult;
-    len -= sendResult;
+    lastWriteCount += result;
+    len -= result;
   }
 
-  return TRUE;
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
+  PThread::Yield(); // Starvation prevention
+#endif
+
+  // Reset all the errors.
+  return ConvertOSError(0, LastWriteError);
 }
 
 BOOL PChannel::Close()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
   
   return ConvertOSError(PXClose());
+}
+
+
+static void AbortIO(PThread * & thread, PMutex & mutex)
+{
+  mutex.Wait();
+  while (thread != NULL) {
+    thread->PXAbortIO();
+    mutex.Signal();
+    PThread::Yield();
+    mutex.Wait();
+  }
+  mutex.Signal();
 }
 
 BOOL PChannel::PXClose()
@@ -254,11 +301,11 @@ BOOL PChannel::PXClose()
     return -1;
 
   // make sure we don't have any problems
-  PX_iostreamMutex.Wait();
+  IOSTREAM_MUTEX_WAIT();
   flush();
   int handle = os_handle;
   os_handle = -1;
-  PX_iostreamMutex.Signal();
+  IOSTREAM_MUTEX_SIGNAL();
 
 #if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS)
   // abort any I/O block using this os_handle
@@ -270,15 +317,13 @@ BOOL PChannel::PXClose()
 #endif
 #endif
 
+  AbortIO(px_readThread, px_threadMutex);
+  AbortIO(px_writeThread, px_threadMutex);
+
   int stat;
   do {
     stat = ::close(handle);
   } while (stat == -1 && errno == EINTR);
-
-#ifndef __BEOS__
-  if (px_blockedThread != NULL)
-    px_blockedThread->PXAbortIO();
-#endif
 
   return stat;
 }
@@ -295,15 +340,6 @@ PString PChannel::GetErrorText(Errors, int osError = 0)
   return psprintf("Unknown error %d", osError);
 }
 
-PString PChannel::GetErrorText() const
-{
-  return GetErrorText(lastError, osError);
-}
-
-BOOL PChannel::ConvertOSError(int err)
-{
-  return ConvertOSError(err, lastError, osError);
-}
 
 BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
 

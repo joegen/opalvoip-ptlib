@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.20  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.19  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -111,7 +115,10 @@
     int  PXClose();
 
     PString   channelName;
-    PThread * px_blockedThread;
+    PMutex    px_threadMutex;
+    PThread * px_readThread;
+    PThread * px_writeThread;
+    PMutex    px_writeMutex;
 
 #endif
 
