@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.35  2001/03/14 01:49:54  craigs
+ * Added ability to handle multi-part form POST commands
+ *
  * Revision 1.34  2001/01/15 06:17:56  robertj
  * Set HTTP resource members to private to assure are not modified by
  *   dscendents in non-threadsafe manner.
@@ -324,6 +327,68 @@ void PHTTPServer::Construct()
   SetReadLineTimeout(PTimeInterval(0, READLINE_TIMEOUT));
 }
 
+void PHTTPConnectionInfo::DecodeMultipartFormInfo(const PString & type, const PString & entityBody)
+{
+  // remove trailing ","
+  PINDEX pos = type.Find(",");
+  if (pos == P_MAX_INDEX) {
+    pos = type.Find(";");
+    if (pos == P_MAX_INDEX) 
+      return;
+  }
+  PString sep = type.Mid(pos+1).Trim();
+
+  // remove "boundary"
+  pos = sep.Find("boundary");
+  if (pos == P_MAX_INDEX)
+    return;
+  sep = sep.Mid(8).Trim();
+
+  // remove "="
+  pos = sep.Find("=");
+  if (pos == P_MAX_INDEX)
+    return;
+  sep = sep.Mid(1).Trim();
+
+  PStringStream data(entityBody);
+  PString line;
+
+  // the first seperator has a leading "--"
+  sep = PString("--") + sep;
+
+  // ignore until first separator
+  do {
+    data >> line;
+    if (line.IsEmpty())
+      return;
+  } while (line.Find(sep) != 0);
+
+  PMultipartFormInfo * info = NULL;
+
+  // read form parts
+  while (data.good() && (line.Right(2) != "--")) {
+
+    info = new PMultipartFormInfo;
+
+    // read MIME information
+    info->mime.ReadFrom(data);
+
+    // get the content type
+    PString type = info->mime(PHTTP::ContentTypeTag);
+
+    // accumulate text until another seperator or end of data
+    PString body;
+    while (data.good()) {
+      data >> line;
+      if (line.Find(sep) == 0)
+        break;
+      info->body += line + "\n";
+    } 
+
+    multipartFormInfoArray.Append(info);
+    info = NULL;
+  }
+}
 
 BOOL PHTTPServer::ProcessCommand()
 {
@@ -377,6 +442,9 @@ BOOL PHTTPServer::ProcessCommand()
   }
 
   BOOL persist;
+  
+  // make sure the form info is reset for each new operation
+  connectInfo.ResetMultipartFormInfo();
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -404,7 +472,14 @@ BOOL PHTTPServer::ProcessCommand()
         break;
 
       case POST :
-        PURL::SplitQueryVars(entityBody, postData);
+        {
+          // check for multi-part form POSTs
+          PString postType = (connectInfo.GetMIME())(ContentTypeTag);
+          if (postType.Find("multipart/form-data") == 0)
+            connectInfo.DecodeMultipartFormInfo(postType, entityBody);
+          else  // if (postType *= "x-www-form-urlencoded)
+            PURL::SplitQueryVars(entityBody, postData);
+        }
         persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
         break;
 
@@ -834,8 +909,12 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
-PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & server)
-  : url(u), inMIME(iM), origin(0), localAddr(0), localPort(0)
+PHTTPRequest::PHTTPRequest(const PURL & _url,
+                      const PMIMEInfo & _mime,
+        const PMultipartFormInfoArray & _multipartFormInfo,
+                          PHTTPServer & server)
+  : url(_url), inMIME(_mime), multipartFormInfo(_multipartFormInfo),
+     origin(0), localAddr(0), localPort(0)
 {
   code        = PHTTP::OK;
   contentSize = 0;
@@ -866,6 +945,8 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
   isProxyConnection = FALSE;
 
   entityBodyLength  = -1;
+
+  multipartFormInfoArray.AllowDeleteObjects();
 }
 
 
@@ -1035,7 +1116,7 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                            !IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag]))) 
     return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(url, info, server);
+  PHTTPRequest * request = CreateRequest(url, info, connectInfo.GetMultipartFormInfo(), server);
 
   BOOL retVal = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
@@ -1093,7 +1174,7 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
                  const PStringToString & data,
              const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPRequest * request = CreateRequest(url, info, server);
+  PHTTPRequest * request = CreateRequest(url, info, connectInfo.GetMultipartFormInfo(), server);
 
   BOOL persist = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
@@ -1206,9 +1287,10 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
                                             const PMIMEInfo & inMIME,
+                                            const PMultipartFormInfoArray & multipartFormInfo,
 				            PHTTPServer & socket)
 {
-  return new PHTTPRequest(url, inMIME, socket);
+  return new PHTTPRequest(url, inMIME, multipartFormInfo, socket);
 }
 
 
@@ -1363,17 +1445,19 @@ PHTTPFile::PHTTPFile(const PURL & url,
 
 PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
                                    const PMIMEInfo & inMIME,
+                                   const PMultipartFormInfoArray & multipartFormInfo,
                                    PHTTPServer & server)
-  : PHTTPRequest(url, inMIME, server)
+  : PHTTPRequest(url, inMIME, multipartFormInfo, server)
 {
 }
 
 
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
+                          const PMultipartFormInfoArray & multipartFormInfo,
 				        PHTTPServer & server)
 {
-  return new PHTTPFileRequest(url, inMIME, server);
+  return new PHTTPFileRequest(url, inMIME, multipartFormInfo, server);
 }
 
 
@@ -1446,17 +1530,19 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
                                  const PMIMEInfo & inMIME,
-								                 PHTTPServer & server)
-  : PHTTPFileRequest(url, inMIME, server)
+                                 const PMultipartFormInfoArray & multipartFormInfo,
+			         PHTTPServer & server)
+  : PHTTPFileRequest(url, inMIME, multipartFormInfo, server)
 {
 }
 
 
 PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
-									        PHTTPServer & socket)
+                          const PMultipartFormInfoArray & multipartFormInfo,
+			                    PHTTPServer & socket)
 {
-  return new PHTTPDirRequest(url, inMIME, socket);
+  return new PHTTPDirRequest(url, inMIME, multipartFormInfo, socket);
 }
 
 
