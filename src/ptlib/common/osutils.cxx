@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.156  2001/02/22 08:16:42  robertj
+ * Added standard trace file setup subroutine.
+ *
  * Revision 1.155  2001/02/19 03:44:20  robertj
  * Changed "pl" in version number string to a simple ".", Now like 1.1.19
  *
@@ -601,6 +604,38 @@ void PTrace::SetStream(ostream * s)
 #endif
 
 #endif
+}
+
+
+void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
+{
+  PProcess & process = PProcess::Current();
+
+  // If we have a tracing version, then open trace file and set modes
+  PTrace::SetOptions(options);
+  PTrace::SetLevel(level);
+
+  if (filename != NULL) {
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+    PTextFile * traceOutput = new PTextFile;
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+    if (traceOutput->Open(filename, PFile::WriteOnly))
+      PTrace::SetStream(traceOutput);
+    else {
+      PTRACE(0, process.GetName() << "Could not open trace output file \"" << filename << '"');
+      delete traceOutput;
+    }
+  }
+
+  PTRACE(1, process.GetName()
+         << " Version " << process.GetVersion(TRUE)
+         << " by " << process.GetManufacturer()
+         << " on " << process.GetOSClass() << ' ' << process.GetOSName()
+         << " (" << process.GetOSVersion() << '-' << process.GetOSHardware() << ')');
 }
 
 
