@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.1 1993/08/27 18:17:47 robertj Exp $
+ * $Id: osutils.cxx,v 1.2 1993/08/31 03:38:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.1  1993/08/27 18:17:47  robertj
+ * Revision 1.2  1993/08/31 03:38:02  robertj
+ * G++ needs explicit casts for char */void * interchange.
+ *
+ * Revision 1.1  1993/08/27  18:17:47  robertj
  * Initial revision
  *
  */
@@ -161,7 +164,7 @@ BOOL PFile::Close()
 
 BOOL PFile::Read(void * buffer, size_t amount)
 {
-  BOOL ok = read(GetHandle(), buffer, amount) == (int)amount;
+  BOOL ok = read(GetHandle(), (char *)buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
 }
@@ -169,7 +172,7 @@ BOOL PFile::Read(void * buffer, size_t amount)
 
 BOOL PFile::Write(const void * buffer, size_t amount)
 {
-  BOOL ok = write(GetHandle(), buffer, amount) == (int)amount;
+  BOOL ok = write(GetHandle(), (char *)buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
 }
@@ -201,14 +204,14 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname)
   while (amount > 10000) {
     if (!oldfile.Read(buffer.GetPointer(), 10000))
       return FALSE;
-    if (!newfile.Write(buffer, 10000))
+    if (!newfile.Write((const char *)buffer, 10000))
       return FALSE;
     amount -= 10000;
   }
 
   if (!oldfile.Read(buffer.GetPointer(), (int)amount))
     return FALSE;
-  if (!oldfile.Write(buffer, (int)amount))
+  if (!oldfile.Write((const char *)buffer, (int)amount))
     return FALSE;
 
   return newfile.Close();
