@@ -30,10 +30,21 @@ static pthread_mutex_t logMutex = {{ PTHREAD_MUTEX_INITIALIZER }};
 void PSystemLog::Output(Level level, const char * cmsg)
 {
   if (PServiceProcess::Current().consoleMessages) {
+    static const char * const levelName[NumLogLevels+1] = {
+      "Message",
+      "Fatal error",
+      "Error",
+      "Warning",
+      "Info",
+      "Debug",
+      "Debug2",
+      "Debug3"
+    };
+    PTime now;
 #ifdef P_PTHREADS
     pthread_mutex_lock(&logMutex);
 #endif
-    PError << cmsg << endl;
+    PError << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1] << ": " << cmsg << endl;
 #ifdef P_PTHREADS
     pthread_mutex_unlock(&logMutex);
 #endif
