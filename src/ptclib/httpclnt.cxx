@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.10 1998/02/03 06:27:10 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.11 1998/04/14 03:42:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.11  1998/04/14 03:42:41  robertj
+ * Fixed error code propagation in HTTP client.
+ *
  * Revision 1.10  1998/02/03 06:27:10  robertj
  * Fixed propagation of error codes, especially EOF.
  * Fixed writing to some CGI scripts that require CRLF outside of byte count.
@@ -186,11 +189,12 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime)
 {
-  if (!WriteCommand(cmd, url, outMIME, dataBody))
-    return -1;
-
-  if (!ReadResponse(replyMime))
-    return -1;
+  if (WriteCommand(cmd, url, outMIME, dataBody))
+    ReadResponse(replyMime);
+  else {
+    lastResponseCode = -1;
+    lastResponseInfo = GetErrorText();
+  }
 
   return lastResponseCode;
 }
@@ -203,13 +207,17 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 {
   if (!PHTTP::WriteCommand(cmd, url & "HTTP/1.0"))
     return FALSE;
+
   if (!outMIME.Write(*this))
     return FALSE;
+
   PINDEX len = dataBody.GetSize()-1;
   if (!Write((const char *)dataBody, len))
     return FALSE;
+
   if (len < 2 || (dataBody[len-2] == '\r' && dataBody[len-1] == '\n'))
     return TRUE;
+
   return Write("\r\n", 2);
 }
 
@@ -253,10 +261,10 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
 
 BOOL PHTTPClient::GetDocument(const PURL & url,
-                              const PMIMEInfo & outMIME,
+                              PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
-  if (!AssureConnect(url))
+  if (!AssureConnect(url, outMIME))
     return FALSE;
 
   return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
@@ -264,10 +272,10 @@ BOOL PHTTPClient::GetDocument(const PURL & url,
 
 
 BOOL PHTTPClient::GetHeader(const PURL & url,
-                            const PMIMEInfo & outMIME,
+                            PMIMEInfo & outMIME,
                             PMIMEInfo & replyMIME)
 {
-  if (!AssureConnect(url))
+  if (!AssureConnect(url, outMIME))
     return FALSE;
 
   return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
@@ -275,11 +283,11 @@ BOOL PHTTPClient::GetHeader(const PURL & url,
 
 
 BOOL PHTTPClient::PostData(const PURL & url,
-                           const PMIMEInfo & outMIME,
+                           PMIMEInfo & outMIME,
                            const PStringToString & data,
                            PMIMEInfo & replyMIME)
 {
-  if (!AssureConnect(url))
+  if (!AssureConnect(url, outMIME))
     return FALSE;
 
   PStringStream body;
@@ -288,18 +296,35 @@ BOOL PHTTPClient::PostData(const PURL & url,
 }
 
 
-BOOL PHTTPClient::AssureConnect(const PURL & url)
+BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 {
-  if (IsOpen())
-    return TRUE;  // Already connected
+  PString host = url.GetHostName();
 
-  if (url.GetHostName().IsEmpty())
-    return FALSE;
+  if (!IsOpen()) {
+    lastResponseCode = BadRequest;
+    lastResponseInfo = PString();
+    if (host.IsEmpty())
+      return FALSE;
 
-  if (url.GetPort() == 0)
-    return Connect(url.GetHostName());
+    if (!Connect(host, url.GetPort())) {
+      lastResponseCode = -2;
+      lastResponseInfo = GetErrorText();
+      return FALSE;
+    }
+  }
 
-  return Connect(url.GetHostName(), url.GetPort());
+  static char HostTag[] = "Host";
+  if (!outMIME.Contains(HostTag)) {
+    if (!host)
+      outMIME.SetAt(HostTag, host);
+    else {
+      PIPSocket * sock = GetSocket();
+      if (sock != NULL)
+        outMIME.SetAt(HostTag, sock->GetHostName());
+    }
+  }
+
+  return TRUE;
 }
 
 
