@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.16  1998/10/31 12:46:57  robertj
+ * Renamed file for having general thread synchronisation objects.
+ *
  * Revision 1.15  1998/09/23 06:19:52  robertj
  * Added open source copyright license.
  *
@@ -209,9 +212,9 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PSyncPointAck
+// PSyncPointAck, PCondMutex etc
 
-#include <ptlib/syncptack.h>
+#include <ptlib/syncthrd.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
