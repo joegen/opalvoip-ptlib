@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.149  2003/01/06 22:34:10  rogerh
+# Add NetBSD pth support. Check the state of USE_PTH.
+# Taken from NetBSD package, via Andreas Wrede
+#
 # Revision 1.148  2003/01/06 12:57:34  rogerh
 # On Mac OS X uname -m returns Power Macintosh. Map this to MACHTYPE of ppc.
 # (note uname -p returns powerpc)
@@ -845,15 +849,28 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-STDCCFLAGS	+= -DP_NETBSD
+ifndef OSRELASE
+OSRELEASE   := $(shell /sbin/sysctl -n kern.osrevision)
+endif
+
+STDCCFLAGS	+= -DP_NETBSD=$(OSRELEASE)
 LDLIBS		+= -lossaudio
 
+# enable the USE_PTH line to compile using pth
+# comment out USE_PTH to compile using unproven threads
+#USE_PTH := 1
+
 ifdef P_PTHREADS
+ifdef USE_PTH 
+STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include -I/usr/pkg/include
+LDFLAGS += -L/usr/pkg/lib -lpthread
+#else
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
 CC              := /usr/pkg/pthreads/bin/pgcc
 CPLUS           := /usr/pkg/pthreads/bin/pg++
+endif
 endif
 
 P_USE_RANLIB		:= 1
