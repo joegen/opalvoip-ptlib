@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.15  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.14  2001/11/25 23:47:05  robertj
  * Changed sense of HAS_VIDEO_CAPTURE to NO_VIDEO_CAPTURE to reduce cmd line.
  *
@@ -79,6 +84,7 @@
 
 #ifndef _PVIDEOIO
 
+
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
 #include <linux/videodev.h>     /* change this to "videodev2.h" for v4l2 */
 #endif
@@ -118,6 +124,7 @@
     virtual int GetHue();
     virtual BOOL SetHue(unsigned newHue); 
 
+
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
     // only override these methods in Linux. Other platforms will use the
     // default methods in PVideoDevice
@@ -126,8 +133,18 @@
     virtual int GetColour();
     virtual BOOL SetColour(unsigned newColour); 
 #endif
+
+    /** from one ioctl call, get whiteness, brightness, colour, contrast and hue.
+     */
+    virtual BOOL GetParameters (int *whiteness, int *brightness, 
+				int *colour, int *contrast, int *hue);
+
   protected:
     void ClearMapping();
+
+    /** Do not use memory mapping, access the data with a call to ::read();
+     */
+    BOOL NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned);
 
 
 #if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
