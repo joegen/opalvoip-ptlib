@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.24 1996/08/17 10:00:25 robertj Exp $
+ * $Id: pstring.h,v 1.25 1996/09/14 12:52:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.25  1996/09/14 12:52:39  robertj
+ * Added operator! for !IsEmpty().
+ *
  * Revision 1.24  1996/08/17 10:00:25  robertj
  * Changes for Windows DLL support.
  *
@@ -347,6 +350,14 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        
        <H2>Returns:</H2>
        length of the null terminated string.
+     */
+
+    BOOL operator!() const;
+    /* Determine if the string is NOT empty. This is semantically identical
+       to executing !IsEmpty() on the string.
+
+       <H2>Returns:</H2>
+       TRUE if non-null characters in string.
      */
 
     PString & operator=(
