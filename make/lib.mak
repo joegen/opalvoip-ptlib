@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.31  2003/05/06 06:59:12  robertj
+# Dynamic library support for MacOSX, thanks Hugo Santos
+#
 # Revision 1.30  2002/11/22 10:14:07  robertj
 # QNX port, thanks Xiaodan Tang
 #
@@ -94,23 +97,39 @@
 # Added copyright notice
 #
 
-
-LIBNAME_MAJ	= $(LIB_FILENAME).$(MAJOR_VERSION)
-LIBNAME_MIN	= $(LIBNAME_MAJ).$(MINOR_VERSION)
-
-ifeq ($(BUILD_TYPE),.)
-  LIBNAME_PAT	= $(LIBNAME_MIN).$(BUILD_NUMBER)
+ifneq ($(OSTYPE),Darwin)
+  LIBNAME_BASE	= $(LIB_FILENAME).$(SHAREDLIBEXT)
+  LIBNAME_MAJ	= $(LIBNAME_BASE).$(MAJOR_VERSION)
+  LIBNAME_MIN	= $(LIBNAME_MAJ).$(MINOR_VERSION)
+  ifeq ($(BUILD_TYPE),.)
+    LIBNAME_PAT	= $(LIBNAME_MIN).$(BUILD_NUMBER)
+  else
+    LIBNAME_PAT	= $(LIBNAME_MIN)-$(BUILD_TYPE)$(BUILD_NUMBER)
+  endif
 else
-  LIBNAME_PAT	= $(LIBNAME_MIN)-$(BUILD_TYPE)$(BUILD_NUMBER)
+  LIBNAME_BASE	= $(LIB_FILENAME).$(SHAREDLIBEXT)
+  LIBNAME_MAJ	= $(LIB_FILENAME).$(MAJOR_VERSION).$(SHAREDLIBEXT)
+  LIBNAME_MIN	= $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION).$(SHAREDLIBEXT)
+  ifeq ($(BUILD_TYPE),.)
+    LIBNAME_PAT	= $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER).$(SHAREDLIBEXT)
+  else
+    LIBNAME_PAT	= $(LIB_FILENAME).$(MAJOR_VERSION).$(MINOR_VERSION)-$(BUILD_TYPE)$(BUILD_NUMBER).$(SHAREDLIBEXT)
+  endif
 endif
 
-CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
+CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIBNAME_BASE) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
 ifneq ($(P_SHAREDLIB),1)
-  STATIC_LIB_FILE=$(LIBDIR)/$(LIB_FILENAME)
+  STATIC_LIB_FILE = $(LIBDIR)/$(LIB_FILENAME).$(STATICLIBEXT)
+  TARGETLIB = $(STATIC_LIB_FILE)
 else
+  STATIC_LIB_FILE = $(LIBDIR)/$(LIB_FILENAME)_s.$(STATICLIBEXT)
+  TARGETLIB = $(LIBDIR)/$(LIBNAME_BASE)
+endif
 
-  STATIC_LIB_FILE=$(LIBDIR)/lib$(LIB_BASENAME)_s.a
+$(LIBDIR)/$(LIB_FILENAME) : $(TARGETLIB)
+
+ifeq ($(P_SHAREDLIB),1)
 
   ifeq ($(OSTYPE),beos)
     # BeOS requires different options when building shared libraries
@@ -119,7 +138,11 @@ else
     LDSOOPTS = -nostdlib -nostart
     EXTLIBS = $(SYSLIBS) -lstdc++.r4
   else
-    LDSOOPTS = -shared
+    ifeq ($(OSTYPE),Darwin)
+      LDSOOPTS = -dynamiclib
+    else
+      LDSOOPTS = -shared
+    endif
   endif
 
   ifeq ($(OSTYPE),rtems)
@@ -127,15 +150,15 @@ else
   endif
 
   ifneq ($(OSTYPE), QNX)
-  ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
-    ifdef P_PTHREADS
-      EXTLIBS += -pthread
+    ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
+      ifdef P_PTHREADS
+        EXTLIBS += -pthread
+      endif
+    else
+      ifdef P_PTHREADS
+        EXTLIBS += -lpthread
+      endif
     endif
-  else
-    ifdef P_PTHREADS
-      EXTLIBS += -lpthread
-    endif
-  endif
   endif
 
   # Solaris loader doesn't grok -soname  (sees it as -s -oname)
@@ -143,15 +166,17 @@ else
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
-    LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).$(MAJOR_VERSION)
+    LDSOOPTS = -Bdynamic -G -h $(LIBNAME_MAJ)
     LD = ld
   else
-    LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).$(MAJOR_VERSION)
+    ifneq ($(OSTYPE),Darwin)
+      LDSOOPTS += -Wl,-soname,$(LIBNAME_MAJ)
+    endif
     LD = $(CPLUS)
   endif
 
-  $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
+  $(LIBDIR)/$(LIBNAME_BASE): $(LIBDIR)/$(LIBNAME_PAT)
+	cd $(LIBDIR) ; rm -f $(LIBNAME_BASE) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_BASE)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MAJ) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MIN) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
@@ -161,7 +186,7 @@ else
 
   install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
-	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
+	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_BASE)
 	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
 	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
 
@@ -170,11 +195,9 @@ endif # P_SHAREDLIB
 
 $(STATIC_LIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-ifdef P_USE_RANLIB
-	$(AR) rc $(STATIC_LIB_FILE) $(OBJS)
+	$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
+ifeq ($(P_USE_RANLIB),1)
 	$(RANLIB) $(STATIC_LIB_FILE)
-else
-	$(AR) rcs $(STATIC_LIB_FILE) $(OBJS)
 endif
 
 
