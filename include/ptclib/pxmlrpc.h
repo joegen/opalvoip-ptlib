@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.14  2002/12/10 04:44:43  robertj
+ * Added support in PTime for ISO 8601 format.
+ *
  * Revision 1.13  2002/12/09 04:06:18  robertj
  * Added macros for defining multi-argument functions
  *
@@ -317,7 +320,7 @@ class PXMLRPCStructBase : public PObject {
 
 #define PXMLRPC_DATETIME(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "dateTime.iso8601", ;, \
-             PString ToString() const { return instance.AsString("yyyyMMddThh:mm:ss"); } )
+             PString ToString() const { return instance.AsString(PTime::ShortISO8601); } )
 
 #define PXMLRPC_BINARY(base, type, variable) \
         PXMLRPC_VARIABLE_CUSTOM(base, type, variable, "base64", ;, \
