@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.30  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.29  1998/11/30 02:51:58  robertj
  * New directory structure
  *
@@ -134,7 +137,9 @@ class PSocket;
 PLIST(PSocketList, PSocket);
 
 
-PDECLARE_CLASS(PSocket, PChannel)
+class PSocket : public PChannel
+{
+  PCLASSINFO(PSocket, PChannel)
 /* A network communications channel. This is based on the concepts in the
    Berkley Sockets library.
    
@@ -357,7 +362,9 @@ PDECLARE_CLASS(PSocket, PChannel)
      */
 
 
-    PDECLARE_CLASS(SelectList, PSocketList)
+    class SelectList : public PSocketList
+    {
+      PCLASSINFO(SelectList, PSocketList)
       public:
         SelectList()
           { DisallowDeleteObjects(); }

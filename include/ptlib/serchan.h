@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.11  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.10  1998/09/23 06:21:21  robertj
  * Added open source copyright license.
  *
@@ -73,7 +76,9 @@ class PConfig;
 ///////////////////////////////////////////////////////////////////////////////
 // Serial Channel
 
-PDECLARE_CLASS(PSerialChannel, PChannel)
+class PSerialChannel : public PChannel
+{
+  PCLASSINFO(PSerialChannel, PChannel)
 /* This class defines an I/O channel that communicates via a serial port. This
    is usually an RS-232 port.
  */

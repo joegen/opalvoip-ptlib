@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.12  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.11  1998/09/23 06:21:17  robertj
  * Added open source copyright license.
  *
@@ -70,7 +73,9 @@
 #endif
 
 
-PDECLARE_CLASS(PRemoteConnection, PObject)
+class PRemoteConnection : public PObject
+{
+  PCLASSINFO(PRemoteConnection, PObject)
   public:
     PRemoteConnection();
     PRemoteConnection(
