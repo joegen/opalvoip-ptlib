@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.15 1996/08/17 10:00:33 robertj Exp $
+ * $Id: contain.h,v 1.16 1996/09/14 12:38:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.16  1996/09/14 12:38:57  robertj
+ * Moved template define from command line to code.
+ * Fixed correct application of windows defines.
+ *
  * Revision 1.15  1996/08/17 10:00:33  robertj
  * Changes for Windows DLL support.
  *
@@ -62,6 +66,7 @@
 
 
 #ifdef _MSC_VER
+
 #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
 #pragma warning(disable:4251)  // disable warning exported structs
 #pragma warning(disable:4511)  // default copy ctor not generated warning
@@ -73,25 +78,19 @@
 #pragma warning(disable:4710)  // inline not expanded warning
 #pragma warning(disable:4711)  // auto inlining warning
 #pragma warning(disable:4097)  // typedef synonym for class
+
+#if _MSC_VER>=800 && !defined(PMAKEDLL)
+#define PHAS_TEMPLATES
+#endif
+
 #endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
 
-#if defined(P_NT_CONSOLE) || defined(P_NT_GUI)
-#ifndef WIN32
+#if defined(_WIN32) && !defined(WIN32)
 #define WIN32
-#endif
-#ifndef _WIN32
-#define _WIN32
-#endif
-#endif
-
-#if defined(P_QUICKWIN) || defined(P_DOSWIN)
-#ifndef _WINDOWS
-#define _WINDOWS
-#endif
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
