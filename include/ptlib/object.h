@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.107  2004/07/03 06:49:49  rjongbloed
+ * Added PTRACE_PARAM() macro to fix warnings on parameters used in PTRACE
+ *  macros only.
+ *
  * Revision 1.106  2004/06/01 07:42:19  csoutheren
  * Restored memory allocation checking
  * Added configure flag to enable, thanks to Derek Smithies
@@ -744,12 +748,17 @@ public:
 
 #if !PTRACING
 
+#define PTRACE_PARAM(param)
 #define PTRACE_BLOCK(n)
 #define PTRACE_LINE()
 #define PTRACE(level, arg)
 #define PTRACE_IF(level, cond, args)
 
 #else
+
+/* Macro to conditionally declare a parameter to a function to avoid compiler
+   warning due that parameter only being used in a PTRACE */
+#define PTRACE_PARAM(param) param
 
 /** Trace an execution block.
 This macro creates a trace variable for tracking the entry and exit of program
