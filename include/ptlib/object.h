@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.95  2004/04/04 13:24:18  rjongbloed
+ * Changes to support native C++ Run Time Type Information
+ *
  * Revision 1.94  2004/04/03 08:57:31  csoutheren
  * Replaced pseudo-RTTI with real RTTI
  *
@@ -804,8 +807,8 @@ of compatibility with documentation systems.
 
 #define PCLASSINFO(cls, par) \
     PBASECLASSINFO(cls, par) \
-    virtual const char * GetClass() const \
-      { return cls::Class(); } \
+    virtual const char * GetClass(unsigned ancestor = 0) const \
+      { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
     virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
 
@@ -874,7 +877,7 @@ class PObject {
 
        @return pointer to C string literal.
      */
-    virtual const char * GetClass() const { return Class(); }
+    virtual const char * GetClass(unsigned /*ancestor*/ = 0) const { return Class(); }
 
     BOOL IsClass(const char * cls) const 
     { return strcmp(cls, GetClass()) == 0; }
