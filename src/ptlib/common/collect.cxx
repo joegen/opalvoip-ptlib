@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.5 1994/07/27 05:58:07 robertj Exp $
+ * $Id: collect.cxx,v 1.6 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.5  1994/07/27 05:58:07  robertj
+ * Revision 1.6  1994/08/21 23:43:02  robertj
+ * Fixed bug in lists when inserting element.
+ *
+ * Revision 1.5  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.4  1994/07/17  10:46:06  robertj
@@ -292,7 +295,7 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
   newElement->next = info->lastElement;
   info->lastElement->prev = newElement;
   info->lastElement = newElement;
-  info->lastIndex = 0;
+  info->lastIndex = index;
   reference->size++;
   return index;
 }
