@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_ALSA STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1870,17 +1870,21 @@ BUILD_NUMBER=$BUILD_NUMBER
 { echo "$as_me:$LINENO: PTLib version is ${PWLIB_VERSION}" >&5
 echo "$as_me: PTLib version is ${PWLIB_VERSION}" >&6;};
 
+
 cat >>confdefs.h <<_ACEOF
 #define PWLIB_MAJOR $MAJOR_VERSION
 _ACEOF
+
 
 cat >>confdefs.h <<_ACEOF
 #define PWLIB_MINOR $MINOR_VERSION
 _ACEOF
 
+
 cat >>confdefs.h <<_ACEOF
 #define PWLIB_BUILD $BUILD_NUMBER
 _ACEOF
+
 
 cat >>confdefs.h <<_ACEOF
 #define PWLIB_VERSION "$PWLIB_VERSION"
@@ -2040,7 +2044,7 @@ case "$target_cpu" in
 		   P_64BIT=1 ;
 		   ;;
 
-   alpha | alphaev56) MACHTYPE=alpha ;
+   alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7) MACHTYPE=alpha ;
 		   P_64BIT=1 ;
 		   ;;
 
@@ -2069,6 +2073,9 @@ case "$target_cpu" in
 		   P_64BIT=1 ;
 		   ;;
 
+   s390)	   MACHTYPE=s390 ;
+		   ;;
+
    * )		   MACHTYPE=$target_cpu ;
 		   { echo "$as_me:$LINENO: WARNING: \"CPU $target_cpu not recognized - proceed with caution!\"" >&5
 echo "$as_me: WARNING: \"CPU $target_cpu not recognized - proceed with caution!\"" >&2;} ;;
@@ -2095,13 +2102,15 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+
 cat >>confdefs.h <<\_ACEOF
 #define PHAS_TEMPLATES 1
 _ACEOF
 
 
 if test "x$P_64BIT" != "x" ; then
-  cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define P_64BIT 1
 _ACEOF
 
@@ -2498,8 +2507,9 @@ _ACEOF
 fi
 
 if test $ac_cv_c_long_double != yes ; then
-  cat >>confdefs.h <<\_ACEOF
-#define PNO_LONG_DOUBLE 1
+
+cat >>confdefs.h <<\_ACEOF
+#define PNO_LONG_DOUBLE
 _ACEOF
 
 fi
@@ -3663,8 +3673,9 @@ _ACEOF
 fi
 
 
+
 cat >>confdefs.h <<_ACEOF
-#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib/pwlib"
+#define P_DEFAULT_PLUGIN_DIR "${LIBDIR}/pwlib"
 _ACEOF
 
 
@@ -5027,12 +5038,14 @@ if test "${enable_qos+set}" = set; then
 fi;
 
 if test "$qos" = "no" ; then
-  cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define P_HAS_QOS 0
 _ACEOF
 
 else
-  cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define P_HAS_QOS 1
 _ACEOF
 
@@ -5202,13 +5215,16 @@ fi
 done
 
   if test "${HAS_SDL:-unset}" != "unset" ; then
+    if test "${X11LIBDIR:-unset}" == "unset" ; then
+	X11LIBDIR=/usr/lib/X11R6
+    fi
     echo "$as_me:$LINENO: checking for SDL_CreateYUVOverlay in -lSDL" >&5
 echo $ECHO_N "checking for SDL_CreateYUVOverlay in -lSDL... $ECHO_C" >&6
 if test "${ac_cv_lib_SDL_SDL_CreateYUVOverlay+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lSDL -lpthread $LIBS"
+LIBS="-lSDL -L${X11LIBDIR} -lpthread -lX11 -lXext -laa $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
@@ -5457,12 +5473,14 @@ fi
                 if test "${HAS_VIDEO_CAPTURE}" = "0" ; then
       { echo "$as_me:$LINENO: No Video Capture support" >&5
 echo "$as_me: No Video Capture support" >&6;}
+
+cat >>confdefs.h <<\_ACEOF
+#define NO_VIDEO_CAPTURE
+_ACEOF
+
     fi
   fi
 fi
-cat >>confdefs.h <<\_ACEOF
-#define NO_VIDEO_CAPTURE 1
-_ACEOF
 
 
 # Check whether --enable-alsa or --disable-alsa was given.
@@ -5703,8 +5721,9 @@ fi
 
 fi
 if test "x$ac_cv_func_swab" = "xyes" ; then
-  cat >>confdefs.h <<\_ACEOF
-#define USE_SYSTEM_SWAB 1
+
+cat >>confdefs.h <<\_ACEOF
+#define USE_SYSTEM_SWAB
 _ACEOF
 
 fi
@@ -6393,6 +6412,7 @@ s,@P_STATIC_LDFLAGS@,$P_STATIC_LDFLAGS,;t t
 s,@HAS_EXPAT@,$HAS_EXPAT,;t t
 s,@HAS_IPV6@,$HAS_IPV6,;t t
 s,@HAS_SDL@,$HAS_SDL,;t t
+s,@HAS_VIDEO_CAPTURE@,$HAS_VIDEO_CAPTURE,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@OPTSTDCCFLAGS@,$OPTSTDCCFLAGS,;t t
