@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.171  2003/05/06 09:47:20  robertj
+# Fixed up MacOSX changes so is compatible with previous "API" not requiring
+#   downstream libraries to change
+#
 # Revision 1.170  2003/05/06 06:59:12  robertj
 # Dynamic library support for MacOSX, thanks Hugo Santos
 #
@@ -856,6 +860,9 @@ STATICLIBEXT = a
 endif
 
 ifeq ($(P_SHAREDLIB),1)
+LIB_SUFFIX	= $(SHAREDLIBEXT)
+else   
+LIB_SUFFIX	= a 
 ifndef DEBUG
 LIB_TYPE	= _s
 endif
@@ -905,13 +912,13 @@ PW_LIBDIR	= $(PWLIBDIR)/lib
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE)
+PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
 
 # set name of the PW library (may not be used)
 PWLIB_BASE	= pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE)
+PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
