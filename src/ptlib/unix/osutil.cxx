@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.38  1998/11/10 13:00:52  robertj
+ * Fixed strange problems with readdir_r usage.
+ *
  * Revision 1.37  1998/11/06 04:44:46  robertj
  * Solaris compatibility
  *
@@ -123,6 +126,9 @@ int atexit(void (*f)(void))
 static char *tzname[2] = { "STD", "DST" };
 };
 #endif
+
+#define new PNEW
+
 
 static PString CanonicaliseDirectory (const PString & path)
 
@@ -240,29 +246,38 @@ void PDirectory::CopyContents(const PDirectory & d)
   if (d.entryInfo == NULL)
     entryInfo = NULL;
   else {
-    entryInfo  = PNEW PFileInfo;
+    entryInfo  = new PFileInfo;
     *entryInfo = *d.entryInfo;
   }
-  directory  = NULL;
-  entry      = NULL;
+  directory   = NULL;
+  entryBuffer = NULL;
+  entry       = NULL;
 }
 
 void PDirectory::Close()
 {
-  if (directory != NULL)
+  if (directory != NULL) {
     PAssert(closedir(directory) == 0, POperatingSystemError);
-  directory = NULL;
-  if (entryInfo != NULL)
+    directory = NULL;
+  }
+
+  if (entryBuffer != NULL) {
+    free(entryBuffer);
+    entryBuffer = NULL;
+  }
+
+  if (entryInfo != NULL) {
     delete entryInfo;
-  entryInfo = NULL;
+    entryInfo = NULL;
+  }
 }
 
 void PDirectory::Construct ()
 
 {
-  entryInfo = NULL;
-  directory = NULL;
-  entry     = NULL;
+  directory   = NULL;
+  entryBuffer = NULL;
+  entryInfo   = NULL;
 
   PString::operator =(CanonicaliseDirectory(*this));
 }
@@ -275,13 +290,15 @@ BOOL PDirectory::Open(int ScanMask)
 
   scanMask = ScanMask;
 
-  if ((directory = opendir((const char *)*this)) == NULL)
+  if ((directory = opendir(theArray)) == NULL)
     return FALSE;
 
-  entryInfo = PNEW PFileInfo;
+  entryBuffer = (struct dirent *)malloc(sizeof(struct dirent) + P_MAX_PATH);
+  entryInfo   = new PFileInfo;
 
   if (Next())
     return TRUE;
+
   Close();
   return FALSE;
 }
@@ -294,12 +311,11 @@ BOOL PDirectory::Next()
 
   do {
     do {
-      if (::readdir_r(directory, (struct dirent *)dirb, &entry) != 0)
+      if (::readdir_r(directory, entryBuffer, &entry) != 0)
         return FALSE;
-      if (entry == NULL)
+      if (entry != entryBuffer)
         return FALSE;
-    } while (strcmp(entry->d_name, "." ) == 0 ||
-             strcmp(entry->d_name, "..") == 0);
+    } while (strcmp(entry->d_name, "." ) == 0 || strcmp(entry->d_name, "..") == 0);
 
     PAssert(PFile::GetInfo(*this+entry->d_name, *entryInfo), POperatingSystemError);
     if (scanMask == PFileInfo::AllPermissions)
@@ -308,6 +324,32 @@ BOOL PDirectory::Next()
 
   return TRUE;
 }
+
+
+BOOL PDirectory::IsSubDir() const
+{
+  if (entryInfo == NULL)
+    return FALSE;
+
+  return entryInfo->type == PFileInfo::SubDirectory;
+}
+
+BOOL PDirectory::Restart(int newScanMask)
+{
+  scanMask = newScanMask;
+  if (directory != NULL)
+    rewinddir(directory);
+  return TRUE;
+}
+
+PString PDirectory::GetEntryName() const
+{
+  if (entry == NULL)
+    return PString();
+
+  return entry->d_name;
+}
+
 
 BOOL PDirectory::GetInfo(PFileInfo & info) const
 {
