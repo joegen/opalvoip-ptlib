@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.145  2002/12/16 08:04:46  robertj
+ * Fixed correct error check for gethostbyname_r, thanks Vladimir Toncar
+ *
  * Revision 1.144  2002/12/13 04:01:46  robertj
  * Initialised error code in gethostbyname usage.
  *
@@ -772,7 +775,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
 #ifdef P_AIX
     struct hostent_data ht_data;
-    memset(&ht_data, 0, sizeof(ht_data)); 
+    memset(&ht_data, 0, sizeof(ht_data));
     struct hostent host_info;
 #elif defined(P_RTEMS)
     struct hostent host_info;
@@ -781,7 +784,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #endif
 
     int retry = 3;
-    int localErrNo = 0;
+    int localErrNo = NETDB_SUCCESS;
 
     do {
 #if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || (defined(__NUCLEUS_PLUS__) ) )
@@ -796,16 +799,17 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #endif
 
 #ifdef P_LINUX
-      ::gethostbyname_r(name,
-                        &hostEnt,
-                        buffer, REENTRANT_BUFFER_LEN,
-                        &host_info,
-      		        &localErrNo);
+      if (::gethostbyname_r(name,
+                            &hostEnt,
+                            buffer, REENTRANT_BUFFER_LEN,
+                            &host_info,
+      		            &localErrNo) == 0)
+        localErrNo = NETDB_SUCCESS;
       		        
 #elif defined P_AIX
       ::gethostbyname_r(name,
                         &host_info,
-                        &ht_data);		    
+                        &ht_data);
       localErrNo = h_errno;
 
 #elif defined P_RTEMS
