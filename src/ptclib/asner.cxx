@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.47  2001/08/06 09:31:48  robertj
+ * Added conversion of BMPString to PString without losing special characters.
+ *
  * Revision 1.46  2001/08/06 01:39:02  robertj
  * Added assignement operator with RHS of PASN_BMPString to classes
  *   descended from PASN_BMPString.
@@ -2261,22 +2264,38 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
 
 PASN_BMPString & PASN_BMPString::operator=(const char * str)
 {
-  PINDEX paramSize = ::strlen(str);
+  // Must be at least this big for string conversion
+  value.SetSize(::strlen(str));
 
-  // Can't copy any more than the upper constraint
-  if ((unsigned)paramSize > upperLimit)
-    paramSize = upperLimit;
-
-  // Number of bytes must be at least lhe lower constraint
-  PINDEX newSize = (int)paramSize < lowerLimit ? lowerLimit : paramSize;
-  value.SetSize(newSize);
-
+  // Convert string looking for "&#1234;" style characters for 16 bit stuff
   PINDEX count = 0;
-  for (PINDEX i = 0; i < paramSize; i++) {
-    WORD c = (BYTE)str[i];
+  while (*str != '\0') {
+    WORD c = (BYTE)*str++;
+
+    if (c == '&' && *str == '#') {
+      const char * semicolon = strchr(str, ';');
+      if (semicolon != NULL) {
+        unsigned bigChar = 0;
+        for (const char * p = str+1; isdigit(*p); p++)
+          bigChar = bigChar*10 + *p - '0';
+        if (p == semicolon && bigChar < 65536) {
+          c = (WORD)bigChar;
+          str = semicolon + 1;
+        }
+      }
+    }
+
     if (IsLegalCharacter(c))
       value[count++] = c;
   }
+
+  // Can't have any more than the upper constraint
+  if ((unsigned)count > upperLimit)
+    count = upperLimit;
+
+  // Number of bytes must be at least lhe lower constraint
+  PINDEX newSize = (int)count < lowerLimit ? lowerLimit : count;
+  value.SetSize(newSize);
 
   // Pad out with the first character till required size
   while (count < newSize)
@@ -2319,6 +2338,8 @@ PString PASN_BMPString::GetValue() const
   for (PINDEX i = 0; i < value.GetSize(); i++) {
     if (value[i] < 256)
       str += (char)value[i];
+    else
+      str.sprintf("&#%u;", value[i]);
   }
   return str;
 }
