@@ -160,7 +160,7 @@ BOOL PPipeChannel::Close()
   // kill the child process
   if (IsRunning()) {
     kill (childPid, SIGKILL);
-    PXWaitForTerminate();
+    WaitForTermination();
   }
 
   // ensure this channel looks like it is closed
@@ -220,17 +220,27 @@ BOOL PPipeChannel::IsRunning() const
   return kill(childPid, 0) == 0;
 }
 
-void PPipeChannel::PXWaitForTerminate()
+int PPipeChannel::WaitForTermination()
 {
-  PAssert(childPid > 0, "waiting on closed PPipeChannel");
   if (kill (childPid, 0) == 0)
-    retVal = PThread::Current()->PXBlockOnChildTerminate(childPid);
+    return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
+
+  ConvertOSError(-1);
+  return -1;
 }
 
-void PPipeChannel::PXKill(int killType)
+int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
-  if (childPid > 0)
-    kill (childPid, killType);
+  if (kill (childPid, 0) == 0)
+    return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
+
+  ConvertOSError(-1);
+  return -1;
+}
+
+BOOL PPipeChannel::Kill(int killType)
+{
+  return ConvertOSError(kill (childPid, killType));
 }
 
 BOOL PPipeChannel::CanReadAndWrite()
