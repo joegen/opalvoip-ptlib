@@ -66,9 +66,6 @@ inline PString::PString(const char * cstr)
 inline PString::PString(const char * cstr, PINDEX len)
   : PCharArray(len+1) { memcpy(theArray, PAssertNULL(cstr), len); }
 
-inline PString::PString(char c)
-  : PCharArray(2) { SetAt(0,c); }
-
 inline PObject::Comparison PString::CompareString(const char * cstr) const
   { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
 
@@ -140,9 +137,6 @@ inline PCaselessString::PCaselessString(const char * cstr)
 
 inline PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
-
-inline PCaselessString::PCaselessString(char c)
-  : PString(c) { }
 
 inline PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }

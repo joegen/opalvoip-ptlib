@@ -40,13 +40,13 @@ inline void PDirectory::DestroyContents()
 inline PString PDirectory::GetPath() const
   { return path; }
 
-inline BOOL PDirectory::Change()
+inline BOOL PDirectory::Change() const
   { return Change(path); }
 
-inline BOOL PDirectory::Create(PPermissions perm)
+inline BOOL PDirectory::Create(int perm) const
   { return Create(path, perm); }
 
-inline BOOL PDirectory::Remove()
+inline BOOL PDirectory::Remove() const
   { return Remove(path); }
 
 
@@ -76,19 +76,20 @@ inline PFile::~PFile()
   { DestroyContents(); }
 
 
-inline BOOL PFile::Exists()
+inline BOOL PFile::Exists() const
   { return Exists(fullname); }
 
-inline BOOL PFile::Access(OpenMode mode)
+inline BOOL PFile::Access(OpenMode mode) const
   { return Access(fullname, mode); }
 
-inline BOOL PFile::Remove()
+inline BOOL PFile::Remove() const
   { return Remove(fullname); }
 
 inline BOOL PFile::Rename(const PString & newname)
-  { return Rename(fullname, newname); }
+  { if (!Rename(fullname, newname)) return FALSE;
+    fullname = newname; return TRUE; }
 
-inline BOOL PFile::GetStatus(PStatus & status)
+inline BOOL PFile::GetStatus(Status & status) const
   { return GetStatus(fullname, status); }
 
 
