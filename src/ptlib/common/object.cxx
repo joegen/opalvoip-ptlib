@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.15 1996/01/02 12:52:02 robertj Exp $
+ * $Id: object.cxx,v 1.16 1996/01/23 13:15:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.16  1996/01/23 13:15:52  robertj
+ * Mac Metrowerks compiler support.
+ *
  * Revision 1.15  1996/01/02 12:52:02  robertj
  * Mac OS compatibility changes.
  *
@@ -946,15 +949,12 @@ istream & operator>>(istream & stream, PInt64 & v)
   switch (stream.peek()) {
     case '-' :
       stream.ignore();
-      {
-        PInt64 i = Inp64(stream)
-        v = -i;
-      }
+      v = -(PInt64)Inp64(stream)
       break;
     case '+' :
       stream.ignore();
     default :
-      v = Inp64(stream);
+      v = (PInt64)Inp64(stream);
   }
 
   return stream;
