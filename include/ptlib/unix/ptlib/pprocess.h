@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.10 1998/03/26 04:55:53 robertj Exp $
+ * $Id: pprocess.h,v 1.11 1998/03/29 10:42:52 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.11  1998/03/29 10:42:52  craigs
+ * Made PConfig thread safe
+ *
  * Revision 1.10  1998/03/26 04:55:53  robertj
  * Added PMutex and PSyncPoint
  *
@@ -63,11 +66,8 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
     ~PProcess();
 
-    PString GetHomeDir ();
-    char ** GetEnvp() const;
-    char ** GetArgv() const;
-    int     GetArgc() const;
-    void    PXSetupProcess();
+    PDirectory PXGetHomeDir ();
+    char ** PXGetEnvp() const;
 
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
@@ -77,14 +77,14 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
 
   protected:
+    void         CommonConstruct();
+    void         CommonDestruct();
+
     void         PXCheckSignals();
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
     int pxSignals;
 
-  private:
-    char **envp;
-    char **argv;
-    int  argc;
+  protected:
 
 #ifndef P_PTHREADS
   public:

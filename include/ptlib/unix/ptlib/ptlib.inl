@@ -23,14 +23,16 @@
 #include <langinfo.h>
 #endif
 
-PINLINE char ** PProcess::GetEnvp() const
+PINLINE char ** PProcess::PXGetEnvp() const
   { return envp; }
 
+#if 0
 PINLINE char ** PProcess::GetArgv() const
   { return argv; }
 
 PINLINE int PProcess::GetArgc() const
   { return argc; }
+#endif
 
 PINLINE DWORD PProcess::GetProcessID() const
 {
