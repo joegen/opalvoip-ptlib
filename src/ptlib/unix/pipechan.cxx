@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.27  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.26  2000/04/09 18:19:23  rogerh
  * Add my changes for NetBSD support.
  *
@@ -223,7 +226,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined (P_AIX)
     extern char ** environ;
 #define __environ environ
 #endif
