@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.10  2004/01/17 17:54:02  rjongbloed
+ * Added function to get server name from STUN client.
+ *
  * Revision 1.9  2003/10/08 22:00:18  dereksmithies
  * Fix unsigned/signed warning message. Thanks to Craig Southeren.
  *
@@ -97,6 +100,14 @@ void PSTUNClient::Construct()
   pairedPortInfo.currentPort = 0;
   numSocketsForPairing = 3;
   natType = UnknownNat;
+}
+
+
+PString PSTUNClient::GetServer() const
+{
+  PStringStream str;
+  str << serverAddress << ':' << serverPort;
+  return str;
 }
 
 
