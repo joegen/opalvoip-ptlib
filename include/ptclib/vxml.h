@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.23  2003/03/18 00:40:28  robertj
+ * Added back the IsMediaPCM() function for backward compatibility.
+ *
  * Revision 1.22  2003/03/17 08:02:54  robertj
  * Combined to the separate incoming and outgoing substream classes into
  *   a single class to make it easier to produce codec aware descendents.
@@ -413,6 +416,7 @@ class PVXMLChannel : public PIndirectChannel
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
 
     const PString & GetFormatName() const { return formatName; }
+    BOOL IsMediaPCM() const { formatName == "PCM-16"; }
     unsigned GetWavFileType() const { return wavFileType; }
     virtual PString AdjustWavFilename(const PString & fn);
 
