@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.10 1995/03/14 12:41:38 robertj Exp $
+ * $Id: ipsock.h,v 1.11 1995/03/18 06:26:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.10  1995/03/14 12:41:38  robertj
+ * Revision 1.11  1995/03/18 06:26:44  robertj
+ * Changed IP address variable for GNU compatibility.
+ *
+ * Revision 1.10  1995/03/14  12:41:38  robertj
  * Updated documentation to use HTML codes.
  *
  * Revision 1.9  1995/03/12  04:38:41  robertj
@@ -68,8 +71,11 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
 
   // New functions for class
-    typedef BYTE Address[4];
-
+#ifdef P_HAS_BERKELEY_SOCKETS
+    typedef struct in_addr Address;
+#else
+    typedef struct { BYTE b1,b2,b3,b4; } Address;
+#endif
     static BOOL GetAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
