@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.15  2001/06/26 15:48:31  rogerh
+ * Do not call GetInputDeviceName if there is no video grabber code
+ *
  * Revision 1.14  2001/05/22 23:38:45  robertj
  * Fixed bug in PVideoOutputDevice, removed redundent SetFrameSize.
  *
@@ -418,7 +421,12 @@ void PVideoOutputDevice::SetNow(int _now)
 
 PStringList PVideoInputDevice::GetDeviceNames() const
 {
+#ifdef HAS_VIDEOCAPTURE
   return GetInputDeviceNames();
+#else
+  PStringList empty;
+  return empty;
+#endif
 }
 
 
