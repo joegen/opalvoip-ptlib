@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.218  2004/05/18 02:32:09  csoutheren
+ * Fixed linking problems with PGenericFactory classes
+ *
  * Revision 1.217  2004/05/13 15:05:43  csoutheren
  * Added <vector.h>
  *
@@ -1830,12 +1833,10 @@ int PProcess::_main(void *)
   // PProcessStartup abstract factory
   std::vector<PProcessStartup *> startups;
   {
-    PProcessStartupFactory & startupFactory = PProcessStartupFactory::GetFactory();
-    PWaitAndSignal m(startupFactory.GetMutex());
-    PProcessStartupFactory::KeyMap & keyMap = startupFactory.GetKeyMap();
-    PProcessStartupFactory::KeyMap::const_iterator r;
-    for (r = keyMap.begin(); r != keyMap.end(); ++r) {
-      PProcessStartup * instance = PProcessStartupFactory::CreateInstance(r->first);
+    PProcessStartupFactory::KeyList list = PProcessStartupFactory::GetKeyList();
+    PProcessStartupFactory::KeyList::const_iterator r;
+    for (r = list.begin(); r != list.end(); ++r) {
+      PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
       instance->OnStartup();
       startups.push_back(instance);
     }
@@ -1846,8 +1847,6 @@ int PProcess::_main(void *)
 
   // delete the PProcessInstance previously created
   {
-    PProcessStartupFactory & startupFactory = PProcessStartupFactory::GetFactory();
-    PWaitAndSignal m(startupFactory.GetMutex());
     std::vector<PProcessStartup *>::iterator r;
     for (r = startups.begin(); r != startups.end(); ++r) {
       (*r)->OnShutdown();
