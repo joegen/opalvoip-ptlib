@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.2 1994/07/02 03:18:09 robertj Exp $
+ * $Id: msdos.cxx,v 1.3 1994/07/17 11:01:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Ehancements, implementation, bug fixes etc.
+ *
+ * Revision 1.2  1994/07/02  03:18:09  robertj
  * Multi-threading implementation.
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
@@ -103,12 +106,6 @@ void PSerialChannel::Construct()
 void PSerialChannel::CopyContents(const PSerialChannel & chan)
 {
   commsId = chan.commsId;
-}
-
-
-BOOL PSerialChannel::IsOpen() const
-{
-  return commsId >= 0;
 }
 
 

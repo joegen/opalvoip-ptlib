@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.2 1994/07/02 03:18:09 robertj Exp $
+ * $Id: mswin.cxx,v 1.3 1994/07/17 11:01:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Ehancements, implementation, bug fixes etc.
+ *
+ * Revision 1.2  1994/07/02  03:18:09  robertj
  * Multi-threading implementation.
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
@@ -122,26 +125,19 @@ PTime::DateOrder PTime::GetDateOrder()
 
 void PSerialChannel::Construct()
 {
-  commsId = -1;
 }
 
 
 void PSerialChannel::CopyContents(const PSerialChannel & chan)
 {
-  commsId = chan.commsId;
-}
-
-
-BOOL PSerialChannel::IsOpen() const
-{
-  return commsId >= 0;
+  os_handle = chan.os_handle;
 }
 
 
 PString PSerialChannel::GetName() const
 {
   if (IsOpen())
-    return psprintf("COM%i", commsId+1);
+    return psprintf("COM%i", os_handle+1);
 
   return PString();
 }
@@ -151,7 +147,7 @@ BOOL PSerialChannel::IsReadBlocked(PObject * obj)
 {
   PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
-  GetCommError(chan.commsId, &stat);
+  GetCommError(chan.os_handle, &stat);
   return stat.cbInQue <= 0 &&
          (chan.readTimeout == PMaxTimeInterval || chan.readTimer.IsRunning());
 }
@@ -171,12 +167,12 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
   if (IsReadBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsReadBlocked, this);
 
-  lastReadCount = ReadComm(commsId, buf, len);
+  lastReadCount = ReadComm(os_handle, buf, len);
   if (lastReadCount > 0)
     return TRUE;
 
   COMSTAT stat;
-  GetCommError(commsId, &stat);
+  GetCommError(os_handle, &stat);
   osError = EFAULT;
   lastReadCount = -lastReadCount;
   return lastReadCount > 0;
@@ -187,7 +183,7 @@ BOOL PSerialChannel::IsWriteBlocked(PObject * obj)
 {
   PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
-  GetCommError(chan.commsId, &stat);
+  GetCommError(chan.os_handle, &stat);
   return stat.cbOutQue >= OutputQueueSize &&
        (chan.writeTimeout == PMaxTimeInterval || chan.writeTimer.IsRunning());
 }
@@ -207,10 +203,10 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
   if (IsWriteBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsWriteBlocked, this);
 
-  lastWriteCount = WriteComm(commsId, buf, len);
+  lastWriteCount = WriteComm(os_handle, buf, len);
   if (lastWriteCount <= 0) {
     COMSTAT stat;
-    GetCommError(commsId, &stat);
+    GetCommError(os_handle, &stat);
     osError = EFAULT;
     lastWriteCount = -lastWriteCount;
   }
@@ -226,8 +222,8 @@ BOOL PSerialChannel::Close()
     return FALSE;
   }
 
-  BOOL retVal = CloseComm(commsId) == 0;
-  commsId = -1;
+  BOOL retVal = CloseComm(os_handle) == 0;
+  os_handle = -1;
   return retVal;
 }
 
@@ -242,7 +238,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
   }
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
 
   switch (speed) {
     case 0 :
@@ -347,9 +343,9 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
 {
   Close();
 
-  commsId = OpenComm(port, InputQueueSize, OutputQueueSize);
-  if (commsId < 0) {
-    switch (commsId) {
+  os_handle = OpenComm(port, InputQueueSize, OutputQueueSize);
+  if (os_handle < 0) {
+    switch (os_handle) {
       case IE_BADID :
       case IE_HARDWARE :
         osError = ENOENT;
@@ -372,7 +368,7 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
         osError = EFAULT;
         lastError = Miscellaneous;
     }
-    commsId = -1;
+    os_handle = -1;
     return FALSE;
   }
 
@@ -383,11 +379,11 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
     SetCommState(&dcb);
 
   if (!SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow)) {
-    CloseComm(commsId);
+    CloseComm(os_handle);
     return FALSE;
   }
 
-  SetCommEventMask(commsId, EV_CTSS|EV_DSR|EV_RING|EV_RLSDS);
+  SetCommEventMask(os_handle, EV_CTSS|EV_DSR|EV_RING|EV_RLSDS);
   return TRUE;
 }
 
@@ -405,7 +401,7 @@ DWORD PSerialChannel::GetSpeed() const
     return 9600;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   switch (dcb.BaudRate) {
     case CBR_110 :
       return 110;
@@ -451,7 +447,7 @@ BYTE PSerialChannel::GetDataBits() const
     return 8;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   return dcb.ByteSize;
 }
 
@@ -468,7 +464,7 @@ PSerialChannel::Parity PSerialChannel::GetParity() const
     return NoParity;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   switch (dcb.Parity) {
     case ODDPARITY :
       return OddParity;
@@ -496,7 +492,7 @@ BYTE PSerialChannel::GetStopBits() const
     return 1;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   return (BYTE)(dcb.StopBits == ONESTOPBIT ? 1 : 2);
 }
 
@@ -513,7 +509,7 @@ PSerialChannel::FlowControl PSerialChannel::GetInputFlowControl() const
     return NoFlowControl;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   if (dcb.fRtsflow)
     return RtsCts;
   if (dcb.fInX != 0)
@@ -534,7 +530,7 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
     return NoFlowControl;
 
   DCB dcb;
-  PAssert(GetCommState(commsId, &dcb) == 0, POperatingSystemError);
+  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
   if (dcb.fOutxCtsFlow != 0)
     return RtsCts;
   if (dcb.fOutX != 0)
@@ -551,7 +547,7 @@ void PSerialChannel::SetDTR(BOOL state)
     return;
   }
 
-  PAssert(EscapeCommFunction(commsId, state ? SETDTR : CLRDTR) == 0,
+  PAssert(EscapeCommFunction(os_handle, state ? SETDTR : CLRDTR) == 0,
                                                       POperatingSystemError);
 }
 
@@ -564,7 +560,7 @@ void PSerialChannel::SetRTS(BOOL state)
     return;
   }
 
-  PAssert(EscapeCommFunction(commsId, state ? SETRTS : CLRRTS) == 0,
+  PAssert(EscapeCommFunction(os_handle, state ? SETRTS : CLRRTS) == 0,
                                                       POperatingSystemError);
 }
 
@@ -578,9 +574,9 @@ void PSerialChannel::SetBreak(BOOL state)
   }
 
   if (state)
-    PAssert(SetCommBreak(commsId), POperatingSystemError);
+    PAssert(SetCommBreak(os_handle), POperatingSystemError);
   else
-    PAssert(ClearCommBreak(commsId), POperatingSystemError);
+    PAssert(ClearCommBreak(os_handle), POperatingSystemError);
 }
 
 
@@ -592,7 +588,7 @@ BOOL PSerialChannel::GetCTS()
     return FALSE;
   }
 
-  return (GetCommEventMask(commsId, 0)&EV_CTSS) != 0;
+  return (GetCommEventMask(os_handle, 0)&EV_CTSS) != 0;
 }
 
 
@@ -604,7 +600,7 @@ BOOL PSerialChannel::GetDSR()
     return FALSE;
   }
 
-  return (GetCommEventMask(commsId, 0)&EV_DSR) != 0;
+  return (GetCommEventMask(os_handle, 0)&EV_DSR) != 0;
 }
 
 
@@ -616,7 +612,7 @@ BOOL PSerialChannel::GetDCD()
     return FALSE;
   }
 
-  return (GetCommEventMask(commsId, 0)&EV_RLSDS) != 0;
+  return (GetCommEventMask(os_handle, 0)&EV_RLSDS) != 0;
 }
 
 
@@ -628,7 +624,7 @@ BOOL PSerialChannel::GetRing()
     return FALSE;
   }
 
-  return (GetCommEventMask(commsId, 0)&EV_RING) != 0;
+  return (GetCommEventMask(os_handle, 0)&EV_RING) != 0;
 }
 
 
