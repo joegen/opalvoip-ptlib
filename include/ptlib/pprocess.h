@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.23 1996/05/18 09:18:30 robertj Exp $
+ * $Id: pprocess.h,v 1.24 1996/05/23 09:58:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.24  1996/05/23 09:58:47  robertj
+ * Changed process.h to pprocess.h to avoid name conflict.
+ * Added mutex to timer list.
+ *
  * Revision 1.23  1996/05/18 09:18:30  robertj
  * Added mutex to timer list.
  *
@@ -147,6 +151,9 @@ class PTimerList : PInternalTimerList // Want this to be private
   private:
     PSemaphore    mutex;
     // Mutual exclusion for multi tasking
+
+    PThread * processingThread;
+    // Thread that currently has the mutex in Process()
 
     PTimeInterval lastSample;
     // The last system timer tick value that was used to process timers.
