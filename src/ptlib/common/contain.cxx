@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.39 1995/04/02 09:27:27 robertj Exp $
+ * $Id: contain.cxx,v 1.40 1995/04/25 11:29:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.40  1995/04/25 11:29:38  robertj
+ * Fixed Borland compiler warnings.
+ *
  * Revision 1.39  1995/04/02 09:27:27  robertj
  * Added "balloon" help.
  *
@@ -157,11 +160,6 @@
  * Fixed header comment for RCS.
  */
 
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
-#define _CONTAIN_CXX
 #include <contain.h>
 
 #include <ctype.h>
