@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.22  1999/07/08 08:39:12  robertj
+ * Fixed bug when assigning negative number ot cosntrained PASN_Integer
+ *
  * Revision 1.21  1999/06/30 08:58:12  robertj
  * Fixed bug in encoding/decoding OID greater than 2.39
  *
@@ -433,12 +436,24 @@ PASN_Integer & PASN_Integer::operator=(unsigned val)
 {
   if (constraint == Unconstrained)
     value = val;
-  else if (val > upperLimit)
-    value = upperLimit;
-  else if (lowerLimit < 0 ? ((int)val < lowerLimit) : (val < (unsigned)lowerLimit))
-    value = lowerLimit;
-  else
-    value = val;
+  else if (lowerLimit >= 0) { // Is unsigned integer
+    if (val < (unsigned)lowerLimit)
+      value = lowerLimit;
+    else if (val > upperLimit)
+      value = upperLimit;
+    else
+      value = val;
+  }
+  else {
+    int ival = (int)val;
+    if (ival < lowerLimit)
+      value = lowerLimit;
+    else if (upperLimit < INT_MAX && ival > (int)upperLimit)
+      value = upperLimit;
+    else
+      value = val;
+  }
+
   return *this;
 }
 
