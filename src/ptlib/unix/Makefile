@@ -1,0 +1,222 @@
+
+#
+# Makefile for pwlib
+#
+# $Id: Makefile,v 1.15 1996/09/21 05:41:41 craigs Exp $
+# $Log: Makefile,v $
+# Revision 1.15  1996/09/21 05:41:41  craigs
+# Added new common files
+#
+# Revision 1.14  1996/08/03 12:05:10  craigs
+# *** empty log message ***
+#
+# Revision 1.13  1996/07/03 06:32:18  craigs
+# Removed spurious lines causing warnings during library make
+#
+# Revision 1.12  1996/06/29 11:37:28  craigs
+# Added unix system type to object directories
+# Added support for Linux shared libraries
+#
+# Revision 1.11  1996/06/19 01:56:26  craigs
+# Added uhttpsvc to the list
+#
+# Revision 1.10  1996/06/14 09:30:43  craigs
+# Included buildinc stuff
+#
+# Revision 1.9  1996/05/10 11:03:22  craigs
+# Fixed distsrc rule to only include ptlib stuff
+#
+# Revision 1.8  1996/05/03 13:48:58  craigs
+# Sun4 fixes
+#
+# Revision 1.7  1996/05/02  10:53:24  craigs
+# Fixed problem with SUN4 target
+#
+# Revision 1.6  1996/04/17 11:12:20  craigs
+# Latest version pre mibmaster release 1.0
+#
+# Revision 1.5  1996/04/15 10:50:13  craigs
+# Last revision prior to release of MibMaster
+#
+# Revision 1.4  1996/01/26 11:09:04  craigs
+# *** empty log message ***
+#
+# Revision 1.3  1995/12/08 13:18:13  craigs
+# Lots of changes
+#
+# Revision 1.2  1995/07/09 00:35:42  craigs
+# Latest and greatest omnibus change
+#
+# Revision 1.1  1995/01/16 20:50:44  craigs
+# Initial revision
+#
+# Revision 1.1  1993/07/12  21:22:16  craigs
+# Initial revision
+#
+#
+
+DEBUG		= 1
+COMMONSRC	= ../../common/ptlib/src
+
+SOURCES		= switch.cxx \
+		  osutil.cxx \
+		  channel.cxx \
+		  tlib.cxx \
+		  assert.cxx \
+		  config.cxx \
+		  socket.cxx \
+		  remconn.cxx \
+		  serchan.cxx \
+		  pipechan.cxx \
+		  svcproc.cxx \
+		  utfile.cxx \
+		  usfile.cxx \
+		  uftp.cxx \
+		  umailsock.cxx \
+		  utelnet.cxx \
+		  uappsock.cxx \
+		  uhtml.cxx \
+		  ucypher.cxx \
+		  uhttp.cxx \
+		  uicmp.cxx \
+		  uhttpsvc.cxx \
+		  uhttpform.cxx \
+		  uasn.cxx \
+		  usnmp.cxx \
+		  $(COMMONSRC)/object.cxx \
+		  $(COMMONSRC)/contain.cxx \
+		  $(COMMONSRC)/osutils.cxx \
+		  $(COMMONSRC)/sockets.cxx \
+		  $(COMMONSRC)/pmain.cxx \
+		  $(COMMONSRC)/ptime.cxx \
+		  $(COMMONSRC)/collect.cxx \
+		  $(COMMONSRC)/snmpclnt.cxx \
+		  $(COMMONSRC)/snmpserv.cxx \
+		  $(COMMONSRC)/httpclnt.cxx \
+		  $(COMMONSRC)/httpsrvr.cxx \
+		  $(COMMONSRC)/ftpclnt.cxx \
+		  $(COMMONSRC)/ftpsrvr.cxx 
+
+#######################################################
+
+include unix.mak
+
+#######################################################
+
+all:	$(PTLIB_FILE)
+
+ifdef REQUIRES_SEPARATE_SWITCH 
+$(OBJDIR)/switch.o: ./switch.cxx
+	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+endif
+
+CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
+
+thelot:
+	make alllibs
+	( cd ../../apps/mibmastr; make clean ; make both; )
+	( cd ../../apps/firedoor; make clean ; make both; )
+
+test:
+	(cd $(PWLIBDIR); \
+          grep -h '^#include' common/contain.h common/ptlib.h common/sockets.h \
+            | grep -v ptlib.inl \
+            | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' \
+	)
+
+distunix:
+	(cd $(PWLIBDIR); tar -czvf unix-src.tgz \
+	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
+	unix/src/common.mak unix/include/* )
+distsrc:
+	(cd $(PWLIBDIR); tar -czvf ptlib-src.tgz \
+	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
+	unix/src/common.mak unix/include/* common/*.h common/ptlib/* )
+
+#######################################################
+
+include common.mak
+
+#######################################################
+
+
+ifdef SHAREDLIB
+$(PTLIB_FILE): $(PTLIB_FILE).1
+	@if [ ! -e $(PTLIB_FILE) ] ; then ln -s $(PTLIB_FILE).1 $(PTLIB_FILE) ; fi
+
+$(PTLIB_FILE).1: $(PTLIB_FILE).1.0
+	@if [ ! -e $(PTLIB_FILE).1 ] ; then ln -s $(PTLIB_FILE).1.0 $(PTLIB_FILE).1 ; fi
+
+$(PTLIB_FILE).1.0: $(OBJS)
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	gcc -shared -Wl,-soname,$(PTLIB_FILE).1 -o $(PTLIB_FILE).1.0 $(OBJS)
+
+else
+
+$(PTLIB_FILE): $(OBJS)
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+ifndef RANLIB
+	ar rcs $(PTLIB_FILE) $(OBJS)
+else
+	ar rc $(PTLIB_FILE) $(OBJS)
+	ranlib $(PTLIB_FILE)
+endif
+
+endif
+
+
+$(OBJDIR)/osutil.o: ./osutil.cxx 
+
+$(OBJDIR)/channel.o: channel.cxx 
+
+$(OBJDIR)/tlib.o: tlib.cxx 
+
+$(OBJDIR)/assert.o: assert.cxx 
+
+$(OBJDIR)/config.o: config.cxx 
+
+$(OBJDIR)/socket.o: socket.cxx 
+
+$(OBJDIR)/pipechan.o: pipechan.cxx 
+
+$(OBJDIR)/serchan.o: serchan.cxx 
+
+$(OBJDIR)/svcproc.o: svcproc.cxx 
+
+$(OBJDIR)/remconn.o: remconn.cxx 
+
+$(OBJDIR)/uappsock.o: uappsock.cxx 
+
+$(OBJDIR)/uhttp.o: uhttp.cxx 
+
+$(OBJDIR)/uhttpsvc.o: uhttpsvc.cxx 
+
+$(OBJDIR)/object.o: $(COMMONSRC)/object.cxx 
+
+$(OBJDIR)/contain.o: $(COMMONSRC)/contain.cxx 
+
+$(OBJDIR)/collect.o: $(COMMONSRC)/collect.cxx 
+
+$(OBJDIR)/osutils.o: $(COMMONSRC)/osutils.cxx 
+
+$(OBJDIR)/sockets.o: $(COMMONSRC)/sockets.cxx 
+
+$(OBJDIR)/appsock.o: $(COMMONSRC)/appsock.cxx 
+
+$(OBJDIR)/cypher.o: $(COMMONSRC)/cypher.cxx 
+
+$(OBJDIR)/html.o: $(COMMONSRC)/html.cxx 
+
+$(OBJDIR)/http.o: $(COMMONSRC)/http.cxx 
+
+$(OBJDIR)/pmain.o: $(COMMONSRC)/pmain.cxx 
+
+$(OBJDIR)/ptime.o: $(COMMONSRC)/ptime.cxx 
+
+$(OBJDIR)/telnet.o: $(COMMONSRC)/telnet.cxx 
+
+$(OBJDIR)/mailsock.o: $(COMMONSRC)/mailsock.cxx 
+
+$(OBJDIR)/ftp.o: ../../common/src/ftp.cxx 
+# Do not delete this line - make depend depends upon it
