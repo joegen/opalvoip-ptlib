@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.106  2004/06/01 07:42:19  csoutheren
+ * Restored memory allocation checking
+ * Added configure flag to enable, thanks to Derek Smithies
+ *
  * Revision 1.105  2004/06/01 05:22:43  csoutheren
  * Restored memory check functionality
  *
@@ -375,10 +379,6 @@
 #include "msos/ptlib/contain.h"
 #else
 #include "unix/ptlib/contain.h"
-#endif
-
-#ifdef _DEBUG
-#define PMEMORY_CHECK   1
 #endif
 
 #if defined(P_VXWORKS)

@@ -1066,6 +1066,21 @@ if test "x$ac_cv_func_swab" = "xyes" ; then
 fi
 
 dnl ########################################################################
+dnl look for MEMORY_CHECK enabled.
+
+dnl MSWIN_DISPLAY    memcheck,Memory check switch read
+
+AC_ARG_ENABLE(memcheck,
+       [  --enable-memcheck       enable leak testing code (off by default)],
+       memcheck=$enableval)
+
+if test "$memcheck" = "yes" ; then
+  AC_DEFINE(PMEMORY_CHECK, 1)
+  AC_MSG_NOTICE(Memory checking enabled)
+fi
+
+
+dnl ########################################################################
 dnl output make directives
 
 dnl resolver needs to be at the end
