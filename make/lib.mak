@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.13  2001/07/03 04:41:25  yurik
+# Corrections to Jac's submission from 6/28
+#
 # Revision 1.12  2001/06/30 06:59:06  yurik
 # Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
 #
@@ -81,7 +84,6 @@ $(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	gcc -shared -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(OBJS)
 	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)

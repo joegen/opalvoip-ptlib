@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.65  2001/07/03 04:41:25  yurik
+ * Corrections to Jac's submission from 6/28
+ *
  * Revision 1.64  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -990,48 +993,47 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 #else
 
-#if 0
-	// Most of this code came from the source code for the "route" command
-	// so it should work on other platforms too.
-	// However, it is not complete (the "address-for-interface" function doesn't exist) and not tested!
-	
-	route_table_req_t reqtable;
-	route_req_t *rrtp;
-	int i,ret;
-	
-	ret = get_route_table(&amp;reqtable);
-	if (ret  0)
-	{
-		return FALSE;
-	}
-	
-	for (i=reqtable.cnt, rrtp = reqtable.rrtp;i0;i--, rrtp++)
-	{
-		//the datalink doesn't save addresses/masks for host and default
-		//routes, so the route_req_t may not be filled out completely
-		if (rrtp-flags &amp; RTF_DEFAULT) {
-			//the IP default route is 0/0
-			((struct sockaddr_in *)&amp;rrtp-dst)-sin_addr.s_addr = 0;
-			((struct sockaddr_in *)&amp;rrtp-mask)-sin_addr.s_addr = 0;
-	
-		} else if (rrtp-flags &amp; RTF_HOST) {
-			//host routes are addr/32
-			((struct sockaddr_in *)&amp;rrtp-mask)-sin_addr.s_addr = 0xffffffff;
-		}
-	
-	    RouteEntry * entry = new RouteEntry(/* address_for_interface(rrtp-iface) */);
-	    entry-net_mask = rrtp-mask;
-	    entry-destination = rrtp-dst;
-	    entry-interfaceName = rrtp-iface;
-	    entry-metric = rrtp-refcnt;
-	    table.Append(entry);
-	}
-	
-	free(reqtable.rrtp);
-		
-	return TRUE;
-#endif // 0
- 
+#if 0 
+        // Most of this code came from the source code for the "route" command 
+        // so it should work on other platforms too. 
+        // However, it is not complete (the "address-for-interface" function doesn't exist) and not tested! 
+        
+        route_table_req_t reqtable; 
+        route_req_t *rrtp; 
+        int i,ret; 
+        
+        ret = get_route_table(&reqtable); 
+        if (ret < 0) 
+        { 
+                return FALSE; 
+        } 
+        
+        for (i=reqtable.cnt, rrtp = reqtable.rrtp;i>0;i--, rrtp++) 
+        { 
+                //the datalink doesn't save addresses/masks for host and default 
+                //routes, so the route_req_t may not be filled out completely 
+                if (rrtp->flags & RTF_DEFAULT) { 
+                        //the IP default route is 0/0 
+                        ((struct sockaddr_in *)&rrtp->dst)->sin_addr.s_addr = 0; 
+                        ((struct sockaddr_in *)&rrtp->mask)->sin_addr.s_addr = 0; 
+        
+                } else if (rrtp->flags & RTF_HOST) { 
+                        //host routes are addr/32 
+                        ((struct sockaddr_in *)&rrtp->mask)->sin_addr.s_addr = 0xffffffff; 
+                } 
+        
+            RouteEntry * entry = new RouteEntry(/* address_for_interface(rrtp->iface) */); 
+            entry->net_mask = rrtp->mask; 
+            entry->destination = rrtp->dst; 
+            entry->interfaceName = rrtp->iface; 
+            entry->metric = rrtp->refcnt; 
+            table.Append(entry); 
+        } 
+        
+        free(reqtable.rrtp); 
+                
+        return TRUE; 
+#endif // 0  
 #warning Platform requires implemetation of GetRouteTable()
   return FALSE;
 
