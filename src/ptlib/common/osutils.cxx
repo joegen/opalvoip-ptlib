@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.136  2000/04/28 06:58:50  robertj
+ * Fixed bug introduced when added Ashley Untts fix, forgot to take out old code!
+ *
  * Revision 1.135  2000/04/27 04:19:27  robertj
  * Fixed bug in restarting free running timers, thanks Ashley Unitt.
  *
@@ -714,8 +717,6 @@ void PTimer::StartRunning(BOOL once)
   oneshot = once;
   state = (*this) != 0 ? Starting : Stopped;
 
-  if (IsRunning() && timeoutThread == NULL)
-    PProcess::Current().GetTimerList()->AppendTimer(this);
   if (IsRunning()) {
     if (timeoutThread == NULL)
       PProcess::Current().GetTimerList()->AppendTimer(this);
