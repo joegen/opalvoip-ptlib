@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.26  1998/11/30 04:50:45  robertj
+ * New directory structure
+ *
  * Revision 1.25  1998/09/23 06:21:56  robertj
  * Added open source copyright license.
  *
@@ -115,8 +118,8 @@
 #endif
 
 #include <ptlib.h>
-#include <cypher.h>
-#include <mime.h>
+#include <ptclib/cypher.h>
+#include <ptclib/mime.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
