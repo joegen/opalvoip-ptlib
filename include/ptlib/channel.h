@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.23 1996/09/14 13:09:17 robertj Exp $
+ * $Id: channel.h,v 1.24 1996/11/04 03:41:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.24  1996/11/04 03:41:04  robertj
+ * Added extra error message for UDP packet truncated.
+ *
  * Revision 1.23  1996/09/14 13:09:17  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -479,16 +482,17 @@ class PEXPORT PChannel : public PObject, public iostream {
 
     enum Errors {
       NoError,
-      NotFound,     // Open fail due to device or file not found
-      FileExists,   // Open fail due to file already existing
-      DiskFull,     // Write fail due to disk full
-      AccessDenied, // Operation fail due to insufficient privilege
-      DeviceInUse,  // Open fail due to device already open for exclusive use
-      BadParameter, // Operation fail due to bad parameters
-      NoMemory,     // Operation fail due to insufficient memory
-      NotOpen,      // Operation fail due to channel not being open yet
-      Timeout,      // Operation failed due to a timeout
-      Interrupted,  // Operation was interrupted
+      NotFound,       // Open fail due to device or file not found
+      FileExists,     // Open fail due to file already existing
+      DiskFull,       // Write fail due to disk full
+      AccessDenied,   // Operation fail due to insufficient privilege
+      DeviceInUse,    // Open fail due to device already open for exclusive use
+      BadParameter,   // Operation fail due to bad parameters
+      NoMemory,       // Operation fail due to insufficient memory
+      NotOpen,        // Operation fail due to channel not being open yet
+      Timeout,        // Operation failed due to a timeout
+      Interrupted,    // Operation was interrupted
+      BufferTooSmall, // Operations buffer was too small for data.
       Miscellaneous
     };
     Errors GetErrorCode() const;
