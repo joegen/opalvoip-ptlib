@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.90  1999/03/09 08:13:52  robertj
+ * Fixed race condition in doing Select() on closed sockets. Could go into infinite wait.
+ *
  * Revision 1.89  1999/03/02 05:41:58  robertj
  * More BeOS changes
  *
@@ -783,6 +786,9 @@ int PSocket::Select(PSocket & sock1,
                     PSocket & sock2,
                     const PTimeInterval & timeout)
 {
+  if (!sock1.IsOpen() || !sock2.IsOpen())
+    return NotOpen;
+
   int h1 = sock1.GetHandle();
   int h2 = sock2.GetHandle();
 
@@ -878,40 +884,40 @@ PChannel::Errors PSocket::Select(SelectList & read,
   FD_ZERO(&readfds);
   PINDEX i;
   for (i = 0; i < read.GetSize(); i++) {
+    if (!read[i].IsOpen())
+      return NotOpen;
     int h = read[i].GetHandle();
-    if (h >= 0) {
-      FD_SET(h, &readfds);
-      if (h > maxfds)
-        maxfds = h;
-      allfds[nextfd++] = h;
-      allfds[nextfd++] = 1;
-    }
+    FD_SET(h, &readfds);
+    if (h > maxfds)
+      maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 1;
   }
 
   fd_set writefds;
   FD_ZERO(&writefds);
   for (i = 0; i < write.GetSize(); i++) {
+    if (!write[i].IsOpen())
+      return NotOpen;
     int h = write[i].GetHandle();
-    if (h >= 0) {
-      FD_SET(h, &writefds);
-      if (h > maxfds)
-        maxfds = h;
-      allfds[nextfd++] = h;
-      allfds[nextfd++] = 2;
-    }
+    FD_SET(h, &writefds);
+    if (h > maxfds)
+      maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 2;
   }
 
   fd_set exceptfds;
   FD_ZERO(&exceptfds);
   for (i = 0; i < except.GetSize(); i++) {
+    if (!except[i].IsOpen())
+      return NotOpen;
     int h = except[i].GetHandle();
-    if (h >= 0) {
-      FD_SET(h, &exceptfds);
-      if (h > maxfds)
-        maxfds = h;
-      allfds[nextfd++] = h;
-      allfds[nextfd++] = 4;
-    }
+    FD_SET(h, &exceptfds);
+    if (h > maxfds)
+      maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 4;
   }
 #ifdef _MSC_VER
 #pragma warning(default:4127)
@@ -927,17 +933,23 @@ PChannel::Errors PSocket::Select(SelectList & read,
   if (retval > 0) {
     for (i = 0; i < read.GetSize(); i++) {
       int h = read[i].GetHandle();
-      if (h < 0 || !FD_ISSET(h, &readfds))
+      if (h < 0)
+        return Interrupted;
+      if (!FD_ISSET(h, &readfds))
         read.RemoveAt(i--);
     }
     for (i = 0; i < write.GetSize(); i++) {
       int h = write[i].GetHandle();
-      if (h < 0 || !FD_ISSET(h, &writefds))
+      if (h < 0)
+        return Interrupted;
+      if (!FD_ISSET(h, &writefds))
         write.RemoveAt(i--);
     }
     for (i = 0; i < except.GetSize(); i++) {
       int h = except[i].GetHandle();
-      if (h < 0 || !FD_ISSET(h, &exceptfds))
+      if (h < 0)
+        return Interrupted;
+      if (!FD_ISSET(h, &exceptfds))
         except.RemoveAt(i--);
     }
   }
