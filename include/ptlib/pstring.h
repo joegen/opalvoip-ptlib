@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.26 1996/10/08 13:13:38 robertj Exp $
+ * $Id: pstring.h,v 1.27 1997/05/16 12:10:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.27  1997/05/16 12:10:12  robertj
+ * Fixed G++ compatibility bug.
+ *
  * Revision 1.26  1996/10/08 13:13:38  robertj
  * Added operator += and &= for char so no implicit PString construction.
  *
@@ -1610,7 +1613,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        reference to the object indexed by the key.
      */
     PString operator()(const K & key, const char * dflt = "") const
-      { return Contains(key) ? (*this)[key] : dflt; }
+      { if (Contains(key)) return (*this)[key]; return dflt; }
 
     virtual PString * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
