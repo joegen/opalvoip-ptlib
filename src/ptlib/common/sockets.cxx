@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.174  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.173  2004/04/27 04:37:51  rjongbloed
  * Fixed ability to break of a PSocket::Select call under linux when a socket
  *   is closed by another thread.
@@ -585,6 +588,13 @@
 #include <ptlib/sockets.h>
 
 #include <ctype.h>
+
+#ifdef P_VXWORKS
+// VxWorks variant of inet_ntoa() allocates INET_ADDR_LEN bytes via malloc
+// BUT DOES NOT FREE IT !!!  Use inet_ntoa_b() instead.
+#define INET_ADDR_LEN      18
+extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
+#endif // P_VXWORKS
 
 #if P_HAS_QOS
 
@@ -2301,8 +2311,13 @@ PString PIPSocket::Address::AsString() const
     return str;
   }
 #endif
-
+#ifdef P_VXWORKS
+  char ipStorage[INET_ADDR_LEN];
+  inet_ntoa_b(v.four, ipStorage);
+  return ipStorage;    
+#else // P_VXWORKS
   return inet_ntoa(v.four);
+#endif // P_VXWORKS
 }
 
 

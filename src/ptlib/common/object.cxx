@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.79  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.78  2004/07/01 11:41:30  csoutheren
  * Fixed compile and run problems on Linux
  *
@@ -544,6 +547,8 @@ PMemoryHeap::Wrapper::Wrapper()
   PAssertOS((err = MPEnterCriticalRegion(instance->mutex, kDurationForever)) == 0);
 #elif defined(P_PTHREADS)
   pthread_mutex_lock(&instance->mutex);
+#elif defined(P_VXWORKS)
+  semTake((SEM_ID)instance->mutex, WAIT_FOREVER);
 #endif
 }
 
@@ -560,6 +565,8 @@ PMemoryHeap::Wrapper::~Wrapper()
   PAssertOS((err = MPExitCriticalRegion(instance->mutex)) == 0 || instance->isDestroyed);
 #elif defined(P_PTHREADS)
   pthread_mutex_unlock(&instance->mutex);
+#elif defined(P_VXWORKS)
+  semGive((SEM_ID)instance->mutex);
 #endif
 }
 
@@ -594,6 +601,8 @@ PMemoryHeap::PMemoryHeap()
 #else
 #if defined(P_PTHREADS)
   pthread_mutex_init(&mutex, NULL);
+#elif defined(P_VXWORKS)
+  mutex = semMCreate(SEM_Q_FIFO);
 #endif
   leakDumpStream = &cerr;
 #endif
@@ -615,6 +624,8 @@ PMemoryHeap::~PMemoryHeap()
   PWaitOnExitConsoleWindow();
 #elif defined(P_PTHREADS)
   pthread_mutex_destroy(&mutex);
+#elif defined(P_VXWORKS)
+  semDelete((SEM_ID)mutex);
 #endif
 }
 
@@ -662,6 +673,8 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint) {
 #ifdef _WIN32
     __asm int 3;
+#elif defined(P_VXWORKS)
+    kill(taskIdSelf(), SIGABRT);
 #else
     kill(getpid(), SIGABRT);
 #endif 
@@ -729,6 +742,8 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
   if (mem->allocationBreakpoint != 0 && mem->allocationRequest == mem->allocationBreakpoint) {
 #ifdef _WIN32
     __asm int 3;
+#elif defined(P_VXWORKS)
+    kill(taskIdSelf(), SIGABRT);
 #else
     kill(getpid(), SIGABRT);
 #endif 

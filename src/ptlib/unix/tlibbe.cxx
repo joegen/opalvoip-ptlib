@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.32  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.31  2004/05/30 04:48:15  ykiryanov
  * Sync point is better when semaphore based
  *
@@ -423,17 +426,6 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
 PThreadIdentifier PThread::GetCurrentThreadId(void)
 {
   return ::find_thread(NULL);
-}
-
-int PThread::PXBlockOnIO(int maxHandles,
-           fd_set * readBits,
-           fd_set * writeBits,
-           fd_set * exceptionBits,
-           const PTimeInterval & timeout,
-           const PIntArray & ) // osHandles
-{
-  // Redundant function - functionality moved to socket code
-  return -1;
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
