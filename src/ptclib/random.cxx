@@ -1,12 +1,11 @@
 /*
  * random.cxx
  *
- * Mersenne Twister random number generator.
- * From Makoto Matsumoto and Takuji Nishimura.
+ * ISAAC random number generator by Bob Jenkins.
  *
  * Portable Windows Library
  *
- * Copyright (c) 1993-2000 Equivalence Pty. Ltd.
+ * Copyright (c) 1993-2001 Equivalence Pty. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -22,29 +21,14 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Based on code originally under the following license:
- *
- * This library is free software; you can redistribute it and/or   
- * modify it under the terms of the GNU Library General Public     
- * License as published by the Free Software Foundation; either    
- * version 2 of the License, or (at your option) any later         
- * version.                                                        
- * This library is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of  
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.            
- * See the GNU Library General Public License for more details.    
- * You should have received a copy of the GNU Library General      
- * Public License along with this library; if not, write to the    
- * Free Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA   
- * 02111-1307  USA                                                 
- * 
- * Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura.       
- * When you use this, send an email to: matumoto@math.keio.ac.jp   
- * with an appropriate reference to your work.                     
- *
  * Contributor(s): ______________________________________.
  *
+ * Based on code originally by Bob Jenkins.
+ *
  * $Log: random.cxx,v $
+ * Revision 1.2  2001/02/27 03:33:44  robertj
+ * Changed random number generator due to licensing issues.
+ *
  * Revision 1.1  2000/02/17 12:05:02  robertj
  * Added better random number generator after finding major flaws in MSVCRT version.
  *
@@ -58,20 +42,6 @@
 #include <ptlib.h>
 #include <ptclib/random.h>
 
-
-/* Period parameters */  
-#define M 397
-#define MATRIX_A 0x9908b0df   /* constant vector a */
-#define UPPER_MASK 0x80000000 /* most significant w-r bits */
-#define LOWER_MASK 0x7fffffff /* least significant r bits */
-
-/* Tempering parameters */   
-#define TEMPERING_MASK_B 0x9d2c5680
-#define TEMPERING_MASK_C 0xefc60000
-#define TEMPERING_SHIFT_U(y)  (y >> 11)
-#define TEMPERING_SHIFT_S(y)  (y << 7)
-#define TEMPERING_SHIFT_T(y)  (y << 15)
-#define TEMPERING_SHIFT_L(y)  (y >> 18)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,48 +59,100 @@ PRandom::PRandom(DWORD seed)
 }
 
 
-void PRandom::SetSeed(DWORD seed)
-{
-    /* setting initial seeds to mt[N] using         */
-    /* the generator Line 25 of Table 1 in          */
-    /* [KNUTH 1981, The Art of Computer Programming */
-    /*    Vol. 2 (2nd Ed.), pp102]                  */
-    mt[0] = seed & 0xffffffff;
-    for (mti = 1; mti < N; mti++)
-        mt[mti] = (69069 * mt[mti-1]) & 0xffffffff;
+#define mix(a,b,c,d,e,f,g,h) \
+{ \
+   a^=b<<11; d+=a; b+=c; \
+   b^=c>>2;  e+=b; c+=d; \
+   c^=d<<8;  f+=c; d+=e; \
+   d^=e>>16; g+=d; e+=f; \
+   e^=f<<10; h+=e; f+=g; \
+   f^=g>>4;  a+=f; g+=h; \
+   g^=h<<8;  b+=g; h+=a; \
+   h^=a>>9;  c+=h; a+=b; \
 }
 
 
+void PRandom::SetSeed(DWORD seed)
+{
+   int i;
+   DWORD a,b,c,d,e,f,g,h;
+   DWORD *m,*r;
+   randa = randb = randc = 0;
+   m=randmem;
+   r=randrsl;
+
+   for (i=0; i<RandSize; i)
+     r[i] = seed++;
+
+   a=b=c=d=e=f=g=h=0x9e3779b9;  /* the golden ratio */
+
+   for (i=0; i<4; ++i)          /* scramble it */
+   {
+     mix(a,b,c,d,e,f,g,h);
+   }
+
+   /* initialize using the the seed */
+   for (i=0; i<RandSize; i+=8)
+   {
+     a+=r[i  ]; b+=r[i+1]; c+=r[i+2]; d+=r[i+3];
+     e+=r[i+4]; f+=r[i+5]; g+=r[i+6]; h+=r[i+7];
+     mix(a,b,c,d,e,f,g,h);
+     m[i  ]=a; m[i+1]=b; m[i+2]=c; m[i+3]=d;
+     m[i+4]=e; m[i+5]=f; m[i+6]=g; m[i+7]=h;
+   }
+
+   /* do a second pass to make all of the seed affect all of m */
+   for (i=0; i<RandSize; i+=8)
+   {
+     a+=m[i  ]; b+=m[i+1]; c+=m[i+2]; d+=m[i+3];
+     e+=m[i+4]; f+=m[i+5]; g+=m[i+6]; h+=m[i+7];
+     mix(a,b,c,d,e,f,g,h);
+     m[i  ]=a; m[i+1]=b; m[i+2]=c; m[i+3]=d;
+     m[i+4]=e; m[i+5]=f; m[i+6]=g; m[i+7]=h;
+   }
+
+   randcnt=0;
+   Generate();            /* fill in the first set of results */
+   randcnt=RandSize;  /* prepare to use the first set of results */
+}
+
+
+#define ind(mm,x)  (*(DWORD *)((BYTE *)(mm) + ((x) & ((RandSize-1)<<2))))
+
+#define rngstep(mix,a,b,mm,m,m2,r,x) \
+{ \
+  x = *m;  \
+  a = (a^(mix)) + *(m2++); \
+  *(m++) = y = ind(mm,x) + a + b; \
+  *(r++) = b = ind(mm,y>>RandSize) + x; \
+}
+
 unsigned PRandom::Generate()
 {
-  unsigned long y;
-  static unsigned long mag01[2]={0x0, MATRIX_A};
-  /* mag01[x] = x * MATRIX_A  for x=0,1 */
+  if (randcnt--)
+    return randrsl[randcnt];
 
-  if (mti >= N) { /* generate N words at one time */
-    int kk;
-
-    for (kk=0;kk<N-M;kk++) {
-      y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-      mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
-    }
-    for (;kk<N-1;kk++) {
-      y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-      mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
-    }
-    y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-    mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1];
-
-    mti = 0;
+  register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
+  mm=randmem; r=randrsl;
+  a = randa; b = randb + (++randc);
+  for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
+  {
+    rngstep( a<<13, a, b, mm, m, m2, r, x);
+    rngstep( a>>6 , a, b, mm, m, m2, r, x);
+    rngstep( a<<2 , a, b, mm, m, m2, r, x);
+    rngstep( a>>16, a, b, mm, m, m2, r, x);
   }
+  for (m2 = mm; m2<mend; )
+  {
+    rngstep( a<<13, a, b, mm, m, m2, r, x);
+    rngstep( a>>6 , a, b, mm, m, m2, r, x);
+    rngstep( a<<2 , a, b, mm, m, m2, r, x);
+    rngstep( a>>16, a, b, mm, m, m2, r, x);
+  }
+  randb = b; randa = a;
 
-  y = mt[mti++];
-  y ^= TEMPERING_SHIFT_U(y);
-  y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
-  y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
-  y ^= TEMPERING_SHIFT_L(y);
-
-  return y; 
+  randcnt = RandSize-1;
+  return randrsl[randcnt];
 }
 
 
