@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.24 1996/05/15 10:18:11 robertj Exp $
+ * $Id: http.cxx,v 1.25 1996/05/18 09:08:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.25  1996/05/18 09:08:15  robertj
+ * Fixed yet another bug in checkboxes on HTML forms.
+ *
  * Revision 1.24  1996/05/15 10:18:11  robertj
  * Fixed persistent connections.
  * Fixed bug crashing when no elements in HTTPSelection list field array.
@@ -2195,16 +2198,13 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name)) {
-      if (&field == keyField) {
-        PString key = field.GetValue();
-        if (!key.IsEmpty())
-          cfg.SetString(key, valField->GetValue());
-      }
-      else if (&field != valField)
-        cfg.SetString(name, field.GetValue());
+    if (&field == keyField) {
+      PString key = field.GetValue();
+      if (!key.IsEmpty())
+        cfg.SetString(key, valField->GetValue());
     }
+    else if (&field != valField)
+      cfg.SetString(field.GetName(), field.GetValue());
   }
   return TRUE;
 }
