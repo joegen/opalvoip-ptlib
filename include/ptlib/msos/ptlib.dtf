@@ -64,7 +64,6 @@ EXPORTS
     ??0PCapStatus@@QAE@PAUHWND__@@@Z @2467 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
     ??0PCaselessString@@QAE@ABVPString@@@Z @42 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PString const &)
     ??0PCaselessString@@QAE@PBD@Z @43 NONAME ;public: __thiscall PCaselessString::PCaselessString(char const *)
-    ??0PCaselessString@@QAE@XZ @3405 NONAME ;public: __thiscall PCaselessString::PCaselessString(void)
     ??0PChannel@@QAE@XZ @46 NONAME ;public: __thiscall PChannel::PChannel(void)
     ??0PChannelStreamBuffer@@IAE@PAVPChannel@@@Z @47 NONAME ;protected: __thiscall PChannelStreamBuffer::PChannelStreamBuffer(class PChannel *)
     ??0PCharArray@@QAE@ABV0@@Z @2199 NONAME ;public: __thiscall PCharArray::PCharArray(class PCharArray const &)
