@@ -233,6 +233,22 @@ PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
   return rootElement->GetElement(name, idx);
 }
 
+PXMLElement * PXML::GetElement(PINDEX idx) const
+{
+  if (rootElement == NULL)
+    return NULL;
+  if (idx >= rootElement->GetSize())
+    return NULL;
+
+  return (PXMLElement *)(rootElement->GetElement(idx));
+}
+
+PINDEX PXML::GetNumElements() const
+{
+	if (rootElement == NULL) return 0;
+	else return rootElement->GetSize();
+}
+
 void PXML::StartElement(const char * name, const char **attrs)
 {
   PXMLElement * newElement = new PXMLElement(currentElement, name);
@@ -421,6 +437,22 @@ PString PXMLElement::GetAttribute(const PCaselessString & key) const
   return attributes(key);
 }
 
+PString PXMLElement::GetKeyAttribute(PINDEX idx) const
+{
+  if (idx < attributes.GetSize())
+    return attributes.GetKeyAt(idx);
+  else
+    return PString();
+}
+
+PString PXMLElement::GetDataAttribute(PINDEX idx) const
+{
+  if (idx < attributes.GetSize())
+    return attributes.GetDataAt(idx);
+  else
+    return PString();
+}
+
 void PXMLElement::SetAttribute(const PCaselessString & key,
 		                       const PString & value,
 				                  BOOL setDirty)
@@ -511,11 +543,27 @@ PString PXMLElement::GetData() const
 
 ///////////////////////////////////////////////////////
 
-#define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
-
-PXMLSettings::PXMLSettings()
+PXMLSettings::PXMLSettings(int options)
+  :PXML(options)
 {
-  options = XMLSETTINGS_OPTIONS;
+}
+
+PXMLSettings::PXMLSettings(const PString & data, int options)
+  : PXML(data,options) 
+{
+}
+
+PXMLSettings::PXMLSettings(const PConfig & data, int options)
+  : PXML(options) 
+{
+  PStringList sects = data.GetSections();
+
+  for (PINDEX i = 0;i < (PINDEX)sects.GetSize();++i) {
+    PStringToString keyvals = data.GetAllKeyValues(sects[i]);
+    for (PINDEX j = 0; j < (PINDEX)keyvals.GetSize(); ++j) {
+      SetAttribute(sects[i],keyvals.GetKeyAt(j),keyvals.GetDataAt(j));
+	 }
+  }
 }
 
 BOOL PXMLSettings::Load(const PString & data)
@@ -561,9 +609,10 @@ void PXMLSettings::SetAttribute(const PCaselessString & section, const PString &
     rootElement = new PXMLElement(NULL, "settings");
 
   PXMLElement * element = rootElement->GetElement(section);
-  if (element == NULL) 
+  if (element == NULL) {
     element = new PXMLElement(rootElement, section);
-
+    rootElement->AddSubObject(element);
+  }
   element->SetAttribute(key, value);
 }
 
@@ -577,6 +626,20 @@ BOOL PXMLSettings::HasAttribute(const PCaselessString & section, const PString &
     return FALSE;
 
   return element->HasAttribute(key);
+}
+
+void PXMLSettings::ToConfig(PConfig & cfg) const
+{
+  for (PINDEX i = 0;i < (PINDEX)GetNumElements();++i) {
+    PXMLElement * el = GetElement(i);
+    PString sectionName = el->GetName();
+    for (PINDEX j = 0; j < (PINDEX)el->GetNumAttributes(); ++j) {
+      PString key = el->GetKeyAttribute(j);
+      PString dat = el->GetDataAttribute(j);
+      if ( key != "" && dat != "")
+        cfg.SetString(sectionName, key, dat);
+	 }
+  }	
 }
 
 ///////////////////////////////////////////////////////
