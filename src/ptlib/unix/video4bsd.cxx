@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.15  2001/12/05 14:32:48  rogerh
+ * Add GetParemters function
+ *
  * Revision 1.14  2001/08/06 06:56:16  rogerh
  * Add scaling for new methods to match BSD's Meteor API
  *
@@ -464,6 +467,40 @@ BOOL PVideoInputDevice::SetHue(unsigned newHue)
     return FALSE;
 
   frameHue=newHue;
+  return TRUE;
+}
+
+BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
+                                      int *colour, int *contrast, int *hue)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  unsigned char data;
+  char signed_data;
+
+  if (::ioctl(videoFd, METEORGBRIG, &data) < 0)
+    return -1;
+  *brightness = (data << 8);
+
+  if (::ioctl(videoFd, METEORGCONT, &data) < 0)
+    return -1;
+  *contrast = (data << 8);
+
+  if (::ioctl(videoFd, METEORGHUE, &signed_data) < 0)
+    return -1;
+  *hue = ((data + 128) << 8);
+
+  // The bktr driver does not have colour or whiteness ioctls
+  // so set them to the current global values
+  *colour     = frameColour;
+  *whiteness  = frameWhiteness;
+
+  // update the global settings
+  frameBrightness = *brightness;
+  frameContrast   = *contrast;
+  frameHue        = *hue;
+
   return TRUE;
 }
 
