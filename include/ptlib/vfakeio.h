@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.13  2003/06/14 02:58:44  rjongbloed
+ * Fixed MSVC warning.
+ *
  * Revision 1.12  2003/06/11 22:17:53  dereksmithies
  * Add fake video device which display text, on --videoinput 5
  *
@@ -79,7 +82,7 @@
 #define MAX_L_HEIGHT 11
 
 typedef struct {
-    unsigned char ascii;
+    char ascii;
     char *line[MAX_L_HEIGHT];
 } OneVFakeLetterData;
 
