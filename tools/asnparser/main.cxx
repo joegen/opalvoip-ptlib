@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.31  2001/02/22 23:31:42  robertj
+ * Fixed display of version number just added.
+ *
  * Revision 1.30  2001/02/22 22:31:01  robertj
  * Added command line flag to display version number only.
  *
@@ -278,6 +281,10 @@ App::App()
 
 void App::Main()
 {
+  cout << GetName() << " version " << GetVersion(TRUE)
+       << " for " << GetOSClass() << ' ' << GetOSName()
+       << " by " << GetManufacturer() << endl;
+
   PArgList & args = GetArguments();
   args.Parse("V-version."
              "v-verbose."
@@ -290,6 +297,9 @@ void App::Main()
              "o-output:"
              "m-module:"
              "r-rename:");
+
+  if (args.HasOption('V'))
+    return;
 
   unsigned numFiles = 1;
   if (args.HasOption('s')) {
@@ -316,13 +326,6 @@ void App::Main()
            << endl;
     return;
   }
-
-  cout << GetName() << " version " << GetVersion(TRUE)
-       << " for " << GetOSClass() << ' ' << GetOSName()
-       << " by " << GetManufacturer() << endl;
-
-  if (args.HasOption('V'))
-    return;
 
   PTextFile prcFile;
   if (!prcFile.Open(args[0], PFile::ReadOnly)) {
