@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.41  2004/04/15 03:58:40  csoutheren
+ * Removed PCONTAINER_USES_CRITSEC
+ *
  * Revision 1.40  2004/04/13 10:12:21  csoutheren
  * Fix for MSVC (grrr)
  *
@@ -428,7 +431,7 @@ extern "C" char ** __argv;
 #define   P_HAS_TYPEINFO  1
 #define   PCLASSNAME(cls) (6+typeid(cls).name())
 
-#define   PCONTAINER_USES_CRITSEC   1
+//#define   PCONTAINER_USES_CRITSEC   1
 
 // preload <string> and kill warnings
 #pragma warning(push)
