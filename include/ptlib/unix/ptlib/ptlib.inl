@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.16  1998/10/18 10:02:47  robertj
+ * Fixed program argument access functions.
+ *
  * Revision 1.15  1998/09/24 04:11:49  robertj
  * Added open software license.
  *
@@ -45,17 +48,6 @@
 
 #ifdef P_USE_LANGINFO
 #include <langinfo.h>
-#endif
-
-PINLINE char ** PProcess::PXGetEnvp() const
-  { return envp; }
-
-#if 0
-PINLINE char ** PProcess::GetArgv() const
-  { return argv; }
-
-PINLINE int PProcess::GetArgc() const
-  { return argc; }
 #endif
 
 PINLINE DWORD PProcess::GetProcessID() const
