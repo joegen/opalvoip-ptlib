@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.5  1999/02/25 05:05:15  robertj
+ * Added missing test for hidden entries not to be written to config file
+ *
  * Revision 1.4  1999/02/08 08:05:39  robertj
  * Changed semantics of IP access control list for empty list.
  *
@@ -434,8 +437,11 @@ void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
 {
   cfg.SetInteger(baseName & "Array Size", GetSize());
 
-  for (PINDEX i = 1; i <= GetSize(); i++)
-    cfg.SetString(baseName & PString(PString::Unsigned, i), operator[](i-1).AsString());
+  for (PINDEX i = 1; i <= GetSize(); i++) {
+    PIpAccessControlEntry & entry = operator[](i-1);
+    if (!entry.IsHidden())
+      cfg.SetString(baseName & PString(PString::Unsigned, i), entry.AsString());
+  }
 }
 
 
