@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.20  2004/02/22 03:36:41  ykiryanov
+ * Added inclusion of signal.h on BeOS to define SIGINT
+ *
  * Revision 1.19  2003/12/02 10:46:15  csoutheren
  * Added patch for Solaris, thanks to Michal Zygmuntowicz
  *
@@ -55,6 +58,10 @@
 #endif // P_VXWORKS
 
 #ifdef P_SOLARIS
+#include <signal.h>
+#endif
+
+#ifdef __BEOS__
 #include <signal.h>
 #endif
 
