@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.1 1996/01/02 13:11:52 robertj Exp $
+ * $Id: ptlib.cxx,v 1.2 1996/05/09 12:23:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.2  1996/05/09 12:23:08  robertj
+ * Further implementation.
+ *
  * Revision 1.1  1996/01/02 13:11:52  robertj
  * Initial revision
  *
@@ -21,6 +24,7 @@
 #endif
 
 #include <errno.h>
+#include <Processes.h>
 
 
 PProcess * PSTATIC PProcessInstance;
@@ -55,7 +59,7 @@ PString PTime::GetTimePM()
 }
 
 
-PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
+PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
   static const char * const weekdays[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -64,7 +68,7 @@ PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
   static const char * const abbrev_weekdays[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
   };
-  return (abbreviated ? abbrev_weekdays : weekdays)[dayOfWeek];
+  return (type == Abbreviated ? abbrev_weekdays : weekdays)[dayOfWeek];
 }
 
 
@@ -74,7 +78,7 @@ PString PTime::GetDateSeparator()
 }
 
 
-PString PTime::GetMonthName(Months month, BOOL abbreviated)
+PString PTime::GetMonthName(Months month, NameType type)
 {
   static const char * const months[] = { "",
     "January", "February", "March", "April", "May", "June",
@@ -84,7 +88,7 @@ PString PTime::GetMonthName(Months month, BOOL abbreviated)
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   };
-  return (abbreviated ? abbrev_months : months)[month];
+  return (type == Abbreviated ? abbrev_months : months)[month];
 }
 
 
@@ -766,7 +770,7 @@ void PConfig::Construct(const PFilePath & file)
 }
 
 
-PStringList PConfig::GetSections()
+PStringList PConfig::GetSections() const
 {
   PStringList sections;
 
@@ -796,7 +800,7 @@ void PConfig::DeleteKey(const PString &, const PString & key)
 
 
 PString PConfig::GetString(const PString &,
-                                          const PString & key, const PString & dflt)
+                                    const PString & key, const PString & dflt) const
 {
   PString str;
 
@@ -854,6 +858,11 @@ void PThread::SwitchContext(PThread * from)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+void PProcess::Construct()
+{
+}
+
+
 void PProcess::OperatingSystemYield()
 {
 }
@@ -866,8 +875,34 @@ PString PProcess::GetUserName() const
 }
 
 
+DWORD PProcess::GetProcessID() const
+{
+  ProcessSerialNumber id;
+  ::GetCurrentProcess(&id);
+  return id.lowLongOfPSN;
+}
+
+
 int PProcess::_main(int argc, char ** argv, char **)
 {
+  if (argc == 0) {
+	  ProcessSerialNumber id;
+	  ::GetCurrentProcess(&id);
+	  ProcessInfoRec info;
+	  info.processInfoLength  = sizeof(info);
+	  info.processName = NULL;
+	  FSSpec spec;
+	  info.processAppSpec = &spec;
+	  GetProcessInformation(&id, &info);
+    static char * fake_argv[2];
+    static char filename[64];
+    memcpy(filename, &spec.name[1], spec.name[0]);
+    spec.name[spec.name[0]];
+    fake_argv[0] = filename;
+    fake_argv[1] = NULL;
+    argv = fake_argv;
+    argc = 1;
+  }
   PreInitialise(argc, argv);
 
   Main();
