@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.6  2004/04/02 04:07:54  ykiryanov
+ * Added ifndef BeOS for PSound
+ *
  * Revision 1.5  2003/11/12 08:55:58  csoutheren
  * Added newline at end of file to remove gcc warning
  *
@@ -88,7 +91,6 @@ PSoundChannel * PSoundChannel::CreateChannel(const PString & driverName, PPlugin
     return NULL;
 }
 
- 
 PSoundChannel * PSoundChannel::CreateOpenedChannel(
       const PString & driverName,
       const PString & deviceName,
@@ -176,7 +178,7 @@ BOOL PSoundChannel::Open(
 
 ///////////////////////////////////////////////////////////////////////////
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__BEOS__)
 
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
