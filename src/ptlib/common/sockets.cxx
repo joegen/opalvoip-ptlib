@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.25 1996/02/13 13:08:09 robertj Exp $
+ * $Id: sockets.cxx,v 1.26 1996/02/15 14:46:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.26  1996/02/15 14:46:44  robertj
+ * Added Select() function to PSocket.
+ *
  * Revision 1.25  1996/02/13 13:08:09  robertj
  * Fixed usage of sock_addr structure, not being cleared correctly.
  *
@@ -94,6 +97,151 @@
 #include <sockets.h>
 
 #include <ctype.h>
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PSocket
+
+int PSocket::Select(PSocket & sock1, PSocket & sock2)
+{
+  return Select(sock1, sock2, PMaxTimeInterval);
+}
+
+
+int PSocket::Select(PSocket & sock1,
+                    PSocket & sock2,
+                    const PTimeInterval & timeout)
+{
+  int h1 = sock1.GetHandle();
+  int h2 = sock2.GetHandle();
+
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+  fd_set readfds;
+  FD_ZERO(&readfds);
+  FD_SET(h1, &readfds);
+  FD_SET(h2, &readfds);
+  fd_set writefds;
+  FD_ZERO(&writefds);
+  fd_set exceptfds;
+  FD_ZERO(&exceptfds);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+
+  int rval = os_select(PMAX(h1, h2)+1, readfds, writefds, exceptfds, timeout);
+
+  if (rval > 0) {
+    rval = 0;
+    if (FD_ISSET(h1, &readfds))
+      rval |= 1;
+    if (FD_ISSET(h2, &readfds))
+      rval |= 2;
+  }
+
+  return rval;
+}
+
+
+BOOL PSocket::Select(SelectList & read)
+{
+  return Select(read, SelectList(), SelectList(), PMaxTimeInterval);
+}
+
+
+BOOL PSocket::Select(SelectList & read, const PTimeInterval & timeout)
+{
+  return Select(read, SelectList(), SelectList(), timeout);
+}
+
+
+BOOL PSocket::Select(SelectList & read, SelectList & write)
+{
+  return Select(read, write, SelectList(), PMaxTimeInterval);
+}
+
+
+BOOL PSocket::Select(SelectList & read,
+                     SelectList & write,
+                     const PTimeInterval & timeout)
+{
+  return Select(read, write, SelectList(), timeout);
+}
+
+
+BOOL PSocket::Select(SelectList & read,
+                     SelectList & write,
+                     SelectList & except)
+{
+  return Select(read, write, except, PMaxTimeInterval);
+}
+
+
+BOOL PSocket::Select(SelectList & read,
+                     SelectList & write,
+                     SelectList & except,
+                     const PTimeInterval & timeout)
+{
+  int maxfds = 0;
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+  fd_set readfds;
+  FD_ZERO(&readfds);
+  for (PINDEX i = 0; i < read.GetSize(); i++) {
+    int h = read[i].GetHandle();
+    FD_SET(h, &readfds);
+    if (h > maxfds)
+      maxfds = h;
+  }
+
+  fd_set writefds;
+  FD_ZERO(&writefds);
+  for (i = 0; i < write.GetSize(); i++) {
+    int h = write[i].GetHandle();
+    FD_SET(h, &writefds);
+    if (h > maxfds)
+      maxfds = h;
+  }
+
+  fd_set exceptfds;
+  FD_ZERO(&exceptfds);
+  for (i = 0; i < except.GetSize(); i++) {
+    int h = except[i].GetHandle();
+    FD_SET(h, &exceptfds);
+    if (h > maxfds)
+      maxfds = h;
+  }
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+
+  int retval = os_select(maxfds+1, readfds, writefds, exceptfds, timeout);
+
+  if (retval < 0)
+    return FALSE;
+
+  if (retval > 0) {
+    for (i = 0; i < read.GetSize(); i++)
+      if (!FD_ISSET(read[i].GetHandle(), &readfds))
+        read.RemoveAt(i--);
+    for (i = 0; i < write.GetSize(); i++)
+      if (!FD_ISSET(write[i].GetHandle(), &writefds))
+        write.RemoveAt(i--);
+    for (i = 0; i < except.GetSize(); i++)
+      if (!FD_ISSET(except[i].GetHandle(), &exceptfds))
+        except.RemoveAt(i--);
+  }
+  else {
+    read.RemoveAll();
+    write.RemoveAll();
+    except.RemoveAll();
+  }
+
+  return TRUE;
+}
 
 
 
