@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.26 1994/12/05 11:19:09 robertj Exp $
+ * $Id: contain.inl,v 1.27 1994/12/12 10:16:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,14 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.26  1994/12/05 11:19:09  robertj
+ * Revision 1.27  1994/12/12 10:16:20  robertj
+ * Restructuring and documentation of container classes.
+ * Renaming of some macros for declaring container classes.
+ * Added some extra functionality to PString.
+ * Added start to 2 byte characters in PString.
+ * Fixed incorrect overrides in PCaselessString.
+ *
+ * Revision 1.26  1994/12/05  11:19:09  robertj
  * Moved SetMinSize from PAbstractArray to PContainer.
  *
  * Revision 1.25  1994/11/28  12:33:46  robertj
@@ -118,25 +125,21 @@ PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
 
 PINLINE PString::PString(int, const PString * str)
-  : PCharArray(*str) { }
-
-PINLINE PString::PString(const char * cstr)
-  : PCharArray(strlen(PAssertNULL(cstr))+1) { strcpy(theArray, cstr); }
-
-PINLINE PString::PString(const char * cstr, PINDEX len)
-  : PCharArray(len+1) { memcpy(theArray, PAssertNULL(cstr), len); }
+  : PSTRING_ANCESTOR_CLASS(*str) { }
 
 PINLINE PString::PString(char c)
-  : PCharArray(2) { *theArray = c; }
+  : PCharArray(2) { SetAt(0, c); }
 
 PINLINE PObject::Comparison PString::CompareString(const char * cstr) const
   { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
 
 PINLINE BOOL PString::MakeMinimumSize()
-  { return SetSize(strlen(theArray)+1); }
+  { return SetSize(GetLength()+1); }
 
+#ifndef PHAS_UNICODE
 PINLINE PINDEX PString::GetLength() const
   { return strlen(theArray); }
+#endif
 
 PINLINE PString & PString::operator=(const PString & str)
   { PCharArray::operator=(str); return *this; }
@@ -146,6 +149,9 @@ PINLINE PString PString::operator+(const PString & str) const
 
 PINLINE PString operator+(const char * cstr, const PString & str)
   { return PString(cstr) + str; }
+  
+PINLINE PString operator+(char c, const PString & str)
+  { return PString(c) + str; }
   
 PINLINE PString & PString::operator+=(const PString & str)
   { return operator+=((const char *)str); }
@@ -186,6 +192,22 @@ PINLINE BOOL PString::operator<=(const char * cstr) const
 PINLINE BOOL PString::operator>=(const char * cstr) const
   { return CompareString(cstr) != LessThan; }
 
+PINLINE void PString::Insert(const PString & str, PINDEX pos)
+  { Insert((const char *)str, pos); }
+
+PINLINE PINDEX PString::Find(const PString & str, PINDEX offset) const
+  { return Find((const char *)str, offset); }
+
+PINLINE PINDEX PString::FindLast(const PString & str, PINDEX offset) const
+  { return FindLast((const char *)str, offset); }
+
+PINLINE PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
+  { return FindOneOf((const char *)str, offset); }
+
+PINLINE PStringArray
+      PString::Tokenise(const PString & separators, BOOL onePerSeparator) const
+  { return Tokenise(separators, onePerSeparator); }
+
 PINLINE PString::operator const unsigned char *() const
   { return (const unsigned char *)theArray; }
 
@@ -213,18 +235,32 @@ PINLINE PCaselessString::PCaselessString(int dummy,const PCaselessString * str)
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }
 
+PINLINE PINDEX PCaselessString::Find(const PString & str, PINDEX offset) const
+  { return Find((const char *)str, offset); }
+
+PINLINE PINDEX
+           PCaselessString::FindLast(const PString & str, PINDEX offset) const
+  { return PString::FindLast((const char *)str, offset); }
+
+PINLINE PINDEX
+             PCaselessString::FindLast(const char * cstr, PINDEX offset) const
+  { return PString::FindLast(cstr, offset); }
+
+PINLINE PINDEX
+          PCaselessString::FindOneOf(const PString & str, PINDEX offset) const
+  { return FindOneOf((const char *)str, offset); }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PStringStreamBuffer::PStringStreamBuffer(const PStringStreamBuffer & s)
-  : string(s.string) { }
-
-PINLINE PStringStreamBuffer &
-                  PStringStreamBuffer::operator=(const PStringStreamBuffer & s)
-  { string = s.string; return *this; }
-
-PINLINE PStringStreamBuffer::PStringStreamBuffer(PStringStream * str)
+PINLINE PStringStream::Buffer::Buffer(PStringStream * str)
   : string(PAssertNULL(str)) { sync(); }
+
+PINLINE PStringStream::Buffer::Buffer(const Buffer & b)
+  : string(b.string) { }
+
+PINLINE PStringStream::Buffer& PStringStream::Buffer::operator=(const Buffer&b)
+  { string = b.string; return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -260,7 +296,7 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractList::PAbstractList()
-  : info(new ListInfo) { PAssertNULL(info); }
+  : info(new Info) { PAssertNULL(info); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -279,27 +315,27 @@ PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractSortedList::PAbstractSortedList()
-  : info(new SortedListInfo) { PAssertNULL(info); }
+  : info(new Info) { PAssertNULL(info); }
 
-PINLINE void PSortedListElement::MakeBlack()
+PINLINE void PAbstractSortedList::Element::MakeBlack()
   { colour = Black; }
 
-PINLINE void PSortedListElement::MakeRed()
+PINLINE void PAbstractSortedList::Element::MakeRed()
   { colour = Red; }
 
-PINLINE BOOL PSortedListElement::IsBlack()
+PINLINE BOOL PAbstractSortedList::Element::IsBlack()
   { return colour == Black; }
 
-PINLINE BOOL PSortedListElement::IsLeftBlack()
+PINLINE BOOL PAbstractSortedList::Element::IsLeftBlack()
   { return left == NULL || left->colour == Black; }
 
-PINLINE BOOL PSortedListElement::IsRightBlack()
+PINLINE BOOL PAbstractSortedList::Element::IsRightBlack()
   { return right == NULL || right->colour == Black; }
 
-PINLINE BOOL PSortedListElement::LeftTreeSize()
+PINLINE BOOL PAbstractSortedList::Element::LeftTreeSize()
   { return left != NULL ? left->subTreeSize : 0; }
 
-PINLINE BOOL PSortedListElement::RightTreeSize()
+PINLINE BOOL PAbstractSortedList::Element::RightTreeSize()
   { return right != NULL ? right->subTreeSize : 0; }
 
 
@@ -318,10 +354,10 @@ PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PScalarKey::PScalarKey(PINDEX newKey)
+PINLINE POrdinalKey::POrdinalKey(PINDEX newKey)
   : theKey(newKey) { }
 
-PINLINE PScalarKey::operator PINDEX() const
+PINLINE POrdinalKey::operator PINDEX() const
   { return theKey; }
 
 
@@ -334,26 +370,11 @@ PINLINE BOOL PAbstractSet::Contains(const PObject & key)
   { return hashTable->GetElementAt(key) != NULL; }
 
 
-PINLINE PStringSet::PStringSet()
-  : PAbstractSet() { }
-
-PINLINE PStringSet::PStringSet(int dummy, const PStringSet * c)
-  : PAbstractSet(dummy, c) { }
-
-PINLINE PObject * PStringSet::Clone() const
-  { return PNEW PStringSet(0, this); }
-
 PINLINE void PStringSet::Include(const PString & key)
-  { Append(PNEW PString(key)); }
+  { PAbstractSet::Append(PNEW PString(key)); }
 
 PINLINE void PStringSet::Exclude(const PString & key)
-  { Remove(&key); }
-
-PINLINE BOOL PStringSet::operator[](const PString & key)
-  { return Contains(key); }
-
-PINLINE const PString & PStringSet::GetKeyAt(PINDEX index) const
-  { return (const PString &)AbstractGetKeyAt(index); }
+  { PAbstractSet::Remove(&key); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,32 +385,6 @@ PINLINE PAbstractDictionary::PAbstractDictionary()
 PINLINE PAbstractDictionary::PAbstractDictionary(int dummy,
                                                  const PAbstractDictionary * c)
   : PHashTable(dummy, c) { }
-
-
-PINLINE PStringDictionary::PStringDictionary()
-  : PAbstractDictionary() { }
-
-PINLINE PStringDictionary::PStringDictionary(int dummy,
-                                                   const PStringDictionary * c)
-  : PAbstractDictionary(dummy, c) { }
-
-PINLINE PObject * PStringDictionary::Clone() const
-  { return PNEW PStringDictionary(0, this); }
-
-PINLINE BOOL PStringDictionary::SetAt(const PObject & key, PString str)
-  { return PAbstractDictionary::SetAt(key, PNEW PString(str)); }
-
-PINLINE PString & PStringDictionary::operator[](const PString & key) const
-  { return (PString &)GetRefAt(key); }
-
-PINLINE const PString & PStringDictionary::GetKeyAt(PINDEX index) const
-  { return (const PString &)AbstractGetKeyAt(index); }
-
-PINLINE PString & PStringDictionary::GetDataAt(PINDEX index) const
-  { return (PString &)AbstractGetDataAt(index); }
-
-PINLINE BOOL PStringDictionary::SetDataAt(PINDEX index, const PString & str)
-  { return PAbstractDictionary::SetDataAt(index, PNEW PString(str)); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
