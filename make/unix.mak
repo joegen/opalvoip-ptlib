@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.122  2002/03/15 01:14:12  robertj
+# Added search for expat library in /usr/local as well as /usr
+#
 # Revision 1.121  2002/02/25 22:58:04  robertj
 # Moved GCC 3 version check to after CPLUS is assured to be defined.
 #
@@ -1163,7 +1166,7 @@ endif
 endif
 
 # define expat (XML parser) variables if installed
-ifneq (,$(wildcard /usr/include/expat.h))
+ifneq (,$(wildcard /usr/include/expat.h)$(wildcard /usr/local/include/expat.h))
 HAS_EXPAT	= 1
 ENDLDLIBS	+= -lexpat
 STDCCFLAGS	+= -DP_EXPAT
