@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.14 1997/06/16 13:18:03 robertj Exp $
+ * $Id: html.cxx,v 1.15 1998/01/26 02:49:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.15  1998/01/26 02:49:15  robertj
+ * GNU support.
+ *
  * Revision 1.14  1997/06/16 13:18:03  robertj
  * Set Is() function to be const as it should have been.
  *
@@ -63,6 +66,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "html.h"
+#endif
 
 #include <ptlib.h>
 #include <html.h>
