@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.52  2001/10/03 00:25:25  robertj
+ * Split out function for adding a single line of MIME info, reduces
+ *    duplicated code and is useful in some other areas such as HTTP/1.1
+ *
  * Revision 1.51  2001/09/28 00:44:15  robertj
  * Added SetInteger() function to set numeric MIME fields.
  *
@@ -715,15 +719,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
     strm >> line;
     if (line.IsEmpty())
       break;
-
-    PINDEX colonPos = line.Find(':');
-    if (colonPos != P_MAX_INDEX) {
-      PCaselessString fieldName  = line.Left(colonPos).Trim();
-      PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
-      if (Contains(fieldName))
-        fieldValue = (*this)[fieldName] + "\n" + fieldValue;
-      SetAt(fieldName, fieldValue);
-    }
+    AddMIME(line);
   }
 }
 
@@ -736,18 +732,28 @@ BOOL PMIMEInfo::Read(PInternetProtocol & socket)
   while (socket.ReadLine(line, TRUE)) {
     if (line.IsEmpty())
       return TRUE;
-
-    PINDEX colonPos = line.Find(':');
-    if (colonPos != P_MAX_INDEX) {
-      PCaselessString fieldName  = line.Left(colonPos).Trim();
-      PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
-      if (Contains(fieldName))
-        fieldValue = (*this)[fieldName] + "\n" + fieldValue;
-      SetAt(fieldName, fieldValue);
-    }
+    AddMIME(line);
   }
 
   return FALSE;
+}
+
+
+BOOL PMIMEInfo::AddMIME(const PString & line)
+{
+  PINDEX colonPos = line.Find(':');
+  if (colonPos == P_MAX_INDEX)
+    return FALSE;
+
+  PCaselessString fieldName  = line.Left(colonPos).Trim();
+  PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+
+  if (Contains(fieldName))
+    fieldValue = (*this)[fieldName] + '\n' + fieldValue;
+
+  SetAt(fieldName, fieldValue);
+
+  return TRUE;
 }
 
 
