@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.9  2000/01/19 12:33:07  robertj
+ * Fixed parsing of OID's in IMPORTS section.
+ *
  * Revision 1.8  2000/01/19 03:38:12  robertj
  * Fixed support for parsing multiple IMPORTS
  *
@@ -544,9 +547,11 @@ GlobalModuleReference
   : MODULEREFERENCE
       {
 	ReferenceTokenContext = TYPEREFERENCE;
+        BraceTokenContext = OID_BRACE;
       }
     AssignedIdentifier
       {
+        BraceTokenContext = '{';
 	delete $3;
       }
   ;
@@ -2146,9 +2151,14 @@ ExternalValueReference
 
 
 ObjectIdentifierValue
-  : OID_BRACE ObjIdComponentList '}'
+  : OID_BRACE
       {
-	$$ = new ObjectIdentifierValue($2);
+        IdentifierTokenContext = OID_IDENTIFIER;
+      }
+    ObjIdComponentList '}'
+      {
+	$$ = new ObjectIdentifierValue($3);
+	IdentifierTokenContext = IDENTIFIER;
       }
 /*!!!
   | '{' DefinedValue_OID ObjIdComponentList '}'

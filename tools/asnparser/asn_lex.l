@@ -31,6 +31,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.10  2000/01/19 12:33:07  robertj
+ * Fixed parsing of OID's in IMPORTS section.
+ *
  * Revision 1.9  1999/07/22 06:48:55  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -293,9 +296,11 @@ static int TokenSelect(int context, int token1, int token2)
 
 ([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
     yylval.sval = new PString(yytext);
-    if (CurrentImportList != NULL &&
-	CurrentImportList->GetValuesIndex(*yylval.sval) != P_MAX_INDEX)
-      return IMPORT_IDENTIFIER;
+    if (CurrentImportList != NULL) {
+      ImportedType searchArg(new PString(yytext), FALSE);
+      if (CurrentImportList->GetValuesIndex(searchArg) != P_MAX_INDEX)
+        return IMPORT_IDENTIFIER;
+    }
     return IdentifierTokenContext;
   }
 
