@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.19 1994/09/25 10:51:04 robertj Exp $
+ * $Id: osutils.cxx,v 1.20 1994/10/23 03:46:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.19  1994/09/25 10:51:04  robertj
+ * Revision 1.20  1994/10/23 03:46:41  robertj
+ * Shortened OS error assert.
+ *
+ * Revision 1.19  1994/09/25  10:51:04  robertj
  * Fixed error conversion code to use common function.
  * Added pipe channel.
  *
@@ -597,6 +600,7 @@ PChannel::PChannel()
 
 void PChannel::DestroyContents()
 {
+  flush();
   delete (PChannelStreamBuffer *)rdbuf();
   init(NULL);
 }
@@ -873,22 +877,6 @@ BOOL PChannel::SendCommandString(const PString & command)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PDirectory
-
-#if defined(_PDIRECTORY)
-
-istream & PDirectory::ReadFrom(istream & strm)
-{
-  strm >> path;
-  Construct();
-  return strm;
-}
-
-
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PFile
 
 #if defined(_PFILE)
@@ -959,7 +947,7 @@ off_t PFile::GetLength() const
 {
   off_t pos = _lseek(GetHandle(), 0, SEEK_CUR);
   off_t len = _lseek(GetHandle(), 0, SEEK_END);
-  PAssert(_lseek(GetHandle(), pos, SEEK_SET) == pos, POperatingSystemError);
+  PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) == pos);
   return len;
 }
 
