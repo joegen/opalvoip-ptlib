@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.7 1994/08/23 11:32:52 robertj Exp $
+ * $Id: channel.h,v 1.8 1994/11/28 12:31:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.7  1994/08/23 11:32:52  robertj
+ * Revision 1.8  1994/11/28 12:31:40  robertj
+ * Documentation.
+ *
+ * Revision 1.7  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.6  1994/08/22  00:46:48  robertj
@@ -48,33 +51,32 @@ class PChannel;
 
 PCLASS PChannelStreamBuffer : public PObject, public streambuf {
   PCLASSINFO(PChannelStreamBuffer, PObject)
-
-  public:
-    PChannelStreamBuffer(const PChannelStreamBuffer & sbuf);
-    PChannelStreamBuffer & operator=(const PChannelStreamBuffer & sbuf);
+/* This class is necessary for implementing the standard C++ iostream interface
+   on $H$PChannel classes and its descendents. It is an internal class and
+   should not ever be used by application writers.
+ */
 
   protected:
-    PChannelStreamBuffer(PChannel * chan);
-      // Construct the streambuf for standard streams on the channel
+    PChannelStreamBuffer(
+      PChannel * chan   // Channel the buffer operates on.
+    );
+    /* Construct the streambuf for standard streams on a channel. This is used
+       internally by the $H$PChannel class.
+     */
 
     virtual int overflow(int=EOF);
-      // Function to flush the output buffer to the stream.
-
     virtual int underflow();
-      // Function to refill the input buffer from the stream.
-
     virtual int sync();
-      // Function to flush input and output buffer of the stream.
-
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
-      // Function to seek a location in the file
-
 
   private:
     // Member variables
     PChannel * channel;
     char buffer[1024];
 
+  public:
+    PChannelStreamBuffer(const PChannelStreamBuffer & sbuf);
+    PChannelStreamBuffer & operator=(const PChannelStreamBuffer & sbuf);
 
   friend class PChannel;
 };
@@ -82,8 +84,15 @@ PCLASS PChannelStreamBuffer : public PObject, public streambuf {
 
 PCLASS PChannel : public PContainer, public iostream {
   PCONTAINERINFO(PChannel, PContainer)
-  // Abstract class defining I/O channel semantics. An I/O channel can be a
-  // serial port, pipe, network socket or even just a simple file.
+/* Abstract class defining I/O channel semantics. An I/O channel can be a
+   serial port, pipe, network socket or even just a simple file. Anything that
+   requires opening and closing then reading and/or writing from.
+
+   A descendent would typically have constructors and an Open() function which
+   enables access to the I/O channel it represents. The Read() and Write()
+   functions would then be overridden to the platform and I/O specific
+   mechanisms required.
+ */
 
   public:
     PChannel();
@@ -92,126 +101,232 @@ PCLASS PChannel : public PContainer, public iostream {
 
     // New functions for class
     virtual BOOL IsOpen() const;
-      // Return TRUE if the channel is currently open.
+    /* Determine if the channel is currently open and read and write operations
+       can be executed on it. For example, in the $H$PFile class it returns if
+       the file is currently open.
+
+       Returns: TRUE if the channel is open.
+     */
 
     virtual PString GetName() const;
-      // Return the name of the channel.
+    /* Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in $H$PFile type channels.
+
+       Returns: the name of the channel.
+     */
 
 
-    void SetReadTimeout(PTimeInterval time);
-      // Set the timeout for read operations. This may be zero for immediate
-      // return of data through to PMaxMilliseconds which will wait forever
-      // for the read request to be filled. Note that this function may not
-      // be available for all channels.
+    void SetReadTimeout(
+      PTimeInterval time   // The new time interval for read operations.
+    );
+    /* Set the timeout for read operations. This may be zero for immediate
+       return of data through to PMaxMilliseconds which will wait forever for
+       the read request to be filled.
+       
+       Note that this function may not be available, or meaningfull, for all
+       channels. In that case it is set but ignored.
+     */
 
     PTimeInterval GetReadTimeout() const;
-      // Get the current read timeout.
+    /* Get the timeout for read operations. Note that this function may not be
+       available, or meaningfull, for all channels. In that case it returns the
+       previously set value.
 
-    virtual BOOL Read(void * buf, PINDEX len);
-      // Low level read from the channel. This function may block until the
-      // requested number of characters were read or the read timeout was
-      // reached. The return value indicates that at least one character was
-      // read from the channel.
+       Returns: time interval for read operations.
+     */
+
+    virtual BOOL Read(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
+    );
+    /* Low level read from the channel. This function may block until the
+        requested number of characters were read or the read timeout was
+        reached.
+
+        The GetErrorCode() function should be consulted after Read() returns
+        FALSE to determine what caused the failure.
+
+        Returns: TRUE indicates that at least one character was read from the
+                 channel. FALSE means no bytes were read due to timeout or
+                 some other I/O error.
+     */
 
     PINDEX GetLastReadCount() const;
-      // Return the number of bytes read by the last Read() call.
+    /* Get the number of bytes read by the last Read() call. This will be from
+       0 to the maximum number of bytes as passed to the Read() call.
+       
+       Note that the number of bytes read may often be less than that asked
+       for. Aside from the most common case of being at end of file, which the
+       applications semantics may regard as an exception, there are some cases
+       where this is normal. For example, if a $H$PTextFile channel on the
+       MSDOS platform is read from, then the translation of CR/LF pairs to \n
+       characters will result in the number of bytes returned being less than
+       the size of the buffer supplied.
+
+       Returns: the number of bytes read.
+     */
 
     virtual int ReadChar();
-      // Read a single 8 bit byte from the channel. If one was not available
-      // within the readtimeout period then the function returns with a -1
-      // return value.
+    /* Read a single 8 bit byte from the channel. If one was not available
+       within the read timeout period, or an I/O error occurred, then the
+       function gives with a -1 return value.
+       Returns: byte read or -1 if no character could be read.
+     */
 
     PString ReadString(PINDEX len);
-      // Read up to len bytes into a string from the channel. This function may
-      // block as for Read().
+    /* Read up to len bytes into a string from the channel. This function
+       simply uses Read(), so all remarks pertaining to that function also
+       apply to this one.
+     */
 
-    virtual BOOL ReadAsync(void * buf, PINDEX len);
-      // Begin an asynchronous read from channel. The read timeout is used as
-      // in other read operations, in this case calling the OnReadComplete()
-      // function. Note that if the channel is not capable of asynchronous
-      // read then this will do a sychronous read is in the Read() function
-      // with the addition of calling the OnReadComplete() before returning.
-      // The return value is TRUE if the read was sucessfully queued.
+    virtual BOOL ReadAsync(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
+    );
+    /* Begin an asynchronous read from channel. The read timeout is used as in
+       other read operations, in this case calling the OnReadComplete()
+       function.
 
-    virtual void OnReadComplete(void * buf, PINDEX len);
-      // User callback function for when a ReadAsync() call has completed or
-      // timed out. The original pointer to the buffer passed in ReadAsync()
-      // is passed in here and the len parameter as the actual number of
-      // characters read.
+       Note that if the channel is not capable of asynchronous read then this
+       will do a sychronous read is in the Read() function with the addition
+       of calling the OnReadComplete() before returning.
+
+       Returns: TRUE if the read was sucessfully queued.
+     */
+
+    virtual void OnReadComplete(
+      void * buf, // Pointer to a block of memory that received the read bytes.
+      PINDEX len  // Actual number of bytes to read into the buffer.
+    );
+    /* User callback function for when a ReadAsync() call has completed or
+       timed out. The original pointer to the buffer passed in ReadAsync() is
+       passed to the function.
+     */
 
 
-    void SetWriteTimeout(PTimeInterval time);
-      // Set the timeout for write operations. This may be zero for immediate
-      // return of data through to PMaxMilliseconds which will wait forever
-      // for the write request to be completed. Note that this function may not
-      // be available for all channels.
+    void SetWriteTimeout(
+      PTimeInterval time   // The new time interval for write operations.
+    );
+    /* Set the timeout for write operations to complete. This may be zero for
+       immediate return through to PMaxMilliseconds which will wait forever for
+       the write request to be completed.
+       
+       Note that this function may not be available, or meaningfull,  for all
+       channels. In this case the parameter is et but ignored.
+     */
 
     PTimeInterval GetWriteTimeout() const;
-      // Get the current write timeout.
+    /* Get the timeout for write operations to complete. Note that this
+       function may not be available, or meaningfull, for all channels. In
+       that case it returns the previously set value.
 
-    virtual BOOL Write(const void * buf, PINDEX len);
-      // Low level write to the channel. This function will block until the
-      // requested number of characters are written or the write timeout is
-      // reached. The return value is TRUE if at least len bytes were written
-      // to the channel.
+       Returns: time interval for writing.
+     */
+
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Low level write to the channel. This function will block until the
+       requested number of characters are written or the write timeout is
+       reached.
+
+       Returns TRUE if at least len bytes were written to the channel.
+     */
 
     PINDEX GetLastWriteCount() const;
-      // Return the number of bytes written by the last Write() call.
+    /* Get the number of bytes written by the last Write() call.
+       
+       Note that the number of bytes written may often be less, or even more,
+       than that asked for. A common case of it being less is where the disk
+       is full. An example of where the bytes written is more is as follows.
+       On a $H$PTextFile channel on the MSDOS platform, there is translation
+       of \n to CR/LF pairs. This will result in the number of bytes returned
+       being more than that requested.
+
+       Returns: the number of bytes written.
+     */
 
     BOOL WriteChar(int c);
-      // Write a single character to the channel. This function will block
-      // until the requested number of characters are written or the write
-      // timeout is reached. Note that this asserts if the value is not in the
-      // range 0..255.
+    /* Write a single character to the channel. This function simply uses the
+       Write() function so all comments on that function also apply.
+       
+       Note that this asserts if the value is not in the range 0..255.
+
+       Returns: TRUE if the byte was successfully written.
+     */
 
     BOOL WriteString(const PString & str);
-      // Write a string to the channel. This function will block until the
-      // requested number of characters are written or the write timeout is
-      // reached.
+    /* Write a string to the channel. This function simply uses the Write()
+       function so all comments on that function also apply.
 
-    virtual BOOL WriteAsync(void * buf, PINDEX len);
-      // Begin an asynchronous write from channel. The write timeout is used as
-      // in other write operations, in this case calling the OnWriteComplete()
-      // function. Note that if the channel is not capable of asynchronous
-      // write then this will do a sychronous write as in the Write() function
-      // with the addition of calling the OnWriteComplete() before returning.
+       Returns: TRUE if the string was completely written.
+     */
 
-    virtual void OnWriteComplete(void * buf, PINDEX len);
-      // User callback function for when a WriteAsync() call has completed or
-      // timed out. The original pointer to the buffer passed in WriteAsync()
-      // is passed in here and the len parameter is the actual number of
-      // characters written.
+    virtual BOOL WriteAsync(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Begin an asynchronous write from channel. The write timeout is used as
+       in other write operations, in this case calling the OnWriteComplete()
+       function. Note that if the channel is not capable of asynchronous write
+       then this will do a sychronous write as in the Write() function with
+       the addition of calling the OnWriteComplete() before returning.
+
+       Returns: TRUE of the write operation was succesfully queued.
+     */
+
+    virtual void OnWriteComplete(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* User callback function for when a WriteAsync() call has completed or
+       timed out. The original pointer to the buffer passed in WriteAsync() is
+       passed in here and the len parameter is the actual number of characters
+       written.
+     */
 
 
-    BOOL SendCommandString(const PString & command);
-      // Send a command meta-string. A meta-string is a string of characters
-      // that may contain escaped commands. The escape command is the \ as in
-      // the C language. The escape commands are:
-      //    \a    alert (ascii value 7)
-      //    \b    backspace (ascii value 8)
-      //    \f    formfeed (ascii value 12)
-      //    \n    newline (ascii value 10)
-      //    \r    return (ascii value 13)
-      //    \t    horizontal tab (ascii value 9)
-      //    \v    vertical tab (ascii value 11)
-      //    \\    backslash
-      //    \ooo  where ooo is octal number (ascii value ooo)
-      //    \xhh  where hh is hex number (ascii value 0xhh)
-      //    \0    null character (ascii zero)
-      //    \dns  delay for n seconds
-      //    \dnm  delay for n milliseconds
-      //    \s    characters following this, up to a \w command or the end of
-      //          string, are to be sent to modem
-      //    \wns  characters following this, up to a \s, \d or another \w or
-      //          the end of the string are expected back from the modem. If
-      //          the string is not received within n seconds, a failed command
-      //          is registered. The exception to this is if the command is at
-      //          the end of the string or the next character in the string is
-      //          the \s, \d or \w in which case all characters are ignored
-      //          from the modem until n seconds of no data.
-      //    \wnm  as for above but timeout is in milliseconds
+    BOOL SendCommandString(
+      const PString & command  // Command to send to the channel
+    );
+    /* Send a command meta-string. A meta-string is a string of characters
+       that may contain escaped commands. The escape command is the \ as in
+       the C language.
+
+       The escape commands are:
+          \a    alert (ascii value 7)
+          \b    backspace (ascii value 8)
+          \f    formfeed (ascii value 12)
+          \n    newline (ascii value 10)
+          \r    return (ascii value 13)
+          \t    horizontal tab (ascii value 9)
+          \v    vertical tab (ascii value 11)
+          \\    backslash
+          \ooo  where ooo is octal number (ascii value ooo)
+          \xhh  where hh is hex number (ascii value 0xhh)
+          \0    null character (ascii zero)
+          \dns  delay for n seconds
+          \dnm  delay for n milliseconds
+          \s    characters following this, up to a \w command or the end of
+                string, are to be sent to modem
+          \wns  characters following this, up to a \s, \d or another \w or
+                the end of the string are expected back from the modem. If
+                the string is not received within n seconds, a failed command
+                is registered. The exception to this is if the command is at
+                the end of the string or the next character in the string is
+                the \s, \d or \w in which case all characters are ignored
+                from the modem until n seconds of no data.
+          \wnm  as for above but timeout is in milliseconds
+
+       Returns: TRUE if the command string was completely processed.
+     */
 
     void AbortCommandString();
+    /* Abort a command string that is in progress. Note that as the
+       SendCommandString() function blocks the calling thread when it runs,
+       this can only be called from within another thread.
+     */
 
 
     virtual BOOL Close();
@@ -245,10 +360,12 @@ PCLASS PChannel : public PContainer, public iostream {
 
   protected:
     BOOL ConvertOSError(int error);
-      // Convert an operating system error into platform independent error.
-      // This will set the lastError and osError member variables for access
-      // by GetErrorCode() and GetErrorNumber(). Returns TRUE if there was
-      // no error.
+    /* Convert an operating system error into platform independent error. This
+       will set the lastError and osError member variables for access by
+       GetErrorCode() and GetErrorNumber().
+       
+       Returns: TRUE if there was no error.
+     */
 
 
     // Member variables
