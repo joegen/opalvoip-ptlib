@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.7  2002/02/26 21:19:55  rogerh
+ * Return the correct number of bytes in the Read() method. This fixes
+ * the bug where esound audio made you sound like a robot.
+ *
  * Revision 1.6  2002/02/26 18:08:23  rogerh
  * Add dummy stubs for the volume settings
  *
@@ -370,13 +374,14 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
 {
   if (os_handle > 0) {
-    lastReadCount = ::read(os_handle, buf, len);
-    if (lastReadCount > 0) {
-      return (TRUE);
+    lastReadCount = 0;
+    // keep looping until we have read 'len' bytes
+    while (lastReadCount < len) {
+      int retval = ::read(os_handle, ((char *)buf)+lastReadCount, len-lastReadCount);
+      if (retval <= 0) return FALSE;
+      lastReadCount += retval;
     }
-    else {
-      return (FALSE);
-    }
+    return (TRUE);
   }
   else {
     // loopback
