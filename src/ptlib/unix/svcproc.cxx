@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.39  2001/03/19 00:11:03  robertj
+ * Added information message when killing service.
+ *
  * Revision 1.38  2001/03/14 01:30:35  robertj
  * Do setgid before so setuid, ie when still root.
  *
@@ -309,8 +312,16 @@ int PServiceProcess::_main(void *)
       return 1;
     }
 
-    if (kill(pid, args.HasOption('t') ? SIGTERM : SIGKILL) == 0)
+    int sig = args.HasOption('t') ? SIGTERM : SIGKILL;
+    if (kill(pid, sig) == 0) {
+      cout << "Sent SIG";
+      if (sig == SIGTERM)
+        cout << "TERM";
+      else
+        cout << "KILL";
+      cout << " to daemon at pid " << pid << endl;
       return 0;
+    }
 
     PError << "Could not stop process " << pid << " - " << strerror(errno) << endl;
     return 2;
