@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.33  2004/04/09 00:42:59  csoutheren
+ * Changed Unix build to use slightly different method for
+ * keep class names, as GCC does not use actual class names for typeinfo
+ *
  * Revision 1.32  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -398,6 +402,7 @@ extern "C" char ** __argv;
 #endif
 
 #define   P_HAS_TYPEINFO  1
+#define   PCLASSNAME(cls) (6+typeid(cls).name())
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
