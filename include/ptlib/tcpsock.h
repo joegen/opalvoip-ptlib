@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.9 1995/03/14 12:42:46 robertj Exp $
+ * $Id: tcpsock.h,v 1.10 1995/06/04 12:46:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.10  1995/06/04 12:46:25  robertj
+ * Slight redesign of port numbers on sockets.
+ *
  * Revision 1.9  1995/03/14 12:42:46  robertj
  * Updated documentation to use HTML codes.
  *
@@ -52,8 +55,15 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
       WORD port = 0             // Port number to use for the connection.
     );
     PTCPSocket(
+      const PString & service   // Service name to use for the connection.
+    );
+    PTCPSocket(
       const PString & address,  // Address of remote machine to connect to.
       WORD port                 // Port number to use for the connection.
+    );
+    PTCPSocket(
+      const PString & address,  // Address of remote machine to connect to.
+      const PString & service   // Service name to use for the connection.
     );
     PTCPSocket(
       PSocket & socket          // Listening socket making the connection.
@@ -65,8 +75,7 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
   // New functions for class.
     virtual BOOL Open(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port = 0             // Port number to use for the connection.
+      const PString & address   // Address of remote machine to connect to.
     );
     virtual BOOL Open(
       WORD port = 0             // Port number to use for the connection.
