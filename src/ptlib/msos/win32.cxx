@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.144  2005/01/16 23:00:36  csoutheren
+ * Fixed problem when calling WaitForTermination from within the same thread
+ *
  * Revision 1.143  2005/01/11 06:57:15  csoutheren
  * Fixed namespace collisions with plugin starup factories
  *
@@ -1271,8 +1274,10 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-  if (threadHandle == NULL)
+  if ((this == PThread::Current()) || threadHandle == NULL) {
+    PTRACE(2, "WaitForTermination short circuited");
     return TRUE;
+  }
 
   DWORD result;
   PINDEX retries = 10;
