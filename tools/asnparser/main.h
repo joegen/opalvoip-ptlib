@@ -30,6 +30,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.9  1999/08/09 13:02:36  robertj
+ * Added ASN compiler #defines for backward support of pre GCC 2.9 compilers.
+ * Added ASN compiler #defines to reduce its memory footprint.
+ * Added ASN compiler code generation of assignment operators for string classes.
+ *
  * Revision 1.8  1999/07/22 06:48:56  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -698,6 +703,7 @@ class StringTypeBase : public TypeBase
   public:
     StringTypeBase(int tag);
     virtual int GetBraceTokenContext() const;
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
 };
 
 
