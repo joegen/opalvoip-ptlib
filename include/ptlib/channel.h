@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.19 1996/04/15 12:33:03 robertj Exp $
+ * $Id: channel.h,v 1.20 1996/05/26 03:24:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.20  1996/05/26 03:24:40  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.19  1996/04/15 12:33:03  robertj
  * Fixed SetReadTimeout/SetWriteTimeout to use const reference so works with GNU compiler.
  *
@@ -82,8 +85,9 @@
 
 class PChannel;
 
-PCLASS PChannelStreamBuffer : public PObject, public streambuf {
-  PCLASSINFO(PChannelStreamBuffer, PObject)
+//PCLASS PChannelStreamBuffer : public streambuf, public PObject {
+//  PCLASSINFO(PChannelStreamBuffer, PObject)
+PCLASS PChannelStreamBuffer : public streambuf {
 /* This class is necessary for implementing the standard C++ iostream interface
    on <A>PChannel</A> classes and its descendents. It is an internal class and
    should not ever be used by application writers.
