@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.11  2002/10/04 08:20:44  robertj
+ * Changed read/write mutex so can be called by same thread without deadlock.
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -320,6 +323,22 @@ class PReadWriteMutex : public PObject
     PSemaphore writerSemaphore;
     PMutex     writerMutex;
     unsigned   writerCount;
+
+    class Nest : public PObject
+    {
+      PCLASSINFO(Nest, PObject);
+      Nest() { readerCount = writerCount = 0; }
+      unsigned readerCount;
+      unsigned writerCount;
+    };
+    PDictionary<POrdinalKey, Nest> nestedThreads;
+    PMutex                         nestingMutex;
+
+    Nest * GetNest() const;
+    Nest & StartNest();
+    void EndNest();
+    void InternalStartRead();
+    void InternalEndRead();
 };
 
 
