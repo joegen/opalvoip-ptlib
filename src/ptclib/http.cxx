@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.12 1996/02/25 11:14:24 robertj Exp $
+ * $Id: http.cxx,v 1.13 1996/03/02 03:27:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.13  1996/03/02 03:27:37  robertj
+ * Added function to translate a string to a form suitable for inclusion in a URL.
+ * Added radio button and selection boxes to HTTP form resource.
+ * Fixed bug in URL parsing, losing first / if hostname specified.
+ *
  * Revision 1.12  1996/02/25 11:14:24  robertj
  * Radio button support for forms.
  *
@@ -127,6 +132,19 @@ void PURL::ReadFrom(istream & stream)
 }
 
 
+PString PURL::TranslateString(const PString & str)
+{
+  PString xlat = str;
+
+  PINDEX pos = (PINDEX)-1;
+  PString unsafeChars = " ;/?:@=&#%+";
+  while ((pos = xlat.FindOneOf(unsafeChars, pos+1)) != P_MAX_INDEX)
+    xlat.Splice(psprintf("%%%02X", xlat[pos]), pos, 1);
+
+  return xlat;
+}
+
+
 static void UnmangleString(PString & str)
 {
   PINDEX pos = (PINDEX)-1;
@@ -175,8 +193,9 @@ void PURL::Parse(const char * cstr)
   // copy the string so we can take bits off it
   PString url = cstr;
 
-  static PString reservedChars = "=;/#?";
   PINDEX pos;
+
+  static PString reservedChars = "=;/#?";
 
   // determine if the URL has a scheme
   if (isalpha(url[0])) {
@@ -224,7 +243,7 @@ void PURL::Parse(const char * cstr)
       port = (WORD)url(pos2+1, pos).AsInteger();
     }
     UnmangleString(hostname);
-    url.Delete(0, pos+1);
+    url.Delete(0, pos);
   }
 
   // chop off any trailing fragment
@@ -1441,6 +1460,58 @@ PHTTPRadioField::PHTTPRadioField(const char * name,
 }
 
 
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const char * groupTitle,
+                                 const PStringArray & valueArray,
+                                 PINDEX initVal)
+  : PHTTPField(name, groupTitle),
+    values(valueArray),
+    titles(valueArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const char * groupTitle,
+                                 const PStringArray & valueArray,
+                                 const PStringArray & titleArray,
+                                 PINDEX initVal)
+  : PHTTPField(name, groupTitle),
+    values(valueArray),
+    titles(titleArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const char * groupTitle,
+                                 PINDEX count,
+                                 const char * const * valueStrings,
+                                 PINDEX initVal)
+  : PHTTPField(name, groupTitle),
+    values(count, valueStrings),
+    titles(count, valueStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const char * groupTitle,
+                                 PINDEX count,
+                                 const char * const * valueStrings,
+                                 const char * const * titleStrings,
+                                 PINDEX initVal)
+  : PHTTPField(name, groupTitle),
+    values(count, valueStrings),
+    titles(count, titleStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
 void PHTTPRadioField::GetHTML(PHTML & html)
 {
   for (PINDEX i = 0; i < values.GetSize(); i++)
@@ -1459,6 +1530,74 @@ PString PHTTPRadioField::GetValue() const
 
 
 void PHTTPRadioField::SetValue(const PString & val)
+{
+  value = val;
+}
+
+
+PHTTPSelectField::PHTTPSelectField(const char * name,
+                                   const PStringArray & valueArray,
+                                   PINDEX initVal)
+  : PHTTPField(name),
+    values(valueArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPSelectField::PHTTPSelectField(const char * name,
+                                   PINDEX count,
+                                   const char * const * valueStrings,
+                                   PINDEX initVal)
+  : PHTTPField(name),
+    values(count, valueStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
+PHTTPSelectField::PHTTPSelectField(const char * name,
+                                   const char * title,
+                                   const PStringArray & valueArray,
+                                   PINDEX initVal)
+  : PHTTPField(name, title),
+    values(valueArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPSelectField::PHTTPSelectField(const char * name,
+                                   const char * title,
+                                   PINDEX count,
+                                   const char * const * valueStrings,
+                                   PINDEX initVal)
+  : PHTTPField(name, title),
+    values(count, valueStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
+void PHTTPSelectField::GetHTML(PHTML & html)
+{
+  html << PHTML::Select(name);
+  for (PINDEX i = 0; i < values.GetSize(); i++)
+    html << PHTML::Option(
+                    values[i] == value ? PHTML::Selected : PHTML::NotSelected)
+         << values[i];
+  html << PHTML::Select();
+  notInHTML = FALSE;
+}
+
+
+PString PHTTPSelectField::GetValue() const
+{
+  return value;
+}
+
+
+void PHTTPSelectField::SetValue(const PString & val)
 {
   value = val;
 }
