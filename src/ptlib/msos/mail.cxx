@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.1 1995/03/14 12:45:14 robertj Exp $
+ * $Id: mail.cxx,v 1.2 1995/04/01 08:05:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.2  1995/04/01 08:05:04  robertj
+ * Added GUI support.
+ *
  * Revision 1.1  1995/03/14 12:45:14  robertj
  * Initial revision
  *
@@ -54,6 +57,7 @@ PMailSession::~PMailSession()
 void PMailSession::Construct()
 {
   loggedOn = FALSE;
+  logOffHWND = NULL;
 }
 
 
@@ -66,6 +70,13 @@ BOOL PMailSession::LogOn(const PString & username, const PString & password)
 BOOL PMailSession::LogOn(const PString & username,
                              const PString & password, const PString & service)
 {
+  return CMCLogOn(service, username, password, NULL);
+}
+
+
+BOOL PMailSession::CMCLogOn(const char * service,
+                 const char * username, const char * password, CMC_ui_id ui_id)
+{
   if (!cmc.IsLoaded()) {
     lastError = CMC_E_FAILURE;
     return FALSE;
@@ -73,6 +84,8 @@ BOOL PMailSession::LogOn(const PString & username,
 
   if (!LogOff())
     return FALSE;
+ 
+  logOffHWND = ui_id;
 
   CMC_X_COM_support support[2];
   support[0].item_code = CMC_XS_COM;
@@ -84,13 +97,14 @@ BOOL PMailSession::LogOn(const PString & username,
   extension.item_data = PARRAYSIZE(support);
   extension.item_reference = support;
   extension.extension_flags = CMC_EXT_LAST_ELEMENT;
-  if ((lastError = cmc.logon((CMC_string)(const char *)service,
-                             (CMC_string)(const char *)username,
-                             (CMC_string)(const char *)password,
+  if ((lastError = cmc.logon((CMC_string)service,
+                             (CMC_string)username,
+                             (CMC_string)password,
                              NULL,
-                             NULL,
+                             ui_id,
                              100,
-                             0,
+                             ui_id == NULL ? 0 :
+                                 (CMC_LOGON_UI_ALLOWED | CMC_ERROR_UI_ALLOWED),
                              &sessionId,
                              &extension)) != CMC_SUCCESS)
     return FALSE;
@@ -98,57 +112,6 @@ BOOL PMailSession::LogOn(const PString & username,
   loggedOn = TRUE;
   return TRUE;
 }
-
-
-#if 0
-BOOL PMailSession::LogOn(PInteractor * parent)
-{
-  if (hCMCDLL == NULL) {
-    lastError = CMC_E_FAILURE;
-    return FALSE;
-  }
-
-  if (!LogOff())
-    return FALSE;
-
-  if ((lastError = cmc_logon(NULL, NULL, NULL, NULL,
-                             (CMC_ui_id)(UINT)parent->GetHWND(),
-                             100,
-                             CMC_LOGON_UI_ALLOWED | CMC_ERROR_UI_ALLOWED,
-                             &sessionId,
-                             NULL)) != CMC_SUCCESS)
-    return FALSE;
-
-  loggedOn = TRUE;
-  return TRUE;
-}
-
-
-BOOL PMailSession::LogOff(PInteractor * parent)
-{
-  if (hCMCDLL == NULL) {
-    lastError = CMC_E_FAILURE;
-    return FALSE;
-  }
-
-  if (!loggedOn)
-    return TRUE;
-
-  lastError = cmc.logoff(mailSession,
-                         (CMC_ui_id)(UINT)parent->GetHWND(),
-                         CMC_LOGOFF_UI_ALLOWED | CMC_UI_ERROR_ALLOWED,
-                         NULL);
-
-  switch (lastError) {
-    case CMC_SUCCESS :
-    case CMC_E_USER_NOT_LOGGED_IN :
-      loggedOn = FALSE;
-      return lastError == CMC_SUCCESS;
-  }
-
-  return FALSE;
-}
-#endif
 
 
 BOOL PMailSession::LogOff()
@@ -161,7 +124,11 @@ BOOL PMailSession::LogOff()
   if (!loggedOn)
     return TRUE;
 
-  lastError = cmc.logoff(sessionId, NULL, 0, NULL);
+  lastError = cmc.logoff(sessionId,
+           logOffHWND,
+           logOffHWND == NULL ? 0
+                              : (CMC_LOGOFF_UI_ALLOWED | CMC_ERROR_UI_ALLOWED),
+           NULL);
 
   switch (lastError) {
     case CMC_SUCCESS :
@@ -225,6 +192,7 @@ PMailSession::LookUpResult
   CMC_recipient recip_in;
   memset(&recip_in, 0, sizeof(recip_in));
   recip_in.name = (CMC_string)(const char *)name;
+  recip_in.recip_flags = CMC_RECIP_LAST_ELEMENT;
 
   CMC_recipient * recip_out;
   CMC_uint32 count = 1;
