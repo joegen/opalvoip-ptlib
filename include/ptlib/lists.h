@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.19  2000/04/14 07:19:32  craigs
+ * Fixed problem with assert when dequeueing from an empty queue
+ *
  * Revision 1.18  1999/08/22 12:13:43  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -484,7 +487,7 @@ template <class T> class PQueue : public PAbstractList
        first object added to the queue or NULL if queue empty.
      */
     virtual T * Dequeue()
-      { return (T *)PAbstractList::RemoveAt(0);}
+      { if (GetSize() == 0) return NULL; else return (T *)PAbstractList::RemoveAt(0);}
   //@}
 
   protected:
@@ -693,7 +696,7 @@ template <class T> class PStack : public PAbstractList
     virtual inline void Enqueue(T * t) \
       { PAbstractList::Append(t); } \
     virtual inline T * Dequeue() \
-      { return (T *)PAbstractList::RemoveAt(0);} \
+      { if (GetSize() == 0) return NULL; else return (T *)PAbstractList::RemoveAt(0);} \
   }
 
 #define PDECLARE_QUEUE(cls, T) \
