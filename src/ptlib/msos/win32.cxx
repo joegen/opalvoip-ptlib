@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.92  2000/08/25 08:07:48  robertj
+ * Added Windows 2000 to operating system reporting.
+ *
  * Revision 1.91  2000/04/05 02:50:18  robertj
  * Added microseconds to PTime class.
  *
@@ -1222,7 +1225,9 @@ PString PProcess::GetOSName()
     case 1 : //VER_PLATFORM_WIN32_WINDOWS :
       return "95";
     case VER_PLATFORM_WIN32_NT :
-      return "NT";
+      if (info.dwMajorVersion < 5)
+        return "NT";
+      return "2000";
   }
   return "?";
 }
