@@ -14,8 +14,13 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <signal.h>
+
+#define PSETPGRP()  setpgrp(0, 0)
+#define raise(s)    kill(getpid(),s)
 
 extern "C" {
+
 char *mktemp(char *);
 int accept(int, struct sockaddr *, int *);
 int connect(int, struct sockaddr *, int);
@@ -47,8 +52,6 @@ char * inet_ntoa(struct in_addr);
 struct hostent * gethostbyname(const char *);
 struct hostent * gethostbyaddr(const char *, int, int);
 struct servent * getservbyname(const char *, const char *);
-
-#define PSETPGRP()  setpgrp(0, 0)
 
 #include <sys/termios.h>
 #undef NL0
