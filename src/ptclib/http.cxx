@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.55  1999/04/21 01:56:13  robertj
+ * Fixed problem with escape codes greater that %80
+ *
  * Revision 1.54  1999/01/16 12:45:54  robertj
  * Added RTSP schemes to URL's
  *
@@ -394,7 +397,7 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
   }
   PINDEX pos = (PINDEX)-1;
   while ((pos += 1+strspn(&xlat[pos+1], safeChars)) < xlat.GetLength())
-    xlat.Splice(psprintf("%%%02X", xlat[pos]), pos, 1);
+    xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
 
   return xlat;
 }
