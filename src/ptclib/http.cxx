@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.77  2002/11/20 02:10:56  robertj
+ * Fixed some more realtive/absolute path issues.
+ *
  * Revision 1.76  2002/11/20 01:01:49  robertj
  * Fixed GNU compatibility
  *
@@ -321,13 +324,12 @@
 #define	DEFAULT_SIP_PORT        5060
 
 
-class schemeStruct {
-  public:
-    const char * name;
-    BOOL hasUserPassword;
-    BOOL hasHostPort;
-    BOOL hasPath;
-    WORD defaultPort;
+struct schemeStruct {
+  const char * name;
+  BOOL hasUserPassword;
+  BOOL hasHostPort;
+  BOOL hasPath;
+  WORD defaultPort;
 };
 
 #define DEFAULT_SCHEME 0
@@ -688,6 +690,10 @@ PString PURL::AsString(UrlFormat fmt) const
       return PString::Empty();
 
     str << scheme << ':';
+
+    if (relativePath)
+      return str;
+
     const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
     if (schemeInfo.hasHostPort)
@@ -717,8 +723,11 @@ PString PURL::AsString(UrlFormat fmt) const
   }
 
   // URIOnly and PathOnly
-  for (i = 0; i < path.GetSize(); i++)
-    str << '/' << TranslateString(path[i], PathTranslation);
+  for (i = 0; i < path.GetSize(); i++) {
+    if (i > 0 || !relativePath)
+      str << '/';
+    str << TranslateString(path[i], PathTranslation);
+  }
 
   if (fmt == URIOnly) {
     if (!fragment)
