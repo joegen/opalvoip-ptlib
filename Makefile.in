@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.12  2003/11/14 06:01:11  csoutheren
+# Fixed HAS_PLUGIN define
+#
 # Revision 1.11  2003/09/01 09:37:04  dsandras
 # Fixed DESTDIR support thanks to Stefan Brüns <lurchi@kawo1.rwth-aachen.de>.
 #
@@ -162,7 +165,7 @@ include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
 SUBDIRS += tools/asnparser
-ifeq (1, $(TRY_PLUGINS))
+ifeq (1, $(HAS_PLUGINS))
 SUBDIRS += plugins
 endif
 
