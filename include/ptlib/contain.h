@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.58  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.57  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -289,7 +292,9 @@ class PContainer : public PObject
        This will decrement the reference count on the contents and if unique,
        will destroy it using the #DestroyContents()# function.
      */
-    PINLINE virtual ~PContainer();
+    virtual ~PContainer()
+    { Destruct(); }
+
   //@}
 
   /**@name Common functions for containers */
