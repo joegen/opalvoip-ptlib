@@ -1,11 +1,15 @@
 /*
- * $Id: httpsvc.h,v 1.8 1997/02/05 11:54:52 robertj Exp $
+ * $Id: httpsvc.h,v 1.9 1997/03/02 03:42:19 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.9  1997/03/02 03:42:19  robertj
+ * Added error logging to standard HTTP Service HTTP Server.
+ * Removed extraneous variables that set GIF file size to zero.
+ *
  * Revision 1.8  1997/02/05 11:54:52  robertj
  * Added support for order form page overridiing.
  *
@@ -93,7 +97,6 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
   protected:
     PString    gifText;
-    PINDEX     gifWidth, gifHeight;
 
     PString    email;
     PString    homePage;
@@ -115,10 +118,7 @@ PDECLARE_CLASS(PHTTPServiceThread, PThread)
   public:
     PHTTPServiceThread(PHTTPServiceProcess & app,
                        PSocket & listeningSocket,
-                       PHTTPSpace & http)
-      : PThread(10000, AutoDeleteThread),
-        process(app), listener(listeningSocket), httpSpace(http)
-      { Resume(); }
+                       PHTTPSpace & http);
 
     void Main();
 
