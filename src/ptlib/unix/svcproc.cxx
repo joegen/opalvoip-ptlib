@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.59  2001/08/07 03:05:54  robertj
+ * Expanded thread name field width in system log.
+ *
  * Revision 1.58  2001/07/09 04:26:08  yurik
  * Fixed lack of pthread_self function on BeOS
  *
@@ -222,10 +225,10 @@ void PSystemLog::Output(Level level, const char * cmsg)
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
     PString threadName = PThread::Current()->GetThreadName();
-    if (!threadName)
-      *out << setw(15) << threadName.Left(15);
+    if (threadName.GetLength() <= 23)
+      *out << setw(23) << threadName;
     else
-      *out << (void *)PThread::Current();
+      *out << threadName.Left(10) << "..." << threadName.Right(10);
     *out << '\t'
          << PLevelName[level+1]
          << '\t'
