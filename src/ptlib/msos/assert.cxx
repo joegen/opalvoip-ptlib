@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.18 1997/02/09 01:27:18 robertj Exp $
+ * $Id: assert.cxx,v 1.19 1997/03/18 21:22:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.19  1997/03/18 21:22:31  robertj
+ * Display error message if assert stack dump fails
+ *
  * Revision 1.18  1997/02/09 01:27:18  robertj
  * Added stack dump under NT.
  *
@@ -235,7 +238,11 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
       imagehlp.SymCleanup(hProcess);
     }
+    else
+      str << "\n    No stack dump: IMAGEHLP.DLL SymInitialise failed.";
   }
+  else
+    str << "\n    No stack dump: IMAGEHLP.DLL could not be loaded.";
 #endif
 
   str << ends;
