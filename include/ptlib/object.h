@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.35  1998/11/03 00:57:19  robertj
+ * Added allocation breakpoint variable.
+ *
  * Revision 1.34  1998/10/26 11:05:26  robertj
  * Added raw free for things allocated within the runtime library.
  *
@@ -371,6 +374,10 @@ class PMemoryHeap {
        function.
      */
 
+    static void SetAllocationBreakpoint(DWORD point);
+    /* Set the allocation request number to cause an assert.
+     */
+
   protected:
     void * InternalAllocate(
       size_t nSize,           // Number of bytes to allocate.
@@ -418,6 +425,7 @@ class PMemoryHeap {
     Header * listHead;
     Header * listTail;
 
+    static DWORD allocationBreakpoint;
     DWORD allocationRequest;
     DWORD firstRealObject;
     BYTE  flags;
