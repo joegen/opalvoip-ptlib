@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.29  2004/03/17 22:24:29  rjongbloed
+ * Fixed MSVC warnings
+ *
  * Revision 1.28  2004/03/16 10:10:47  csoutheren
  * Proper fix that does not generate warnings
  *
@@ -436,7 +439,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "******",
              "      ",
              "      " }},
-    { (char)230, { "      ",
+    { '\xe6', { "      ",
 	     "      ",
 	     "      ",
 	     " ** * ",
@@ -447,7 +450,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " ** * ",
              "      ",
              "      " }},
-    { (char)248, { "      ",
+    { '\xf8', { "      ",
 	     "      ",
 	     "     *",
 	     " **** ",
@@ -458,7 +461,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " **** ",
              "*     ",
              "      " }},
-    { (char)229, { "  **  ",
+    { '\xe5', { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     " **** ",
@@ -755,7 +758,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*****",
              "     ",
              "     " }},
-    { (char)198, { " ** ***",
+    { '\xc6', { " ** ***",
 	     "*  *   ",
 	     "*  *   ",
 	     "*  *   ",
@@ -766,7 +769,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*  ****",
              "       ",
              "       " }},
-    { (char)216, { " *** ",
+    { '\xd8', { " *** ",
 	     "*  **",
 	     "* * *",
 	     "* * *",
@@ -777,7 +780,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " *** ",
              "*    ",
              "     " }},
-    { (char)197, { "  **  ",
+    { '\xc5', { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     "  **  ",
