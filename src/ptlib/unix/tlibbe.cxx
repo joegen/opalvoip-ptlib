@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.14  2004/02/22 04:35:04  ykiryanov
+ * Removed PMutex desctructor
+ *
  * Revision 1.13  2003/02/26 01:13:18  robertj
  * Fixed race condition where thread can terminatebefore an IsSuspeded() call
  *   occurs and cause an assert, thanks Sebastian Meyer
@@ -778,10 +781,6 @@ PMutex::PMutex()
   PError << "::create_sem(PMutex) " << semId << endl;
   PAssertOS( semId >= B_NO_ERROR );
   #endif 
-}
-
-PMutex::~PMutex()
-{
 }
 
 void PMutex::Wait()
