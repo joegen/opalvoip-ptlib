@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.75  2000/10/05 23:36:26  robertj
+ * Fixed compiler ambiguities in PTimeInterval constructor.
+ *
  * Revision 1.74  2000/05/25 11:07:26  robertj
  * Added PConfig::HasKey() function to determine if value actually set.
  *
@@ -264,12 +267,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
-
-PINLINE PTimeInterval::PTimeInterval(int millisecs)
-  : milliseconds(millisecs) { }
-
-PINLINE PTimeInterval::PTimeInterval(unsigned millisecs)
-  : milliseconds(millisecs) { }
 
 PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
   : milliseconds(millisecs) { }
