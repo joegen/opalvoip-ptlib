@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.cxx,v $
+ * Revision 1.21  2004/04/12 05:42:25  csoutheren
+ * Fixed problem with radio buttons
+ *
  * Revision 1.20  2004/04/03 06:54:24  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -1017,7 +1020,7 @@ void PHTML::RadioButton::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=" << valueString;
+  html << " VALUE=\"" << valueString << "\"";
   if (checkedFlag)
     html << " CHECKED";
 }
@@ -1073,7 +1076,7 @@ void PHTML::InputRange::AddAttr(PHTML & html) const
   html << " SIZE=" << width
        << " MIN=" << minValue
        << " MAX=" << maxValue
-       << " VALUE=" << initValue;
+       << " VALUE=\"" << initValue << "\"";
 }
 
 
