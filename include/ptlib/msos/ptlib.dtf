@@ -872,7 +872,9 @@ EXPORTS
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @792 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @793 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
     ?ConvertOSError@PChannel@@KAHHAAW4Errors@1@AAH@Z @795 NONAME ;protected: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
+    ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @797 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
+    ?ConvertOSError@PSocket@@MAEHH@Z @2243 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
     ?Copy@PFile@@SAHABVPFilePath@@0H@Z @799 NONAME ;public: static int __cdecl PFile::Copy(class PFilePath const &,class PFilePath const &,int)
     ?CopyContents@PAbstractArray@@IAEXABV1@@Z @800 NONAME ;protected: void __thiscall PAbstractArray::CopyContents(class PAbstractArray const &)
     ?CopyContents@PAbstractList@@IAEXABV1@@Z @801 NONAME ;protected: void __thiscall PAbstractList::CopyContents(class PAbstractList const &)
@@ -1088,8 +1090,10 @@ EXPORTS
     ?GetErrorCode@PMail@@QBEHXZ @1001 NONAME ;public: int __thiscall PMail::GetErrorCode(void)const 
     ?GetErrorCode@PRegularExpression@@QBE?AW4ErrorCodes@1@XZ @1002 NONAME ;public: enum PRegularExpression::ErrorCodes  __thiscall PRegularExpression::GetErrorCode(void)const 
     ?GetErrorText@PChannel@@SA?AVPString@@W4Errors@1@H@Z @1005 NONAME ;public: static class PString  __cdecl PChannel::GetErrorText(enum PChannel::Errors,int)
+    ?GetErrorText@PChannel@@UBE?AVPString@@XZ @2244 NONAME ;public: virtual class PString  __thiscall PChannel::GetErrorText(void)const 
     ?GetErrorText@PMail@@QBE?AVPString@@XZ @1006 NONAME ;public: class PString  __thiscall PMail::GetErrorText(void)const 
     ?GetErrorText@PRegularExpression@@QBE?AVPString@@XZ @1007 NONAME ;public: class PString  __thiscall PRegularExpression::GetErrorText(void)const 
+    ?GetErrorText@PSoundChannel@@UBE?AVPString@@XZ @2245 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetErrorText(void)const 
     ?GetExtension@PDynaLink@@SA?AVPString@@XZ @1008 NONAME ;public: static class PString  __cdecl PDynaLink::GetExtension(void)
     ?GetFileName@PFilePath@@QBE?AVPCaselessString@@XZ @1010 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetFileName(void)const 
     ?GetFilter@PEthSocket@@QAEHAAIAAG@Z @1896 NONAME ;public: int __thiscall PEthSocket::GetFilter(unsigned int &,unsigned short &)
@@ -1955,7 +1959,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
-    ?ConvertOSError@PSocket@@MAEHH@Z @2243 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
-    ?GetErrorText@PChannel@@UBE?AVPString@@XZ @2244 NONAME ;public: virtual class PString  __thiscall PChannel::GetErrorText(void)const 
-    ?GetErrorText@PSoundChannel@@UBE?AVPString@@XZ @2245 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetErrorText(void)const 
+    ?__setprecision@@YAAAVios@@AAV1@H@Z @2246 NONAME ;class ios & __cdecl __setprecision(class ios &,int)
