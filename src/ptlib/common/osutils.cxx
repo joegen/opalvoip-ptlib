@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.179  2002/01/31 08:14:16  robertj
+ * Put back code taken out by GCC 3.0 patch. It really SHOULD be there!
+ *
  * Revision 1.178  2002/01/26 23:57:45  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -834,12 +837,12 @@ ostream & PTrace::End(ostream & s)
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
      must suffer with blank lines in that case.
    */
-//    if ((s.flags()&ios::unitbuf) != 0 || s.rdbuf()->out_waiting() > 0) {
+  if ((s.flags()&ios::unitbuf) != 0 || s.rdbuf()->out_waiting() > 0) {
     if ((PTraceOptions&SystemLogStream) != 0)
       s.flush();
     else
       s << endl;
-//  }
+  }
 
   PTraceMutex->Signal();
 
