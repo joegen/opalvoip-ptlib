@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.16 1997/01/04 06:52:04 robertj Exp $
+ * $Id: assert.cxx,v 1.17 1997/02/05 11:49:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.17  1997/02/05 11:49:40  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.16  1997/01/04 06:52:04  robertj
  * Removed the press a key to continue under win  '95.
  *
@@ -111,7 +114,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
   int err = errno;
 #endif
 
-  if (PProcess::Current()->IsDescendant(PServiceProcess::Class())) {
+  if (PProcess::Current().IsDescendant(PServiceProcess::Class())) {
     if (msg == NULL)
       msg = "";
     static const char fmt[] = "Assertion fail in file %s, line %u %s - code = %lu";
@@ -121,7 +124,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
     PSystemLog::Output(PSystemLog::Fatal, buf);
     delete [] buf;
 #if defined(_MSC_VER) && defined(_DEBUG)
-    if (((PServiceProcess*)PProcess::Current())->debugMode)
+    if (PServiceProcess::Current().debugMode)
       __asm int 3;
 #endif
     return;
