@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.43  1999/09/12 07:06:23  craigs
+ * Added support for getting Solaris interface info
+ *
  * Revision 1.42  1999/09/10 02:31:19  craigs
  * Added interface table routines
  *
@@ -105,6 +108,14 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+
+#ifdef SIOCGENADDR
+#define SIO_Get_MAC_Address SIOCGENADDR
+#define	ifr_macaddr         ifr_ifru.ifru_enaddr
+#else
+#define SIO_Get_MAC_Address SIOCGIFHWADDR
+#define	ifr_macaddr         ifr_hwaddr.sa_data
+#endif
 
 extern PSemaphore PX_iostreamMutex;
 
@@ -559,15 +570,15 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     return FALSE;
   }
 
-#ifdef SIOCGIFHWADDR
+#ifdef SIO_Get_MAC_Address 
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
   strcpy(ifr.ifr_name, interfaceName);
-  if (!ConvertOSError(ioctl(ifsock.GetHandle(), SIOCGIFHWADDR, &ifr)))
+  if (!ConvertOSError(ioctl(ifsock.GetHandle(), SIO_Get_MAC_Address, &ifr)))
     return FALSE;
 
-  memcpy(&macAddress, ifr.ifr_hwaddr.sa_data, sizeof(macAddress));
+  memcpy(&macAddress, ifr.ifr_macaddr, sizeof(macAddress));
 #endif
 
   channelName = interfaceName;
@@ -931,8 +942,13 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
           PString            macAddr;
           PIPSocket::Address addr;
 
-          if (ioctl(sock.GetHandle(), SIOCGIFHWADDR, &ifReq) >= 0) 
-            macAddr = (PString)PEthSocket::Address((BYTE *)((sockaddr *)(&ifReq.ifr_addr))->sa_data);
+#ifdef SIO_Get_MAC_Address
+          if (ioctl(sock.GetHandle(), SIO_Get_MAC_Address, &ifReq) >= 0) {
+            BYTE * p = (BYTE *)ifReq.ifr_macaddr;
+            PEthSocket::Address a(p);
+            macAddr = (PString)a;
+          }
+#endif
 
           if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) 
             addr = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr);
