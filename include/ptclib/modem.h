@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.h,v $
+ * Revision 1.11  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.10  1998/12/02 03:51:39  robertj
  * Unix compatibility changes
  *
@@ -71,7 +74,9 @@
 #endif
 
 
-PDECLARE_CLASS(PModem, PSerialChannel)
+class PModem : public PSerialChannel
+{
+  PCLASSINFO(PModem, PSerialChannel)
 /* A class representing a modem attached to a serial port. This adds the usual
    modem operations to the basic serial port.
    

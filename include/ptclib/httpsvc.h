@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.27  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.26  1998/11/30 02:50:50  robertj
  * New directory structure
  *
@@ -120,7 +123,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
+class PHTTPServiceProcess : public PServiceProcess
+{
+  PCLASSINFO(PHTTPServiceProcess, PServiceProcess)
 
   public:
     enum {
@@ -212,7 +217,9 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
 /////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PHTTPServiceThread, PThread)
+class PHTTPServiceThread : public PThread
+{
+  PCLASSINFO(PHTTPServiceThread, PThread)
   public:
     PHTTPServiceThread(PINDEX stackSize,
                        PHTTPServiceProcess & app,
@@ -231,7 +238,9 @@ PDECLARE_CLASS(PHTTPServiceThread, PThread)
 
 /////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PConfigPage, PHTTPConfig)
+class PConfigPage : public PHTTPConfig
+{
+  PCLASSINFO(PConfigPage, PHTTPConfig)
   public:
     PConfigPage(
       PHTTPServiceProcess & app,
@@ -272,7 +281,9 @@ PDECLARE_CLASS(PConfigPage, PHTTPConfig)
 
 /////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PConfigSectionsPage, PHTTPConfigSectionList)
+class PConfigSectionsPage : public PHTTPConfigSectionList
+{
+  PCLASSINFO(PConfigSectionsPage, PHTTPConfigSectionList)
   public:
     PConfigSectionsPage(
       PHTTPServiceProcess & app,
@@ -313,7 +324,9 @@ PDECLARE_CLASS(PConfigSectionsPage, PHTTPConfigSectionList)
 
 /////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PRegisterPage, PConfigPage)
+class PRegisterPage : public PConfigPage
+{
+  PCLASSINFO(PRegisterPage, PConfigPage)
   public:
     PRegisterPage(
       PHTTPServiceProcess & app,
@@ -342,7 +355,9 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
 
 /////////////////////////////////////////////////////////////////////S
 
-PDECLARE_CLASS(PServiceHTML, PHTML)
+class PServiceHTML : public PHTML
+{
+  PCLASSINFO(PServiceHTML, PHTML)
   public:
     PServiceHTML(const char * title,
                  const char * help = NULL,
@@ -376,7 +391,9 @@ PDECLARE_CLASS(PServiceHTML, PHTML)
 
 ///////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PServiceHTTPString, PHTTPString)
+class PServiceHTTPString : public PHTTPString
+{
+  PCLASSINFO(PServiceHTTPString, PHTTPString)
   public:
     PServiceHTTPString(const PURL & url, const PString & string)
       : PHTTPString(url, string) { }
@@ -388,7 +405,9 @@ PDECLARE_CLASS(PServiceHTTPString, PHTTPString)
 };
 
 
-PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
+class PServiceHTTPFile : public PHTTPFile
+{
+  PCLASSINFO(PServiceHTTPFile, PHTTPFile)
   public:
     PServiceHTTPFile(const PString & filename, BOOL needSig = FALSE)
       : PHTTPFile(filename) { needSignature = needSig; }
@@ -403,7 +422,9 @@ PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
     BOOL needSignature;
 };
 
-PDECLARE_CLASS(PServiceHTTPDirectory, PHTTPDirectory)
+class PServiceHTTPDirectory : public PHTTPDirectory
+{
+  PCLASSINFO(PServiceHTTPDirectory, PHTTPDirectory)
   public:
     PServiceHTTPDirectory(const PURL & url, const PDirectory & dirname, BOOL needSig = FALSE)
       : PHTTPDirectory(url, dirname) { needSignature = needSig; }

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.6  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.5  1998/12/04 13:01:51  craigs
  * Changed for SSLeay 0.9
  *
@@ -56,7 +59,9 @@ extern "C" {
 #include <crypto.h>
 };
 
-PDECLARE_CLASS(PSSLChannel, PIndirectChannel)
+class PSSLChannel : public PIndirectChannel
+{
+  PCLASSINFO(PSSLChannel, PIndirectChannel)
   public:
     enum {
       CertificateOK,

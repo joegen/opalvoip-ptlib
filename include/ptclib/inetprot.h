@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.13  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.12  1998/09/23 06:19:40  robertj
  * Added open source copyright license.
  *
@@ -82,7 +85,9 @@ class PSocket;
 class PIPSocket;
 
 
-PDECLARE_CLASS(PInternetProtocol, PIndirectChannel)
+class PInternetProtocol : public PIndirectChannel
+{
+  PCLASSINFO(PInternetProtocol, PIndirectChannel)
 /* A TCP/IP socket for process/application layer high level protocols. All of
    these protocols execute commands and responses in a standard manner.
 
