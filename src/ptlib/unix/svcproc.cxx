@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.64  2002/02/19 07:12:36  rogerh
+ * Mac Carbon fix
+ *
  * Revision 1.63  2001/12/16 23:40:16  robertj
  * Fixed system log so does not crash if current thread not created by PWLib.
  *
@@ -262,12 +265,17 @@ void PSystemLog::Output(Level level, const char * cmsg)
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
 
     PThread * thread = PThread::Current();
-    if (thread == NULL)
+    if (thread == NULL) {
+#ifdef P_MAC_MPTHREADS
+      unsigned tid = (unsigned)MPCurrentTaskID();
+#else
+      unsigned tid = (unsigned) pthread_self();
+#endif
       *out << "ThreadID=0x"
            << setfill('0') << hex
-           << setw(8) << (unsigned)pthread_self()
+           << setw(8) << tid
            << setfill(' ') << dec;
-    else {
+    } else {
       PString threadName = thread->GetThreadName();
       if (threadName.GetLength() <= 23)
         *out << setw(23) << threadName;
@@ -770,7 +778,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   inHandler = TRUE;
 
-#if P_MAC_MPTHREADS
+#ifdef P_MAC_MPTHREADS
   unsigned tid = (unsigned)MPCurrentTaskID();
 #else
   unsigned tid = (unsigned) pthread_self();
