@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.80  2002/06/14 10:29:43  rogerh
+ * STL + gcc 3.1 compile fix. Submitted by Klaus Kaempf <kkaempf@suse.de>
+ *
  * Revision 1.79  2002/06/13 08:34:05  rogerh
  * gcc 3.1 needs iostream instead of iostream.h
  *
@@ -289,7 +292,11 @@
 #include <string>
 #include <iomanip>
 #include <iostream>
+#if (__GNUC__ >= 3)
+#include <sstream>
+#else
 #include <strstream>
+#endif
 #else
 #if (__GNUC__ >= 3)
 #include <iostream>
