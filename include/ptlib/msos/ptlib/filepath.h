@@ -1,0 +1,26 @@
+/*
+ * $Id: filepath.h,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ *
+ * Portable Windows Library
+ *
+ * Operating System Classes Interface Declarations
+ *
+ * Copyright 1993 Equivalence
+ *
+ * $Log: filepath.h,v $
+ * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Initial revision
+ *
+ */
+
+
+#ifndef _PFILEPATH
+
+///////////////////////////////////////////////////////////////////////////////
+// File Specification
+
+#include "../../common/filepath.h"
+};
+
+
+#endif
