@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.31  1998/10/15 01:53:58  robertj
+ * GNU compatibility.
+ *
  * Revision 1.30  1998/10/13 14:23:29  robertj
  * Complete rewrite of memory leak detection.
  *
@@ -468,10 +471,9 @@ class PMemoryHeap {
 
 inline void * operator new(size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
-inline void * operator new(size_t nSize)
-  { return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL); }
-inline void operator delete(void * ptr)
-  { PMemoryHeap::Deallocate(ptr, NULL); }
+
+inline void * operator new[](size_t nSize, const char * file, int line)
+  { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
 
 #else // _DEBUG
 
