@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.3 1995/01/15 04:49:09 robertj Exp $
+ * $Id: array.h,v 1.4 1995/02/22 10:50:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
- * Revision 1.3  1995/01/15 04:49:09  robertj
+ * Revision 1.4  1995/02/22 10:50:26  robertj
+ * Changes required for compiling release (optimised) version.
+ *
+ * Revision 1.3  1995/01/15  04:49:09  robertj
  * Fixed errors in template version.
  *
  * Revision 1.2  1994/12/21  11:52:46  robertj
@@ -400,7 +403,7 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
  */
 
   public:
-    PINLINE PArrayObjects(
+    PArrayObjects(
       PINDEX initialSize = 0  // Initial number of objects in the array.
     );
     /* Create a new array of objects. The array is initially set to the
