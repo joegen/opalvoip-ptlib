@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.51  2002/02/14 05:13:33  robertj
+ * Fixed possible deadlock if a timer is deleted (however indirectly) in the
+ *   OnTimeout of another timer.
+ *
  * Revision 1.50  2001/11/23 06:59:29  robertj
  * Added PProcess::SetUserName() function for effective user changes.
  *
@@ -286,6 +290,9 @@ class PTimerList : PInternalTimerList // Want this to be private
 
     PTimeInterval lastSample;
     // The last system timer tick value that was used to process timers.
+
+    PTimer * currentTimer;
+    // The timer which is currently being handled
 
   friend class PTimer;
 };
