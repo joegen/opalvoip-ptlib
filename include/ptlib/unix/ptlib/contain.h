@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.21  2004/04/09 11:54:47  csoutheren
+ * Added configure.in check for STL streams, and tested with gcc 2.95.3,
+ * gcc 3.3.1, and gcc 3.3.3
+ *
  * Revision 1.20  2004/04/09 00:42:59  csoutheren
  * Changed Unix build to use slightly different method for
  * keep class names, as GCC does not use actual class names for typeinfo
@@ -133,8 +137,8 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 //
 // needed for STL
 //
-#if (__GNUC__ >= 3)
-#define	__USE_STL__
+#if P_HAS_STL_STREAMS
+#define	__USE_STL__	1
 #endif
 
 #define	P_HAS_TYPEINFO	1
