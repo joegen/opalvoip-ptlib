@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.23  2004/11/07 20:01:32  dsandras
+ * Make sure lastWriteCount is updated.
+ *
  * Revision 1.22  2004/11/06 16:31:12  dsandras
  * Removed dictionnary copy.
  *
@@ -448,7 +451,8 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
   long r = 0;
   char *buf2 = (char *) buf;
   int pos = 0, max_try = 0;
-
+ 
+  lastWriteCount = 0;
   PWaitAndSignal m(device_mutex);
 
   if (!isInitialised && !Setup() || !len || !os_handle)
@@ -465,6 +469,7 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
 
       pos += r * frame_bytes;
       len -= r * frame_bytes;
+      lastWriteCount += r * frame_bytes;
     }
     else {
 
@@ -501,9 +506,9 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
 
   char *buf2 = (char *) buf;
   int pos = 0, max_try = 0;
+  int to_read = len;
 
   lastReadCount = 0;
-
   PWaitAndSignal m(device_mutex);
 
   if (!isInitialised && !Setup() || !len || !os_handle)
@@ -551,6 +556,9 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
 
     PTRACE (1, "ALSA\tRead Error, filling with zeros");
   }
+  
+  
+  lastReadCount = len;
 
   return TRUE;
 }
