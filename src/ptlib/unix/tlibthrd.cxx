@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.11  1999/01/11 12:05:56  robertj
+ * Fixed some more race conditions in threads.
+ *
  * Revision 1.10  1999/01/11 03:42:26  robertj
  * Fixed problem with destroying thread automatically.
  *
@@ -187,7 +190,7 @@ void PThread::InitialiseProcessThread()
   PX_threadId         = pthread_self();
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(PX_GetThreadId(), this);
+  ((PProcess *)this)->activeThreads.SetAt(PX_threadId, this);
 }
 
 
@@ -232,8 +235,10 @@ void PThread::PX_NewThread(BOOL startSuspended)
 
 void * PThread::PX_ThreadStart(void * arg)
 { 
+  pthread_t threadId = pthread_self();
+
   // self-detach
-  pthread_detach(pthread_self());
+  pthread_detach(threadId);
 
   PThread * thread = (PThread *)arg;
 
@@ -251,7 +256,7 @@ void * PThread::PX_ThreadStart(void * arg)
 
   // add thread to thread list
   process.threadMutex.Wait();
-  process.activeThreads.SetAt(thread->PX_GetThreadId(), thread);
+  process.activeThreads.SetAt(threadId, thread);
   process.threadMutex.Signal();
 
   // make sure the cleanup routine is called when the thread exits
@@ -307,6 +312,7 @@ void PThread::PX_ThreadEnd(void * arg)
 
   // delete the thread if required
   if (thread->PX_autoDelete) {
+    thread->PX_threadId = 0;  // Prevent terminating terminated thread
     delete thread;
 //    printf("auto deleted thread object\n");
   }
@@ -332,8 +338,7 @@ void PThread::Terminate()
     return;
 
   PAssert(!IsTerminated(), "Cannot terminate a thread which is already terminated");
-  PThread * current = Current();
-  if (current == NULL || current == this)
+  if (Current() == this)
     pthread_exit(NULL);
   else {
     PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
@@ -360,7 +365,7 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 BOOL PThread::IsTerminated() const
 {
-  return Current() == NULL || pthread_kill(PX_threadId, 0) != 0;
+  return PX_threadId == 0 || pthread_kill(PX_threadId, 0) != 0;
 }
 
 
@@ -441,7 +446,7 @@ PThread * PThread::Current()
   process.threadMutex.Wait();
   PThread * thread = process.activeThreads.GetAt((unsigned)pthread_self());
   process.threadMutex.Signal();
-  return thread;
+  return PAssertNULL(thread);
 }
 
 
