@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.14  2000/05/05 10:08:29  robertj
+ * Fixed some GNU compiler warnings
+ *
  * Revision 1.13  1999/05/01 11:29:20  robertj
  * Alpha linux port changes.
  *
@@ -875,10 +878,13 @@ PString PASNObjectID::GetTypeAsString() const
 
 PString PASNObjectID::GetString() const
 {
-  PString str;
+  PStringStream str;
 
-  for (PINDEX i = 0; i < value.GetSize(); i++) 
-    str.sprintf("%lu%s", value[i], (i == value.GetSize()-1) ? "" : ".");
+  for (PINDEX i = 0; i < value.GetSize(); i++) {
+    if (i > 0)
+      str << '.';
+    str << value[i];
+  }
 
   return str;
 }

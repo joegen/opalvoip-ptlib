@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.137  2000/05/05 10:08:29  robertj
+ * Fixed some GNU compiler warnings
+ *
  * Revision 1.136  2000/04/28 06:58:50  robertj
  * Fixed bug introduced when added Ashley Untts fix, forgot to take out old code!
  *
@@ -1319,7 +1322,7 @@ void PThread::PrintOn(ostream & strm) const
 {
   PString name = GetThreadName();
   if (name.IsEmpty())
-    name.sprintf("%s<%08x>", GetClass(), (INT)this);
+    name.sprintf("%s<%08x>", GetClass(), (int)this);
   strm << name;
 }
 
