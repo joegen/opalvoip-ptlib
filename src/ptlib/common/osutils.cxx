@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.166  2001/05/29 02:50:56  robertj
+ * Fixed GNU compatibility
+ *
  * Revision 1.165  2001/05/29 00:49:18  robertj
  * Added ability to put in a printf %x in thread name to get thread object
  *   address into user settable thread name.
@@ -1643,9 +1646,9 @@ PString PThread::GetThreadName() const
 void PThread::SetThreadName(const PString & name)
 {
   if (name.IsEmpty())
-    threadName = psprintf("%s:%08x", GetClass(), (PINT)this);
+    threadName = psprintf("%s:%08x", GetClass(), (INT)this);
   else
-    threadName = psprintf(name, (PINT)this);
+    threadName = psprintf(name, (INT)this);
 }
 
 
