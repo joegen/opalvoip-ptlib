@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.43  1999/05/04 15:26:01  robertj
+ * Improved HTTP/1.1 compatibility (pass through user commands).
+ * Fixed problems with quicktime installer.
+ *
  * Revision 1.42  1998/12/04 10:08:01  robertj
  * Fixed bug in PMIMInfo read functions, should clear entries before loading.
  *
@@ -644,17 +648,29 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
+  BOOL output_cr = strm.fill() == '\r';
+  strm.fill(' ');
   for (PINDEX i = 0; i < GetSize(); i++) {
     PString name = GetKeyAt(i) + ": ";
     PString value = GetDataAt(i);
     if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
       PStringArray vals = value.Lines();
-      for (PINDEX j = 0; j < vals.GetSize(); j++)
-        strm << name << vals[j] << '\n';
+      for (PINDEX j = 0; j < vals.GetSize(); j++) {
+        strm << name << vals[j];
+        if (output_cr)
+          strm << '\r';
+        strm << '\n';
+      }
     }
-    else
-      strm << name << value << '\n';
+    else {
+      strm << name << value;
+      if (output_cr)
+        strm << '\r';
+      strm << '\n';
+    }
   }
+  if (output_cr)
+    strm << '\r';
   strm << endl;
 }
 
