@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.185  2002/04/24 01:19:07  robertj
+ * Added milliseconds to PTRACE output timestamp
+ *
  * Revision 1.184  2002/04/24 01:10:28  robertj
  * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
  *
@@ -789,7 +792,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   else {
     if ((PTraceOptions&DateAndTime) != 0) {
       PTime now;
-      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
     }
 
     if ((PTraceOptions&Timestamp) != 0)
