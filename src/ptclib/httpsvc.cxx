@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.78  2002/07/17 08:03:45  robertj
+ * Allowed for adjustable copyright holder.
+ * Allowed for not having gif file for product name in default header.
+ *
  * Revision 1.77  2001/10/10 08:06:49  robertj
  * Fixed problem with not shutting down threads when closing listener.
  *
@@ -314,21 +318,23 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     compilationDate(inf.compilationDate),
     manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE),
     manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
-    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName)
+    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
+    gifHTML(inf.gifHTML),
+    copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : EQUIVALENCE),
+    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : HOME_PAGE),
+    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : EMAIL)
 {
   ignoreSignatures = FALSE;
 
-  if (inf.gifHTML != NULL)
-    gifHTML = inf.gifHTML;
-  else {
-    gifHTML = psprintf("<img src=\"/%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
-    if (inf.gifWidth != 0 && inf.gifHeight != 0)
-      gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
-    gifHTML += " align=absmiddle>";
-  }
-
-  if (inf.gifFilename != NULL)
+  if (inf.gifFilename != NULL) {
     httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, GetFile().GetDirectory()+inf.gifFilename));
+    if (gifHTML.IsEmpty()) {
+      gifHTML = psprintf("<img src=\"/%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+      if (inf.gifWidth != 0 && inf.gifHeight != 0)
+        gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
+      gifHTML += " align=absmiddle>";
+    }
+  }
 
   restartThread = NULL;
   httpListeningSocket = NULL;
@@ -462,12 +468,12 @@ PString PHTTPServiceProcess::GetCopyrightText()
   PHTML html(PHTML::InBody);
   html << "Copyright &copy;"
        << compilationDate.AsString("yyyy") << " by "
-       << PHTML::HotLink(HOME_PAGE)
-       << EQUIVALENCE
+       << PHTML::HotLink(copyrightHomePage)
+       << copyrightHolder
        << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink("mailto:" EMAIL)
-       << EMAIL
+       << PHTML::HotLink("mailto:" + copyrightEmail)
+       << copyrightEmail
        << PHTML::HotLink();
   return html;
 }
@@ -482,17 +488,24 @@ PString PHTTPServiceProcess::GetPageGraphic()
   PHTML html(PHTML::InBody);
   html << PHTML::TableStart()
        << PHTML::TableRow()
-       << PHTML::TableData()
-       << gifHTML
-       << PHTML::TableData()
+       << PHTML::TableData();
+
+  if (gifHTML.IsEmpty())
+    html << PHTML::Heading(1) << productNameHTML << "&nbsp;" << PHTML::Heading(1);
+  else
+    html << gifHTML;
+
+  html << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
-       << " Version " << GetVersion(TRUE)
+       << " Version " << GetVersion(TRUE) << PHTML::BreakLine()
+       << ' ' << GetCompilationDate().AsString("d MMMM yyyy")
        << PHTML::BreakLine()
        << "By "
        << PHTML::HotLink(manufacturersHomePage) << GetManufacturer() << PHTML::HotLink()
        << ", "
        << PHTML::HotLink("mailto:" + manufacturersEmail) << manufacturersEmail << PHTML::HotLink()
-       << PHTML::TableEnd();
+       << PHTML::TableEnd()
+       << PHTML::HRule();
 
   return html;
 }
