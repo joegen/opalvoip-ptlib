@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.19  2003/11/06 09:13:20  rjongbloed
+ * Improved the Windows configure system to allow multiple defines based on file existence. Needed for SDL support of two different distros.
+ *
  * Revision 1.18  2003/10/30 11:23:53  rjongbloed
  * Added direcetory name for Speech API under Windows.
  * Added automatic inclusion of Winsock2 library.
@@ -104,9 +107,12 @@
 #endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && P_HAS_IPV6
+
 #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
 #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
+
 #define P_WINSOCK2_LIBRARY "ws2_32.lib"
+
 #endif
 
 
@@ -121,8 +127,11 @@
 #endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && P_HAS_QOS
+
 #pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
+
 #define P_WINSOCK2_LIBRARY "ws2_32.lib"
+
 #endif
 
 
@@ -134,6 +143,7 @@
 #undef P_SSL 
 
 #if defined(_MSC_VER) && P_SSL
+
 #pragma include_alias(<openssl/ssl.h>,        <@SSL_DIR@/inc32/openssl/ssl.h>)
 #pragma include_alias(<openssl/safestack.h>,  <@SSL_DIR@/inc32/openssl/safestack.h>)
 #pragma include_alias(<openssl/stack.h>,      <@SSL_DIR@/inc32/openssl/stack.h>)
@@ -185,16 +195,14 @@
 #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
 
-#define P_SSL_DIR         "@SSL_DIR@/"
-
 #ifdef _DEBUG
-#define P_SSL_LIBDIR P_SSL_DIR "out32.dbg"
+#define P_SSL_LIBDIR "out32.dbg"
 #else
-#define P_SSL_LIBDIR P_SSL_DIR "out32"
+#define P_SSL_LIBDIR "out32"
 #endif
 
-#define P_SSL_LIB1 P_SSL_LIBDIR "/ssleay32.lib"
-#define P_SSL_LIB2 P_SSL_LIBDIR "/libeay32.lib"
+#define P_SSL_LIB1 "@SSL_DIR@/" P_SSL_LIBDIR "/ssleay32.lib"
+#define P_SSL_LIB2 "@SSL_DIR@/" P_SSL_LIBDIR "/libeay32.lib"
 
 #endif
 
@@ -207,17 +215,16 @@
 #undef P_EXPAT 
 
 #if defined(_MSC_VER) && P_EXPAT
+
 #pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
 
-#define P_EXPAT_DIR     "@EXPAT_DIR@/"
-
 #ifdef _DEBUG
-#define P_EXPAT_LIBDIR P_EXPAT_DIR "Debug"
+#define P_EXPAT_LIBDIR "Debug"
 #else
-#define P_EXPAT_LIBDIR P_EXPAT_DIR "Release"
+#define P_EXPAT_LIBDIR "Release"
 #endif
 
-#define P_EXPAT_LIBRARY P_EXPAT_LIBDIR "/expat.lib"
+#define P_EXPAT_LIBRARY "@EXPAT_DIR@/" P_EXPAT_LIBDIR "/expat.lib"
 
 #endif
 
@@ -237,12 +244,10 @@
 #pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
 #pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
 
-#define P_LDAP_DIR "@LDAP_DIR@/"
-
 #ifdef _DEBUG
-#define P_LDAP_LIBRARY P_LDAP_DIR "DLLDebug/openldapd.lib"
+#define P_LDAP_LIBRARY "@LDAP_DIR@/DLLDebug/openldapd.lib"
 #else
-#define P_LDAP_LIBRARY P_LDAP_DIR "DLLRelease/openldap.lib"
+#define P_LDAP_LIBRARY "@LDAP_DIR@/DLLRelease/openldap.lib"
 #endif
 
 #endif
@@ -256,8 +261,11 @@
 #undef P_DNS 
 
 #if defined(_MSC_VER) && P_DNS
+
 #pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
+
 #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
+
 #endif
 
 
@@ -270,6 +278,7 @@
 #undef P_SAPI 
 
 #if defined(_MSC_VER) && P_SAPI
+
 #pragma include_alias(<sphelper.h>, <@SAPI_DIR@/include/sphelper.h>)
 #pragma include_alias(<sapi.h>, <@SAPI_DIR@/include/sapi.h>)
 #pragma include_alias(<sapiddk.h>, <@SAPI_DIR@/include/sapiddk.h>)
@@ -277,6 +286,7 @@
 #pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
 
 #define P_SAPI_LIBRARY "@SAPI_DIR@/Lib/i386/sapi.lib"
+
 #endif
 
 
@@ -291,11 +301,17 @@
 #if defined(_MSC_VER) && P_SDL
 #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
 
-#ifdef _DEBUG
-#define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Debug/SDL.lib"
-#else
-#define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Release/SDL.lib"
+#undef P_SDL_LIBDIR
+
+#ifndef P_SDL_LIBDIR
+ #ifdef _DEBUG
+  #define P_SDL_LIBDIR "VisualC/SDL/Debug"
+ #else
+  #define P_SDL_LIBDIR "VisualC/SDL/Release"
+ #endif
 #endif
+
+#define P_SDL_LIBRARY "@SDL_DIR@/" P_SDL_LIBDIR "/SDL.lib"
 
 #endif
 
