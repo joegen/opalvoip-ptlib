@@ -256,8 +256,7 @@ Threads & Processes
 
 These classes support lightweight threading and functionality to do with the
 process as a whole (for example argument parsing). The threading will be
-pre-emptive on platforms that support it (Win32, pthreads) and cooperative on
-those that don't (eg Linux at the time of writing).
+pre-emptive on platforms that support it (Win32, platforms with pthreads eg Linux and FreeBSD) and cooperative on those that don't.
 
 GUI
 
