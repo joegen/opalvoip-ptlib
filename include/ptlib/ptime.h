@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.4 1993/12/31 06:45:38 robertj Exp $
+ * $Id: ptime.h,v 1.5 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.4  1993/12/31 06:45:38  robertj
+ * Revision 1.5  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.4  1993/12/31  06:45:38  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.3  1993/08/27  18:17:47  robertj
@@ -31,7 +34,7 @@
 class PTimeInterval;
 
 
-DECLARE_CLASS(PTime,PObject)
+PDECLARE_CLASS(PTime,PObject)
 
   public:
     PINLINE PTime(time_t t = time(NULL));

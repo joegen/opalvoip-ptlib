@@ -49,7 +49,9 @@ typedef int PDIMENSION;
 
 #ifdef WIN32
 
+#ifdef _MSC_VER
 #pragma warning(disable:4705)
+#endif
 
 typedef UINT PRESOURCE_ID;
 
@@ -69,6 +71,10 @@ typedef short PRESOURCE_ID;
 
 #define EXPORTED FAR PASCAL _export
 
+#endif
+
+#ifdef _MSC_VER // default copy ctor/assignment op not generatoed warning
+#pragma warning(disable:4511; disable:4512)
 #endif
 
 
@@ -663,7 +669,6 @@ PARRAY(PPointArray, PPoint);
 // PPrintCanvas
 
 #include "../../common/pcanvas.h"
-  protected:
 };
 
 
@@ -1204,9 +1209,6 @@ class PResourceData;
 
 
   protected:
-    // Overrides from class PContainer
-    virtual void DestroyContents();
-
     // Overrides from class PInteractor
     virtual const char * GetWinClsName() const;
       // Return the MS-Windows class name used in CreateWindow().
@@ -1260,10 +1262,6 @@ class PResourceData;
 
 #include "../../common/filedlg.h"
   protected:
-    // Overrides from class PContainer
-    virtual void DestroyContents();
-
-
     // Overrides from class PInteractor
     virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
       // Event handler for this interactor. Translates MS-Windows messages into
@@ -1373,11 +1371,6 @@ class PResourceData;
 
 #include "../../common/toplwnd.h"
   protected:
-    // Overrides from class PContainer
-    void DestroyContents();
-      // Destroy the top level window and menu.
-
-
     // Overrides from class PInteractor
     void SetPosition(PORDINATE x, PORDINATE y,
                      PositionOrigin xOrigin = TopLeftScreen,
@@ -1467,11 +1460,6 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
       // the object given the menu ID as used in the resource template.
 
 
-    // Overrides from class PContainer
-    virtual void DestroyContents();
-      // Destroy the window.
-
-
     // New functions for class
     void LoadSubMenu(const PMenuBindings * funcs);
       // Function for recursively creating menu items and sub-menus from the
@@ -1488,10 +1476,6 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
 // PRootMenu
 
 #include "../../common/rootmenu.h"
-  protected:
-    // Overrides from class PContainer
-    virtual void DestroyContents();
-      // Destroy the window.
 };
 
 
@@ -1547,7 +1531,7 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
     HINSTANCE hInstance;
       // The MS-Windows instance handle for the running image.
 
-    DECLARE_CLASS(HWNDKey, PObject)
+    PDECLARE_CLASS(HWNDKey, PObject)
       // This class is used in the hash table lookup for getting a PInteractor
       // pointer given a MS-Windows window handle.
       public:
@@ -1627,7 +1611,7 @@ extern "C" char **__argv;
 #endif
 
 
-#define DECLARE_MAIN(cls) \
+#define PDECLARE_MAIN(cls) \
   static PApplication * PApplicationInstance = NULL; \
   LRESULT EXPORTED WndProc(HWND hW, UINT msg, WPARAM wP, LPARAM lP) \
     { return PApplicationInstance->WndProc(hW, msg, wP, lP); } \
