@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.7  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.6  1998/09/23 06:19:21  robertj
  * Added open source copyright license.
  *
@@ -59,12 +62,14 @@ class PPER_Stream;
 
 /////////////////////////////////////////////////////////////////////////////
 
+/** Base class for ASN encoding/decoding.
+*/
 class PASN_Object : public PObject
 {
-    PCLASSINFO(PASN_Object, PObject)
+    PCLASSINFO(PASN_Object, PObject);
   public:
+    /** Return a string giving the type of the object */
     virtual PString GetTypeAsString() const = 0;
-    /* Return a string giving the type of the object */
 
     PINDEX GetObjectLength() const;
     virtual PINDEX GetDataLength() const = 0;
@@ -136,15 +141,20 @@ class PASN_Object : public PObject
   protected:
     PASN_Object(unsigned tag, TagClass tagClass, BOOL extend = FALSE);
 
-    BOOL extendable;   // PER extension capability
-    TagClass tagClass; // BER tag class
-    unsigned tag;      // ASN object tag
+    /// PER extension capability
+    BOOL extendable;
+    /// BER tag class
+    TagClass tagClass;
+    /// ASN object tag
+    unsigned tag;
 };
 
 
+/** Base class for constrained ASN encoding/decoding.
+*/
 class PASN_ConstrainedObject : public PASN_Object
 {
-    PCLASSINFO(PASN_ConstrainedObject, PASN_Object)
+    PCLASSINFO(PASN_ConstrainedObject, PASN_Object);
   public:
     virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     BOOL IsConstrained() const { return constraint != Unconstrained; }
@@ -165,9 +175,11 @@ class PASN_ConstrainedObject : public PASN_Object
 };
 
 
+/** Class for ASN Null type.
+*/
 class PASN_Null : public PASN_Object
 {
-    PCLASSINFO(PASN_Null, PASN_Object)
+    PCLASSINFO(PASN_Null, PASN_Object);
   public:
     PASN_Null(unsigned tag = UniversalNull,
               TagClass tagClass = UniversalTagClass);
@@ -181,9 +193,11 @@ class PASN_Null : public PASN_Object
 };
 
 
+/** Class for ASN Boolean type.
+*/
 class PASN_Boolean : public PASN_Object
 {
-    PCLASSINFO(PASN_Boolean, PASN_Object)
+    PCLASSINFO(PASN_Boolean, PASN_Object);
   public:
     PASN_Boolean(BOOL val = FALSE,
                  unsigned tag = UniversalBoolean,
@@ -206,9 +220,11 @@ class PASN_Boolean : public PASN_Object
 };
 
 
+/** Class for ASN Integer type.
+*/
 class PASN_Integer : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_Integer, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_Integer, PASN_ConstrainedObject);
   public:
     PASN_Integer(unsigned tag = UniversalInteger,
                  TagClass tagClass = UniversalTagClass,
@@ -234,9 +250,11 @@ class PASN_Integer : public PASN_ConstrainedObject
 };
 
 
+/** Class for ASN Enumerated type.
+*/
 class PASN_Enumeration : public PASN_Object
 {
-    PCLASSINFO(PASN_Enumeration, PASN_Object)
+    PCLASSINFO(PASN_Enumeration, PASN_Object);
   public:
     PASN_Enumeration(unsigned tag = UniversalEnumeration,
                      TagClass tagClass = UniversalTagClass,
@@ -274,9 +292,11 @@ class PASN_Enumeration : public PASN_Object
 };
 
 
+/** Class for ASN floating point type.
+*/
 class PASN_Real : public PASN_Object
 {
-    PCLASSINFO(PASN_Real, PASN_Object)
+    PCLASSINFO(PASN_Real, PASN_Object);
   public:
     PASN_Real(unsigned tag = UniversalEnumeration,
               TagClass tagClass = UniversalTagClass,
@@ -299,9 +319,11 @@ class PASN_Real : public PASN_Object
 };
 
 
+/** Class for ASN Object Identifier type.
+*/
 class PASN_ObjectId : public PASN_Object
 {
-    PCLASSINFO(PASN_ObjectId, PASN_Object)
+    PCLASSINFO(PASN_ObjectId, PASN_Object);
   public:
     PASN_ObjectId(unsigned tag = UniversalObjectId,
                   TagClass tagClass = UniversalTagClass);
@@ -336,9 +358,11 @@ class PASN_ObjectId : public PASN_Object
 };
 
 
+/** Class for ASN Bit String type.
+*/
 class PASN_BitString : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_BitString, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_BitString, PASN_ConstrainedObject);
   public:
     PASN_BitString(unsigned tag = UniversalBitString,
                    TagClass tagClass = UniversalTagClass,
@@ -378,9 +402,11 @@ class PASN_BitString : public PASN_ConstrainedObject
 };
 
 
+/** Class for ASN Octet String type.
+*/
 class PASN_OctetString : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_OctetString, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_OctetString, PASN_ConstrainedObject);
   public:
     PASN_OctetString(unsigned tag = UniversalOctetString,
                      TagClass tagClass = UniversalTagClass);
@@ -422,9 +448,11 @@ class PASN_OctetString : public PASN_ConstrainedObject
 };
 
 
+/** Base class for ASN String types.
+*/
 class PASN_ConstrainedString : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_ConstrainedString, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_ConstrainedString, PASN_ConstrainedObject);
   public:
     PASN_ConstrainedString & operator=(const char * str);
     PASN_ConstrainedString & operator=(const PString & str) { return operator=((const char *)str); }
@@ -461,7 +489,8 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
 
 
 #define DECLARE_STRING_CLASS(name) \
-  PDECLARE_CLASS(PASN_##name##String, PASN_ConstrainedString) \
+  class PASN_##name##String : public PASN_ConstrainedString { \
+    PCLASSINFO(PASN_##name##String, PASN_ConstrainedString); \
     public: \
       PASN_##name##String(unsigned tag = UniversalNumericString, \
                           TagClass tagClass = UniversalTagClass); \
@@ -478,9 +507,11 @@ DECLARE_STRING_CLASS(IA5);
 DECLARE_STRING_CLASS(General);
 
 
+/** Class for ASN BMP (16 bit) String type.
+*/
 class PASN_BMPString : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_BMPString, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_BMPString, PASN_ConstrainedObject);
   public:
     PASN_BMPString(unsigned tag = UniversalBMPString,
                    TagClass tagClass = UniversalTagClass);
@@ -524,9 +555,11 @@ class PASN_BMPString : public PASN_ConstrainedObject
 
 class PASN_Sequence;
 
+/** Class for ASN Choice type.
+*/
 class PASN_Choice : public PASN_Object
 {
-    PCLASSINFO(PASN_Choice, PASN_Object)
+    PCLASSINFO(PASN_Choice, PASN_Object);
   public:
     ~PASN_Choice();
 
@@ -580,9 +613,11 @@ class PASN_Choice : public PASN_Object
 PARRAY(PASN_ObjectArray, PASN_Object);
 
 
+/** Class for ASN Sequence type.
+*/
 class PASN_Sequence : public PASN_Object
 {
-    PCLASSINFO(PASN_Sequence, PASN_Object)
+    PCLASSINFO(PASN_Sequence, PASN_Object);
   public:
     PASN_Sequence(unsigned tag = UniversalSequence,
                   TagClass tagClass = UniversalTagClass,
@@ -640,9 +675,11 @@ class PASN_Sequence : public PASN_Object
 };
 
 
+/** Class for ASN Set type.
+*/
 class PASN_Set : public PASN_Sequence
 {
-    PCLASSINFO(PASN_Set, PASN_Sequence)
+    PCLASSINFO(PASN_Set, PASN_Sequence);
   public:
     PASN_Set(unsigned tag = UniversalSet,
              TagClass tagClass = UniversalTagClass,
@@ -653,9 +690,11 @@ class PASN_Set : public PASN_Sequence
 };
 
 
+/** Class for ASN Array type.
+*/
 class PASN_Array : public PASN_ConstrainedObject
 {
-    PCLASSINFO(PASN_Array, PASN_ConstrainedObject)
+    PCLASSINFO(PASN_Array, PASN_ConstrainedObject);
   public:
     PINDEX GetSize() const { return array.GetSize(); }
     void SetSize(PINDEX newSize);
@@ -685,9 +724,11 @@ class PASN_Array : public PASN_ConstrainedObject
 
 /////////////////////////////////////////////////////////////////////////////
 
+/** Base class for ASN decoder/encoder stream.
+*/
 class PASN_Stream : public PBYTEArray
 {
-    PCLASSINFO(PASN_Stream, PBYTEArray)
+    PCLASSINFO(PASN_Stream, PBYTEArray);
   public:
     PASN_Stream();
     PASN_Stream(const PBYTEArray & bytes);
@@ -753,9 +794,11 @@ class PASN_Stream : public PBYTEArray
 };
 
 
+/** Class for ASN basic Encoding Rules stream.
+*/
 class PBER_Stream : public PASN_Stream
 {
-    PCLASSINFO(PBER_Stream, PASN_Stream)
+    PCLASSINFO(PBER_Stream, PASN_Stream);
   public:
     PBER_Stream();
     PBER_Stream(const PBYTEArray & bytes);
@@ -810,9 +853,11 @@ class PBER_Stream : public PASN_Stream
 };
 
 
+/** Class for ASN Packed Encoding Rules stream.
+*/
 class PPER_Stream : public PASN_Stream
 {
-    PCLASSINFO(PPER_Stream, PASN_Stream)
+    PCLASSINFO(PPER_Stream, PASN_Stream);
   public:
     PPER_Stream(BOOL aligned = TRUE);
     PPER_Stream(const PBYTEArray & bytes, BOOL aligned = TRUE);

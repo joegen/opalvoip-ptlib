@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.12  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.11  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -75,12 +78,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PHTTPField
 
+/** This class is the abstract base class for fields in a #PHTTPForm#
+   resource type.
+ */
 class PHTTPField : public PObject
 {
   PCLASSINFO(PHTTPField, PObject)
-/* This class is the abstract base class for fields in a <A>PHTTPForm</A>
-   resource type.
- */
   public:
     PHTTPField(
       const char * bname,  // base name (identifier) for the field.
@@ -89,57 +92,57 @@ class PHTTPField : public PObject
     );
     // Create a new field in a HTTP form.
 
+    /** Compare the fields using the field names.
+
+       @return
+       Comparison of the name fields of the two fields.
+     */
     virtual Comparison Compare(
       const PObject & obj
     ) const;
-    /* Compare the fields using the field names.
 
-       <H2>Returns:</H2>
-       Comparison of the name fields of the two fields.
+    /** Get the identifier name of the field.
+
+       @return
+       String for field name.
      */
-
     const PCaselessString & GetName() const { return fullName; }
-    /* Get the identifier name of the field.
 
-       <H2>Returns:</H2>
+    /** Get the identifier name of the field.
+
+       @return
        String for field name.
      */
-
     const PCaselessString & GetBaseName() const { return baseName; }
-    /* Get the identifier name of the field.
 
-       <H2>Returns:</H2>
-       String for field name.
+    /** Set the name for the field.
      */
-
     virtual void SetName(
       const PString & newName   // New name for field
     );
-    /* Set the name for the field.
-     */
 
+    /** Locate the field naem, recusing down for composite fields.
+
+       @return
+       Pointer to located field, or NULL if not found.
+     */
     virtual const PHTTPField * LocateName(
       const PString & name    // Full field name to locate
     ) const;
-    /* Locate the field naem, recusing down for composite fields.
 
-       <H2>Returns:</H2>
-       Pointer to located field, or NULL if not found.
+    /** Get the title of the field.
+
+       @return
+       String for title placed next to the field.
      */
-
     const PString & GetTitle() const { return title; }
-    /* Get the title of the field.
 
-       <H2>Returns:</H2>
+    /** Get the title of the field.
+
+       @return
        String for title placed next to the field.
      */
-
     const PString & GetHelp() const { return help; }
-    /* Get the title of the field.
-
-       <H2>Returns:</H2>
-       String for title placed next to the field.
-     */
 
     void SetHelp(
       const PString & text        // Help text.
@@ -155,100 +158,100 @@ class PHTTPField : public PObject
     );
     // Set the help text for the field.
 
-    virtual PHTTPField * NewField() const = 0;
-    /* Create a new field of the same class as the current field.
+    /** Create a new field of the same class as the current field.
 
-       <H2>Returns:</H2>
+       @return
        New field object instance.
      */
+    virtual PHTTPField * NewField() const = 0;
 
     virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const;
     // Splice expanded macro substitutions into text string
 
+    /** Convert the field to HTML form tag for inclusion into the HTTP page.
+     */
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the fields HTML tag.
     ) const = 0;
-    /* Convert the field to HTML form tag for inclusion into the HTTP page.
-     */
 
+    /** Convert the field input to HTML for inclusion into the HTTP page.
+     */
     virtual PString GetHTMLInput(
       const PString & input // Source HTML text for input tag.
     ) const;
-    /* Convert the field input to HTML for inclusion into the HTTP page.
-     */
 
+    /** Convert the field input to HTML for inclusion into the HTTP page.
+     */
     virtual PString GetHTMLSelect(
       const PString & selection // Source HTML text for input tag.
     ) const;
-    /* Convert the field input to HTML for inclusion into the HTTP page.
-     */
 
+    /** Convert the field to HTML for inclusion into the HTTP page.
+     */
     virtual void GetHTMLHeading(
       PHTML & html    // HTML to receive the field info.
     ) const;
-    /* Convert the field to HTML for inclusion into the HTTP page.
-     */
 
-    virtual PString GetValue(BOOL dflt = FALSE) const = 0;
-    /* Get the string value of the field.
+    /** Get the string value of the field.
 
-       <H2>Returns:</H2>
+       @return
        String for field value.
      */
+    virtual PString GetValue(BOOL dflt = FALSE) const = 0;
 
+    /** Set the value of the field.
+     */
     virtual void SetValue(
       const PString & newValue   // New value for the field.
     ) = 0;
-    /* Set the value of the field.
-     */
 
+    /** Get the value of the PConfig to the sub-field. If the field is not
+       composite then it always sets the value as for the non-indexed version.
+     */
     virtual void LoadFromConfig(
       PConfig & cfg   // Configuration for value transfer.
     );
-    /* Get the value of the PConfig to the sub-field. If the field is not
+
+    /** Set the value of the sub-field into the PConfig. If the field is not
        composite then it always sets the value as for the non-indexed version.
      */
-
     virtual void SaveToConfig(
       PConfig & cfg   // Configuration for value transfer.
     ) const;
-    /* Set the value of the sub-field into the PConfig. If the field is not
-       composite then it always sets the value as for the non-indexed version.
-     */
 
+    /** Validate the new field value before #SetValue()# is called.
+
+       @return
+       BOOL if the new field value is OK.
+     */
     virtual BOOL Validated(
       const PString & newVal, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
-    /* Validate the new field value before <A>SetValue()</A> is called.
-
-       <H2>Returns:</H2>
-       BOOL if the new field value is OK.
-     */
 
 
-    virtual PStringList GetAllNames() const;
-    /* Retrieve all the names in the field and subfields.
+    /** Retrieve all the names in the field and subfields.
 
-       <H2>Returns:</H2>
+       @return
        List of strings for each subfield.
      */
+    virtual PStringList GetAllNames() const;
 
+    /** Set the value of the field in a list of fields.
+     */
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
-    /* Set the value of the field in a list of fields.
-     */
 
+    /** Validate the new field value in a list before #SetValue()# is called.
+
+       @return
+       BOOL if the all the new field values are OK.
+     */
     virtual BOOL ValidateAll(
       const PStringToString & data, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
-    /* Validate the new field value in a list before <A>SetValue()</A> is called.
-
-       <H2>Returns:</H2>
-       BOOL if the all the new field values are OK.
-     */
 
 
     BOOL NotYetInHTML() const { return notInHTML; }
@@ -323,14 +326,14 @@ class PHTTPCompositeField : public PHTTPField
     ) const;
 
 
-    virtual PINDEX GetSize() const;
-    /* Get the number of sub-fields in the composite field. Note that this is
+    /** Get the number of sub-fields in the composite field. Note that this is
        the total including any composite sub-fields, ie, it is the size of the
        whole tree of primitive fields.
 
-       <H2>Returns:</H2>
+       @return
        Returns field count.
      */
+    virtual PINDEX GetSize() const;
 
     void Append(PHTTPField * fld);
     PHTTPField & operator[](PINDEX idx) const { return fields[idx]; }
@@ -829,39 +832,39 @@ class PHTTPConfig : public PHTTPForm
     );
 
 
-    void LoadFromConfig();
-    /* Load all of the values for the resource from the configuration.
+    /** Load all of the values for the resource from the configuration.
      */
+    void LoadFromConfig();
 
-    const PString & GetConfigSection() const { return section; }
-    /* Get the configuration file section that the page will alter.
+    /** Get the configuration file section that the page will alter.
 
-       <H2>Returns:</H2>
+       @return
        String for config file section.
      */
+    const PString & GetConfigSection() const { return section; }
 
     void SetConfigSection(
       const PString & sect   // New section for the config page.
     ) { section = sect; }
     // Set the configuration file section.
 
+    /** Add a field that will determine the name opf the secontion into which
+       the other fields are to be added as keys. The section is not created and
+       and error generated if the section already exists.
+     */
     PHTTPField * AddSectionField(
       PHTTPField * sectionFld,     // Field to set as the section name
       const char * prefix = NULL,  // String to attach before the field value
       const char * suffix = NULL   // String to attach after the field value
     );
-    /* Add a field that will determine the name opf the secontion into which
-       the other fields are to be added as keys. The section is not created and
-       and error generated if the section already exists.
-     */
 
+    /** Add fields to the HTTP form for adding a new key to the config file
+       section.
+     */
     void AddNewKeyFields(
       PHTTPField * keyFld,  // Field for the key to be added.
       PHTTPField * valFld   // Field for the value of the key yto be added.
     );
-    /* Add fields to the HTTP form for adding a new key to the config file
-       section.
-     */
 
 
   protected:

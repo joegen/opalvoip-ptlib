@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.14  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.13  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -85,10 +88,7 @@ class PSocket;
 class PIPSocket;
 
 
-class PInternetProtocol : public PIndirectChannel
-{
-  PCLASSINFO(PInternetProtocol, PIndirectChannel)
-/* A TCP/IP socket for process/application layer high level protocols. All of
+/** A TCP/IP socket for process/application layer high level protocols. All of
    these protocols execute commands and responses in a standard manner.
 
    A command consists of a line starting with a short, case insensitive command
@@ -107,6 +107,9 @@ class PInternetProtocol : public PIndirectChannel
 
    The default read timeout is to 10 minutes by the constructor.
  */
+class PInternetProtocol : public PIndirectChannel
+{
+  PCLASSINFO(PInternetProtocol, PIndirectChannel)
 
   protected:
     PInternetProtocol(
@@ -119,11 +122,7 @@ class PInternetProtocol : public PIndirectChannel
 
   public:
   // Overrides from class PChannel.
-    virtual BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Low level read from the channel.
+    /** Low level read from the channel.
 
        This override also supports the mechanism in the <A>UnRead()</A>
        function allowing characters to be be "put back" into the data stream.
@@ -131,15 +130,15 @@ class PInternetProtocol : public PIndirectChannel
        is completely independent of the standard iostream mechanisms which do
        not support the level of timeout control required by the protocols.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if at least len bytes were written to the channel.
      */
-
-    virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+    virtual BOOL Read(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
     );
-    /* Low level write to the channel.
+
+    /** Low level write to the channel.
 
        This override assures that the sequence CR/LF/./CR/LF does not occur by
        byte stuffing an extra '.' character into the data stream, whenever a
@@ -151,18 +150,27 @@ class PInternetProtocol : public PIndirectChannel
        <CODE>newLineToCRLF</CODE> member variable is TRUE then all occurrences
        of a '\n' character will be translated to a CR/LF pair.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if at least len bytes were written to the channel.
      */
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
 
+     /** Set the maximum timeout between characters within a line. Default
+        value is 10 seconds.
+      */
      void SetReadLineTimeout(
        const PTimeInterval & t
      );
-     /* Set the maximum timeout between characters within a line. Default
-        value is 10 seconds.
-      */
 
   // New functions for class.
+    /** Connect a socket to a remote host for the internet protocol.
+
+       @return
+       TRUE if the channel was successfully connected to the remote host.
+     */
     BOOL Connect(
       const PString & address,    // Address of remote machine to connect to.
       WORD port = 0               // Port number to use for the connection.
@@ -171,55 +179,46 @@ class PInternetProtocol : public PIndirectChannel
       const PString & address,    // Address of remote machine to connect to.
       const PString & service     // Service name to use for the connection.
     );
-    /* Connect a socket to a remote host for the internet protocol.
 
-       <H2>Returns:</H2>
+    /** Accept a server socket to a remote host for the internet protocol.
+
+       @return
        TRUE if the channel was successfully connected to the remote host.
      */
-
     BOOL Accept(
       PSocket & listener    // Address of remote machine to connect to.
     );
-    /* Accept a server socket to a remote host for the internet protocol.
 
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully connected to the remote host.
-     */
-
-    const PString & GetDefaultService() const;
-    /* Get the default service name or port number to use in socket
+    /** Get the default service name or port number to use in socket
        connections.
 
-       <H2>Returns:</H2>
+       @return
        string for the default service name.
      */
+    const PString & GetDefaultService() const;
 
-    PIPSocket * GetSocket() const;
-    /* Get the eventual socket for the series of indirect channels that may
+    /** Get the eventual socket for the series of indirect channels that may
        be between the current protocol and the actual I/O channel.
 
        This will assert if the I/O channel is not an IP socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the string and CR/LF were completely written.
      */
+    PIPSocket * GetSocket() const;
 
-    BOOL WriteLine(
-      const PString & line // String to write as a command line.
-    );
-    /* Write a string to the socket channel followed by a CR/LF pair. If there
+    /** Write a string to the socket channel followed by a CR/LF pair. If there
        are any lone CR or LF characters in the <CODE>line</CODE> parameter
        string, then these are translated into CR/LF pairs.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the string and CR/LF were completely written.
      */
-
-    BOOL ReadLine(
-      PString & line,             // String to receive a CR/LF terminated line.
-      BOOL allowContinuation = FALSE  // Flag to handle continued lines.
+    BOOL WriteLine(
+      const PString & line // String to write as a command line.
     );
-    /* Read a string from the socket channel up to a CR/LF pair.
+
+    /** Read a string from the socket channel up to a CR/LF pair.
     
        If the <CODE>unstuffLine</CODE> parameter is set then the function will
        remove the '.' character from the start of any line that begins with
@@ -232,10 +231,17 @@ class PInternetProtocol : public PIndirectChannel
        set by the <CODE>readLineTimeout</CODE> member variable. The timeout is
        set back to the original setting when the function returns.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if a CR/LF pair was received, FALSE if a timeout or error occurred.
      */
+    BOOL ReadLine(
+      PString & line,             // String to receive a CR/LF terminated line.
+      BOOL allowContinuation = FALSE  // Flag to handle continued lines.
+    );
 
+    /** Put back the characters into the data stream so that the next
+       <A>Read()</A> function call will return them first.
+     */
     void UnRead(
       int ch                // Individual character to be returned.
     );
@@ -246,18 +252,8 @@ class PInternetProtocol : public PIndirectChannel
       const void * buffer,  // Characters to be put back into data stream.
       PINDEX len            // Number of characters to be returned.
     );
-    /* Put back the characters into the data stream so that the next
-       <A>Read()</A> function call will return them first.
-     */
 
-    BOOL WriteCommand(
-      PINDEX cmdNumber       // Number of command to write.
-    );
-    BOOL WriteCommand(
-      PINDEX cmdNumber,      // Number of command to write.
-      const PString & param  // Extra parameters required by the command.
-    );
-    /* Write a single line for a command. The command name for the command
+    /** Write a single line for a command. The command name for the command
        number is output, then a space, the the <CODE>param</CODE> string
        followed at the end with a CR/LF pair.
 
@@ -267,17 +263,18 @@ class PInternetProtocol : public PIndirectChannel
 
        This function is typically used by client forms of the socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the command was completely written.
      */
-
-    BOOL ReadCommand(
-      PINDEX & num,
-       // Number of the command parsed from the command line, or P_MAX_INDEX
-       // if no match.
-      PString & args  // String to receive the arguments to the command.
+    BOOL WriteCommand(
+      PINDEX cmdNumber       // Number of command to write.
     );
-    /* Read a single line of a command which ends with a CR/LF pair. The
+    BOOL WriteCommand(
+      PINDEX cmdNumber,      // Number of command to write.
+      const PString & param  // Extra parameters required by the command.
+    );
+
+    /** Read a single line of a command which ends with a CR/LF pair. The
        command number for the command name is parsed from the input, then the
        remaining text on the line is returned in the <CODE>args</CODE>
        parameter.
@@ -291,19 +288,17 @@ class PInternetProtocol : public PIndirectChannel
 
        This function is typically used by server forms of the socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if something was read, otherwise an I/O error occurred.
      */
+    BOOL ReadCommand(
+      PINDEX & num,
+       // Number of the command parsed from the command line, or P_MAX_INDEX
+       // if no match.
+      PString & args  // String to receive the arguments to the command.
+    );
 
-    BOOL WriteResponse(
-      unsigned numericCode, // Response code for command response.
-      const PString & info  // Extra information available after response code.
-    );
-    BOOL WriteResponse(
-      const PString & code, // Response code for command response.
-      const PString & info  // Extra information available after response code.
-    );
-    /* Write a response code followed by a text string describing the response
+    /** Write a response code followed by a text string describing the response
        to a command. The form of the response is to place the code string,
        then the info string.
        
@@ -316,16 +311,19 @@ class PInternetProtocol : public PIndirectChannel
 
        This function is typically used by server forms of the socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the response was completely written.
      */
-
-    BOOL ReadResponse();
-    BOOL ReadResponse(
-      int & code,      // Response code for command response.
-      PString & info   // Extra information available after response code.
+    BOOL WriteResponse(
+      unsigned numericCode, // Response code for command response.
+      const PString & info  // Extra information available after response code.
     );
-    /* Read a response code followed by a text string describing the response
+    BOOL WriteResponse(
+      const PString & code, // Response code for command response.
+      const PString & info  // Extra information available after response code.
+    );
+
+    /** Read a response code followed by a text string describing the response
        to a command. The form of the response is to have the code string,
        then the info string.
        
@@ -340,18 +338,16 @@ class PInternetProtocol : public PIndirectChannel
 
        This function is typically used by client forms of the socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the response was completely read without a socket error.
      */
+    BOOL ReadResponse();
+    BOOL ReadResponse(
+      int & code,      // Response code for command response.
+      PString & info   // Extra information available after response code.
+    );
 
-    int ExecuteCommand(
-      PINDEX cmdNumber       // Number of command to write.
-    );
-    int ExecuteCommand(
-      PINDEX cmdNumber,      // Number of command to write.
-      const PString & param  // Extra parameters required by the command.
-    );
-    /* Write a command to the socket, using <CODE>WriteCommand()</CODE> and
+    /** Write a command to the socket, using <CODE>WriteCommand()</CODE> and
        await a response using <CODE>ReadResponse()</CODE>. The first character
        of the response is returned, as well as the entire response being saved
        into the protected member variables <CODE>lastResponseCode</CODE> and
@@ -359,41 +355,48 @@ class PInternetProtocol : public PIndirectChannel
 
        This function is typically used by client forms of the socket.
 
-       <H2>Returns:</H2>
+       @return
        First character of response string or '\0' if a socket error occurred.
      */
+    int ExecuteCommand(
+      PINDEX cmdNumber       // Number of command to write.
+    );
+    int ExecuteCommand(
+      PINDEX cmdNumber,      // Number of command to write.
+      const PString & param  // Extra parameters required by the command.
+    );
 
-    int GetLastResponseCode() const;
-    /* Return the code associated with the last response received by the
+    /** Return the code associated with the last response received by the
        socket.
 
-       <H2>Returns:</H2>
+       @return
        Response code
     */
+    int GetLastResponseCode() const;
 
-    PString GetLastResponseInfo() const;
-    /* Return the last response received by the socket.
+    /** Return the last response received by the socket.
 
-       <H2>Returns:</H2>
+       @return
        Response as a string
     */
+    PString GetLastResponseInfo() const;
 
 
   protected:
-    virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
-    );
-    /* Parse a response line string into a response code and any extra info
+    /** Parse a response line string into a response code and any extra info
        on the line. Results are placed into the member variables
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
        and info either side of that character, then returns FALSE.
 
-       <H2>Returns:</H2>
+       @return
        Position of continuation character in response, 0 if no continuation
        lines are possible.
      */
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
 
 
     PString defaultServiceName;
