@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.32  2003/04/08 05:09:14  craigs
+ * Added ability to use commands as an audio source
+ *
  * Revision 1.31  2003/03/17 08:03:07  robertj
  * Combined to the separate incoming and outgoing substream classes into
  *   a single class to make it easier to produce codec aware descendents.
@@ -894,13 +897,22 @@ BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOO
   return TRUE;
 }
 
+BOOL PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
+{
+  if (outgoingChannel != NULL) {
+    outgoingChannel->QueueCommand(cmd, repeat, delay);
+    AllowClearCall();
+  }
+
+  return TRUE;
+}
+
 BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
   if (outgoingChannel != NULL) {
     outgoingChannel->QueueData(data, repeat, delay);
     AllowClearCall();
   }
-
 
   return TRUE;
 }
@@ -1065,43 +1077,51 @@ BOOL PVXMLSession::TraverseAudio()
 
       if (element->HasAttribute("src")) {
 
-        PFilePath fn; 
-        BOOL haveFn = FALSE;
+        PString str = element->GetAttribute("src").Trim();
+        if (!str.IsEmpty() && (str[0] == '|')) {
+          loaded = TRUE;
+          PlayCommand(str.Mid(1));
+        } 
+        
+        else {
+          PFilePath fn; 
+          BOOL haveFn = FALSE;
 
-        // get a normalised name for the resource
-        PURL url = NormaliseResourceName(element->GetAttribute("src"));
+          // get a normalised name for the resource
+          PURL url = NormaliseResourceName(str);
 
-        if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
+          if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
 
-          PString contentType;
-          PBYTEArray data;
-          if (RetrieveResource(url, data, contentType, fn))
+            PString contentType;
+            PBYTEArray data;
+            if (RetrieveResource(url, data, contentType, fn))
+              haveFn = TRUE;
+          }
+
+          // attempt to load the resource if a file
+          else if (url.GetScheme() *= "file") {
+            fn = url.AsFilePath();
             haveFn = TRUE;
-        }
+          }
 
-        // attempt to load the resource if a file
-        else if (url.GetScheme() *= "file") {
-          fn = url.AsFilePath();
-          haveFn = TRUE;
-        }
-
-        // check the file type
-        if (haveFn) {
-          PWAVFile * wavFile = outgoingChannel->CreateWAVFile(fn);
-          if (wavFile == NULL)
-            PTRACE(3, "PVXML\tCannot create audio file " + fn);
-          else {
-            if (wavFile->IsOpen())
+          // check the file type
+          if (haveFn) {
+            PWAVFile * wavFile = outgoingChannel->CreateWAVFile(fn);
+            if (wavFile == NULL)
+              PTRACE(3, "PVXML\tCannot create audio file " + fn);
+            else if (!wavFile->IsOpen())
+              delete wavFile;
+            else {
               loaded = TRUE;
-            delete wavFile;
-            if (loaded) {
               PlayFile(fn);
-
-              // skip to the next node
-              if (element->HasSubObjects())
-					      currentNode = element->GetElement(element->GetSize() - 1);
             }
           }
+        }
+
+        if (loaded) {
+          // skip to the next node
+          if (element->HasSubObjects())
+					  currentNode = element->GetElement(element->GetSize() - 1);
         }
       }
     }
@@ -1297,12 +1317,19 @@ PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
                            const PString & prefix)
   : vxml(_vxml),
     isIncoming(incoming),
-    formatName(fmtName),
     frameBytes(frBytes),
     frameTime(frTime),
     wavFileType(wavType),
     wavFilePrefix(prefix)
 {
+  PINDEX pos = fmtName.Find('/');
+  if (pos == P_MAX_INDEX) {
+    formatName = fmtName;
+    sampleFrequency = 8000;
+  } else {
+    formatName = fmtName.Left(pos);
+    sampleFrequency = fmtName.Mid(pos+1).AsUnsigned();
+  }
   closed = FALSE;
   wavFile = NULL;
   playing = FALSE;
@@ -1601,6 +1628,12 @@ void PVXMLChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BO
   QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay, autoDelete));
 }
 
+void PVXMLChannel::QueueCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
+{
+  PTRACE(3, "PVXML\tEnqueueing command " << cmd << " for playing");
+  QueueItem(new PVXMLQueueCommandItem(cmd, formatName, sampleFrequency, repeat, delay));
+}
+
 void PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
@@ -1723,29 +1756,62 @@ void PVXMLChannelG729::CreateSilenceFrame(PINDEX /*amount*/)
 
 void PVXMLQueueFilenameItem::Play(PVXMLChannel & outgoingChannel)
 {
+  PChannel * chan = NULL;
+
   // check the file extension and open a .wav or a raw (.sw or .g723) file
-  if ((fn.Right(4)).ToLower() == ".wav") {
-    PWAVFile * chan = outgoingChannel.CreateWAVFile(fn);
-    if (chan == NULL) {
-      PTRACE(3, "PVXML\tCannot open outgoing WAV file");
-    }
-    else if (!chan->IsOpen()) {
-      PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << '"');
-      delete chan;
-    } else {
-      PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
-      outgoingChannel.SetReadChannel(chan, TRUE);
-    }
-  } else { // raw file (eg .sw)
-    PFile *chan;
-    chan = new PFile(fn);
-    if (!chan->Open(PFile::ReadOnly)) {
-      PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << "\"");
-      delete chan;
-    } else {
-      PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
-      outgoingChannel.SetReadChannel(chan, TRUE);
-    }
+  if ((fn.Right(4)).ToLower() == ".wav")
+    chan = outgoingChannel.CreateWAVFile(fn);
+  else {
+    PFile * fileChan = new PFile(fn);
+    if (fileChan->Open(PFile::ReadOnly))
+      chan = fileChan;
+    else
+      delete fileChan;
+  }
+
+  if (chan == NULL)
+    PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << "\"");
+  else {
+    PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
+    outgoingChannel.SetReadChannel(chan, TRUE);
+  }
+}
+
+void PVXMLQueueFilenameItem::OnStop() 
+{
+  if (autoDelete) 
+    PFile::Remove(fn); 
+}
+
+///////////////////////////////////////////////////////////////
+
+void PVXMLQueueCommandItem::Play(PVXMLChannel & outgoingChannel)
+{
+  cmd.Replace("%s", PString(PString::Unsigned, sampleFrequency));
+  cmd.Replace("%f", format);
+
+  // execute a command and send the output through the stream
+  pipeCmd = new PPipeChannel;
+  if (!pipeCmd->Open(cmd, PPipeChannel::ReadOnly)) {
+    PTRACE(3, "PVXML\tCannot open command " << cmd);
+    delete pipeCmd;
+    return;
+  }
+
+  if (pipeCmd == NULL)
+    PTRACE(3, "PVXML\tCannot open command \"" << cmd << "\"");
+  else {
+    pipeCmd->Execute();
+    PTRACE(3, "PVXML\tPlaying command \"" << cmd << "\"");
+    outgoingChannel.SetReadChannel(pipeCmd, TRUE);
+  }
+}
+
+void PVXMLQueueCommandItem::OnStop() 
+{
+  if (pipeCmd != NULL) {
+    pipeCmd->WaitForTermination();
+    delete pipeCmd;
   }
 }
 
