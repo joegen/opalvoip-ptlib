@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.17 1995/01/06 10:42:25 robertj Exp $
+ * $Id: pdirect.h,v 1.18 1995/02/22 10:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.17  1995/01/06 10:42:25  robertj
+ * Revision 1.18  1995/02/22 10:50:33  robertj
+ * Changes required for compiling release (optimised) version.
+ *
+ * Revision 1.17  1995/01/06  10:42:25  robertj
  * Moved identifiers into different scope.
  * Changed file size to 64 bit integer.
  * Documentation
@@ -231,10 +234,13 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        Returns: TRUE if current working directory was changed.
      */
       
-    BOOL Create(int perm = PFileInfo::DefaultPerms) const;
+    BOOL Create(
+      int perm = PFileInfo::DefaultPerms    // Permission on new directory.
+    ) const;
     PINLINE static BOOL Create(
       const PString & p,   // Directory file path.
-    int perm = PFileInfo::DefaultPerms);
+      int perm = PFileInfo::DefaultPerms    // Permission on new directory.
+    );
     /* Create a new directory with the specified permissions. The parameterless
        version changes to the name contained in the object instance. The static
        version may be simply passed a path name.
