@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.28  1998/10/13 14:06:26  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.27  1998/09/23 06:22:22  robertj
  * Added open source copyright license.
  *
@@ -152,21 +155,25 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 }
 
 
-#ifdef PMEMORY_CHECK
+
+#ifdef _DEBUG
+
+#undef malloc
+#undef realloc
+#undef free
 
 #if defined(_WIN32)
-class PMemChkOutClass : public ostream {
+class PDebugStream : public ostream {
   public:
-    PMemChkOutClass()
-      { init(new Buffer()); }
-    ~PMemChkOutClass()
-      { flush(); delete rdbuf(); }
+    PDebugStream()  { init(&buffer); }
+    ~PDebugStream() { flush(); }
 
   private:
     class Buffer : public strstreambuf {
       public:
         Buffer() : strstreambuf(buffer, sizeof(buffer)-1, buffer) { }
-        virtual int sync() {
+        virtual int sync()
+        {
           *pptr() = '\0';
           setp(buffer, &buffer[sizeof(buffer) - 1]);
           OutputDebugString(buffer);
@@ -174,281 +181,358 @@ class PMemChkOutClass : public ostream {
         }
         char buffer[250];
     } buffer;
-} PMemChkOut;
-#else
-#define PMemChkOut cerr
-#endif
-
-const size_t PointerTableSize = 12345;
-
-class PMemoryCheck {
-  public:
-    PMemoryCheck();
-    ~PMemoryCheck();
-
-    void ** FindPointerInHashTable(void * object, void * search);
-
-    void ** pointerHashTable;
-    long currentMemory;
-    long peakMemory;
-    long currentObjects;
-    long peakObjects;
-    long totalObjects;
 };
-
-static PMemoryCheck Memory;
-
-
-PMemoryCheck::PMemoryCheck()
-{
-  pointerHashTable = (void **)calloc(PointerTableSize, sizeof(void *));
-}
-
-
-void PObject::MemoryCheckStatistics(long * currentMemory, long * peakMemory,
-                long * currentObjects, long * peakObjects, long * totalObjects)
-{
-  if (currentMemory != NULL)
-    *currentMemory = Memory.currentMemory;
-  if (peakMemory != NULL)
-    *peakMemory = Memory.peakMemory;
-  if (currentObjects != NULL)
-    *currentObjects = Memory.currentObjects;
-  if (peakObjects != NULL)
-    *peakObjects = Memory.peakObjects;
-  if (totalObjects != NULL)
-    *totalObjects = Memory.totalObjects;
-}
-
-
-static const char GuardBytes[] = { '\x55', '\xaa', '\xff', '\xaa', '\x55' };
-
-struct PointerArenaStruct {
-  size_t       size;
-  const char * fileName;
-  int          line;
-  const char * className;
-  BYTE         afterMain;
-  char         guard[sizeof(GuardBytes)];
-};
-
-BOOL PMainExecuted;
-
-
-#ifndef __BORLANDC__
-static ostream & operator<<(ostream & out, void * ptr)
-{
-  return out << resetiosflags(ios::basefield) << setiosflags(ios::hex)
-             << setw(8) << setfill('0') << (long)ptr
-             << resetiosflags(ios::basefield) << setiosflags(ios::dec);
-}
 #endif
 
 
-PMemoryCheck::~PMemoryCheck()
+const char PMemoryHeap::Header::GuardBytes[] =
+  { '\x11', '\x55', '\xaa', '\xee', '\xaa', '\x55', '\x11' };
+
+
+PMemoryHeap::Wrapper::Wrapper()
 {
-#if !defined(_WIN32)
-  BOOL firstLeak = TRUE;
-#endif
-  PMemChkOut.setf(ios::uppercase);
-  void ** entry = pointerHashTable;
-  for (size_t i = 0; i < PointerTableSize; i++, entry++) {
-    if (*entry != NULL ) {
-      PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
-      if (!arena->afterMain) {
-#if !defined(_WIN32)
-        if (firstLeak) {
-          firstLeak = FALSE;
-          PMemChkOut << "\nMemory leaks detected, press Enter to display . . .";
-          PMemChkOut.flush();
-          cin.get();
-        }
-#endif
-        PMemChkOut << "Pointer @" << (void *)(*entry) << " [" << arena->size << ']';
-        if (arena->className != NULL)
-          PMemChkOut << " \"" << arena->className << '"';
-        PMemChkOut << " not deallocated.";
-        if (arena->fileName != NULL)
-          PMemChkOut << " PNEW: " << arena->fileName << '(' << arena->line << ')';
-        PMemChkOut << endl;
-      }
-    }
-  }
+  // The following is done like this to get over brain dead compilers that cannot
+  // guarentee that a static global is contructed before it is used.
+  static PMemoryHeap real_instance;
+  instance = &real_instance;
+  EnterCriticalSection(&instance->mutex);
+}
 
-  PMemChkOut << "\nPeak memory usage: " << Memory.peakMemory << " bytes";
-  if (Memory.peakMemory > 2048)
-    PMemChkOut << ", " << (Memory.peakMemory+1023)/1024 << "kb";
-  if (Memory.peakMemory > 2097152)
-    PMemChkOut << ", " << (Memory.peakMemory+1048575)/1048576 << "Mb";
-  PMemChkOut << ".\nPeak objects created: " << Memory.peakObjects
-             << "\nTotal objects created: " << Memory.totalObjects
-             << '\n' << endl;
 
-  free(pointerHashTable);
+PMemoryHeap::Wrapper::~Wrapper()
+{
+  LeaveCriticalSection(&instance->mutex);
+}
+
+
+PMemoryHeap::PMemoryHeap()
+{
+  listHead = NULL;
+  listTail = NULL;
+
+  allocationRequest = 1;
+  flags = 0;
+
+  allocFillChar = '\x5A';
+  freeFillChar = '\xA5';
+
+  currentMemoryUsage = 0;
+  peakMemoryUsage = 0;
+  currentObjects = 0;
+  peakObjects = 0;
+  totalObjects = 0;
 
 #if defined(_WIN32)
+  InitializeCriticalSection(&mutex);
+  static PDebugStream debug;
+  leakDumpStream = &debug;
+#else
+  leakDumpStream = &cerr;
+#endif
+}
+
+
+PMemoryHeap::~PMemoryHeap()
+{
+  if (leakDumpStream != NULL) {
+    DumpStatistics(*leakDumpStream);
+#if !defined(_WIN32)
+    if (listHead != NULL) {
+      *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
+      cin.get();
+    }
+#endif
+    DumpObjectsSince(0, *leakDumpStream);
+  }
+
+#if defined(_WIN32)
+  DeleteCriticalSection(&mutex);
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
 #endif
 }
 
 
-void ** PMemoryCheck::FindPointerInHashTable(void * object, void * search)
+void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
 {
-  int hash = (int)(((((long)object)&0x7fffffff)>>3)%PointerTableSize);
-  void ** forward = &pointerHashTable[hash];
-  void ** backward = forward;
-  static void ** endHashTable = &pointerHashTable[PointerTableSize-1];
-
-  do {
-    if (*forward == search)
-      return forward;
-
-    if (forward == endHashTable)
-      forward = pointerHashTable;
-    else
-      forward++;
-
-    if (*backward == search)
-      return backward;
-
-    if (backward == pointerHashTable)
-      backward = endHashTable;
-    else
-      backward--;
-  } while (forward != backward);
-
-  return NULL;
+  Wrapper mem;
+  return mem->InternalAllocate(nSize, file, line, className);
 }
 
 
-void * PObject::MemoryCheckAllocate(size_t nSize,
-                           const char * file, int line, const char * className)
+void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int line)
 {
-  PointerArenaStruct * arena = (PointerArenaStruct *)malloc(
-                      sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes));
-  if (arena == NULL) {
+  Wrapper mem;
+
+  char oldFill = mem->allocFillChar;
+  mem->allocFillChar = '\0';
+
+  void * data = mem->InternalAllocate(count*size, file, line, NULL);
+
+  mem->allocFillChar = oldFill;
+
+  return data;
+}
+
+
+void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className)
+{
+  Header * obj = (Header *)malloc(sizeof(Header) + nSize + sizeof(Header::GuardBytes));
+  if (obj == NULL) {
     PAssertAlways(POutOfMemory);
     return NULL;
   }
 
-  Memory.totalObjects++;
-  if (++Memory.currentObjects > Memory.peakObjects)
-    Memory.peakObjects = Memory.currentObjects;
+  currentMemoryUsage += nSize;
+  if (currentMemoryUsage > peakMemoryUsage)
+    peakMemoryUsage = currentMemoryUsage;
 
-  char * data = (char *)&arena[1];
+  currentObjects++;
+  if (currentObjects > peakObjects)
+    peakObjects = currentObjects;
+  totalObjects++;
 
-  arena->size      = nSize;
-  arena->fileName  = file;
-  arena->line      = line;
-  arena->className = className;
-  arena->afterMain = PMainExecuted;
-  memcpy(arena->guard, GuardBytes, sizeof(GuardBytes));
-  memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
+  char * data = (char *)&obj[1];
 
-  if (Memory.pointerHashTable != NULL) {
-    void ** entry = Memory.FindPointerInHashTable(data, NULL);
-    if (entry == NULL)
-      PMemChkOut << "Pointer @" << (void *)data
-                 << " not added to hash table." << endl;
-    else {
-      *entry = data;
-      Memory.currentMemory += sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes);
-      if (Memory.currentMemory > Memory.peakMemory)
-        Memory.peakMemory = Memory.currentMemory;
-    }
-  }
+  obj->prev      = listTail;
+  obj->next      = NULL;
+  obj->size      = nSize;
+  obj->fileName  = file;
+  obj->line      = line;
+  obj->className = className;
+  obj->request   = allocationRequest++;
+  obj->flags     = flags;
+  memcpy(obj->guard, obj->GuardBytes, sizeof(obj->guard));
+  memset(data, allocFillChar, nSize);
+  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
+
+  if (listTail != NULL)
+    listTail->next = obj;
+
+  listTail = obj;
+
+  if (listHead == NULL)
+    listHead = obj;
 
   return data;
 }
 
 
-void * PObject::MemoryCheckAllocate(size_t count,
-                                      size_t size, const char * file, int line)
+void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
 {
-  size_t total = count*size;
-  void * data = MemoryCheckAllocate(total, file, line, NULL);
-  if (data != NULL)
-    memset(data, 0, total);
-  return data;
-}
+  if (ptr == NULL)
+    return Allocate(nSize, file, line, NULL);
 
-
-void * PObject::MemoryCheckReallocate(void * ptr,
-                                     size_t nSize, const char * file, int line)
-{
-  if (Memory.pointerHashTable == NULL)
-    return realloc(ptr, nSize);
-
-  void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
-  if (entry == NULL) {
-    PMemChkOut << "Pointer @" << ptr << " invalid for reallocate." << endl;
-    return realloc(ptr, nSize);
+  if (nSize == 0) {
+    Deallocate(ptr, NULL);
+    return NULL;
   }
 
-  PointerArenaStruct * arena =
-            (PointerArenaStruct *)realloc(((PointerArenaStruct *)ptr)-1,
-                      sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes));
-  if (arena == NULL) {
+  Wrapper mem;
+
+  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) == Trashed)
+    return NULL;
+
+  Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
+  if (obj == NULL) {
     PAssertAlways(POutOfMemory);
     return NULL;
   }
 
-  Memory.currentMemory -= arena->size;
-  Memory.currentMemory += nSize;
-  if (Memory.currentMemory > Memory.peakMemory)
-    Memory.peakMemory = Memory.currentMemory;
+  mem->currentMemoryUsage -= obj->size;
+  mem->currentMemoryUsage += nSize;
+  if (mem->currentMemoryUsage > mem->peakMemoryUsage)
+    mem->peakMemoryUsage = mem->currentMemoryUsage;
 
-  char * data = (char *)&arena[1];
-  memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
+  char * data = (char *)&obj[1];
+  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
 
-  arena->size      = nSize;
-  arena->fileName  = file;
-  arena->line      = line;
-
-  *entry = data;
+  obj->size      = nSize;
+  obj->fileName  = file;
+  obj->line      = line;
+  obj->request   = mem->allocationRequest++;
+  if (obj->prev != NULL)
+    obj->prev->next = obj;
+  else
+    mem->listHead = obj;
+  if (obj->next != NULL)
+    obj->next->prev = obj;
+  else
+    mem->listTail = obj;
 
   return data;
 }
 
 
-void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
+void PMemoryHeap::Deallocate(void * ptr, const char * className)
 {
-  if (Memory.pointerHashTable == NULL) {
-    free(ptr);
-    return;
-  }
-
   if (ptr == NULL)
     return;
 
-  Memory.currentObjects--;
+  Wrapper mem;
 
-  void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
-  if (entry == NULL) {
-    PMemChkOut << "Pointer @" << ptr << " invalid for deallocation." << endl;
+  if (mem->InternalValidate(ptr, className, mem->leakDumpStream) == Trashed) {
     free(ptr);
     return;
   }
 
-  *entry = NULL;
+  Header * obj = ((Header *)ptr)-1;
+  if (obj->prev != NULL)
+    obj->prev->next = obj->next;
+  else
+    mem->listHead = obj->next;
+  if (obj->next != NULL)
+    obj->next->prev = obj->prev;
+  else
+    mem->listTail = obj->prev;
 
-  PointerArenaStruct * arena = ((PointerArenaStruct *)ptr)-1;
+  mem->currentMemoryUsage -= obj->size;
+  mem->currentObjects--;
 
-  Memory.currentMemory -= sizeof(PointerArenaStruct) + arena->size + sizeof(GuardBytes);
+  memset(ptr, mem->freeFillChar, obj->size);  // Make use of freed data noticable
+  free(obj);
+}
 
-  if (arena->className != NULL && strcmp(arena->className, className) != 0)
-    PMemChkOut << "Pointer @" << ptr << " allocated as '" << arena->className
-               << "' and deallocated as '" << className << "'." << endl;
 
-  if (memcmp(arena->guard, GuardBytes, sizeof(GuardBytes)) != 0)
-    PMemChkOut << "Pointer @" << ptr << " underrun." << endl;
+PMemoryHeap::Validation PMemoryHeap::Validate(void * ptr,
+                                              const char * className,
+                                              ostream * error)
+{
+  Wrapper mem;
+  return mem->InternalValidate(ptr, className, error);
+}
 
-  if (memcmp((char *)ptr+arena->size, GuardBytes, sizeof(GuardBytes)) != 0)
-    PMemChkOut << "Pointer @" << ptr << " overrun." << endl;
 
-  memset(ptr, 0x55, arena->size);  // Make use of freed data noticable
-  free(arena);
+PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
+                                                      const char * className,
+                                                      ostream * error)
+{
+  if (ptr == NULL)
+    return Trashed;
+
+  Header * obj = ((Header *)ptr)-1;
+  Header * forward = obj;
+  Header * backward = obj;
+  while (forward->next != NULL && backward->prev != NULL) {
+    forward = forward->next;
+    backward = backward->prev;
+  }
+
+  if (forward != listTail && backward != listHead) {
+    if (error != NULL)
+      *error << "Block " << ptr << '[' << obj->size << "] #" << obj->request
+             << " not in heap!" << endl;
+    return Trashed;
+  }
+
+  if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+    if (error != NULL)
+      *error << "Underrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
+    return Bad;
+  }
+  
+  if (memcmp((char *)ptr+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+    if (error != NULL)
+      *error << "Overrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
+    return Bad;
+  }
+  
+  if (obj->className != NULL && strcmp(obj->className, className) != 0) {
+    if (error != NULL)
+      *error << "PObject " << ptr << '[' << obj->size << "] #" << obj->request
+             << " allocated as \"" << obj->className
+             << "\" and should be \"" << className << "\"." << endl;
+    return Bad;
+  }
+
+  return Ok;
+}
+
+
+void PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+{
+  Wrapper mem;
+
+  if (ignore)
+    mem->flags |= NoLeakPrint;
+  else
+    mem->flags &= ~NoLeakPrint;
+}
+
+
+void PMemoryHeap::DumpStatistics()
+{
+  Wrapper mem;
+  if (mem->leakDumpStream != NULL)
+    mem->InternalDumpStatistics(*mem->leakDumpStream);
+}
+
+
+void PMemoryHeap::DumpStatistics(ostream & strm)
+{
+  Wrapper mem;
+  mem->InternalDumpStatistics(strm);
+}
+
+
+void PMemoryHeap::InternalDumpStatistics(ostream & strm)
+{
+  strm << "\nCurrent memory usage: " << currentMemoryUsage << " bytes";
+  if (currentMemoryUsage > 2048)
+    strm << ", " << (currentMemoryUsage+1023)/1024 << "kb";
+  if (currentMemoryUsage > 2097152)
+    strm << ", " << (currentMemoryUsage+1048575)/1048576 << "Mb";
+
+  strm << ".\nCurrent objects count: " << currentObjects
+       << "\nPeak memory usage: " << peakMemoryUsage << " bytes";
+  if (peakMemoryUsage > 2048)
+    strm << ", " << (peakMemoryUsage+1023)/1024 << "kb";
+  if (peakMemoryUsage > 2097152)
+    strm << ", " << (peakMemoryUsage+1048575)/1048576 << "Mb";
+
+  strm << ".\nPeak objects created: " << peakObjects
+       << "\nTotal objects created: " << totalObjects
+       << '\n' << endl;
+}
+
+
+DWORD PMemoryHeap::GetAllocationRequest()
+{
+  Wrapper mem;
+  return mem->allocationRequest;
+}
+
+
+void PMemoryHeap::DumpObjectsSince(DWORD objectNumber)
+{
+  Wrapper mem;
+  if (mem->leakDumpStream != NULL)
+    mem->InternalDumpObjectsSince(objectNumber, *mem->leakDumpStream);
+}
+
+
+void PMemoryHeap::DumpObjectsSince(DWORD objectNumber, ostream & strm)
+{
+  Wrapper mem;
+  mem->InternalDumpObjectsSince(objectNumber, strm);
+}
+
+
+void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
+{
+  strm << "Object dump:\n";
+  for (Header * obj = listHead; obj != NULL; obj = obj->next) {
+    if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
+      continue;
+
+    void * data = (char *)&obj[1];
+    if (obj->fileName != NULL)
+      strm << obj->fileName << '(' << obj->line << ") : ";
+    strm << '#' << obj->request << ' ' << data << " [" << obj->size << ']';
+    if (obj->className != NULL)
+      strm << " \"" << obj->className << '"';
+    strm << endl;
+  }
 }
 
 
