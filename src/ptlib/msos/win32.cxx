@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.50 1997/08/04 10:38:43 robertj Exp $
+ * $Id: win32.cxx,v 1.51 1997/08/07 11:57:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.51  1997/08/07 11:57:42  robertj
+ * Added ability to get registry data from other applications and anywhere in system registry.
+ *
  * Revision 1.50  1997/08/04 10:38:43  robertj
  * Fixed infamous error 87 assert failure in housekeeping thread.
  *
@@ -1373,36 +1376,52 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
 }
 
 
-RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
+RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 {
   PProcess & proc = PProcess::Current();
   DWORD access = mode == ReadOnly ? KEY_READ : KEY_ALL_ACCESS;
   DWORD error;
 
-  if (!proc.GetVersion(FALSE).IsEmpty()) {
-    PString keyname = subkey;
-    keyname.Replace("CurrentVersion", proc.GetVersion(FALSE));
+  PString subkey;
+  HKEY basekey;
+  if (subkeyname.Find("HKEY_LOCAL_MACHINE\\") == 0) {
+    subkey = subkeyname.Mid(19);
+    basekey = HKEY_LOCAL_MACHINE;
+  }
+  else if (subkeyname.Find("HKEY_CURRENT_USER\\") == 0) {
+    subkey = subkeyname.Mid(18);
+    basekey = HKEY_CURRENT_USER;
+  }
+  else {
+    subkey = subkeyname;
+    basekey = NULL;
 
-    error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
-    if (error == ERROR_SUCCESS)
-      return;
+    if (!proc.GetVersion(FALSE).IsEmpty()) {
+      PString keyname = subkey;
+      keyname.Replace("CurrentVersion", proc.GetVersion(FALSE));
 
-    PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+      error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
+      if (error == ERROR_SUCCESS)
+        return;
 
-    error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key);
+      PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+
+      error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key);
+      if (error == ERROR_SUCCESS)
+        return;
+
+      PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+    }
+
+    error = RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key);
     if (error == ERROR_SUCCESS)
       return;
 
     PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
   }
 
-  error = RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key);
-  if (error == ERROR_SUCCESS)
-    return;
-
-  PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
-
-  error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, access, &key);
+  error = RegOpenKeyEx(basekey != NULL ? basekey : HKEY_LOCAL_MACHINE,
+                       subkey, 0, access, &key);
   if (error == ERROR_SUCCESS)
     return;
 
@@ -1412,14 +1431,17 @@ RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
   if (mode != Create)
     return;
 
-  HKEY rootKey = HKEY_CURRENT_USER;
-  if (PProcess::Current().IsDescendant(PServiceProcess::Class()))
-    rootKey = HKEY_LOCAL_MACHINE;
+  if (basekey == NULL) {
+    if (PProcess::Current().IsDescendant(PServiceProcess::Class()))
+      basekey = HKEY_LOCAL_MACHINE;
+    else
+      basekey = HKEY_CURRENT_USER;
+  }
 
-  error = SecureCreateKey(rootKey, subkey, key);
+  error = SecureCreateKey(basekey, subkey, key);
   if (error != ERROR_SUCCESS) {
     DWORD disposition;
-    error = RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+    error = RegCreateKeyEx(basekey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
     if (error != ERROR_SUCCESS)
       key = NULL;
@@ -1562,29 +1584,40 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 }
 
 
-void PConfig::Construct(Source src)
+void PConfig::Construct(Source src, const PString & appname, const PString & manuf)
 {
-  source = src;
-
   switch (src) {
     case System :
-      Construct("WIN.INI");
+      source = Application;
+      if (appname.Find("HKEY_LOCAL_MACHINE\\") == 0)
+        location = appname;
+      else if (appname.Find("HKEY_CURRENT_USER\\") == 0)
+        location = appname;
+      else
+        Construct("WIN.INI");
       break;
 
     case Application :
-      PFilePath appFile = PProcess::Current().GetFile();
-      PFilePath cfgFile = appFile.GetVolume() +
-                               appFile.GetPath() + appFile.GetTitle() + ".INI";
+      PProcess & proc = PProcess::Current();
+      PFilePath appFile = proc.GetFile();
+      PFilePath cfgFile = appFile.GetVolume() + appFile.GetPath() + appFile.GetTitle() + ".INI";
       if (PFile::Exists(cfgFile))
         Construct(cfgFile); // Make a file based config
       else {
         location = "SOFTWARE\\";
-        PProcess & proc = PProcess::Current();
-        if (!proc.GetManufacturer().IsEmpty())
-          location += proc.GetManufacturer() + PDIR_SEPARATOR;
+        if (!manuf)
+          location += manuf;
+        else if (!proc.GetManufacturer())
+          location += proc.GetManufacturer();
         else
-          location += "PWLib\\";
-        location += proc.GetName() + "\\CurrentVersion\\";
+          location += "PWLib";
+        location += PString(PDIR_SEPARATOR);
+        if (appname.IsEmpty())
+          location += proc.GetName();
+        else
+          location += appname;
+        location += "\\CurrentVersion\\";
+        source = Application;
       }
       break;
   }
