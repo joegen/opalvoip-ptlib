@@ -354,6 +354,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "xmpptest"=.\samples\xmpptest\xmpptest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name Console Components
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name PTLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Global:
 
 Package=<5>
