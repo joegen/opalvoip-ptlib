@@ -53,11 +53,11 @@ case "$target_os" in
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD=$OSRELEASE" ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
-                   OSRELEASE='$(subst 5.,,$(shell uname -r))' ;
+                   OSRELEASE=`uname -r | sed "s/5\.//g"` ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
   darwin* )	   OSTYPE=Darwin ;
-		   OSRELEASE='$(subst .,,$(shell uname -r))' ;
+		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
                    STDCCFLAGS='-DP_MACOSX=$(OSRELEASE) -DNO_LONG_DOUBLE' ;
                    SHAREDLIBEXT="dylib";;
 
