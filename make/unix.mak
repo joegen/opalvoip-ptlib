@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.96  2001/07/30 07:45:54  robertj
+# Added "all" target with double colon.
+#
 # Revision 1.95  2001/07/19 09:27:12  rogerh
 # Add support for EsounD and esd (the Enlightenment Sound Daemon).
 # This allows OhPhone to run on platforms where EsounD and esd have been
@@ -421,6 +424,7 @@ default_target :
 	@echo "    make debugdepend Create debug dependency files"
 	@echo "    make optdepend   Create optimised dependency files"
 	@echo "    make bothdepend  Create both debug and optimised dependency files"
+	@echo "    make all         Create debug & optimised dependencies & libraries"
 
 endif
 

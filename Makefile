@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.21  2001/07/30 07:45:54  robertj
+# Added "all" target with double colon.
+#
 # Revision 1.20  2001/04/23 00:44:30  robertj
 # Spelt update correctly!
 #
@@ -90,7 +93,7 @@
 #
 
 
-all : opt optnoshared bothdepend debug
+all ::
 
 
 ifeq ($(OSTYPE),Nucleus)
