@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.69  2002/08/28 05:11:23  craigs
+ * Fixed problem with file:// URLs
+ *
  * Revision 1.68  2002/05/02 05:11:29  craigs
  * Fixed problem with not translating + chars in URL query parameters
  *
@@ -320,7 +323,7 @@ static schemeStruct const schemeInfo[] = {
 
   { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT },
   { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT },
-  { "file",      HostOnly,             TRUE },
+  { "file",      Other,                TRUE },
   { "mailto",    Other, FALSE},
   { "news",      Other, FALSE},
   { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT },
