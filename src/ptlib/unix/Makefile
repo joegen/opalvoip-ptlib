@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.44  1999/06/09 15:41:18  robertj
+# Added better UI to make files.
+#
 # Revision 1.43  1999/04/18 09:36:31  robertj
 # Get date grammar build.
 #
@@ -236,7 +239,7 @@ include ../../../make/unix.mak
 
 OBJDIR := $(LIBDIR)/$(OBJDIR)
 
-all ::	$(PTLIB_FILE)
+TARGET = $(PTLIB_FILE)
 
 include ../../../make/common.mak
 
