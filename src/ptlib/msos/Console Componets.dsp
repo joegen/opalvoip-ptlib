@@ -95,17 +95,11 @@ SOURCE=..\..\Ptclib\Asner.cxx
 # Begin Source File
 
 SOURCE=..\..\Ptclib\Cypher.cxx
-
-!IF  "$(CFG)" == "Console Componets - Win32 Release"
-
 # ADD CPP /Yc"ptlib.h"
+# End Source File
+# Begin Source File
 
-!ELSEIF  "$(CFG)" == "Console Componets - Win32 Debug"
-
-# ADD CPP /Yc"ptlib.h"
-
-!ENDIF 
-
+SOURCE=..\..\ptclib\ipacl.cxx
 # End Source File
 # Begin Source File
 
@@ -126,6 +120,10 @@ SOURCE=..\..\..\Include\PtCLib\asner.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\cypher.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\ipacl.h
 # End Source File
 # Begin Source File
 
