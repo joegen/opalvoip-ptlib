@@ -126,20 +126,18 @@ BOOL PRemoteConnection::Open(const PString & name,
     return FALSE;
   }
 
-  // Try and find name of ppp device. if we find any PPP devices up, then
-  // assume it is the connection we want. If we don't find any, then assume
-  // pppd will make one
+  // Try and find a connected PPP device. If we find one, then we assume
+  // we are connected and use that device. Otherwise, we assume PPPD will
+  // create the device when it runs
   PINDEX i;
   for (i = 0; i < MAX_PPP_DEVICES; i++) {
     pppDeviceName = psprintf("ppp%i", i);
-    int stat = PPPDeviceExists(pppDeviceName);
-    if (stat > 0) {
+    if (PPPDeviceExists(pppDeviceName) > 0) {
+      Close();
       status = Connected;
       remoteThread = NULL;
       return TRUE;
     }
-    else if (stat == 0)
-      break;
   }
 
   // cannot open remote connection with port not in config file
