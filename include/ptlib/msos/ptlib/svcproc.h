@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.5 1996/01/28 02:55:02 robertj Exp $
+ * $Id: svcproc.h,v 1.6 1996/04/17 12:09:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.6  1996/04/17 12:09:02  robertj
+ * Added service dependencies.
+ *
  * Revision 1.5  1996/01/28 02:55:02  robertj
  * WIN16 support.
  *
@@ -34,6 +37,10 @@
 
 #include "../../common/svcproc.h"
 #ifdef _WIN32
+  protected:
+    virtual const char * GetServiceDependencies() const { return NULL; }
+      // Get a set of null terminated strings terminated with double null.
+
   private:
     static void __stdcall StaticMainEntry(DWORD argc, LPTSTR * argv);
     /* Internal function called from the Service Manager. This simply calls the
