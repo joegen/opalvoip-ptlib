@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.7  2001/12/03 03:44:52  dereks
+ * Add method to retrive pointer to the attached video display class.
+ *
  * Revision 1.6  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -211,6 +214,10 @@ class PVideoChannel : public PChannel
     /**Return a pointer to the class for acquiring video 
      */
     virtual PVideoInputDevice *GetVideoReader();
+
+    /**Return a pointer to the class for displaying video
+     */
+    virtual PVideoOutputDevice *GetVideoPlayer();
 
     /**See if the grabber is open 
      */
