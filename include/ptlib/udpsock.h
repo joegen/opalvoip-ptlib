@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.7 1995/06/17 11:13:41 robertj Exp $
+ * $Id: udpsock.h,v 1.8 1995/12/10 11:44:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
+ * Revision 1.8  1995/12/10 11:44:45  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.7  1995/06/17 11:13:41  robertj
  * Documentation update.
  *
@@ -55,9 +58,6 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
       const PString & address,  // Address of remote machine to connect to.
       const PString & service   // Service name to use for the connection.
     );
-    PUDPSocket(
-      PSocket & socket          // Listening socket making the connection.
-    );
     /* Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
      */
@@ -94,6 +94,19 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
        defined by the object instance construction or the
        <A>PIPSocket::SetPort()</A> function.
 
+       For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number.
+
+       You cannot accept on a UDP socket, so this function asserts.
+
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
      */
@@ -119,6 +132,31 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
      */
 
 
+  // New functions for class
+    virtual BOOL ReadFrom(
+      void * buf,     // Data to be written as URGENT TCP data.
+      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
+      Address & addr, // Address from which the datagram was received.
+      WORD & port     // Port from which the datagram was received.
+    );
+    /* Read a datagram from a remote computer.
+       
+       <H2>Returns:</H2>
+       TRUE if all the bytes were sucessfully written.
+     */
+
+
+    virtual BOOL WriteTo(
+      const void * buf,   // Data to be written as URGENT TCP data.
+      PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
+      const Address & addr, // Address to which the datagram is sent.
+      WORD port           // Port to which the datagram is sent.
+    );
+    /* Write a datagram to a remote computer.
+
+       <H2>Returns:</H2>
+       TRUE if all the bytes were sucessfully written.
+     */
 
 
 // Class declaration continued in platform specific header file ///////////////
