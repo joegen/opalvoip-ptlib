@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.66  2002/04/17 03:31:48  robertj
+ * Renamed system log file member variable to be common with Windows version.
+ *
  * Revision 1.65  2002/03/18 08:03:30  robertj
  * Fixed hex output of thread pid.
  * Added ability to have -tk option wich attempt to terminate a daemon and
@@ -249,8 +252,8 @@ static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void PSystemLog::Output(Level level, const char * cmsg)
 {
-  PString systemLogFile = PServiceProcess::Current().systemLogFile;
-  if (systemLogFile.IsEmpty())
+  PString systemLogFileName = PServiceProcess::Current().systemLogFileName;
+  if (systemLogFileName.IsEmpty())
     syslog(PwlibLogToUnixLog[level], "%s", cmsg);
   else {
 #ifdef P_PTHREADS
@@ -262,10 +265,10 @@ void PSystemLog::Output(Level level, const char * cmsg)
 #endif
 
     ostream * out;
-    if (systemLogFile == "-")
+    if (systemLogFileName == "-")
       out = &cerr;
     else
-      out = new ofstream(systemLogFile, ios::app);
+      out = new ofstream(systemLogFileName, ios::app);
 
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
@@ -359,7 +362,7 @@ PServiceProcess::~PServiceProcess()
     PFile::Remove(pidFileToRemove);
 
   // close the system log
-  if (systemLogFile.IsEmpty())
+  if (systemLogFileName.IsEmpty())
     closelog();
 }
 
@@ -529,18 +532,18 @@ int PServiceProcess::InitialiseService()
 
   // set flag for console messages
   if (args.HasOption('c')) {
-    systemLogFile = '-';
+    systemLogFileName = '-';
     debugMode = TRUE;
   }
 
   if (args.HasOption('l')) {
-    systemLogFile = args.GetOptionString('l');
-    if (systemLogFile.IsEmpty()) {
+    systemLogFileName = args.GetOptionString('l');
+    if (systemLogFileName.IsEmpty()) {
       cout << "error: must specify file name for -l" << endl;
       helpAndExit = TRUE;
     }
-    else if (PDirectory::Exists(systemLogFile))
-      systemLogFile = PDirectory(systemLogFile) + PProcess::Current().GetFile().GetFileName() + ".log";
+    else if (PDirectory::Exists(systemLogFileName))
+      systemLogFileName = PDirectory(systemLogFileName) + PProcess::Current().GetFile().GetFileName() + ".log";
   }
 
   if (helpAndExit) {
@@ -636,14 +639,14 @@ int PServiceProcess::InitialiseService()
   }
 
   // open the system logger for this program
-  if (systemLogFile.IsEmpty())
+  if (systemLogFileName.IsEmpty())
     openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
-  else if (systemLogFile == "-")
+  else if (systemLogFileName == "-")
     cout << "All output for " << GetName() << " is to console." << endl;
   else {
-    ofstream logfile(systemLogFile, ios::app);
+    ofstream logfile(systemLogFileName, ios::app);
     if (!logfile.is_open()) {
-      cout << "Could not open log file \"" << systemLogFile << "\""
+      cout << "Could not open log file \"" << systemLogFileName << "\""
               " - " << strerror(errno) << endl;
       return 1;
     }
@@ -773,7 +776,7 @@ void PServiceProcess::Terminate()
   OnStop();
 
   // close the system log
-  if (systemLogFile.IsEmpty())
+  if (systemLogFileName.IsEmpty())
     closelog();
 
   // Now end the program
@@ -839,7 +842,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   strcat(msg, ", aborting.\n");
 
-  if (systemLogFile.IsEmpty()) {
+  if (systemLogFileName.IsEmpty()) {
     syslog(LOG_CRIT, 
 #ifdef __BEOS__ // (Some?) BeOS versions of syslog.h have syslog() (wrongly) declared without const 
     (char *) 
@@ -848,7 +851,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
     closelog();
   }
   else {
-    int fd = open(systemLogFile, O_WRONLY|O_APPEND);
+    int fd = open(systemLogFileName, O_WRONLY|O_APPEND);
     if (fd >= 0) {
       write(fd, msg, strlen(msg));
       close(fd);
