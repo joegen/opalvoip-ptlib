@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.22 1995/10/14 15:02:22 robertj Exp $
+ * $Id: pdirect.h,v 1.23 1995/11/09 12:17:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.23  1995/11/09 12:17:23  robertj
+ * Added platform independent base type access classes.
+ *
  * Revision 1.22  1995/10/14 15:02:22  robertj
  * Added function to get parent directory.
  *
@@ -124,7 +127,7 @@ PDECLARE_CLASS(PFileInfo, PObject)
        access time in which case the last modified time is returned.
      */
 
-    QWORD size;
+    PUInt64 size;
     /* Size of the file in bytes. This is a quadword or 8 byte value to allow
        for files greater than 4 gigabytes.
      */
