@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.55  1999/11/01 00:10:27  robertj
+ * Added override of new functions for MSVC memory check code.
+ *
  * Revision 1.54  1999/10/19 09:21:30  robertj
  * Added functions to get current trace options and level.
  *
@@ -830,6 +833,9 @@ inline void * operator new[](size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
 
 #ifndef __GNUC__
+void * operator new(size_t nSize);
+void * operator new[](size_t nSize);
+
 void operator delete(void * ptr);
 void operator delete[](void * ptr);
 
