@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.17 1997/02/05 11:49:40 robertj Exp $
+ * $Id: assert.cxx,v 1.18 1997/02/09 01:27:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.18  1997/02/09 01:27:18  robertj
+ * Added stack dump under NT.
+ *
  * Revision 1.17  1997/02/05 11:49:40  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -66,12 +69,15 @@
 #include <svcproc.h>
 
 #include <errno.h>
+#include <strstrea.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
 #if defined(_WIN32)
+
+#include <imagehlp.h>
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
@@ -103,6 +109,52 @@ void PWaitOnExitConsoleWindow()
   EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 }
 
+PDECLARE_CLASS(PImageDLL, PDynaLink)
+  public:
+    PImageDLL();
+
+  BOOL (__stdcall *SymInitialize)(
+    IN HANDLE   hProcess,
+    IN LPSTR    UserSearchPath,
+    IN BOOL     fInvadeProcess
+    );
+  BOOL (__stdcall *SymCleanup)(
+    IN HANDLE hProcess
+    );
+  BOOL (__stdcall *StackWalk)(
+    DWORD                             MachineType,
+    HANDLE                            hProcess,
+    HANDLE                            hThread,
+    LPSTACKFRAME                      StackFrame,
+    LPVOID                            ContextRecord,
+    PREAD_PROCESS_MEMORY_ROUTINE      ReadMemoryRoutine,
+    PFUNCTION_TABLE_ACCESS_ROUTINE    FunctionTableAccessRoutine,
+    PGET_MODULE_BASE_ROUTINE          GetModuleBaseRoutine,
+    PTRANSLATE_ADDRESS_ROUTINE        TranslateAddress
+    );
+  BOOL (__stdcall *SymGetSymFromAddr)(
+    IN  HANDLE              hProcess,
+    IN  DWORD               dwAddr,
+    OUT PDWORD              pdwDisplacement,
+    OUT PIMAGEHLP_SYMBOL    Symbol
+    );
+
+  PFUNCTION_TABLE_ACCESS_ROUTINE SymFunctionTableAccess;
+  PGET_MODULE_BASE_ROUTINE       SymGetModuleBase;
+};
+
+PImageDLL::PImageDLL()
+  : PDynaLink("IMAGEHLP.DLL")
+{
+  if (!GetFunction("SymInitialize", (Function &)SymInitialize) ||
+      !GetFunction("SymCleanup", (Function &)SymCleanup) ||
+      !GetFunction("StackWalk", (Function &)StackWalk) ||
+      !GetFunction("SymGetSymFromAddr", (Function &)SymGetSymFromAddr) ||
+      !GetFunction("SymFunctionTableAccess", (Function &)SymFunctionTableAccess) ||
+      !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase))
+    Close();
+}
+
 #endif
 
 
@@ -114,15 +166,82 @@ void PAssertFunc(const char * file, int line, const char * msg)
   int err = errno;
 #endif
 
+  ostrstream str;
+  str << "Assertion fail: ";
+  if (msg != NULL)
+    str << msg << ", ";
+  str << "file " << file << ", line " << line;
+  if (err != 0)
+    str << ", Error=" << err;
+
+#if defined(_WIN32) && defined(_M_IX86)
+  PImageDLL imagehlp;
+  if (imagehlp.IsLoaded()) {
+    HANDLE hProcess = GetCurrentProcess();
+    if (imagehlp.SymInitialize(hProcess, NULL, TRUE)) {
+      STACKFRAME frame;
+      memset(&frame, 0, sizeof(frame));
+      frame.AddrPC.Mode = AddrModeFlat;
+      frame.AddrFrame.Mode = AddrModeFlat;
+
+      __asm {
+        call $+5
+        pop frame.AddrPC.Offset
+        mov frame.AddrFrame.Offset,ebp
+      }
+
+      int frameCount = 0;
+      while (frameCount++ < 16 &&
+             imagehlp.StackWalk(IMAGE_FILE_MACHINE_I386,
+                                hProcess,
+                                GetCurrentThread(),
+                                &frame,
+                                NULL, // Context
+                                NULL, // ReadMemoryRoutine
+                                imagehlp.SymFunctionTableAccess,
+                                imagehlp.SymGetModuleBase,
+                                 NULL)) {
+        if (frameCount > 1 && frame.AddrPC.Offset != 0) {
+          char buffer[sizeof(IMAGEHLP_SYMBOL)+100];
+          PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)buffer;
+          symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
+          symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL);
+          DWORD displacement = 0;
+          if (imagehlp.SymGetSymFromAddr(hProcess,
+                                         frame.AddrPC.Offset,
+                                         &displacement,
+                                         symbol)) {
+            str << "\n    " << symbol->Name;
+          }
+          else {
+            str << "\n    0x"
+                << hex << setfill('0')
+                << setw(8) << frame.AddrPC.Offset
+                << dec << setfill(' ');
+          }
+          str << '(' << hex << setfill('0');
+          for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
+            if (i > 0)
+              str << ", ";
+            if (frame.Params[i] != 0)
+              str << "0x";
+            str << frame.Params[i];
+          }
+          str << setfill(' ') << ')';
+          if (displacement != 0)
+            str << " + 0x" << displacement;
+        }
+      }
+
+      imagehlp.SymCleanup(hProcess);
+    }
+  }
+#endif
+
+  str << ends;
+
   if (PProcess::Current().IsDescendant(PServiceProcess::Class())) {
-    if (msg == NULL)
-      msg = "";
-    static const char fmt[] = "Assertion fail in file %s, line %u %s - code = %lu";
-    char * buf = new char[sizeof(fmt)+strlen(file)+strlen(msg)+20];
-    sprintf(buf, "Assertion fail in file %s, line %u %s - code = %lu",
-                 file, line, msg != NULL ? msg : "", err);
-    PSystemLog::Output(PSystemLog::Fatal, buf);
-    delete [] buf;
+    PSystemLog::Output(PSystemLog::Fatal, str.str());
 #if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
@@ -136,10 +255,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
 #endif
 
   for (;;) {
-    cerr << "Assertion fail: File " << file << ", Line " << line << endl;
-    if (msg != NULL)
-      cerr << msg << " - Error code=" << err << endl;
-    cerr << "<A>bort, <B>reak, <I>gnore? ";
+    cerr << str.str() << "\n<A>bort, <B>reak, <I>gnore? ";
     cerr.flush();
     switch (cin.get()) {
       case 'A' :
