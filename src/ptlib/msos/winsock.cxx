@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.52  2002/10/19 06:12:20  robertj
+ * Moved P_fd_set::Zero() from platform independent to platform dependent
+ *   code as Win32 implementation is completely different from Unix.
+ *
  * Revision 1.51  2002/10/17 07:17:43  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -242,6 +246,13 @@ void P_fd_set::Construct()
 {
   max_fd = UINT_MAX;
   set = new fd_set;
+}
+
+
+void P_fd_set::Zero()
+{
+  PAssertNULL(set);
+  FD_ZERO(set);
 }
 
 

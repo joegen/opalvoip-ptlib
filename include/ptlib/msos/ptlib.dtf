@@ -2658,6 +2658,7 @@ EXPORTS
     ?WriteTo@PIPXSocket@@UAEHPBXHABVAddress@1@G@Z @1782 NONAME ;public: virtual int __thiscall PIPXSocket::WriteTo(void const *,int,class PIPXSocket::Address const &,unsigned short)
     ?Yield@PThread@@SAXXZ @1783 NONAME ;public: static void __cdecl PThread::Yield(void)
     ?YUV420PtoRGB@PStandardColourConverter@@IBEHPBEPAEPAHIH@Z @3149 NONAME ;protected: int __thiscall PStandardColourConverter::YUV420PtoRGB(unsigned char const *,unsigned char *,int *,unsigned int,int)const 
+    ?Zero@P_fd_set@@QAEXXZ @3381 NONAME ;public: void __thiscall P_fd_set::Zero(void)
     ?_main@PProcess@@UAEHPAX@Z @1784 NONAME ;public: virtual int __thiscall PProcess::_main(void *)
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
