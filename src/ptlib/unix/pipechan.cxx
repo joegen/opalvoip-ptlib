@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.23  1999/06/28 09:28:02  robertj
+ * Portability issues, especially n BeOS (thanks Yuri!)
+ *
  * Revision 1.22  1999/02/22 13:26:54  robertj
  * BeOS port changes.
  *
@@ -126,7 +129,11 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
   // fork to allow us to execute the child
+#ifdef __BEOS__
+  if ((childPid = fork()) != 0) {
+#else
   if ((childPid = vfork()) != 0) {
+#endif
     // setup the pipe to the child
     if (toChildPipe[0] != -1) 
       ::close(toChildPipe[0]);
@@ -207,7 +214,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(__BEOS__)
     extern char ** environ;
 #define __environ environ
 #endif
