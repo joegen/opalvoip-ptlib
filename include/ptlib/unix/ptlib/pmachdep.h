@@ -3,6 +3,18 @@
 
 #include <netdb.h>
 
+#if defined(P_LINUX)
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <sys/socketio.h>
+#include <dlfcn.h>
+
+#define SIOCGIFNUM  SIOCGIFCOUNT
+#endif
+
 #if defined(P_PTHREADS)
 #include <pthread.h>
 #endif
@@ -10,6 +22,9 @@
 #if defined(P_SOLARIS)
 
 #include <errno.h>
+#include <sys/sockio.h>
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/termios.h>
@@ -19,6 +34,10 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <dlfcn.h>
 
 #define PSETPGRP()  setpgrp()
 
