@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.16 1994/08/01 03:39:42 robertj Exp $
+ * $Id: osutils.cxx,v 1.17 1994/08/04 12:57:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.16  1994/08/01 03:39:42  robertj
+ * Revision 1.17  1994/08/04 12:57:10  robertj
+ * Changed CheckBlock() to better name.
+ * Moved timer porcessing so is done at every Yield().
+ *
+ * Revision 1.16  1994/08/01  03:39:42  robertj
  * Fixed temporary variable problem with GNU C++
  *
  * Revision 1.15  1994/07/27  05:58:07  robertj
@@ -1803,6 +1807,7 @@ void PThread::Yield()
 {
   // Determine the next thread to schedule
   PProcess * process = PProcess::Current();
+  process->GetTimerList()->Process();
   PThread * current = process->currentThread;
   if (current->status == Running) {
     if (current->basePriority != HighestPriority && current->link != current)
@@ -1844,7 +1849,7 @@ void PThread::Yield()
         break;
 
       case Blocked :
-        if (thread->CheckBlock()) {
+        if (thread->IsNoLongerBlocked()) {
           thread->ClearBlock();
           if (thread->IsSuspended())
             thread->status = Suspended;
@@ -1874,10 +1879,8 @@ void PThread::Yield()
     thread = thread->link;
     if (thread == current) {
       pass++;
-      if (pass > 3) { // Everything is blocked
+      if (pass > 3) // Everything is blocked
         process->OperatingSystemYield();
-        process->GetTimerList()->Process();
-      }
     }
   }
 
