@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.32  1998/11/03 03:11:53  robertj
+ * Fixed memory leak question so correctly detects leaks and can be ^C'd.
+ *
  * Revision 1.31  1998/11/03 00:55:31  robertj
  * Added allocation breakpoint variable.
  *
@@ -267,7 +270,8 @@ PMemoryHeap::~PMemoryHeap()
   if (leakDumpStream != NULL) {
     DumpStatistics(*leakDumpStream);
 #if !defined(_WIN32)
-    if (listHead != NULL) {
+    if (listTail != NULL && listTail->request >= firstRealObject) {
+      signal(SIGINT, SIG_DFL);
       *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
       cin.get();
     }
@@ -563,7 +567,6 @@ void PMemoryHeap::DumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 {
-  strm << "Object dump:\n";
   for (Header * obj = listHead; obj != NULL; obj = obj->next) {
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
