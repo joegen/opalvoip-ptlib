@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.84  2004/02/22 03:31:50  ykiryanov
+ * Added current thread id routine to BeOS code
+ *
  * Revision 1.83  2003/09/17 09:02:14  csoutheren
  * Removed memory leak detection code
  *
@@ -364,6 +367,8 @@ void PSystemLog::Output(Level level, const char * cmsg)
       unsigned tid = (unsigned)MPCurrentTaskID();
 #elif defined(P_VXWORKS)
       unsigned tid = ::taskIdSelf();
+#elif defined(BE_THREADS)
+      thread_id tid = ::find_thread(NULL);
 #else
       unsigned tid = (unsigned) pthread_self();
 #endif
@@ -902,6 +907,8 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   unsigned tid = (unsigned)MPCurrentTaskID();
 #elif defined(P_VXWORKS)
   unsigned tid = ::taskIdSelf();
+#elif defined(BE_THREADS)
+  thread_id tid = ::find_thread(NULL);
 #else
   unsigned tid = (unsigned) pthread_self();
 #endif
