@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.55  2003/02/03 08:51:44  robertj
+ * Fixed compatibility with old code so taking address of PIPSocket::Address
+ *   gets address of 4 or 16 byte IP address.
+ *
  * Revision 1.54  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -366,13 +370,13 @@ class PIPSocket : public PSocket
 
       protected:
         /// Runtime test of IP addresse type
-        unsigned version;
         union {
           in_addr four;
 #if P_HAS_IPV6
           in6_addr six;
 #endif
         } v;
+        unsigned version;
 
       /// output IPv6 & IPv4 address as a string to the specified string
       friend ostream & operator<<(ostream & s, const Address & a);
