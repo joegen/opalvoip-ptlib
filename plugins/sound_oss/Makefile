@@ -20,7 +20,7 @@ TARGET	=	$(LIBDIR)/$(BASE_FILE)
 
 include ../../make/common.mak
 
-P_SHAREDLIB	= 0
+P_SHAREDLIB	= 1
 
 LIB_BASENAME=$(BASENAME)
 LIB_FILENAME=$(BASE_FILE)
