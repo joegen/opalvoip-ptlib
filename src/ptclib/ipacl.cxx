@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.16  2005/01/26 05:37:58  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.15  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -452,6 +455,7 @@ BOOL PIpAccessControlList::LoadHostsAccess(const char * daemonName)
          InternalLoadHostsAccess(daemon, "hosts.deny", FALSE);
 }
 
+#ifdef P_CONFIG_LIST
 
 static const char DefaultConfigName[] = "IP Access Control List";
 
@@ -494,6 +498,8 @@ void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
 
   cfg.SetInteger(baseName & "Array Size", count);
 }
+
+#endif // P_CONFIG_LIST
 
 
 BOOL PIpAccessControlList::Add(PIpAccessControlEntry * entry)
