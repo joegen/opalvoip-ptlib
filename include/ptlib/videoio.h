@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.7  2000/11/09 00:20:38  robertj
+ * Added qcif size constants
+ *
  * Revision 1.6  2000/07/30 03:41:31  robertj
  * Added more colour formats to video device enum.
  *
@@ -91,8 +94,10 @@ class PVideoDevice : public PObject
     };
 
     enum StandardSizes {
-      CIF_WIDTH = 352,
-      CIF_HEIGHT = 288
+      CIFWidth = 352,
+      CIFHeight = 288,
+      QCIFWidth = 176,
+      QCIFHeight = 144
     };
 
     /** Create a new video output device.
