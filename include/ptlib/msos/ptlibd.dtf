@@ -2492,6 +2492,7 @@ EXPORTS
     ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1631 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
     ?GetVFlipState@PColourConverter@@QAEHXZ @4311 NONAME ;public: int __thiscall PColourConverter::GetVFlipState(void)
     ?GetVFlipState@PFakeVideoInputDevice@@UAEHXZ @4312 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetVFlipState(void)
+    ?GetVFlipState@PVideoDevice@@UAEHXZ @4330 NONAME ;public: virtual int __thiscall PVideoDevice::GetVFlipState(void)
     ?GetVFlipState@PVideoInputDevice@@UAEHXZ @4313 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetVFlipState(void)
     ?GetVideoFormat@PVideoDevice@@UBE?AW4VideoFormat@1@XZ @3335 NONAME ;public: virtual enum PVideoDevice::VideoFormat  __thiscall PVideoDevice::GetVideoFormat(void)const 
     ?GetVideoPlayer@PVideoChannel@@UAEPAVPVideoOutputDevice@@XZ @4305 NONAME ;public: virtual class PVideoOutputDevice * __thiscall PVideoChannel::GetVideoPlayer(void)
@@ -2508,6 +2509,7 @@ EXPORTS
     ?GrabMovingBlocksTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3481 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabMovingBlocksTestFrame(unsigned char *)
     ?GrabMovingLineTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3482 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabMovingLineTestFrame(unsigned char *)
     ?GrabNTSCTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3483 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabNTSCTestFrame(unsigned char *)
+    ?GrabOriginalMovingBlocksFrame@PFakeVideoInputDevice@@QAEXPAE@Z @4331 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(unsigned char *)
     ?GuardBytes@Header@PMemoryHeap@@2PADA @4043 NONAME ;public: static char *  PMemoryHeap::Header::GuardBytes
     ?HandleCapture@PVideoInputDevice@@IAEXXZ @3375 NONAME ;protected: void __thiscall PVideoInputDevice::HandleCapture(void)
     ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @3354 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
@@ -3287,6 +3289,7 @@ EXPORTS
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @2209 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVFlipState@PColourConverter@@QAEXH@Z @4315 NONAME ;public: void __thiscall PColourConverter::SetVFlipState(int)
     ?SetVFlipState@PFakeVideoInputDevice@@UAEHH@Z @4316 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVFlipState(int)
+    ?SetVFlipState@PVideoDevice@@UAEHH@Z @4332 NONAME ;public: virtual int __thiscall PVideoDevice::SetVFlipState(int)
     ?SetVFlipState@PVideoInputDevice@@UAEHH@Z @4317 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetVFlipState(int)
     ?SetVideoFormat@PFakeVideoInputDevice@@UAEHW4VideoFormat@PVideoDevice@@@Z @3493 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?SetVideoFormat@PVideoDevice@@UAEHW4VideoFormat@1@@Z @3341 NONAME ;public: virtual int __thiscall PVideoDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
@@ -3341,6 +3344,7 @@ EXPORTS
     ?ToggleVFlipInput@PVideoChannel@@QAEHXZ @4320 NONAME ;public: int __thiscall PVideoChannel::ToggleVFlipInput(void)
     ?ToggleVFlipState@PColourConverter@@QAEXXZ @4321 NONAME ;public: void __thiscall PColourConverter::ToggleVFlipState(void)
     ?ToggleVFlipState@PFakeVideoInputDevice@@UAEHXZ @4322 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::ToggleVFlipState(void)
+    ?ToggleVFlipState@PVideoDevice@@UAEHXZ @4333 NONAME ;public: virtual int __thiscall PVideoDevice::ToggleVFlipState(void)
     ?ToggleVFlipState@PVideoInputDevice@@UAEHXZ @4323 NONAME ;public: virtual int __thiscall PVideoInputDevice::ToggleVFlipState(void)
     ?Tokenise@PString@@QBE?AVPStringArray@@ABV1@H@Z @2251 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(class PString const &,int)const 
     ?Tokenise@PString@@QBE?AVPStringArray@@PBDH@Z @2252 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(char const *,int)const 
