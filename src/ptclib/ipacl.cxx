@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.6  1999/02/25 11:10:52  robertj
+ * Fixed count of non-hidden entries in config file.
+ *
  * Revision 1.5  1999/02/25 05:05:15  robertj
  * Added missing test for hidden entries not to be written to config file
  *
@@ -435,13 +438,17 @@ void PIpAccessControlList::Save(PConfig & cfg)
 
 void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
 {
-  cfg.SetInteger(baseName & "Array Size", GetSize());
+  PINDEX count = 0;
 
-  for (PINDEX i = 1; i <= GetSize(); i++) {
-    PIpAccessControlEntry & entry = operator[](i-1);
-    if (!entry.IsHidden())
-      cfg.SetString(baseName & PString(PString::Unsigned, i), entry.AsString());
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PIpAccessControlEntry & entry = operator[](i);
+    if (!entry.IsHidden()) {
+      count++;
+      cfg.SetString(baseName & PString(PString::Unsigned, count), entry.AsString());
+    }
   }
+
+  cfg.SetInteger(baseName & "Array Size", count);
 }
 
 
