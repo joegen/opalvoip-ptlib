@@ -5890,6 +5890,7 @@ echo "$as_me: VXML disabled" >&6;}
 #define P_VXML 1
 _ACEOF
 
+    HAS_VXML=1
   fi
 
 
@@ -5910,6 +5911,7 @@ echo "$as_me: Jabber disabled" >&6;}
 #define P_JABBER 1
 _ACEOF
 
+    HAS_JABBER=1
   fi
 
 
@@ -5930,6 +5932,7 @@ echo "$as_me: XMLRPC disabled" >&6;}
 #define P_XMLRPC 1
 _ACEOF
 
+     HAS_XMLRPC=1
   fi
 
 
@@ -5950,6 +5953,7 @@ echo "$as_me: SOAP disabled" >&6;}
 #define P_SOAP 1
 _ACEOF
 
+    HAS_SOAP=1
   fi
 fi
 
