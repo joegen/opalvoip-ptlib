@@ -8,8 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  */
 
-#ifdef	P_HPUX9
+#if defined(P_HPUX9)
 #include <langinfo.h>
+#elif defined(P_SUN4)
+#warning No locale info header
 #else
 #include <localeinfo.h>
 #endif
@@ -31,27 +33,40 @@ PINLINE char ** PProcess::GetEnvironment()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE unsigned PTimer::Resolution()
+#if defined(P_SUN4)
+  { return 1000; }
+#else
   { return (unsigned)(1000/CLOCKS_PER_SEC); }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE BOOL PTime::GetTimeAMPM()
-#ifdef P_HPUX9
-  { return strstr(nl_langinfo[T_FMT], "%p") =! NULL; }
+#if defined(P_HPUX9)
+  { return strstr(nl_langinfo(T_FMT), "%p") != NULL; }
+#elif defined(P_SUN4)
+#warning No AMPM flag
+  { return FALSE; }
 #else
   { return strchr(_time_info->time, 'H') == NULL; }
 #endif
 
 PINLINE PString PTime::GetTimeAM()
-#ifdef P_HPUX9
-  { return PString(nl_langinfo[T_AM]); }
+#if defined(P_HPUX9)
+  { return PString(nl_langinfo(AM_STR)); }
+#elif defined(P_SUN4)
+#warning No AM string
+  { return "am"; }
 #else
   { return PString(_time_info->ampm[0]); }
 #endif
 
 PINLINE PString PTime::GetTimePM()
-#ifdef P_HPUX9
-  { return PString(nl_langinfo[T_PM]); }
+#if defined(P_HPUX9)
+  { return PString(nl_langinfo(PM_STR)); }
+#elif defined(P_SUN4)
+#warning No PM string
+  { return "pm"; }
 #else
   { return PString(_time_info->ampm[1]); }
 #endif
