@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.13 1995/08/24 12:40:52 robertj Exp $
+ * $Id: mswin.cxx,v 1.14 1995/12/10 11:58:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.14  1995/12/10 11:58:37  robertj
+ * Added WIN32 registry support for PConfig objects.
+ *
  * Revision 1.13  1995/08/24 12:40:52  robertj
  * Changed PChannel so not a PContainer.
  *
@@ -759,33 +762,40 @@ void PConfig::Construct(Source src)
 {
   switch (src) {
     case System :
-      Construct("WIN.INI");
+      location = "WIN.INI";
       break;
 
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
-      Construct(appFile.GetDirectory() + appFile.GetTitle() + ".INI");
+      location = appFile.GetDirectory() + appFile.GetTitle() + ".INI";
       break;
   }
+
+  source = src;
 }
 
 
 void PConfig::Construct(const PFilePath & filename)
 {
-  configFile = filename;
+  location = filename;
+  source = NumSources;
 }
 
 
 PStringList PConfig::GetSections()
 {
   PStringList sections;
-  PString buf;
-  char * ptr = buf.GetPointer(10000);
-  GetPrivateProfileString(NULL, NULL, "", ptr, 9999, configFile);
-  while (*ptr != '\0') {
-    sections.AppendString(ptr);
-    ptr += strlen(ptr)+1;
+
+  if (source != Environment) {
+    PString buf;
+    char * ptr = buf.GetPointer(10000);
+    GetPrivateProfileString(NULL, NULL, "", ptr, 9999, location);
+    while (*ptr != '\0') {
+      sections.AppendString(ptr);
+      ptr += strlen(ptr)+1;
+    }
   }
+
   return sections;
 }
 
@@ -794,7 +804,7 @@ PStringList PConfig::GetKeys(const PString & section) const
 {
   PStringList keys;
 
-  if (configFile.IsEmpty()) {
+  if (source == Environment) {
     char ** ptr = _environ;
     while (*ptr != NULL) {
       PString buf = *ptr++;
@@ -804,7 +814,7 @@ PStringList PConfig::GetKeys(const PString & section) const
   else {
     PString buf;
     char * ptr = buf.GetPointer(10000);
-    GetPrivateProfileString(section, NULL, "", ptr, 9999, configFile);
+    GetPrivateProfileString(section, NULL, "", ptr, 9999, location);
     while (*ptr != '\0') {
       keys.AppendString(ptr);
       ptr += strlen(ptr)+1;
@@ -817,11 +827,11 @@ PStringList PConfig::GetKeys(const PString & section) const
 
 void PConfig::DeleteSection(const PString & section)
 {
-  if (configFile.IsEmpty())
+  if (source == Environment)
     return;
 
   PAssert(!section.IsEmpty(), PInvalidParameter);
-  PAssertOS(WritePrivateProfileString(section, NULL, NULL, configFile));
+  PAssertOS(WritePrivateProfileString(section, NULL, NULL, location));
 }
 
 
@@ -829,14 +839,14 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 {
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
+  if (source == Environment) {
     PString str = key;
     PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
     _putenv(str + "=");
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    PAssertOS(WritePrivateProfileString(section, key, NULL, configFile));
+    PAssertOS(WritePrivateProfileString(section, key, NULL, location));
   }
 }
 
@@ -848,7 +858,7 @@ PString PConfig::GetString(const PString & section,
 
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
+  if (source == Environment) {
     PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
     char * env = getenv(key);
     if (env != NULL)
@@ -859,7 +869,7 @@ PString PConfig::GetString(const PString & section,
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
     GetPrivateProfileString(section, key, dflt,
-                                        str.GetPointer(1000), 999, configFile);
+                                        str.GetPointer(1000), 999, location);
     str.MakeMinimumSize();
   }
 
@@ -872,14 +882,14 @@ void PConfig::SetString(const PString & section,
 {
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
+  if (source == Environment) {
     PString str = key;
     PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
     _putenv(str + "=" + value);
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    PAssertOS(WritePrivateProfileString(section, key, value, configFile));
+    PAssertOS(WritePrivateProfileString(section, key, value, location));
   }
 }
 
