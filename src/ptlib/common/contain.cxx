@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.96  2001/02/26 07:50:18  robertj
+ * Updated regular expression parser to latest version from Henry Spencer.
+ *
  * Revision 1.95  2001/02/21 03:38:37  robertj
  * Added ability to copy between various string lists/arrays etc during construction.
  *
@@ -368,10 +371,7 @@
 extern "C" int vsprintf(char *, const char *, va_list);
 #endif
 
-#ifndef __STDC__
-#define __STDC__ 1
-#endif
-#include "regex.h"
+#include "regex/regex.h"
 
 
 #if !P_USE_INLINES
