@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.38  2002/07/02 08:00:55  craigs
+ * Also made GetPosition, SetPosition and SetLength virtual as well
+ *
  * Revision 1.37  2002/07/02 07:59:42  craigs
  * Added virtual to GetLength call
  *
@@ -560,7 +563,7 @@ class PFile : public PChannel
        @return
        TRUE if the file size was changed to the length specified.
      */
-    BOOL SetLength(
+    virtual BOOL SetLength(
       off_t len   // New length of file.
     );
 
@@ -584,7 +587,7 @@ class PFile : public PChannel
        @return
        TRUE if the new file position was set.
      */
-    BOOL SetPosition(
+    virtual BOOL SetPosition(
       off_t pos,                         /// New position to set.
       FilePositionOrigin origin = Start  /// Origin for position change.
     );
@@ -595,7 +598,7 @@ class PFile : public PChannel
        @return
        current file position relative to start of file.
      */
-    off_t GetPosition() const;
+    virtual off_t GetPosition() const;
 
     /**Determine if the current file position is at the end of the file. If
        this is TRUE then any read operation will fail.
