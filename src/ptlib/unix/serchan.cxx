@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.21  2001/01/04 17:57:41  rogerh
+ * Fix a cut and past error in my previous commit
+ *
  * Revision 1.20  2001/01/04 10:28:07  rogerh
  * FreeBSD does not set the Baud Rate with c_cflags. Add the 'BSD' way
  *
@@ -133,8 +136,8 @@ void PSerialChannel::Construct()
   Termio.c_iflag = IGNBRK | IGNPAR;
   Termio.c_cflag = CS8 | CSTOPB | CREAD | CLOCAL;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_
-  Termio.c_ispeed = Termio.c.ospeed = B9600;
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
+  Termio.c_ispeed = Termio.c_ospeed = B9600;
 #else
   Termio.c_cflag |= B9600;
 #endif
@@ -373,8 +376,7 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
   // save new baud rate
   baudRate = newBaudRate;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_
-MACOSX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
   // The BSD way
   Termio.c_ispeed = baud; 
   Termio.c_ospeed = baud;
