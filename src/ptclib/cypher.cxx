@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.28  2001/02/28 21:10:47  craigs
+ * Fixed problem in Decode function
+ * Added randomizer to fill data in Decode
+ *
  * Revision 1.27  2000/02/17 12:05:02  robertj
  * Added better random number generator after finding major flaws in MSVCRT version.
  *
@@ -489,9 +493,14 @@ void PCypher::Encode(const void * data, PINDEX length, PBYTEArray & coded)
 
   if (blockSize > 1) {
     PBYTEArray extra(blockSize);
-    extra[blockSize-1] = (BYTE)length;
-    for (PINDEX i = 0; i < length; i++)
+    PINDEX i;
+    for (i = 0; i < length; i++)
       extra[i] = *in++;
+    PTime now;
+    PRandom rand((DWORD)now.GetTimestamp());
+    for (; i < blockSize-1; i++)
+      extra[i] = rand.Generate() % 255;
+    extra[blockSize-1] = (BYTE)length;
     EncodeBlock(extra, out);
   }
 }
@@ -549,7 +558,7 @@ PINDEX PCypher::Decode(const PBYTEArray & coded, void * data, PINDEX length)
   PBYTEArray clear;
   if (!Decode(coded, clear))
     return 0;
-  memcpy(data, coded, PMIN(length, clear.GetSize()));
+  memcpy(data, clear, PMIN(length, clear.GetSize()));
   return clear.GetSize();
 }
 
