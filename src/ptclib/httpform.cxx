@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.42  2001/10/10 08:07:48  robertj
+ * Fixed large memory leak of strings when doing POST to a form.
+ *
  * Revision 1.41  2001/05/16 06:03:14  craigs
  * Changed to allow access to absolute registry paths from within subforms
  *
@@ -520,12 +523,9 @@ BOOL PHTTPField::Validated(const PString &, PStringStream &) const
 }
 
 
-PStringList PHTTPField::GetAllNames() const
+void PHTTPField::GetAllNames(PStringList & list) const
 {
-  PStringList list;
-  list.DisallowDeleteObjects();
   list.AppendString(fullName);
-  return list;
 }
 
 
@@ -682,16 +682,10 @@ void PHTTPCompositeField::SaveToConfig(PConfig & cfg) const
 }
 
 
-PStringList PHTTPCompositeField::GetAllNames() const
+void PHTTPCompositeField::GetAllNames(PStringList & list) const
 {
-  PStringList list;
-  list.DisallowDeleteObjects();
-  for (PINDEX i = 0; i < GetSize(); i++) {
-    PStringList sublist = fields[i].GetAllNames();
-    for (PINDEX j = 0; j < sublist.GetSize(); j++)
-      list.AppendString(sublist[j]);
-  }
-  return list;
+  for (PINDEX i = 0; i < GetSize(); i++)
+    fields[i].GetAllNames(list);
 }
 
 
@@ -2129,9 +2123,9 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field != keyField && &field != valField && &field != sectionField) {
-      PStringList names = field.GetAllNames();
-      for (PINDEX i = 0; i < names.GetSize(); i++)
-        oldValues.AppendString(names[i]);
+      PStringList names;
+      field.GetAllNames(names);
+      oldValues = names;
     }
   }
 
@@ -2163,7 +2157,8 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field != keyField && &field != valField && &field != sectionField) {
-      PStringList names = field.GetAllNames();
+      PStringList names;
+      field.GetAllNames(names);
       for (PINDEX i = 0; i < names.GetSize(); i++) {
         PINDEX idx = oldValues.GetStringsIndex(names[i]);
         if (idx != P_MAX_INDEX)
