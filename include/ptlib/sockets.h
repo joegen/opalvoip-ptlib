@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.1 1994/07/25 03:36:03 robertj Exp $
+ * $Id: sockets.h,v 1.2 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
- * Revision 1.1  1994/07/25 03:36:03  robertj
+ * Revision 1.2  1994/08/21 23:43:02  robertj
+ * Added telnet.
+ *
+ * Revision 1.1  1994/07/25  03:36:03  robertj
  * Initial revision
  *
  * Revision 1.3  1994/07/21  12:17:41  robertj
@@ -39,15 +42,21 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PUDPocket
+// PUDPSocket
 
 #include <udpsock.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTCPocket
+// PTCPSocket
 
 #include <tcpsock.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTelnetSocket
+
+#include <telnet.h>
 
 
 #endif // _SOCKETS_H
