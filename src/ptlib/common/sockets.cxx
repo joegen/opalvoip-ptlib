@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.160  2003/05/21 09:34:44  rjongbloed
+ * Name lookup support for IPv6, thanks again Sébastien Josset
+ *
  * Revision 1.159  2003/04/28 02:55:50  robertj
  * Added function to see at run time if IPv6 available, thanks Sebastien Josset
  *
@@ -699,6 +702,10 @@ class PIPCacheData : public PObject
   PCLASSINFO(PIPCacheData, PObject)
   public:
     PIPCacheData(struct hostent * ent, const char * original);
+#if P_HAS_IPV6
+    PIPCacheData(struct addrinfo  * addr_info, const char * original);
+    void AddEntry(struct addrinfo  * addr_info);
+#endif
     const PString & GetHostName() const { return hostname; }
     const PIPSocket::Address & GetHostAddress() const { return address; }
     const PStringList & GetHostAliases() const { return aliases; }
@@ -709,6 +716,7 @@ class PIPCacheData : public PObject
     PStringList        aliases;
     PTime              birthDate;
 };
+
 
 
 PDICTIONARY(PHostByName_private, PCaselessString, PIPCacheData);
@@ -724,6 +732,7 @@ class PHostByName : PHostByName_private
     PMutex mutex;
   friend void PIPSocket::ClearNameCache();
 };
+
 
 static PHostByName & pHostByName()
 {
@@ -811,6 +820,73 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 }
 
 
+#if P_HAS_IPV6
+
+PIPCacheData::PIPCacheData(struct addrinfo * addr_info, const char * original)
+{
+  PINDEX i;
+  if (addr_info == NULL) {
+    address = 0;
+    return;
+  }
+
+  // Fill Host primary informations
+  hostname = addr_info->ai_canonname; // Fully Qualified Domain Name (FQDN) 
+  if (addr_info->ai_addr != NULL)
+    address = PIPSocket::Address(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
+
+  // Next entries
+  while (addr_info != NULL) {
+    AddEntry(addr_info);
+    addr_info = addr_info->ai_next;
+  }
+
+  // Add original as alias or allready added ?
+  for (i = 0; i < aliases.GetSize(); i++) {
+    if (aliases[i] *= original)
+      return;
+  }
+
+  aliases.AppendString(original);
+}
+
+
+void PIPCacheData::AddEntry(struct addrinfo * addr_info)
+{
+  PINDEX i;
+
+  if (addr_info == NULL)
+    return;
+
+  // Add canonical name
+  BOOL add_it = TRUE;
+  for (i = 0; i < aliases.GetSize(); i++) {
+    if (addr_info->ai_canonname != NULL && (aliases[i] *= addr_info->ai_canonname)) {
+      add_it = FALSE;
+      break;
+    }
+  }
+
+  if (add_it && addr_info->ai_canonname != NULL)
+    aliases.AppendString(addr_info->ai_canonname);
+
+  // Add IP address
+  PIPSocket::Address ip(addr_info->ai_family, addr_info->ai_addrlen, addr_info->ai_addr);
+  add_it = TRUE;
+  for (i = 0; i < aliases.GetSize(); i++) {
+    if (aliases[i] *= ip.AsString()) {
+      add_it = FALSE;
+      break;
+    }
+  }
+
+  if (add_it)
+    aliases.AppendString(ip.AsString());
+}
+
+#endif
+
+
 static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
 {
   PConfig cfg("DNS Cache");
@@ -877,6 +953,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
   PCaselessString key = name;
   PIPCacheData * host = GetAt(key);
+  int localErrNo = NETDB_SUCCESS;
 
   if (host != NULL && host->HasAged()) {
     SetAt(key, NULL);
@@ -886,8 +963,16 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (host == NULL) {
     mutex.Signal();
 
+#if P_HAS_IPV6
+    struct addrinfo *res;
+    struct addrinfo hints = { AI_CANONNAME, PF_UNSPEC };
+    localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
+    mutex.Wait();
+    host = new PIPCacheData(res, name);
+    freeaddrinfo(res);
+#else // P_HAS_IPV6
+
     int retry = 3;
-    int localErrNo = NETDB_SUCCESS;
     struct hostent * host_info;
 
 #ifdef P_AIX
@@ -949,8 +1034,9 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
     if (localErrNo != NETDB_SUCCESS || retry == 0)
       return NULL;
-
     host = new PIPCacheData(host_info, name);
+
+#endif //P_HAS_IPV6
 
     SetAt(key, host);
   }
@@ -2053,7 +2139,7 @@ PIPSocket::Address::Address(PINDEX len, const BYTE * bytes)
       memcpy(&v.four, bytes, len);
       break;
 
-    case 0 :
+    default :
       version = 0;
   }
 }
@@ -2072,6 +2158,28 @@ PIPSocket::Address::Address(const in6_addr & addr)
   version = 6;
   v.six = addr;
 }
+
+// Create an IP (v4 or v6) address from a sockaddr (sockaddr_in, sockaddr_in6 or sockaddr_in6_old) structure
+PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct sockaddr *ai_addr)
+{
+  switch (ai_family) {
+#if P_HAS_IPV6
+    case AF_INET6: 
+      version = 6;
+      v.six = ((struct sockaddr_in6 *)ai_addr)->sin6_addr;
+      //sin6_scope_id, should be taken into account for link local addresses
+      break;
+#endif
+    case AF_INET: 
+      version = 4;
+      v.four = ((struct sockaddr_in  *)ai_addr)->sin_addr;
+      break;
+
+    default :
+      version = 0;
+  }
+}
+
 #endif
 
 
