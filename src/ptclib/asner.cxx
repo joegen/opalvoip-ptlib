@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.62  2002/05/29 01:22:35  robertj
+ * Added ability to set object id from unsigned integer arrays.
+ *
  * Revision 1.61  2002/05/21 04:23:40  robertj
  * Fixed problem with ASN encoding/decoding unsconstrained negative numbers,
  *
@@ -1174,12 +1177,25 @@ PASN_ObjectId & PASN_ObjectId::operator=(const PString & dotstr)
 }
 
 
+PASN_ObjectId & PASN_ObjectId::operator=(const PUnsignedArray & numbers)
+{
+  SetValue(numbers);
+  return *this;
+}
+
+
 void PASN_ObjectId::SetValue(const PString & dotstr)
 {
   PStringArray parts = dotstr.Tokenise('.');
   value.SetSize(parts.GetSize());
   for (PINDEX i = 0; i < parts.GetSize(); i++)
     value[i] = parts[i].AsUnsigned();
+}
+
+
+void PASN_ObjectId::SetValue(const unsigned * numbers, PINDEX size)
+{
+  value = PUnsignedArray(numbers, size);
 }
 
 
