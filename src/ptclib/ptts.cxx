@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.15  2004/10/23 10:56:15  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.14  2004/07/12 09:17:20  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -549,7 +552,10 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
 
 #if 1
 
+#ifndef _WIN32_WCE
   system(cmdLine);
+#endif
+
   return TRUE;
 
 #else
