@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.152  2003/03/26 05:36:38  robertj
+ * More IPv6 support (INADDR_ANY handling), thanks Sébastien Josset
+ *
  * Revision 1.151  2003/02/11 06:49:12  craigs
  * Added missing OpenSocket function
  *
@@ -514,6 +517,54 @@
 
 #include <ctype.h>
 
+///////////////////////////////////////////////////////////////////////////////
+// PIPSocket::Address
+
+static int defaultIpAddressFamily=PF_INET; //PF_INET for IPv4 (default) or PF_INET6 for IPv6
+
+static PIPSocket::Address loopback4(127,0,0,1);
+static PIPSocket::Address broadcast4(INADDR_BROADCAST);
+static PIPSocket::Address any4(INADDR_ANY);
+static in_addr inaddr_empty;
+#if P_HAS_IPV6
+static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
+static in6_addr inaddr6_empty;
+static in6_addr inaddr6_any={0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
+static PIPSocket::Address any6(inaddr6_any);
+#endif
+
+
+const void PIPSocket::SetDefaultIpAddressFamily(int ipAdressFamily)
+{
+  defaultIpAddressFamily = ipAdressFamily;
+}
+
+
+const void PIPSocket::SetDefaultIpAddressFamilyV4()
+{
+  SetDefaultIpAddressFamily(PF_INET);
+}
+
+const void PIPSocket::SetDefaultIpAddressFamilyV6()
+{
+  SetDefaultIpAddressFamily(PF_INET6);
+}
+
+
+const int PIPSocket::GetDefaultIpAddressFamily()
+{
+  return defaultIpAddressFamily;
+}
+
+const PIPSocket::Address PIPSocket::GetDefaultIpAny()
+{
+#if P_HAS_IPV6
+  if (defaultIpAddressFamily == PF_INET6)
+    return any6;
+#endif
+
+  return any4;
+}
 
 
 #if P_HAS_IPV6
@@ -1671,21 +1722,34 @@ PString PIPSocket::GetPeerHostName()
 BOOL PIPSocket::Connect(const PString & host)
 {
   Address ipnum;
+#ifdef P_HAS_IPV6
+  if (GetHostAddress(host, ipnum))
+    return Connect(GetDefaultIpAny(), 0, ipnum);
+#else
   if (GetHostAddress(host, ipnum))
     return Connect(INADDR_ANY, 0, ipnum);
+#endif  
   return FALSE;
 }
 
 
 BOOL PIPSocket::Connect(const Address & addr)
 {
+#ifdef P_HAS_IPV6
+  return Connect(GetDefaultIpAny(), 0, addr);
+#else
   return Connect(INADDR_ANY, 0, addr);
+#endif
 }
 
 
 BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
 {
+#ifdef P_HAS_IPV6
+  return Connect(GetDefaultIpAny(), localPort, addr);
+#else
   return Connect(INADDR_ANY, localPort, addr);
+#endif
 }
 
 
@@ -1774,7 +1838,11 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
 
 BOOL PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
+#ifdef P_HAS_IPV6
+  return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
+#else
   return Listen(INADDR_ANY, queueSize, newPort, reuse);
+#endif
 }
 
 
@@ -1860,16 +1928,6 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// PIPSocket::Address
-
-static PIPSocket::Address loopback4(127,0,0,1);
-static PIPSocket::Address broadcast4(INADDR_BROADCAST);
-static in_addr inaddr_empty;
-#if P_HAS_IPV6
-static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static in6_addr inaddr6_empty;
-#endif
 
 
 const PIPSocket::Address & PIPSocket::Address::GetLoopback()
@@ -1883,7 +1941,19 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback6()
 {
   return loopback6;
 }
+
+const PIPSocket::Address & PIPSocket::Address::GetAny6()
+{
+  return any6;
+}
+
 #endif
+
+
+BOOL PIPSocket::Address::IsAny()
+{
+  return (!IsValid());
+}
 
 
 const PIPSocket::Address & PIPSocket::Address::GetBroadcast()
@@ -2337,7 +2407,11 @@ BOOL PTCPSocket::Write(const void * buf, PINDEX len)
 
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
+#if P_HAS_IPV6
+  return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
+#else
   return Listen(INADDR_ANY, queueSize, newPort, reuse);
+#endif
 }
 
 
