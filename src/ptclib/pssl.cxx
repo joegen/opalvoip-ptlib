@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.8 1998/12/04 13:04:18 craigs Exp $
+ * $Id: pssl.cxx,v 1.9 2000/01/10 02:24:09 craigs Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.9  2000/01/10 02:24:09  craigs
+ * Updated for new OpenSSL
+ *
  * Revision 1.8  1998/12/04 13:04:18  craigs
  * Changed for SSLeay 0.9
  *
@@ -101,11 +104,9 @@
 
 #include <ptlib.h>
 
-#ifdef P_SSL
-
-#include <pssl.h>
-#include "buffer.h"
-#include "crypto.h"
+#include <ptclib/pssl.h>
+#include <openssl/buffer.h>
+#include <openssl/crypto.h>
 
 PMutex PSSLChannel::initFlag;
 
@@ -121,7 +122,7 @@ static PMutex semaphores[CRYPTO_NUM_LOCKS];
 
 extern "C" {
 
-void locking_callback(int mode, int type, char * /* file */, int /* line */)
+void locking_callback(int mode, int type, const char * /* file */, int /* line */)
 {
 	if (mode & CRYPTO_LOCK) 
 		semaphores[type].Wait();
@@ -133,7 +134,7 @@ void locking_callback(int mode, int type, char * /* file */, int /* line */)
 
 static void thread_setup()
 {
-	CRYPTO_set_locking_callback((void (*)(int,int,char *,int))locking_callback);
+	CRYPTO_set_locking_callback((void (*)(int,int,const char *,int))locking_callback);
 }
 
 void PSSLChannel::Cleanup()
@@ -150,7 +151,7 @@ extern "C" {
 static int verifyCallBack(int ok, X509_STORE_CTX * ctx)
 {
   X509 * err_cert = X509_STORE_CTX_get_current_cert(ctx);
-  int err         = X509_STORE_CTX_get_error(ctx);
+  //int err         = X509_STORE_CTX_get_error(ctx);
   int depth       = X509_STORE_CTX_get_error_depth(ctx);
 
   // get the subject name, just for verification
@@ -394,8 +395,10 @@ extern "C" {
 #include <stdio.h>
 #include <errno.h>
 #define USE_SOCKETS
-#include "cryptlib.h"
-#include "buffer.h"
+
+//#include <openssl/cryptlib.h>
+#include <openssl/err.h>
+#include <openssl/buffer.h>
 
 static int  Psock_write(BIO *h,char *buf,int num);
 static int  Psock_read(BIO *h,char *buf,int size);
@@ -670,5 +673,3 @@ int verify_callback(int ok, X509 * xs, X509 * xi, int depth, int error)
 
 #endif
 
-
-#endif
