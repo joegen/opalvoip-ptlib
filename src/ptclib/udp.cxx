@@ -135,7 +135,7 @@ openPort( unsigned short port, unsigned int interfaceIp )
    fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
    if ( fd == INVALID_SOCKET )
    {
-      int err = errno;
+      //int err = errno;
       //cerr << "Could not create a UDP socket:" << err << endl;
       return INVALID_SOCKET;
    }
@@ -203,14 +203,18 @@ getMessage( Socket fd, char* buf, int* len,
    int originalSize = *len;
 
    struct sockaddr_in from;
+#ifdef P_MACOSX
    int fromLen = sizeof(from);
+#else
+   socklen_t fromLen = sizeof(from);
+#endif
 
    *len = recvfrom(fd,
                    buf,
                    *len,
                    0,
                    (struct sockaddr *)&from,
-                   (socklen_t *)&fromLen);
+                   &fromLen);
 
    if ( *len == SOCKET_ERROR )
    {
