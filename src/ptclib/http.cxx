@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.52  1998/11/30 04:51:53  robertj
+ * New directory structure
+ *
  * Revision 1.51  1998/09/23 06:22:07  robertj
  * Added open source copyright license.
  *
@@ -204,9 +207,9 @@
 #endif
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <http.h>
-#include <url.h>
+#include <ptlib/sockets.h>
+#include <ptclib/http.h>
+#include <ptclib/url.h>
 
 #include <ctype.h>
 
