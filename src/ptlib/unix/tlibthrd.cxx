@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.90  2002/08/29 01:50:40  robertj
+ * Changed the pthread_create so does retries if get EINTR or EAGAIN errors
+ *   which indicate a (possibly) temporary resource limit.
+ * Enabled and adjusted tracing.
+ *
  * Revision 1.89  2002/08/22 13:05:57  craigs
  * Fixed problems with mutex implementation thanks to Martin Froehlich
  *
@@ -407,7 +412,8 @@ BOOL PProcess::SetMaxFileHandles(int maxFileHandles)
   // set the new current limit
   rl.rlim_cur = maxFileHandles;
   if (setrlimit(RLIMIT_NOFILE, &rl) != 0) {
-    PTRACE(1, "Cannot set per-process file handle limit to " << maxFileHandles << " - check permissions");
+    PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
+           << maxFileHandles << " - check permissions");
     return FALSE;
   }
 
@@ -538,7 +544,23 @@ void PThread::Restart()
     PAssertOS(pthread_attr_setschedpolicy(&threadAttr, SCHED_FIFO) == 0);
 #endif
 
-  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) == 0);
+  int retry = 0;
+  while (pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) != 0) {
+    switch (errno) {
+      case EAGAIN :
+      case EINTR :
+        if (++retry < 1000) {
+          usleep(10000); // Basically just swap out thread to try and clear blockage
+          break;
+        }
+        // Give up and assert
+
+      default :
+        PAssertAlways("Could not create thread " + threadName);
+        return;
+    }
+  }
+  PTRACE_IF(2, retry > 0, "PWLib\tpthread_create required " << retry << " retries!");
 }
 
 
@@ -685,8 +707,7 @@ PThread::Priority PThread::GetPriority() const
       
     default:
       /* Unknown scheduler. We don't know what priority this thread has. */
-      PTRACE( 1, "PWLib\tPThread::GetPriority: unknown scheduling policy #" 
-              << schedulingPolicy );
+      PTRACE(1, "PWLib\tPThread::GetPriority: unknown scheduling policy #" << schedulingPolicy);
   }
 #endif
 
@@ -747,7 +768,7 @@ void PThread::Terminate()
   if (IsTerminated())
     return;
 
-  PTRACE(1, "PWLib\tForcing termination of thread " << (void *)this);
+  PTRACE(2, "PWLib\tForcing termination of thread " << (void *)this);
 
   if (Current() == this)
     pthread_exit(NULL);
@@ -777,21 +798,17 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
-  if (PX_threadId == 0) {
-    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") = 0");
+  if (PX_threadId == 0)
     return TRUE;
-  }
 
 #ifndef P_MACOSX
   // MacOS X does not support pthread_kill so we cannot use it
   // to test the validity of the thread
-  if (pthread_kill(PX_threadId, 0) != 0)  {
-    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") terminated");
+  if (pthread_kill(PX_threadId, 0) != 0)
     return TRUE;
-  }
 #endif
 
-  //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
+  PTRACE(7, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
   return FALSE;
 }
 
@@ -811,7 +828,7 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
-  //PTRACE(1, "PWLib\tWaitForTermination(" << maxWait << ')');
+  PTRACE(6, "PWLib\tWaitForTermination(" << maxWait << ')');
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
@@ -845,7 +862,6 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
 
   // now call the the thread main routine
-  //PTRACE(1, "PWLib\tAbout to call Main");
   thread->Main();
 
   // execute the cleanup routine
@@ -882,7 +898,7 @@ void PThread::PX_ThreadEnd(void * arg)
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
-  //PTRACE(1,"PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
+  PTRACE(7, "PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
   if ((handle < 0) || (handle >= FD_SETSIZE)) {
     errno = EBADF;
@@ -933,7 +949,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
-    PTRACE(4, "PWLib\tUnblocked I/O");
+    PTRACE(6, "PWLib\tUnblocked I/O");
   }
 
   return retval;
