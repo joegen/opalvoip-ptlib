@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.50  2001/08/07 04:37:03  robertj
+ * Simplified &#num; parsing.
+ *
  * Revision 1.49  2001/08/07 02:49:05  robertj
  * Fixed incorrect alignment if constrained string upper bound is exactly
  *     16 bits long. thanks Guntram Diehl & Thomas Arimont.
@@ -2284,16 +2287,13 @@ PASN_BMPString & PASN_BMPString::operator=(const char * str)
     WORD c = (BYTE)*str++;
 
     if (c == '&' && *str == '#') {
-      const char * semicolon = strchr(str, ';');
-      if (semicolon != NULL) {
-        unsigned bigChar = 0;
-        const char * p = str+1;
-        while (isdigit(*p))
-          bigChar = bigChar*10 + *p++ - '0';
-        if (p == semicolon && bigChar < 65536) {
-          c = (WORD)bigChar;
-          str = semicolon + 1;
-        }
+      unsigned bigChar = 0;
+      const char * p = str+1;
+      while (isdigit(*p))
+        bigChar = bigChar*10 + *p++ - '0';
+      if (*p == ';' && bigChar < 65536) {
+        c = (WORD)bigChar;
+        str = p + 1;
       }
     }
 
