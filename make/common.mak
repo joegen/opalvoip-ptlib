@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.49  2000/10/01 01:08:10  craigs
+# Fixed problems with Motif build
+#
 # Revision 1.48  2000/09/20 23:59:35  craigs
 # Fixed problem with bothnoshared target
 #
@@ -137,6 +140,9 @@ vpath %.dep $(DEPDIR)
 # add common directory to include path - must be after PW and PT directories
 #
 STDCCFLAGS	+= -I$(PWLIBDIR)/include
+ifdef PWLIB_GUI_FLAG
+STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
+endif
 
 #
 # add any trailing libraries
