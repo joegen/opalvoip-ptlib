@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.125  2004/03/23 04:56:23  csoutheren
+ * Added patches to use XPG6 threading under Linux if available
+ * Thanks to Matthew Hodgson
+ *
  * Revision 1.124  2004/02/01 11:23:16  dsandras
  * Reverted previous Change and removed Yield call from Current (). Fix from Christian Meder <chris@onestepahead.de>. Thanks for your help, Christian!
  *
@@ -1426,7 +1430,22 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   finishTime += waitTime;
 
 #ifdef P_HAS_SEMAPHORES
+#ifdef P_HAS_SEMAPHORES_XPG6
+  // use proper timed spinlocks if supported.
+  // http://www.opengroup.org/onlinepubs/007904975/functions/sem_timedwait.html
 
+  struct timespec absTime;
+  absTime.tv_sec  = finishTime.GetTimeInSeconds();
+  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+
+  if (sem_timedwait(&semId, &absTime) == 0) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+
+#else
   // loop until timeout, or semaphore becomes available
   // don't use a PTimer, as this causes the housekeeping
   // thread to get very busy
@@ -1434,11 +1453,18 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
     if (sem_trywait(&semId) == 0)
       return TRUE;
 
-    PThread::Yield(); // One time slice
+#if defined(P_LINUX)
+  // sched_yield in a tight loop is bad karma
+  // for the linux scheduler: http://www.ussg.iu.edu/hypermail/linux/kernel/0312.2/1127.html
+    PThread::Current()->Sleep(10);
+#else
+    PThread::Yield();
+#endif
   } while (PTime() < finishTime);
 
   return FALSE;
 
+#endif
 #else
 
   struct timespec absTime;
