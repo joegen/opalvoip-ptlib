@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.31 1998/03/29 06:16:44 robertj Exp $
+ * $Id: pprocess.h,v 1.32 1998/04/01 01:56:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.32  1998/04/01 01:56:21  robertj
+ * Fixed standard console mode app main() function generation.
+ *
  * Revision 1.31  1998/03/29 06:16:44  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -117,7 +120,7 @@
  */
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
-    { PProcess::PreInitialise(__argc, __argv, (char **)hInst); \
+    { PProcess::PreInitialise(argc, argv, envp); \
       static cls instance; \
       return instance._main(); \
     }
