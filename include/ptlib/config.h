@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.19  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.18  1998/10/30 12:23:55  robertj
  * Added ability to get all key values as a dictionary.
  *
@@ -88,7 +91,9 @@
 #endif
 
 
-PDECLARE_CLASS(PConfig, PObject)
+class PConfig : public PObject
+{
+  PCLASSINFO(PConfig, PObject)
 /* A class representing a configuration for the application. There are four
    sources of configuration information. The system environment, a system wide
    configuration file, an application specific configuration file or an

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.48  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.47  1998/09/23 06:20:23  robertj
  * Added open source copyright license.
  *
@@ -197,7 +200,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract container class
 
-PDECLARE_CLASS(PContainer, PObject)
+class PContainer : public PObject
+{
+  PCLASSINFO(PContainer, PObject)
 /* Abstract class to embody the base functionality of a <I>container</I>.
 
    Fundamentally, a container is an object that contains other objects. There
@@ -465,7 +470,9 @@ PDECLARE_CLASS(PContainer, PObject)
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract collection of objects class
 
-PDECLARE_CLASS(PCollection, PContainer)
+class PCollection : public PContainer
+{
+  PCLASSINFO(PCollection, PContainer)
 /* A collection is a container that collects together descendents of the
    <A>PObject</A> class. The objects contained in the collection are always
    pointers to objects, not the objects themselves. The life of an object in

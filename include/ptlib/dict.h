@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.22  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.21  1998/09/23 06:20:27  robertj
  * Added open source copyright license.
  *
@@ -103,7 +106,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PDictionary classes
 
-PDECLARE_CLASS(POrdinalKey, PObject)
+class POrdinalKey : public PObject
+{
+  PCLASSINFO(POrdinalKey, PObject)
 /* This class is used when an ordinal index value is the key for <A>PSet</A>
    and <A>PDictionary</A> classes.
  */
@@ -427,8 +432,9 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T>
-PDECLARE_CLASS(PSet, PAbstractSet)
+template <class T> class PSet : public PAbstractSet
+{
+  PCLASSINFO(PSet, PAbstractSet)
 /* This template class maps the PAbstractSet to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -598,7 +604,9 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 
 //////////////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PAbstractDictionary, PHashTable)
+class PAbstractDictionary : public PHashTable
+{
+  PCLASSINFO(PAbstractDictionary, PHashTable)
   public:
     PAbstractDictionary();
     /* Create a new, empty, dictionary.
@@ -796,8 +804,9 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
 
 #ifdef PHAS_TEMPLATES
 
-template <class K, class D>
-PDECLARE_CLASS(PDictionary, PAbstractDictionary)
+template <class K, class D> class PDictionary : public PAbstractDictionary
+{
+  PCLASSINFO(PDictionary, PAbstractDictionary)
 /* This template class maps the PAbstractDictionary to a specific key and data
    types. The functions in this class primarily do all the appropriate casting
    of types.
@@ -960,8 +969,9 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
  */
 #define PDICTIONARY(cls, K, D) typedef PDictionary<K, D> cls
 
-template <class K>
-PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
+template <class K> class POrdinalDictionary : public PAbstractDictionary
+{
+  PCLASSINFO(POrdinalDictionary, PAbstractDictionary)
 /* This template class maps the <A>PAbstractDictionary</A> to a specific key
    type and a <A>POrdinalKey</A> data type. The functions in this class
    primarily do all the appropriate casting of types.
