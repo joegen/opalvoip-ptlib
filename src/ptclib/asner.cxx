@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.33  2000/10/26 01:29:32  robertj
+ * Fixed MSVC warning.
+ *
  * Revision 1.32  2000/10/25 04:05:38  robertj
  * More bullet proofing of PER decoder.
  *
@@ -806,7 +809,7 @@ BOOL PASN_Enumeration::DecodePER(PPER_Stream & strm)
 
   if (extendable) {  // 13.3
     if (strm.SingleBitDecode()) {
-      int len;
+      int len = 0;
       return strm.SmallUnsignedDecode(len) &&
              len > 0 &&
              strm.UnsignedDecode(0, len-1, value) == 0;
