@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.13 2000/09/01 02:06:00 craigs Exp $
+ * $Id: pssl.cxx,v 1.14 2000/09/01 03:32:46 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.14  2000/09/01 03:32:46  robertj
+ * Fixed assert on setting directories for CAs.
+ *
  * Revision 1.13  2000/09/01 02:06:00  craigs
  * Changed to OpenSSL_add_ssl_algorthms to fix link problem on some machines
  *
@@ -190,7 +193,7 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
   SSL_CTX_set_quiet_shutdown(context, 1);
 
   // Set default locations
-  PAssert(SSL_CTX_load_verify_locations(context, NULL, NULL) && 
+  PAssert(SSL_CTX_load_verify_locations(context, NULL, ".") && 
           SSL_CTX_set_default_verify_paths(context), "Cannot set CAfile and path");
 
   if (sessionId != NULL) {
