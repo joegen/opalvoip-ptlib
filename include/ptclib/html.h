@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.h,v $
+ * Revision 1.20  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.19  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -99,15 +102,15 @@
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
 
-class PHTML : public PStringStream
-{
-  PCLASSINFO(PHTML, PStringStream)
-/* This class describes a HyperText markup Language string as used by the
-   World Wide Web and the <A>PURL</A> and <A>PHTTPSocket</A> class.
+/** This class describes a HyperText markup Language string as used by the
+   World Wide Web and the #PURL# and #PHTTPSocket# class.
    
    All of the standard stream I/O operators, manipulators etc will operate on
    the PString class.
  */
+class PHTML : public PStringStream
+{
+  PCLASSINFO(PHTML, PStringStream)
 
   public:
     enum ElementInSet {
@@ -157,6 +160,10 @@ class PHTML : public PStringStream
       NumElementsInSet
     };
 
+    /** Construct a new HTML object. If a title is specified in the
+       constructor then the HEAD, TITLE and BODY elements are output and the
+       string is used in a H1 element.
+     */
     PHTML(
       ElementInSet initialState = NumElementsInSet
     );
@@ -166,23 +173,19 @@ class PHTML : public PStringStream
     PHTML(
       const PString & str   // String representation of the title string.
     );
-    /* Construct a new HTML object. If a title is specified in the
-       constructor then the HEAD, TITLE and BODY elements are output and the
-       string is used in a H1 element.
-     */
 
     ~PHTML();
 
+    /** Restart the HTML string output using the specified value as the
+       new title. If <CODE>title</CODE> is empty then no HEAD or TITLE
+       elements are placed into the HTML.
+     */
     PHTML & operator=(
       const char * cstr    // String for title in restating HTML.
     );
     PHTML & operator=(
       const PString & str    // String for title in restating HTML.
     );
-    /* Restart the HTML string output using the specified value as the
-       new title. If <CODE>title</CODE> is empty then no HEAD or TITLE
-       elements are placed into the HTML.
-     */
 
 
   // New functions for class.

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.h,v $
+ * Revision 1.12  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.11  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -74,10 +77,7 @@
 #endif
 
 
-class PModem : public PSerialChannel
-{
-  PCLASSINFO(PModem, PSerialChannel)
-/* A class representing a modem attached to a serial port. This adds the usual
+/** A class representing a modem attached to a serial port. This adds the usual
    modem operations to the basic serial port.
    
    A modem object is always in a particular state. This state determines what
@@ -95,8 +95,17 @@ class PModem : public PSerialChannel
        hang up            <CODE>\d2s+++\d2sATH0\r</CODE>
 
  */
+class PModem : public PSerialChannel
+{
+  PCLASSINFO(PModem, PSerialChannel)
 
   public:
+    /** Create a modem object on the serial port specified. If no port was
+       specified do not open it. It does not initially have a valid port name.
+       
+       See the <A>PSerialChannel</A> class for more information on the
+       parameters.
+     */
     PModem();
     PModem(
       const PString & port,   // Serial port name to open.
@@ -107,20 +116,14 @@ class PModem : public PSerialChannel
       FlowControl inputFlow = DefaultFlowControl,   // Input flow control.
       FlowControl outputFlow = DefaultFlowControl   // Output flow control.
     );
-    /* Create a modem object on the serial port specified. If no port was
-       specified do not open it. It does not initially have a valid port name.
-       
-       See the <A>PSerialChannel</A> class for more information on the
-       parameters.
-     */
 
-    PModem(
-      PConfig & cfg   // Configuration file to read parameters from.
-    );
-    /* Open the modem serial channel obtaining the parameters from standard
+    /** Open the modem serial channel obtaining the parameters from standard
        variables in the configuration file. Note that it assumed that the
        correct configuration file section is already set.
      */
+    PModem(
+      PConfig & cfg   // Configuration file to read parameters from.
+    );
 
 
   // Overrides from class PChannel
@@ -129,6 +132,14 @@ class PModem : public PSerialChannel
 
 
   // Overrides from class PSerialChannel
+    /** Open the modem serial channel on the specified port.
+       
+       See the <A>PSerialChannel</A> class for more information on the
+       parameters.
+       
+       @return
+       TRUE if the modem serial port was successfully opened.
+     */
     virtual BOOL Open(
       const PString & port,   // Serial port name to open.
       DWORD speed = 0,        // Speed of serial port.
@@ -138,25 +149,17 @@ class PModem : public PSerialChannel
       FlowControl inputFlow = DefaultFlowControl,   // Input flow control.
       FlowControl outputFlow = DefaultFlowControl   // Output flow control.
     );
-    /* Open the modem serial channel on the specified port.
-       
-       See the <A>PSerialChannel</A> class for more information on the
-       parameters.
-       
-       <H2>Returns:</H2>
-       TRUE if the modem serial port was successfully opened.
-     */
 
-    virtual BOOL Open(
-      PConfig & cfg   // Configuration file to read parameters from.
-    );
-    /* Open the modem serial port obtaining the parameters from standard
+    /** Open the modem serial port obtaining the parameters from standard
        variables in the configuration file. Note that it assumed that the
        correct configuration file section is already set.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the modem serial port was successfully opened.
      */
+    virtual BOOL Open(
+      PConfig & cfg   // Configuration file to read parameters from.
+    );
 
     virtual void SaveSettings(
       PConfig & cfg   // Configuration file to write parameters to.
@@ -165,109 +168,106 @@ class PModem : public PSerialChannel
 
 
   // New member functions
+    /** Set the modem initialisation meta-command string.
+
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
+
+       Note there is an implied <CODE>\s</CODE> before the string.
+     */
     void SetInitString(
       const PString & str   // New initialisation command string.
     );
-    /* Set the modem initialisation meta-command string.
+
+    /** Get the modem initialisation meta-command string.
+    
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
+
+       @return
+       string for initialisation command.
+     */
+    PString GetInitString() const;
+
+    /** The modem is in a state that allows the initialise to start.
+    
+       @return
+       TRUE if the <A>Initialise()</A> function may proceeed.
+     */
+    BOOL CanInitialise() const;
+
+    /** Send the initialisation meta-command string to the modem. The return
+       value indicates that the conditions for the operation to start were met,
+       ie the serial port was open etc and the command was successfully
+       sent with all replies met.
+
+       @return
+       TRUE if command string sent successfully and the objects state has
+       changed.
+     */
+    BOOL Initialise();
+
+    /** Set the modem de-initialisation meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
        Note there is an implied <CODE>\s</CODE> before the string.
      */
-
-    PString GetInitString() const;
-    /* Get the modem initialisation meta-command string.
-    
-       See the <A>PChannel::SendCommandString()</A> function for more
-       information on the format of the command string.
-
-       <H2>Returns:</H2>
-       string for initialisation command.
-     */
-
-    BOOL CanInitialise() const;
-    /* The modem is in a state that allows the initialise to start.
-    
-       <H2>Returns:</H2>
-       TRUE if the <A>Initialise()</A> function may proceeed.
-     */
-
-    BOOL Initialise();
-    /* Send the initialisation meta-command string to the modem. The return
-       value indicates that the conditions for the operation to start were met,
-       ie the serial port was open etc and the command was successfully
-       sent with all replies met.
-
-       <H2>Returns:</H2>
-       TRUE if command string sent successfully and the objects state has
-       changed.
-     */
-
     void SetDeinitString(
       const PString & str   // New de-initialisation command string.
     );
-    /* Set the modem de-initialisation meta-command string.
 
-       See the <A>PChannel::SendCommandString()</A> function for more
-       information on the format of the command string.
-
-       Note there is an implied <CODE>\s</CODE> before the string.
-     */
-
-    PString GetDeinitString() const;
-    /* Get the modem de-initialisation meta-command string.
+    /** Get the modem de-initialisation meta-command string.
     
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       <H2>Returns:</H2>
+       @return
        string for de-initialisation command.
      */
+    PString GetDeinitString() const;
 
-    BOOL CanDeinitialise() const;
-    /* The modem is in a state that allows the de-initialise to start.
+    /** The modem is in a state that allows the de-initialise to start.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if the <A>Deinitialise()</A> function may proceeed.
      */
+    BOOL CanDeinitialise() const;
 
-    BOOL Deinitialise();
-    /* Send the de-initialisation meta-command string to the modem. The return
+    /** Send the de-initialisation meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if command string sent successfully and the objects state has
        changed.
      */
+    BOOL Deinitialise();
 
-    void SetPreDialString(
-      const PString & str   // New pre-dial command string.
-    );
-    /* Set the modem pre-dial meta-command string.
+    /** Set the modem pre-dial meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
        Note there is an implied <CODE>\s</CODE> before the string.
      */
+    void SetPreDialString(
+      const PString & str   // New pre-dial command string.
+    );
 
-    PString GetPreDialString() const;
-    /* Get the modem pre-dial meta-command string.
+    /** Get the modem pre-dial meta-command string.
     
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       <H2>Returns:</H2>
+       @return
        string for pre-dial command.
      */
+    PString GetPreDialString() const;
 
-    void SetPostDialString(
-      const PString & str   // New post-dial command string.
-    );
-    /* Set the modem post-dial meta-command string.
+    /** Set the modem post-dial meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
@@ -275,21 +275,44 @@ class PModem : public PSerialChannel
        Note there is <EM>not</EM> an implied <CODE>\s</CODE> before the
        string, unlike the pre-dial string.
      */
+    void SetPostDialString(
+      const PString & str   // New post-dial command string.
+    );
 
-    PString GetPostDialString() const;
-    /* Get the modem post-dial meta-command string.
+    /** Get the modem post-dial meta-command string.
     
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       <H2>Returns:</H2>
+       @return
        string for post-dial command.
      */
+    PString GetPostDialString() const;
 
+    /** Set the modem busy response meta-command string.
+
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
+
+       Note there is an implied <CODE>\w120s</CODE> before the string. Also
+       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       will simply terminate the string match.
+     */
     void SetBusyString(
       const PString & str   // New busy response command string.
     );
-    /* Set the modem busy response meta-command string.
+
+    /** Get the modem busy response meta-command string.
+    
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
+
+       @return
+       string for busy response command.
+     */
+    PString GetBusyString() const;
+
+    /** Set the modem no carrier response meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
@@ -298,21 +321,21 @@ class PModem : public PSerialChannel
        the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
        will simply terminate the string match.
      */
-
-    PString GetBusyString() const;
-    /* Get the modem busy response meta-command string.
-    
-       See the <A>PChannel::SendCommandString()</A> function for more
-       information on the format of the command string.
-
-       <H2>Returns:</H2>
-       string for busy response command.
-     */
-
     void SetNoCarrierString(
       const PString & str   // New no carrier response command string.
     );
-    /* Set the modem no carrier response meta-command string.
+
+    /** Get the modem no carrier response meta-command string.
+    
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
+
+       @return
+       string for no carrier response command.
+     */
+    PString GetNoCarrierString() const;
+
+    /** Set the modem connect response meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
@@ -321,49 +344,28 @@ class PModem : public PSerialChannel
        the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
        will simply terminate the string match.
      */
-
-    PString GetNoCarrierString() const;
-    /* Get the modem no carrier response meta-command string.
-    
-       See the <A>PChannel::SendCommandString()</A> function for more
-       information on the format of the command string.
-
-       <H2>Returns:</H2>
-       string for no carrier response command.
-     */
-
     void SetConnectString(
       const PString & str   // New connect response command string.
     );
-    /* Set the modem connect response meta-command string.
 
-       See the <A>PChannel::SendCommandString()</A> function for more
-       information on the format of the command string.
-
-       Note there is an implied <CODE>\w120s</CODE> before the string. Also
-       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
-       will simply terminate the string match.
-     */
-
-    PString GetConnectString() const;
-    /* Get the modem connect response meta-command string.
+    /** Get the modem connect response meta-command string.
     
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       <H2>Returns:</H2>
+       @return
        string for connect response command.
      */
+    PString GetConnectString() const;
 
-    BOOL CanDial() const;
-    /* The modem is in a state that allows the dial to start.
+    /** The modem is in a state that allows the dial to start.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if the <A>Dial()</A> function may proceeed.
      */
+    BOOL CanDial() const;
 
-    BOOL Dial(const PString & number);
-    /* Send the dial meta-command strings to the modem. The return
+    /** Send the dial meta-command strings to the modem. The return
        value indicates that the conditions for the operation to start were met,
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
@@ -372,81 +374,82 @@ class PModem : public PSerialChannel
        string, a <CODE>\s</CODE>, the <CODE>number</CODE> parameter and the
        post-dial string.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if command string sent successfully and the objects state has
        changed.
      */
+    BOOL Dial(const PString & number);
 
-    void SetHangUpString(
-      const PString & str   // New hang up command string.
-    );
-    /* Set the modem hang up meta-command string.
+    /** Set the modem hang up meta-command string.
 
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
        Note there is an implied <CODE>\s</CODE> before the string.
      */
+    void SetHangUpString(
+      const PString & str   // New hang up command string.
+    );
 
-    PString GetHangUpString() const;
-    /* Get the modem hang up meta-command string.
+    /** Get the modem hang up meta-command string.
     
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       <H2>Returns:</H2>
+       @return
        string for hang up command.
      */
+    PString GetHangUpString() const;
 
-    BOOL CanHangUp() const;
-    /* The modem is in a state that allows the hang up to start.
+    /** The modem is in a state that allows the hang up to start.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if the <A>HangUp()</A> function may proceeed.
      */
+    BOOL CanHangUp() const;
 
-    BOOL HangUp();
-    /* Send the hang up meta-command string to the modem. The return
+    /** Send the hang up meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if command string sent successfully and the objects state has
        changed.
      */
+    BOOL HangUp();
 
-    BOOL CanSendUser() const;
-    /* The modem is in a state that allows the user command to start.
+    /** The modem is in a state that allows the user command to start.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if the <A>SendUser()</A> function may proceeed.
      */
+    BOOL CanSendUser() const;
 
-    BOOL SendUser(
-      const PString & str   // User command string to send.
-    );
-    /* Send an arbitrary user meta-command string to the modem. The return
+    /** Send an arbitrary user meta-command string to the modem. The return
        value indicates that the conditions for the operation to start were met,
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if command string sent successfully.
      */
+    BOOL SendUser(
+      const PString & str   // User command string to send.
+    );
 
     void Abort();
     // Abort the current meta-string command operation eg dial, hang up etc.
 
-    BOOL CanRead() const;
-    /* The modem is in a state that allows the user application to read from
+    /** The modem is in a state that allows the user application to read from
        the channel. Reading while this is TRUE can interfere with the operation
        of the meta-string processing. This function is only usefull when
        multi-threading is used.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if <A>Read()</A> operations are "safe".
      */
+    BOOL CanRead() const;
 
     enum Status {
       Unopened,           // Has not been opened yet
@@ -469,12 +472,12 @@ class PModem : public PSerialChannel
     };
     // Modem object states.
 
-    Status GetStatus() const;
-    /* Get the modem objects current state.
+    /** Get the modem objects current state.
 
-       <H2>Returns:</H2>
+       @return
        modem status.
      */
+    Status GetStatus() const;
 
 
   protected:
