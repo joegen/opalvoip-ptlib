@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.15 1997/10/10 10:43:43 robertj Exp $
+ * $Id: httpform.cxx,v 1.16 1997/12/18 05:06:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.16  1997/12/18 05:06:51  robertj
+ * Added missing braces to kill GNU compiler warning.
+ *
  * Revision 1.15  1997/10/10 10:43:43  robertj
  * Fixed bug in password encryption, missing string terminator.
  *
@@ -678,8 +681,10 @@ void PHTTPPasswordField::GetHTMLTag(PHTML & html) const
 
 
 static const PTEACypher::Key PasswordKey = {
-  103,  60, 222,  17, 128, 157,  31, 137,
-  133,  64,  82, 148,  94, 136,   4, 209
+  {
+    103,  60, 222,  17, 128, 157,  31, 137,
+    133,  64,  82, 148,  94, 136,   4, 209
+  }
 };
 
 void PHTTPPasswordField::SetValue(const PString & newVal)
