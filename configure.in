@@ -346,9 +346,12 @@ fi
 dnl ########################################################################
 dnl check for linux video devices
 
-AC_CHECK_HEADER(linux/videodev.h, HAS_LINUX_VIDEODEV_H=1)
-if test "${HAS_LINUX_VIDEODEV_H:-unset}" = unset ; then
+HAS_VIDEO_CAPTURE=no
+AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
+  echo "No Video Capture support"
 fi
 
 dnl ########################################################################
