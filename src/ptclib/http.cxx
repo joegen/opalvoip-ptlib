@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.21 1996/04/16 12:47:22 robertj Exp $
+ * $Id: http.cxx,v 1.22 1996/04/29 12:25:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
- * Revision 1.21  1996/04/16 12:47:22  robertj
- * Fixed support for HTTPS via proxy.
+ * Revision 1.22  1996/04/29 12:25:45  robertj
+ * Fixed check boxes in HTML forms.
+ * Removed persistence (temporarily).
+ *
+ * Revision 1.19.1.1  1996/04/17 11:08:22  craigs
+ * New version by craig pending confirmation by robert
  *
  * Revision 1.19  1996/04/05 01:46:30  robertj
  * Assured PSocket::Write always writes the number of bytes specified, no longer need write loops.
@@ -94,6 +98,9 @@
 #include <html.h>
 #include <http.h>
 #include <ctype.h>
+
+//#define HAS_PERSISTANCE
+//#define STRANGE_NT_BUG
 
 #define DEFAULT_FTP_PORT	21
 #define DEFAULT_TELNET_PORT	23
@@ -709,17 +716,24 @@ BOOL PHTTPSocket::ProcessCommand()
 
     // if the client specified a persistant connection, then use the
     // ContentLength field. If there is no content length field, then
-    // assume 0. This isn't what the spec says, but it's what Netscape
-    // does so we don't really have a choice
+    // assume a ContentLength of zero and close the connection.
+    // The spec actually says to read until end of file in this case,
+    // but Netscape hangs if this is done.
     // If the client didn't specify a persistant connection, then use the
     // ContentLength if there is one or read until end of file if there isn't
-    if (connectInfo.IsPersistant())
+    if (!connectInfo.IsPersistant())
       contentLength = mimeInfo.GetInteger(ContentLengthStr, 0);
-    else 
+    else {
       contentLength = mimeInfo.GetInteger(ContentLengthStr, -1);
+      if (contentLength < 0) {
+        contentLength = 0;
+        connectInfo.SetPersistance(FALSE);
+      }
+    }
 
     // a content length of > 0 means read explicit length
     // a content length of < 0 means read until EOF
+    // a content length of 0 means read nothing
     int count = 0;
     if (contentLength > 0) {
       entityBody = ReadString((PINDEX)contentLength);
@@ -1117,6 +1131,8 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
 
   BOOL retval = request->outMIME.Contains(ContentLengthStr);
 
+#ifdef STRANGE_NT_BUG
+
   // The following is a work around for a strange bug in the NT version of
   // Netscape where it locks up when a persistent connection is made and data
   // less than 1k (including MIME headers) is sent. Go figure....
@@ -1126,6 +1142,7 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
     if (agent.Find("Mozilla") != P_MAX_INDEX)
       retval = agent.Find("WinNT") == P_MAX_INDEX;
   }
+#endif
 
   delete request;
   return retval;
@@ -1758,7 +1775,7 @@ void PHTTPBooleanField::GetHTML(PHTML & html)
 
 void PHTTPBooleanField::SetValue(const PString & val)
 {
-  value = val[0] != 'F';
+  value = val[0] == 'T';
 }
 
 
@@ -2080,6 +2097,8 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
     const PCaselessString & name = field.GetName();
     if (data.Contains(name))
       field.SetValue(data[name]);
+    else
+      field.SetValue("");
   }
 
   msg = "Accepted New Configuration";
@@ -2170,21 +2189,25 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
 {
-  isPersistant      = FALSE;
-  isProxyConnection = FALSE;
   majorVersion      = 0;
   minorVersion      = 9;
+
+  isPersistant      = FALSE;
+  isProxyConnection = FALSE;
 }
 
 void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
                                     int major, int minor)
 {
-  isPersistant      = FALSE;
   majorVersion      = major;
   minorVersion      = minor;
 
-  PString str;
+  isPersistant      = FALSE;
 
+#ifndef HAS_PERSISTANCE
+  isProxyConnection = FALSE;
+#else
+  PString str;
   // check for Proxy-Connection and Connection strings
   isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
   if (isProxyConnection)
@@ -2197,11 +2220,16 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
     PStringArray tokens = str.Tokenise(", ", FALSE);
     isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
   }
+#endif
 }
 
 void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
 {
+#ifdef HAS_PERSISTANCE
   isPersistant = newPersist;
+#else
+  isPersistant = FALSE;
+#endif
 }
 
 BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
