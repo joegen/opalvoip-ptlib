@@ -87,21 +87,8 @@ void killpidfile()
 }
 #endif
 
-int PServiceProcess::_main(int parmArgc,
-                      char ** parmArgv,
-                      char ** parmEnvp)
+int PServiceProcess::_main()
 {
-  // save the environment
-  envp = parmEnvp;
-  argc = parmArgc;
-  argv = parmArgv;
-
-  // setup the common process initialisation
-  PXSetupProcess();
-
-  // perform PWLib initialisation
-  PreInitialise(argc, argv);
-
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
 
