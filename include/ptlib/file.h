@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.23 1995/03/12 04:37:13 robertj Exp $
+ * $Id: file.h,v 1.24 1995/03/14 12:41:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.23  1995/03/12 04:37:13  robertj
+ * Revision 1.24  1995/03/14 12:41:23  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.23  1995/03/12  04:37:13  robertj
  * Moved GetHandle() function from PFile to PChannel.
  *
  * Revision 1.22  1995/01/14  06:22:11  robertj
@@ -107,7 +110,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
     PFile();
     /* Create a file object but do not open it. It does not initially have a
        valid file name. However, an attempt to open the file using the
-       $B$Open()$B$ function will generate a unique temporary file.
+       <A><CODE>Open()</CODE></A> function will generate a unique temporary
+       file.
      */
 
     enum OpenMode {
@@ -117,7 +121,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
     };
     /* When a file is opened, it may restrict the access available to
        operations on the object instance. A value from this enum is passed to
-       the $B$Open()$B$ function to set the mode.
+       the <A><CODE>Open()</CODE></A> function to set the mode.
      */
 
     enum OpenOptions {
@@ -131,38 +135,40 @@ PDECLARE_CONTAINER(PFile, PChannel)
     /* When a file is opened, a number of options may be associated with the
        open file. These describe what action to take on opening the file and
        what to do on closure. A value from this enum is passed to the
-       $B$Open()$B$ function to set the options.
+       <A><CODE>Open()</CODE></A> function to set the options.
 
-       The $B$ModeDefault$B$ option will use the following values:
-          $U$Mode$U$          $U$Options$U$
-          ReadOnly      MustExist
-          WriteOnly     Create | Truncate
-          ReadWrite     Create
+       The <CODE>ModeDefault</CODE> option will use the following values:
+       <PRE>
+          <EM>Mode</EM>          <EM>Options</EM>
+          ReadOnly      <CODE>MustExist</CODE>
+          WriteOnly     <CODE>Create | Truncate</CODE>
+          ReadWrite     <CODE>Create</CODE>
+       </PRE>
      */
 
     PFile(
       OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // $H$OpenOptions for open operation.
+      int opts = ModeDefault  // <A>OpenOptions</A> for open operation.
     );
     /* Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The $B$IsOpen()$B$ function may be used after object construction to
-       determine if the file was successfully opened.
+       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       construction to determine if the file was successfully opened.
      */
 
     PFile(
       const PFilePath & name,     // Name of file to open.
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // $H$OpenOptions for open operation.
+      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
     );
     /* Create a file object with the specified name and open it in the
        specified mode and with the specified options.
 
-       The $B$IsOpen()$B$ function may be used after object construction to
-       determine if the file was successfully opened.
+       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       construction to determine if the file was successfully opened.
      */
 
 
@@ -171,18 +177,20 @@ PDECLARE_CONTAINER(PFile, PChannel)
       const PObject & obj   // Other file to compare against.
     ) const;
     /* Determine the relative rank of the two objects. This is essentially the
-       string comparison of the $H$PFilePath names of the files.
+       string comparison of the <A>PFilePath</A> names of the files.
 
-       Returns: relative rank of the file paths.
+       <H2>Returns:</H2>
+       relative rank of the file paths.
      */
 
 
   // Overrides from class PChannel
     virtual PString GetName() const;
     /* Get the platform and I/O channel type name of the channel. For example,
-       it would return the filename in $H$PFile type channels.
+       it would return the filename in <A>PFile</A> type channels.
 
-       Returns: the name of the channel.
+       <H2>Returns:</H2>
+       the name of the channel.
      */
 
     virtual BOOL Read(
@@ -196,9 +204,9 @@ PDECLARE_CONTAINER(PFile, PChannel)
        The GetErrorCode() function should be consulted after Read() returns
        FALSE to determine what caused the failure.
 
-       Returns: TRUE indicates that at least one character was read from the
-                channel. FALSE means no bytes were read due to timeout or
-                some other I/O error.
+       <H2>Returns:</H2>
+       TRUE indicates that at least one character was read from the channel.
+       FALSE means no bytes were read due to timeout or some other I/O error.
      */
 
     virtual BOOL Write(
@@ -221,15 +229,16 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
   // New member functions
     const PFilePath & GetFilePath() const;
-    /* Get the full path name of the file. The $H$PFilePath object describes
-       the full file name specification for the particular platform.
+    /* Get the full path name of the file. The <A>PFilePath</A> object
+       describes the full file name specification for the particular platform.
 
-       Returns: the name of the file.
+       <H2>Returns:</H2>
+       the name of the file.
      */
 
     void SetFilePath(const PString & str);
-    /* Set the full path name of the file. The $H$PFilePath object describes
-       the full file name specification for the particular platform.
+    /* Set the full path name of the file. The <A>PFilePath</A> object
+       describes the full file name specification for the particular platform.
      */
 
 
@@ -243,7 +252,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        instance of the object. The second static function uses an arbitrary
        file specified by name.
 
-       Returns: TRUE if the file exists.
+       <H2>Returns:</H2>
+       TRUE if the file exists.
      */
 
     BOOL Access(
@@ -262,7 +272,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        instance of the object. The second static function uses an arbitrary
        file specified by name.
 
-       Returns: TRUE if a file open would succeed.
+       <H2>Returns:</H2>
+       TRUE if a file open would succeed.
      */
       
     BOOL Remove(
@@ -272,19 +283,21 @@ PDECLARE_CONTAINER(PFile, PChannel)
       const PString & name,   // Name of file to delete.
       BOOL force = FALSE      // Force deletion even if file is protected.
     );
-    /* Delete the specified file. If $B$force$B$ is FALSE and the file is
-       protected against being deleted then the function fails. If $B$force$B$
-       is TRUE then the protection is ignored. What constitutes file deletion
-       protection is platform dependent, eg on DOS is the Read Only attribute
-       and on a Novell network it is a Delete trustee right. Some protection
-       may not be able to overridden with the $B$force$B$ parameter at all, eg
-       on a Unix system and you are not the owner of the file.
+    /* Delete the specified file. If <CODE>force</CODE> is FALSE and the file
+       is protected against being deleted then the function fails. If
+       <CODE>force</CODE> is TRUE then the protection is ignored. What
+       constitutes file deletion protection is platform dependent, eg on DOS
+       is the Read Only attribute and on a Novell network it is a Delete
+       trustee right. Some protection may not be able to overridden with the
+       <CODE>force</CODE> parameter at all, eg on a Unix system and you are
+       not the owner of the file.
 
        The first form uses the file path specification associated with the
        instance of the object. The second static function uses an arbitrary
        file specified by name.
 
-       Returns: TRUE if the file was deleted.
+       <H2>Returns:</H2>
+       TRUE if the file was deleted.
      */
       
     BOOL Rename(
@@ -308,7 +321,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        new name if the function succeeds. The second static function uses an
        arbitrary file specified by name.
 
-       Returns: TRUE if the file was renamed.
+       <H2>Returns:</H2>
+       TRUE if the file was renamed.
      */
 
     BOOL Copy(
@@ -329,7 +343,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        new name if the function succeeds. The second static function uses an
        arbitrary file specified by name.
 
-       Returns: TRUE if the file was renamed.
+       <H2>Returns:</H2>
+       TRUE if the file was renamed.
      */
 
 
@@ -340,30 +355,33 @@ PDECLARE_CONTAINER(PFile, PChannel)
     BOOL Open(
       const PFilePath & name,     // Name of file to open.
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // $H$OpenOptions for open operation.
+      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
     );
     /* Open the given file name (if specified) in the specified mode and with
        the specified options. If the file object already has an open file then
        it is closed.
        
        If there has not been a filename attached to the file object (via
-       $B$SetFilePath()$B$, the $B$name$B$ parameter or a previous open) then
-       a new unique temporary filename is generated.
+       <CODE>SetFilePath()</CODE>, the <A><CODE>name</CODE></A> parameter or a
+       previous open) then a new unique temporary filename is generated.
 
-       Returns: TRUE if the file was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the file was successfully opened.
      */
       
     off_t GetLength() const;
     /* Get the current size of the file.
 
-       Returns: length of file in bytes.
+       <H2>Returns:</H2>
+       length of file in bytes.
      */
       
     BOOL SetLength(off_t len);
     /* Set the size of the file, padding with 0 bytes if it would require
        expanding the file, or truncating it if being made shorter.
 
-       Returns: TRUE if the file size was changed to the length specified.
+       <H2>Returns:</H2>
+       TRUE if the file size was changed to the length specified.
      */
 
     enum FilePositionOrigin {
@@ -378,34 +396,40 @@ PDECLARE_CONTAINER(PFile, PChannel)
       FilePositionOrigin origin = Start  // Origin for position change.
     );
     /* Set the current active position in the file for the next read or write
-       operation. The $B$pos$B$ variable is a signed number which is added to
-       the specified origin. For $B$origin$B$ == PFile::Start only positive
-       values for $B$pos$B$ are meaningful. For $B$origin$B$ == PFile::End only
-       negative values for $B$pos$B$ are meaningful.
+       operation. The <CODE>pos</CODE> variable is a signed number which is
+       added to the specified origin. For <CODE>origin == PFile::Start</CODE>
+       only positive values for <CODE>pos</CODE> are meaningful. For
+       <CODE>origin == PFile::End</CODE> only negative values for
+       <CODE>pos</CODE> are meaningful.
 
-       Returns: TRUE if the new file position was set.
+       <H2>Returns:</H2>
+       TRUE if the new file position was set.
      */
 
     off_t GetPosition() const;
     /* Get the current active position in the file for the next read or write
        operation.
 
-       Returns: current file position relative to start of file.
+       <H2>Returns:</H2>
+       current file position relative to start of file.
      */
 
     BOOL IsEndOfFile() const;
     /* Determine if the current file position is at the end of the file. If
        this is TRUE then any read operation will fail.
 
-       Returns: TRUE if at end of file.
+       <H2>Returns:</H2>
+       TRUE if at end of file.
      */
       
     BOOL GetInfo(
-      PFileInfo & info    // $H$PFileInfo structure to receive the information.
+      PFileInfo & info
+      // <A>PFileInfo</A> structure to receive the information.
     );
     static BOOL GetInfo(
       const PFilePath & name,  // Name of file to get the information on.
-      PFileInfo & info    // $H$PFileInfo structure to receive the information.
+      PFileInfo & info
+      // <A>PFileInfo</A> structure to receive the information.
     );
     /* Get information (eg protection, timestamps) on the specified file.
 
@@ -413,7 +437,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        instance of the object.The second static function uses an arbitrary
        file specified by name.
 
-       Returns: TRUE if the file was renamed.
+       <H2>Returns:</H2>
+       TRUE if the file was renamed.
      */
 
     BOOL SetPermissions(
@@ -429,7 +454,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        instance of the object.The second static function uses an arbitrary
        file specified by name.
 
-       Returns: TRUE if the file was renamed.
+       <H2>Returns:</H2>
+       TRUE if the file was renamed.
      */
 
 
