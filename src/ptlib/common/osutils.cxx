@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.181  2002/02/14 05:14:51  robertj
+ * Fixed possible deadlock if a timer is deleted (however indirectly) in the
+ *   OnTimeout of another timer.
+ *
  * Revision 1.180  2002/02/11 04:07:00  robertj
  * Fixed possibly race condition in PTRACE of first message. Consequence is
  *   that cannot PTRACE until have PProcess, ie before main() is executed.
@@ -939,9 +943,15 @@ PTimer::~PTimer()
 {
   timerList->listMutex.Wait();
   timerList->Remove(this);
+  BOOL isCurrentTimer = this == timerList->currentTimer;
   timerList->listMutex.Signal();
-  timerList->inTimeoutMutex.Wait();
-  timerList->inTimeoutMutex.Signal();
+
+  // Make sure that the OnTimeout for this timer has completed before
+  // destroying the timer
+  if (isCurrentTimer) {
+    timerList->inTimeoutMutex.Wait();
+    timerList->inTimeoutMutex.Signal();
+  }
 }
 
 
@@ -1067,6 +1077,7 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 PTimerList::PTimerList()
 {
   DisallowDeleteObjects();
+  currentTimer = NULL;
 }
 
 
@@ -1089,13 +1100,14 @@ PTimeInterval PTimerList::Process()
   lastSample = now;
 
   for (i = 0; i < GetSize(); i++) {
-    PTimer & timer = (*this)[i];
+    currentTimer = (PTimer *)GetAt(i);
     inTimeoutMutex.Wait();
     listMutex.Signal();
-    timer.Process(sampleTime, minTimeLeft);
+    currentTimer->Process(sampleTime, minTimeLeft);
     listMutex.Wait();
     inTimeoutMutex.Signal();
   }
+  currentTimer = NULL;
   
   listMutex.Signal();
 
