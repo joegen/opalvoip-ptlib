@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.8  1998/11/30 02:55:42  robertj
+ * New directory structure
+ *
  * Revision 1.7  1998/09/24 03:30:35  robertj
  * Added open software license.
  *
@@ -59,7 +62,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-#include "../../common/ptlib/timeint.h"
+#include "../../timeint.h"
 };
 
 #define PMaxTimeInterval PTimeInterval(0x7fffffff)
