@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.8 1995/06/17 11:12:53 robertj Exp $
+ * $Id: pipechan.h,v 1.9 1995/07/31 12:15:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.9  1995/07/31 12:15:45  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.8  1995/06/17 11:12:53  robertj
  * Documentation update.
  *
@@ -42,7 +45,7 @@
 #endif
 
 
-PDECLARE_CONTAINER(PPipeChannel, PChannel)
+PDECLARE_CLASS(PPipeChannel, PChannel)
 /* A channel that uses a operating system pipe between the current process and
    a sub-process. On platforms that support <I>multi-processing</I>, the
    sub-program is executed concurrently with the calling process.
@@ -126,6 +129,9 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
        only the explicit or implicit path contained in the
        <CODE>subProgram</CODE> parameter is searched for the executable.
      */
+
+  ~PPipeChannel();
+  // Close the pipe channel, killing the sub-process.
 
 
   // Overrides from class PObject
