@@ -9,3 +9,4 @@ asnparser.ncb
 asnparser.opt
 asnparser.plg
 asnparser.dep
+test.asn test.cxx test.h
