@@ -28,10 +28,16 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "pxml.h"
+#endif
+
 #include <ptlib.h>
-#include <expat.h>
+
+#if P_EXPAT
 
 #include <ptclib/pxml.h>
+#include <expat.h>
 
 #define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
 
@@ -501,3 +507,5 @@ BOOL PXMLSettings::HasAttribute(const PCaselessString & section, const PString &
 }
 
 ///////////////////////////////////////////////////////
+
+#endif 
