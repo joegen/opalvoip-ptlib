@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.8 1996/03/04 12:39:35 robertj Exp $
+ * $Id: assert.cxx,v 1.9 1996/05/23 10:03:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.9  1996/05/23 10:03:20  robertj
+ * Windows 95 support.
+ *
  * Revision 1.8  1996/03/04 12:39:35  robertj
  * Fixed Win95 support for console tasks.
  *
@@ -40,17 +43,6 @@
 
 #include <errno.h>
 
-#if defined(_WIN32)
-#include <conio.h>
-#ifdef _MSC_VER
-#define GETCHAR _getch
-#else
-#define GETCHAR getch
-#endif
-#else
-#define GETCHAR getchar
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -69,8 +61,14 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   if (wndProcess != (DWORD)thisProcess)
     return TRUE;
 
-  fputs("\nPress any key to continue . . .\n", stderr);
-  GETCHAR();
+  cerr << "\nPress a key to continue . . .";
+  cerr.flush();
+
+  HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+  FlushConsoleInputBuffer(in);
+  char dummy;
+  DWORD readBytes;
+  ReadConsole(in, &dummy, 1, &readBytes, NULL);
   return FALSE;
 }
 
@@ -103,20 +101,21 @@ void PAssertFunc(const char * file, int line, const char * msg)
   }
 
   for (;;) {
-    fprintf(stderr, "Assertion fail: File %s, Line %u\n", file, line);
+    cerr << "Assertion fail: File " << file << ", Line " << line << endl;
     if (msg != NULL)
-      fprintf(stderr, "%s - Error code=%u\n", msg, err);
-    fputs("<A>bort, <B>reak, <I>gnore? ", stderr);
-    switch (GETCHAR()) {
+      cerr << msg << " - Error code=" << err << endl;
+    cerr << "<A>bort, <B>reak, <I>gnore? ";
+    cerr.flush();
+    switch (cin.get()) {
       case 'A' :
       case 'a' :
       case EOF :
-        fputs("Aborted\n", stderr);
+        cerr << "Aborted" << endl;
         _exit(100);
         
       case 'B' :
       case 'b' :
-        fputs("Break\n", stderr);
+        cerr << "Break" << endl;
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
@@ -126,7 +125,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
       case 'I' :
       case 'i' :
-        fputs("Ignored\n", stderr);
+        cerr << "Ignored" << endl;
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
