@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.33  1998/11/14 10:37:38  robertj
+ * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
+ *
  * Revision 1.32  1998/10/16 01:16:55  craigs
  * Added Yield to help with cooperative multithreading.
  *
@@ -388,7 +391,7 @@ BOOL PSocket::os_sendto(
          ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)) > 0) {
     PThread::Yield();
     lastWriteCount = writeResult;
-    return lastWriteCount >= len;
+    return TRUE;
   }
 
   if (errno != EWOULDBLOCK)
@@ -402,9 +405,8 @@ BOOL PSocket::os_sendto(
   // attempt to read data
   if (ConvertOSError(lastWriteCount =
          ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)))
-    return lastWriteCount >= len;
+    return lastWriteCount > 0;
 
-  lastWriteCount = 0;
   return FALSE;
 }
 
@@ -748,7 +750,7 @@ BOOL PEthSocket::Write(const void * buf, PINDEX len)
 {
   sockaddr to;
   strcpy(to.sa_data, channelName);
-  return os_sendto(buf, len, 0, &to, sizeof(to));
+  return os_sendto(buf, len, 0, &to, sizeof(to)) && lastWriteCount >= len;
 }
 
 
