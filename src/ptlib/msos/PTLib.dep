@@ -1,5 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by PTLib.mak
 
+.\dllmain.cxx : \
+	
 
 .\libver.rc : \
 	"..\..\..\version.h"\
