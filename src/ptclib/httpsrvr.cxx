@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.11 1997/08/04 10:44:36 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.12 1997/10/03 13:39:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.12  1997/10/03 13:39:25  robertj
+ * Fixed race condition on socket close in Select() function.
+ *
+ * Revision 1.12  1997/10/03 13:31:12  craigs
+ * Added ability to access client socket from within HTTP resources
+ *
  * Revision 1.11  1997/08/04 10:44:36  robertj
  * Improved receiving of a POST on a non-persistant connection, do not wait for EOF if have CRLF.
  *
@@ -702,11 +708,12 @@ BOOL PHTTPSimpleAuth::Validate(const PHTTPRequest &,
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
-PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM)
+PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & server)
   : url(u), inMIME(iM)
 {
   code        = PHTTP::OK;
   contentSize = 0;
+  server.GetSocket()->GetPeerAddress(origin); 
 }
 
 
@@ -841,7 +848,7 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                            !IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag]))) 
     return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(url, info);
+  PHTTPRequest * request = CreateRequest(url, info, server);
 
   BOOL retVal = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
@@ -897,7 +904,7 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
                  const PStringToString & data,
              const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPRequest * request = CreateRequest(url, info);
+  PHTTPRequest * request = CreateRequest(url, info, server);
 
   BOOL persist = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
@@ -996,9 +1003,10 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 
 
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
-                                       const PMIMEInfo & inMIME)
+                                       const PMIMEInfo & inMIME,
+									       PHTTPServer & socket)
 {
-  return PNEW PHTTPRequest(url, inMIME);
+  return PNEW PHTTPRequest(url, inMIME, socket);
 }
 
 
@@ -1152,16 +1160,18 @@ PHTTPFile::PHTTPFile(const PURL & url,
 
 
 PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME)
-  : PHTTPRequest(url, inMIME)
+                                   const PMIMEInfo & inMIME,
+								   PHTTPServer & server)
+  : PHTTPRequest(url, inMIME, server)
 {
 }
 
 
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME)
+                                   const PMIMEInfo & inMIME,
+								       PHTTPServer & server)
 {
-  return PNEW PHTTPFileRequest(url, inMIME);
+  return PNEW PHTTPFileRequest(url, inMIME, server);
 }
 
 
@@ -1231,16 +1241,18 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 
 
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME)
-  : PHTTPFileRequest(url, inMIME)
+                                   const PMIMEInfo & inMIME,
+								   PHTTPServer & server)
+  : PHTTPFileRequest(url, inMIME, server)
 {
 }
 
 
 PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
-                                        const PMIMEInfo & inMIME)
+                                        const PMIMEInfo & inMIME,
+									        PHTTPServer & socket)
 {
-  return PNEW PHTTPDirRequest(url, inMIME);
+  return PNEW PHTTPDirRequest(url, inMIME, socket);
 }
 
 
