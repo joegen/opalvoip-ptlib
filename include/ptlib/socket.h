@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.45  2004/01/28 08:53:02  csoutheren
+ * Fixed missing delete[] operator. Thanks to Borko Jandras
+ *
  * Revision 1.44  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -606,7 +609,7 @@ class P_fd_set {
     P_fd_set(SOCKET fd);
     ~P_fd_set()
       {
-        delete set;
+        delete[] set;
       }
 
     P_fd_set & operator=(SOCKET fd);
