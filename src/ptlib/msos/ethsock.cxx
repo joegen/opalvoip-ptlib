@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.39  2003/11/05 22:51:22  csoutheren
+ * Added pragma to automatically included required libs
+ *
  * Revision 1.38  2003/09/17 05:45:10  csoutheren
  * Removed recursive includes
  *
@@ -154,6 +157,8 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <snmp.h>
+
+#pragma comment(lib, "snmpapi.lib")
 
 ///////////////////////////////////////////////////////////////////////////////
 // Stuff from snmp.h
