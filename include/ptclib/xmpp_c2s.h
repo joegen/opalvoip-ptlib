@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.6  2004/05/09 07:23:46  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.5  2004/04/28 11:26:42  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -90,16 +93,18 @@ namespace XMPP
     };
   
 
-/** This class handles the client side of a C2S (Client to Server)
-    XMPP stream.
- */
+    /** This class handles the client side of a C2S (Client to Server)
+        XMPP stream.
+     */
     class StreamHandler : public BaseStreamHandler
     {
       PCLASSINFO(StreamHandler, BaseStreamHandler);
 
     public:
-      StreamHandler(const JID& jid, const PString& pwd);
+      StreamHandler(const JID& jid, const PString& pwd, BOOL newAccount = FALSE);
       ~StreamHandler();
+
+      virtual BOOL IsEstablished() const        { return m_State == Established; }
 
       virtual BOOL Start(Transport * transport = 0);
 
@@ -113,6 +118,8 @@ namespace XMPP
 
       void    SetVersion(WORD major, WORD minor);
       void    GetVersion(WORD& major, WORD& minor) const;
+
+      const JID&  GetJID() const  { return m_JID; }
 
       /** These notifier lists after when a client session is
       established (i.e. after the handshake and authentication
@@ -134,15 +141,36 @@ namespace XMPP
       PNotifierList&  IQHandlers()        { return m_IQHandlers; }
 
       /** A notifier list for a specific namespace. The list will
-      be fired only upon receiving an IQ with a child element
-      of type "query" (just like a lot of JEPs) and the specified 
-      namespace
+      be fired only upon receiving an IQ with the child element
+      of the specified namespace
       */
-      PNotifierList&  IQQueryHandlers(const PString& xml_namespace);
+      PNotifierList&  IQNamespaceHandlers(const PString& xml_namespace);
+
+      /** A notifier list for a particular message originator. The list will
+      be fired only upon receiving a message from the specified jid.
+      NOTE: if a matching notifier list is found and it's not emnpty, the
+      generic MessageHandlers list IS NOT fired.
+      */
+      PNotifierList&  MessageSenderHandlers(const JID& from);
+
+      /** JEP-0030 Service Discovery access methods.
+          The response handler will receive a PIQ stanza (a smart
+          pointer to a XMPP::IQ)
+       */
+      virtual BOOL DiscoverItems(
+                    const PString& jid,           // JID to which a query will be send
+                    PNotifier * responseHandler,
+                    const PString& node = PString::Empty()); // Optional node
+
+      virtual BOOL DiscoverInfo(
+                    const PString& jid,           // JID to which a query will be send
+                    PNotifier * responseHandler,
+                    const PString& node = PString::Empty()); // Optional node
 
     protected:
       virtual void    OnOpen(Stream& stream, INT);
       virtual void    OnClose(Stream& stream, INT);
+      virtual void    StartRegistration();
       virtual void    StartAuthNegotiation();
 
       virtual void    OnSessionEstablished();
@@ -156,6 +184,7 @@ namespace XMPP
 
       // State handlers
       virtual void    HandleNullState(PXML& pdu);
+      virtual void    HandleRegStartedState(PXML& pdu);
       virtual void    HandleTLSStartedState(PXML& pdu);
 #if P_SASL2
       virtual void    HandleSASLStartedState(PXML& pdu);
@@ -166,8 +195,15 @@ namespace XMPP
       virtual void    HandleSessionSentState(PXML& pdu);
       virtual void    HandleEstablishedState(PXML& pdu);
 
+      virtual BOOL    Discover(const PString& xmlns,
+                               const PString& jid,
+                               PNotifier * responseHandler,
+                               const PString& node);
+
       WORD                m_VersionMajor;
       WORD                m_VersionMinor;
+      PString             m_StreamID;
+      BOOL                m_NewAccount;
       JID                 m_JID;
       const PString       m_Password;
 #if P_SASL2
@@ -183,7 +219,8 @@ namespace XMPP
       PNotifierList       m_MessageHandlers;
       PNotifierList       m_PresenceHandlers;
       PNotifierList       m_IQHandlers;
-      PDictionary<PString, PNotifierList> m_IQQueryHandlers;
+      PDictionary<PString, PNotifierList> m_IQNamespaceHandlers;
+      PDictionary<JID, PNotifierList> m_MessageSenderHandlers;
 
       PMutex              m_PendingIQsLock;
       StanzaList          m_PendingIQs;
@@ -191,6 +228,7 @@ namespace XMPP
       enum StreamState
       {
         Null,
+        RegStarted,
         TLSStarted,
         SASLStarted,
         NonSASLStarted, // non SASL authentication (JEP-0078)
@@ -214,5 +252,6 @@ namespace XMPP
 #endif  // _XMPP_C2S
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
 
