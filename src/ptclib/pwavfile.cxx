@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.11  2001/08/15 12:52:20  rogerh
+ * Fix typo
+ *
  * Revision 1.10  2001/08/15 12:21:45  rogerh
  * Make Solaris use our swab() function instead of the C library version.
  * Submitted by Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
@@ -71,7 +74,7 @@
 #include <ptlib.h>
 
 
-#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__)
+#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__) \
                                  || defined(P_SOLARIS) )
 void swab(const void * void_from, void * void_to, register size_t len)
 {
