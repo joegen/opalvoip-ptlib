@@ -24,9 +24,11 @@ endif
 
 
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
-	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
+	set -e; $(foreach dir,$(SUBDIRS),$(MAKE)  -C $(dir) opt;)
 
 default_sound:
 	@echo $(DEFAULT_SOUND)
-	
+
+
+
 
