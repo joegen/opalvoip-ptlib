@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.69  2001/08/30 08:57:40  robertj
+ * Changed calls to usleep to be PThread::Yield(), normalising single
+ *   timeslice process swap out.
+ *
  * Revision 1.68  2001/08/20 06:55:45  robertj
  * Fixed ability to have PMutex::Wait() with times less than one second.
  * Fixed small error in return value of block on I/O function, not critical.
@@ -937,7 +941,7 @@ PThread::Priority PThread::GetPriority() const
 
 void PThread::Yield()
 {
-  ::sleep(0);
+  usleep(1000); // Approx one timeslice
 }
 
 
@@ -975,7 +979,7 @@ void PThread::WaitForTermination() const
   PXAbortIO();
 
   while (!IsTerminated())
-    usleep(1); // One time slice
+    Yield(); // One time slice
 }
 
 
@@ -990,7 +994,7 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   while (!IsTerminated()) {
     if (timeout == 0)
       return FALSE;
-    usleep(1); // One time slice
+    Yield(); // One time slice
   }
   return TRUE;
 }
@@ -1086,7 +1090,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
     if (sem_trywait(&semId) == 0)
       return TRUE;
 
-    usleep(1); // One time slice
+    PThread::Yield(); // One time slice
   } while (PTime() < finishTime);
 
   return FALSE;
@@ -1208,7 +1212,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
       return TRUE;
     }
 
-    usleep(1); // One time slice
+    PThread::Yield(); // One time slice
   } while (PTime() < finishTime);
 
   return FALSE;
