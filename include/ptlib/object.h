@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.37  1999/01/07 03:35:35  robertj
+ * Added default for PCHAR8 to ANSI, removes need for compiler option.
+ *
  * Revision 1.36  1998/12/15 09:00:29  robertj
  * Fixed 8 byte alignment problem in memory leak check code for sparc.
  *
@@ -1862,6 +1865,10 @@ class PStandardType
     friend istream & operator>>(istream & s, name & v) { type val; s >> val; v = val; return s; } \
     private: type data; \
   }
+
+#ifndef PCHAR8
+#define PCHAR8 PANSI_CHAR
+#endif
 
 #if PCHAR8==PANSI_CHAR
 PI_SAME(PChar8, char);
