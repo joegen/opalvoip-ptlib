@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.41  1999/03/09 03:08:39  robertj
+ * Changes for new documentation system
+ *
  * Revision 1.40  1998/09/23 06:20:25  robertj
  * Added open source copyright license.
  *
@@ -383,10 +386,6 @@ PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
 
 PINLINE PINDEX PSortedStringList::AppendString(const PString & str)
   { return Append(str.Clone()); }
-
-PINLINE PINDEX PSortedStringList::InsertString(
-                                   const PString & before, const PString & str)
-  { return Insert(before, str.Clone()); }
 
 PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
