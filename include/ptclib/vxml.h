@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.17  2002/08/30 05:06:13  craigs
+ * Added changes for PVXMLGrammar from Alexander Kovatch
+ *
  * Revision 1.16  2002/08/28 08:04:31  craigs
  * Reorganised VXMLSession class as per code from Alexander Kovatch
  *
@@ -95,21 +98,29 @@ class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
-#if 0
-
 class PVXMLGrammar : public PObject
 {
   PCLASSINFO(PVXMLGrammar, PObject);
   public:
-    PVXMLGrammar(PVXMLFieldItem & field);
-    virtual BOOL OnUserInput(char /*ch*/) { return TRUE; }
+    PVXMLGrammar(PXMLElement * field);
+    virtual BOOL OnUserInput(const PString & /*str*/) { return TRUE; }
+    virtual void Stop() { }
 
     PString GetValue() const { return value; }
-    PVXMLFieldItem & GetField() { return field; }
+    PXMLElement * GetField() { return field; }
+
+    enum GrammarState { 
+      FILLED,       // got something that matched the grammar
+      NOINPUT,      // timeout or still waiting to match
+      NOMATCH,      // recognized something but didn't match the grammar
+      HELP };       // help keyword
+
+    GrammarState GetState() const { return state; }
 
   protected:
-    PVXMLFieldItem & field;
+    PXMLElement * field;
     PString value;
+    GrammarState state;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -118,7 +129,7 @@ class PVXMLMenuGrammar : public PVXMLGrammar
 {
   PCLASSINFO(PVXMLMenuGrammar, PVXMLGrammar);
   public:
-    PVXMLMenuGrammar(PVXMLFieldItem & field);
+    PVXMLMenuGrammar(PXMLElement * field);
 };
 
 //////////////////////////////////////////////////////////////////
@@ -127,15 +138,13 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
 {
   PCLASSINFO(PVXMLDigitsGrammar, PVXMLGrammar);
   public:
-    PVXMLDigitsGrammar(PVXMLFieldItem & field, PINDEX digitCount);
-    BOOL OnUserInput(char ch);
+    PVXMLDigitsGrammar(PXMLElement * field, PINDEX digitCount);
+    BOOL OnUserInput(const PString & str);
+    virtual void Stop();
 
   protected:
     PINDEX digitCount;
-    PString digits;
 };
-
-#endif
 
 //////////////////////////////////////////////////////////////////
 
@@ -181,7 +190,7 @@ class PVXMLSession : public PIndirectChannel
 
     BOOL Execute();
 
-    //BOOL LoadGrammar(PVXMLGrammar * grammar);
+    BOOL LoadGrammar(PVXMLGrammar * grammar);
 
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
@@ -198,7 +207,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual void StartRecord(const PFilePath & recordfn, BOOL dtmfTerm, int maxTime, int finalSilence);
 
-    virtual BOOL OnUserInput(char ch);
+    virtual BOOL OnUserInput(const PString & str);
 
     PString GetXMLError() const;
 
@@ -221,6 +230,7 @@ class PVXMLSession : public PIndirectChannel
 
     BOOL TraverseAudio();
     BOOL TraverseGoto();
+    BOOL TraverseGrammar();
 
     void SayAs(const PString & className, const PString & text);
 
@@ -231,8 +241,9 @@ class PVXMLSession : public PIndirectChannel
 
     PXML xmlFile;
 
-    //PVXMLDialogArray dialogArray;
-    //PVXMLGrammar * activeGrammar;
+    PVXMLGrammar * activeGrammar;
+    BOOL listening;                 // TRUE if waiting for recognition events
+    int timeout;                    // timeout in msecs for the current recognition
 
     PStringToString sessionVars;
     PStringToString documentVars;
@@ -254,6 +265,7 @@ class PVXMLSession : public PIndirectChannel
     BOOL autoDeleteTextToSpeech;
 
     PXMLElement * currentForm;
+    PXMLElement * currentField;
 	  PXMLObject  * currentNode;
 
     static PMutex cacheMutex;
