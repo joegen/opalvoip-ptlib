@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.8  2003/09/26 09:58:50  rogerhardiman
+ * Move #include <sys/stat.h> from the unix file.h to the main file.h
+ * FreeBSD's sys/stat.h includes extern "C" for some prototypes and you
+ * cannot have an extern "C" in the middle of a C++ class
+ *
  * Revision 1.7  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -55,8 +60,6 @@
  * Initial revision
  *
  */
-
-#include <sys/stat.h>
 
 #define	_read(fd,vp,st)		::read(fd, vp, (size_t)st)
 #define	_write(fd,vp,st)	::write(fd, vp, (size_t)st)
