@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.110  2003/01/20 10:05:46  rogerh
+ * NetBSD thread changes
+ *
  * Revision 1.109  2003/01/08 08:47:51  rogerh
  * Add new Sleep() function for GNU PTH threads.
  * Taken from NetBSD's package which uses PTH.
@@ -692,9 +695,9 @@ void PX_SuspendSignalHandler(int)
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
-#ifndef P_NETBSD
+#if !( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
     pthread_testcancel();
-#endif /* P_NETBSD */
+#endif
   }
 }
 
@@ -875,9 +878,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
     if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
       break;
 
-#ifndef P_NETBSD
+#if !( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
     pthread_testcancel();
-#endif /* P_NETBSD */
+#endif
 
     lastTime = PTime();
   } while (lastTime < targetTime);
@@ -931,7 +934,7 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
-#if defined(P_NETBSD)
+#if ( defined(P_NETBSD) && defined(P_NETBSD_UNPROVEN) )
   pthread_kill(PX_threadId,SIGKILL);
 #else
   pthread_cancel(PX_threadId);
