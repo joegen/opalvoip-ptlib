@@ -1,5 +1,5 @@
 /*
- * $Id: socket.cxx,v 1.25 1998/09/08 09:54:31 robertj Exp $
+ * $Id: socket.cxx,v 1.26 1998/09/08 11:31:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994-1996 Equivalence Pty. Ltd.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.26  1998/09/08 11:31:51  robertj
+ * Fixed ippp bug on very full packets.
+ *
  * Revision 1.25  1998/09/08 09:54:31  robertj
  * Fixed ppp and ippp compatibility.
  *
@@ -408,7 +411,6 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
   }
   else if (strncmp("ippp", interfaceName, 4) == 0) {
     medium = MediumWan;
-    fakeMacHeader = TRUE;
     ipppInterface = TRUE;
   }
   else {
@@ -651,10 +653,16 @@ BOOL PEthSocket::Read(void * buf, PINDEX len)
     if (ipppInterface) {
       if (lastReadCount <= 10)
         return FALSE;
-      if (memcmp(bufptr+6, "\xff\x03\x00\x21", 4) == 0) {
-        lastReadCount -= 10;
-        memmove(bufptr, bufptr+10, lastReadCount);
+      if (memcmp(bufptr+6, "\xff\x03\x00\x21", 4) != 0) {
+        memmove(bufptr+sizeof(macHeader), bufptr, lastReadCount);
+        lastReadCount += sizeof(macHeader);
       }
+      else {
+        memmove(bufptr+sizeof(macHeader), bufptr+10, lastReadCount);
+        lastReadCount += sizeof(macHeader)-10;
+      }
+      memcpy(bufptr, macHeader, sizeof(macHeader));
+      break;
     }
 
     if (fakeMacHeader) {
