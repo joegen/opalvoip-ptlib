@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.82 1997/02/09 04:05:56 robertj Exp $
+ * $Id: osutils.cxx,v 1.83 1997/04/27 05:50:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.83  1997/04/27 05:50:15  robertj
+ * DLL support.
+ *
  * Revision 1.82  1997/02/09 04:05:56  robertj
  * Changed PProcess::Current() from pointer to reference.
  *
@@ -1746,6 +1749,8 @@ void PThread::Yield()
 
 #if defined(_PPROCESS)
 
+static PProcess * PProcessInstance;
+
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : manufacturer(manuf), productName(name)
@@ -1756,6 +1761,12 @@ PProcess::PProcess(const char * manuf, const char * name,
   status = stat;
   buildNumber = build;
   Construct();
+}
+
+
+PProcess & PProcess::Current()
+{
+  return *PProcessInstance;
 }
 
 
