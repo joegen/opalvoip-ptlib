@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.3  2002/07/02 06:23:51  craigs
+ * Added recording functions
+ *
  * Revision 1.2  2002/06/27 05:39:18  craigs
  * Fixed Linux warning
  *
@@ -133,6 +136,21 @@ class PVXMLVarItem : public PVXMLFormItem
 
 //////////////////////////////////////////////////////////////////
 
+class PVXMLRecordItem : public PVXMLFormItem
+{
+  PCLASSINFO(PVXMLRecordItem, PVXMLFormItem);
+  public:
+    PVXMLRecordItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
+    BOOL Execute();
+
+  protected:
+    BOOL dtmfTerm;
+    int maxTime;
+    int finalSilence;
+};
+
+//////////////////////////////////////////////////////////////////
+
 class PVXMLDialog : public PVXMLElement
 {
   PCLASSINFO(PVXMLDialog, PObject);
@@ -224,8 +242,10 @@ class PVXMLSession : public PObject
     virtual BOOL PlayText(const PString & text, TextType type = Default) = 0;
     virtual BOOL PlayFile(const PString & fn) = 0;
     virtual BOOL PlayData(const PBYTEArray & data) = 0;
-
     virtual BOOL IsPlaying() const = 0;
+    virtual BOOL IsRecording() const = 0;
+
+    virtual void StartRecord(const PFilePath & recordfn, BOOL dtmfTerm, int maxTime, int finalSilence);
 
     virtual BOOL OnUserInput(char ch);
 
@@ -250,6 +270,12 @@ class PVXMLSession : public PObject
 
     PStringToString sessionVars;
     PStringToString documentVars;
+
+    BOOL recording;
+    PFilePath recordFn;
+    BOOL recordDTMFTerm;
+    int recordMaxTime;
+    int recordFinalSilence;
 };
 
 //////////////////////////////////////////////////////////////////
