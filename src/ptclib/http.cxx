@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.30 1996/06/07 13:52:23 robertj Exp $
+ * $Id: http.cxx,v 1.31 1996/06/10 10:00:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.31  1996/06/10 10:00:00  robertj
+ * Added global function for query parameters parsing.
+ *
  * Revision 1.30  1996/06/07 13:52:23  robertj
  * Added PUT to HTTP proxy FTP. Necessitating redisign of entity body processing.
  *
@@ -244,7 +247,7 @@ static void UnmangleString(PString & str)
 }
 
 
-static void SplitVars(const PString & queryStr, PStringToString & queryVars)
+void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 {
   PStringArray tokens = queryStr.Tokenise("&=", TRUE);
   for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
@@ -348,7 +351,7 @@ void PURL::Parse(const char * cstr)
   if (pos != P_MAX_INDEX && pos > 0) {
     queryStr = url(pos+1, P_MAX_INDEX);
     url.Delete(pos, P_MAX_INDEX);
-    SplitVars(queryStr, queryVars);
+    SplitQueryVars(queryStr, queryVars);
   }
 
   // chop off any trailing parameters
@@ -834,7 +837,7 @@ BOOL PHTTPSocket::ProcessCommand()
       break;
 
     case POST :
-      SplitVars(entityBody, postData);
+      PURL::SplitQueryVars(entityBody, postData);
       persist = OnPOST(url, mimeInfo, postData, connectInfo);
       break;
 
