@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.140  2002/11/13 02:15:25  craigs
+ * Fixed problem with GetLocalHostName
+ *
  * Revision 1.139  2002/11/12 11:47:53  rogerh
  * Add a missing memset in the Psockaddr constructor
  *
@@ -1603,7 +1606,7 @@ PString PIPSocket::GetLocalHostName()
 {
   Address addr;
 
-  if (!GetLocalAddress(addr))
+  if (GetLocalAddress(addr))
     return GetHostName(addr);
 
   return PString::Empty();
