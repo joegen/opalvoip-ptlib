@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.9 1996/03/16 04:37:20 robertj Exp $
+ * $Id: cypher.cxx,v 1.10 1996/03/17 05:47:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.10  1996/03/17 05:47:19  robertj
+ * Changed secured config to allow for expiry dates.
+ *
  * Revision 1.9  1996/03/16 04:37:20  robertj
  * Redesign of secure config to accommodate expiry dates and option values passed in security key code.
  *
@@ -436,7 +439,7 @@ PINDEX PCypher::Decode(const PString & cypher, void * data, PINDEX length)
   PBYTEArray clear;
   if (!Decode(coded, clear))
     return 0;
-  memcpy(data, coded, PMIN(length, clear.GetSize()));
+  memcpy(data, clear, PMIN(length, clear.GetSize()));
   return clear.GetSize();
 }
 
@@ -615,14 +618,25 @@ void PSecureConfig::GetProductKey(PTEACypher::Key prodKey) const
 
 PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 {
+  PString str;
   BOOL allEmpty = TRUE;
   PMessageDigest5 digestor;
   for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
-    PString str = GetString(securedKeys[i]);
+    str = GetString(securedKeys[i]);
     if (!str.IsEmpty()) {
       digestor.Process(str.Trim());
       allEmpty = FALSE;
     }
+  }
+  str = GetString(expiryDateKey);
+  if (!str.IsEmpty()) {
+    digestor.Process(str);
+    allEmpty = FALSE;
+  }
+  str = GetString(optionBitsKey);
+  if (!str.IsEmpty()) {
+    digestor.Process(str);
+    allEmpty = FALSE;
   }
 
   if (allEmpty)
@@ -635,13 +649,17 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
   if (vkey.IsEmpty())
     return Invalid;
 
-  BYTE info[sizeof(code)+3];
+  BYTE info[sizeof(code)+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return Invalid;
 
-  if (memcmp(&info[3], code, sizeof(code)) != 0)
+  if (memcmp(info, code, sizeof(code)) != 0)
     return Invalid;
+
+  PTime now;
+  if (now > GetTime(expiryDateKey))
+    return Expired;
 
   return IsValid;
 }
@@ -657,18 +675,30 @@ BOOL PSecureConfig::ValidatePending()
     return TRUE;
 
   PMessageDigest5::Code code;
-  BYTE info[sizeof(code)+3];
+  BYTE info[sizeof(code)+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return FALSE;
 
+  PTime expiryDate(0,0,0,1,info[sizeof(code)]&15,(info[sizeof(code)]>>4)+1996);
+  PString expiry = expiryDate.AsString(PTime::RFC1123);
+
+  const BYTE * infoptr = &info[sizeof(code)+1];
+  PUInt32b optionBits(&infoptr);
+  PString options(PString::Unsigned, (DWORD)optionBits);
+
   PMessageDigest5 digestor;
   for (PINDEX i = 0; i < securedKeys.GetSize(); i++)
     digestor.Process(GetString(pendingPrefix + securedKeys[i]).Trim());
+  digestor.Process(expiry);
+  digestor.Process(options);
   digestor.Complete(code);
 
-  if (memcmp(&info[3], code, sizeof(code)) != 0)
+  if (memcmp(info, code, sizeof(code)) != 0)
     return FALSE;
+
+  SetString(expiryDateKey, expiry);
+  SetString(optionBitsKey, options);
 
   for (i = 0; i < securedKeys.GetSize(); i++) {
     PString str = GetString(pendingPrefix + securedKeys[i]);
@@ -677,9 +707,6 @@ BOOL PSecureConfig::ValidatePending()
     DeleteKey(pendingPrefix + securedKeys[i]);
   }
   DeleteKey(pendingPrefix + securityKey);
-
-  SetInteger(optionBitsKey, info[0]|((WORD)info[1]<<8));
-  SetTime(expiryDateKey, PTime(0, 0, 0, 1, info[3]&15, (info[3]>>4)+1996));
 
   return TRUE;
 }
@@ -701,7 +728,8 @@ void PSecureConfig::ResetPending()
       DeleteKey(securedKeys[i]);
     }
   }
-  SetTime(pendingPrefix + expiryDateKey, PTime());
+  DeleteKey(expiryDateKey);
+  DeleteKey(optionBitsKey);
 }
 
 
