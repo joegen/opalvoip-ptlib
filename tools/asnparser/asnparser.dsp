@@ -109,8 +109,8 @@ InputName=asn_grammar
 
 BuildCmds= \
 	bison -t -v -d $(InputName).y \
-	move $(InputName)_tab.c $(InputName).cxx \
-	move $(InputName)_tab.h $(InputName).h \
+	copy $(InputName)_tab.c $(InputName).cxx \
+	copy $(InputName)_tab.h $(InputName).h \
 	
 
 "$(InputName).cxx" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -128,8 +128,8 @@ InputName=asn_grammar
 
 BuildCmds= \
 	bison -t -v -d $(InputName).y \
-	move $(InputName)_tab.c $(InputName).cxx \
-	move $(InputName)_tab.h $(InputName).h \
+	copy $(InputName)_tab.c $(InputName).cxx \
+	copy $(InputName)_tab.h $(InputName).h \
 	
 
 "$(InputName).cxx" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
