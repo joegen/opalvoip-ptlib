@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.17 1995/06/04 13:10:19 robertj Exp $
+ * $Id: ptlib.cxx,v 1.18 1995/07/31 12:18:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.18  1995/07/31 12:18:11  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.17  1995/06/04 13:10:19  robertj
  * Fixed rename bug.
  *
@@ -144,8 +147,11 @@ PString PChannel::GetErrorText() const
 
 BOOL PChannel::ConvertOSError(int error)
 {
-  if (error >= 0)
+  if (error >= 0) {
+    lastError = NoError;
+    osError = 0;
     return TRUE;
+  }
 
 #if defined(_WIN32)
   if (error != -2)
@@ -372,13 +378,6 @@ void PFilePath::SetType(const PCaselessString & type)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
-
-void PFile::CopyContents(const PFile & f)
-{
-  path = f.path;
-  os_handle = f.os_handle;
-}
-
 
 void PFile::SetFilePath(const PString & newName)
 {
