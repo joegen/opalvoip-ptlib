@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.19  2001/01/03 10:56:01  rogerh
+ * CBAUD is not defined on FreeBSD.
+ *
  * Revision 1.18  2000/12/29 07:36:18  craigs
  * Finally got working correctly!
  *
@@ -360,7 +363,9 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 
   // save new baud rate
   baudRate = newBaudRate;
+#ifdef CBAUD
   Termio.c_cflag &= ~CBAUD;
+#endif
   Termio.c_cflag |= baud;
 
   if (os_handle < 0)
