@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.24  2002/03/27 06:42:16  robertj
+ * Implemented the DTR etc functions and ttya/ttyb strings for sunos,
+ *    thanks tommi.korhonen@insta.fi & Raimo Ruokonen <rruokonen@koti.soon.fi>
+ *
  * Revision 1.23  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -80,7 +84,7 @@
  * Added open software license.
  *
  */
-
+ 
 #pragma implementation "serchan.h"
 #pragma implementation "modem.h"
 
@@ -135,7 +139,7 @@ void PSerialChannel::Construct()
   baudRate   = 9600;
   dataBits   = 8;
   parityBits = NoParity;
-  stopBits   = 2;
+  stopBits   = 1;
 
   // set input mode: ignore breaks, ignore parity errors, do not strip chars,
   // no CR/NL conversion, no case conversion, no XON/XOFF control,
@@ -569,42 +573,79 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 }
 
 
-void PSerialChannel::SetDTR(BOOL)
+void PSerialChannel::SetDTR(BOOL mode)
 {
+  int flags = 0;
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  flags &= ~TIOCM_DTR;
+  if ( mode == TRUE )
+  	flags |= TIOCM_DTR;
+  ioctl(os_handle,TIOCMSET,&flags);	// set back
+
+  /* 
+  ALTERNATE IMPLEMENTATION?
+  Uses "Local Mode" bits?
+  if ( mode TRUE )
+  	ioctl(os_handle, TIOCSDTR, 0);
+  else 
+    ioctl(os_handle, TIOCCDTR, 0);
+  */
 }
 
 
-void PSerialChannel::SetRTS(BOOL)
+void PSerialChannel::SetRTS(BOOL mode)
 {
+  int flags = 0;
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  flags &= ~TIOCM_RTS;
+  if ( mode == TRUE )
+  	flags |= TIOCM_RTS;
+  ioctl(os_handle,TIOCMSET,&flags);	// set back
 }
 
 
-void PSerialChannel::SetBreak(BOOL)
+void PSerialChannel::SetBreak(BOOL mode)
 {
+  if ( mode == TRUE )
+  	ioctl(os_handle, TIOCSBRK, 0);
+  else 
+    ioctl(os_handle, TIOCCBRK, 0);
+
 }
 
 
 BOOL PSerialChannel::GetCTS()
 {
-  return FALSE;
+  int flags = 0;
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  return (flags&TIOCM_CTS)?TRUE:FALSE;
 }
 
 
 BOOL PSerialChannel::GetDSR()
 {
-  return FALSE;
+  int flags = 0;
+
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  return (flags&TIOCM_DSR)?TRUE:FALSE;
 }
 
 
 BOOL PSerialChannel::GetDCD()
 {
-  return FALSE;
+  int flags = 0;
+
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  return (flags&TIOCM_CD)?TRUE:FALSE;
 }
 
 
 BOOL PSerialChannel::GetRing()
 {
-  return FALSE;
+  int flags = 0;
+  
+  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  return (flags&TIOCM_RNG)?TRUE:FALSE;
 }
 
 
@@ -620,10 +661,15 @@ PStringList PSerialChannel::GetPortNames()
     for (i = 0; i < tokens.GetSize(); i++) 
       ports.AppendString(tokens[i]);
   } else {
+#if defined(__sun) && defined (__sparc)
+    ports.AppendString(PString("ttya"));
+    ports.AppendString(PString("ttyb"));
+#else
     ports.AppendString(PString("ttyS0"));
     ports.AppendString(PString("ttyS1"));
     ports.AppendString(PString("ttyS2"));
     ports.AppendString(PString("ttyS3"));
+#endif
   }
 
   return ports;
