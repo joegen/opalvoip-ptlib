@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.20  2002/02/08 09:58:44  robertj
+ * Slight adjustment to API and documentation for volume functions.
+ *
  * Revision 1.19  2002/02/07 20:57:21  dereks
  * add SetVolume and GetVolume methods to PSoundChannel
  *
@@ -375,20 +378,6 @@ class PSoundChannel : public PChannel
       PINDEX count = 2  /// Number of buffers
     );
 
-    /**Get the volume of the play/read process.  0 == quiet.  99 == LOUD.
-
-       @return
-       TRUE if there were no errors.
-    */
-    BOOL GetVolume(int &devVol);
-
-    /**Set the volume of the play/read process.  0 == quiet.  99 == LOUD.
-        
-       @return
-       TRUE if there were no errors.
-    */
-    BOOL SetVolume(int devVol);
-
     /**Get the internal buffers for the sound channel I/O. 
 
        @return
@@ -397,6 +386,30 @@ class PSoundChannel : public PChannel
     BOOL GetBuffers(
       PINDEX & size,    // Size of each buffer
       PINDEX & count    // Number of buffers
+    );
+
+    enum {
+      MaxVolume = 100
+    };
+
+    /**Set the volume of the play/read process.
+       The volume range is 0 == quiet.  100 == LOUD.
+        
+       @return
+       TRUE if there were no errors.
+    */
+    BOOL SetVolume(
+      unsigned volume   /// New volume level
+    );
+
+    /**Get the volume of the play/read process.
+       The volume range is 0 == quiet.  100 == LOUD.
+
+       @return
+       TRUE if there were no errors.
+    */
+    BOOL GetVolume(
+      unsigned & volume   /// Variable to receive volume level.
     );
   //@}
 
