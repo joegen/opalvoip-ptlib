@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.16 1995/12/23 03:44:59 robertj Exp $
+ * $Id: ipsock.h,v 1.17 1996/01/28 14:07:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.17  1996/01/28 14:07:31  robertj
+ * Changed service parameter to PString for ease of use in GetPortByService function
+ * Fixed up comments.
+ *
  * Revision 1.16  1995/12/23 03:44:59  robertj
  * Fixed unix portability issues.
  *
@@ -74,12 +78,20 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
   public:
     PIPSocket(
-      WORD port = 0           // Port number to use for the connection.
+      WORD port = 0              // Port number to use for the connection.
     );
     PIPSocket(
-      const char * protocol,  // Protocol name to use for port look up.
-      const char * service    // Service name to use for the connection.
+      const char * protocol,     // Protocol name to use for port look up.
+      const PString & service    // Service name to use for the connection.
     );
+    /* Create a new Internet Protocol socket.
+
+       A service name is a unique string contained in a system database. The
+       parameter here may be either this unique name, an integer value or both
+       separated by a space (name then integer). In the latter case the
+       integer value is used if the name cannot be found in the database.
+     */
+
 
   // Overrides from class PChannel
     virtual PString GetName() const;
@@ -211,6 +223,11 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        an agreed high level protocol type. The string version looks up a
        database of names to find the number for the string name.
 
+       A service name is a unique string contained in a system database. The
+       parameter here may be either this unique name, an integer value or both
+       separated by a space (name then integer). In the latter case the
+       integer value is used if the name cannot be found in the database.
+    
        The port number may not be changed while the port is open and the
        function will assert if an attempt is made to do so.
      */
@@ -227,7 +244,8 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        instance is using.
 
        <H2>Returns:</H2>
-       string service name.
+       string service name or a string representation of the port number if no
+       service with that number can be found.
      */
 
 
@@ -235,10 +253,15 @@ PDECLARE_CLASS(PIPSocket, PSocket)
       const PString & service   // Name of service to get port number for.
     ) const = 0;
     static WORD GetPortByService(
-      const char * protocol,  // Protocol type for port lookup
-      const char * service    // Name of service to get port number for.
+      const char * protocol,     // Protocol type for port lookup
+      const PString & service    // Name of service to get port number for.
     );
-    /* Get the port number for the specified service.
+    /* Get the port number for the specified service name.
+    
+       A name is a unique string contained in a system database. The parameter
+       here may be either this unique name, an integer value or both separated
+       by a space (name then integer). In the latter case the integer value is
+       used if the name cannot be found in the database.
     
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
@@ -248,7 +271,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        its first parameter may be "tcp" or "udp", 
 
        <H2>Returns:</H2>
-       Port number for service name.
+       Port number for service name, or 0 if service cannot be found.
      */
 
     virtual PString GetServiceByPort(
@@ -259,6 +282,11 @@ PDECLARE_CLASS(PIPSocket, PSocket)
       WORD port   // Number for service to find name of.
     );
     /* Get the service name from the port number.
+    
+       A service name is a unique string contained in a system database. The
+       parameter here may be either this unique name, an integer value or both
+       separated by a space (name then integer). In the latter case the
+       integer value is used if the name cannot be found in the database.
     
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
