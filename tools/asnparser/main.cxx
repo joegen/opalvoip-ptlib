@@ -30,6 +30,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.46  2004/02/17 09:38:24  csoutheren
+ * Added change to remove duplicate forward declarations
+ * See SourceForge bug 832245
+ * Thanks to Vyacheslav E. Andrejev
+ *
  * Revision 1.45  2003/10/03 00:13:04  rjongbloed
  * Added ability to specify CHOICE field selection by function rather than operator as the operator technique does not work with some dumb compilers.
  * Added ability to specify that the header file name be different from the module name and module prefix string.
@@ -2752,11 +2757,16 @@ void ChoiceType::GenerateForwardDecls(ostream & hdr)
   PStringSet typesOutput(PARRAYSIZE(StandardClasses), StandardClasses);
   typesOutput += GetIdentifier();
 
+  PStringSet forwards;
+
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     PString type = fields[i].GetTypeName();
-    if (!fields[i].IsParameterizedType() && !typesOutput.Contains(type)) {
+    if (!fields[i].IsParameterizedType() &&
+        !typesOutput.Contains(type) &&
+        !forwards.Contains(type)) {
       hdr << "class " << type << ";\n";
       needExtraLine = TRUE;
+      forwards.Include(type);
     }
   }
 
