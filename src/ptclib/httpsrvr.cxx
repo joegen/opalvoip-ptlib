@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.9 1997/07/08 13:10:26 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.10 1997/07/14 11:47:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.10  1997/07/14 11:47:13  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.9  1997/07/08 13:10:26  robertj
  * Fixed bug in HTTP server where standard error text is not sent to remote client.
  *
@@ -242,7 +245,7 @@ BOOL PHTTPServer::ProcessCommand()
   else { // otherwise, attempt to extract a version number
     PString verStr = tokens[1];
     PINDEX dotPos = verStr.Find('.');
-    static PCaselessString httpId = "HTTP/";
+    static const PCaselessString httpId = "HTTP/";
     if (dotPos == P_MAX_INDEX
                       || verStr.GetLength() < 8 || httpId != verStr.Left(5)) {
       OnError(BadRequest, "Malformed version number " + verStr, PHTTPConnectionInfo());
