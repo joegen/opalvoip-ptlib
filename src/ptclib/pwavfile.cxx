@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.18  2002/01/22 03:55:59  craigs
+ * Added include of ptclib/pwavfile.cxx as this is now in PTCLib
+ *
  * Revision 1.17  2002/01/13 21:01:55  rogerh
  * The class contructor is now used to specify the type of new WAV files
  * (eg PCM or G7231)
@@ -94,6 +97,7 @@
 #endif
 
 #include <ptlib.h>
+#include <ptclib/pwavfile.h>
 
 
 #if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__) \
