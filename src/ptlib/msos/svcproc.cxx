@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.34 1998/02/16 01:43:57 robertj Exp $
+ * $Id: svcproc.cxx,v 1.35 1998/02/20 23:01:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.35  1998/02/20 23:01:10  robertj
+ * Fixed bug where application exits on log out in win95.
+ *
  * Revision 1.34  1998/02/16 01:43:57  robertj
  * Really fixed spurious error display on install/start/stop etc
  *
@@ -635,8 +638,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 
     case WM_ENDSESSION :
-      if (wParam)
-        PostQuitMessage(0);
+      if (wParam && (debugMode || lParam != ENDSESSION_LOGOFF))
+        OnStop();
       return 0;
 
     case WM_SIZE :
