@@ -15,6 +15,7 @@ EXPORTS
     ??0?$PBaseArray@E@@QAE@PBEHH@Z @8 NONAME ;public: __thiscall PBaseArray<unsigned char>::PBaseArray<unsigned char>(unsigned char const *,int,int)
     ??0?$PBaseArray@F@@QAE@H@Z @3114 NONAME ;public: __thiscall PBaseArray<short>::PBaseArray<short>(int)
     ??0?$PBaseArray@F@@QAE@PBFHH@Z @3115 NONAME ;public: __thiscall PBaseArray<short>::PBaseArray<short>(short const *,int,int)
+    ??0?$PBaseArray@G@@QAE@ABV0@@Z @4627 NONAME ;public: __thiscall PBaseArray<unsigned short>::PBaseArray<unsigned short>(class PBaseArray<unsigned short> const &)
     ??0?$PBaseArray@G@@QAE@H@Z @3116 NONAME ;public: __thiscall PBaseArray<unsigned short>::PBaseArray<unsigned short>(int)
     ??0?$PBaseArray@G@@QAE@PBGHH@Z @3117 NONAME ;public: __thiscall PBaseArray<unsigned short>::PBaseArray<unsigned short>(unsigned short const *,int,int)
     ??0?$PBaseArray@H@@QAE@ABV0@@Z @3308 NONAME ;public: __thiscall PBaseArray<int>::PBaseArray<int>(class PBaseArray<int> const &)
@@ -260,6 +261,7 @@ EXPORTS
     ??0PString@@IAE@HPBV0@@Z @179 NONAME ;protected: __thiscall PString::PString(int,class PString const *)
     ??0PString@@QAA@W4ConversionType@0@PBDZZ @180 NONAME ;public: __cdecl PString::PString(enum PString::ConversionType,char const *,...)
     ??0PString@@QAE@ABV0@@Z @181 NONAME ;public: __thiscall PString::PString(class PString const &)
+    ??0PString@@QAE@ABVPWORDArray@@@Z @4628 NONAME ;public: __thiscall PString::PString(class PWORDArray const &)
     ??0PString@@QAE@D@Z @182 NONAME ;public: __thiscall PString::PString(char)
     ??0PString@@QAE@F@Z @4191 NONAME ;public: __thiscall PString::PString(short)
     ??0PString@@QAE@G@Z @4192 NONAME ;public: __thiscall PString::PString(unsigned short)
@@ -366,6 +368,7 @@ EXPORTS
     ??0PWin32PacketVxD@@QAE@XZ @2322 NONAME ;public: __thiscall PWin32PacketVxD::PWin32PacketVxD(void)
     ??0PWin32SnmpLibrary@@QAE@XZ @2323 NONAME ;public: __thiscall PWin32SnmpLibrary::PWin32SnmpLibrary(void)
     ??0PWinSock@@QAE@XZ @241 NONAME ;public: __thiscall PWinSock::PWinSock(void)
+    ??0PWORDArray@@QAE@ABV0@@Z @4629 NONAME ;public: __thiscall PWORDArray::PWORDArray(class PWORDArray const &)
     ??0PWORDArray@@QAE@H@Z @3128 NONAME ;public: __thiscall PWORDArray::PWORDArray(int)
     ??0PWORDArray@@QAE@PBGHH@Z @3129 NONAME ;public: __thiscall PWORDArray::PWORDArray(unsigned short const *,int,int)
     ??0P_fd_set@@QAE@I@Z @4608 NONAME ;public: __thiscall P_fd_set::P_fd_set(unsigned int)
@@ -1532,6 +1535,7 @@ EXPORTS
     ?AsString@PTime@@QBE?AVPString@@PBDH@Z @919 NONAME ;public: class PString  __thiscall PTime::AsString(char const *,int)const 
     ?AsString@PTime@@QBE?AVPString@@W4TimeFormat@1@H@Z @920 NONAME ;public: class PString  __thiscall PTime::AsString(enum PTime::TimeFormat,int)const 
     ?AsString@PTimeInterval@@QBE?AVPString@@HW4Formats@1@H@Z @4189 NONAME ;public: class PString  __thiscall PTimeInterval::AsString(int,enum PTimeInterval::Formats,int)const 
+    ?AsUCS2@PString@@QBE?AVPWORDArray@@XZ @4630 NONAME ;public: class PWORDArray  __thiscall PString::AsUCS2(void)const 
     ?AsUnsigned64@PString@@QBE_KI@Z @921 NONAME ;public: unsigned __int64 __thiscall PString::AsUnsigned64(unsigned int)const 
     ?AsUnsigned@PString@@QBEKI@Z @922 NONAME ;public: unsigned long __thiscall PString::AsUnsigned(unsigned int)const 
     ?Attach@?$PBaseArray@D@@QAEXPBDH@Z @3283 NONAME ;public: void __thiscall PBaseArray<char>::Attach(char const *,int)
@@ -2689,6 +2693,7 @@ EXPORTS
     ?InternalDumpObjectsSince@PMemoryHeap@@IAEXKAAVostream@@@Z @4045 NONAME ;protected: void __thiscall PMemoryHeap::InternalDumpObjectsSince(unsigned long,class ostream &)
     ?InternalDumpStatistics@PMemoryHeap@@IAEXAAVostream@@@Z @4046 NONAME ;protected: void __thiscall PMemoryHeap::InternalDumpStatistics(class ostream &)
     ?InternalEndRead@PReadWriteMutex@@IAEXXZ @4553 NONAME ;protected: void __thiscall PReadWriteMutex::InternalEndRead(void)
+    ?InternalFromUCS2@PString@@IAEXPBGH@Z @4631 NONAME ;protected: void __thiscall PString::InternalFromUCS2(unsigned short const *,int)
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @4554 NONAME ;protected: void __thiscall PReadWriteMutex::InternalStartRead(void)
     ?InternalValidate@PMemoryHeap@@IAE?AW4Validation@1@PAXPBDPAVostream@@@Z @4047 NONAME ;protected: enum PMemoryHeap::Validation  __thiscall PMemoryHeap::InternalValidate(void *,char const *,class ostream *)
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @2389 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
