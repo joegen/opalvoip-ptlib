@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.37 1996/01/28 14:10:12 robertj Exp $
+ * $Id: osutil.inl,v 1.38 1996/02/08 12:12:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.38  1996/02/08 12:12:01  robertj
+ * Changed zone parameter in PTime to indicate the time zone as minutes not enum.
+ *
  * Revision 1.37  1996/01/28 14:10:12  robertj
  * Added time functions to PConfig.
  *
@@ -232,11 +235,6 @@ PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
 PINLINE int PTime::GetDayOfYear() const
   { return localtime(&theTime)->tm_yday; }
 
-#ifndef WIN32
-PINLINE BOOL PTime::IsDaylightSavings() const
-  { return localtime(&theTime)->tm_isdst > 0; }
-#endif
-
 
 PINLINE PTime PTime::operator+(const PTimeInterval & t) const
   { return PTime(theTime + t.GetSeconds()); }
@@ -253,8 +251,8 @@ PINLINE PTime PTime::operator-(const PTimeInterval & t) const
 PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
   { theTime -= t.GetSeconds(); return *this; }
 
-PINLINE PString PTime::AsString(const PString & format) const
-  { return AsString((const char *)format); }
+PINLINE PString PTime::AsString(const PString & format, int zone) const
+  { return AsString((const char *)format, zone); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
