@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.13 1996/03/31 09:08:23 robertj Exp $
+ * $Id: ptlib.inl,v 1.14 1996/05/15 10:23:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.14  1996/05/15 10:23:25  robertj
+ * Changed millisecond access functions to get 64 bit integer.
+ *
  * Revision 1.13  1996/03/31 09:08:23  robertj
  * Added mutex to thread dictionary access.
  *
@@ -132,7 +135,7 @@ PINLINE BOOL PPipeChannel::CanReadAndWrite()
 #if defined(_WIN32)
 
 PINLINE void PThread::Sleep(const PTimeInterval & delay)
-  { ::Sleep(delay.GetMilliseconds()); }
+  { ::Sleep(delay.GetInterval()); }
 
 #else
 
