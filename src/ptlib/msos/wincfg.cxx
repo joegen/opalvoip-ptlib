@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.13  2003/02/12 01:59:44  robertj
+ * Changed to allow for very large private .INI files.
+ *
  * Revision 1.12  2001/08/17 20:09:12  yurik
  * Fixed RegEnumValue name clash with system function
  *
@@ -629,6 +632,25 @@ static void RecurseRegistryKeys(const PString & location,
 }
 
 
+static PString PGetPrivateProfileString(const char * lpAppName,
+                                        const char * lpKeyName,
+                                        const char * lpDefault,
+                                        const char * lpFileName)
+{
+  PString buffer;
+
+  DWORD numNulls = lpAppName != NULL && lpKeyName != NULL ? 1 : 2;
+  DWORD size = 100;
+  while (size <= 100000 &&
+                ::GetPrivateProfileString(lpAppName, lpKeyName, lpDefault,
+                                          buffer.GetPointer(size+numNulls), size,
+                                          lpFileName) == size)
+    size *= 10;
+
+  return buffer;
+}
+
+
 PStringList PConfig::GetSections() const
 {
   PStringList sections;
@@ -639,9 +661,8 @@ PStringList PConfig::GetSections() const
       break;
 
     case NumSources :
-      PString buf;
-      char * ptr = buf.GetPointer(10000);
-      GetPrivateProfileString(NULL, NULL, "", ptr, 9999, location);
+      PString buffer = PGetPrivateProfileString(NULL, NULL, "", location);
+      char * ptr = buffer.GetPointer();
       while (*ptr != '\0') {
         sections.AppendString(ptr);
         ptr += strlen(ptr)+1;
@@ -678,9 +699,8 @@ PStringList PConfig::GetKeys(const PString & section) const
 
     case NumSources :
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      PString buf;
-      char * ptr = buf.GetPointer(10000);
-      GetPrivateProfileString(section, NULL, "", ptr, 9999, location);
+      PString buffer = PGetPrivateProfileString(section, NULL, "", location);
+      char * ptr = buffer.GetPointer();
       while (*ptr != '\0') {
         keys.AppendString(ptr);
         ptr += strlen(ptr)+1;
@@ -748,10 +768,7 @@ BOOL PConfig::HasKey(const PString & section, const PString & key) const
     case NumSources :
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
-      PString str;
-      GetPrivateProfileString(section, key, dflt,
-                                        str.GetPointer(1000), 999, location);
-      return str != dflt;
+      return PGetPrivateProfileString(section, key, dflt, location) != dflt;
   }
 
   return FALSE;
@@ -784,8 +801,7 @@ PString PConfig::GetString(const PString & section,
 
     case NumSources :
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
-      GetPrivateProfileString(section, key, dflt,
-                                        str.GetPointer(1000), 999, location);
+      str = PGetPrivateProfileString(section, key, dflt, location);
       str.MakeMinimumSize();
   }
 
