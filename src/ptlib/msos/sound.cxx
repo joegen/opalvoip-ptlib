@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.4  1999/06/07 01:36:28  robertj
+ * Fixed incorrect;ly set block alignment in sound structure.
+ *
  * Revision 1.3  1999/05/28 14:04:51  robertj
  * Added function to get default audio device.
  *
@@ -276,6 +279,9 @@ void PWaveFormat::SetFormat(unsigned numChannels,
                             unsigned sampleRate,
                             unsigned bitsPerSample)
 {
+  PAssert(numChannels == 1 || numChannels == 2, PInvalidParameter);
+  PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
+
   if (waveFormat != NULL)
     free(waveFormat);
 
@@ -287,7 +293,7 @@ void PWaveFormat::SetFormat(unsigned numChannels,
   waveFormat->nChannels = (WORD)numChannels;
   waveFormat->nSamplesPerSec = sampleRate;
   waveFormat->wBitsPerSample = (WORD)bitsPerSample;
-  waveFormat->nBlockAlign = 2;
+  waveFormat->nBlockAlign = (WORD)(numChannels*(bitsPerSample+7)/8);
   waveFormat->nAvgBytesPerSec = waveFormat->nSamplesPerSec*waveFormat->nBlockAlign;
   waveFormat->cbSize = 0;
 }
