@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.45  2001/02/22 05:26:47  robertj
+ * Added "nicer" version of GetDocument in HTTP client class.
+ *
  * Revision 1.44  2001/01/15 06:16:53  robertj
  * Set HTTP resource members to private to assure are not modified by
  *   dscendents in non-threadsafe manner.
@@ -414,9 +417,11 @@ class PHTTP : public PInternetProtocol
       <PRE><CODE>
       PHTTPSocket web("webserver");
       if (web.IsOpen()) {
-        if (web.GetDocument("http://www.someone.com/somewhere/url")) {
-          while (web.Read(block, sizeof(block)))
-            ProcessHTML(block);
+        PINDEX len;
+        if (web.GetDocument("http://www.someone.com/somewhere/url", len)) {
+          PString html = web.ReadString(len);
+          if (!html.IsEmpty())
+            ProcessHTML(html);
         }
         else
            PError << "Could not get page." << endl;
@@ -470,6 +475,16 @@ class PHTTPClient : public PHTTP
 
 
 
+    /** Get the document specified by the URL.
+
+       @return
+       TRUE if document is being transferred.
+     */
+    BOOL GetDocument(
+      const PURL & url,         // Universal Resource Locator for document.
+      PINDEX & contentLength,   // Length of body to read
+      BOOL persist = TRUE
+    );
     /** Get the document specified by the URL.
 
        @return
