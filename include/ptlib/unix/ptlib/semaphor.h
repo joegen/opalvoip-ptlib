@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.3 1998/01/03 23:06:32 craigs Exp $
+ * $Id: semaphor.h,v 1.4 1998/01/04 10:45:01 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.4  1998/01/04 10:45:01  craigs
+ * Added thread.h
+ *
  * Revision 1.3  1998/01/03 23:06:32  craigs
  * Added PThread support
  *
@@ -22,6 +25,8 @@
 #ifndef _PSEMAPHORE
 
 #pragma interface
+
+#include <thread.h>
 
 #include "../../common/ptlib/semaphor.h"
 #ifdef P_PTHREADS
