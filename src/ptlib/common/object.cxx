@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.39  1999/07/18 15:08:48  robertj
+ * Fixed 64 bit compatibility
+ *
  * Revision 1.38  1999/05/01 11:29:20  robertj
  * Alpha linux port changes.
  *
@@ -217,7 +220,7 @@ void operator delete[](void * ptr)
 DWORD PMemoryHeap::allocationBreakpoint;
 
 const char PMemoryHeap::Header::GuardBytes[] =
-  { '\x55', '\xaa', '\xee', '\xaa', '\x55' };
+  { '\x11', '\x55', '\x5a', '\xaa', '\xee', '\xaa', '\xa5', '\x55', '\x11' };
 
 
 PMemoryHeap::Wrapper::Wrapper()
