@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.6  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.5  1998/11/30 02:50:58  robertj
  * New directory structure
  *
@@ -52,7 +55,9 @@
 #include <ptlib/socket.h>
 #endif
 
-PDECLARE_CLASS(PIPXSocket, PSocket)
+class PIPXSocket : public PSocket
+{
+  PCLASSINFO(PIPXSocket, PSocket)
 /* This class describes a type of socket that will communicate using the
    IPX/SPX protocols.
  */
