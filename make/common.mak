@@ -97,7 +97,7 @@ endif
 ######################################################################
 
 depend: $(DEPS)
-
+	@echo Created dependencies.
 
 
 ######################################################################
@@ -112,29 +112,57 @@ clean:
 
 ######################################################################
 #
+# common rule to make a release of the program
+#
+######################################################################
+
+ifndef RELEASEDIR
+RELEASEDIR=releases
+endif
+
+ifndef RELEASEPROGDIR
+RELEASEPROGDIR=$(PROG)
+endif
+
+ifndef VERSION
+VERSION=v1.XplX
+endif
+
+ifdef DEBUG
+release:
+	$(MAKE) DEBUG= release
+else
+release: $(OBJDIR)/$(PROG)
+	cp $(OBJDIR)/$(PROG) $(RELEASEDIR)/$(RELEASEPROGDIR)
+	cd $(RELEASEDIR) ; tar cf - $(RELEASEPROGDIR) | gzip > $(PROG)_$(VERSION)_$(OBJ_SUFFIX).tar.gz
+endif
+
+
+######################################################################
+#
 # common rule to make both debug and non-debug version
 #
 ######################################################################
 
 both:
-	make DEBUG=; make DEBUG=1
+	$(MAKE) DEBUG=; $(MAKE) DEBUG=1
 
 shared:
-	make SHAREDLIB=1 
+	$(MAKE) SHAREDLIB=1 
 
 bothshared:
-	make DEBUG= shared; make DEBUG=1 shared
+	$(MAKE) DEBUG= shared; $(MAKE) DEBUG=1 shared
 
 alllibs:
-	make both
-	make bothshared
+	$(MAKE) both
+	$(MAKE) bothshared
 
 static:
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
          ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
 	done
-	make DEBUG=
+	$(MAKE) DEBUG=
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
 	done
