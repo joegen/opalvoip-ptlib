@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.32 1994/12/13 11:50:56 robertj Exp $
+ * $Id: contain.cxx,v 1.33 1995/01/03 09:39:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.32  1994/12/13 11:50:56  robertj
+ * Revision 1.33  1995/01/03 09:39:08  robertj
+ * Put standard malloc style memory allocation etc into memory check system.
+ *
+ * Revision 1.32  1994/12/13  11:50:56  robertj
  * Added MakeUnique() function to all container classes.
  *
  * Revision 1.31  1994/12/12  13:13:17  robertj
@@ -230,7 +233,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   if (GetSize() == 0)
     theArray = NULL;
   else
-    theArray = (char *)calloc(GetSize(), elementSize);
+    theArray = (char *)PCALLOC(GetSize(), elementSize);
 }
 
 
@@ -245,7 +248,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
     theArray = NULL;
   else {
     PINDEX sizebytes = elementSize*GetSize();
-    theArray = (char *)malloc(sizebytes);
+    theArray = (char *)PMALLOC(sizebytes);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
   }
 }
@@ -253,10 +256,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 
 void PAbstractArray::DestroyContents()
 {
-#ifdef PMEMORY_CHECK
-  memset(theArray, 0x55, elementSize*GetSize());
-#endif
-  free(theArray);
+  PFREE(theArray);
   theArray = NULL;
 }
 
@@ -272,7 +272,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
   PINDEX sizebytes = elementSize*GetSize();
-  char * newArray = (char *)malloc(sizebytes);
+  char * newArray = (char *)PMALLOC(sizebytes);
   if (newArray == NULL)
     reference->size = 0;
   else
@@ -320,17 +320,17 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
   if (IsUnique()) {
     if (theArray != NULL) {
-      if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
+      if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
         return FALSE;
     }
     else {
-      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
         return FALSE;
     }
     reference->size = newSize;
   }
   else {
-    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
       return FALSE;
 
     if (theArray != NULL)
@@ -556,8 +556,10 @@ istream & PString::ReadFrom(istream &strm)
   while ((c = strm.get()) != EOF && c != '\n') {
     *ptr++ = (char)c;
     len++;
-    if (len >= GetSize())
+    if (len >= GetSize()) {
       SetSize(len + 100);
+      ptr = theArray + len;
+    }
   }
   *ptr = '\0';
   PAssert(MakeMinimumSize(), POutOfMemory);
