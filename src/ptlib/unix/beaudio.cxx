@@ -29,6 +29,9 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.16  2004/10/26 18:08:54  ykiryanov
+ * Added code for old Media Kit, to be backwards compatible with R5, and Zeta ifdef
+ *
  * Revision 1.15  2004/06/16 01:55:10  ykiryanov
  * Added usage of lastReadCount - sound capture now works
  *
@@ -73,38 +76,19 @@
  *
  */
 
-// Storage kit
-#include <storage/Directory.h>
-#include <storage/Entry.h>
-#include <storage/File.h>
-
-// Media kit 
-#include <media/MediaDefs.h>
-#include <media/MediaFormats.h>
-#include <media/MediaFile.h>
-#include <media/MediaTrack.h>
-#include <media/SoundPlayer.h>
-#include <media/PlaySound.h>
-#include <media/MediaRecorder.h>
-
-// Kernel kit
-#include <kernel/OS.h>
-#include <kernel/scheduler.h>
-
-// Beep kit :-)
-#include <support/Beep.h>
-
 #include <ptlib.h>
-
 #include <ptlib/unix/ptlib/beaudio.h>
 
+PCREATE_SOUND_PLUGIN(BeOS, PSoundChannelBeOS);
+
+/////////////// Debugging stuff ///////////////
 #define TL (7)
 
-#define PRINT(x) do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
+#define PRINT(x) //do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
 
-#define STATUS(x) PRINT((x "=%ld", (long)dwLastError))
+#define STATUS(x) // PRINT((x "=%ld", (long)dwLastError))
 
-#define PRINTCB(x) //PRINT(x)
+#define PRINTCB(x) // PRINT(x)
 
 //#define SOUNDDETECT 1 define this for printed output of first pb/rec audio
 
@@ -866,7 +850,7 @@ public:
 	// Empty data out of buffer
 	void Drain(BYTE **extbuf, size_t *extsize)
 	{
-		PTRACE(TL, "Drain: head " << mHead 
+		PTRACE(7, "Drain: head " << mHead 
 	    << " tail " << mTail 
 	    << " headroom " << mHeadRoom 
 	    << " tailroom " << mTailRoom 
@@ -1074,24 +1058,27 @@ PSoundChannelBeOS::~PSoundChannelBeOS()
 	InternalSetBuffers(0,0); // destroys buffer
 }
 
-
-static const PStringArray GetRecorderDevicesList(BMediaRecorder *rec)
+static const PStringArray GetRecorderDevicesList(BMediaRecorder *Recorder)
 {
-	bool recorderallocated=false;
+	// Array to hold the list.
+	PStringArray devlist;
+    BMediaRecorder* bRecorder = NULL;
+    
+    if(Recorder != NULL)
+      bRecorder = Recorder;
+
+#ifdef MEDIA_KIT_UPDATE
+    BMediaRecorder localRecorder("GetRecorderDevicesList");    
 	bool result=true;
 	status_t status;
 	
-	// Array to hold the list.
-	PStringArray devlist;
-
 	{
-		if (rec==NULL)
+		if(bRecorder == NULL)
 		{
-			rec=new BMediaRecorder("GetRecorderDevicesList");
-			recorderallocated=true;
+			bRecorder = &localRecorder;
 		}
 	
-		if (rec==NULL || rec->InitCheck()!=B_OK)
+		if (bRecorder == NULL || bRecorder->InitCheck()!=B_OK)
 		{
 			PRINT(("Error constructing recorder to fetch device names"));
 			result=false;
@@ -1108,7 +1095,7 @@ static const PStringArray GetRecorderDevicesList(BMediaRecorder *rec)
 		format.u.raw_audio.format=media_raw_audio_format::B_AUDIO_SHORT;
 
 		// Let the media recorder determine which sources are available		
-		if ((status=rec->FetchSources(format, false))!=B_OK)
+		if ((status = bRecorder->FetchSources(format, false))!=B_OK)
 		{
 			PRINT(("Couldn't fetch BMediaRecorder sources; status=%d", status));
 			result=false;
@@ -1120,12 +1107,12 @@ static const PStringArray GetRecorderDevicesList(BMediaRecorder *rec)
 		// Fetch the names of all output devices
 		media_format format;
 		BString outname;
-		for (int i=0; i<rec->CountSources(); i++)
+		for (int i=0; i< bRecorder->CountSources(); i++)
 		{
-			if ((status=rec->GetSourceAt(i, &outname, &format))==B_OK)
+			if ((status = bRecorder->GetSourceAt(i, &outname, &format))==B_OK)
 			{
 				PRINT(("Device found: %s", outname.String()));
-				devlist[i]=PString(outname.String());
+				devlist[i] = PString(outname.String());
 			}
 			else
 			{
@@ -1135,19 +1122,18 @@ static const PStringArray GetRecorderDevicesList(BMediaRecorder *rec)
 		}
 	}
 
-	if (recorderallocated)
-	{
-		delete rec;
-	}
-	
 	if (!result)
 	{
 		devlist.RemoveAll();
 	}
 	
 	return devlist;
+#else
+    // Media Kit is the only device
+    devlist[0] = "MediaKit";
+	return devlist;
+#endif
 }
-
 
 PStringArray PSoundChannelBeOS::GetDeviceNames(Directions dir)
 {
@@ -1161,7 +1147,6 @@ PStringArray PSoundChannelBeOS::GetDeviceNames(Directions dir)
 		return PStringArray("MediaKit");
 	}
 }
-
 
 PString PSoundChannelBeOS::GetDefaultDevice(Directions dir)
 {
@@ -1261,16 +1246,16 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 	if (result)			
 	{
 		// Create the recorder
-		mRecorder=new BMediaRecorder("PWLR");
+		mRecorder=new BMediaRecorder("PWLIB PSoundChannel recorder");
 	
 		if ((mRecorder==NULL) || (mRecorder->InitCheck()!=B_OK))
 		{
-			
-                        result=FALSE;
+			result=FALSE;
 			PRINT(("Couldn't construct recorder"));
 		}
 	}
 
+#ifdef MEDIA_KIT_UPDATE
 	int32 sourceindex;
 	if (result)
 	{
@@ -1286,16 +1271,16 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 			sourceindex=(int32)x;
 		}
 	}
-
+	
 #ifdef _DEBUG	
 	if (result)
 	{
 		// Get information for the device
 		BString outname;
-		media_format xformat; 
+		media_format xformat;
 		status_t err;
 
-		if ((err=mRecorder->GetSourceAt(sourceindex, &outname, &xformat)) == B_OK)
+		if ((err=mRecorder->GetSourceAt(sourceindex, &outname, &xformat))==B_OK)
 		{
 			PRINT(("%s", outname.String()));
 			PRINT(("    type %d", (int)xformat.type));
@@ -1313,20 +1298,38 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 		}
 	}
 #endif
+
 	if (result)
 	{
-	  // Try to connect to the source
-	  if (mRecorder->ConnectSourceAt(sourceindex)!=B_OK)
-	  {
-		result=FALSE;
-		PRINT(("Couldn't connect BMediaRecorder to source"));
-	  }
-	} // if result
+		// Try to connect to the source
+		if (mRecorder->ConnectSourceAt(sourceindex)!=B_OK)
+		{
+			result=FALSE;
+			PRINT(("Couldn't connect BMediaRecorder to source"));
+		}
+	}
+
+#else
+	if (result)
+	{
+		// Connect the recorder to the default input device
+		media_format format;
+		format.type=B_MEDIA_RAW_AUDIO;
+		format.u.raw_audio=media_raw_audio_format::wildcard;
+		// The resampler can only handle 16-bit audio
+		format.u.raw_audio.format=media_raw_audio_format::B_AUDIO_SHORT;
+		if (mRecorder->Connect(format,0)!=B_OK)
+		{
+			result=FALSE;
+			PRINT(("couldn't connect the recorder to the default source"));
+		}
+	}
+#endif
 
 	if (result)
 	{
 		// Create resampler
-		media_format format = mRecorder->Format();
+		media_format format=mRecorder->Format();
 
 		delete mResampler;
 		mResampler=new Resampler(
@@ -1349,7 +1352,7 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 #endif
 
 		// If the current buffer is not a resamplin buffer, re-create it 
-		ResamplingBuffer *buf = dynamic_cast<ResamplingBuffer*>(mBuffer);
+		ResamplingBuffer *buf=dynamic_cast<ResamplingBuffer*>(mBuffer);
 		
 		if (buf==NULL)
 		{
@@ -1385,7 +1388,7 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 			mRecorder=NULL;
 		}
 	}
-
+	
 	return result;		
 }
 
@@ -1542,10 +1545,8 @@ BOOL PSoundChannelBeOS::Read(void *buf, PINDEX len)
 
 		return TRUE;
 	}
-	
 	return FALSE;
 }
-
 
 BOOL PSoundChannelBeOS::Write(const void *buf, PINDEX len)
 {
@@ -1599,9 +1600,9 @@ BOOL PSoundChannelBeOS::Close()
 
         if(mPlayer)
         {
-	  // Destroy the player
-	  delete mPlayer;
-	  mPlayer=NULL; // make sure that another Close won't crash the system
+	      // Destroy the player
+	  	  delete mPlayer;
+	      mPlayer=NULL; // make sure that another Close won't crash the system
         }
 
 	// Stop the recorder
@@ -1616,12 +1617,12 @@ BOOL PSoundChannelBeOS::Close()
 #endif
 	}
 	
-        if(mRecorder)
-        {
-	  // Destroy the recorder
-	  delete mRecorder;
+     if(mRecorder)
+     {
+	   // Destroy the recorder
+	   delete mRecorder;
 	   mRecorder=NULL; // make sure that another Close won't crash the system
-	}
+	 }
 
 	return TRUE;
 }
@@ -1658,7 +1659,7 @@ BOOL PSoundChannelBeOS::InternalSetBuffers(PINDEX size, PINDEX threshold)
 	{
       if (!mResampler)
       {
-	    PTRACE(TL, "Creating default resampler");	
+        PTRACE(TL, "Creating default resampler");	
         mResampler = new Resampler(1.0,1.0,1,1,0,1);
       }
 
@@ -1985,6 +1986,5 @@ BOOL  PSoundChannelBeOS::GetVolume(unsigned & volume)
   return TRUE;
 
 }
-  
 
 // End of file
