@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.142  2002/11/03 08:10:24  rogerh
+# Add IPV6 check using header files. This works on FreeBSD.
+#
 # Revision 1.141  2002/11/02 00:48:58  robertj
 # Changed test for IPv6, old test picked up old versions which are no good.
 #
@@ -1393,6 +1396,13 @@ endif
 # define IP v6 stuff
 ifndef NO_IPv6
 ifneq (,$(wildcard /proc/net/if_inet6))
+STDCCFLAGS	+= -DP_HAS_IPV6
+endif
+endif
+
+# define IP v6 stuff
+ifndef NO_IPv6
+ifneq (,$(wildcard /usr/include/netinet6/in6.h))
 STDCCFLAGS	+= -DP_HAS_IPV6
 endif
 endif
