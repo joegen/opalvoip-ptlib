@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.5  2002/08/13 01:55:00  craigs
+ * Fixed memory leak on PXMLRPCRequest class
+ *
  * Revision 1.4  2002/08/06 01:04:03  robertj
  * Fixed missing pragma interface/implementation
  *
@@ -111,10 +114,12 @@ class PXMLRPCRequest : public PXML
   PCLASSINFO(PXMLRPCRequest, PXML);
   public:
     PXMLRPCRequest(const PString & method);
+    ~PXMLRPCRequest();
+
     PXMLRPCParams * GetParams()  { return params; }
 
-    protected:
-      PXMLRPCParams * params;
+  protected:
+    PXMLRPCParams * params;
 };
 
 /////////////////////////////////////////////////////////////////
