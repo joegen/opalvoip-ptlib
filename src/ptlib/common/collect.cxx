@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.54  2002/04/16 07:58:13  robertj
+ * Fixed MakeUnique for lists and sorted lists.
+ *
  * Revision 1.53  2002/02/03 16:16:07  rogerh
  * make nil static. Submitted by Peter Johnson <paj@chartermi.net>
  *
@@ -421,7 +424,16 @@ void PAbstractList::CloneContents(const PAbstractList * list)
   PAssertNULL(info);
 
   while (element != NULL) {
-    Append(element->data->Clone());
+    Element * newElement = new Element(element->data->Clone());
+
+    if (info->head == NULL)
+      info->head = info->tail = newElement;
+    else {
+      newElement->prev = info->tail;
+      info->tail->next = newElement;
+      info->tail = newElement;
+    }
+
     element = element->next;
   }
 }
@@ -676,6 +688,7 @@ void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 
   info = new Info;
   PAssertNULL(info);
+  reference->size = 0;
 
   while (element != &nil) {
     Append(element->data->Clone());
