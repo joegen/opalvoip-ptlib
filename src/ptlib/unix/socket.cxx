@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.82  2002/01/31 22:52:18  robertj
+ * Added fix for buffer too small in Solaris GetRouteTable(), thanks Markus Storm.
+ *
  * Revision 1.81  2001/12/17 23:33:50  robertj
  * Solaris 8 porting changes, thanks James Dugal
  *
@@ -1359,7 +1362,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 		mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
 
 		do {
-		  char name[16];
+		  char name[256];
 #ifdef SOL_DEBUG_RT
 		  printf("%s -> %s mask %s metric %d %d %d %d %d ifc %.*s type %d/%x/%x\n",
 			       inet_ntoa(rp->ipRouteDest),
@@ -1377,12 +1380,16 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 			       rp->ipRouteInfo.re_flags
 				);
 #endif
-		  if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL)) continue;
+		  if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL))
+                    continue;
 		  RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
 		  entry->net_mask = rp->ipRouteMask;
 		  entry->destination = rp->ipRouteNextHop;
-		  strncpy(name, rp->ipRouteIfIndex.o_bytes, rp->ipRouteIfIndex.o_length);
-		  name[rp->ipRouteIfIndex.o_length] = '\0';
+                  unsigned len = rp->ipRouteIfIndex.o_length;
+                  if (len >= sizeof(name))
+                    len = sizeof(name)-1;
+		  strncpy(name, rp->ipRouteIfIndex.o_bytes, len);
+		  name[len] = '\0';
 		  entry->interfaceName = name;
 		  entry->metric =  rp->ipRouteMetric1;
 		  table.Append(entry);
