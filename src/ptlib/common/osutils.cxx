@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.67 1996/05/26 03:46:56 robertj Exp $
+ * $Id: osutils.cxx,v 1.68 1996/06/01 05:03:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.68  1996/06/01 05:03:37  robertj
+ * Fixed GNU compiler having difficulty with PTimeInterval *this.
+ *
  * Revision 1.67  1996/05/26 03:46:56  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -345,9 +348,9 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
   operator-=(delta);
 
-  if (*this > 0) {
-    if (*this < minTimeLeft)
-      minTimeLeft = *this;
+  if (milliseconds > 0) {
+    if (milliseconds < minTimeLeft)
+      minTimeLeft = milliseconds;
     inTimeout = FALSE;
     return TRUE;
   }
