@@ -2,6 +2,47 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.1pl18
+------------
+	Added ability to change the persistent connection parameters (timeout
+	etc) in HTTP server class.
+
+	Fixed bug in HTTP form updating SELECT fields from registry.
+
+	Fixed OpenSSL support so can operate as a server channel.
+
+	SSL channel changes, added error functions, removed need to have
+	openssl include directory in app.
+
+	Added mechanism by which a service can get at new HTTP connections, 
+	eg to add SSL.
+
+	Fixed resize of multi-line edit box windows, again.
+
+	Fixed problem with no control value update if press "Enter" to close dialog.
+
+	Added ability to have multiple lines with the same key in PConfig.
+
+	Removed assert for empty key name so can set registry default key for 
+	a section.
+
+	Removed PAssert with registry access denied error, changed to PTRACE.
+
+	Fixed subtle difference between Unix and Win32 section names (ignore 
+	trailing backslash) in PConfig files.
+
+	Fixed silly mistake in runtime_malloc() function, should return a 
+	pointer!
+
+	Improved multithreaded reliability of the timers under stress.
+
+	Fixed problem with no new lines in trace output to stderr.
+
+	Added Windows 2000 to operating system reporting.
+
+	Fixed problem with bothnoshared target in makefile
+
+
 Release 1.1pl17
 ------------
 	AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
