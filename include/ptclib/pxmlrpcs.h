@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.h,v $
+ * Revision 1.3  2003/02/19 01:50:31  robertj
+ * Change to make it easier to set a fault from the server function handler.
+ *
  * Revision 1.2  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -42,6 +45,7 @@
 #include <ptclib/pxmlrpc.h>
 #include <ptclib/http.h>
 
+
 class PXMLRPCServerMethod : public PString
 {
   PCLASSINFO(PXMLRPCServerMethod, PString);
@@ -52,18 +56,9 @@ class PXMLRPCServerMethod : public PString
     PNotifier methodFunc;
 };
 
-class PXMLRPCServerParms : public PObject 
-{
-  PCLASSINFO(PXMLRPCServerParms, PObject);
-  public:
-    PXMLRPCServerParms(PXMLRPCBlock & _request)
-      : request(_request) { }
-
-    PXMLRPCBlock & request;
-    PXMLRPCBlock response;
-};
 
 PSORTED_LIST(PXMLRPCServerMethodList, PXMLRPCServerMethod);
+
 
 class PXMLRPCServerResource : public PHTTPResource
 {
@@ -90,12 +85,36 @@ class PXMLRPCServerResource : public PHTTPResource
     virtual BOOL SetMethod(const PString & methodName, const PNotifier & func);
     void OnXMLRPCRequest(const PString & methodName, PXMLRPCBlock & request, PString & reply);
 
-    virtual PString FormatFault(PINDEX code, const PString & str);
+    virtual PString FormatFault(
+      PINDEX code,
+      const PString & str
+    );
 
   protected:
     PMutex methodMutex;
     PXMLRPCServerMethodList methodList;
 };
+
+
+class PXMLRPCServerParms : public PObject 
+{
+  PCLASSINFO(PXMLRPCServerParms, PObject);
+  public:
+    PXMLRPCServerParms(
+      PXMLRPCServerResource & _resource,
+      PXMLRPCBlock & _request
+    ) : resource(_resource), request(_request) { }
+
+    void SetFault(
+      PINDEX code,
+      const PString & text
+    ) { request.SetFault(code, resource.FormatFault(code, text)); }
+
+    PXMLRPCServerResource & resource;
+    PXMLRPCBlock & request;
+    PXMLRPCBlock response;
+};
+
 
 #endif
 
