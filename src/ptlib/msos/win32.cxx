@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.146  2005/02/02 23:21:16  csoutheren
+ * Fixed problem with race condition in HousekeepingThread
+ * Thanks to an idea from Auri Vizgaitis
+ *
  * Revision 1.145  2005/01/25 11:28:25  csoutheren
  * Changed parms to CreateEvent to be more clear
  *
@@ -1265,6 +1269,9 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
+  if (this == PThread::Current())
+    return FALSE;
+
   return WaitForTermination(0);
 }
 
@@ -1440,18 +1447,31 @@ PProcess::HouseKeepingThread::HouseKeepingThread()
 void PProcess::HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
+
   for (;;) {
+
+    // collect a list of thread handles to check, and clean up 
+    // handles for threads that disappeared without telling us
     process.deleteThreadMutex.Wait();
     HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
+    DWORD dwFlags;
     handles[0] = breakBlock.GetHandle();
     for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
       PThread & thread = process.autoDeleteThreads[i];
       if (thread.IsTerminated())
         process.autoDeleteThreads.RemoveAt(i--);
+
       else {
         handles[numHandles] = thread.GetHandle();
-        if (handles[numHandles] != process.GetHandle()) {
+
+        // make sure we don't put invalid handles into the list
+        if (::GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
+          PTRACE(2, "Refused to put invalid handle into wait list");
+        }
+
+        // don't put the handle for the current process in the list
+        else if (handles[numHandles] != process.GetHandle()) {
           numHandles++;
           if (numHandles >= MAXIMUM_WAIT_OBJECTS)
             break;
@@ -1470,10 +1490,22 @@ void PProcess::HouseKeepingThread::Main()
       delay = nextTimer.GetInterval();
 
     DWORD result;
-    PINDEX retries = 100;
+    int retries = 100;
+
     while ((result = WaitForMultipleObjects(numHandles, handles, FALSE, delay)) == WAIT_FAILED) {
-      PAssertOS(::GetLastError() == ERROR_INVALID_HANDLE || retries > 0);
-      retries--;
+
+      // if we get an invalid handle error, than assume this is because a thread ended between
+      // creating the handle list and testing it. So, cleanup the list before calling 
+      // WaitForMultipleObjects again
+      if (::GetLastError() == ERROR_INVALID_HANDLE)
+        break;
+
+      // sometimes WaitForMultipleObjects fails. No idea why, so allow some retries
+      else {
+        retries--;
+        if (retries <= 0)
+          break;
+      }
     }
   }
 }
