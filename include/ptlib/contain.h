@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.43 1995/06/17 11:12:26 robertj Exp $
+ * $Id: contain.h,v 1.44 1996/08/08 10:08:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.44  1996/08/08 10:08:41  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.43  1995/06/17 11:12:26  robertj
  * Documentation update.
  *
@@ -160,7 +163,7 @@
 #pragma interface
 #endif
 
-#include <object.h>
+#include <ptlib/object.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -672,23 +675,23 @@ PDECLARE_CLASS(PCollection, PContainer)
 ///////////////////////////////////////////////////////////////////////////////
 // The abstract array class
 
-#include <array.h>
+#include <ptlib/array.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // The abstract array class
 
-#include <lists.h>
+#include <ptlib/lists.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class (specialised version of PBASEARRAY(char))
 
-#include <dict.h>
+#include <ptlib/dict.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class
 
-#include <pstring.h>
+#include <ptlib/pstring.h>
 
 
 
@@ -696,7 +699,7 @@ PDECLARE_CLASS(PCollection, PContainer)
 // Fill in all the inline functions
 
 #if defined(P_USE_INLINES)
-#include "contain.inl"
+#include "ptlib/contain.inl"
 #endif
 
 #endif // _CONTAIN_H
