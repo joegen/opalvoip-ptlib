@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.21  2002/01/07 05:26:47  robertj
+ * Fixed getting scan list of messages, thanks xradish
+ *
  * Revision 1.20  2001/09/28 00:45:27  robertj
  * Removed HasKey() as is confusing due to ancestor Contains().
  *
@@ -848,7 +851,7 @@ PUnsignedArray PPOP3Client::GetMessageSizes()
 
   if (ExecuteCommand(LIST, "") > 0) {
     PString msgInfo;
-    while (ReadLine(msgInfo))
+    while (ReadLine(msgInfo) && isdigit(msgInfo[0]))
       sizes.SetAt((PINDEX)msgInfo.AsInteger()-1,
                   (unsigned)msgInfo.Mid(msgInfo.Find(' ')).AsInteger());
   }
