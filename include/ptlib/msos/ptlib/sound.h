@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.7  1999/05/24 03:02:32  robertj
+ * Added include for compiling under different environments.
+ *
  * Revision 1.6  1999/02/22 10:15:15  robertj
  * Sound driver interface implementation to Linux OSS specification.
  *
@@ -49,6 +52,8 @@
 
 
 #ifndef _PSOUND
+
+#include <mmsystem.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
