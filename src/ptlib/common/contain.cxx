@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.85  2000/02/05 22:36:09  craigs
+ * Fixed problem caused by last modification
+ *
  * Revision 1.84  2000/02/04 19:34:26  craigs
  * Fixed problem with changing size of referenced objects
  *
@@ -528,9 +531,6 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
 
-  if (newsizebytes == oldsizebytes)
-    return TRUE;
-
   char * newArray;
 
   if (!IsUnique()) {
@@ -549,6 +549,9 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
     reference = new Reference(newSize);
 
   } else {
+
+    if (newsizebytes == oldsizebytes)
+      return TRUE;
 
     if (theArray != NULL) {
       if (newsizebytes == 0) {
