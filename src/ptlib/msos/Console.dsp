@@ -153,6 +153,10 @@ SOURCE=.\mail.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\notifier_ext.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\object.cxx
 # End Source File
 # Begin Source File
@@ -345,6 +349,10 @@ SOURCE=..\..\..\Include\PtLib\Mail.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\mutex.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\notifier_ext.h
 # End Source File
 # Begin Source File
 
@@ -614,7 +622,7 @@ SOURCE=..\..\..\include\ptbuildopts.h.in
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\pwlib\include
+InputDir=\Work\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -626,7 +634,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\pwlib\include
+InputDir=\Work\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
