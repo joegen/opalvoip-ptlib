@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.84  2000/02/04 19:34:26  craigs
+ * Fixed problem with changing size of referenced objects
+ *
  * Revision 1.83  2000/01/25 14:05:35  robertj
  * Added optimisation to array comparisons if referencing same array.
  *
@@ -530,31 +533,49 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
   char * newArray;
 
-  if (theArray != NULL) {
-    if (newsizebytes == 0) {
-      if (allocatedDynamically)
-        free(theArray);
+  if (!IsUnique()) {
+
+    if (newsizebytes == 0)
       newArray = NULL;
-    }
-    else if (allocatedDynamically) {
-      if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
-        return FALSE;
-    }
     else {
       if ((newArray = (char *)malloc(newsizebytes)) == NULL)
         return FALSE;
-      memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
-      allocatedDynamically = TRUE;
+  
+      if (theArray != NULL)
+        memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
     }
-  }
-  else if (newsizebytes != 0) {
-    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
-      return FALSE;
-  }
-  else
-    newArray = NULL;
 
-  reference->size = newSize;
+    reference->count--;
+    reference = new Reference(newSize);
+
+  } else {
+
+    if (theArray != NULL) {
+      if (newsizebytes == 0) {
+        if (allocatedDynamically)
+          free(theArray);
+        newArray = NULL;
+      }
+      else if (allocatedDynamically) {
+        if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
+          return FALSE;
+      }
+      else {
+        if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+          return FALSE;
+        memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
+        allocatedDynamically = TRUE;
+      }
+    }
+    else if (newsizebytes != 0) {
+      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+        return FALSE;
+    }
+    else
+      newArray = NULL;
+
+    reference->size = newSize;
+  }
 
   if (newsizebytes > oldsizebytes)
     memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
@@ -1070,6 +1091,8 @@ BOOL PString::IsEmpty() const
 
 BOOL PString::SetSize(PINDEX newSize)
 {
+  return PAbstractArray::SetSize(newSize);
+#if 0
   if (IsUnique())
     return PAbstractArray::SetSize(newSize);
 
@@ -1095,6 +1118,7 @@ BOOL PString::SetSize(PINDEX newSize)
 
   theArray = newArray;
   return TRUE;
+#endif
 }
 
 
