@@ -14,7 +14,7 @@
 #pragma implementation "process.h"
 #pragma implementation "thread.h"
 #pragma implementation "dynalink.h"
-
+#pragma implementation "semaphor.h"
 
 #include "ptlib.h"
 
@@ -101,11 +101,11 @@ PThread::PThread()
   hasIOTimer  = FALSE;
 }
 
-
 PThread::~PThread()
 {
+  Terminate();
+  free(stackBase);
 }
-
 
 void PThread::SwitchContext(PThread * from)
 {
@@ -146,14 +146,16 @@ BOOL PThread::IsNoLongerBlocked()
 
   // do a zero time select call to see if we would block if we did the read/write
   struct timeval timeout = {0, 0};
-  if (SELECT (blockHandle + 1, &readfds, &writefds, NULL, &timeout) == 1)
+  if (SELECT (blockHandle + 1, &readfds, &writefds, NULL, &timeout) == 1) {
+    dataAvailable = TRUE;
     return TRUE;
+  }
+
+  // well, we definitly didn't get any data.
+  dataAvailable = FALSE;
 
   // if the channel has timed out, return TRUE
-  if (hasIOTimer && (ioTimer == 0))
-    return TRUE;
-
-  return FALSE;
+  return hasIOTimer && (ioTimer == 0);
 }
 
 
@@ -194,44 +196,63 @@ void PProcess::OperatingSystemYield()
     timeout             = &timeout_val;
   }
 
-  // wait until someone wakes up!
-  if ((width > 0) || (timeout != NULL)) 
-    SELECT (width, &readfds, &writefds, NULL, timeout);
-  else {
+  // wait for something to happen on an I/O channel, or for a timeout
+  int selectCount;
+  if ((width > 0) || (timeout != NULL)) {
+    selectCount = SELECT (width, &readfds, &writefds, NULL, timeout);
+  } else {
     PError << "OperatingSystemYield with no blocks! Sleeping....\n";
     ::sleep(1);
+    selectCount = 0;
   }
+ 
+  // process the timer list
   GetTimerList()->Process();
+
+  // go through the list of threads again and update the status of threads
+  // that are blocked on I/O
+  thread = current;
+  do {
+    if (thread->blockHandle >= 0) {
+      if (thread->blockRead)
+        thread->dataAvailable = FD_ISSET (thread->blockHandle, &readfds);
+      else
+        thread->dataAvailable = FD_ISSET (thread->blockHandle, &writefds);
+    }
+    thread = thread->link;
+  } while (thread != current);
 }
 
 
 BOOL PThread::PXBlockOnIO(int handle, BOOL isRead)
 
 {
-  blockHandle = handle;
-  blockRead   = isRead;
-  hasIOTimer  = FALSE;
+  blockHandle   = handle;
+  blockRead     = isRead;
+  hasIOTimer    = FALSE;
+  dataAvailable = FALSE;
 
-  status      = Blocked;
+  status      = BlockedIO;
   Yield();
 
-  return FALSE;
+  return dataAvailable;
 }
 
-BOOL PThread::PXBlockOnIO(int handle, BOOL isRead, PTimeInterval timeout)
+BOOL PThread::PXBlockOnIO(int handle, BOOL isRead, const PTimeInterval & timeout)
 
 {
-  blockHandle = handle;
-  blockRead   = isRead;
-  hasIOTimer  = TRUE;
-  ioTimer     = timeout;
+  blockHandle   = handle;
+  blockRead     = isRead;
+  hasIOTimer    = TRUE;
+  ioTimer       = timeout;
+  dataAvailable = FALSE;
 
-  status      = Blocked;
+  status        = BlockedIO;
   Yield();
 
   ioTimer.Stop();
 
-  return FALSE;
+  return dataAvailable;
 }
 
 
