@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.7  1999/06/09 15:41:18  robertj
+# Added better UI to make files.
+#
 # Revision 1.6  1999/04/22 02:37:00  robertj
 # Added history file.
 #
@@ -58,55 +61,46 @@ HAS_GUI = 1
 HAS_MOTIF = 1
 endif
 
-all :
-	$(MAKE) -C src/ptlib/unix
-	$(MAKE) -C tools/asnparser DEBUG=
+SUBDIRS := src/ptlib/unix tools/asnparser
 ifdef HAS_GUI
-	$(MAKE) -C tools/pwrc DEBUG=
+SUBDIRS += tools/pwrc
 ifdef HAS_XLIB
-	$(MAKE) -C src/pwlib/xlib
+SUBDIRS += src/pwlib/xlib
 endif
 ifdef HAS_MOTIF
-	$(MAKE) -C src/pwlib/motif
+SUBDIRS += src/pwlib/motif
 endif
 endif
 
-depend :
-	$(MAKE) -C src/ptlib/unix depend
-	$(MAKE) -C tools/asnparser DEBUG= depend
-ifdef HAS_GUI
-	$(MAKE) -C tools/pwrc DEBUG= depend
-ifdef HAS_XLIB
-	$(MAKE) -C src/pwlib/xlib depend
-endif
-ifdef HAS_MOTIF
-	$(MAKE) -C src/pwlib/motif depend
-endif
-endif
+opt :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) opt ;)
 
-clean :
-	$(MAKE) -C src/ptlib/unix clean
-	$(MAKE) -C tools/asnparser DEBUG= clean
-ifdef HAS_GUI
-	$(MAKE) -C tools/pwrc DEBUG= clean
-ifdef HAS_XLIB
-	$(MAKE) -C src/pwlib/xlib clean
-endif
-ifdef HAS_MOTIF
-	$(MAKE) -C src/pwlib/motif clean
-endif
-endif
+debug :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debug ;)
 
 both :
-	$(MAKE) DEBUG= ; $(MAKE) DEBUG=1
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) both ;)
+
+clean :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) clean ;)
+
+optclean :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) optclean ;)
+
+debugclean :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debugclean ;)
+
+optdepend :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) optdepend ;)
+
+debugdepend :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debugdepend ;)
 
 bothdepend :
-	$(MAKE) DEBUG= depend ; $(MAKE) DEBUG=1 depend
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) bothdepend ;)
 
-bothclean :
-	$(MAKE) DEBUG= clean ; $(MAKE) DEBUG=1 clean
-
-
+ptlib:
+	$(MAKE) -C src/ptlib/unix both
 
 
 docs: 

@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.39  1999/06/09 15:41:18  robertj
+# Added better UI to make files.
+#
 # Revision 1.38  1999/06/07 04:49:46  robertj
 # Added support for SuSe linux variant.
 #
@@ -87,10 +90,6 @@
 #
 
 
-ifndef DEBUG
-DEBUG := 1
-endif
-
 ifndef PWLIBDIR
 PWLIBDIR := $(HOME)/pwlib
 endif
@@ -132,6 +131,9 @@ MACHTYPE := x86
 endif
 
 
+.PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
+
+
 ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris))
 
 all ::
@@ -148,6 +150,32 @@ all ::
 	@echo "         it working please send patches to support@equival.com.au"
 	@echo ######################################################################
 	@echo
+
+debug :: all
+opt :: all
+both :: all
+release :: all
+clean :: all
+debugclean :: all
+optclean :: all
+debugdepend :: all
+optdepend :: all
+bothdepend :: all
+
+else
+
+all ::
+	@echo "The following targets are available:"
+	@echo "    make debug       Make debug version of application"
+	@echo "    make opt         Make optimised version of application"
+	@echo "    make both        Make both versions of application"
+	@echo "    make release     Package up optimised version int tar.gz file"
+	@echo "    make clean       Remove both debug and optimised files"
+	@echo "    make debugclean  Remove debug files"
+	@echo "    make optclean    Remove optimised files"
+	@echo "    make debugdepend Create debug dependency files"
+	@echo "    make optdepend   Create optimised dependency files"
+	@echo "    make bothdepend  Create both debug and optimised dependency files"
 
 endif
 
