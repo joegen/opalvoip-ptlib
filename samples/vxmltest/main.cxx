@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4.2.1  2004/06/20 11:18:03  csoutheren
+ * Rewrite of resource cacheing to cache text-to-speech output
+ *
  * Revision 1.4  2004/06/19 09:00:35  csoutheren
  * Updated for TTS changes
  *
@@ -109,11 +112,15 @@ void Vxmltest::Main()
 
   PTextToSpeech * tts = NULL;
   PGenericFactory<PTextToSpeech>::KeyList_T engines = PGenericFactory<PTextToSpeech>::GetKeyList();
-  if (engines.size() != 0)
-    tts = PGenericFactory<PTextToSpeech>::CreateInstance(engines[0]);
-  if (tts == NULL) {
-    PError << "error: cannot select default text to speech engine" << endl;
-    return;
+  if (engines.size() != 0) {
+    PString name = "Microsoft SAPI";
+    if (std::find(engines.begin(), engines.end(), name) == engines.end())
+      name = engines[0];
+    tts = PGenericFactory<PTextToSpeech>::CreateInstance(name);
+    if (tts == NULL) {
+      PError << "error: cannot select default text to speech engine" << endl;
+      return;
+    }
   }
 
   vxml = new PVXMLSession(tts);
