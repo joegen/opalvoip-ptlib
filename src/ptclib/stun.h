@@ -81,7 +81,7 @@ operator<<( ostream& strm, const StunAddress& addr);
 
 
 /// gets a consecutive pair (first is even) or public sockets
-bool stunOpenSocketPair( StunAddress& stunServerAddr, StunAddress* sAddr, int* fd1, int* fd2 );
+bool stunOpenSocketPair( StunAddress& stunServerAddr, StunAddress* sAddr, int* fd1, int* fd2, int port = 0 );
 
 
 /// gets a UDP socket for use and returns it's public address
