@@ -35,7 +35,7 @@ extern "C" {
 }
 #endif
 
-#if defined (_WIN32) | (__GNUC__ >= 3)
+#if (__GNUC__ >= 3)
 #include <iostream>
 #else
 #include <iostream.h>
