@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.6 1996/08/19 13:39:20 robertj Exp $
+ * $Id: svcproc.h,v 1.7 1997/02/05 11:51:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.7  1997/02/05 11:51:15  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.6  1996/08/19 13:39:20  robertj
  * Added "Debug" level to system log.
  * Moved PSYSTEMLOG macro to common code.
@@ -96,7 +99,7 @@ class PEXPORT PSystemLog : public PObject, public iostream {
 
 
 #define PSYSTEMLOG(l, v) \
-  if (PServiceProcess::Current()->GetLogLevel() >= PSystemLog::l) { \
+  if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::l) { \
     PSystemLog s(PSystemLog::l); \
     s << v; \
   } else (void)0
@@ -121,7 +124,7 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
 
   // New functions for class
-    static PServiceProcess * Current();
+    static PServiceProcess & Current();
     /* Get the current service process object.
 
        <H2>Returns:</H2>
