@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.63  2001/10/12 07:25:33  robertj
+# Removed diff test, cvs commit already does compare
+#
 # Revision 1.62  2001/10/12 06:18:41  robertj
 # Fixed check of change of version file for tagbuild
 #
@@ -531,10 +534,7 @@ else # ifndef CVS_TAG
 
 tagbuild ::
 	sed $(foreach dir,$(LIBDIRS), -e "s/ $(notdir $(dir)):.*/ $(notdir $(dir)): $(shell $(MAKE) -s -C $(dir) version)/") $(VERSION_FILE) > $(VERSION_FILE).new
-	@if test -e $(TMPRSRC) && diff -q $(VERSION_FILE) $(VERSION_FILE).new ; \
-		then mv -f $(VERSION_FILE).new $(VERSION_FILE) ; \
-		else rm -f $(VERSION_FILE).new ;  \
-	fi
+	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Pre-tagging check in for $(CVS_TAG)." $(VERSION_FILE)
 	cvs tag -c $(CVS_TAG)
 	let BLD=$(BUILD_NUMBER)+1 ; \
