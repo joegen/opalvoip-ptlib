@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.24  2002/11/13 23:45:19  robertj
+# Added install and uninstall targets, thanks Damien Sandras
+#
 # Revision 1.23  2002/10/17 13:44:27  robertj
 # Port to RTEMS, thanks Vladimir Nesic.
 #
@@ -124,6 +127,11 @@ SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
 
 
+ifndef PREFIX
+PREFIX=/usr/local/
+endif
+ 
+
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
 optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
@@ -141,6 +149,19 @@ ptlib:
 
 docs: 
 	doc++ --dir html --tables pwlib.dxx
+
+install:
+	cp -df lib/*so* $(PREFIX)/lib/
+	cp -rf include/* $(PREFIX)/include/
+	cp tools/asnparser/obj*/asnparser $(PREFIX)/bin/
+	mkdir -p $(PREFIX)/share/pwlib/
+	cp -rf make $(PREFIX)/share/pwlib/
+	ln -s $(PREFIX)/lib/$(PTLIB_FILE) $(PREFIX)/lib/libpt.so
+	chmod -R a+r $(PREFIX)/include/ptlib $(PREFIX)/include/ptclib $(PREFIX)/include/ptlib.h $(PREFIX)/share/pwlib
+
+uninstall:
+	rm -rf $(PREFIX)/include/ptlib $(PREFIX)/include/ptclib $(PREFIX)/include/ptlib.h $(PREFIX)/share/pwlib/
+	rm -f $(PREFIX)/lib/$(PTLIB_FILE)* $(PREFIX)/lib/libpt.so $(PREFIX)/bin/asnparser 
 
 
 # End of Makefile
