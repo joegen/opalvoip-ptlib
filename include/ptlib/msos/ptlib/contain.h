@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.16 1996/09/14 12:38:57 robertj Exp $
+ * $Id: contain.h,v 1.17 1997/01/12 04:13:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.17  1997/01/12 04:13:07  robertj
+ * Changed library to support NT 4.0 API changes.
+ *
  * Revision 1.16  1996/09/14 12:38:57  robertj
  * Moved template define from command line to code.
  * Fixed correct application of windows defines.
@@ -94,6 +97,10 @@
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
+
+#ifndef WINVER
+#define WINVER 0x401
+#endif
 
 #define STRICT
 #include <windows.h>
