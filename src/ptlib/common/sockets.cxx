@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.166  2003/11/12 05:16:48  csoutheren
+ * Fixed compiling problem on systems without QoS or IPV6
+ *
  * Revision 1.165  2003/10/30 11:32:57  rjongbloed
  * Added bullet proofing for converting from inaddr
  *
@@ -2964,15 +2967,15 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
     return ConvertOSError(os_handle = os_socket(af, type, proto));
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(P_HAS_QOS)
+    
     DWORD bufferSize = 0;
     DWORD numProtocols, i;
     LPWSAPROTOCOL_INFO installedProtocols, qosProtocol;
-    BOOL retval;
 
     //Try to find a QOS-enabled protocol
  
-    retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
+    BOOL retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
                                                             NULL,
                                                             &bufferSize));
     
@@ -3040,6 +3043,7 @@ BOOL PUDPSocket::OpenSocket()
 {
 #ifdef _WIN32
 #ifndef _WIN32_WCE
+#ifdef P_HAS_QOS
     OSVERSIONINFO versInfo;
     ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
     versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -3052,6 +3056,7 @@ BOOL PUDPSocket::OpenSocket()
     }
 #endif
 #endif
+#endif
     return ConvertOSError(os_handle = os_socket(AF_INET,SOCK_DGRAM, 0));
 }
 
@@ -3059,6 +3064,7 @@ BOOL PUDPSocket::OpenSocket(int ipAdressFamily)
 {
 #ifdef _WIN32
 #ifndef _WIN32_WCE
+#ifdef P_HAS_QOS
     OSVERSIONINFO versInfo;
     ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
     versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -3069,7 +3075,7 @@ BOOL PUDPSocket::OpenSocket(int ipAdressFamily)
             versInfo.dwMinorVersion > 0))
         return OpenSocketGQOS(ipAdressFamily, SOCK_DGRAM, 0);
     }
-
+#endif
 #endif
 #endif
     return ConvertOSError(os_handle = os_socket(ipAdressFamily,SOCK_DGRAM, 0));
