@@ -25,6 +25,10 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.8  2001/03/08 08:31:34  robertj
+ * Numerous enhancements to the video grabbing code including resizing
+ *   infrastructure to converters. Thanks a LOT, Mark Cooke.
+ *
  * Revision 1.7  2001/03/07 01:39:56  dereks
  * Fix image flip (top to bottom) in YUV411P to RGB24 conversion
  *
@@ -106,17 +110,29 @@ PColourConverter::PColourConverter(const PString & src,
   : srcColourFormat(src),
     dstColourFormat(dst)
 {
-  SetFrameSize(width, height);
+    SetSrcFrameSize(width, height);
+    SetDstFrameSize(width, height, FALSE);
 }
 
 
-BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
+BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
 {
-  frameWidth = width;
-  frameHeight = height;
-  srcFrameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, srcColourFormat);
-  dstFrameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, dstColourFormat);
-  return srcFrameBytes != 0 && dstFrameBytes != 0;
+  srcFrameWidth = width;
+  srcFrameHeight = height;
+  srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
+  return srcFrameBytes != 0;
+}
+
+
+BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
+					  BOOL bScale)
+{
+  dstFrameWidth  = width;
+  dstFrameHeight = height;
+  scaleNotCrop   = bScale;
+  
+  dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
+  return dstFrameBytes != 0;
 }
 
 
@@ -183,7 +199,7 @@ static void RGBtoYUV411p(unsigned width, unsigned height,
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,YUV411P)
 {
-  RGBtoYUV411p(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 3);
+  RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 3);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
@@ -192,7 +208,7 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,YUV411P)
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,YUV411P)
 {
-  RGBtoYUV411p(frameWidth, frameHeight, srcFrameBuffer, dstFrameBuffer, 4);
+  RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 4);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
@@ -208,17 +224,17 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV411P)
   BYTE *u,*v;
   const BYTE * s = srcFrameBuffer;
   BYTE * y =  dstFrameBuffer;
-  u = y + (frameWidth * frameHeight);
-  v = u + (frameWidth * frameHeight / 4);
+  u = y + (srcFrameWidth * srcFrameHeight);
+  v = u + (srcFrameWidth * srcFrameHeight / 4);
 
-  for (a = frameHeight; a > 0; a -= 2) {
-    for (b = frameWidth; b > 0; b -= 2) {           
+  for (a = srcFrameHeight; a > 0; a -= 2) {
+    for (b = srcFrameWidth; b > 0; b -= 2) {           
       *(y++) = *(s++);
       *(u++) = *(s++);
       *(y++) = *(s++);
       *(v++) = *(s++);
     }
-    for (b = frameWidth; b > 0; b -= 2) {
+    for (b = srcFrameWidth; b > 0; b -= 2) {
       *(y++) = *(s++);
       s++;
       *(y++) = *(s++);
@@ -239,20 +255,20 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
 
-  unsigned int   nbytes    = frameWidth*frameHeight;
+  unsigned int   nbytes    = srcFrameWidth*srcFrameHeight;
   const BYTE    *yplane    = srcFrameBuffer;           		// 1 byte Y (luminance) for each pixel
   const BYTE    *uplane    = yplane+nbytes;              	// 1 byte U for a block of 4 pixels
   const BYTE    *vplane    = uplane+(nbytes >> 2);       	// 1 byte V for a block of 4 pixels
-  unsigned int   pixpos[4] = { 0, 1, frameWidth, frameWidth+1 };
+  unsigned int   pixpos[4] = { 0, 1, srcFrameWidth, srcFrameWidth+1 };
   unsigned int   x, y, p;
 
   long     int   yvalue;
   long     int   cr, cb, rd, gd, bd;
   long     int   l, r, g, b;
             
-  for (y = 0; y < frameHeight; y += 2)
+  for (y = 0; y < srcFrameHeight; y += 2)
   {
-    for (x = 0; x < frameWidth; x += 2)
+    for (x = 0; x < srcFrameWidth; x += 2)
     {
       // The RGB value without luminance
      
@@ -289,8 +305,8 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
       vplane++;
     }
 
-    yplane += frameWidth;
-    dstFrameBuffer += 4*frameWidth;  
+    yplane += srcFrameWidth;
+    dstFrameBuffer += 4*srcFrameWidth;  
   }
   
   if (bytesReturned != NULL)
@@ -305,8 +321,8 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
   const BYTE * src = srcFrameBuffer+srcFrameBytes-1;
   BYTE * dst = dstFrameBuffer+dstFrameBytes-1;
 
-  for (unsigned x = 0; x < frameWidth; x++) {
-    for (unsigned y = 0; y < frameHeight; y++) {
+  for (unsigned x = 0; x < srcFrameWidth; x++) {
+    for (unsigned y = 0; y < srcFrameHeight; y++) {
       *dst-- = 0;
       for (unsigned p = 0; p < 3; p++)
         *dst-- = *src--;
@@ -315,6 +331,33 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
   
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV411P)
+{
+  if (srcFrameBuffer != dstFrameBuffer)
+    memcpy(dstFrameBuffer, srcFrameBuffer, (srcFrameWidth*srcFrameHeight*3)>>1);
+  
+  return TRUE;
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(RGB24,RGB24)
+{
+  if (srcFrameBuffer != dstFrameBuffer)
+    memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight*3);
+  
+  return TRUE;
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(RGB32,RGB32)
+{
+  if (srcFrameBuffer != dstFrameBuffer)
+    memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight*4);
+  
   return TRUE;
 }
 
