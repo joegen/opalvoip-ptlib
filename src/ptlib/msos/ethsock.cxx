@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.23  2001/08/15 22:15:27  yurik
+ * First cut of Windows CE port  to support gatekeeper
+ *
  * Revision 1.22  2001/03/05 04:18:27  robertj
  * Added net mask to interface info returned by GetInterfaceTable()
  *
@@ -102,7 +105,6 @@
 #include <ptlib/sockets.h>
 #include <snmp.h>
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Stuff from snmp.h
 
@@ -148,7 +150,6 @@ typedef enum _NDIS_MEDIUM {
 
 #define USE_VPACKET
 #include <ptlib/epacket.h>
-
 
 #ifdef USE_VPACKET
 #define PACKET_SERVICE_NAME "Packet"
@@ -202,9 +203,16 @@ class PWin32AsnOid : public AsnObjectIdentifier
 
 /////////////////////////////////////////////////////////////////////////////
 
-class PWin32SnmpLibrary : public PDynaLink
+class PWin32SnmpLibrary
+#ifndef _WIN32_WCE
+ : public PDynaLink
 {
   PCLASSINFO(PWin32SnmpLibrary, PDynaLink)
+#else
+{
+	void Close() {};
+	BOOL IsLoaded() { return TRUE; }
+#endif
   public:
     PWin32SnmpLibrary();
 
@@ -289,7 +297,6 @@ class PWin32PacketDriver
     HANDLE hDriver;
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class PWin32PacketVxD : public PWin32PacketDriver
@@ -337,6 +344,30 @@ class PWin32PacketSYS : public PWin32PacketDriver
     PString registryKey;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+class PWin32PacketCe : public PWin32PacketDriver
+{
+  public:
+    PWin32PacketCe();
+
+    virtual BOOL EnumInterfaces(PINDEX idx, PString & name);
+    virtual BOOL BindInterface(const PString & interfaceName);
+
+    virtual BOOL EnumIpAddress(PINDEX idx, PIPSocket::Address & addr, PIPSocket::Address & net_mask);
+
+    virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
+    virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+#ifdef USE_VPACKET
+    virtual UINT GetQueryOidCommand(DWORD) const
+      { return IOCTL_EPACKET_QUERY_OID; }
+#endif
+  protected:
+	PStringArray ipAddresses;
+	PStringArray netMasks;
+	PStringArray interfaces;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -493,10 +524,18 @@ PWin32AsnOid & PWin32AsnOid::operator=(const AsnObjectIdentifier & oid)
 ///////////////////////////////////////////////////////////////////////////////
 
 PWin32SnmpLibrary::PWin32SnmpLibrary()
+#ifndef _WIN32_WCE
   : PDynaLink("inetmib1.dll")
+#endif
 {
-  if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
+#ifndef _WIN32_WCE
+	if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
       !GetFunction("SnmpExtensionQuery", (Function &)Query) ||
+#else
+	Init = SnmpExtensionInit;
+	Query = SnmpExtensionQuery;
+	if(
+#endif
       !Init(0, &hEvent, &baseOid))
     Close();
 }
@@ -636,7 +675,6 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
   return GetInterfaceName(gwAddr);
 }
 
-
 PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
 {
   PString gatewayInterface, anInterface;
@@ -659,7 +697,6 @@ PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
 
   return gatewayInterface;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -688,10 +725,14 @@ PWin32PacketDriver * PWin32PacketDriver::Create()
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
+#ifndef _WIN32_WCE
   if (info.dwPlatformId == VER_PLATFORM_WIN32_NT)
     return new PWin32PacketSYS;
   else
     return new PWin32PacketVxD;
+#else
+    return new PWin32PacketCe;
+#endif
 }
 
 
@@ -711,7 +752,7 @@ PWin32PacketDriver::~PWin32PacketDriver()
 void PWin32PacketDriver::Close()
 {
   if (hDriver != INVALID_HANDLE_VALUE) {
-    CloseHandle(hDriver);
+	CloseHandle(hDriver);
     hDriver = INVALID_HANDLE_VALUE;
   }
 }
@@ -749,9 +790,9 @@ BOOL PWin32PacketDriver::IoControl(UINT func,
   return CompleteIO(received, overlap);
 }
 
-
 BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap)
 {
+#ifndef _WIN32_WCE
   received = 0;
   if (GetOverlappedResult(hDriver, &overlap, &received, TRUE)) {
     dwError = ERROR_SUCCESS;
@@ -760,8 +801,10 @@ BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap
 
   dwError = ::GetLastError();
   return FALSE;
+#else
+  return TRUE;
+#endif
 }
-
 
 BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
@@ -819,6 +862,26 @@ BOOL PWin32PacketDriver::SetOid(UINT oid, DWORD data)
                    oidData, sizeof(oidData), oidData, sizeof(oidData), rxsize);
 }
 
+static BOOL RegistryQueryMultiSz(RegistryKey & registry,
+                                 const PString & variable,
+                                 PINDEX idx,
+                                 PString & value)
+{
+  PString allValues;
+  if (!registry.QueryValue(variable, allValues))
+    return FALSE;
+
+  const char * ptr = allValues;
+  while (*ptr != '\0' && idx-- > 0)
+    ptr += strlen(ptr)+1;
+
+  if (*ptr == '\0')
+    return FALSE;
+
+  value = ptr;
+  return TRUE;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -864,6 +927,7 @@ static PString SearchRegistryKeys(const PString & key,
 
 BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
 {
+#ifndef _WIN32_WCE
   BYTE buf[20];
   DWORD rxsize;
 
@@ -935,7 +999,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
         transportBinding.AppendString(SERVICES_REGISTRY_KEY "Class\\" + str);
     }
   }
-
+#endif // !_WIN32_WCE
   return TRUE;
 }
 
@@ -1055,6 +1119,7 @@ BOOL PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
 PWin32PacketSYS::PWin32PacketSYS()
 {
+#ifndef _WIN32_WCE
   // Start the packet driver service
   SC_HANDLE hManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
   if (hManager != NULL) {
@@ -1066,27 +1131,7 @@ PWin32PacketSYS::PWin32PacketSYS()
     }
     CloseServiceHandle(hManager);
   }
-}
-
-
-static BOOL RegistryQueryMultiSz(RegistryKey & registry,
-                                 const PString & variable,
-                                 PINDEX idx,
-                                 PString & value)
-{
-  PString allValues;
-  if (!registry.QueryValue(variable, allValues))
-    return FALSE;
-
-  const char * ptr = allValues;
-  while (*ptr != '\0' && idx-- > 0)
-    ptr += strlen(ptr)+1;
-
-  if (*ptr == '\0')
-    return FALSE;
-
-  value = ptr;
-  return TRUE;
+#endif // !_WIN32_WCE
 }
 
 
@@ -1094,6 +1139,7 @@ static const char PacketDeviceStr[] = "\\Device\\" PACKET_SERVICE_NAME "_";
 
 BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
 {
+#ifndef _WIN32_WCE
   RegistryKey registry(SERVICES_REGISTRY_KEY PACKET_SERVICE_NAME "\\Linkage",
                        RegistryKey::ReadOnly);
   if (!RegistryQueryMultiSz(registry, "Export", idx, name)) {
@@ -1104,12 +1150,14 @@ BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
   if (strnicmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
     name.Delete(0, sizeof(PacketDeviceStr)-1);
 
+#endif // !_WIN32_WCE
   return TRUE;
 }
 
 
 BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
 {
+#ifndef _WIN32_WCE
   Close();
 
   if (!DefineDosDevice(DDD_RAW_TARGET_PATH,
@@ -1134,6 +1182,8 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
 
   registryKey = SERVICES_REGISTRY_KEY + interfaceName + "\\Parameters\\Tcpip";
   dwError = ERROR_SUCCESS;
+
+#endif // !_WIN32_WCE
   return TRUE;
 }
 
@@ -1188,6 +1238,86 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
   return dwError == ERROR_IO_PENDING;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+PWin32PacketCe::PWin32PacketCe()
+{
+	PString str, driver, ipAddress, netMask;
+
+	static const PString CommBase = "HKEY_LOCAL_MACHINE\\Comm";
+
+	// Collecting normal IPs
+	RegistryKey registry(CommBase, RegistryKey::ReadOnly);
+	for (PINDEX idx = 0; registry.EnumKey(idx, str); idx++) 
+	{
+		driver = CommBase + "\\" + str + "\\Parms\\TcpIp";
+		RegistryKey driverKey( driver, RegistryKey::ReadOnly );
+		if( driverKey.QueryValue( "IpAddress", ipAddress ) )
+		{
+			if( ipAddress != "0.0.0.0" )
+			{
+				interfaces[interfaces.GetSize()] = str;
+				ipAddresses[ipAddresses.GetSize()] = ipAddress;
+				if( driverKey.QueryValue( "Subnetmask", netMask ) )
+					netMasks[netMasks.GetSize()] = netMask;
+				else
+					netMasks[netMasks.GetSize()] = "255.255.255.0";
+			}
+			else
+			{
+				if( driverKey.QueryValue( "DhcpIpAddress", ipAddress ) )
+				{
+					interfaces[interfaces.GetSize()] = str;
+					ipAddresses[ipAddresses.GetSize()] = ipAddress;
+					if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
+						netMasks[netMasks.GetSize()] = netMask;
+					else
+						netMasks[netMasks.GetSize()] = "255.255.255.0";
+				}
+			}
+		}
+	}
+}
+
+BOOL PWin32PacketCe::EnumInterfaces(PINDEX idx, PString & name)
+{
+	if( idx >= interfaces.GetSize() )
+		return FALSE;
+	
+	name = interfaces[idx];
+	return TRUE;
+}
+
+
+BOOL PWin32PacketCe::BindInterface(const PString & interfaceName)
+{
+	return TRUE;
+}
+
+
+BOOL PWin32PacketCe::EnumIpAddress(PINDEX idx,
+                                    PIPSocket::Address & addr,
+                                    PIPSocket::Address & net_mask)
+{
+	if( idx >= interfaces.GetSize() )
+		return FALSE;
+
+	addr = ipAddresses[idx];
+	net_mask = netMasks[idx];
+	return TRUE;
+}
+
+
+BOOL PWin32PacketCe::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
+{
+  return TRUE;
+}
+
+
+BOOL PWin32PacketCe::BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap)
+{
+  return TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1598,7 +1728,6 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
   return frame->snap.dsap == filterType;    // A pure 802.2 protocol id
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 BOOL PIPSocket::GetGatewayAddress(Address & addr)
@@ -1740,13 +1869,15 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
       name.MakeMinimumSize();
     }
 
-    table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
+#ifdef _WIN32_WCE // Getting rid of ghost ips
+    if ( !name.IsEmpty() )
+#endif
+		table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
 
     oid[9] = 1;
   }
 
   return TRUE;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
