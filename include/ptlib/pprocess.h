@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.58  2002/12/11 22:23:59  robertj
+ * Added ability to set user identity temporarily and permanently.
+ * Added get and set users group functions.
+ *
  * Revision 1.57  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -532,17 +536,66 @@ class PProcess : public PThread
        This is a platform dependent string only provided by platforms that are
        multi-user.
 
-       For unix systems the string #uid can be used to specify numeric uids.
+       For unix systems if the username may consist exclusively of digits and
+       there is no actual username consisting of that string then the numeric
+       uid value is used. For example "0" is the superuser. For the rare
+       occassions where the users name is the same as their uid, if the
+       username field starts with a '#' then the numeric form is forced.
 
        If an empty string is provided then original user that executed the
        process in the first place (the real user) is set as the effective user.
+
+       The permanent flag indicates that the user will not be able to simple
+       change back to the original user as indicated above, ie for unix
+       systems setuid() is used instead of seteuid(). This is not necessarily
+       meaningful for all platforms.
 
        @return
        TRUE if processes owner changed. The most common reason for failure is
        that the process does not have the privilege to change the effective user.
       */
     BOOL SetUserName(
-      const PString & username  /// New effective user
+      const PString & username, /// New user name or uid
+      BOOL permanent = FALSE    /// Flag for if effective or real user
+    );
+
+    /**Get the effective group name of the owner of the process, eg "root" etc.
+       This is a platform dependent string only provided by platforms that are
+       multi-user. Note that some value may be returned as a "simulated" user.
+       For example, in MS-DOS an environment variable
+
+       @return
+       group name of processes owner.
+     */
+    PString GetGroupName() const;
+
+    /**Set the effective group of the process.
+       This is a platform dependent string only provided by platforms that are
+       multi-user.
+
+       For unix systems if the groupname may consist exclusively of digits and
+       there is no actual groupname consisting of that string then the numeric
+       uid value is used. For example "0" is the superuser. For the rare
+       occassions where the groups name is the same as their uid, if the
+       groupname field starts with a '#' then the numeric form is forced.
+
+       If an empty string is provided then original group that executed the
+       process in the first place (the real group) is set as the effective
+       group.
+
+       The permanent flag indicates that the group will not be able to simply
+       change back to the original group as indicated above, ie for unix
+       systems setgid() is used instead of setegid(). This is not necessarily
+       meaningful for all platforms.
+
+       @return
+       TRUE if processes group changed. The most common reason for failure is
+       that the process does not have the privilege to change the effective
+       group.
+      */
+    BOOL SetGroupName(
+      const PString & groupname, /// New group name or gid
+      BOOL permanent = FALSE     /// Flag for if effective or real group
     );
 
     /**Get the maximum file handle value for the process.
