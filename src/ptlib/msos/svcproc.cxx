@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.40 1998/04/07 13:32:14 robertj Exp $
+ * $Id: svcproc.cxx,v 1.41 1998/05/07 05:21:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.41  1998/05/07 05:21:38  robertj
+ * Improved formatting of debug window, adding tabs and tab stops.
+ *
  * Revision 1.40  1998/04/07 13:32:14  robertj
  * Changed startup code to support PApplication class.
  *
@@ -293,7 +296,7 @@ void PSystemLog::Output(Level level, const char * msg)
       "Debug3"
     };
     PTime now;
-    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1] << '\t' << msg;
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t") << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
       *out << " - error = " << err << endl;
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
@@ -615,6 +618,8 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                                hInstance,
                                NULL);
     SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 128000, 0);
+    DWORD tabs[] = { 72, 108, 132, 172, 204, 240, 272 };
+    SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(tabs), (LPARAM)tabs);
   }
 
   return TRUE;
