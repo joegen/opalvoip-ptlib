@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.76  2002/04/08 00:41:50  robertj
+# Added dependency build to "make libs" target.
+#
 # Revision 1.75  2002/04/01 09:14:09  rogerh
 # Add noshared build targets
 #
@@ -407,7 +410,7 @@ optlibs ::
 	@$(MAKE) DEBUG= libs
 
 libs ::
-	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i debug; done
+	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i debugdepend debug; done
 
 else
 
@@ -436,7 +439,7 @@ debuglibs ::
 optlibs :: libs
 
 libs ::
-	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i opt; done
+	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i optdepend opt; done
 
 endif
 
