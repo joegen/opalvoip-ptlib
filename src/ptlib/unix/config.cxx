@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.29  2001/05/24 00:56:38  robertj
+ * Fixed problem with config file being written every time on exit. Now is
+ *   only written if it the config was modified by the application.
+ *
  * Revision 1.28  2001/03/10 04:15:29  robertj
  * Incorrect case for .ini extension
  *
@@ -134,7 +138,7 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     void ReadFromEnvironment (char **envp);
 
     BOOL WriteToFile(const PFilePath & filename);
-    BOOL Flush(const PFilePath & filename, BOOL force);
+    BOOL Flush(const PFilePath & filename);
 
     void SetDirty()   { dirty = TRUE; }
 
@@ -147,7 +151,7 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     int       instanceCount;
     PMutex    mutex;
     BOOL      dirty;
-    BOOL      saveOnExit;
+    BOOL      canSave;
 };
 
 //
@@ -160,7 +164,7 @@ PDECLARE_DICTIONARY(PXConfigDictionary, PFilePath, PXConfig)
     PXConfig * GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey);
     PXConfig * GetEnvironmentInstance();
     void RemoveInstance(PXConfig * instance);
-    void WriteChangedInstances(BOOL force);
+    void WriteChangedInstances();
 
   protected:
     PMutex        mutex;
@@ -206,9 +210,9 @@ PXConfigWriteThread::~PXConfigWriteThread()
 void PXConfigWriteThread::Main()
 {
   while (!stop.Wait(30000))  // if stop.Wait() returns TRUE, we are shutting down
-    configDict->WriteChangedInstances(FALSE);   // check dictionary for items that need writing
+    configDict->WriteChangedInstances();   // check dictionary for items that need writing
 
-  configDict->WriteChangedInstances(TRUE);
+  configDict->WriteChangedInstances();
 
   stop.Acknowledge();
 }
@@ -227,7 +231,7 @@ PXConfig::PXConfig(int)
   dirty = FALSE;
 
   // normally save on exit (except for environment configs)
-  saveOnExit = TRUE;
+  canSave = TRUE;
 }
 
 BOOL PXConfig::AddInstance()
@@ -247,32 +251,18 @@ BOOL PXConfig::RemoveInstance(const PFilePath & /*filename*/)
 
   BOOL stat = --instanceCount == 0;
 
-/*
-  this code required if no write thread used
-
-
-  if (stat && saveOnExit && dirty) {
-    WriteToFile(filename);
-    dirty = FALSE;
-  }
-*/
-
   mutex.Signal();
 
   return stat;
 }
 
-BOOL PXConfig::Flush(const PFilePath & filename, BOOL force)
+BOOL PXConfig::Flush(const PFilePath & filename)
 {
   mutex.Wait();
 
   BOOL stat = instanceCount == 0;
 
-//  if ((force || (instanceCount == 0)) && saveOnExit && dirty) {
-//    if (instanceCount != 0) 
-//      PProcess::PXShowSystemWarning(2000, "Flush of config with non-zero instance");
-
-  if (force || (saveOnExit && dirty)) {
+  if (canSave && dirty) {
     WriteToFile(filename);
     dirty = FALSE;
   }
@@ -396,7 +386,7 @@ void PXConfig::ReadFromEnvironment (char **envp)
   }
 
   // can't save environment configs
-  saveOnExit = FALSE;
+  canSave = FALSE;
 }
 
 PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
@@ -523,14 +513,14 @@ void PXConfigDictionary::RemoveInstance(PXConfig * instance)
   mutex.Signal();
 }
 
-void PXConfigDictionary::WriteChangedInstances(BOOL force)
+void PXConfigDictionary::WriteChangedInstances()
 {
   mutex.Wait();
 
   PINDEX i;
   for (i = 0; i < GetSize(); i++) {
     PFilePath key = GetKeyAt(i);
-    GetAt(key)->Flush(key, force);
+    GetAt(key)->Flush(key);
   }
 
   mutex.Signal();
