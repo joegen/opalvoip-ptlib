@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.7  2004/02/24 11:15:48  rjongbloed
+ * Added function to get external router address, also did a bunch of documentation.
+ *
  * Revision 1.6  2004/01/17 17:54:02  rjongbloed
  * Added function to get server name from STUN client.
  *
@@ -105,21 +108,43 @@ class PSTUNClient : public PObject
     );
 
 
+    /**Get the current STUN server address and port being used.
+      */
     PString GetServer() const;
 
+    /**Set the STUN server to use.
+       The server string may be of the form host:port. If :port is absent
+       then the default port 3478 is used. The substring port can also be
+       a service name as found in /etc/services. The host substring may be
+       a DNS name or explicit IP address.
+      */
     BOOL SetServer(
       const PString & server
     );
+
+    /**Set the STUN server to use by IP address and port.
+       If serverPort is zero then the default port of 3478 is used.
+      */
     BOOL SetServer(
       const PIPSocket::Address & serverAddress,
       WORD serverPort = 0
     );
 
+    /**Set the port ranges to be used on local machine.
+       Note that the ports used on the NAT router may not be the same unless
+       some form of port forwarding is present.
+
+       If the port base is zero then standard operating system port allocation
+       method is used.
+
+       If the max port is zero then it will be automatically set to the port
+       base + 99.
+      */
     void SetPortRanges(
-      WORD portBase,
-      WORD portMax = 0,
-      WORD portPairBase = 0,
-      WORD portPairMax = 0
+      WORD portBase,          /// Single socket port number base
+      WORD portMax = 0,       /// Single socket port number max
+      WORD portPairBase = 0,  /// Socket pair port number base
+      WORD portPairMax = 0    /// Socket pair port number max
     );
 
 
@@ -135,17 +160,62 @@ class PSTUNClient : public PObject
       NumNatTypes
     };
 
+    /**Determine via the STUN protocol the NAT type for the router.
+       This will cache the last determine NAT type. Use the force variable to
+       guarantee an up to date value.
+      */
     NatTypes GetNatType(
-      BOOL force = FALSE
-    );
-    PString GetNatTypeName(
-      BOOL force = FALSE
+      BOOL force = FALSE    /// Force a new check
     );
 
+    /**Determine via the STUN protocol the NAT type for the router.
+       As for GetNatType() but returns an English string for the type.
+      */
+    PString GetNatTypeName(
+      BOOL force = FALSE    /// Force a new check
+    );
+
+    /**Determine the external router address.
+       This will send UDP packets out using the STUN protocol to determine
+       the intervening routers external IP address.
+
+       A cached address is returned provided it is no older than the time
+       specified.
+      */
+    BOOL GetExternalAddress(
+      PIPSocket::Address & externalAddress, // External address of router
+      const PTimeInterval & maxAge = 1000   // Maximum age for caching
+    );
+
+    /**Create a single socket.
+       The STUN protocol is used to create a socket for which the external IP
+       address and port numbers are known. A PUDPSocket descendant is returned
+       which will, in response to GetLocalAddress() return the externally
+       visible IP and port rather than the local machines IP and socket.
+
+       The will create a new socket pointer. It is up to the caller to make
+       sure the socket is deleted to avoid memory leaks.
+
+       The socket pointer is set to NULL if the function fails and returns
+       FALSE.
+      */
     BOOL CreateSocket(
       PUDPSocket * & socket
     );
 
+    /**Create a socket pair.
+       The STUN protocol is used to create a pair of sockets with adjacent
+       port numbers for which the external IP address and port numbers are
+       known. PUDPSocket descendants are returned which will, in response
+       to GetLocalAddress() return the externally visible IP and port rather
+       than the local machines IP and socket.
+
+       The will create new socket pointers. It is up to the caller to make
+       sure the sockets are deleted to avoid memory leaks.
+
+       The socket pointers are set to NULL if the function fails and returns
+       FALSE.
+      */
     BOOL CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2
@@ -168,6 +238,8 @@ class PSTUNClient : public PObject
     int  numSocketsForPairing;
 
     NatTypes natType;
+    PIPSocket::Address cachedExternalAddress;
+    PTime              timeAddressObtained;
 };
 
 
