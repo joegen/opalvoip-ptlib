@@ -20,9 +20,13 @@
 
 #define	INADDR_NONE	-1
 
+extern "C" {
+
 int ftime (struct timeb *);
 pid_t wait3(int *status, int options, struct rusage *rusage);
 int gethostname(char *, int);
+
+};
 
 #elif defined (P_SUN4)
 
