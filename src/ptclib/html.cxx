@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.10 1996/04/29 12:21:22 robertj Exp $
+ * $Id: html.cxx,v 1.11 1996/06/01 04:18:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.11  1996/06/01 04:18:45  robertj
+ * Fixed bug in RadioButton, having 2 VALUE fields
+ *
  * Revision 1.10  1996/04/29 12:21:22  robertj
  * Fixed spelling error in assert.
  * Fixed check box HTML, should always have a value.
@@ -886,63 +889,23 @@ PHTML::InputPassword::InputPassword(const char * fname,
 }
 
 
-PHTML::CheckBox::CheckBox(const char * fname, const char * attr)
-  : InputField("checkbox", fname, Enabled, attr)
-{
-  checkedFlag = FALSE;
-}
-
-PHTML::CheckBox::CheckBox(const char * fname,
-                          DisableCodes disabled,
-                          const char * attr)
-  : InputField("checkbox", fname, disabled, attr)
-{
-  checkedFlag = FALSE;
-}
-
-PHTML::CheckBox::CheckBox(const char * fname,
-                          CheckedCodes check,
-                          DisableCodes disabled,
-                          const char * attr)
-  : InputField("checkbox", fname, disabled, attr)
-{
-  checkedFlag = check == Checked;
-}
-
-PHTML::CheckBox::CheckBox(const char * type,
-                          const char * fname,
-                          CheckedCodes check,
-                          DisableCodes disabled,
-                          const char * attr)
-  : InputField(type, fname, disabled, attr)
-{
-  checkedFlag = check == Checked;
-}
-
-void PHTML::CheckBox::AddAttr(PHTML & html) const
-{
-  InputField::AddAttr(html);
-  html << " VALUE=TRUE";
-  if (checkedFlag)
-    html << " CHECKED";
-}
-
-
 PHTML::RadioButton::RadioButton(const char * fname,
                                 const char * value,
                                 const char * attr)
-  : CheckBox("radio", fname, UnChecked, Enabled, attr)
+  : InputField("radio", fname, Enabled, attr)
 {
   valueString = value;
+  checkedFlag = FALSE;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
                                 const char * value,
                                 DisableCodes disabled,
                                 const char * attr)
-  : CheckBox("radio", fname, UnChecked, disabled, attr)
+  : InputField("radio", fname, disabled, attr)
 {
   valueString = value;
+  checkedFlag = FALSE;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -950,16 +913,52 @@ PHTML::RadioButton::RadioButton(const char * fname,
                                 CheckedCodes check,
                                 DisableCodes disabled,
                                 const char * attr)
-  : CheckBox("radio", fname, check, disabled, attr)
+  : InputField("radio", fname, disabled, attr)
 {
   valueString = value;
+  checkedFlag = check == Checked;
+}
+
+PHTML::RadioButton::RadioButton(const char * type,
+                                const char * fname,
+                                const char * value,
+                                CheckedCodes check,
+                                DisableCodes disabled,
+                                const char * attr)
+  : InputField(type, fname, disabled, attr)
+{
+  valueString = value;
+  checkedFlag = check == Checked;
 }
 
 void PHTML::RadioButton::AddAttr(PHTML & html) const
 {
+  InputField::AddAttr(html);
   PAssert(valueString != NULL, PInvalidParameter);
-  CheckBox::AddAttr(html);
   html << " VALUE=" << valueString;
+  if (checkedFlag)
+    html << " CHECKED";
+}
+
+
+PHTML::CheckBox::CheckBox(const char * fname, const char * attr)
+  : RadioButton("checkbox", fname, "TRUE", UnChecked, Enabled, attr)
+{
+}
+
+PHTML::CheckBox::CheckBox(const char * fname,
+                          DisableCodes disabled,
+                          const char * attr)
+  : RadioButton("checkbox", fname, "TRUE", UnChecked, disabled, attr)
+{
+}
+
+PHTML::CheckBox::CheckBox(const char * fname,
+                          CheckedCodes check,
+                          DisableCodes disabled,
+                          const char * attr)
+  : RadioButton("checkbox", fname, "TRUE", check, disabled, attr)
+{
 }
 
 
