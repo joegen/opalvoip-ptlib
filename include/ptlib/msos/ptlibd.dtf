@@ -265,6 +265,7 @@ EXPORTS
     ??0PTime@@QAE@XZ @227 NONAME ;public: __thiscall PTime::PTime(void)
     ??0PTimeInterval@@QAE@ABV0@@Z @228 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PTimeInterval const &)
     ??0PTimeInterval@@QAE@H@Z @229 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(int)
+    ??0PTimeInterval@@QAE@I@Z @3047 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(unsigned int)
     ??0PTimeInterval@@QAE@JJJJH@Z @230 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(long,long,long,long,int)
     ??0PTimeInterval@@QAE@_J@Z @231 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(__int64)
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @232 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
@@ -2719,4 +2720,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ??0PTimeInterval@@QAE@I@Z @3047 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(unsigned int)
+    ??5@YAAAVistream@@AAV0@AAVAddress@PIPSocket@@@Z @3048 NONAME ;class istream & __cdecl operator>>(class istream &,class PIPSocket::Address &)
