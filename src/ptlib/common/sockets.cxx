@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.56 1996/12/17 11:07:05 robertj Exp $
+ * $Id: sockets.cxx,v 1.57 1997/01/04 06:54:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.57  1997/01/04 06:54:38  robertj
+ * Added missing canonical name to alias list.
+ *
  * Revision 1.56  1996/12/17 11:07:05  robertj
  * Added clear of name cache.
  *
@@ -513,6 +516,8 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
   memcpy(&address, host_info->h_addr, sizeof(address));
 
   PINDEX count = 0;
+  aliases[count++] = host_info->h_name;
+
   PINDEX i;
   for (i = 0; host_info->h_aliases[i] != NULL; i++)
     aliases[count++] = host_info->h_aliases[i];
