@@ -2556,6 +2556,7 @@ EXPORTS
     ?GetOutputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1556 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetOutputFlowControl(void)const 
     ?GetPacketType@PIPXSocket@@QAEHXZ @1557 NONAME ;public: int __thiscall PIPXSocket::GetPacketType(void)
     ?GetParameter@PArgList@@QBE?AVPString@@H@Z @1558 NONAME ;public: class PString  __thiscall PArgList::GetParameter(int)const 
+    ?GetParameters@PArgList@@QBE?AVPStringArray@@HH@Z @4705 NONAME ;public: class PStringArray  __thiscall PArgList::GetParameters(int,int)const 
     ?GetParameters@PVideoDevice@@UAEHPAH0000@Z @4282 NONAME ;public: virtual int __thiscall PVideoDevice::GetParameters(int *,int *,int *,int *,int *)
     ?GetParent@PDirectory@@QBE?AV1@XZ @1559 NONAME ;public: class PDirectory  __thiscall PDirectory::GetParent(void)const 
     ?GetParity@PSerialChannel@@QBE?AW4Parity@1@XZ @1560 NONAME ;public: enum PSerialChannel::Parity  __thiscall PSerialChannel::GetParity(void)const 
