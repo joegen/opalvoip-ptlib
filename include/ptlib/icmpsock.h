@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.13  2003/02/11 06:47:19  craigs
+ * Added missing OpenSocket function
+ *
  * Revision 1.12  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -171,6 +174,7 @@ class PICMPSocket : public PIPDatagramSocket
   protected:
     const char * GetProtocolName() const;
     virtual BOOL OpenSocket();
+    virtual BOOL OpenSocket(int ipAdressFamily);
 
 
 // Include platform dependent part of class
