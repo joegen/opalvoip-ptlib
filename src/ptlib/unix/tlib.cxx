@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.51  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.50  2000/04/09 18:19:23  rogerh
  * Add my changes for NetBSD support.
  *
@@ -189,7 +192,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
@@ -293,7 +296,7 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-#ifdef P_LINUX
+#if defined (P_LINUX) || defined(P_AIX)
   ::getpwuid_r(geteuid(), &pwd,
                buffer, 1024,
                &pw);
@@ -330,7 +333,7 @@ PString PProcess::GetUserName() const
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#ifdef P_LINUX
+#if defined (P_LINUX) || defined (P_AIX)
   ::getpwuid_r(getuid(), &pwd,
                buffer, 1024,
                &pw);

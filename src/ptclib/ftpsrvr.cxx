@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.7  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.6  1999/02/16 06:04:41  robertj
  * Fixed bug in FTP server for PASV mode, may return incorrect IP address.
  *
@@ -180,7 +183,7 @@ BOOL PFTPServer::DispatchCommand(PINDEX code, const PString & args)
       return OnSTOR(args);
     case SYST:
       return OnSYST(args);
-    case STAT:
+    case STATcmd:
       return OnSTAT(args);
     case ACCT:
       return OnACCT(args);
