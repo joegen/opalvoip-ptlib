@@ -1036,6 +1036,9 @@
 				RelativePath="..\..\..\include\ptclib\dtmf.h">
 			</File>
 			<File
+				RelativePath="..\..\..\include\ptclib\enum.h">
+			</File>
+			<File
 				RelativePath="..\..\..\Include\PtCLib\ftp.h">
 			</File>
 			<File
