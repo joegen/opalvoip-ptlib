@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.20  2002/09/18 06:37:13  robertj
+ * Added functions to load vxml directly, via file or URL. Old function
+ *   intelligently picks which one to use.
+ *
  * Revision 1.19  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -188,8 +192,10 @@ class PVXMLSession : public PIndirectChannel
     // new functions
     void SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
 
-    virtual BOOL Load(const PString & xmlSource);
+    virtual BOOL Load(const PString & source);
+    virtual BOOL LoadFile(const PFilePath & file);
     virtual BOOL LoadURL(const PURL & url);
+    virtual BOOL LoadVXML(const PString & xml);
 
     virtual BOOL Open(BOOL isPCM);
     virtual BOOL Close();
