@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.20  1999/07/06 04:46:00  robertj
+ * Fixed being able to case an unsigned to a PTimeInterval.
+ * Improved resolution of PTimer::Tick() to be millisecond accurate.
+ *
  * Revision 1.19  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -125,6 +129,9 @@ class PTimeInterval : public PObject
      */
     PTimeInterval(
       int milliseconds = 0  /// Number of milliseconds for interval.
+    );
+    PTimeInterval(
+      unsigned millisecs    /// Number of milliseconds for interval.
     );
     PTimeInterval(
       PInt64 mseconds       /// Number of milliseconds for interval.

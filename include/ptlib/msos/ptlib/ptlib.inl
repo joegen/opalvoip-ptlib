@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.20  1999/07/06 04:46:00  robertj
+ * Fixed being able to case an unsigned to a PTimeInterval.
+ * Improved resolution of PTimer::Tick() to be millisecond accurate.
+ *
  * Revision 1.19  1998/11/30 03:02:17  robertj
  * Moved PPipeChannel code to .cxx file to avoid linking unused code.
  *
@@ -94,19 +98,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if !defined(_WIN32)
 
-PINLINE PTimeInterval PTimer::Tick()
-  { return (int)(GetTickCount()&0x7fffffff); }
-
-PINLINE unsigned PTimer::Resolution()
-#if defined(_WIN32)
-  { return 1; }
-#else
-  { return 55; }
-#endif
-
-#elif CLOCKS_PER_SEC==1000
+#if CLOCKS_PER_SEC==1000
 
 PINLINE PTimeInterval PTimer::Tick()
   { return clock(); }
@@ -121,6 +115,8 @@ PINLINE PTimeInterval PTimer::Tick()
 
 PINLINE unsigned PTimer::Resolution()
   { return 1000/CLOCKS_PER_SEC; }
+
+#endif
 
 #endif
 
