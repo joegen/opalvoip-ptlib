@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.18  2000/07/02 04:50:44  craigs
+ * Fixed potential race condition in OSS initialise
+ *
  * Revision 1.17  2000/05/11 02:05:54  craigs
  * Fixed problem with PLayFile not recognizing wait flag
  *
@@ -285,7 +288,7 @@ BOOL PSoundChannel::Open(const PString & _device,
   Close();
 
   // lock the dictionary
-  dictMutex.Wait();
+  PWaitAndSignal mutex(dictMutex);
 
   // make the direction value 1 or 2
   int dir = _dir + 1;
@@ -296,10 +299,8 @@ BOOL PSoundChannel::Open(const PString & _device,
     SoundHandleEntry & entry = handleDict()[_device];
 
     // see if the sound channel is already open in this direction
-    if ((entry.direction & dir) != 0) {
-      dictMutex.Signal();
+    if ((entry.direction & dir) != 0) 
       return FALSE;
-    }
 
     // flag this entry as open in this direction
     entry.direction |= dir;
@@ -313,10 +314,8 @@ BOOL PSoundChannel::Open(const PString & _device,
       startptr = endptr = 0;
       os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
     }
-    else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
-      dictMutex.Signal();
+    else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) 
       return FALSE;
-    }
 
     // add the device to the dictionary
     SoundHandleEntry * entry = PNEW SoundHandleEntry;
@@ -332,10 +331,6 @@ BOOL PSoundChannel::Open(const PString & _device,
     entry->fragmentValue = 0x7fff0008;
   }
    
-   
-  // unlock the dictionary
-  dictMutex.Signal();
-
   // save the direction and device
   direction     = _dir;
   device        = _device;
@@ -346,14 +341,17 @@ BOOL PSoundChannel::Open(const PString & _device,
 
 BOOL PSoundChannel::Setup()
 {
-  if (os_handle < 0)
+  PWaitAndSignal mutex(dictMutex);
+
+  if (os_handle < 0) {
+    PTRACE(6, "OSS\tSkipping setup of " << device << " as not open");
     return FALSE;
+  }
 
-  if (isInitialised)
+  if (isInitialised) {
+    PTRACE(6, "OSS\tSkipping setup of " << device << " as instance already initialised");
     return TRUE;
-
-  // lock the dictionary
-  dictMutex.Wait();
+  }
 
   // the device must always be in the dictionary
   PAssertOS(handleDict().Contains(device));
@@ -361,13 +359,21 @@ BOOL PSoundChannel::Setup()
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
-  BOOL stat = FALSE;
-  if (entry.isInitialised)  {
-    isInitialised = TRUE;
-    stat          = TRUE;
-  } else if (device == "loopback")
-    stat = TRUE;
-  else {
+  // ensure device is marked as initialised
+  isInitialised       = TRUE;
+  entry.isInitialised = TRUE;
+
+  // set default return status
+  BOOL stat = TRUE;
+
+  // do not re-initialise initialised devices
+  if (entry.isInitialised || (device == "loopback")) {
+    PTRACE(6, "OSS\tSkipping setup for " << device << " as already initialised");
+
+  } else {
+    PTRACE(6, "OSS\tInitialising " << device);
+
+    stat = FALSE;
 
   // must always set paramaters in the following order:
   //   buffer paramaters
@@ -398,11 +404,6 @@ BOOL PSoundChannel::Setup()
       }
     }
   }
-
-  entry.isInitialised = TRUE;
-  isInitialised       = TRUE;
-
-  dictMutex.Signal();
 
   return stat;
 }
@@ -471,9 +472,15 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
     return FALSE;
 
   if (os_handle > 0) {
-    while (!ConvertOSError(::read(os_handle, (void *)buf, len)))
-      if (GetErrorCode() != Interrupted)
+    PTRACE(6, "OSS\tRead start");
+    while (!ConvertOSError(::read(os_handle, (void *)buf, len))) {
+      if (GetErrorCode() != Interrupted) {
+        PTRACE(6, "OSS\tRead failed");
         return FALSE;
+      }
+      PTRACE(6, "OSS\tRead interrupted");
+    }
+    PTRACE(6, "OSS\tRead completed");
     return TRUE;
   }
 
