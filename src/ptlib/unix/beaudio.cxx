@@ -29,6 +29,9 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.13  2004/05/20 03:18:11  ykiryanov
+ * Some changes with buffer sets
+ *
  * Revision 1.12  2004/05/14 05:26:57  ykiryanov
  * Fixed dynamic cast bug
  *
@@ -79,17 +82,11 @@
 #include <media/MediaTrack.h>
 #include <media/SoundPlayer.h>
 #include <media/PlaySound.h>
-
-#define MEDIA_KIT_UPDATE
-
-#ifdef MEDIA_KIT_UPDATE
 #include <media/MediaRecorder.h>
-#else
-#include "beaudio/MediaRecorder.h"
-#endif
 
 // Kernel kit
 #include <kernel/OS.h>
+#include <kernel/scheduler.h>
 
 // Beep kit :-)
 #include <support/Beep.h>
@@ -98,7 +95,7 @@
 
 #include <ptlib/unix/ptlib/beaudio.h>
 
-#define PRINT(x) //do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
+#define PRINT(x) do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
 
 #define STATUS(x) //PRINT((x "=%ld", (long)dwLastError))
 
@@ -108,9 +105,6 @@
 
 //#define FILEDUMP 1 define this for dumping audio to wav file
 
-//#define TEST
-
-////////////////////////////////////////////////////////////////////////////////
 // Macros and global vars for debugging
 
 #ifdef SOUNDDETECT
@@ -1025,7 +1019,7 @@ static void RecordBuffer(void *cookie, const void *buffer, size_t size, const me
 
 // This defines the number of times we would like to be called per second
 // to play/record data
-#define PLAYRECFREQ 20
+#define PLAYRECFREQ 80 
 
 // Macro to let the default buffer size correspond neatly with the
 // setting we put into the format.
@@ -1038,7 +1032,7 @@ PSoundChannelBeOS::PSoundChannelBeOS() :
 	mNumBuffers(1),
 	mResampler(NULL)
 {
-	PRINT((""));
+	PRINT(("default constructor"));
 
 	InternalSetBuffers(DEFAULT_BUFSIZE(1, 8000, 16),DEFAULT_BUFSIZE(1, 8000, 16)/2);
 	SetFormat(1, 8000, 16);
@@ -1059,7 +1053,7 @@ PSoundChannelBeOS::PSoundChannelBeOS(const PString & dev,
 	mNumBuffers(1),
 	mResampler(NULL)
 {
-	PRINT(("%s %u %u %u", dir==Player ? "Player" : "Recorder", numChannels, sampleRate, bitsPerSample));
+	PRINT(("constructor %s %u %u %u", dir==Player ? "Player" : "Recorder", numChannels, sampleRate, bitsPerSample));
 	
 	InternalSetBuffers(DEFAULT_BUFSIZE(numChannels, sampleRate, bitsPerSample), DEFAULT_BUFSIZE(numChannels, sampleRate, bitsPerSample)/2);
 	Open(dev, dir, numChannels, sampleRate, bitsPerSample);
@@ -1159,7 +1153,7 @@ PStringArray PSoundChannelBeOS::GetDeviceNames(Directions dir)
 	else
 	{
 		// not supported yet
-		return PStringArray("BeOSPlayback");
+		return PStringArray("MediaKit");
 	}
 }
 
@@ -1168,7 +1162,7 @@ PString PSoundChannelBeOS::GetDefaultDevice(Directions dir)
 {
 	if (dir==Recorder)
 	{
-		const PStringArray &devlist=GetRecorderDevicesList(NULL);
+		const PStringArray &devlist = GetRecorderDevicesList(NULL);
 		
 		if (devlist.GetSize()!=0)
 		{
@@ -1176,39 +1170,35 @@ PString PSoundChannelBeOS::GetDefaultDevice(Directions dir)
 		}
 		else
 		{
-			return PString("BeOSRecorder");
+			return PString("MediaKit");
 		}
 	}
 	else
 	{
 		// not supported yet
-		return PString("BeOSPlayback");
+		return PString("MediaKit");
 	}
 }
 
 BOOL PSoundChannelBeOS::OpenPlayer(void)
 {
 	// We're using cascaded "if result"s here for clarity
-	BOOL result=TRUE;
+	BOOL result = TRUE;
 
 #ifdef FILEDUMP
-	{
-		media_format format;
-		format.type=B_MEDIA_RAW_AUDIO;
-		memcpy(&format.u.raw_audio, &mFormat, sizeof(mFormat));
+	media_format format;
+	format.type=B_MEDIA_RAW_AUDIO;
+	memcpy(&format.u.raw_audio, &mFormat, sizeof(mFormat));
 			
-		delete playwriter;
-		playwriter=new BAudioFileWriter("play.wav", format, 441000);
-	}
+	delete playwriter;
+	playwriter=new BAudioFileWriter("play.wav", format, 441000);
 #endif			
 	
+	// Must have a buffer
+	if (!mBuffer)
 	{
-		// Must have a buffer
-		if (!mBuffer)
-		{
-			result=FALSE;
-			PRINT(("Trying to open as player without setting buffers first"));
-		}
+		result = FALSE;
+		PRINT(("Trying to open as player without setting buffers first"));
 	}
 	
 	if (result)		
@@ -1223,9 +1213,9 @@ BOOL PSoundChannelBeOS::OpenPlayer(void)
 				NULL,
 				mBuffer);
 				
-		if ((mPlayer==NULL) || (mPlayer->InitCheck()!=B_OK))
+		if ((mPlayer == NULL) || (mPlayer->InitCheck() != B_OK))
 		{
-			result=FALSE;
+			result = FALSE;
 			PRINT(("Couldn't construct player"));
 		}
 	}
@@ -1233,9 +1223,9 @@ BOOL PSoundChannelBeOS::OpenPlayer(void)
 	if (result)
 	{
 		// Start the player
-		if (mPlayer->Start()!=B_OK)
+		if (mPlayer->Start() != B_OK)
 		{
-			result=FALSE;
+			result = FALSE;
 			PRINT(("Couldn't start the player"));
 		}
 	}
@@ -1246,6 +1236,7 @@ BOOL PSoundChannelBeOS::OpenPlayer(void)
 		mPlayer->SetHasData(true);
 	}
 
+	PRINT(("Returning %s", result?"success":"failure"));
 	return result;
 }
 
@@ -1269,7 +1260,8 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 	
 		if ((mRecorder==NULL) || (mRecorder->InitCheck()!=B_OK))
 		{
-			result=FALSE;
+			
+                        result=FALSE;
 			PRINT(("Couldn't construct recorder"));
 		}
 	}
@@ -1388,7 +1380,8 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 			mRecorder=NULL;
 		}
 	}
-	
+
+	PRINT(("Returning %s", result?"success":"failure"));
 	return result;		
 }
 
@@ -1399,19 +1392,17 @@ BOOL PSoundChannelBeOS::Open(const PString & dev,
                          unsigned bitsPerSample)
 {
 	// We're using cascaded "if result"s here for clarity
-	BOOL result=TRUE;
+	BOOL result = TRUE;
 	PRINT(("%s %u %u %u", dir==Player?"Player":"Recorder", numChannels, sampleRate, bitsPerSample));
 	
 	// Close the channel first, just in case	
-    (void)Close();
+        Close();
 
 	// Initialize the format struct, necessary to create player or recorder	
+	if (!SetFormat(numChannels, sampleRate, bitsPerSample))
 	{
-		if (!SetFormat(numChannels, sampleRate, bitsPerSample))
-		{
-			result=FALSE;
-			PRINT(("Couldn't set format"));
-		}
+	  result = FALSE;
+	  PRINT(("Couldn't set format"));
 	}
 
 	if (result)
@@ -1419,10 +1410,12 @@ BOOL PSoundChannelBeOS::Open(const PString & dev,
 		switch (dir)
 		{
 		case Player:
-			result=OpenPlayer();
+		        PRINT(("... trying to open player"));
+                 	result=OpenPlayer();
 			break;
 			
 		case Recorder:
+                        PRINT(("...trying to open recorder"));
 			result=OpenRecorder(dev);
 			break;
 
@@ -1435,10 +1428,11 @@ BOOL PSoundChannelBeOS::Open(const PString & dev,
 	if (!result)
 	{
 		// If anything went wrong, clean up
-		(void)Close();
+		PRINT(("... can't open, cleaning up"));
+                Close();
 	}
-		
-	PRINT(("Returning %s", result?"success":"failure"));
+	
+        PRINT(("Returning %s", result?"success":"failure"));
    	return result;
 }
 
@@ -1635,7 +1629,8 @@ BOOL PSoundChannelBeOS::Close()
 
 BOOL PSoundChannelBeOS::SetBuffers(PINDEX size, PINDEX count)
 {
-	return InternalSetBuffers(size*(mNumBuffers=count),size);
+      ::snooze(1000*1000); // snooze 1s, to allow audio settle 
+      return TRUE; //YK- Not necessary InternalSetBuffers(size*(mNumBuffers=count),size);
 }
 
 
@@ -1658,27 +1653,33 @@ BOOL PSoundChannelBeOS::InternalSetBuffers(PINDEX size, PINDEX threshold)
         }
 	
 	// Create the new buffer
-	if (size!=0)
+	if (size != 0)
 	{
 		if (mRecorder)
 		{
 			if (!mResampler)
 			{
-				mResampler=new Resampler(1.0,1.0,1,1,0,1);
+			  PRINT(("...creating default resampler"));	
+                          mResampler = new Resampler(1.0,1.0,1,1,0,1);
 			}
+
+                        PRINT(("...creating resampling buffer, size %d", size));
 			mBuffer=new P_ResamplingBuffer(mResampler, size, threshold, threshold);
 		}
 		else 
 		{
+                        PRINT(("...creating playback buffer, size %d", size));
 			mBuffer = new P_CircularBuffer(size, threshold, threshold);
 		}
 
 		// If we have a player, set the cookie again and restart it
 		if (mPlayer)
 		{
-			//mPlayer->SetBufferHook(PlayBuffer, mBuffer);
 			mPlayer->SetCookie(mBuffer);
+                          PRINT(("...tried to set player buffer cookie"));
                         mPlayer->SetHasData(true);
+                          PRINT(("...tried to set player has data"));
+ 
 		}
 		
 		// If we have a recorder, set the cookie again
@@ -1687,7 +1688,9 @@ BOOL PSoundChannelBeOS::InternalSetBuffers(PINDEX size, PINDEX threshold)
 		// recording anyway because it would at least lose some data.
 		if (mRecorder)
 		{
-			mRecorder->SetBufferHook(RecordBuffer, mBuffer);
+			if(B_OK != mRecorder->SetBufferHook(RecordBuffer, mBuffer))
+                          PRINT(("...can't set recorder buffer hook"));
+ 
 		}
 		
 		return TRUE;
@@ -1958,7 +1961,7 @@ BOOL PSoundChannelBeOS::WaitForAllRecordBuffersFull()
 BOOL PSoundChannelBeOS::IsOpen() const
 {
 	BOOL result=((mPlayer!=NULL) || (mRecorder!=NULL));
-	PRINT(("returning %s", result?"true":"false"));
+	PRINT(("returning %s, player 0x%X recorder 0x%X", result?"true":"false", mPlayer, mRecorder));
 	return result;
 }
 
