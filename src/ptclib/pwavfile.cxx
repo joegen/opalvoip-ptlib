@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.24  2002/06/12 07:28:16  craigs
+ * Fixed problem with opening WAV files in read mode
+ *
  * Revision 1.23  2002/05/23 05:04:11  robertj
  * Set error code if get invalid sized write for G.723.1 wav file.
  *
@@ -162,13 +165,12 @@ PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
 
 
 PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
-  : PFile(mode, opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
   format = fmt;
 
-  Open(name);
+  Open(name, mode, opts);
 }
 
 
