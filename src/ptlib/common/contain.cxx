@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.33 1995/01/03 09:39:08 robertj Exp $
+ * $Id: contain.cxx,v 1.34 1995/01/04 10:57:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.33  1995/01/03 09:39:08  robertj
+ * Revision 1.34  1995/01/04 10:57:08  robertj
+ * Changed for HPUX and GNU2.6.x
+ *
+ * Revision 1.33  1995/01/03  09:39:08  robertj
  * Put standard malloc style memory allocation etc into memory check system.
  *
  * Revision 1.32  1994/12/13  11:50:56  robertj
@@ -137,6 +140,10 @@
  * Revision 1.3  1993/07/14  02:06:34  robertj
  * Fixed header comment for RCS.
  */
+
+#ifdef __GNUC__
+#pragma implementation
+#endif
 
 #define _CONTAIN_CXX
 #include <contain.h>

@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.6 1995/01/03 09:37:52 robertj Exp $
+ * $Id: sockets.cxx,v 1.7 1995/01/04 10:57:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.6  1995/01/03 09:37:52  robertj
+ * Revision 1.7  1995/01/04 10:57:08  robertj
+ * Changed for HPUX and GNU2.6.x
+ *
+ * Revision 1.6  1995/01/03  09:37:52  robertj
  * Added constructor to open TCP socket.
  *
  * Revision 1.5  1995/01/02  12:28:25  robertj
@@ -144,7 +147,7 @@ BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 
   sockaddr_in address;
   address.sin_family = AF_INET;
-  address.sin_port = ::htons(port);  // set the port
+  address.sin_port = htons(port);  // set the port
   memcpy(&address.sin_addr, ipnum, sizeof(address.sin_addr));
 
   // attempt to create a socket
