@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.13  1999/05/01 11:29:20  robertj
+ * Alpha linux port changes.
+ *
  * Revision 1.12  1999/05/01 03:52:20  robertj
  * Fixed various egcs warnings.
  *
@@ -326,7 +329,7 @@ void PASNObject::EncodeASNUnsigned (PBYTEArray & buffer, PASNUnsigned data, PASN
   mask = 0x1FFL << ((8 * (sizeof(DWORD) - 1)) - 1);
 
   // remove all sequences of nine 0's or 1's at the start of the value
-  while ((((data & mask) == 0) || ((data & mask) == mask))
+  while ((((data & mask) == 0) || (((long)data & mask) == mask))
 	  && intsize > 1) {
     intsize--;
     data <<= 8;
@@ -433,7 +436,7 @@ WORD PASNObject::GetASNUnsignedLength (PASNUnsigned data)
   mask = 0x1FFL << ((8 * (sizeof(DWORD) - 1)) - 1);
 
   // remove all sequences of nine 0's or 1's at the start of the value
-  while ((((data & mask) == 0) || ((data & mask) == mask))
+  while ((((data & mask) == 0) || (((long)data & mask) == mask))
 	  && intsize > 1) {
     intsize--;
     data <<= 8;

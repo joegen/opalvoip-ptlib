@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.18  1999/05/01 11:29:20  robertj
+ * Alpha linux port changes.
+ *
  * Revision 1.17  1999/03/05 07:03:27  robertj
  * Some more BeOS port changes.
  *
@@ -57,7 +60,7 @@
 #define	STACK_MULT	4
 #else
 #ifdef JB_SP
-#define	SET_STACK	context[0].__jmpbuf[JB_SP] = (int)stackTop-16;
+#define	SET_STACK	context[0].__jmpbuf[JB_SP] = (INT)stackTop-16;
 #else
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
 #endif
