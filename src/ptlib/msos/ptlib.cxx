@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.6 1994/07/27 06:00:10 robertj Exp $
+ * $Id: ptlib.cxx,v 1.7 1994/08/04 13:24:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.6  1994/07/27 06:00:10  robertj
+ * Revision 1.7  1994/08/04 13:24:27  robertj
+ * Added debug stream.
+ *
+ * Revision 1.6  1994/07/27  06:00:10  robertj
  * Backup
  *
  * Revision 1.5  1994/07/21  12:35:18  robertj
@@ -40,6 +43,9 @@
 #include <osutil.inl>
 #include <ptlib.inl>
 #endif
+
+
+ostream * PSTATIC PErrorStream = &cerr;
 
 
 ///////////////////////////////////////////////////////////////////////////////
