@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.15  2000/11/09 06:01:58  robertj
+ * Added MIME version and content disposition to RFC822 class.
+ *
  * Revision 1.14  2000/11/09 05:50:23  robertj
  * Added RFC822 aware channel class for doing internet mail.
  *
@@ -965,6 +968,15 @@ class PRFC822Channel : public PIndirectChannel
       const PString & contentType   /// Content type in form major/minor
     );
 
+    /**Set the content disposition for attachments.
+       This must be called before any writes are done to the channel. It may
+       be set again immediately after any call to NextPart() when multipart
+       mime is being used.
+      */
+    void SetContentAttachment(
+      const PString & filename   /// Attachment filename
+    );
+
 
     /**Set the and arbitrary header field.
        This must be called before any writes are done to the channel.
@@ -975,6 +987,7 @@ class PRFC822Channel : public PIndirectChannel
     );
 
     // Common MIME header tags
+    static const char MimeVersionTag[];
     static const char FromTag[];
     static const char ToTag[];
     static const char CCTag[];
