@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.28 1994/11/28 12:37:29 robertj Exp $
+ * $Id: contain.cxx,v 1.29 1994/12/05 11:19:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.28  1994/11/28 12:37:29  robertj
+ * Revision 1.29  1994/12/05 11:19:36  robertj
+ * Moved SetMinSize from PAbstractArray to PContainer.
+ *
+ * Revision 1.28  1994/11/28  12:37:29  robertj
  * Added dummy parameter to container classes.
  *
  * Revision 1.27  1994/10/30  11:50:44  robertj
@@ -184,6 +187,15 @@ void PContainer::Destruct()
 }
 
 
+BOOL PContainer::SetMinSize(PINDEX minSize)
+{
+  PASSERTINDEX(minSize);
+  if (minSize < GetSize())
+    minSize = GetSize();
+  return SetSize(minSize);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
@@ -236,7 +248,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
   theArray = array->theArray;
-  MakeUnique();
+  SetSize(GetSize());
 }
 
 
@@ -304,15 +316,6 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
   theArray = newArray;
   return TRUE;
-}
-
-
-BOOL PAbstractArray::SetMinSize(PINDEX minSize)
-{
-  if (minSize <= 0)
-    minSize = 1;
-  PASSERTINDEX(minSize);
-  return minSize <= GetSize() ? MakeUnique() : SetSize(minSize);
 }
 
 
@@ -562,7 +565,7 @@ void PString::Delete(PINDEX start, PINDEX len)
   if (start > slen)
     return;
 
-  MakeUnique();
+  SetSize(GetSize());
   if (start + len > slen)
     theArray[start] = '\0';
   else
@@ -743,7 +746,8 @@ PStringArray PString::Lines() const
     if (theArray[p2] == '\r' && theArray[p1] == '\n') // CR LF pair
       p1++;
   }
-  lines[line] = operator()(p1, P_MAX_INDEX);
+  if (p1 < GetLength())
+    lines[line] = operator()(p1, P_MAX_INDEX);
   return lines;
 }
 
