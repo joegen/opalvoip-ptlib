@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.60  2003/11/12 04:40:58  csoutheren
+ * Fixed linking problem on systems without QoS or IPV6
+ *
  * Revision 1.59  2003/11/10 00:21:38  dereksmithies
  * Stop compiler warnings (unused formal parameters) when P_HAS_QOS is on
  *
@@ -236,6 +239,8 @@
 
 #if defined(P_WINSOCK2_LIBRARY)
 #pragma comment(lib, P_WINSOCK2_LIBRARY)
+#else
+#pragma comment(lib, "wsock32.lib")
 #endif
 
 
