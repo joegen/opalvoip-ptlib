@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.7  2000/04/29 05:48:22  robertj
+ * Added error and progress reporting in searching path for external DEF files.
+ *
  * Revision 1.6  2000/04/29 05:01:49  robertj
  * Added multiple external DEF file capability (-x flag).
  * Added directory search path argument for external DEF files.
@@ -120,17 +123,25 @@ void MergeSym::Main()
     include_path.InsertAt(0, new PString());
     PStringArray file_list = args.GetOptionString('x').Lines();
     for (PINDEX ext_index = 0; ext_index < file_list.GetSize(); ext_index++) {
-      PFilePath ext_filename = file_list[ext_index];
+      PString base_ext_filename = file_list[ext_index];
+      PFilePath ext_filename = base_ext_filename;
       if (ext_filename.GetType().IsEmpty())
         ext_filename.SetType(".def");
 
-      if (args.HasOption('v'))
-        cout << "Reading external symbols from " << ext_filename << " ..." << flush;
       PINDEX previous_def_symbols_size = def_symbols.GetSize();
 
       for (PINDEX inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
+        PString trial_filename;
+        if (include_path[inc_index].IsEmpty())
+          trial_filename = ext_filename;
+        else
+          trial_filename = PDirectory(include_path[inc_index]) + ext_filename.GetFileName();
+        if (args.HasOption('v'))
+          cout << "\nTrying " << trial_filename << " ..." << flush;
         PTextFile ext;
-        if (ext.Open(PDirectory(include_path[inc_index]) + ext_filename.GetFileName(), PFile::ReadOnly)) {
+        if (ext.Open(trial_filename, PFile::ReadOnly)) {
+          if (args.HasOption('v'))
+            cout << "\nReading external symbols from " << ext.GetFilePath() << " ..." << flush;
           BOOL prefix = TRUE;
           while (!ext.eof()) {
             PCaselessString line;
@@ -152,6 +163,8 @@ void MergeSym::Main()
           break;
         }
       }
+      if (inc_index >= include_path.GetSize())
+        PError << "MergeSym: external symbol file \"" << base_ext_filename << "\" not found.\n";
       if (args.HasOption('v'))
         cout << '\n' << (def_symbols.GetSize() - previous_def_symbols_size)
              << " symbols read." << endl;
