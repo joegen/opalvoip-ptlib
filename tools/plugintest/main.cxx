@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.1.2.3  2003/10/12 21:22:12  dereksmithies
+ * Add ability to play sample sound out PSoundChannel - illustrating operation of plugins.
+ *
  * Revision 1.1.2.2  2003/10/08 03:55:54  dereksmithies
  * Add lots of debug statements, fix option parsing, improve Usage() function.
  *
@@ -46,7 +49,9 @@ void Usage()
 	 << "-x Attempt to load the OSS sound plugin\n"
 	 << "-t (more t's for more detail) logging on\n"
 	 << "-o output file for logging \n"
+	 << "-p play a beep beep beep sound, and testtest created PSoundChannel\n"
 	 << "-h print this help\n";
+
 }
 
 void PluginTest::Main()
@@ -60,6 +65,7 @@ void PluginTest::Main()
 	     "x-xamineOSS."          "-no-xamineOSS."
 	     "s-soundPlugins."       "-no-soundPlugins."
 	     "d-directory:"          "-no-directory."
+	     "p-play."               "-no-play."
 	     "h-help."               "-no-help."
 	     );
 
@@ -77,7 +83,7 @@ void PluginTest::Main()
     cout << "Default device names = " << setfill(',') << PSoundChannel::GetDeviceNames(PSoundChannel::Player) << setfill(' ') << endl;
     cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetPluginNames() << setfill(' ') << endl;
     PSoundChannel * snd = new PSoundChannel();
-    cout << "PSoundChannel has a name of \"" << snd->GetName() << "\"" << endl 
+    cout << "PSoundChannel has a name of \"" << snd->GetClass() << "\"" << endl 
 	 << endl;
   }
 
@@ -100,13 +106,68 @@ void PluginTest::Main()
 
     //cout << "Device names = " << PSoundChannelOSS_Static::GetDeviceNames(0) << endl;
 
+#define SAMPLES 64000  /*8 seconds of data */
+
+#define GET_FUNCTION(x, y) \
+   if (!plugin->GetFunction(#x, (PDynaLink::Function &)y)) {     \
+      cout << " no " << #x << " function " << dlerror() << endl; \
+      goto end_program;                                          \
+   }
+ 
+    PString      (*dnType)();
     PStringArray (*dnFn)(int);
-    if (!plugin->GetFunction("GetDeviceNames", (PDynaLink::Function &)dnFn)) {
-      cout << "No GetDeviceNames function" << endl;
-    }
+
+    GET_FUNCTION(GetDeviceNames, dnFn);    /*GetDeviceNames is a static method in the sound_oss lib*/
     PStringArray names = (*dnFn)(0);
     cout << "Device names = " << names << endl
-	 << endl;;
+	 << endl;
+
+    GET_FUNCTION(GetType, dnType);         /*GetType is a static method in the sound_oss lib. */
+    cout << "Type is " << (*dnType)() << endl << endl;
+
+    if (args.HasOption('p')) {
+      cout << "Play a test beep beep beep sound out the PSoundChannel" << endl;
+      PSoundChannel * snd = new PSoundChannel();
+      PString deviceName = snd->GetDefaultDevice(PSoundChannel::Player);
+
+      if (!snd->Open(deviceName, PSoundChannel::Player)) {
+	cout << "Failed to open " << deviceName << " for sound. End program now." << endl;
+	goto end_program;
+      }
+
+      cout << "sound channel has a handle of " << snd->GetHandle() << endl;
+      if (!snd->IsOpen()) {
+	cout << "Sound device is not open. Sorry. End program now." << endl;
+	goto end_program;
+      }
+      
+      if (!snd->SetBuffers(SAMPLES, 2)) {
+	cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
+	goto end_program;
+      }
+
+      snd->SetVolume(90);
+
+      PWORDArray audio(SAMPLES);
+      int i, pointsPerCycle = 80;
+      int volume = 80;
+      double angle;
+
+      for (i = 0; i < SAMPLES; i++) {
+	angle = M_PI * 2 * (double)(i % pointsPerCycle)/pointsPerCycle;
+	if ((i % 4000) < 3000)
+	  audio[i] = (unsigned short) ((16384 * cos(angle) * volume)/100);
+	else
+	  audio[i] = 0;
+      }
+	
+      if (!snd->Write((unsigned char *)audio.GetPointer(), SAMPLES * 2)) {
+	cout << "Failed to write  " << SAMPLES/8000  << " seconds of beep beep. End program now." << endl;
+	goto end_program;
+      }
+
+      snd->WaitForPlayCompletion();
+    } /* Play beep beep*/
   }
 
  end_program:
