@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.11  2001/03/08 02:18:45  robertj
+ * Added improved defaulting of video formats so Open() does not fail.
+ * Removed the requirement that the device be open before you can set
+ *   formats such as colour, video, channel number etc.
+ *
  * Revision 1.10  2001/03/07 01:41:03  dereks
  * Fix memory leak, on destroying PVideoDevice
  * Ensure converter class is resized correctly.
@@ -69,12 +74,11 @@
 // PVideoDevice
 
 PVideoDevice::PVideoDevice()
-  : colourFormat("RGB24")
 {
   lastError = 0;
 
   videoFormat = Auto;
-  channelNumber = 0;
+  channelNumber = -1;
   frameRate = 15;
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
@@ -92,7 +96,7 @@ PVideoDevice::~PVideoDevice()
 BOOL PVideoDevice::SetVideoFormat(VideoFormat videoFmt)
 {
   videoFormat = videoFmt;
-  return IsOpen();
+  return TRUE;
 }
 
 
@@ -110,11 +114,18 @@ int PVideoDevice::GetNumChannels()
 
 BOOL PVideoDevice::SetChannel(int channelNum)
 {
-  if (channelNum >= (int)GetNumChannels())
+  if (channelNum < 0) {
+    for (int c = 0; c < GetNumChannels(); c++)
+      if (SetChannel(c))
+        return TRUE;
+    return FALSE;
+  }
+
+  if (channelNum >= GetNumChannels())
     return FALSE;
 
   channelNumber = channelNum;
-  return IsOpen();
+  return TRUE;
 }
 
 
@@ -182,8 +193,17 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
 
 BOOL PVideoDevice::SetColourFormat(const PString & colourFmt)
 {
-  colourFormat = colourFmt;
-  return IsOpen();
+  if (!colourFmt) {
+    colourFormat = colourFmt;
+    return TRUE;
+  }
+
+  for (PINDEX i = 0; i < PARRAYSIZE(colourFormatBPPTab); i++) {
+    if (SetColourFormat(colourFormatBPPTab[i].colourFormat))
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 
@@ -196,7 +216,7 @@ const PString & PVideoDevice::GetColourFormat() const
 BOOL PVideoDevice::SetFrameRate(unsigned rate)
 {
   frameRate = rate;
-  return IsOpen();
+  return TRUE;
 }
 
 
@@ -239,7 +259,7 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
   if (converter)
     converter->SetFrameSize(width,height);
 
-  return IsOpen();
+  return TRUE;
 }
 
 
@@ -247,7 +267,7 @@ BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height)
 {
   width = frameWidth;
   height = frameHeight;
-  return IsOpen();
+  return TRUE;
 }
 
 unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
