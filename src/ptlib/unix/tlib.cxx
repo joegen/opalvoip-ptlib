@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.19  1996/11/16 11:11:46  craigs
+ * Fixed problem with timeout on blocked IO channels
+ *
  * Revision 1.18  1996/11/03 04:35:58  craigs
  * Added hack to avoid log timeouts, which shouldn't happen!
  *
@@ -261,6 +264,26 @@ void PThread::ClearBlock()
     handleWidth = 0;
 }
 
+static void Copy_Fd_Sets(fd_set & dr, fd_set & dw, fd_set & de,
+                         fd_set & sr, fd_set & sw, fd_set & se, int width)
+{
+  unsigned long *srp = (unsigned long *)&sr;
+  unsigned long *swp = (unsigned long *)&sw;
+  unsigned long *sep = (unsigned long *)&se;
+
+  unsigned long *drp = (unsigned long *)&dr;
+  unsigned long *dwp = (unsigned long *)&dw;
+  unsigned long *dep = (unsigned long *)&de;
+
+  int orSize = (width + (8*sizeof (unsigned long)) - 1) / (8*sizeof (unsigned long));
+
+  for (int i = 0; i < orSize; i++) {
+    *drp++ = *srp++;
+    *dwp++ = *swp++;
+    *dep++ = *sep++;
+  }
+}
+
 BOOL PThread::IsNoLongerBlocked()
 {
   // check signals
@@ -271,7 +294,9 @@ BOOL PThread::IsNoLongerBlocked()
     return kill(waitPid, 0) != 0;
 
   // if the I/O block was terminated previously, perhaps by a close from
-  // another thread, then return TRUE
+  // another thread, then return TRUE. Don't check for timeouts yet -
+  // this means we return if data is available before we timeout because
+  // it isn't there
   if (selectErrno != 0 || selectReturnVal != 0)
     return TRUE;
 
@@ -281,9 +306,9 @@ BOOL PThread::IsNoLongerBlocked()
   // do a zero time select call to see if we would block if we did the read/write
   struct timeval timeout = {0, 0};
 
-  fd_set rfds = *read_fds;
-  fd_set wfds = *write_fds;
-  fd_set efds = *exception_fds;
+  fd_set rfds, wfds, efds;
+
+  Copy_Fd_Sets(rfds, wfds, efds, *read_fds, *write_fds, *exception_fds, handleWidth);
 
   // check signals on the way in
   PProcess::Current()->PXCheckSignals();
@@ -296,14 +321,12 @@ BOOL PThread::IsNoLongerBlocked()
   // check signals on the way out
   PProcess::Current()->PXCheckSignals();
   
+  Copy_Fd_Sets(*read_fds, *write_fds, *exception_fds, rfds, wfds, efds, handleWidth);
+
   if (selectReturnVal != 0) {
     selectErrno  = errno;
     return TRUE;
   }
-
-  *read_fds      = rfds;
-  *write_fds     = wfds;
-  *exception_fds = efds;
 
   // if the channel has timed out, return TRUE
   return hasIOTimer && (ioTimer == 0);
@@ -321,13 +344,21 @@ void PProcess::OperatingSystemYield()
   int width     = 0;
   int waitCount = 0;
 
+  // process the timer list BEFORE checking timers
+  PTimeInterval delay = GetTimerList()->Process();
+
   // collect the handles across all threads
   PThread * thread = current;
+  BOOL      threadUnblocked = FALSE;
+  PInt64    maxTimeout = 1000000;
   do {
     if (thread->status == BlockedIO) {
       if (thread->waitPid > 0)
         waitCount++;
-      else if (thread->handleWidth > 0) {
+      else if ((thread->selectReturnVal != 0) ||
+               (thread->hasIOTimer && thread->ioTimer == 0)) {
+        threadUnblocked = TRUE;
+      } else if (thread->handleWidth > 0) {
         unsigned long *srp = (unsigned long *)thread->read_fds;
         unsigned long *swp = (unsigned long *)thread->write_fds;
         unsigned long *sep = (unsigned long *)thread->exception_fds;
@@ -351,11 +382,18 @@ void PProcess::OperatingSystemYield()
   } while (thread != current);
 
   //
+  // if we found a thread that was IO blocked, but has already found
+  // input, then return now
+  //
+  if (threadUnblocked)
+    return;
+  
+
+  //
   // find timeout until next timer event
   //
   struct timeval * timeout = NULL;
   struct timeval   timeout_val;
-  PTimeInterval delay = GetTimerList()->Process();
   if (delay != PMaxTimeInterval) {
     if (delay.GetMilliSeconds() < 1000L*60L*60L*24L) {
       timeout_val.tv_usec = (delay.GetMilliSeconds() % 1000) * 1000;
@@ -469,7 +507,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   PXSetOSHandleBlock(handle, blockType);
 
   hasIOTimer  = timeout != PMaxTimeInterval;
-  ioTimer     = timeout;
+  if (hasIOTimer)
+    ioTimer     = timeout;
   selectErrno = selectReturnVal = 0;
   handleWidth = handle+1;
   waitPid     = 0;
@@ -505,7 +544,8 @@ int PThread::PXBlockOnIO(int maxHandles,
   handleWidth   = maxHandles;
 
   hasIOTimer    = timeout != PMaxTimeInterval;
-  ioTimer       = timeout;
+  if (hasIOTimer)
+    ioTimer       = timeout;
   selectErrno   = selectReturnVal = 0;
   waitPid     = 0;
 
