@@ -3,7 +3,6 @@ EXPORTS
     ??0?$PArray@VPString@@@@QAE@ABV0@@Z @1 NONAME ;public: __thiscall PArray<class PString>::PArray<class PString>(class PArray<class PString> const &)
     ??0?$PBaseArray@D@@QAE@ABV0@@Z @2 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(class PBaseArray<char> const &)
     ??0?$PBaseArray@D@@QAE@H@Z @3 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(int)
-    ??0?$PBaseArray@E@@QAE@H@Z @4 NONAME ;public: __thiscall PBaseArray<unsigned char>::PBaseArray<unsigned char>(int)
     ??0?$PBaseArray@J@@QAE@H@Z @1798 NONAME ;public: __thiscall PBaseArray<long>::PBaseArray<long>(int)
     ??0Address@PEthSocket@@QAE@ABT01@@Z @1799 NONAME ;public: __thiscall PEthSocket::Address::Address( ?? ::Z volatile Address::* const &, ?? ) throw( ?? )
     ??0Address@PEthSocket@@QAE@ABVPString@@@Z @1800 NONAME ;public: __thiscall PEthSocket::Address::Address(class PString const &)
@@ -196,7 +195,6 @@ EXPORTS
     ??1?$PArray@VPString@@@@UAE@XZ @165 NONAME ;public: virtual __thiscall PArray<class PString>::~PArray<class PString>(void)
     ??1?$PArray@VPWin32PacketBuffer@@@@UAE@XZ @1820 NONAME ;public: virtual __thiscall PArray<class PWin32PacketBuffer>::~PArray<class PWin32PacketBuffer>(void)
     ??1?$PBaseArray@D@@UAE@XZ @166 NONAME ;public: virtual __thiscall PBaseArray<char>::~PBaseArray<char>(void)
-    ??1?$PBaseArray@E@@UAE@XZ @167 NONAME ;public: virtual __thiscall PBaseArray<unsigned char>::~PBaseArray<unsigned char>(void)
     ??1?$PBaseArray@J@@UAE@XZ @1821 NONAME ;public: virtual __thiscall PBaseArray<long>::~PBaseArray<long>(void)
     ??1?$PBaseArray@PAVElement@PHashTable@@@@UAE@XZ @168 NONAME ;public: virtual __thiscall PBaseArray<class PHashTable::Element *>::~PBaseArray<class PHashTable::Element *>(void)
     ??1?$PBaseArray@PAVPObject@@@@UAE@XZ @169 NONAME ;public: virtual __thiscall PBaseArray<class PObject *>::~PBaseArray<class PObject *>(void)
@@ -492,7 +490,6 @@ EXPORTS
     ??_7?$PArray@VPString@@@@6B@ @436 NONAME ;const  PArray<class PString>::`vftable'
     ??_7?$PArray@VPWin32PacketBuffer@@@@6B@ @1844 NONAME ;const  PArray<class PWin32PacketBuffer>::`vftable'
     ??_7?$PBaseArray@D@@6B@ @437 NONAME ;const  PBaseArray<char>::`vftable'
-    ??_7?$PBaseArray@E@@6B@ @438 NONAME ;const  PBaseArray<unsigned char>::`vftable'
     ??_7?$PBaseArray@J@@6B@ @1845 NONAME ;const  PBaseArray<long>::`vftable'
     ??_7?$PBaseArray@PAVPObject@@@@6B@ @439 NONAME ;const  PBaseArray<class PObject *>::`vftable'
     ??_7?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @440 NONAME ;const  PDictionary<class PCaselessString,class PIPCacheData>::`vftable'
@@ -712,7 +709,6 @@ EXPORTS
     ?Clone@?$PArray@VPString@@@@UBEPAVPObject@@XZ @627 NONAME ;public: virtual class PObject * __thiscall PArray<class PString>::Clone(void)const 
     ?Clone@?$PArray@VPWin32PacketBuffer@@@@UBEPAVPObject@@XZ @1866 NONAME ;public: virtual class PObject * __thiscall PArray<class PWin32PacketBuffer>::Clone(void)const 
     ?Clone@?$PBaseArray@D@@UBEPAVPObject@@XZ @628 NONAME ;public: virtual class PObject * __thiscall PBaseArray<char>::Clone(void)const 
-    ?Clone@?$PBaseArray@E@@UBEPAVPObject@@XZ @629 NONAME ;public: virtual class PObject * __thiscall PBaseArray<unsigned char>::Clone(void)const 
     ?Clone@?$PBaseArray@J@@UBEPAVPObject@@XZ @1867 NONAME ;public: virtual class PObject * __thiscall PBaseArray<long>::Clone(void)const 
     ?Clone@?$PBaseArray@PAVPObject@@@@UBEPAVPObject@@XZ @630 NONAME ;public: virtual class PObject * __thiscall PBaseArray<class PObject *>::Clone(void)const 
     ?Clone@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPAVPObject@@XZ @631 NONAME ;public: virtual class PObject * __thiscall PDictionary<class PCaselessString,class PIPCacheData>::Clone(void)const 
@@ -778,7 +774,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PArray@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @687 NONAME ;public: virtual enum PObject::Comparison  __thiscall PArray<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PArray@VPWin32PacketBuffer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1871 NONAME ;public: virtual enum PObject::Comparison  __thiscall PArray<class PWin32PacketBuffer>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@D@@UBE?AW4Comparison@PObject@@ABV3@@Z @688 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<char>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PBaseArray@E@@UBE?AW4Comparison@PObject@@ABV3@@Z @689 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<unsigned char>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@J@@UBE?AW4Comparison@PObject@@ABV3@@Z @1872 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<long>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@PAVPObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @690 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<class PObject *>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @691 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDictionary<class PCaselessString,class PIPCacheData>::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1002,7 +997,6 @@ EXPORTS
     ?GetClass@?$PArray@VPString@@@@UBEPBDI@Z @893 NONAME ;public: virtual char const * __thiscall PArray<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PArray@VPWin32PacketBuffer@@@@UBEPBDI@Z @1888 NONAME ;public: virtual char const * __thiscall PArray<class PWin32PacketBuffer>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@D@@UBEPBDI@Z @894 NONAME ;public: virtual char const * __thiscall PBaseArray<char>::GetClass(unsigned int)const 
-    ?GetClass@?$PBaseArray@E@@UBEPBDI@Z @895 NONAME ;public: virtual char const * __thiscall PBaseArray<unsigned char>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@J@@UBEPBDI@Z @1889 NONAME ;public: virtual char const * __thiscall PBaseArray<long>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@PAVPObject@@@@UBEPBDI@Z @896 NONAME ;public: virtual char const * __thiscall PBaseArray<class PObject *>::GetClass(unsigned int)const 
     ?GetClass@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPBDI@Z @897 NONAME ;public: virtual char const * __thiscall PDictionary<class PCaselessString,class PIPCacheData>::GetClass(unsigned int)const 
@@ -1351,7 +1345,6 @@ EXPORTS
     ?IsClass@?$PArray@VPString@@@@UBEHPBD@Z @1211 NONAME ;public: virtual int __thiscall PArray<class PString>::IsClass(char const *)const 
     ?IsClass@?$PArray@VPWin32PacketBuffer@@@@UBEHPBD@Z @1917 NONAME ;public: virtual int __thiscall PArray<class PWin32PacketBuffer>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@D@@UBEHPBD@Z @1212 NONAME ;public: virtual int __thiscall PBaseArray<char>::IsClass(char const *)const 
-    ?IsClass@?$PBaseArray@E@@UBEHPBD@Z @1213 NONAME ;public: virtual int __thiscall PBaseArray<unsigned char>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@J@@UBEHPBD@Z @1918 NONAME ;public: virtual int __thiscall PBaseArray<long>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@PAVPObject@@@@UBEHPBD@Z @1214 NONAME ;public: virtual int __thiscall PBaseArray<class PObject *>::IsClass(char const *)const 
     ?IsClass@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEHPBD@Z @1215 NONAME ;public: virtual int __thiscall PDictionary<class PCaselessString,class PIPCacheData>::IsClass(char const *)const 
@@ -1447,7 +1440,6 @@ EXPORTS
     ?IsDescendant@?$PArray@VPString@@@@UBEHPBD@Z @1299 NONAME ;public: virtual int __thiscall PArray<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@?$PArray@VPWin32PacketBuffer@@@@UBEHPBD@Z @1924 NONAME ;public: virtual int __thiscall PArray<class PWin32PacketBuffer>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@D@@UBEHPBD@Z @1300 NONAME ;public: virtual int __thiscall PBaseArray<char>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PBaseArray@E@@UBEHPBD@Z @1301 NONAME ;public: virtual int __thiscall PBaseArray<unsigned char>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@J@@UBEHPBD@Z @1925 NONAME ;public: virtual int __thiscall PBaseArray<long>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@PAVPObject@@@@UBEHPBD@Z @1302 NONAME ;public: virtual int __thiscall PBaseArray<class PObject *>::IsDescendant(char const *)const 
     ?IsDescendant@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEHPBD@Z @1303 NONAME ;public: virtual int __thiscall PDictionary<class PCaselessString,class PIPCacheData>::IsDescendant(char const *)const 
@@ -1971,3 +1963,6 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
+    ??0PBYTEArray@@QAE@H@Z @1972 NONAME ;public: __thiscall PBYTEArray::PBYTEArray(int)
+    ?IsServiceProcess@PProcess@@UBEHXZ @1973 NONAME ;public: virtual int __thiscall PProcess::IsServiceProcess(void)const 
+    ?IsServiceProcess@PServiceProcess@@UBEHXZ @1974 NONAME ;public: virtual int __thiscall PServiceProcess::IsServiceProcess(void)const 
