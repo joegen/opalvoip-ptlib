@@ -27,9 +27,18 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: ptlib.mak,v $
+# Revision 1.3  1998/12/02 02:37:31  robertj
+# New directory structure.
+#
 # Revision 1.2  1998/09/24 04:20:52  robertj
 # Added open software license.
 #
 
-include ~/pwlib/unix/src/unix.mak
-include ~/pwlib/unix/src/common.mak
+ifndef PWLIBDIR
+PWLIBDIR=$(HOME)/pwlib
+endif
+
+include $(PWLIBDIR)/make/unix.mak
+include $(PWLIBDIR)/make/common.mak
+
+# End of ptlib.mak
