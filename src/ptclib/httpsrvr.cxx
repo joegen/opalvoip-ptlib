@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.8 1997/04/15 14:32:19 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.9 1997/07/08 13:10:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.9  1997/07/08 13:10:26  robertj
+ * Fixed bug in HTTP server where standard error text is not sent to remote client.
+ *
  * Revision 1.8  1997/04/15 14:32:19  robertj
  * Fixed case problem for HTTP version string.
  *
@@ -608,6 +611,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
          << PHTML::Heading(1)
          << extra
          << PHTML::Body();
+    reply = html;
   }
 
   headers.SetAt(ContentTypeTag, "text/html");
