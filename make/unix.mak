@@ -9,21 +9,70 @@ SOURCES		:= $(strip $(SOURCES))
 #  defines for common Unix types
 ###############################################################################
 #
+P_LINUX		= 1
+#P_SUN4  	= 1
+#P_SOLARIS	= 1
+#P_HPUX		= 1
+#P_ULTRIX	= 1
+
+#STDCCFLAGS	:= -DPHAS_TEMPLATES
+
+####################################################
+#
+#  Linux
+#
+endif # DEBUG
+
+ifdef P_LINUX
+ifeq ($(MACHTYPE),ppc)
 # i486 Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+ENDIAN		:= PBIG_ENDIAN
+# i486 Linux for x86, using gcc 2.7.2
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+
+endif
+
+endif # FreeBSD
+#
+#  Sun
+#
+####################################################
+
+ifdef P_SUN4
 ####################################################
 # Sparc Sun 4x, using gcc 2.6.3
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
-#RANLIB		:= 1
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4 -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
+
+
+endif
+
+ifdef P_SOLARIS
 else
 # Sparc Solaris 2.x, using gcc 2.6.3
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
+endif
+
+endif # solaris
+#
+#  Other
+#
+endif # beos
+
+ifdef P_ULTRIX
 ####################################################
 
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX  -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
+
+endif
+
+ifdef P_HPUX
 ####################################################
 
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
+ifeq ($(OSTYPE),hpux)
+
+endif
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 
 
@@ -75,7 +124,7 @@ LDFLAGS		:= $(LDFLAGS) -s
 
 endif # DEBUG
 
-OBJDIR		= obj_$(LIBID)
+OBJDIR		:= obj_$(LIBID)
 
 LIBDIR		= $(PWLIBDIR)/lib
 COMMONDIR	= $(PWLIBDIR)/common
