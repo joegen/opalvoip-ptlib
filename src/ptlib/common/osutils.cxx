@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.195  2002/06/27 06:38:58  robertj
+ * Changes to remove memory leak display for things that aren't memory leaks.
+ *
  * Revision 1.194  2002/06/15 02:16:36  robertj
  * Fixed bug (from rev 1.190) so can now use PTimer::Reset() after the timer
  *   had previously expired (resetTiem was being zeroed), thanks Ted Szoczei
@@ -736,11 +739,14 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   PTraceOptions = options;
   PTraceLevelThreshold = level;
 
-  if (filename != NULL) {
 #if PMEMORY_CHECK
-    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+  int ignoreAllocations = -1;
 #endif
 
+  if (filename != NULL) {
+#if PMEMORY_CHECK
+    ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
+#endif
     PTextFile * traceOutput;
     if (options & AppendToFile) {
       traceOutput = new PTextFile(filename, PFile::ReadWrite);
@@ -748,9 +754,6 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
     } else 
       traceOutput = new PTextFile(filename, PFile::WriteOnly);
 
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
     if (traceOutput->IsOpen())
       PTrace::SetStream(traceOutput);
     else {
@@ -765,6 +768,11 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
          << " on " << process.GetOSClass() << ' ' << process.GetOSName()
          << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
          << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu"));
+
+#if PMEMORY_CHECK
+  if (ignoreAllocations >= 0)
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations != 0);
+#endif
 }
 
 
