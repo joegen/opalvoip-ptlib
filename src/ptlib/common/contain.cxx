@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.144  2004/02/23 00:26:05  csoutheren
+ * Finally, a generic and elegant fix for the regex include hacks.  Thanks to Roger Hardiman
+ *
  * Revision 1.143  2004/02/15 03:04:52  rjongbloed
  * Fixed problem with PSortedList nil variable and assignment between instances,
  *   pointed out by Ben Lear.
@@ -530,28 +533,12 @@
  * Fixed header comment for RCS.
  */
 
-//#if P_MACOS
-//#include <sys/types.h>
-//extern "C"  // curse apple
-//{
-//#include <regex.h>
-//};
-//#endif
-
 #include <ptlib.h>
-
 #include <ctype.h>
+
 
 #ifdef __NUCLEUS_PLUS__
 extern "C" int vsprintf(char *, const char *, va_list);
-#endif
-
-#if P_REGEX
-extern "C" {
-#include <regex.h>
-};
-#else
-#include "regex/regex.h"
 #endif
 
 #if !P_USE_INLINES
@@ -2976,7 +2963,7 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
 
   if (expression != NULL) {
     regfree(expression);
-    delete expression;
+    delete (regex_t *)expression;
     expression = NULL;
   }
   if (pattern == NULL || *pattern == '\0')

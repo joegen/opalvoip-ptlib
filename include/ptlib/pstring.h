@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.67  2004/02/23 00:26:05  csoutheren
+ * Finally, a generic and elegant fix for the regex include hacks.  Thanks to Roger Hardiman
+ *
  * Revision 1.66  2004/02/11 05:09:14  csoutheren
  * Fixed problems with regex libraries on Solaris, and with host OS numbering
  * being a quoted string rather than a number. Thanks to Chad Attermann
@@ -256,6 +259,12 @@
 
 #ifdef P_USE_PRAGMA
 #pragma interface
+#endif
+
+#if P_REGEX
+#include <regex.h>
+#else
+#include "regex/regex.h"
 #endif
 
 
@@ -2813,13 +2822,6 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     );
   //@}
 };
-
-
-// there used to be some really weird stuff here, but this has all
-// been replaced with a simple typedef. ./configure will ensure that
-// the symbol re_pattern_buffer exists, either by using a system library
-// or by including a local copy of the regex libraries
-typedef struct re_pattern_buffer regex_t;
 
 
 /**A class representing a regular expression that may be used for locating
