@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.1 1996/06/28 12:55:56 robertj Exp $
+ * $Id: httpform.h,v 1.2 1997/04/01 06:01:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.2  1997/04/01 06:01:39  robertj
+ * Allowed value list in drop down box to be modified once created.
+ *
  * Revision 1.1  1996/06/28 12:55:56  robertj
  * Initial revision
  *
@@ -369,8 +372,10 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
     );
 
 
-  protected:
     PStringArray values;
+
+
+  protected:
     PString value;
 };
 
