@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.50  2004/04/21 00:32:02  csoutheren
+ * Fixed problem with XER and the new RTTI system
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.49  2004/04/13 11:33:55  csoutheren
  * Fixed XER output, thanks to Federico Pinna
  *
@@ -2276,7 +2280,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    cxx << "  if (PIsDescendantStr(&strm, PXER_Stream))\n"
+    cxx << "  if (PIsDescendant(&strm, PXER_Stream))\n"
            "    return TRUE;\n\n";
   }
 
@@ -2306,7 +2310,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    cxx << "  if (PIsDescendant(&strm, \"PXER_Stream\"))\n"
+    cxx << "  if (PIsDescendant(&strm, PXER_Stream))\n"
            "    return;\n\n";
   }
 
