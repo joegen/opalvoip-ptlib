@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psharedptr.h,v $
+ * Revision 1.3  2004/10/21 09:20:33  csoutheren
+ * Fixed compile problems on gcc 2.95.x
+ *
  * Revision 1.2  2004/10/01 08:08:50  csoutheren
  * Added Reset and auto_ptr conversions
  *
@@ -40,6 +43,7 @@
 #endif
 
 #include <ptlib.h>
+#include <memory>
 
 /**
  *
