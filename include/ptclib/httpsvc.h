@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.44  2003/07/15 11:17:45  csoutheren
+ * Added additional constructor for PServiceHTTPString,
+ *   Thanks to Federico Pinna
+ *
  * Revision 1.43  2003/02/19 07:23:17  robertj
  * Changes to allow for single threaded HTTP service processes.
  *
@@ -532,6 +536,9 @@ class PServiceHTTPString : public PHTTPString
 
     PServiceHTTPString(const PURL & url, const PString & string, const PHTTPAuthority & auth)
       : PHTTPString(url, string, auth) { }
+
+    PServiceHTTPString(const PURL & url, const PString & string, const PString & contentType)
+      : PHTTPString(url, string, contentType) { }
 
     PServiceHTTPString(const PURL & url, const PString & string, const PString & contentType, const PHTTPAuthority & auth)
       : PHTTPString(url, string, contentType, auth) { }
