@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.107  2002/12/11 05:39:26  robertj
+ * Added logging for file handle changes.
+ * Fixd bug where internal maxHandles not set when increased.
+ *
  * Revision 1.106  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -496,6 +500,7 @@ void PProcess::Construct()
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   maxHandles = rl.rlim_cur;
+  PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
   ::pipe(timerChangePipe);
 #else
@@ -509,7 +514,7 @@ void PProcess::Construct()
 }
 
 
-BOOL PProcess::SetMaxHandles(int maxHandles)
+BOOL PProcess::SetMaxHandles(int newMax)
 {
 #ifndef P_RTEMS
   // get the current process limit
@@ -517,13 +522,19 @@ BOOL PProcess::SetMaxHandles(int maxHandles)
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
 
   // set the new current limit
-  rl.rlim_cur = maxHandles;
-  if (setrlimit(RLIMIT_NOFILE, &rl) == 0)
-    return TRUE;
+  rl.rlim_cur = newMax;
+  if (setrlimit(RLIMIT_NOFILE, &rl) == 0) {
+    PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+    maxHandles = rl.rlim_cur;
+    if (maxHandles == newMax) {
+      PTRACE(2, "PWLib\tNew maximum per-process file handles set to " << maxHandles);
+      return TRUE;
+    }
+  }
 #endif // !P_RTEMS
 
   PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
-         << maxHandles << " - check permissions");
+         << newMax << " (is " << maxHandles << ") - check permissions");
   return FALSE;
 }
 
