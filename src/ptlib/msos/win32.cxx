@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.20 1996/03/10 13:16:49 robertj Exp $
+ * $Id: win32.cxx,v 1.21 1996/03/12 11:31:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.21  1996/03/12 11:31:39  robertj
+ * Moved PProcess destructor to platform dependent code.
+ * Fixed bug in deleting Event Viewer registry entry for service process.
+ *
  * Revision 1.20  1996/03/10 13:16:49  robertj
  * Implemented system version functions.
  *
@@ -1603,6 +1607,18 @@ void PProcess::Construct()
 }
 
 
+PProcess::~PProcess()
+{
+  if (timerThread != (PThread *)-1)
+    delete timerThread;
+
+#ifndef PMEMORY_CHECK
+  extern void PWaitOnExitConsoleWindow();
+  PWaitOnExitConsoleWindow();
+#endif
+}
+
+
 PString PProcess::GetOSClass()
 {
   return "Windows";
@@ -2024,7 +2040,7 @@ PServiceProcess::ProcessCommandResult
       if (good) {
         PString name = "SYSTEM\\CurrentControlSet\\Services\\"
                                          "EventLog\\Application\\" + GetName();
-        RegDeleteValue(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+        RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
       }
       break;
 
