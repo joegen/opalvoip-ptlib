@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.3 1996/02/03 11:06:27 robertj Exp $
+ * $Id: url.h,v 1.4 1996/03/02 03:12:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.4  1996/03/02 03:12:13  robertj
+ * Added function to translate a string to a form suitable for inclusion in a URL.
+ *
  * Revision 1.3  1996/02/03 11:06:27  robertj
  * Added splitting of query field into variables dictionary.
  *
@@ -94,6 +97,16 @@ PDECLARE_CLASS(PURL, PObject)
 
        <H2>Returns:</H2>
        String representation of the URL.
+     */
+
+    static PString TranslateString(
+      const PString & str     // String to be translated
+    );
+    /* Translate a string from general form to one that can be included into
+       a URL. All reserved characters are escaped.
+
+       <H2>Returns:</H2>
+       String for the URL ready translation.
      */
 
     const PCaselessString & GetScheme() const   { return scheme; }
