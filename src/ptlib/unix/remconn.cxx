@@ -16,17 +16,6 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-#if defined(P_LINUX)
-#include <linux/if.h>
-#define HAS_IFREQ
-#endif
-
-#if defined(P_SUN4) || defined(P_SOLARIS)
-#include <net/if.h>
-#include <sys/sockio.h>
-#define HAS_IFREQ
-#endif
-
 #include "uerror.h"
 
 static const PString RasStr      = "ras";
