@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.13  1998/11/30 04:48:40  robertj
+ * New directory structure
+ *
  * Revision 1.12  1998/10/15 05:41:49  robertj
  * New memory leak check code.
  *
@@ -66,7 +69,7 @@
  */
 
 #include <ptlib.h>
-#include <mail.h>
+#include <ptlib/mail.h>
 
 #include <ctype.h>
 
