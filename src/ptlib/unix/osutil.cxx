@@ -226,9 +226,14 @@ BOOL PDirectory::Next()
 
   do {
     do {
+#ifdef P_PHTREADS
       struct dirent dirEnt;
-      if ((entry = readdir_r(directory, &dirEnt)) == NULL)
+      if ((entry = ::readdir_r(directory, &dirEnt)) == NULL)
         return FALSE;
+#else
+      if ((entry = ::readdir(directory)) == NULL)
+        return FALSE;
+#endif
     } while (strcmp(entry->d_name, "." ) == 0 ||
              strcmp(entry->d_name, "..") == 0);
 
@@ -858,14 +863,26 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 }
 
 // note that PX_tm is local storage inside the PTime instance
+#ifdef P_PTHREADS
 struct tm * PTime::os_localtime(const time_t * clock, struct tm * ts)
 {
   return ::localtime_r(clock, ts);
+#else
+struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
+{
+  return ::localtime(clock);
+#endif
 }
 
+#ifdef P_PTHREADS
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm * ts)
 {
   return ::gmtime_r(clock, ts);
+#else
+struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
+{
+  return ::gmtime(clock);
+#endif
 }
 
 
