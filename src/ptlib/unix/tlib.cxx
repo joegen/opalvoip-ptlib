@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.22  1997/02/14 09:18:36  craigs
+ * Changed for PProcess::Current being a reference rather that a ptr
+ *
  * Revision 1.21  1996/12/30 03:21:46  robertj
  * Added timer to block on wait for child process.
  *
@@ -222,7 +225,7 @@ void PProcess::PXShowSystemWarning(PINDEX num)
 
 void PProcess::PXShowSystemWarning(PINDEX num, const PString & str)
 {
-  PProcess::Current()->_PXShowSystemWarning(num, str);
+  PProcess::Current()._PXShowSystemWarning(num, str);
 }
 
 void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
@@ -248,7 +251,7 @@ PThread::PThread()
 PThread::~PThread()
 {
   // can never destruct ourselves!!!!
-  PAssert(this == PProcess::Current() || this != PThread::Current(), "Thread attempted suicide!");
+  PAssert(this != PThread::Current(), "Thread attempted suicide!");
 
   // call the terminate function so overloads work properly
   Terminate();
@@ -293,7 +296,7 @@ static void Copy_Fd_Sets(fd_set & dr, fd_set & dw, fd_set & de,
 BOOL PThread::IsNoLongerBlocked()
 {
   // check signals
-  PProcess::Current()->PXCheckSignals();
+  PProcess::Current().PXCheckSignals();
 
   // if are blocked on a child process, see if that child is still going
   if (waitPid > 0) 
@@ -317,7 +320,7 @@ BOOL PThread::IsNoLongerBlocked()
   Copy_Fd_Sets(rfds, wfds, efds, *read_fds, *write_fds, *exception_fds, handleWidth);
 
   // check signals on the way in
-  PProcess::Current()->PXCheckSignals();
+  PProcess::Current().PXCheckSignals();
 
   // do the select
   selectReturnVal = SELECT (handleWidth,
@@ -325,7 +328,7 @@ BOOL PThread::IsNoLongerBlocked()
                             &timeout);
 
   // check signals on the way out
-  PProcess::Current()->PXCheckSignals();
+  PProcess::Current().PXCheckSignals();
   
   Copy_Fd_Sets(*read_fds, *write_fds, *exception_fds, rfds, wfds, efds, handleWidth);
 
@@ -342,7 +345,7 @@ BOOL PThread::IsNoLongerBlocked()
 void PProcess::OperatingSystemYield()
 
 {
-  PThread * current = PProcess::Current();
+  PThread * current = &PProcess::Current();
 
   // setup file descriptor tables for select call
   fd_set rfds, wfds, efds;
@@ -433,34 +436,34 @@ void PProcess::OperatingSystemYield()
 void PThread::PXSetOSHandleBlock(int fd, int type)
 {
   POrdinalKey key(fd);
-  PProcess * proc = PProcess::Current();
+  PProcess & proc = PProcess::Current();
   if (type & 1) {
-    PAssert(!proc->ioBlocks[0].Contains(key),
+    PAssert(!proc.ioBlocks[0].Contains(key),
            "Attempt to read block on handle which already has a pending read operation");
-    proc->ioBlocks[0].SetAt(key, this);
+    proc.ioBlocks[0].SetAt(key, this);
   }
   if (type & 2) {
-    PAssert(!proc->ioBlocks[1].Contains(key),
+    PAssert(!proc.ioBlocks[1].Contains(key),
            "Attempt to write block on handle which already has a pending write operation");
-    proc->ioBlocks[1].SetAt(key, this);
+    proc.ioBlocks[1].SetAt(key, this);
   }
   if (type & 4) {
-    PAssert(!proc->ioBlocks[2].Contains(key),
+    PAssert(!proc.ioBlocks[2].Contains(key),
            "Attempt to exception block on handle which already has a pending except operation");
-    proc->ioBlocks[2].SetAt(key, this);
+    proc.ioBlocks[2].SetAt(key, this);
   }
 }
 
 void PThread::PXClearOSHandleBlock(int fd, int type)
 {
   POrdinalKey key(fd);
-  PProcess * proc = PProcess::Current();
-  if ((type & 1) && (proc->ioBlocks[0].GetAt(key) == this)) 
-    proc->ioBlocks[0].SetAt(key, NULL);
-  if ((type & 2) && (proc->ioBlocks[1].GetAt(key) == this)) 
-    proc->ioBlocks[1].SetAt(key, NULL);
-  if ((type & 4) && (proc->ioBlocks[2].GetAt(key) == this)) 
-    proc->ioBlocks[2].SetAt(key, NULL);
+  PProcess & proc = PProcess::Current();
+  if ((type & 1) && (proc.ioBlocks[0].GetAt(key) == this)) 
+    proc.ioBlocks[0].SetAt(key, NULL);
+  if ((type & 2) && (proc.ioBlocks[1].GetAt(key) == this)) 
+    proc.ioBlocks[1].SetAt(key, NULL);
+  if ((type & 4) && (proc.ioBlocks[2].GetAt(key) == this)) 
+    proc.ioBlocks[2].SetAt(key, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -629,9 +632,9 @@ BOOL PDynaLink::GetFunction(const PString &, Function &)
 
 void PXSignalHandler(int sig)
 {
-  PProcess * process = PProcess::Current();
-  process->pxSignals |= sig;
-  process->PXOnSignal(sig);
+  PProcess & process = PProcess::Current();
+  process.pxSignals |= sig;
+  process.PXOnSignal(sig);
   signal(sig, PXSignalHandler);
 }
 
