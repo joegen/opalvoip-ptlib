@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.21  1999/08/28 01:48:55  robertj
+ * Fixed anomaly to always include non-optional extensions in encodings.
+ *
  * Revision 1.20  1999/08/09 13:02:36  robertj
  * Added ASN compiler #defines for backward support of pre GCC 2.9 compilers.
  * Added ASN compiler #defines to reduce its memory footprint.
@@ -241,7 +244,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 2)
+  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 3)
 {
 }
 
@@ -1809,8 +1812,12 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   cxx << "\n"
          "{\n";
   GenerateCplusplusConstraints(PString(), hdr, cxx);
-  for (i = 0; i < fields.GetSize(); i++)
-    fields[i].GenerateCplusplusConstraints("m_"+fields[i].GetIdentifier()+".", hdr, cxx);
+  for (i = 0; i < fields.GetSize(); i++) {
+    PString ident = fields[i].GetIdentifier();
+    fields[i].GenerateCplusplusConstraints("m_" + ident + ".", hdr, cxx);
+    if (i >= numFields && !fields[i].IsOptional())
+      cxx << "  IncludeOptionalField(e_" << ident << ");\n";
+  }
   cxx << "}\n"
          "\n"
          "\n"
