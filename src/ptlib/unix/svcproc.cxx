@@ -21,7 +21,7 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
 
 void PSystemLog::Output(Level level, const char * cmsg)
 {
-  if (PServiceProcess::Current()->consoleMessages)
+  if (PServiceProcess::Current().consoleMessages)
     PError << cmsg << endl;
   else
     syslog(PwlibLogToUnixLog[level], "%s", cmsg);
@@ -35,11 +35,14 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                          WORD buildNumber)
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
+  currentLogLevel = PSystemLog::Warning;
 }
 
-PServiceProcess * PServiceProcess::Current()
+PServiceProcess & PServiceProcess::Current()
 {
-  return (PServiceProcess *)PProcess::Current();
+  PProcess & process = PProcess::Current();
+  PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service process!");
+  return (PServiceProcess &)process;
 }
 
 void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
@@ -54,7 +57,7 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 #ifdef _PATH_VARRUN
 void killpidfile()
 {
-  PString pidfilename = _PATH_VARRUN + PProcess::Current()->GetFile().GetFileName() + ".pid";
+  PString pidfilename = _PATH_VARRUN + PProcess::Current().GetFile().GetFileName() + ".pid";
   PFile::Remove(pidfilename);
 }
 #endif
@@ -121,7 +124,9 @@ int PServiceProcess::_main(int parmArgc,
   consoleMessages = args.HasOption('c');
 
   // open the system logger for this program
-  if (!consoleMessages)
+  if (consoleMessages)
+    PError << "All output for " << GetName() << " is to the console." << endl;
+  else
     openlog((const char *)GetName(), LOG_PID, LOG_DAEMON);
 
   // Run as a daemon, ie fork
