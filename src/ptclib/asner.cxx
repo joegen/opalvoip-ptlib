@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.25  1999/08/08 15:45:59  robertj
+ * Fixed incorrect encoding of unknown extensions.
+ *
  * Revision 1.24  1999/08/05 00:44:28  robertj
  * Fixed PER encoding problems for large integer values.
  *
@@ -3111,7 +3114,7 @@ void PASN_Sequence::UnknownExtensionsEncodePER(PPER_Stream & strm) const
 
   int i;
   for (i = knownExtensions; i < totalExtensions; i++) {
-    if (extensionMap[i-knownExtensions])
+    if (extensionMap[i])
       fields[i-knownExtensions].Encode(strm);
   }
 }
