@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.138  2003/12/14 01:12:00  csoutheren
+ * Added return value to PRegularExpression::operator = again (Doh!)
+ *
  * Revision 1.137  2003/12/13 23:08:46  csoutheren
  * Changed PRegularExpression to allow a copy constructor and operator =
  *
@@ -2916,6 +2919,7 @@ PRegularExpression & PRegularExpression::operator =(const PRegularExpression & f
   patternSaved = from.patternSaved;
   flagsSaved   = from.flagsSaved;
   Compile(patternSaved, flagsSaved);
+  return *this;
 }
 
 PRegularExpression::~PRegularExpression()
