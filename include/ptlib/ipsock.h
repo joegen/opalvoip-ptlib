@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.51  2002/10/08 14:31:43  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.50  2002/10/08 12:41:51  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -279,8 +282,10 @@ class PIPSocket : public PSocket
         BOOL operator!=(in_addr & addr) const { return !operator==(addr); }
         BOOL operator==(DWORD dw) const;
         BOOL operator!=(DWORD dw) const   { return !operator==(dw); }
+#ifdef _WIN32
         BOOL operator==(unsigned u) const { return  operator==((DWORD)u); }
         BOOL operator!=(unsigned u) const { return !operator==((DWORD)u); }
+#endif
         BOOL operator==(int i) const      { return  operator==((DWORD)i); }
         BOOL operator!=(int i) const      { return !operator==((DWORD)i); }
 
