@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.45  2000/05/05 10:08:29  robertj
+ * Fixed some GNU compiler warnings
+ *
  * Revision 1.44  2000/05/02 08:29:07  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -182,7 +185,6 @@
 
 
 static const char * CRLF = "\r\n";
-static const char * CRLFdotCRLF = "\r\n.\r\n";
 
 
 //////////////////////////////////////////////////////////////////////////////
