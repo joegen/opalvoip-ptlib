@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.50  2000/01/22 00:52:06  craigs
+# Added ability to use in any directory, and to create shared libraries
+#
 # Revision 1.49  2000/01/10 02:22:41  craigs
 # Updated for new OpenSSL functionality
 #
@@ -172,7 +175,17 @@
 #
 #
 
-include ../../../make/unix.mak
+ifndef PWLIBDIR
+PWLIBDIR := $(HOME)/pwlib
+endif
+
+include $(PWLIBDIR)/make/unix.mak
+
+OBJDIR	= $(PW_OBJDIR)
+LIBDIR  = $(PW_LIBDIR)
+TARGET  = $(LIBDIR)/$(PTLIB_FILE)
+
+##########################################
 
 COMPONENT_SRC_DIR	= ../../ptclib
 PROTOCOLS_SRC_DIR	= ../../ptclib/proto
@@ -268,10 +281,6 @@ OBJS	= $(OBJDIR)/regex.o
 
 #######################################################
 
-OBJDIR := $(LIBDIR)/$(OBJDIR)
-
-TARGET = $(PTLIB_FILE)
-
 include ../../../make/common.mak
 
 #######################################################
@@ -283,11 +292,11 @@ alllibs:
 
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
-CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE) $(GETDATE_SOURCE)
+CLEAN_FILES	:= $(CLEAN_FILES) $(LIBDIR)/$(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
@@ -306,33 +315,16 @@ endif
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y
 
-ifdef SHAREDLIB
+#######################################################
 
-$(PTLIB_FILE): $(PTLIB_FILE).1
-	@if [ ! -e $(PTLIB_FILE) ] ; then ln -s $(PTLIB_FILE).1 $(PTLIB_FILE) ; fi
+LIB_BASENAME = $(PTLIB_FILE)
+LIBVER_MAJ	 = 1
+LIBVER_MIN	 = 13
+LIBVER_PAT	 = 0
 
-$(PTLIB_FILE).1: $(PTLIB_FILE).1.0
-	@if [ ! -e $(PTLIB_FILE).1 ] ; then ln -s $(PTLIB_FILE).1.0 $(PTLIB_FILE).1 ; fi
+include $(PWLIBDIR)/make/lib.mak
 
-$(PTLIB_FILE).1.0: $(OBJS)
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	gcc -shared -Wl,-soname,$(PTLIB_FILE).1 -o $(PTLIB_FILE).1.0 $(OBJS)
-
-else
-
-$(PTLIB_FILE): $(OBJS)
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-ifdef RANLIB
-	ar rc $(PTLIB_FILE) $(OBJS)
-	ranlib $(PTLIB_FILE)
-else
-	ar rcs $(PTLIB_FILE) $(OBJS)
-endif
-
-endif
-
-
-###########################################################
+#######################################################
 
 # make links to common directories and files to ease development work
 
