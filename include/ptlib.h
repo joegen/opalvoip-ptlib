@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.24  2001/07/19 09:53:29  rogerh
+ * Add the PWAVFile class to read and write .wav files
+ *
  * Revision 1.23  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -233,6 +236,12 @@ using namespace std;
 // PStructuredFile
 
 #include <ptlib/sfile.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PWAVFile
+
+#include <ptlib/pwavfile.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
