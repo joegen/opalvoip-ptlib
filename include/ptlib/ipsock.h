@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.39  1999/08/08 09:04:01  robertj
+ * Added operator>> for PIPSocket::Address class.
+ *
  * Revision 1.38  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -235,6 +238,9 @@ class PIPSocket : public PSocket
 
         /// output address as a string to the specified string
         friend ostream & operator<<(ostream & s, const Address & a);
+
+        /// output address as a string to the specified string
+        friend istream & operator>>(istream & s, Address & a);
     };
 
 
