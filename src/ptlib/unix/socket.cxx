@@ -216,3 +216,20 @@ BOOL PSocket::os_sendto(
   // attempt to read data
   return ::sendto(os_handle, buf, len, flags, (sockaddr *)addr, addrlen);
 }
+
+BOOL PSocket::Read(void * buf, PINDEX len)
+{
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
+    return FALSE;
+
+  if (ConvertOSError(lastReadCount = ::recv(os_handle, buf, len, 0)))
+    return lastReadCount > 0;
+
+  lastReadCount = 0;
+  return FALSE;
+}
