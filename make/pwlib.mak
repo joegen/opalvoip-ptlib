@@ -27,10 +27,13 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: pwlib.mak,v $
+# Revision 1.3  1998/10/16 13:45:17  robertj
+# Fixed included make file name
+#
 # Revision 1.2  1998/09/24 04:20:53  robertj
 # Added open software license.
 #
 
 include ~/pwlib/unix/src/unix.mak
-include ~/pwlib/xlib/src/xlib.mak
+include ~/pwlib/xlib/src/xlib_unix.mak
 include ~/pwlib/unix/src/common.mak
