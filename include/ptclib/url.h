@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.5 1996/03/16 04:46:02 robertj Exp $
+ * $Id: url.h,v 1.6 1996/03/31 08:53:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.6  1996/03/31 08:53:13  robertj
+ * Added string representation for URI part only.
+ *
  * Revision 1.5  1996/03/16 04:46:02  robertj
- * FireDoorV10
+ * Added translation type to TranslateString() to accommodate query variables.
  *
  * Revision 1.4  1996/03/02 03:12:13  robertj
  * Added function to translate a string to a form suitable for inclusion in a URL.
@@ -89,7 +92,8 @@ PDECLARE_CLASS(PURL, PObject)
 
     enum UrlFormat {
       FullURL,  // Translate to a string as a full URL
-      PathOnly  // Translate to a string as a partial URL.
+      PathOnly, // Translate to a string as only path
+      URIOnly   // Translate to a string with no scheme or host
     };
 
     PString AsString(
