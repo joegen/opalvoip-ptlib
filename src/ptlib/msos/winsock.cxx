@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.43  2001/03/20 06:57:14  robertj
+ * os_accept() function changed due to unix changes re unblocking threads.
+ *
  * Revision 1.42  2001/01/24 06:46:45  yurik
  * Windows CE port-related changes
  *
@@ -339,12 +342,11 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 }
 
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
-                       const PTimeInterval & timeout)
+int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
 {
-  if (timeout != PMaxTimeInterval) {
-    fd_set_class readfds = sock;
-    timeval_class tv = timeout;
+  if (listener.GetReadTimeout() != PMaxTimeInterval) {
+    fd_set_class readfds = listener.GetHandle();
+    timeval_class tv = listener.GetReadTimeout();
     switch (select(0, &readfds, NULL, NULL, &tv)) {
       case 1 :
         break;
@@ -355,7 +357,7 @@ int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
         return -1;
     }
   }
-  return ::accept(sock, addr, size);
+  return ::accept(listener.GetHandle(), addr, size);
 }
 
 BOOL PSocket::os_recvfrom(void * buf,
@@ -978,9 +980,7 @@ BOOL PSPXSocket::Accept(PSocket & socket)
   sockaddr_ipx sip;
   sip.sa_family = AF_IPX;
   int size = sizeof(sip);
-  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
-                                          (struct sockaddr *)&sip, &size,
-                                           socket.GetReadTimeout())))
+  if (!ConvertOSError(os_handle = os_accept(socket, (struct sockaddr *)&sip, &size)))
     return FALSE;
 
   port = ((PIPXSocket &)socket).GetPort();
