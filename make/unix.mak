@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.34  1999/03/05 07:03:27  robertj
-# Some more BeOS port changes.
+# Revision 1.35  1999/04/29 07:04:04  robertj
+# Fixed missing -g in debug version
+#
+# Revision 1.35  1999/04/29 07:04:04  robertj
+# Fixed missing -g in debug version
 #
 # Revision 1.34  1999/03/05 07:03:27  robertj
 # Some more BeOS port changes.
@@ -132,25 +135,9 @@ all ::
 endif
 
 
-###############################################################################
-#
-# Set up compiler flags and macros for debug/release versions
-#
-
-
-
 PLATFORM_TYPE = $(OSTYPE)_$(MACHTYPE)
-STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
-LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
-
-
 
 ifdef	DEBUG
-OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
-LDFLAGS		:= $(LDFLAGS) -s
-
 OBJ_SUFFIX	:= d
 else
 OBJ_SUFFIX	:= r
@@ -333,6 +320,26 @@ PTLIB		= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 ifndef SHAREDLIB
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
+else
+PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
+endif
+
+
+###############################################################################
+#
+# Set up compiler flags and macros for debug/release versions
+#
+
+ifdef	DEBUG
+
+STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
+LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
+
+else
+
+OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
+#OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
+#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 LDFLAGS		:= $(LDFLAGS) -s
 
 endif # DEBUG
