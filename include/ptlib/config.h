@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.21  2000/05/25 11:07:26  robertj
+ * Added PConfig::HasKey() function to determine if value actually set.
+ *
  * Revision 1.20  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -276,6 +279,23 @@ class PConfig : public PObject
       const PString & section,  /// Section to use instead of the default.
       const PString & key       /// Key of the variable to delete.
     );
+
+    /**Determine if the particular variable in the section is actually present.
+
+       This function allows a caller to distinguish between getting a saved
+       value or using the default value. For example if you called
+       GetString("MyKey", "DefVal") there is no way to distinguish between
+       the default "DefVal" being used, or the user had explicitly saved the
+       value "DefVal" into the PConfig.
+     */
+    BOOL HasKey(
+      const PString & key       /// Key of the variable.
+    ) const;
+    /**Determine if the particular variable in the section is actually present. */
+    BOOL HasKey(
+      const PString & section,  /// Section to use instead of the default.
+      const PString & key       /// Key of the variable.
+    ) const;
   //@}
 
   /**@name Get/Set variables */
