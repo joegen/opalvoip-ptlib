@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.31  2004/07/03 01:48:28  rjongbloed
+ * Fixed memory leak caused by buggy iostream, can't do init twice. Thanks Norbert Bartalsky
+ *
  * Revision 1.30  2004/06/08 01:31:08  csoutheren
  * Make the test sense correct for the init(NULL)
  *
@@ -246,14 +249,13 @@ streampos PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
 
 
 PChannel::PChannel()
-  : iostream(cout.rdbuf()),
+  : iostream(new PChannelStreamBuffer(this)),
     readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
 {
   os_handle = -1;
   memset(lastErrorCode, 0, sizeof(lastErrorCode));
   memset(lastErrorNumber, 0, sizeof(lastErrorNumber));
   lastReadCount = lastWriteCount = 0;
-  init(new PChannelStreamBuffer(this));
   Construct();
 }
 
