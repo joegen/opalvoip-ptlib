@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.11 1995/04/02 09:27:34 robertj Exp $
+ * $Id: timer.h,v 1.12 1995/06/17 11:13:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
+ * Revision 1.12  1995/06/17 11:13:36  robertj
+ * Documentation update.
+ *
  * Revision 1.11  1995/04/02 09:27:34  robertj
  * Added "balloon" help.
  *
@@ -91,16 +94,15 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
 /* A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
 
-   A timer on completion calls the virtual function
-   <A><CODE>OnTimeout()</CODE></A>. This will in turn call the callback
-   function provided by the instance. The user may either override the virtual
-   function or set a callback as desired.
+   A timer on completion calls the virtual function <A>OnTimeout()</A>. This
+   will in turn call the callback function provided by the instance. The user
+   may either override the virtual function or set a callback as desired.
    
    Note that only one timeout function can be executed at a time. The timeout
    function is also executed in the context of the <A>PProcess</A> instances
    thread of execution.
    
-   A list of active timers is maintinaed by the applications <A>PProcess</A> 
+   A list of active timers is maintained by the applications <A>PProcess</A> 
    instance. This is used for sstealing the processor time to decrement the
    timers and call the timeout functions. A consequence of this is that no
    static timer instances can be running when the program terminates.
@@ -166,9 +168,9 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
      */
 
     void Pause();
-    /* Pause a running timer. This differs from the <A><CODE>Stop()</CODE></A>
-       function in that the timer may be resumed at the point that it left off.
-       That is time is "frozen" while the timer is paused.
+    /* Pause a running timer. This differs from the <A>Stop()</A> function in
+       that the timer may be resumed at the point that it left off. That is
+       time is "frozen" while the timer is paused.
      */
 
     void Resume();
@@ -186,7 +188,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
 
     const PNotifier & GetNotifier() const;
     /* Get the current call back function that is called whenever the timer
-       expires. This is called by the <A><CODE>OnTimeout()</CODE></A> function.
+       expires. This is called by the <A>OnTimeout()</A> function.
 
        <H2>Returns:</H2>
        current notifier for the timer.
@@ -196,7 +198,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
       const PNotifier & func  // New notifier function for the timer.
     );
     /* Set the call back function that is called whenever the timer expires.
-       This is called by the <A><CODE>OnTimeout()</CODE></A> function.
+       This is called by the <A>OnTimeout()</A> function.
      */
 
     static PTimeInterval Tick();
@@ -206,8 +208,8 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
        Note that even though this function returns milliseconds, the value may
        jump in minimum quanta according the platforms timer system, eg under
        MS-DOS and MS-Windows the values jump by 55 every 55 milliseconds. The
-       <A><CODE>Resolution()</CODE></A> function may be used to determine what
-       the minimum time interval is.
+       <A>Resolution()</A> function may be used to determine what the minimum
+       time interval is.
     
        <H2>Returns:</H2>
        millisecond counter.
@@ -216,8 +218,8 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     static unsigned Resolution();
     /* Get the smallest number of milliseconds that the timer can be set to.
        All actual timing events will be rounded up to the next value. This is
-       typically the platforms internal timing units used in the
-       <A><CODE>Tick()</CODE></A> function.
+       typically the platforms internal timing units used in the <A>Tick()</A>
+       function.
        
        <H2>Returns:</H2>
        minimum number of milliseconds per timer "tick".
@@ -250,8 +252,8 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
       PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
     );
     /* Process the timer decrementing it by the delta amount and calling the
-       <A><CODE>OnTimeout()</CODE></A> when zero. This is used by internally
-       by the <A>PTimerList</A> calless <A><CODE>Process()</CODE></A> function.
+       <A>OnTimeout()</A> when zero. This is used internally by the
+       <A>PTimerList::Process()</A> function.
 
        <H2>Returns:</H2>
        TRUE if is no longer running.
