@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.36 1996/01/28 02:51:59 robertj Exp $
+ * $Id: osutil.inl,v 1.37 1996/01/28 14:10:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.37  1996/01/28 14:10:12  robertj
+ * Added time functions to PConfig.
+ *
  * Revision 1.36  1996/01/28 02:51:59  robertj
  * Added assert into all Compare functions to assure comparison between compatible objects.
  *
@@ -593,6 +596,18 @@ PINLINE double PConfig::GetReal(const PString & key, double dflt)
 
 PINLINE void PConfig::SetReal(const PString & key, double value)
   { SetReal(defaultSection, key, value); }
+
+PINLINE PTime PConfig::GetTime(const PString & key)
+  { return GetTime(defaultSection, key, PTime(0)); }
+
+PINLINE PTime PConfig::GetTime(const PString & key, const PTime & dflt)
+  { return GetTime(defaultSection, key, dflt); }
+
+PINLINE PTime PConfig::GetTime(const PString & section, const PString & key)
+  { return GetTime(section, key, PTime(0)); }
+
+PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
+  { SetTime(defaultSection, key, value); }
 
 
 #endif
