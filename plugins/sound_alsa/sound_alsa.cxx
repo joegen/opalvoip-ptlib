@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.12  2003/12/28 15:10:35  dsandras
+ * Updated to the new PCM API.
+ *
  * Revision 1.11  2003/12/18 11:16:41  dominance
  * Removed the ALSA Abort completely upon Damien's request ;)
  *
@@ -251,6 +254,7 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
 BOOL PSoundChannelALSA::Setup()
 {
   snd_pcm_hw_params_t *hw_params = NULL;
+  snd_pcm_uframes_t buffer_size = 0;
   
   int err = 0;
   enum _snd_pcm_format val = SND_PCM_FORMAT_UNKNOWN;
@@ -289,7 +293,7 @@ BOOL PSoundChannelALSA::Setup()
 
 
   if ((err = snd_pcm_hw_params_set_access (os_handle, hw_params, 
-				    SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+					   SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 
     PTRACE (1, "ALSA\tCannot set access type " <<
 	    snd_strerror (err));
@@ -328,26 +332,27 @@ BOOL PSoundChannelALSA::Setup()
 
     if ((err = snd_pcm_hw_params_set_period_size_near (os_handle, 
 						       hw_params, 
-						       period_size, 
+						       &period_size, 
 						       0)) < 0)
       PTRACE (1, "ALSA\tCannot set period size " <<
 	      snd_strerror (err));
     
-    if ((err = snd_pcm_hw_params_set_periods (os_handle, 
-					      hw_params, 
-					      periods, 0)) < 0)
+    if ((err = snd_pcm_hw_params_set_periods_near (os_handle, 
+						   hw_params, 
+						   &periods,
+						   0)) < 0)
       PTRACE (1, "ALSA\tCannot set number of periods " <<
 	      snd_strerror (err));
-        
-    if ((err = snd_pcm_hw_params_set_buffer_size_near (os_handle, 
-						       hw_params, 
-						       periods*period_size/frame_bytes)) < 0)
+
+    buffer_size = periods*period_size/frame_bytes;
+      
+    if ((err = (int) snd_pcm_hw_params_set_buffer_size_near (os_handle, 
+							     hw_params, 
+							     &buffer_size))
+	< 0)
       PTRACE (1, "ALSA\tCannot set buffer size " <<
 	      snd_strerror (err));
   }
-
-
-  snd_pcm_hw_params_get_period_size(hw_params, &period_size);
     
   
   if ((err = snd_pcm_hw_params (os_handle, hw_params)) < 0) {

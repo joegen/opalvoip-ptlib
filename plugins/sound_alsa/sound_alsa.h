@@ -1,5 +1,6 @@
 #include <ptlib.h>
 
+#define ALSA_PCM_NEW_HW_PARAMS_API 1
 #include <alsa/asoundlib.h>
 
 class PAudioDelay : public PObject
@@ -100,7 +101,7 @@ class PSoundChannelALSA: public PSoundChannel
   snd_pcm_t *os_handle; /* Handle, different from the PChannel handle */
   int card_nr;
   int frame_bytes; /* Number of bytes in a frame */
-  int period_size;
-  int periods;
+  snd_pcm_uframes_t period_size;
+  unsigned int periods;
   PMutex device_mutex;
 };
