@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.5  2003/07/28 09:05:04  dsandras
+# Make sure that things are installed in $(DESTDIR)$(PREFIX) and not only $(DESTDIR). Use the style used in all distributions for headers of $(DESTIR)$(PREFIX).
+#
 # Revision 1.4  2003/07/24 22:01:42  dereksmithies
 # Add fixes from Peter Nixon  for fixing install problems. Thanks.
 #
@@ -167,23 +170,27 @@ docs:
 
 install:
 	chmod a+r lib/*@SHAREDLIBEXT@*
-	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)/@libdir@
-	cp -rf include/ptclib/ $(DESTDIR)$(PREFIX)/include/pwlib/
-	cp -rf include/ptlib/ $(DESTDIR)$(PREFIX)/include/pwlib/
-	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/pwlib/
-	cp -rf include/ptlib.h $(DESTDIR)$(PREFIX)/include/pwlib/
+	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(PREFIX)/@libdir@
+	cp -rf include/ptclib/ $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptlib/ $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
+	cp -rf include/ptlib.h $(DESTDIR)$(PREFIX)/include/
 	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
 	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib/
 	cp -rf make $(DESTDIR)$(PREFIX)/share/pwlib/
 	rm -f $(DESTDIR)$(PREFIX)/share/pwlib/make/*.in
-	(cd $(DESTDIR)/@libdir@; ln -s $(PTLIB_FILE) libpt.@SHAREDLIBEXT@)
-	chmod -R a+r $(DESTDIR)$(PREFIX)/include/pwlib/ptlib $(DESTDIR)$(PREFIX)/include/pwlib/ptclib $(DESTDIR)$(PREFIX)/include/pwlib/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/pwlib/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/pwlib/ptlib.h
-	chmod a+rx $(DESTDIR)$(PREFIX)/include/pwlib $(DESTDIR)$(PREFIX)/include/pwlib/ptlib $(DESTDIR)$(PREFIX)/include/pwlib/ptlib/unix $(DESTDIR)$(PREFIX)/include/pwlib/ptclib $(DESTDIR)$(PREFIX)/share/pwlib/make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib/CVS/
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptclib/CVS/
+	(cd $(DESTDIR)$(PREFIX)/@libdir@; ln -s $(PTLIB_FILE) libpt.@SHAREDLIBEXT@)
+	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h
+	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/share/pwlib/make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	(cd $(DESTDIR)$(PREFIX)/share/pwlib; ln -s ../../include/pwlib include)
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/pwlib $(DESTDIR)$(PREFIX)/share/pwlib/ 
-	rm -f $(DESTDIR)/@libdir@/$(PTLIB_FILE)* $(DESTDIR)/@libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
+	rm -f $(DESTDIR)$(PREFIX)/@libdir@/$(PTLIB_FILE)* $(DESTDIR)$(PREFIX)/@libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
 
 
 # End of Makefile.in
