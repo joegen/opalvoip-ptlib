@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.22 1996/05/15 10:11:38 robertj Exp $
+ * $Id: socket.h,v 1.23 1996/07/27 04:14:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.23  1996/07/27 04:14:00  robertj
+ * Changed Select() calls to return error codes.
+ *
  * Revision 1.22  1996/05/15 10:11:38  robertj
  * Added timeout to accept function.
  *
@@ -230,28 +233,28 @@ PDECLARE_CLASS(PSocket, PChannel)
       PSocket & sock2,        // Second socket to check for readability.
       const PTimeInterval & timeout // Timeout for wait on read/write data.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read       // List of sockets to check for readability.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read,      // List of sockets to check for readability.
       const PTimeInterval & timeout // Timeout for wait on read/write data.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read,      // List of sockets to check for readability.
       SelectList & write      // List of sockets to check for writability.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read,      // List of sockets to check for readability.
       SelectList & write,     // List of sockets to check for writability.
       const PTimeInterval & timeout // Timeout for wait on read/write data.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read,      // List of sockets to check for readability.
       SelectList & write,     // List of sockets to check for writability.
       SelectList & except     // List of sockets to check for exceptions.
     );
-    static BOOL Select(
+    static Errors Select(
       SelectList & read,      // List of sockets to check for readability.
       SelectList & write,     // List of sockets to check for writability.
       SelectList & except,    // List of sockets to check for exceptions.
