@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.46 1996/04/15 10:57:57 robertj Exp $
+ * $Id: osutil.inl,v 1.47 1996/04/15 12:33:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.47  1996/04/15 12:33:04  robertj
+ * Fixed SetReadTimeout/SetWriteTimeout to use const reference so works with GNU compiler.
+ *
  * Revision 1.46  1996/04/15 10:57:57  robertj
  * Moved some functions from INL to serial.cxx so unix linker can make smaller executables.
  *
@@ -319,7 +322,7 @@ PINLINE PChannel::PChannel(const PChannel &)
 PINLINE PChannel & PChannel::operator=(const PChannel &)
   { PAssertAlways("Cannot assign channels"); return *this; }
 
-PINLINE void PChannel::SetReadTimeout(PTimeInterval time)
+PINLINE void PChannel::SetReadTimeout(const PTimeInterval & time)
   { readTimeout = time; }
 
 PINLINE PTimeInterval PChannel::GetReadTimeout() const
@@ -328,7 +331,7 @@ PINLINE PTimeInterval PChannel::GetReadTimeout() const
 PINLINE PINDEX PChannel::GetLastReadCount() const
   { return lastReadCount; }
 
-PINLINE void PChannel::SetWriteTimeout(PTimeInterval time)
+PINLINE void PChannel::SetWriteTimeout(const PTimeInterval & time)
   { writeTimeout = time; }
 
 PINLINE PTimeInterval PChannel::GetWriteTimeout() const
