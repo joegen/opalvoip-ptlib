@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.7 1996/03/05 14:09:20 robertj Exp $
+ * $Id: ptime.cxx,v 1.8 1996/03/17 05:43:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.8  1996/03/17 05:43:42  robertj
+ * Changed PTimeInterval to 64 bit integer.
+ *
  * Revision 1.7  1996/03/05 14:09:20  robertj
  * Fixed bugs in PTimerInterval stream output.
  *
@@ -40,10 +43,14 @@
 
 #if defined(_PTIMEINTERVAL)
 
-PTimeInterval::PTimeInterval(long millisecs,
-                                 int seconds, int minutes, int hours, int days)
+PTimeInterval::PTimeInterval(PInt64 millisecs,
+                             long seconds,
+                             long minutes,
+                             long hours,
+                             int days)
 {
-  milliseconds = millisecs+1000L*(seconds+60L*(minutes+60L*(hours+24L*days)));
+  milliseconds =
+      millisecs + 1000*(seconds + 60*(minutes + 60*(hours + 24*(PInt64)days)));
 }
 
 
@@ -65,13 +72,13 @@ void PTimeInterval::PrintOn(ostream & strm) const
   strm.fill('0');
 
   BOOL hadPrevious = FALSE;
-  long tmp = milliseconds/86400000;
+  long tmp = (long)(milliseconds/86400000);
   if (tmp > 0) {
     strm << tmp << ':';
     hadPrevious = TRUE;
   }
 
-  tmp = (milliseconds%86400000)/3600000;
+  tmp = (long)(milliseconds%86400000)/3600000;
   if (hadPrevious || tmp > 0) {
     if (hadPrevious)
       strm.width(2);
@@ -79,7 +86,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
     hadPrevious = TRUE;
   }
 
-  tmp = (milliseconds%3600000)/60000;
+  tmp = (long)(milliseconds%3600000)/60000;
   if (hadPrevious || tmp > 0) {
     if (hadPrevious)
       strm.width(2);
@@ -89,10 +96,10 @@ void PTimeInterval::PrintOn(ostream & strm) const
 
   if (hadPrevious)
     strm.width(2);
-  strm << (milliseconds%60000)/1000;
+  strm << (int)(milliseconds%60000)/1000;
 
   if (decs > 0)
-    strm << '.' << setw(decs) << (milliseconds%1000);
+    strm << '.' << setw(decs) << (int)(milliseconds%1000);
 }
 
 
@@ -115,10 +122,14 @@ void PTimeInterval::ReadFrom(istream &strm)
 }
 
 
-void PTimeInterval::SetInterval(long millisecs,
-                                 int seconds, int minutes, int hours, int days)
+void PTimeInterval::SetInterval(PInt64 millisecs,
+                                long seconds,
+                                long minutes,
+                                long hours,
+                                int days)
 {
-  milliseconds = millisecs+1000L*(seconds+60L*(minutes+60L*(hours+24L*days)));
+  milliseconds =
+      millisecs + 1000*(seconds + 60*(minutes + 60*(hours + 24*(PInt64)days)));
 }
 
 
