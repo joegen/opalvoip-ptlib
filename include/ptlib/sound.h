@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.25  2003/11/12 04:33:32  csoutheren
+ * Fixed problem with static linking of sound plugins
+ * Fixed problem with Windows sound driver
+ *
  * Revision 1.24  2003/11/12 03:29:51  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren of Post Increment
@@ -119,63 +123,6 @@
 
 #include <ptlib/pluginmgr.h>
 
-#ifdef _WIN32
-
-class PWaveFormat : public PObject
-{
-  PCLASSINFO(PWaveFormat, PObject)
-  public:
-    PWaveFormat();
-    ~PWaveFormat();
-    PWaveFormat(const PWaveFormat & fmt);
-    PWaveFormat & operator=(const PWaveFormat & fmt);
-
-    void PrintOn(ostream &) const;
-    void ReadFrom(istream &);
-
-    void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
-    void SetFormat(const void * data, PINDEX size);
-
-    BOOL           SetSize   (PINDEX sz);
-    PINDEX         GetSize   () const { return  size;       }
-    void         * GetPointer() const { return  waveFormat; }
-    WAVEFORMATEX * operator->() const { return  waveFormat; }
-    WAVEFORMATEX & operator *() const { return *waveFormat; }
-    operator   WAVEFORMATEX *() const { return  waveFormat; }
-
-  protected:
-    PINDEX         size;
-    WAVEFORMATEX * waveFormat;
-};
-
-
-class PSound;
-
-class PWaveBuffer : public PBYTEArray
-{
-  PCLASSINFO(PWaveBuffer, PBYTEArray);
-  private:
-    PWaveBuffer(PINDEX sz = 0);
-    ~PWaveBuffer();
-
-    PWaveBuffer & operator=(const PSound & sound);
-
-    DWORD Prepare(HWAVEOUT hWaveOut, PINDEX & count);
-    DWORD Prepare(HWAVEIN hWaveIn);
-    DWORD Release();
-
-    void PrepareCommon(PINDEX count);
-
-    HWAVEOUT hWaveOut;
-    HWAVEIN  hWaveIn;
-    WAVEHDR  header;
-
-  friend class PSoundChannel;
-};
-
-PARRAY(PWaveBufferArray, PWaveBuffer);
-
-#endif
 
 /** A class representing a sound. A sound is a highly platform dependent
    entity that is abstracted for use here. Very little manipulation of the
@@ -585,7 +532,7 @@ class PSoundChannel : public PChannel
       const PSound & sound,   /// Sound to play.
       BOOL wait = TRUE        /// Flag to play sound synchronously.
     )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->PlaySound(sound); }
+    { return (baseChannel == NULL) ? FALSE : baseChannel->PlaySound(sound, wait); }
     /**Play a sound file to the open device. If the #wait#
        parameter is TRUE then the function does not return until the file has
        been played. If FALSE then the sound play is begun asynchronously and
@@ -765,7 +712,7 @@ PSoundChannelPluginServiceDescriptor className##_descriptor(\
 ); \
 
 #define PCREATE_SOUND_PLUGIN(name, className) \
-PCREATE_PLUGIN_VERSION_FN(name, className) \
+PCREATE_PLUGIN_VERSION_FN(name, PSoundChannel) \
 PCREATE_SOUND_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PSoundChannel)) \
 PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
