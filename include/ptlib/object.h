@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.74  2001/08/12 11:26:07  robertj
+ * Put back PMEMORY_CHECK taken out by the Carbon port.
+ *
  * Revision 1.73  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -613,8 +616,7 @@ trace level is sufficient.
 #ifndef _DEBUG
 #define PMEMORY_CHECK 0
 #else
-// #define PMEMORY_CHECK 1
-#define PMEMORY_CHECK 0
+#define PMEMORY_CHECK 1
 #endif
 #endif
 
