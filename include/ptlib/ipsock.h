@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.19 1996/02/25 03:00:31 robertj Exp $
+ * $Id: ipsock.h,v 1.20 1996/03/03 07:37:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.20  1996/03/03 07:37:56  robertj
+ * Added Reusability clause to the Listen() function on sockets.
+ *
  * Revision 1.19  1996/02/25 03:00:31  robertj
  * Added operator<< to PIPSocket::Address.
  * Moved some socket functions to platform dependent code.
@@ -324,7 +327,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        TRUE if successful.
      */
 
-    BOOL _Bind();
+    BOOL _Bind(Reusability reuse);
     /* Bind a socket to the protocol and listen for connections from remote
        hosts.
 
