@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.12  2000/06/19 11:33:53  robertj
+ * Fixed incorrect comment documentation
+ *
  * Revision 1.11  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -527,8 +530,8 @@ class PPOP3 : public PInternetProtocol
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
       <PRE><CODE>
-      PPOP3Client mail("popserver");
-      if (mail.IsOpen()) {
+      PPOP3Client mail;
+      if (mail.Connect("popserver")) {
         if (mail.LogIn("Me", "password")) {
           if (mail.GetMessageCount() > 0) {
             PUnsignedArray sizes = mail.GetMessageSizes();
