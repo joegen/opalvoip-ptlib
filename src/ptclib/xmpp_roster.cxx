@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_roster.cxx,v $
+ * Revision 1.3  2004/04/27 06:19:12  rjongbloed
+ * Fixed GCC 3.4 warnings and improved crash avoidance with NULL pointers.
+ *
  * Revision 1.2  2004/04/26 04:17:19  rjongbloed
  * Fixed GNU warnings
  *
@@ -294,7 +297,8 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 {
   PXMLElement * query = iq.GetElement(XMPP::IQQuery);
 
-  PAssertNULL(query);
+  if (PAssertNULL(query) == NULL)
+    return;
 
   PINDEX i = 0;
   PXMLElement * item;
