@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.9  2004/04/09 06:52:17  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.8  2004/02/23 23:52:20  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -63,9 +67,7 @@
 #if P_SAPI
 
 #if defined(P_SAPI_LIBRARY)
-#pragma comment(lib,    P_SAPI_LIBRARY)
-#pragma comment(linker, "/delayload:sapi.dll")
-#pragma comment(lib,    "Delayimp.lib")
+#pragma comment(lib, P_SAPI_LIBRARY)
 #endif
 
 

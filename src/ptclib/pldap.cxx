@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.16  2004/04/09 06:52:17  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.15  2004/02/23 23:52:19  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -84,13 +88,6 @@
 
 #if defined(_WIN32)
 #pragma comment(lib, P_LDAP_LIBRARY)
-
-#ifdef _DEBUG
-#pragma comment(linker, "/delayload:openldapd.dll")
-#else
-#pragma comment(linker, "/delayload:openldap.dll")
-#endif
-#pragma comment(lib,    "Delayimp.lib")
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
