@@ -1,11 +1,14 @@
 /*
- * $Id: snmpclnt.cxx,v 1.1 1996/09/14 13:14:59 robertj Exp $
+ * $Id: snmpclnt.cxx,v 1.2 1996/09/20 12:20:19 robertj Exp $
  *
  * SNMP Client Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.2  1996/09/20 12:20:19  robertj
+ * Used read timeout instead of member variable.
+ *
  * Revision 1.1  1996/09/14 13:14:59  robertj
  * Initial revision
  *
@@ -29,9 +32,9 @@ static const char defaultCommunity[] = "public";
 PSNMPClient::PSNMPClient(PINDEX retry, PINDEX timeout)
  : community(defaultCommunity),
    version(SNMP_VERSION),
-   retryMax(retry),
-   timeoutMax(timeout)
+   retryMax(retry)
 {
+  SetReadTimeout(timeout*1000);
 }
 
 
@@ -39,9 +42,9 @@ PSNMPClient::PSNMPClient(const PString & host, PINDEX retry, PINDEX timeout)
  : hostName(host),
    community(defaultCommunity),
    version(SNMP_VERSION),
-   retryMax(retry),
-   timeoutMax(timeout)
+   retryMax(retry)
 {
+  SetReadTimeout(timeout*1000);
   Open(PNEW PUDPSocket(host, SNMP_PORT));
   requestId = rand() % 0x7fffffff;
 }
@@ -159,32 +162,27 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
   pdu.Encode(sendBuffer);
 
   varsOut.RemoveAll();
-  PBYTEArray readBuffer(1500);
+  PBYTEArray readBuffer;
 
   PINDEX retry = retryMax;
 
   for (;;) {
 
     // send the packet
-    if (!Write(sendBuffer.GetPointer(), sendBuffer.GetSize())) {
+    if (!Write(sendBuffer, sendBuffer.GetSize())) {
       lastErrorCode = SendFailed;
       return FALSE;
     }
 
     // receive a packet
-    Read (readBuffer.GetPointer(), 1500);
+    if (Read(readBuffer.GetPointer(1500), 1500))
+      break;   // if we received some data, them we are done
 
-    // if we received some data, them we are done
-    if (GetLastReadCount() != 0)
-      break;
-
-    retry--;
-  }
-
-  // if no response, then return error code
-  if (GetLastReadCount() == 0) {
-    lastErrorCode = NoResponse;
-    return FALSE;
+    // if no response, then return error code
+    if (--retry <= 0) {
+      lastErrorCode = NoResponse;
+      return FALSE;
+    }
   }
 
   // parse the response
@@ -381,7 +379,7 @@ void PSNMP::WriteTrap(                 PChannel & channel,
   pdu.Encode(sendBuffer);
 
   // send the trap to specified remote host
-  channel.Write(sendBuffer.GetPointer(), sendBuffer.GetSize());
+  channel.Write(sendBuffer, sendBuffer.GetSize());
 }
 
 
