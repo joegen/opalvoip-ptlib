@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.50  2000/04/07 05:43:48  rogerh
+ * Fix a compilation error in a non-pthreaded function. Found by Kevin Packard
+ *
  * Revision 1.49  2000/03/17 03:45:40  craigs
  * Fixed problem with connect call hanging
  *
@@ -180,7 +183,7 @@ int PSocket::os_socket(int af, int type, int protocol)
 #ifndef P_PTHREADS
 // non PThread unixes need non-blocking sockets
     DWORD cmd = 1;
-    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) {
+    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
         !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
       ::close(handle);
       return -1;
