@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.20  2004/10/14 19:30:16  dsandras
+ * Removed DMIX and DSNOOP plugins and added support for DEFAULT as it is the correcti way to do things.
+ *
  * Revision 1.19  2004/08/30 21:09:41  dsandras
  * Added DSNOOP plugin support.
  *
@@ -215,15 +218,11 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
 
   UpdateDictionary (dir);
   
+  if (devices_dict.GetSize () > 0)
+    devices += "Default";
+  
   for (PINDEX j = 0 ; j < devices_dict.GetSize () ; j++) 
     devices += devices_dict.GetKeyAt (j);
-  
- 
-  if (dir != Recorder && devices.GetSize () > 0)
-    devices += "DMIX Plugin";
-
-  if (dir == Recorder && devices.GetSize () > 0)
-    devices += "DSNOOP Plugin";
     
   return devices;
 }
@@ -258,13 +257,9 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
     stream = SND_PCM_STREAM_PLAYBACK;
 
   /* Open in NONBLOCK mode */
-  if (_dir != Recorder && _device == "DMIX Plugin") {
+  if (_device == "Default") {
 
-    real_device_name = "plug:dmix";
-  }
-  if (_dir == Recorder && _device == "DSNOOP Plugin") {
-
-    real_device_name = "plug:dsnoop";
+    real_device_name = "default";
   }
   else {
 
