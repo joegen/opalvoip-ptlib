@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.31  2003/07/29 11:27:16  csoutheren
+ * Changed to use autoconf detected swab function
+ *
  * Revision 1.30  2003/07/28 18:39:09  dsandras
  * Linux has a swab function. Patch from Alexander Larsson <alexl@redhat.com>.
  *
@@ -143,14 +146,11 @@
 #include <ptlib.h>
 #include <ptclib/pwavfile.h>
 
-#if PBYTE_ORDER==PBIG_ENDIAN && (defined(__BEOS__) \
-                                 || defined(P_SOLARIS) || defined(P_RTEMS))
-#ifdef P_RTEMS
-extern "C" {
-void swab(const void * void_from, void * void_to, int len)
-#else
-void swab(const void * void_from, void * void_to, register size_t len)
-#endif
+#if PBYTE_ORDER==PBIG_ENDIAN
+#  if defined(USE_SYSTEM_SWAB)
+#    define	SWAB(a,b,c)	::swab(a,b,c)
+#  else
+static void SWAB(const void * void_from, void * void_to, register size_t len)
 {
   register const char * from = (const char *)void_from;
   register char * to = (char *)void_to;
@@ -162,11 +162,10 @@ void swab(const void * void_from, void * void_to, register size_t len)
     len -= 2;
   }
 }
-#ifdef P_RTEMS
-}
+#  endif
+#else
+#  define	SWAB(a,b,c)	{}
 #endif
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PWAVFile
@@ -269,11 +268,10 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
 
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
-#if PBYTE_ORDER==PBIG_ENDIAN
   // Note: swab only works on even length buffers.
-  if (bitsPerSample == 16)
-    swab(buf, buf, PFile::GetLastReadCount());
-#endif
+  if (bitsPerSample == 16) {
+    SWAB(buf, buf, PFile::GetLastReadCount());
+  }
 
   return TRUE;
 }
@@ -287,12 +285,10 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
 
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
-#if PBYTE_ORDER==PBIG_ENDIAN
+  // Note: swab only works on even length buffers.
   if (bitsPerSample == 16) {
-    // Note: swab only works on even length buffers.
-    swab(buf, (void *)buf, len);
+    SWAB(buf, (void *)buf, len);
   }
-#endif
 
   if (format != fmt_VivoG7231 && format != fmt_MSG7231)
     return PFile::Write(buf, len);
