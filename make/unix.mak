@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.102  2001/08/11 08:04:06  rogerh
+# Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+#
 # Revision 1.101  2001/08/06 19:27:24  rogerh
 # Determine the OS Version for OpenBSD.
 # Submitted by Marius Aamodt Eriksen <marius@umich.edu>
@@ -409,7 +412,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin AIX Nucleus))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus))
 
 default_target :
 	@echo
@@ -423,7 +426,7 @@ default_target :
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD OpenBSD NetBSD beos Darwin"
+	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -797,7 +800,33 @@ CC              := cc
 CPLUS           := c++
  
 endif # Darwin
+
+ifeq ($(OSTYPE),Carbon)
+
+# MacOS 9 or X using Carbonlib calls
+
+STDCCFLAGS	+= -DP_MACOS
+
+# I'm having no end of trouble with the debug memory allocator.
+MEMORY_CHECK    := 0
+
+# Carbon is only available for full Mac OS X, not pure Darwin, so the only
+# currently available architecture is PPC.
+ENDIAN		:= PBIG_ENDIAN
+P_MAC_MPTHREADS := 1
+STDCCFLAGS	+= -DP_MAC_MPTHREADS -DP_PLATFORM_HAS_THREADS
+# stupid Projct Builder compiler
+STDCCFLAGS	+= -DNO_LONG_DOUBLE
+# 
+LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carbon
+  
+P_USE_RANLIB		:= 1
+
+CC              := cc
+CPLUS           := c++
  
+endif # Carbon
+
  
 ###############################################################################
 #
@@ -965,9 +994,11 @@ else
 OPTCCFLAGS	+= -O3 -DNDEBUG
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
+ifneq ($(OSTYPE),Carbon)
 ifneq ($(OSTYPE),Darwin)
 # Apple does not support -s to remove symbol table/relocation information 
 LDFLAGS		+= -s
+endif
 endif
 
 endif # DEBUG
