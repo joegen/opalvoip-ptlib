@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.6  2004/05/27 04:47:05  csoutheren
+ * Added include guard to file
+ *
  * Revision 1.5  2003/12/12 05:11:56  rogerhardiman
  * Add SDL support on FreeBSD. Header files live in SDL11 directory
  *
@@ -66,6 +69,9 @@
  *
  */
 
+#ifndef _PVSDL
+#define _PVSDL
+
 #if P_SDL
 
 #include <ptlib.h>
@@ -76,7 +82,6 @@
 #endif
 
 #undef main
-
 
 class PSDLVideoFrame : public PObject
 {
@@ -283,5 +288,7 @@ class PSDLVideoDevice : public PVideoOutputDevice
     PSDLDisplayThread *sdlThread;
     unsigned     width, height;
 };
+
+#endif    // P_SDL
 
 #endif
