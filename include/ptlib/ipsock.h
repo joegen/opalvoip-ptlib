@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.41  1999/09/10 02:31:42  craigs
+ * Added interface table routines
+ *
  * Revision 1.40  1999/08/30 02:21:03  robertj
  * Added ability to listen to specific interfaces for IP sockets.
  *
@@ -492,6 +495,45 @@ class PIPSocket : public PSocket
      */
     static BOOL GetRouteTable(
       RouteTable & table      /// Route table
+    );
+
+
+    /**
+      Describes an interface table entry
+     */
+    class InterfaceEntry : public PObject
+    {
+      PCLASSINFO(InterfaceEntry, PObject)
+
+      public:
+        /// create an interface entry from a name, IP addr and MAC addr
+        InterfaceEntry(const PString & _name, const PIPSocket::Address & _addr, const PString & _macAddr)
+          : name(_name), addr(_addr), macAddr(_macAddr) { }
+
+        /// Get the name of the interface
+        PString GetName() const { return name; }
+
+        /// Get the address associated with the interface
+        PIPSocket::Address  GetAddr() const { return addr; }
+
+        /// Get the MAC address associate with the interface
+        PString GetMACAddr() const { return macAddr; }
+
+      protected:
+        PString name;
+        PIPSocket::Address  addr;
+        PString macAddr;
+    };
+
+    PLIST(InterfaceTable, InterfaceEntry);
+
+    /** Get a list of all interfaces
+
+       @return
+       TRUE if the interface table is returned, FALSE if an error occurs.
+     */
+    static BOOL GetInterfaceTable(
+      InterfaceTable & table      /// interface table
     );
 
 #ifdef DOC_PLUS_PLUS
