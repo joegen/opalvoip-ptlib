@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.125  2004/04/24 01:37:43  csoutheren
+# Added PNotifier extensions and XMPP (Jabber) support,
+#   thanks to Federico Pinna and Reitek S.p.A.
+#
 # Revision 1.124  2004/04/18 12:37:41  csoutheren
 # Modified to detect sem_wait etc on Linux systems
 #
@@ -632,6 +636,9 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
+	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
         $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
