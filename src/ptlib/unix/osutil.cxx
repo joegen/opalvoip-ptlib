@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.44  1999/06/09 04:08:46  robertj
+ * Added support for opening stdin/stdout/stderr as PFile objects.
+ *
  * Revision 1.43  1999/02/22 13:26:53  robertj
  * BeOS port changes.
  *
@@ -543,10 +546,29 @@ BOOL PFile::Open(OpenMode mode, int opt)
       if (opt == ModeDefault)
         opt = Create|Truncate;
       break;
-    default :
+    case ReadWrite :
       oflags |= O_RDWR;
       if (opt == ModeDefault)
         opt = Create;
+      break;
+
+    case StandardInput :
+      path = ttyname(0);
+      os_handle = 0;
+      return TRUE;
+
+    case StandardOutput :
+      path = ttyname(1);
+      os_handle = 1;
+      return TRUE;
+
+    case StandardError :
+      path = ttyname(2);
+      os_handle = 2;
+      return TRUE;
+
+    default :
+      PAssertAlways(PInvalidParameter);
   }
   if ((opt&Create) != 0)
     oflags |= O_CREAT;
