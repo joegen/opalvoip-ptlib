@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.10 1996/05/23 10:02:41 robertj Exp $
+ * $Id: pprocess.h,v 1.11 1996/06/13 13:32:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.11  1996/06/13 13:32:09  robertj
+ * Rewrite of auto-delete threads, fixes Windows95 total crash.
+ *
  * Revision 1.10  1996/05/23 10:02:41  robertj
  * Changed process.h to pprocess.h to avoid name conflict.
  *
@@ -53,12 +56,28 @@
     ~PProcess();
 
 #if defined(P_PLATFORM_HAS_THREADS)
+
+    void SignalTimerChange();
+    // Signal to the timer thread that a change was made.
+
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PSemaphore threadMutex;
+
+    PDECLARE_CLASS(HouseKeepingThread, PThread)
+      public:
+        HouseKeepingThread();
+        void Main();
+        PSemaphore semaphore;
+    };
+    HouseKeepingThread * houseKeeper;
+    // Thread for doing timers, thread clean up etc.
+
   friend PThread * PThread::Current();
-  friend void PThread::RegisterWithProcess(BOOL terminating);
+  friend void HouseKeepingThread::Main();
+  friend DWORD EXPORTED PThread::MainFunction(LPVOID thread);
+
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
