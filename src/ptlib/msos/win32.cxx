@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.115  2001/10/26 04:20:25  craigs
+ * Changed housekeeping thread to be Normal priority to avoide starvation
+ * of PTimer dependent threads
+ *
  * Revision 1.114  2001/10/23 05:42:48  robertj
  * Fixed bug in retry loop waiting for termination, applies only to heavily
  *   laoded Win98 class machines.
@@ -1299,7 +1303,7 @@ PThread * PThread::Current()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, LowPriority, "PWLib Housekeeper")
+  : PThread(1000, NoAutoDeleteThread, NormalPriority, "PWLib Housekeeper")
 {
   Resume();
 }
