@@ -75,6 +75,8 @@ BOOL FindIP::get_ip(PString server_url, PString &ip_address){
         cout << "IP obtained." << endl;
         //cout << "Your real IP is " << ip_address << endl;
 	result = TRUE;
+      } else {
+        cout << "No IP address found on page." << endl;
       }
     } else {
       cout << "Page is empty." << endl;
