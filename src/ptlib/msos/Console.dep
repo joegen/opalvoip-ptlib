@@ -47,7 +47,6 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -107,7 +106,6 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -167,7 +165,6 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -230,7 +227,6 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -248,49 +244,37 @@
 
 !ENDIF 
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
 ..\common\collect.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\collect.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\contain.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\common\regex\regex.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\contain.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\common\regex\regex.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\contain.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\common\regex\regex.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\contain.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\common\regex\regex.h"\
 	
 
@@ -299,6 +283,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\ethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -324,6 +309,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\ethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -339,7 +325,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -350,6 +335,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\ethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -365,7 +351,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -376,6 +361,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\ethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -413,6 +399,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\icmp.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -437,6 +424,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\icmp.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -451,7 +439,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -462,6 +449,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\icmp.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -476,7 +464,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -487,6 +474,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\icmp.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -513,6 +501,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\mail.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
 	
@@ -520,22 +509,23 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\mail.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\mail.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\mail.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
 	
@@ -545,26 +535,28 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\object.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\object.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\object.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\object.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
@@ -573,6 +565,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\osutils.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
@@ -580,67 +573,41 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\osutils.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\osutils.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\osutils.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\Common\pchannel.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\Common\pchannel.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\Common\pconfig.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\Common\pconfig.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\pethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -665,6 +632,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\pethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -679,7 +647,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -690,6 +657,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\pethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -704,7 +672,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -715,6 +682,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\pethsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -741,6 +709,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\pipe.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
@@ -748,22 +717,23 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\pipe.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\pipe.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\pipe.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
@@ -773,6 +743,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\pipechan.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
@@ -780,139 +751,77 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\pipechan.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\pipechan.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\pipechan.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\ptime.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\ptime.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
+
+.\ptlib.cxx : \
+	"..\..\..\include\ptlib.h"\
+	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\ptlib.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\include\ptlib\osutil.inl"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\ptlib.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\include\ptlib\osutil.inl"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
+.\ptlib.cxx : \
+	"..\..\..\include\ptlib.h"\
+	
+
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\pvidchan.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\pvidchan.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\pwavfile.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\pwavfile.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
 
 .\remconn.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
 	"..\..\..\Include\PtLib\Remconn.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\remconn.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\Remconn.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-.\remconn.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\Remconn.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-.\remconn.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
-	"..\..\..\Include\PtLib\Remconn.h"\
-	
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\Common\serial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
@@ -920,49 +829,37 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\Common\serial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\Common\serial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\Common\serial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\sfile.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\sfile.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\sockets.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -987,6 +884,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\sockets.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1001,7 +899,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1012,6 +909,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\sockets.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1026,7 +924,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1037,6 +934,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\sockets.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1059,28 +957,15 @@
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\sound.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-.\sound.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\svcproc.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
@@ -1089,24 +974,25 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\svcproc.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\svcproc.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\svcproc.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
@@ -1117,72 +1003,62 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\vconvert.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\vconvert.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\vconvert.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\vconvert.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\vfakeio.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\vfakeio.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\vfw.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\vfw.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\vfw.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\vfw.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
@@ -1191,26 +1067,28 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\videoio.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\videoio.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 ..\common\videoio.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 ..\common\videoio.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
 
@@ -1219,52 +1097,41 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\win32.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\win32.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\win32.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\win32.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
 !ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\wincfg.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\include\ptlib.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-.\wincfg.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\winserial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
@@ -1272,22 +1139,23 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\winserial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\winserial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\winserial.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
@@ -1297,6 +1165,7 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\winsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1321,6 +1190,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\winsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1335,7 +1205,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1346,6 +1215,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\winsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1360,7 +1230,6 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1371,6 +1240,7 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\winsock.cxx : \
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\

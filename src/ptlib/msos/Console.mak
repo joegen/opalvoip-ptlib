@@ -60,7 +60,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
-	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regerror.obj"
 	-@erase "$(INTDIR)\regexec.obj"
@@ -114,7 +113,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -186,8 +184,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
-	-@erase "$(INTDIR)\pwavfile.obj"
-	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regcomp.sbr"
 	-@erase "$(INTDIR)\regerror.obj"
@@ -256,7 +252,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
-	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -301,7 +296,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -373,8 +367,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
-	-@erase "$(INTDIR)\pwavfile.obj"
-	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regcomp.sbr"
 	-@erase "$(INTDIR)\regerror.obj"
@@ -443,7 +435,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
-	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -488,7 +479,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -543,7 +533,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
-	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regerror.obj"
 	-@erase "$(INTDIR)\regexec.obj"
@@ -597,7 +586,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
-	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -1256,38 +1244,6 @@ SOURCE=..\common\pvidchan.cxx
 
 
 "$(INTDIR)\pvidchan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=..\common\pwavfile.cxx
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
-
-"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-
-"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-
-"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-
-"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
