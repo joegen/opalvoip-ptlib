@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.53 1996/03/02 03:20:11 robertj Exp $
+ * $Id: contain.cxx,v 1.54 1996/03/16 04:56:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.54  1996/03/16 04:56:59  robertj
+ * Fixed bug in PStringStream assignment oeprator getting pointers wrong.
+ *
  * Revision 1.53  1996/03/02 03:20:11  robertj
  * Fixed bug in PString::Find() not finding substring if exactly same as string.
  *
@@ -1439,16 +1442,16 @@ PStringStream::PStringStream(const char * cstr)
 
 PStringStream & PStringStream::operator=(const char * cstr)
 {
-  flush();
   PString::operator=(cstr);
+  flush();
   return *this;
 }
 
 
 PStringStream & PStringStream::operator=(const PString & str)
 {
-  flush();
   PString::operator=(str);
+  flush();
   return *this;
 }
 
