@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.23  1998/11/30 21:51:30  robertj
+ * New directory structure.
+ *
  * Revision 1.22  1998/10/16 02:03:18  robertj
  * Fixed error message output to include number on unknown errors.
  *
@@ -98,6 +101,10 @@
 
 #include <ptlib.h>
 #include <sys/ioctl.h>
+
+
+#include "../common/pchannel.cxx"
+
 
 PMutex PX_iostreamMutex;
 
@@ -326,3 +333,7 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
   }
   return FALSE;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
