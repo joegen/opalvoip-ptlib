@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.17  2003/03/24 04:30:41  robertj
+ * Added function to set and get strings from PConfig in correct format for
+ *   use with HTTP form array contsructs.
+ *
  * Revision 1.16  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -413,6 +417,15 @@ class PHTTPFieldArray : public PHTTPCompositeField
 
     virtual PINDEX GetSize() const;
     void SetSize(PINDEX newSize);
+
+    PStringArray GetStrings(
+      PConfig & cfg   /// Config file to get strings from
+    );
+
+    void SetStrings(
+      PConfig & cfg,   /// Config file to Set strings to
+      const PStringArray & values /// Strings to set
+    );
 
   protected:
     void AddBlankField();
