@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.15  2004/06/05 04:55:29  rjongbloed
+ * Removed the unmangled versions of symbols to eliminate problems withthe line length
+ *   exceeding MSVC linkers internal limits. Has added benefit of making files half the size.
+ *
  * Revision 1.14  2004/05/22 07:41:32  rjongbloed
  * Added ability to specify command line override of the "dumpbin" program run
  *   to get library symbols, very useful for debugging.
@@ -71,7 +75,7 @@ PDECLARE_CLASS(Symbol, PCaselessString)
     BOOL IsExternal() const { return external; }
 
     void PrintOn(ostream & s) const
-      { s << "    " << theArray << " @" << ordinal << " NONAME ;" << unmangled << '\n'; }
+    { s << "    " << theArray << " @" << ordinal << " NONAME\n"; }
 
   private:
     PString unmangled;
@@ -261,8 +265,8 @@ void MergeSym::Main()
   }
 
   while (!pipe.eof()) {
-    char line[5000];
-    pipe.getline(line, sizeof(line));
+    PString line;
+    pipe >> line;
     symfile << line;
 
     char * namepos = strchr(line, '|');
