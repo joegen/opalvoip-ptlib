@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.31  2003/04/08 12:47:07  craigs
+ * Fixed problem with handling of CDATA
+ *
  * Revision 1.30  2003/04/08 05:08:41  craigs
  * Fixed problems with additional spaces being included with metasequences
  *
@@ -221,7 +224,8 @@ void PXMLParser::AddCharacterData(const char * data, int len)
     lastElement->SetString(lastElement->GetString() + str, FALSE);
   } else {
     PXMLData * newElement = new PXMLData(currentElement, str);
-    currentElement->AddSubObject(newElement, FALSE);
+    if (currentElement != NULL)
+      currentElement->AddSubObject(newElement, FALSE);
     lastElement = newElement;
   } 
 }
