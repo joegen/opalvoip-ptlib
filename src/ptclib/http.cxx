@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.74  2002/11/19 22:45:03  robertj
+ * Fixed support for file: scheme under unix
+ *
  * Revision 1.73  2002/11/19 10:36:50  robertj
  * Added functions to set anf get "file:" URL. as PFilePath and do the right
  *   things with platform dependent directory components.
@@ -529,7 +532,7 @@ void PURL::Parse(const char * cstr)
   static const PString reservedChars = "=;/#?";
 
   // determine if the URL has a scheme
-  scheme = "";
+  scheme = PString::Empty();
   if (isalpha(url[0])) {
     for (pos = 0; url[pos] != '\0' &&
                           reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
@@ -543,75 +546,74 @@ void PURL::Parse(const char * cstr)
 
   // if there is no scheme, then default to http for the local
   // on the default port
-  if (scheme.IsEmpty()) {
-    scheme = schemeInfo[0].name;
-    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
-      url.Delete(0, 2);
-  } else {
+  if (scheme.IsEmpty())
+    scheme = schemeInfo[DEFAULT_SCHEME].name;
 
-    // get information which tells us how to parse URL for this
-    // particular scheme
-    const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+  // get information which tells us how to parse URL for this
+  // particular scheme
+  const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
     
-    // if the URL should have leading slash, then remove it if it has one
-    if (schemeInfo.hasDoubleSlash &&
-      url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
-    url.Delete(0, 2);
+  BOOL hadDoubleSlash = FALSE;
 
-    // if the rest of the URL isn't a path, then we are finished!
-    if (schemeInfo.type == Other) {
-      pathStr = url;
-      return;
+  // if the URL should have leading slash, then remove it if it has one
+  if (schemeInfo.hasDoubleSlash &&
+             url.GetLength() > 2 && url[0] == '/' && url[1] == '/') {
+    url.Delete(0, 2);
+    hadDoubleSlash = TRUE;
+  }
+
+  // if the rest of the URL isn't a path, then we are finished!
+  if (schemeInfo.type == Other) {
+    pathStr = url;
+    return;
+  }
+
+  // parse user/password/host/port
+  if (schemeInfo.type == HostPort ||
+      schemeInfo.type == UserPasswordHostPort ||
+      schemeInfo.type == HostOnly) {
+    pos = url.FindOneOf("/;?#");
+    PString uphp = url.Left(pos);
+    if (pos != P_MAX_INDEX)
+      url.Delete(0, pos);
+    else
+      url = PString();
+
+    // if the URL is of type HostOnly, then this is the hostname
+    if (schemeInfo.type == HostOnly)
+      hostname = UntranslateString(uphp, LoginTranslation);
+
+    // if the URL is of type UserPasswordHostPort, then parse it
+    if (schemeInfo.type == UserPasswordHostPort) {
+
+      // extract username and password
+      PINDEX pos2 = uphp.Find('@');
+      if (pos2 != P_MAX_INDEX && pos2 > 0) {
+        PINDEX pos3 = uphp.Find(":");
+        // if no password...
+        if (pos3 > pos2)
+          username = UntranslateString(uphp(0, pos2-1), LoginTranslation);
+        else {
+          username = UntranslateString(uphp(0, pos3-1), LoginTranslation);
+          password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+        }
+        uphp.Delete(0, pos2+1);
+      }
     }
 
-    // parse user/password/host/port
+    // determine if the URL has a port number
     if (schemeInfo.type == HostPort ||
-        schemeInfo.type == UserPasswordHostPort ||
-        schemeInfo.type == HostOnly) {
-      pos = url.FindOneOf("/;?#");
-      PString uphp = url.Left(pos);
-      if (pos != P_MAX_INDEX)
-        url.Delete(0, pos);
-      else
-        url = PString();
-
-      // if the URL is of type HostOnly, then this is the hostname
-      if (schemeInfo.type == HostOnly) {
+        schemeInfo.type == UserPasswordHostPort) {
+      pos = uphp.Find(":");
+      if (pos == P_MAX_INDEX) {
         hostname = UntranslateString(uphp, LoginTranslation);
-      } 
-
-      // if the URL is of type UserPasswordHostPort, then parse it
-      if (schemeInfo.type == UserPasswordHostPort) {
-
-        // extract username and password
-        PINDEX pos2 = uphp.Find('@');
-        if (pos2 != P_MAX_INDEX && pos2 > 0) {
-          PINDEX pos3 = uphp.Find(":");
-          // if no password...
-          if (pos3 > pos2)
-            username = UntranslateString(uphp(0, pos2-1), LoginTranslation);
-          else {
-            username = UntranslateString(uphp(0, pos3-1), LoginTranslation);
-            password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
-          }
-          uphp.Delete(0, pos2+1);
-        }
+        port = schemeInfo.defaultPort;
+      } else {
+        hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
+        port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
       }
-
-      // determine if the URL has a port number
-      if (schemeInfo.type == HostPort ||
-          schemeInfo.type == UserPasswordHostPort) {
-        pos = uphp.Find(":");
-        if (pos == P_MAX_INDEX) {
-          hostname = UntranslateString(uphp, LoginTranslation);
-          port = schemeInfo.defaultPort;
-        } else {
-          hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
-          port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
-        }
-        if (hostname.IsEmpty())
-          hostname = PIPSocket::GetHostName();
-      }
+      if (hostname.IsEmpty())
+        hostname = PIPSocket::GetHostName();
     }
   }
 
@@ -637,7 +639,10 @@ void PURL::Parse(const char * cstr)
   }
 
   // the hierarchy is what is left
-  SetPathStr(url);
+  if (schemeInfo.type == NoHost && hadDoubleSlash)
+    SetPathStr('/' + url);
+  else
+    SetPathStr(url);
 }
 
 
@@ -647,11 +652,13 @@ PFilePath PURL::AsFilePath() const
     return PString::Empty();
 
   PStringStream str;
+
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     if (i > 0)
       str << PDIR_SEPARATOR;
     str << path[i];
   }
+
   return str;
 }
 
@@ -706,14 +713,9 @@ PString PURL::AsString(UrlFormat fmt) const
   }
 
   // URIOnly and PathOnly
-  if (!path.IsEmpty()) {
-    PINDEX count = path.GetSize();
-    str << '/';
-    for (i = 0; i < count; i++) {
-      str << TranslateString(path[i], PathTranslation);
-      if (i < count-1)
-        str << '/';
-    }
+  for (i = 0; i < path.GetSize(); i++) {
+    if (i > 0 || !path[i])
+      str << '/' << TranslateString(path[i], PathTranslation);
   }
 
   if (fmt == URIOnly) {
