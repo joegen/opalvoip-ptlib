@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.117  2003/04/08 03:29:31  robertj
+ * Fixed IsSuspeneded() so returns TRUE if thread not started yet, this makes
+ *   it the same as the Win32 semantics.
+ *
  * Revision 1.116  2003/03/10 15:37:00  rogerh
  * fix IsTerminated() function.
  *
@@ -793,6 +797,9 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
+  if (PX_firstTimeStart)
+    return TRUE;
+
   if (IsTerminated())
     return FALSE;
 
