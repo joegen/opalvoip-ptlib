@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.82  2003/04/08 06:28:14  craigs
+ * Fixed introduced problem with HTTP server mistaking relative URLs for proxy requests
+ *
  * Revision 1.81  2003/04/04 08:03:55  robertj
  * Fixed special case of h323 URL default port changing depending on
  *   if it the host is an endpoint or gatekeeper.
@@ -756,7 +759,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     Recalculate();
   }
 
-  if (port == 0 && schemeInfo.defaultPort != 0) {
+  if (port == 0 && schemeInfo.defaultPort != 0 && !relativePath) {
     // Yes another horrible, horrible special case!
     if (scheme == "h323" && paramVars("type") == "gk")
       port = DEFAULT_H323RAS_PORT;
