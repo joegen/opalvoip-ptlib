@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.13  2001/09/10 00:28:21  robertj
+ * Fixed extra CR in comments.
+ *
  * Revision 1.12  2000/06/21 01:01:21  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
