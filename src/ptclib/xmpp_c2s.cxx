@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.2  2004/04/23 06:07:25  csoutheren
+ * Added #if P_SASL to allow operation without SASL
+ *
  * Revision 1.1  2004/04/22 12:31:00  rjongbloed
  * Added PNotifier extensions and XMPP (Jabber) support,
  *   thanks to Federico Pinna and Reitek S.p.A.
@@ -75,7 +78,9 @@ BOOL XMPP_C2S_TCPTransport::Close()
 XMPP_C2S::XMPP_C2S(const PString& uid, const PString& server,
                    const PString& resource, const PString& pwd)
   : m_UserID(uid), m_Server(server), m_Resource(resource), m_Password(pwd),
+#if P_SASL
     m_SASL("xmpp", m_UserID + PString("@") + m_Server, m_UserID, m_Password),
+#endif
     m_HasBind(FALSE), m_HasSession(FALSE),
     m_State(XMPP_C2S::Null)
 {
@@ -125,9 +130,11 @@ void XMPP_C2S::OnElement(PXML& pdu)
     HandleTLSStartedState(pdu);
     break;
 
+#if P_SASL
   case SASLStarted:
     HandleSASLStartedState(pdu);
     break;
+#endif
 
   case StreamSent:
     HandleStreamSentState(pdu);
@@ -178,12 +185,14 @@ void XMPP_C2S::HandleNullState(PXML& pdu)
 
   // We might have to negotiate the TLS first, but we set up the SASL phase now
 
+#if P_SASL
   if (!mechList || !m_SASL.Init(m_Server, ourMechSet))
   {
     // SASL initialisation failed, goodbye...
     Stop();
     return;
   }
+#endif
 
   PXMLElement * mech;
   PINDEX i = 0;
@@ -205,6 +214,7 @@ void XMPP_C2S::HandleNullState(PXML& pdu)
     // we must start the TLS nogotiation...
     m_State = XMPP_C2S::TLSStarted;
   }
+#if P_SASL
   else
   {
     // Go with SASL!
@@ -232,6 +242,7 @@ void XMPP_C2S::HandleNullState(PXML& pdu)
 
     m_State = XMPP_C2S::SASLStarted;
   }
+#endif
 }
 
 
@@ -241,6 +252,7 @@ void XMPP_C2S::HandleTLSStartedState(PXML& /*pdu*/)
 }
 
 
+#if P_SASL
 void XMPP_C2S::HandleSASLStartedState(PXML& pdu)
 {
   PString name = pdu.GetRootElement()->GetName();
@@ -255,7 +267,6 @@ void XMPP_C2S::HandleSASLStartedState(PXML& pdu)
       Stop();
       return;
     }
-
     PString response("<response xmlns='urn:ietf:params:xml:ns:xmpp-sasl'");
     if (output.IsEmpty())
       response += "/>";
@@ -287,7 +298,7 @@ void XMPP_C2S::HandleSASLStartedState(PXML& pdu)
     Stop();
   }
 }
-
+#endif
 
 void XMPP_C2S::HandleStreamSentState(PXML& pdu)
 {
