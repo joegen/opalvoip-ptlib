@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.189  2004/06/10 01:36:44  csoutheren
+# Fixed problems with static links
+#
 # Revision 1.188  2004/05/30 04:49:42  ykiryanov
 # Streamlined BeOS section
 #
@@ -830,16 +833,11 @@ endif
 
 ifeq ($(P_SHAREDLIB),1)
 LIB_SUFFIX	= $(SHAREDLIBEXT)
+LIB_TYPE	=
 else   
 LIB_SUFFIX	= a 
-ifndef DEBUG
 LIB_TYPE	= _s
-endif
 endif # P_SHAREDLIB
-
-ifndef LIB_TYPE
-LIB_TYPE	=
-endif
 
 ifndef INSTALL_DIR
 INSTALL_DIR	= /usr/local
