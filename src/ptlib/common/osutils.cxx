@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.217  2004/05/13 15:05:43  csoutheren
+ * Added <vector.h>
+ *
  * Revision 1.216  2004/05/13 14:54:57  csoutheren
  * Implement PProcess startup and shutdown handling using abstract factory classes
  *
@@ -722,6 +725,7 @@
  */
 
 #include <ptlib.h>
+#include <vector>
 
 #include <ctype.h>
 
