@@ -24,6 +24,10 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.16  2001/11/30 00:37:16  robertj
+# Fixed incorrect library filename when building static library during shared
+#   library build.
+#
 # Revision 1.15  2001/11/27 22:42:13  robertj
 # Changed to make system to better support non-shared library building.
 #
@@ -57,7 +61,7 @@ CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(LIBDIR)/$(LI
 ifneq ($(P_SHAREDLIB),1)
 STATIC_LIB_FILE=$(LIBDIR)/$(LIB_FILENAME)
 else
-STATIC_LIB_FILE=$(LIBDIR)/$(LIB_BASENAME)_s.a
+STATIC_LIB_FILE=$(LIBDIR)/lib$(LIB_BASENAME)_s.a
 
 ifndef MAJOR_VERSION
 MAJOR_VERSION	:= 1
