@@ -20,8 +20,6 @@
 #include <winnetwk.h>
 #include <mmsystemx.h>
 
-#include <afxwin.h>
-
 #define assert(e) 
 inline void abort() { exit(3); }
 
