@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.10 1998/02/16 00:13:16 robertj Exp $
+ * $Id: svcproc.h,v 1.11 1998/03/29 06:16:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.11  1998/03/29 06:16:50  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.10  1998/02/16 00:13:16  robertj
  * Added tray icon support.
  *
@@ -135,6 +138,13 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
      */
 
 
+  // Overrides from class PProcess
+    virtual int _main();
+    /* Internal initialisation function called directly from
+       <CODE>main()</CODE>. The user should never call this function.
+     */
+
+
   // New functions for class
     static PServiceProcess & Current();
     /* Get the current service process object.
@@ -199,17 +209,6 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
 
   protected:
-  // Overrides from class PProcess
-    virtual int _main(
-      int argc,     // Number of program arguments.
-      char ** argv, // Array of strings for program arguments.
-      char ** envp  // Array of strings for program environment.
-    );
-    /* Internal initialisation function called directly from
-       <CODE>main()</CODE>. The user should never call this function.
-     */
-
-
   // Member variables
     BOOL debugMode;
     PSystemLog::Level currentLogLevel;
