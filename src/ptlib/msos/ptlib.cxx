@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.25 1996/08/17 10:00:37 robertj Exp $
+ * $Id: ptlib.cxx,v 1.26 1997/01/12 04:23:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.26  1997/01/12 04:23:43  robertj
+ * Fixed PDirectory::IsRoot() so works with UNC's
+ *
  * Revision 1.25  1996/08/17 10:00:37  robertj
  * Changes for Windows DLL support.
  *
@@ -189,7 +192,11 @@ BOOL PDirectory::Filtered()
 
 BOOL PDirectory::IsRoot() const
 {
-  return GetLength() == 3;
+  if ((*this)[1] == ':')
+    return GetLength() == 3;
+
+  PINDEX pos = FindOneOf("/\\", 2);
+  return pos == GetLength();
 }
 
 
