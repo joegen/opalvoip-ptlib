@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.108  1998/10/31 12:47:10  robertj
+ * Added conditional mutex and read/write mutex thread synchronisation objects.
+ *
  * Revision 1.107  1998/10/30 12:24:15  robertj
  * Added ability to get all key values as a dictionary.
  * Fixed warnings in GNU C.
@@ -1873,6 +1876,9 @@ PString PProcess::GetVersion(BOOL full) const
 }
 
 
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
@@ -2281,7 +2287,147 @@ void PSyncPointAck::Acknowledge()
 }
 
 
-#endif
+void PCondMutex::WaitCondition()
+{
+  for (;;) {
+    Wait();
+    if (Condition())
+      return;
+    PMutex::Signal();
+    OnWait();
+    syncPoint.Wait();
+  }
+}
+
+
+void PCondMutex::Signal()
+{
+  if (Condition())
+    syncPoint.Signal();
+  PMutex::Signal();
+}
+
+
+void PCondMutex::OnWait()
+{
+  // Do nothing
+}
+
+
+PIntCondMutex::PIntCondMutex(int val, int targ, Operation op)
+{
+  value = val;
+  target = targ;
+  operation = op;
+}
+
+
+void PIntCondMutex::PrintOn(ostream & strm) const
+{
+  strm << '(' << value;
+  switch (operation) {
+    case LT :
+      strm << " < ";
+    case LE :
+      strm << " <= ";
+    case GE :
+      strm << " >= ";
+    case GT :
+      strm << " > ";
+    default:
+      strm << " == ";
+  }
+  strm << target << ')';
+}
+
+
+BOOL PIntCondMutex::Condition()
+{
+  switch (operation) {
+    case LT :
+      return value < target;
+    case LE :
+      return value <= target;
+    case GE :
+      return value >= target;
+    case GT :
+      return value > target;
+  }
+  return value == target;
+}
+
+
+PIntCondMutex & PIntCondMutex::operator=(int newval)
+{
+  Wait();
+  value = newval;
+  Signal();
+  return *this;
+}
+
+
+PIntCondMutex & PIntCondMutex::operator++()
+{
+  Wait();
+  value++;
+  Signal();
+  return *this;
+}
+
+
+PIntCondMutex & PIntCondMutex::operator+=(int inc)
+{
+  Wait();
+  value += inc;
+  Signal();
+  return *this;
+}
+
+
+PIntCondMutex & PIntCondMutex::operator--()
+{
+  Wait();
+  value--;
+  Signal();
+  return *this;
+}
+
+
+PIntCondMutex & PIntCondMutex::operator-=(int dec)
+{
+  Wait();
+  value -= dec;
+  Signal();
+  return *this;
+}
+
+
+void PReadWriteMutex::StartRead()
+{
+  starvationPreventer.Wait();
+  starvationPreventer.Signal();
+  ++readers;
+}
+
+
+void PReadWriteMutex::EndRead()
+{
+  --readers;
+}
+
+
+void PReadWriteMutex::StartWrite()
+{
+  starvationPreventer.Wait();
+  readers.WaitCondition();
+}
+
+
+void PReadWriteMutex::EndWrite()
+{
+  starvationPreventer.Signal();
+  readers.Signal();
+}
 
 
 // End Of File ///////////////////////////////////////////////////////////////
