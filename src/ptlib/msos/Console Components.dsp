@@ -273,6 +273,14 @@ SOURCE=..\..\ptclib\vsdl.cxx
 
 SOURCE=..\..\ptclib\vxml.cxx
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\xmpp.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\xmpp_c2s.cxx
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -436,6 +444,14 @@ SOURCE=..\..\..\include\ptclib\vsdl.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\vxml.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\xmpp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\xmpp_c2s.h
 # End Source File
 # End Group
 # End Target
