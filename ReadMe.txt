@@ -98,45 +98,95 @@ system for all of the various unix systems.
 
 
 4.1. For Windows
----------------
+----------------
 
-1.	Start MSVC (v5 or v6). If you have another compiler you are on your 
-        own!  Go into the Tools menu, Options item, Directories tab and add 
-	to the Include files path:
-		C:\PWLib\Include\PwLib\MSWIN      (if have full version)
+1.  Note you will need the bison and flex tools to compile some parts of the
+    system. You can get a copy from http://www.openh323.org/bin/flexbison.zip,
+    follow the instructions included in that package and put the executables
+    somewhere in your path.
+
+2.  Start MSVC (v5, v6 or v7 (.NET)). If you have another compiler you are on
+    your own! Add these folders to the Include Files path as follows:
+    
+    In VisualStudio v5/6 go into the Tools menu, Options item, Directories tab.
+    
+    In VisualStudio v7, go into the Tools menu, Options item. In the Options
+    dialog, open the Projects folder, VC++ Directories item. In the 'Show
+    Directories for:' list, select 'Include files'.
+	
+		C:\PWLib\Include\PwLib\MSWIN  (if you have the full PWLIB version)
 		C:\PWLib\Include\PtLib\MSOS
 		C:\PWLib\Include
-	and add to the Lib Files path and the Executable Files path the
-	following:
+		
+    Add the following to the Lib Files path and the Executable Files path:
+	
 		C:\PWLib\Lib
-        Also make sure this directory is in your PATH environment variable.
+		
+    The Lib folder is created as parts of PWLib are built. Also add this
+    directory to your PATH environment variable (so PWRC, MergeSym and 
+    ASNParser tools can be found).
 
-1a.     If you have OpenSSL installed and compiled on your system then you
-        can define the following environment variables to get SSL support:
-                OPENSSLFLAG=1
-                OPENSSLDIR=c:\somewhere\openssl
-                OPENSSLLIBS=ssleay32.lib libeay32.lib
+2a. If you have OpenSSL installed and compiled on your system then you
+    can define the following environment variables to get SSL support:
+    
+        OPENSSLFLAG=1
+        OPENSSLDIR=c:\somewhere\openssl
+        OPENSSLLIBS=ssleay32.lib libeay32.lib
 
-1b.     If you have EXPAT installed and compiled on your system then you
-        can define the following environment variables to get XML support:
-                EXPATFLAG=1
-                EXPATDIR=c:\somewhere\expat
-                EXPATLIBS=expat.lib
+    If you have NOT included these variables then you will get a warning
+    during the build. YOu can safely ignore this warning.
 
-2.	Open the pwlib.dsw file in the pwlib top directory. If you have the
-	minimum library it will come up with several requests to find .dsp
-	files, just cancel past these.
+2b. If you have EXPAT installed and compiled on your system then you
+    can define the following environment variables to get XML support:
+    
+        EXPATFLAG=1
+        EXPATDIR=c:\somewhere\expat
+        EXPATLIBS=expat.lib
 
-3.	Note you will need bison and flex to compile the system. You can get 
-	a copy from http://www.openh323.org/bin/flexbison.zip, follow the 
-	instructions included in that package and put the executables 
-	somewhere in your path.
+    If you have NOT included these variables then you will get a warning
+    during the build. YOu can safely ignore this warning.
 
-4.	Use the Batch Build command and build the "ASNParser - Win32 Release",
-        "pwtest - Win32 Release" and "pwtest - Win32 Debug" targets. make sure
-        all other targets are not checked.
+3.  In VisualStudio v5/6 open the pwlib.dsw file in the pwlib top directory.
+    If you have the minimum library it will come up with several requests to
+    find .dsp files, just cancel past these.
+	
+    In VisualStudio v7 open the pwlib.sln file in the pwlib top directory.
 
-5.	That it, you are now on your own!
+4.  In VisualStudio v5/6 use the Batch Build command and build the "ASNParser
+    Win32 Release", "pwtest Win32 Release" and "pwtest Win32 Debug" targets.
+    Make sure all other targets are not checked.
+    
+    In VisualStudio v7 use the Batch Build command. It seems as though the
+    batch build does not build dependent parts unless they're checked in the
+    Build column. For a test build, be sure all Projects are checked except
+    ASNParser-debug, MergeSym-debug, PacketVXD-release, PWRC-debug, and both
+    XMLRPC.
+
+5.  That's it, now you're on your own!
+
+
+
+These are the project relationships:
+
+project             dependencies                             output
+-------             ------------                             ------
+Console             (none)                                   ptlibs.lib
+GUI                 (none)                                   pwlibs.lib
+MergeSym            ptlibs.lib                               mergesym.exe
+PTLib               ptlibs.lib, mergesym.exe                 ptlib.dll & lib
+PWLib               pwlibs.lib, mergesysm.exe, ptlib.lib     pwlib.dll & lib
+Console Components  (none)                                   ptclib.lib
+GUI Components      (none)                                   pwclib.lib
+ASN Parser          ptlib.lib                                asnparser.exe
+PWRC                ptlib.lib (flex.exe)                     pwrc.exe
+PWTest              ptlib,pwlib,ptclib,pwclib.lib,pwrc.exe   pwtest.exe
+MSDevWizard         (none)                                   PWLibWizard.awx
+XMLRPC              ptlibs.lib, ptclib.lib                   xmlrpc.exe
+PacketVXD           (none)                                   epacket.vxd
+
+Debug versions append 'd' to filename, ie: ptlibsd.lib.
+
+MSDevWizard will not build in VisualStudio v7 and so is not included as a project.
 
 
 --------------------------------------------------------------------------------
@@ -736,7 +786,8 @@ http://www.mivideo.net/openh323.zip
 
 - In order to improve UDP performance ( videoconferencing ) 
   you have to change registry setting on iPAQ value to 16(maximum)
-  HKEY_LOCAL_MACHINE\Comm\AfdOn NetMeeting go to Video settings,
+  HKEY_LOCAL_MACHINE\Comm\Afd
+On NetMeeting go to Video settings,
   choose "Better Image". 
 
 - If you get following when trying to run PocketBone:
@@ -763,7 +814,9 @@ thru the work of many contributors of the openh323.org project
 to the H323 v4 standard. It does not have patented codecs 
 integrated due to licensing restrictions but there are hooks
 in it should the codec be recognized in the system. Please refer
-to the openh323.org site for details. Cisco ATA 186 IP phones,
+to the openh323.org site for details.
+ 
+Cisco ATA 186 IP phones,
 either in H323 or when set to IP phones work quite well . 
 Testing has been done on HP Jornada and Casio PDAs. 
 Results will soon follow along with configurations, notes and source Zip files.
