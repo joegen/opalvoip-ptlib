@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.64  2004/10/23 10:45:32  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.63  2004/05/06 11:28:30  rjongbloed
  * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
  *
@@ -250,7 +253,9 @@
 #if defined(P_WINSOCK2_LIBRARY)
 #pragma comment(lib, P_WINSOCK2_LIBRARY)
 #else
+#ifndef _WIN32_WCE
 #pragma comment(lib, "wsock32.lib")
+#endif // !_WIN32_WCE
 #endif
 
 
