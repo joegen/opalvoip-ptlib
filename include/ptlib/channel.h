@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.24 1996/11/04 03:41:04 robertj Exp $
+ * $Id: channel.h,v 1.25 1997/07/08 13:15:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.25  1997/07/08 13:15:03  robertj
+ * DLL support.
+ *
  * Revision 1.24  1996/11/04 03:41:04  robertj
  * Added extra error message for UDP packet truncated.
  *
@@ -101,7 +104,7 @@
 
 class PChannel;
 
-class PEXPORT PChannelStreamBuffer : public streambuf {
+class PChannelStreamBuffer : public streambuf {
 /* This class is necessary for implementing the standard C++ iostream interface
    on <A>PChannel</A> classes and its descendents. It is an internal class and
    should not ever be used by application writers.
@@ -137,7 +140,7 @@ class PEXPORT PChannelStreamBuffer : public streambuf {
 };
 
 
-class PEXPORT PChannel : public PObject, public iostream {
+class PChannel : public PObject, public iostream {
   PCLASSINFO(PChannel, PObject)
 /* Abstract class defining I/O channel semantics. An I/O channel can be a
    serial port, pipe, network socket or even just a simple file. Anything that
