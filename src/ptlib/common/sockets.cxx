@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.173  2004/04/27 04:37:51  rjongbloed
+ * Fixed ability to break of a PSocket::Select call under linux when a socket
+ *   is closed by another thread.
+ *
  * Revision 1.172  2004/04/22 12:27:24  rjongbloed
  * Fixed selection of QoS to use more flexible #if rather than #ifdef
  *
@@ -1527,35 +1531,23 @@ int PSocket::Select(PSocket & sock1,
                     PSocket & sock2,
                     const PTimeInterval & timeout)
 {
-  if (!sock1.IsOpen() || !sock2.IsOpen())
-    return NotOpen;
-
-  int h1 = sock1.GetHandle();
-  int h2 = sock2.GetHandle();
-
-  P_fd_set readfds;
-  readfds += h1;
-  readfds += h2;
-
-  PIntArray allfds(4);
-  allfds[0] = h1;
-  allfds[1] = 1;
-  allfds[2] = h2;
-  allfds[3] = 1;
-  int rval = os_select(PMAX(h1, h2)+1, (fd_set*)readfds, NULL, NULL, allfds, timeout);
+  SelectList read, dummy1, dummy2;
+  read += sock1;
+  read += sock2;
 
   Errors lastError;
   int osError;
-  if (!ConvertOSError(rval, lastError, osError))
+  if (!ConvertOSError(Select(read, dummy1, dummy2, timeout), lastError, osError))
     return lastError;
 
-  rval = 0;
-  if (readfds.IsPresent(h1))
-    rval -= 1;
-  if (readfds.IsPresent(h2))
-    rval -= 2;
-
-  return rval;
+  switch (read.GetSize()) {
+    case 0 :
+      return 0;
+    case 2 :
+      return -3;
+    default :
+      return &read[0] == &sock1 ? -1 : -2;
+  }
 }
 
 
@@ -1595,96 +1587,6 @@ PChannel::Errors PSocket::Select(SelectList & read,
 {
   return Select(read, write, except, PMaxTimeInterval);
 }
-
-
-PChannel::Errors PSocket::Select(SelectList & read,
-                                 SelectList & write,
-                                 SelectList & except,
-                                 const PTimeInterval & timeout)
-{
-  int maxfds = 0;
-  PINDEX nextfd = 0;
-  PIntArray allfds(2*(read.GetSize()+write.GetSize()+except.GetSize()));
-
-  P_fd_set readfds;
-  PINDEX i;
-  for (i = 0; i < read.GetSize(); i++) {
-    if (!read[i].IsOpen())
-      return NotOpen;
-    int h = read[i].GetHandle();
-    readfds += h;
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 1;
-  }
-
-  P_fd_set writefds;
-  for (i = 0; i < write.GetSize(); i++) {
-    if (!write[i].IsOpen())
-      return NotOpen;
-    int h = write[i].GetHandle();
-    writefds += h;
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 2;
-  }
-
-  P_fd_set exceptfds;
-  for (i = 0; i < except.GetSize(); i++) {
-    if (!except[i].IsOpen())
-      return NotOpen;
-    int h = except[i].GetHandle();
-    exceptfds += h;
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 4;
-  }
-#ifdef _MSC_VER
-#pragma warning(default:4018 4127)
-#endif
-
-  int retval = os_select(maxfds+1,(fd_set*)readfds,(fd_set*)writefds,(fd_set*)exceptfds,allfds,timeout);
-
-  Errors lastError;
-  int osError;
-  if (!ConvertOSError(retval, lastError, osError))
-    return lastError;
-
-  if (retval > 0) {
-    for (i = 0; i < read.GetSize(); i++) {
-      int h = read[i].GetHandle();
-      if (h < 0)
-        return Interrupted;
-      if (!readfds.IsPresent(h))
-        read.RemoveAt(i--);
-    }
-    for (i = 0; i < write.GetSize(); i++) {
-      int h = write[i].GetHandle();
-      if (h < 0)
-        return Interrupted;
-      if (!writefds.IsPresent(h))
-        write.RemoveAt(i--);
-    }
-    for (i = 0; i < except.GetSize(); i++) {
-      int h = except[i].GetHandle();
-      if (h < 0)
-        return Interrupted;
-      if (!exceptfds.IsPresent(h))
-        except.RemoveAt(i--);
-    }
-  }
-  else {
-    read.RemoveAll();
-    write.RemoveAll();
-    except.RemoveAll();
-  }
-
-  return NoError;
-}
-
 
 
 //////////////////////////////////////////////////////////////////////////////
