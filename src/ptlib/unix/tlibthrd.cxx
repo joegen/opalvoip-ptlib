@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.114  2003/03/06 08:58:48  rogerh
+ * P_MACOSX now carries the OSRELEASE. Use this to enable better threads
+ * support on Darwin 6.4. Submitted by Shawn.
+ *
  * Revision 1.113  2003/02/20 23:32:00  robertj
  * More RTEMS support patches, thanks Sebastian Meyer.
  *
@@ -740,7 +744,7 @@ void PThread::Suspend(BOOL susp)
     return;
   }
 
-#ifdef P_MACOSX
+#if (P_MACOSX <= 55)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
@@ -964,7 +968,7 @@ BOOL PThread::IsTerminated() const
   if (PX_threadId == 0)
     return TRUE;
 
-#ifndef P_MACOSX
+#if (P_MACOSX <= 55)
   // MacOS X does not support pthread_kill so we cannot use it
   // to test the validity of the thread
   if (pthread_kill(PX_threadId, 0) != 0)
