@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.33  2004/10/01 07:17:16  csoutheren
+ * Added PSharedptr class
+ *
  * Revision 1.32  2004/07/06 10:12:52  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -236,6 +239,12 @@
 // PFactory
 
 #include <ptlib/pfactory.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSharedPtr
+
+#include <ptlib/psharedptr.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
