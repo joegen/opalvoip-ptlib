@@ -1,5 +1,6 @@
 #include <ptlib.h>
 
+#ifndef P_PTHREADS
 
 #ifdef P_LINUX
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
@@ -113,4 +114,6 @@ void PThread::FreeStack()
     free(stackBase);
 #endif
 }
+
+#endif  // P_PTHREADS
 
