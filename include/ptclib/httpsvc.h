@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.39  2002/02/05 22:53:14  robertj
+ * Changed default for HTTP listener to reuse addresses.
+ *
  * Revision 1.38  2001/10/10 08:06:34  robertj
  * Fixed problem with not shutting down threads when closing listener.
  *
@@ -234,12 +237,12 @@ class PHTTPServiceProcess : public PServiceProcess
 
     BOOL ListenForHTTP(
       WORD port,
-      PSocket::Reusability reuse = PSocket::AddressIsExclusive,
+      PSocket::Reusability reuse = PSocket::CanReuseAddress,
       PINDEX stackSize = 0x4000
     );
     BOOL ListenForHTTP(
       PSocket * listener,
-      PSocket::Reusability reuse = PSocket::AddressIsExclusive,
+      PSocket::Reusability reuse = PSocket::CanReuseAddress,
       PINDEX stackSize = 0x4000
     );
 
