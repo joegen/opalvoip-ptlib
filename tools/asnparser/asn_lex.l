@@ -31,6 +31,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.15  2001/01/17 00:52:56  robertj
+ * Added option to remove warning about isatty() under Win32.
+ *
  * Revision 1.14  2001/01/17 00:33:59  robertj
  * Removed extra %option, there need be only one.
  *
@@ -115,7 +118,7 @@ static int TokenSelect(int context, int token1, int token2)
 
 %}
 
-%option nounput nodefault
+%option nounput nodefault never-interactive
 
 %x comment_line
 
