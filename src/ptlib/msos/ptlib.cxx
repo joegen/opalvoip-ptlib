@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.30 1998/01/05 10:38:25 robertj Exp $
+ * $Id: ptlib.cxx,v 1.31 1998/01/26 00:54:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.31  1998/01/26 00:54:15  robertj
+ * 64 bit integer string conversions.
+ *
  * Revision 1.30  1998/01/05 10:38:25  robertj
  * Unix pthreads compatibility, added threadsafe time functions.
  *
@@ -134,6 +137,94 @@ ostream & PGetErrorStream()
 void PSetErrorStream(ostream * s)
 {
   PErrorStream = s;
+}
+
+
+ostream & operator<<(ostream & s, PInt64 v)
+{
+  char buffer[25];
+  return s << _i64toa(v, buffer, (s.flags()&ios::oct) ? 8 : ((s.flags()&ios::hex) ? 16 : 10));
+}
+
+
+ostream & operator<<(ostream & s, PUInt64 v)
+{
+  char buffer[25];
+  return s << _ui64toa(v, buffer, (s.flags()&ios::oct) ? 8 : ((s.flags()&ios::hex) ? 16 : 10));
+}
+
+
+PInt64 PString::AsInt64(unsigned base) const
+{
+  if (base == 10)
+    return _atoi64(theArray);
+
+  PAssert(base >= 2 && base <= 36, PInvalidParameter);
+
+  PInt64 total = 0;
+  const char * ptr = theArray;
+
+  while (isspace(*ptr))
+    ptr++;
+
+  BOOL negative = *ptr == '-';
+  if (*ptr == '-' || *ptr == '+')
+    ptr++;
+
+  for (;;) {
+    unsigned c = *ptr++;
+    if (c < '0')
+      break;
+
+    if (c <= '9')
+      c -= '0';
+    else
+      c = toupper(c) - 'A' + 10;
+
+    if (c >= base)
+      break;
+
+    total = base * total + c;
+
+    c = *ptr++;
+  }
+
+  if (negative)
+    return -total;
+  else
+    return total;
+}
+
+
+PUInt64 PString::AsUnsigned64(unsigned base) const
+{
+  PAssert(base >= 2 && base <= 36, PInvalidParameter);
+
+  PUInt64 total = 0;
+  const char * ptr = theArray;
+
+  while (isspace(*ptr))
+    ptr++;
+
+  for (;;) {
+    unsigned c = *ptr++;
+    if (c < '0')
+      break;
+
+    if (c <= '9')
+      c -= '0';
+    else
+      c = toupper(c) - 'A' + 10;
+
+    if (c >= base)
+      break;
+
+    total = base * total + c;
+
+    c = *ptr++;
+  }
+
+  return total;
 }
 
 
