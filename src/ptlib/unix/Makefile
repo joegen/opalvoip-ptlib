@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.56  2000/03/08 18:22:03  rogerh
+# Select oss.cxx sound support for OpenBSD
+#
 # Revision 1.55  2000/03/03 00:30:31  robertj
 # Removed ptclilb/proto directory.
 #
@@ -223,6 +226,10 @@ SOUND_SOURCE = sunaudio.cxx
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
+SOUND_SOURCE = oss.cxx
+endif
+
+ifeq ($(OSTYPE),OpenBSD)
 SOUND_SOURCE = oss.cxx
 endif
 
