@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.38  2001/10/10 08:06:34  robertj
+ * Fixed problem with not shutting down threads when closing listener.
+ *
  * Revision 1.37  2001/08/28 06:44:30  craigs
  * Added ability to override PHTTPServer creation
  *
@@ -149,12 +152,35 @@
 #ifndef APPCOMM_H
 #define APPCOMM_H
 
-#include <ptclib/httpform.h>
 #include <ptlib/svcproc.h>
+#include <ptlib/sockets.h>
+#include <ptclib/httpform.h>
 #include <ptclib/cypher.h>
 
 
-class PTCPSocket;
+class PHTTPServiceProcess;
+
+
+/////////////////////////////////////////////////////////////////////
+
+class PHTTPServiceThread : public PThread
+{
+  PCLASSINFO(PHTTPServiceThread, PThread)
+  public:
+    PHTTPServiceThread(PINDEX stackSize,
+                       PHTTPServiceProcess & app,
+                       PSocket & listeningSocket);
+    ~PHTTPServiceThread();
+
+    void Main();
+    void Close() { socket.Close(); }
+
+  protected:
+    PHTTPServiceProcess & process;
+    PSocket             & listener;
+    PTCPSocket            socket;
+    PINDEX                myStackSize;
+};
 
 
 /////////////////////////////////////////////////////////////////////
@@ -263,30 +289,14 @@ class PHTTPServiceProcess : public PServiceProcess
     void CompleteRestartSystem();
 
     PThread *  restartThread;
-    PSyncPoint httpThreadClosed;
+
+    PLIST(ThreadList, PHTTPServiceThread);
+    ThreadList httpThreads;
+    PMutex     httpThreadsMutex;
 
   friend class PConfigPage;
   friend class PConfigSectionsPage;
   friend class PHTTPServiceThread;
-};
-
-
-/////////////////////////////////////////////////////////////////////
-
-class PHTTPServiceThread : public PThread
-{
-  PCLASSINFO(PHTTPServiceThread, PThread)
-  public:
-    PHTTPServiceThread(PINDEX stackSize,
-                       PHTTPServiceProcess & app,
-                       PSocket & listeningSocket);
-
-    void Main();
-
-  protected:
-    PHTTPServiceProcess & process;
-    PSocket & listener;
-    PINDEX myStackSize;
 };
 
 
