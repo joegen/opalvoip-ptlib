@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.7  2001/12/03 03:44:52  dereks
+ * Add method to retrive pointer to the attached video display class.
+ *
  * Revision 1.6  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -296,6 +299,11 @@ void  PVideoChannel::SetRenderFrameSize(int _width, int _height)
 PVideoInputDevice *PVideoChannel::GetVideoReader()
 {
   return mpInput;
+}
+
+PVideoOutputDevice *PVideoChannel::GetVideoPlayer()
+{
+  return mpOutput;
 }
 
 BOOL  PVideoChannel::Redraw(const void * frame) 
