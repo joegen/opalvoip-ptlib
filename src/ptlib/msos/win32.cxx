@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.135  2004/04/09 06:52:18  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.134  2004/04/03 06:54:30  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -490,9 +494,7 @@
 #include <winsock2.h>
 #include<ws2tcpip.h>
 
-#pragma comment(lib,    "mpr.lib")
-#pragma comment(linker, "/delayload:mpr.dll")
-#pragma comment(lib,    "Delayimp.lib")
+#pragma comment(lib, "mpr.lib")
 
 #define new PNEW
 
