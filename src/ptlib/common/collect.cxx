@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.20 1996/02/08 12:24:13 robertj Exp $
+ * $Id: collect.cxx,v 1.21 1996/02/19 13:32:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.21  1996/02/19 13:32:31  robertj
+ * Fixed yet another bug in PSortedList, not setting cache index value correctly.
+ *
  * Revision 1.20  1996/02/08 12:24:13  robertj
  * Added default print for dictionaries in form key=data\n.
  * Added missing GetAt() function on PSet to be consistent with all others.
@@ -680,8 +683,10 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
       info->lastIndex++;
       info->lastElement = info->lastElement->Successor();
     }
-    else
+    else {
+      info->lastIndex = index;
       info->lastElement = info->root->OrderSelect(index+1);
+    }
   }
 
   return PAssertNULL(info->lastElement)->data;
