@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.105  2004/05/05 06:52:37  ykiryanov
+ * Made BeOS changes
+ *
  * Revision 1.104  2004/04/27 04:37:51  rjongbloed
  * Fixed ability to break of a PSocket::Select call under linux when a socket
  *   is closed by another thread.
@@ -452,7 +455,7 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * siz
 }
 
 
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS) && !defined(__BEOS__)
 
 int PSocket::os_select(int maxHandle,
                    fd_set * readBits,
