@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.33  2002/10/08 12:41:52  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.32  2002/02/25 09:57:29  robertj
  * Fixed possible NULL pointer use and  memory leak, thanks Klaus König
  *
@@ -492,12 +495,10 @@ BOOL PWin32AsnAny::GetInteger(AsnInteger & i)
 
 BOOL PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
 {
-  if (asnType != ASN_IPADDRESS ||
-      asnValue.address.stream == NULL ||
-      asnValue.address.length < sizeof(addr))
+  if (asnType != ASN_IPADDRESS || asnValue.address.stream == NULL)
     return FALSE;
 
-  memcpy(&addr, asnValue.address.stream, sizeof(addr));
+  addr = PIPSocket::Address(asnValue.address.length, asnValue.address.stream);
   return TRUE;
 }
 
@@ -1032,17 +1033,22 @@ BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
     addr = 0;
 
   if (addr != 0) {
-    if (transportRegistry.QueryValue("IPMask", str))
-      net_mask = str;
-    else {
-      if (IN_CLASSA(addr))
-        net_mask = "255.0.0.0";
-      else if (IN_CLASSB(addr))
-        net_mask = "255.255.0.0";
-      else if (IN_CLASSC(addr))
-        net_mask = "255.255.255.0";
-      else
-        net_mask = 0;
+    if (addr.GetVersion() == 6) {
+      net_mask = 0;
+      // Seb: Something to do ?
+    } else {
+      if (transportRegistry.QueryValue("IPMask", str))
+        net_mask = str;
+      else {
+        if (IN_CLASSA(addr))
+          net_mask = "255.0.0.0";
+        else if (IN_CLASSB(addr))
+          net_mask = "255.255.0.0";
+        else if (IN_CLASSC(addr))
+          net_mask = "255.255.255.0";
+        else
+          net_mask = 0;
+      }
     }
     return TRUE;
   }
