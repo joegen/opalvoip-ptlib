@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.5  2001/10/23 02:11:00  dereks
+ * Extend video channel so it can display raw data, using attached video devices.
+ *
  * Revision 1.4  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -202,6 +205,11 @@ class PVideoChannel : public PChannel
     /**See if the rendering device is open
      */
     virtual BOOL IsRenderOpen();
+
+    /**Get data from the attached inputDevice, and display on the
+       attached ouptutDevice.
+    */
+    BOOL DisplayRawData(void *videoBuffer);
 
  protected:
     Directions       direction;
