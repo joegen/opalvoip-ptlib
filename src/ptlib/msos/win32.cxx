@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.69  1998/10/26 09:11:31  robertj
+ * Added ability to separate out stdout from stderr on pipe channels.
+ *
  * Revision 1.68  1998/10/15 02:20:26  robertj
  * Added message for connection aborted error.
  *
@@ -741,7 +744,10 @@ BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
 // PPipeChannel
 
 void PPipeChannel::Construct(const PString & subProgram,
-                const char * const * arguments, OpenMode mode, BOOL searchPath)
+                             const char * const * arguments,
+                             OpenMode mode,
+                             BOOL searchPath,
+                             BOOL stderrSeparate)
 {
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
@@ -768,7 +774,12 @@ void PPipeChannel::Construct(const PString & subProgram,
     hFromChild = NULL;
   else {
     PAssertOS(CreatePipe(&hFromChild, &startup.hStdOutput, &security, 0));
-    startup.hStdError = startup.hStdOutput;
+    if (stderrSeparate)
+      PAssertOS(CreatePipe(&hStandardError, &startup.hStdError, &security, 0));
+    else {
+      startup.hStdError = startup.hStdOutput;
+      hStandardError = INVALID_HANDLE_VALUE;
+    }
   }
 
   const char * prog = NULL;
@@ -795,6 +806,8 @@ void PPipeChannel::Construct(const PString & subProgram,
     CloseHandle(startup.hStdInput);
   if (startup.hStdOutput != NULL)
     CloseHandle(startup.hStdOutput);
+  if (startup.hStdOutput != startup.hStdError)
+    CloseHandle(startup.hStdError);
 }
 
 
@@ -878,6 +891,8 @@ BOOL PPipeChannel::Close()
       CloseHandle(hToChild);
     if (hFromChild != INVALID_HANDLE_VALUE)
       CloseHandle(hFromChild);
+    if (hStandardError != INVALID_HANDLE_VALUE)
+      CloseHandle(hStandardError);
     TerminateProcess(info.hProcess, 1);
     os_handle = -1;
   }
@@ -893,6 +908,38 @@ BOOL PPipeChannel::Execute()
     CloseHandle(hToChild);
   hToChild = INVALID_HANDLE_VALUE;
   return TRUE;
+}
+
+
+BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
+{
+  DWORD available, bytesRead;
+  if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
+    return ConvertOSError(-2);
+
+  if (available != 0)
+    return ConvertOSError(ReadFile(hStandardError,
+                          errors.GetPointer(available), available,
+                          &bytesRead, NULL) ? 0 : -2);
+
+  if (wait)
+    return FALSE;
+
+  char firstByte;
+  if (!ReadFile(hStandardError, &firstByte, 1, &bytesRead, NULL))
+    return ConvertOSError(-2);
+
+  errors = firstByte;
+
+  if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
+    return ConvertOSError(-2);
+
+  if (available == 0)
+    return TRUE;
+
+  return ConvertOSError(ReadFile(hStandardError,
+                        errors.GetPointer(available+1)+1, available,
+                        &bytesRead, NULL) ? 0 : -2);
 }
 
 
