@@ -307,6 +307,7 @@ Threads cannot be suspended once they are running, and trying to Suspend
 a running thread will generate an Assertion Error.
 Theads can be created in 'suspended' mode and then started with Resume
 This is due to a lack of pthread_kill() in Dawrin 1.2
+See http://www.publicsource.apple.com/bugs/X/Libraries/2686231.html
 
 There is no support for GetRouteTable() in socket.cxx
 due to lack of time by the port maintainer.
@@ -318,6 +319,10 @@ with localtime() and gm_time() which may not be thread safe.
 There is no audio support due to a lack of documentation and hardware.
 
 There is no video support due to a lack of documentation and hardware.
+
+
+
+
 
 6.5 BeOS Issues
 ---------------

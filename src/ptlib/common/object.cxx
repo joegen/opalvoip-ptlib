@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.50  2001/06/20 06:05:47  rogerh
+ * Updates for Mac OS X from Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
+ *
  * Revision 1.49  2001/05/03 06:27:29  robertj
  * Added return value to PMemoryCheck::SetIgnoreAllocations() so get previous state.
  *
@@ -704,7 +707,11 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
       sigaddset(&blockedSignals, SIGINT);
       sigaddset(&blockedSignals, SIGQUIT);
       sigaddset(&blockedSignals, SIGTERM);
+#if defined(P_MACOSX)
+      sigprocmask(SIG_UNBLOCK, &blockedSignals, NULL);
+#else
       pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL);
+#endif
 #endif
       ::signal(SIGINT, SIG_DFL);
       ::signal(SIGQUIT, SIG_DFL);
