@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.1 1996/05/15 21:11:35 robertj Exp $
+ * $Id: icmp.cxx,v 1.2 1996/05/30 10:08:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.2  1996/05/30 10:08:51  robertj
+ * Fixed bug in ping (checksum incorrect).
+ *
  * Revision 1.1  1996/05/15 21:11:35  robertj
  * Initial revision
  *
@@ -55,7 +58,7 @@ typedef struct {
 static WORD CalcChecksum(void * p, PINDEX len)
 {
   WORD * ptr = (WORD *)p;
-  PInt32 sum = 0;
+  DWORD sum = 0;
   while (len > 1) {
     sum += *ptr++;
     len-=2;
@@ -103,7 +106,7 @@ BOOL PICMPSocket::WritePing(const PString & host, WORD sequenceNum)
   ICMPPacket packet;
 
   // clear the packet including data area
-  memset(&packet.data, 0x00, sizeof(packet.data));
+  memset(&packet, 0, sizeof(packet));
 
   packet.type     = ICMP_ECHO;
   packet.sequence = sequenceNum;
