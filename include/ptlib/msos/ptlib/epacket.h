@@ -8,6 +8,10 @@
  * Original code by William Ingle (address unknown)
  *
  * $Log: epacket.h,v $
+ * Revision 1.6  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.5  1999/02/16 08:10:33  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -74,4 +78,4 @@ typedef struct _EPACKET_OID {
 #endif // __EPACKET_H
 
 
-// End of File ////////////////////////////////////////////////////////////////
+// End Of File ////////////////////////////////////////////////////////////////

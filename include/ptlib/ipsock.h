@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.46  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.45  2001/03/05 04:18:27  robertj
  * Added net mask to interface info returned by GetInterfaceTable()
  *
@@ -568,8 +572,10 @@ class PIPSocket : public PSocket
       InterfaceTable & table      /// interface table
     );
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/ipsock.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.8  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.7  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -65,7 +69,13 @@
 #endif
 
 
+#define _PVIDEOIO_PLATFORM_INCLUDE
 #include "../../videoio.h"
+
+#endif
+#ifdef _PVIDEOIO_PLATFORM_INCLUDE
+#undef _PVIDEOIO_PLATFORM_INCLUDE
+
   public:
     virtual BOOL SetVideoFormat(VideoFormat videoFormat);
     virtual int  GetNumChannels();
@@ -108,7 +118,9 @@
     PINDEX frameBytes;
     int    mmap_size;
 #endif
-};
 
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

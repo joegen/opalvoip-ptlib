@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.12  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.11  2000/12/16 12:56:59  rogerh
  * BeOS changes, submitted by Yuri Kiryanov <openh323@kiryanov.com>
  *
@@ -73,7 +77,13 @@
 #endif
 
 
+#define _PSEMAPHORE_PLATFORM_INCLUDE
 #include "../../semaphor.h"
+
+#endif
+#ifdef _PSEMAPHORE_PLATFORM_INCLUDE
+#undef _PSEMAPHORE_PLATFORM_INCLUDE
+
 #ifdef P_PTHREADS
 
   protected:
@@ -103,6 +113,8 @@
     ThreadQueue waitQueue;
 
 #endif
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

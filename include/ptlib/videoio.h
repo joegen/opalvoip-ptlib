@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.16  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.15  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -471,8 +475,10 @@ class PVideoInputDevice : public PVideoDevice
      */
     virtual BOOL VerifyHardwareFrameSize(unsigned width, unsigned height);
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/videoio.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

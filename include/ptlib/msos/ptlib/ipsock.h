@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.7  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.6  2001/01/24 06:06:34  yurik
  * Windows CE port-related changes - actually my first change of openh323 code
  *
@@ -75,8 +79,11 @@
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|0x40000000)
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PIPSocket
+
 #include "../../ipsock.h"
-};
 
 
 #endif

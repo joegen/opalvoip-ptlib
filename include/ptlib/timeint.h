@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.23  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.22  2000/10/05 23:36:26  robertj
  * Fixed compiler ambiguities in PTimeInterval constructor.
  *
@@ -415,8 +419,10 @@ class PTimeInterval : public PObject
     /// Number of milliseconds in time interval.
     PInt64 milliseconds;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/timeint.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

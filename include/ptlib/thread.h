@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.26  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.25  2000/11/28 12:55:36  robertj
  * Added static function to create a new thread class and automatically
  *   run a function on another class in the context of that thread.
@@ -102,8 +106,6 @@
  *
  */
 
-
-#define _PTHREAD
 
 #ifdef __GNUC__
 #pragma interface
@@ -574,8 +576,10 @@ class PThread : public PObject
     friend class PSemaphore;
 #endif
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/thread.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

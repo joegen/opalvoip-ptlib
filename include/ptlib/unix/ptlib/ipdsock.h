@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  1998/11/30 22:06:47  robertj
  * New directory structure.
  *
@@ -48,7 +52,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PIPDatagramSocket
 
+#define _PIPDATAGRAMSOCKET_PLATFORM_INCLUDE
 #include "../../ipdsock.h"
-};
 
 #endif
+#ifdef _PIPDATAGRAMSOCKET_PLATFORM_INCLUDE
+#undef _PIPDATAGRAMSOCKET_PLATFORM_INCLUDE
+
+
+#endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.18  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.17  2001/02/07 03:33:43  craigs
  * Added functions to get sound channel parameters
  *
@@ -529,8 +533,10 @@ class PSoundChannel : public PChannel
   private:
     void Construct();
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/sound.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.4  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.3  1998/11/30 22:07:18  robertj
  * New directory structure.
  *
@@ -41,15 +45,20 @@
  *
  */
 
-
 #ifndef _PSYNCPOINT
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
+#define _PSYNCPOINT_PLATFORM_INCLUDE
 #include "../../syncpoint.h"
-};
+
+#endif
+#ifdef _PSYNCPOINT_PLATFORM_INCLUDE
+#undef _PSYNCPOINT_PLATFORM_INCLUDE
 
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

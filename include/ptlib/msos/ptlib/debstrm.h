@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: debstrm.h,v $
+ * Revision 1.7  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.6  1998/09/24 03:39:55  robertj
  * Added open software license.
  *
@@ -75,3 +79,6 @@ class PDebugStream : public ostream {
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

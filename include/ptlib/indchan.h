@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.7  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.6  2000/11/14 08:25:25  robertj
  * Added function to propagate the error text through to indirect channel.
  *
@@ -320,3 +324,6 @@ class PIndirectChannel : public PChannel
 
 
 #endif // _PINDIRECTCHANNEL
+
+
+// End Of File ///////////////////////////////////////////////////////////////
