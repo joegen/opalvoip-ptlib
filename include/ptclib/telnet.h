@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.6 1994/11/28 12:38:59 robertj Exp $
+ * $Id: telnet.h,v 1.7 1995/01/01 01:07:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.6  1994/11/28 12:38:59  robertj
+ * Revision 1.7  1995/01/01 01:07:33  robertj
+ * More implementation.
+ *
+ * Revision 1.6  1994/11/28  12:38:59  robertj
  * Added DONT and WONT states.
  *
  * Revision 1.5  1994/08/23  11:32:52  robertj
@@ -41,22 +44,36 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       DefaultPort = 23
     };
 
-    PTelnetSocket();
+    PTelnetSocket(WORD port = DefaultPort);
       // create an unopened socket
 
     PTelnetSocket(const PString & address, WORD port = DefaultPort);
       // create an opened socket
 
-    // Overrides from class PTCPSocket
-    BOOL Open(const PString & address, WORD port = DefaultPort);
-      // connect to a telnet server
-
     // Overrides from class PChannel
     BOOL Read(void * data, PINDEX len);
       // read data from a telnet port
 
+    BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    // write data to a telnet port
+
+    virtual void OnOutOfBand(const void * buf, PINDEX len);
 
     // New functions
+    enum Options {
+      ExtendedOptionsList = 255,
+      TransmitBinary      = 0,
+      Echo                = 1,
+      SuppressGoAhead     = 3,
+      Status              = 5,
+      TimingMark          = 6,
+      MaxOptions
+    };
+    // Defined TELNET options
+
     virtual BOOL OnUnknownCommand(BYTE code);
       // Received unknown telnet command. Return TRUE if next byte
       // is not part of the unknown command
@@ -85,7 +102,6 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     virtual void SendDont(BYTE code);
       // Send DONT request
 
-  protected:
     // defined telnet commands
     enum Command {
       SE        = 240,    // subnegotiation end
@@ -106,6 +122,10 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       IAC       = 255     // Escape
     };
 
+    void SendDataMark(Command ch);
+      // Sends SYNCH, then inserts the data mark into outgoing data stream
+
+  protected:
     // internal states for the Telnet decoder
     enum State {
       StateNormal,
@@ -114,7 +134,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       StateDont,
       StateWill,
       StateWont,
-      StateUnknownCommand,
+      StateSubNegotiations
     };
 
     void Construct();
@@ -122,9 +142,10 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
     // internal storage for the Telnet decoder
     State  state;
+    BOOL   willOptions[MaxOptions];
+    BOOL   doOptions[MaxOptions];
 
     BOOL   debug;
-
 };
 
 
