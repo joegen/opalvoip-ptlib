@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.26  2001/10/03 00:26:34  robertj
+ * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
+ *
  * Revision 1.25  2001/09/28 08:55:15  robertj
  * More changes to support restartable PHTTPClient
  *
@@ -340,7 +343,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
   else
     *this << cmdName;
 
-  *this << ' ' << url << " HTTP/1.0\r\n"
+  *this << ' ' << url << " HTTP/1.1\r\n"
         << setfill('\r') << outMIME;
 
   return Write((const char *)dataBody, len);
@@ -387,7 +390,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
-BOOL PHTTPClient::ReadContentBody(const PMIMEInfo & replyMIME, PBYTEArray & body)
+BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
   if (replyMIME.Contains(ContentLengthTag)) {
     PINDEX length = replyMIME.GetInteger(ContentLengthTag);
@@ -395,13 +398,53 @@ BOOL PHTTPClient::ReadContentBody(const PMIMEInfo & replyMIME, PBYTEArray & body
     return ReadBlock(body.GetPointer(), length);
   }
 
-  static const PINDEX ChunkSize = 2048;
-  PINDEX bytesRead = 0;
-  while (ReadBlock(body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
-    bytesRead += GetLastReadCount();
+  if (!replyMIME.Contains(TransferEncodingTag)) {
+    // Must be raw, read to end file variety
+    static const PINDEX ChunkSize = 2048;
+    PINDEX bytesRead = 0;
+    while (ReadBlock(body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
+      bytesRead += GetLastReadCount();
 
-  body.SetSize(bytesRead + GetLastReadCount());
-  return GetErrorCode(LastReadError) == NoError;
+    body.SetSize(bytesRead + GetLastReadCount());
+    return GetErrorCode(LastReadError) == NoError;
+  }
+
+  if (!(replyMIME(TransferEncodingTag) *= ChunkedTag)) {
+    lastResponseCode = -1;
+    lastResponseInfo = "Unknown Transfer-Encoding extension";
+    return FALSE;
+  }
+
+  // HTTP1.1 chunked format
+  PINDEX bytesRead = 0;
+  for (;;) {
+    // Read chunk length line
+    PString chunkLengthLine;
+    if (!ReadLine(chunkLengthLine))
+      return FALSE;
+
+    // A zero length chunk is end of output
+    PINDEX chunkLength = chunkLengthLine.AsUnsigned(16);
+    if (chunkLength == 0)
+      break;
+
+    // Read the chunk
+    if (!ReadBlock(body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
+      return FALSE;
+
+    // Read the trailing CRLF
+    if (!ReadLine(chunkLengthLine))
+      return FALSE;
+  }
+
+  // Read the footer
+  PString footer;
+  do {
+    if (!ReadLine(footer))
+      return FALSE;
+  } while (replyMIME.AddMIME(footer));
+
+  return TRUE;
 }
 
 
