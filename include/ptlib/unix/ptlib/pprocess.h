@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.11 1998/03/29 10:42:52 craigs Exp $
+ * $Id: pprocess.h,v 1.12 1998/05/30 13:30:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.12  1998/05/30 13:30:44  robertj
+ * Fixed shutdown problems with PConfig caching.
+ *
  * Revision 1.11  1998/03/29 10:42:52  craigs
  * Made PConfig thread safe
  *
@@ -54,6 +57,7 @@
 
 PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
@@ -85,6 +89,9 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     int pxSignals;
 
   protected:
+    void CreateConfigFilesDictionary();
+    PAbstractDictionary * configFiles;
+
 
 #ifndef P_PTHREADS
   public:
