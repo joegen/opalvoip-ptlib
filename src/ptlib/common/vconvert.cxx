@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.12  2001/07/20 05:23:51  robertj
+ * Added YUV411P to RGB24 converter.
+ *
  * Revision 1.11  2001/05/14 05:10:38  robertj
  * Fixed problems with video colour converters registration, could not rely
  *   on static PList being initialised before all registration instances.
@@ -382,11 +385,10 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV411P)
 
 #define LIMIT(x) (unsigned char) (((x > 0xffffff) ? 0xff0000 : ((x <= 0xffff) ? 0 : x & 0xff0000)) >> 16)
 
-PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
+static void YUV411PtoRGB(unsigned srcFrameWidth, unsigned srcFrameHeight,
+                         const BYTE * srcFrameBuffer, BYTE * dstFrameBuffer,
+                         unsigned rgbIncrement)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
-    return FALSE;
-
   unsigned int   nbytes    = srcFrameWidth*srcFrameHeight;
   const BYTE    *yplane    = srcFrameBuffer;           		// 1 byte Y (luminance) for each pixel
   const BYTE    *uplane    = yplane+nbytes;              	// 1 byte U for a block of 4 pixels
@@ -424,25 +426,50 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
         g = l+gd;
         b = l+bd;
         
-        *(dstFrameBuffer+4*pixpos[p])   = LIMIT(b);
-        *(dstFrameBuffer+4*pixpos[p]+1) = LIMIT(g);
-        *(dstFrameBuffer+4*pixpos[p]+2) = LIMIT(r);
-        *(dstFrameBuffer+4*pixpos[p]+3) = 0;
+        *(dstFrameBuffer+rgbIncrement*pixpos[p])   = LIMIT(b);
+        *(dstFrameBuffer+rgbIncrement*pixpos[p]+1) = LIMIT(g);
+        *(dstFrameBuffer+rgbIncrement*pixpos[p]+2) = LIMIT(r);
+        if (rgbIncrement == 4)
+          *(dstFrameBuffer+4*pixpos[p]+3) = 0;
       }
       
       yplane += 2;
-      dstFrameBuffer += 8;
+      dstFrameBuffer += rgbIncrement*2;
       
       uplane++;
       vplane++;
     }
 
     yplane += srcFrameWidth;
-    dstFrameBuffer += 4*srcFrameWidth;  
+    dstFrameBuffer += rgbIncrement*srcFrameWidth;  
   }
-  
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB24)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  YUV411PtoRGB(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 3);
+
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
+
+  return TRUE;
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUV411P,RGB32)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  YUV411PtoRGB(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 4);
+
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+
   return TRUE;
 }
 
