@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.10  2005/01/26 05:37:42  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.9  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -241,6 +244,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
       const char * daemonName = NULL    // Name of "daemon" application
     );
 
+#ifdef P_CONFIG_FILE
+
     /** Load entries in the list from the configuration file specified. This is
        equivalent to Load(cfg, "IP Access Control List").
 
@@ -282,6 +287,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
       PConfig & cfg,            // Configuration file to save entries to.
       const PString & baseName  // Base name string for each entry in file.
     );
+
+#endif // P_CONFIG_FILE
 
     /** Add the specified entry into the list. See the PIpAccessControlEntry
        class for more details on the format of the <CODE>description</CODE>
