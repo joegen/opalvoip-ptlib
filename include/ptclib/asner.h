@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.14  2000/10/25 04:05:44  robertj
+ * More bullet proofing of PER decoder.
+ *
  * Revision 1.13  2000/07/11 18:23:03  robertj
  * Added ability to set/get BMP string data as PWORDArray.
  *
@@ -994,11 +997,11 @@ class PPER_Stream : public PASN_Stream
     BOOL SingleBitDecode();
     void SingleBitEncode(BOOL value);
 
-    int MultiBitDecode(unsigned nBits);
+    BOOL MultiBitDecode(unsigned nBits, int & value);
     void MultiBitEncode(int value, unsigned nBits);
 
-    unsigned SmallUnsignedDecode();
-    void SmallUnsignedEncode(unsigned val);
+    BOOL SmallUnsignedDecode(int & value);
+    void SmallUnsignedEncode(unsigned value);
 
     int LengthDecode(unsigned lower, unsigned upper, unsigned & len);
     void LengthEncode(unsigned len, unsigned lower, unsigned upper);
