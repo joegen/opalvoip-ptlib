@@ -33,7 +33,7 @@
 //  extra things to class declarations
 //
 
-#define	PCLASS		class
+#define	PEXPORT
 #define	PSTATIC
 
 ///////////////////////////////////////////
