@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.8 1995/03/14 12:41:19 robertj Exp $
+ * $Id: dict.h,v 1.9 1995/06/04 08:45:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.9  1995/06/04 08:45:57  robertj
+ * Better C++ compatibility (with BC++)
+ *
  * Revision 1.8  1995/03/14 12:41:19  robertj
  * Updated documentation to use HTML codes.
  *
@@ -287,15 +290,6 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
        TRUE if the object was in the collection.
      */
 
-    virtual PObject * RemoveAt(
-      PINDEX index   // Index position in collection to place the object.
-    );
-    /* This function is meaningless and will assert if executed.
-
-       <H2>Returns:</H2>
-       Always NULL.
-     */
-
     virtual BOOL SetAt(
       PINDEX index,   // Index position in collection to set.
       PObject * val   // New value to place into the collection.
@@ -304,22 +298,13 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
        the set then the object is <EM>not</EM> included. If the
        AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter is
        also deleted.
-       
+
        The object is always placed in the an ordinal position dependent on its
        hash function. It is not placed at the specified position. The
        <CODE>index</CODE> parameter is ignored.
 
        <H2>Returns:</H2>
        TRUE if the object was successfully added.
-     */
-
-    virtual PObject * GetAt(
-      PINDEX index  // Index position in the collection of the object.
-    ) const;
-    /* This function is meaningless.
-
-       <H2>Returns:</H2>
-       Always NULL.
      */
 
     virtual PINDEX GetObjectsIndex(
@@ -361,6 +346,25 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
 
        <H2>Returns:</H2>
        TRUE if the object value is in the set.
+     */
+
+  private:
+    virtual PObject * RemoveAt(
+      PINDEX index   // Index position in collection to place the object.
+    );
+    /* This function is meaningless and will assert if executed.
+
+       <H2>Returns:</H2>
+       Always NULL.
+     */
+
+    virtual PObject * GetAt(
+      PINDEX index  // Index position in the collection of the object.
+    ) const;
+    /* This function is meaningless.
+
+       <H2>Returns:</H2>
+       Always NULL.
      */
 };
 
@@ -534,15 +538,6 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
      */
 
   // Overrides from class PCollection
-    virtual PINDEX Append(
-      PObject * obj   // New object to place into the collection.
-    );
-    /* This function is meaningless and will assert.
-
-       <H2>Returns:</H2>
-       Always zero.
-     */
-
     virtual PINDEX Insert(
       const PObject & key,   // Object value to use as the key.
       PObject * obj          // New object to place into the collection.
@@ -703,6 +698,16 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
 
   protected:
     PAbstractDictionary(int dummy, const PAbstractDictionary * c);
+
+  private:
+    virtual PINDEX Append(
+      PObject * obj   // New object to place into the collection.
+    );
+    /* This function is meaningless and will assert.
+
+       <H2>Returns:</H2>
+       Always zero.
+     */
 };
 
 
@@ -790,6 +795,9 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
   protected:
     PDictionary(int dummy, const PDictionary * c)
       : PAbstractDictionary(dummy, c) { }
+
+  private:
+    PObject * GetAt(const PObject &) const { return NULL; }
 };
 
 
@@ -832,14 +840,13 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
  */
 #define PDICTIONARY(cls, K, D) typedef PDictionary<K, D> cls
 
-
 template <class K>
 PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 /* This template class maps the <A>PAbstractDictionary</A> to a specific key
    type and a <A>POrdinalKey</A> data type. The functions in this class
    primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the <A>PDECLARE_ORDINAL_DICTIONARY</A> 
+   Note that if templates are not used the <A>PDECLARE_ORDINAL_DICTIONARY</A>
    macro will simulate the template instantiation.
  */
 
@@ -944,6 +951,13 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
   protected:
     POrdinalDictionary(int dummy, const POrdinalDictionary * c)
       : PAbstractDictionary(dummy, c) { }
+
+  private:
+    PObject * GetAt(PINDEX) const { return NULL; }
+    PObject * GetAt(const PObject &) const { return NULL; }
+    BOOL SetAt(PINDEX, PObject *) { return FALSE; }
+    BOOL SetAt(const PObject &, PObject *) { return FALSE; }
+    BOOL SetDataAt(PINDEX, PObject *) { return FALSE; }
 };
 
 
