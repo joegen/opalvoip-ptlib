@@ -57,6 +57,7 @@ class PSoundChannelCoreAudio : public PSoundChannel
       setformat_,
       setbuffer_,
       running_,
+		mute_,
       destroy_
    };
 
@@ -175,6 +176,10 @@ class PSoundChannelCoreAudio : public PSoundChannel
          UInt32 inNumberFrames,
          AudioBufferList * ioData);
 
+	static OSStatus VolumeChangePropertyListener(AudioDeviceID id, 
+			UInt32 chan, Boolean isInput, AudioDevicePropertyID propID, 
+			void* inUserData);
+
 
    /**
     * Recording needs a couple more buffers, which are setup by this 
@@ -187,6 +192,15 @@ class PSoundChannelCoreAudio : public PSoundChannel
     */
    Directions direction;
    State state;
+
+	static pthread_mutex_t& GetReadMuteMutex();
+	static pthread_mutex_t& GetWriteMuteMutex();
+	static BOOL& GetReadMute();
+	static BOOL& GetWriteMute();
+	/* These functions just return the right mutex/variable depending whehter
+	 * the channel is recorder/player */
+	pthread_mutex_t& GetIsMuteMutex();
+	BOOL& isMute();
 
    /** 
     * Devices
