@@ -9,6 +9,19 @@
 			Thank you for listening.
 		</prompt>
 	</block>
+	<block>
+		<menu>
+		  <prompt>Select one of </prompt>
+		  <choice dtmf="1" next="#top1">choice 1</choice>
+		  <choice dtmf="2" next="#top2">choice 2</choice>
+		</menu>
+	</block>
+	<field name="top1">
+	  <prompt>You selected 1</prompt>
+    </field>
+	<field name="top2">
+	  <prompt>You selected 2</prompt>
+    </field>
 </form>
 
 </vxml>
