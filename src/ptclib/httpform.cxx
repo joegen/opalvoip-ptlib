@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.24 1998/08/09 11:25:51 robertj Exp $
+ * $Id: httpform.cxx,v 1.25 1998/08/20 05:51:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.25  1998/08/20 05:51:06  robertj
+ * Fixed bug where substitutions did not always occur if near end of macro block.
+ * Improved internationalisation. Allow HTML override of strings in macros.
+ *
  * Revision 1.24  1998/08/09 11:25:51  robertj
  * GNU C++ warning removal.
  *
@@ -244,7 +248,21 @@ static BOOL FindSpliceFieldName(const PString & text,
 }
 
 
-void PHTTPField::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const
+static void SpliceAdjust(const PString & str,
+                         PString & text,
+                         PINDEX pos,
+                         PINDEX & len,
+                         PINDEX & finish)
+{
+  text.Splice(str, pos, len);
+  PINDEX newLen = str.GetLength();
+  if (finish != P_MAX_INDEX)
+    finish += newLen - len;
+  len = newLen;
+}
+
+
+void PHTTPField::ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const
 {
   PString name;
   PINDEX pos, len;
@@ -252,7 +270,7 @@ void PHTTPField::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) c
     if (pos > finish)
       break;
     if (baseName == name)
-      text.Splice(fullName, pos, len);
+      SpliceAdjust(fullName, text, pos, len, finish);
     start = pos + len;
   }
 }
@@ -314,8 +332,10 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
     if (thisValue == myValue) {
       if (selpos == P_MAX_INDEX) {
         text.Splice(" selected", pos+7, 0);
-        finishAdjust += 9;
-        end += 9;
+        if (finishAdjust != P_MAX_INDEX)
+          finishAdjust += 9;
+        if (end != P_MAX_INDEX)
+          end += 9;
         len += 9;
       }
     }
@@ -329,8 +349,10 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
         if (valid >= validValues.GetSize()) {
           text.Delete(pos, len);
           selpos = P_MAX_INDEX;
-          finishAdjust -= len;
-          end -= len;
+          if (finishAdjust != P_MAX_INDEX)
+            finishAdjust -= len;
+          if (end != P_MAX_INDEX)
+            end -= len;
           len = 0;
         }
       }
@@ -342,8 +364,10 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
           sellen++;
         }
         text.Delete(selpos, sellen);
-        finishAdjust -= sellen;
-        end -= sellen;
+        if (finishAdjust != P_MAX_INDEX)
+          finishAdjust -= sellen;
+        if (end != P_MAX_INDEX)
+          end -= sellen;
         len -= sellen;
       }
     }
@@ -354,7 +378,7 @@ PString PHTTPField::GetHTMLSelect(const PString & selection) const
 {
   PString text = selection;
   PStringList dummy1;
-  PINDEX dummy2;
+  PINDEX dummy2 = P_MAX_INDEX;
   AdjustSelectOptions(text, 0, P_MAX_INDEX, GetValue(FALSE), dummy1, dummy2);
   return text;
 }
@@ -512,21 +536,7 @@ PString PHTTPCompositeField::GetHTMLInput(const PString & input) const
 }
 
 
-static void SpliceAdjust(const PString & str,
-                         PString & text,
-                         PINDEX pos,
-                         PINDEX & len,
-                         PINDEX & finish)
-{
-  text.Splice(str, pos, len);
-  PINDEX newLen = str.GetLength();
-  if (finish != P_MAX_INDEX)
-    finish += newLen - len;
-  len = newLen;
-}
-
-
-void PHTTPCompositeField::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const
+void PHTTPCompositeField::ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const
 {
   static PRegularExpression FieldName( "!--#form[ \t\r\n]+[^-]*[ \t\r\n]+[^-]*[ \t\r\n]*)?--"
                                        "|"
@@ -774,19 +784,35 @@ void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
 }
 
 
-void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const
+void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const
 {
   PString original = text(start, finish);
   PINDEX origFinish = finish;
+  PINDEX finalFinish = finish;
 
   PINDEX fld = fields.GetSize();
   while (fld > 0) {
     fields[--fld].ExpandFieldNames(text, start, finish);
 
     PINDEX pos,len;
+    static PRegularExpression RowNum("<?!--#form[ \t\r\n]+rownum[ \t\r\n]*-->?",
+                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+    while (text.FindRegEx(RowNum, pos, len, start, finish))
+      SpliceAdjust(psprintf("%u", fld+1), text, pos, len, finish);
+
+    static PRegularExpression SubForm("<?!--#form[ \t\r\n]+subform[ \t\r\n]*-->?",
+                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+    while (text.FindRegEx(SubForm, pos, len, start, finish)) {
+      PString fmt = fullName;
+      if (fmt.Find("%u") == P_MAX_INDEX)
+        fmt += " %u";
+      SpliceAdjust("subformprefix=" + PURL::TranslateString(psprintf(fmt, fld+1), PURL::QueryTranslation),
+                   text, pos, len, finish);
+    }
+
     static PRegularExpression RowControl("<?!--#form[ \t\r\n]+rowcontrol[ \t\r\n]*-->?",
                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-    if (text.FindRegEx(RowControl, pos, len, start, finish)) {
+    while (text.FindRegEx(RowControl, pos, len, start, finish)) {
       PHTML html = PHTML::InForm;
       AddArrayControlBox(html, fld);
       SpliceAdjust(html, text, pos, len, finish);
@@ -797,7 +823,7 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX fini
     static PRegularExpression SelEndRegEx("</select[^>]*>",
                                           PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     PINDEX begin, end;
-    if (FindSpliceBlock(SelectRow, SelEndRegEx, text, 0, pos, len, begin, end)) {
+    while (FindSpliceBlock(SelectRow, SelEndRegEx, text, 0, pos, len, begin, end)) {
       PStringList options = GetArrayControlOptions(fld, fields.GetSize()-1, orderedArray);
       AdjustSelectOptions(text, begin, end, options[0], options, finish);
       static PRegularExpression RowSelect("!--#form[ \t\r\n]+rowselect[ \t\r\n]*--",
@@ -806,26 +832,16 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX fini
         SpliceAdjust(fields[fld].GetName() + ArrayControlBox, text, pos, len, finish);
     }
 
-    static PRegularExpression RowNum("<?!--#form[ \t\r\n]+rownum[ \t\r\n]*-->?",
-                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-    if (text.FindRegEx(RowNum, pos, len, start, finish))
-      SpliceAdjust(psprintf("%u", fld+1), text, pos, len, finish);
-
-    static PRegularExpression SubForm("<?!--#form[ \t\r\n]+subform[ \t\r\n]*-->?",
-                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-    if (text.FindRegEx(SubForm, pos, len, start, finish)) {
-      PString fmt = fullName;
-      if (fmt.Find("%u") == P_MAX_INDEX)
-        fmt += " %u";
-      SpliceAdjust("subformprefix=" + PURL::TranslateString(psprintf(fmt, fld+1), PURL::QueryTranslation),
-                   text, pos, len, finish);
-    }
+    finalFinish += finish - origFinish;
 
     if (fld > 0) {
       text.Splice(original, start, 0);
       finish = origFinish;
+      finalFinish += finish - start;
     }
   }
+
+  finish = finalFinish;
 }
 
 
@@ -1672,8 +1688,10 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
                   PURL::TranslateString(prefix, PURL::QueryTranslation),
                   pos, len);
     field = fields.LocateName(prefix);
-    if (field != NULL)
-      field->ExpandFieldNames(text, 0, P_MAX_INDEX);
+    if (field != NULL) {
+      finish = P_MAX_INDEX;
+      field->ExpandFieldNames(text, 0, finish);
+    }
   }
 
   // Locate <!--#form array name--> macros and expand them
