@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.8 1995/12/10 11:56:42 robertj Exp $
+ * $Id: doswin.cxx,v 1.9 1996/01/02 12:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.9  1996/01/02 12:55:15  robertj
+ * Fixed copy of directories.
+ *
  * Revision 1.8  1995/12/10 11:56:42  robertj
  * Moved error code for specific WIN32 and MS-DOS versions.
  *
@@ -46,6 +49,13 @@
 void PDirectory::Construct()
 {
   PString::operator=(CreateFullPath(*this, TRUE));
+}
+
+
+void PDirectory::CopyContents(const PDirectory & dir)
+{
+  scanMask = dir.scanMask;
+  fileinfo = dir.fileinfo;
 }
 
 
