@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.3 1996/01/28 14:15:38 robertj Exp $
+ * $Id: http.h,v 1.4 1996/02/03 11:03:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.4  1996/02/03 11:03:32  robertj
+ * Added ismodified since and expires time checking.
+ * Added PHTTPString that defaults to empty string.
+ *
  * Revision 1.3  1996/01/28 14:15:38  robertj
  * Changed PCharArray in OnLoadData to PString for convenience in mangling data.
  * Beginning of pass through resource type.
@@ -315,6 +319,12 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        viewer.
      */
 
+    void SetDefaultMIMEInfo(
+      PMIMEInfo & info       // Extra MIME information in command.
+    );
+    /* Set the default mime info
+     */
+
 
   protected:
     int majorVersion;
@@ -493,6 +503,25 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
 
+    virtual BOOL IsModifiedSince(
+      const PTime & when    // Time to see if modified later than
+    );
+    /* Check to see if the resource has been modified since the date
+       specified.
+
+       <H2>Returns:</H2>
+       TRUE if has been modified since.
+     */
+
+    virtual BOOL GetExpirationDate(
+      PTime & when          // Time that the resource expires
+    );
+    /* Get a block of data (eg HTML) that the resource contains.
+
+       <H2>Returns:</H2>
+       Status of load operation.
+     */
+
     virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
@@ -559,6 +588,9 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
  */
 
   public:
+    PHTTPString(
+      const PURL & url             // Name of the resource in URL space.
+    );
     PHTTPString(
       const PURL & url,            // Name of the resource in URL space.
       const PString & str          // String to return in this resource.
