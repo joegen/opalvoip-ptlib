@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.18  1999/07/06 05:00:26  robertj
+ * Incremented release number
+ *
  * Revision 1.17  1999/07/01 12:21:46  robertj
  * Changed PASN_Choice cast operators so no longer "break" const-ness of object.
  *
@@ -229,7 +232,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 1, AlphaCode, 2)
+  : PProcess("Equivalence", "ASNParse", 1, 1, AlphaCode, 3)
 {
 }
 
