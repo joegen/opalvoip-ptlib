@@ -2814,6 +2814,26 @@ _ACEOF
 
 
 
+if test "${OSTYPE:-unknown}" = "solaris"; then
+  echo "$as_me:$LINENO: checking checking for FD_SETSIZE" >&5
+echo $ECHO_N "checking checking for FD_SETSIZE... $ECHO_C" >&6
+  _FD_SYSTEM_FILE=/etc/system
+  _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -c1`
+  if test "$_FD_SETSIZE" = "#"; then
+    _FD_SETSIZE=4098
+  else
+    _FD_SETSIZE=`cat $_FD_SYSTEM_FILE | grep rlim_fd_max | cut -f2 -d'='`
+    if test "x$_FD_SETSIZE" = "x"; then
+      _FD_SETSIZE=4098
+    else
+      STDCCFLAGS="$STDCCFLAGS -DFD_SETSIZE=$_FD_SETSIZE"
+    fi
+  fi
+  echo "$as_me:$LINENO: result: $_FD_SETSIZE" >&5
+echo "${ECHO_T}$_FD_SETSIZE" >&6
+fi
+
+
 if test ${OSTYPE} != Darwin ; then
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
