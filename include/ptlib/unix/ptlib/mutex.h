@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.8  2000/10/30 05:48:33  robertj
+ * Added assert when get nested mutex.
+ *
  * Revision 1.7  1999/09/23 06:52:16  robertj
  * Changed PSemaphore to use Posix semaphores.
  *
@@ -65,13 +68,14 @@
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
     virtual BOOL WillBlock() const;
+  protected:
+    pthread_t ownerThreadId;
 #ifdef P_HAS_SEMAPHORES
     pthread_mutex_t mutex;
 #endif
 #endif
 #ifdef BE_THREADS
-  protected:
-  	int32 benaphoreCount;
+    int32 benaphoreCount;
 #endif
 };
 
