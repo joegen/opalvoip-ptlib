@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.8  2003/05/21 03:59:10  dereksmithies
+ * Fix close down bug.
+ *
  * Revision 1.7  2003/05/17 03:21:26  rjongbloed
  * Removed need to do strange things with main() function.
  *
@@ -278,17 +281,15 @@ void PSDLDisplayThread::Main()
     
     ProcessSDLEvents();
     
-    if (closeRecWindow) {
+    if ((closeRecWindow && closeEncWindow) ||
+	(closeEncWindow && (overlay[0] == NULL)) ||
+	(closeRecWindow && (overlay[1] == NULL))) {
       CloseWindow(FALSE);     
-      ProcessSDLEvents();
-    }
-
-    if (closeEncWindow) {
       CloseWindow(TRUE);
       ProcessSDLEvents();
     }
   }
-
+  
   CloseWindow(TRUE);
   CloseWindow(FALSE);
   ::SDL_Quit();
@@ -377,6 +378,7 @@ void PSDLDisplayThread::RequestCloseWindow(BOOL isEncoding)
     closeRecWindow = TRUE;
 
   commandSync.Signal();
+  PTRACE(3, "PSDL\tRequest: Close window " << GetDirName(isEncoding) << " video Finished");
 }
 
 
@@ -553,14 +555,15 @@ BOOL PSDLDisplayThread::SetOverlaySize (BOOL isEncoding, unsigned _width, unsign
 void PSDLDisplayThread::CloseWindow(BOOL isEncoding)
 {
   PINDEX dispIndex = GetDisplayIndex(isEncoding);
-  PTRACE(3, "PSDL\tClose window " << dispIndex);
+  PTRACE(3, "PSDL\tClose window " << dispIndex << " " << GetDirName(isEncoding) << " video");
 
   if (!(width[dispIndex] || height[dispIndex])) {
+    PTRACE(3, "PSDL\tWindow " << GetDirName(isEncoding) << " video has zero width, and zero height");
     return;
   }
 
   if(overlay[dispIndex] != NULL) {
-    PTRACE(3, "PSDL\tClose the overlay for window " << dispIndex);
+    PTRACE(3, "PSDL\tClose the overlay for window " << dispIndex << " " << GetDirName(isEncoding) << " video");
     ::SDL_FreeYUVOverlay(overlay[dispIndex]);
     overlay[dispIndex] = NULL;    
   }
@@ -570,10 +573,14 @@ void PSDLDisplayThread::CloseWindow(BOOL isEncoding)
   displayPosn[dispIndex].w = 0;
   displayPosn[dispIndex].h = 0;
 
-  if(overlay[1-dispIndex] == NULL)
+  if(overlay[1-dispIndex] == NULL) {
+    PTRACE(3, "PSDL\tClose screen as both overlays are NULL");
     CloseScreen();
-  else
+  } else {
+    PTRACE(3, "PSDL\t Resize screen as other overlay is non null, " 
+	   << displayPosn[1-dispIndex].w << "x" << displayPosn[1-dispIndex].h);
     ResizeScreen(displayPosn[1-dispIndex].w, displayPosn[1-dispIndex].h);
+  }
 }
 
 
@@ -612,7 +619,8 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
 
   unsigned dispIndex = GetDisplayIndex(isEncoding);
 
-  PTRACE(6, "PSDL\tRedraw starts now. Window " << dispIndex);  
+  PTRACE(6, "PSDL\tRedraw starts now. Window " << dispIndex 
+	 << " " << GetDirName(isEncoding) << " video");  
         
   if (DisplayIsShutDown()) {   //Some task somewhere has closed our display device.
     PTRACE(6, "PSDL\tScreen is closed. ::Redraw() returning immediately"); 
@@ -643,9 +651,9 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
     return TRUE;       //Again, we lost the overlay, exit quickly.
   }
  
-#if 0 
-%  if (overlay[1 - dispIndex] == NULL) {
-%    PTRACE(6, "PSDL\tRedraw end prematurely, other overlay undefined");
+#if 0
+  if (overlay[1 - dispIndex] == NULL) {
+    PTRACE(6, "PSDL\tRedraw end prematurely, other overlay undefined");
     return TRUE;       //Again, we lost the overlay, exit quickly.
   }
 #endif
@@ -707,4 +715,4 @@ unsigned PSDLDisplayThread::GetDisplayIndex(BOOL isEncoding)
 #endif // P_SDL
 
 
-// Edn of file ////////////////////////////////////////////////////////////////
+// End of file ////////////////////////////////////////////////////////////////
