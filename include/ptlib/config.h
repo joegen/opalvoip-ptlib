@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.18  1998/10/30 12:23:55  robertj
+ * Added ability to get all key values as a dictionary.
+ *
  * Revision 1.17  1998/09/23 06:20:21  robertj
  * Added open source copyright license.
  *
@@ -216,6 +219,17 @@ PDECLARE_CLASS(PConfig, PObject)
 
        <H2>Returns:</H2>
        list of all key names.
+     */
+
+    PStringToString GetAllKeyValues() const;
+    PStringToString GetAllKeyValues(
+      const PString & section   // Section to use instead of the default.
+    ) const;
+    /* Get all of the keys in the section and their values. If the section
+       name is not specified then use the default section.
+
+       <H2>Returns:</H2>
+       Dictionary of all key names and their values.
      */
 
 
