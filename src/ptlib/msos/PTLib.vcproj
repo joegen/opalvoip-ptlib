@@ -93,6 +93,7 @@
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="ptlib.h"
 				PrecompiledHeaderFile=".\..\..\..\Lib\Release/PTLib.pch"
