@@ -24,7 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.11  2003/07/12 00:10:40  csoutheren
+ * Fixed problem where Modify routines were calling Add, thanks to Ravelli Rossano
+ *
  * Revision 1.10  2003/06/06 09:14:01  dsandras
+ *
  * Test that a search result has been returned before calling ldapresult2error.
  *
  * Revision 1.9  2003/06/05 23:17:52  rjongbloed
@@ -432,19 +436,19 @@ BOOL PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attribute
 
 BOOL PLDAPSession::Modify(const PString & dn, const PStringToString & attributes)
 {
-  return Add(dn, AttribsFromDict(attributes));
+  return Modify(dn, AttribsFromDict(attributes));
 }
 
 
 BOOL PLDAPSession::Modify(const PString & dn, const PStringArray & attributes)
 {
-  return Add(dn, AttribsFromArray(attributes));
+  return Modify(dn, AttribsFromArray(attributes));
 }
 
 
 BOOL PLDAPSession::Modify(const PString & dn, const PLDAPStructBase & attributes)
 {
-  return Add(dn, AttribsFromStruct(attributes));
+  return Modify(dn, AttribsFromStruct(attributes));
 }
 
 
