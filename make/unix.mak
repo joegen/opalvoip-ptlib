@@ -25,8 +25,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.23  1998/11/14 10:47:22  robertj
-# Support for PPC Linux, better arrangement of variables.
+# Revision 1.24  1998/11/16 07:30:15  robertj
+# Removed confusion between sunos and solaris
+#
+# Revision 1.24  1998/11/16 07:30:15  robertj
+# Removed confusion between sunos and solaris
 #
 # Revision 1.23  1998/11/14 10:47:22  robertj
 # Support for PPC Linux, better arrangement of variables.
@@ -66,10 +69,6 @@ MACHTYPE	= x86
 ifeq ($(OSTYPE),mklinux)
 OSTYPE   := linux
 endif #linux
-
-ifeq ($(HOSTTYPE),sun4)
-OSTYPE		= sunos
-endif
 ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 	@echo
 
