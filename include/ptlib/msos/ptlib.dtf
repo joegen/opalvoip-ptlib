@@ -1561,8 +1561,8 @@ EXPORTS
     ?GetDCD@PSerialChannel@@QAEHXZ @993 NONAME ;public: int __thiscall PSerialChannel::GetDCD(void)
     ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @2152 NONAME ;public: static class PString  __cdecl PSoundChannel::GetDefaultDevice(enum PSoundChannel::Directions)
     ?GetDefaultDevice@PVideoChannel@@SA?AVPString@@W4Directions@1@@Z @2519 NONAME ;public: static class PString  __cdecl PVideoChannel::GetDefaultDevice(enum PVideoChannel::Directions)
-    ?GetDefaultIpAddressFamily@PIPSocket@@SA?BHXZ @3448 NONAME ;public: static int const  __cdecl PIPSocket::GetDefaultIpAddressFamily(void)
-    ?GetDefaultIpAny@PIPSocket@@SA?BVAddress@1@XZ @3449 NONAME ;public: static class PIPSocket::Address const  __cdecl PIPSocket::GetDefaultIpAny(void)
+    ?GetDefaultIpAddressFamily@PIPSocket@@SAHXZ @3570 NONAME ;public: static int __cdecl PIPSocket::GetDefaultIpAddressFamily(void)
+    ?GetDefaultIpAny@PIPSocket@@SA?AVAddress@1@XZ @3571 NONAME ;public: static class PIPSocket::Address  __cdecl PIPSocket::GetDefaultIpAny(void)
     ?GetDefaultSection@PConfig@@QBE?AVPString@@XZ @2415 NONAME ;public: class PString  __thiscall PConfig::GetDefaultSection(void)const 
     ?GetDeviceID@PSoundChannel@@AAEHABVPString@@W4Directions@1@AAI@Z @3038 NONAME ;private: int __thiscall PSoundChannel::GetDeviceID(class PString const &,enum PSoundChannel::Directions,unsigned int &)
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringArray@@W4Directions@1@@Z @2053 NONAME ;public: static class PStringArray  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
@@ -2507,7 +2507,6 @@ EXPORTS
     ?SetDataBits@PSerialChannel@@QAEHE@Z @1658 NONAME ;public: int __thiscall PSerialChannel::SetDataBits(unsigned char)
     ?SetDefaultIpAddressFamily@PIPSocket@@SAXH@Z @3451 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamily(int)
     ?SetDefaultIpAddressFamilyV4@PIPSocket@@SAXXZ @3452 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV4(void)
-    ?SetDefaultIpAddressFamilyV6@PIPSocket@@SAXXZ @3453 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV6(void)
     ?SetDstFrameSize@PColourConverter@@UAEHIIH@Z @2872 NONAME ;public: virtual int __thiscall PColourConverter::SetDstFrameSize(unsigned int,unsigned int,int)
     ?SetDTR@PSerialChannel@@QAEXH@Z @1660 NONAME ;public: void __thiscall PSerialChannel::SetDTR(int)
     ?SetErrorValues@PChannel@@IAEHW4Errors@1@HW4ErrorGroup@1@@Z @3029 NONAME ;protected: int __thiscall PChannel::SetErrorValues(enum PChannel::Errors,int,enum PChannel::ErrorGroup)
