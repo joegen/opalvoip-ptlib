@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.15 1995/12/10 11:32:11 robertj Exp $
+ * $Id: ipsock.h,v 1.16 1995/12/23 03:44:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.16  1995/12/23 03:44:59  robertj
+ * Fixed unix portability issues.
+ *
  * Revision 1.15  1995/12/10 11:32:11  robertj
  * Numerous fixes for sockets.
  *
@@ -115,11 +118,11 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
         Address & operator=(const Address & addr);
         operator PString() const;
-        operator DWORD() const { return Net2Host(S_un.S_addr); }
-        BYTE Byte1() const { return S_un.S_un_b.s_b1; }
-        BYTE Byte2() const { return S_un.S_un_b.s_b2; }
-        BYTE Byte3() const { return S_un.S_un_b.s_b3; }
-        BYTE Byte4() const { return S_un.S_un_b.s_b4; }
+        operator DWORD() const;
+        BYTE Byte1() const;
+        BYTE Byte2() const;
+        BYTE Byte3() const;
+        BYTE Byte4() const;
     };
 
     static BOOL GetAddress(
