@@ -114,12 +114,12 @@ ifdef BUILDFILES
 buildnum.o:	buildnum.c
 	cc -o buildnum.o -c buildnum.c
 
-ifndef DEBUG
-buildnum.c:	$(SOURCES) $(BUILDFILES) 
-	buildinc buildnum.c
-else
+#ifndef DEBUG
+#buildnum.c:	$(SOURCES) $(BUILDFILES) 
+#	buildinc buildnum.c
+#else
 buildnum.c:
-endif
+#endif
 
 endif
 
