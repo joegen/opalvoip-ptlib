@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.83  1999/01/06 10:58:01  robertj
+ * Fixed subtle mutex bug in returning string hostname from DNS cache.
+ *
  * Revision 1.82  1998/12/22 10:25:01  robertj
  * Added clone() function to support SOCKS in FTP style protocols.
  * Fixed internal use of new operator in IP cache.
@@ -405,8 +408,10 @@ BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
 {
   PIPCacheData * host = GetHost(name);
 
-  if (host != NULL)
+  if (host != NULL) {
     hostname = host->GetHostName();
+    hostname.MakeUnique();
+  }
 
   mutex.Signal();
 
@@ -491,8 +496,10 @@ BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostnam
 {
   PIPCacheData * host = GetHost(addr);
 
-  if (host != NULL)
+  if (host != NULL) {
     hostname = host->GetHostName();
+    hostname.MakeUnique();
+  }
 
   mutex.Signal();
   return host != NULL;
