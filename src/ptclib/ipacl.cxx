@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.4  1999/02/08 08:05:39  robertj
+ * Changed semantics of IP access control list for empty list.
+ *
  * Revision 1.3  1999/01/31 10:14:07  robertj
  * Changed about dialog to be full company name
  *
@@ -495,13 +498,17 @@ BOOL PIpAccessControlList::InternalRemoveEntry(PIpAccessControlEntry & entry)
 
 BOOL PIpAccessControlList::IsAllowed(PIPSocket::Address address)
 {
-  for (PINDEX i = 0; i < GetSize(); i++) {
+  PINDEX size = GetSize();
+  if (size == 0)
+    return TRUE;
+
+  for (PINDEX i = 0; i < size; i++) {
     PIpAccessControlEntry & entry = operator[](i);
     if (entry.Match(address))
       return entry.IsAllowed();
   }
 
-  return TRUE;
+  return FALSE;
 }
 
 
