@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.85  1999/07/06 13:37:07  robertj
+ * Fixed bug in PThread::IsSuspended(), returned exactly the opposite state!
+ *
  * Revision 1.84  1999/07/06 04:46:01  robertj
  * Fixed being able to case an unsigned to a PTimeInterval.
  * Improved resolution of PTimer::Tick() to be millisecond accurate.
@@ -1017,7 +1020,7 @@ BOOL PThread::IsSuspended() const
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
   SuspendThread(threadHandle);
-  return ResumeThread(threadHandle) <= 1;
+  return ResumeThread(threadHandle) > 1;
 }
 
 
