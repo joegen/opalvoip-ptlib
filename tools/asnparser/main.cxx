@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.39  2002/11/26 11:39:10  craigs
+ * Added option to allow adding functions to generated header files
+ *
  * Revision 1.38  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -295,6 +298,9 @@ class App : public PProcess
   public:
     App();
     void Main();
+    void OutputAdditionalHeaders(ostream & hdr, const PString & className);
+  protected:
+    PStringToString classToHeader;
 };
 
 PCREATE_PROCESS(App);
@@ -321,7 +327,9 @@ void App::Main()
              "s-split;"
              "o-output:"
              "m-module:"
-             "r-rename:");
+             "r-rename:"
+             "-classheader:"
+             "-classheaderfile:");
 
   if (args.HasOption('V'))
     return;
@@ -369,6 +377,52 @@ void App::Main()
   fatals     = 0;
   warnings   = 0;
 
+  if (args.HasOption("classheaderfile")) {
+    PStringArray lines = args.GetOptionString("classheaderfile").Lines();
+    PINDEX i;
+    for (i = 0; i < lines.GetSize(); i++) {
+      PString str = lines[i];
+      PINDEX pos = str.Find("=");
+      if (pos == P_MAX_INDEX) {
+        PError << GetName() << ": malformed --classheaderfile option" << endl;
+        return;
+      } else {
+        PString className = str.Left(pos);
+        PFilePath fn      = str.Right(pos+1);
+        PTextFile file(fn, PFile::ReadOnly);
+        if (!file.IsOpen()) {
+          PError << GetName() << ": cannot open file required for --classheaderfile option \"" << fn 
+                              << "\" :" << prcFile.GetErrorText() << endl;
+          return;
+        }
+        PString text;
+        PString line;
+        while (file.ReadLine(line))
+          text += line + "\n";
+        text.Replace("\\\\n", "\n", TRUE);
+        classToHeader.SetAt(className, text);
+      }
+    }
+  }
+
+  if (args.HasOption("classheader")) {
+    PStringArray lines = args.GetOptionString("classheader").Lines();
+    PINDEX i;
+    for (i = 0; i < lines.GetSize(); i++) {
+      PString str = lines[i];
+      PINDEX pos = str.Find("=");
+      if (pos == P_MAX_INDEX) {
+        PError << GetName() << ": malformed --classheader option" << endl;
+        return;
+      } else {
+        PString className = str.Left(pos);
+        PString text      = str.Mid(pos+1);
+        text.Replace("\\\\n", "\n", TRUE);
+        classToHeader.SetAt(className, text);
+      }
+    }
+  }
+
   if (args.HasOption('v'))
     cout << "Parsing..." << endl;
 
@@ -390,6 +444,14 @@ void App::Main()
   }
 }
 
+void App::OutputAdditionalHeaders(ostream & hdr, const PString & className)
+{
+  if (classToHeader.Contains(className)) {
+    hdr << "// following code added by command line option" << endl << endl
+        << classToHeader[className] << endl
+        << endl << "// end of added code" << endl << endl;
+  }
+}
 
 /////////////////////////////////////////
 //
@@ -1141,6 +1203,9 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
   else
     hdr << tag.number;
   hdr << ", TagClass tagClass = " << UniversalTagClassNames[tag.type] << ");\n\n";
+
+  App & app = (App &)PProcess::Current();
+  app.OutputAdditionalHeaders(hdr, GetIdentifier());
 
   // Output cxx file implementation of class
   cxx << "//\n"
