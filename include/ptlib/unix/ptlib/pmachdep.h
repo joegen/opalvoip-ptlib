@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.58  2004/02/21 21:26:30  ykiryanov
+ * Added P_THREADIDENTIFIER for BeOS threads
+ *
  * Revision 1.57  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -646,6 +649,10 @@ typedef	int SOCKET;
 #endif  // P_HAS_SEMPAHORES
 
 #endif  // P_PTHREADS
+
+#ifdef BE_THREADS
+#define P_THREADIDENTIFIER thread_id
+#endif // BE_THREADS
 
 #endif // _PMACHDEP_H
 
