@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.26  2000/05/02 02:58:09  robertj
+ * Added strcasecmp macro, BSDish version of stricmp
+ *
  * Revision 1.25  2000/02/28 11:39:52  robertj
  * Removed warning for if STRICT (for windows.h) already defined.
  *
@@ -250,6 +253,8 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #define PASSERTINDEX(idx)
 
 #endif
+
+#define strcasecmp(s1,s2) stricmp(s1,s2)
 
 
 ///////////////////////////////////////////////////////////////////////////////
