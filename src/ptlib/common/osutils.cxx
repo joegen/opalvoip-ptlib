@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.114  1998/11/06 02:37:53  robertj
+ * Fixed the fix for semaphore timeout race condition.
+ *
  * Revision 1.113  1998/11/03 10:52:19  robertj
  * Fixed bug in semaphores with timeout saying timed out when really signalled.
  *
@@ -2135,6 +2138,7 @@ void PThread::Yield()
         case SuspendedBlockSem :
           if (thread->blockingSemaphore->timeout == 0) {
             thread->blockingSemaphore->PSemaphore::Signal();
+            thread->blockingSemaphore->timeout = 0;
             if (thread->status == Waiting) {
               next = thread;
               next->status = Running;
