@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.202  2002/12/18 05:31:31  robertj
+ * Moved PTimeInterval::GetInterval() to common code.
+ *
  * Revision 1.201  2002/12/11 03:23:27  robertj
  * Fixed deadlock in read/write mutex, at price of not having seemless upgrading
  *   of read lock to write lock. There is now a window in which some other
@@ -972,6 +975,21 @@ PTrace::Block::~Block()
 void PDirectory::CloneContents(const PDirectory * d)
 {
   CopyContents(*d);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+DWORD PTimeInterval::GetInterval() const
+{
+  if (milliseconds <= 0)
+    return 0;
+
+  if (milliseconds >= UINT_MAX)
+    return UINT_MAX;
+
+  return (DWORD)milliseconds;
 }
 
 
