@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.12  2002/12/11 03:21:28  robertj
+ * Updated documentation for read/write mutex.
+ *
  * Revision 1.11  2002/10/04 08:20:44  robertj
  * Changed read/write mutex so can be called by same thread without deadlock.
  *
@@ -279,11 +282,6 @@ class PIntCondMutex : public PCondMutex
    This is a special type of mutual exclusion, where the excluded area may
    have multiple read threads but only one write thread and the read threads
    are blocked on write as well.
-
-   NOTE: this type of mutex cannot be nested in the same thread. So if you call
-   StartWrite() consecutive in the same thread it will GUARANTEED to deadlock. A
-   nested StartRead() in the same thread can also deadlock if there are pending
-   write locks, so this should not be executed either.
  */
 
 class PReadWriteMutex : public PObject
@@ -298,6 +296,8 @@ class PReadWriteMutex : public PObject
   /**@name Operations */
   //@{
     /** This function attempts to acquire the mutex for reading.
+        This call may be nested and must have an equal number of EndRead()
+        calls for the mutex to be released.
      */
     void StartRead();
 
@@ -306,10 +306,32 @@ class PReadWriteMutex : public PObject
     void EndRead();
 
     /** This function attempts to acquire the mutex for writing.
+        This call may be nested and must have an equal number of EndWrite()
+        calls for the mutex to be released.
+
+        Note, if the same thread had a read lock previous to this call then
+        the read lock is automatically released and reacquired when EndWrite()
+        is called, unless an EndRead() is called. The EndRead() and EndWrite()
+        calls do not have to be strictly nested.
+
+        It should also be noted that a consequence of this is that another
+        thread may acquire the write lock before the thread that previously
+        had the read lock. Thus it is impossibly to go straight from a read
+        lock to write lock without the possiblility of the object being
+        changed and application logic should take this into account.
      */
     void StartWrite();
 
     /** This function attempts to release the mutex for writing.
+        Note, if the same thread had a read lock when the StartWrite() was
+        called which has not yet been released by an EndRead() call then this
+        will reacquire the read lock.
+
+        It should also be noted that a consequence of this is that another
+        thread may acquire the write lock before the thread that regains the
+        read lock. Thus it is impossibly to go straight from a write lock to
+        read lock without the possiblility of the object being changed and
+        application logic should take this into account.
      */
     void EndWrite();
   //@}
