@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.94  2000/11/02 01:31:11  robertj
+ * Fixed problem with PSemaphore::WillBlock actually locking semaphore.
+ *
  * Revision 1.93  2000/10/20 05:31:53  robertj
  * Added function to change auto delete flag on a thread.
  *
@@ -1394,9 +1397,13 @@ void PSemaphore::Signal()
 
 BOOL PSemaphore::WillBlock() const
 {
-  DWORD result = WaitForSingleObject(handle, 0);
-  PAssertOS(result != WAIT_FAILED);
-  return result == WAIT_TIMEOUT;
+  PSemaphore * unconst = (PSemaphore *)this;
+
+  if (!unconst->Wait(0))
+    return TRUE;
+
+  unconst->Signal();
+  return FALSE;
 }
 
 
