@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.32  2003/04/03 09:28:37  robertj
+ * Added reversed RGB byte order versions (BGR24), thanks Damien Sandras
+ *
  * Revision 1.31  2003/03/31 11:30:14  rogerh
  * make 'cb' and 'cr' contain the values that their name implies.
  *
@@ -146,7 +149,11 @@
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
 PSYNONYM_COLOUR_CONVERTER(RGB24,  RGB24);
+PSYNONYM_COLOUR_CONVERTER(RGB24F, RGB24F);
+PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
+PSYNONYM_COLOUR_CONVERTER(BGR24F, BGR24F);
 PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
+PSYNONYM_COLOUR_CONVERTER(RGB32F, RGB32F);
 PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
@@ -189,7 +196,8 @@ class PStandardColourConverter : public PColourConverter
       BYTE * rgb,
       PINDEX * bytesReturned,
       unsigned rgbIncrement,
-      BOOL flipVertical
+      BOOL flipVertical,
+      BOOL flipBR
     ) const;
     void ResizeYUV422(
       const BYTE * src,
@@ -661,7 +669,8 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned,
                                             unsigned rgbIncrement,
-					    BOOL     flipVertical) const
+					    BOOL     flipVertical,
+                                            BOOL     flipBR) const
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
@@ -717,11 +726,19 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
         g = l+gd;
         b = l+bd;
         
-        *(dstImageFrame + rgbIncrement*pixpos[p])   = LIMIT(b);
-        *(dstImageFrame + rgbIncrement*pixpos[p]+1) = LIMIT(g);
-        *(dstImageFrame + rgbIncrement*pixpos[p]+2) = LIMIT(r);
+        BYTE * rgpPtr = dstImageFrame + rgbIncrement*pixpos[p];
+        if (flipBR) {
+          *rgpPtr++ = LIMIT(r);
+          *rgpPtr++ = LIMIT(g);
+          *rgpPtr++ = LIMIT(b);
+        }
+        else {
+          *rgpPtr++= LIMIT(b);
+          *rgpPtr++= LIMIT(g);
+          *rgpPtr++ = LIMIT(r);
+        }
         if (rgbIncrement == 4)
-          *(dstImageFrame + 4*pixpos[p]+3) = 0;
+          *rgpPtr = 0;
       }
       
       yplane += 2;
@@ -747,24 +764,32 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, FALSE);
 }
 
+PSTANDARD_COLOUR_CONVERTER(YUV420P,BGR24)
+{
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, TRUE);
+}
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, FALSE);
 }
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24F)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip, FALSE);
 }
 
+PSTANDARD_COLOUR_CONVERTER(YUV420P,BGR24F)
+{
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip, TRUE);
+}
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32F)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, !doVFlip);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, !doVFlip, FALSE);
 }
 
 
