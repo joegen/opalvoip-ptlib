@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.3 1994/07/02 03:18:09 robertj Exp $
+ * $Id: contain.h,v 1.4 1994/11/19 00:18:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.3  1994/07/02 03:18:09  robertj
+ * Revision 1.4  1994/11/19 00:18:26  robertj
+ * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
+ *
+ * Revision 1.3  1994/07/02  03:18:09  robertj
  * Support for 16 bit systems.
  *
  * Revision 1.2  1994/06/25  12:13:01  robertj
@@ -19,8 +22,8 @@
  *
  */
 
-#ifndef _CONTAIN_H
-#define _CONTAIN_H
+#ifndef _OBJECT_H
+#define _OBJECT_H
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,6 +56,7 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 typedef unsigned char  BYTE;  // 8 bit quantity
 typedef unsigned short WORD;  // 16 bit quantity
 typedef unsigned long  DWORD; // 32 bit quantity
+typedef long           INT;   // Integer that is the same size as a void *
 
 
 #ifdef _MSC_VER
@@ -90,10 +94,10 @@ typedef unsigned long  DWORD; // 32 bit quantity
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
 
-#include "../../common/contain.h"
+#include "../../common/object.h"
 
 
-#endif // _CONTAIN_H
+#endif // _OBJECT_H
 
 
 // End Of File ///////////////////////////////////////////////////////////////
