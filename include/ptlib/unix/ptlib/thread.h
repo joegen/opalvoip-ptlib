@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.8 1997/04/22 11:00:44 craigs Exp $
+ * $Id: thread.h,v 1.9 1998/01/03 23:06:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.9  1998/01/03 23:06:32  craigs
+ * Added PThread support
+ *
  * Revision 1.8  1997/04/22 11:00:44  craigs
  * Added FreeStack function
  *
@@ -50,6 +53,8 @@ class PSemaphore;
 // PThread
 
 #include "../../common/ptlib/thread.h"
+  public:
+    int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
   public:
     int PXBlockOnIO(int handle,
@@ -63,9 +68,26 @@ class PSemaphore;
                const PTimeInterval & timeout,
                const PIntArray & osHandles);
 
-    int PXBlockOnChildTerminate(int pid,
-                                const PTimeInterval & timeout);
-                     
+#ifdef P_PTHREADS
+
+  public:
+    //void InitialiseProcessThread();
+    static void * PX_ThreadStart(void *);
+    static void PX_ThreadEnd(void *);
+
+  protected:
+    void PX_NewThread(BOOL startSuspended);
+    unsigned PX_GetThreadId() const;
+
+    PINDEX     PX_origStackSize;
+    int        PX_suspendCount;
+    BOOL       PX_autoDelete;
+
+    pthread_t       PX_threadId;
+    pthread_mutex_t PX_suspendMutex;
+
+#else
+
   protected:
     void FreeStack();
     void PXSetOSHandleBlock  (int fd, int type);
@@ -82,7 +104,7 @@ class PSemaphore;
 
     int    selectReturnVal;
     int    selectErrno;
+#endif
 };
-
 
 #endif
