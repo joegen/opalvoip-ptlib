@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.58  2003/02/02 18:54:22  rogerh
+ * FreeBSD changes for support of dspN.M (eg dsp0.0) sound card entries.
+ * Problem reported by Lars Eggert <larse@isi.edu>
+ *
  * Revision 1.57  2003/01/06 19:25:07  rogerh
  * Add NetBSD video support.
  * Add correct includes for OSS ioctls (note the proper way to do this now
@@ -464,13 +468,18 @@ PSoundChannel::~PSoundChannel()
 }
 
 static BOOL IsNumericString(PString numbers) {
-  // return true if 'numbers' contains only digits 0 to 9
+  // return true if 'numbers' contains only digits (0 to 9)
+  // or if it contains digits followed by a '.'
+
+  BOOL isNumber = FALSE;
   for (PINDEX p = 0; p < numbers.GetLength(); p++) {
-    if (!isdigit(numbers[p])) {
-      return FALSE;
+    if (isdigit(numbers[p])) {
+      isNumber = TRUE;
+    } else {
+      return isNumber;
     }
   }
-  return TRUE;
+  return isNumber;
 }
 
 static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdinalToString & mixer, BOOL collect_with_names)
@@ -508,21 +517,30 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
 	// On FreeBSD and other OSs, the major numbes are different to Linux.
 	// So collect devices by looking for dsp(N) and mixer(N).
         // (or /dev/audio(N) and mixer(N) on NetBSD
-	// Notes. FreeBSD supports audio stream mixing. For /dev/dsp0
-	// there are also entries for /dev/dsp0.0 dsp0.1 dsp0.2 and dsp0.3
-	// We will ignore these N.M devices.
+	// Notes. FreeBSD supports audio stream mixing. A single sound card
+	// may have multiple /dev entries in the form /dev/dspN.M
+	// eg /dev/dsp0.0 /dev/dsp0.1 /dev/dsp0.2 and /dev/dsp0.3
+	// When adding these to the 'dsp' string array, only the first one
+	// found is used.
 
 #ifndef P_NETBSD
         // Look for dsp
         if (filename == "dsp") {
           dsp.SetAt(0, devname);
         }
-        // Look for dspN. Insert at position cardnum + 1
+
+        // Look for dspN entries. Insert at position N + 1
+        // and look for dspN.M entries. Insert at position N + 1 (ignoring M)
+
         if ((filename.GetLength() > 3) && (filename.Left(3) == "dsp")) {
+
 	  PString numbers = filename.Mid(3); // get everything after 'dsp'
 	  if (IsNumericString(numbers)) {
-            PINDEX cardnum = numbers.AsInteger();
-            dsp.SetAt(cardnum+1, devname);
+            PINDEX cardnum = numbers.AsInteger(); //dspN.M is truncated to dspN.
+	    // If we have not yet inserted something for this cardnum, insert it
+	    if (dsp.GetAt(cardnum+1) == NULL) {
+              dsp.SetAt(cardnum+1, devname);
+	    }
 	  }
         }
 #else
