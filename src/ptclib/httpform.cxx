@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.14 1997/08/28 12:48:29 robertj Exp $
+ * $Id: httpform.cxx,v 1.15 1997/10/10 10:43:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.15  1997/10/10 10:43:43  robertj
+ * Fixed bug in password encryption, missing string terminator.
+ *
  * Revision 1.14  1997/08/28 12:48:29  robertj
  * Changed array fields to allow for reordering.
  *
@@ -688,15 +691,15 @@ void PHTTPPasswordField::SetValue(const PString & newVal)
 PString PHTTPPasswordField::GetValue() const
 {
   PTEACypher crypt(PasswordKey);
-  return crypt.Encode(value);;
+  return crypt.Encode(value);
 }
 
 
 PString PHTTPPasswordField::Decrypt(const PString & pword)
 {
+  PString clear;
   PTEACypher crypt(PasswordKey);
-  PString clear = crypt.Decode(pword);
-  return clear.IsEmpty() ? pword : clear;
+  return crypt.Decode(pword, clear) ? clear : pword;
 }
 
 
