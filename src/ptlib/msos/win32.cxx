@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.101  2001/03/24 05:52:42  robertj
+ * Added Windows 98 and ME to GetOSName()
+ * Added build number to GetOSVersion()
+ *
  * Revision 1.100  2001/03/03 00:55:02  yurik
  * Proper fix for filetime routines used in guid calc done for WinCE
  *
@@ -1345,8 +1349,19 @@ PString PProcess::GetOSName()
   switch (info.dwPlatformId) {
     case VER_PLATFORM_WIN32s :
       return "32s";
-    case 1 : //VER_PLATFORM_WIN32_WINDOWS :
-      return "95";
+
+#ifdef VER_PLATFORM_WIN32_CE
+    case VER_PLATFORM_WIN32_CE :
+      return "CE";
+#endif
+
+    case VER_PLATFORM_WIN32_WINDOWS :
+      if (info.dwMinorVersion < 10)
+        return "95";
+      if (info.dwMinorVersion < 90)
+        return "98";
+      return "ME";
+
     case VER_PLATFORM_WIN32_NT :
       if (info.dwMajorVersion < 5)
         return "NT";
@@ -1390,7 +1405,9 @@ PString PProcess::GetOSVersion()
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
-  return psprintf("v%u.%u", info.dwMajorVersion, info.dwMinorVersion);
+  WORD wBuildNumber = (WORD)info.dwBuildNumber;
+  return psprintf(wBuildNumber > 0 ? "v%u.%u.%u" : "v%u.%u",
+                  info.dwMajorVersion, info.dwMinorVersion, wBuildNumber);
 }
 
 
