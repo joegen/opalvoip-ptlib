@@ -8,6 +8,10 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2002/03/27 01:54:40  craigs
+ * Added ability to send random struct as request
+ * Added ability to preview request without sending
+ *
  * Revision 1.1  2002/03/26 07:05:28  craigs
  * Initial version
  *
@@ -40,7 +44,11 @@ void XMLRPCApp::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse("t.o:");
+  args.Parse("t."
+             "o:"
+             "s."
+             "d."
+             );
 
   PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL);
@@ -55,8 +63,28 @@ void XMLRPCApp::Main()
 
   PXMLRPC rpc(url);
 
+  PXMLRPCRequest  request(method);
+
+  if (args.HasOption('s')) {
+    PStringToString dict;
+    PINDEX i;
+    for (i = 2; (i+1) < args.GetCount(); i += 2) {
+      PString key   = args[i];
+      PString value = args[i+1];
+      dict.SetAt(key, value);
+    }
+
+    request.GetParams()->AddStructParam(dict);
+  }
+
+  if (args.HasOption('d')) {
+    cout << "Request = " << request;
+    return;
+  }
+
   PXMLRPCResponse response;
-  if (!rpc.MakeRequest(method, response)) {
+
+  if (!rpc.MakeRequest(request, response)) {
     PError << "Error in request (" 
            << rpc.GetFaultCode() 
            << ") : "
