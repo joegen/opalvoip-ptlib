@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.43 1996/01/23 13:16:30 robertj Exp $
+ * $Id: osutils.cxx,v 1.44 1996/01/28 02:52:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.44  1996/01/28 02:52:04  robertj
+ * Added assert into all Compare functions to assure comparison between compatible objects.
+ *
  * Revision 1.43  1996/01/23 13:16:30  robertj
  * Mac Metrowerks compiler support.
  * Fixed timers so background thread not created if a windows app.
@@ -168,6 +171,7 @@ PTimeInterval::PTimeInterval(long millisecs,
 
 PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PTimeInterval::Class()), PInvalidCast);
   const PTimeInterval & other = (const PTimeInterval &)obj;
   return milliseconds < other.milliseconds ? LessThan :
          milliseconds > other.milliseconds ? GreaterThan : EqualTo;
@@ -235,6 +239,7 @@ PTime::PTime(int second, int minute, int hour,
 
 PObject::Comparison PTime::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PTime::Class()), PInvalidCast);
   const PTime & other = (const PTime &)obj;
   return theTime < other.theTime ? LessThan :
          theTime > other.theTime ? GreaterThan : EqualTo;
@@ -1136,6 +1141,13 @@ PFile::~PFile()
 }
 
 
+PObject::Comparison PFile::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(PFile::Class()), PInvalidCast);
+  return path.Compare(((const PFile &)obj).path);
+}
+
+
 BOOL PFile::Rename(const PString & newname, BOOL force)
 {
   Close();
@@ -1287,6 +1299,7 @@ PPipeChannel::PPipeChannel(const PString & subProgram,
 
 PObject::Comparison PPipeChannel::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PPipeChannel::Class()), PInvalidCast);
   return subProgName.Compare(((const PPipeChannel &)obj).subProgName);
 }
 
@@ -2193,6 +2206,7 @@ PProcess::~PProcess()
 
 PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PProcess::Class()), PInvalidCast);
   return productName.Compare(((const PProcess &)obj).productName);
 }
 
