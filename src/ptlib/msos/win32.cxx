@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.133  2004/02/23 23:52:20  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.132  2003/11/10 20:52:26  dereksmithies
  * add fix from Diego Tartara to recognize win XP and 2003 Server. Many thanks.
  *
@@ -484,7 +487,9 @@
 #include <winsock2.h>
 #include<ws2tcpip.h>
 
-#pragma comment(lib, "mpr.lib")
+#pragma comment(lib,    "mpr.lib")
+#pragma comment(linker, "/delayload:mpr.dll")
+#pragma comment(lib,    "Delayimp.lib")
 
 #define new PNEW
 

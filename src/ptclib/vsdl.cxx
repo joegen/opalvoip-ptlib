@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.12  2004/02/23 23:52:20  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.11  2003/12/12 05:11:56  rogerhardiman
  * Add SDL support on FreeBSD. Header files live in SDL11 directory
  *
@@ -81,7 +84,9 @@ extern "C" {
 };
 
 #ifdef _MSC_VER
-#pragma comment(lib, P_SDL_LIBRARY)
+#pragma comment(lib,    P_SDL_LIBRARY)
+#pragma comment(linker, "/delayload:SDL.dll")
+#pragma comment(lib,    "Delayimp.lib")
 #endif
 
 
