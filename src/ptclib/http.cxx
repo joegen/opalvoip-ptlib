@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.44 1997/06/06 08:54:47 robertj Exp $
+ * $Id: http.cxx,v 1.45 1997/07/12 09:45:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.45  1997/07/12 09:45:01  robertj
+ * Fixed bug when URL has + sign in somthing other than parameters.
+ *
  * Revision 1.44  1997/06/06 08:54:47  robertj
  * Allowed username/password on http scheme URL.
  *
@@ -329,11 +332,14 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 }
 
 
-static void UnmangleString(PString & str)
+static void UnmangleString(PString & str, PURL::TranslationType type)
 {
-  PINDEX pos = (PINDEX)-1;
-  while ((pos = str.Find('+', pos+1)) != P_MAX_INDEX)
-    str[pos] = ' ';
+  PINDEX pos;
+  if (type == PURL::QueryTranslation) {
+    pos = (PINDEX)-1;
+    while ((pos = str.Find('+', pos+1)) != P_MAX_INDEX)
+      str[pos] = ' ';
+  }
 
   pos = (PINDEX)-1;
   while ((pos = str.Find('%', pos+1)) != P_MAX_INDEX) {
@@ -354,9 +360,9 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
   PStringArray tokens = queryStr.Tokenise("&=", TRUE);
   for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
     PCaselessString key = tokens[i];
-    UnmangleString(key);
+    UnmangleString(key, QueryTranslation);
     PString data = tokens[i+1];
-    UnmangleString(data);
+    UnmangleString(data, QueryTranslation);
     if (queryVars.Contains(key))
       queryVars.SetAt(key, queryVars[key] + ',' + data);
     else
@@ -387,7 +393,7 @@ void PURL::Parse(const char * cstr)
                           reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
       if (url[pos] == ':') {
         scheme = url.Left(pos);
-        UnmangleString(scheme);
+        UnmangleString(scheme, NormalTranslation);
         url.Delete(0, pos+1);
         break;
       }
@@ -433,7 +439,7 @@ void PURL::Parse(const char * cstr)
       // if the URL is of type HostOnly, then this is the hostname
       if (schemeInfo->type == HostOnly) {
         hostname = uphp;
-        UnmangleString(hostname);
+        UnmangleString(hostname, NormalTranslation);
       } 
 
       // if the URL is of type UserPasswordHostPort, then parse it
@@ -449,9 +455,9 @@ void PURL::Parse(const char * cstr)
           else {
             username = uphp(0, pos3-1);
             password = uphp(pos3+1, pos2-1);
-            UnmangleString(password);
+            UnmangleString(password, NormalTranslation);
           }
-          UnmangleString(username);
+          UnmangleString(username, NormalTranslation);
           uphp.Delete(0, pos2+1);
         }
       }
@@ -467,7 +473,7 @@ void PURL::Parse(const char * cstr)
           hostname = uphp.Left(pos);
           port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
         }
-        UnmangleString(hostname);
+        UnmangleString(hostname, NormalTranslation);
         if (hostname.IsEmpty())
           hostname = PIPSocket::GetHostName();
       }
@@ -478,7 +484,7 @@ void PURL::Parse(const char * cstr)
   pos = url.Find('#');
   if (pos != P_MAX_INDEX && pos > 0) {
     fragment = url(pos+1, P_MAX_INDEX);
-    UnmangleString(fragment);
+    UnmangleString(fragment, NormalTranslation);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -494,7 +500,7 @@ void PURL::Parse(const char * cstr)
   pos = url.Find(';');
   if (pos != P_MAX_INDEX && pos > 0) {
     parameters = url(pos+1, P_MAX_INDEX);
-    UnmangleString(parameters);
+    UnmangleString(parameters, NormalTranslation);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -504,7 +510,7 @@ void PURL::Parse(const char * cstr)
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
   for (pos = 0; pos < path.GetSize(); pos++) {
-    UnmangleString(path[pos]);
+    UnmangleString(path[pos], NormalTranslation);
     if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
       path.RemoveAt(pos--);
       path.RemoveAt(pos--);
