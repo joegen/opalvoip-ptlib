@@ -29,6 +29,8 @@ $(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	gcc -shared -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(OBJS)
 
+CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
+
 else
 
 $(LIBDIR)/$(LIB_BASENAME): $(OBJS)
@@ -40,4 +42,7 @@ else
 	ar rcs $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
 endif
 
+CLEAN_FILES += $(LIBDIR)/$(LIB_BASENAME)
+
 endif
+
