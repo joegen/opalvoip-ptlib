@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.92  2004/04/03 07:41:00  csoutheren
+ * Fixed compile problem with ostringstream/ostrstream
+ *
  * Revision 1.91  2004/04/03 07:16:05  rjongbloed
  * Fixed backward compatibility with MSVC 6
  *
@@ -350,6 +353,7 @@
   #include <iostream>
   #if (__GNUC__ >= 3)
     #include <sstream>
+    //typedef std::ostringstream ostrstream;
   #else
     #include <strstream>
   #endif
