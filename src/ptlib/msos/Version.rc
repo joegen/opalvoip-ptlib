@@ -28,8 +28,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,2,3
- PRODUCTVERSION 1,0,2,3
+ FILEVERSION 1,0,2,9
+ PRODUCTVERSION 1,0,2,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -47,14 +47,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Equivalence Pty. Ltd.\0"
             VALUE "FileDescription", "PTLib\0"
-            VALUE "FileVersion", "1.03\0"
+            VALUE "FileVersion", "1.09\0"
             VALUE "InternalName", "PTLib\0"
             VALUE "LegalCopyright", "Copyright © 1999 Equivalence Pty. Ltd.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "PTLib.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Equivalence Portable Windows Library\0"
-            VALUE "ProductVersion", "1.03\0"
+            VALUE "ProductVersion", "1.09\0"
             VALUE "SpecialBuild", "\0"
         END
     END
