@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.1 1996/01/23 13:04:20 robertj Exp $
+ * $Id: url.h,v 1.2 1996/01/26 02:24:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.2  1996/01/26 02:24:32  robertj
+ * Further implemetation.
+ *
  * Revision 1.1  1996/01/23 13:04:20  robertj
  * Initial revision
  *
@@ -95,8 +98,10 @@ PDECLARE_CLASS(PURL, PObject)
     const PString & GetPassword() const         { return password; }
     const PCaselessString & GetHostName() const { return hostname; }
     WORD GetPort() const                        { return port; }
-    const PStringArray & GetHierarchy() const   { return hierarchy; }
+    const PStringArray & GetPath() const        { return path; }
+    BOOL IsAbsolutePath() const                 { return absolutePath; }
     const PString & GetParameters() const       { return parameters; }
+    const PString & GetFragment() const         { return fragment; }
     const PString & GetQuery() const            { return query; }
 
   protected:
@@ -105,7 +110,8 @@ PDECLARE_CLASS(PURL, PObject)
     PString password;
     PCaselessString hostname;
     WORD port;
-    PStringArray hierarchy;
+    PStringArray path;
+    BOOL absolutePath;
     PString parameters;
     PString fragment;
     PString query;
