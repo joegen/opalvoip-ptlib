@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.18  1999/03/02 05:41:58  robertj
+ * More BeOS changes
+ *
  * Revision 1.17  1998/12/15 12:43:43  robertj
  * Fixed signal handling so can now ^C a pthread version.
  *
@@ -129,13 +132,7 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     PAbstractDictionary * configFiles;
 
 
-#ifndef P_PTHREADS
-  public:
-    void PXAbortIOBlock(int fd);
-  protected:
-    PXFdDict     ioBlocks[3];
-#else
-  friend void * PXHouseKeepingThread(void *);
+#ifdef P_PTHREADS
 
   public:
     void SignalTimerChange();
@@ -146,6 +143,41 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     PMutex     threadMutex;
     PSyncPoint timerChangeSemaphore;
     PThread * housekeepingThread;
+
+  friend void * PXHouseKeepingThread(void *);
+
+#elif defined(BE_THREADS)
+
+  public:
+    void SignalTimerChange();
+
+  private:
+    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
+    ThreadDict activeThreads;
+    PMutex activeThreadMutex;
+    PLIST(ThreadList, PThread);
+    ThreadList autoDeleteThreads;
+    PMutex deleteThreadMutex;
+
+    PDECLARE_CLASS(HouseKeepingThread, PThread)
+        public:
+        HouseKeepingThread();
+        void Main();
+        PSyncPoint breakBlock;
+    };
+    friend class HouseKeepingThread;
+    HouseKeepingThread * houseKeeper;
+    // Thread for doing timers, thread clean up etc.
+
+  friend PThread * PThread::Current();
+  friend int32 PThread::ThreadFunction(void * thread);
+
+#else
+
+  public:
+    void PXAbortIOBlock(int fd);
+  protected:
+    PXFdDict     ioBlocks[3];
 #endif
 };
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.14  1999/03/02 05:41:58  robertj
+ * More BeOS changes
+ *
  * Revision 1.13  1999/01/12 11:22:19  robertj
  * Removed redundent variable, is in common.
  *
@@ -119,6 +122,14 @@ class PSemaphore;
 
     PSemaphore * PX_waitingSemaphore;
     pthread_mutex_t PX_WaitSemMutex;
+
+#elif defined(BE_THREADS)
+
+  private:
+	static int32 ThreadFunction(void * threadPtr);
+	thread_id threadId;
+	int32 priority;
+	PINDEX originalStackSize;
 
 #else
 
