@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.38  2002/02/14 03:34:18  craigs
+ * Added comment on using SetReadTimeout to set maximum wait for Connect
+ *
  * Revision 1.37  2001/09/06 02:30:17  robertj
  * Fixed mismatched declarations, thanks Vjacheslav Andrejev
  *
@@ -182,6 +185,8 @@ class PSocket : public PChannel
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
        communications channel.
+
+       Use the SetReadTimeout function to set a maximum time for the Connect
 
        @return
        TRUE if the channel was successfully connected to the remote host.
