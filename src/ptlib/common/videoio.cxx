@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.16  2001/06/27 17:23:33  rogerh
+ * Back out my previous change
+ *
  * Revision 1.15  2001/06/26 15:48:31  rogerh
  * Do not call GetInputDeviceName if there is no video grabber code
  *
@@ -421,12 +424,7 @@ void PVideoOutputDevice::SetNow(int _now)
 
 PStringList PVideoInputDevice::GetDeviceNames() const
 {
-#ifdef HAS_VIDEOCAPTURE
   return GetInputDeviceNames();
-#else
-  PStringList empty;
-  return empty;
-#endif
 }
 
 
