@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.49  2000/01/10 02:22:41  craigs
+# Updated for new OpenSSL functionality
+#
 # Revision 1.48  1999/09/27 01:04:42  robertj
 # BeOS support changes.
 #
@@ -183,7 +186,6 @@ ifneq (,$(wildcard ../../ptclib/proto))
 
 PROTO_SOURCES	= \
 	$(PROTOCOLS_SRC_DIR)/httpsvc.cxx \
-	$(PROTOCOLS_SRC_DIR)/pssl.cxx \
 	$(PROTOCOLS_SRC_DIR)/snmpclnt.cxx \
 	$(PROTOCOLS_SRC_DIR)/snmpserv.cxx \
 	$(PROTOCOLS_SRC_DIR)/psnmp.cxx \
@@ -201,6 +203,9 @@ PROTO_SOURCES	= \
 	$(PROTOCOLS_SRC_DIR)/telnet.cxx
 endif
 
+ifdef OPENSSLDIR
+PROTO_SOURCES := $(PROTO_SOURCES) $(PROTOCOLS_SRC_DIR)/pssl.cxx 
+endif
 
 ifeq ($(OSTYPE),linux)
 SOUND_SOURCE = oss.cxx
