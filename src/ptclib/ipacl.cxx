@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.2  1999/01/31 08:10:33  robertj
+ * Fixed PConfig file save, out by one error in array subscript.
+ *
  * Revision 1.1  1999/01/31 00:59:26  robertj
  * Added IP Access Control List class to PTLib Components
  *
@@ -429,7 +432,7 @@ void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
   cfg.SetInteger(baseName & "Array Size", GetSize());
 
   for (PINDEX i = 1; i <= GetSize(); i++)
-    cfg.SetString(baseName + psprintf(" %u", i), operator[](i).AsString());
+    cfg.SetString(baseName & PString(PString::Unsigned, i), operator[](i-1).AsString());
 }
 
 
