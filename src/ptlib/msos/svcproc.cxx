@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.15 1996/11/10 21:04:32 robertj Exp $
+ * $Id: svcproc.cxx,v 1.16 1996/11/12 10:15:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.16  1996/11/12 10:15:16  robertj
+ * Fixed bug in NT 3.51 locking up when needs to output to window.
+ *
  * Revision 1.15  1996/11/10 21:04:32  robertj
  * Added category names to event log.
  * Fixed menu enables for debug and command modes.
@@ -383,7 +386,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                                (HMENU)200,
                                hInstance,
                                NULL);
-    SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 64000, 0);
+    SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 128000, 0);
   }
 
   return TRUE;
@@ -500,7 +503,7 @@ void PServiceProcess::DebugOutput(const char * out)
     ShowWindow(controlWindow, SW_SHOWDEFAULT);
 
   int len = strlen(out);
-  int max = SendMessage(debugWindow, EM_GETLIMITTEXT, 0, 0);
+  int max = isWin95 ? 32000 : 128000;
   while (GetWindowTextLength(debugWindow)+len >= max) {
     SendMessage(debugWindow, WM_SETREDRAW, FALSE, 0);
     SendMessage(debugWindow, EM_SETSEL, 0,
