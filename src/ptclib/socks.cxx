@@ -8,6 +8,9 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.cxx,v $
+ * Revision 1.4  1999/11/23 08:45:10  robertj
+ * Fixed bug in user/pass authentication version, thanks Dmitry <dipa@linkline.com>
+ *
  * Revision 1.3  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -150,7 +153,7 @@ BOOL PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
 
     if (auth_pdu[1] == SOCKS_AUTH_USER_PASS) {
       // Send username and pasword
-      socket << SOCKS_VERSION_5
+      socket << '\x01'
              << (BYTE)authenticationUsername.GetLength()  // Username length as single byte
              << authenticationUsername
              << (BYTE)authenticationPassword.GetLength()  // Password length as single byte
