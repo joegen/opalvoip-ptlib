@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.21  2002/02/14 23:37:53  craigs
+ * Added fix for optimisation for PArray [] operator, thanks to Vyacheslav Frolov
+ *
  * Revision 1.20  2002/02/14 05:11:50  robertj
  * Minor optimisation in the operator[] for arrays of PObjects.
  *
@@ -1165,7 +1168,8 @@ information.
     inline T & operator[](PINDEX index) const\
       { PObject * obj = GetAt(index); \
         PAssert(obj != NULL, PInvalidArrayElement); \
-        return *(T *)obj; } \
+        /* want to do to this, but gcc 3.0 complains --> return *(T *)obj; } */ \
+        return (T &)*obj; } \
   }
 
 #define PDECLARE_ARRAY(cls, T) \
