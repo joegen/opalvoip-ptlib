@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.16  2003/09/17 05:43:49  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.15  2002/11/06 22:47:23  robertj
  * Fixed header comment (copyright etc)
  *
@@ -84,7 +87,7 @@
 #endif
 
 #include <ptclib/inetprot.h>
-#include <ptlib/sockets.h>
+#include "ptlib/sockets.h"
 
 
 /**
