@@ -25,9 +25,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -73,7 +70,40 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -98,11 +128,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\random.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -177,70 +207,8 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
-BSC32_SBRS= \
-	"$(INTDIR)\Asner.sbr" \
-	"$(INTDIR)\Cypher.sbr" \
-	"$(INTDIR)\Ftp.sbr" \
-	"$(INTDIR)\Ftpclnt.sbr" \
-	"$(INTDIR)\Ftpsrvr.sbr" \
-	"$(INTDIR)\Html.sbr" \
-	"$(INTDIR)\Http.sbr" \
-	"$(INTDIR)\Httpclnt.sbr" \
-	"$(INTDIR)\Httpform.sbr" \
-	"$(INTDIR)\Httpsrvr.sbr" \
-	"$(INTDIR)\Httpsvc.sbr" \
-	"$(INTDIR)\Inetmail.sbr" \
-	"$(INTDIR)\Inetprot.sbr" \
-	"$(INTDIR)\ipacl.sbr" \
-	"$(INTDIR)\modem.sbr" \
-	"$(INTDIR)\Pasn.sbr" \
-	"$(INTDIR)\Psnmp.sbr" \
-	"$(INTDIR)\Snmpclnt.sbr" \
-	"$(INTDIR)\Snmpserv.sbr" \
-	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr" \
-	"$(INTDIR)\random.sbr"
-
-"$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LIB32=link.exe -lib
-LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclibd.lib" 
-LIB32_OBJS= \
-	"$(INTDIR)\Asner.obj" \
-	"$(INTDIR)\Cypher.obj" \
-	"$(INTDIR)\Ftp.obj" \
-	"$(INTDIR)\Ftpclnt.obj" \
-	"$(INTDIR)\Ftpsrvr.obj" \
-	"$(INTDIR)\Html.obj" \
-	"$(INTDIR)\Http.obj" \
-	"$(INTDIR)\Httpclnt.obj" \
-	"$(INTDIR)\Httpform.obj" \
-	"$(INTDIR)\Httpsrvr.obj" \
-	"$(INTDIR)\Httpsvc.obj" \
-	"$(INTDIR)\Inetmail.obj" \
-	"$(INTDIR)\Inetprot.obj" \
-	"$(INTDIR)\ipacl.obj" \
-	"$(INTDIR)\modem.obj" \
-	"$(INTDIR)\Pasn.obj" \
-	"$(INTDIR)\Psnmp.obj" \
-	"$(INTDIR)\Snmpclnt.obj" \
-	"$(INTDIR)\Snmpserv.obj" \
-	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\random.obj"
-
-"$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
-    $(LIB32) @<<
-  $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
-<<
-
-!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -271,6 +239,71 @@ LIB32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
+
+RSC=rc.exe
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
+BSC32_SBRS= \
+	"$(INTDIR)\Asner.sbr" \
+	"$(INTDIR)\Cypher.sbr" \
+	"$(INTDIR)\Ftp.sbr" \
+	"$(INTDIR)\Ftpclnt.sbr" \
+	"$(INTDIR)\Ftpsrvr.sbr" \
+	"$(INTDIR)\Html.sbr" \
+	"$(INTDIR)\Http.sbr" \
+	"$(INTDIR)\Httpclnt.sbr" \
+	"$(INTDIR)\Httpform.sbr" \
+	"$(INTDIR)\Httpsrvr.sbr" \
+	"$(INTDIR)\Httpsvc.sbr" \
+	"$(INTDIR)\Inetmail.sbr" \
+	"$(INTDIR)\Inetprot.sbr" \
+	"$(INTDIR)\ipacl.sbr" \
+	"$(INTDIR)\modem.sbr" \
+	"$(INTDIR)\Pasn.sbr" \
+	"$(INTDIR)\Psnmp.sbr" \
+	"$(INTDIR)\random.sbr" \
+	"$(INTDIR)\Snmpclnt.sbr" \
+	"$(INTDIR)\Snmpserv.sbr" \
+	"$(INTDIR)\socks.sbr" \
+	"$(INTDIR)\Telnet.sbr"
+
+"$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LIB32=link.exe -lib
+LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclibd.lib" 
+LIB32_OBJS= \
+	"$(INTDIR)\Asner.obj" \
+	"$(INTDIR)\Cypher.obj" \
+	"$(INTDIR)\Ftp.obj" \
+	"$(INTDIR)\Ftpclnt.obj" \
+	"$(INTDIR)\Ftpsrvr.obj" \
+	"$(INTDIR)\Html.obj" \
+	"$(INTDIR)\Http.obj" \
+	"$(INTDIR)\Httpclnt.obj" \
+	"$(INTDIR)\Httpform.obj" \
+	"$(INTDIR)\Httpsrvr.obj" \
+	"$(INTDIR)\Httpsvc.obj" \
+	"$(INTDIR)\Inetmail.obj" \
+	"$(INTDIR)\Inetprot.obj" \
+	"$(INTDIR)\ipacl.obj" \
+	"$(INTDIR)\modem.obj" \
+	"$(INTDIR)\Pasn.obj" \
+	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\random.obj" \
+	"$(INTDIR)\Snmpclnt.obj" \
+	"$(INTDIR)\Snmpserv.obj" \
+	"$(INTDIR)\socks.obj" \
+	"$(INTDIR)\Telnet.obj"
+
+"$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+    $(LIB32) @<<
+  $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
+<<
+
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -331,7 +364,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Ftp.cxx
+SOURCE=..\..\Ptclib\Ftp.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -349,7 +382,7 @@ SOURCE=..\..\Ptclib\proto\Ftp.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Ftpclnt.cxx
+SOURCE=..\..\Ptclib\Ftpclnt.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -367,7 +400,7 @@ SOURCE=..\..\Ptclib\proto\Ftpclnt.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Ftpsrvr.cxx
+SOURCE=..\..\Ptclib\Ftpsrvr.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -385,7 +418,7 @@ SOURCE=..\..\Ptclib\proto\Ftpsrvr.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Html.cxx
+SOURCE=..\..\Ptclib\Html.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -403,7 +436,7 @@ SOURCE=..\..\Ptclib\proto\Html.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Http.cxx
+SOURCE=..\..\Ptclib\Http.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -421,7 +454,7 @@ SOURCE=..\..\Ptclib\proto\Http.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Httpclnt.cxx
+SOURCE=..\..\Ptclib\Httpclnt.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -439,7 +472,7 @@ SOURCE=..\..\Ptclib\proto\Httpclnt.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Httpform.cxx
+SOURCE=..\..\Ptclib\Httpform.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -457,7 +490,7 @@ SOURCE=..\..\Ptclib\proto\Httpform.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Httpsrvr.cxx
+SOURCE=..\..\Ptclib\Httpsrvr.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -475,7 +508,7 @@ SOURCE=..\..\Ptclib\proto\Httpsrvr.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Httpsvc.cxx
+SOURCE=..\..\Ptclib\Httpsvc.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -493,7 +526,7 @@ SOURCE=..\..\Ptclib\proto\Httpsvc.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Inetmail.cxx
+SOURCE=..\..\Ptclib\Inetmail.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -511,7 +544,7 @@ SOURCE=..\..\Ptclib\proto\Inetmail.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Inetprot.cxx
+SOURCE=..\..\Ptclib\Inetprot.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -565,7 +598,7 @@ SOURCE=..\..\Ptclib\modem.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Pasn.cxx
+SOURCE=..\..\Ptclib\Pasn.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -583,7 +616,7 @@ SOURCE=..\..\Ptclib\proto\Pasn.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Psnmp.cxx
+SOURCE=..\..\Ptclib\Psnmp.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -619,7 +652,7 @@ SOURCE=..\..\ptclib\random.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Snmpclnt.cxx
+SOURCE=..\..\Ptclib\Snmpclnt.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -637,7 +670,7 @@ SOURCE=..\..\Ptclib\proto\Snmpclnt.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Snmpserv.cxx
+SOURCE=..\..\Ptclib\Snmpserv.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -673,7 +706,7 @@ SOURCE=..\..\Ptclib\socks.cxx
 
 !ENDIF 
 
-SOURCE=..\..\Ptclib\proto\Telnet.cxx
+SOURCE=..\..\Ptclib\Telnet.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
