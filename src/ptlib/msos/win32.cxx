@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.1 1995/03/14 12:45:20 robertj Exp $
+ * $Id: win32.cxx,v 1.2 1995/03/22 13:56:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
- * Revision 1.1  1995/03/14 12:45:20  robertj
- * Initial revision
+ * Revision 1.2  1995/03/22 13:56:18  robertj
+ * Fixed directory handle value check for closing directory.
  *
+// Revision 1.1  1995/03/14  12:45:20  robertj
+// Initial revision
+//
  */
 
 #include <ptlib.h>
@@ -106,9 +109,9 @@ PTime::DateOrder PTime::GetDateOrder()
 
 void PDirectory::Construct()
 {
-  PString::operator=(CreateFullPath(*this, TRUE));
-  hFindFile = NULL;
+  hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
+  PString::operator=(CreateFullPath(*this, TRUE) + '\\');
 }
 
 
@@ -126,7 +129,7 @@ BOOL PDirectory::Open(int newScanMask)
 
 BOOL PDirectory::Next()
 {
-  if (hFindFile == NULL)
+  if (hFindFile == INVALID_HANDLE_VALUE)
     return FALSE;
 
   do {
@@ -162,7 +165,7 @@ PCaselessString PDirectory::GetVolume() const
 
 void PDirectory::Close()
 {
-  if (hFindFile != NULL)
+  if (hFindFile != INVALID_HANDLE_VALUE)
     FindClose(hFindFile);
 }
 
@@ -172,7 +175,6 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL)
   LPSTR dummy;
   PString fullpath;
   GetFullPathName(path, _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
-  PAssert(fullpath.MakeMinimumSize(), POutOfMemory);
   return fullpath;
 }
 
