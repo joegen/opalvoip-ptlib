@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.30  1999/01/16 09:56:24  robertj
+# Changed some macros to more informative names.
+#
 # Revision 1.29  1999/01/16 04:00:05  robertj
 # Added bothclean target
 #
@@ -170,7 +173,7 @@ depend: $(DEPS)
 ######################################################################
 
 clean:
-	rm -rf $(CLEAN_FILES) obj_$(OBJ_SUFFIX)*
+	rm -rf $(CLEAN_FILES)
 
 
 ######################################################################
@@ -194,7 +197,7 @@ release:
 else
 release: $(OBJDIR)/$(PROG)
 	cp $(OBJDIR)/$(PROG) $(RELEASEDIR)/$(RELEASEPROGDIR)
-	cd $(RELEASEDIR) ; tar cf - $(RELEASEPROGDIR) | gzip > $(PROG)_$(VERSION)_$(OBJ_SUFFIX).tar.gz
+	cd $(RELEASEDIR) ; tar cf - $(RELEASEPROGDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
 endif
 else
 release:
