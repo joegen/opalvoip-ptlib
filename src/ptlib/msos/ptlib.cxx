@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.31 1998/01/26 00:54:15 robertj Exp $
+ * $Id: ptlib.cxx,v 1.32 1998/03/20 03:20:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.32  1998/03/20 03:20:16  robertj
+ * Added MSVC RT debug support.
+ *
  * Revision 1.31  1998/01/26 00:54:15  robertj
  * 64 bit integer string conversions.
  *
@@ -119,6 +122,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys\stat.h>
+#include <crtdbg.h>
 
 #ifndef P_USE_INLINES
 #include <ptlib/osutil.inl>
@@ -681,6 +685,11 @@ BOOL PTextFile::WriteLine(const PString & str)
 
 int PProcess::_main(int argc, char ** argv, char **)
 {
+#ifdef _DEBUG
+  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+#endif
   PSetErrorStream(&cerr);
   PreInitialise(argc, argv);
 
