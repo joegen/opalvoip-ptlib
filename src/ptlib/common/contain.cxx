@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.13 1994/03/07 07:47:00 robertj Exp $
+ * $Id: contain.cxx,v 1.14 1994/04/01 14:01:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.13  1994/03/07 07:47:00  robertj
+ * Revision 1.14  1994/04/01 14:01:11  robertj
+ * Streams and stuff.
+ *
+ * Revision 1.13  1994/03/07  07:47:00  robertj
  * Major upgrade
  *
  * Revision 1.12  1994/01/15  03:14:22  robertj
@@ -76,14 +79,92 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <iomanip.h>
 
 
-PObject * PObject::Clone() const
+#ifdef PMEMORY_CHECK
+
+static const int PointerHashTableSize = 6001;
+
+static struct {
+  void * ptr;
+  size_t size;
+  const char * className;
+} PointerHashTable[PointerHashTableSize];
+
+static inline int PointerHashFunction(void * ptr) { return (int)((((long)ptr)/5)%PointerHashTableSize); }
+
+void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
 {
-  PAssertAlways();
-  return NULL;
+  void * obj = malloc(nSize);
+  PAssertNULL(obj);
+
+  int forward, backward, entry;
+  forward = backward = PointerHashFunction(obj);
+  for (;;) {
+    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr == NULL) {
+      entry = forward;
+      break;
+    }
+    forward++;
+    if (backward >= 0 && PointerHashTable[backward].ptr == NULL) {
+      entry = backward;
+      break;
+    }
+    backward--;
+    PAssert(forward < PointerHashTableSize && backward >= 0);
+  }
+  PointerHashTable[entry].ptr = obj;
+  PointerHashTable[entry].size = nSize;
+  PointerHashTable[entry].className = className;
+  return obj;
 }
 
+
+void PObject::DeallocateObjectMemory(void * ptr, const char * className)
+{
+  int forward, backward, entry;
+  forward = backward = PointerHashFunction(ptr);
+  for (;;) {
+    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr == ptr) {
+      entry = forward;
+      break;
+    }
+    forward++;
+    if (backward >= 0 && PointerHashTable[backward].ptr == ptr) {
+      entry = backward;
+      break;
+    }
+    backward--;
+    PAssert(forward < PointerHashTableSize && backward >= 0);
+  }
+
+#ifndef __GNUC__
+  PAssert(PointerHashTable[entry].className == className);
+#endif
+  PointerHashTable[entry].ptr = NULL;
+  free(ptr);
+}
+
+
+void PDumpMemoryLeaks()
+{
+  cerr.setf(ios::uppercase);
+  for (int i = 0; i < PointerHashTableSize; i++) {
+    if (PointerHashTable[i].ptr != NULL) {
+      cerr << "Memory leak: "
+           << resetiosflags(ios::basefield) << setiosflags(ios::hex)
+           << setw(8) << setfill('0')
+           << (long)(PointerHashTable[i].ptr)
+           << resetiosflags(ios::basefield) << setiosflags(ios::dec)
+           << setw(1) << " (" << PointerHashTable[i].size << ") \""
+           << PointerHashTable[i].className << "\"\n";
+    }
+  }
+}
+
+
+#else
 
 void * PObject::operator new(size_t nSize)
 {
@@ -95,6 +176,14 @@ void * PObject::operator new(size_t nSize)
 void PObject::operator delete(void * ptr)
 {
   free(ptr);
+}
+
+#endif
+
+PObject * PObject::Clone() const
+{
+  PAssertAlways();
+  return NULL;
 }
 
 
@@ -133,7 +222,7 @@ PContainer::PContainer(PINDEX initialSize)
 
 PContainer::PContainer(const PContainer * cont)
   : reference(new Reference(0))
-{                                                            
+{
   *PAssertNULL(reference) = *cont->reference;
 }
 
@@ -623,7 +712,7 @@ PStringArray
       p1 = p2 + 1;
     } while ((p2 = FindOneOf(separators, p1)) == p1 && !onePerSeparator);
 
-    if (p2 > 0)
+    if (p2 != P_MAX_INDEX)
       tokens[token++] = operator()(p1, p2-1);
   }
 
@@ -862,6 +951,120 @@ PINDEX PCaselessString::FindLast(const char *cstr) const
 {
   PString str(cstr);
   return ToUpper().FindLast(str.ToUpper());
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+int PStringStreamBuffer::overflow(int c)
+{
+  if (pptr() >= epptr()) {
+    int gpos = gptr() - eback();
+    int ppos = pptr() - pbase();
+    char * newptr = string->GetPointer(string->GetSize() + 10);
+    setp(newptr + ppos, newptr + string->GetSize() - 1);
+    setg(newptr, newptr + gpos, newptr + ppos);
+  }
+  if (c != EOF) {
+    *pptr() = (char)c;
+    pbump(1);
+  }
+  return 0;
+}
+
+
+int PStringStreamBuffer::underflow()
+{
+  return gptr() >= egptr() ? EOF : *gptr();
+}
+
+
+int PStringStreamBuffer::sync()
+{
+  char * base = string->GetPointer();
+  char * end = base + string->GetLength();
+  setg(base, base, end);
+  setp(end, base + string->GetSize() - 1);
+  return 0;
+}
+
+
+streampos PStringStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
+{
+  int len = string->GetLength();
+  int gpos = gptr() - eback();
+  int ppos = pptr() - pbase();
+  char * newgptr;
+  char * newpptr;
+  switch (dir) {
+    case ios::beg :
+      if (off < 0)
+        newpptr = newgptr = eback();
+      else if (off >= len)
+        newpptr = newgptr = egptr();
+      else
+        newpptr = newgptr = eback()+off;
+      break;
+
+    case ios::cur :
+      if (off < -ppos)
+        newpptr = eback();
+      else if (off >= len-ppos)
+        newpptr = epptr();
+      else
+        newpptr = pptr()+off;
+      if (off < -gpos)
+        newgptr = eback();
+      else if (off >= len-gpos)
+        newgptr = egptr();
+      else
+        newgptr = gptr()+off;
+      break;
+
+    case ios::end :
+      if (off < -len)
+        newpptr = newpptr = newgptr = eback();
+      else if (off >= 0)
+        newpptr = newgptr = egptr();
+      else
+        newpptr = newgptr = egptr()+off;
+  }
+
+  if ((mode&ios::in) != 0)
+    setg(eback(), newgptr, egptr());
+
+  if ((mode&ios::out) != 0)
+    setp(newpptr, epptr());
+
+  return 0;
+}
+
+
+PStringStream::PStringStream()
+{
+  init(new PStringStreamBuffer(this));
+}
+
+
+PStringStream::PStringStream(const PString & str)
+  : PString(str)
+{
+  init(new PStringStreamBuffer(this));
+}
+
+
+PStringStream::PStringStream(const char * cstr)
+  : PString(cstr)
+{
+  init(new PStringStreamBuffer(this));
+}
+
+
+PStringStream & PStringStream::operator=(const PString & str)
+{
+  PString::operator=(str);
+  rdbuf()->sync();
+  return *this;
 }
 
 
@@ -1268,10 +1471,7 @@ PListElement::PListElement(PObject * theData)
 
 void PAbstractSortedList::DestroyContents()
 {
-  if (info->root != NULL) {
-    info->root->DeleteSubTrees(reference->deleteObjects);
-    delete info->root;
-  }
+  RemoveAll();
   delete info;
 }
 
@@ -1399,8 +1599,29 @@ BOOL PAbstractSortedList::Remove(const PObject * obj)
     element = *obj < *element->data ? element->left : element->right;
   if (element == NULL)
     return FALSE;
+
   RemoveElement(element);
   return TRUE;
+}
+
+
+PObject * PAbstractSortedList::RemoveAt(PINDEX index)
+{
+  PSortedListElement * node = info->root->OrderSelect(index+1);
+  PObject * data = node->data;
+  RemoveElement(node);
+  return reference->deleteObjects ? NULL : data;
+}
+
+
+void PAbstractSortedList::RemoveAll()
+{
+  if (info->root != NULL) {
+    info->root->DeleteSubTrees(reference->deleteObjects);
+    delete info->root;
+    info->root = NULL;
+    reference->size = 0;
+  }
 }
 
 
@@ -1413,14 +1634,6 @@ PINDEX PAbstractSortedList::Insert(const PObject &, PObject * obj)
 PINDEX PAbstractSortedList::InsertAt(PINDEX, PObject * obj)
 {
   return Append(obj);
-}
-
-
-PObject * PAbstractSortedList::RemoveAt(PINDEX index)
-{
-  PSortedListElement * node = info->root->OrderSelect(index+1);
-  RemoveElement(node);
-  return node->data;
 }
 
 
@@ -1474,6 +1687,9 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
 {
   PAssertNULL(node);
 
+  if (node->data != NULL && reference->deleteObjects)
+    delete node->data;
+
   PSortedListElement * y = 
           node->left == NULL || node->right == NULL ? node : node->Successor();
   PSortedListElement * x = y->left != NULL ? y->left : y->right;
@@ -1487,8 +1703,15 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
   if (x != NULL)
     x->parent = y->parent;
 
-  if (y != node)
-    *y = *node;
+  if (y != node) {
+    node->data = y->data;
+    node->subTreeSize = y->subTreeSize;
+  }
+  delete y;
+
+  reference->size--;
+  info->lastIndex = P_MAX_INDEX;
+  info->lastElement = NULL;
 
   PSortedListElement * t = y->parent;
   while (t != NULL) {
@@ -1499,55 +1722,55 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
   if (x != NULL && y->IsBlack()) {
     while (x != info->root && x->IsBlack()) {
       if (x == x->parent->left) {
-        y = x->parent->right;
-        if (!y->IsBlack()) {
-          y->MakeBlack();
+        PSortedListElement * w = x->parent->right;
+        if (!w->IsBlack()) {
+          w->MakeBlack();
           x->parent->MakeRed();
           LeftRotate(x->parent);
-          y = x->parent->right;
+          w = x->parent->right;
         }
-        if (y->IsLeftBlack() && y->IsRightBlack()) {
-          y->MakeRed();
+        if (w->IsLeftBlack() && w->IsRightBlack()) {
+          w->MakeRed();
           x = x->parent;
         }
         else {
-          if (y->IsRightBlack()) {
-            y->left->MakeBlack();
-            y->MakeRed();
-            RightRotate(y);
-            y = x->parent->right;
+          if (w->IsRightBlack()) {
+            w->left->MakeBlack();
+            w->MakeRed();
+            RightRotate(w);
+            w = x->parent->right;
           }
-          y->colour = x->parent->colour;
+          w->colour = x->parent->colour;
           x->parent->MakeBlack();
-          if (y->right != NULL)
-            y->right->MakeBlack();
+          if (w->right != NULL)
+            w->right->MakeBlack();
           LeftRotate(x->parent);
           x = info->root;
         }
       }
       else {
-        y = x->parent->left;
-        if (!y->IsBlack()) {
-          y->MakeBlack();
+        PSortedListElement * w = x->parent->left;
+        if (!w->IsBlack()) {
+          w->MakeBlack();
           x->parent->MakeRed();
           RightRotate(x->parent);
-          y = x->parent->left;
+          w = x->parent->left;
         }
-        if (y->IsRightBlack() && y->IsLeftBlack()) {
-          y->MakeRed();
+        if (w->IsRightBlack() && w->IsLeftBlack()) {
+          w->MakeRed();
           x = x->parent;
         }
         else {
-          if (y->IsLeftBlack()) {
-            y->right->MakeBlack();
-            y->MakeRed();
-            LeftRotate(y);
-            y = x->parent->left;
+          if (w->IsLeftBlack()) {
+            w->right->MakeBlack();
+            w->MakeRed();
+            LeftRotate(w);
+            w = x->parent->left;
           }
-          y->colour = x->parent->colour;
+          w->colour = x->parent->colour;
           x->parent->MakeBlack();
-          if (y->left != NULL)
-            y->left->MakeBlack();
+          if (w->left != NULL)
+            w->left->MakeBlack();
           RightRotate(x->parent);
           x = info->root;
         }
@@ -1555,11 +1778,6 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
     }
     x->MakeBlack();
   }
-
-  reference->size--;
-  info->lastIndex = P_MAX_INDEX;
-  info->lastElement = NULL;
-  delete node;
 }
 
 
@@ -1767,7 +1985,8 @@ void PInternalHashTable::DestroyContents()
         PHashTableElement * nextElmt = elmt->next;
         if (elmt->data != NULL && reference->deleteObjects)
           delete elmt->data;
-        delete elmt->key;
+        if (deleteKeys)
+          delete elmt->key;
         delete elmt;
         elmt = nextElmt;
       } while (elmt != list);
@@ -1777,15 +1996,15 @@ void PInternalHashTable::DestroyContents()
 }
 
 
-void PInternalHashTable::AppendElement(const PObject & key, PObject * data)
+void PInternalHashTable::AppendElement(PObject * key, PObject * data)
 {
   lastElement = NULL;
 
-  PINDEX bucket = key.HashFunction();
+  PINDEX bucket = PAssertNULL(key)->HashFunction();
   PHashTableElement * list = GetAt(bucket);
   PHashTableElement * element = new PHashTableElement;
   PAssertNULL(element);
-  element->key = key.Clone();
+  element->key = key;
   element->data = data;
   if (list == NULL) {
     element->next = element->prev = element;
@@ -1818,7 +2037,8 @@ PObject * PInternalHashTable::RemoveElement(const PObject & key)
       SetAt(key.HashFunction(), lastElement->next);
     }
     obj = lastElement->data;
-    delete lastElement->key;
+    if (deleteKeys)
+      delete lastElement->key;
     delete lastElement;
     lastElement = NULL;
   }
@@ -1828,7 +2048,7 @@ PObject * PInternalHashTable::RemoveElement(const PObject & key)
 
 BOOL PInternalHashTable::SetLastElementAt(PINDEX index)
 {
-  if (lastElement == NULL || lastIndex == P_MAX_INDEX) {
+  if (index == 0 || lastElement == NULL || lastIndex == P_MAX_INDEX) {
     lastIndex = 0;
     lastBucket = 0;
     while ((lastElement = operator[](lastBucket)) == NULL) {
@@ -1863,6 +2083,7 @@ BOOL PInternalHashTable::SetLastElementAt(PINDEX index)
           if (lastBucket-- == 0)
             return FALSE;
         } while ((lastElement = operator[](lastBucket)) == NULL);
+        lastElement = lastElement->prev;
       }
       lastIndex--;
     }
@@ -1913,10 +2134,27 @@ BOOL PInternalHashTable::EnumerateElements(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void PAbstractSet::DestroyContents()
+{
+  hashTable->deleteKeys = reference->deleteObjects;
+  PHashTable::DestroyContents();
+}
+
+
+void PAbstractSet::CopyContents(const PAbstractSet & )
+{
+}
+
+  
+void PAbstractSet::CloneContents(const PAbstractSet * )
+{
+}
+
+
 PINDEX PAbstractSet::Append(PObject * obj)
 {
   if (!Contains(*obj)) {
-    hashTable->AppendElement(*obj, NULL);
+    hashTable->AppendElement(obj, NULL);
     reference->size++;
   }
   return 0;
@@ -1937,6 +2175,7 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 
 BOOL PAbstractSet::Remove(const PObject * obj)
 {
+  hashTable->deleteKeys = hashTable->reference->deleteObjects = reference->deleteObjects;
   if (!hashTable->RemoveElement(*obj))
     return FALSE;
   reference->size--;
@@ -2052,14 +2291,14 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 {
   if (obj == NULL) {
     obj = hashTable->RemoveElement(key);
-    if (reference->deleteObjects)
+    if (obj != NULL && reference->deleteObjects)
       delete obj;
     reference->size--;
   }
   else {
     PHashTableElement * element = hashTable->GetElementAt(key);
     if (element == NULL) {
-      hashTable->AppendElement(key, obj);
+      hashTable->AppendElement(key.Clone(), obj);
       reference->size++;
     }
     else {
