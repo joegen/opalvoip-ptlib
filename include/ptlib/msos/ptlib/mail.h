@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.1 1995/03/14 12:44:51 robertj Exp $
+ * $Id: mail.h,v 1.2 1995/04/01 08:04:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.2  1995/04/01 08:04:40  robertj
+ * Added GUI support.
+ *
  * Revision 1.1  1995/03/14 12:44:51  robertj
  * Initial revision
  *
@@ -29,7 +32,6 @@
     DWORD sessionId;
     DWORD lastError;
 
-  private:
 #if defined(_WIN32)
     PDECLARE_CLASS(MAPIDLL, PDynaLink)
       public:
@@ -123,7 +125,10 @@
             CMC_extension FAR       *act_on_extensions
         );
     };
-    CMCDLL cmc;
+    CMCDLL    cmc;
+    BOOL CMCLogOn(const char * service,
+                const char * username, const char * password, CMC_ui_id ui_id);
+    CMC_ui_id logOffHWND;
 #endif
 };
 
