@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.3 1994/12/21 11:53:21 robertj Exp $
+ * $Id: pstring.h,v 1.4 1995/01/09 12:33:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.3  1994/12/21 11:53:21  robertj
+ * Revision 1.4  1995/01/09 12:33:44  robertj
+ * Removed unnecesary return value from I/O functions.
+ * Changed function names due to Mac port.
+ *
+ * Revision 1.3  1994/12/21  11:53:21  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.2  1994/12/12  13:13:13  robertj
@@ -155,7 +159,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
                 the object.
      */
 
-    virtual ostream & PrintOn(
+    virtual void PrintOn(
       ostream & strm  // I/O stream to output to.
     ) const;
     /* Output the string to the specified stream.
@@ -163,7 +167,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        Returns: stream that the string was output to.
      */
 
-    virtual istream & ReadFrom(
+    virtual void ReadFrom(
       istream & strm  // I/O stream to input from.
     );
     /* Input the string from the specified stream. This will read all
@@ -865,7 +869,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
 
   protected:
-    virtual Comparison CompareString(
+    virtual Comparison InternalCompare(
       const char * cstr   // C string to compare against.
     ) const;
     /* Internal function to compare the current string value against the
@@ -990,7 +994,7 @@ PDECLARE_CLASS(PCaselessString, PString)
 
 
   protected:
-    virtual Comparison CompareString(
+    virtual Comparison InternalCompare(
       const char * cstr   // C string to compare against.
     ) const;
     /* Internal function to compare the current string value against the
