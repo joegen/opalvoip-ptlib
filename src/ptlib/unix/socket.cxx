@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.45  1999/10/30 13:43:01  craigs
+ * Added correct method of aborting socket operations asynchronously
+ *
  * Revision 1.44  1999/09/27 01:04:42  robertj
  * BeOS support changes.
  *
@@ -266,7 +269,7 @@ int PSocket::os_select(int maxHandle,
                      
 #else
 
-int PSocket::os_select(int maxHandle,
+int PSocket::os_select(int width,
                    fd_set & readBits,
                    fd_set & writeBits,
                    fd_set & exceptionBits,
@@ -283,10 +286,25 @@ int PSocket::os_select(int maxHandle,
     }
   }
 
+  int termPipe = PThread::Current()->termPipe[0];
+  FD_SET(termPipe, &readBits);
+  width = PMAX(width, termPipe+1);
+
   do {
-    int result = ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
-    if (result >= 0)
+    int result = ::select(width, &readBits, &writeBits, &exceptionBits, tptr);
+    if (result >= 0) {
+      if (FD_ISSET(termPipe, &readBits)) {
+        FD_CLR(termPipe, &readBits);
+        if (result == 1) {
+          BYTE ch;
+          ::read(termPipe, &ch, 1);
+          FD_CLR(termPipe, &readBits);
+          errno = EINTR;
+          return -1;
+        }
+      }
       return result;
+    }
   } while (errno == EINTR);
   return -1;
 }
