@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.75  2002/11/20 01:55:06  robertj
+ * Fixed to follow new semantics of GetPath(), first entry is volume which on
+ *   UNix machines is always an empty string. Also collapses consecutive
+ *   slashes as they are meaningless.
+ *
  * Revision 1.74  2002/11/19 11:21:30  robertj
  * Changed PFilePath so can be empty string, indicating illegal path.
  * Added function to extract a path as an array of directories components.
@@ -737,11 +742,17 @@ PStringArray PDirectory::GetPath() const
   if (IsEmpty())
     return path;
 
-  path = Tokenise("/", FALSE);
+  PStringArray tokens = Tokenise("/");
 
-  PINDEX last = path.GetSize()-1;
-  while (path[last].IsEmpty())
-    path.SetSize(last--);
+  path.SetSize(tokens.GetSize()+1);
+
+  PINDEX count = 1; // First path field is volume name, empty under unix
+  for (PINDEX i = 0; i < tokens.GetSize(); i++) {
+    if (!tokens[i])
+     path[count++] = tokens[i];
+  }
+
+  path.SetSize(count);
 
   return path;
 }
