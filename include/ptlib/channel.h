@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.12 1995/06/04 08:42:00 robertj Exp $
+ * $Id: channel.h,v 1.13 1995/06/17 11:12:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.13  1995/06/17 11:12:21  robertj
+ * Documentation update.
+ *
  * Revision 1.12  1995/06/04 08:42:00  robertj
  * Fixed comment.
  *
@@ -100,11 +103,10 @@ PCLASS PChannel : public PContainer, public iostream {
    serial port, pipe, network socket or even just a simple file. Anything that
    requires opening and closing then reading and/or writing from.
 
-   A descendent would typically have constructors and an
-   <A><CODE>Open()</CODE></A> function which enables access to the I/O channel
-   it represents. The <A><CODE>Read()</CODE></A> and
-   <A><CODE>Write()</CODE></A> functions would then be overridden to the
-   platform and I/O specific mechanisms required.
+   A descendent would typically have constructors and an Open() function which
+   enables access to the I/O channel it represents. The <A>Read()</A> and
+   <A>Write()</A> functions would then be overridden to the platform and I/O
+   specific mechanisms required.
 
    The general model for a channel is that the channel accepts and/or supplies
    a stream of bytes. The access to the stream of bytes is via a set of
