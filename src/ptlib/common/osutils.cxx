@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.172  2001/11/30 04:19:26  robertj
+ * Fixed correct setting of option bits in PTrace::Initialise()
+ * Added date and time to first message in PTrace::Initialise()
+ *
  * Revision 1.171  2001/11/14 06:06:26  robertj
  * Added functions on PTimer to get reset value and restart timer to it.
  *
@@ -661,8 +665,8 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 #endif
 
   // If we have a tracing version, then open trace file and set modes
-  PTrace::SetOptions(options);
-  PTrace::SetLevel(level);
+  PTraceOptions = options;
+  PTraceLevelThreshold = level;
 
   if (filename != NULL) {
 #if PMEMORY_CHECK
@@ -684,7 +688,8 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
          << "\tVersion " << process.GetVersion(TRUE)
          << " by " << process.GetManufacturer()
          << " on " << process.GetOSClass() << ' ' << process.GetOSName()
-         << " (" << process.GetOSVersion() << '-' << process.GetOSHardware() << ')');
+         << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
+         << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu"));
 }
 
 
