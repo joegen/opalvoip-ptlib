@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.18 1996/04/14 02:53:30 robertj Exp $
+ * $Id: channel.h,v 1.19 1996/04/15 12:33:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.19  1996/04/15 12:33:03  robertj
+ * Fixed SetReadTimeout/SetWriteTimeout to use const reference so works with GNU compiler.
+ *
  * Revision 1.18  1996/04/14 02:53:30  robertj
  * Split serial and pipe channel into separate compilation units for Linux executable size reduction.
  *
@@ -168,7 +171,7 @@ PCLASS PChannel : public PObject, public iostream {
 
 
     void SetReadTimeout(
-      PTimeInterval time   // The new time interval for read operations.
+      const PTimeInterval & time  // The new time interval for read operations.
     );
     /* Set the timeout for read operations. This may be zero for immediate
        return of data through to PMaxMilliseconds which will wait forever for
@@ -262,7 +265,7 @@ PCLASS PChannel : public PObject, public iostream {
 
 
     void SetWriteTimeout(
-      PTimeInterval time   // The new time interval for write operations.
+      const PTimeInterval & time // The new time interval for write operations.
     );
     /* Set the timeout for write operations to complete. This may be zero for
        immediate return through to PMaxMilliseconds which will wait forever for
