@@ -27,6 +27,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.67.2.3  2005/02/13 23:44:03  csoutheren
+ * Backported more IPV6 fixes from Atlas-devel
+ *
+ * Revision 1.75  2005/02/13 23:01:35  csoutheren
+ * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
+ * address range as RFC1918
+ *
+ * Revision 1.74  2005/02/07 12:12:33  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.67.2.2  2005/02/07 00:54:32  csoutheren
  * Backported latest IPV6 changes from Atlas-devel
  *
@@ -276,8 +287,8 @@
 
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.
-   If P_USE_IPV6 is not set, IPv4 only is supported.
-   If P_USE_IPV6 is set, both IPv4 and IPv6 adresses are supported, with 
+   If P_HAS_IPV6 is not set, IPv4 only is supported.
+   If P_HAS_IPV6 is set, both IPv4 and IPv6 adresses are supported, with 
    IPv4 as default. This allows to transparently use IPv4, IPv6 or Dual 
    stack operating systems.
  */
@@ -443,31 +454,13 @@ class PIPSocket : public PSocket
         /// Check for Broadcast address 255.255.255.255
         BOOL IsBroadcast() const;
 
-        // Check if the remote address is private address as specified
-        // by RFC 1918 address
-        //  10.0.0.0    - 10.255.255.255.255
-        //  172.16.0.0  - 172.31.255.255
-        //  192.168.0.0 - 192.168.255.255
-        BOOL IsRFC1918() const 
-        { 
-#if P_HAS_IPV6
-          if (version == 6) 
-            return IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six);
-#endif
-          return (Byte1() == 10)
-                  ||
-                  (
-                    (Byte1() == 172)
-                    &&
-                    (Byte2() >= 16) && (Byte2() <= 31)
-                  )
-                  ||
-                  (
-                    (Byte1() == 192) 
-                    &&
-                    (Byte2() == 168)
-                  );
-        }
+        // Check if the remote address is a private address.
+        // For IPV4 this is specified RFC 1918 as the following ranges:
+        //    10.0.0.0    - 10.255.255.255.255
+        //    172.16.0.0  - 172.31.255.255
+        //    192.168.0.0 - 192.168.255.255
+        // For IPV6 this is specified as any address having "1111 1110 1” for the first nine bits
+        BOOL IsRFC1918() const;
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
@@ -790,6 +783,9 @@ class PIPSocket : public PSocket
           const Address & _addr,
           const Address & _mask,
           const PString & _macAddr
+#if P_HAS_IPV6
+          , const PString & _ip6Addr = PString::Empty()
+#endif
         );
 
         /// Print to specified stream
@@ -803,6 +799,16 @@ class PIPSocket : public PSocket
         /// Get the address associated with the interface
         Address GetAddress() const { return ipAddr; }
 
+        BOOL HasIP6Address() const
+#if ! P_HAS_IPV6
+        { return FALSE;}
+#else
+        { return !ip6Addr.IsEmpty();}
+
+        /// Get the address associated with the interface
+        Address GetIP6Address() const { return ip6Addr; }
+#endif
+
         /// Get the net mask associated with the interface
         Address GetNetMask() const { return netMask; }
 
@@ -814,6 +820,9 @@ class PIPSocket : public PSocket
         Address ipAddr;
         Address netMask;
         PString macAddr;
+#if P_HAS_IPV6
+        PString ip6Addr;
+#endif
     };
 
     PLIST(InterfaceTable, InterfaceEntry);
