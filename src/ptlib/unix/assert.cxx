@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.6  2000/03/20 22:59:18  craigs
+ * Fixed problem with asserts generating unlimited output when input is redirected
+ *
  * Revision 1.5  2000/02/18 01:49:18  craigs
  * Added VxWorks code
  *
@@ -60,9 +63,11 @@ void PAssertFunc (const char * file, int line, const char * msg)
   for(;;) {
     PError << "\n<A>bort, <C>ore dump, <I>gnore? " << flush;
     int c = getchar();
+
     switch (c) {
       case 'a' :
       case 'A' :
+      case EOF :
         PError << "\nAborting.\n";
         _exit(1);
 
