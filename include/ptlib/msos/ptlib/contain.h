@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.43  2004/05/19 23:34:43  csoutheren
+ * Added <algorithm>
+ *
  * Revision 1.42  2004/05/13 14:53:35  csoutheren
  * Add "abstract factory" template classes
  *
@@ -479,6 +482,9 @@ extern "C" char ** __argv;
 #pragma warning(disable:4786)
 #include <iterator>
 #pragma warning(pop)
+
+// preload <algorithm> and kill warnings
+#include <algorithm>
 
 // VS.net won't work without this :(
 #if _MSC_VER>=1300
