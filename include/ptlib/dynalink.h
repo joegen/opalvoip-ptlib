@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.10  2002/10/10 04:43:43  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.9  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -58,8 +61,9 @@
  *
  */
 
-#ifndef __BEOS__
 #define _PDYNALINK
+
+#if !defined(__BEOS__) && !defined(P_VXWORKS)
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -164,5 +168,7 @@ class PDynaLink : public PObject
 #include <ptlib/dynalink.h>
 };
 
-#endif // !__BEOS__
+#endif // !defined(__BEOS__) && !defined(P_VXWORKS)
+
+
 // End Of File ///////////////////////////////////////////////////////////////
