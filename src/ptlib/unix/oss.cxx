@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.54  2002/12/03 23:03:54  rogerh
+ * oops - remove some test code which should not have been committed
+ *
  * Revision 1.53  2002/12/03 19:11:58  rogerh
  * Open sound device in non blocking mode incase it is already open.
  *
@@ -876,7 +879,6 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
     else
       PTRACE(6, "OSS\tRead completed");
 
-    lastReadCount = len; // ROGER's HACK
     return TRUE;
   }
 
