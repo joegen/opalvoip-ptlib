@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.37  2003/04/17 14:44:44  craigs
+ * Removed MacOS specific defines to make some attributes public
+ * Thanks to Hugo Santos and apologies to Roger Hardiman
+ *
  * Revision 1.36  2003/02/26 01:57:44  robertj
  * Added XML encoding rules to ASN system, thanks Federico Pinna
  *
@@ -834,12 +838,7 @@ class PASN_Choice : public PASN_Object
     void EncodeXER(PXER_Stream &) const;
 #endif
 
-#ifdef P_MACOSX
-  #warning making PASN_Choice public
-  public:
-#else
   protected:
-#endif
     PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PString & nameSpec);
@@ -972,12 +971,7 @@ class PASN_Array : public PASN_ConstrainedObject
 
     virtual PASN_Object * CreateObject() const = 0;
 
-#ifdef P_MACOSX
-  #warning making PASN_Array public
-  public:
-#else
   protected:
-#endif
     PASN_Array(unsigned tag = UniversalSequence,
                TagClass tagClass = UniversalTagClass);
 
