@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.30 1995/03/12 04:38:01 robertj Exp $
+ * $Id: contain.inl,v 1.31 1995/03/25 02:12:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.31  1995/03/25 02:12:16  robertj
+ * Fixed PStringXXX containers so can correctly contain PCaselessString etc.
+ *
  * Revision 1.30  1995/03/12 04:38:01  robertj
  * Added assignment operator for const char * for efficiency.
  *
@@ -314,11 +317,11 @@ PINLINE PAbstractList::PAbstractList()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PStringList::AppendString(const PString & str)
-  { return Append(PNEW PString(str)); }
+  { return Append(str.Clone()); }
 
 PINLINE PINDEX PStringList::InsertString(
                                    const PString & before, const PString & str)
-  { return Insert(before, PNEW PString(str)); }
+  { return Insert(before, str.Clone()); }
 
 PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
@@ -354,11 +357,11 @@ PINLINE BOOL PAbstractSortedList::Element::RightTreeSize()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PSortedStringList::AppendString(const PString & str)
-  { return Append(PNEW PString(str)); }
+  { return Append(str.Clone()); }
 
 PINLINE PINDEX PSortedStringList::InsertString(
                                    const PString & before, const PString & str)
-  { return Insert(before, PNEW PString(str)); }
+  { return Insert(before, str.Clone()); }
 
 PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
@@ -382,11 +385,11 @@ PINLINE BOOL PAbstractSet::Contains(const PObject & key)
   { return hashTable->GetElementAt(key) != NULL; }
 
 
-PINLINE void PStringSet::Include(const PString & key)
-  { PAbstractSet::Append(PNEW PString(key)); }
+PINLINE void PStringSet::Include(const PString & str)
+  { PAbstractSet::Append(str.Clone()); }
 
-PINLINE void PStringSet::Exclude(const PString & key)
-  { PAbstractSet::Remove(&key); }
+PINLINE void PStringSet::Exclude(const PString & str)
+  { PAbstractSet::Remove(&str); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
