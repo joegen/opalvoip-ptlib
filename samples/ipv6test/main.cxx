@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2005/02/13 22:33:09  csoutheren
+ * Added ability to test an IP address for RFC1918
+ *
  * Revision 1.6  2005/02/07 12:12:34  csoutheren
  * Expanded interface list routines to include IPV6 addresses
  * Added IPV6 to GetLocalAddress
@@ -70,6 +73,7 @@ void IPV6Test::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
+             "-isrfc1918."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -104,6 +108,16 @@ void IPV6Test::Main()
     else
         cout << "failed";
     cout << endl;
+  }
+
+  if (args.HasOption("isrfc1918")) {
+    if (args.GetCount() == 0) 
+      PError << "error: must supply IP address as argument" << endl;
+    else {
+      PIPSocket::Address addr(args[0]);
+      cout << addr << " is " << (addr.IsRFC1918() ? "" : "not ") << "an RFC1918 address" << endl;
+    }
+    return;
   }
 
 
