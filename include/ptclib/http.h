@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.9 1996/02/25 11:14:21 robertj Exp $
+ * $Id: http.h,v 1.10 1996/03/02 03:12:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.10  1996/03/02 03:12:55  robertj
+ * Added radio button and selection boxes to HTTP form resource.
+ *
  * Revision 1.9  1996/02/25 11:14:21  robertj
  * Radio button support for forms.
  *
@@ -1157,6 +1160,34 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
       const char * const * titleStrings,
       PINDEX initVal = 0
     );
+    PHTTPRadioField(
+      const char * name,
+      const char * groupTitle,
+      const PStringArray & valueArray,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      const char * groupTitle,
+      const PStringArray & valueArray,
+      const PStringArray & titleArray,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      const char * groupTitle,
+      PINDEX count,
+      const char * const * valueStrings,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      const char * groupTitle,
+      PINDEX count,
+      const char * const * valueStrings,
+      const char * const * titleStrings,
+      PINDEX initVal = 0
+    );
 
     virtual void GetHTML(
       PHTML & html
@@ -1172,6 +1203,50 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
   protected:
     PStringArray values;
     PStringArray titles;
+    PString value;
+};
+
+
+PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
+  public:
+    PHTTPSelectField(
+      const char * name,
+      const PStringArray & valueArray,
+      PINDEX initVal = 0
+    );
+    PHTTPSelectField(
+      const char * name,
+      PINDEX count,
+      const char * const * valueStrings,
+      PINDEX initVal = 0
+    );
+    PHTTPSelectField(
+      const char * name,
+      const char * title,
+      const PStringArray & valueArray,
+      PINDEX initVal = 0
+    );
+    PHTTPSelectField(
+      const char * name,
+      const char * title,
+      PINDEX count,
+      const char * const * valueStrings,
+      PINDEX initVal = 0
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & val
+    );
+
+
+  protected:
+    PStringArray values;
     PString value;
 };
 
