@@ -1,13 +1,12 @@
 /*
- * $Id: config.h,v 1.5 1996/09/21 05:42:12 craigs Exp $
+ * $Id: config.h,v 1.6 1998/03/29 10:42:52 craigs Exp $
  */
 
 #ifndef _PCONFIG
 
 #pragma interface
 
-class PXConfigSection;
-PLIST(PXConfig, PXConfigSection);
+class PXConfig;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
@@ -18,10 +17,7 @@ PLIST(PXConfig, PXConfigSection);
     ~PConfig();
 
   protected:
-    PFilePath  filename;
     PXConfig * config;
-    BOOL       dirty;
-    BOOL       saveOnExit;
 };
 
 
