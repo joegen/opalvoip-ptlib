@@ -5,12 +5,7 @@
  *
  * Customisable application configurationfor OEMs.
  *
- * Copyright 2002 Equivalence
- *
- * $Log: custom.cxx,v $
- * Revision 1.1  2002/10/02 08:58:20  craigs
- * Initial version
- *
+ * Copyright 2001 Equivalence Pty. Ltd.
  */
 
 #ifdef RC_INVOKED
@@ -24,7 +19,7 @@
 #define MINOR_VERSION 0
 
 #ifndef BUILD_TYPE
-#define BUILD_TYPE AlphaCode
+#define BUILD_TYPE ReleaseCode
 #endif
 
 #ifndef BUILD_NUMBER
@@ -39,16 +34,23 @@
 ////////////////////////////////////////////////////
 
 #ifndef PRODUCT_NAME_TEXT
-#define	PRODUCT_NAME_TEXT	"xmlrpcsrvr"
-//#define	PRODUCT_NAME_HTML "<font color=\"#008000\"><em>Product</em></font>Name"
+#define	PRODUCT_NAME_TEXT	"PWLib XML/RPC Server"
+#endif
+
+#ifndef EXE_NAME_TEXT
+#define	EXE_NAME_TEXT	        "xmlrpcsrvr"
 #endif
 
 #ifndef MANUFACTURER_TEXT
-#define	MANUFACTURER_TEXT	"Equivalence"
+#define	MANUFACTURER_TEXT	"Equivalence Pty. Ltd."
+#endif
+
+#ifndef COPYRIGHT_HOLDER
+#define	COPYRIGHT_HOLDER	MANUFACTURER_TEXT
 #endif
 
 #ifndef GIF_NAME
-#define GIF_NAME  		"xmlrpcsrvr.gif"
+#define GIF_NAME  		EXE_NAME_TEXT ".gif"
 #define	GIF_WIDTH  380
 #define GIF_HEIGHT 101
 #endif
@@ -63,12 +65,6 @@
 
 #ifndef PRODUCT_NAME_HTML
 #define	PRODUCT_NAME_HTML PRODUCT_NAME_TEXT
-#endif
-
-
-#ifndef SIGNATURE_KEY
-#define SIGNATURE_KEY     \
-  239,246,255,179,166,185,40,236,59,15,16,150,55,219,186,234
 #endif
 
 
@@ -116,9 +112,9 @@ BEGIN
             VALUE "CompanyName",      MANUFACTURER_TEXT "\0"
             VALUE "FileDescription",  PRODUCT_NAME_TEXT "\0"
             VALUE "FileVersion",      VERSION_STRING "\0"
-            VALUE "InternalName",     "xmlrpcsrvr\0"
-            VALUE "LegalCopyright",   "Copyright © Equivalence Pty. Ltd. 2002\0"
-            VALUE "OriginalFilename", "xmlrpcsrvr.exe\0"
+            VALUE "InternalName",     EXE_NAME_TEXT "\0"
+            VALUE "LegalCopyright",   "Copyright © " COPYRIGHT_HOLDER " 2001\0"
+            VALUE "OriginalFilename", EXE_NAME_TEXT ".exe\0"
             VALUE "ProductName",      PRODUCT_NAME_TEXT "\0"
             VALUE "ProductVersion",   VERSION_STRING "\0"
         END
@@ -135,11 +131,8 @@ PHTTPServiceProcess::Info ProductInfo = {
     PRODUCT_NAME_TEXT,
     MANUFACTURER_TEXT,
     MAJOR_VERSION, MINOR_VERSION, PProcess::BUILD_TYPE, BUILD_NUMBER, __TIME__ __DATE__,
-
-#include "xmlrpcsrvr.key"
-    , NumSecuredKeys,
-
-    {{ SIGNATURE_KEY }},
+    
+    {{ 0 }}, { NULL }, 0, {{ 0 }},  // Only relevent for commercial apps
 
     HOME_PAGE,
     EMAIL,
