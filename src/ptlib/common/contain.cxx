@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.22 1994/08/01 03:40:28 robertj Exp $
+ * $Id: contain.cxx,v 1.23 1994/08/04 12:57:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.22  1994/08/01 03:40:28  robertj
+ * Revision 1.23  1994/08/04 12:57:10  robertj
+ * Rewrite of memory check code.
+ *
+ * Revision 1.22  1994/08/01  03:40:28  robertj
  * Fixed PString() constructor from integer
  *
  * Revision 1.21  1994/07/27  05:58:07  robertj
@@ -141,44 +144,72 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 #ifdef PMEMORY_CHECK
 
-struct PointerHashTableStruct {
-  void       * ptr;
+static const size_t PointerTableSize = 12345;
+static void **      PointerHashTable;
+
+static const char GuardBytes[] = { '\x55', '\xaa', '\xff', '\xaa', '\x55' };
+
+struct PointerArenaStruct {
   size_t       size;
   const char * fileName;
   int          line;
   const char * className;
+  char         guard[sizeof(GuardBytes)];
 };
 
 
-static const char GuardBytes[] = { '\x55', '\xaa', '\xff', '\xaa', '\x55' };
-static const unsigned PointerHashTableSize =
-                                        0xffff/sizeof(PointerHashTableStruct);
-static PointerHashTableStruct PointerHashTable[PointerHashTableSize];
-
-
-static PointerHashTableStruct *
-                          FindObjectMemoryPointer(void * object, void * search)
+static ostream & operator<<(ostream & out, void * ptr)
 {
-  int hash = (int)(((((long)object)&0x7fffffff)>>3)%PointerHashTableSize);
-  PointerHashTableStruct * forward = &PointerHashTable[hash];
-  PointerHashTableStruct * backward = forward;
-  static PointerHashTableStruct * const EndPointerHashTable =
-                                     &PointerHashTable[PointerHashTableSize-1];
+  return out << resetiosflags(ios::basefield) << setiosflags(ios::hex)
+             << setw(8) << setfill('0') << (long)ptr
+             << resetiosflags(ios::basefield) << setiosflags(ios::dec);
+}
+
+
+static void DumpMemoryLeaks()
+{
+  PError.setf(ios::uppercase);
+  void ** entry = PointerHashTable;
+  for (size_t i = 0; i < PointerTableSize; i++, entry++) {
+    if (*entry != NULL) {
+      PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
+      PError << "Pointer @" << (void *)(*entry)
+             << " [" << arena->size << "] '" << arena->className
+             << "' not deallocated.";
+      if (arena->fileName != NULL)
+        PError << " PNEW: " << arena->fileName << '(' << arena->line << ')';
+      PError << endl;
+    }
+  }
+
+#ifdef WIN32
+  extern void PWaitOnExitConsoleWindow();
+  PWaitOnExitConsoleWindow();
+#endif
+}
+
+
+static void ** FindPointerInHashTable(void * object, void * search)
+{
+  int hash = (int)(((((long)object)&0x7fffffff)>>3)%PointerTableSize);
+  void ** forward = &PointerHashTable[hash];
+  void ** backward = forward;
+  static void ** endHashTable = &PointerHashTable[PointerTableSize-1];
 
   do {
-    if (forward->ptr == search)
+    if (*forward == search)
       return forward;
 
-    if (forward == EndPointerHashTable)
+    if (forward == endHashTable)
       forward = PointerHashTable;
     else
       forward++;
 
-    if (backward->ptr == search)
+    if (*backward == search)
       return backward;
 
     if (backward == PointerHashTable)
-      backward = EndPointerHashTable;
+      backward = endHashTable;
     else
       backward--;
   } while (forward != backward);
@@ -187,73 +218,73 @@ static PointerHashTableStruct *
 }
 
 
-void * PObject::AllocateObjectMemory(size_t nSize,
+void * PMemoryCheckAllocate(size_t nSize,
                            const char * file, int line, const char * className)
 {
-  void * obj = malloc(nSize + sizeof(GuardBytes));
-  if (obj == NULL) {
+  if (PointerHashTable == NULL) {
+    PointerHashTable = (void **)calloc(PointerTableSize, sizeof(void *));
+    atexit(DumpMemoryLeaks);
+  }
+
+  PointerArenaStruct * arena = (PointerArenaStruct *)malloc(
+                      sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes));
+  if (arena == NULL) {
     PAssertAlways(POutOfMemory);
     return NULL;
   }
 
-  memcpy((char *)obj+nSize, GuardBytes, sizeof(GuardBytes));
+  char * data = (char *)&arena[1];
 
-  PointerHashTableStruct * entry = FindObjectMemoryPointer(obj, NULL);
-  if (entry == NULL)
-    PAssertAlways("Pointer hash table full.");
-  else {
-    entry->ptr       = obj;
-    entry->size      = nSize;
-    entry->fileName  = file;
-    entry->line      = line;
-    entry->className = className;
+  arena->size      = nSize;
+  arena->fileName  = file;
+  arena->line      = line;
+  arena->className = className;
+  memcpy(arena->guard, GuardBytes, sizeof(GuardBytes));
+  memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
+
+  if (PointerHashTable != NULL) {
+    void ** entry = FindPointerInHashTable(data, NULL);
+    if (entry != NULL)
+      *entry = data;
+    else
+      PError << "Pointer @" << (void *)data
+             << " not added to hash table." << endl;
   }
 
-  return obj;
+  return data;
 }
 
 
-void PObject::DeallocateObjectMemory(void * ptr, const char * className)
+void PMemoryCheckDeallocate(void * ptr, const char * className)
 {
-  PointerHashTableStruct * entry = FindObjectMemoryPointer(ptr, ptr);
-  if (entry == NULL)
-    PAssertAlways("Deallocating invalid pointer.");
-  else {
-    entry->ptr = NULL;
-
-    if (strcmp(entry->className, className) != 0) {
-      char buf[200];
-      sprintf(buf,
-              "Pointer allocated as \"%1.70s\", deallocated as \"%1.70s\".",
-              entry->className, className);
-      PAssertAlways(buf);
-    }
-  
-    PAssert(memcmp((char *)ptr+entry->size,
-               GuardBytes, sizeof(GuardBytes)) == 0, "Heap pointer overrun.");
-  
-    memset(ptr, 0x55, entry->size);  // Make use of freed pointer noticable
+  if (PointerHashTable == NULL) {
+    free(ptr);
+    return;
   }
 
-  free(ptr);
-}
-
-
-void PDumpMemoryLeaks()
-{
-  PError.setf(ios::uppercase);
-  PointerHashTableStruct * entry = PointerHashTable;
-  for (int i = 0; i < PointerHashTableSize; i++, entry++) {
-    if (entry->ptr != NULL) {
-      PError << (entry->fileName != NULL ? entry->fileName : "<Unknown>")
-             << '(' << entry->line << ") : memory leak : '"
-             << entry->className << "' @"
-             << resetiosflags(ios::basefield) << setiosflags(ios::hex)
-             << setw(8) << setfill('0') << (long)(entry->ptr)
-             << resetiosflags(ios::basefield) << setiosflags(ios::dec)
-             << setw(1) << " [" << entry->size << ']' << endl;
-    }
+  void ** entry = FindPointerInHashTable(ptr, ptr);
+  if (entry == NULL) {
+    PError << "Pointer @" << ptr << " invalid for deallocation." << endl;
+    free(ptr);
+    return;
   }
+
+  *entry = NULL;
+
+  PointerArenaStruct * arena = ((PointerArenaStruct *)ptr)-1;
+
+  if (strcmp(arena->className, className) != 0)
+    PError << "Pointer @" << ptr << " allocated as '" << arena->className
+           << "' and deallocated as '" << className << "'." << endl;
+
+  if (memcmp(arena->guard, GuardBytes, sizeof(GuardBytes)) != 0)
+    PError << "Pointer @" << ptr << " underrun." << endl;
+
+  if (memcmp((char *)ptr+arena->size, GuardBytes, sizeof(GuardBytes)) != 0)
+    PError << "Pointer @" << ptr << " overrun." << endl;
+
+  memset(ptr, 0x55, arena->size);  // Make use of freed data noticable
+  free(arena);
 }
 
 
