@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2004/09/10 22:33:31  dereksmithies
+ * Calculate time required to do the decoding of the dtmf symbol.
+ *
  * Revision 1.2  2004/09/10 04:31:57  dereksmithies
  * Add code to calculate the detection rate.
  *
@@ -150,7 +153,10 @@ void DtmfTest::Main()
       result[j + 1] = (BYTE)(signal >> 8);
     }
 
+    PTime startTime;
     PString tones = decoder.Decode(result.GetPointer(), result.GetSize() );
+    PTimeInterval elapsed = PTime() - startTime;
+
     if (tones.IsEmpty())
       tones = " ";
     cout << "Test : " << symbol << " ---> " << tones << "    ";
@@ -162,9 +168,7 @@ void DtmfTest::Main()
       cout << "Fail";
     }
 
-    cout << endl;
-
-
+    cout << "       decode time : " << elapsed.GetInterval() << " millisecs" << endl;
   }
 
   cout << endl << "Test run complete. Correctly interpreted " << (int)((nCorrect / 0.16) + 0.5) << "%" << endl;
