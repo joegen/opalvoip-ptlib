@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.43 1997/04/06 07:46:09 robertj Exp $
+ * $Id: http.cxx,v 1.44 1997/06/06 08:54:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.44  1997/06/06 08:54:47  robertj
+ * Allowed username/password on http scheme URL.
+ *
  * Revision 1.43  1997/04/06 07:46:09  robertj
  * Fixed bug where URL has more than special character ('?', '#' etc).
  *
@@ -200,7 +203,7 @@ class schemeStruct {
 };
 
 static schemeStruct schemeInfo[] = {
-  { "http",      HostPort, TRUE, DEFAULT_HTTP_PORT },
+  { "http",      UserPasswordHostPort, TRUE, DEFAULT_HTTP_PORT },
   { "https",     HostPort, TRUE, DEFAULT_HTTPS_PORT },
   { "gopher",    HostPort, TRUE, DEFAULT_GOPHER_PORT },
   { "wais",      HostPort, TRUE, DEFAULT_WAIS_PORT },
