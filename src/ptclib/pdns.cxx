@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.9  2004/01/02 13:22:04  csoutheren
+ * Fixed problem with extracting SRV records from DNS
+ *
  * Revision 1.8  2003/11/02 15:52:58  shawn
  * added arpa/nameser_compat.h for Mac OS X 10.3 (Panther)
  *
@@ -431,7 +434,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
     // calculate total of all unused weights at this priority
     unsigned totalWeight = (*this)[firstPos].weight;
     PINDEX i = firstPos + 1;
-    PINDEX count = 0;
+    PINDEX count = 1;
     while (i < GetSize() && ((*this)[i].priority == currentPri)) {
       if (!(*this)[i].used) {
         totalWeight += (*this)[i].weight;
