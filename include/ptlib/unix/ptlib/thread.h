@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.38  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.37  2004/05/02 18:00:02  ykiryanov
  * Made unblock pipe public for BeOS
  *
@@ -161,13 +164,6 @@
                     int type,
                    const PTimeInterval & timeout);
 
-    int PXBlockOnIO(int maxHandle,
-               fd_set * readBits,
-               fd_set * writeBits,
-               fd_set * execptionBits,
-               const PTimeInterval & timeout,
-               const PIntArray & osHandles);
-
     void PXAbortBlock() const;
 
 #ifdef P_PTHREADS
@@ -232,6 +228,9 @@
     friend class PSocket;
 
 #elif defined(VX_TASKS)
+  public:
+    SEM_ID syncPoint;
+    static void Trace(PThreadIdentifer threadId = 0);
 
   private:
     static int ThreadFunction(void * threadPtr);

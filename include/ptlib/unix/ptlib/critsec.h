@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.3  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.2  2004/04/18 12:37:40  csoutheren
  * Modified to detect sem_wait etc on Linux systems
  *
@@ -33,7 +36,7 @@
  */
 
   // Unix specific critical section implementation
-#ifdef P_HAS_SEMAPHORES
+#if defined P_HAS_SEMAPHORES && !defined P_VXWORKS
   sem_t sem;
 #endif
 

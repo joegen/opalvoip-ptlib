@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.109  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.108  2004/07/08 00:57:29  csoutheren
  * Added check for EINTR on connect
  * Thanks to Alex Vishnev
@@ -358,6 +361,12 @@
 
 int PX_NewHandle(const char *, int);
 
+#ifdef P_VXWORKS
+// VxWorks variant of inet_ntoa() allocates INET_ADDR_LEN bytes via malloc
+// BUT DOES NOT FREE IT !!!  Use inet_ntoa_b() instead.
+#define INET_ADDR_LEN      18
+extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
+#endif // P_VXWORKS
 
 //////////////////////////////////////////////////////////////////////////////
 // P_fd_set
@@ -397,20 +406,20 @@ int PSocket::os_close()
 
 static int SetNonBlocking(int fd)
 {
-#if defined(P_VXWORKS)
-  return fd;
-#else
   if (fd < 0)
     return -1;
 
   // Set non-blocking so we can use select calls to break I/O block on close
   int cmd = 1;
+#if defined(P_VXWORKS)
+  if (::ioctl(fd, FIONBIO, &cmd) == 0)
+#else
   if (::ioctl(fd, FIONBIO, &cmd) == 0 && ::fcntl(fd, F_SETFD, 1) == 0)
+#endif
     return fd;
 
   ::close(fd);
   return -1;
-#endif // !P_VXWORKS
 }
 
 
@@ -470,24 +479,64 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * siz
 
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS) && !defined(__BEOS__)
 
-int PSocket::os_select(int maxHandle,
-                   fd_set * readBits,
-                   fd_set * writeBits,
-                   fd_set * exceptionBits,
-          const PIntArray & osHandles,
+PChannel::Errors PSocket::Select(SelectList & read,
+                                 SelectList & write,
+                                 SelectList & except,
       const PTimeInterval & timeout)
 {
-  int stat = PThread::Current()->PXBlockOnIO(maxHandle,
-                                         readBits,
-                                         writeBits,
-                                         exceptionBits,
-                                         timeout,
-					 osHandles);
-  if (stat <= 0)
-    return stat;
+  PINDEX i, j;
+  PINDEX nextfd = 0;
+  int maxfds = 0;
+  Errors lastError = NoError;
+  PThread * unblockThread = PThread::Current();
+  
+  P_fd_set fds[3];
+  SelectList * list[3] = { &read, &write, &except };
 
-  P_timeval instant;
-  return ::select(maxHandle, readBits, writeBits, exceptionBits, instant);
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < list[i]->GetSize(); j++) {
+      PSocket & socket = (*list[i])[j];
+      if (!socket.IsOpen())
+        lastError = NotOpen;
+      else {
+        int h = socket.GetHandle();
+        fds[i] += h;
+        if (h > maxfds)
+          maxfds = h;
+      }
+      socket.px_selectMutex.Wait();
+      socket.px_selectThread = unblockThread;
+    }
+  }
+
+  if (lastError == NoError) {
+    P_timeval tval = timeout;
+    int result = ::select(maxfds+1, 
+                          (fd_set *)fds[0], 
+                          (fd_set *)fds[1], 
+                          (fd_set *)fds[2], 
+                          tval);
+
+    int osError;
+    (void)ConvertOSError(result, lastError, osError);
+  }
+
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < list[i]->GetSize(); j++) {
+      PSocket & socket = (*list[i])[j];
+      socket.px_selectThread = NULL;
+      socket.px_selectMutex.Signal();
+      if (lastError == NoError) {
+        int h = socket.GetHandle();
+        if (h < 0)
+          lastError = Interrupted;
+        else if (!fds[i].IsPresent(h))
+          list[i]->RemoveAt(j--);
+      }
+    }
+  }
+
+  return lastError;
 }
                      
 #else
@@ -1741,7 +1790,9 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
   hp->h_addr_list = NULL;
 
   if ((int)(addr = inet_addr(name)) != ERROR) {
-    sprintf(staticgethostaddr,"%s",inet_ntoa(addr));
+    char ipStorage[INET_ADDR_LEN];
+    inet_ntoa_b(*(struct in_addr*)&addr, ipStorage);
+    sprintf(staticgethostaddr,"%s",ipStorage);
     hp->h_name = staticgethostaddr;
     h_errno = SUCCESS;
   }

@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.30  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.29  2004/03/17 22:24:29  rjongbloed
  * Fixed MSVC warnings
  *
@@ -116,10 +119,6 @@
  *
  *
  */
-#ifdef __GNUC__
-#pragma implementation "vfakeio.h"
-#endif
-
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.17  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.16  2002/06/25 04:05:19  robertj
  * Fixed new assert function that does not have file/line parameters.
  *
@@ -157,6 +160,7 @@ void PAssertFunc(const char * msg)
 
 #else // P_VXWORKS
 
+  PThread::Trace(); // Get debugging dump
   exit(1);
   kill(taskIdSelf(), SIGABRT);
 
