@@ -8,7 +8,8 @@ VERSION="@PWLIB_VERSION@"
 CCFLAGS="@STDCCFLAGS@"
 LDFLAGS="@LDFLAGS@"
 LIBS="@ENDLDLIBS@"
-PWLIBDIR="@PWLIBDIR@"
+LIBDIR="@libdir@"
+PWINSTDIR="@PWINSTDIR@"
 MACHTYPE="@MACHTYPE@"
 OSTYPE="@OSTYPE@"
 OSRELEASE="@OSRELEASE@"
@@ -16,7 +17,7 @@ SHAREDLIBEXT="@SHAREDLIBEXT@"
 INSTALLPREFIX="@INSTALLPREFIX@"
 
 # usage="Usage: ptlib-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--libs] [--cflags]"
-usage="Usage: ptlib-config [--version] [--pwlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix]"
+usage="Usage: ptlib-config [--version] [--pwlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix] [--libdir]"
 
 if test $# -eq 0; then
       echo "${usage}" 1>&2
@@ -34,7 +35,7 @@ while test $# -gt 0; do
       echo $VERSION
       ;;
     --pwlibdir)
-      echo $PWLIBDIR
+      echo $PWINSTDIR
       ;;
     --ldflags)
       echo $LDFLAGS
@@ -60,9 +61,12 @@ while test $# -gt 0; do
     --prefix)
       echo $INSTALLPREFIX
       ;;
+    --libdir)
+      echo $LIBDIR
+      ;;
     --all)
       echo VERSION      = $VERSION
-      echo PWLIBDIR     = $PWLIBDIR
+      echo PWLIBDIR     = $PWINSTDIR
       echo LDFLAGS      = $LDFLAGS
       echo CCFLAGS      = $CCFLAGS
       echo LIBS         = $LIBS
@@ -71,6 +75,7 @@ while test $# -gt 0; do
       echo OSRELEASE    = $OSRELEASE
       echo SHAREDLIBEXT = $SHAREDLIBEXT
       echo PREFIX       = $INSTALLPREFIX
+      echo LIBDIR       = $LIBDIR
       ;;
 
     *)

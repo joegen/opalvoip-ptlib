@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.205  2003/07/24 22:01:42  dereksmithies
+ * Add fixes from Peter Nixon  for fixing install problems. Thanks.
+ *
  * Revision 1.204  2003/03/27 07:27:44  robertj
  * Added function to get a bunch of arguments as a string array.
  *
@@ -889,7 +892,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
     if ((PTraceOptions&ThreadAddress) != 0)
       *PTraceStream << hex << setfill('0')
-                    << setw(7) << (unsigned)PThread::Current()
+                    << setw(7) << (void *)PThread::Current()
                     << dec << setfill(' ') << '\t';
   }
 

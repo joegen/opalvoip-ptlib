@@ -5,6 +5,8 @@ dnl set the PWLIB directory to the current directory
 
 PWLIBDIR=`pwd`
 AC_SUBST(PWLIBDIR)
+dnl set the pwlib installation dir for pwlib-config
+AC_SUBST(PWINSTDIR)
 
 dnl ########################################################################
 dnl set the PREFIX accordingly
@@ -34,7 +36,7 @@ AC_CANONICAL_TARGET()
 OSTYPE=
 
 case "$target_os" in
-  linux\-gnu)      OSTYPE=linux ;  
+  linux*)          OSTYPE=linux ;  
                    OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
 
@@ -82,6 +84,11 @@ case "$target_cpu" in
 
    powerpc )       MACHTYPE=ppc ;;
 
+   ppc64 )         MACHTYPE=ppc ;
+		   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   ppc )           MACHTYPE=ppc ;;
+
    ia64)	   MACHTYPE=ia64 ;
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
@@ -93,7 +100,7 @@ case "$target_cpu" in
 esac
 
 echo "OSTYPE set to $OSTYPE";
-echo "OSRLEASE set to $OSRELEASE";
+echo "OSRELEASE set to $OSRELEASE";
 echo "MACHTYPE set to $MACHTYPE";
 
 AC_SUBST(MACHTYPE,  $MACHTYPE)
@@ -121,22 +128,22 @@ else
   PBYTE_ORDER=PLITTLE_ENDIAN
 fi
 
-AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
+AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
 
 dnl ########################################################################
 dnl look for compile flags
 AC_LANG(C++)
 AC_LANG(C)
 
-AC_MSG_CHECKING(if compiler accepts -fno-rtti)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -fno-rtti"
-else
-  AC_MSG_RESULT(no)
-fi
+dnl AC_MSG_CHECKING(if compiler accepts -fno-rtti)
+dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+dnl $CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
+dnl if test $? = 0 ; then
+dnl   AC_MSG_RESULT(yes)
+dnl   STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
 
 GCSECTIONS=0
 
@@ -267,6 +274,7 @@ fi
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
+dnl but needs resolv.h included which defines res_search as __res_search
 
 dnl MSWIN DNS Resolver,resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
 
@@ -278,6 +286,8 @@ else
   AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=1)
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
     RESOLVER_LIBS="${LIBS}"
+  else
+    AC_SEARCH_LIBS(__res_search, resolv, HAVE_RESOLVER=1)
   fi
 fi
 
