@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.52 1996/02/22 10:23:54 robertj Exp $
+ * $Id: contain.cxx,v 1.53 1996/03/02 03:20:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.53  1996/03/02 03:20:11  robertj
+ * Fixed bug in PString::Find() not finding substring if exactly same as string.
+ *
  * Revision 1.52  1996/02/22 10:23:54  robertj
  * Fixed buf in *= operator only comparing up to shortest string.
  * Fixed bug in & operator for if left string is empty.
@@ -937,8 +940,8 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
   if (offset > len - clen)
     return P_MAX_INDEX;
 
-  if (clen < 10) {
-    while (offset+clen < len) {
+  if (len - clen < 10) {
+    while (offset+clen <= len) {
       if (InternalCompare(offset, clen, cstr) == EqualTo)
         return offset;
       offset++;
@@ -954,7 +957,7 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
   }
 
   // search for a matching substring
-  while (offset+clen < len) {
+  while (offset+clen <= len) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
     strSum += toupper(theArray[offset+clen]);
