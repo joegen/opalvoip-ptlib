@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.110  2001/05/24 02:07:31  yurik
+ * ::setsockopt on WinCE is now not called if option is not supported
+ *
  * Revision 1.109  2001/05/23 19:48:55  yurik
  * Fix submitted by Dave Cassel, dcassel@cyberfone.com,
  * allowing a connection between a client and a gatekeeper.
@@ -792,7 +795,11 @@ BOOL PSocket::Accept(PSocket &)
 
 BOOL PSocket::SetOption(int option, int value, int level)
 {
-  return ConvertOSError(::setsockopt(os_handle, level, option,
+#ifdef _WIN32_WCE
+	if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
+		return TRUE;
+#endif
+	return ConvertOSError(::setsockopt(os_handle, level, option,
                                      (char *)&value, sizeof(value)));
 }
 
