@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.193  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.192  2002/06/04 00:25:31  robertj
  * Fixed incorrectly initialised trace indent, thanks Artis Kugevics
  *
@@ -880,12 +883,17 @@ ostream & PTrace::End(ostream & s)
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
      must suffer with blank lines in that case.
    */
-  if ((s.flags()&ios::unitbuf) != 0 || s.rdbuf()->out_waiting() > 0) {
+#if __GNUC__ >= 3
+  s << endl;
+#else
+  ::streambuf & rb = *s.rdbuf();
+  if (((s.flags()&ios::unitbuf) != 0) || (rb.out_waiting() > 0)) {
     if ((PTraceOptions&SystemLogStream) != 0)
       s.flush();
     else
       s << endl;
   }
+#endif
 
   PTraceMutex->Signal();
 
