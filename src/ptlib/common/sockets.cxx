@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.180  2005/01/15 19:23:39  csoutheren
+ * Fixed problem in operator *= for IP V6
+ *
  * Revision 1.179  2004/12/14 14:24:20  csoutheren
  * Added PIPSocket::Address::operator*= to compare IPV4 addresses
  * to IPV4-compatible IPV6 addresses. More documentation needed
@@ -2267,9 +2270,9 @@ bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
 
   if (this->GetVersion() == 6 && this->IsV4Mapped()) 
     return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
-
-  else 
+  else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
     return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
+  return FALSE;
 }
 
 bool PIPSocket::Address::operator==(in6_addr & addr) const
