@@ -545,6 +545,10 @@ LONG RegDeleteValue( HKEY hKey, const char* lpValueName )
 UINT GetWindowsDirectory( char* lpBuffer, UINT uSize )
 { strncpy(lpBuffer, "\\Windows", uSize ); return uSize; }
 
+
+#if 0
+#include <afxwin.h>
+
 DWORD GetPrivateProfileString(
   const char* lpAppName,        // points to section name
   const char*  lpKeyName,        // points to key name
@@ -569,3 +573,25 @@ BOOL WritePrivateProfileString(
 	A2T(lpAppName), A2T(lpKeyName), A2T(lpString));
 }
 
+#else
+DWORD GetPrivateProfileString(
+  const char* lpAppName,        // points to section name
+  const char*  lpKeyName,        // points to key name
+  const char* lpDefault,        // points to default string
+  char* lpReturnedString,  // points to destination buffer
+  DWORD nSize,              // size of destination buffer
+  const char*  )        // points to initialization filename
+{ 	
+	return -1L;
+}
+
+BOOL WritePrivateProfileString(
+  const char* lpAppName,  // pointer to section name
+  const char* lpKeyName,  // pointer to key name
+  const char* lpString,   // pointer to string to add
+  const char* )  // pointer to initialization filename
+{ 
+	return FALSE;
+}
+
+#endif
