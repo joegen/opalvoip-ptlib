@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.25 1996/09/14 12:52:39 robertj Exp $
+ * $Id: pstring.h,v 1.26 1996/10/08 13:13:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.26  1996/10/08 13:13:38  robertj
+ * Added operator += and &= for char so no implicit PString construction.
+ *
  * Revision 1.25  1996/09/14 12:52:39  robertj
  * Added operator! for !IsEmpty().
  *
@@ -374,6 +377,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     PString & operator=(
       const char * cstr  // C string to assign.
     );
+    PString & operator=(
+      char ch            // Character to assign.
+    );
     /* Assign the C string to the current object. The current instance then
        becomes a unique reference to a copy of the <CODE>cstr</CODE> parameter.
        The <CODE>cstr</CODE> parameter is typically a literal string, eg:
@@ -473,6 +479,18 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        reference to string that was concatenated to.
      */
 
+    PString & operator+=(
+      char ch   // Character to concatenate.
+    );
+    /* Concatenate a single character to a PString. The <CODE>ch</CODE>
+       parameter is typically a literal, eg:
+
+       <CODE>        myStr += '!';</CODE>
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
 
     PString operator&(
       const PString & str   // String to concatenate.
@@ -494,7 +512,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
        <CODE>        myStr = aStr & "fred";</CODE>
 
-       This function differes from oeprator+ in that it assures there is at
+       This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
        there is not a space at the end of the first or beggining of the last
        string.
@@ -513,7 +531,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
        <CODE>        myStr = aStr & '!';</CODE>
 
-       This function differes from oeprator+ in that it assures there is at
+       This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
        there is not a space at the end of the first or beggining of the last
        string.
@@ -533,7 +551,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
        <CODE>        myStr = "fred" & aStr;</CODE>
 
-       This function differes from oeprator+ in that it assures there is at
+       This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
        there is not a space at the end of the first or beggining of the last
        string.
@@ -553,7 +571,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
        <CODE>        myStr = '!' & aStr;</CODE>
 
-       This function differes from oeprator+ in that it assures there is at
+       This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
        there is not a space at the end of the first or beggining of the last
        string.
@@ -579,7 +597,25 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
        <CODE>        myStr &= "fred";</CODE>
 
-       This function differes from oeprator+ in that it assures there is at
+       This function differes from operator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
+     */
+
+
+    PString & operator&=(
+      char ch  // Character to concatenate.
+    );
+    /* Concatenate a character to a PString, modifiying that string. The
+       <CODE>ch</CODE> parameter is typically a literal string, eg:
+
+       <CODE>        myStr &= '!';</CODE>
+
+       This function differes from operator+ in that it assures there is at
        least one space between the strings. Exactly one space is added if
        there is not a space at the end of the first or beggining of the last
        string.
