@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.30  2000/02/29 06:32:12  robertj
+ * Added ability to remove optional field in sequence, thanks Dave Harvey.
+ *
  * Revision 1.29  2000/01/20 06:22:22  robertj
  * Fixed boundary condition error for constrained integer encoding (values 1, 256 etc)
  *
@@ -2924,6 +2927,18 @@ void PASN_Sequence::IncludeOptionalField(PINDEX opt)
     if (opt >= (PINDEX)extensionMap.GetSize())
       extensionMap.SetSize(opt+1);
     extensionMap.Set(opt);
+  }
+}
+
+
+void PASN_Sequence::RemoveOptionalField(PINDEX opt)
+{
+  if (opt < (PINDEX)optionMap.GetSize())
+    optionMap.Clear(opt);
+  else {
+    PAssert(extendable, "Must be extendable type");
+    opt -= optionMap.GetSize();
+    extensionMap.Clear(opt);
   }
 }
 
