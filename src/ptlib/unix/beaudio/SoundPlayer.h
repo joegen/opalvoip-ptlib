@@ -52,7 +52,7 @@ public:
 	bool StartPlayer();
 	bool StopPlayer();
 
-	void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample, 
+	bool SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample, 
 			unsigned bufSize = g_defaultFmt.buffer_size * (g_defaultFmt.format & 0xf) );
 			
 	bool Play(const void * buf, size_t size);

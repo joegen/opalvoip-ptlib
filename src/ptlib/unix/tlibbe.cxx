@@ -34,6 +34,8 @@ class PSemaphore;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
+//#define DEBUG_THREADS
+
 static int const priorities[] = {
   1, // Lowest priority is 1. 0 is not
   B_LOW_PRIORITY,
@@ -78,12 +80,22 @@ PThread::PThread(PINDEX stackSize,
 
   priority = priorities[priorityLevel];
 
+  PString str("PWLT");
+  str += threadName;
+  #ifdef DEBUG_THREADS
+  PError << "::spawn_thread(" << str << "), priority:" << priority << endl;
+  #endif
+
   threadId =  ::spawn_thread(ThreadFunction, // Function 
-         "PWLT", // Name
+         (const char*) str, // Name
          priority, // Priority 
          (void *) this); // Pass this as cookie
 
   PAssertOS(threadId >= B_NO_ERROR);
+
+  #ifdef DEBUG_THREADS
+  PError << ", id: " << threadId << endl;
+  #endif
 
   if (autoDelete) {
     PProcess & process = PProcess::Current();
@@ -113,11 +125,21 @@ void PThread::Restart()
 {
   PAssert(IsTerminated(), "Cannot restart running thread");
 
+  PString str("PWLT");
+  str += threadName;
+  #ifdef DEBUG_THREADS
+  PError << "::spawn_thread(" << str << "), priority:" << priority << endl;
+  #endif
+
   threadId =  ::spawn_thread(ThreadFunction, // Function 
-         "PWLT", // Name
-           priority, 
+         (const char*) str, // Name
+         priority, 
          (void *) this); // Pass this as cookie
          
+  #ifdef DEBUG_THREADS
+  PError << ", id: " << threadId << endl;
+  #endif
+
   PAssertOS(threadId >= B_NO_ERROR);
 }
 
@@ -137,6 +159,9 @@ void PThread::Terminate()
 			::release_sem(semId);
 			::delete_sem(semId);
 			
+	  	    #ifdef DEBUG_THREADS
+	  	    PError << "::exit_thread(0), id:" << threadId << endl;
+	  	    #endif
 			::exit_thread(0);
 		}
 	}
@@ -145,18 +170,22 @@ void PThread::Terminate()
 		sem_id semId = ::create_sem( 1, "PWTS" );
 		if ( ::acquire_sem(semId) == B_NO_ERROR )
 		{
-			thread_id tId(B_BAD_THREAD_ID);
-			
+			thread_id idToKill;
+			idToKill = threadId;
+
 			// Invalidate the thread
-			tId = threadId;
 			threadId = B_BAD_THREAD_ID;
 			
 			// Kill it
-			if (tId != B_BAD_THREAD_ID)
+			if (idToKill != B_BAD_THREAD_ID)
 			{
 				::release_sem(semId);
 				::delete_sem(semId);
-				::kill_thread(tId);
+
+		  	    #ifdef DEBUG_THREADS
+		  	    PError << "::kill_thread(" << idToKill << ")" << endl;
+		  	    #endif
+				::kill_thread(idToKill);
 			}
 			
 		}
@@ -179,22 +208,33 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix timeout
 {
-  if (threadId == 0)
-    return TRUE;
+  status_t result = B_NO_ERROR;
+  status_t exit_value = B_NO_ERROR;
 
-  status_t result, exit_value;
-  PINDEX retries = 10;
-  
-  while ((result = ::wait_for_thread(threadId, &exit_value) != B_NO_ERROR)) {
+  #ifdef DEBUG_THREADS
+  PError << "::wait_for_thread(" << threadId << "), result:";
+  #endif
 
-    if ( result == B_INTERRUPTED ) { // thread was killed.
-      return TRUE;
-    }
+  result = ::wait_for_thread(threadId, &exit_value);
+  if ( result == B_INTERRUPTED ) { // thread was killed.
+	   #ifdef DEBUG_THREADS
+	   PError << "B_INTERRUPTED" << endl;
+	   #endif
+     return TRUE;
+  }
 
-    if (retries > 0)
-      return TRUE;
+  if ( result == B_OK ) { // thread is dead
+	   #ifdef DEBUG_THREADS
+	   PError << "B_OK" << endl;
+	   #endif
+     return TRUE;
+  }
 
-    retries--;
+  if ( result == B_BAD_THREAD_ID ) { // thread has invalid id
+	   #ifdef DEBUG_THREADS
+	   PError << "B_BAD_THREAD_ID" << endl;
+	   #endif
+     return TRUE;
   }
 
   return FALSE;
@@ -233,6 +273,12 @@ BOOL PThread::IsSuspended() const
 
   PAssert(result == B_OK && threadId == info.thread, "Thread info inaccessible");
   return info.state == B_THREAD_SUSPENDED;
+}
+
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  autoDelete = deletion == AutoDeleteThread;
 }
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
@@ -280,7 +326,7 @@ void PThread::Yield()
 
 void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for.
 {
-	bigtime_t microseconds = 
+  bigtime_t microseconds = 
 		delay == PMaxTimeInterval ? B_INFINITE_TIMEOUT : (delay.GetMilliSeconds() * 1000 );
  
   status_t result = ::snooze( microseconds ) ; // delay in ms, snooze in microsec
@@ -316,10 +362,36 @@ PThread * PThread::Current()
 
 int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/) // Fix timeout
 {
-  status_t result, exit_value;
+  status_t result = B_NO_ERROR;
+  status_t exit_value = B_NO_ERROR;
 
-  while ((result = ::wait_for_thread(pid, &exit_value) != B_NO_ERROR));
-  return exit_value;
+  #ifdef DEBUG_THREADS
+  PError << "::wait_for_thread(" << pid << "), result:";
+  #endif
+
+  result = ::wait_for_thread(pid, &exit_value);
+  if ( result == B_INTERRUPTED ) { // thread was killed.
+	   #ifdef DEBUG_THREADS
+	   PError << "B_INTERRUPTED" << endl;
+	   #endif
+     return 1;
+  }
+
+  if ( result == B_OK ) { // thread is dead
+	   #ifdef DEBUG_THREADS
+	   PError << "B_OK" << endl;
+	   #endif
+     return 1;
+  }
+
+  if ( result == B_BAD_THREAD_ID ) { // thread has invalid id
+	   #ifdef DEBUG_THREADS
+	   PError << "B_BAD_THREAD_ID" << endl;
+	   #endif
+     return 1;
+  }
+
+  return 0; // ???
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
@@ -364,7 +436,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   }
 
   int retval = ::select(handle+1, read_fds, write_fds, exception_fds, tptr);
-  //YK PProcess::Current().PXCheckSignals();
+  PProcess::Current().PXCheckSignals();
 
   return retval;
 }
@@ -393,7 +465,7 @@ int PThread::PXBlockOnIO(int maxHandles,
   }
 
   int retval = ::select(maxHandles, read_fds, write_fds, exception_fds, tptr);
-  //YK PProcess::Current().PXCheckSignals();
+  PProcess::Current().PXCheckSignals();
   return retval;
 }
 
@@ -446,7 +518,7 @@ void PProcess::HouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
-  if (houseKeeper == NULL)
+  if ( !houseKeeper )
      houseKeeper = new HouseKeepingThread;
   else
     houseKeeper->breakBlock.Signal();
@@ -460,14 +532,15 @@ PProcess::~PProcess()
 {
   Sleep(100);  // Give threads time to die a natural death
 
-  delete houseKeeper;
+  if( houseKeeper )
+  	delete houseKeeper;
 
   // OK, if there are any left we get really insistent...
   activeThreadMutex.Wait();
   for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
-    PThread & thread = activeThreads.GetDataAt(i);
-    if (this != &thread && !thread.IsTerminated())
-      thread.Terminate();  // With extreme prejudice
+    PThread* pThread = activeThreads.GetAt(i);
+    if (pThread && (this != pThread) && !pThread->IsTerminated())
+      pThread->Terminate();  // With extreme prejudice
   }
   activeThreadMutex.Signal();
 
@@ -481,31 +554,29 @@ PProcess::~PProcess()
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 //#define DEBUG_SEMAPHORES
+#define USE_BENAPHORES // Comment this line if you don't want benaphores
 
-PSemaphore::PSemaphore(sem_id anId)
+PSemaphore::PSemaphore(sem_id anId, int32 initialBenaphore )
+  : semId( anId ), benaphoreCount(initialBenaphore)
 {
-  semId = anId;
-
+  #ifdef DEBUG_SEMAPHORES
   PAssertOS(semId != 0);
+  #endif 
 }
 
-PSemaphore::PSemaphore(unsigned initial, unsigned /*maxCount*/)
-	: semId(0)
+PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
+	: semId(0), benaphoreCount(0)
 {
-  semId = ::create_sem(1, // the semaphore's thread count
-  				"PWLS" // Name
-  				);
-
-  #ifdef DEBUG_SEMAPHORES
-  PError << "::create_sem " << semId << endl;
-  #endif 
-
-   PAssertOS( semId >= B_NO_ERROR );
+   PAssertOS(FALSE); // This constructor is never called
 }
 
 PSemaphore::~PSemaphore()
 {
-   PAssertOS( semId >= B_NO_ERROR );
+	status_t result = B_NO_ERROR;
+
+	#ifdef DEBUG_SEMAPHORES
+    PAssertOS( semId >= B_NO_ERROR );
+	#endif 
 
 	#ifdef DEBUG_SEMAPHORES
 	int32 semCnt = 0;
@@ -513,118 +584,187 @@ PSemaphore::~PSemaphore()
     PError << "::delete_sem " << semId << ", count:" << semCnt << endl;
 	#endif 
 
-	status_t result = B_NO_ERROR;
-	
 	if ( semId != 0 )
 	{
 		result = ::delete_sem(semId);
 	}
 
 	#ifdef DEBUG_SEMAPHORES
-	PError << ", result: " << strerror(result) << endl;
+	if( result != B_NO_ERROR )
+		PError << "::Error: " << strerror(result) << endl;
 	#endif 
 }
 
 void PSemaphore::Wait()
 {
-   PAssertOS( semId >= B_NO_ERROR );
+	status_t result = B_NO_ERROR;
 
 	#ifdef DEBUG_SEMAPHORES
-	int32 semCnt = 0;
-	get_sem_count(semId, &semCnt);
-	PError << "::acquire_sem " << semId << ", count:" << semCnt;
+    PAssertOS( semId >= B_NO_ERROR );
 	#endif 
 
-	status_t result = B_NO_ERROR;
-	
-	while ((result = ::acquire_sem_etc(semId, 1, 0, 0)) == B_INTERRUPTED)
+	#ifdef DEBUG_SEMAPHORES
+	PError << "PSemaphore::Wait, benaphore: " << benaphoreCount << endl;
+	#endif 
+
+    #ifdef USE_BENAPHORES
+    if( atomic_add( &benaphoreCount, 1 ) > 0 ) {
+    #endif // USE_BENAPHORES
+
+	#ifdef DEBUG_SEMAPHORES
+	sem_info info;
+	get_sem_info(semId, &info);
+	PError << "::acquire_sem_etc, id: " << semId << " (" << info.name << "), count:" << info.count << endl;
+	#endif 
+
+	while ((result = ::acquire_sem(semId)) == B_INTERRUPTED)
 	{
-		;
+		#ifdef DEBUG_SEMAPHORES
+		PError << "::acquire_sem_etc " << semId << ", interrupted!" << endl;
+		#endif 
 	}
 
 	#ifdef DEBUG_SEMAPHORES
-	PError << ", result: " << strerror(result) << endl;
+	if( result != B_NO_ERROR )
+		PError << "::Error: " << strerror(result) << endl;
 	#endif 
+
+    #ifdef USE_BENAPHORES
+  		atomic_add(&benaphoreCount, -1);
+    }
+    #endif // USE_BENAPHORES
 }
 
 
 BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
-   PAssertOS( semId >= B_NO_ERROR );
-
-	bigtime_t microseconds = 
-		timeout == PMaxTimeInterval ? B_INFINITE_TIMEOUT : (timeout.GetMilliSeconds() * 1000 );
- 
-	status_t result = ::acquire_sem_etc(semId, 1, 
-							B_TIMEOUT, microseconds);
+	status_t result = B_NO_ERROR;
 
 	#ifdef DEBUG_SEMAPHORES
-	sem_info info;
-	::get_sem_info(semId, &info);
-	PError << "::acquire_sem_etc " << info.sem << ", count:" << info.count << ", delay:";
+    PAssertOS( semId >= B_NO_ERROR );
+	#endif 
+
+	#ifdef DEBUG_SEMAPHORES
+	PError << "PSemaphore::Wait(timeout), benaphore: " << benaphoreCount << endl;
+	#endif 
+
+    #ifdef USE_BENAPHORES
+    if( atomic_add( &benaphoreCount, 1 ) > 0 ) {
+    #endif // USE_BENAPHORES
+
+	PInt64 ms = timeout.GetMilliSeconds();
+	bigtime_t microseconds = 
+		ms? timeout == PMaxTimeInterval ? B_INFINITE_TIMEOUT : ( ms * 1000 ) : 0;
+ 
+	#ifdef DEBUG_SEMAPHORES
+	int32 semCnt = 0;
+	get_sem_count(semId, &semCnt);
+	PError << "::acquire_sem_etc " << semId << ", count:" << semCnt << ", timeout:";
 	
 	if( microseconds == B_INFINITE_TIMEOUT ) 
-		PError << "infinite";
+		PError << "infinite" << endl;
 	else
-		PError << microseconds;
-	#endif 
-
-	#ifdef DEBUG_SEMAPHORES
-	PError << ", result: " << strerror(result) <<endl;
+		PError << microseconds << endl;
 	#endif 
 	
+	result = ::acquire_sem_etc(semId, 1, 
+							B_RELATIVE_TIMEOUT, microseconds);
+
+	#ifdef DEBUG_SEMAPHORES
+	if( result != B_NO_ERROR ) 
+	{
+		PError << "::acquire_sem_etc " << semId << " with ";
+		if( microseconds == B_INFINITE_TIMEOUT ) 
+			PError << "infinite";
+		else
+			PError << microseconds;
+		PError << " timeout failed, Error: " << strerror(result) << endl; 
+	}
+	#endif
+	
+    #ifdef USE_BENAPHORES
+  		atomic_add(&benaphoreCount, -1);
+    }
+    #endif // USE_BENAPHORES
+
   return result == B_TIMED_OUT;
 }
 
 
 void PSemaphore::Signal()
 {
+    #ifdef DEBUG_SEMAPHORES
     PAssertOS( semId >= B_NO_ERROR );
+    #endif 
 
 	#ifdef DEBUG_SEMAPHORES
-	int32 semCnt = 0;
-	get_sem_count(semId, &semCnt);
-	PError << "::release_sem " << semId << ", count:" << semCnt;
+	PError << "PSemaphore::Wait(timeout), benaphore: " << benaphoreCount << endl;
 	#endif 
-	
-	status_t result = B_NO_ERROR;
-	result = ::release_sem_etc(semId, 1, 0);
 
-	#ifdef DEBUG_SEMAPHORES
-	PError << ", result: " << strerror(result) << endl;
-	#endif 
+    #ifdef USE_BENAPHORES
+    if( atomic_add( &benaphoreCount, -1 ) > 1 ) 
+    {
+    #endif // USE_BENAPHORES
+
+		#ifdef DEBUG_SEMAPHORES
+  		status_t result = 
+		#endif 
+		::release_sem_etc(semId, 1, 0);
+		
+		#ifdef DEBUG_SEMAPHORES
+		if( result != B_NO_ERROR ) 
+			PError << "::Error:" << strerror(result) << endl;
+		#endif 
+
+    #ifdef USE_BENAPHORES
+    }
+    #endif // USE_BENAPHORES
 }
 
 
 BOOL PSemaphore::WillBlock() const
 {
+	status_t result = B_NO_ERROR;
+
+	#ifdef DEBUG_SEMAPHORES
 	PAssertOS( semId >= B_NO_ERROR );
+	#endif 
 	
+    #ifdef USE_BENAPHORES
+    if( atomic_add( (volatile int32*) &benaphoreCount, -1 ) > 1 ) 
+    {
+    #endif // USE_BENAPHORES
+
 	#ifdef DEBUG_SEMAPHORES
 	int32 semCnt = 0;
 	get_sem_count(semId, &semCnt);
 	PError << "::acquire_sem_etc (WillBlock) " << semId << ", count:" << semCnt << endl;
 	#endif 
 	
-	status_t result = ::acquire_sem_etc(semId, 0, B_TIMEOUT, 0);
+	result = ::acquire_sem_etc(semId, 0, B_RELATIVE_TIMEOUT, 0);
 	
+	#ifdef DEBUG_SEMAPHORES
+	if( result != B_NO_ERROR ) 
+		PError << "::Error:" << strerror(result) << endl;
+	#endif 
+
+    #ifdef USE_BENAPHORES
+    }
+    #endif // USE_BENAPHORES
+
 	return result == B_WOULD_BLOCK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex  
-// Using benaphores
-#define USE_BENAPHORES // Comment this line if you don't want benaphores
 
 PMutex::PMutex() 
-  : PSemaphore( ::create_sem(1, "PWLM" ) ), benaphoreCount(0)
+  : PSemaphore( ::create_sem(1, "PWLM" ) , 0 )
 {
-#warning PMutex not guaranteed to be recursive
   #ifdef DEBUG_SEMAPHORES
   PError << "::create_sem(PMutex) " << semId << endl;
-  #endif 
-  
   PAssertOS( semId >= B_NO_ERROR );
+  #endif 
 }
 
 PMutex::~PMutex()
@@ -633,87 +773,29 @@ PMutex::~PMutex()
 
 void PMutex::Wait()
 {
-    PAssertOS( semId >= B_NO_ERROR );
-
-    status_t result = B_NO_ERROR;
-    
-    #ifdef USE_BENAPHORES
-    if( atomic_add( &benaphoreCount, 1 ) > 0 ) {
-    #endif // USE_BENAPHORES
-
-		while ((result = ::acquire_sem_etc(semId, 1, 0, 0)) == B_INTERRUPTED)
-		{
-			;
-		}
-
-    #ifdef USE_BENAPHORES
-    	PAssertOS( result == B_NO_ERROR );
-  		atomic_add(&benaphoreCount, -1);
-    }
-    #endif // USE_BENAPHORES
+	PSemaphore::Wait();
 }
 
 BOOL PMutex::Wait(const PTimeInterval & timeout)
 {
-    PAssertOS( semId >= B_NO_ERROR );
-
-    status_t result = B_NO_ERROR;
-    
-	bigtime_t microseconds = 
-		timeout == PMaxTimeInterval ? B_INFINITE_TIMEOUT : (timeout.GetMilliSeconds() * 1000 );
-
-    #ifdef USE_BENAPHORES
-    if( atomic_add( &benaphoreCount, 1 ) > 0 ) {
-    #endif // USE_BENAPHORES
-
-		result = ::acquire_sem_etc(semId, 1,
-						B_TIMEOUT, microseconds);
-
-    #ifdef USE_BENAPHORES
-    	PAssertOS( result == B_NO_ERROR || result == B_TIMED_OUT || result == B_WOULD_BLOCK );
-  		atomic_add(&benaphoreCount, -1);
-    }
-    #endif // USE_BENAPHORES
-
-	return result == B_TIMED_OUT;
+	return PSemaphore::Wait(timeout);
 }
 
 void PMutex::Signal()
 {
-    PAssertOS( semId >= B_NO_ERROR );
-
-    status_t result = B_NO_ERROR;
-    
-    #ifdef USE_BENAPHORES
-    if( atomic_add( &benaphoreCount, -1 ) > 1 ) 
-    {
-    #endif // USE_BENAPHORES
-
-  		result = ::release_sem_etc(semId, 1, 0);
-
-    #ifdef USE_BENAPHORES
-    }
-    #endif // USE_BENAPHORES
-		
-	PAssertOS( result == B_NO_ERROR );
+	PSemaphore::Signal();
 }
 
 BOOL PMutex::WillBlock() const 
 {
-    PAssertOS( semId >= B_NO_ERROR );
-
-    status_t result = B_NO_ERROR;
-
-	result = ::acquire_sem_etc(semId, 0, B_TIMEOUT, 0);
-	
-	return result == B_WOULD_BLOCK;
+	return PSemaphore::WillBlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore( ::create_sem(0, "PWLP" ) )
+  : PSemaphore( ::create_sem(0, "PWLP" ), 1 )
 {
   #ifdef DEBUG_SEMAPHORES
   PError << "::create_sem(PSyncPoint) " << semId << endl;
