@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.2 1995/03/22 13:56:18 robertj Exp $
+ * $Id: win32.cxx,v 1.3 1995/04/25 11:33:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.3  1995/04/25 11:33:54  robertj
+ * Fixed Borland compiler warnings.
+ *
  * Revision 1.2  1995/03/22 13:56:18  robertj
  * Fixed directory handle value check for closing directory.
  *
@@ -159,7 +162,7 @@ PCaselessString PDirectory::GetVolume() const
   DWORD maxFilenameLen, fileSystemFlags;
   PAssertOS(GetVolumeInformation(NULL, volName, sizeof(volName), NULL,
                                  &maxFilenameLen, &fileSystemFlags, NULL, 0));
-  return volName;
+  return PCaselessString(volName);
 }
 
 
@@ -837,7 +840,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
   if (configFile.IsEmpty()) {
     PString str = key;
     PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    _putenv(str + "=");
+    putenv(str + "=");
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
@@ -880,7 +883,7 @@ void PConfig::SetString(const PString & section,
   if (configFile.IsEmpty()) {
     PString str = key;
     PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    _putenv(str + "=" + value);
+    putenv(str + "=" + value);
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
