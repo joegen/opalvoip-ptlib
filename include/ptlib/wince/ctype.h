@@ -5,5 +5,5 @@
 // Windows CE port of OpenH323 Open Source Project, www.openh323.org
 // PWLib extras
 
-#include <ctype.h>
+#include "stdlibx.h"
 
