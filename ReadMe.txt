@@ -739,10 +739,13 @@ Port Maintained by Roger Hardiman <roger@freebsd.org>
 GetRouteTable() in socket.cxx has been added. It is used by
 OenH323Proxy, but is not fully tested.
 
-Video Capture using the bktr driver has not been added, just due to a lack
-of time. It is easy to add, being 99.99% identical to the FreeBSD and
-OpenBSD support.
+There are now three ways to do pthreads in NetBSD.
+a) unproven threads - from the packages tree.
+b) GNU pth threads - from the packages tree.
+c) Native pthreads - added to the kernel on 15th January 2003.
 
+The choice can be made by editing pwlib/make/unix.mak
+Native threads is the default and the best solution.
 
 --------------------------------------------------------------------------------
 7.4. Mac OS X (Darwin) Issues
