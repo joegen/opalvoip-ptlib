@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.3  2003/11/12 10:24:35  csoutheren
+ * Changes to allow operation of static plugins under Windows
+ *
  * Revision 1.2  2003/11/12 03:26:17  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren os Post Increment
@@ -59,9 +62,6 @@ class PPluginManager : public PObject
     
     PMutex serviceListMutex;
     PList<PPluginService> serviceList;
-
-    static PPluginManager * systemPluginMgr;
-    static PMutex           systemPluginMgrInitMutex;
 };
 
 #endif // ifndef _PLUGINMGR_H
