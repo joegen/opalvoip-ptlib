@@ -27,8 +27,14 @@ PINLINE void PThread::ClearBlock()
 PINLINE PProcess * PProcess::Current()
   { return PProcessInstance; }
 
-PINLINE char ** PProcess::GetEnvironment()
+PINLINE char ** PProcess::GetEnvp() const
   { return envp; }
+
+PINLINE char ** PProcess::GetArgv() const
+  { return argv; }
+
+PINLINE int PProcess::GetArgc() const
+  { return argc; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +46,28 @@ PINLINE unsigned PTimer::Resolution()
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+
+PINLINE long PTime::GetTimeZone() const
+#if defined(P_HPUX9)
+#warning No timezone
+  { return 0; }
+#elif defined(P_SUN4)
+#warning No timezone
+  { return 0; }
+#else
+  { return timezone - (IsDaylightSavings() ? 1 : 0); }
+#endif
+
+PINLINE PString PTime::GetTimeZoneString(PTime::TimeZoneType type) const
+#if defined(P_HPUX9)
+#warning No timezone name
+  { return PString(); }
+#elif defined(P_SUN4)
+#warning No timezone name
+  { return PString(); }
+#else
+  { return PString((type == StandardTime) ? tzname[0] : tzname[1]); }
+#endif
 
 PINLINE BOOL PTime::GetTimeAMPM()
 #if defined(P_HPUX9)
@@ -104,10 +132,6 @@ PINLINE BOOL PDirectory::Restart(int newScanMask)
 
 PINLINE PString PDirectory::GetEntryName() const
   { return (entry == NULL) ? PString() : PString((const char *)entry->d_name); }
-
-PINLINE void PDirectory::Close()
-  { if (directory != NULL) PAssert(closedir(directory) == 0, POperatingSystemError);
-    if (entryInfo != NULL) delete entryInfo; }
 
 PINLINE BOOL PDirectory::Exists(const PString & p)
   { return access((const char *)p, 0) == 0; }
