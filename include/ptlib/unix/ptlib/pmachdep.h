@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.67  2004/11/16 00:30:38  csoutheren
+ * Added Cygwin support
+ *
  * Revision 1.66  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -651,6 +654,11 @@ extern "C" {
 #define HAS_IFREQ
 #define PSETPGRP()  setpgrp()
 
+///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_CYGWIN)
+#include <sys/termios.h>
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
