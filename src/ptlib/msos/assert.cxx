@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.12 1996/10/08 13:00:46 robertj Exp $
+ * $Id: assert.cxx,v 1.13 1996/11/10 21:02:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.13  1996/11/10 21:02:08  robertj
+ * Fixed bug in assertion when as a service, string buffer not big enough.
+ *
  * Revision 1.12  1996/10/08 13:00:46  robertj
  * Changed default for assert to be ignore, not abort.
  *
@@ -101,10 +104,14 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
   if (PProcess::Current()->IsDescendant(PServiceProcess::Class()) &&
                               !((PServiceProcess*)PProcess::Current())->debugMode) {
-    char buf[50];
+    if (msg == NULL)
+      msg = "";
+    static const char fmt[] = "Assertion fail in file %s, line %u %s - code = %lu";
+    char * buf = new char[sizeof(fmt)+strlen(file)+strlen(msg)+20];
     sprintf(buf, "Assertion fail in file %s, line %u %s - code = %lu",
                  file, line, msg != NULL ? msg : "", err);
     PSystemLog::Output(PSystemLog::Fatal, buf);
+    delete [] buf;
     return;
   }
 
