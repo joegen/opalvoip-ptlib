@@ -53,6 +53,8 @@ class PXML : public PObject
     PXML(int options = -1);
     PXML(const PString & data, int options = -1);
 
+    PXML(const PXML & xml);
+
     ~PXML();
 
     BOOL IsDirty() const;
@@ -70,6 +72,7 @@ class PXML : public PObject
     void PrintOn(ostream & strm) const;
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
+    PCaselessString GetDocumentType() const;
 
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
@@ -115,6 +118,8 @@ class PXMLObject : public PObject {
     void SetDirty();
     BOOL IsDirty() const { return dirty; }
 
+    virtual PXMLObject * Clone(PXMLElement * parent) const = 0;
+
   protected:
     PXMLElement * parent;
     BOOL dirty;
@@ -135,6 +140,8 @@ class PXMLData : public PXMLObject {
     PString GetString() const           { return value; }
 
     void PrintOn(ostream & strm, int indent, int options) const;
+
+    PXMLObject * Clone(PXMLElement * parent) const;
 
   protected:
     PString value;
@@ -168,6 +175,9 @@ class PXMLElement : public PXMLObject {
     BOOL GetAttribute(const PCaselessString & key) const;
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
+    PXMLObject  * GetElement(PINDEX idx = 0) const;
+
+    PXMLObject * Clone(PXMLElement * parent) const;
 
   protected:
     PCaselessString name;
