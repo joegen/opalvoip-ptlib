@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.26  2004/06/01 07:28:44  csoutheren
+ * Changed URL parsing to use abstract factory code
+ *
  * Revision 1.25  2004/03/13 06:30:52  rjongbloed
  * Virtualised parse function.
  *
@@ -111,9 +114,10 @@
 #pragma interface
 #endif
 
-
 //////////////////////////////////////////////////////////////////////////////
 // PURL
+
+class PURLLegacyScheme;
 
 /**
  This class describes a Universal Resource Locator.
@@ -354,6 +358,9 @@ class PURL : public PObject
     );
   //@}
 
+    BOOL LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo);
+    PString LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schemeInfo) const;
+
   protected:
     virtual BOOL InternalParse(
       const char * cstr,         /// URL as a string to parse.
@@ -375,6 +382,14 @@ class PURL : public PObject
     PStringToString queryVars;
 };
 
+
+class PURLScheme
+{
+  public:
+    virtual PString GetName() const = 0;
+    virtual BOOL Parse(const PString & url, PURL & purl) const = 0;
+    virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
+};
 
 #endif
 
