@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.16 1997/04/01 06:00:06 robertj Exp $
+ * $Id: remconn.cxx,v 1.17 1997/04/06 07:45:28 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.17  1997/04/06 07:45:28  robertj
+ * Fixed bug in dialling already connected remotes.
+ *
  * Revision 1.16  1997/04/01 06:00:06  robertj
  * Added Remove Configuration.
  *
@@ -191,11 +194,10 @@ BOOL PRemoteConnection::Open()
 
   if (rasError == 0) {
     for (DWORD i = 0; i < numConnections; i++) {
-      if (remoteName == connections->szEntryName) {
-        rasConnection = connections->hrasconn;
+      if (remoteName == connections[i].szEntryName) {
+        rasConnection = connections[i].hrasconn;
         break;
       }
-      connections = (LPRASCONN)(((char *)connections)+connection.dwSize);
     }
   }
 
