@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.7  2001/10/03 03:11:35  robertj
+ * Changed to use only a single instance of SNMP library to avoid memory leak.
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -73,7 +76,6 @@ PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
 
   protected:
     PWin32PacketDriver * driver;
-    PWin32SnmpLibrary  * snmp;
     PString              interfaceName;
     PWin32PackBufArray   readBuffers;
     PWin32PackBufArray   writeBuffers;
