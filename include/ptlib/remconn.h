@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.5 1996/11/04 03:40:43 robertj Exp $
+ * $Id: remconn.h,v 1.6 1997/01/12 04:15:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.6  1997/01/12 04:15:11  robertj
+ * Added ability to add/change new connections.
+ *
  * Revision 1.5  1996/11/04 03:40:43  robertj
  * Added more debugging for remote drop outs.
  *
@@ -81,6 +84,54 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
 
        <H2>Returns:</H2>
        Array of strings for remote connection names.
+     */
+
+    enum MultiChannelDialMode {
+
+    };
+
+    struct Configuration {
+      PString device;
+      PString phoneNumber;
+      PString ipAddress;
+      PString dnsAddress;
+      PString script;
+      PINDEX  subEntries;
+      BOOL    dialAllSubEntries;
+    };
+
+    Status GetConfiguration(
+      Configuration & config  // Configuration of remote connection
+    );
+    static Status GetConfiguration(
+      const PString & name,   // Remote connection name to get configuration
+      Configuration & config  // Configuration of remote connection
+    );
+    /* Get the configuration of the specified remote access connection.
+
+       <H2>Returns:</H2>
+       Connected if the configuration information was obtained,
+       NoNameOrNumber if the particular RAS name does not exist,
+       NotInstalled if there is no RAS support in the operating system,
+       GeneralFailure on any other error.
+     */
+
+    Status SetConfiguration(
+      const Configuration & config,  // Configuration of remote connection
+      BOOL create = FALSE            // Flag to create connection if not present
+    );
+    static Status SetConfiguration(
+      const PString & name,          // Remote connection name to configure
+      const Configuration & config,  // Configuration of remote connection
+      BOOL create = FALSE            // Flag to create connection if not present
+    );
+    /* Set the configuration of the specified remote access connection.
+
+       <H2>Returns:</H2>
+       Connected if the configuration information was obtained,
+       NoNameOrNumber if the particular RAS name does not exist,
+       NotInstalled if there is no RAS support in the operating system,
+       GeneralFailure on any other error.
      */
 
     
