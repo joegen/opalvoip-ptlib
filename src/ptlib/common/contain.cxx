@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.151  2004/04/11 02:55:18  csoutheren
+ * Added PCriticalSection for Windows
+ * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
+ *
  * Revision 1.150  2004/04/09 06:38:11  rjongbloed
  * Fixed compatibility with STL based streams, eg as used by VC++2003
  *
@@ -594,6 +598,10 @@ PContainer::PContainer(int, const PContainer * cont)
   PAssertNULL(cont);
   PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
 
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(cont->reference->critSec);
+#endif
+
   reference = new Reference(0);
   PAssert(reference != NULL, POutOfMemory);
 
@@ -604,6 +612,11 @@ PContainer::PContainer(int, const PContainer * cont)
 PContainer::PContainer(const PContainer & cont)
 {
   PAssert2(cont.reference != NULL, cont.GetClass(), "Copy of deleted container");
+
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(cont.reference->critSec);
+#endif
+
   reference = cont.reference;
   reference->count++;
 }
@@ -611,32 +624,70 @@ PContainer::PContainer(const PContainer & cont)
 
 void PContainer::AssignContents(const PContainer & cont)
 {
-  if (reference == cont.reference)
-    return;
-
-  if (!IsUnique())
-    reference->count--;
-  else {
-    DestroyContents();
-    delete reference;
-  }
+#if PCONTAINER_USES_CRITSEC
+  // make sure the critsecs are entered and left in the right order to avoid deadlock
+  cont.reference->critSec.Enter();
+  reference->critSec.Enter();
+#endif
 
   PAssert2(cont.reference != NULL, cont.GetClass(), "Assign of deleted container");
+
+  if (reference == cont.reference) {
+#if PCONTAINER_USES_CRITSEC
+    reference->critSec.Leave();
+    cont.reference->critSec.Leave();
+#endif
+    return;
+  }
+
+  if (!IsUnique()) {
+    reference->count--;
+#if PCONTAINER_USES_CRITSEC
+    reference->critSec.Leave();
+#endif
+  } else {
+#if PCONTAINER_USES_CRITSEC
+    reference->critSec.Leave();
+#endif
+    DestroyContents();
+    delete reference;
+    reference = NULL;
+  }
+
   reference = cont.reference;
   reference->count++;
+
+#if PCONTAINER_USES_CRITSEC
+  cont.reference->critSec.Leave();
+#endif
 }
 
 
 void PContainer::Destruct()
 {
   if (reference != NULL) {
-    if (reference->count > 1)
+
+#if PCONTAINER_USES_CRITSEC
+    Reference * ref = reference;
+    ref->critSec.Enter();
+#endif
+
+    if (reference->count > 1) {
       reference->count--;
+      reference = NULL;
+#if PCONTAINER_USES_CRITSEC
+      ref->critSec.Leave();
+#endif
+    }
+    
     else {
+#if PCONTAINER_USES_CRITSEC
+      ref->critSec.Leave();
+#endif
       DestroyContents();
       delete reference;
+      reference = NULL;
     }
-    reference = NULL;
   }
 }
 
@@ -654,6 +705,10 @@ BOOL PContainer::SetMinSize(PINDEX minSize)
 
 BOOL PContainer::MakeUnique()
 {
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(reference->critSec);
+#endif
+
   if (IsUnique())
     return TRUE;
 
@@ -811,6 +866,10 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
   char * newArray;
 
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(reference->critSec);
+#endif
+
   if (!IsUnique()) {
 
     if (newsizebytes == 0)
@@ -870,6 +929,10 @@ void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 {
   if (allocatedDynamically && theArray != NULL)
     free(theArray);
+
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(reference->critSec);
+#endif
 
   theArray = (char *)buffer;
   reference->size = bufferSize;
@@ -1513,6 +1576,10 @@ BOOL PString::SetSize(PINDEX newSize)
 
 BOOL PString::MakeUnique()
 {
+#if PCONTAINER_USES_CRITSEC
+  PEnterAndLeave m(reference->critSec);
+#endif
+
   if (IsUnique())
     return TRUE;
 
