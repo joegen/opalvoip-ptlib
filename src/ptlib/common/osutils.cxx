@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.31 1995/04/02 09:27:31 robertj Exp $
+ * $Id: osutils.cxx,v 1.32 1995/04/22 00:51:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.32  1995/04/22 00:51:00  robertj
+ * Changed file path strings to use PFilePath object.
+ * Changed semantics of Rename().
+ *
  * Revision 1.31  1995/04/02 09:27:31  robertj
  * Added "balloon" help.
  *
@@ -1027,7 +1031,8 @@ BOOL PFile::Rename(const PString & newname, BOOL force)
 
   if (!ConvertOSError(Rename(path, newname, force) ? 0 : -1))
     return FALSE;
-  path = newname;
+
+  path = path.GetDirectory() + newname;
   return TRUE;
 }
 
@@ -1098,7 +1103,7 @@ BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
 }
 
 
-BOOL PFile::Copy(const PString & oldname, const PString & newname, BOOL force)
+BOOL PFile::Copy(const PFilePath & oldname, const PFilePath & newname, BOOL force)
 {
   PFile oldfile(oldname, ReadOnly);
   if (!oldfile.IsOpen())
