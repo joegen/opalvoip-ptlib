@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.28  2000/08/04 12:48:13  robertj
+ * Added mechanism by which a service can get at new HTTP connections, eg to add SSL.
+ *
  * Revision 1.27  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -121,6 +124,9 @@
 #include <ptclib/cypher.h>
 
 
+class PTCPSocket;
+
+
 /////////////////////////////////////////////////////////////////////
 
 class PHTTPServiceProcess : public PServiceProcess
@@ -186,6 +192,7 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void AddRegisteredText(PHTML & html);
     virtual void AddUnregisteredText(PHTML & html);
     virtual BOOL SubstituteEquivalSequence(PHTTPRequest & request, const PString &, PString &);
+    virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
 
   protected:
     PSocket  * httpListeningSocket;
@@ -223,15 +230,13 @@ class PHTTPServiceThread : public PThread
   public:
     PHTTPServiceThread(PINDEX stackSize,
                        PHTTPServiceProcess & app,
-                       PSocket & listeningSocket,
-                       PHTTPSpace & http);
+                       PSocket & listeningSocket);
 
     void Main();
 
   protected:
     PHTTPServiceProcess & process;
     PSocket & listener;
-    PHTTPSpace & httpNameSpace;
     PINDEX myStackSize;
 };
 
