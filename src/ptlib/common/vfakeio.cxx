@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.32  2005/01/31 08:05:41  csoutheren
+ * More patches for MacOSX, thanks to Hannes Friederich
+ *
  * Revision 1.31  2005/01/04 07:44:03  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -133,6 +136,12 @@
 #endif
 
 #include <ptlib/videoio.h>
+
+#ifdef __MACOSX__
+namespace PWLibStupidOSXHacks {
+	int loadFakeVideoStuff;
+};
+#endif
 
 #define NUM_PATTERNS 6
 #define MAX_L_HEIGHT 11

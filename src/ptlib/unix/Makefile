@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.135  2005/01/31 08:05:41  csoutheren
+# More patches for MacOSX, thanks to Hannes Friederich
+#
 # Revision 1.134  2005/01/26 05:38:04  csoutheren
 # Added ability to remove config file support
 #
@@ -531,11 +534,19 @@ ifeq ($(OSTYPE),beos)
 SOURCES	 += beaudio.cxx
 endif  # beos
 
+#ifeq ($(OSTYPE),Darwin)
+#SOURCES	+= maccoreaudio.cxx
+#endif # Darwin
+ 
+endif  # HAS_PLUGINS
+
+# Although not an external plugin, the MacOSX
+# CoreAudio sound driver still is in plugin form
+# and requires the PPluginManager
 ifeq ($(OSTYPE),Darwin)
 SOURCES	+= maccoreaudio.cxx
 endif # Darwin
- 
-endif  # HAS_PLUGINS
+
 endif  # HAS_AUDIO
 
 ## Various modules
