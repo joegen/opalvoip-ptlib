@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.80  1999/08/12 12:12:47  robertj
+ * GCC 2.95 compatibility.
+ *
  * Revision 1.79  1999/05/28 14:01:53  robertj
  * Added initialisers to string containers (list, sorted list and set).
  *
@@ -950,11 +953,11 @@ PString::PString(ConversionType type, double value, unsigned places)
 {
   switch (type) {
     case Decimal :
-      sprintf("%0.*f", places, value);
+      sprintf("%0.*f", (int)places, value);
       break;
 
     case Exponent :
-      sprintf("%0.*e", places, value);
+      sprintf("%0.*e", (int)places, value);
       break;
 
     default :
