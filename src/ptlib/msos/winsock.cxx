@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.33 1998/01/26 01:00:06 robertj Exp $
+ * $Id: winsock.cxx,v 1.34 1998/05/07 05:21:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.34  1998/05/07 05:21:04  robertj
+ * Fixed DNS lookup so only works around bug in old Win95 and not OSR2
+ *
  * Revision 1.33  1998/01/26 01:00:06  robertj
  * Added timeout to os_connect().
  * Fixed problems with NT version of IsLocalHost().
@@ -483,6 +486,23 @@ BYTE PIPSocket::Address::Byte4() const
 }
 
 
+BOOL P_IsOldWin95()
+{
+  static int state = -1;
+  if (state < 0) {
+    state = 1;
+    OSVERSIONINFO info;
+    info.dwOSVersionInfoSize = sizeof(info);
+    if (GetVersionEx(&info)) {
+      state = 0;
+      if (info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS && info.dwBuildNumber < 1000)
+        state = 1;
+    }
+  }
+  return state != 0;
+}
+
+
 BOOL PIPSocket::IsLocalHost(const PString & hostname)
 {
   if (hostname.IsEmpty())
@@ -503,8 +523,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   struct hostent * host_info = ::gethostbyname(GetHostName());
 
-  static BOOL isWin95 = PProcess::GetOSName() == "95";
-  if (isWin95)
+  if (P_IsOldWin95())
     return addr == Address(*(struct in_addr *)host_info->h_addr_list[0]);
 
   for (PINDEX i = 0; host_info->h_addr_list[i] != NULL; i++) {
