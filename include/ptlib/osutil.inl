@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.53 1997/01/12 04:21:39 robertj Exp $
+ * $Id: osutil.inl,v 1.54 1997/02/09 03:55:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.54  1997/02/09 03:55:22  robertj
+ * Changed PProcess::Current() from pointer to reference.
+ *
  * Revision 1.53  1997/01/12 04:21:39  robertj
  * Added IsPast() and IsFuture() functions for time comparison.
  *
@@ -619,7 +622,7 @@ PINLINE void PArgList::operator>>(int sh)
 #ifndef P_PLATFORM_HAS_THREADS
 
 PINLINE PThread * PThread::Current()
-  { return PProcess::Current()->currentThread; }
+  { return PProcess::Current().currentThread; }
 
 PINLINE BOOL PThread::IsTerminated() const
   { return status == Terminated; }
