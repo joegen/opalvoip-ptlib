@@ -292,6 +292,10 @@ SOURCE=..\..\..\Include\PtLib\Contain.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\include\ptlib\critsec.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Include\PtLib\Dict.h
 # End Source File
 # Begin Source File
@@ -469,6 +473,10 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\config.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptlib\msos\ptlib\contain.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\critsec.h
 # End Source File
 # Begin Source File
 
