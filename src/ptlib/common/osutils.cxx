@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.76 1996/10/08 13:07:07 robertj Exp $
+ * $Id: osutils.cxx,v 1.77 1996/11/10 21:05:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.77  1996/11/10 21:05:43  robertj
+ * Fixed bug of missing flush in close of indirect channel.
+ *
  * Revision 1.76  1996/10/08 13:07:07  robertj
  * Fixed bug in indirect channel being reopened double deleting subchannel.
  *
@@ -911,6 +914,8 @@ PString PIndirectChannel::GetName() const
 
 BOOL PIndirectChannel::Close()
 {
+  flush();
+
   if (readAutoDelete)
     delete readChannel;
 
