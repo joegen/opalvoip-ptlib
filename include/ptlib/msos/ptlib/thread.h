@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.6 1995/04/25 11:19:53 robertj Exp $
+ * $Id: thread.h,v 1.7 1995/07/02 01:23:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.7  1995/07/02 01:23:51  robertj
+ * Allowed access to thread info to descendents.
+ *
  * Revision 1.6  1995/04/25 11:19:53  robertj
  * Fixes for DLL use in WIN32.
  *
@@ -59,9 +62,11 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
 #include "../../common/thread.h"
 #if defined(P_PLATFORM_HAS_THREADS)
+  protected:
+    HANDLE threadHandle;
+    DWORD  threadId;
+
   private:
-    HANDLE handle;
-    DWORD  id;
     PINDEX originalStackSize;
 
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
