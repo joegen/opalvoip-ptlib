@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.4  1998/11/30 04:50:47  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/23 06:22:00  robertj
  * Added open source copyright license.
  *
@@ -39,8 +42,8 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <ftp.h>
+#include <ptlib/sockets.h>
+#include <ptclib/ftp.h>
 
 
 /////////////////////////////////////////////////////////
