@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.116.2.1  2003/10/07 01:34:52  csoutheren
+# Initial checkin of pwlib code to do plugins.
+# Modified from original code and concept provided by Snark of Gnomemeeting
+#
 # Revision 1.116  2003/10/06 02:30:06  dereksmithies
 # Remove Stun.cxx as it is not in the repositary.
 #
@@ -398,6 +402,7 @@ VERSION_FILE = $(PWLIBDIR)/version.h
 
 COMPONENT_SRC_DIR	= ../../ptclib
 COMMON_SRC_DIR		= ../common
+PLUGIN_DIR		= ../../../plugins
 VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 
 
@@ -418,122 +423,142 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
-ifeq (1,$(HAS_SDL))
-SDL_SOURCE := $(COMPONENT_SRC_DIR)/vsdl.cxx
-endif
+## ifeq (1,$(HAS_SDL))
+## SDL_SOURCE := $(COMPONENT_SRC_DIR)/vsdl.cxx
+## endif
 
 # Video Capture. Set Video Capture Source to a dummy file, (which does not
 # actually do anything, and then override it with platform specific files
 
-VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
+## VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
 
-ifneq (,$(wildcard $(SYSINCDIR)/linux/videodev.h))
-VIDEO_CAPTURE_SOURCE = video4linux.cxx
-endif
+## ifneq (,$(wildcard $(SYSINCDIR)/linux/videodev.h))
+## VIDEO_CAPTURE_SOURCE = video4linux.cxx
+## endif
 
-ifeq ($(OSTYPE),FreeBSD)
-VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-endif
+## ifeq ($(OSTYPE),FreeBSD)
+## VIDEO_CAPTURE_SOURCE = video4bsd.cxx
+## endif
 
-ifeq ($(OSTYPE),OpenBSD)
-VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-endif
+## ifeq ($(OSTYPE),OpenBSD)
+## VIDEO_CAPTURE_SOURCE = video4bsd.cxx
+## endif
 
-ifeq ($(OSTYPE),NetBSD)
-VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-endif
+## ifeq ($(OSTYPE),NetBSD)
+## VIDEO_CAPTURE_SOURCE = video4bsd.cxx
+## endif
 
-ifeq (1,$(TRY_1394DC))
-VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
-endif
+## ifeq (1,$(TRY_1394DC))
+## VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
+## endif
 
-ifeq (1,$(TRY_1394AVC))
-VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
-endif
+## ifeq (1,$(TRY_1394AVC))
+## VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
+## endif
 
-VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
-                $(COMMON_SRC_DIR)/videoio.cxx \
-		$(VIDEO_CAPTURE_SOURCE) \
-	        $(COMMON_SRC_DIR)/vconvert.cxx
+## VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
+##                 $(COMMON_SRC_DIR)/videoio.cxx \
+## 		$(VIDEO_CAPTURE_SOURCE) \
+## 	        $(COMMON_SRC_DIR)/vconvert.cxx
 
 
-#Set SOUND_SOURCE to dummyaudio, a file which links but does not
-#actually play or record audio.
-#This will then be overridden by platform specific audio files.
+## #Set SOUND_SOURCE to dummyaudio, a file which links but does not
+## #actually play or record audio.
+## #This will then be overridden by platform specific audio files.
 
-SOUND_SOURCE = dummyaudio.cxx
+## SOUND_SOURCE = dummyaudio.cxx
 
-ifeq ($(OSTYPE),linux)
-SOUND_SOURCE = oss.cxx
-endif
+## ifeq ($(OSTYPE),linux)
+## SOUND_SOURCE = oss.cxx
+## endif
 
-ifeq ($(OSTYPE),solaris)
-ifneq (,$(wildcard /usr/include/sys/audioio.h))
-SOUND_SOURCE = sunaudio.cxx
-endif
-endif
+## ifeq ($(OSTYPE),solaris)
+## ifneq (,$(wildcard /usr/include/sys/audioio.h))
+## SOUND_SOURCE = sunaudio.cxx
+## endif
+## endif
 
-ifeq ($(OSTYPE),FreeBSD)
-SOUND_SOURCE = oss.cxx
-endif
+## ifeq ($(OSTYPE),FreeBSD)
+## SOUND_SOURCE = oss.cxx
+## endif
 
-ifeq ($(OSTYPE),OpenBSD)
-SOUND_SOURCE = oss.cxx
-endif
+## ifeq ($(OSTYPE),OpenBSD)
+## SOUND_SOURCE = oss.cxx
+## endif
 
-ifeq ($(OSTYPE),NetBSD)
-SOUND_SOURCE = oss.cxx
-endif
+## ifeq ($(OSTYPE),NetBSD)
+## SOUND_SOURCE = oss.cxx
+## endif
 
-ifeq ($(OSTYPE),AIX)
-SOUND_SOURCE = ossaix.cxx
-endif
+## ifeq ($(OSTYPE),AIX)
+## SOUND_SOURCE = ossaix.cxx
+## endif
 
 ifeq ($(OSTYPE),beos)
 
 ifdef MEDIA_KIT_UPDATE
-SOUND_SOURCE = beaudio.cxx
+
+## SOUND_SOURCE = beaudio.cxx
+
 else
-BEAUDIO_SRC_DIR	= ./beaudio
-VPATH_CXX += $(BEAUDIO_SRC_DIR)
 
-SOUND_SOURCE = beaudio.cxx \
-	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
-	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
+## BEAUDIO_SRC_DIR	= ./beaudio
+## VPATH_CXX += $(BEAUDIO_SRC_DIR)
+
+## SOUND_SOURCE = beaudio.cxx \
+## 	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
+## 	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
 endif
 
-VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
-               $(COMMON_SRC_DIR)/videoio.cxx \
-	       	   video4beos.cxx \
-	       	   $(COMMON_SRC_DIR)/vconvert.cxx
+## VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
+##                $(COMMON_SRC_DIR)/videoio.cxx \
+## 	       	   video4beos.cxx \
+## 	       	   $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
-ifeq ($(OSTYPE),Carbon)
-MACAUDIO_SRC_DIR	= ./macosaudio
-VPATH_CXX += $(MACAUDIO_SRC_DIR)
+## ifeq ($(OSTYPE),Carbon)
+## MACAUDIO_SRC_DIR	= ./macosaudio
+## VPATH_CXX += $(MACAUDIO_SRC_DIR)
+## 
+## SOUND_SOURCE = macosaudio.cxx \
+## 	$(MACAUDIO_SRC_DIR)/ringbuffer.cxx \
+## 	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
+## 	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
+## 	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
+## endif
 
-SOUND_SOURCE = macosaudio.cxx \
-	$(MACAUDIO_SRC_DIR)/ringbuffer.cxx \
-	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
-	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
-	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
+## ifeq ($(OSTYPE),Darwin)
+## SOUND_SOURCE = maccoreaudio.cxx
+## endif
+
+## ifeq ($(OSTYPE),VxWorks)
+## SOUND_SOURCE = vxaudio.cxx
+## endif
+
+## ifdef HAS_ESD
+## SOUND_SOURCE = esdaudio.cxx
+## endif
+
+## ifeq ($(OSTYPE),QNX)
+## SOUND_SOURCE = qsa.cxx
+## endif
+
+ifeq (1,$(HAS_PLUGINS))
+
+PLUGIN_SOURCE	= $(COMMON_SRC_DIR)/pluginmgr.cxx 
+
+else
+
+DEFAULT_SOUND = $(shell ( cd $(PLUGIN_DIR) ; make default_sound ) )
+
+#LDFLAGS	+= -L$(PLUGIN_DIR)/sound_oss
+#EXTLIBS	+= -lpwplugin_sound_oss_s $(ENDLDLIBS)
+
+EXTLIBS		+= $(PLUGIN_DIR)/sound_oss/sound_oss.o
+
 endif
 
-ifeq ($(OSTYPE),Darwin)
-SOUND_SOURCE = maccoreaudio.cxx
-endif
 
-ifeq ($(OSTYPE),VxWorks)
-SOUND_SOURCE = vxaudio.cxx
-endif
-
-ifdef HAS_ESD
-SOUND_SOURCE = esdaudio.cxx
-endif
-
-ifeq ($(OSTYPE),QNX)
-SOUND_SOURCE = qsa.cxx
-endif
 
 ifeq (1,$(HAS_EXPAT))
 PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
@@ -544,6 +569,8 @@ PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
+
+#	$(COMMON_SRC_DIR)/pvidchan.cxx \
 
 SOURCES	= \
 	$(COMPONENT_SRC_DIR)/asner.cxx \
@@ -577,16 +604,14 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
-        $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
-	$(VIDEO_SOURCE) \
-	$(SOUND_SOURCE) \
+	$(PLUGINS_SOURCE) \
 	$(GETDATE_SOURCE) \
 	$(PXML_SOURCE) \
 	uicmp.cxx \
+	$(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
-	$(COMMON_SRC_DIR)/pvidchan.cxx \
 	socket.cxx \
 	svcproc.cxx \
 	remconn.cxx \
@@ -603,12 +628,13 @@ SOURCES	= \
 	tlib.cxx \
 	switch.cxx \
 	assert.cxx \
+	$(COMMON_SRC_DIR)/sound.cxx \
 	$(COMMON_SRC_DIR)/collect.cxx \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
 ifneq ($(HAS_REGEX),1)
-OBJS	= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
+OBJS	+= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
 endif
 
 CLEAN_FILES = $(GETDATE_SOURCE)
