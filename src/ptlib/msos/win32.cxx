@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.31 1996/06/17 11:38:58 robertj Exp $
+ * $Id: win32.cxx,v 1.32 1996/06/28 13:24:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.32  1996/06/28 13:24:33  robertj
+ * Fixed enumeration of sections to recurse into registry tree.
+ *
  * Revision 1.31  1996/06/17 11:38:58  robertj
  * Fixed memory leak on termination of threads.
  *
@@ -1270,18 +1273,27 @@ void PConfig::Construct(const PFilePath & filename)
 }
 
 
+static void RecurseRegistryKeys(const PString & location,
+                                PINDEX baseLength,
+                                PStringList &sections)
+{
+  RegistryKey registry = location;
+  PString name;
+  for (PINDEX idx = 0; registry.EnumKey(idx, name); idx++) {
+    sections.AppendString(location.Mid(baseLength) + name);
+    RecurseRegistryKeys(location + name + '\\', baseLength, sections);
+  }
+}
+
+
 PStringList PConfig::GetSections() const
 {
   PStringList sections;
 
   switch (source) {
-    case Application : {
-      RegistryKey registry = location;
-      PString name;
-      for (PINDEX idx = 0; registry.EnumKey(idx, name); idx++)
-        sections.AppendString(name);
+    case Application :
+      RecurseRegistryKeys(location, location.GetLength(), sections);
       break;
-    }
 
     case NumSources :
       PString buf;
