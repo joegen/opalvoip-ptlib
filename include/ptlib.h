@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.10 1996/05/23 09:57:24 robertj Exp $
+ * $Id: ptlib.h,v 1.11 1996/08/08 10:08:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
+ * Revision 1.11  1996/08/08 10:08:40  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.10  1996/05/23 09:57:24  robertj
  * Changed process.h to pprocess.h to avoid name conflict.
  *
@@ -120,7 +123,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PModem
 
-#include <modem.h>
+#include <ptlib/modem.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,7 +135,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
-#include <args.h>
+#include <ptlib/args.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,11 +163,17 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PSound
+
+#include <sound.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 
 #if defined(P_USE_INLINES)
 #include <ptlib.inl>
-#include <osutil.inl>
+#include <ptlib/osutil.inl>
 #endif
 
 
