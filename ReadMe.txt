@@ -15,8 +15,8 @@ Contents
 
 
 
-Introduction
-------------
+1. Introduction
+---------------
 
 PWLib is a moderately large class library that has its genesis many years ago as
 a method to product applications to run on both Microsoft Windows and Unix
@@ -39,8 +39,8 @@ to support the open H323 project by throwing in some of the code written for
 one of our products. Thus, required PWLib so it got thrown into the open source
 world as well.
 
-Apologies (not)
----------------
+2. Apologies (not)
+------------------
 
 As you start using the library, the inevitable question "why did they do it that
 way?" will come up. The more experienced out there will know that there are
@@ -61,8 +61,8 @@ not) include them in the base line code. Just do not send us any mail starting
 with the words "Why did you..." as the answer is quite likely to be "Because!"
 
 
-CVS Access
-----------
+3. CVS Access
+-------------
 
 There is a public CVS archive available at cvs.openh323.org. Note that there are
 still some parts of PWLib that are not available, so make sure you use the
@@ -76,8 +76,8 @@ The modules available are:
 	pwlib_win32
 
 
-Building PWLib
---------------
+4. Building PWLib
+-----------------
 
 For Windows.
 
@@ -169,8 +169,8 @@ To prevent the incorrect function prototype from being defined. The getdate.y
 should then produce a getdate.tab.c file that will actually compile.
 
 
-Using PWLib
------------
+5. Using PWLib
+--------------
 
 What documentation there is consists of this document and all of the header
 files. It was intended that a post processer go through the header files and
@@ -270,15 +270,57 @@ implementation has quite a lot implemented but is by no means complete. A motif
 implementation is in the works but has not progressed very far.
 
 
-Platform Specific Issues
-------------------------
-On some platforms there are a few ommissions in the functionality. These
-are noted in the Readme.OS_Issues file.
-mostly due to shortfalls
+6. Platform Specific Issues
+---------------------------
+PWLib has been ported to several platforms. However on some systems not all of
+the functionality has been implemented. This could be due to lack of support
+at the OS level or simply due to lack of time or documentation when developing
+the port.
+
+6.1 FreeBSD Issues
+------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+6.2 OpenBSD Issues
+------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+6.3 NetBSD Issues
+-----------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+The is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+Video Capture using the bktr driver has not been added, just due to a lack
+of time. It is easy to add, being 99.99% identical to the FreeBSD and
+OpenBSD support.
+
+6.4 Mac OS X (Darwin) Issues
+----------------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+Threads cannot be suspended once they are running, and trying to Suspend
+a running thread will generate an Assertion Error.
+Theads can be created in 'suspended' mode and then started with Resume
+This is due to a lack of pthread_kill() in Dawrin 1.2
+
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+localtime_r() and gm_time() are missing.
+So in osutil.cxx I have implemented os_localtime() and os_gmtime()
+with localtime() and gm_time() which may not be thread safe.
+
+There is no audio support due to a lack of documentation and hardware.
+
+There is no video support due to a lack of documentation and hardware.
 
 
-Conclusion
-----------
+7. Conclusion
+-------------
 
 This package is far from a "product". There is very limited documentation and
 support will be on an ad-hoc basis, send us an e-mail and we will probably
