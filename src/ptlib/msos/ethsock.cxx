@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.34  2002/11/08 06:45:23  robertj
+ * Fixed problem with very long interface names, pointed out by Kees Klop.
+ *
  * Revision 1.33  2002/10/08 12:41:52  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -251,6 +254,7 @@ class PWin32SnmpLibrary
 
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
     BOOL GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
+    BOOL GetOid(AsnObjectIdentifier & oid, PString & str);
     BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len = NULL);
     BOOL GetOid(AsnObjectIdentifier & oid, PWin32AsnAny & value)     { return QueryOid(SNMP_PDU_GET, oid, value); }
 
@@ -571,6 +575,7 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #endif
 }
 
+
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
 {
   if (!IsLoaded())
@@ -595,6 +600,24 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & v
 
   return any.GetIpAddress(value);
 }
+
+
+BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PString & str)
+{
+  if (!IsLoaded())
+    return FALSE;
+
+  PWin32AsnAny any;
+  if (!GetOid(oid, any))
+    return FALSE;
+
+  if (any.asnType != ASN_OCTETSTRING)
+    return FALSE;
+
+  str = PString((char *)any.asnValue.string.stream, any.asnValue.string.length);
+  return TRUE;
+}
+
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
 {
@@ -1897,7 +1920,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
     if (name.IsEmpty()) {
       PWin32AsnOid nameOid = "1.3.6.1.2.1.2.2.1.2.0";
       nameOid[10] = ifIndex;
-      if (!snmp.GetOid(nameOid, name.GetPointer(100), 100))
+      if (!snmp.GetOid(nameOid, name))
         break;
       name.MakeMinimumSize();
     }
