@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.4  1999/06/23 14:19:46  robertj
+ * Fixed core dump problem with SIGINT/SIGTERM terminating process.
+ *
  * Revision 1.3  1998/09/24 04:12:08  robertj
  * Added open software license.
  *
@@ -56,7 +59,7 @@ void PAssertFunc (const char * file, int line, const char * msg)
       case 'a' :
       case 'A' :
         PError << "\nAborting.\n";
-        exit (1);
+        _exit(1);
 
       case 'c' :
       case 'C' :
