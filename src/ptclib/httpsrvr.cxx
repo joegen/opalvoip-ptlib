@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.33  2000/09/04 03:57:58  robertj
+ * Added ability to change the persistent connection parameters (timeout etc).
+ *
  * Revision 1.32  2000/05/02 07:55:22  craigs
  * Changed static PString to static const char * to avoid "memory leak"
  *
@@ -138,21 +141,15 @@
 #define new PNEW
 
 
-// undefine to remove support for persistant connections
-#define HAS_PERSISTANCE
-
 // define to enable work-around for Netscape persistant connection bug
 // set to lifetime of suspect sockets (in seconds)
 #define STRANGE_NETSCAPE_BUG	3
 
-// maximum lifetime (in seconds) of persistant connections
-#define	MAX_LIFETIME		30
-
-// maximum lifetime (in transactions) of persistant connections
-#define MAX_TRANSACTIONS	10
-
 // maximum delay between characters whilst reading a line of text
 #define	READLINE_TIMEOUT	30
+
+#define DEFAULT_PERSIST_TIMEOUT 30
+#define DEFAULT_PERSIST_TRANSATIONS 10
 
 //  filename to use for directory access directives
 static const char * accessFilename = "_access";
@@ -359,7 +356,7 @@ BOOL PHTTPServer::ProcessCommand()
   // now that we've decided we did receive a HTTP request, increment the
   // count of transactions
   transactionCount++;
-  nextTimeout.SetInterval(MAX_LIFETIME*1000);
+  nextTimeout = connectInfo.GetPersistenceTimeout();
 
   PIPSocket * socket = GetSocket();
   WORD myPort = (WORD)(socket != NULL ? socket->GetPort() : 80);
@@ -420,13 +417,13 @@ BOOL PHTTPServer::ProcessCommand()
   // routines above must make sure that their return value is FALSE if
   // if there was no ContentLength field in the response. This ensures that
   // we always close the socket so the client will get the correct end of file
-  if (persist &&
-      connectInfo.IsPersistant() &&
-      transactionCount < MAX_TRANSACTIONS)
-    return TRUE;
+  if (persist && connectInfo.IsPersistant()) {
+    unsigned max = connectInfo.GetPersistenceMaximumTransations();
+    if (max == 0 || transactionCount < max)
+      return TRUE;
+  }
 
-//  if (connectInfo.IsPersistant())
-//    PError << "Server: connection persistance end" << endl;
+  PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistant());
 
   // close the output stream now and return FALSE
   Shutdown(ShutdownWrite);
@@ -645,14 +642,14 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
     info.SetAt(ServerTag, GetServerName());
 
   if (connectInfo.IsPersistant()) {
-    if (connectInfo.IsProxyConnection())
-//{      PError << "Server: setting proxy persistant response" << endl;
+    if (connectInfo.IsProxyConnection()) {
+      PTRACE(5, "HTTPServer\tSetting proxy persistant response");
       info.SetAt(ProxyConnectionTag, KeepAliveTag);
-//    }
-    else
-//{      PError << "Server: setting direct persistant response" << endl;
+    }
+    else {
+      PTRACE(5, "HTTPServer\tSetting direct persistant response");
       info.SetAt(ConnectionTag, KeepAliveTag);
-//    }
+    }
   }
 }
 
@@ -850,13 +847,18 @@ PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & s
 // PHTTPConnectionInfo
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
+  : persistenceTimeout(0, DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistant connections
 {
+  // maximum lifetime (in transactions) of persistant connections
+  persistenceMaximum = DEFAULT_PERSIST_TRANSATIONS;
+
   commandCode       = PHTTP::NumCommands;
 
   majorVersion      = 0;
   minorVersion      = 9;
 
   isPersistant      = FALSE;
+  wasPersistant     = FALSE;
   isProxyConnection = FALSE;
 
   entityBodyLength  = -1;
@@ -894,12 +896,11 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   if (!mimeInfo.Read(server))
     return FALSE;
 
-  isPersistant      = FALSE;
+  wasPersistant = isPersistant;
+  isPersistant = FALSE;
 
-#ifndef HAS_PERSISTANCE
-  isProxyConnection = FALSE;
-#else
   PString str;
+
   // check for Proxy-Connection and Connection strings
   isProxyConnection = mimeInfo.HasKey(PHTTP::ProxyConnectionTag);
   if (isProxyConnection)
@@ -913,13 +914,6 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
     for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
-#endif
-//    if (connectInfo.IsPersistant()) {
-//      if (connectInfo.IsProxyConnection())
-//        PError << "Server: Persistant proxy connection received" << endl;
-//      else
-//        PError << "Server: Persistant direct connection received" << endl;
-//    }
 
   // If the protocol is version 1.0 or greater, there is MIME info, and the
   // prescence of a an entity body is signalled by the inclusion of
@@ -939,7 +933,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   else {
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
     if (entityBodyLength < 0) {
-//        PError << "Server: persistant connection has no content length" << endl;
+      PTRACE(5, "HTTPServer\tPersistant connection has no content length");
       entityBodyLength = 0;
       mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
     }
@@ -953,16 +947,6 @@ void PHTTPConnectionInfo::SetMIME(const PString & tag, const PString & value)
 {
   mimeInfo.MakeUnique();
   mimeInfo.SetAt(tag, value);
-}
-
-
-void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
-{
-#ifdef HAS_PERSISTANCE
-  isPersistant = newPersist;
-#else
-  isPersistant = FALSE;
-#endif
 }
 
 
