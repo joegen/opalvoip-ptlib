@@ -1822,6 +1822,7 @@ EXPORTS
     ?GetBuffers@PSoundChannel@@QAEHAAH0@Z @2681 NONAME ;public: int __thiscall PSoundChannel::GetBuffers(int &,int &)
     ?GetChannel@PVideoDevice@@UBEHXZ @3437 NONAME ;public: virtual int __thiscall PVideoDevice::GetChannel(void)const 
     ?GetChannels@PSound@@QBEIXZ @2907 NONAME ;public: unsigned int __thiscall PSound::GetChannels(void)const 
+    ?GetChannels@PSoundChannel@@QBEIXZ @3521 NONAME ;public: unsigned int __thiscall PSoundChannel::GetChannels(void)const 
     ?GetClass@?$PArray@VPString@@@@UBEPBDI@Z @1329 NONAME ;public: virtual char const * __thiscall PArray<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PArray@VPWaveBuffer@@@@UBEPBDI@Z @2682 NONAME ;public: virtual char const * __thiscall PArray<class PWaveBuffer>::GetClass(unsigned int)const 
     ?GetClass@?$PArray@VPWin32PacketBuffer@@@@UBEPBDI@Z @2472 NONAME ;public: virtual char const * __thiscall PArray<class PWin32PacketBuffer>::GetClass(unsigned int)const 
@@ -2197,7 +2198,9 @@ EXPORTS
     ?GetRing@PSerialChannel@@QAEHXZ @1591 NONAME ;public: int __thiscall PSerialChannel::GetRing(void)
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @2485 NONAME ;public: static int __cdecl PIPSocket::GetRouteTable(class PList<class PIPSocket::RouteEntry> &)
     ?GetSampleRate@PSound@@QBEIXZ @2910 NONAME ;public: unsigned int __thiscall PSound::GetSampleRate(void)const 
+    ?GetSampleRate@PSoundChannel@@QBEIXZ @3522 NONAME ;public: unsigned int __thiscall PSoundChannel::GetSampleRate(void)const 
     ?GetSampleSize@PSound@@QBEIXZ @2911 NONAME ;public: unsigned int __thiscall PSound::GetSampleSize(void)const 
+    ?GetSampleSize@PSoundChannel@@QBEIXZ @3523 NONAME ;public: unsigned int __thiscall PSoundChannel::GetSampleSize(void)const 
     ?GetSecond@PTime@@QBEHXZ @1592 NONAME ;public: int __thiscall PTime::GetSecond(void)const 
     ?GetSeconds@PTimeInterval@@QBEJXZ @1593 NONAME ;public: long __thiscall PTimeInterval::GetSeconds(void)const 
     ?GetSections@PConfig@@QBE?AVPStringList@@XZ @1594 NONAME ;public: class PStringList  __thiscall PConfig::GetSections(void)const 
@@ -2728,6 +2731,7 @@ EXPORTS
     ?PrepareCommon@PWaveBuffer@@AAEXH@Z @2705 NONAME ;private: void __thiscall PWaveBuffer::PrepareCommon(int)
     ?PreSerialise@PObject@@UAEHAAVPSerialiser@@@Z @1998 NONAME ;public: virtual int __thiscall PObject::PreSerialise(class PSerialiser &)
     ?PrintNumbersOn@PAbstractArray@@IBEXAAVostream@@HH@Z @1999 NONAME ;protected: void __thiscall PAbstractArray::PrintNumbersOn(class ostream &,int,int)const 
+    ?PrintOn@InterfaceEntry@PIPSocket@@UBEXAAVostream@@@Z @3520 NONAME ;public: virtual void __thiscall PIPSocket::InterfaceEntry::PrintOn(class ostream &)const 
     ?PrintOn@PAbstractDictionary@@UBEXAAVostream@@@Z @2000 NONAME ;public: virtual void __thiscall PAbstractDictionary::PrintOn(class ostream &)const 
     ?PrintOn@PBYTEArray@@UBEXAAVostream@@@Z @2001 NONAME ;public: virtual void __thiscall PBYTEArray::PrintOn(class ostream &)const 
     ?PrintOn@PCharArray@@UBEXAAVostream@@@Z @2002 NONAME ;public: virtual void __thiscall PCharArray::PrintOn(class ostream &)const 
