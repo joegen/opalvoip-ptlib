@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.3 1996/01/23 13:18:43 robertj Exp $
+ * $Id: inetprot.cxx,v 1.4 1996/01/26 02:24:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.4  1996/01/26 02:24:29  robertj
+ * Further implemetation.
+ *
  * Revision 1.3  1996/01/23 13:18:43  robertj
  * Major rewrite for HTTP support.
  *
@@ -356,6 +359,17 @@ char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
 
+PMIMEInfo::PMIMEInfo(istream & strm)
+{
+  ReadFrom(strm);
+}
+
+
+PMIMEInfo::PMIMEInfo(PApplicationSocket & socket)
+{
+  Read(socket);
+}
+
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
@@ -426,6 +440,52 @@ long PMIMEInfo::GetInteger(const PString & key, long dflt) const
   if (GetAt(PCaselessString(key)) == NULL)
     return dflt;
   return operator[](key).AsInteger();
+}
+
+
+static const PStringToString::Initialiser DefaultContentTypes[] = {
+  { ".txt", "text/plain" },
+  { ".text", "text/plain" },
+  { ".html", "text/html" },
+  { ".htm", "text/html" },
+  { ".aif", "audio/aiff" },
+  { ".aiff", "audio/aiff" },
+  { ".au", "audio/basic" },
+  { ".snd", "audio/basic" },
+  { ".wav", "audio/wav" },
+  { ".gif", "image/gif" },
+  { ".xbm", "image/x-bitmap" },
+  { ".tif", "image/tiff" },
+  { ".tiff", "image/tiff" },
+  { ".jpg", "image/jpeg" },
+  { ".jpe", "image/jpeg" },
+  { ".jpeg", "image/jpeg" },
+  { ".avi", "video/avi" },
+  { ".mpg", "video/mpeg" },
+  { ".mpeg", "video/mpeg" },
+  { ".qt", "video/quicktime" },
+  { ".mov", "video/quicktime" }
+};
+
+PStringToString PMIMEInfo::contentTypes(PARRAYSIZE(DefaultContentTypes),
+                                        DefaultContentTypes,
+                                        TRUE);
+
+
+void PMIMEInfo::SetAssociation(const PStringToString & allTypes, BOOL merge)
+{
+  if (!merge)
+    contentTypes.RemoveAll();
+  for (PINDEX i = 0; i < allTypes.GetSize(); i++)
+    contentTypes.SetAt(allTypes.GetKeyAt(i), allTypes.GetDataAt(i));
+}
+
+
+PString PMIMEInfo::GetContentType(const PString & fileType)
+{
+  if (contentTypes.GetAt(fileType) != NULL)
+    return contentTypes[fileType];
+  return "application/octet-stream";
 }
 
 
