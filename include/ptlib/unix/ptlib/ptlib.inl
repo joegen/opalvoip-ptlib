@@ -1,5 +1,5 @@
 /*
- * osutil.inl
+ * ptlib.inl
  *
  * Operating System classes inline function implementation
  *
@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.20  2001/03/12 02:35:20  robertj
+ * Fixed PDirectory::Exists so only returns TRUE if a directory and not file.
+ *
  * Revision 1.19  2000/04/05 02:55:11  robertj
  * Added microseconds to PTime class.
  *
@@ -75,7 +78,6 @@ PINLINE unsigned PTimer::Resolution()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 PINLINE BOOL PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 
@@ -84,9 +86,6 @@ PINLINE BOOL PDirectory::IsSeparator(char ch)
 
 PINLINE BOOL PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
-
-PINLINE BOOL PDirectory::Exists(const PString & p)
-  { return access((const char *)p, 0) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
