@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.36  1999/04/29 08:46:50  robertj
-# Force use of GNU C compiler for .c files not only c++ files.
+# Revision 1.37  1999/05/01 11:29:19  robertj
+# Alpha linux port changes.
+#
+# Revision 1.37  1999/05/01 11:29:19  robertj
+# Alpha linux port changes.
 #
 # Revision 1.36  1999/04/29 08:46:50  robertj
 # Force use of GNU C compiler for .c files not only c++ files.
@@ -151,16 +154,23 @@ endif # DEBUG
 
 ifeq ($(OSTYPE),linux)
 
+# P_SSL		= $(PWLIBDIR)
+# PTHREADS	= 1
+
+# i486 Linux for x86, using gcc 2.7.2
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX
 
-else
+
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	:= -m486 $(STDCCFLAGS)
+endif
+
+ifeq ($(MACHTYPE),alpha)
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_64BIT
 endif
 
 ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
-# i486 Linux for x86, using gcc 2.7.2
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64
-
 endif
 
 
@@ -184,7 +194,7 @@ ifeq ($(OSTYPE),FreeBSD)
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64
+STDCCFLAGS	:= -m486 $(STDCCFLAGS)
 endif
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD
@@ -225,7 +235,7 @@ else
 ENDIAN		:= PBIG_ENDIAN
 endif
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE) -DP_HAS_INT64
+OSRELEASE	:= $(subst 5.,,$(shell uname -r))
 
 # Sparc Solaris 2.x, using gcc 2.7.2
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
@@ -249,7 +259,7 @@ endif # solaris
 
 ifeq ($(OSTYPE),beos)
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_HAS_INT64
+BE_THREADS := 0
 
 # BeOS R4, using gcc from Cygnus version 2.9-beos-980929
 STDCCFLAGS	:= $(STDCCFLAGS)
@@ -266,7 +276,7 @@ endif # beos
 
 ifeq ($(OSTYPE),ultrix)
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX -DP_HAS_INT64
+ENDIAN	:= PBIG_ENDIAN
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
