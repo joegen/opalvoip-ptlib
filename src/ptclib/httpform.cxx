@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.23 1998/08/09 10:35:11 robertj Exp $
+ * $Id: httpform.cxx,v 1.24 1998/08/09 11:25:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.24  1998/08/09 11:25:51  robertj
+ * GNU C++ warning removal.
+ *
  * Revision 1.23  1998/08/09 10:35:11  robertj
  * Changed array control so can have language override.
  *
@@ -318,7 +321,8 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
     }
     else {
       if (validValues.GetSize() > 0) {
-        for (PINDEX valid = 0; valid < validValues.GetSize(); valid++) {
+        PINDEX valid;
+        for (valid = 0; valid < validValues.GetSize(); valid++) {
           if (thisValue == validValues[valid])
             break;
         }
