@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.20  2004/03/23 06:38:51  csoutheren
+ * Update for change in location of Base64 routines
+ *
  * Revision 1.19  2004/03/23 05:59:17  csoutheren
  * Moved the Base64 routines into cypher.cxx, which is a more sensible
  * place and reduces the inclusion of unrelated code
@@ -99,7 +102,7 @@
 #endif
 
 #include <ptclib/inetprot.h>
-
+#include <ptclib/cypher.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
