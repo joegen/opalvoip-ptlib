@@ -72,7 +72,7 @@
 #include <strings.h>
 #endif
 
-#ifdef STDC_HEADERS
+#if defined(STDC_HEADERS) || defined(_WIN32_WCE)
 #include <stdlib.h>
 #else
 char *malloc ();
@@ -100,6 +100,9 @@ extern char *re_syntax_table;
 /* How many characters in the character set.  */
 #define CHAR_SET_SIZE 256
 
+#ifdef _WIN32_WCE
+#pragma warning( disable : 4018 )  
+#endif
 static char re_syntax_table[CHAR_SET_SIZE];
 
 static void
@@ -245,10 +248,12 @@ char *alloca ();
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+#ifndef _WIN32_WCE
 typedef char boolean;
 #define false 0
 #define true 1
-
+#endif // _WIN32_WCE
+
 /* These are the command codes that appear in compiled regular
    expressions.  Some opcodes are followed by argument bytes.  A
    command code can specify any interpretation whatsoever for its
@@ -420,9 +425,7 @@ typedef enum
 
 #ifdef DEBUG
 static void
-extract_number (dest, source)
-    int *dest;
-    unsigned char *source;
+extract_number (int* dest, const unsigned char* source)
 {
   int temp = SIGN_EXTEND_CHAR (*(source + 1)); 
   *dest = *source & 0377;
@@ -447,9 +450,14 @@ extract_number (dest, source)
 
 #ifdef DEBUG
 static void
-extract_number_and_incr (destination, source)
-    int *destination;
-    unsigned char **source;
+extract_number_and_incr (int* destination, unsigned char **source)
+{ 
+  extract_number (destination, *source);
+  *source += 2;
+}
+
+static void
+extract_number_and_incr (int* destination, const unsigned char **source)
 { 
   extract_number (destination, *source);
   *source += 2;
@@ -490,13 +498,12 @@ static int debug = 0;
   if (debug) print_double_string (w, s1, sz1, s2, sz2)
 
 
-extern void printchar ();
+extern void printchar (char);
 
 /* Print the fastmap in human-readable form.  */
 
 void
-print_fastmap (fastmap)
-    char *fastmap;
+print_fastmap (char* fastmap)
 {
   unsigned was_a_range = 0;
   unsigned i = 0;  
@@ -527,9 +534,7 @@ print_fastmap (fastmap)
    the START pointer into it and ending just before the pointer END.  */
 
 void
-print_partial_compiled_pattern (start, end)
-    unsigned char *start;
-    unsigned char *end;
+print_partial_compiled_pattern (unsigned char *start, unsigned char *end)
 {
   int mcnt, mcnt2;
   unsigned char *p = start;
@@ -735,8 +740,7 @@ print_partial_compiled_pattern (start, end)
 
 
 void
-print_compiled_pattern (bufp)
-    struct re_pattern_buffer *bufp;
+print_compiled_pattern (struct re_pattern_buffer *bufp)
 {
   unsigned char *buffer = bufp->buffer;
 
@@ -762,12 +766,8 @@ print_compiled_pattern (bufp)
 
 
 void
-print_double_string (where, string1, size1, string2, size2)
-    const char *where;
-    const char *string1;
-    const char *string2;
-    int size1;
-    int size2;
+print_double_string (const char *where, const char *string1, int size1, 
+					 const char *string2, int size2)
 {
   unsigned this_char;
   
