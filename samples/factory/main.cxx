@@ -1,4 +1,8 @@
 #include <ptlib.h>
+
+#include <ptclib/http.h>
+#include <ptclib/ptts.h>
+
 #include "abstract.h"
 
 extern unsigned PTraceCurrentLevel;
@@ -13,10 +17,25 @@ class Factory : public PProcess
 
 PCREATE_PROCESS(Factory)
 
+template <class FactoryClass>
+void TestFactory(const char * title)
+{
+  cout << "Testing " << title << endl;
+  PFactory<FactoryClass>::KeyList_T keys = PFactory<FactoryClass>::GetKeyList();
+
+  cout << "keys = " << endl;
+  PFactory<FactoryClass>::KeyList_T::const_iterator r;
+  for (r = keys.begin(); r != keys.end(); ++r) {
+    cout << "  " << *r << endl;
+  }
+  
+  cout << endl;
+}
+
 void Factory::Main()
 {
-  PGenericFactory<MyAbstractClass>::KeyList_T keyList = PGenericFactory<MyAbstractClass>::GetKeyList();
-  PGenericFactory<MyAbstractClass>::KeyList_T::const_iterator r;
+  PFactory<MyAbstractClass>::KeyList_T keyList = PFactory<MyAbstractClass>::GetKeyList();
+  PFactory<MyAbstractClass>::KeyList_T::const_iterator r;
 
   cout << "List of concrete types:" << endl;
   for (r = keyList.begin(); r != keyList.end(); ++r)
@@ -27,11 +46,15 @@ void Factory::Main()
   for (i = 0; i < keyList.size(); i++) {
     for (int j = 0; j < 3; j++)
     {
-      MyAbstractClass * c = PGenericFactory<MyAbstractClass>::CreateInstance(keyList[i]);
+      MyAbstractClass * c = PFactory<MyAbstractClass>::CreateInstance(keyList[i]);
       if (c == NULL) 
         cout << "Cannot instantiate class " << keyList[i] << endl;
       else
         cout << keyList[i] << "::Function returned " << c->Function() << ", instance " << (void *)c << endl;
     }
   }
+
+  TestFactory<PURLScheme>("PURLScheme");
+  TestFactory<PTextToSpeech>("PTextToSpeech");
+  TestFactory<PPluginModuleManager>("PPluginModuleManager");
 }
