@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.5 1996/03/10 13:14:55 robertj Exp $
+ * $Id: html.cxx,v 1.6 1996/03/12 11:30:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.6  1996/03/12 11:30:33  robertj
+ * Fixed resetting of HTML output using operator=.
+ *
  * Revision 1.5  1996/03/10 13:14:55  robertj
  * Simplified some of the classes and added catch all string for attributes.
  *
@@ -68,10 +71,25 @@ PHTML::~PHTML()
 }
 
 
-PHTML & PHTML::operator=(const PHTML & html)
+PHTML & PHTML::operator=(const char * cstr)
 {
-  PStringStream::operator=((const PString &)html);
-  memcpy(elementSet, html.elementSet, sizeof(elementSet));
+  PStringStream::operator=("");
+  memset(elementSet, 0, sizeof(elementSet));
+  if (cstr != NULL && *cstr != '\0')
+    *this << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
+  return *this;
+}
+
+
+PHTML & PHTML::operator=(const PString & str)
+{
+  return operator=((const char *)str);
+}
+
+
+PHTML & PHTML::operator=(const PHTML &)
+{
+  PAssertAlways(PLogicError);
   return *this;
 }
 
