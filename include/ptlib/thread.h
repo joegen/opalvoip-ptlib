@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.32  2002/10/04 04:33:27  robertj
+ * Added functions for getting operating system thread identifer values.
+ *
  * Revision 1.31  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -377,6 +380,14 @@ class PThread : public PObject
 
   /**@name Miscellaneous */
   //@{
+    /**Get operating system specific thread identifier for this thread.
+      */
+    virtual PThreadIdentifer GetThreadId() const;
+
+    /**Get operating system specific thread identifier for current thread.
+      */
+    static PThreadIdentifer GetCurrentThreadId();
+
     /** User override function for the main execution routine of the thread. A
        descendent class must provide the code that will be executed in the
        thread within this function.
