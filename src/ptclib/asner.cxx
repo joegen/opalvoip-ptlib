@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.67  2002/09/26 23:53:20  robertj
+ * Fixed incorrect asserts in PASN_Enumerated, thanks Platzer Wolfgang
+ *
  * Revision 1.66  2002/09/13 08:16:15  robertj
  * Fixed missing line feed when dumping hex octet strings.
  *
@@ -890,10 +893,9 @@ PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
   : PASN_Object(tag, tagClass, extend),
     names(BuildNamesDict(nameSpec))
 {
-  PAssert(maxEnum > 0, PInvalidParameter);
   maxEnumValue = maxEnum;
 
-  PAssert(val < maxEnum, PInvalidParameter);
+  PAssert(val <= maxEnum, PInvalidParameter);
   value = val;
 }
 
