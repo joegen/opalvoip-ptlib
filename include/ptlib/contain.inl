@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.9 1993/12/24 04:20:52 robertj Exp $
+ * $Id: contain.inl,v 1.10 1993/12/31 06:48:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.9  1993/12/24 04:20:52  robertj
+ * Revision 1.10  1993/12/31 06:48:46  robertj
+ * Made inlines optional for debugging purposes.
+ * Added PImgIcon class.
+ *
+ * Revision 1.9  1993/12/24  04:20:52  robertj
  * Mac CFront port.
  *
  * Revision 1.8  1993/12/22  05:54:08  robertj
@@ -35,261 +39,261 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline BOOL PObject::operator==(const PObject & obj) const
+PINLINE BOOL PObject::operator==(const PObject & obj) const
   { return Compare(obj) == EqualTo; }
 
-inline BOOL PObject::operator!=(const PObject & obj) const
+PINLINE BOOL PObject::operator!=(const PObject & obj) const
   { return Compare(obj) != EqualTo; }
 
-inline BOOL PObject::operator<(const PObject & obj) const
+PINLINE BOOL PObject::operator<(const PObject & obj) const
   { return Compare(obj) == LessThan; }
 
-inline BOOL PObject::operator>(const PObject & obj) const
+PINLINE BOOL PObject::operator>(const PObject & obj) const
   { return Compare(obj) == GreaterThan; }
 
-inline BOOL PObject::operator<=(const PObject & obj) const
+PINLINE BOOL PObject::operator<=(const PObject & obj) const
   { return Compare(obj) != GreaterThan; }
 
-inline BOOL PObject::operator>=(const PObject & obj) const
+PINLINE BOOL PObject::operator>=(const PObject & obj) const
   { return Compare(obj) != LessThan; }
 
-inline ostream & operator<<(ostream &strm, const PObject & obj)
+PINLINE ostream & operator<<(ostream &strm, const PObject & obj)
   { return obj.PrintOn(strm); }
 
-inline istream & operator>>(istream &strm, PObject & obj)
+PINLINE istream & operator>>(istream &strm, PObject & obj)
   { return obj.ReadFrom(strm); }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PContainer::PContainer(PINDEX initialSize)
+PINLINE PContainer::PContainer(PINDEX initialSize)
   : reference(new Reference(initialSize)) { PAssertNULL(reference); }
 
-inline BOOL PContainer::IsUnique() const
+PINLINE BOOL PContainer::IsUnique() const
   { return PAssertNULL(reference)->count <= 1; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PAbstractArray::~PAbstractArray()
+PINLINE PAbstractArray::~PAbstractArray()
   { DestroyContents(); }
 
-inline BOOL PAbstractArray::MakeUnique()
+PINLINE BOOL PAbstractArray::MakeUnique()
   { return IsUnique() || SetSize(GetSize()); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PString::PString()
+PINLINE PString::PString()
   : PCharArray(1) { }
 
-inline PString::PString(const PString & str)
+PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
 
-inline PString::PString(const char * cstr)
+PINLINE PString::PString(const char * cstr)
   : PCharArray(PAssertNULL(cstr), strlen(cstr)+1) { }
 
-inline PString::PString(const char * cstr, PINDEX len)
+PINLINE PString::PString(const char * cstr, PINDEX len)
   : PCharArray(len+1) { memcpy(theArray, PAssertNULL(cstr), len); }
 
-inline PString::PString(char c)
+PINLINE PString::PString(char c)
   : PCharArray(2) { *theArray = c; }
 
-inline PObject::Comparison PString::CompareString(const char * cstr) const
+PINLINE PObject::Comparison PString::CompareString(const char * cstr) const
   { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
 
-inline BOOL PString::MakeMinimumSize()
+PINLINE BOOL PString::MakeMinimumSize()
   { return SetSize(strlen(theArray)+1); }
 
-inline PINDEX PString::Length() const
+PINLINE PINDEX PString::Length() const
   { return strlen(theArray); }
 
-inline PString & PString::operator=(const PString & str)
+PINLINE PString & PString::operator=(const PString & str)
   { PCharArray::operator=(str); return *this; }
 
-inline PString PString::operator+(const PString & str) const
+PINLINE PString PString::operator+(const PString & str) const
   { return operator+((const char *)str); }
 
-inline PString operator+(const char * cstr, const PString & str)
+PINLINE PString operator+(const char * cstr, const PString & str)
   { return PString(cstr) + str; }
   
-inline PString & PString::operator+=(const PString & str)
+PINLINE PString & PString::operator+=(const PString & str)
   { return operator+=((const char *)str); }
 
-inline BOOL PString::operator==(const PObject & obj) const
+PINLINE BOOL PString::operator==(const PObject & obj) const
   { return PObject::operator==(obj); }
 
-inline BOOL PString::operator!=(const PObject & obj) const
+PINLINE BOOL PString::operator!=(const PObject & obj) const
   { return PObject::operator!=(obj); }
 
-inline BOOL PString::operator<(const PObject & obj) const
+PINLINE BOOL PString::operator<(const PObject & obj) const
   { return PObject::operator<(obj); }
 
-inline BOOL PString::operator>(const PObject & obj) const
+PINLINE BOOL PString::operator>(const PObject & obj) const
   { return PObject::operator>(obj); }
 
-inline BOOL PString::operator<=(const PObject & obj) const
+PINLINE BOOL PString::operator<=(const PObject & obj) const
   { return PObject::operator<=(obj); }
 
-inline BOOL PString::operator>=(const PObject & obj) const
+PINLINE BOOL PString::operator>=(const PObject & obj) const
   { return PObject::operator>=(obj); }
 
-inline BOOL PString::operator==(const char * cstr) const
+PINLINE BOOL PString::operator==(const char * cstr) const
   { return CompareString(cstr) == EqualTo; }
 
-inline BOOL PString::operator!=(const char * cstr) const
+PINLINE BOOL PString::operator!=(const char * cstr) const
   { return CompareString(cstr) != EqualTo; }
 
-inline BOOL PString::operator<(const char * cstr) const
+PINLINE BOOL PString::operator<(const char * cstr) const
   { return CompareString(cstr) == LessThan; }
 
-inline BOOL PString::operator>(const char * cstr) const
+PINLINE BOOL PString::operator>(const char * cstr) const
   { return CompareString(cstr) == GreaterThan; }
 
-inline BOOL PString::operator<=(const char * cstr) const
+PINLINE BOOL PString::operator<=(const char * cstr) const
   { return CompareString(cstr) != GreaterThan; }
 
-inline BOOL PString::operator>=(const char * cstr) const
+PINLINE BOOL PString::operator>=(const char * cstr) const
   { return CompareString(cstr) != LessThan; }
 
-inline PString::operator const unsigned char *() const
+PINLINE PString::operator const unsigned char *() const
   { return (const unsigned char *)theArray; }
   
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PCaselessString::PCaselessString()
+PINLINE PCaselessString::PCaselessString()
   : PString() { }
 
-inline PCaselessString::PCaselessString(const char * cstr)
+PINLINE PCaselessString::PCaselessString(const char * cstr)
   : PString(cstr) { }
 
-inline PCaselessString::PCaselessString(const PString & str)
+PINLINE PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
 
-inline PCaselessString & PCaselessString::operator=(const PString & str)
+PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PCollection::PCollection(PINDEX initialSize)
+PINLINE PCollection::PCollection(PINDEX initialSize)
   : PContainer(initialSize), deleteObjects(TRUE) { }
 
-inline PCollection::PCollection(const PCollection & coll)
+PINLINE PCollection::PCollection(const PCollection & coll)
   : PContainer(coll), deleteObjects(coll.deleteObjects) { }
 
-inline PCollection & PCollection::operator=(const PCollection & coll)
+PINLINE PCollection & PCollection::operator=(const PCollection & coll)
   { PContainer::operator=(coll);
                             deleteObjects = coll.deleteObjects; return *this; }
 
-inline void PCollection::DeleteObjects(BOOL yes)
+PINLINE void PCollection::DeleteObjects(BOOL yes)
   { deleteObjects = yes; }
 
-inline void PCollection::NoDeleteObjects()
+PINLINE void PCollection::NoDeleteObjects()
   { DeleteObjects(FALSE); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PArrayObjects::PArrayObjects(PINDEX initialSize)
+PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
   : theArray(initialSize) { }
 
-inline PArrayObjects::PArrayObjects(const PArrayObjects & arr)
+PINLINE PArrayObjects::PArrayObjects(const PArrayObjects & arr)
   : PCollection(arr), theArray(arr.theArray) { }
 
-inline PArrayObjects::~PArrayObjects()
+PINLINE PArrayObjects::~PArrayObjects()
   { DestroyContents(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PAbstractList::PAbstractList()
+PINLINE PAbstractList::PAbstractList()
   : info(new ListInfo) { PAssertNULL(info); }
 
-inline PAbstractList::~PAbstractList()
+PINLINE PAbstractList::~PAbstractList()
  { DestroyContents(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PAbstractSortedList::PAbstractSortedList()
+PINLINE PAbstractSortedList::PAbstractSortedList()
   : info(new SortedListInfo) { PAssertNULL(info); }
 
-inline PAbstractSortedList::~PAbstractSortedList()
+PINLINE PAbstractSortedList::~PAbstractSortedList()
   { DestroyContents(); }
 
-inline void PSortedListElement::MakeBlack()
+PINLINE void PSortedListElement::MakeBlack()
   { colour = Black; }
 
-inline void PSortedListElement::MakeRed()
+PINLINE void PSortedListElement::MakeRed()
   { colour = Red; }
 
-inline BOOL PSortedListElement::IsBlack()
+PINLINE BOOL PSortedListElement::IsBlack()
   { return colour == Black; }
 
-inline BOOL PSortedListElement::IsLeftBlack()
+PINLINE BOOL PSortedListElement::IsLeftBlack()
   { return left == NULL || left->colour == Black; }
 
-inline BOOL PSortedListElement::IsRightBlack()
+PINLINE BOOL PSortedListElement::IsRightBlack()
   { return right == NULL || right->colour == Black; }
 
-inline BOOL PSortedListElement::LeftTreeSize()
+PINLINE BOOL PSortedListElement::LeftTreeSize()
   { return left != NULL ? left->subTreeSize : 0; }
 
-inline BOOL PSortedListElement::RightTreeSize()
+PINLINE BOOL PSortedListElement::RightTreeSize()
   { return right != NULL ? right->subTreeSize : 0; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PScalarKey::PScalarKey(PINDEX newKey)
+PINLINE PScalarKey::PScalarKey(PINDEX newKey)
   : theKey(newKey) { }
 
-inline PScalarKey::operator PINDEX() const
+PINLINE PScalarKey::operator PINDEX() const
   { return theKey; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PHashTable::~PHashTable()
+PINLINE PHashTable::~PHashTable()
   { DestroyContents(); }
 
-inline PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
+PINLINE PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
   { return *(PObject *)(hashTable->SetLastElementAt(index)
                                       ? hashTable->lastElement->data : NULL); }
 
-inline const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
+PINLINE const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
   { return *(PObject *)(hashTable->SetLastElementAt(index)
                                        ? hashTable->lastElement->key : NULL); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PAbstractSet::PAbstractSet()
+PINLINE PAbstractSet::PAbstractSet()
   { }
   
-inline PAbstractSet::PAbstractSet(const PAbstractSet & set)
+PINLINE PAbstractSet::PAbstractSet(const PAbstractSet & set)
   : PHashTable(set) { }
   
-inline PAbstractSet::PAbstractSet(const PAbstractSet * set)
+PINLINE PAbstractSet::PAbstractSet(const PAbstractSet * set)
   : PHashTable(set) { }
 
-inline BOOL PAbstractSet::Contains(const PObject & key)
+PINLINE BOOL PAbstractSet::Contains(const PObject & key)
   { return hashTable->GetElementAt(key) != NULL; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PAbstractDictionary::PAbstractDictionary()
+PINLINE PAbstractDictionary::PAbstractDictionary()
   { }
   
-inline 
+PINLINE 
      PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary & dict)
   : PHashTable(dict) { }
   
-inline 
+PINLINE 
      PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary * dict)
   : PHashTable(dict) { }
 
