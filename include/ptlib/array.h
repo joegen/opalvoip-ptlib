@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.15  1999/08/18 01:45:12  robertj
+ * Added concatenation function to "base type" arrays.
+ *
  * Revision 1.14  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -229,6 +232,22 @@ class PAbstractArray : public PContainer
     void * GetPointer(
       PINDEX minSize = 1  /// Minimum size the array must be.
     );
+
+    /**Concatenate one array to the end of this array.
+       This function will allocate a new array large enough for the existing 
+       contents and the contents of the parameter. The paramters contents is then
+       copied to the end of the existing array.
+       
+       Note this does nothing and returns FALSE if the target array is not
+       dynamically allocated, or if the two arrays are of base elements of
+       different sizes.
+
+       @return
+       TRUE if the memory allocation succeeded.
+     */
+    BOOL Concatenate(
+      const PAbstractArray & array  /// Array to concatenate.
+    );
   //@}
 
   protected:
@@ -339,7 +358,7 @@ template <class T> class PBaseArray : public PAbstractArray
     void Attach(
       const T * buffer,   /// Pointer to an array of elements.
       PINDEX bufferSize   /// Number of elements pointed to by buffer.
-    );
+    ) { PAbstraceArray::Attach(buffer, bufferSize); }
 
     /**Get a pointer to the internal array and assure that it is of at least
        the specified size. This is useful when the array contents are being
@@ -403,6 +422,21 @@ template <class T> class PBaseArray : public PAbstractArray
        constant pointer to the array memory.
      */
     operator T const *() const { return (T const *)theArray; }
+
+    /**Concatenate one array to the end of this array.
+       This function will allocate a new array large enough for the existing 
+       contents and the contents of the parameter. The paramters contents is then
+       copied to the end of the existing array.
+       
+       Note this does nothing and returns FALSE if the target array is not
+       dynamically allocated.
+
+       @return
+       TRUE if the memory allocation succeeded.
+     */
+    BOOL Concatenate(
+      const PBaseArray & array  /// Other array to concatenate
+    ) { return PAbstractArray::Concatenate(array); }
 };
 
 /*Declare a dynamic array base type.
@@ -468,6 +502,8 @@ template <class T> class PBaseArray : public PAbstractArray
       { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline operator P_##cls##_Base_Type const *() const \
       { return (P_##cls##_Base_Type const *)theArray; } \
+    inline BOOL Concatenate(P_##cls##_Base_Type const & array) \
+      { return PAbstractArray::Concatenate(array); } \
   }
 
 #define PDECLARE_BASEARRAY(cls, T) \
