@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.132  2002/10/18 08:07:41  robertj
+ * Fixed use of FD_ZERO as (strangely) crashes on some paltforms and would
+ *   not have cleared enough of an enlarges fd_set anyway.
+ *
  * Revision 1.131  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -936,14 +940,14 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 P_fd_set::P_fd_set()
 {
   Construct();
-  FD_ZERO(set);
+  Zero();
 }
 
 
 P_fd_set::P_fd_set(SOCKET fd)
 {
   Construct();
-  FD_ZERO(set);
+  Zero();
   FD_SET(fd, set);
 }
 
@@ -951,7 +955,7 @@ P_fd_set::P_fd_set(SOCKET fd)
 P_fd_set & P_fd_set::operator=(SOCKET fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
-  FD_ZERO(set);
+  Zero();
   FD_SET(fd, set);
   return *this;
 }
@@ -970,6 +974,13 @@ P_fd_set & P_fd_set::operator-=(SOCKET fd)
   PAssert(fd < max_fd, PInvalidParameter);
   FD_CLR(fd, set);
   return *this;
+}
+
+
+void P_fd_set::Zero()
+{
+  PAssertNULL(set);
+  memset(set, 0, (max_fd+7)>>3);
 }
 
 #ifdef _MSC_VER
