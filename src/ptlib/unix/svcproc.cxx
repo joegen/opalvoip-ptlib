@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.54  2001/05/03 01:13:10  robertj
+ * Closed stdin if in background, should never block in tty I/O if daemon!
+ *
  * Revision 1.53  2001/04/20 05:41:35  craigs
  * Added ability to set core dump size from command line under Linux
  *
@@ -586,6 +589,9 @@ int PServiceProcess::InitialiseService()
   signal(SIGSEGV, PXSignalHandler);
   signal(SIGFPE, PXSignalHandler);
   signal(SIGBUS, PXSignalHandler);
+
+  // Also if in background, don't want to get blocked on input from stdin
+  ::close(STDIN_FILENO);
 
 #endif // BE_THREADS
 
