@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.17  2004/04/03 10:33:45  dsandras
+ * Use PStringToOrdinal to store the detected devices, that fixes problems if there is a discontinuity in the succession of soundcard ID's. For example the user has card ID 1 and 3, but not 2.
+ *
  * Revision 1.16  2004/03/13 12:36:14  dsandras
  * Added support for DMIX plugin output.
  *
@@ -81,8 +84,8 @@
 PCREATE_SOUND_PLUGIN(ALSA, PSoundChannelALSA)
 
 
-static PStringArray playback_devices;
-static PStringArray capture_devices;
+static PStringToOrdinal playback_devices;
+static PStringToOrdinal capture_devices;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -121,6 +124,8 @@ PSoundChannelALSA::~PSoundChannelALSA()
 
 PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
 {
+  PStringArray devices;
+  
   int card = -1, dev = -1;
   
   snd_ctl_t *handle = NULL;
@@ -134,12 +139,12 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
   if (dir == Recorder) {
 
     stream = SND_PCM_STREAM_CAPTURE;
-    capture_devices = PStringArray ();
+    capture_devices = PStringToOrdinal ();
   }
   else {
 
     stream = SND_PCM_STREAM_PLAYBACK;
-    playback_devices = PStringArray ();
+    playback_devices = PStringToOrdinal ();
   }
 
   snd_ctl_card_info_alloca (&info);
@@ -176,13 +181,11 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
           snd_card_get_name (card, &name);
           if (dir == Recorder) {
 
-            if (capture_devices.GetStringsIndex (name) == P_MAX_INDEX)
-              capture_devices.AppendString (name);
+              capture_devices.SetAt (name, card);
           }
           else {
 
-            if (playback_devices.GetStringsIndex (name) == P_MAX_INDEX)
-              playback_devices.AppendString (name);
+              playback_devices.SetAt (name, card);
           }
 
           free (name);
@@ -194,16 +197,20 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
     snd_card_next (&card);
   }
 
-
+  PStringToOrdinal devices_dict;
   if (dir == Recorder)
-    return capture_devices;
-  else {
+    devices_dict = capture_devices;
+  else
+    devices_dict = playback_devices;
+  
+  for (PINDEX j = 0 ; j < devices_dict.GetSize () ; j++) 
+    devices += devices_dict.GetKeyAt (j);
+  
  
-    if (playback_devices.GetSize () > 0)
-      playback_devices += "DMIX Plugin";
+  if (dir != Recorder && devices.GetSize () > 0)
+      devices += "DMIX Plugin";
     
-    return playback_devices;
-  }
+  return devices;
 }
 
 
@@ -223,7 +230,7 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
 			      unsigned _bitsPerSample)
 {
   PString real_device_name;
-  PINDEX i = 0;
+  POrdinalKey *i = NULL;
   snd_pcm_stream_t stream;
 
   Close();
@@ -240,17 +247,22 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
 
     real_device_name = "plug:dmix";
   }
-  else if ((i = (_dir == Recorder) ? capture_devices.GetStringsIndex (_device) : playback_devices.GetStringsIndex (_device)) != P_MAX_INDEX) {
-
-    real_device_name = "plughw:" + PString (i);
-    card_nr = i;
-  }
   else {
-    
-    PTRACE (1, "ALSA\tDevice unavailable");
-    return FALSE;
-  }
 
+    i = (_dir == Recorder) ? capture_devices.GetAt (_device) : playback_devices.GetAt (_device);
+
+    if (i) {
+
+      real_device_name = "plughw:" + PString (*i);
+      card_nr = *i;
+    }
+    else {
+
+      PTRACE (1, "ALSA\tDevice not found");
+      return FALSE;
+    }
+  }
+    
   if (snd_pcm_open (&os_handle, real_device_name, stream, SND_PCM_NONBLOCK) < 0) {
 
     PTRACE (1, "ALSA\tOpen Failed");
