@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.13 1996/06/01 04:18:40 robertj Exp $
+ * $Id: html.h,v 1.14 1996/06/28 13:08:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.14  1996/06/28 13:08:41  robertj
+ * Changed PHTML class so can create html fragments.
+ * Fixed nesting problem in tables.
+ *
  * Revision 1.13  1996/06/01 04:18:40  robertj
  * Fixed bug in RadioButton, having 2 VALUE fields
  *
@@ -70,33 +74,6 @@ PDECLARE_CLASS(PHTML, PStringStream)
  */
 
   public:
-    PHTML();
-    PHTML(
-      const char * cstr     // C string representation of the title string.
-    );
-    PHTML(
-      const PString & str   // String representation of the title string.
-    );
-    /* Construct a new HTML object. If a title is specified in the
-       constructor then the HEAD, TITLE and BODY elements are output and the
-       string is used in a H1 element.
-     */
-
-    ~PHTML();
-
-    PHTML & operator=(
-      const char * cstr    // String for title in restating HTML.
-    );
-    PHTML & operator=(
-      const PString & str    // String for title in restating HTML.
-    );
-    /* Restart the HTML string output using the specified value as the
-       new title. If <CODE>title</CODE> is empty then no HEAD or TITLE
-       elements are placed into the HTML.
-     */
-
-
-  // New functions for class.
     enum ElementInSet {
       InHTML,
       InHead,
@@ -143,6 +120,36 @@ PDECLARE_CLASS(PHTML, PStringStream)
       InTextArea,
       NumElementsInSet
     };
+
+    PHTML(
+      ElementInSet initialState = NumElementsInSet
+    );
+    PHTML(
+      const char * cstr     // C string representation of the title string.
+    );
+    PHTML(
+      const PString & str   // String representation of the title string.
+    );
+    /* Construct a new HTML object. If a title is specified in the
+       constructor then the HEAD, TITLE and BODY elements are output and the
+       string is used in a H1 element.
+     */
+
+    ~PHTML();
+
+    PHTML & operator=(
+      const char * cstr    // String for title in restating HTML.
+    );
+    PHTML & operator=(
+      const PString & str    // String for title in restating HTML.
+    );
+    /* Restart the HTML string output using the specified value as the
+       new title. If <CODE>title</CODE> is empty then no HEAD or TITLE
+       elements are placed into the HTML.
+     */
+
+
+  // New functions for class.
     BOOL Is(ElementInSet elmt);
     void Set(ElementInSet elmt);
     void Clr(ElementInSet elmt);
@@ -488,15 +495,25 @@ PDECLARE_CLASS(PHTML, PStringStream)
       NoBorder,
       Border
     };
-    class Table : public Element {
+    class TableStart : public Element {
       public:
-        Table(const char * attr = NULL);
-        Table(BorderCodes border, const char * attr = NULL);
+        TableStart(const char * attr = NULL);
+        TableStart(BorderCodes border, const char * attr = NULL);
       protected:
+        virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
         BOOL borderFlag;
     };
+    friend class TableStart;
+
+    class TableEnd : public Element {
+      public:
+        TableEnd();
+      protected:
+        virtual void Output(PHTML & html) const;
+    };
+    friend class TableEnd;
 
     class TableRow : public Element {
       public:
@@ -885,7 +902,9 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
 
   private:
+    ElementInSet initialElement;
     BYTE elementSet[NumElementsInSet/8+1];
+    PINDEX tableNestLevel;
 
     PHTML & operator=(
       const PHTML & html    // HTML to copy
