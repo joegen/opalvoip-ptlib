@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.87  2001/02/14 14:01:24  rogerh
+# Handle uname of 'darwin' for Macos X machines
+#
 # Revision 1.86  2001/02/09 12:29:41  robertj
 # Changed to allow for object directory suffix to be different from library.
 #
@@ -287,6 +290,10 @@ OSTYPE := OpenBSD
 endif
 
 ifneq (,$(findstring macos,$(OSTYPE)))
+OSTYPE := macos
+endif
+
+ifneq (,$(findstring darwin,$(OSTYPE)))
 OSTYPE := macos
 endif
 
