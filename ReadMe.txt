@@ -209,6 +209,27 @@ globals.
 A GUI application is very similar but is descended off PApplication rather than
 PProcess, and would create a window as a descendent off the PMainWindow class.
 
+The following is a simple Makefile for Unix platforms for the hello world 
+program.
+
+
+# Simple makefile for PTLib
+
+PROG    = hello
+SOURCES = hello.cxx
+
+ifndef PWLIBDIR
+PWLIBDIR=$(HOME)/pwlib
+endif
+
+include $(PWLIBDIR)/make/ptlib.mak
+
+# End of Makefile
+
+
+
+PWlib Classes
+=============
 
 The classes in PWLib fall into the following broad categories
 
