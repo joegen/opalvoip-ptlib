@@ -1,5 +1,5 @@
 /*
- * $Id: sound.h,v 1.7 1994/08/23 11:32:52 robertj Exp $
+ * $Id: sound.h,v 1.8 1995/01/16 09:42:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sound.h,v $
- * Revision 1.7  1994/08/23 11:32:52  robertj
+ * Revision 1.8  1995/01/16 09:42:05  robertj
+ * Documentation.
+ *
+ * Revision 1.7  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.6  1994/08/22  00:46:48  robertj
@@ -37,15 +40,22 @@
 
 
 PDECLARE_CLASS(PSound, PObject)
-  // A class representing a sound.
+/* A class representing a sound. A sound is a highly platform dependent entity
+   that is abstracted for use here. Very little manipulation of the sounds are
+   possible. The class is provided mainly for the playback of sound files on
+   the system.
+
+   The most common sound to use is the static function $B$Beep()$B$ which
+   emits the system standard "warning" or "attention" sound.
+ */
 
   public:
     PSound();
-      // Create an empty sound
+    // Create an empty sound.
 
 
     static void Beep();
-      // Play the "standard" warning beep for the platform.
+    // Play the "standard" warning beep for the platform.
 
     
 // Class declaration continued in platform specific header file ///////////////
