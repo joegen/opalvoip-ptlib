@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.7 1996/02/19 13:25:43 robertj Exp $
+ * $Id: http.h,v 1.8 1996/02/25 02:57:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.8  1996/02/25 02:57:48  robertj
+ * Removed pass through HTTP resource.
+ *
  * Revision 1.7  1996/02/19 13:25:43  robertj
  * Added overwrite option to AddResource().
  * Added get/set string to PHTTPString resource.
@@ -1216,6 +1219,18 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
     );
 
 
+    const PString & GetConfigSection() const { return section; }
+    /* Get the configuration file section that the page will alter.
+
+       <H2>Returns:</H2>
+       String for config file section.
+     */
+
+    void SetConfigSection(
+      const PString & sect   // New section for the config page.
+    ) { section = sect; }
+    // Set the configuration file section.
+
     void SetConfigValues();
     /* Set all of the field values to the config files current values. Their
        current values are used as the defaults if no entry is present in the
@@ -1235,41 +1250,6 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
     PString section;
     PHTTPField * keyField;
     PHTTPField * valField;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPPassThrough
-
-PDECLARE_CLASS(PHTTPPassThrough, PHTTPResource)
-/* This object describes a HyperText Transport Protocol resource which is a
-   passes through to another HTTP server.
- */
-
-  public:
-    PHTTPPassThrough(
-      const PURL & localURL,       // Name of the resource in URL space.
-      const PURL & remoteURL       // Name of the resource on other server.
-    );
-    /* Contruct a new pass through resource for the HTTP space.
-     */
-
-
-  // Overrides from class PHTTPResource
-    virtual void OnGET(
-      PHTTPSocket & socket,       // HTTP socket that received the request
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info      // Extra MIME information in command.
-    );
-    /* Handle the GET command passed from the HTTP socket.
-
-       This will pass the request on to another server and send the reply
-       back on to the client.
-     */
-
-
-  protected:
-    PURL remoteURL;
 };
 
 
