@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.13  2004/04/14 08:12:04  csoutheren
+ * Added support for generic plugin managers
+ *
  * Revision 1.12  2004/04/09 06:03:47  csoutheren
  * Cannot do PProcess virtual, so code is now in the plugin manager
  *
@@ -49,6 +52,8 @@
 
 #include <ptlib.h>
 #include <ptlib/pluginmgr.h>
+
+#include <algorithm>
 
 #ifndef	P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
@@ -259,3 +264,44 @@ void PPluginManager::CallNotifier(PDynaLink & dll, INT code)
   for (PINDEX i = 0; i < notifierList.GetSize(); i++)
     notifierList[i](dll, code);
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+
+PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, PPluginManager * _pluginMgr)
+  : signatureFunctionName(_signatureFunctionName)
+{
+  pluginList.DisallowDeleteObjects();
+  pluginMgr = _pluginMgr;;
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  pluginMgr->AddNotifier(PCREATE_NOTIFIER(OnLoadModule), TRUE);
+}
+
+void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
+{
+  PDynaLink::Function dummyFunction;
+  if (!dll.GetFunction(signatureFunctionName, dummyFunction))
+    return;
+
+  switch (code) {
+    case 0:
+      pluginList.SetAt(dll.GetName(), &dll); 
+      break;
+
+    case 1: 
+      {
+        PINDEX idx = pluginList.GetValuesIndex(dll.GetName());
+        if (idx != P_MAX_INDEX)
+          pluginList.RemoveAt(idx);
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  OnLoadPlugin(dll, code);
+}
+
+
