@@ -202,6 +202,23 @@ PARRAY(PPointArray, PPoint);
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PPalette
+
+#include "../../common/palette.h"
+  public:
+    // New functions for class
+    HPALETTE GetHPALETTE() const;
+      // Select the palette for the specified MS-Windows device context.
+
+
+  protected:
+    // Member variables
+    HPALETTE hPalette;
+      // Palette GDI object
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PPattern
 
 #include "../../common/pattern.h"
@@ -221,7 +238,7 @@ PARRAY(PPointArray, PPoint);
 
 #include "../../common/image.h"
   public:
-    virtual HDC CreateImageDC() const = 0;
+    virtual HDC CreateImageDC() = 0;
     virtual void CloseImageDC(HDC hDC) = 0;
 };
 
@@ -229,20 +246,49 @@ PARRAY(PPointArray, PPoint);
 ///////////////////////////////////////////////////////////////////////////////
 // PPixels
 
+class PCanvas;
+
+#ifdef WIN32
+typedef unsigned char * PPixelData;
+#else
+typedef unsigned char __huge * PPixelData;
+#endif
+
 #include "../../common/pixels.h"
   public:
-    PPixels(HBITMAP hBm);
-    HBITMAP GetHBITMAP() const;
-
-    virtual HDC CreateImageDC() const;
+    virtual HDC CreateImageDC();
     virtual void CloseImageDC(HDC hDC);
+      // Support for PMemoryCanvas
+
+    HBITMAP GetHBITMAP() const;
+      // Get the bitmap as an MS-Windows Device Dependent Bitmap
 
 
   protected:
-    void Construct(HBITMAP hBm);
+    PPixels(HBITMAP hBm);
+      // Create a pixels object from the MS-Windows Device Dependent Bitmap
+
+    void InitialiseDIB(PDIMENSION dx, PDIMENSION dy, BYTE planes, BYTE depth);
+      // Convert a MS-Windows Device Dependent Bitmap to MS-Windows Device
+      // Independent Bitmap 
+
+    void ConvertBitmapToDIB(HBITMAP hBm);
+      // Convert a MS-Windows Device Dependent Bitmap to MS-Windows Device
+      // Independent Bitmap 
+
+
+    // Member variables
+    BITMAPINFOHEADER bitmapHeader;
+      // MS-Windows Device Independent Bitmap header info
+
+    PPixelData pixels;
+      // Memory block for pixel data
 
     HBITMAP hBitmap;
-    BYTE depth;
+      // MS-Windows Device Dependent Bitmap for interaction with PMemoryCanvas.
+
+
+  friend class PCanvas;
 };
 
 
@@ -259,7 +305,7 @@ PARRAY(PPointArray, PPoint);
     HMETAFILE GetMETAFILE() const;
 #endif
 
-    virtual HDC CreateImageDC() const;
+    virtual HDC CreateImageDC();
     virtual void CloseImageDC(HDC hDC);
 
 
@@ -323,23 +369,6 @@ PARRAY(PPointArray, PPoint);
   protected:
     HICON hIcon;
     BOOL deleteIcon;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PPalette
-
-#include "../../common/palette.h"
-  public:
-    // New functions for class
-    HPALETTE GetHPALETTE() const;
-      // Select the palette for the specified MS-Windows device context.
-
-
-  protected:
-    // Member variables
-    HPALETTE hPalette;
-      // Palette GDI object
 };
 
 
