@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.35  2003/03/17 08:10:59  robertj
+ * Fixed bug with parsing lines with no equal sign
+ *
  * Revision 1.34  2003/01/30 23:46:05  dereks
  * Fix compile error on gcc 3.2
  *
@@ -375,7 +378,7 @@ BOOL PXConfig::ReadFromFile(const PFilePath & filename)
           }
         } else if (currentSection != NULL) {
           PINDEX equals = line.Find('=');
-          if (equals > 0) {
+          if (equals > 0 && equals != P_MAX_INDEX) {
             PString keyStr = line.Left(equals).Trim();
             PString valStr = line.Right(len - equals - 1).Trim();
 
