@@ -17,6 +17,7 @@
 #define _INC_TIME // for wce.h
 
 #include <windows.h>
+#include <time.h>
 #include <stdlib.h>
 
 #ifndef _TM_DEFINED
