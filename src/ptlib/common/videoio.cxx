@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.46  2004/01/18 14:25:58  dereksmithies
+ * New methods to make the opening of video input devices easier.
+ *
  * Revision 1.45  2004/01/17 17:41:50  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -1064,6 +1067,34 @@ PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName,
   else
   return NULL;
 }
+
+PVideoInputDevice *PVideoInputDevice::CreateDeviceByName(const PString &deviceName,
+							 PPluginManager *_pluginMgr)
+{
+  PStringToString    deviceDescriptorMap;  
+  PStringList descriptors = GetDriverNames();
+  PINDEX i;
+  
+  PPluginManager *pluginMgr =
+             (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  for (i = 0; i < descriptors.GetSize(); i++) {
+    PStringList devices = GetDriversDeviceNames(descriptors[i], pluginMgr);
+    for (int j = 0; j < devices.GetSize(); j++) 
+      deviceDescriptorMap.SetAt(devices[j], descriptors[i]);
+  }
+  
+  PString  descriptorName;
+  for (i = 0; i < deviceDescriptorMap.GetSize(); i++)
+    if (deviceDescriptorMap.GetKeyAt(i).Find(deviceName) != P_MAX_INDEX) {
+      descriptorName = deviceDescriptorMap.GetDataAt(i);
+      break;
+    }
+  PVideoInputDevice *grabber = CreateDevice(descriptorName, pluginMgr);
+
+  return grabber;
+}
+
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString &driverName,
                                                          const PString &deviceName,
