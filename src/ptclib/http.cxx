@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.27 1996/05/26 03:46:42 robertj Exp $
+ * $Id: http.cxx,v 1.28 1996/05/30 10:07:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.28  1996/05/30 10:07:26  robertj
+ * Fixed bug in version number checking of return code compatibility.
+ *
  * Revision 1.27  1996/05/26 03:46:42  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -2289,8 +2292,8 @@ BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
   if (minor == 0 && major == 0)
     return TRUE;
   else
-    return (major > majorVersion) ||
-           ((major == majorVersion) && (minor >= minorVersion));
+    return (majorVersion > major) ||
+           ((majorVersion == major) && (minorVersion >= minor));
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
