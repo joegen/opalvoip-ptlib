@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.36  2004/01/17 18:12:59  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.35  2003/05/14 02:50:53  rjongbloed
  * Simplified name space initialisation
  *
@@ -470,7 +473,7 @@ BOOL PXML::StartAutoReloadURL(const PURL & url,
   SetOptions(_options);
   autoloadURL      = url;
   autoLoadWaitTime = timeout;
-  autoLoadError    = PString::Empty();
+  autoLoadError.MakeEmpty();
   autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
 
   BOOL stat = AutoLoadURL();
@@ -501,7 +504,7 @@ BOOL PXML::AutoLoadURL()
 {
   BOOL stat = LoadURL(autoloadURL, autoLoadWaitTime);
   if (stat)
-    autoLoadError = PString::Empty();
+    autoLoadError.MakeEmpty();
   else 
     autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
   return stat;
