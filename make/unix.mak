@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.146  2002/11/22 10:14:07  robertj
+# QNX port, thanks Xiaodan Tang
+#
 # Revision 1.145  2002/11/20 02:51:53  robertj
 # Fixed endian-ness on sparc OpenBSD
 #
@@ -599,7 +602,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX))
 
 default_target :
 	@echo
@@ -1172,6 +1175,33 @@ P_SHAREDLIB	:= 0
 P_PTHREADS	:= 1
 
 endif # rtems
+
+####################################################
+
+ifeq ($(OSTYPE),QNX)
+
+P_PTHREADS	:= 1
+
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	+= -Wc,-m486
+endif
+
+STDCCFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX -DFD_SETSIZE=1024
+LDLIBS		+= -lasound
+ENDLDLIBS       += -lsocket -lstdc++
+
+CC		:= qcc -Vgcc_ntox86
+CPLUS		:= qcc -Vgcc_ntox86_gpp
+
+P_USE_RANLIB	:= 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
+ifeq ($(P_SHAREDLIB),1)
+STDCCFLAGS      += -shared
+OPTCCFLAGS      += -shared
+endif
+
+endif # QNX6
 
 
 ###############################################################################
