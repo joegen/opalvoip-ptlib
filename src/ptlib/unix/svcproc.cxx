@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.29  1999/06/23 14:19:46  robertj
+ * Fixed core dump problem with SIGINT/SIGTERM terminating process.
+ *
  * Revision 1.28  1999/05/13 04:44:18  robertj
  * Added SIGHUP and SIGWINCH handlers to increase and decrease the log levels.
  *
@@ -423,8 +426,8 @@ void PServiceProcess::PXOnSignal(int sig)
   switch (sig) {
     case SIGINT :
     case SIGTERM :
-      OnStop();
-      exit(1);
+      Terminate();
+      break;
 
     case SIGUSR1 :
       OnPause();
