@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.62 1996/09/14 12:45:57 robertj Exp $
+ * $Id: contain.cxx,v 1.63 1996/10/08 13:13:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.63  1996/10/08 13:13:25  robertj
+ * Added operator += and &= for char so no implicit PString construction.
+ *
  * Revision 1.62  1996/09/14 12:45:57  robertj
  * Fixed bug in PString::Splice() function, no end of string put in.
  *
@@ -664,6 +667,14 @@ PString & PString::operator=(const char * cstr)
 }
 
 
+PString & PString::operator=(char ch)
+{
+  PString pstr(ch);
+  PCharArray::operator=(pstr);
+  return *this;
+}
+
+
 PObject * PString::Clone() const
 {
   return PNEW PString(*this);
@@ -808,6 +819,15 @@ PString & PString::operator+=(const char * cstr)
 }
 
 
+PString & PString::operator+=(char ch)
+{
+  PINDEX olen = GetLength();
+  SetSize(olen+2);
+  theArray[olen] = ch;
+  return *this;
+}
+
+
 PString PString::operator&(const char * cstr) const
 {
   PINDEX olen = GetLength();
@@ -846,6 +866,18 @@ PString & PString::operator&=(const char * cstr)
   if (space != 0)
     theArray[olen] = ' ';
   PSTRING_COPY(theArray+olen+space, cstr, alen);
+  return *this;
+}
+
+
+PString & PString::operator&=(char ch)
+{
+  PINDEX olen = GetLength();
+  PINDEX space = olen > 0 && theArray[olen-1] != ' ' && ch != ' ' ? 1 : 0;
+  SetSize(olen+2+space);
+  if (space != 0)
+    theArray[olen] = ' ';
+  theArray[olen+space] = ch;
   return *this;
 }
 
