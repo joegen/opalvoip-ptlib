@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.33  2003/04/27 23:53:30  craigs
+ * Removed deprecated options
+ *
  * Revision 1.32  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -81,7 +84,7 @@
 
 
 #define CACHE_BUFFER_SIZE   1024
-#define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
+#define	XMLSETTINGS_OPTIONS	(NewLineAfterElement)
 
 
 #ifdef _MSC_VER
@@ -902,10 +905,9 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
     }
   }
 
-  if (((options & PXMLParser::CloseExtended) != 0) &&
-      ((options & PXMLParser::NoIgnoreWhiteSpace) == 0) &&
-      (subObjects.GetSize() == 0)) {
-    strm << " />";
+  // this ensures empty elements use the shortened form
+  if (subObjects.GetSize() == 0) {
+    strm << "/>";
     if (newLine)
       strm << endl;
   }
