@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.184  2004/02/26 11:19:07  csoutheren
+# Added changes for BeOS, thanks to Yuri Kiryanov
+# Added changes to fix link problems on some platforms, thanks to Klaus Kaempf
+#
 # Revision 1.183  2004/02/21 19:44:54  ykiryanov
 # Fixed make parameters for BeOS: Changed default on BeOS to using Be BONE
 #
@@ -370,16 +374,12 @@ endif
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
 STDCCFLAGS	+= -fPIC
-#OPTCCFLAGS	+= -fPIC
 endif # PROG
 endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= $(shell $(PWLIBDIR)/make/ptlib-config --libdir)
-#LDFLAGS	+= --no-whole-archive --cref
-#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
-#OPTCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 endif # linux
 
@@ -749,7 +749,6 @@ STDCCFLAGS      += -DP_USE_PRAGMA
 
 ifeq ($(P_SHAREDLIB),1)
 STDCCFLAGS      += -shared
-OPTCCFLAGS      += -shared
 endif
 
 endif # QNX6
@@ -929,18 +928,17 @@ ifndef MEMORY_CHECK
 MEMORY_CHECK := 1
 endif
 
-STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG 
+STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DNDEBUG
 LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
 ifneq ($(OSTYPE),Darwin)
-  OPTCCFLAGS	+= -Os -DNDEBUG
+  OPTCCFLAGS	+= -Os 
 else
-  OPTCCFLAGS	+= -O2 -DNDEBUG
+  OPTCCFLAGS	+= -O2
 endif
-#OPTCCFLAGS	+= -DP_USE_INLINES=1
-#OPTCCFLAGS	+= -fconserve-space
+
 ifneq ($(OSTYPE),Carbon)
 ifneq ($(OSTYPE),Darwin)
 # Apple does not support -s to remove symbol table/relocation information 

@@ -102,6 +102,12 @@ case "$target_os" in
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
+  beos*)           OSTYPE=beos ;
+                   OS_TAG="P_BEOS" ;
+                   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+		   ;;
+
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
   		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
@@ -169,10 +175,12 @@ if test "x$P_64BIT" != "x" ; then
   AC_DEFINE(P_64BIT, 1)
 fi
 
-AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-dnl
+dnl BeOS has it;s own threading system
+if test ${OSTYPE} != beos ; then
+  AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+fi
+
 dnl posix semaphore support in darwin/macosx is broken
-dnl 
 if test ${OSTYPE} != Darwin ; then
   AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
 fi
@@ -337,9 +345,12 @@ dnl MSWIN DLL Support,,P_DYNALINK
 LIBS=""
 HAS_LIBDL=no
 P_DYNALINK=0
-if test ${OSTYPE} = Darwin ; then
+if test ${OSTYPE} = beos ; then
   P_DYNALINK=1
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in BeOS")
+elif test ${OSTYPE} = Darwin ; then
+  P_DYNALINK=1
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in Darwin")
 else
   AC_CHECK_HEADERS(dlfcn.h, HAS_DLFCN=yes, HAS_DLFCN=no)
   if test "$HAS_DLFCN" = yes ; then
