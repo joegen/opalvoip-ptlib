@@ -6,6 +6,9 @@
  * Portable Windows Library
  *
  * $Log: asnper.cxx,v $
+ * Revision 1.7  2004/01/17 09:23:43  csoutheren
+ * Fixed problem with the upper limit on constrained unsigned integers not being correctly enforced
+ *
  * Revision 1.6  2003/12/14 10:21:29  rjongbloed
  * Fixed bug in length incorrectlty decoded from ASN and (apparently) rare circumstances. Thanks pangxg@hotmail.com.
  * Cleaned up return values to be BOOL rather than int for some functions.
@@ -1234,6 +1237,11 @@ BOOL PPER_Stream::UnsignedDecode(unsigned lower, unsigned upper, unsigned & valu
     return FALSE;
 
   value += lower;
+
+  // clamp value to upper limit
+  if (value > upper)
+    value = upper;
+
   return TRUE;
 }
 
