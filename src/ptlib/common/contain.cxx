@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.58 1996/05/15 10:17:02 robertj Exp $
+ * $Id: contain.cxx,v 1.59 1996/05/26 03:46:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.59  1996/05/26 03:46:27  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.58  1996/05/15 10:17:02  robertj
  * Fixed idiotic bug in string compare, caseless version always matched.
  *
@@ -1459,21 +1462,21 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
 
 PStringStream::PStringStream()
 {
-  init(PNEW PStringStream::Buffer(this));
+  init(new PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const PString & str)
   : PString(str)
 {
-  init(PNEW PStringStream::Buffer(this));
+  init(new PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const char * cstr)
   : PString(cstr)
 {
-  init(PNEW PStringStream::Buffer(this));
+  init(new PStringStream::Buffer(this));
 }
 
 
