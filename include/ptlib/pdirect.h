@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.38  2002/11/20 00:13:43  robertj
+ * Fixed some documentation
+ *
  * Revision 1.37  2002/11/19 12:07:02  robertj
  * Added function to get root directory.
  *
@@ -354,6 +357,8 @@ class PDirectory : public PFilePathString
     PDirectory GetRoot() const;
 
     /**Get the directory path as an array of strings.
+       The first element in the array is the volume string, eg under Win32 it
+       is "c:" or "\\machine", while under unix it is an empty string.
       */
     PStringArray GetPath() const;
 
