@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.72  2001/05/29 03:34:39  craigs
+# Changed to use new HAS_OPENSSL define
+#
 # Revision 1.71  2001/02/27 01:05:24  robertj
 # Updated regular expression parser to latest version from Henry Spencer.
 #
@@ -262,7 +265,7 @@ VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 # global statics will be constructed/destructed in the correct order
 
 
-ifdef OPENSSLDIR
+ifdef HAS_OPENSSL
 SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
