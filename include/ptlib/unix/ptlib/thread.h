@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.28  2002/10/04 04:33:44  robertj
+ * Added functions for getting operating system thread identifer values.
+ *
  * Revision 1.27  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -139,6 +142,8 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+typedef pthread_t PThreadIdentifer;
+
 #define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
 
@@ -166,7 +171,6 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 #ifdef P_PTHREADS
 
   public:
-    pthread_t PX_GetThreadId() const;
 #ifndef P_HAS_SEMAPHORES
     void PXSetWaitingSemaphore(PSemaphore * sem);
 #endif
@@ -194,10 +198,10 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 #elif defined(BE_THREADS)
 
   private:
-	static int32 ThreadFunction(void * threadPtr);
-	thread_id threadId;
-	int32 priority;
-	PINDEX originalStackSize;
+    static int32 ThreadFunction(void * threadPtr);
+    thread_id threadId;
+    int32 priority;
+    PINDEX originalStackSize;
 
 #elif defined(P_MAC_MPTHREADS)
   public:
@@ -240,6 +244,12 @@ thread_id pthread_self(void) { return find_thread(NULL); }
     int    selectReturnVal;
     int    selectErrno;
 #endif
+
+inline PThreadIdentifer PThread::GetThreadId() const
+  { return PX_threadId; }
+
+inline PThreadIdentifer PThread::GetCurrentThreadId()
+  { return ::pthread_self(); }
 
 #endif
 
