@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.46  2001/01/02 07:47:44  robertj
+ * Fixed very narrow race condition in timers (destroyed while in OnTimeout()).
+ *
  * Revision 1.45  2000/08/30 03:16:59  robertj
  * Improved multithreaded reliability of the timers under stress.
  *
@@ -230,7 +233,7 @@ class PTimerList : PInternalTimerList // Want this to be private
      */
 
   private:
-    PMutex listMutex, timeoutMutex;
+    PMutex listMutex, processingMutex, inTimeoutMutex;
     // Mutual exclusion for multi tasking
 
     PTimeInterval lastSample;
