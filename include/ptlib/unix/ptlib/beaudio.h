@@ -29,6 +29,9 @@
  * Bits by Jac Goudsmit
  *
  * $Log: beaudio.h,v $
+ * Revision 1.3  2004/06/16 01:57:57  ykiryanov
+ * Working capture code
+ *
  * Revision 1.2  2004/05/30 04:55:57  ykiryanov
  * Added include files
  *
@@ -71,7 +74,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // PSoundChannelBeOS declaration
 
-class P_CircularBuffer;
+class CircularBuffer;
 
 class PSoundChannelBeOS: public PSoundChannel
 {
@@ -142,9 +145,9 @@ class PSoundChannelBeOS: public PSoundChannel
 	// The class holds a circular buffer whose size is set with SetBuffers.
 	// We only need one buffer for BeOS. The number of buffers that was set
 	// is only kept for reference.
-	friend class P_CircularBuffer;
-	P_CircularBuffer	   *mBuffer;			// The internal buffer
-	PINDEX					mNumBuffers;		// for reference only!
+	friend class CircularBuffer;
+	CircularBuffer *mBuffer;			// The internal buffer
+	PINDEX mNumBuffers;		// for reference only!
 	
 	// Just some helpers so that the Open function doesn't get too big
 	BOOL OpenPlayer(void);
@@ -159,83 +162,3 @@ class PSoundChannelBeOS: public PSoundChannel
 	// Input resampler
 	Resampler			   *mResampler;
 };
-
-/*class PSoundChannelBeOS: public PSoundChannel
-{
- public:
-    PSoundChannelBeOS();
-    void Construct();
-    PSoundChannelBeOS(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
-    ~PSoundChannelBeOS();
-    static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    static PString GetDefaultDevice(PSoundChannel::Directions);
-    BOOL Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
-    BOOL Setup();
-    BOOL Close();
-    BOOL IsOpen() const;
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
-    BOOL SetFormat(unsigned numChannels,
-                   unsigned sampleRate,
-                   unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
-    BOOL SetBuffers(PINDEX size, PINDEX count);
-    BOOL GetBuffers(PINDEX & size, PINDEX & count);
-    BOOL PlaySound(const PSound & sound, BOOL wait);
-    BOOL PlayFile(const PFilePath & filename, BOOL wait);
-    BOOL HasPlayCompleted();
-    BOOL WaitForPlayCompletion();
-    BOOL RecordSound(PSound & sound);
-    BOOL RecordFile(const PFilePath & filename);
-    BOOL StartRecording();
-    BOOL IsRecordBufferFull();
-    BOOL AreAllRecordBuffersFull();
-    BOOL WaitForRecordBufferFull();
-    BOOL WaitForAllRecordBuffersFull();
-    BOOL Abort();
-    BOOL SetVolume(unsigned newVal);
-    BOOL GetVolume(unsigned &devVol);
-
-    PBYTEArray* Dequeue() { PBYTEArray* s; mLock.Lock(); s = mBuffers.Dequeue(); mLock.Unlock(); return s; }
-    void Enqueue(PBYTEArray* sound) { mLock.Lock(); mBuffers.Enqueue(sound); mLock.Unlock(); }
-    
-  public:
-    // Overrides from class PChannel
-    virtual PString GetName() const { return deviceName; }
-      // Return the name of the channel.
-  protected:
-    PString     deviceName;
-    Directions  direction;   
-
-  private:
-  	// Only one of the following pointers can be non-NULL at a time.
-	BMediaRecorder		   *mRecorder;
-	BSoundPlayer		   *mPlayer;
-
-	// Raw media format specifier used for sound player.
-	// It also stores the parameters (number of channels, sample rate etc) so
-	// no need to store them separately here.
-	// For the recorder, a media_format struct is created temporarily with
-	// the data from this raw format spec.
-	media_raw_audio_format	mFormat;
-public:
-	BLocker  		mLock;
-	PQueue<PBYTEArray>	mBuffers;
-
-	PINDEX			mNumBuffers;		// for reference only!
-	
-	// Just some helpers so that the Open function doesn't get too big
-	BOOL OpenPlayer(void);
-	BOOL OpenRecorder(const PString &dev);
-};
-*/
