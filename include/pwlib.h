@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.35 1995/01/22 07:29:39 robertj Exp $
+ * $Id: pwlib.h,v 1.36 1995/02/19 04:19:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.35  1995/01/22 07:29:39  robertj
+ * Revision 1.36  1995/02/19 04:19:15  robertj
+ * Added dynamically linked command processing.
+ *
+ * Revision 1.35  1995/01/22  07:29:39  robertj
  * Added font & colour standard dialogs.
  *
  * Revision 1.34  1995/01/07  04:39:38  robertj
@@ -514,6 +517,12 @@
 // PMDIDocWindow
 
 #include <mdidoc.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PCommandSink, PCommandSource
+
+#include <commands.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
