@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.25 1998/02/12 04:17:55 robertj Exp $
+# $Id: Makefile,v 1.26 1998/08/21 05:32:14 robertj Exp $
 # $Log: Makefile,v $
+# Revision 1.26  1998/08/21 05:32:14  robertj
+# Allowed for multiple "all" target, so can build lib from app makefile.
+#
 # Revision 1.25  1998/02/12 04:17:55  robertj
 # Made DEBUG variable optional
 #
@@ -134,7 +137,7 @@ include unix.mak
 
 #######################################################
 
-all:	$(PTLIB_FILE)
+all ::	$(PTLIB_FILE)
 
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
