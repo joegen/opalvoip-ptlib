@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.50  2004/10/23 10:54:39  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.49  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -207,7 +210,9 @@
  *
  */
 
+#ifndef _WIN32_WCE
 #pragma implementation "videoio.h"
+#endif // !_WIN32_WCE 
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
