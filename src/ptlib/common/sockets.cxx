@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.22 1996/01/28 14:08:13 robertj Exp $
+ * $Id: sockets.cxx,v 1.23 1996/02/03 11:07:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.23  1996/02/03 11:07:37  robertj
+ * Fixed buf in assuring error when converting string to IP number and string is empty.
+ *
  * Revision 1.22  1996/01/28 14:08:13  robertj
  * Changed service parameter to PString for ease of use in GetPortByService function
  * Fixed up comments.
@@ -122,19 +125,23 @@ PString PIPSocket::GetName() const
 
 BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
 {
+  if (hostname.IsEmpty())
+    return FALSE;
+
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
-  if ((temp = inet_addr((const char *)hostname)) != -1)
+  if ((temp = inet_addr((const char *)hostname)) != -1) {
     memcpy(&addr, &temp, sizeof(addr));
-  else {
-    // otherwise lookup the name as a host name
-    struct hostent * host_info;
-    if ((host_info = gethostbyname(hostname)) != 0)
-      memcpy(&addr, host_info->h_addr, sizeof(addr));
-    else
-      return FALSE;
+    return TRUE;
   }
 
+
+  // otherwise lookup the name as a host name
+  struct hostent * host_info;
+  if ((host_info = gethostbyname(hostname)) == NULL)
+    return FALSE;
+
+  memcpy(&addr, host_info->h_addr, sizeof(addr));
   return TRUE;
 }
 
