@@ -102,6 +102,9 @@ class ostream_withassign : public ostream
 };
 
 #ifndef WCE_NO_EXTERNAL_STREAMS
+// callback function type for subscribing to trace messages
+typedef void (*YWinCEOStreamCB)(WPARAM);
+
 class YWinCEOStream : public ostream
 {
 public:
@@ -109,6 +112,7 @@ public:
 	~YWinCEOStream();
 
 	void Subscribe(HWND Reciever,UINT MessageID);
+    void Subscribe(YWinCEOStreamCB pCB);
 	void UnSubscribe();
 };
 
