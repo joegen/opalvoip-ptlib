@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.120  2003/11/18 10:41:20  csoutheren
+# Fixed problem with linking in static plugins
+#
 # Revision 1.119  2003/11/14 05:32:09  csoutheren
 # Removed video input device
 #
@@ -442,7 +445,7 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
 
-ifndef	HAS_PLUGINS
+ifeq ($(HAS_PLUGINS),0)
 
 ifeq ($(OSTYPE),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/vidinput_v4l
@@ -481,7 +484,7 @@ endif  #  HAS_PLUGINS
 ## SOUND DRIVERS
 ## Note this is mostly handled by the plugin system
 
-ifndef	HAS_PLUGINS
+ifeq ($(HAS_PLUGINS),0)
 
 ifeq ($(OSTYPE),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
