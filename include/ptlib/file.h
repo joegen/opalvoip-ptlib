@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.13 1994/03/07 07:38:19 robertj Exp $
+ * $Id: file.h,v 1.14 1994/04/01 14:11:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.13  1994/03/07 07:38:19  robertj
+ * Revision 1.14  1994/04/01 14:11:03  robertj
+ * Added const to functions.
+ * Added SetName function.
+ *
+ * Revision 1.13  1994/03/07  07:38:19  robertj
  * Major enhancementsacross the board.
  *
  * Revision 1.12  1994/01/13  03:40:22  robertj
@@ -72,7 +76,7 @@ PDECLARE_CONTAINER(PFile, PContainer)
     enum OpenOptions {
       Normal = 0,
       Create = 1,
-      Truncate = 2,
+      Truncate = 2,        
       Exclusive = 4
     };
     PFile(const PString & name, OpenMode mode, int opts = Normal);
@@ -110,6 +114,9 @@ PDECLARE_CONTAINER(PFile, PContainer)
       // Return the full, unambiguous, path name for the file. This is
       // always GetVolume()+GetPath()+GetFileName().
 
+    void SetName(const PString & str);
+      // Set the name of the file object. This has no effect if the file is
+      // currently open.
 
     BOOL Exists() const;
     PINLINE static BOOL Exists(const PString & name);
@@ -119,7 +126,7 @@ PDECLARE_CONTAINER(PFile, PContainer)
     static BOOL Access(const PString & name, OpenMode mode);
       // Return TRUE if the file may be opened in the specified mode
       
-    BOOL Remove() const;
+    BOOL Remove();
     PINLINE static BOOL Remove(const PString & name);
       // Delete the specified file.
       
@@ -149,7 +156,7 @@ PDECLARE_CONTAINER(PFile, PContainer)
     BOOL Open(OpenMode  mode, int opts = Normal);
       // Open the file in the specified mode.
       
-    BOOL IsOpen();
+    BOOL IsOpen() const;
       // Return TRUE if the file is currently open.
       
     int GetHandle() const;
@@ -160,19 +167,21 @@ PDECLARE_CONTAINER(PFile, PContainer)
       // the required number of bytes was successfully read.
       
     BOOL Write(const void * buffer, size_t amount);
-      // Write a sequence of bytes into the specified buffer. Return TRUE if
+      // Write a sequence of bytes from the specified buffer. Return TRUE if
       // the required number of bytes was successfully written.
+
+    int ReadChar();
+      // Read a byte (0..255) from the file. Return -1 if error.
       
-    off_t GetLength();
+    BOOL WriteChar(BYTE c);
+      // Write a byte to the file. Return TRUE if byte was written.
+
+    off_t GetLength() const;
       // Get the current size of the file.
       
     BOOL SetLength(off_t len);
       // Set the size of the file, padding with 0 bytes if it would require
       // expanding the file.
-      
-    off_t GetPosition();
-      // Get the current active position in the file for the next read/write
-      // operation.
       
     enum FilePositionOrigin {
       Start = SEEK_SET,
@@ -182,6 +191,13 @@ PDECLARE_CONTAINER(PFile, PContainer)
     BOOL SetPosition(off_t pos, FilePositionOrigin origin = Start);
       // Set the current active position in the file for the next read/write
       // operation.
+
+    off_t GetPosition() const;
+      // Get the current active position in the file for the next read/write
+      // operation.
+
+    BOOL IsEndOfFile() const;
+      // Return TRUE if at end of file.
       
     BOOL Close();
       // Close the open file.
@@ -194,14 +210,19 @@ PDECLARE_CONTAINER(PFile, PContainer)
       AccessDenied,
       Miscellaneous
     };
-    Errors GetErrorCode();
+    Errors GetErrorCode() const;
       // Return the error result of the last file I/O operation in this object.
-    PString GetErrorText();
+    PString GetErrorText() const;
       // Return a string indicating the error message that may be displayed to
       // the user. The error for the last I/O operation in this object is used.
 
 
   protected:
+    // New member functions
+    virtual BOOL FlushStreams();
+      // Flush stream based descendents of PFile
+
+
     // Member variables
     PString fullname;
       // The fully qualified path name for the file.
