@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.25  2005/01/26 05:37:43  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.24  2003/09/17 01:18:01  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -421,6 +424,8 @@ class PArgList : public PObject
 };
 
 
+#ifdef P_CONFIG_FILE
+
 /**This class parse command line arguments with the ability to override them
    from a PConfig file/registry.
   */
@@ -520,6 +525,8 @@ class PConfigArgs : public PArgList
     PString sectionName;
     PString negationPrefix;
 };
+
+#endif // P_CONFIG_FILE
 
 #endif
 
