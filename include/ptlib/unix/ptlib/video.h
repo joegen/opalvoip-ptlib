@@ -27,6 +27,11 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.5  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.4  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -63,11 +68,11 @@
     virtual BOOL Close();
 
     virtual PString GetName() const;
-      // Return the name of the channel.
+    // Return the name of the channel.
 
     PString GetErrorText() const;
     // Get a text form of the last error encountered.
-  
+
   protected:
     static PMutex dictMutex;
 

@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.19  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.18  2001/09/25 04:25:38  dereks
  * Add fix from Stelian Pop to improve the field of view  for
  * the  small image with a  Sony Vaio Motion Eye. Many thanks.
@@ -106,13 +111,14 @@ PVideoDevice::PVideoDevice()
 
   videoFormat = Auto;
   channelNumber = -1;
-  frameRate = 15;
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
 
   SetCanCaptureVideo(FALSE);    ///This device cannot grab video from a port.
 
   converter = NULL;
+
+  SetFrameRate(0);
 }
 
 PVideoDevice::~PVideoDevice()
@@ -255,7 +261,17 @@ const PString & PVideoDevice::GetColourFormat() const
 
 BOOL PVideoDevice::SetFrameRate(unsigned rate)
 {
+
+  if (rate < 1) {
+    frameRate = 0;
+    return TRUE;
+  }
+
   frameRate = rate;
+  previousFrameTime = PTime();
+  msBetweenFrames = 1000/rate;
+  frameTimeError  = 0;
+
   return TRUE;
 }
 
@@ -434,6 +450,21 @@ unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
 BOOL PVideoDevice::Close()
 {
   return TRUE;  
+}
+
+BOOL PVideoDevice::GetParameters (int *whiteness, int *brightness, 
+                                      int *colour, int *contrast, int *hue)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  *brightness = frameBrightness;
+  *colour     = frameColour;
+  *contrast   = frameContrast;
+  *hue        = frameHue;
+  *whiteness  = frameWhiteness;
+
+  return TRUE;
 }
 
 
