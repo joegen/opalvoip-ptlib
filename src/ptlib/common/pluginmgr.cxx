@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.12  2004/04/09 06:03:47  csoutheren
+ * Cannot do PProcess virtual, so code is now in the plugin manager
+ *
  * Revision 1.11  2004/04/09 05:54:41  csoutheren
  * Added ability for application to specify plugin directorories, or to specify directories by environment variable
  *
@@ -47,6 +50,22 @@
 #include <ptlib.h>
 #include <ptlib/pluginmgr.h>
 
+#ifndef	P_DEFAULT_PLUGIN_DIR
+#  ifdef  _WIN32
+#    define	P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
+#  else
+#    define	P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
+#  endif
+#endif
+
+#ifdef  _WIN32
+#define DIR_SEP   ";"
+#else
+#define DIR_SEP   ":"
+#endif
+
+#define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
+
 //////////////////////////////////////////////////////
 
 PPluginManager & PPluginManager::GetPluginManager()
@@ -58,7 +77,12 @@ PPluginManager & PPluginManager::GetPluginManager()
 
   if (systemPluginMgr == NULL) {
     systemPluginMgr = new PPluginManager;
-    PStringArray dirs = PProcess::Current().GetPluginDirectories();
+    PString env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+    if (env == NULL)
+      env = P_DEFAULT_PLUGIN_DIR;
+
+    // split into directories on correct seperator
+    PStringArray dirs = env.Tokenise(DIR_SEP, TRUE);
     PINDEX i;
     for (i = 0; i < dirs.GetSize(); i++) 
       systemPluginMgr->LoadPluginDirectory(dirs[i]);
