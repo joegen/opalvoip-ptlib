@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.13  2004/07/06 10:12:54  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.12  2004/06/30 12:17:05  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -70,7 +73,6 @@
 
 #include "ptbuildopts.h"
 
-
 ////////////////////////////////////////////////////////////
 
 // WIN32 COM stuff must be first in file to compile properly
@@ -99,9 +101,13 @@
 // this disables the winsock2 stuff in the Windows contain.h, to avoid header file problems
 #define P_KNOCKOUT_WINSOCK2
 
+#define P_DISABLE_FACTORY_INSTANCES
+
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
+
+PINSTANTIATE_FACTORY(PTextToSpeech, PString)
 
 ////////////////////////////////////////////////////////////
 //
@@ -152,7 +158,7 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PString voice;
 };
 
-static PFactory<PTextToSpeech>::Worker<PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI", false);
+PFactory<PTextToSpeech>::Worker<PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI", false);
 
 int * PTextToSpeech_SAPI::refCount;
 PMutex PTextToSpeech_SAPI::refMutex;
@@ -393,7 +399,7 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PString voice;
 };
 
-static PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Festival", false);
+PFactory<PTextToSpeech>::Worker<PTextToSpeech_Festival> festivalTTSFactory("Festival", false);
 
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
@@ -560,6 +566,5 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
 
 #endif
 }
-
 
 // End Of File ///////////////////////////////////////////////////////////////
