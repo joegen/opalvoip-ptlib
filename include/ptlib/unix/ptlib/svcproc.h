@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.11  2001/03/20 01:02:32  robertj
+ * Fixed some difficulties with terminating a service process from signals or
+ *   from simply dropping out of Main().
+ *
  * Revision 1.10  2001/03/13 03:47:18  robertj
  * Added ability to set pid file from command line.
  *
@@ -66,12 +70,14 @@
 #include "../../svcproc.h"
   public:
     ~PServiceProcess();
+    virtual void Terminate();
   protected:
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);
     PString systemLogFile;
     PString pidFileToRemove;
+    BOOL isTerminating;
 };
 
 #endif
