@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.148  2003/02/03 08:43:01  robertj
+ * Fixed correct scoping of local variables in gethostbyX functions.
+ *
  * Revision 1.147  2003/01/14 04:36:08  robertj
  * Fixed v6 conversion of numeric string to binary so does not internally
  *   doa DNS lookup, confuses other parts of the system.
@@ -788,6 +791,10 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct hostent host_info;
 #else
     struct hostent * host_info;
+#if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || (defined(__NUCLEUS_PLUS__) ) )
+    char buffer[REENTRANT_BUFFER_LEN];
+    struct hostent hostEnt;
+#endif
 #endif
 
     int retry = 3;
@@ -799,11 +806,6 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
 
-
-#if !defined(P_AIX) && !defined(P_RTEMS)	// that I get no warnings
-      char buffer[REENTRANT_BUFFER_LEN];
-      struct hostent hostEnt;
-#endif
 
 #ifdef P_LINUX
       if (::gethostbyname_r(name,
@@ -921,6 +923,10 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     struct hostent host_info;
 #else
     struct hostent * host_info;
+#if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || ( defined(__NUCLEUS_PLUS__) ) )
+    char buffer[REENTRANT_BUFFER_LEN];
+    struct hostent hostEnt;
+#endif
 #endif
 
     int retry = 3;
@@ -931,12 +937,6 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
       
-#if !defined(P_AIX) && !defined(P_RTEMS)	// that I get no warnings
-      int localErrNo;
-      char buffer[REENTRANT_BUFFER_LEN];
-      struct hostent hostEnt;
-#endif
-
 #ifdef P_LINUX
       ::gethostbyaddr_r((const char *)&addr, sizeof(addr),
                         PF_INET, 
