@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.2 1995/07/02 01:23:27 robertj Exp $
+ * $Id: svcproc.h,v 1.3 1995/12/10 11:50:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.3  1995/12/10 11:50:05  robertj
+ * Numerous fixes for WIN32 service processes.
+ *
  * Revision 1.2  1995/07/02 01:23:27  robertj
  * Set up service process to be in subthread not main thread.
  *
@@ -21,7 +24,11 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
  */
 
   public:
-    PServiceProcess();
+    PServiceProcess(
+      const char * manuf,   // Name of manufacturer
+      const char * name,    // Name of product
+      const char * ver      // Version of the product
+    );
     /* Create a new service process.
      */
 
@@ -35,27 +42,45 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
      */
 
 
-    virtual LPTSTR GetServiceName() const = 0;
-    /* Get the name of the service. This must be supplied by the applications
-       derived class.
-
-       <H2>Returns:</H2>
-       Pointer to service name.
-     */
-
     enum SystemLogLevel {
       LogFatal,   // Log a fatal error
       LogError,   // Log a non-fatal error
       LogWarning, // Log a warning
-      LogInfo     // Log general debug trace information
+      LogInfo,    // Log general debug trace information
+      NumLogLevels
     };
     // Type of log message.
 
     void SystemLog(
       SystemLogLevel level, // Log level for this log message.
+      const char * cmsg,    // Message to log.
+      ...                   // Optional printf style parameters.
+    );
+    void SystemLog(
+      SystemLogLevel level, // Log level for this log message.
       const PString & msg   // Message to log.
     );
     /* Log an error into the system log.
+     */
+
+    void SetLogLevel(
+      SystemLogLevel level  // New log level
+    ) { currentLogLevel = level; }
+    /* Set the level at which errors are logged. Only messages higher than or
+       equal to the specified level will be logged.
+    
+       The default is <CODE>LogError</CODE> allowing fatal errors and ordinary\
+       errors to be logged and warning and information to be ignored.
+
+       If in debug mode then the default is <CODE>LogInfo</CODE> allowing all
+       messages to be displayed.
+     */
+
+    SystemLogLevel GetLogLevel() const { return currentLogLevel; }
+    /* Get the current level for logging.
+
+       <H2>Returns:</H2>
+       Log level.
      */
 
 
@@ -72,9 +97,10 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
   protected:
   // Overrides from class PProcess
-    virtual void PreInitialise(
+    virtual int _main(
       int argc,     // Number of program arguments.
-      char ** argv  // Array of strings for program arguments.
+      char ** argv, // Array of strings for program arguments.
+      char ** envp  // Array of strings for program environment.
     );
     /* Internal initialisation function called directly from
        <CODE>main()</CODE>. The user should never call this function.
@@ -90,6 +116,7 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
   // Member variables
     BOOL                  debugMode;
+    SystemLogLevel        currentLogLevel;
 
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
@@ -126,15 +153,18 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
        ControlService in reference to our service.
      */
 
-    void ProcessCommand(const char * cmd);
+    enum ProcessCommandResult {
+      DebugCommandMode, ProcessCommandError, CommandProcessed
+    };
+    ProcessCommandResult ProcessCommand(const char * cmd);
     // Process command line argument for controlling the service.
+
+
+  friend void PAssertFunc(const char * file, int line, const char * msg);
 };
 
 
 #if defined(_WIN32) || !defined(_WINDLL)
-
-inline PServiceProcess::PServiceProcess()
-  { }
 
 inline PServiceProcess * PServiceProcess::Current()
   { return (PServiceProcess *)PProcessInstance; }
