@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwlib.h,v $
+ * Revision 1.47  1999/11/16 05:23:58  craigs
+ * Added PCustomListBox class
+ *
  * Revision 1.46  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -404,6 +407,12 @@
 // PListBox
 
 #include <pwlib/listbox.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PCustomListBox
+
+#include <pwlib/clistbox.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
