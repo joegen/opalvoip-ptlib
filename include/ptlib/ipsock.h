@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.31  1998/11/19 05:18:22  robertj
+ * Added route table manipulation functions to PIPSocket class.
+ *
  * Revision 1.30  1998/09/23 06:20:45  robertj
  * Added open source copyright license.
  *
@@ -334,6 +337,52 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
     static void ClearNameCache();
     /* Clear the name cache.
+     */
+
+
+    static BOOL GetGatewayAddress(
+      Address & addr     // Variable to receive the IP address.
+    );
+    /* Get the IP address that is being used as the gateway, that is, the
+       computer that packets on the default route will be sent.
+
+       The string returned may be used in the Connect() function to open that
+       interface.
+
+       Note that the driver does not need to be open for this function to work.
+
+       <H2>Returns:</H2>
+       TRUE if there was a gateway.
+     */
+
+    static PString GetGatewayInterface();
+    /* Get the name for the interface that is being used as the gateway,
+       that is, the interface that packets on the default route will be sent.
+
+       The string returned may be used in the Connect() function to open that
+       interface.
+
+       Note that the driver does not need to be open for this function to work.
+
+       <H2>Returns:</H2>
+       String name of the gateway device, or empty string if there is none.
+     */
+
+    static BOOL EnumRouteTable(
+      Address & network,      // Network address for route
+      Address & mask,         // Mask for network address
+      Address & destination,  // Host packets are routed to
+      PString & ifName,       // Interface name for route
+      BOOL begin              // Flag for first enumeration
+    );
+    /* Enumerate the entries in the route table. The first time the function
+       is called the <CODE>begin</CODE> variable is set to TRUE and the first
+       route is returned. Thereafter, the <CODE>begin</CODE> variable is FALSE
+       and the <CODE>network</CODE> variable is the previously returned value.
+
+       <H2>Returns:</H2>
+       TRUE if the data returned is a valid enumeration, FALSE if at end or an
+       error occurs.
      */
 
 
