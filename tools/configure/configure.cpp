@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.17  2004/04/29 02:00:49  csoutheren
+ * Fixed problem with checking for NULL error return from FindFirstFile rather than INVALID_HANDLE_VALUE
+ *
  * Revision 1.16  2004/04/04 01:30:37  csoutheren
  * Added ability to specify exclude environment variable on configure command line which allows easy switching between MSVC and VS.net 2003
  *
@@ -93,7 +96,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.3"
+#define VERSION "1.3.1"
 
 
 using namespace std;
@@ -302,7 +305,7 @@ bool TreeWalk(const string & directory)
 
   WIN32_FIND_DATA fileinfo;
   HANDLE hFindFile = FindFirstFile(wildcard.c_str(), &fileinfo);
-  if (hFindFile != NULL) {
+  if (hFindFile != INVALID_HANDLE_VALUE) {
     do {
       string subdir = directory;
       subdir += fileinfo.cFileName;
@@ -322,6 +325,9 @@ bool TreeWalk(const string & directory)
 
           if (foundAll)
             break;
+          if (subdir == "C:\\nasty folder\\") {
+            cout << subdir << endl;
+          }
 
           TreeWalk(subdir);
         }
