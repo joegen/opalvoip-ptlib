@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.2 1996/07/27 04:10:06 robertj Exp $
+ * $Id: svcproc.h,v 1.3 1996/07/30 12:24:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.3  1996/07/30 12:24:13  robertj
+ * Added SYSTEMLOG macro for GNU compiler compatibility.
+ *
  * Revision 1.2  1996/07/27 04:10:06  robertj
  * Changed SystemLog to be stream based rather than printf based.
  *
@@ -77,6 +80,13 @@ PCLASS PSystemLog : public PObject, public iostream {
 
     Level logLevel;
 };
+
+#ifdef __GNUC__
+#define PSYSTEMLOG(l, v) do { PSystemLog s(PSystemLog::l); s << v; } while (0)
+#else
+#define PSYSTEMLOG(l, v) PSystemLog(PSystemLog::l) << v
+#endif
+
 
 
 PDECLARE_CLASS(PServiceProcess, PProcess)
