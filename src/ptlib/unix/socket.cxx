@@ -1,5 +1,5 @@
 /*
- * $Id: socket.cxx,v 1.22 1998/08/21 05:30:59 robertj Exp $
+ * $Id: socket.cxx,v 1.23 1998/08/27 01:13:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,11 +8,16 @@
  * Copyright 1994-1996 Equivalence Pty. Ltd.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.23  1998/08/27 01:13:20  robertj
+ * Changes to resolve signedness in GNU C library v6
+ * Remove Linux EthSocket stuff from Sun build, still needs implementing.
+ *
  * Revision 1.22  1998/08/21 05:30:59  robertj
  * Ethernet socket implementation.
  *
  */
 
+#pragma implementation "sockets.h"
 #pragma implementation "socket.h"
 #pragma implementation "ipsock.h"
 #pragma implementation "udpsock.h"
@@ -23,7 +28,6 @@
 
 #include <ptlib.h>
 #include <sockets.h>
-#include <linux/if_ether.h>
 
 
 extern PSemaphore PX_iostreamMutex;
@@ -67,7 +71,7 @@ int PSocket::os_socket(int af, int type, int protocol)
   return handle;
 }
 
-int PSocket::os_connect(struct sockaddr * addr, int size)
+int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   int val = ::connect(os_handle, addr, size);
 
@@ -91,7 +95,7 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 }
 
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
+int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
                        const PTimeInterval & timeout)
 {
   int new_fd;
@@ -101,7 +105,7 @@ int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
   }
 
   while (1) {
-    new_fd = ::accept(sock, addr, size);
+    new_fd = ::accept(sock, addr, (socklen_t *)size);
     if ((new_fd >= 0) || (errno != EPROTO))
       return new_fd;
     //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
@@ -290,7 +294,7 @@ BOOL PSocket::os_recvfrom(
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
       int    flags,
       sockaddr * addr, // Address from which the datagram was received.
-      int * addrlen)
+      PINDEX * addrlen)
 {
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
     lastError     = Timeout;
@@ -300,7 +304,7 @@ BOOL PSocket::os_recvfrom(
 
   // attempt to read non-out of band data
   if (ConvertOSError(lastReadCount =
-        ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)))
+        ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -313,7 +317,7 @@ BOOL PSocket::os_sendto(
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
       int flags,
       sockaddr * addr, // Address to which the datagram is sent.
-      int addrlen)  
+      PINDEX addrlen)  
 {
   if (!IsOpen()) {
     lastError     = NotOpen;
@@ -406,6 +410,7 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     return FALSE;
   }
 
+#ifdef SIOCGIFHWADDR
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
@@ -414,6 +419,7 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     return FALSE;
 
   memcpy(&macAddress, ifr.ifr_hwaddr.sa_data, sizeof(macAddress));
+#endif
 
   channelName = interfaceName;
   return OpenSocket();
@@ -422,6 +428,7 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
 
 BOOL PEthSocket::OpenSocket()
 {
+#ifdef SOCK_PACKET
   if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_PACKET, htons(filterType))))
     return FALSE;
 
@@ -434,6 +441,7 @@ BOOL PEthSocket::OpenSocket()
     os_handle = -1;
     return FALSE;
   }
+#endif
 
   return TRUE;
 }
@@ -622,7 +630,7 @@ BOOL PEthSocket::Read(void * buf, PINDEX len)
 
   for (;;) {
     sockaddr from;
-    int fromlen = sizeof(from);
+    PINDEX fromlen = sizeof(from);
     if (!os_recvfrom(bufptr, len, 0, &from, &fromlen))
       return FALSE;
 
