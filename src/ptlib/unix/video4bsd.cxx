@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.13  2001/08/06 06:19:33  rogerh
+ * Implement Brightness, Contract and Hue methods.
+ *
  * Revision 1.12  2001/03/26 16:02:01  rogerh
  * Add dummy function for VerifyHardwareFrameSize
  *
@@ -381,5 +384,81 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 	// Assume the size is valid
 	return TRUE;
 }
-    
+
+
+int PVideoInputDevice::GetBrightness()
+{
+  if (!IsOpen())
+    return -1;
+
+  int data;
+  if (::ioctl(videoFd, METEORGBRIG, &data) < 0)
+    return -1;
+  frameBrightness = data;
+
+  return frameBrightness;
+}
+
+int PVideoInputDevice::GetContrast()
+{
+  if (!IsOpen())
+    return -1;
+
+  int data;
+  if (::ioctl(videoFd, METEORGCONT, &data) < 0)
+    return -1;
+  frameContrast = data;
+
+ return frameContrast;
+}
+
+int PVideoInputDevice::GetHue()
+{
+  if (!IsOpen())
+    return -1;
+
+  int data;
+  if (::ioctl(videoFd, METEORGHUE, &data) < 0)
+    return -1;
+  frameHue = data;
+
+  return frameHue;
+}
+
+BOOL PVideoInputDevice::SetBrightness(unsigned newBrightness)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  if (::ioctl(videoFd, METEORSBRIG, &newBrightness) < 0)
+    return FALSE;
+
+  frameBrightness=newBrightness;
+  return TRUE;
+}
+
+BOOL PVideoInputDevice::SetContrast(unsigned newContrast)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  if (::ioctl(videoFd, METEORSCONT, &newContrast) < 0)
+    return FALSE;
+
+  frameContrast = newContrast;
+  return TRUE;
+}
+
+BOOL PVideoInputDevice::SetHue(unsigned newHue)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  if (::ioctl(videoFd, METEORSHUE, &newHue) < 0)
+    return FALSE;
+
+  frameHue=newHue;
+  return TRUE;
+}
+
 // End Of File ///////////////////////////////////////////////////////////////
