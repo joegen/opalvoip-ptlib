@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.13 1996/06/10 10:01:23 robertj Exp $
+ * $Id: cypher.cxx,v 1.14 1996/06/18 12:35:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.14  1996/06/18 12:35:49  robertj
+ * Fixed bug in registration when language is not English.
+ *
  * Revision 1.13  1996/06/10 10:01:23  robertj
  * Fixed bug in getting cypher key, not copying all the bytes.
  *
@@ -694,7 +697,7 @@ BOOL PSecureConfig::ValidatePending()
 
   PTime expiryDate(0, 0, 0,
             1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
-  PString expiry = expiryDate.AsString("d MMM yyyy", PTime::GMT);
+  PString expiry = expiryDate.AsString("d MMME yyyy", PTime::GMT);
 
   const BYTE * infoptr = &info[sizeof(code)+1];
   PUInt32b optionBits(&infoptr);
