@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.6 1997/08/09 07:46:51 robertj Exp $
+ * $Id: httpform.h,v 1.7 1998/01/26 00:25:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.7  1998/01/26 00:25:24  robertj
+ * Major rewrite of HTTP forms management.
+ *
  * Revision 1.6  1997/08/09 07:46:51  robertj
  * Fixed problems with value of SELECT fields in form
  *
@@ -69,11 +72,8 @@ PDECLARE_CLASS(PHTTPField, PObject)
        String for field name.
      */
 
-    virtual PCaselessString GetNameAt(
-      PINDEX idx  // Number of the primitive in composite field
-    ) const;
-    /* Get the identifier name of the sub-field. If the field is not composite
-       then it always returns the name as for the parameterless GetName().
+    const PCaselessString & GetBaseName() const { return baseName; }
+    /* Get the identifier name of the field.
 
        <H2>Returns:</H2>
        String for field name.
@@ -83,6 +83,15 @@ PDECLARE_CLASS(PHTTPField, PObject)
       const PString & newName   // New name for field
     );
     /* Set the name for the field.
+     */
+
+    virtual const PHTTPField * LocateName(
+      const PString & name    // Full field name to locate
+    ) const;
+    /* Locate the field naem, recusing down for composite fields.
+
+       <H2>Returns:</H2>
+       Pointer to located field, or NULL if not found.
      */
 
     const PString & GetTitle() const { return title; }
@@ -113,15 +122,6 @@ PDECLARE_CLASS(PHTTPField, PObject)
     );
     // Set the help text for the field.
 
-    virtual PINDEX GetSize() const;
-    /* Get the number of sub-fields in the composite field. Note that this is
-       the total including any composite sub-fields, ie, it is the size of the
-       whole tree of primitive fields.
-
-       <H2>Returns:</H2>
-       Returns field count.
-     */
-
     virtual PHTTPField * NewField() const = 0;
     /* Create a new field of the same class as the current field.
 
@@ -129,10 +129,8 @@ PDECLARE_CLASS(PHTTPField, PObject)
        New field object instance.
      */
 
-    virtual void SpliceHTML(
-      PString & text  // String to do macro subsitutions in
-    ) const;
-    // Splice macro substitutions into text string
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
+    // Splice expanded macro substitutions into text string
 
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the fields HTML tag.
@@ -140,14 +138,16 @@ PDECLARE_CLASS(PHTTPField, PObject)
     /* Convert the field to HTML form tag for inclusion into the HTTP page.
      */
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
-    ) const = 0;
-    /* Convert the field value to HTML for inclusion into the HTTP page.
+    virtual PString GetHTMLInput(
+      const PString & input // Source HTML text for input tag.
+    ) const;
+    /* Convert the field input to HTML for inclusion into the HTTP page.
      */
 
-    virtual PString GetHTMLKeyword() const;
-    /* Get the substitution keyword for this field type.
+    virtual PString GetHTMLSelect(
+      const PString & selection // Source HTML text for input tag.
+    ) const;
+    /* Convert the field input to HTML for inclusion into the HTTP page.
      */
 
     virtual void GetHTMLHeading(
@@ -156,18 +156,8 @@ PDECLARE_CLASS(PHTTPField, PObject)
     /* Convert the field to HTML for inclusion into the HTTP page.
      */
 
-    virtual PString GetValue() const = 0;
+    virtual PString GetValue(BOOL dflt = FALSE) const = 0;
     /* Get the string value of the field.
-
-       <H2>Returns:</H2>
-       String for field value.
-     */
-
-    virtual PString GetValueAt(
-      PINDEX idx
-    ) const;
-    /* Get the string value of the sub-field. If the field is not composite
-       then it always returns the value as for the parameterless version.
 
        <H2>Returns:</H2>
        String for field value.
@@ -179,12 +169,18 @@ PDECLARE_CLASS(PHTTPField, PObject)
     /* Set the value of the field.
      */
 
-    virtual void SetValueAt(
-      PINDEX idx,
-      const PString & value   // New value for the field.
+    virtual void LoadFromConfig(
+      PConfig & cfg   // Configuration for value transfer.
     );
-    /* Set the value of the sub-field. If the field is not composite then it
-       always sets the value as for the non-indexed version.
+    /* Get the value of the PConfig to the sub-field. If the field is not
+       composite then it always sets the value as for the non-indexed version.
+     */
+
+    virtual void SaveToConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    ) const;
+    /* Set the value of the sub-field into the PConfig. If the field is not
+       composite then it always sets the value as for the non-indexed version.
      */
 
     virtual BOOL Validated(
@@ -197,6 +193,13 @@ PDECLARE_CLASS(PHTTPField, PObject)
        BOOL if the new field value is OK.
      */
 
+
+    virtual PStringList GetAllNames() const;
+    /* Retrieve all the names in the field and subfields.
+
+       <H2>Returns:</H2>
+       List of strings for each subfield.
+     */
 
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
@@ -237,47 +240,44 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
       const char * help = NULL    // Help text for the field.
     );
 
-    virtual PCaselessString GetNameAt(
-      PINDEX idx  // Number of the primitive in composite field
-    ) const;
-
     virtual void SetName(
       const PString & name   // New name for field
     );
 
-    virtual PINDEX GetSize() const;
+    virtual const PHTTPField * LocateName(
+      const PString & name    // Full field name to locate
+    ) const;
 
     virtual PHTTPField * NewField() const;
 
-    virtual void SpliceHTML(
-      PString & text  // String to do macro subsitutions in
-    ) const;
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
 
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
+    virtual PString GetHTMLInput(
+      const PString & input // Source HTML text for input tag.
     ) const;
-
-    virtual PString GetHTMLKeyword() const;
 
     virtual void GetHTMLHeading(
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue() const;
-    virtual PString GetValueAt(PINDEX idx) const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newValue   // New value for the field.
     );
-    virtual void SetValueAt(
-      PINDEX idx,
-      const PString & value   // New value for the field.
-    );
 
+    virtual void LoadFromConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    );
+    virtual void SaveToConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    ) const;
+
+    virtual PStringList GetAllNames() const;
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
@@ -287,59 +287,85 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
 
+
+    virtual PINDEX GetSize() const;
+    /* Get the number of sub-fields in the composite field. Note that this is
+       the total including any composite sub-fields, ie, it is the size of the
+       whole tree of primitive fields.
+
+       <H2>Returns:</H2>
+       Returns field count.
+     */
+
     void Append(PHTTPField * fld);
+    PHTTPField & operator[](PINDEX idx) const { return fields[idx]; }
 
   protected:
     PHTTPFieldList fields;
 };
 
 
+PDECLARE_CLASS(PHTTPSubForm, PHTTPCompositeField)
+  public:
+    PHTTPSubForm(
+      const PString & subFormName, // URL for the sub-form
+      const char * name,           // Name (identifier) for the field.
+      const char * title = NULL,   // Title text for field (defaults to name).
+      PINDEX primaryField = 0,     // Pimary field whove value is in hot link
+      PINDEX secondaryField = P_MAX_INDEX   // Seconary field next to hotlink
+    );
+
+  PHTTPField * NewField() const;
+  void GetHTMLTag(PHTML & html) const;
+  void GetHTMLHeading(PHTML & html) const;
+
+  protected:
+    PString subFormName;
+    PINDEX primary;
+    PINDEX secondary;
+};
+
+
 PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
   public:
     PHTTPFieldArray(
-      PHTTPField * baseField
+      PHTTPField * baseField,
+      BOOL ordered
     );
 
     ~PHTTPFieldArray();
 
 
-    virtual PCaselessString GetNameAt(
-      PINDEX idx  // Number of the primitive in composite field
-    ) const;
-
-    virtual PINDEX GetSize() const;
-
     virtual PHTTPField * NewField() const;
 
-    virtual void SpliceHTML(
-      PString & text  // String to do macro subsitutions in
-    ) const;
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
 
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
+    virtual void LoadFromConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    );
+    virtual void SaveToConfig(
+      PConfig & cfg   // Configuration for value transfer.
     ) const;
 
-    virtual PString GetHTMLKeyword() const;
-
-    virtual PString GetValueAt(PINDEX idx) const;
-
-    virtual void SetValueAt(
-      PINDEX idx,
-      const PString & value   // New value for the field.
-    );
 
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
 
+    virtual PINDEX GetSize() const;
+    void SetSize(PINDEX newSize);
+
   protected:
     void AddBlankField();
+    void AddArrayControlBox(PHTML & html, PINDEX fld) const;
+    void SetArrayFieldName(PINDEX idx) const;
 
     PHTTPField * baseField;
+    BOOL orderedArray;
 };
 
 
@@ -365,11 +391,7 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
-    ) const;
-
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -378,6 +400,7 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
 
   protected:
     PString value;
+    PString initialValue;
     PINDEX size;
 };
 
@@ -404,7 +427,7 @@ PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -438,15 +461,18 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
-    ) const;
-
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
     );
+
+    virtual void LoadFromConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    );
+    virtual void SaveToConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    ) const;
 
     virtual BOOL Validated(
       const PString & newVal,
@@ -456,6 +482,7 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
 
   protected:
     int low, high, value;
+    int initialValue;
     PString units;
 };
 
@@ -480,19 +507,26 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
+    virtual PString GetHTMLInput(
+      const PString & input
     ) const;
 
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
     );
 
+    virtual void LoadFromConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    );
+    virtual void SaveToConfig(
+      PConfig & cfg   // Configuration for value transfer.
+    ) const;
+
 
   protected:
-    BOOL value;
+    BOOL value, initialValue;
 };
 
 
@@ -565,11 +599,11 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
+    virtual PString GetHTMLInput(
+      const PString & input
     ) const;
 
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -580,6 +614,7 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
     PStringArray values;
     PStringArray titles;
     PString value;
+    PString initialValue;
 };
 
 
@@ -620,11 +655,7 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual PString GetHTMLValue(
-      const PString & text // Source HTML text for array repeat.
-    ) const;
-
-    virtual PString GetValue() const;
+    virtual PString GetValue(BOOL dflt = FALSE) const;
 
     virtual void SetValue(
       const PString & newVal
@@ -636,6 +667,7 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
 
   protected:
     PString value;
+    PINDEX initialValue;
 };
 
 
@@ -696,7 +728,7 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
 
 
   protected:
-    PHTTPFieldList fields;
+    PHTTPCompositeField fields;
     PStringSet fieldNames;
 };
 
@@ -737,6 +769,10 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
       PHTML & replyMessage          // Reply message for post.
     );
 
+
+    void LoadFromConfig();
+    /* Load all of the values for the resource from the configuration.
+     */
 
     const PString & GetConfigSection() const { return section; }
     /* Get the configuration file section that the page will alter.
