@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.9  2003/05/17 03:22:47  rjongbloed
+ * Removed need to do strange things with main() function.
+ *
  * Revision 1.8  2003/05/05 06:25:33  robertj
  * Corrections to external libraries
  *
@@ -230,8 +233,7 @@
 
 #ifdef _MSC_VER
 #pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
-#define P_SDL_LIBRARY1 "@SDL_DIR@/Lib/SDL.lib"
-#define P_SDL_LIBRARY2 "@SDL_DIR@/Lib/SDLmain.lib"
+#define P_SDL_LIBRARY "@SDL_DIR@/Lib/SDL.lib"
 #endif
 
 
