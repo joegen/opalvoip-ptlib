@@ -871,7 +871,6 @@ EXPORTS
     ?Construct@PSoundChannel@@AAEXXZ @2049 NONAME ;private: void __thiscall PSoundChannel::Construct(void)
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @792 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @793 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
-    ?ConvertOSError@PChannel@@KAHHAAW4Errors@1@AAH@Z @795 NONAME ;protected: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @797 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@MAEHH@Z @2243 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
@@ -1136,6 +1135,7 @@ EXPORTS
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @1904 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
     ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2220 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
     ?GetLength@PFile@@QBEJXZ @1048 NONAME ;public: long __thiscall PFile::GetLength(void)const 
+    ?GetLevel@PTrace@@SAIXZ @2247 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1975 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &)
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1976 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &,unsigned short &)
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@@Z @1052 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &)
@@ -1183,6 +1183,7 @@ EXPORTS
     ?GetOptionCount@PArgList@@QBEHD@Z @1091 NONAME ;public: int __thiscall PArgList::GetOptionCount(char)const 
     ?GetOptionCount@PArgList@@QBEHPBD@Z @1092 NONAME ;public: int __thiscall PArgList::GetOptionCount(char const *)const 
     ?GetOptionCountByIndex@PArgList@@ABEHH@Z @1093 NONAME ;private: int __thiscall PArgList::GetOptionCountByIndex(int)const 
+    ?GetOptions@PTrace@@SAIXZ @2248 NONAME ;public: static unsigned int __cdecl PTrace::GetOptions(void)
     ?GetOptionString@PArgList@@QBE?AVPString@@ABV2@PBD@Z @1094 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(class PString const &,char const *)const 
     ?GetOptionString@PArgList@@QBE?AVPString@@DPBD@Z @1095 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(char,char const *)const 
     ?GetOptionString@PArgList@@QBE?AVPString@@PBD0@Z @1096 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(char const *,char const *)const 
@@ -1960,5 +1961,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?GetLevel@PTrace@@SAIXZ @2247 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
-    ?GetOptions@PTrace@@SAIXZ @2248 NONAME ;public: static unsigned int __cdecl PTrace::GetOptions(void)
+    ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @2249 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
