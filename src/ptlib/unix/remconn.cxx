@@ -100,14 +100,15 @@ PRemoteConnection::~PRemoteConnection()
 }
 
 
-BOOL PRemoteConnection::Open(const PString & name)
+BOOL PRemoteConnection::Open(const PString & name, BOOL existing)
 {
-  return Open(name, "", "");
+  return Open(name, "", "", existing);
 }
 
 BOOL PRemoteConnection::Open(const PString & name,
                              const PString & user,
-                             const PString & pword)
+                             const PString & pword,
+                             BOOL existing)
 {
   userName = user;
   password = pword;
@@ -133,9 +134,15 @@ BOOL PRemoteConnection::Open(const PString & name,
       pipeChannel->IsRunning() &&
       name == remoteName &&
       PPPDeviceStatus(deviceStr) > 0) {
+    osError = errno;
     status = Connected;
     return TRUE;
   }
+  osError = errno;
+
+  if (existing)
+    return FALSE;
+
   Close();
 
   // name        = name of configuration
@@ -218,6 +225,7 @@ BOOL PRemoteConnection::Open(const PString & name,
   // instigate a dial using pppd
   //
   pipeChannel  = PNEW PPipeChannel(pppdStr, argArray);
+  osError = errno;
 
   ///////////////////////////////////////////
   //
@@ -228,14 +236,17 @@ BOOL PRemoteConnection::Open(const PString & name,
     if (pipeChannel == NULL || !pipeChannel->IsRunning()) 
       break;
 
-    if (PPPDeviceStatus(deviceStr) > 0) 
+    if (PPPDeviceStatus(deviceStr) > 0) {
+      osError = errno;
       return TRUE;
+    }
 
     if (!timer.IsRunning())
       break;
 
     PThread::Current()->Sleep(1000);
   }
+  osError = errno;
 
   ///////////////////////////////////////////
   //
@@ -263,12 +274,13 @@ void PRemoteConnection::Construct()
 {
   pipeChannel  = NULL;
   status       = Idle;
+  osError      = 0;
 }
 
 
-BOOL PRemoteConnection::Open()
+BOOL PRemoteConnection::Open(BOOL existing)
 {
-  return Open(remoteName);
+  return Open(remoteName, existing);
 }
 
 
