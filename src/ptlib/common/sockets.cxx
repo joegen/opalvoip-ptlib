@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.118  2002/01/28 01:27:03  robertj
+ * Removed previous change that actually has nothing to do with GCC 3 compatibility,
+ *   setting default timeout for all sockets to 10 seconds is NOT a sensible thing to do!
+ *
  * Revision 1.117  2002/01/26 23:57:45  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -793,8 +797,6 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 PSocket::PSocket()
 {
-  SetReadTimeout(10000);
-  SetWriteTimeout(10000);
   port = 0;
 }
 
