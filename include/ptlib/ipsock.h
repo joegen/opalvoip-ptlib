@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
+ * $Id: ipsock.h,v 1.6 1994/12/15 12:47:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Revision 1.6  1994/12/15 12:47:14  robertj
+ * Documentation.
+ *
+ * Revision 1.5  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.4  1994/08/22  00:46:48  robertj
@@ -34,11 +37,22 @@
 #endif
 
 PDECLARE_CLASS(PIPSocket, PSocket)
+/* This class describes a type of socket that will communicate using the
+   Internet Protocol.
+ */
+
   public:
 
 #ifdef P_HAS_BERKELEY_SOCKETS
 
-    BOOL LookupHost(const PString & host_address, sockaddr_in * address);
+    BOOL LookupHost(
+      const PString & host_address,
+      sockaddr_in * address
+    );
+    /* Internal function used when the library is using a Berkley sockets
+       compatible system. It will obtain the address in a socket ready form
+       given a host domain name or dot form IP address as a string.
+     */
 
 #endif
 
