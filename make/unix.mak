@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.179  2003/11/02 16:00:26  shawn
+# Panther requires -lresolv
+#
 # Revision 1.178  2003/09/18 23:02:35  csoutheren
 # Removed definition of PMEMORY_CHECK
 #
@@ -630,21 +633,20 @@ ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
 
-# To compile using esound. Uncomment the ESDDIR line, and
-# enter the base path where esound is installed.
-# For Fink users, the base is /sw
-# For others that compiled the esound package without fink,
-# it typically is /usr/local
+ifndef OSRELEASE
+OSRELEASE	:= $(shell uname -r | sed "s/\.//g")
+endif
 
-#ESDDIR =/sw
+CFLAGS		+= -fno-common -dynamic
+LDFLAGS		+= -multiply_defined suppress
+ifeq ($(OSRELEASE), 700)
+ENDLDLIBS	+= -lresolv
+endif
+ENDLDLIBS	+= -framework AudioToolbox -framework CoreAudio
 
 # Quicktime support is still a long way off. But for development purposes,
 # I am inluding the flags to allow QuickTime to be linked.
 # Uncomment them if you wish, but it will do nothing for the time being.
-
-CFLAGS		+= -fno-common -dynamic
-LDFLAGS		+= -multiply_defined suppress
-ENDLDLIBS	+= -framework AudioToolbox -framework CoreAudio
 
 #HAS_QUICKTIMEX := 1
 #STDCCFLAGS     += -DHAS_QUICKTIMEX
