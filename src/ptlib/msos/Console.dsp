@@ -162,6 +162,15 @@ SOURCE=..\common\object.cxx
 # Begin Source File
 
 SOURCE=..\common\osutils.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+# ADD CPP /Ob0
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -186,6 +195,15 @@ SOURCE=..\common\pipechan.cxx
 # Begin Source File
 
 SOURCE=..\common\pluginmgr.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+# ADD CPP /Ob0
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -361,6 +379,10 @@ SOURCE=..\..\..\Include\PtLib\object.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\Pdirect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\pfactory.h
 # End Source File
 # Begin Source File
 
