@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.11 1995/06/17 00:44:35 robertj Exp $
+ * $Id: socket.h,v 1.12 1995/06/17 11:13:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.12  1995/06/17 11:13:25  robertj
+ * Documentation update.
+ *
  * Revision 1.11  1995/06/17 00:44:35  robertj
  * More logical design of port numbers and service names.
  * Changed overloaded Open() calls to 3 separate function names.
@@ -70,9 +73,6 @@ PDECLARE_CLASS(PSocket, PChannel)
        This connects to a "listening" socket at the other end of the
        communications channel.
 
-       The port number as defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
-
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
      */
@@ -89,8 +89,8 @@ PDECLARE_CLASS(PSocket, PChannel)
        establish a two way communications channel with the "connecting" socket.
 
        If the <CODE>port</CODE> parameter is zero then the port number as
-       defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       defined by the object instance construction or the descendent classes
+       SetPort() function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
