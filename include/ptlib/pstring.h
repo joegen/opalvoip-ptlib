@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.81  2004/12/22 04:04:36  dereksmithies
+ * Modify description of parameters for PString::Replace()
+ *
  * Revision 1.80  2004/11/23 11:33:08  csoutheren
  * Fixed problem with RemoveAt returning invalid pointer in some cases,
  * and added extra documentation on this case.
@@ -1384,9 +1387,9 @@ class PString : public PCharArray {
        #PCaselessString# before the search is made.
      */
     void Replace(
-      const PString & target,   /// String to be replaced in string.
-      const PString & subs,     /// String to do replace in string.
-      BOOL all = FALSE,         /// Replace all occurrences of string.
+      const PString & target,   /// Text to be removed.
+      const PString & subs,     /// String to be inserted into the gaps created
+      BOOL all = FALSE,         /// Replace all occurrences of target text.
       PINDEX offset = 0         /// Offset into string to begin search.
     );
 
