@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.26 1997/08/28 12:50:32 robertj Exp $
+ * $Id: svcproc.cxx,v 1.27 1997/10/03 15:14:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.27  1997/10/03 15:14:17  robertj
+ * Fixed crash on exit.
+ *
  * Revision 1.26  1997/08/28 12:50:32  robertj
  * Fixed race condition in cleaning up threads on application termination.
  *
@@ -390,9 +393,12 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     DestroyWindow(controlWindow);
 
   // Set thread ID for process to this thread
+  threadMutex.Wait();
   activeThreads.SetAt(threadId, NULL);
   threadId = GetCurrentThreadId();
+  threadHandle = GetCurrentThread();
   activeThreads.SetAt(threadId, this);
+  threadMutex.Signal();
   OnStop();
 
   cfg.SetInteger("Pid", 0);
@@ -637,8 +643,11 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 
 void PServiceProcess::ThreadEntry()
 {
+  threadMutex.Wait();
   threadId = GetCurrentThreadId();
+  threadHandle = GetCurrentThread();
   activeThreads.SetAt(threadId, this);
+  threadMutex.Signal();
 
   SetTerminationValue(1);
   if (OnStart()) {
