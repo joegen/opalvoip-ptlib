@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.25  1999/02/26 04:10:39  robertj
+ * More BeOS port changes
+ *
  * Revision 1.24  1999/02/22 13:26:53  robertj
  * BeOS port changes.
  *
@@ -237,7 +240,7 @@ struct servent * getservbyname(const char *, const char *);
 typedef int socklen_t;
 #define INADDR_NONE INADDR_BROADCAST
 #define wait3(s, o, r) waitpid(-1, s, o)
-#define PSETPGRP()  setpgrp(0,0)
+#define PSETPGRP()  setpgid(0,0)
 
 #else
 
