@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.23 1996/05/26 03:46:24 robertj Exp $
+ * $Id: collect.cxx,v 1.24 1996/07/15 10:32:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.24  1996/07/15 10:32:52  robertj
+ * Fixed bug in sorted list (crash on remove).
+ *
  * Revision 1.23  1996/05/26 03:46:24  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -562,7 +565,8 @@ PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 PINDEX PAbstractSortedList::Append(PObject * obj)
 {
   Element * element = new Element(PAssertNULL(obj));
-  Element * child = info->root, * parent = NULL;
+  Element * child = info->root;
+  Element * parent = NULL;
   while (child != NULL) {
     child->subTreeSize++;
     parent = child;
@@ -579,12 +583,13 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   info->lastElement = element;
 
   element->MakeRed();
-  while (element != info->root && !element->parent->IsBlack()) {
+  while (element != info->root && element->parent->IsRed()) {
     if (element->parent == element->parent->parent->left) {
       child = element->parent->parent->right;
-      if (child != NULL && !child->IsBlack()) {
-        element->parent->MakeBlack();
+      if (child != NULL && child->IsRed()) {
         child->MakeBlack();
+        element->parent->MakeBlack();
+        element->parent->parent->MakeRed();
         element = element->parent->parent;
       }
       else {
@@ -599,9 +604,10 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
     }
     else {
       child = element->parent->parent->left;
-      if (child != NULL && !child->IsBlack()) {
-        element->parent->MakeBlack();
+      if (child != NULL && child->IsRed()) {
         child->MakeBlack();
+        element->parent->MakeBlack();
+        element->parent->parent->MakeRed();
         element = element->parent->parent;
       }
       else {
@@ -747,7 +753,7 @@ void PAbstractSortedList::RemoveElement(Element * node)
     while (x != info->root && x->IsBlack()) {
       if (x == x->parent->left) {
         Element * w = x->parent->right;
-        if (!w->IsBlack()) {
+        if (w->IsRed()) {
           w->MakeBlack();
           x->parent->MakeRed();
           LeftRotate(x->parent);
@@ -774,7 +780,7 @@ void PAbstractSortedList::RemoveElement(Element * node)
       }
       else {
         Element * w = x->parent->left;
-        if (!w->IsBlack()) {
+        if (w->IsRed()) {
           w->MakeBlack();
           x->parent->MakeRed();
           RightRotate(x->parent);
