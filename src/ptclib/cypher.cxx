@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.8 1996/03/11 10:28:53 robertj Exp $
+ * $Id: cypher.cxx,v 1.9 1996/03/16 04:37:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.9  1996/03/16 04:37:20  robertj
+ * Redesign of secure config to accommodate expiry dates and option values passed in security key code.
+ *
  * Revision 1.8  1996/03/11 10:28:53  robertj
  * Fixed bug in C++ optimising compiler.
  *
@@ -487,13 +490,13 @@ PTEACypher::PTEACypher()
 }
 
 
-PTEACypher::PTEACypher(const Key keyData)
+PTEACypher::PTEACypher(const BYTE * keyData)
   : PCypher(8, keyData, sizeof(Key))
 {
 }
 
 
-void PTEACypher::SetKey(const Key newKey)
+void PTEACypher::SetKey(const BYTE * newKey)
 {
   memcpy(key.GetPointer(sizeof(Key)), newKey, sizeof(Key));
 }
@@ -569,136 +572,147 @@ void PTEACypher::DecodeBlock(const BYTE * in, BYTE * out)
 ///////////////////////////////////////////////////////////////////////////////
 // PSecureConfig
 
-static const char SecuredOptions[] = "Secured Options";
-static const char ValidationKey[] = "Validation";
-static const char PendingPrefix[] = "Pending:";
+static const char DefaultSecuredOptions[] = "Secured Options";
+static const char DefaultSecurityKey[] = "Validation";
+static const char DefaultExpiryDateKey[] = "Expiry Date";
+static const char DefaultOptionBitsKey[] = "Option Bits";
+static const char DefaultPendingPrefix[] = "Pending:";
 
-PSecureConfig::PSecureConfig(const PStringArray & securedKeys, Source src)
-  : PConfig(SecuredOptions, src), securedKey(securedKeys)
+PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
+                             const PStringArray & secKeys,
+                             Source src)
+  : PConfig(DefaultSecuredOptions, src),
+    securedKeys(secKeys),
+    securityKey(DefaultSecurityKey),
+    expiryDateKey(DefaultExpiryDateKey),
+    optionBitsKey(DefaultOptionBitsKey),
+    pendingPrefix(DefaultPendingPrefix)
 {
+  memcpy(productKey, prodKey, sizeof(productKey));
 }
 
 
-PSecureConfig::PSecureConfig(const char * const * securedKeys,
+PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
+                             const char * const * secKeys,
                              PINDEX count,
                              Source src)
-  : PConfig(SecuredOptions, src), securedKey(count, securedKeys)
+  : PConfig(DefaultSecuredOptions, src),
+    securedKeys(count, secKeys),
+    securityKey(DefaultSecurityKey),
+    expiryDateKey(DefaultExpiryDateKey),
+    optionBitsKey(DefaultOptionBitsKey),
+    pendingPrefix(DefaultPendingPrefix)
 {
+  memcpy(productKey, prodKey, sizeof(productKey));
 }
 
 
-PSecureConfig::PSecureConfig(const PStringArray & securedKeys,
-                             const PString & securedSection,
-                             Source src)
-  : PConfig(securedSection, src), securedKey(securedKeys)
+void PSecureConfig::GetProductKey(PTEACypher::Key prodKey) const
 {
-}
-
-
-PSecureConfig::PSecureConfig(const char * const * securedKeys,
-                             PINDEX count,
-                             const PString & securedSection,
-                             Source src)
-  : PConfig(securedSection, src), securedKey(count, securedKeys)
-{
-}
-
-
-BOOL PSecureConfig::SetValidation()
-{
-  return SetValidation(ValidationKey);
-}
-
-
-BOOL PSecureConfig::SetValidation(const PString & validationKey)
-{
-  PAssert(GetBoolean(PendingPrefix + validationKey), "Validation not pending");
-
-  PString vkey = GetString(validationKey);
-  if (vkey.IsEmpty())
-    return TRUE;
-
-  if (vkey != CalculateValidation(PendingKeys))
-    return FALSE;
-
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
-    PString str = GetString(PendingPrefix + securedKey[i]);
-    if (!str.IsEmpty())
-      SetString(securedKey[i], str);
-    DeleteKey(PendingPrefix + securedKey[i]);
-  }
-  DeleteKey(PendingPrefix + validationKey);
-
-  return TRUE;
-}
-
-
-void PSecureConfig::UnsetValidation()
-{
-  UnsetValidation(ValidationKey);
-}
-
-
-void PSecureConfig::UnsetValidation(const PString & validationKey)
-{
-  if (GetBoolean(PendingPrefix + validationKey))
-    return;
-
-  SetBoolean(PendingPrefix + validationKey, TRUE);
-
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
-    PString str = GetString(securedKey[i]);
-    if (!str.IsEmpty())
-      SetString(PendingPrefix + securedKey[i], str);
-    DeleteKey(securedKey[i]);
-  }
-
-  DeleteKey(validationKey);
+  memcpy(prodKey, productKey, sizeof(prodKey));
 }
 
 
 PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 {
-  return GetValidation(ValidationKey);
-}
-
-
-PSecureConfig::ValidationState
-              PSecureConfig::GetValidation(const PString & validationKey) const
-{
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
-    PString s = GetString(securedKey[i]);
-    if (!s.IsEmpty())
-      return GetString(validationKey) == CalculateValidation(SecuredKeys)
-                                                           ? IsValid : Invalid;
+  BOOL allEmpty = TRUE;
+  PMessageDigest5 digestor;
+  for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
+    PString str = GetString(securedKeys[i]);
+    if (!str.IsEmpty()) {
+      digestor.Process(str.Trim());
+      allEmpty = FALSE;
+    }
   }
-  return GetBoolean(PendingPrefix + validationKey) ? Pending : Defaults;
+
+  if (allEmpty)
+    return GetBoolean(pendingPrefix + securityKey) ? Pending : Defaults;
+
+  PMessageDigest5::Code code;
+  digestor.Complete(code);
+
+  PString vkey = GetString(securityKey);
+  if (vkey.IsEmpty())
+    return Invalid;
+
+  BYTE info[sizeof(code)+3];
+  PTEACypher crypt(productKey);
+  if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
+    return Invalid;
+
+  if (memcmp(&info[3], code, sizeof(code)) != 0)
+    return Invalid;
+
+  return IsValid;
 }
 
 
-PString PSecureConfig::CalculateDigest(DigestType keyType) const
+BOOL PSecureConfig::ValidatePending()
+{
+  if (GetValidation() != Pending)
+    return FALSE;
+
+  PString vkey = GetString(securityKey);
+  if (vkey.IsEmpty())
+    return TRUE;
+
+  PMessageDigest5::Code code;
+  BYTE info[sizeof(code)+3];
+  PTEACypher crypt(productKey);
+  if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
+    return FALSE;
+
+  PMessageDigest5 digestor;
+  for (PINDEX i = 0; i < securedKeys.GetSize(); i++)
+    digestor.Process(GetString(pendingPrefix + securedKeys[i]).Trim());
+  digestor.Complete(code);
+
+  if (memcmp(&info[3], code, sizeof(code)) != 0)
+    return FALSE;
+
+  for (i = 0; i < securedKeys.GetSize(); i++) {
+    PString str = GetString(pendingPrefix + securedKeys[i]);
+    if (!str.IsEmpty())
+      SetString(securedKeys[i], str);
+    DeleteKey(pendingPrefix + securedKeys[i]);
+  }
+  DeleteKey(pendingPrefix + securityKey);
+
+  SetInteger(optionBitsKey, info[0]|((WORD)info[1]<<8));
+  SetTime(expiryDateKey, PTime(0, 0, 0, 1, info[3]&15, (info[3]>>4)+1996));
+
+  return TRUE;
+}
+
+
+void PSecureConfig::ResetPending()
+{
+  if (GetBoolean(pendingPrefix + securityKey)) {
+    for (PINDEX i = 0; i < securedKeys.GetSize(); i++)
+      DeleteKey(securedKeys[i]);
+  }
+  else {
+    SetBoolean(pendingPrefix + securityKey, TRUE);
+
+    for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
+      PString str = GetString(securedKeys[i]);
+      if (!str.IsEmpty())
+        SetString(pendingPrefix + securedKeys[i], str);
+      DeleteKey(securedKeys[i]);
+    }
+  }
+  SetTime(pendingPrefix + expiryDateKey, PTime());
+}
+
+
+PString PSecureConfig::CalculatePendingDigest() const
 {
   PMessageDigest5 digestor;
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
-    PString key;
-    if (keyType == PendingKeys)
-      key = PendingPrefix + securedKey[i];
-    else
-      key = securedKey[i];
+  for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
+    PString key = pendingPrefix + securedKeys[i];
     digestor.Process(GetString(key).Trim());
   }
   return digestor.Complete();
-}
-
-
-PString PSecureConfig::CalculateValidation(DigestType keyType) const
-{
-  PTEACypher::Key key;
-  PBase64::Decode(CalculateDigest(keyType), key, sizeof(key));
-  PTEACypher crypt(key);
-  PMessageDigest5::Code code;
-  PMessageDigest5::Encode(PProcess::Current()->GetName()&SecuredOptions,code);
-  return crypt.Encode(code, sizeof(code)-1);
 }
 
 
