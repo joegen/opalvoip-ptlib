@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.53 1996/11/30 12:08:17 robertj Exp $
+ * $Id: sockets.cxx,v 1.54 1996/12/05 11:46:39 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.54  1996/12/05 11:46:39  craigs
+ * Fixed problem with Win95 recvfrom not having timeouts
+ *
  * Revision 1.53  1996/11/30 12:08:17  robertj
  * Added Connect() variant so can set the local port number on link.
  *
@@ -1146,13 +1149,9 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 
   sockaddr_in sockAddr;
   int addrLen = sizeof(sockAddr);
-  int recvResult = os_recvfrom(buf, len, 0,
-                               (struct sockaddr *)&sockAddr, &addrLen);
-  if (ConvertOSError(recvResult)) {
+  if (os_recvfrom(buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen)) {
     addr = sockAddr.sin_addr;
     port = ntohs(sockAddr.sin_port);
-
-    lastReadCount = recvResult;
   }
 
   return lastReadCount > 0;
