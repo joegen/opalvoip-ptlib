@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.21  1998/11/30 04:48:38  robertj
+ * New directory structure
+ *
  * Revision 1.20  1998/09/24 03:30:39  robertj
  * Added open software license.
  *
@@ -91,7 +94,7 @@
  */
 
 #include <ptlib.h>
-#include <svcproc.h>
+#include <ptlib/msos/ptlib/svcproc.h>
 
 #include <errno.h>
 #include <strstrea.h>
