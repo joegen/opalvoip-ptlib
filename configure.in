@@ -374,18 +374,18 @@ AC_ARG_ENABLE(plugins,
        [  --enable-plugins        enable plugins' support in PWLIB],
        plugins=$enableval)
 
+HAS_PLUGINS=0
 if test "${plugins}" = "no" ; then
   AC_MSG_RESULT(no)
-  AC_SUBST(HAS_PLUGINS, 0)
 elif test "${P_DYNALINK:-unset}" = "unset" ; then
   AC_MSG_RESULT(plugins disabled as dlopen not available)
-  AC_SUBST(HAS_PLUGINS, 0)
 else
   AC_MSG_RESULT(plugins enabled)
-  AC_SUBST(HAS_PLUGINS, 1)
+  HAS_PLUGINS=1
   AC_DEFINE(P_HAS_PLUGINS, 1, "plugins enabled")
 fi
 
+AC_SUBST(HAS_PLUGINS)
 AC_DEFINE_UNQUOTED(P_DEFAULT_PLUGIN_DIR, "${INSTALLPREFIX}/lib/pwlib")
 
 dnl ########################################################################
@@ -677,6 +677,52 @@ dnl MSWIN_CHECK_FILE sapi,include\sphelper.h,P_SAPI=1
 dnl MSWIN_DIR_SYMBOL sapi,SAPI_DIR
 dnl MSWIN_CHECK_DIR  sapi,\Program Files\Microsoft Speech SDK 5.1\
 
+dnl ########################################################################
+dnl look for IPV6 functions
+
+dnl MSWIN_DISPLAY    ipv6,IPv6 Support
+dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
+dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
+
+AC_ARG_ENABLE(ipv6,
+       [  --disable-ipv6          disable IPV6 support in PWLIB],
+       ipv6=$enableval)
+
+if test "$ipv6" = "no" ; then
+  AC_DEFINE(P_HAS_IPV6, 0)
+  AC_SUBST(HAS_IPV6, 0)
+else
+  AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
+  [AC_TRY_COMPILE([#include <sys/types.h>
+                   #include <netinet/in.h>],
+                   [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
+
+  if test $HAS_IPV6 = yes ; then
+    AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+  fi
+fi
+
+dnl ########################################################################
+dnl look for QoS functions
+
+dnl MSWIN_DISPLAY    qos,QoS Support
+dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
+dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
+
+AC_ARG_ENABLE(qos,
+       [  --disable-qos           disable QOS support in PWLIB],
+       qos=$enableval)
+
+if test "$qos" = "no" ; then
+  AC_DEFINE(P_HAS_QOS, 0)
+else
+  AC_DEFINE(P_HAS_QOS, 1)
+fi
+
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
@@ -732,52 +778,6 @@ fi
 
 
 dnl ########################################################################
-dnl look for IPV6 functions
-
-dnl MSWIN_DISPLAY    ipv6,IPv6 Support
-dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
-dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
-
-AC_ARG_ENABLE(ipv6,
-       [  --disable-ipv6          disable IPV6 support in PWLIB],
-       ipv6=$enableval)
-
-if test "$ipv6" = "no" ; then
-  AC_DEFINE(P_HAS_IPV6, 0)
-  AC_SUBST(HAS_IPV6, 0)
-else
-  AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
-  [AC_TRY_COMPILE([#include <sys/types.h>
-                   #include <netinet/in.h>],
-                   [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
-
-  if test $HAS_IPV6 = yes ; then
-    AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
-  fi
-fi
-
-dnl ########################################################################
-dnl look for QoS functions
-
-dnl MSWIN_DISPLAY    qos,QoS Support
-dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
-dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
-
-AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support in PWLIB],
-       qos=$enableval)
-
-if test "$qos" = "no" ; then
-  AC_DEFINE(P_HAS_QOS, 0)
-else
-  AC_DEFINE(P_HAS_QOS, 1)
-fi
-
-dnl ########################################################################
 dnl check for video capture support.
 dnl videodev.h on linux
 dnl machine/ioctl_meteor on FreeBSD
@@ -785,23 +785,40 @@ dnl i386/ioctl_meteor on OpenBSD
 dnl dev/ic/bt8xx on NetBSD
 
 AC_ARG_ENABLE(video,
-       [  --disable-video         disable video device support in PWLIB],
+       [  --disable-video         disable non-plugin video device support in PWLIB],
        video=$enableval)
 
-if test "$video" = "no" ; then
-  AC_DEFINE(NO_VIDEO_CAPTURE, 0)
-else
-  HAS_VIDEO_CAPTURE=no
-  AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
-  AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-  AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-  AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
-  if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
-    AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux/BSD video capture")
-    AC_MSG_NOTICE(No Video Capture support)
+HAS_VIDEO_CAPTURE=0
+if test "$HAS_PLUGINS" = "0" ; then
+  if test "$video" != "no" ; then
+    AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=1)
+    dnl AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
+    dnl AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
+    dnl AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=1)
+    if test "${HAS_VIDEO_CAPTURE}" = "0" ; then
+      AC_MSG_NOTICE(No Video Capture support)
+    fi
   fi
 fi
+AC_DEFINE(NO_VIDEO_CAPTURE)
 
+dnl ########################################################################
+dnl check for various functions
+AC_ARG_ENABLE(alsa, [  --enable-alsa           disable non-plugin ALSA audio support],enable_alsa=$enableval)
+
+HAS_ALSA=0
+if test "$HAS_PLUGINS" = "0" ; then
+  if test "$enable_alsa" != "no" ; then
+    AC_CHECK_HEADER(alsa/asoundlib.h, HAS_ALSA=1)
+    AC_MSG_CHECKING(for ALSA sound support)
+    if test "${HAS_ALSA}" = "1"; then
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+fi
+AC_SUBST(HAS_ALSA)
 
 dnl ########################################################################
 dnl check for various functions
