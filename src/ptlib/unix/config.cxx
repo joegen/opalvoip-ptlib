@@ -153,7 +153,9 @@ PConfig::PConfig(int, const PString & name)
   ReadConfigFile(readFilename, *config);
 }
 
-void PConfig::Construct(Source src)
+void PConfig::Construct(Source src,
+                        const PString & appname,
+                        const PString & /*manuf*/)
 {
   config = new PXConfig;
   config->AllowDeleteObjects();
@@ -175,7 +177,10 @@ void PConfig::Construct(Source src)
 
     case PConfig::Application:
     default:
-      name = PProcess::Current().GetName();
+      if (appname.IsEmpty())
+        name = PProcess::Current().GetName();
+      else
+        name = appname;
       if (LocateFile(name, readFilename, filename))
         break;
       name = PProcess::Current().GetFile().GetTitle();
