@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.25  1998/11/26 07:29:19  craigs
+# Yet another bash at a GUI build environment
+#
 # Revision 1.24  1998/11/24 03:41:32  robertj
 # Fixed problem where failed make depend leaves bad .dep files behind
 #
@@ -271,7 +274,8 @@ libdir:
 	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
 	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
 	ln -sf $(PWLIBDIR)/unix/src/pwlib.mak  $(LIBDIR)/pwlib.mak
-	ln -sf $(PWLIBDIR)/$(GUI)/src/$(GUI).mak  $(LIBDIR)/gui.mak
+	ln -sf $(PWLIBDIR)/$(GUI)/src/$(GUI).mak  $(LIBDIR)/$(GUI).mak
+	ln -sf $(PWLIBDIR)/$(GUI)/src/pw_$(GUI).mak  $(LIBDIR)/pw_$(GUI).mak
 else
 libdir:
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
