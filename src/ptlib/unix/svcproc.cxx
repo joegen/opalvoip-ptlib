@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.75  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.74  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -962,7 +965,7 @@ void PServiceProcess::PXOnSignal(int sig)
       }
       break;
 
-#ifndef P_VXWORKS
+#ifdef SIGWINCH
     case SIGWINCH :
       if (currentLogLevel > PSystemLog::Fatal) {
         currentLogLevel = (PSystemLog::Level)(currentLogLevel-1);
@@ -970,7 +973,7 @@ void PServiceProcess::PXOnSignal(int sig)
         s << "Log level decreased to " << PLevelName[currentLogLevel+1];
       }
       break;
-#endif // !P_VXWORKS
+#endif
   }
 }
 

@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.29  2002/10/17 13:44:27  robertj
+# Port to RTEMS, thanks Vladimir Nesic.
+#
 # Revision 1.28  2002/09/26 00:17:48  robertj
 # Fixed make install to force creation of symlinks, thanks Pierre.
 #
@@ -116,6 +119,9 @@ else
     LDSOOPTS = -shared
   endif
 
+  ifeq ($(OSTYPE),rtems)
+    EXTLIBS = -lstdc++
+  endif
 
   ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
     ifdef P_PTHREADS

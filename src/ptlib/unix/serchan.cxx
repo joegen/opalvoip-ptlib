@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.26  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.25  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -100,7 +103,7 @@
 #define	TCSETATTR(f,t)	tcsetattr(f,TCSANOW,t)
 #define	TCGETATTR(f,t)	tcgetattr(f,t)
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_RTEMS)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.97  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.96  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -347,6 +350,13 @@
 #include <pthread.h>
 #include <sys/resource.h>
 
+#ifdef P_RTEMS
+#define	SUSPEND_SIG SIGALRM
+#include <sched.h>
+#else
+#define	SUSPEND_SIG SIGVTALRM
+#endif
+
 
 #define PAssertPTHREAD(func, args) \
   { \
@@ -366,8 +376,12 @@ static BOOL PAssertThreadOp(int retval,
   }
 
   if (errno == EINTR || errno == EAGAIN) {
-    if (++retry < 1000) { \
+    if (++retry < 1000) {
+#if defined(P_RTEMS)
+      rtems_task_wake_after(10);
+#else
       usleep(10000); // Basically just swap out thread to try and clear blockage
+#endif
       return TRUE;   // Return value to try again
     }
     // Give up and assert
@@ -376,9 +390,6 @@ static BOOL PAssertThreadOp(int retval,
   PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
   return FALSE;
 }
-
-
-#define	SUSPEND_SIG SIGVTALRM
 
 
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
@@ -447,7 +458,11 @@ void PProcess::Construct()
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   maxHandles = rl.rlim_cur;
 
+#ifdef P_RTEMS
+  socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
+#else
   ::pipe(timerChangePipe);
+#endif
 
   // initialise the housekeeping thread
   housekeepingThread = NULL;
@@ -510,7 +525,11 @@ void PThread::InitialiseProcessThread()
 
   PX_suspendMutex = MutexInitialiser;
 
+#ifdef P_RTEMS
+  PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
+#else
   PAssertOS(::pipe(unblockPipe) == 0);
+#endif
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
@@ -540,7 +559,11 @@ PThread::PThread(PINDEX stackSize,
 
   PX_suspendMutex = MutexInitialiser;
 
+#ifdef P_RTEMS
+  PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
+#else
   PAssertOS(::pipe(unblockPipe) == 0);
+#endif
 
   // new thread is actually started the first time Resume() is called.
   PX_firstTimeStart = TRUE;
@@ -575,7 +598,7 @@ void PThread::Restart()
   pthread_attr_init(&threadAttr);
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_RTEMS)
   /*
     Set realtime scheduling if our effective user id is root (only then is this
     allowed) AND our priority is Highest.
@@ -697,7 +720,7 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PX_priority = priorityLevel;
 
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_RTEMS)
   if (IsTerminated())
     return;
 
@@ -720,7 +743,7 @@ void PThread::SetPriority(Priority priorityLevel)
 
 PThread::Priority PThread::GetPriority() const
 {
-#ifdef LINUX
+#if defined(LINUX) || defined(P_RTEMS)
   int schedulingPolicy;
   struct sched_param schedParams;
   
