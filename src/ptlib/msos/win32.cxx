@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.9 1995/11/21 11:53:24 robertj Exp $
+ * $Id: win32.cxx,v 1.10 1995/12/10 12:05:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.10  1995/12/10 12:05:48  robertj
+ * Changes to main() startup mechanism to support Mac.
+ * Moved error code for specific WIN32 and MS-DOS versions.
+ * Added WIN32 registry support for PConfig objects.
+ * Added asserts in WIN32 semaphores.
+ *
  * Revision 1.9  1995/11/21 11:53:24  robertj
  * Added timeout on semaphore wait.
  *
@@ -205,6 +211,94 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
   if (isDirectory && len > 0 && fullpath[len-1] != '\\')
     fullpath += '\\';
   return fullpath;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+PString PChannel::GetErrorText() const
+{
+  if (osError == 0)
+    return PString();
+
+  if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
+    return _sys_errlist[osError];
+
+  if ((osError & 0x40000000) == 0)
+    return psprintf("OS error %u", osError);
+
+  int err = osError & 0x3fffffff;
+
+  static const char * const win32_errlist[] = { "" };
+
+  if (err < PARRAYSIZE(win32_errlist) && win32_errlist[err][0] != '\0')
+    return win32_errlist[err];
+
+  return psprintf("WIN32 error %u", err);
+}
+
+
+BOOL PChannel::ConvertOSError(int error)
+{
+  if (error >= 0) {
+    lastError = NoError;
+    osError = 0;
+    return TRUE;
+  }
+
+  if (error != -2)
+    osError = errno;
+  else {
+    osError = GetLastError();
+    switch (osError) {
+      case ERROR_INVALID_HANDLE :
+        osError = EBADF;
+        break;
+      case ERROR_INVALID_PARAMETER :
+        osError = EINVAL;
+        break;
+      case ERROR_ACCESS_DENIED :
+        osError = EACCES;
+        break;
+      case ERROR_NOT_ENOUGH_MEMORY :
+        osError = ENOMEM;
+        break;
+      default :
+        osError |= 0x40000000;
+    }
+  }
+
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+      return TRUE;
+    case ENOENT :
+      lastError = NotFound;
+      break;
+    case EEXIST :
+      lastError = FileExists;
+      break;
+    case EACCES :
+      lastError = AccessDenied;
+      break;
+    case ENOMEM :
+      lastError = NoMemory;
+      break;
+    case ENOSPC :
+      lastError = DiskFull;
+      break;
+    case EINVAL :
+      lastError = BadParameter;
+      break;
+    case EBADF :
+      lastError = NotOpen;
+      break;
+    default :
+      lastError = Miscellaneous;
+  }
+
+  return FALSE;
 }
 
 
@@ -782,6 +876,8 @@ PStringList PSerialChannel::GetPortNames()
 
 void PConfig::Construct(Source src)
 {
+  source = src;
+
   switch (src) {
     case System :
       Construct("WIN.INI");
@@ -789,8 +885,21 @@ void PConfig::Construct(Source src)
 
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
-      Construct(appFile.GetVolume() +
-                              appFile.GetPath() + appFile.GetTitle() + ".INI");
+      PFilePath cfgFile = appFile.GetVolume() +
+                               appFile.GetPath() + appFile.GetTitle() + ".INI";
+      if (PFile::Exists(cfgFile))
+        Construct(cfgFile); // Make a file based config
+      else {
+        location = "SOFTWARE\\";
+        PProcess * proc = PProcess::Current();
+        if (!proc->GetManufacturer().IsEmpty())
+          location += proc->GetManufacturer() + '\\';
+        else
+          location += "PWLib\\";
+        location += proc->GetName() + '\\';
+        if (!proc->GetVersion().IsEmpty())
+          location += proc->GetVersion() + '\\';
+      }
       break;
   }
 }
@@ -798,7 +907,160 @@ void PConfig::Construct(Source src)
 
 void PConfig::Construct(const PFilePath & filename)
 {
-  configFile = filename;
+  location = filename;
+  source = NumSources;
+}
+
+
+class RegistryKey
+{
+  public:
+    RegistryKey(const PString & subkey, BOOL create = FALSE);
+    ~RegistryKey();
+    BOOL EnumKey(PINDEX idx, PString & str);
+    BOOL EnumValue(PINDEX idx, PString & str);
+    BOOL DeleteKey(const PString & subkey);
+    BOOL DeleteValue(const PString & value);
+    BOOL QueryValue(const PString & value, PString & str);
+    BOOL QueryValue(const PString & value, DWORD & num);
+    BOOL SetValue(const PString & value, const PString & str);
+    BOOL SetValue(const PString & value, DWORD num);
+  private:
+    HKEY key;
+};
+
+
+RegistryKey::RegistryKey(const PString & subkey, BOOL create)
+{
+  if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (create) {
+    HKEY rootKey = HKEY_CURRENT_USER;
+    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
+      rootKey = HKEY_LOCAL_MACHINE;
+    DWORD disposition;
+    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
+      return;
+  }
+
+  key = NULL;
+}
+
+
+RegistryKey::~RegistryKey()
+{
+  if (key != NULL)
+    RegCloseKey(key);
+}
+
+
+BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD sizeofname = MAX_PATH;
+  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
+                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::DeleteKey(const PString & subkey)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::DeleteValue(const PString & value)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  if (type != REG_SZ)
+    return FALSE;
+
+  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  if (type != REG_DWORD)
+    return FALSE;
+
+  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, const PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
+                (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
+
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, DWORD num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value,
+                     0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
 }
 
 
@@ -806,14 +1068,24 @@ PStringList PConfig::GetSections()
 {
   PStringList sections;
 
-  if (!configFile.IsEmpty()) {
-    PString buf;
-    char * ptr = buf.GetPointer(10000);
-    GetPrivateProfileString(NULL, NULL, "", ptr, 9999, configFile);
-    while (*ptr != '\0') {
-      sections.AppendString(ptr);
-      ptr += strlen(ptr)+1;
+  switch (source) {
+    case Application : {
+      RegistryKey registry = location;
+      PString name;
+      for (PINDEX idx = 0; registry.EnumKey(idx, name); idx++)
+        sections.AppendString(name);
+      break;
     }
+
+    case NumSources :
+      PString buf;
+      char * ptr = buf.GetPointer(10000);
+      GetPrivateProfileString(NULL, NULL, "", ptr, 9999, location);
+      while (*ptr != '\0') {
+        sections.AppendString(ptr);
+        ptr += strlen(ptr)+1;
+      }
+      break;
   }
 
   return sections;
@@ -824,21 +1096,34 @@ PStringList PConfig::GetKeys(const PString & section) const
 {
   PStringList keys;
 
-  if (configFile.IsEmpty()) {
-    char ** ptr = _environ;
-    while (*ptr != NULL) {
-      PString buf = *ptr++;
-      keys.AppendString(buf.Left(buf.Find('=')));
+  switch (source) {
+    case Environment : {
+      char ** ptr = _environ;
+      while (*ptr != NULL) {
+        PString buf = *ptr++;
+        keys.AppendString(buf.Left(buf.Find('=')));
+      }
+      break;
     }
-  }
-  else {
-    PString buf;
-    char * ptr = buf.GetPointer(10000);
-    GetPrivateProfileString(section, NULL, "", ptr, 9999, configFile);
-    while (*ptr != '\0') {
-      keys.AppendString(ptr);
-      ptr += strlen(ptr)+1;
+
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry = location + section;
+      PString name;
+      for (PINDEX idx = 0; registry.EnumValue(idx, name); idx++)
+        keys.AppendString(name);
+      break;
     }
+
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PString buf;
+      char * ptr = buf.GetPointer(10000);
+      GetPrivateProfileString(section, NULL, "", ptr, 9999, location);
+      while (*ptr != '\0') {
+        keys.AppendString(ptr);
+        ptr += strlen(ptr)+1;
+      }
   }
 
   return keys;
@@ -847,11 +1132,18 @@ PStringList PConfig::GetKeys(const PString & section) const
 
 void PConfig::DeleteSection(const PString & section)
 {
-  if (configFile.IsEmpty())
-    return;
+  switch (source) {
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry = location;
+      PAssertOS(registry.DeleteKey(section));
+      break;
+    }
 
-  PAssert(!section.IsEmpty(), PInvalidParameter);
-  PAssertOS(WritePrivateProfileString(section, NULL, NULL, configFile));
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssertOS(WritePrivateProfileString(section, NULL, NULL, location));
+  }
 }
 
 
@@ -859,14 +1151,22 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 {
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
-    PString str = key;
-    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    putenv(str + "=");
-  }
-  else {
-    PAssert(!section.IsEmpty(), PInvalidParameter);
-    PAssertOS(WritePrivateProfileString(section, key, NULL, configFile));
+  switch (source) {
+    case Environment :
+      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      putenv(key + "=");
+      break;
+
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry = location + section;
+      PAssertOS(registry.DeleteValue(key));
+      break;
+    }
+
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssertOS(WritePrivateProfileString(section, key, NULL, location));
   }
 }
 
@@ -874,23 +1174,34 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 PString PConfig::GetString(const PString & section,
                                      const PString & key, const PString & dflt)
 {
-  PString str;
-
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
-    PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    char * env = getenv(key);
-    if (env != NULL)
-      str = env;
-    else
-      str = dflt;
-  }
-  else {
-    PAssert(!section.IsEmpty(), PInvalidParameter);
-    GetPrivateProfileString(section, key, dflt,
-                                        str.GetPointer(1000), 999, configFile);
-    str.MakeMinimumSize();
+  PString str;
+
+  switch (source) {
+    case Environment : {
+      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      char * env = getenv(key);
+      if (env != NULL)
+        str = env;
+      else
+        str = dflt;
+      break;
+    }
+
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry = location + section;
+      if (!registry.QueryValue(key, str))
+        str = dflt;
+      break;
+    }
+
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      GetPrivateProfileString(section, key, dflt,
+                                        str.GetPointer(1000), 999, location);
+      str.MakeMinimumSize();
   }
 
   return str;
@@ -902,14 +1213,84 @@ void PConfig::SetString(const PString & section,
 {
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
-  if (configFile.IsEmpty()) {
-    PString str = key;
-    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    putenv(str + "=" + value);
+  switch (source) {
+    case Environment :
+      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      putenv(key + "=" + value);
+      break;
+
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry = location + section;
+      registry.SetValue(key, value);
+      break;
+    }
+
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssertOS(WritePrivateProfileString(section, key, value, location));
+  }
+}
+
+
+BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt)
+{
+  if (source != Application) {
+    PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
+    return str[0] == 'T' || str[0] == 'Y' || str.AsInteger() != 0;
+  }
+
+  PAssert(!section.IsEmpty(), PInvalidParameter);
+  RegistryKey registry = location + section;
+
+  DWORD value;
+  if (!registry.QueryValue(key, value))
+    return dflt;
+
+  return value != 0;
+}
+
+
+void PConfig::SetBoolean(const PString & section, const PString & key, BOOL value)
+{
+  if (source != Application)
+    SetString(section, key, value ? "True" : "False");
+  else {
+    PAssert(!section.IsEmpty(), PInvalidParameter);
+    RegistryKey registry = location + section;
+    registry.SetValue(key, value ? 1 : 0);
+  }
+}
+
+
+long PConfig::GetInteger(const PString & section, const PString & key, long dflt)
+{
+  if (source != Application) {
+    PString str(PString::Signed, dflt);
+    return GetString(section, key, str).AsInteger();
+  }
+
+  PAssert(!section.IsEmpty(), PInvalidParameter);
+  RegistryKey registry = location + section;
+
+  DWORD value;
+  if (!registry.QueryValue(key, value))
+    return dflt;
+
+  return value;
+}
+
+
+void PConfig::SetInteger(const PString & section, const PString & key, long value)
+{
+  if (source != Application) {
+    PString str(PString::Signed, value);
+    SetString(section, key, str);
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    PAssertOS(WritePrivateProfileString(section, key, value, configFile));
+    RegistryKey registry = location + section;
+    registry.SetValue(key, value);
   }
 }
 
@@ -917,19 +1298,17 @@ void PConfig::SetString(const PString & section,
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
 
-PThread::ThreadDict PThread::threads;
-
 DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
 {
+  PProcess * process = PProcess::Current();
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
-  AttachThreadInput(thread->threadId,
-                              ((PThread*)PProcess::Current())->threadId, TRUE);
-  PThread::threads.SetAt(thread->threadId, thread);
+  AttachThreadInput(thread->threadId, ((PThread*)process)->threadId, TRUE);
+  process->threads.SetAt(thread->threadId, thread);
 
   thread->Main();
 
-  PThread::threads.SetAt(thread->threadId, NULL);
+  process->threads.SetAt(thread->threadId, NULL);
   thread->threadHandle = NULL;
   return 0;
 }
@@ -969,7 +1348,7 @@ void PThread::Terminate()
       ExitThread(0);
     else
       TerminateThread(threadHandle, 1);
-    threads.SetAt(threadId, NULL);
+    PProcess::Current()->threads.SetAt(threadId, NULL);
     threadHandle = NULL;
   }
 }
@@ -1044,11 +1423,11 @@ void PThread::Yield()
 
 void PThread::InitialiseProcessThread()
 {
+  originalStackSize = 0;
   threadHandle = GetCurrentThread();
   threadId = GetCurrentThreadId();
-  threads.DisallowDeleteObjects();
-  threads.SetAt(threadId, this);
-  originalStackSize = 0;
+  ((PProcess *)this)->threads.DisallowDeleteObjects();
+  ((PProcess *)this)->threads.SetAt(threadId, this);
 }
 
 
@@ -1068,17 +1447,42 @@ PString PProcess::GetUserName() const
 ///////////////////////////////////////////////////////////////////////////////
 // PServiceProcess
 
-void PServiceProcess::PreInitialise(int argc, char ** argv)
+PServiceProcess::PServiceProcess(const char * manuf,
+                                           const char * name, const char * ver)
+  : PProcess(manuf, name, ver)
 {
-  PProcess::PreInitialise(1, argv);
+}
+
+
+int PServiceProcess::_main(int argc, char ** argv, char **)
+{
+  PErrorStream = &cerr;
+  PreInitialise(1, argv);
 
   if (argc > 1) {
-    ProcessCommand(argv[1]);
+    switch (ProcessCommand(argv[1])) {
+      case CommandProcessed :
+        return 0;
+      case ProcessCommandError :
+        return 1;
+    }
+
     debugMode = TRUE;
-    return;
+    currentLogLevel = LogInfo;
+    PError << "Service simulation started for \"" << GetName() << "\".\n"
+              "Press ENTER to terminate.\n" << endl;
+
+    // start the thread that performs the work of the service.
+    threadHandle=CreateThread(NULL, 4096, ThreadEntry, NULL, 0, &threadId);
+    if (threadHandle != NULL)
+      getchar();
+    TerminateThread(threadHandle, 1);
+    OnStop();
+    return 0;
   }
 
   debugMode = FALSE;
+  currentLogLevel = LogError;
 
   // SERVICE_STATUS members that don't change
   status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -1089,20 +1493,22 @@ void PServiceProcess::PreInitialise(int argc, char ** argv)
     { NULL, NULL }
   };
 
-  dispatchTable[0].lpServiceName = GetServiceName();
+  dispatchTable[0].lpServiceName = (char *)(const char *)GetName();
 
   if (StartServiceCtrlDispatcher(dispatchTable))
-    exit(GetTerminationValue());
+    return GetTerminationValue();
 
   SystemLog(LogFatal, "StartServiceCtrlDispatcher failed.");
-  exit(1);
+  PError << "Could not start service.\n";
+  ProcessCommand("");
+  return 1;
 }
 
 
 void PServiceProcess::BeginService()
 {
   // register our service control handler:
-  statusHandle = RegisterServiceCtrlHandler(GetServiceName(), ControlEntry);
+  statusHandle = RegisterServiceCtrlHandler(GetName(), ControlEntry);
   if (statusHandle == NULL)
     return;
 
@@ -1171,39 +1577,63 @@ void PServiceProcess::ControlEntry(DWORD code)
 }
 
 
-void PServiceProcess::SystemLog(SystemLogLevel level, const PString & msg)
+
+void PServiceProcess::SystemLog(SystemLogLevel level,const PString & msg)
 {
+  SystemLog(level, "%s", (const char *)msg);
+}
+
+
+void PServiceProcess::SystemLog(SystemLogLevel level, const char * fmt, ...)
+{
+  if (level > currentLogLevel)
+    return;
+
   DWORD err = GetLastError();
 
-  static const char * levelName[] = {
-    "Fatal error logged",
-    "Error logged",
-    "Warning logged",
-    "Information logged"
-  };
+  char msg[1000];
+  va_list args;
+  va_start(args, fmt);
+  vsprintf(msg, fmt, args);
 
   if (debugMode) {
-    PError << levelName[level] << ": " << msg;
-    if (level != LogInfo)
+    static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
+    WaitForSingleObject(mutex, INFINITE);
+    static const char * levelName[NumLogLevels] = {
+      "Fatal error",
+      "Error",
+      "Warning",
+      "Information"
+    };
+    PTime now;
+    PError << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
+    if (msg[0] != '\0')
+      PError << ": " << msg;
+    if (level != LogInfo && err != 0)
       PError << " - error = " << err;
     PError << endl;
+    ReleaseSemaphore(mutex, 1, NULL);
     return;
   }
 
   // Use event logging to log the error.
-  HANDLE hEventSource = RegisterEventSource(NULL, GetServiceName());
+  HANDLE hEventSource = RegisterEventSource(NULL, GetName());
   if (hEventSource == NULL)
     return;
 
-  PStringStream buf;
-  if (level != LogInfo)
-    buf << "error code = " << err;
+  if (level != LogInfo && err != 0)
+    sprintf(&msg[strlen(msg)], "error code = ", err);
 
-  LPCTSTR strings[3];
-  strings[0] = levelName[level];
-  strings[1] = msg;
-  strings[2] = buf;
+  LPCTSTR strings[2];
+  strings[0] = msg;
+  strings[1] = level != LogFatal ? "" : " Program aborted.";
 
+  static const DWORD levelName[NumLogLevels] = {
+    EVENTLOG_ERROR_TYPE,
+    EVENTLOG_ERROR_TYPE,
+    EVENTLOG_WARNING_TYPE,
+    EVENTLOG_INFORMATION_TYPE
+  };
   ReportEvent(hEventSource, // handle of event source
               EVENTLOG_ERROR_TYPE,  // event type
               0,                    // event category
@@ -1282,7 +1712,26 @@ void PServiceProcess::OnInterrogate()
 }
 
 
-void PServiceProcess::ProcessCommand(const char * cmd)
+class SC_HANDLE_class
+{
+  public:
+    SC_HANDLE_class()
+        { h = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS); }
+    SC_HANDLE_class(const SC_HANDLE_class & manager, PServiceProcess * svc)
+        { h = OpenService(manager, svc->GetName(), SERVICE_ALL_ACCESS); }
+    ~SC_HANDLE_class()
+        { if (h != NULL) CloseServiceHandle(h); }
+    operator SC_HANDLE() const
+        { return h; }
+    BOOL IsNULL()
+        { return h == NULL; }
+  private:
+    SC_HANDLE h;
+};
+
+
+PServiceProcess::ProcessCommandResult
+                             PServiceProcess::ProcessCommand(const char * cmd)
 {
   static const char * commandNames[] = {
     "debug", "install", "remove", "start", "stop", "pause", "resume"
@@ -1293,97 +1742,88 @@ void PServiceProcess::ProcessCommand(const char * cmd)
       break;
 
   if (cmdNum >= PARRAYSIZE(commandNames)) {
-    cerr << "Unknown command \"" << cmd << "\".\n"
-            "usage: " << GetName() << " [ ";
+    if (*cmd != '\0')
+      PError << "Unknown command \"" << cmd << "\".\n";
+    PError << "usage: " << GetName() << " [ ";
     for (cmdNum = 0; cmdNum < PARRAYSIZE(commandNames)-1; cmdNum++)
-      cerr << commandNames[cmdNum] << " | ";
-    cerr << commandNames[cmdNum] << " ]" << endl;
-    exit(1);
+      PError << commandNames[cmdNum] << " | ";
+    PError << commandNames[cmdNum] << " ]" << endl;
+    return ProcessCommandError;
   }
 
   if (cmdNum == 0) // Debug mode
-    return;
+    return DebugCommandMode;
 
-  SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-  if (schSCManager == NULL) {
-    cerr << "Could not open Service Manager." << endl;
-    exit(1);
+  SC_HANDLE_class schSCManager;
+  if (schSCManager.IsNULL()) {
+    PError << "Could not open Service Manager." << endl;
+    return ProcessCommandError;
   }
 
-  SC_HANDLE schService = OpenService(schSCManager,
-                                        GetServiceName(), SERVICE_ALL_ACCESS);
-  if (cmdNum != 1 && schService == NULL)
-    cerr << "Service is not installed." << endl;
+  SC_HANDLE_class schService(schSCManager, this);
+  if (cmdNum != 1 && schService.IsNULL()) {
+    PError << "Service is not installed." << endl;
+    return ProcessCommandError;
+  }
+
+  SERVICE_STATUS status;
+
+  switch (cmdNum) {
+    case 1 : // install
+      if (schService.IsNULL()) {
+        PError << "Service is already installed." << endl;
+        return ProcessCommandError;
+      }
+      else {
+        SC_HANDLE newService = CreateService(
+                          schSCManager,               // SCManager database
+                          GetName(),                  // name of service
+                          GetName(),                  // name to display
+                          SERVICE_ALL_ACCESS,         // desired access
+                          SERVICE_WIN32_OWN_PROCESS,  // service type
+                          SERVICE_DEMAND_START,       // start type
+                          SERVICE_ERROR_NORMAL,       // error control type
+                          GetFile(),                  // service's binary
+                          NULL,                       // no load ordering group
+                          NULL,                       // no tag identifier
+                          NULL,                       // no dependencies
+                          NULL,                       // LocalSystem account
+                          NULL);                      // no password
+        if (newService != NULL)
+          CloseServiceHandle(newService);
+      }
+      break;
+
+    case 2 : // remove
+      DeleteService(schService);
+      break;
+
+    case 3 : // start
+      StartService(schService, 0, NULL);
+      break;
+
+    case 4 : // stop
+      ControlService(schService, SERVICE_CONTROL_STOP, &status);
+      break;
+
+    case 5 : // pause
+      ControlService(schService, SERVICE_CONTROL_PAUSE, &status);
+      break;
+
+    case 6 : // resume
+      ControlService(schService, SERVICE_CONTROL_CONTINUE, &status);
+  }
+
+  DWORD err = GetLastError();
+  PError << "Service command \"" << commandNames[cmdNum] << "\" ";
+  if (err != 0) {
+    PError << "failed - error code = " << err << endl;
+    return ProcessCommandError;
+  }
   else {
-    SERVICE_STATUS status;
-    switch (cmdNum) {
-      case 1 : // install
-        if (schService != NULL)
-          cerr << "Service is already installed." << endl;
-        else {
-          schService = CreateService(
-                            schSCManager,               // SCManager database
-                            GetServiceName(),           // name of service
-                            GetServiceName(),           // name to display
-                            SERVICE_ALL_ACCESS,         // desired access
-                            SERVICE_WIN32_OWN_PROCESS,  // service type
-                            SERVICE_DEMAND_START,       // start type
-                            SERVICE_ERROR_NORMAL,       // error control type
-                            GetFile(),                  // service's binary
-                            NULL,                       // no load ordering group
-                            NULL,                       // no tag identifier
-                            NULL,                       // no dependencies
-                            NULL,                       // LocalSystem account
-                            NULL);                      // no password
-          if (schService == NULL) {
-            DWORD err = GetLastError();
-            cerr << "Service install failed - error code = " << err << endl;
-          }
-        }
-        break;
-
-      case 2 : // remove
-        if (!DeleteService(schService)) {
-          DWORD err = GetLastError();
-          cerr << "Service removal failed - error code = " << err << endl;
-        }
-        schService = NULL;
-        break;
-
-      case 3 : // start
-        if (!StartService(schService, 0, NULL)) {
-          DWORD err = GetLastError();
-          cerr << "Service start failed - error code = " << err << endl;
-        }
-        break;
-
-      case 4 : // stop
-        if (!ControlService(schService, SERVICE_CONTROL_STOP, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service stop failed - error code = " << err << endl;
-        }
-        break;
-
-      case 5 : // pause
-        if (!ControlService(schService, SERVICE_CONTROL_PAUSE, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service pause failed - error code = " << err << endl;
-        }
-        break;
-
-      case 6 : // resume
-        if (!ControlService(schService, SERVICE_CONTROL_CONTINUE, &status)) {
-          DWORD err = GetLastError();
-          cerr << "Service continue failed - error code = " << err << endl;
-        }
-    }
+    PError << "successful." << endl;
+    return CommandProcessed;
   }
-
-	if (schService != NULL)
-    CloseServiceHandle(schService);
-	if (schSCManager != NULL)
-    CloseServiceHandle(schSCManager);
-  exit(0);
 }
 
 
@@ -1392,38 +1832,46 @@ void PServiceProcess::ProcessCommand(const char * cmd)
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
+  if (initial > maxCount)
+    initial = maxCount;
   hSemaphore = CreateSemaphore(NULL, initial, maxCount, NULL);
+  PAssertOS(hSemaphore != NULL);
 }
 
 
 PSemaphore::~PSemaphore()
 {
-  CloseHandle(hSemaphore);
+  PAssertOS(CloseHandle(hSemaphore));
 }
 
 
 void PSemaphore::Wait()
 {
-  WaitForSingleObject(hSemaphore, INFINITE);
+  PAssertOS(WaitForSingleObject(hSemaphore, INFINITE) != WAIT_FAILED);
 }
 
 
 BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
-  return WaitForSingleObject(hSemaphore,
-                                    timeout.GetMilliseconds()) != WAIT_TIMEOUT;
+  DWORD result = WaitForSingleObject(hSemaphore, timeout.GetMilliseconds());
+  PAssertOS(result != WAIT_FAILED);
+  return result != WAIT_TIMEOUT;
 }
 
 
 void PSemaphore::Signal()
 {
-  ReleaseSemaphore(hSemaphore, 1, NULL);
+  if (!ReleaseSemaphore(hSemaphore, 1, NULL))
+    PAssertOS(GetLastError() == ERROR_TOO_MANY_POSTS);
+  SetLastError(ERROR_SUCCESS);
 }
 
 
 BOOL PSemaphore::WillBlock() const
 {
-  return WaitForSingleObject(hSemaphore, 0) == WAIT_TIMEOUT;
+  DWORD result = WaitForSingleObject(hSemaphore, 0);
+  PAssertOS(result != WAIT_FAILED);
+  return result == WAIT_TIMEOUT;
 }
 
 
