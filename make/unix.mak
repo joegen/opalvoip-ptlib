@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.131  2002/06/14 11:14:30  rogerh
+# Detect more cpu types. Submitted by Klaus Kaempf <kkaempf@suse.de>
+#
 # Revision 1.130  2002/06/13 10:01:20  rogerh
 # We no longer need the /usr/include/g++/backward include path
 #
@@ -485,8 +488,13 @@ MACHTYPE := x86
 POSSIBLE_CPUTYPE := i686
 endif
 
+#make sure x86 does not match x86_64 by mistake
 ifneq (,$(findstring x86, $(MACHTYPE)))
+ifneq (,$(findstring x86_64, $(MACHTYPE)))
+MACHTYPE := x86_64
+else
 MACHTYPE := x86
+endif
 endif
 
 ifneq (,$(findstring powerpc, $(MACHTYPE)))
@@ -497,6 +505,33 @@ ifneq (,$(findstring mips, $(MACHTYPE)))
 MACHTYPE := mips
 endif
 
+ifneq (,$(findstring alpha, $(MACHTYPE)))
+MACHTYPE := alpha
+endif
+
+ifneq (,$(findstring ppc, $(MACHTYPE)))
+MACHTYPE := ppc
+endif
+
+ifneq (,$(findstring sparc, $(MACHTYPE)))
+MACHTYPE := sparc
+endif
+
+ifneq (,$(findstring ia64, $(MACHTYPE)))
+MACHTYPE := ia64
+endif
+
+ifneq (,$(findstring s390, $(MACHTYPE)))
+ifneq (,$(findstring s390x, $(MACHTYPE)))
+MACHTYPE := s390x
+else
+MACHTYPE := s390
+endif
+endif
+
+ifneq (,$(findstring armv4l, $(MACHTYPE)))
+MACHTYPE := armv4l
+endif
 ifndef CPUTYPE
 CPUTYPE := $(POSSIBLE_CPUTYPE)
 export CPUTYPE
@@ -607,11 +642,27 @@ ifeq ($(MACHTYPE),alpha)
 STDCCFLAGS	+= -DP_64BIT
 endif
 
+ifeq ($(MACHTYPE),ia64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
+ifeq ($(MACHTYPE),s390x)
+STDCCFLAGS     += -DP_64BIT
+endif
+
+ifeq ($(MACHTYPE),x86_64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
 ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
 ifeq ($(MACHTYPE),alpha)
+ENDIAN		:= PBIG_ENDIAN
+endif
+
+ifneq ($(findstring $(MACHTYPE),s390 s390x),)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
