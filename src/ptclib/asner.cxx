@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.29  2000/01/20 06:22:22  robertj
+ * Fixed boundary condition error for constrained integer encoding (values 1, 256 etc)
+ *
  * Revision 1.28  1999/11/22 23:15:43  robertj
  * Fixed bug in PASN_Choice::Compare(), should make sure choices are the same before comparing.
  *
@@ -3891,7 +3894,7 @@ void PBER_Stream::HeaderEncode(const PASN_Object & obj)
   if (len < 128)
     ByteEncode(len);
   else {
-    PINDEX count = (CountBits(len)+7)/8;
+    PINDEX count = (CountBits(len+1)+7)/8;
     ByteEncode(count|0x80);
     while (count-- > 0)
       ByteEncode(len >> (count*8));
@@ -4163,7 +4166,7 @@ void PPER_Stream::UnsignedEncode(int value, unsigned lower, unsigned upper)
 
   if (aligned && (range == 0 || range > 255)) { // not 10.5.6 and not 10.5.7.1
     if (nBits > 16) {                           // not 10.5.7.4
-      int numBytes = value == 0 ? 1 : (((CountBits(value - lower))+7)/8);
+      int numBytes = value == 0 ? 1 : (((CountBits(value - lower + 1))+7)/8);
       LengthEncode(numBytes, 1, (nBits+7)/8);    // 12.2.6
       nBits = numBytes*8;
     }
