@@ -27,6 +27,18 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.134.2.1  2005/02/04 05:19:12  csoutheren
+ * Backported patches from Atlas-devel
+ *
+ * Revision 1.137  2005/01/21 21:25:19  csoutheren
+ * Removed incorrect return in PThread::WaitForTermination
+ *
+ * Revision 1.136  2005/01/16 23:00:37  csoutheren
+ * Fixed problem when calling WaitForTermination from within the same thread
+ *
+ * Revision 1.135  2004/12/21 06:30:55  csoutheren
+ * Added explicit stack size for pthreads to minimise VM usage, thanks to Diana Cionoiu
+ *
  * Revision 1.134  2004/09/02 07:55:44  csoutheren
  * Added extra PXAbortBlock to WaitForTermination to assist in terminaing
  * threads under certain conditions
@@ -778,6 +790,10 @@ void PThread::Restart()
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
 #if defined(P_LINUX)
+
+  // Set a decent (256K) stack size that won't eat all virtual memory
+  pthread_attr_setstacksize(&threadAttr, 16*PTHREAD_STACK_MIN);
+
   /*
     Set realtime scheduling if our effective user id is root (only then is this
     allowed) AND our priority is Highest.
@@ -1191,7 +1207,10 @@ BOOL PThread::IsTerminated() const
 
 void PThread::WaitForTermination() const
 {
-  PAssert(Current() != this, "Waiting for self termination!");
+  if (this == Current()) {
+    PTRACE(2, "WaitForTermination short circuited");
+    return;
+  }
   
   PXAbortBlock();   // this assist in clean shutdowns on some systems
 
@@ -1204,8 +1223,10 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-
-  PAssert(Current() != this, "Waiting for self termination!");
+  if (this == Current()) {
+    PTRACE(2, "WaitForTermination(t) short circuited");
+    return TRUE;
+  }
   
   PTRACE(6, "PWLib\tWaitForTermination(" << maxWait << ')');
 

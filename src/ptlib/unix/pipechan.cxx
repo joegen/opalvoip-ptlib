@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.42.8.1  2005/02/04 05:19:12  csoutheren
+ * Backported patches from Atlas-devel
+ *
+ * Revision 1.43  2004/12/15 00:39:01  csoutheren
+ * Fixed problem with passing arguments to PPipeChannel, thanks to Derek Smithies
+ *
  * Revision 1.42  2003/04/22 23:43:51  craigs
  * MacOSX changes as per Hugo Santos
  *
@@ -294,7 +300,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   args[0] = strdup(subProgName.GetTitle());
   PINDEX i;
   for (i = 0; i < argumentList.GetSize(); i++) 
-    args[i+1] = argumentList[i].GetPointer();
+    args[i+1] = strdup(argumentList[i].GetPointer());
 
   // Set up new environment if one specified.
   if (environment != NULL) {
