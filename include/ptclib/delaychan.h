@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.3  2002/02/25 11:05:02  rogerh
+ * New Delay code which solves the accumulated error problem. Based on ideas
+ * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
+ *
  * Revision 1.2  2002/01/15 03:55:43  craigs
  * Added PAdaptiveDelay class
  *
@@ -56,12 +60,10 @@ class PAdaptiveDelay : public PObject
     PAdaptiveDelay();
     BOOL Delay(int time);
     void Restart();
-    int  GetError();
  
   protected:
-    PTime  previousTime;
     BOOL   firstTime;
-    int    error;
+    PTime  targetTime;
 };
 
 
