@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.19  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.18  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -372,7 +375,21 @@ class PSoundChannel : public PChannel
       PINDEX count = 2  /// Number of buffers
     );
 
-    /**Get the internal buffers for the sound channel I/O.
+    /**Get the volume of the play/read process.  0 == quiet.  99 == LOUD.
+
+       @return
+       TRUE if there were no errors.
+    */
+    BOOL GetVolume(int &devVol);
+
+    /**Set the volume of the play/read process.  0 == quiet.  99 == LOUD.
+        
+       @return
+       TRUE if there were no errors.
+    */
+    BOOL SetVolume(int devVol);
+
+    /**Get the internal buffers for the sound channel I/O. 
 
        @return
        TRUE if the buffer size were obtained.

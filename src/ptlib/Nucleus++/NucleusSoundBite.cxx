@@ -155,3 +155,15 @@ BOOL PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
     return TRUE;
 }
 
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+ cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+

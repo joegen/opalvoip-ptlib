@@ -27,6 +27,9 @@
  * Contributor(s): 
  *
  * $Log: macosaudio.cxx,v $
+ * Revision 1.2  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.1  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -519,6 +522,18 @@ BOOL PSoundChannel::Abort()
 	}
 	
 	return FALSE;
+}
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+ cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
+  return FALSE;
 }
 
 
