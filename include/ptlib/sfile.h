@@ -1,5 +1,5 @@
 /*
- * $Id: sfile.h,v 1.10 1995/06/17 11:13:19 robertj Exp $
+ * $Id: sfile.h,v 1.11 1996/01/23 13:15:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sfile.h,v $
+ * Revision 1.11  1996/01/23 13:15:38  robertj
+ * Mac Metrowerks compiler support.
+ *
  * Revision 1.10  1995/06/17 11:13:19  robertj
  * Documentation update.
  *
@@ -53,6 +56,10 @@ PDECLARE_CLASS(PStructuredFile, PFile)
    disk file and is random access. It would primarily be used for database
    type applications.
  */
+
+  private:
+    BOOL Read(void * buf, PINDEX len) { return PFile::Read(buf, len); }
+    BOOL Write(const void * buf, PINDEX len) { return PFile::Write(buf, len); }
 
   public:
     PStructuredFile();
