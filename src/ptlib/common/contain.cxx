@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.114  2002/06/17 09:16:18  robertj
+ * Fixed strange deadlock woth gcc 3.0.2, thanks Artis Kugevics
+ *
  * Revision 1.113  2002/06/14 13:22:52  robertj
  * Added PBitArray class.
  *
@@ -770,10 +773,10 @@ void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed)
       strm << '\n';
     PINDEX j;
     for (j = 0; j < indent; j++)
-      strm.put(' ');
+      strm << ' ';
     for (j = 0; j < line_width; j++) {
       if (j == line_width/2)
-        strm.put(' ');
+        strm << ' ';
       if (i+j < GetSize()) {
         strm << setw(val_width);
         if (is_signed)
@@ -784,7 +787,7 @@ void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed)
       else {
         PINDEX k;
         for (k = 0; k < val_width; k++)
-          strm.put(' ');
+          strm << ' ';
       }
       strm << ' ';
     }
@@ -825,7 +828,7 @@ void PCharArray::PrintOn(ostream & strm) const
     strm.write(theArray, GetSize());
 
   while (width-- > 0)
-    strm.put(strm.fill());
+    strm << (char)strm.fill();
 
   if (!left)
     strm.write(theArray, GetSize());
