@@ -1,5 +1,5 @@
 /*
- * $Id: socket.cxx,v 1.23 1998/08/27 01:13:20 robertj Exp $
+ * $Id: socket.cxx,v 1.24 1998/09/08 05:15:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994-1996 Equivalence Pty. Ltd.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.24  1998/09/08 05:15:14  robertj
+ * Fixed problem in Windows requiring snmpapi.dll for PEthSocket class.
+ *
  * Revision 1.23  1998/08/27 01:13:20  robertj
  * Changes to resolve signedness in GNU C library v6
  * Remove Linux EthSocket stuff from Sun build, still needs implementing.
@@ -665,6 +668,9 @@ BOOL PEthSocket::Write(const void * buf, PINDEX len)
   strcpy(to.sa_data, channelName);
   return os_sendto(buf, len, 0, &to, sizeof(to));
 }
+
+
+#include "ptlib/src/pethsock.cxx"
 
 
 ///////////////////////////////////////////////////////////////////////////////
