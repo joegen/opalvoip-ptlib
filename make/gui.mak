@@ -51,7 +51,7 @@ ifdef RESOURCE
 #
 # create list of source files containing resource file if required
 #
-SOURCES		:= $(SOURCES) $(RESCODE) $(RESCXX)
+SOURCES		:= $(RESCODE) $(RESCXX) $(SOURCES)
 
 #
 # create list of object files containing resource file if required
