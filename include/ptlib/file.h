@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.3 1993/07/14 12:49:16 robertj Exp $
+ * $Id: file.h,v 1.4 1993/08/01 14:05:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Revision 1.4  1993/08/01 14:05:27  robertj
+ * Added GetFileName() function required for proper portability.
+ * Improved some comments.
+ *
+ * Revision 1.3  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
@@ -59,9 +63,6 @@ DECLARE_CLASS(PFile, PContainer)
 
 
     // New member functions
-    PString GetFullName() const;
-      // Return the full, unambiguous, path name for the file.
-
     PString GetVolume() const;
       // Get the drive/volume name component of the full file specification.
       // Note this may not be relevent on some platforms and returns "".
@@ -70,12 +71,21 @@ DECLARE_CLASS(PFile, PContainer)
       // Get the directory path component of the full file specification.
 
     PString GetName() const;
-      // Get the file name component of the full file specification.
+      // Get the name part component of the full file specification.
 
     PString GetType() const;
       // Get the file type component of the full file specification. Note that
       // on some platforms this may not actually be part of the GetFullName()
       // string.
+
+    PString GetFileName() const;
+      // Get the actual directory entry name component of the full file
+      // specification. This may be identical to GetName()+GetType() or
+      // simply GetName() depending on the platform.
+
+    PString GetFullName() const;
+      // Return the full, unambiguous, path name for the file. This is
+      // always GetVolume()+GetPath()+GetFileName().
 
 
     BOOL Exists() const;
