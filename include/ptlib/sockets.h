@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.5 1995/06/04 12:36:55 robertj Exp $
+ * $Id: sockets.h,v 1.6 1996/05/15 10:13:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.6  1996/05/15 10:13:15  robertj
+ * Added ICMP protocol socket, getting common ancestor to UDP.
+ *
  * Revision 1.5  1995/06/04 12:36:55  robertj
  * Added application layer protocol sockets.
  *
@@ -55,9 +58,21 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PIPDatagramSocket
+
+#include <ipdsock.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
 #include <udpsock.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PICMPSocket
+
+#include <icmpsock.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
