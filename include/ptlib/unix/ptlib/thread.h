@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.33  2004/04/02 03:42:07  ykiryanov
+ * Added unblockPipe to improve code
+ *
  * Revision 1.32  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -189,6 +192,7 @@
     thread_id threadId;
     int32 priority;
     PINDEX originalStackSize;
+    int unblockPipe[2];
 
 #elif defined(P_MAC_MPTHREADS)
   public:
