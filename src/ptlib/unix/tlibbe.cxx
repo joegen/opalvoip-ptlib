@@ -613,6 +613,7 @@ BOOL PSemaphore::WillBlock() const
 PMutex::PMutex() 
   : PSemaphore( ::create_sem(1, "PWLM" ) ), benaphoreCount(0)
 {
+#warning PMutex not guaranteed to be recursive
   #ifdef DEBUG_SEMAPHORES
   PError << "::create_sem(PMutex) " << semId << endl;
   #endif 
