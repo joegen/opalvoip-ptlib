@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.20  2001/09/28 00:45:27  robertj
+ * Removed HasKey() as is confusing due to ancestor Contains().
+ *
  * Revision 1.19  2000/11/21 01:49:25  robertj
  * Fixed warning on GNU compiler.
  *
@@ -1153,18 +1156,18 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
   flush();
 
   if (writeHeaders) {
-    if (!headers.HasKey(FromTag) || !headers.HasKey(ToTag))
+    if (!headers.Contains(FromTag) || !headers.Contains(ToTag))
       return FALSE;
 
-    if (!headers.HasKey(MimeVersionTag))
+    if (!headers.Contains(MimeVersionTag))
       headers.SetAt(MimeVersionTag, "1.0");
 
-    if (!headers.HasKey(DateTag))
+    if (!headers.Contains(DateTag))
       headers.SetAt(DateTag, PTime().AsString());
 
     if (writePartHeaders)
       headers.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundaries[0]+'"');
-    else if (!headers.HasKey(ContentTypeTag))
+    else if (!headers.Contains(ContentTypeTag))
       headers.SetAt(ContentTypeTag, "text/plain");
 
     PStringStream hdr;
@@ -1179,7 +1182,7 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
   }
 
   if (writePartHeaders) {
-    if (!partHeaders.HasKey(ContentTypeTag))
+    if (!partHeaders.Contains(ContentTypeTag))
       partHeaders.SetAt(ContentTypeTag, "text/plain");
 
     PStringStream hdr;
@@ -1361,7 +1364,7 @@ BOOL PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
   if (!Open(smtp))
     return FALSE;
 
-  if (!headers.HasKey(FromTag) || !headers.HasKey(ToTag))
+  if (!headers.Contains(FromTag) || !headers.Contains(ToTag))
     return FALSE;
 
   return smtp->BeginMessage(headers[FromTag], headers[ToTag]);
