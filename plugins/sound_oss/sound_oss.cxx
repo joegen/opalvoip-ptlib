@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.3  2003/11/14 05:58:00  csoutheren
+ * Removed loopback code as this should be in a seperate plugin :)
+ *
  * Revision 1.2  2003/11/12 03:24:15  csoutheren
  * Imported plugin code from crs_pwlib_plugin branch and combined with
  *   new plugin code from Snark of GnomeMeeting
@@ -249,58 +252,9 @@
 PCREATE_SOUND_PLUGIN(OSS, PSoundChannelOSS);
 
 ///////////////////////////////////////////////////////////////////////////////
-    
-PAudioDelay::PAudioDelay()
-{
-  firstTime = TRUE;
-  error = 0;
-}
-    
-void PAudioDelay::Restart()
-{
-  firstTime = TRUE;
-}
-  
-BOOL PAudioDelay::Delay(int frameTime)
-{
-  if (firstTime) {
-    firstTime = FALSE;
-    previousTime = PTime();
-    return TRUE;
-  }
-
-  error += frameTime;
-
-  PTime now;
-  PTimeInterval delay = now - previousTime;
-  error -= (int)delay.GetMilliSeconds();
-  previousTime = now;
-
-  if (error > 0)
-#ifdef P_LINUX
-    usleep(error * 1000);
-#else
-    PThread::Current()->Sleep(error);
-#endif
-
-  return error <= -frameTime;
-
-  //if (headRoom > MAX_HEADROOM)
-  //  PThread::Current()->Sleep(headRoom - MIN_HEADROOM);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
 PDICTIONARY(SoundHandleDict, PString, SoundHandleEntry);
-
-static char buffer[LOOPBACK_BUFFER_SIZE];
-static int  startptr, endptr;
-static PINDEX bufferLen;
-static PMutex audioBufferMutex;
-PAudioDelay readDelay;
-PAudioDelay writeDelay;
-
 
 static PMutex dictMutex;
 
@@ -517,8 +471,6 @@ PStringArray PSoundChannelOSS::GetDeviceNames(Directions /*dir*/)
     }
   }
 
-  devices.AppendString("loopback");
-
   return devices;
 }
 
@@ -568,33 +520,27 @@ BOOL PSoundChannelOSS::Open(const PString & _device,
 
     // this is the first time this device has been used
     // open the device in read/write mode always
-    if (_device == "loopback") {
-      startptr = endptr = 0;
-      bufferLen = 0;
-      os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
-    } else {
-      // open the device in non-blocking mode to avoid hang if already open
-      os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
+    // open the device in non-blocking mode to avoid hang if already open
+    os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
 
-      if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-        // cannot open in read/write mode. Try in one direction only. (for ALSA)
-        if (_dir == Recorder) {
-          os_handle = ::open((const char *)_device, O_RDONLY | O_NONBLOCK);
-        } else {
-          os_handle = ::open((const char *)_device, O_WRONLY | O_NONBLOCK);
-        }
-
-        if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-          return ConvertOSError(os_handle);
-        }
-
-        // device opened, but in half duplex mode
+    if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
+      // cannot open in read/write mode. Try in one direction only. (for ALSA)
+      if (_dir == Recorder) {
+        os_handle = ::open((const char *)_device, O_RDONLY | O_NONBLOCK);
+      } else {
+        os_handle = ::open((const char *)_device, O_WRONLY | O_NONBLOCK);
       }
 
-      // switch to blocking mode
-      DWORD cmd = 0;
-      ::ioctl(os_handle, FIONBIO, &cmd);
+      if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
+        return ConvertOSError(os_handle);
+      }
+
+      // device opened, but in half duplex mode
     }
+
+    // switch to blocking mode
+    DWORD cmd = 0;
+    ::ioctl(os_handle, FIONBIO, &cmd);
 
     // add the device to the dictionary
     SoundHandleEntry * entry = PNEW SoundHandleEntry;
@@ -642,7 +588,7 @@ BOOL PSoundChannelOSS::Setup()
   BOOL stat = TRUE;
 
   // do not re-initialise initialised devices
-  if (entry.isInitialised || (device == "loopback")) {
+  if (entry.isInitialised) {
     PTRACE(6, "OSS\tSkipping setup for " << device << " as already initialised");
 
   } else {
@@ -734,25 +680,12 @@ BOOL PSoundChannelOSS::Close()
   if (entry->direction == 0) {
     handleDict().RemoveAt(device);
     dictMutex.Signal();
-    if (os_handle == 0) { // indicates loopback device
-      os_handle = -1;
-      usleep(2000); // this delay will ensure the other usleep loops notice that
-                    // os_handle is no longer 0
-      return TRUE;
-    } else {
-      return PChannel::Close();
-    }
+    return PChannel::Close();
   }
 
   // flag this channel as closed
   dictMutex.Signal();
-  if (os_handle == 0) {
-    os_handle = -1;
-    usleep(2000); // this delay will ensure the other usleep loops notice that
-                  // os_handle is no longer 0
-  } else {
-    os_handle = -1;
-  }
+  os_handle = -1;
   return TRUE;
 }
 
@@ -763,39 +696,12 @@ BOOL PSoundChannelOSS::IsOpen() const
 
 BOOL PSoundChannelOSS::Write(const void * buf, PINDEX len)
 {
-  if (!Setup())
+  if (!Setup() || os_handle < 0)
     return FALSE;
 
-  if (os_handle > 0) {
-    while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
-      if (GetErrorCode() != Interrupted)
-        return FALSE;
-    return TRUE;
-  }
-
-  // Write to the Circular Buffer
-
-  // Do a sleep to simulate the amount of time the hardware would take
-  // to write out this data.
-  writeDelay.Delay(len/16);
-
-  // Obtain the audioBufferMutex. Release it at the end of this function.
-  PWaitAndSignal muxex(audioBufferMutex);
-
-  // Check if there is space to write the audio.
-  if (bufferLen + len > LOOPBACK_BUFFER_SIZE) {
-    PTRACE(1,"buffer is full. Cannot write\n");
-    return TRUE; // the write failed, but we return OK
-  }
-
-  PINDEX index = 0;
-  while (index < len) {
-    buffer[endptr++] = ((char *)buf)[index++];
-    if (endptr == LOOPBACK_BUFFER_SIZE)
-      endptr = 0;
-  }
-  PTRACE(1,"Write. Buffer was "<<bufferLen<<" and goes up by "<<len);
-  bufferLen = bufferLen + len;
+  while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
+    if (GetErrorCode() != Interrupted)
+      return FALSE;
   return TRUE;
 }
 
@@ -803,89 +709,44 @@ BOOL PSoundChannelOSS::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
-  if (!Setup())
+  if (!Setup() || os_handle < 0)
     return FALSE;
 
-  if (os_handle > 0) {
-    PTRACE(6, "OSS\tRead start");
+  PTRACE(6, "OSS\tRead start");
 
 #if defined(P_FREEBSD)
-    PINDEX total = 0;
-    while (total < len) {
-      PINDEX bytes = 0;
-      while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
-        if (GetErrorCode() != Interrupted) {
-          PTRACE(6, "OSS\tRead failed");
-          return FALSE;
-        }
-        PTRACE(6, "OSS\tRead interrupted");
-      }
-      total += bytes;
-      if (total != len)
-        PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
-    }
-    lastReadCount = total;
-
-#else
-
-    while (!ConvertOSError(lastReadCount = ::read(os_handle, (void *)buf, len))) {
+  PINDEX total = 0;
+  while (total < len) {
+    PINDEX bytes = 0;
+    while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
       if (GetErrorCode() != Interrupted) {
         PTRACE(6, "OSS\tRead failed");
         return FALSE;
       }
       PTRACE(6, "OSS\tRead interrupted");
     }
+    total += bytes;
+    if (total != len)
+      PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
+  }
+  lastReadCount = total;
+
+#else
+
+  while (!ConvertOSError(lastReadCount = ::read(os_handle, (void *)buf, len))) {
+    if (GetErrorCode() != Interrupted) {
+      PTRACE(6, "OSS\tRead failed");
+      return FALSE;
+    }
+    PTRACE(6, "OSS\tRead interrupted");
+  }
 #endif
 
 
-    if (lastReadCount != len)
-      PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
-    else
-      PTRACE(6, "OSS\tRead completed");
-
-    return TRUE;
-  }
-
-  // os_handle = 0 indicated loopback mode
-
-
-  // Read from the Circular Buffer
-
-  // This sleep simulates the time taken to read from real hardware
-  readDelay.Delay(len/16);
-
-
-  // Obtain the audioBufferMutex. Release it at the end of this function.
-  PWaitAndSignal mutex(audioBufferMutex);
-
-  // If there is no data in the buffer, we output silence
-  if (bufferLen == 0) {
-    PTRACE(1,"all zero\n");
-    memset(buf, 0, len);
-    lastReadCount = len;
-    return TRUE;
-  }
-
-  // There may not be enough audio data in the buffer, so find out
-  // how much we can copy.
-  PINDEX copy = ((len < bufferLen) ? len : bufferLen);
-
-  for (PINDEX index = 0; index < copy; index++) {
-    ((char *)buf)[index]=buffer[startptr++];
-    if (startptr == LOOPBACK_BUFFER_SIZE)
-      startptr = 0;
-  }
-  PTRACE(1,"Read - buffer len is "<<bufferLen<< " and goes down by "<<copy);
-  bufferLen = bufferLen - copy;
-
-
-  // If there was some data in the buffer, but not enough for the
-  // amount required, use the data in the buffer followed by silence.
-  if (copy < len) {
-    memset(&(((char *)buf)[copy]), 0, len - copy);
-  }
-
-  lastReadCount = len;
+  if (lastReadCount != len)
+    PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
+  else
+    PTRACE(6, "OSS\tRead completed");
 
   return TRUE;
 }
@@ -1071,9 +932,6 @@ BOOL PSoundChannelOSS::HasPlayCompleted()
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
 
-  if (os_handle == 0)
-    return BYTESINBUF <= 0;
-
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info)))
     return FALSE;
@@ -1086,16 +944,6 @@ BOOL PSoundChannelOSS::WaitForPlayCompletion()
 {
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
-
-  if (os_handle == 0) {
-    while (BYTESINBUF > 0) {
-      usleep(1000);
-      if (os_handle != 0) { // check if the loopback audio has been closed
-        return FALSE;
-      }
-    }
-    return TRUE;
-  }
 
   return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
 }
@@ -1138,9 +986,6 @@ BOOL PSoundChannelOSS::IsRecordBufferFull()
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
 
-  if (os_handle == 0)
-    return (BYTESINBUF > 0);
-
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
     return FALSE;
@@ -1153,9 +998,6 @@ BOOL PSoundChannelOSS::AreAllRecordBuffersFull()
 {
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF);
-
-  if (os_handle == 0)
-    return (BYTESINBUF == LOOPBACK_BUFFER_SIZE);
 
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
@@ -1182,11 +1024,6 @@ BOOL PSoundChannelOSS::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannelOSS::Abort()
 {
-  if (os_handle == 0) {
-    startptr = endptr = 0;
-    return TRUE;
-  }
-
   return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_RESET, NULL));
 }
 

@@ -23,25 +23,6 @@
 #include <soundcard.h>
 #endif
 
-class PAudioDelay : public PObject
-{
-  PCLASSINFO(PAudioDelay, PObject);
-
-  public:
-    PAudioDelay();
-    BOOL Delay(int time);
-    void Restart();
-    int  GetError();
-
-  protected:
-    PTime  previousTime;
-    BOOL   firstTime;
-    int    error;
-};
-
-#define MIN_HEADROOM    30
-#define MAX_HEADROOM    60
-
 class SoundHandleEntry : public PObject {
 
   PCLASSINFO(SoundHandleEntry, PObject)
@@ -58,9 +39,6 @@ class SoundHandleEntry : public PObject {
     unsigned fragmentValue;
     BOOL isInitialised;
 };
-
-#define LOOPBACK_BUFFER_SIZE 5000
-#define BYTESINBUF ((startptr<endptr)?(endptr-startptr):(LOOPBACK_BUFFER_SIZE+endptr-startptr))
 
 class PSoundChannelOSS: public PSoundChannel
 {
