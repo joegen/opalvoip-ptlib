@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.68 1998/01/26 00:37:48 robertj Exp $
+ * $Id: contain.cxx,v 1.69 1998/03/17 10:13:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.69  1998/03/17 10:13:23  robertj
+ * Fixed bug in Trim() should do all white space not just the space character.
+ *
  * Revision 1.68  1998/01/26 00:37:48  robertj
  * Fixed PString & operator putting space in if right hand side is empty string, it shouldn't..
  * Added Execute() functions to PRegularExpression that take PINDEX references instead of PIntArrays.
@@ -1280,7 +1283,7 @@ PStringArray PString::Lines() const
 PString PString::LeftTrim() const
 {
   const char * lpos = theArray;
-  while (*lpos == ' ')
+  while (isspace(*lpos))
     lpos++;
   return PString(lpos);
 }
@@ -1289,10 +1292,10 @@ PString PString::LeftTrim() const
 PString PString::RightTrim() const
 {
   char * rpos = theArray+GetLength()-1;
-  if (*rpos != ' ')
+  if (isspace(*rpos))
     return *this;
 
-  while (*rpos == ' ') {
+  while (isspace(*rpos)) {
     if (rpos == theArray)
       return PString();
     rpos--;
@@ -1304,16 +1307,16 @@ PString PString::RightTrim() const
 PString PString::Trim() const
 {
   const char * lpos = theArray;
-  while (*lpos == ' ')
+  while (isspace(*lpos))
     lpos++;
   if (*lpos == '\0')
     return PString();
 
   const char * rpos = theArray+GetLength()-1;
-  if (*rpos != ' ')
+  if (!isspace(*rpos))
     return PString(lpos);
 
-  while (*rpos == ' ')
+  while (isspace(*rpos))
     rpos--;
   return PString(lpos, rpos - lpos + 1);
 }
