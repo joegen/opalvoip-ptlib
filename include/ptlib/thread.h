@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.12 1995/07/31 12:10:40 robertj Exp $
+ * $Id: thread.h,v 1.13 1995/11/21 11:49:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.13  1995/11/21 11:49:44  robertj
+ * Added timeout on semaphore wait.
+ *
  * Revision 1.12  1995/07/31 12:10:40  robertj
  * Added semaphore class.
  *
@@ -345,6 +348,12 @@ PDECLARE_CLASS(PThread, PObject)
     PTimer sleepTimer;
     /* Time for thread to remain asleep. Thread is not scheduled while this
        is running after a <A>Sleep()</A> call.
+
+       This variable is not present for platforms that support threads.
+     */
+
+    PSemaphore * blockingSemaphore;
+    /* Semaphore that is blocking this thread.
 
        This variable is not present for platforms that support threads.
      */
