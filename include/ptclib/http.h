@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.47  2001/08/28 06:44:30  craigs
+ * Added ability to override PHTTPServer creation
+ *
  * Revision 1.46  2001/03/14 01:49:54  craigs
  * Added ability to handle multi-part form POST commands
  *
@@ -690,7 +693,7 @@ class PHTTPServer : public PHTTP
        allow persistant mode, or the client did not request it
        timed out
      */
-    BOOL ProcessCommand();
+    virtual BOOL ProcessCommand();
 
     /** Handle a GET command from a client.
 
