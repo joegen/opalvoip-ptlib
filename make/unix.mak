@@ -29,10 +29,13 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.29  1999/01/08 01:43:44  robertj
-# Changes to minimise the command line length.
-# FreeBSD pthreads support
+# Revision 1.30  1999/01/16 09:56:28  robertj
+# Changed some macros to more informative names.
 #
+# Revision 1.30  1999/01/16 09:56:28  robertj
+# Changed some macros to more informative names.
+#
+# Revision 1.29  1999/01/08 01:43:44  robertj
 # Changes to minimise the command line length.
 # FreeBSD pthreads support
 #
@@ -137,7 +140,7 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64
 
 endif
 
-OBJ_SUFFIX	:= pic
+PLATFORM_TYPE	:= pic
 ifdef SHAREDLIB
 ifndef PROG
 PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
@@ -258,7 +261,7 @@ endif # hpux
 SHELL		= /bin/sh
 CPLUS		:= g++
 SHELL		:= /bin/sh
-OBJ_SUFFIX	= $(OSTYPE)_$(MACHTYPE)
+PLATFORM_TYPE	= $(OSTYPE)_$(MACHTYPE)
 
 
 .SUFFIXES:	.cxx .prc 
@@ -317,13 +320,13 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 #
 ifdef	DEBUG
 
-LIBID		= d
+OBJ_SUFFIX	:= d
 STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
 LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
 
 else
 
-LIBID		= r
+OBJ_SUFFIX	:= r
 OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
@@ -331,7 +334,7 @@ LDFLAGS		:= $(LDFLAGS) -s
 
 endif # DEBUG
 
-OBJDIR		:= obj_$(OBJ_SUFFIX)_$(LIBID)
+OBJDIR		:= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 LIBDIR		= $(PWLIBDIR)/lib
 
@@ -348,10 +351,7 @@ LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
 #
 # set name of the PT library
 #
-ifndef LIB_SUFFIX
-LIB_SUFFIX	= $(OBJ_SUFFIX)
-endif
-PTLIB		= pt_$(LIB_SUFFIX)_$(LIBID)
+PTLIB		= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 ifndef SHAREDLIB
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
