@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.9 1998/01/26 00:39:00 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.10 1998/02/03 06:27:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.10  1998/02/03 06:27:10  robertj
+ * Fixed propagation of error codes, especially EOF.
+ * Fixed writing to some CGI scripts that require CRLF outside of byte count.
+ *
  * Revision 1.9  1998/01/26 00:39:00  robertj
  * Added function to allow HTTPClient to automatically connect if URL has hostname.
  * Fixed incorrect return values on HTTPClient GetDocument(), Post etc functions.
@@ -197,34 +201,49 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
                                const PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
-  return PHTTP::WriteCommand(cmd, url & "HTTP/1.0") &&
-         outMIME.Write(*this) &&
-         Write((const char *)dataBody, dataBody.GetSize()-1);
+  if (!PHTTP::WriteCommand(cmd, url & "HTTP/1.0"))
+    return FALSE;
+  if (!outMIME.Write(*this))
+    return FALSE;
+  PINDEX len = dataBody.GetSize()-1;
+  if (!Write((const char *)dataBody, len))
+    return FALSE;
+  if (len < 2 || (dataBody[len-2] == '\r' && dataBody[len-1] == '\n'))
+    return TRUE;
+  return Write("\r\n", 2);
 }
 
 
 BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
+  BOOL bad = TRUE;
+
   PString http = ReadString(7);
-  if (http.IsEmpty()) {
+  if (!http) {
+    UnRead(http);
+
+    if (http.Find("HTTP/") == P_MAX_INDEX) {
+      lastResponseCode = PHTTP::OK;
+      lastResponseInfo = "HTTP/0.9";
+      return TRUE;
+    }
+
+    if (http[0] == '\n')
+      ReadString(1);
+    else if (http[0] == '\r' &&  http[1] == '\n')
+      ReadString(2);
+
+    if (PHTTP::ReadResponse())
+      bad = FALSE;
+  }
+
+  if (bad) {
     lastResponseCode = -1;
     lastResponseInfo = GetErrorText();
+    if (lastResponseInfo.IsEmpty())
+      lastResponseInfo = "Remote shutdown";
     return FALSE;
   }
-
-  UnRead(http);
-
-  if (http.Left(5) != "HTTP/" && http != "\r\nHTTP/") {
-    lastResponseCode = PHTTP::OK;
-    lastResponseInfo = "HTTP/0.9";
-    return TRUE;
-  }
-
-  if (http[0] == '\r' &&  http[1] == '\n')
-    ReadString(2);
-
-  if (!PHTTP::ReadResponse())
-    return FALSE;
 
   if (replyMIME.Read(*this))
     return TRUE;
