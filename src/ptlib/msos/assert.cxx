@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.31  2001/03/29 23:33:00  robertj
+ * Added missing structure initialisation, thanks Victor H.
+ *
  * Revision 1.30  2001/03/02 06:54:04  yurik
  * Rephrased pragma message
  *
@@ -269,6 +272,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
     imagehlp.SymSetOptions(imagehlp.SymGetOptions()|SYMOPT_LOAD_LINES);
     HANDLE hProcess;
     OSVERSIONINFO ver;
+    ver.dwOSVersionInfoSize = sizeof(ver);
     ::GetVersionEx(&ver);
     if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
       hProcess = GetCurrentProcess();
