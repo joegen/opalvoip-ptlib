@@ -3999,6 +3999,7 @@ EXPORTS
     ?OnContinue@PServiceProcess@@UAEXXZ @2972 NONAME ;public: virtual void __thiscall PServiceProcess::OnContinue(void)
     ?OnControl@PServiceProcess@@UAEXXZ @2973 NONAME ;public: virtual void __thiscall PServiceProcess::OnControl(void)
     ?OnLoadModule@PPluginModuleManager@@MAEXAAVPDynaLink@@H@Z @5893 NONAME ;protected: virtual void __thiscall PPluginModuleManager::OnLoadModule(class PDynaLink &,int)
+    ?OnLoadPlugin@PPluginModuleManager@@UAEXAAVPDynaLink@@H@Z @5938 NONAME ;public: virtual void __thiscall PPluginModuleManager::OnLoadPlugin(class PDynaLink &,int)
     ?OnOpen@PIndirectChannel@@MAEHXZ @2974 NONAME ;protected: virtual int __thiscall PIndirectChannel::OnOpen(void)
     ?OnOutOfBand@PTCPSocket@@UAEXPBXH@Z @2975 NONAME ;public: virtual void __thiscall PTCPSocket::OnOutOfBand(void const *,int)
     ?OnPause@PServiceProcess@@UAEHXZ @2976 NONAME ;public: virtual int __thiscall PServiceProcess::OnPause(void)
