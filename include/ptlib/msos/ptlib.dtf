@@ -1595,6 +1595,7 @@ EXPORTS
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@@Z @1052 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &)
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@AAG@Z @1053 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &,unsigned short &)
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1054 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
+    ?GetManufacturer@PProcess@@UBEABVPString@@XZ @3303 NONAME ;public: virtual class PString const & __thiscall PProcess::GetManufacturer(void)const 
     ?GetMaxFrameBytes@PFakeVideoInputDevice@@UAEHXZ @2557 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetMaxFrameBytes(void)
     ?GetMaxFrameBytes@PVideoInputDevice@@UAEHXZ @2442 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetMaxFrameBytes(void)
     ?GetMedium@PEthSocket@@QAE?AW4MediumTypes@1@XZ @1905 NONAME ;public: enum PEthSocket::MediumTypes  __thiscall PEthSocket::GetMedium(void)
@@ -1612,6 +1613,7 @@ EXPORTS
     ?GetName@PIPSocket@@UBE?AVPString@@XZ @1069 NONAME ;public: virtual class PString  __thiscall PIPSocket::GetName(void)const 
     ?GetName@PIPXSocket@@UBE?AVPString@@XZ @1070 NONAME ;public: virtual class PString  __thiscall PIPXSocket::GetName(void)const 
     ?GetName@PPipeChannel@@UBE?AVPString@@XZ @1793 NONAME ;public: virtual class PString  __thiscall PPipeChannel::GetName(void)const 
+    ?GetName@PProcess@@UBEABVPString@@XZ @3304 NONAME ;public: virtual class PString const & __thiscall PProcess::GetName(void)const 
     ?GetName@PSerialChannel@@UBE?AVPString@@XZ @1072 NONAME ;public: virtual class PString  __thiscall PSerialChannel::GetName(void)const 
     ?GetName@PSoundChannel@@UBE?AVPString@@XZ @2055 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetName(void)const 
     ?GetName@PVideoChannel@@UBE?AVPString@@XZ @2529 NONAME ;public: virtual class PString  __thiscall PVideoChannel::GetName(void)const 
@@ -1709,6 +1711,7 @@ EXPORTS
     ?GetSize@PContainer@@UBEHXZ @1143 NONAME ;public: virtual int __thiscall PContainer::GetSize(void)const 
     ?GetSpeed@PSerialChannel@@QBEKXZ @1144 NONAME ;public: unsigned long __thiscall PSerialChannel::GetSpeed(void)const 
     ?GetSrcFrameSize@PColourConverter@@QBEHAAI0@Z @2892 NONAME ;public: int __thiscall PColourConverter::GetSrcFrameSize(unsigned int &,unsigned int &)const 
+    ?GetStartTime@PProcess@@QBE?AVPTime@@XZ @3305 NONAME ;public: class PTime  __thiscall PProcess::GetStartTime(void)const 
     ?GetStatus@PRemoteConnection@@QBE?AW4Status@1@XZ @1145 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetStatus(void)const 
     ?GetStopBits@PSerialChannel@@QBEEXZ @1146 NONAME ;public: unsigned char __thiscall PSerialChannel::GetStopBits(void)const 
     ?GetString@PConfig@@QBE?AVPString@@ABV2@00@Z @1147 NONAME ;public: class PString  __thiscall PConfig::GetString(class PString const &,class PString const &,class PString const &)const 
@@ -1732,7 +1735,7 @@ EXPORTS
     ?GetValuesIndex@PAbstractSet@@UBEHABVPObject@@@Z @1171 NONAME ;public: virtual int __thiscall PAbstractSet::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PAbstractSortedList@@UBEHABVPObject@@@Z @1172 NONAME ;public: virtual int __thiscall PAbstractSortedList::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1173 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
-    ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1174 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
+    ?GetVersion@PProcess@@UBE?AVPString@@H@Z @3306 NONAME ;public: virtual class PString  __thiscall PProcess::GetVersion(int)const 
     ?GetVFlipState@PFakeVideoInputDevice@@UAEHXZ @3153 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetVFlipState(void)
     ?GetVFlipState@PVideoDevice@@UAEHXZ @3170 NONAME ;public: virtual int __thiscall PVideoDevice::GetVFlipState(void)
     ?GetVFlipState@PVideoInputDevice@@UAEHXZ @3154 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetVFlipState(void)
