@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.16 1996/01/28 02:52:45 robertj Exp $
+ * $Id: collect.cxx,v 1.17 1996/01/28 14:11:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.17  1996/01/28 14:11:45  robertj
+ * Fixed bug in sorted list for when getting entry one before last one cached.
+ *
  * Revision 1.16  1996/01/28 02:52:45  robertj
  * Added assert into all Compare functions to assure comparison between compatible objects.
  *
@@ -864,7 +867,7 @@ PAbstractSortedList::Element*PAbstractSortedList::Element::Predecessor() const
   else {
     pred = parent;
     const Element * node = this;
-    while (pred != NULL && node == pred->right) {
+    while (pred != NULL && node == pred->left) {
       node = pred;
       pred = node->parent;
     }
