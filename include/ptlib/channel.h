@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.16 1996/01/23 13:09:14 robertj Exp $
+ * $Id: channel.h,v 1.17 1996/02/19 13:12:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.17  1996/02/19 13:12:48  robertj
+ * Added new error code for interrupted I/O.
+ *
  * Revision 1.16  1996/01/23 13:09:14  robertj
  * Mac Metrowerks compiler support.
  *
@@ -421,6 +424,7 @@ PCLASS PChannel : public PObject, public iostream {
       NoMemory,     // Operation fail due to insufficient memory
       NotOpen,      // Operation fail due to channel not being open yet
       Timeout,      // Operation failed due to a timeout
+      Interrupted,  // Operation was interrupted
       Miscellaneous
     };
     Errors GetErrorCode() const;
