@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.85  2002/04/12 01:42:41  robertj
+ * Changed return value on os_connect() and os_accept() to make sure
+ *   get the correct error codes propagated up under unix.
+ *
  * Revision 1.84  2002/02/13 02:19:47  robertj
  * Fixed mistake in previous patch, is if not ifdef!
  *
@@ -323,22 +327,14 @@ int PSocket::os_socket(int af, int type, int protocol)
 }
 
 
-int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   int val = ::connect(os_handle, addr, size);
-  if (val == 0)
-    return 0;
-
-  if (errno != EINPROGRESS)
-    return -1;
+  if (val == 0 || errno != EINPROGRESS)
+    return ConvertOSError(val);
 
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
-    return -1;
-
-  if (val == 0) {
-    errno = ECONNREFUSED;
-    return -1;
-  }
+    return FALSE;
 
 #ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
@@ -347,34 +343,32 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen);
   if (optval != 0) {
     errno = optval;
-    return -1;
+    return ConvertOSError(-1);
   }
 #endif //!__BEOS__
 
-  return 0;
+  return TRUE;
 }
 
 
-int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
+BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
 {
-  if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout())) {
-    errno = EINTR;
-    return -1;
-  }
+  if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout()))
+    return SetErrorValues(listener.GetErrorCode(), listener.GetErrorNumber());
 
 #if defined(E_PROTO)
   for (;;) {
     int new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size);
     if (new_fd >= 0)
-      return SetNonBlocking(new_fd);
+      return ConvertOSError(SetNonBlocking(new_fd));
 
     if (errno != EPROTO)
-      return -1;
+      return ConvertOSError(-1);
 
     PTRACE(3, "PWLib\tAccept on " << sock << " failed with EPROTO - retrying");
   }
 #else
-  return SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size));
+  return ConvertOSError(SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
 #endif
 }
 

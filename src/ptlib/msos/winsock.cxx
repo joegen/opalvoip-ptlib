@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.46  2002/04/12 01:42:41  robertj
+ * Changed return value on os_connect() and os_accept() to make sure
+ *   get the correct error codes propagated up under unix.
+ *
  * Revision 1.45  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -293,24 +297,24 @@ class timeval_class : public timeval {
 };
 
 
-int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   if (readTimeout == PMaxTimeInterval)
-    return ::connect(os_handle, addr, size);
+    return ConvertOSError(::connect(os_handle, addr, size));
 
   DWORD fionbio = 1;
-  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR)
-    return SOCKET_ERROR;
+  if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio)))
+    return FALSE;
   fionbio = 0;
 
   if (::connect(os_handle, addr, size) != SOCKET_ERROR)
-    return ::ioctlsocket(os_handle, FIONBIO, &fionbio);
+    return ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio));
 
   DWORD err = GetLastError();
   if (err != WSAEWOULDBLOCK) {
     ::ioctlsocket(os_handle, FIONBIO, &fionbio);
     SetLastError(err);
-    return SOCKET_ERROR;
+    return ConvertOSError(-1);
   }
 
   fd_set_class writefds = os_handle;
@@ -342,11 +346,11 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   }
 
   SetLastError(err);
-  return err == 0 ? 0 : SOCKET_ERROR;
+  return ConvertOSError(err == 0 ? 0 : SOCKET_ERROR);
 }
 
 
-int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
+BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
 {
   if (listener.GetReadTimeout() != PMaxTimeInterval) {
     fd_set_class readfds = listener.GetHandle();
@@ -358,11 +362,12 @@ int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
         SetLastError(WSAETIMEDOUT);
         // Then return -1
       default :
-        return -1;
+        return ConvertOSError(-1);
     }
   }
-  return ::accept(listener.GetHandle(), addr, size);
+  return ConvertOSError(os_handle = ::accept(listener.GetHandle(), addr, size));
 }
+
 
 BOOL PSocket::os_recvfrom(void * buf,
                           PINDEX len,
@@ -872,7 +877,7 @@ BOOL PIPXSocket::Connect(const Address & addr)
   sip.sa_family = AF_IPX;
   AssignAddress(sip, addr);
   sip.sa_socket  = Host2Net(port);  // set the port
-  if (ConvertOSError(os_connect((struct sockaddr *)&sip, sizeof(sip))))
+  if (os_connect((struct sockaddr *)&sip, sizeof(sip)))
     return TRUE;
 
   os_close();
@@ -981,7 +986,7 @@ BOOL PSPXSocket::Accept(PSocket & socket)
   sockaddr_ipx sip;
   sip.sa_family = AF_IPX;
   int size = sizeof(sip);
-  if (!ConvertOSError(os_handle = os_accept(socket, (struct sockaddr *)&sip, &size)))
+  if (!os_accept(socket, (struct sockaddr *)&sip, &size))
     return FALSE;
 
   port = ((PIPXSocket &)socket).GetPort();
