@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
+ * $Id: serchan.h,v 1.3 1994/07/17 11:01:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Ehancements, implementation, bug fixes etc.
+ *
+ * Revision 1.2  1994/07/02  03:18:09  robertj
  * Using system timers for serial channel timeouts.
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
@@ -20,12 +23,28 @@
 #ifndef _PSERIALCHANNEL
 
 #include "..\..\common\serchan.h"
+  public:
+    // Overrides from class PChannel
+    virtual PString GetName() const;
+      // Return the name of the channel.
+
+      
+    virtual BOOL Read(void * buf, PINDEX len);
+      // Low level read from the channel. This function will block until the
+      // requested number of characters were read.
+
+    virtual BOOL Write(const void * buf, PINDEX len);
+      // Low level write to the channel. This function will block until the
+      // requested number of characters were written.
+
+    virtual BOOL Close();
+      // Close the channel.
+
+
   protected:
     BOOL SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow);
 
-    // Meber variables
-    int commsId;
 
   private:
     static BOOL IsReadBlocked(PObject * obj);
