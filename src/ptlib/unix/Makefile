@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.40  1999/02/25 03:44:58  robertj
+# Sound driver implementation changes for various unix platforms.
+#
 # Revision 1.39  1999/02/22 13:24:47  robertj
 # Added first cut sound implmentation.
 #
@@ -173,13 +176,22 @@ PROTO_SOURCES	= \
 endif
 
 
+ifeq ($(OSTYPE),linux)
+SOUND_SOURCE = oss.cxx
+endif
+
+ifeq ($(OSTYPE),solaris)
+SOUND_SOURCE = sunaudio.cxx
+endif
+
+
 SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/ipacl.cxx \
 	  $(COMPONENT_SRC_DIR)/modem.cxx \
 	  $(COMPONENT_SRC_DIR)/cypher.cxx \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
 	  $(COMPONENT_SRC_DIR)/asner.cxx \
-	  sound.cxx \
+	  $(SOUND_SOURCE) \
 	  uicmp.cxx \
 	  $(COMMON_SRC_DIR)/sockets.cxx \
 	  socket.cxx \
