@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.61 1998/03/27 10:52:39 robertj Exp $
+ * $Id: win32.cxx,v 1.62 1998/03/29 06:16:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.62  1998/03/29 06:16:56  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.61  1998/03/27 10:52:39  robertj
  * Fixed crash bug in win95 OSR2 GetVolumeSpace().
  * Fixed error 87 problem with threads.
@@ -2236,12 +2239,6 @@ void PProcess::SignalTimerChange()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
-
-void PProcess::Construct()
-{
-  houseKeeper = NULL;
-}
-
 
 PProcess::~PProcess()
 {
