@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.119  2002/08/06 08:51:36  robertj
+ * Added missing va_end, thanks Klaus Kaempf
+ *
  * Revision 1.118  2002/06/27 06:59:34  robertj
  * Removed memory leak display of static that is not really a leak.
  *
@@ -1186,6 +1189,7 @@ PString::PString(ConversionType type, const char * str, ...)
       va_list args;
       va_start(args, str);
       vsprintf(str, args);
+      va_end(args);
       break;
     }
 
