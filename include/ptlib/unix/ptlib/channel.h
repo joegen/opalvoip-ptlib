@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.21  2001/11/27 02:20:20  robertj
+ * Fixed problem with a read ro write blocking until connect completed, it
+ *   really should return an error as the caller is doing a bad thing.
+ *
  * Revision 1.20  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -103,7 +107,7 @@
 #undef _PCHANNEL_PLATFORM_INCLUDE
 
   public:
-    enum {
+    enum PXBlockType {
       PXReadBlock,
       PXWriteBlock,
       PXAcceptBlock,
@@ -111,14 +115,15 @@
     };
 
   protected:
-    BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
+    BOOL PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout);
     int  PXClose();
 
-    PString   channelName;
-    PMutex    px_threadMutex;
-    PThread * px_readThread;
-    PThread * px_writeThread;
-    PMutex    px_writeMutex;
+    PString     channelName;
+    PMutex      px_threadMutex;
+    PXBlockType px_lastBlockType;
+    PThread   * px_readThread;
+    PThread   * px_writeThread;
+    PMutex      px_writeMutex;
 
 #endif
 
