@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.17 2000/11/27 06:46:16 robertj Exp $
+ * $Id: pssl.cxx,v 1.18 2001/02/16 07:13:41 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.18  2001/02/16 07:13:41  robertj
+ * Fixed bug in PSSLChannel error detection, thinks a zero byte write is error.
+ *
  * Revision 1.17  2000/11/27 06:46:16  robertj
  * Added asserts with SSL error message text.
  *
@@ -583,13 +586,19 @@ BOOL PSSLChannel::Close()
 
 BOOL PSSLChannel::ConvertOSError(int error)
 {
-  if (SSL_get_error(ssl, error) == SSL_ERROR_NONE) {
+  if (SSL_get_error(ssl, error) == SSL_ERROR_NONE)
     osError = 0;
+  else {
+    osError = ERR_peek_error();
+    if (osError != 0)
+      osError |= 0x80000000;
+  }
+
+  if (osError == 0) {
     lastError = NoError;
     return TRUE;
   }
 
-  osError = ERR_peek_error()|0x80000000;
   lastError = Miscellaneous;
   return FALSE;
 }
