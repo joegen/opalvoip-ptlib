@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.16 1996/02/15 14:46:43 robertj Exp $
+ * $Id: socket.h,v 1.17 1996/02/25 03:02:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.17  1996/02/25 03:02:14  robertj
+ * Moved some socket functions to platform dependent code.
+ * Added array of fds to os_select for unix threading support.
+ *
  * Revision 1.16  1996/02/15 14:46:43  robertj
  * Added Select() function to PSocket.
  *
@@ -222,12 +226,27 @@ PDECLARE_CLASS(PSocket, PChannel)
     int _Close();
     // Close the socket without setting errors.
 
-  private:
+
+    int os_socket(
+      int af,
+      int type,
+      int protocol
+    );
+    int os_connect(
+      struct sockaddr * sin,
+      int size
+    );
+    int os_accept(
+      int sock,
+      struct sockaddr * addr,
+      int * size
+    );
     static int os_select(
       int maxfds,
       fd_set & readfds,
       fd_set & writefds,
       fd_set & exceptfds,
+      const PIntArray & allfds,
       const PTimeInterval & timeout
     );
 
