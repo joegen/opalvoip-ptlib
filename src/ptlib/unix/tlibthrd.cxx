@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.37  2000/04/06 12:19:49  rogerh
+ * Add Mac OS X support submitted by Kevin Packard
+ *
  * Revision 1.36  2000/03/20 22:56:34  craigs
  * Fixed problems with race conditions caused by testing or changing
  * attributes on a terminated thread. Only occured on a fast machine!
@@ -231,7 +234,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
