@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.182  2005/01/16 21:27:07  csoutheren
+ * Changed PIPSocket::IsAny to be const
+ *
  * Revision 1.181  2005/01/16 20:35:41  csoutheren
  * Fixed problem with IPv6 INADDR_ANY
  *
@@ -2117,7 +2120,7 @@ const PIPSocket::Address & PIPSocket::Address::GetAny6()
 #endif
 
 
-BOOL PIPSocket::Address::IsAny()
+BOOL PIPSocket::Address::IsAny() const
 {
   return (!IsValid());
 }
