@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.17  2003/04/10 07:02:38  craigs
+ * Fixed link problem in MD5 class
+ *
  * Revision 1.16  2003/04/10 06:16:30  craigs
  * Added SHA-1 digest
  *
@@ -206,10 +209,6 @@ class PMessageDigest5 : public PMessageDigest
       const void * dataBlock,  /// Pointer to data to be encoded to MD5
       PINDEX length,           /// Length of the data block.
       Result & result            /// The resultant 128 bit MD5 code
-    );
-
-    virtual void Complete(
-      Result & result   /// The resultant 128 bit MD5 code
     );
 
     // backwards compatibility functions
