@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov (openh323@kiryanov.com)
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.6  2000/12/16 13:08:56  rogerh
+ * BeOS changes from Yuri Kiryanov <openh323@kiryanov.com>
+ *
  * Revision 1.5  2000/04/19 00:13:52  robertj
  * BeOS port changes.
  *
@@ -49,6 +52,7 @@
 #include <ptlib.h>
 
 // Storage kit bits
+#include <storage/Directory.h>
 #include <storage/Entry.h>
 #include <storage/File.h>
 
@@ -63,18 +67,6 @@
 // Homegrown bits
 #include "beaudio/SoundInput.h"
 #include "beaudio/SoundPlayer.h"
-
-// Format convertors
-#define FORMATFROMBITSPERSAMPLE(bps) (uint32) ( \
-		(bps) == 8*sizeof(unsigned char) ? gs_audio_format::B_GS_U8 : \
-		(bps) == 8*sizeof(short) ? gs_audio_format::B_GS_S16 : \
-		(bps) == 8*sizeof(int) ? gs_audio_format::B_GS_S32 : \
-		(bps) == 0 ? gs_audio_format::B_GS_F : gs_audio_format::B_GS_U8 )
-#define BITSPERSAMPLEFROMFORMAT(fmt) (unsigned) ( (fmt & 0xf)*8 )
-#define DEFAULTSAMPLESIZE BITSPERSAMPLEFROMFORMAT(gs_audio_format::B_GS_U8)
-#define MAX_SOUND_FILE_SIZE (3 * 1024 * 1024)
-
-#define GAMESOUNDFORMAT(ps) (*(gs_audio_format*)(ps)->formatInfo.GetPointer())
 
 // PSound
 PSound::PSound(unsigned channels,
@@ -180,39 +172,93 @@ BOOL PSound::Load(const PFilePath & filename)
 
 BOOL PSound::Save(const PFilePath & filename)
 {
-	struct formChunk { int32 name ; int32 size; int32 type; } form = { 'MROF', GetSize(), 'FFIA' }; 
-	struct aifffmt { uint16 channels; uint32 frames; uint16 bps; float fps; int32 compression; }
-		fmt = { numChannels, 0, sampleSize, 1.0 * sampleRate, 0 };
-	struct commChunk { int32 comm; aifffmt format; } comm = { 'MMOC', fmt }; 
-	struct ssndChunk { int32 name ; int32 size;} ssnd = { 'DNSS', 0 }; 
-	const char* aiffFile = "audio/x-aiff"; 
-
-	BYTE aiffHeader[0x35];
-	BYTE* pHdr = aiffHeader;
-	memset(pHdr, 0, 0x35);
-	memcpy(pHdr, &form, sizeof(form) );
-	pHdr += sizeof(form);
-	memcpy(pHdr, &comm, sizeof(comm));
-	pHdr += sizeof(comm);
-	memcpy( pHdr, &ssnd, sizeof(ssnd));
+    PTRACE(1, "PSound::Save(" << filename << ") " <<  numChannels << "," << sampleRate << "," << sampleSize);
 	
+	PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
+	PAssert( sampleSize == 0 ||
+		sampleSize == 8 || 
+		sampleSize == 16 ||
+		sampleSize == 32, PInvalidParameter);
+
+	if( !sampleSize )
+		PError << "\tWarning: sample bits parameter is zero. Float?" << endl;
+
 	status_t err = B_OK;
-	if( err == B_OK )
-	{
-		BFile file(filename, B_CREATE_FILE|B_ERASE_FILE|B_WRITE_ONLY);
-		
-		err = file.Write( aiffHeader, 0x35 );
-		err = file.Write( GetPointer(), GetSize() );
+	entry_ref ref;
+	media_file_format ff;
+	int32 cookie = 0;
+	while ((err = get_next_file_format(&cookie, &ff)) == B_OK) {
+		if (!strcasecmp(ff.file_extension, "wav")) {
+			PTRACE(1, "chose WAV file format" << endl );
+			break;
+		}
 	}
-	
-	if( err == B_OK )
-	{
-		BNode node(filename);
-		err = node.WriteAttr("BEOS:TYPE", 'MIMS', 0, aiffFile, strlen(aiffFile)+1);
-	}
-	
 
-  return err == B_OK;
+	BDirectory dir((const char*)filename.GetDirectory());
+	BEntry ent;
+	BFile file;
+	if ((err = dir.CreateFile((const char*)filename.GetFileName(), &file)) < B_OK) {
+		PTRACE(1, "cannot create output file" << endl );
+		return FALSE;
+	}
+	if (ff.mime_type[0] != 0) {
+		file.RemoveAttr("BEOS:TYPE");
+		file.WriteAttr("BEOS:TYPE", 'MIMS', 0, ff.mime_type, strlen(ff.mime_type));
+	}
+	if ((err = dir.FindEntry((const char*)filename.GetFileName(), &ent)) < B_OK) {
+		PTRACE(1, "cannot get entry for output file" << endl);
+		return FALSE; 
+	}
+	ent.GetRef(&ref);
+
+	if (err != B_OK) {
+		PTRACE(1, "no file format found\n" << endl);
+		return FALSE;
+	}
+	BMediaFile mFile(&ref, &ff);
+	if ((err = mFile.InitCheck()) < B_OK) {
+		PTRACE(1, "could not create BMediaFile" << endl);
+		return FALSE;
+	}
+
+	media_format fmt;
+	fmt.type = B_MEDIA_RAW_AUDIO;
+	fmt.u.raw_audio.format = FORMATFROMBITSPERSAMPLE(sampleSize);
+	fmt.u.raw_audio.channel_count = numChannels;
+	fmt.u.raw_audio.frame_rate = 1.0 * sampleRate;
+	fmt.u.raw_audio.byte_order = (B_HOST_IS_BENDIAN) ? B_MEDIA_BIG_ENDIAN : B_MEDIA_LITTLE_ENDIAN;
+	fmt.u.raw_audio.buffer_size = 2048; 
+
+	char str[200];
+	string_for_format(fmt, str, 200);
+	fprintf(stderr, "format: %s (%g;0x%lx;%ld;%ld;%ld)\n", str, fmt.u.raw_audio.frame_rate,
+			fmt.u.raw_audio.format, fmt.u.raw_audio.channel_count, fmt.u.raw_audio.byte_order,
+			fmt.u.raw_audio.buffer_size);
+
+	BMediaTrack* pmTrack = NULL;
+	if (0 == (pmTrack = mFile.CreateTrack(&fmt))) {
+		PTRACE(1, "could not add track to file" << endl);
+		return FALSE;
+	}
+	
+	err = mFile.CommitHeader();
+	if (err < B_OK) {
+		PTRACE(1, "CommitHeader() failed" << endl);
+		pmTrack = 0;
+		return FALSE;
+	}
+
+	if (0 > pmTrack->WriteFrames(GetPointer(), GetSize(), B_MEDIA_KEY_FRAME)) {
+		PTRACE(1, "buffer_flusher couldn't write data; bailing" << endl);
+	}
+
+	// flush file
+	err = mFile.CloseFile();
+	if (err < B_OK) {
+		PTRACE(1, "CloseFile() failed" << endl);
+	}
+
+	return B_OK;
 }
 
 
@@ -248,9 +294,7 @@ PSoundChannel::~PSoundChannel()
 	Close();
   
 	if( direction == Recorder && mpInput )
-	{
-		PSoundInput::ReleaseSoundInput( mpInput );
-  	}
+		delete mpInput;
 }
 
 
@@ -288,16 +332,22 @@ BOOL PSoundChannel::Open(const PString & dev,
 			return FALSE;		
   		
   		mpOutput->SetFormat(mNumChannels, mSampleRate, mBitsPerSample);
-   		return 	mpOutput->StartPlayer()? TRUE : FALSE;
+   
+   		bool fStarted = mpOutput->StartPlayer();
+  		return fStarted ? TRUE : FALSE;
 	}
 	else
  	if( direction == Recorder )
 	{
-		mpInput = PSoundInput::CreateSoundInput(device);
+		mpInput = new PSoundInput(device, mNumChannels, mSampleRate, mBitsPerSample);
 
   		// Can't yet set format for input. Resampler?
 		// Recorder initialised
-  		return ( mpInput && mpInput->StartRecording() ) ? TRUE : FALSE;
+    	if( !mpInput )
+			return FALSE;		
+    	
+  		bool fStarted = mpInput->StartRecording(); 
+  		return fStarted ? TRUE : FALSE;
  	}
    		
 	// No more channel types 
@@ -309,7 +359,7 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
-	PError << "PSoundChannel::SetFormat: " <<  numChannels << "," << sampleRate << "," << bitsPerSample << endl;
+    PTRACE(1, "PSoundChannel::SetFormat: " <<  numChannels << "," << sampleRate << "," << bitsPerSample);
 	
 	PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
 	PAssert(	bitsPerSample == 0 ||
@@ -326,19 +376,17 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 	
   	if( direction == Player )
 	{
-		if( mpOutput )
-		{
-			mpOutput->SetFormat(mNumChannels, mSampleRate, mBitsPerSample);
-		}
-		
-		return TRUE;
+		if( !mpOutput )
+			return FALSE;		
+
+		bool fFormatSet = mpOutput->SetFormat(mNumChannels, mSampleRate, mBitsPerSample);
+		return fFormatSet ? TRUE : FALSE;
 	}
 	else
 	if( direction == Recorder )
 	{
-		if( mpInput )
-		{
-		}
+		if( !mpInput )
+			return FALSE;
 
 		return TRUE;
 	}
@@ -355,9 +403,11 @@ BOOL PSoundChannel::Read( void * buf, PINDEX len)
 	else
 	if( direction == Recorder )
 	{
-		PAssertNULL(mpInput);
+		if( !mpInput )
+			return FALSE;
 		
-		return mpInput->Read(buf, len)? TRUE : FALSE;
+		bool fRead = mpInput->Read(buf, len);
+		return fRead? TRUE : FALSE;
 	}
 
 	return FALSE;
@@ -386,9 +436,7 @@ BOOL PSoundChannel::Close()
   	if( direction == Player )
 	{
 		if ( mpOutput )
-		{
 		 	mpOutput->StopPlayer();
-		}
 		
 	 	isInitialised = false;
 		return TRUE;
@@ -398,9 +446,7 @@ BOOL PSoundChannel::Close()
 	if( direction == Recorder )
 	{
 		if ( mpInput )
-		{
 		 	mpInput->StopRecording();
-		}
 		
 	 	isInitialised = false;
 		return TRUE;
@@ -427,14 +473,6 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 
 BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 {
-  Abort();
-
-//  if (!Write((const BYTE *)sound, sound.GetSize()))
-//    return FALSE;
-
-//  if (wait)
-//  return WaitForPlayCompletion();
-
 	// Set buffer frame count to 20ms.
 	PSoundPlayer NewSoundPlayer("TempOutput");
 	NewSoundPlayer.SetFormat(sound.GetChannels(), sound.GetSampleRate(), sound.GetSampleSize(), sound.GetSize());
@@ -534,18 +572,18 @@ BOOL PSoundChannel::Abort()
 {
   	if( direction == Player )
 	{
-		if(mpOutput);
-			return mpOutput->StopPlayer() ? TRUE : FALSE;
+		if( !mpOutput )
+			return FALSE;
 			
-		return TRUE;
+		return mpOutput->StopPlayer()? TRUE : FALSE;
 	}
   	else
   	if( direction == Recorder )
 	{
-		if(mpInput)
-			mpInput->StopRecording()? TRUE : FALSE;
+		if(!mpInput)
+			return FALSE;
 			
-		return TRUE;
+		return mpInput->StopRecording()? TRUE : FALSE;
 	}
 	
 	return FALSE;
