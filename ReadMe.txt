@@ -10,6 +10,8 @@ Contents
 	3.	CVS Access
 	4.	Building PWLib
 	5.	Using PWLib
+	6.	Platform Specific Issues
+	7.	Conclusion
 
 
 
@@ -256,7 +258,8 @@ Threads & Processes
 
 These classes support lightweight threading and functionality to do with the
 process as a whole (for example argument parsing). The threading will be
-pre-emptive on platforms that support it (Win32, platforms with pthreads eg Linux and FreeBSD) and cooperative on those that don't.
+pre-emptive on platforms that support it (Win32, platforms with pthreads eg
+Linux and FreeBSD) and cooperative on those that don't.
 
 GUI
 
@@ -265,6 +268,13 @@ very complete at this time. The Win32 implementation is quite usable, though it
 doesn't include the latest and greatest out of Redmond. The pure xlib
 implementation has quite a lot implemented but is by no means complete. A motif
 implementation is in the works but has not progressed very far.
+
+
+Platform Specific Issues
+------------------------
+On some platforms there are a few ommissions in the functionality. These
+are noted in the Readme.OS_Issues file.
+mostly due to shortfalls
 
 
 Conclusion
