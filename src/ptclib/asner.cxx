@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.80  2003/02/26 04:37:21  robertj
+ * Tidied some comments
+ *
  * Revision 1.79  2003/02/26 01:57:44  robertj
  * Added XML encoding rules to ASN system, thanks Federico Pinna
  *
@@ -5029,13 +5032,10 @@ void PPER_Stream::AnyTypeEncode(const PASN_Object * value)
 }
 
 
-// PERASN.CXX
-
-
-
 ///////////////////////////////////////////////////////////////////////
 
 #if P_EXPAT
+
 PXER_Stream::PXER_Stream(PXMLElement * elem)
   : position(elem)
 {
@@ -5067,4 +5067,8 @@ BOOL PXER_Stream::Write(PChannel &)
 {
   return FALSE;
 }
+
 #endif
+
+
+// End of file ////////////////////////////////////////////////////////////////
