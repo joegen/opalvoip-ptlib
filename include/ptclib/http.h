@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.2 1996/01/26 02:24:26 robertj Exp $
+ * $Id: http.h,v 1.3 1996/01/28 14:15:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.3  1996/01/28 14:15:38  robertj
+ * Changed PCharArray in OnLoadData to PString for convenience in mangling data.
+ * Beginning of pass through resource type.
+ *
  * Revision 1.2  1996/01/26 02:24:26  robertj
  * Further implemetation.
  *
@@ -442,7 +446,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Get the current content type for the file.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       string for the current MIME content type.
      */
 
     void SetContentType(
@@ -492,19 +496,19 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PCharArray & data,          // Data used in reply.
+      PString & data,             // Data used in reply.
       PMIMEInfo & outMIME         // MIME information used in reply.
     ) = 0;
     /* Get a block of data (eg HTML) that the resource contains.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of load operation.
      */
 
     virtual PHTTPSocket::StatusCode OnLoadHead(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PCharArray & data,          // Data used in reply.
+      PString & data,             // Data used in reply.
       PMIMEInfo & outMIME         // MIME information used in reply.
     );
     /* Get the head of block of data (eg HTML) that the resource contains.
@@ -513,7 +517,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        <A>OnLoadData()</A> function does.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of load operation.
      */
 
     virtual PHTTPSocket::StatusCode Post(
@@ -527,7 +531,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        success.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of post operation.
      */
 
 
@@ -576,9 +580,7 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
       const PHTTPAuthority & auth  // Authorisation for the resource.
     );
     /* Contruct a new simple string resource for the HTTP space. If no MIME
-       content type is specified then a default type is used depending on the
-       file type. For example, "text/html" is used of the file type is
-       ".html" or ".htm". The default for an unknown type is "text/plain".
+       content type is specified then a default type is "text/html".
      */
 
 
@@ -586,13 +588,13 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
     virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PCharArray & data,          // Data used in reply.
+      PString & data,             // Data used in reply.
       PMIMEInfo & outMIME         // MIME information used in reply.
     );
     /* Get a block of data (eg HTML) that the resource contains.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of load operation.
      */
 
 
@@ -612,6 +614,9 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
  */
 
   public:
+    PHTTPFile(
+      const PString & filename     // file in file system and URL name.
+    );
     PHTTPFile(
       const PURL & url,            // Name of the resource in URL space.
       const PFilePath & file       // Location of file in file system.
@@ -635,7 +640,8 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
     /* Contruct a new simple file resource for the HTTP space. If no MIME
        content type is specified then a default type is used depending on the
        file type. For example, "text/html" is used of the file type is
-       ".html" or ".htm". The default for an unknown type is "text/plain".
+       ".html" or ".htm". The default for an unknown type is
+       "application/octet-stream".
      */
 
 
@@ -643,13 +649,13 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
     virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PCharArray & data,          // Data used in reply.
+      PString & data,             // Data used in reply.
       PMIMEInfo & outMIME         // MIME information used in reply.
     );
     /* Get a block of data (eg HTML) that the resource contains.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of load operation.
      */
 
 
@@ -671,23 +677,8 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPResource)
    space. This effectively grafts a file system directory tree onto the URL
    name space tree.
 
-   When a file is sent to the remote client the MIME content type is derived
-   from the file type or extension. A dictionary is provided for this purpose.
-   The default values placed in this dictionary are:
-      <PRE>
-      .html, .htm  =>  text/html
-      .jpg, .jpeg, .jpe  =>  text/jpeg
-      .aif, .aiff  =>  audio/aiff
-      .au, .snd  =>  audio/basic
-      .wav  =>  audio/wav
-      .gif  => image/gif
-      .tif, .tiff  =>  image/tiff
-      .xbm  => image/x-bitmap
-      .avi  =>  video/avi
-      .mpg, .mpeg  =>  video/mpeg
-      .qt, .mov  =>  video/quicktime
-      </PRE>
-   all other file types will be of MIME type "text/plain".
+   See the <A>PMIMEInfo</A> class for more information on the mappings between
+   file types and MIME types.
  */
 
   public:
@@ -707,18 +698,53 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPResource)
     virtual PHTTPSocket::StatusCode OnLoadData(
       const PURL & url,           // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PCharArray & data,          // Data used in reply.
+      PString & data,             // Data used in reply.
       PMIMEInfo & outMIME         // MIME information used in reply.
     );
     /* Get a block of data (eg HTML) that the resource contains.
 
        <H2>Returns:</H2>
-       TRUE if data obtained and should be sent.
+       Status of load operation.
      */
 
 
   protected:
     PDirectory basePath;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPPassThrough
+
+PDECLARE_CLASS(PHTTPPassThrough, PHTTPResource)
+/* This object describes a HyperText Transport Protocol resource which is a
+   passes through to another HTTP server.
+ */
+
+  public:
+    PHTTPPassThrough(
+      const PURL & localURL,       // Name of the resource in URL space.
+      const PURL & remoteURL       // Name of the resource on other server.
+    );
+    /* Contruct a new pass through resource for the HTTP space.
+     */
+
+
+  // Overrides from class PHTTPResource
+    virtual void OnGET(
+      PHTTPSocket & socket,       // HTTP socket that received the request
+      const PURL & url,           // Universal Resource Locator for document.
+      const PMIMEInfo & info      // Extra MIME information in command.
+    );
+    /* Handle the GET command passed from the HTTP socket.
+
+       This will pass the request on to another server and send the reply
+       back on to the client.
+     */
+
+
+  protected:
+    PURL remoteURL;
 };
 
 
