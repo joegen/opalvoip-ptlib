@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.3 1993/08/27 18:17:47 robertj Exp $
+ * $Id: contain.cxx,v 1.4 1993/09/27 16:35:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Revision 1.4  1993/09/27 16:35:25  robertj
+ * Fixed bugs in sorted list.
+ * Fixed compatibility problem with sprintf return value (SVR4).
+ * Change function for making string array to a constructor.
+ * /.
+ *
+ * Revision 1.3  1993/08/27  18:17:47  robertj
  * Fixed bugs in PAbstractSortedList (including some formatting).
  *
  * Revision 1.2  1993/08/21  01:50:33  robertj
@@ -357,7 +363,7 @@ istream & PString::ReadFrom(istream &strm)
   delete theArray;
   theArray = new char[1000];
   strm >> theArray;
-  MakeMinimumSize();
+  PAssert(MakeMinimumSize());
   return strm;
 }
 
@@ -623,7 +629,9 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
-  PAssert(::vsprintf(GetPointer(1000), fmt, arg) < 1000);
+  ::vsprintf(GetPointer(1000), fmt, arg);
+  PAssert(strlen(theArray) < 1000);
+  PAssert(MakeMinimumSize());
   return *this;
 }
 
@@ -831,13 +839,12 @@ BOOL PArrayObjects::Enumerate(PEnumerator func, PObject * info) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringArray MakeStringArray(PINDEX count, char **strarr)
+PStringArray::PStringArray(PINDEX count, char **strarr)
 {
   PAssertNULL(strarr);
-  PStringArray array(count);
+  SetSize(count);
   for (PINDEX i = 0; i < count; i++)
-    array.SetAt(i, new PString(strarr[i]));
-  return array;
+    SetAt(i, new PString(strarr[i]));
 }
 
 
@@ -1174,7 +1181,7 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   while (element != root && !element->parent->IsBlack()) {
     if (element->parent == element->parent->parent->left) {
       child = element->parent->parent->right;
-      if (!child->IsBlack()) {
+      if (child != NULL && !child->IsBlack()) {
         element->parent->MakeBlack();
         child->MakeBlack();
         element = element->parent->parent;
@@ -1191,7 +1198,7 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
     }
     else {
       child = element->parent->parent->left;
-      if (!child->IsBlack()) {
+      if (child != NULL && !child->IsBlack()) {
         element->parent->MakeBlack();
         child->MakeBlack();
         element = element->parent->parent;
@@ -1325,7 +1332,7 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
   PSortedListElement * t = y->parent;
   while (t != NULL) {
     t->subTreeSize--;
-    t= t->parent;
+    t = t->parent;
   }
 
   if (x != NULL && y->IsBlack()) {
