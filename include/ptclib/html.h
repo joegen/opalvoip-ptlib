@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.4 1996/01/28 14:15:56 robertj Exp $
+ * $Id: html.h,v 1.5 1996/02/03 11:01:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.5  1996/02/03 11:01:25  robertj
+ * Further implementation.
+ *
  * Revision 1.4  1996/01/28 14:15:56  robertj
  * More comments.
  *
@@ -101,6 +104,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       InDefinitionList,
       InListHeading,
       InDefinitionTerm,
+      InTable,
       InForm,
       InSelect,
       InTextArea,
@@ -559,6 +563,49 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
+    enum BorderCodes {
+      NoBorder,
+      Border
+    };
+    class Table : public BodyElement {
+      public:
+        Table(BorderCodes border = NoBorder);
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        BOOL borderFlag;
+    };
+
+    class TableElement : public BodyElement {
+      public:
+        TableElement(
+          const char * nam,
+          ElementInSet elmt,
+          OptionalCRLF opt,
+          const char * attr
+        );
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * attributes;
+    };
+
+    class TableRow : public TableElement {
+      public:
+        TableRow(const char * attr = NULL);
+    };
+
+    class TableHeader : public TableElement {
+      public:
+        TableHeader(const char * attr = NULL);
+    };
+
+    class TableData : public TableElement {
+      public:
+        TableData(const char * attr = NULL);
+    };
+
+
     class Form : public BodyElement {
       public:
         Form(
@@ -619,29 +666,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * errorString;
     };
 
-    class FormField : public FieldElement {
-      protected:
-        FormField(
-          const char * nam,
-          ElementInSet elmt,
-          OptionalCRLF opt,
-          const char * fname,
-          DisableCodes disabled,
-          const char * error
-        );
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        const char * nameString;
-    };
-
     enum MultipleCodes {
       SingleSelect,
       MultipleSelect
     };
-    class Select : public FormField {
+    class Select : public FieldElement {
       public:
         Select(
-          const char * fname,
+          const char * fname = NULL,
           MultipleCodes multiple = SingleSelect,
           DisableCodes disabled = Enabled,
           const char * error = NULL
@@ -655,6 +687,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
+        const char * nameString;
         BOOL multipleFlag;
     };
 
@@ -673,6 +706,21 @@ PDECLARE_CLASS(PHTML, PStringStream)
         virtual void AddAttr(PHTML & html) const;
       private:
         BOOL selectedFlag;
+    };
+
+    class FormField : public FieldElement {
+      protected:
+        FormField(
+          const char * nam,
+          ElementInSet elmt,
+          OptionalCRLF opt,
+          const char * fname,
+          DisableCodes disabled,
+          const char * error
+        );
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * nameString;
     };
 
     class TextArea : public FormField {
@@ -713,6 +761,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         InputText(
           const char * fname,
           int size,
+          const char * init = NULL,
           int maxLength = 0,
           DisableCodes disabled = Enabled,
           const char * error = NULL
@@ -720,6 +769,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         InputText(
           const PString & fnameStr,
           int size,
+          const PString & init,
           int maxLength = 0,
           DisableCodes disabled = Enabled,
           const char * error = NULL
@@ -735,6 +785,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         );
         virtual void AddAttr(PHTML & html) const;
       private:
+        const char * value;
         int width, length;
     };
 
@@ -925,53 +976,129 @@ PDECLARE_CLASS(PHTML, PStringStream)
     class ResetButton : public InputImage {
       public:
         ResetButton(
-          const char * fname,
+          const char * title,
+          const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         ResetButton(
-          const PString & fname,
+          const PString & titleStr,
+          const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         ResetButton(
+          const char * title,
+          const PString & fnameStr,
+          const char * src = NULL,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        ResetButton(
+          const PString & titleStr,
+          const PString & fnameStr,
+          const char * src = NULL,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        ResetButton(
+          const char * title,
           const char * fname,
           const PString & srcStr,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         ResetButton(
-          const PString & fname,
+          const PString & titleStr,
+          const char * fname,
           const PString & srcStr,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
+        ResetButton(
+          const char * title,
+          const PString & fnameStr,
+          const PString & srcStr,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        ResetButton(
+          const PString & titleStr,
+          const PString & fnameStr,
+          const PString & srcStr,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+      protected:
+        ResetButton(
+          const char * type,
+          const char * title,
+          const char * fname,
+          const char * src,
+          DisableCodes disabled,
+          const char * error
+        );
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * titleString;
     };
 
-    class SubmitButton : public InputImage {
+    class SubmitButton : public ResetButton {
       public:
         SubmitButton(
-          const char * fname,
+          const char * title,
+          const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         SubmitButton(
-          const PString & fname,
+          const PString & titleStr,
+          const char * fname = NULL,
           const char * src = NULL,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         SubmitButton(
+          const char * title,
+          const PString & fnameStr,
+          const char * src = NULL,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        SubmitButton(
+          const PString & titleStr,
+          const PString & fnameStr,
+          const char * src = NULL,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        SubmitButton(
+          const char * title,
           const char * fname,
           const PString & srcStr,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         SubmitButton(
-          const PString & fname,
+          const PString & titleStr,
+          const char * fname,
+          const PString & srcStr,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        SubmitButton(
+          const char * title,
+          const PString & fnameStr,
+          const PString & srcStr,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        SubmitButton(
+          const PString & titleStr,
+          const PString & fnameStr,
           const PString & srcStr,
           DisableCodes disabled = Enabled,
           const char * error = NULL
