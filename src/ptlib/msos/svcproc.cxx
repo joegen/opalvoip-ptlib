@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.17 1996/11/18 11:32:04 robertj Exp $
+ * $Id: svcproc.cxx,v 1.18 1996/11/30 12:07:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.18  1996/11/30 12:07:19  robertj
+ * Changed service creation for NT so is auto-start,
+ *
  * Revision 1.17  1996/11/18 11:32:04  robertj
  * Fixed bug in doing a "stop" command closing ALL instances of service.
  *
@@ -889,7 +892,7 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
                     svc->GetName(),                 // name to display
                     SERVICE_ALL_ACCESS,             // desired access
                     SERVICE_WIN32_OWN_PROCESS,      // service type
-                    SERVICE_DEMAND_START,           // start type
+                    SERVICE_AUTO_START,             // start type
                     SERVICE_ERROR_NORMAL,           // error control type
                     svc->GetFile(),                 // service's binary
                     NULL,                           // no load ordering group
