@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.7 1996/07/15 10:29:38 robertj Exp $
+ * $Id: cypher.h,v 1.8 1996/11/16 10:50:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.8  1996/11/16 10:50:24  robertj
+ * Fixed bug in registration order form showing incorrect check code when have key.
+ *
  * Revision 1.7  1996/07/15 10:29:38  robertj
  * Changed memory block cypher conversion functions to be void *.
  * Changed key types to be structures rather than arrays to avoid pinter/reference confusion by compilers.
@@ -431,14 +434,6 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
     /* "Unvalidate" a security configuration going back to a pending state,
        usually used after an <CODE>Invalid</CODE> response was recieved from
        the <A>GetValidation()</A> function.
-     */
-
-    PString CalculatePendingDigest() const;
-    /* Calculate the MD5 digest for all of the pending secured keys data in the
-       configuration file.
-
-       <H2>Returns:</H2>
-       Base64 string for MD5 encoding of data.
      */
 
 
