@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.10 1995/03/14 12:42:49 robertj Exp $
+ * $Id: thread.h,v 1.11 1995/06/17 11:13:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.11  1995/06/17 11:13:35  robertj
+ * Documentation update.
+ *
  * Revision 1.10  1995/03/14 12:42:49  robertj
  * Updated documentation to use HTML codes.
  *
@@ -96,8 +99,8 @@ PDECLARE_CLASS(PThread, PObject)
       Priority priorityLevel = NormalPriority  // Initial priority of thread.
     );
     /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
-       parameter is TRUE, the threads <A><CODE>Main()</CODE></A> function is
-       called to execute the code for the thread.
+       parameter is TRUE, the threads <A>Main()</A> function is called to
+       execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
        never be predicted. Thus never assume that on return from this
@@ -118,12 +121,12 @@ PDECLARE_CLASS(PThread, PObject)
      */
 
     ~PThread();
-    /* Destroy the thread, this simply calls the
-       <A><CODE>Terminate()</CODE></A> function with all its restrictions and
-       penalties. See that function for more information.
-       
+    /* Destroy the thread, this simply calls the <A>Terminate()</A> function
+       with all its restrictions and penalties. See that function for more
+       information.
+
        Note that the correct way for a thread to terminate is to return from
-       the <A><CODE>Main()</CODE></A> function.
+       the <A>Main()</A> function.
      */
 
 
@@ -163,9 +166,9 @@ PDECLARE_CLASS(PThread, PObject)
        called causing at the very least the possiblity of memory leaks.
 
        Note that the correct way for a thread to terminate is to return from
-       the <A><CODE>Main()</CODE></A> function or self terminate by calling
-       <A><CODE>Terminate()</CODE></A> within the context of the thread which
-       can then assure that all resources are cleaned up.
+       the <A>Main()</A> function or self terminate by calling
+       <A>Terminate()</A> within the context of the thread which can then
+       assure that all resources are cleaned up.
      */
 
     virtual BOOL IsTerminated() const;
@@ -182,7 +185,7 @@ PDECLARE_CLASS(PThread, PObject)
     
        If <CODE>susp</CODE> is TRUE this increments an internal count of
        suspensions that must be matched by an equal number of calls to
-       <A><CODE>Resume()</CODE></A> or <CODE>Suspend(FALSE)</CODE> before the
+       <A>Resume()</A> or <CODE>Suspend(FALSE)</CODE> before the
        thread actually executes again.
 
        If <CODE>susp</CODE> is FALSE then this decrements the internal count of
@@ -292,7 +295,7 @@ PDECLARE_CLASS(PThread, PObject)
      */
 
     void BeginThread();
-    /* Function to start <A><CODE>Main()</CODE></A> and exit when completed.
+    /* Function to start <A>Main()</A> and exit when completed.
 
        This function is not present for platforms that support threads.
      */
@@ -321,22 +324,21 @@ PDECLARE_CLASS(PThread, PObject)
        been scheduled has its dynamic priority increased so that next time
        the scheduler is looking for a thread to run it has a better chance of
        executing. Once a thread is executed the dynamic priority is set back
-       to the base priority as set by <A><CODE>SetPriority()</CODE></A>.
+       to the base priority as set by <A>SetPriority()</A>.
 
        This variable is not present for platforms that support threads.
      */
 
     int suspendCount;
-    /* The threads count of calls to <A><CODE>Suspend()</CODE></A> or
-       <A><CODE>Resume()</CODE></A>. If <=0 then can run, if >0 means
-       suspended and is not to be scheduled.
+    /* The threads count of calls to <A>Suspend()</A> or <A>Resume()</A>.
+       If <=0 then can run, if >0 means suspended and is not to be scheduled.
 
        This variable is not present for platforms that support threads.
      */
 
     PTimer sleepTimer;
     /* Time for thread to remain asleep. Thread is not scheduled while this
-       is running after a <A><CODE>Sleep()</CODE></A> call.
+       is running after a <A>Sleep()</A> call.
 
        This variable is not present for platforms that support threads.
      */
