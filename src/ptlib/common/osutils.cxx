@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.132  2000/03/29 01:55:52  robertj
+ * Fixed infinite recursion on PProcess::Current() = NULL assertion.
+ *
  * Revision 1.131  2000/03/02 05:43:12  robertj
  * Fixed handling of NULL pointer on current thread in PTRACE output.
  *
@@ -1229,7 +1232,13 @@ void PProcess::PreInitialise(int c, char ** v, char ** e)
 
 PProcess & PProcess::Current()
 {
-  PAssertNULL(PProcessInstance);
+  if (PProcessInstance == NULL) {
+    cerr << "Catastrophic failure, PProcess::Current() = NULL!!\n";
+#if defined(_MSC_VER) && defined(_DEBUG)
+    __asm int 3;
+#endif
+    _exit(1);
+  }
   return *PProcessInstance;
 }
 
