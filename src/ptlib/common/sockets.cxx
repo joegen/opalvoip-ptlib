@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.42 1996/05/26 03:47:03 robertj Exp $
+ * $Id: sockets.cxx,v 1.43 1996/06/10 09:58:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.43  1996/06/10 09:58:21  robertj
+ * Fixed win95 compatibility with looking up zero address (got a response and shouldn't).
+ *
  * Revision 1.42  1996/05/26 03:47:03  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -407,6 +410,8 @@ PString PIPSocket::GetHostName(const PString & hostname)
 
 PString PIPSocket::GetHostName(const Address & addr)
 {
+  if (addr == 0)
+    return addr;
   struct hostent * host_info =
                 ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
   if (host_info != NULL)
