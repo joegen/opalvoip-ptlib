@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.68  2004/04/03 06:54:28  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.67  2003/09/17 09:02:14  csoutheren
  * Removed memory leak detection code
  *
@@ -245,17 +248,11 @@
 #include <ptlib.h>
 #include <ctype.h>
 #ifdef _WIN32
-#include <strstrea.h>
 #include <ptlib/msos/ptlib/debstrm.h>
 #include <crtdbg.h>
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
-#if defined(__GNUC__) && __GNUC__ > 2
-#include <strstream>
-#else
-#include <strstream.h>
-#endif
 #include <signal.h>
 #endif
 
