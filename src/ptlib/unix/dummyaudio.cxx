@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dummyaudio.cxx,v $
+ * Revision 1.2  2001/09/27 08:37:45  rogerh
+ * remove unwanted lastError
+ *
  * Revision 1.1  2001/02/23 08:48:10  rogerh
  * Implement a dummy PSoundChannel class. There is no functionality
  * but it allows OpenH323 to link.
@@ -269,7 +272,6 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 BOOL PSoundChannel::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
-    lastError = NotOpen;
     return FALSE;
   }
 
