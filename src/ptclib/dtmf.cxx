@@ -12,6 +12,11 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.4  2002/01/24 11:14:45  rogerh
+ * Back out robert's change. It did not work (no sign extending)
+ * and replace it with a better solution which should be happy on both big
+ * endian and little endian systems.
+ *
  * Revision 1.3  2002/01/24 10:40:17  rogerh
  * Add version log
  *
@@ -64,24 +69,21 @@ PDTMFDecoder::PDTMFDecoder() {
 	p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
 }
 
-static int join(int a,int b)
-{
-  return (b << 8) | a;
-}
-
 PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
 	int x;
 	int s, kk;
 	int c, d, f, n;
-	unsigned char *buffer = (unsigned char*)buf;
+	short *buffer = (short *)buf;
+
+	PINDEX numSamples = bytes >> 1;
 
 	PString keyString;
 
 	PINDEX pos;
-	for (pos = 0; pos < (bytes-1); pos = pos+2) {
+	for (pos = 0; pos < numSamples; pos++) {
 
-		/* Convert to our format */
-		x = join(buffer[pos],buffer[pos+1]) / (32768/FSC);
+		/* Read (and scale) the next 16 bit sample */
+		x = ((int)(*buffer++)) / (32768/FSC);
 
 		/* Input amplitude */
 		if (x > 0)
