@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.25  2002/02/20 02:37:26  dereks
+ * Initial release of Firewire camera support for linux.
+ * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+ *
  * Revision 1.24  2002/01/16 07:51:06  robertj
  * MSVC compatibilty changes
  *
@@ -141,6 +145,12 @@ class PColourConverter;
      "YUV410"   YUV 4:1:0 packed
      "YUV410P"  YUV 4:1:0 planar
      "MJPEG"    Motion JPEG
+     "UYVY422"  YUV 4:2:2 packed as U Y V Y U Y V Y ...
+     "UYV444    YUV 4:4:4 packed as U Y V   U Y V   ...
+                They are used in IEEE 1394 digital cameras. The specification
+                is found at
+http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pdf
+
  */
 
 
