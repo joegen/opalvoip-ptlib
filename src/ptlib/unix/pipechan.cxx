@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.25  2000/04/06 12:11:32  rogerh
+ * MacOS X support submitted by Kevin Packard
+ *
  * Revision 1.24  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -217,7 +220,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(__BEOS__)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(__BEOS__) || defined(P_MACOSX)
     extern char ** environ;
 #define __environ environ
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.12  2000/04/06 12:11:32  rogerh
+ * MacOS X support submitted by Kevin Packard
+ *
  * Revision 1.11  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -53,7 +56,7 @@
 #include <sys/ioctl.h>
 
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW
