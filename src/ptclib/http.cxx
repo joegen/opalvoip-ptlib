@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.58  2000/05/02 08:29:07  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.57  1999/05/11 12:24:18  robertj
  * Fixed URL parser so leading blanks are ignored.
  *
@@ -691,32 +694,32 @@ static char const * const HTTPCommands[PHTTP::NumCommands] = {
 };
 
 
-const PCaselessString PHTTP::AllowTag           = "Allow";
-const PCaselessString PHTTP::AuthorizationTag   = "Authorization";
-const PCaselessString PHTTP::ContentEncodingTag = "Content-Encoding";
-const PCaselessString PHTTP::ContentLengthTag   = "Content-Length";
-const PCaselessString PHTTP::ContentTypeTag     = "Content-Type";
-const PCaselessString PHTTP::DateTag            = "Date";
-const PCaselessString PHTTP::ExpiresTag         = "Expires";
-const PCaselessString PHTTP::FromTag            = "From";
-const PCaselessString PHTTP::IfModifiedSinceTag = "If-Modified-Since";
-const PCaselessString PHTTP::LastModifiedTag    = "Last-Modified";
-const PCaselessString PHTTP::LocationTag        = "Location";
-const PCaselessString PHTTP::PragmaTag          = "Pragma";
-const PCaselessString PHTTP::PragmaNoCacheTag   = "no-cache";
-const PCaselessString PHTTP::RefererTag         = "Referer";
-const PCaselessString PHTTP::ServerTag          = "Server";
-const PCaselessString PHTTP::UserAgentTag       = "User-Agent";
-const PCaselessString PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
-const PCaselessString PHTTP::MIMEVersionTag     = "MIME-Version";
-const PCaselessString PHTTP::ConnectionTag      = "Connection";
-const PCaselessString PHTTP::KeepAliveTag       = "Keep-Alive";
-const PCaselessString PHTTP::ProxyConnectionTag = "Proxy-Connection";
-const PCaselessString PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
-const PCaselessString PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
-const PCaselessString PHTTP::ForwardedTag       = "Forwarded";
-const PCaselessString PHTTP::SetCookieTag       = "Set-Cookie";
-const PCaselessString PHTTP::CookieTag          = "Cookie";
+const char * PHTTP::AllowTag           = "Allow";
+const char * PHTTP::AuthorizationTag   = "Authorization";
+const char * PHTTP::ContentEncodingTag = "Content-Encoding";
+const char * PHTTP::ContentLengthTag   = "Content-Length";
+const char * PHTTP::ContentTypeTag     = "Content-Type";
+const char * PHTTP::DateTag            = "Date";
+const char * PHTTP::ExpiresTag         = "Expires";
+const char * PHTTP::FromTag            = "From";
+const char * PHTTP::IfModifiedSinceTag = "If-Modified-Since";
+const char * PHTTP::LastModifiedTag    = "Last-Modified";
+const char * PHTTP::LocationTag        = "Location";
+const char * PHTTP::PragmaTag          = "Pragma";
+const char * PHTTP::PragmaNoCacheTag   = "no-cache";
+const char * PHTTP::RefererTag         = "Referer";
+const char * PHTTP::ServerTag          = "Server";
+const char * PHTTP::UserAgentTag       = "User-Agent";
+const char * PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
+const char * PHTTP::MIMEVersionTag     = "MIME-Version";
+const char * PHTTP::ConnectionTag      = "Connection";
+const char * PHTTP::KeepAliveTag       = "Keep-Alive";
+const char * PHTTP::ProxyConnectionTag = "Proxy-Connection";
+const char * PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
+const char * PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
+const char * PHTTP::ForwardedTag       = "Forwarded";
+const char * PHTTP::SetCookieTag       = "Set-Cookie";
+const char * PHTTP::CookieTag          = "Cookie";
 
 
 

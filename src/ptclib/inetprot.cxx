@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.44  2000/05/02 08:29:07  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.43  1999/05/04 15:26:01  robertj
  * Improved HTTP/1.1 compatibility (pass through user commands).
  * Fixed problems with quicktime installer.
@@ -178,8 +181,8 @@
 #include <ptclib/mime.h>
 
 
-static const PString CRLF = "\r\n";
-static const PString CRLFdotCRLF = "\r\n.\r\n";
+static const char * CRLF = "\r\n";
+static const char * CRLFdotCRLF = "\r\n.\r\n";
 
 
 //////////////////////////////////////////////////////////////////////////////
