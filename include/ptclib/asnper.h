@@ -68,10 +68,10 @@ class PPER_Stream : public PASN_Stream
     BOOL SmallUnsignedDecode(unsigned & value);
     void SmallUnsignedEncode(unsigned value);
 
-    int LengthDecode(unsigned lower, unsigned upper, unsigned & len);
+    BOOL LengthDecode(unsigned lower, unsigned upper, unsigned & len);
     void LengthEncode(unsigned len, unsigned lower, unsigned upper);
 
-    int UnsignedDecode(unsigned lower, unsigned upper, unsigned & value);
+    BOOL UnsignedDecode(unsigned lower, unsigned upper, unsigned & value);
     void UnsignedEncode(int value, unsigned lower, unsigned upper);
 
     void AnyTypeEncode(const PASN_Object * value);
