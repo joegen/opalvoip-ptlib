@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.22 1996/07/15 10:33:14 robertj Exp $
+ * $Id: inetprot.cxx,v 1.23 1996/08/25 09:35:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.23  1996/08/25 09:35:47  robertj
+ * Added bug in appsock that last response is set on an I/O error.
+ *
  * Revision 1.22  1996/07/15 10:33:14  robertj
  * Changed memory block base64 conversion functions to be void *.
  *
@@ -404,8 +407,11 @@ BOOL PApplicationSocket::WriteResponse(const PString & code,
 BOOL PApplicationSocket::ReadResponse()
 {
   PString line;
-  if (!ReadLine(line))
+  if (!ReadLine(line)) {
+    lastResponseCode = -1;
+    lastResponseInfo = GetErrorText();
     return FALSE;
+  }
 
   PINDEX continuePos = ParseResponse(line);
   if (continuePos == 0)
@@ -414,8 +420,10 @@ BOOL PApplicationSocket::ReadResponse()
   char continueChar = line[continuePos];
   while (!isdigit(line[0]) || line[continuePos] == continueChar) {
     lastResponseInfo += '\n';
-    if (!ReadLine(line))
+    if (!ReadLine(line)) {
+      lastResponseInfo += GetErrorText();
       return FALSE;
+    }
     lastResponseInfo += line.Mid(continuePos+1);
   }
 
