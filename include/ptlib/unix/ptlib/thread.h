@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.18  2000/10/31 08:07:28  rogerh
+ * Use proper return type for PX_GetThreadID
+ *
  * Revision 1.17  2000/03/17 03:46:32  craigs
  * Removed spurious stuff for PThread implementation
  *
@@ -118,7 +121,7 @@ class PSemaphore;
     //void InitialiseProcessThread();
     static void * PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
-    unsigned PX_GetThreadId() const;
+    pthread_t   PX_GetThreadId() const;
 
   protected:
     void PX_NewThread(BOOL startSuspended);
