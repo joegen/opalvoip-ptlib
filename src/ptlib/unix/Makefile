@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.64  2001/01/03 16:48:13  rogerh
+# Rename V4L_SOURCE to VIDEO_SOURCE (to be less platform specific).
+# Specify which files to use for VIDEO_SOURCE on non-linux systems eg BSD.
+#
 # Revision 1.63  2000/12/19 22:20:26  dereks
 # Add video channel classes to connect to the PwLib PVideoInputDevice class.
 # Add PFakeVideoInput class to generate test images for video.
@@ -241,7 +245,14 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx
 endif
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
-V4L_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx $(COMMON_SRC_DIR)/videoio.cxx video4linux.cxx $(COMMON_SRC_DIR)/vconvert.cxx
+VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
+                $(COMMON_SRC_DIR)/videoio.cxx \
+	        video4linux.cxx
+	        $(COMMON_SRC_DIR)/vconvert.cxx
+else
+VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
+                $(COMMON_SRC_DIR)/videoio.cxx \
+	        $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),linux)
@@ -306,7 +317,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/telnet.cxx \
 	$(SSL_SOURCE) \
-	$(V4L_SOURCE) \
+	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
 	$(GETDATE_SOURCE) \
 	uicmp.cxx \
