@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.8 1996/02/13 12:57:49 robertj Exp $
+ * $Id: inetprot.cxx,v 1.9 1996/02/15 14:42:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.9  1996/02/15 14:42:41  robertj
+ * Fixed warning for long to int conversion.
+ *
  * Revision 1.8  1996/02/13 12:57:49  robertj
  * Added access to the last response in an application socket.
  *
@@ -376,7 +379,7 @@ char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
 
 PINDEX PApplicationSocket::GetLastResponseCode() const
 {
-  return lastResponseCode.AsInteger();
+  return (PINDEX)lastResponseCode.AsInteger();
 }
 
 PString PApplicationSocket::GetLastResponseInfo() const
