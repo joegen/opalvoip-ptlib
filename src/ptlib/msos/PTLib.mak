@@ -27,6 +27,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -35,21 +39,10 @@ INTDIR=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+ALL : "$(OUTDIR)\PTLib.dll"
 
-ALL : "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
 
-!ELSE 
-
-ALL : "Console - Win32 Release" "MergeSym - Win32 Release" "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"MergeSym - Win32 ReleaseCLEAN" "Console - Win32 ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
 	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -58,7 +51,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\PTLib.exp"
 	-@erase "$(OUTDIR)\PTLib.lib"
 	-@erase "$(OUTDIR)\PTLib.pdb"
-	-@erase ".\..\..\..\Lib\PTLib.dbg"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -66,42 +58,8 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\PTLib.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\libver.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
@@ -113,8 +71,7 @@ DEF_FILE= \
 	"$(INTDIR)\ptlib.def"
 LINK32_OBJS= \
 	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\ptlib.res" \
-	"$(OUTDIR)\ptlibs.lib"
+	"$(INTDIR)\ptlib.res"
 
 "$(OUTDIR)\PTLib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -123,15 +80,19 @@ LINK32_OBJS= \
 
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=\Work\pwlib\Lib\PTLib.dll
 SOURCE="$(InputPath)"
+PostBuild_Desc=Extracting debug symbols
+DS_POSTBUILD_DEP=$(INTDIR)\postbld.dep
 
-"$(OUTDIR)\PTLib.dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
-	rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
-<< 
-	
+ALL : $(DS_POSTBUILD_DEP)
+
+# Begin Custom Macros
+OutDir=.\..\..\..\Lib
+# End Custom Macros
+
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\PTLib.dll"
+   rebase -b 0x10000000 -x . .\..\..\..\Lib\PTLib.dll
+	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
 
@@ -141,21 +102,10 @@ INTDIR=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\PTLibd.dll"
 
-!ELSE 
 
-ALL : "Console - Win32 Debug" "MergeSym - Win32 Debug" "$(OUTDIR)\PTLibd.dll"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"MergeSym - Win32 DebugCLEAN" "Console - Win32 DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
 	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -172,42 +122,8 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\ptlib.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
@@ -219,8 +135,7 @@ DEF_FILE= \
 	"$(INTDIR)\PTLibd.def"
 LINK32_OBJS= \
 	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\ptlib.res" \
-	"$(OUTDIR)\ptlibsd.lib"
+	"$(INTDIR)\ptlib.res"
 
 "$(OUTDIR)\PTLibd.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -235,21 +150,10 @@ INTDIR=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\PTLibd.dll"
 
-!ELSE 
 
-ALL : "Console - Win32 SSL Debug" "MergeSym - Win32 SSL Debug" "$(OUTDIR)\PTLibd.dll"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"MergeSym - Win32 SSL DebugCLEAN" "Console - Win32 SSL DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
 	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -266,42 +170,8 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\ptlib.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
@@ -313,8 +183,7 @@ DEF_FILE= \
 	"$(INTDIR)\PTLibd.def"
 LINK32_OBJS= \
 	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\ptlib.res" \
-	"$(OUTDIR)\ptlibsd.lib"
+	"$(INTDIR)\ptlib.res"
 
 "$(OUTDIR)\PTLibd.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -329,21 +198,10 @@ INTDIR=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+ALL : "$(OUTDIR)\PTLib.dll"
 
-ALL : "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
 
-!ELSE 
-
-ALL : "Console - Win32 SSL Release" "MergeSym - Win32 SSL Release" "$(OUTDIR)\PTLib.dll" ".\..\..\..\Lib\PTLib.dbg"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"MergeSym - Win32 SSL ReleaseCLEAN" "Console - Win32 SSL ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
 	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -352,7 +210,6 @@ CLEAN :
 	-@erase "$(OUTDIR)\PTLib.exp"
 	-@erase "$(OUTDIR)\PTLib.lib"
 	-@erase "$(OUTDIR)\PTLib.pdb"
-	-@erase ".\..\..\..\Lib\PTLib.dbg"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -360,8 +217,43 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\PTLib.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\libver.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\PTLib.pdb" /debug /debugtype:both /machine:I386 /def:"..\..\..\Lib\Release\ptlib.def" /out:"$(OUTDIR)\PTLib.dll" /implib:"$(OUTDIR)\PTLib.lib" /libpath:"..\..\..\lib" 
+DEF_FILE= \
+	"$(INTDIR)\ptlib.def"
+LINK32_OBJS= \
+	"$(INTDIR)\dllmain.obj" \
+	"$(INTDIR)\ptlib.res"
+
+"$(OUTDIR)\PTLib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+OutDir=.\..\..\..\Lib
+TargetName=PTLib
+SOURCE="$(InputPath)"
+PostBuild_Desc=Extracting debug symbols
+DS_POSTBUILD_DEP=$(INTDIR)\postbld.dep
+
+ALL : $(DS_POSTBUILD_DEP)
+
+# Begin Custom Macros
+OutDir=.\..\..\..\Lib
+# End Custom Macros
+
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\PTLib.dll"
+   rebase -b 0x10000000 -x . .\..\..\..\Lib\PTLib.dll
+	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -392,42 +284,6 @@ CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I ".
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\libver.res" /d "NDEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\PTLib.pdb" /debug /debugtype:both /machine:I386 /def:"..\..\..\Lib\Release\ptlib.def" /out:"$(OUTDIR)\PTLib.dll" /implib:"$(OUTDIR)\PTLib.lib" /libpath:"..\..\..\lib" 
-DEF_FILE= \
-	"$(INTDIR)\ptlib.def"
-LINK32_OBJS= \
-	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\ptlib.res" \
-	"$(OUTDIR)\ptlibs.lib"
-
-"$(OUTDIR)\PTLib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-OutDir=.\..\..\..\Lib
-TargetName=PTLib
-InputPath=\Work\pwlib\Lib\PTLib.dll
-SOURCE="$(InputPath)"
-
-"$(OUTDIR)\PTLib.dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	<<tempfile.bat 
-	@echo off 
-	rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
-<< 
-	
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -440,107 +296,6 @@ SOURCE="$(InputPath)"
 
 
 !IF "$(CFG)" == "PTLib - Win32 Release" || "$(CFG)" == "PTLib - Win32 Debug" || "$(CFG)" == "PTLib - Win32 SSL Debug" || "$(CFG)" == "PTLib - Win32 SSL Release"
-
-!IF  "$(CFG)" == "PTLib - Win32 Release"
-
-"MergeSym - Win32 Release" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 Release" 
-   cd "..\..\src\ptlib\msos"
-
-"MergeSym - Win32 ReleaseCLEAN" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 Release" RECURSE=1 CLEAN 
-   cd "..\..\src\ptlib\msos"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
-
-"MergeSym - Win32 Debug" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 Debug" 
-   cd "..\..\src\ptlib\msos"
-
-"MergeSym - Win32 DebugCLEAN" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 Debug" RECURSE=1 CLEAN 
-   cd "..\..\src\ptlib\msos"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
-
-"MergeSym - Win32 SSL Debug" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Debug" 
-   cd "..\..\src\ptlib\msos"
-
-"MergeSym - Win32 SSL DebugCLEAN" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Debug" RECURSE=1 CLEAN 
-   cd "..\..\src\ptlib\msos"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
-
-"MergeSym - Win32 SSL Release" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Release" 
-   cd "..\..\src\ptlib\msos"
-
-"MergeSym - Win32 SSL ReleaseCLEAN" : 
-   cd "\Work\pwlib\tools\MergeSym"
-   $(MAKE) /$(MAKEFLAGS) /F .\MergeSym.mak CFG="MergeSym - Win32 SSL Release" RECURSE=1 CLEAN 
-   cd "..\..\src\ptlib\msos"
-
-!ENDIF 
-
-!IF  "$(CFG)" == "PTLib - Win32 Release"
-
-"Console - Win32 Release" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Release" 
-   cd "."
-
-"Console - Win32 ReleaseCLEAN" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Release" RECURSE=1 CLEAN 
-   cd "."
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
-
-"Console - Win32 Debug" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Debug" 
-   cd "."
-
-"Console - Win32 DebugCLEAN" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Debug" RECURSE=1 CLEAN 
-   cd "."
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Debug"
-
-"Console - Win32 SSL Debug" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Debug" 
-   cd "."
-
-"Console - Win32 SSL DebugCLEAN" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Debug" RECURSE=1 CLEAN 
-   cd "."
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 SSL Release"
-
-"Console - Win32 SSL Release" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Release" 
-   cd "."
-
-"Console - Win32 SSL ReleaseCLEAN" : 
-   cd "."
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Release" RECURSE=1 CLEAN 
-   cd "."
-
-!ENDIF 
-
 SOURCE=.\dllmain.cxx
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"

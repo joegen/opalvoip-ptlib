@@ -56,16 +56,13 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /debugtype:both /machine:I386 /libpath:"..\..\..\lib"
-# Begin Custom Build - Extracting debug symbols
+# Begin Special Build Tool
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=\Work\pwlib\Lib\PTLib.dll
 SOURCE="$(InputPath)"
-
-"$(OutDir)\$(TargetName).dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
-
-# End Custom Build
+PostBuild_Desc=Extracting debug symbols
+PostBuild_Cmds=rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
 
@@ -149,16 +146,13 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /debugtype:both /machine:I386 /libpath:"..\..\..\lib"
 # ADD LINK32 vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /debugtype:both /machine:I386 /libpath:"..\..\..\lib"
-# Begin Custom Build - Extracting debug symbols
+# Begin Special Build Tool
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=\Work\pwlib\Lib\PTLib.dll
 SOURCE="$(InputPath)"
-
-"$(OutDir)\$(TargetName).dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
-
-# End Custom Build
+PostBuild_Desc=Extracting debug symbols
+PostBuild_Cmds=rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
+# End Special Build Tool
 
 !ENDIF 
 
