@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.32  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.31  2004/04/03 06:54:23  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -393,6 +396,8 @@ extern "C" char ** __argv;
 #else
 #include <cevfw.h>
 #endif
+
+#define   P_HAS_TYPEINFO  1
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations

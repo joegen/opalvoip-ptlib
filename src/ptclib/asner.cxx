@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.84  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.83  2004/01/17 09:21:21  csoutheren
  * Added protection against NULL ptr to PASN_Stream::BlockDecode
  *
@@ -442,7 +445,7 @@ PASN_Null::PASN_Null(unsigned tag, TagClass tagClass)
 
 PObject::Comparison PASN_Null::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Null::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Null), PInvalidCast);
   return EqualTo;
 }
 
@@ -502,7 +505,7 @@ PASN_Boolean::PASN_Boolean(unsigned tag, TagClass tagClass, BOOL val)
 
 PObject::Comparison PASN_Boolean::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Boolean::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Boolean), PInvalidCast);
   return value == ((const PASN_Boolean &)obj).value ? EqualTo : GreaterThan;
 }
 
@@ -597,7 +600,7 @@ PASN_Integer & PASN_Integer::operator=(unsigned val)
 
 PObject::Comparison PASN_Integer::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Integer::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Integer), PInvalidCast);
   const PASN_Integer & other = (const PASN_Integer &)obj;
 
   if (IsUnsigned()) {
@@ -735,7 +738,7 @@ PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
 
 PObject::Comparison PASN_Enumeration::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Enumeration::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Enumeration), PInvalidCast);
   const PASN_Enumeration & other = (const PASN_Enumeration &)obj;
 
   if (value < other.value)
@@ -806,7 +809,7 @@ PASN_Real::PASN_Real(unsigned tag, TagClass tagClass, double val)
 
 PObject::Comparison PASN_Real::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Real::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Real), PInvalidCast);
   const PASN_Real & other = (const PASN_Real &)obj;
 
   if (value < other.value)
@@ -937,7 +940,7 @@ BOOL PASN_ObjectId::operator==(const char * dotstr) const
 
 PObject::Comparison PASN_ObjectId::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_ObjectId::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_ObjectId), PInvalidCast);
   const PASN_ObjectId & other = (const PASN_ObjectId &)obj;
   return value.Compare(other.value);
 }
@@ -1205,7 +1208,7 @@ void PASN_BitString::Invert(unsigned bit)
 
 PObject::Comparison PASN_BitString::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_BitString::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_BitString), PInvalidCast);
   const PASN_BitString & other = (const PASN_BitString &)obj;
   if (totalBits < other.totalBits)
     return LessThan;
@@ -1368,7 +1371,7 @@ PString PASN_OctetString::AsString() const
 
 PObject::Comparison PASN_OctetString::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_OctetString::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_OctetString), PInvalidCast);
   const PASN_OctetString & other = (const PASN_OctetString &)obj;
   return value.Compare(other.value);
 }
@@ -1542,7 +1545,7 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
 
 PObject::Comparison PASN_ConstrainedString::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_ConstrainedString::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_ConstrainedString), PInvalidCast);
   const PASN_ConstrainedString & other = (const PASN_ConstrainedString &)obj;
   return value.Compare(other.value);
 }
@@ -1819,7 +1822,7 @@ PObject * PASN_BMPString::Clone() const
 
 PObject::Comparison PASN_BMPString::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_BMPString::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_BMPString), PInvalidCast);
   const PASN_BMPString & other = (const PASN_BMPString &)obj;
   return value.Compare(other.value);
 }
@@ -2052,7 +2055,7 @@ PString PASN_Choice::GetTagName() const
     return names[tag];
 
   if (CheckCreate() &&
-      choice->IsDescendant(PASN_Choice::Class()) &&
+      PIsDescendant(choice, PASN_Choice) &&
       choice->GetTag() == tag &&
       choice->GetTagClass() == tagClass)
     return PString(choice->GetClass()) + "->" + ((PASN_Choice *)choice)->GetTagName();
@@ -2093,13 +2096,13 @@ PASN_Object & PASN_Choice::GetObject() const
   PASN_Choice::operator cls &() \
   { \
     PAssert(CheckCreate(), "Cast of NULL choice"); \
-    PAssert(choice->IsDescendant(cls::Class()), PInvalidCast); \
+    PAssert(PIsDescendant(choice, cls), PInvalidCast); \
     return *(cls *)choice; \
   } \
   PASN_Choice::operator const cls &() const \
   { \
     PAssert(CheckCreate(), "Cast of NULL choice"); \
-    PAssert(choice->IsDescendant(cls::Class()), PInvalidCast); \
+    PAssert(PIsDescendant(choice, cls), PInvalidCast); \
     return *(const cls *)choice; \
   } \
 
@@ -2125,7 +2128,7 @@ CHOICE_CAST_OPERATOR(PASN_Sequence)
 
 PObject::Comparison PASN_Choice::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Choice::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Choice), PInvalidCast);
   const PASN_Choice & other = (const PASN_Choice &)obj;
 
   CheckCreate();
@@ -2278,7 +2281,7 @@ void PASN_Sequence::RemoveOptionalField(PINDEX opt)
 
 PObject::Comparison PASN_Sequence::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Sequence::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Sequence), PInvalidCast);
   const PASN_Sequence & other = (const PASN_Sequence &)obj;
   return fields.Compare(other.fields);
 }
@@ -2463,7 +2466,7 @@ BOOL PASN_Array::SetSize(PINDEX newSize)
 
 PObject::Comparison PASN_Array::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PASN_Array::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PASN_Array), PInvalidCast);
   const PASN_Array & other = (const PASN_Array &)obj;
   return array.Compare(other.array);
 }
