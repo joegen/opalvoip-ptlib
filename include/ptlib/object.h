@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.24 1996/09/16 12:57:23 robertj Exp $
+ * $Id: object.h,v 1.25 1997/02/05 11:54:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.25  1997/02/05 11:54:10  robertj
+ * Fixed problems with memory check and leak detection.
+ *
  * Revision 1.24  1996/09/16 12:57:23  robertj
  * DLL support
  *
@@ -652,7 +655,7 @@ PI_SAME(PFloat80b, long double);
 ///////////////////////////////////////////////////////////////////////////////
 // The low level object support, memory checks, run time typing etc.
 
-#if defined(PMEMORY_CHECK) && PMEMORY_CHECK>2
+#if defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
 
 /*$MACRO PMALLOC(s)
    This macro is used to allocate memory via the memory check system selected
@@ -690,7 +693,7 @@ PI_SAME(PFloat80b, long double);
  */
 #define PFREE(p) PObject::MemoryCheckDeallocate(p, NULL)
 
-#else // defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
+#else // !defined(PMEMORY_CHECK) || PMEMORY_CHECK==1
 
 
 #define PMALLOC(s)    malloc(s)
@@ -708,7 +711,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
 #endif // defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
 
 
-#if defined(PMEMORY_CHECK)
+#if defined(PMEMORY_CHECK) && PMEMORY_CHECK!=0
 
 /*$MACRO PNEW
    This macro is used to allocate memory via the memory check system selected
@@ -728,7 +731,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
       { MemoryCheckDeallocate(ptr, Class()); }
 
 
-#else // defined(PMEMORY_CHECK)
+#else // !defined(PMEMORY_CHECK) || PMEMORY_CHECK==0
 
 #define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
