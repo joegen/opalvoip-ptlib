@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.10 1994/08/23 11:32:52 robertj Exp $
+ * $Id: pprocess.h,v 1.11 1995/01/11 09:45:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.10  1994/08/23 11:32:52  robertj
+ * Revision 1.11  1995/01/11 09:45:09  robertj
+ * Documentation and normalisation.
+ *
+ * Revision 1.10  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.9  1994/08/22  00:46:48  robertj
@@ -46,91 +49,157 @@
 // PProcess
 
 PDECLARE_CLASS(PProcess, PThread)
-  // Process object definition. This defines a running "programme" in the 
-  // context of the operating system. Note that there can only be one instance
-  // of a PProcess class in a programme.
+/* This class represents an operating system process. This is a running
+   "programme" in the  context of the operating system. Note that there can
+   only be one instance of a PProcess class in a given programme.
+   
+   The instance of a PProcess or it GUI descendent $H$PApplication is usually
+   a static variable created by the application writer. This is the initial
+   "anchor" point for all data structures in an application. As the application
+   writer never needs to access the standard system $B$main()$B$ function, it
+   is in the library, the programmes exexcution begins with the virtual
+   function $B$Main()$B$ on a process.
+ */
 
   public:
     PProcess();
-      // Create a new process instance.
+    // Create a new process instance.
 
     ~PProcess();
-      // Destroy the process instance.
+    // Destroy the process instance.
 
 
-    // Overrides from class PObject
-    Comparison Compare(const PObject & obj) const;
-      // Return EqualTo if the two process object have the same name.
+  // Overrides from class PObject
+    Comparison Compare(
+      const PObject & obj   // Other process to compare against.
+    ) const;
+    /* Compare two process instances. This should almost never be called as
+       a programme only has access to a single process, its own.
+
+       Returns: EqualTo if the two process object have the same name.
+     */
 
 
-    // New functions for class
+  // New functions for class
     static PProcess * Current();
-      // Get the current processes object
+    /* Get the current processes object instance. The $I$current process$I$ is
+       the one the application is running in.
+       
+       Returns: pointer to current process instance.
+     */
 
     virtual void Terminate();
-      // Terminate the process. Usually only used in abnormal abort
-      // situation.
+    /* Terminate the process. Usually only used in abnormal abort situation.
+     */
 
-    void SetTerminationValue(int value);
-      // Set the termination value for the process
+    void SetTerminationValue(
+      int value  // Value to return a process termination status.
+    );
+    /* Set the termination value for the process.
+    
+       The termination value is an operating system dependent integer which
+       indicates the processes termiantion value. It can be considered a
+       "return value" for an entire programme.
+     */
 
     int GetTerminationValue() const;
-      // Get the termination value for the process
+    /* Get the termination value for the process.
+    
+       The termination value is an operating system dependent integer which
+       indicates the processes termiantion value. It can be considered a
+       "return value" for an entire programme.
+       
+       Returns: integer termination value.
+     */
 
     PArgList & GetArguments();
-      // Return the argument list.
+    /* Get the programme arguments. Programme arguments are a set of strings
+       provided to the programme in a platform dependent manner.
+    
+       Returns: argument handling class instance.
+     */
 
     PString GetName() const;
-      // Return the root name of the processes executable image.
+    /* Get the name of the process. This is usually the title part of the
+       executable image file.
+    
+       Returns: string for the process name.
+     */
 
     const PFilePath & GetFile() const;
-      // Return the processes executable image file path.
+    /* Get the processes executable image file path.
+
+       Returns: file path for program.
+     */
 
     PString GetUserName() const;
-      // Return the effective user name of the process, eg "root" etc.
+    /* Get the effective user name of the owner of the process, eg "root" etc.
+       This is a platform dependent string only provided by platforms that are
+       multi-user. Note that some value may be returned as a "simulated" user.
+       For example, in MS-DOS an environment variable
+
+       Returns: user name of processes owner.
+     */
 
     PTimerList * GetTimerList();
-      // Get the list of timers handled by the application.
+    /* Get the list of timers handled by the application. This is an internal
+       function and should not need to be called by the user.
+       
+       Returns: list of timers.
+     */
 
 
 #ifndef P_PLATFORM_HAS_THREADS
 
   protected:
     virtual void OperatingSystemYield();
-      // Yield to the platforms operating system.
+    /* Yield to the platforms operating system. This is an internal function
+       and should never be called by the user. It is provided on platforms
+       that do not provide multiple threads in a single process.
+     */
 
 #endif
 
 
   private:
-    friend int main(int argc, char ** argv);
-      // The main() system entry point to programme. Calls PreInitialise then
-      // the Main() function.
+    friend int main(
+      int argc,     // Number of program arguments.
+      char ** argv  // Array of strings for program arguments.
+    );
+    /* The main() system entry point to programme. This does platform dependent
+       initialisation and then calls the $B$PreInitialise()$B$ function, then
+       the $B$Main()$B$ function.
+     */
 
-    void PreInitialise(int argc, char ** argv);
-      // Internal initialisation function called directly from main().
+    void PreInitialise(
+      int argc,     // Number of program arguments.
+      char ** argv  // Array of strings for program arguments.
+    );
+    /* Internal initialisation function called directly from $B$main()$B$. The
+       user should never call this function.
+     */
 
 
-    // Member variables
+  // Member variables
     int terminationValue;
-      // Application return value
+    // Application return value
 
     PString executableName;
-      // Application executable base name from argv[0]
+    // Application executable base name from argv[0]
 
     PFilePath executableFile;
-      // Application executable file from argv[0] (not open)
+    // Application executable file from argv[0] (not open)
 
     PArgList arguments;
-      // The list of arguments
+    // The list of arguments
 
     PTimerList timers;
-      // List of active timers in system
+    // List of active timers in system
 
 #ifndef P_PLATFORM_HAS_THREADS
 
     PThread * currentThread;
-      // Currently running thread in the process
+    // Currently running thread in the process
 
   friend class PThread;
 
