@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.78  2002/11/22 06:16:49  robertj
+ * Fixed usage of URI (relative http/https URL).
+ *
  * Revision 1.77  2002/11/20 02:10:56  robertj
  * Fixed some more realtive/absolute path issues.
  *
@@ -329,6 +332,7 @@ struct schemeStruct {
   BOOL hasUserPassword;
   BOOL hasHostPort;
   BOOL hasPath;
+  BOOL relativeImpliesScheme;
   WORD defaultPort;
 };
 
@@ -336,23 +340,23 @@ struct schemeStruct {
 #define FILE_SCHEME    1
 
 static schemeStruct const schemeInfo[] = {
-  { "http",      TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      FALSE, TRUE,  TRUE,  0                     }, // Must be second
-  { "https",     FALSE, TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
-  { "gopher",    FALSE, TRUE,  TRUE,  DEFAULT_GOPHER_PORT   },
-  { "wais",      FALSE, TRUE,  TRUE,  DEFAULT_WAIS_PORT     },
-  { "nntp",      FALSE, TRUE,  TRUE,  DEFAULT_NNTP_PORT     },
-  { "prospero",  FALSE, TRUE,  TRUE,  DEFAULT_PROSPERO_PORT },
-  { "rtsp",      FALSE, TRUE,  TRUE,  DEFAULT_RTSP_PORT     },
-  { "rtspu",     FALSE, TRUE,  TRUE,  DEFAULT_RTSPU_PORT    },
+  { "http",      TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      FALSE, TRUE,  TRUE,  FALSE, 0                     }, // Must be second
+  { "https",     FALSE, TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
+  { "gopher",    FALSE, TRUE,  TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
+  { "wais",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_WAIS_PORT     },
+  { "nntp",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_NNTP_PORT     },
+  { "prospero",  FALSE, TRUE,  TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_RTSP_PORT     },
+  { "rtspu",     FALSE, TRUE,  TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
 
-  { "ftp",       TRUE,  TRUE,  TRUE,  DEFAULT_FTP_PORT      },
-  { "telnet",    TRUE,  TRUE,  FALSE, DEFAULT_TELNET_PORT   },
-  { "mailto",    FALSE, FALSE, FALSE, 0                     },
-  { "news",      FALSE, FALSE, FALSE, 0                     },
-  { "h323",      TRUE,  TRUE,  FALSE, DEFAULT_H323_PORT     },
-  { "sip",       TRUE,  TRUE,  FALSE, DEFAULT_SIP_PORT      },
-  { NULL,        FALSE, FALSE, FALSE, 0                     }
+  { "ftp",       TRUE,  TRUE,  TRUE,  FALSE, DEFAULT_FTP_PORT      },
+  { "telnet",    TRUE,  TRUE,  FALSE, FALSE, DEFAULT_TELNET_PORT   },
+  { "mailto",    FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "news",      FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "h323",      TRUE,  TRUE,  FALSE, FALSE, DEFAULT_H323_PORT     },
+  { "sip",       TRUE,  TRUE,  FALSE, FALSE, DEFAULT_SIP_PORT      },
+  { NULL,        FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
 static const schemeStruct & GetSchemeInfo(const PCaselessString & scheme)
@@ -691,10 +695,13 @@ PString PURL::AsString(UrlFormat fmt) const
 
     str << scheme << ':';
 
-    if (relativePath)
-      return str;
-
     const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+
+    if (relativePath) {
+      if (schemeInfo.relativeImpliesScheme)
+        return PString::Empty();
+      return str;
+    }
 
     if (schemeInfo.hasHostPort)
       str << "//";
