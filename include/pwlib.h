@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.36 1995/02/19 04:19:15 robertj Exp $
+ * $Id: pwlib.h,v 1.37 1995/04/02 09:27:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.36  1995/02/19 04:19:15  robertj
+ * Revision 1.37  1995/04/02 09:27:25  robertj
+ * Added "balloon" help.
+ *
+ * Revision 1.36  1995/02/19  04:19:15  robertj
  * Added dynamically linked command processing.
  *
  * Revision 1.35  1995/01/22  07:29:39  robertj
@@ -47,6 +50,12 @@
 #pragma interface
 #endif
 
+
+#define P_GUI
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Basic text mode library
 
 #include <ptlib.h>
 
@@ -493,6 +502,12 @@
 // PScrollable
 
 #include <scrollab.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PBalloon
+
+#include <balloon.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
