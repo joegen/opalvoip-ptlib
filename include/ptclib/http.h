@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.48  2001/09/28 00:42:54  robertj
+ * Added automatic setting of some outward MIME fields.
+ * Added "user agent" string field for automatic inclusion.
+ * Added function to read the contents of the HTTP request.
+ *
  * Revision 1.47  2001/08/28 06:44:30  craigs
  * Added ability to override PHTTPServer creation
  *
@@ -443,6 +448,9 @@ class PHTTPClient : public PHTTP
   public:
     /// Create a new HTTP client channel.
     PHTTPClient();
+    PHTTPClient(
+      const PString & userAgentName
+    );
 
 
   // New functions for class.
@@ -453,32 +461,47 @@ class PHTTPClient : public PHTTP
        @return
        TRUE if all of header returned and ready to receive body.
      */
-    int ExecuteCommand(Commands cmd,
-                       const PString & url,
-                       const PMIMEInfo & outMIME,
-                       const PString & dataBody,
-                       PMIMEInfo & replyMime,
-                       BOOL persist = TRUE);
-    int ExecuteCommand(const PString & cmdName,
-                       const PString & url,
-                       const PMIMEInfo & outMIME,
-                       const PString & dataBody,
-                       PMIMEInfo & replyMime,
-                       BOOL persist = TRUE);
+    int ExecuteCommand(
+      Commands cmd,
+      const PString & url,
+      PMIMEInfo & outMIME,
+      const PString & dataBody,
+      PMIMEInfo & replyMime,
+      BOOL persist = TRUE
+    );
+    int ExecuteCommand(
+      const PString & cmdName,
+      const PString & url,
+      PMIMEInfo & outMIME,
+      const PString & dataBody,
+      PMIMEInfo & replyMime,
+      BOOL persist = TRUE
+    );
 
     /// Write a HTTP command to server
-    BOOL WriteCommand(Commands cmd,
-                      const PString & url,
-                      const PMIMEInfo & outMIME,
-                      const PString & dataBody);
-    BOOL WriteCommand(const PString & cmdName,
-                      const PString & url,
-                      const PMIMEInfo & outMIME,
-                      const PString & dataBody);
+    BOOL WriteCommand(
+      Commands cmd,
+      const PString & url,
+      const PMIMEInfo & outMIME,
+      const PString & dataBody
+    );
+    BOOL WriteCommand(
+      const PString & cmdName,
+      const PString & url,
+      const PMIMEInfo & outMIME,
+      const PString & dataBody
+    );
 
     /// Read a response from the server
-    BOOL ReadResponse(PMIMEInfo & replyMIME);
+    BOOL ReadResponse(
+      PMIMEInfo & replyMIME
+    );
 
+    /// Read the body of the HTTP command
+    BOOL ReadContentBody(
+      const PMIMEInfo & replyMIME,
+      PBYTEArray & body
+    );
 
 
     /** Get the document specified by the URL.
@@ -531,6 +554,8 @@ class PHTTPClient : public PHTTP
 
   protected:
     BOOL AssureConnect(const PURL & url, PMIMEInfo & outMIME);
+
+    PString userAgentName;
 };
 
 
