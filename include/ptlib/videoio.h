@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.30  2003/03/17 08:10:00  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.29  2003/03/17 07:51:07  robertj
  * Added OpenFull() function to open with all video parameters in one go.
  * Made sure vflip variable is set in converter even if converter has not
@@ -211,11 +214,11 @@ class PVideoDevice : public PObject
         : deviceName("#1"),
           videoFormat(Auto),
           channelNumber(0),
+          colourFormat("YUV420P"),
           convertFormat(TRUE),
+          rate(0),
           width(CIFWidth),
           height(CIFHeight),
-          rate(0),
-          colourFormat("YUV420P"),
           convertSize(TRUE),
           scaleSize(FALSE),
           flip(FALSE),
