@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.39  1998/10/16 02:05:55  robertj
+ * Tried to make ReadLine more forgiving of CR CR LF combination.
+ *
  * Revision 1.38  1998/09/23 06:22:20  robertj
  * Added open source copyright license.
  *
@@ -399,8 +402,22 @@ BOOL PInternetProtocol::ReadLine(PString & str, BOOL allowContinuation)
 
       case '\r' :
         c = ReadChar();
-        if (c >= 0 && c != '\n')
-          UnRead(c);
+        switch (c) {
+          case -1 :
+          case '\n' :
+            break;
+
+          case '\r' :
+            c = ReadChar();
+            if (c == '\n')
+              break;
+            UnRead(c);
+            c = '\r';
+            // Then do default case
+
+          default :
+            UnRead(c);
+        }
         // Then do line feed case
 
       case '\n' :
