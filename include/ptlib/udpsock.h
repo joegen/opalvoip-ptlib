@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.8 1995/12/10 11:44:45 robertj Exp $
+ * $Id: udpsock.h,v 1.9 1996/03/03 07:38:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
+ * Revision 1.9  1996/03/03 07:38:00  robertj
+ * Added Reusability clause to the Listen() function on sockets.
+ *
  * Revision 1.8  1995/12/10 11:44:45  robertj
  * Numerous fixes for sockets.
  *
@@ -82,7 +85,8 @@ PDECLARE_CLASS(PUDPSocket, PIPSocket)
 
     virtual BOOL Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0             // Port number to use for the connection.
+      WORD port = 0,           // Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
     );
     /* Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
