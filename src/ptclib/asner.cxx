@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.61  2002/05/21 04:23:40  robertj
+ * Fixed problem with ASN encoding/decoding unsconstrained negative numbers,
+ *
  * Revision 1.60  2002/05/14 08:34:29  robertj
  * Fixed problem encoding unsigned where value==lower bound, thanks Greg Adams.
  *
@@ -236,8 +239,12 @@ static PINDEX MaximumStringSize = 16*1024;
 
 static PINDEX CountBits(unsigned range)
 {
-  if (range == 0)
-    return sizeof(unsigned)*8;
+  switch (range) {
+    case 0 :
+      return sizeof(unsigned)*8;
+    case 1:
+      return 1;
+  }
 
   PINDEX nBits = 0;
   while (nBits < (sizeof(unsigned)*8) && range > (unsigned)(1 << nBits))
@@ -597,6 +604,12 @@ PASN_Integer::PASN_Integer(unsigned tag, TagClass tagClass, unsigned val)
 }
 
 
+BOOL PASN_Integer::IsUnsigned() const
+{
+  return constraint != Unconstrained && lowerLimit >= 0;
+}
+
+
 PASN_Integer & PASN_Integer::operator=(unsigned val)
 {
   if (constraint == Unconstrained)
@@ -628,12 +641,18 @@ PObject::Comparison PASN_Integer::Compare(const PObject & obj) const
   PAssert(obj.IsDescendant(PASN_Integer::Class()), PInvalidCast);
   const PASN_Integer & other = (const PASN_Integer &)obj;
 
-  if (value < other.value)
-    return LessThan;
-
-  if (value > other.value)
-    return GreaterThan;
-
+  if (IsUnsigned()) {
+    if (value < other.value)
+      return LessThan;
+    if (value > other.value)
+      return GreaterThan;
+  }
+  else {
+    if ((int)value < (int)other.value)
+      return LessThan;
+    if ((int)value > (int)other.value)
+      return GreaterThan;
+  }
   return EqualTo;
 }
 
@@ -647,7 +666,7 @@ PObject * PASN_Integer::Clone() const
 
 void PASN_Integer::PrintOn(ostream & strm) const
 {
-  if (lowerLimit < 0)
+  if (constraint == Unconstrained || lowerLimit < 0)
     strm << (int)value;
   else
     strm << value;
@@ -657,12 +676,7 @@ void PASN_Integer::PrintOn(ostream & strm) const
 void PASN_Integer::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
-  if (constraint != Unconstrained) {
-    if ((int)value < lowerLimit)
-      value = lowerLimit;
-    else if (value > upperLimit)
-      value = upperLimit;
-  }
+  operator=(value);
 }
 
 
@@ -760,7 +774,16 @@ BOOL PASN_Integer::DecodePER(PPER_Stream & strm)
       unsigned len;
       if (strm.LengthDecode(0, INT_MAX, len) != 0)
         return FALSE;
-      return strm.MultiBitDecode(len*8, value);
+
+      len *= 8;
+      if (!strm.MultiBitDecode(len, value))
+        return FALSE;
+
+      if (IsUnsigned())
+        value += lowerLimit;
+      else if ((value&(1<<(len-1))) != 0) // Negative
+        value |= UINT_MAX << len;         // Sign extend
+      return TRUE;
   }
 
   if ((unsigned)lowerLimit != upperLimit)  // 12.2.2
@@ -779,14 +802,16 @@ void PASN_Integer::EncodePER(PPER_Stream & strm) const
   //  12.1
   if (ConstraintEncode(strm, (int)value)) {
     // 12.2.6
-    PINDEX nBytes;
     unsigned adjusted_value = value - lowerLimit;
-    if (adjusted_value == 0)
-      nBytes = 1;
-    else {
-      PINDEX nBits = CountBits(adjusted_value+1) + 1; // Add one for sign bit
-      nBytes = (nBits+7)/8;
-    }
+
+    PINDEX nBits = 1; // Allow for sign bit
+    if (IsUnsigned() || (int)adjusted_value > 0)
+      nBits += CountBits(adjusted_value+1);
+    else
+      nBits += CountBits(-(int)adjusted_value+1);
+
+    // Round up to nearest number of whole octets
+    PINDEX nBytes = (nBits+7)/8;
     strm.LengthEncode(nBytes, 0, INT_MAX);
     strm.MultiBitEncode(adjusted_value, nBytes*8);
     return;

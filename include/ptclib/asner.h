@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.27  2002/05/21 04:23:40  robertj
+ * Fixed problem with ASN encoding/decoding unsconstrained negative numbers,
+ *
  * Revision 1.26  2002/05/14 06:59:31  robertj
  * Added more bullet proofing so a malformed PDU cannot cause teh decoder
  *   to try and allocate huge arrays and consume all CPU and memory on a
@@ -329,6 +332,8 @@ class PASN_Integer : public PASN_ConstrainedObject
 
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+
+    BOOL IsUnsigned() const;
 
   protected:
     unsigned value;
