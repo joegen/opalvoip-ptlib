@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.14  1998/10/16 11:27:58  robertj
+ * Added access to argc/argv.
+ *
  * Revision 1.13  1998/09/24 04:11:46  robertj
  * Added open software license.
  *
@@ -93,7 +96,9 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     ~PProcess();
 
     PDirectory PXGetHomeDir ();
-    char ** PXGetEnvp() const;
+    char ** PXGetArgv() const { return argv; }
+    int     PXGetArgc() const { return argc; }
+    char ** PXGetEnvp() const { return envp; }
 
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
