@@ -315,6 +315,7 @@ PARRAY(PPointArray, PPoint);
 
   protected:
     HCURSOR hCursor;
+    BOOL deleteCursor;
 };
 
 
@@ -340,6 +341,7 @@ PARRAY(PPointArray, PPoint);
 
   protected:
     HICON hIcon;
+    BOOL deleteIcon;
 };
 
 
@@ -1432,6 +1434,10 @@ class PResourceData;
 // PRootMenu
 
 #include "../../common/rootmenu.h"
+  protected:
+    // Overrides from class PContainer
+    virtual void DestroyContents();
+      // Destroy the window.
 };
 
 
@@ -1446,6 +1452,9 @@ class PResourceData;
 // PTimer
 
 #include "../../common/timer.h"
+  protected:
+    void SetWindowsTimer();
+    int timerID;
 };
 
 
@@ -1506,6 +1515,9 @@ class PResourceData;
 
     PLIST(NonModalDict, PDialog);
     NonModalDict NonModalDialogs;
+
+    int timerID;
+    DWORD timerLastSet;
 
     friend LRESULT EXPORTED
                     WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
