@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.57  2000/04/09 18:19:23  rogerh
+# Add my changes for NetBSD support.
+#
 # Revision 1.56  2000/03/08 18:22:03  rogerh
 # Select oss.cxx sound support for OpenBSD
 #
@@ -230,6 +233,10 @@ SOUND_SOURCE = oss.cxx
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
+SOUND_SOURCE = oss.cxx
+endif
+
+ifeq ($(OSTYPE),NetBSD)
 SOUND_SOURCE = oss.cxx
 endif
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.13  2000/04/09 18:19:23  rogerh
+ * Add my changes for NetBSD support.
+ *
  * Revision 1.12  2000/04/06 12:11:32  rogerh
  * MacOS X support submitted by Kevin Packard
  *
@@ -56,7 +59,7 @@
 #include <sys/ioctl.h>
 
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW

@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.14  2000/04/09 18:19:23  rogerh
+ * Add my changes for NetBSD support.
+ *
  * Revision 1.13  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -86,7 +89,7 @@
 #include <machine/soundcard.h>
 #endif
 
-#ifdef P_OPENBSD
+#if defined(P_OPENBSD) || defined(P_NETBSD)
 #include <soundcard.h>
 #endif
 
