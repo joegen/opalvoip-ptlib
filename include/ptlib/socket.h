@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.39  2002/04/12 01:42:41  robertj
+ * Changed return value on os_connect() and os_accept() to make sure
+ *   get the correct error codes propagated up under unix.
+ *
  * Revision 1.38  2002/02/14 03:34:18  craigs
  * Added comment on using SetReadTimeout to set maximum wait for Connect
  *
@@ -530,7 +534,7 @@ class PSocket : public PChannel
 
     int os_close();
     int os_socket(int af, int type, int proto);
-    int os_connect(
+    BOOL os_connect(
       struct sockaddr * sin,
       PINDEX size
     );
@@ -548,7 +552,7 @@ class PSocket : public PChannel
       struct sockaddr * to,
       PINDEX tolen
     );
-    int os_accept(
+    BOOL os_accept(
       PSocket & listener,
       struct sockaddr * addr,
       PINDEX * size
