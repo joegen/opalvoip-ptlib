@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.149  2004/04/03 23:53:09  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.148  2004/04/03 08:22:21  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -2284,8 +2289,7 @@ PString & PString::sprintf(const char * fmt, ...)
   return vsprintf(fmt, args);
 }
 
-
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__SUNPRO_CC)
 #define _vsnprintf vsnprintf
 #endif
 

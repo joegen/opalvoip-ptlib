@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.27  2004/04/03 23:53:09  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.26  2004/04/03 06:54:21  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -364,6 +369,7 @@ class PAbstractList : public PCollection
 
     class Element {
       public:
+        friend class Info;
         Element(PObject * theData);
         Element * prev;
         Element * next;
@@ -1000,11 +1006,9 @@ class PAbstractSortedList : public PCollection
     ) const;
   //@}
 
-
-    friend class Element;
-
   protected:
     struct Element {
+      friend class Info;
       Element * parent;
       Element * left;
       Element * right;
