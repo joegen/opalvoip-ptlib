@@ -636,57 +636,6 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PEditBox
-
-#include "../../common/editbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual const char * GetWinClsName() const;
-      // Return the MS-Windows class name used in CreateWindow().
-
-    virtual DWORD GetStyle() const;
-      // Return the MS-Windows style used in CreateWindow().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PMultiLineEditBox
-
-#include "../../common/meditbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetStyle() const;
-      // Return the MS-Windows style code used in CreateWindow().
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PNumberEditBox
-
-#include "../../common/numedbox.h"
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PIntegerEditBox
-
-#include "../../common/intedit.h"
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PFloatEditBox
-
-#include "../../common/realedit.h"
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PPushButton
 
 #include "../../common/pbutton.h"
@@ -891,6 +840,57 @@ typedef int PDIMENSION;
     // Overrides from class PInteractor
     virtual DWORD GetStyle() const;
       // Return the MS-Windows style used in CreateWindow().
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PEditBox
+
+#include "../../common/editbox.h"
+  protected:
+    // Overrides from class PInteractor
+    virtual const char * GetWinClsName() const;
+      // Return the MS-Windows class name used in CreateWindow().
+
+    virtual DWORD GetStyle() const;
+      // Return the MS-Windows style used in CreateWindow().
+
+    virtual int TranslateOption(WORD msg) const;
+      // Translate the windows notification message code to the PWLib
+      // notify function code. This returns -1 if the windows message is to be
+      // ignored.
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PMultiLineEditBox
+
+#include "../../common/meditbox.h"
+  protected:
+    // Overrides from class PInteractor
+    virtual DWORD GetStyle() const;
+      // Return the MS-Windows style code used in CreateWindow().
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PNumberEditBox
+
+#include "../../common/numedbox.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIntegerEditBox
+
+#include "../../common/intedit.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFloatEditBox
+
+#include "../../common/realedit.h"
 };
 
 
