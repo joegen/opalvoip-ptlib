@@ -179,7 +179,6 @@ EXPORTS
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @151 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
     ??0PTimer@@QAE@JHHHH@Z @152 NONAME ;public: __thiscall PTimer::PTimer(long,int,int,int,int)
     ??0PTimerList@@QAE@XZ @153 NONAME ;public: __thiscall PTimerList::PTimerList(void)
-    ??0PTraceBlock@@QAE@PBDH0@Z @2114 NONAME ;public: __thiscall PTraceBlock::PTraceBlock(char const *,int,char const *)
     ??0PUDPSocket@@QAE@ABVPString@@0@Z @154 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &,class PString const &)
     ??0PUDPSocket@@QAE@ABVPString@@@Z @155 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &)
     ??0PUDPSocket@@QAE@ABVPString@@G@Z @156 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &,unsigned short)
@@ -248,6 +247,7 @@ EXPORTS
     ??1PCharArray@@UAE@XZ @199 NONAME ;public: virtual __thiscall PCharArray::~PCharArray(void)
     ??1PCollection@@UAE@XZ @200 NONAME ;public: virtual __thiscall PCollection::~PCollection(void)
     ??1PConfig@@UAE@XZ @201 NONAME ;public: virtual __thiscall PConfig::~PConfig(void)
+    ??1PConsoleChannel@@UAE@XZ @2168 NONAME ;public: virtual __thiscall PConsoleChannel::~PConsoleChannel(void)
     ??1PContainer@@UAE@XZ @202 NONAME ;public: virtual __thiscall PContainer::~PContainer(void)
     ??1PDebugStream@@UAE@XZ @1823 NONAME ;public: virtual __thiscall PDebugStream::~PDebugStream(void)
     ??1PDirectory@@UAE@XZ @203 NONAME ;public: virtual __thiscall PDirectory::~PDirectory(void)
@@ -313,7 +313,6 @@ EXPORTS
     ??1PTimeInterval@@UAE@XZ @256 NONAME ;public: virtual __thiscall PTimeInterval::~PTimeInterval(void)
     ??1PTimer@@UAE@XZ @257 NONAME ;public: virtual __thiscall PTimer::~PTimer(void)
     ??1PTimerList@@UAE@XZ @258 NONAME ;public: virtual __thiscall PTimerList::~PTimerList(void)
-    ??1PTraceBlock@@QAE@XZ @2115 NONAME ;public: __thiscall PTraceBlock::~PTraceBlock(void)
     ??1PUDPSocket@@UAE@XZ @259 NONAME ;public: virtual __thiscall PUDPSocket::~PUDPSocket(void)
     ??1PUnSerialiser@@UAE@XZ @260 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PWaitAndSignal@@QAE@XZ @1826 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
@@ -1754,9 +1753,6 @@ EXPORTS
     ?Pause@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1494 NONAME ;public: virtual int __thiscall NT_ServiceManager::Pause(class PServiceProcess *)
     ?Pause@PTimer@@QAEXXZ @1495 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1496 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
-    ?PBeginTrace@@YAAAVostream@@PBDH@Z @2116 NONAME ;class ostream & __cdecl PBeginTrace(char const *,int)
-    ?PCanTrace@@YAHI@Z @2123 NONAME ;int __cdecl PCanTrace(unsigned int)
-    ?PEndTrace@@YAAAVostream@@AAV1@@Z @2117 NONAME ;class ostream & __cdecl PEndTrace(class ostream &)
     ?PGetErrorStream@@YAAAVostream@@XZ @1497 NONAME ;class ostream & __cdecl PGetErrorStream(void)
     ?pHostByAddr@@3VPHostByAddr@@A @1499 NONAME ;class PHostByAddr  pHostByAddr
     ?pHostByName@@3VPHostByName@@A @1500 NONAME ;class PHostByName  pHostByName
@@ -1792,9 +1788,6 @@ EXPORTS
     ?Process@PTimerList@@QAE?AVPTimeInterval@@XZ @1525 NONAME ;public: class PTimeInterval  __thiscall PTimerList::Process(void)
     ?ProcessCommand@PServiceProcess@@AAEHPBD@Z @1526 NONAME ;private: int __thiscall PServiceProcess::ProcessCommand(char const *)
     ?PSetErrorStream@@YAXPAVostream@@@Z @1527 NONAME ;void __cdecl PSetErrorStream(class ostream *)
-    ?PSetTraceBlock@@YAXH@Z @2120 NONAME ;void __cdecl PSetTraceBlock(int)
-    ?PSetTraceLevel@@YAXI@Z @2121 NONAME ;void __cdecl PSetTraceLevel(unsigned int)
-    ?PSetTraceStream@@YAXPAVostream@@@Z @1528 NONAME ;void __cdecl PSetTraceStream(class ostream *)
     ?psprintf@@YA?AVPString@@PBDZZ @1529 NONAME ;class PString  __cdecl psprintf(char const *,...)
     ?PutData@PWin32PacketBuffer@@QAEHPBXH@Z @1938 NONAME ;public: int __thiscall PWin32PacketBuffer::PutData(void const *,int)
     ?pvsprintf@@YA?AVPString@@ABV1@PAD@Z @1530 NONAME ;class PString  __cdecl pvsprintf(class PString const &,char *)
@@ -2100,4 +2093,16 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??1PConsoleChannel@@UAE@XZ @2168 NONAME ;public: virtual __thiscall PConsoleChannel::~PConsoleChannel(void)
+    ??0Block@PTrace@@QAE@PBDH0@Z @2169 NONAME ;public: __thiscall PTrace::Block::Block(char const *,int,char const *)
+    ??1Block@PTrace@@QAE@XZ @2170 NONAME ;public: __thiscall PTrace::Block::~Block(void)
+    ?Begin@PTrace@@SAAAVostream@@IPBDH@Z @2171 NONAME ;public: static class ostream & __cdecl PTrace::Begin(unsigned int,char const *,int)
+    ?CanTrace@PTrace@@SAHI@Z @2172 NONAME ;public: static int __cdecl PTrace::CanTrace(unsigned int)
+    ?ClearOptions@PTrace@@SAXI@Z @2173 NONAME ;public: static void __cdecl PTrace::ClearOptions(unsigned int)
+    ?End@PTrace@@SAAAVostream@@AAV2@@Z @2174 NONAME ;public: static class ostream & __cdecl PTrace::End(class ostream &)
+    ?IndentLevel@Block@PTrace@@0IA @2175 NONAME ;private: static unsigned int  PTrace::Block::IndentLevel
+    ?LevelThreshold@PTrace@@0IA @2176 NONAME ;private: static unsigned int  PTrace::LevelThreshold
+    ?Options@PTrace@@0IA @2177 NONAME ;private: static unsigned int  PTrace::Options
+    ?SetLevel@PTrace@@SAXI@Z @2178 NONAME ;public: static void __cdecl PTrace::SetLevel(unsigned int)
+    ?SetOptions@PTrace@@SAXI@Z @2179 NONAME ;public: static void __cdecl PTrace::SetOptions(unsigned int)
+    ?SetStream@PTrace@@SAXPAVostream@@@Z @2180 NONAME ;public: static void __cdecl PTrace::SetStream(class ostream *)
+    ?Stream@PTrace@@0PAVostream@@A @2181 NONAME ;private: static class ostream *  PTrace::Stream
