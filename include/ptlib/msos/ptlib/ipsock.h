@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.6  2001/01/24 06:06:34  yurik
+ * Windows CE port-related changes - actually my first change of openh323 code
+ *
  * Revision 1.5  1998/11/30 02:55:15  robertj
  * New directory structure
  *
@@ -46,7 +49,7 @@
 
 #ifndef _PIPSOCKET
 
-
+#ifndef _WIN32_WCE
 #define EINPROGRESS             (WSAEINPROGRESS|0x40000000)
 #define ENOTSOCK                (WSAENOTSOCK|0x40000000)
 #define EMSGSIZE                (WSAEMSGSIZE|0x40000000)
@@ -70,7 +73,7 @@
 #define ECONNREFUSED            (WSAECONNREFUSED|0x40000000)
 #define EHOSTDOWN               (WSAEHOSTDOWN|0x40000000)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|0x40000000)
-
+#endif
 
 #include "../../ipsock.h"
 };
