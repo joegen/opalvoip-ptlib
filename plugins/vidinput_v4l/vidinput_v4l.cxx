@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.13  2004/11/21 19:17:17  dsandras
+ * Temporarily removed the double names hack.
+ *
  * Revision 1.12  2004/09/05 19:30:23  dsandras
  * Updated hint for buggy Quickcam camera.
  *
@@ -537,7 +540,7 @@ PStringList V4LNames::GetInputDeviceNames()
   PStringList result;
   for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++) {
     result += GetUserFriendly (inputDeviceNames[i]);
-    result += inputDeviceNames[i];
+    //result += inputDeviceNames[i];
   }
 
   return result;
