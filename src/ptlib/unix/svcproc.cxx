@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.21  1998/10/11 02:26:46  craigs
+ * Added thread ID to output messages
+ *
  * Revision 1.20  1998/09/24 04:12:20  robertj
  * Added open software license.
  *
@@ -91,7 +94,12 @@ void PSystemLog::Output(Level level, const char * cmsg)
     };
 
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t") << levelName[level+1] << '\t' << cmsg << endl;
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss ")
+         << (void *)PThread::Current()
+         << ' '
+         << levelName[level+1]
+         << '\t'
+         << cmsg << endl;
 
     if (out != &PError)
       delete out;
