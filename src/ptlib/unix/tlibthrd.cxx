@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.31  1999/11/18 14:02:57  craigs
+ * Fixed problem with houskeeping thread termination
+ *
  * Revision 1.30  1999/11/15 01:12:56  craigs
  * Fixed problem with PSemaphore::Wait consuming 100% CPU
  *
@@ -131,8 +134,13 @@
 PDECLARE_CLASS(HouseKeepingThread, PThread)
   public:
     HouseKeepingThread()
-      : PThread(1000) { Resume(); }
+      : PThread(1000, NoAutoDeleteThread) { closing = FALSE; Resume(); }
+
     void Main();
+    void SetClosing() { closing = TRUE; }
+
+  protected:
+    BOOL closing;
 };
 
 
@@ -223,7 +231,7 @@ void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
-  for (;;) {
+  while (!closing) {
     PTimeInterval waitTime = process.timers.Process();
     if (waitTime == PMaxTimeInterval)
       process.timerChangeSemaphore.Wait();
@@ -256,8 +264,12 @@ void PProcess::Construct()
 
 PProcess::~PProcess()
 {
-  if (housekeepingThread != NULL)
+  if (housekeepingThread != NULL) {
+    ((HouseKeepingThread *)housekeepingThread)->SetClosing();
+    SignalTimerChange();
+    housekeepingThread->WaitForTermination();
     delete housekeepingThread;
+  }
   CommonDestruct();
 }
 
