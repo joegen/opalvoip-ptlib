@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.79  2004/10/21 13:04:20  rjongbloed
+ * Fixed possibility of const operator[] on PStringArray returning a NULL reference. This
+ *   function should return a non-lvalue PString anyway as it is const!
+ *
  * Revision 1.78  2004/08/16 08:49:59  csoutheren
  * Removed error when compiling with gcc
  *
@@ -2186,9 +2190,9 @@ class PStringArray : public PArray {
       const PString & str /// String to search for index of
     ) const;
 
-    inline PString & operator[](
+    PString operator[](
       PINDEX index  // Index position in the collection of the object.
-    ) const { return PStringArray_PTemplate::operator[](index); }
+    ) const;
 
     /**Retrieve a reference  to the object in the array. If there was not an
        object at that ordinal position or the index was beyond the size of the
