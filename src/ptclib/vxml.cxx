@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42.2.6  2004/07/12 08:30:17  csoutheren
+ * More fixes for abstract factory implementation of PWAVFile
+ *
  * Revision 1.42.2.5  2004/07/08 04:58:11  csoutheren
  * Exposed VXML playable classes to allow descendants
  *
@@ -231,6 +234,9 @@ BOOL PVXMLPlayableFilename::Open(const PString & _fn, PINDEX _delay, PINDEX _rep
 { 
   fn = _fn; 
   arg = _fn;
+  if (!PFile::Exists(fn))
+    return FALSE;
+
   return PVXMLPlayable::Open(_delay, _repeat, _autoDelete); 
 }
 
@@ -245,8 +251,9 @@ void PVXMLPlayableFilename::Play(PVXMLChannel & outgoingChannel)
     PFile * fileChan = new PFile(fn);
     if (fileChan->Open(PFile::ReadOnly))
       chan = fileChan;
-    else
+    else {
       delete fileChan;
+    }
   }
 
   if (chan == NULL)
@@ -347,6 +354,56 @@ void PVXMLPlayableURL::Play(PVXMLChannel & outgoingChannel)
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableURL> vxmlPlayableURLFactory("URL");
+
+///////////////////////////////////////////////////////////////
+
+BOOL PVXMLRecordableFilename::Open(const PString & _arg)
+{ 
+  fn = _arg;
+  consecutiveSilence = 0;
+  return TRUE;
+}
+
+void PVXMLRecordableFilename::Record(PVXMLChannel & outgoingChannel)
+{
+  PChannel * chan = NULL;
+
+  // check the file extension and open a .wav or a raw (.sw or .g723) file
+  if ((fn.Right(4)).ToLower() == ".wav")
+    chan = outgoingChannel.CreateWAVFile(fn, TRUE);
+  else {
+    PFile * fileChan = new PFile(fn);
+    if (fileChan->Open(PFile::WriteOnly))
+      chan = fileChan;
+    else {
+      delete fileChan;
+    }
+  }
+
+  if (chan == NULL)
+    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
+  else {
+    PTRACE(3, "PVXML\tRecording to file \"" << fn << "\"");
+    outgoingChannel.SetWriteChannel(chan, TRUE);
+  }
+
+  silenceStart = PTime();
+  consecutiveSilence = 0;
+}
+
+BOOL PVXMLRecordableFilename::OnFrame(BOOL isSilence)
+{
+  if (!isSilence) {
+    silenceStart = PTime();
+    consecutiveSilence = 0;
+  } else {
+    consecutiveSilence++;
+    if ((consecutiveSilence % 20) == 0 && ((PTime() - silenceStart).GetMilliSeconds() >= finalSilence))
+      return TRUE;
+  }
+
+  return FALSE;
+}
 
 ///////////////////////////////////////////////////////////////
 
@@ -460,8 +517,7 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
   vxmlThread       = NULL;
-  incomingChannel  = NULL;
-  outgoingChannel  = NULL;
+  vxmlChannel      = NULL;
   finishWhenEmpty  = TRUE;
   textToSpeech     = NULL;
 
@@ -738,9 +794,6 @@ BOOL PVXMLSession::Open(BOOL isPCM)
 
 BOOL PVXMLSession::Open(const PString & _mediaFormat)
 {
-  if (IsOpen())
-    Close();
-
   mediaFormat = _mediaFormat;
 
   PVXMLChannel * chan = PFactory<PVXMLChannel>::CreateInstance(mediaFormat);
@@ -749,25 +802,18 @@ BOOL PVXMLSession::Open(const PString & _mediaFormat)
     return FALSE;
   }
 
-  if (!chan->Open(this, FALSE))
-    return FALSE;
-
-  return Open(chan, chan);
-}
-
-BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
-{
   Close();
 
   // set the underlying channel
-  if (!PIndirectChannel::Open(out, in))
+  if (!PIndirectChannel::Open(chan, chan))
     return FALSE;
 
   // start the VXML session in another thread
   {
     PWaitAndSignal m(sessionMutex);
-    outgoingChannel = out;
-    incomingChannel = in;
+    if (!chan->Open(this))
+      return FALSE;
+    vxmlChannel = chan;
   }
 
   return Execute();
@@ -807,8 +853,7 @@ BOOL PVXMLSession::Close()
       vxmlThread = NULL;
     }
 
-    outgoingChannel = NULL;
-    incomingChannel = NULL;
+    vxmlChannel = NULL;
   }
 
   return PIndirectChannel::Close();
@@ -839,11 +884,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
   OnEndSession();
 
   //PWaitAndSignal m(sessionMutex);
-  if (outgoingChannel != NULL)
-    outgoingChannel->Close();
-
-  if (incomingChannel != NULL)
-    incomingChannel->Close();
+  if (vxmlChannel != NULL)
+    vxmlChannel->Close();
 
   return;
 }
@@ -949,8 +991,9 @@ void PVXMLSession::ProcessGrammar()
     listening = FALSE;
 
     // Stop any playback
-    if (outgoingChannel != NULL) {
-      outgoingChannel->FlushQueue();
+    if (vxmlChannel != NULL) {
+      vxmlChannel->FlushQueue();
+      vxmlChannel->EndRecording();
     }
 
     // Check we're not in a menu
@@ -1254,7 +1297,7 @@ void PVXMLSession::SetVar(const PString & ostr, const PString & val)
 
 BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
 {
-  if (outgoingChannel == NULL || !outgoingChannel->QueueFile(fn, repeat, delay, autoDelete))
+  if (vxmlChannel == NULL || !vxmlChannel->QueueFile(fn, repeat, delay, autoDelete))
     return FALSE;
 
   AllowClearCall();
@@ -1264,7 +1307,7 @@ BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOO
 
 BOOL PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel == NULL || !outgoingChannel->QueueCommand(cmd, repeat, delay))
+  if (vxmlChannel == NULL || !vxmlChannel->QueueCommand(cmd, repeat, delay))
     return FALSE;
 
   AllowClearCall();
@@ -1274,7 +1317,7 @@ BOOL PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 
 BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel == NULL || !outgoingChannel->QueueData(data, repeat, delay))
+  if (vxmlChannel == NULL || !vxmlChannel->QueueData(data, repeat, delay))
     return FALSE;
 
   AllowClearCall();
@@ -1285,8 +1328,8 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
 
 void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
 {
-  if (outgoingChannel != NULL)
-    outgoingChannel->GetBeepData(data, ms);
+  if (vxmlChannel != NULL)
+    vxmlChannel->GetBeepData(data, ms);
 }
 
 BOOL PVXMLSession::PlaySilence(const PTimeInterval & timeout)
@@ -1297,7 +1340,7 @@ BOOL PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 BOOL PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  if (outgoingChannel == NULL || !outgoingChannel->QueueData(nothing, 1, msecs))
+  if (vxmlChannel == NULL || !vxmlChannel->QueueData(nothing, 1, msecs))
     return FALSE;
 
   AllowClearCall();
@@ -1307,7 +1350,7 @@ BOOL PVXMLSession::PlaySilence(PINDEX msecs)
 
 BOOL PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel == NULL || !outgoingChannel->QueueResource(url, repeat, delay))
+  if (vxmlChannel == NULL || !vxmlChannel->QueueResource(url, repeat, delay))
     return FALSE;
 
   AllowClearCall();
@@ -1380,24 +1423,22 @@ BOOL PVXMLSession::PlayText(const PString & _text,
 
 void PVXMLSession::SetPause(BOOL _pause)
 {
-  if (incomingChannel != NULL)
-    incomingChannel->SetPause(_pause);
-  if (outgoingChannel != NULL)
-    outgoingChannel->SetPause(_pause);
+  if (vxmlChannel != NULL)
+    vxmlChannel->SetPause(_pause);
 }
-
 
 
 BOOL PVXMLSession::IsPlaying() const
 {
-  return (outgoingChannel != NULL) && outgoingChannel->IsPlaying();
+  return (vxmlChannel != NULL) && vxmlChannel->IsPlaying();
 }
 
-BOOL PVXMLSession::StartRecording(const PFilePath & _recordFn, 
-                                               BOOL _recordDTMFTerm, 
-                              const PTimeInterval & _recordMaxTime, 
-                              const PTimeInterval & _recordFinalSilence)
+BOOL PVXMLSession::StartRecording(const PFilePath & /*_recordFn*/, 
+                                               BOOL /*_recordDTMFTerm*/, 
+                              const PTimeInterval & /*_recordMaxTime*/, 
+                              const PTimeInterval & /*_recordFinalSilence*/)
 {
+  /*
   recording          = TRUE;
   recordFn           = _recordFn;
   recordDTMFTerm     = _recordDTMFTerm;
@@ -1413,6 +1454,8 @@ BOOL PVXMLSession::StartRecording(const PFilePath & _recordFn,
     return incomingChannel->StartRecording(recordFn, (unsigned )recordFinalSilence.GetMilliSeconds());
   }
 
+  */
+
   return FALSE;
 }
 
@@ -1426,8 +1469,8 @@ BOOL PVXMLSession::EndRecording()
 {
   if (recording) {
 	  recording = FALSE;
-    if (incomingChannel != NULL)
-      return incomingChannel->EndRecording();
+    if (vxmlChannel != NULL)
+      return vxmlChannel->EndRecording();
   }
 
   return FALSE;
@@ -1436,7 +1479,7 @@ BOOL PVXMLSession::EndRecording()
 
 BOOL PVXMLSession::IsRecording() const
 {
-  return (incomingChannel != NULL) && incomingChannel->IsRecording();
+  return (vxmlChannel != NULL) && vxmlChannel->IsRecording();
 }
 
 PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt)
@@ -1525,7 +1568,7 @@ BOOL PVXMLSession::TraverseAudio()
           // load the resource from the cache
           PString contentType;
           if (RetreiveResource(url, contentType, fn)) {
-            PWAVFile * wavFile = outgoingChannel->CreateWAVFile(fn);
+            PWAVFile * wavFile = vxmlChannel->CreateWAVFile(fn);
             if (wavFile == NULL)
               PTRACE(3, "PVXML\tCannot create audio file " + fn);
             else if (!wavFile->IsOpen())
@@ -2053,11 +2096,11 @@ BOOL PVXMLSession::TraverseVar()
 }
 
 
-void PVXMLSession::OnEndRecording(const PString & channelName)
+void PVXMLSession::OnEndRecording(const PString & /*channelName*/)
 {
-  SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
-  SetVar(channelName + ".type", "audio/x-wav" );
-  SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
+  //SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
+  //SetVar(channelName + ".type", "audio/x-wav" );
+  //SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
 }
 
 
@@ -2137,22 +2180,21 @@ PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
   : PDelayChannel(DelayReadsAndWrites, frameDelay, frameSize)
 {
   vxmlInterface = NULL; 
-  isIncoming    = FALSE;
 
   sampleFrequency = 8000;
   closed          = FALSE;
-  wavFile         = NULL;
-  playing         = FALSE;
+
   recording       = FALSE;
+  recordable      = NULL;
+
+  playing         = FALSE;
   silentCount     = 20;         // wait 20 frames before playing the OGM
   paused          = FALSE;
 }
 
-BOOL PVXMLChannel::Open(PVXMLChannelInterface * _vxmlInterface, BOOL _incoming)
+BOOL PVXMLChannel::Open(PVXMLChannelInterface * _vxmlInterface)
 {
   vxmlInterface = _vxmlInterface;
-  isIncoming    = _incoming;
-
   return TRUE;
 }
 
@@ -2198,10 +2240,10 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
   return fn;
 }
 
-PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn)
+PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
 { 
   PWAVFile * wav = vxmlInterface->CreateWAVFile(AdjustWavFilename(fn),
-                                       isIncoming ? PFile::WriteOnly : PFile::ReadOnly,
+                                       recording ? PFile::WriteOnly : PFile::ReadOnly,
                                        PFile::ModeDefault,
                                        wavFileType);
 
@@ -2209,7 +2251,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn)
     PTRACE(1, "VXML\tCould not open WAV file " << wav->GetName());
   else {
     // Check the wave file header
-    if (!isIncoming && !wav->IsValid())
+    if (!recording && !wav->IsValid())
       PTRACE(1, "VXML\tWAV file header invalid for " << wav->GetName());
     else {
       if (wav->GetFormat() != wavFileType)
@@ -2246,79 +2288,72 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   if (closed)
     return FALSE;
 
-  if (wavFile == NULL || !wavFile->IsOpen()) {
-    if (closed)
-      return FALSE;
+  // let the recordable do silence detection
+  if (recordable != NULL && recordable->OnFrame(IsSilenceFrame(buf, len))) {
+    PTRACE(1, "VXML\tRecording finished due to silence");
+    EndRecording();
+  }
 
-    if (GetBaseWriteChannel() != NULL)
-      return PDelayChannel::Write(buf, len);
-
+  // if nothing is capturing incoming data, then fake the timing and return
+  if (recordable == NULL || GetBaseWriteChannel() == NULL) {
     PDelayChannel::Wait(len, nextWriteTick);
-    lastWriteCount = len;
-
     return TRUE;
   }
 
-  PDelayChannel::Wait(len, nextWriteTick);
-  lastWriteCount = len;
+  // write the data and do the correct delay
+  if (!WriteFrame(buf, len)) 
+    EndRecording();
+  else
+    totalData += lastWriteCount;
 
-  // only look for silence if nothing is playing
-  //if (recording && !playing) {
-  //  if (!IsSilenceFrame(buf, len))
-  //    silenceRun = 0;
-  //  else {
-  //    silenceRun += msecs;
-  //    if (silenceRun > finalSilence) {
-  //      PTRACE(3, "PVXML\tTriggering end of record due to silence timeout");
-  //      vxmlInterface->RecordEnd();
-  //    }
-  //  }
-  //}
-
-  return WriteFrame(buf, len);
+  return TRUE;
 }
 
 BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence)
 {
-  // if there is already a file open, close it
-  EndRecording();
-
-  // open the output file
-  PWaitAndSignal mutex(channelMutex);
-  wavFile = CreateWAVFile(fn);
-  if (wavFile == NULL || !wavFile->IsOpen()) {
-    PTRACE(2, "PVXML\tCannot create record file " << fn);
-    delete wavFile;
+  PVXMLRecordableFilename * recordable = new PVXMLRecordableFilename();
+  if (!recordable->Open(fn)) {
+    delete recordable;
     return FALSE;
   }
 
-  PTRACE(3, "PVXML\tStarting recording to " << wavFile->GetName() );
+  recordable->SetFinalSilence(_finalSilence);
+  return QueueRecordable(recordable);
+}
 
-  // save the number of seconds of silence that will terminate recording
-  finalSilence = _finalSilence;
-  silenceRun = 0;
+BOOL PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
+{  
+  totalData = 0;
+
+  // shutdown any existing recording
+  EndRecording();
+
+  // insert the new recordable
+  PWaitAndSignal mutex(channelMutex);
+  recordable = newItem;
   recording = TRUE;
-
+  totalData = 0;
+  newItem->OnStart();
+  newItem->Record(*this);
   return TRUE;
 }
+
 
 BOOL PVXMLChannel::EndRecording()
 {
   PWaitAndSignal mutex(channelMutex);
-  recording = FALSE;
-  PTRACE(3, "PVXML\tRecording finished");
 
-  if (wavFile == NULL)
-    return TRUE;
+  if (recordable != NULL) {
+    PTRACE(3, "PVXML\tFinished recording " << totalData << " bytes");
 
-  vxmlInterface->OnEndRecording(channelName);
-  wavFile->Close();
-  delete wavFile;
-  wavFile = NULL;
-  
+    PDelayChannel::Close();
+    recordable->OnStop();
+    delete recordable;
+    recordable = NULL;
+    PTRACE(3, "PVXML\tRecording finished");
+  }
   return TRUE;
 }
-
 
 BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 {
@@ -2555,7 +2590,7 @@ PVXMLChannelPCM::PVXMLChannelPCM()
 
 BOOL PVXMLChannelPCM::WriteFrame(const void * buf, PINDEX len)
 {
-  return wavFile->Write(buf, len);
+  return PDelayChannel::Write(buf, len);
 }
 
 BOOL PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
@@ -2636,15 +2671,20 @@ PVXMLChannelG7231::PVXMLChannelG7231()
   wavFilePrefix  = "_g7231";
 }
 
-BOOL PVXMLChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
+static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
+
+BOOL PVXMLChannelG7231::WriteFrame(const void * buffer, PINDEX actualLen)
 {
-  return wavFile->Write(buf, 24);
+  PINDEX len = g7231Lens[(*(BYTE *)buffer)&3];
+  if (len > actualLen)
+    return FALSE;
+
+  return PDelayChannel::Write(buffer, len);
 }
 
 BOOL PVXMLChannelG7231::ReadFrame(void * buffer, PINDEX /*amount*/)
 {
-  static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
-  if (!PIndirectChannel::Read(buffer, 1))
+  if (!PDelayChannel::Read(buffer, 1))
     return FALSE;
 
   PINDEX len = g7231Lens[(*(BYTE *)buffer)&3];
@@ -2702,7 +2742,7 @@ PVXMLChannelG729::PVXMLChannelG729()
 
 BOOL PVXMLChannelG729::WriteFrame(const void * buf, PINDEX /*len*/)
 {
-  return wavFile->Write(buf, 10);
+  return PDelayChannel::Write(buf, 10);
 }
 
 BOOL PVXMLChannelG729::ReadFrame(void * buffer, PINDEX /*amount*/)
