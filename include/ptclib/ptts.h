@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.4  2004/06/19 07:18:58  csoutheren
+ * Change TTS engine registration to use abstract factory code
+ *
  * Revision 1.3  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -46,9 +49,9 @@
 #include <ptlib.h>
 #include <ptclib/ptts.h>
 
-class PTextToSpeech_Base : public PObject
+class PTextToSpeech : public PObject
 {
-  PCLASSINFO(PTextToSpeech_Base, PObject);
+  PCLASSINFO(PTextToSpeech, PObject);
   public:
     enum TextType {
       Default,
@@ -78,69 +81,6 @@ class PTextToSpeech_Base : public PObject
 
     virtual BOOL Close      () = 0;
     virtual BOOL Speak      (const PString & text, TextType hint = Default) = 0;
-};
-
-class PTextToSpeechEngine : public PTextToSpeech_Base
-{
-  PCLASSINFO(PTextToSpeechEngine, PTextToSpeech_Base);
-  public:
-  protected:
-};
-
-typedef PTextToSpeechEngine * PTextToSpeechEngineCreator();
-
-class PTextToSpeechEngineDef : public PObject
-{
-  PCLASSINFO(PTextToSpeechEngineDef, PObject);
-  public:
-    PTextToSpeechEngineDef(PTextToSpeechEngineCreator * _creator)
-      : creator(_creator) { }
-
-    PTextToSpeechEngineCreator * creator;
-};
-
-PDICTIONARY(PTextToSpeechEngineDict, PString, PTextToSpeechEngineDef);
-
-class PTextToSpeech : public PTextToSpeech_Base
-{
-  PCLASSINFO(PTextToSpeech, PTextToSpeech_Base);
-  public:
-    PTextToSpeech();
-    ~PTextToSpeech();
-
-    // overrides
-    PStringArray GetVoiceList();
-    BOOL SetVoice(const PString & voice);
-
-    BOOL SetRate(unsigned rate);
-    unsigned GetRate();
-
-    BOOL SetVolume(unsigned volume);
-    unsigned GetVolume();
-
-    BOOL OpenFile   (const PFilePath & fn);
-    BOOL OpenChannel(PChannel * chanel);
-    BOOL IsOpen();
-
-    BOOL Close      ();
-    BOOL Speak      (const PString & text, TextType hint = Default);
-
-    // new functions
-    void RegisterEngine(const PString & engineName, PTextToSpeechEngineDef * engineDef);
-    void UnregisterEngine(const PString & engineName);
-
-    static PStringArray GetEngines();
-    BOOL SetEngine(const PString & format);
-
-  protected:
-    static PMutex engineMutex;
-    static PTextToSpeechEngineDict * engineDict;
-
-    PMutex mutex;
-    PTextToSpeechEngine * engine;
-
-    unsigned volume;
-    unsigned rate;
 };
 
 #endif
