@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.140  2000/05/25 14:45:07  robertj
+ * Fixed detection of real argument over configured value.
+ *
  * Revision 1.139  2000/05/25 13:47:51  robertj
  * Fixed warning with GNU.
  *
@@ -1248,7 +1251,7 @@ PINDEX PConfigArgs::GetOptionCount(const PString & option) const
 
 PString PConfigArgs::GetOptionString(char option, const char * dflt) const
 {
-  if (PArgList::HasOption(option))
+  if (PArgList::GetOptionCount(option) > 0)
     return PArgList::GetOptionString(option, dflt);
 
   PString stropt = CharToString(option);
@@ -1268,7 +1271,7 @@ PString PConfigArgs::GetOptionString(const char * option, const char * dflt) con
 PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) const
 {
   // if specified on the command line, use that option
-  if (PArgList::HasOption(option))
+  if (PArgList::GetOptionCount(option) > 0)
     return PArgList::GetOptionString(option, dflt);
 
   // if user has specified "no-option", then ignore config file
@@ -1281,7 +1284,7 @@ PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) 
 
 void PConfigArgs::Save(const PString & saveOptionName)
 {
-  if (!PArgList::HasOption(saveOptionName))
+  if (PArgList::GetOptionCount(saveOptionName) == 0)
     return;
 
   config.DeleteSection(sectionName);
