@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.42  1999/11/01 00:17:20  robertj
+ * Added override of new functions for MSVC memory check code.
+ *
  * Revision 1.41  1999/08/22 13:38:39  robertj
  * Fixed termination hang up problem with memory check code under unix pthreads.
  *
@@ -206,6 +209,12 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 
 void * operator new(size_t nSize)
+{
+  return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
+}
+
+
+void * operator new[](size_t nSize)
 {
   return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
 }
@@ -416,7 +425,7 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
   if (mem->isDestroyed)
     return realloc(ptr, nSize);
 
-  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) == Trashed)
+  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
     return NULL;
 
   Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
@@ -464,7 +473,7 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
     return;
   }
 
-  if (mem->InternalValidate(ptr, className, mem->leakDumpStream) == Trashed) {
+  if (mem->InternalValidate(ptr, className, mem->leakDumpStream) != Ok) {
     free(ptr);
     return;
   }
@@ -507,19 +516,6 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
     return Trashed;
 
   Header * obj = ((Header *)ptr)-1;
-  Header * forward = obj;
-  Header * backward = obj;
-  while (forward->next != NULL && backward->prev != NULL) {
-    forward = forward->next;
-    backward = backward->prev;
-  }
-
-  if (forward != listTail && backward != listHead) {
-    if (error != NULL)
-      *error << "Block " << ptr << '[' << obj->size << "] #" << obj->request
-             << " not in heap!" << endl;
-    return Trashed;
-  }
 
   if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
     if (error != NULL)
@@ -539,6 +535,20 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
              << " allocated as \"" << obj->className
              << "\" and should be \"" << className << "\"." << endl;
     return Bad;
+  }
+
+  Header * forward = obj;
+  Header * backward = obj;
+  while (forward->next != NULL && backward->prev != NULL) {
+    forward = forward->next;
+    backward = backward->prev;
+  }
+
+  if (forward != listTail && backward != listHead) {
+    if (error != NULL)
+      *error << "Block " << ptr << '[' << obj->size << "] #" << obj->request
+             << " not in heap!" << endl;
+    return Trashed;
   }
 
   return Ok;
