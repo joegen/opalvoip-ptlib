@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.5  2002/07/10 13:14:55  craigs
+ * Moved some VXML classes from Opal back into PTCLib
+ *
  * Revision 1.4  2002/07/05 06:27:26  craigs
  * Removed unused member variables
  * Added OnEmptyAction callback
@@ -243,9 +246,9 @@ class PVXMLSession : public PObject
 
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
-    virtual BOOL PlayText(const PString & text, TextType type = Default) = 0;
-    virtual BOOL PlayFile(const PString & fn) = 0;
-    virtual BOOL PlayData(const PBYTEArray & data) = 0;
+    virtual BOOL PlayText(const PString & text, TextType type = Default, PINDEX repeat = 1, PINDEX delay = 0) = 0;
+    virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0) = 0;
+    virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0) = 0;
     virtual BOOL IsPlaying() const = 0;
     virtual BOOL IsRecording() const = 0;
 
@@ -265,7 +268,7 @@ class PVXMLSession : public PObject
   protected:
     BOOL ExecuteWithoutLock();
 
-    PMutex vxmlMutex;
+    PMutex sessionMutex;
 
     PXML xmlFile;
     PVXMLDialogArray dialogArray;
@@ -283,6 +286,138 @@ class PVXMLSession : public PObject
 };
 
 //////////////////////////////////////////////////////////////////
+
+class PVXMLOutgoingChannel;
+
+class PVXMLQueueItem : public PObject
+{
+  PCLASSINFO(PVXMLQueueItem, PObject);
+  public:
+    PVXMLQueueItem(PINDEX _repeat = 1, PINDEX _delay = 0)
+      : repeat(_repeat), delay(_delay)
+      { }
+
+    virtual void Play(PVXMLOutgoingChannel & outgoingChannel) = 0;
+
+    PINDEX repeat;
+    PINDEX delay;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLQueueDataItem : public PVXMLQueueItem
+{
+  PCLASSINFO(PVXMLQueueDataItem, PVXMLQueueItem);
+  public:
+    PVXMLQueueDataItem(const PBYTEArray & _data, PINDEX repeat = 1, PINDEX delay = 0)
+      : PVXMLQueueItem(repeat, delay), data(_data)
+    { }
+
+    void Play(PVXMLOutgoingChannel & outgoingChannel);
+
+  protected:
+    PBYTEArray data;
+};
+
+class PVXMLQueueFilenameItem : public PVXMLQueueItem
+{
+  PCLASSINFO(PVXMLQueueFilenameItem, PObject);
+  public:
+    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX repeat = 1, PINDEX delay = 0)
+      : PVXMLQueueItem(repeat, delay), fn(_fn)
+    { }
+
+    void Play(PVXMLOutgoingChannel & outgoingChannel);
+
+  protected:
+    PFilePath fn;
+};
+
+PQUEUE(PVXMLQueue, PVXMLQueueItem);
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLChannel : public PIndirectChannel
+{
+  PCLASSINFO(PVXMLChannel, PIndirectChannel);
+  public:
+    PVXMLChannel(PVXMLSession & _vxml)
+      : vxml(_vxml) { }
+
+    virtual void DelayFrame(PINDEX msecs) = 0;
+
+  protected:
+    PVXMLSession & vxml;
+    PMutex channelMutex;
+    PAdaptiveDelay delay;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLOutgoingChannel : public PVXMLChannel
+{
+  PCLASSINFO(PVXMLOutgoingChannel, PVXMLChannel);
+
+  public:
+    PVXMLOutgoingChannel(PVXMLSession & vxml);
+
+    // overrides from PIndirectChannel
+    virtual BOOL Read(void * buffer, PINDEX amount);
+    BOOL Close();
+
+    // new functions
+    virtual PWAVFile * CreateWAVFile(const PFilePath & fn)
+      { return new PWAVFile(fn, PFile::ReadOnly); }
+
+    virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
+    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual void PlayFile(PFile * chan);
+    virtual void FlushQueue();
+    virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
+
+  protected:
+    // new functions
+    virtual BOOL ReadFrame(PINDEX amount)= 0;
+    virtual void CreateSilenceFrame(PINDEX amount) = 0;
+
+    PVXMLQueue playQueue;
+    BOOL playing;
+
+    PBYTEArray frameBuffer;
+    PINDEX frameLen, frameOffs;
+
+    int silentCount;
+    int totalData;
+    PTimer delayTimer;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLIncomingChannel : public PVXMLChannel
+{
+  PCLASSINFO(PVXMLIncomingChannel, PVXMLChannel)
+
+  public:
+    PVXMLIncomingChannel(PVXMLSession & vxml);
+    ~PVXMLIncomingChannel();
+
+    // overrides from PIndirectChannel
+    BOOL Write(const void * buf, PINDEX len);
+
+    // new functions
+    BOOL StartRecording(const PFilePath & fn);
+    BOOL EndRecording();
+    BOOL IsRecording() const { return wavFile != NULL; }
+
+    virtual PWAVFile * CreateWAVFile(const PFilePath & fn)
+      { return new PWAVFile(fn, PFile::WriteOnly, PFile::ModeDefault, PWAVFile::fmt_uLaw); }
+
+  protected:
+    // new functions
+    virtual BOOL WriteFrame(const void * buf, PINDEX len) = 0;
+    PWAVFile * wavFile;
+};
 
 #endif
 
