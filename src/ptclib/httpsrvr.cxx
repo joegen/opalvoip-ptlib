@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.10 1997/07/14 11:47:13 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.11 1997/08/04 10:44:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.11  1997/08/04 10:44:36  robertj
+ * Improved receiving of a POST on a non-persistant connection, do not wait for EOF if have CRLF.
+ *
  * Revision 1.10  1997/07/14 11:47:13  robertj
  * Added "const" to numerous variables.
  *
@@ -294,9 +297,9 @@ BOOL PHTTPServer::ProcessCommand()
     // but Netscape hangs if this is done.
     // If the client didn't specify a persistant connection, then use the
     // ContentLength if there is one or read until end of file if there isn't
-    if (!connectInfo.IsPersistant())
-      contentLength = mimeInfo.GetInteger(ContentLengthTag, 0);
-    else {
+    if (!connectInfo.IsPersistant()) {
+      contentLength = mimeInfo.GetInteger(ContentLengthTag, (cmd == POST) ? -2 : 0);
+    } else {
       contentLength = mimeInfo.GetInteger(ContentLengthTag, -1);
       if (contentLength < 0) {
 //        PError << "Server: persistant connection has no content length" << endl;
@@ -397,6 +400,8 @@ PString PHTTPServer::ReadEntityBody(const PHTTPConnectionInfo & connectInfo)
   int count = 0;
   if (contentLength > 0) {
     entityBody = ReadString((PINDEX)contentLength);
+  } else if (contentLength == -2) {
+    ReadLine(entityBody, FALSE);
   } else if (contentLength < 0) {
     while (Read(entityBody.GetPointer(count+1000)+count, 1000))
       count += GetLastReadCount();
