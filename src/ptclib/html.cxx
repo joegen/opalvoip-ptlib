@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.cxx,v $
+ * Revision 1.17  1998/11/30 04:51:51  robertj
+ * New directory structure
+ *
  * Revision 1.16  1998/09/23 06:22:04  robertj
  * Added open source copyright license.
  *
@@ -94,7 +97,7 @@
 #endif
 
 #include <ptlib.h>
-#include <html.h>
+#include <ptclib/html.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
