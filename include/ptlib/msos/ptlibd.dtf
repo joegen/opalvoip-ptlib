@@ -4226,7 +4226,7 @@ EXPORTS
     ?PlayFile@PSoundChannelWin32@@UAEHABVPFilePath@@H@Z @3721 NONAME
     ?PlaySoundA@PSoundChannel@@UAEHABVPSound@@H@Z @3722 NONAME
     ?PlaySoundA@PSoundChannelWin32@@UAEHABVPSound@@H@Z @3723 NONAME
-    ?PLoadPluginDirectory@@YAXAAVPPluginManager@@ABVPDirectory@@@Z @5673 NONAME
+    ?PLoadPluginDirectory@@YAXAAVPPluginManager@@ABVPDirectory@@PBD@Z @6227 NONAME
     ?pluginLoaderStartupFactory@@3V?$PAbstractSingletonFactory@VPProcessStartup@@VPluginLoaderStartup@@VPString@@@@A @5939 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_GetVersion@@YAIXZ @3724 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_Registration_Instance@@3VPPlugin_PSoundChannel_WindowsMultimedia_Registration@@A @3725 NONAME
