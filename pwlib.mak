@@ -13,7 +13,11 @@ all:
 	nmake /nologo /f "MergeSym.mak" CFG="MergeSym - Win32 Release" RECURSE=0
 	cd ..\..\src\ptlib\msos
 	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Release" RECURSE=0
+!IFDEF OPENSSLDIR
+	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 SSL Release" RECURSE=0
+!ELSE
 	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Release" RECURSE=0
+!ENDIF
 	cd ..\..\pwlib\mswin
 	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Release" RECURSE=0
 	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Release" RECURSE=0
