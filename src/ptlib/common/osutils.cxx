@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.182  2002/04/19 00:20:31  craigs
+ * Added option to append to log file rather than create anew each time
+ *
  * Revision 1.181  2002/02/14 05:14:51  robertj
  * Fixed possible deadlock if a timer is deleted (however indirectly) in the
  *   OnTimeout of another timer.
@@ -696,7 +699,11 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 #if PMEMORY_CHECK
     BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
-    PTextFile * traceOutput = new PTextFile(filename, PFile::WriteOnly);
+
+    PTextFile * traceOutput = new PTextFile(filename, PFile::ReadWrite);
+    if (options & AppendToFile)
+      traceOutput->SetPosition(0, PFile::End);
+
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
 #endif
