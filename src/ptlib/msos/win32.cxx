@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.118  2002/01/23 04:45:50  craigs
+ * Added copy Constructors for PSemaphore, PMutex and PSyncPoint
+ *
  * Revision 1.117  2001/12/08 00:22:37  robertj
  * Prevented assert if doing SetUserName() with empty string.
  *
@@ -1566,12 +1569,25 @@ PSemaphore::PSemaphore(HANDLE h)
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
+  initialVal  = initial;
+  maxCountVal = maxCount;
+
   if (initial > maxCount)
     initial = maxCount;
   handle = CreateSemaphore(NULL, initial, maxCount, NULL);
   PAssertOS(handle != NULL);
 }
 
+PSemaphore::PSemaphore(const PSemaphore & sem)
+{
+  initialVal  = sem.GetInitialVal();
+  maxCountVal = sem.GetMaxCountVal();
+
+  if (initialVal > maxCountVal)
+    initialVal = maxCountVal;
+  handle = CreateSemaphore(NULL, initialVal, maxCountVal, NULL);
+  PAssertOS(handle != NULL);
+}
 
 PSemaphore::~PSemaphore()
 {
@@ -1622,6 +1638,10 @@ PMutex::PMutex()
 {
 }
 
+PMutex::PMutex(const PMutex &)
+  : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
+{
+}
 
 void PMutex::Signal()
 {
@@ -1637,6 +1657,10 @@ PSyncPoint::PSyncPoint()
 {
 }
 
+PSyncPoint::PSyncPoint(const PSyncPoint &)
+  : PSemaphore(::CreateEvent(NULL, FALSE, FALSE, NULL))
+{
+}
 
 void PSyncPoint::Signal()
 {
