@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.196  2002/07/30 02:55:09  craigs
+ * Added program start time to PProcess
+ *
  * Revision 1.195  2002/06/27 06:38:58  robertj
  * Changes to remove memory leak display for things that aren't memory leaks.
  *
@@ -1792,6 +1795,10 @@ void PProcess::SetThreadName(const PString & /*name*/)
 {
 }
 
+PTime PProcess::GetStartTime() const
+{ 
+  return programStartTime; 
+}
 
 PString PProcess::GetVersion(BOOL full) const
 {
