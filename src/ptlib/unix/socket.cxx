@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.56  2001/03/05 04:28:56  robertj
+ * Added net mask to interface info returned by GetInterfaceTable()
+ *
  * Revision 1.55  2001/02/02 23:31:30  robertj
  * Fixed enumeration of interfaces, thanks Bertrand Croq.
  *
@@ -1009,6 +1012,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 
           PString            macAddr;
           PIPSocket::Address addr;
+          PIPSocket::Address mask;
 
 #ifdef SIO_Get_MAC_Address
           if (ioctl(sock.GetHandle(), SIO_Get_MAC_Address, &ifReq) >= 0) {
@@ -1021,7 +1025,10 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
           if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) 
             addr = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr);
 
-          list.Append(PNEW InterfaceEntry(name, addr, macAddr));
+          if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) 
+            mask = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr);
+
+          list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr));
         }
       }
 
