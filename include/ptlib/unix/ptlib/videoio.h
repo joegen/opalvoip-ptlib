@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.13  2001/11/22 16:08:32  rogerh
+ * Allow compiles on Linux without V4L installed (eg 2.0.36 / RedHat 5.2)
+ *
  * Revision 1.12  2001/08/08 06:46:44  rogerh
  * Only implement the Whiteness and Colour methods on Linux.
  *
@@ -73,7 +76,7 @@
 
 #ifndef _PVIDEOIO
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
 #include <linux/videodev.h>     /* change this to "videodev2.h" for v4l2 */
 #endif
 
@@ -111,8 +114,10 @@
     virtual BOOL SetContrast(unsigned newContrast); 
     virtual int GetHue();
     virtual BOOL SetHue(unsigned newHue); 
-#if defined(P_LINUX)		// only override these methods in Linux
-								// FreeBSD will use the default methods in PVideoDevice
+
+#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
+    // only override these methods in Linux. Other platforms will use the
+    // default methods in PVideoDevice
     virtual int GetWhiteness();
     virtual BOOL SetWhiteness(unsigned newWhiteness); 
     virtual int GetColour();
@@ -122,7 +127,7 @@
     void ClearMapping();
 
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
     int    videoFd;
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
