@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.36  2004/04/11 13:26:25  csoutheren
+ * Removed namespace problems and removed warnings for Windows <string>
+ *
  * Revision 1.35  2004/04/11 02:55:18  csoutheren
  * Added PCriticalSection for Windows
  * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
@@ -414,6 +417,16 @@ extern "C" char ** __argv;
 #define   PCLASSNAME(cls) (6+typeid(cls).name())
 
 #define   PCONTAINER_USES_CRITSEC   1
+
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4018)
+#pragma warning(disable:4663)
+#pragma warning(disable:4146)
+#pragma warning(disable:4244)
+#include <string>
+//using namespace std;
+#pragma warning(pop)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
