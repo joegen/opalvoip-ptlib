@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.45  2004/06/29 12:22:22  rjongbloed
+ * Fixed incorrect usage of result (now object rather than scalar), thanks Michal Zygmuntowicz
+ *
  * Revision 1.44  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -485,7 +488,7 @@ PString PMessageDigest::CompleteDigest()
 {
   Result result;
   CompleteDigest(result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 void PMessageDigest::CompleteDigest(Result & result)
@@ -755,7 +758,7 @@ PString PMessageDigest5::Encode(const void * data, PINDEX length)
 {
   Result result;
   Encode(data, length, result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 
@@ -897,7 +900,7 @@ PString PMessageDigestSHA1::Encode(const void * data, PINDEX length)
 {
   Result result;
   Encode(data, length, result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 
