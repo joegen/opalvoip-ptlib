@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.12  2001/03/08 08:31:34  robertj
+ * Numerous enhancements to the video grabbing code including resizing
+ *   infrastructure to converters. Thanks a LOT, Mark Cooke.
+ *
  * Revision 1.11  2001/03/08 02:18:45  robertj
  * Added improved defaulting of video formats so Open() does not fail.
  * Removed the requirement that the device be open before you can set
@@ -164,8 +168,8 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
   }
   
   if (SetColourFormat(colourFmt))
-    return TRUE; // Can do it native
-
+    return TRUE;
+  
   /************************
     Eventually, need something more sophisticated than this, but for the
     moment pick the known colour formats that the device is very likely to
@@ -237,6 +241,65 @@ BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
+static struct {
+    unsigned dest_width, dest_height, device_width, device_height;
+} prefResizeTable[] = {
+    
+    { 352, 288,    320, 240 },
+    { 320, 240,    352, 288 },
+    { 176, 144,    160, 120 },
+    { 160, 120,    176, 144 },
+};
+
+BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
+					 BOOL bScaleNotCrop)
+{
+  if (SetFrameSize(width, height))
+    return TRUE;
+  
+  if (!converter)
+    converter = PColourConverter::Create(colourFormat, colourFormat,
+					 width, height);
+  if (!converter) {
+    PTRACE(1,"PVideoDevice::SetFrameSizeConverter converter creation failed");
+    return FALSE;
+  }
+  
+  PINDEX prefResizeIdx = 0;
+  while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
+    
+    if ((prefResizeTable[prefResizeIdx].dest_width != frameWidth) ||
+	(prefResizeTable[prefResizeIdx].dest_height != frameHeight))
+      continue;
+    
+    // If we found a preferred size pairing, see if the converter is
+    // happy.
+    
+    if (SetFrameSize(prefResizeTable[prefResizeIdx].device_width,
+		     prefResizeTable[prefResizeIdx].device_height)) {
+      if (converter->SetDstFrameSize(width, height, bScaleNotCrop))
+	return TRUE;
+    }
+    
+    prefResizeIdx++;
+  }
+
+  // Failed to find a resolution the device can do so far, so try
+  // using the maximum width and height it claims it can do.
+  
+  // QUESTION: DO WE WANT A MAX SIZE INSANITY CHECK HERE.
+
+  unsigned minWidth, minHeight, maxWidth, maxHeight;
+  GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
+  
+  if (SetFrameSize(maxWidth, maxHeight))
+    if (converter->SetDstFrameSize(width, height, bScaleNotCrop))
+      return TRUE;
+  
+  return FALSE;
+}
+
+
 BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 {
   unsigned minWidth, minHeight, maxWidth, maxHeight;
@@ -257,7 +320,7 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     frameHeight = height;
 
   if (converter)
-    converter->SetFrameSize(width,height);
+    converter->SetSrcFrameSize(width,height);
 
   return TRUE;
 }

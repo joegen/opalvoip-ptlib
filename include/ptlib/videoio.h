@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.13  2001/03/08 08:31:34  robertj
+ * Numerous enhancements to the video grabbing code including resizing
+ *   infrastructure to converters. Thanks a LOT, Mark Cooke.
+ *
  * Revision 1.12  2001/03/07 01:42:59  dereks
  * miscellaneous video fixes. Works on linux now. Add debug statements
  * (at PTRACE level of 1)
@@ -257,10 +261,27 @@ class PVideoDevice : public PObject
       QCIFHeight = 144
     };
 
+    /**Set the frame size to be used, trying converters if available.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns the IsOpen() status.
+
+       If the device does not support the size, a set of alternate resolutions
+       are attempted.  A converter is setup if possible.
+    */
+    virtual BOOL SetFrameSizeConverter(
+      unsigned width,        /// New width of frame
+      unsigned height,       /// New height of frame
+      BOOL     bScaleNotCrop /// Scale or crop/pad preference
+    );
+
     /**Set the frame size to be used.
 
        Default behaviour sets the frameWidth and frameHeight variables and
        returns the IsOpen() status.
+
+       Note that devices may not be able to produce the requested size, and
+       this function will fail.  See SetFrameSizeConverter().
     */
     virtual BOOL SetFrameSize(
       unsigned width,   /// New width of frame
@@ -440,7 +461,13 @@ class PVideoInputDevice : public PVideoDevice
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
 
-    
+ protected:
+    /**Check the hardware can do the asked for size.
+
+       Note that not all cameras can provide all frame sizes.
+     */
+    virtual BOOL VerifyHardwareFrameSize(unsigned width, unsigned height);
+
 #ifdef DOC_PLUS_PLUS
 };
 #endif

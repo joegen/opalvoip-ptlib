@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.12  2001/03/08 08:31:34  robertj
+ * Numerous enhancements to the video grabbing code including resizing
+ *   infrastructure to converters. Thanks a LOT, Mark Cooke.
+ *
  * Revision 1.11  2001/03/08 03:59:13  robertj
  * Fixed previous change, needed to allow for -1 as chammelNumber in Open().
  *
@@ -315,8 +319,10 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
   }
   
   // Some V4L drivers are lax about returning errors on VIDIOCSPICT
-  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0)
+  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
+    PTRACE(1,"PVideoInputDevice::Get pict info failed : "<< ::strerror(errno));
     return FALSE;
+  }
   
   if (pictureInfo.palette != colourFormatCode)
     return FALSE;
@@ -354,11 +360,17 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
+  if ((frameWidth == width) && (frameHeight == height))
+    return TRUE;
+
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
   
   ClearMapping();
-
+  
+  if (!VerifyHardwareFrameSize(width, height))
+    return FALSE;
+  
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
@@ -397,14 +409,20 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
         frameBuffer[0].format = colourFormatCode;
         frameBuffer[0].width  = frameWidth;
         frameBuffer[0].height = frameHeight;
-        ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[0]);
-
+	
         frameBuffer[1].frame  = 1;
         frameBuffer[1].format = colourFormatCode;
         frameBuffer[1].width  = frameWidth;
         frameBuffer[1].height = frameHeight;
-        ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[1]);
 
+	if ((::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[0]) != 0) ||
+	    (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[1]) != 0)) {
+	    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (A)");
+	  canMap = 0;
+	  ::munmap(videoBuffer, frame.size);
+	  videoBuffer = NULL;
+	}
+	
         currentFrame = 0;
       }
     }
@@ -435,11 +453,17 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
   }
-
-
-  // trigger capture of next frame in this buffer
-  ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]);
-
+  
+  
+  // trigger capture of next frame in this buffer.
+  // fallback to read() on errors.
+  if (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]) != 0) {
+    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (B)");
+    canMap = 0;
+    ::munmap(videoBuffer, frame.size);
+    videoBuffer = NULL;
+  }
+  
   // change buffers
   currentFrame = 1 - currentFrame;
 
@@ -452,12 +476,35 @@ void PVideoInputDevice::ClearMapping()
   if (canMap == 1) {
     if (videoBuffer != NULL)
       ::munmap(videoBuffer, frame.size);
-
-    canMap = -1;
-    videoBuffer = NULL;
   }
+
+  canMap = -1;
+  videoBuffer = NULL;
 }
 
 
+BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
+						unsigned height)
+{
+    struct video_window vwin;
+    
+    // Request current hardware frame size
+    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0)
+	return FALSE;
+    
+    // Request the width and height
+    vwin.width  = width;
+    vwin.height = height;
+    ::ioctl(videoFd, VIDIOCSWIN, &vwin);
+    
+    // Read back settings to be careful about existing (broken) V4L drivers
+    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0)
+	return FALSE;
+    
+    if ((vwin.width != width) || (vwin.height != height))
+      return FALSE;
+
+    return TRUE;
+}
     
 // End Of File ///////////////////////////////////////////////////////////////
