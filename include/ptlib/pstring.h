@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.17 1996/01/23 13:15:17 robertj Exp $
+ * $Id: pstring.h,v 1.18 1996/01/24 14:43:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.18  1996/01/24 14:43:15  robertj
+ * Added initialisers to string dictionaries.
+ *
  * Revision 1.17  1996/01/23 13:15:17  robertj
  * Added Replace() function to strings.
  * Mac Metrowerks compiler support.
@@ -1165,7 +1168,7 @@ PCLASS PStringStream : public PString, public iostream {
    streamed data to or from a <A>PString</A> class.
    
    All of the standard stream I/O operators, manipulators etc will operate on
-   the PString class.
+   the PStringStream class.
  */
 
   PCLASSINFO(PStringStream, PString)
@@ -1582,8 +1585,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 #endif // PHAS_TEMPLATES
 
 
-PSTRING_DICTIONARY(POrdinalStringDictionary, POrdinalKey);
-/*PDECLARE_CLASS(POrdinalStringDictionary, PStringDictionary)
+PDECLARE_STRING_DICTIONARY(POrdinalToString, POrdinalKey)
+/*PDECLARE_CLASS(POrdinalToString, PStringDictionary)
    This is a dictionary collection class of <A>PString</A> objects, keyed by an
    ordinal value. It has all the usual functions for a collection, with the
    object types set to <A>PString</A> pointers. The class could be considered
@@ -1599,8 +1602,19 @@ PSTRING_DICTIONARY(POrdinalStringDictionary, POrdinalKey);
    more information.
  */
 
-PORDINAL_DICTIONARY(PStringOrdinalDictionary, PString);
-/*PDECLARE_CLASS(PStringOrdinalDictionary, POrdinalDictionary)
+  public:
+    struct Initialiser {
+      PINDEX key;
+      const char * value;
+    };
+    POrdinalToString(
+      PINDEX count,                // Count of strings in initialiser array
+      const Initialiser * init     // Array of Initialiser structures
+    );
+};
+
+PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString)
+/*PDECLARE_CLASS(PStringToOrdinal, POrdinalDictionary)
    This is a dictionary collection class of ordinals (via the
    <A>POrdinalKey</A> class) keyed by <A>PString</A> objects. It has all the
    usual functions for a collection, with the object types set to
@@ -1614,6 +1628,48 @@ PORDINAL_DICTIONARY(PStringOrdinalDictionary, PString);
    See the <A>PAbstractDicionary</A> and <A>POrdinalDictionary</A> classes and
    <A>PDECLARE_ORDINAL_DICTIONARY</A> macro for more information.
  */
+
+  public:
+    struct Initialiser {
+      const char * key;
+      PINDEX value;
+    };
+    PStringToOrdinal(
+      PINDEX count,                // Count of strings in initialiser array
+      const Initialiser * init,    // Array of Initialiser structures
+      BOOL caseless = FALSE        // New keys are to be PCaselessStrings
+    );
+};
+
+
+PDECLARE_STRING_DICTIONARY(PStringToString, PString)
+/*PDECLARE_CLASS(PStringToString, PStringDictionary)
+   This is a dictionary collection class of <A>PString</A> objects, keyed by
+   another string. It has all the usual functions for a collection, with the
+   object types set to <A>PString</A> pointers.
+
+   In addition some addition functions are added that take a const
+   <A>PString</A> reference instead of a pointer as most standard collection
+   functions do. This is more convenient for when string expressions are used
+   as parameters to function in the collection.
+
+   See the <A>PAbstractDictionary</A> and <A>PStringDictionary</A> classes and
+   <A>PDECLARE_DICTIONARY</A> and <A>PDECLARE_STRING_DICTIONARY</A> macros for
+   more information.
+ */
+
+  public:
+    struct Initialiser {
+      const char * key;
+      const char * value;
+    };
+    PStringToString(
+      PINDEX count,                // Count of strings in initialiser array
+      const Initialiser * init,    // Array of Initialiser structures
+      BOOL caselessKeys = FALSE,   // New keys are to be PCaselessStrings
+      BOOL caselessValues = FALSE  // New values are to be PCaselessStrings
+    );
+};
 
 
 // End Of File ///////////////////////////////////////////////////////////////
