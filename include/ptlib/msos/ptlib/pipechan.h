@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.2 1995/03/12 04:59:56 robertj Exp $
+ * $Id: pipechan.h,v 1.3 1995/03/14 13:31:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
- * Revision 1.2  1995/03/12 04:59:56  robertj
+ * Revision 1.3  1995/03/14 13:31:35  robertj
+ * Implemented DOS pipe channel.
+ *
+ * Revision 1.2  1995/03/12  04:59:56  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
  *
@@ -21,13 +24,13 @@
 #ifndef _PPIPECHANNEL
 
 #include "..\..\common\pipechan.h"
-#if defined(_WIN32)
   protected:
+#if defined(_WIN32)
     PROCESS_INFORMATION info;
     HANDLE hToChild, hFromChild;
 #else
-    int hToChild, hFromChild;
     BOOL hasRun;
+    PFilePath toChild, fromChild;
 #endif
 };
 
