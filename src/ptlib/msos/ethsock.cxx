@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.19  1999/10/14 01:34:55  robertj
+ * Fixed backward compatibility problem with old SNMP header file.
+ *
  * Revision 1.18  1999/09/10 04:35:42  robertj
  * Added Windows version of PIPSocket::GetInterfaceTable() function.
  *
@@ -100,6 +103,7 @@ typedef RFC1157VarBindList SnmpVarBindList;
 typedef LONG AsnInteger32;
 #define SNMP_PDU_GET ASN_RFC1157_GETREQUEST
 #define SNMP_PDU_GETNEXT ASN_RFC1157_GETNEXTREQUEST
+#define ASN_IPADDRESS    ASN_RFC1155_IPADDRESS // Prevents GetInterfaceTable failure
 #pragma message("Later version of snmp.h required!")
 #endif
 
