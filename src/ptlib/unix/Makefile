@@ -27,8 +27,8 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
-# Revision 1.30  1998/11/03 02:56:37  robertj
-# Fixed order of modules to reduce phone memory leaks due to static destruction order.
+# Revision 1.31  1998/11/22 08:11:28  craigs
+# Changed for new GUI build mechanism
 #
 # Revision 1.29  1998/10/15 07:03:46  robertj
 # Moved object.cxx to last place so memory leak destructor is called at the right time.
@@ -124,46 +124,45 @@ endif
 
 COMMONSRC	= ../../common/ptlib/src
 
-# try and keep the order of modules in reverse order of usage so any
-# global statics will be constructed/destructed in the correct order
 SOURCES		= switch.cxx \
+		  osutil.cxx \
+		  channel.cxx \
+		  tlib.cxx \
+		  assert.cxx \
+		  config.cxx \
+		  remconn.cxx \
+		  serchan.cxx \
+		  pipechan.cxx \
+		  svcproc.cxx \
+		  socket.cxx \
+		  uicmp.cxx \
+		  udll.cxx \
+		  $(COMMONSRC)/contain.cxx \
+		  $(COMMONSRC)/osutils.cxx \
+		  $(COMMONSRC)/sfile.cxx \
+		  $(COMMONSRC)/ptime.cxx \
+		  $(COMMONSRC)/collect.cxx \
+		  $(COMMONSRC)/sockets.cxx \
+		  $(COMMONSRC)/inetprot.cxx \
+		  $(COMMONSRC)/httpclnt.cxx \
+		  $(COMMONSRC)/httpsrvr.cxx \
+		  $(COMMONSRC)/html.cxx \
+		  $(COMMONSRC)/http.cxx \
+		  $(COMMONSRC)/httpform.cxx \
 		  $(COMMONSRC)/httpsvc.cxx \
+		  $(COMMONSRC)/inetmail.cxx \
+		  $(COMMONSRC)/ftp.cxx \
+		  $(COMMONSRC)/ftpclnt.cxx \
+		  $(COMMONSRC)/ftpsrvr.cxx \
+		  $(COMMONSRC)/pssl.cxx \
+		  $(COMMONSRC)/telnet.cxx \
+		  $(COMMONSRC)/pasn.cxx \
+		  $(COMMONSRC)/psnmp.cxx \
+		  $(COMMONSRC)/snmpclnt.cxx \
+		  $(COMMONSRC)/snmpserv.cxx \
 		  $(COMMONSRC)/cypher.cxx \
 		  $(COMMONSRC)/pssl.cxx \
 		  $(COMMONSRC)/asner.cxx \
-		  $(COMMONSRC)/snmpclnt.cxx \
-		  $(COMMONSRC)/snmpserv.cxx \
-		  $(COMMONSRC)/psnmp.cxx \
-		  $(COMMONSRC)/pasn.cxx \
-		  $(COMMONSRC)/httpform.cxx \
-		  $(COMMONSRC)/httpclnt.cxx \
-		  $(COMMONSRC)/httpsrvr.cxx \
-		  $(COMMONSRC)/http.cxx \
-		  $(COMMONSRC)/html.cxx \
-		  $(COMMONSRC)/ftpclnt.cxx \
-		  $(COMMONSRC)/ftpsrvr.cxx \
-		  $(COMMONSRC)/ftp.cxx \
-		  $(COMMONSRC)/inetmail.cxx \
-		  $(COMMONSRC)/inetprot.cxx \
-		  $(COMMONSRC)/telnet.cxx \
-		  uicmp.cxx \
-		  $(COMMONSRC)/sockets.cxx \
-		  socket.cxx \
-		  svcproc.cxx \
-		  remconn.cxx \
-		  config.cxx \
-		  udll.cxx \
-		  $(COMMONSRC)/ptime.cxx \
-		  pipechan.cxx \
-		  serchan.cxx \
-		  $(COMMONSRC)/sfile.cxx \
-		  channel.cxx \
-		  $(COMMONSRC)/osutils.cxx \
-		  osutil.cxx \
-		  tlib.cxx \
-		  $(COMMONSRC)/contain.cxx \
-		  $(COMMONSRC)/collect.cxx \
-		  assert.cxx \
 		  $(COMMONSRC)/object.cxx   # must be last module
 
 OBJS	= $(OBJDIR)/regex.o
@@ -209,6 +208,20 @@ distsrc:
 include common.mak
 
 #######################################################
+
+
+######################################################################
+#
+# setup the lib directory
+#
+######################################################################
+
+unixlibdir:
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
+	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
+	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
+
 
 
 ifdef SHAREDLIB
