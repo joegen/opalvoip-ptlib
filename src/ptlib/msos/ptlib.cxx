@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.65  2002/12/18 05:31:06  robertj
+ * Moved PTimeInterval::GetInterval() to common code.
+ *
  * Revision 1.64  2002/12/18 05:10:53  robertj
  * Fixed problem with returning DWORD time interval when PTimeInterval is
  *   out of range, especially when negative!
@@ -425,22 +428,6 @@ struct tm * PTime::os_gmtime(const time_t * clock, struct tm * tb)
   memset(tb, 0, sizeof(*tb));
   return tb;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PTimeInterval
-
-DWORD PTimeInterval::GetInterval() const
-{
-  if (milliseconds <= 0)
-    return 0;
-
-  if (milliseconds >= INFINITE)
-    return INFINITE;
-
-  return (DWORD)milliseconds;
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
