@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.97  2001/01/29 01:19:32  robertj
+ * Fixed Win32 compile broken by WinCE changes.
+ *
  * Revision 1.96  2001/01/28 01:50:46  yurik
  * WinCE port-related. System version check and new semaphore code
  *
@@ -686,25 +689,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   if (root.IsEmpty())
     return FALSE;
 
-#if _WIN32_WCE < 300
-	USES_CONVERSION;
-    ULARGE_INTEGER freeBytesAvailableToCaller;
-    ULARGE_INTEGER totalNumberOfBytes; 
-    ULARGE_INTEGER totalNumberOfFreeBytes;
-    if (GetDiskFreeSpaceEx(A2T(root),
-                           &freeBytesAvailableToCaller,
-                           &totalNumberOfBytes,
-                           &totalNumberOfFreeBytes)) 
-	{
-      total = totalNumberOfBytes.QuadPart;
-      free = totalNumberOfFreeBytes.QuadPart;
-	  clusterSize = 512; //X3
-	  return TRUE;
-	}
-	return FALSE;
-#elif _WIN32_WCE >= 300
-	return FALSE;
-#else
+#ifndef _WIN32_WCE
   BOOL needTotalAndFree = TRUE;
 
   static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
@@ -772,6 +757,24 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
     clusterSize = bytesPerSector*sectorsPerCluster;
 
   return TRUE;
+#elif _WIN32_WCE < 300
+	USES_CONVERSION;
+    ULARGE_INTEGER freeBytesAvailableToCaller;
+    ULARGE_INTEGER totalNumberOfBytes; 
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+    if (GetDiskFreeSpaceEx(A2T(root),
+                           &freeBytesAvailableToCaller,
+                           &totalNumberOfBytes,
+                           &totalNumberOfFreeBytes)) 
+	{
+      total = totalNumberOfBytes.QuadPart;
+      free = totalNumberOfFreeBytes.QuadPart;
+	  clusterSize = 512; //X3
+	  return TRUE;
+	}
+	return FALSE;
+#else
+	return FALSE;
 #endif
 }
 
