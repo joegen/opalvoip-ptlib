@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.36  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.35  1998/11/30 02:50:47  robertj
  * New directory structure
  *
@@ -240,7 +243,9 @@ PDECLARE_CONTAINER(PHTTPSpace, PContainer)
     PReadWriteMutex * mutex;
     class Node;
     PSORTED_LIST(ChildList, Node);
-    PDECLARE_CLASS(Node, PString)
+    class Node : public PString
+    {
+      PCLASSINFO(Node, PString)
       public:
         Node(const PString & name, Node * parentNode);
         ~Node();
@@ -258,7 +263,9 @@ PDECLARE_CONTAINER(PHTTPSpace, PContainer)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTP
 
-PDECLARE_CLASS(PHTTP, PInternetProtocol)
+class PHTTP : public PInternetProtocol
+{
+  PCLASSINFO(PHTTP, PInternetProtocol)
 /* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
    When acting as a client, the procedure is to make the connection to a
@@ -398,7 +405,9 @@ PDECLARE_CLASS(PHTTP, PInternetProtocol)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPClient
 
-PDECLARE_CLASS(PHTTPClient, PHTTP)
+class PHTTPClient : public PHTTP
+{
+  PCLASSINFO(PHTTPClient, PHTTP)
 /* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
    When acting as a client, the procedure is to make the connection to a
@@ -495,7 +504,9 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
 
 class PHTTPConnectionInfo;
 
-PDECLARE_CLASS(PHTTPServer, PHTTP)
+class PHTTPServer : public PHTTP
+{
+  PCLASSINFO(PHTTPServer, PHTTP)
 /* A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
     When acting as a server, a descendant class would be created to override
@@ -706,7 +717,9 @@ PDECLARE_CLASS(PHTTPServer, PHTTP)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
-PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
+class PHTTPConnectionInfo : public PObject
+{
+  PCLASSINFO(PHTTPConnectionInfo, PObject)
 /* This object describes the connectiono associated with a HyperText Transport
    Protocol request. This information is required by handler functions on
    <A>PHTTPResource</A> descendant classes to manage the connection correctly.
@@ -753,7 +766,9 @@ PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
-PDECLARE_CLASS(PHTTPRequest, PObject)
+class PHTTPRequest : public PObject
+{
+  PCLASSINFO(PHTTPRequest, PObject)
 /* This object describes a HyperText Transport Protocol request. An individual
    request is passed to handler functions on <A>PHTTPResource</A> descendant
    classes.
@@ -780,7 +795,9 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPAuthority
 
-PDECLARE_CLASS(PHTTPAuthority, PObject)
+class PHTTPAuthority : public PObject
+{
+  PCLASSINFO(PHTTPAuthority, PObject)
 /* This abstract class describes the authorisation mechanism for a Universal
    Resource Locator.
  */
@@ -831,7 +848,9 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSimpleAuth
 
-PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
+class PHTTPSimpleAuth : public PHTTPAuthority
+{
+  PCLASSINFO(PHTTPSimpleAuth, PHTTPAuthority)
 /* This class describes the simplest authorisation mechanism for a Universal
    Resource Locator, a fixed realm, username and password.
  */
@@ -914,7 +933,9 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPMultiSimpAuth
 
-PDECLARE_CLASS(PHTTPMultiSimpAuth, PHTTPAuthority)
+class PHTTPMultiSimpAuth : public PHTTPAuthority
+{
+  PCLASSINFO(PHTTPMultiSimpAuth, PHTTPAuthority)
 /* This class describes the simple authorisation mechanism for a Universal
    Resource Locator, a fixed realm, multiple usernames and passwords.
  */
@@ -994,7 +1015,9 @@ PDECLARE_CLASS(PHTTPMultiSimpAuth, PHTTPAuthority)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPResource
 
-PDECLARE_CLASS(PHTTPResource, PObject)
+class PHTTPResource : public PObject
+{
+  PCLASSINFO(PHTTPResource, PObject)
 /* This object describes a HyperText Transport Protocol resource. A tree of
    these resources are available to the <A>PHTTPSocket</A> class.
  */
@@ -1275,7 +1298,9 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPString
 
-PDECLARE_CLASS(PHTTPString, PHTTPResource)
+class PHTTPString : public PHTTPResource
+{
+  PCLASSINFO(PHTTPString, PHTTPResource)
 /* This object describes a HyperText Transport Protocol resource which is a
    string kept in memory. For instance a pre-calculated HTML string could be
    set in this type of resource.
@@ -1361,7 +1386,9 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPFile
 
-PDECLARE_CLASS(PHTTPFile, PHTTPResource)
+class PHTTPFile : public PHTTPResource
+{
+  PCLASSINFO(PHTTPFile, PHTTPResource)
 /* This object describes a HyperText Transport Protocol resource which is a
    single file. The file can be anywhere in the file system and is mapped to
    the specified URL location in the HTTP name space defined by the
@@ -1462,21 +1489,26 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 };
 
 
-PDECLARE_CLASS(PHTTPFileRequest, PHTTPRequest)
-  PHTTPFileRequest(
-    const PURL & url,             // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME,     // Extra MIME information in command.
-	PHTTPServer & server
-  );
+class PHTTPFileRequest : public PHTTPRequest
+{
+  PCLASSINFO(PHTTPFileRequest, PHTTPRequest)
+  public:
+    PHTTPFileRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME,     // Extra MIME information in command.
+	  PHTTPServer & server
+    );
 
-  PFile file;
+    PFile file;
 };
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPDirectory
 
-PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
+class PHTTPDirectory : public PHTTPFile
+{
+  PCLASSINFO(PHTTPDirectory, PHTTPFile)
 /* This object describes a HyperText Transport Protocol resource which is a
    set of files in a directory. The directory can be anywhere in the file
    system and is mapped to the specified URL location in the HTTP name space
@@ -1566,15 +1598,18 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 };
 
 
-PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
-  PHTTPDirRequest(
-    const PURL & url,             // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME,     // Extra MIME information in command.
-	PHTTPServer & server
-  );
+class PHTTPDirRequest : public PHTTPFileRequest
+{
+  PCLASSINFO(PHTTPDirRequest, PHTTPFileRequest)
+  public:
+    PHTTPDirRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME,     // Extra MIME information in command.
+      PHTTPServer & server
+    );
 
-  PString fakeIndex;
-  PFilePath realPath;
+    PString fakeIndex;
+    PFilePath realPath;
 };
 
 

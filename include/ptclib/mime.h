@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.12  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.11  1998/11/30 02:50:52  robertj
  * New directory structure
  *
@@ -223,7 +226,9 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
 };
 
 
-PDECLARE_CLASS(PBase64, PObject)
+class PBase64 : public PObject
+{
+  PCLASSINFO(PBase64, PObject)
 /* This class is used to encode/decode data using the MIME standard base64
    encoding mechanism as defined in RFC1521.
 
