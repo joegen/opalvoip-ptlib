@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.57  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.56  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -185,6 +188,8 @@
  */
 
 #define _OSUTIL_CXX
+
+//#define SIGNALS_DEBUG
 
 #pragma implementation "args.h"
 #pragma implementation "pprocess.h"
@@ -381,6 +386,10 @@ void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 
 void PXSignalHandler(int sig)
 {
+#ifdef SIGNALS_DEBUG
+  fprintf(stderr,"\nSIGNAL<%u>\n",sig);
+#endif
+
   PProcess & process = PProcess::Current();
   process.pxSignals |= 1 << sig;
   process.PXOnAsyncSignal(sig);
@@ -399,6 +408,10 @@ void PProcess::PXCheckSignals()
   if (pxSignals == 0)
     return;
 
+#ifdef SIGNALS_DEBUG
+  fprintf(stderr,"\nCHKSIG<%x>\n",pxSignals);
+#endif
+
   for (int sig = 0; sig < 32; sig++) {
     int bit = 1 << sig;
     if ((pxSignals&bit) != 0) {
@@ -408,68 +421,49 @@ void PProcess::PXCheckSignals()
   }
 }
 
-#define HANDLER(h)  (h!=NULL?h:SIG_IGN)
 
 void SetSignals(void (*handler)(int))
 {
+#ifdef SIGNALS_DEBUG
+  fprintf(stderr,"\nSETSIG<%x>\n",(INT)handler);
+#endif
+
+  if (handler == NULL)
+    handler = SIG_DFL;
+
 #ifdef SIGHUP
-  signal(SIGHUP, HANDLER(handler));
+  signal(SIGHUP, handler);
 #endif
 #ifdef SIGINT
-  signal(SIGINT, HANDLER(handler));
+  signal(SIGINT, handler);
 #endif
-
-#ifndef P_PTHREADS
 #ifdef SIGUSR1
-  signal(SIGUSR1, HANDLER(handler));
+  signal(SIGUSR1, handler);
 #endif
 #ifdef SIGUSR2
-  signal(SIGUSR2, HANDLER(handler));
+  signal(SIGUSR2, handler);
 #endif
-#endif
-
 #ifdef SIGPIPE
-  signal(SIGPIPE, HANDLER(handler));
+  signal(SIGPIPE, handler);
 #endif
 #ifdef SIGTERM
-  signal(SIGTERM, HANDLER(handler));
+  signal(SIGTERM, handler);
 #endif
 #ifdef SIGWINCH
-  signal(SIGWINCH, HANDLER(handler));
+  signal(SIGWINCH, handler);
 #endif
 #ifdef SIGPROF
-  signal(SIGPROF, HANDLER(handler));
-#endif
-#ifdef SIGCHLD		
-//  signal(SIGCHLD, HANDLER(handler));
+  signal(SIGPROF, handler);
 #endif
 }
 
-#if 0
-int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
-{
-  // save the environment
-  envp = parmEnvp;
-  argc = parmArgc;
-  argv = parmArgv;
-
-  // perform process initialisation
-  PXSetupProcess();
-
-  // perform PWLib initialisation
-  PreInitialise(argc, argv);
-
-  // call the main program
-  Main();
-
-  SetSignals(NULL);
-
-  return terminationValue;
-}
-#endif
 
 void PProcess::PXOnAsyncSignal(int sig)
 {
+#ifdef SIGNALS_DEBUG
+  fprintf(stderr,"\nASYNCSIG<%u>\n",sig);
+#endif
+
   switch (sig) {
     case SIGINT:
     case SIGTERM:
@@ -481,8 +475,11 @@ void PProcess::PXOnAsyncSignal(int sig)
   }
 }
 
-void PProcess::PXOnSignal(int /*sig*/)
+void PProcess::PXOnSignal(int sig)
 {
+#ifdef SIGNALS_DEBUG
+  fprintf(stderr,"\nSYNCSIG<%u>\n",sig);
+#endif
 }
 
 void PProcess::CommonConstruct()

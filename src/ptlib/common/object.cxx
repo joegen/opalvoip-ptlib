@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.52  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.51  2001/08/16 11:58:22  rogerh
  * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -714,21 +717,6 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (first && isDestroyed) {
       *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
 #if !defined(_WIN32)
-#if defined(P_PTHREADS)
-      sigset_t blockedSignals;
-      sigemptyset(&blockedSignals);
-      sigaddset(&blockedSignals, SIGINT);
-      sigaddset(&blockedSignals, SIGQUIT);
-      sigaddset(&blockedSignals, SIGTERM);
-#if defined(P_MACOSX)
-      sigprocmask(SIG_UNBLOCK, &blockedSignals, NULL);
-#else
-      pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL);
-#endif
-#endif
-      ::signal(SIGINT, SIG_DFL);
-      ::signal(SIGQUIT, SIG_DFL);
-      ::signal(SIGTERM, SIG_DFL);
       cin.get();
 #endif
       first = FALSE;

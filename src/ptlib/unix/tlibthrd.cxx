@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.71  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.70  2001/09/10 03:03:02  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -254,21 +257,9 @@
 #include <pthread.h>
 #include <sys/resource.h>
 
-#ifdef P_LINUX
 
-#define	SUSPEND_SIG	SIGALRM
-#define	RESUME_SIG	SIGVTALRM
+#define	SUSPEND_SIG SIGVTALRM
 
-#else
-
-#define	SUSPEND_SIG	SIGUSR1
-#define	RESUME_SIG	SIGUSR2
-
-#endif
-
-#ifdef  P_PTHREADS
-#define P_IO_BREAK_SIGNAL SIGPROF
-#endif
 
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
@@ -292,22 +283,18 @@ void PHouseKeepingThread::Main()
   PProcess & process = PProcess::Current();
 
   while (!closing) {
-    PTimeInterval waitTime = process.timers.Process();
+    PTimeInterval delay = process.timers.Process();
 
-    struct timeval * tptr = NULL;
-    struct timeval   timeout_val;
-    if (waitTime != PMaxTimeInterval) {
-      timeout_val.tv_usec = (waitTime.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = waitTime.GetSeconds();
-      tptr                = &timeout_val;
-    }
+    int fd = process.timerChangePipe[0];
 
     fd_set read_fds;
     FD_ZERO(&read_fds);
-    FD_SET(process.timerChangePipe[0], &read_fds);
-    if (::select(process.timerChangePipe[0]+1, &read_fds, NULL, NULL, tptr) == 1) {
+    FD_SET(fd, &read_fds);
+
+    struct timeval tval;
+    if (::select(fd+1, &read_fds, NULL, NULL, delay.AsTimeVal(tval)) == 1) {
       BYTE ch;
-      ::read(process.timerChangePipe[0], &ch, 1);
+      ::read(fd, &ch, 1);
     }
 
     process.PXCheckSignals();
@@ -334,16 +321,6 @@ void PProcess::SignalTimerChange()
 
 void PProcess::Construct()
 {
-  // make sure we don't get upset by resume signals
-  // This does not apply to Mac OS X which does not support the
-  // required signal operations for Suspend()
-#ifndef P_MACOSX
-  sigset_t blockedSignals;
-  sigemptyset(&blockedSignals);
-  sigaddset(&blockedSignals, RESUME_SIG);
-  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
-#endif // P_MACOSX
-
   // set the file descriptor limit to something sensible
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
@@ -443,7 +420,6 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_WaitSemMutex);
 #endif
 
-  //PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
   pthread_mutex_destroy(&PX_suspendMutex);
 }
 
@@ -482,40 +458,15 @@ void PThread::Restart()
 }
 
 
-
-// Mac OS X and Darwin 1.2 does not support pthread_kill() or sigwait()
-// so we cannot implement suspend and resume using signals. Instead we have a
-// partial implementation using a Semaphore.
-// As a result, we can create a thread in a suspended state and then 'resume'
-// it, but once it is going, we can no longer suspend it.
-// So, for Mac OS X, we will accept Resume() calls (or Suspend(FALSE))
-// but reject Suspend(TRUE) calls with an Assertion. This will indicate
-// to a user that we cannot Suspend threads on Mac OS X
-
-#ifndef P_MACOSX
-static void sigSuspendHandler(int)
+void PX_SuspendSignalHandler(int)
 {
-  // wait for a resume signal
-
-  sigset_t waitSignals;
-  sigemptyset(&waitSignals);
-  sigaddset(&waitSignals, RESUME_SIG);
-  sigaddset(&waitSignals, SIGINT);
-  sigaddset(&waitSignals, SIGQUIT);
-  sigaddset(&waitSignals, SIGTERM);
-
-  for (;;) {
-    int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-    sigwait(&waitSignals, &sig);
-#else
-    sig = sigwait(&waitSignals);
-#endif
-    if (sig == RESUME_SIG)
-      return;
+  PThread * thread = PThread::Current();
+  if (thread != NULL) {
+    BYTE ch;
+    ::read(thread->unblockPipe[0], &ch, 1);
+    pthread_testcancel();
   }
 }
-#endif // P_MACOSX
 
 
 void PThread::Suspend(BOOL susp)
@@ -524,18 +475,18 @@ void PThread::Suspend(BOOL susp)
 
   // Check for start up condition, first time Resume() is called
   if (PX_firstTimeStart) {
-    if (susp) {
+    if (susp)
       PX_suspendCount++;
-      return;
-    }
-    else if (PX_suspendCount > 0) {
-      PX_suspendCount--;
+    else {
       if (PX_suspendCount > 0)
-        return;
+        PX_suspendCount--;
+      if (PX_suspendCount == 0) {
+        PX_firstTimeStart = FALSE;
+        Restart();
+      }
     }
 
-    PX_firstTimeStart = FALSE;
-    Restart();
+    PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
     return;
   }
 
@@ -549,11 +500,13 @@ void PThread::Suspend(BOOL susp)
     if (susp) {
       PX_suspendCount++;
       if (PX_suspendCount == 1) {
-        if (PX_threadId != pthread_self()) 
+        if (PX_threadId != pthread_self()) {
+          signal(SUSPEND_SIG, PX_SuspendSignalHandler);
           pthread_kill(PX_threadId, SUSPEND_SIG);
+        }
         else {
           PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
-          sigSuspendHandler(SUSPEND_SIG);
+          PX_SuspendSignalHandler(SUSPEND_SIG);
           return;  // Mutex already unlocked
         }
       }
@@ -563,7 +516,7 @@ void PThread::Suspend(BOOL susp)
     else if (PX_suspendCount > 0) {
       PX_suspendCount--;
       if (PX_suspendCount == 0) 
-        pthread_kill(PX_threadId, RESUME_SIG);
+        PXAbortBlock();
     }
   }
 
@@ -663,13 +616,24 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 void PThread::Sleep(const PTimeInterval & timeout)
 {
-  usleep((unsigned)timeout.GetMilliSeconds()*1000);
+  PTime lastTime;
+  PTime targetTime = lastTime + timeout;
+  do {
+    PTimeInterval delay = targetTime - lastTime;
+    struct timeval tval;
+    if (select(0, NULL, NULL, NULL, delay.AsTimeVal(tval)) < 0 && errno != EINTR)
+      break;
+
+    pthread_testcancel();
+
+    lastTime = PTime();
+  } while (lastTime < targetTime);
 }
 
 
 void PThread::Yield()
 {
-  usleep(1000); // Approx one timeslice
+  sched_yield();
 }
 
 
@@ -696,6 +660,7 @@ void PThread::Terminate()
   if (Current() == this)
     pthread_exit(NULL);
   else {
+    PXAbortBlock();
     WaitForTermination(20);
 
 #ifndef P_HAS_SEMAPHORES
@@ -743,8 +708,6 @@ void PThread::WaitForTermination() const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
-  PXAbortIO();
-
   while (!IsTerminated())
     Yield(); // One time slice
 }
@@ -755,7 +718,6 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   PAssert(Current() != this, "Waiting for self termination!");
   
   //PTRACE(1, "PWLib\tWaitForTermination(" << maxWait << ')');
-  PXAbortIO();
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
@@ -778,21 +740,6 @@ void * PThread::PX_ThreadStart(void * arg)
   thread->SetThreadName(thread->GetThreadName());
 
   PProcess & process = PProcess::Current();
-
-#ifndef P_MACOSX
-  // This does not apply to Mac OS X which does not use signals to Resume a
-  // thread.
-  // block RESUME_SIG
-  sigset_t blockedSignals;
-  sigemptyset(&blockedSignals);
-  sigaddset(&blockedSignals, RESUME_SIG);
-  PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
-
-  struct sigaction suspend_action;
-  memset(&suspend_action, 0, sizeof(suspend_action));
-  suspend_action.sa_handler = sigSuspendHandler;
-  sigaction(SUSPEND_SIG, &suspend_action, 0);
-#endif // P_MACOSX
 
   // add thread to thread list
   process.threadMutex.Wait();
@@ -853,19 +800,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   fd_set * write_fds     = &tmp_wfd;
   fd_set * exception_fds = &tmp_efd;
 
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) {
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-    if (timeout < oneDay) {
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-
   int retval;
-
   do {
 
     FD_ZERO(read_fds);
@@ -891,7 +826,11 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 
     // include the termination pipe into all blocking I/O functions
     FD_SET(unblockPipe[0], read_fds);
-    retval = ::select(PMAX(handle, unblockPipe[0])+1, read_fds, write_fds, exception_fds, tptr);
+
+    struct timeval tval;
+    retval = ::select(PMAX(handle, unblockPipe[0])+1,
+                      read_fds, write_fds, exception_fds,
+                      timeout.AsTimeVal(tval));
   } while (retval < 0 && errno == EINTR);
 
   if ((retval == 1) && FD_ISSET(unblockPipe[0], read_fds)) {
@@ -905,7 +844,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   return retval;
 }
 
-void PThread::PXAbortIO() const
+void PThread::PXAbortBlock() const
 {
   BYTE ch;
   ::write(unblockPipe[1], &ch, 1);
@@ -946,13 +885,8 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX) || defined (P_MACOSX)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
-#else
-  PAssertOS(pthread_cond_destroy(&condVar) == 0);
-  PAssertOS(pthread_mutex_destroy(&mutex) == 0);
-#endif
 #endif
 }
 
