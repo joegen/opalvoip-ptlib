@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.18 1995/02/22 10:50:33 robertj Exp $
+ * $Id: pdirect.h,v 1.19 1995/03/12 04:42:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.18  1995/02/22 10:50:33  robertj
+ * Revision 1.19  1995/03/12 04:42:48  robertj
+ * Updated documentation.
+ * Changed return type of functions to the correct case string.
+ *
+ * Revision 1.18  1995/02/22  10:50:33  robertj
  * Changes required for compiling release (optimised) version.
  *
  * Revision 1.17  1995/01/06  10:42:25  robertj
@@ -187,12 +191,13 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
 
 
   // New member functions
-    PString GetVolume() const;
+    PFILE_PATH_STRING GetVolume() const;
     /* Get the volume name that the directory is in.
     
-       This is platform dependent, for example for MS-DOS it is the disk drive
-       name, eg "C:", and for Macintosh it is the volume name eg "Untitled".
-       For a unix platform it is the empty string.
+       This is platform dependent, for example for MS-DOS it is the 11
+       character volume name for the drive, eg "DOS_DISK", and for Macintosh it
+       is the disks volume name eg "Untitled". For a unix platform it is the
+       device name for the file system eg "/dev/sda1".
 
        Returns: string for the directory volume.
      */
@@ -310,7 +315,7 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
     void Close();
     // Close the directory during or after a file list scan.
 
-    PString GetEntryName() const;
+    PFILE_PATH_STRING GetEntryName() const;
     /* Get the name (without the volume or directory path) of the current
        entry in the directory scan. This may be the name of a file or a
        subdirectory or even a link or device for operating systems that support
