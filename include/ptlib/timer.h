@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.22  2002/04/09 00:09:10  robertj
+ * Improved documentation on PTimer usage.
+ *
  * Revision 1.21  2001/11/14 06:06:26  robertj
  * Added functions on PTimer to get reset value and restart timer to it.
  *
@@ -112,14 +115,25 @@ class PThread;
    will in turn call the callback function provided by the instance. The user
    may either override the virtual function or set a callback as desired.
    
-   Note that only one timeout function can be executed at a time. The timeout
-   function is also executed in the context of the #PProcess# instances
-   thread of execution.
-   
    A list of active timers is maintained by the applications #PProcess# 
-   instance. This is used for sstealing the processor time to decrement the
-   timers and call the timeout functions. A consequence of this is that no
-   static timer instances can be running when the program terminates.
+   instance and the timeout functions are executed in the context of a single
+   thread of execution. There are many consequences of this: only one timeout
+   function can be executed at a time and thus a user should not execute a
+   lot of code in the timeout call-back functions or it will dealy the timely
+   execution of other timers call-back functions.
+
+   Also timers are not very accurate in sub-second delays, even though you can
+   set the timer in milliseconds, its accuracy is only to -0/+250 ms. Even
+   more (potentially MUCH more) if there are delays in the user call-back
+   functions.
+
+   Another trap is you cannot destroy a timer in its own call-back. There is
+   code to cause an assert if you try but it is very easy to accidentally do
+   this when you delete an object that contains an onject that contains the
+   timer!
+
+   Finally static timers cause race conditions on start up and termination and
+   should be avoided.
  */
 class PTimer : public PTimeInterval
 {
@@ -221,7 +235,11 @@ class PTimer : public PTimeInterval
        processing decrements the timer from a positive value to less than or
        equal to zero. The interval is then reset to zero and the function
        called.
-       
+
+       Please note that the application should not execute large amounts of
+       code in this call back or the accuracy of ALL timers can be severely
+       impacted.
+
        The default behaviour of this function is to call the #PNotifier# 
        callback function.
      */
