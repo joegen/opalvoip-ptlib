@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.25 1996/09/16 12:57:07 robertj Exp $
+ * $Id: inetprot.cxx,v 1.26 1996/10/08 13:07:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.26  1996/10/08 13:07:39  robertj
+ * Changed default for assert to be ignore, not abort.
+ *
  * Revision 1.25  1996/09/16 12:57:07  robertj
  * Fixed missing propagationof errors on open of subchannel.
  *
@@ -221,7 +224,7 @@ BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
       return TRUE;
     Close();
     lastError = Miscellaneous;
-    osError = -1;
+    osError = 0x41000000;
   }
   else {
     lastError = socket->GetErrorCode();
