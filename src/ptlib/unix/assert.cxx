@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.12  2001/07/03 04:41:25  yurik
+ * Corrections to Jac's submission from 6/28
+ *
  * Revision 1.11  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -73,7 +76,7 @@ void PAssertFunc (const char * file, int line, const char * msg)
 {
 #ifdef __BEOS__
 	// Print location in Eddie-compatible format
-    PError << "Assertion fail: File " << file << ", Line " << line << endl;
+    PError << "Assertion fail: " << file << ":" << line << endl;
 	if ( msg != NULL )
 	{
 		PError << msg << endl;
