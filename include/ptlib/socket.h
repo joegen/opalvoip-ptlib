@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.18 1996/03/02 03:10:18 robertj Exp $
+ * $Id: socket.h,v 1.19 1996/03/03 07:37:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.19  1996/03/03 07:37:58  robertj
+ * Added Reusability clause to the Listen() function on sockets.
+ *
  * Revision 1.18  1996/03/02 03:10:18  robertj
  * Added Apability to get and set Berkeley socket options.
  *
@@ -101,9 +104,15 @@ PDECLARE_CLASS(PSocket, PChannel)
      */
 
 
+    enum Reusability {
+      CanReuseAddress,
+      AddressIsExclusive
+    };
+
     virtual BOOL Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0            // Port number to use for the connection.
+      WORD port = 0,           // Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
     ) = 0;
     /* Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
@@ -113,7 +122,7 @@ PDECLARE_CLASS(PSocket, PChannel)
 
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the descendent classes
-       SetPort() function.
+       SetPort() or SetService() function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
@@ -260,10 +269,7 @@ PDECLARE_CLASS(PSocket, PChannel)
 
 
   protected:
-    int _Close();
-    // Close the socket without setting errors.
-
-
+    int os_close();
     int os_socket(
       int af,
       int type,
