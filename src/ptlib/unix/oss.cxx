@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.29  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.28  2001/09/03 09:15:40  robertj
  * Changed GetDeviceNames to try and find actual devices and real devices.
  *
@@ -698,10 +702,8 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   // check parameters
   PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
@@ -760,10 +762,8 @@ unsigned PSoundChannel::GetSampleSize() const
 
 BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   //PINDEX totalSize = size * count;
 
@@ -809,10 +809,8 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
 BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   // lock the dictionary
   PWaitAndSignal mutex(dictMutex);
@@ -832,10 +830,8 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 
 BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   Abort();
 
@@ -851,10 +847,8 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 
 BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   PFile file(filename, PFile::ReadOnly);
   if (!file.IsOpen())
@@ -882,10 +876,8 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   if (os_handle == 0)
     return BYTESINBUF <= 0;
@@ -900,10 +892,8 @@ BOOL PSoundChannel::HasPlayCompleted()
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   if (os_handle == 0) {
     while (BYTESINBUF > 0) {
@@ -921,10 +911,8 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 
 BOOL PSoundChannel::RecordSound(PSound & sound)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   return FALSE;
 }
@@ -932,10 +920,8 @@ BOOL PSoundChannel::RecordSound(PSound & sound)
 
 BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   return FALSE;
 }
@@ -943,10 +929,8 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 
 BOOL PSoundChannel::StartRecording()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   if (os_handle == 0)
     return TRUE;
@@ -964,10 +948,8 @@ BOOL PSoundChannel::StartRecording()
 
 BOOL PSoundChannel::IsRecordBufferFull()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   if (os_handle == 0)
     return (BYTESINBUF > 0);
@@ -982,10 +964,8 @@ BOOL PSoundChannel::IsRecordBufferFull()
 
 BOOL PSoundChannel::AreAllRecordBuffersFull()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   if (os_handle == 0)
     return (BYTESINBUF == LOOPBACK_BUFFER_SIZE);
@@ -1000,10 +980,8 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 
 BOOL PSoundChannel::WaitForRecordBufferFull()
 {
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF);
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
 }

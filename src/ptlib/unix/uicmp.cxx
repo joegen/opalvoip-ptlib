@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.14  2001/09/10 03:03:36  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.13  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -172,10 +176,8 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
 {
   // find address of the host
   PIPSocket::Address addr;
-  if (!GetHostAddress(host, addr)) {
-    lastError = BadParameter;
-    return FALSE;
-  }
+  if (!GetHostAddress(host, addr))
+    return SetErrorValues(BadParameter, EINVAL);
 
   // create the ICMP packet
   ICMPPacket packet;
