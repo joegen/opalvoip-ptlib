@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.4 1997/07/08 13:16:12 robertj Exp $
+ * $Id: httpform.h,v 1.5 1997/07/26 11:38:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.5  1997/07/26 11:38:17  robertj
+ * Support for overridable pages in HTTP service applications.
+ *
  * Revision 1.4  1997/07/08 13:16:12  robertj
  * Major HTTP form enhancements for lists and arrays of fields.
  *
@@ -123,10 +126,20 @@ PDECLARE_CLASS(PHTTPField, PObject)
        New field object instance.
      */
 
-    virtual void GetHTML(
-      PHTML & html    // HTML to receive the field info.
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the fields HTML tag.
     ) = 0;
-    /* Convert the field to HTML for inclusion into the HTTP page.
+    /* Convert the field to HTML form tag for inclusion into the HTTP page.
+     */
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
+    ) = 0;
+    /* Convert the field value to HTML for inclusion into the HTTP page.
+     */
+
+    virtual PString GetHTMLKeyword() const;
+    /* Get the substitution keyword for this field type.
      */
 
     virtual void GetHTMLHeading(
@@ -227,9 +240,15 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
+    virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
     );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
+    );
+
+    virtual PString GetHTMLKeyword() const;
 
     virtual void GetHTMLHeading(
       PHTML & html    // HTML to receive the field info.
@@ -279,9 +298,15 @@ PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
+    virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
     );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
+    );
+
+    virtual PString GetHTMLKeyword() const;
 
     virtual PString GetValueAt(PINDEX idx) const;
 
@@ -319,8 +344,12 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
     );
 
     virtual PString GetValue() const;
@@ -354,9 +383,17 @@ PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
     );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & newVal
+    );
+
+    static PString Decrypt(const PString & pword);
 };
 
 
@@ -380,8 +417,12 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
     );
 
     virtual PString GetValue() const;
@@ -418,8 +459,12 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
     );
 
     virtual PString GetValue() const;
@@ -499,8 +544,12 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
     );
 
     virtual PString GetValue() const;
@@ -550,8 +599,12 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void GetHTML(
-      PHTML & html
+    virtual void GetHTMLTag(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetHTMLValue(
+      const PString & text // Source HTML text for array repeat.
     );
 
     virtual PString GetValue() const;
@@ -626,8 +679,7 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
 
 
   protected:
-    PLIST(FieldList, PHTTPField);
-    FieldList fields;
+    PHTTPFieldList fields;
     PStringSet fieldNames;
 };
 
