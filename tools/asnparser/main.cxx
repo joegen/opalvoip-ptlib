@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.24  1999/09/18 04:17:40  robertj
+ * Added generation of C++ inlines for some  functions.
+ * Optimised CreateObject() switch statements, collapsing common cases.
+ *
  * Revision 1.23  1999/09/18 02:42:27  craigs
  * Added optimisation to collapse switch arms in CreateObject functions
  *
@@ -250,14 +254,14 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 4)
+  : PProcess("Equivalence", "ASNParse", 1, 3, AlphaCode, 1)
 {
 }
 
 void App::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("vedcs;o:m:n");
+  args.Parse("vedics;o:m:n");
 
   unsigned numFiles = 1;
   if (args.HasOption('s')) {
@@ -269,7 +273,7 @@ void App::Main()
   }
 
   if (args.GetCount() < 1 || args.GetCount() > 1 || numFiles == 0) {
-    PError << "usage: asnparse [-v] [-e] [-d] [-c] [-s[n]] [-o file] [-m name] asnfile\n"
+    PError << "usage: asnparse [-v] [-e] [-d] [-c [-i] [-n]] [-s[n]] [-o file] [-m name] asnfile\n"
               "  -v      Verbose output (multiple times for more verbose)\n"
               "  -e      Echo input file\n"
               "  -d      Debug output (copious!)\n"
@@ -278,6 +282,7 @@ void App::Main()
               "  -o file Output filename/directory\n"
               "  -m name Module name prefix/namespace\n"
               "  -n      Use C++ namespace\n"
+              "  -i      Use C++ inlines\n"
            << endl;
     return;
   }
@@ -319,6 +324,7 @@ void App::Main()
                                 args.GetOptionString('m'),
                                 numFiles,
                                 args.HasOption('n'),
+                                args.HasOption('i'),
                                 args.HasOption('v'));
   }
 }
@@ -1409,16 +1415,21 @@ BooleanType::BooleanType()
 
 void BooleanType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(BOOL v);\n";
-  cxx << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(BOOL v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(BOOL v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(BOOL v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
 }
 
 
@@ -1446,26 +1457,37 @@ IntegerType::IntegerType(NamedNumberList * lst)
 
 void IntegerType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(int v);\n"
-         "    " << actualType.GetIdentifier() << " & operator=(unsigned v);\n";
-  cxx << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(int v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n"
-      << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(unsigned v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(int v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(int v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(unsigned v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx  << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(unsigned v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
 }
 
 
@@ -1567,16 +1589,21 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
 void EnumeratedType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(unsigned v);\n";
-  cxx << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(unsigned v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(unsigned v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(unsigned v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
 }
 
 
@@ -1643,36 +1670,53 @@ OctetStringType::OctetStringType()
 
 void OctetStringType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v);\n"
-         "    " << actualType.GetIdentifier() << " & operator=(const PString & v);\n"
-         "    " << actualType.GetIdentifier() << " & operator=(const PBYTEArray & v);\n";
-  cxx << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(const char * v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n"
-      << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n"
-      << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(const PBYTEArray & v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const char * v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PString & v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PBYTEArray & v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const PBYTEArray & v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
 }
 
 
@@ -2035,7 +2079,11 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   // Generate declarations for generated functions
   hdr << "    PASN_Object * CreateObject() const;\n"
-         "    " << baseTypeName << " & operator[](PINDEX i) const;\n";
+         "    " << baseTypeName << " & operator[](PINDEX i) const";
+  if (Module->UsingInlines())
+    hdr << " { return (" << baseTypeName << " &)array[i]; }\n";
+  else
+    hdr << ";\n";
 
   // Generate implementation for functions
   cxx << GetTemplatePrefix()
@@ -2050,13 +2098,14 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   else
     cxx << "  return new " << baseTypeName << ";\n";
 
-  cxx << "}\n"
-         "\n"
-         "\n"
-      << GetTemplatePrefix()
-      << baseTypeName << " & " << GetClassNameString() << "::operator[](PINDEX i) const\n"
-         "{\n"
-         "  return (" << baseTypeName << " &)array[i];\n";
+  if (!Module->UsingInlines())
+    cxx << "}\n"
+           "\n"
+           "\n"
+        << GetTemplatePrefix()
+        << baseTypeName << " & " << GetClassNameString() << "::operator[](PINDEX i) const\n"
+           "{\n"
+           "  return (" << baseTypeName << " &)array[i];\n";
 
   EndGenerateCplusplus(hdr, cxx);
 }
@@ -2199,37 +2248,47 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   for (i = 0; i < fields.GetSize(); i++) {
     PString type = fields[i].GetTypeName();
     if (!typesOutput.Contains(type)) {
-      hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
-             "    operator " << type << " &() const;\n"
-             "#else\n"
-             "    operator " << type << " &();\n"
-             "    operator const " << type << " &() const;\n"
-             "#endif\n";
-      cxx << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
-          << GetTemplatePrefix()
-          << GetClassNameString() << "::operator " << type << " &() const\n"
-             "#else\n"
-          << GetTemplatePrefix()
-          << GetClassNameString() << "::operator " << type << " &()\n"
-             "{\n"
-             "#ifndef PASN_LEANANDMEAN\n"
-             "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
-             "#endif\n"
-             "  return *(" << type << " *)choice;\n"
-             "}\n"
-             "\n"
-             "\n"
-          << GetTemplatePrefix()
-          << GetClassNameString() << "::operator const " << type << " &() const\n"
-             "#endif\n"
-             "{\n"
-             "#ifndef PASN_LEANANDMEAN\n"
-             "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
-             "#endif\n"
-             "  return *(" << type << " *)choice;\n"
-             "}\n"
-             "\n"
-             "\n";
+      if (Module->UsingInlines()) {
+        hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+               "    operator " << type << " &() const { return *(" << type << " *)choice; }\n"
+               "#else\n"
+               "    operator " << type << " &() { return *(" << type << " *)choice; }\n"
+               "    operator const " << type << " &() const { return *(const " << type << " *)choice; }\n"
+               "#endif\n";
+      }
+      else {
+        hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+               "    operator " << type << " &() const;\n"
+               "#else\n"
+               "    operator " << type << " &();\n"
+               "    operator const " << type << " &() const;\n"
+               "#endif\n";
+        cxx << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+            << GetTemplatePrefix()
+            << GetClassNameString() << "::operator " << type << " &() const\n"
+               "#else\n"
+            << GetTemplatePrefix()
+            << GetClassNameString() << "::operator " << type << " &()\n"
+               "{\n"
+               "#ifndef PASN_LEANANDMEAN\n"
+               "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+               "#endif\n"
+               "  return *(" << type << " *)choice;\n"
+               "}\n"
+               "\n"
+               "\n"
+            << GetTemplatePrefix()
+            << GetClassNameString() << "::operator const " << type << " &() const\n"
+               "#endif\n"
+               "{\n"
+               "#ifndef PASN_LEANANDMEAN\n"
+               "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+               "#endif\n"
+               "  return *(" << type << " *)choice;\n"
+               "}\n"
+               "\n"
+               "\n";
+      }
       typesOutput += type;
       needExtraLine = TRUE;
     }
@@ -2247,7 +2306,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
 
   // declare an array of flags indicating whether the tag has been output or not
-  PBYTEArray flags[fields.GetSize()];
+  PBYTEArray flags(fields.GetSize());
   for (i = 0; i < fields.GetSize(); i++)
     flags[i] = 0;
 
@@ -2430,26 +2489,37 @@ int StringTypeBase::GetBraceTokenContext() const
 
 void StringTypeBase::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v);\n"
-         "    " << actualType.GetIdentifier() << " & operator=(const PString & v);\n";
-  cxx << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(const char * v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n"
-      << actualType.GetTemplatePrefix()
-      << actualType.GetIdentifier() << " & "
-      << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
-         "{\n"
-         "  SetValue(v);\n"
-         "  return *this;\n"
-         "}\n"
-         "\n"
-         "\n";
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const char * v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PString & v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
 }
 
 
@@ -3301,10 +3371,12 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                                          const PString & modName,
                                          unsigned numFiles,
                                          BOOL useNamespaces,
+                                         BOOL useInlines,
                                          BOOL verbose)
 {
   PINDEX i;
 
+  usingInlines = useInlines;
 
   // Adjust the module name to what is specified to a default
   if (!modName)
