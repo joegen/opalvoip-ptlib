@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.7  2003/06/05 23:17:07  rjongbloed
+ * Added functions to get and set LDAP operation timeout.
+ *
  * Revision 1.6  2003/06/05 05:29:30  rjongbloed
  * Fixed LDAP bind authentication methods, thanks Ravelli Rossano
  *
@@ -409,6 +412,16 @@ class PLDAPSession : public PObject
     /**Get the OpenLDAP context structure.
       */
     struct ldap * GetOpenLDAP() const { return ldapContext; }
+
+    /**Get the timeout for LDAP operations.
+      */
+    const PTimeInterval & GetTimeout() const { return timeout; }
+
+    /**Set the timeout for LDAP operations.
+      */
+    void SetTimeout(
+      const PTimeInterval & t
+    ) { timeout = t; }
 
   protected:
     struct ldap * ldapContext;
