@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.18  1999/08/22 12:13:43  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.17  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -120,7 +123,7 @@ class PAbstractList : public PCollection
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
-    PAbstractList();
+    PINLINE PAbstractList();
   //@}
 
   // Overrides from class PObject
@@ -300,7 +303,7 @@ class PAbstractList : public PCollection
        @return
        reference to object at the specified index.
      */
-    PObject & GetReferenceAt(
+    PINLINE PObject & GetReferenceAt(
       PINDEX index  /// Ordinal index of the list element to set as current.
     ) const;
 
