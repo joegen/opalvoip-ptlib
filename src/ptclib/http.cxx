@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.83  2003/04/10 00:13:56  robertj
+ * Fixed correct decoding of user/password/host/port field, for non h323 schemes.
+ *
  * Revision 1.82  2003/04/08 06:28:14  craigs
  * Fixed introduced problem with HTTP server mistaking relative URLs for proxy requests
  *
@@ -662,7 +665,20 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
 
   // parse user/password/host/port
   if (!relativePath && schemeInfo.hasHostPort) {
-    pos = url.FindOneOf("/;?#");
+    PString endHostChars;
+    if (schemeInfo.hasPath)
+      endHostChars += '/';
+    if (schemeInfo.hasQuery)
+      endHostChars += '?';
+    if (schemeInfo.hasParameters)
+      endHostChars += ';';
+    if (schemeInfo.hasFragments)
+      endHostChars += '#';
+    if (endHostChars.IsEmpty())
+      pos = P_MAX_INDEX;
+    else
+      pos = url.FindOneOf(endHostChars);
+
     PString uphp = url.Left(pos);
     if (pos != P_MAX_INDEX)
       url.Delete(0, pos);
