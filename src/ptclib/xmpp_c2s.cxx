@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.5  2004/05/02 08:58:15  csoutheren
+ * Removed warnings when compling without SASL
+ *
  * Revision 1.4  2004/04/28 11:26:43  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -360,12 +363,12 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
   */
 
 //  PXMLElement * starttls = pdu.GetRootElement()->GetElement("starttls");
-  PXMLElement * mechList = pdu.GetRootElement()->GetElement("mechanisms");
   PStringSet ourMechSet;
 
   // We might have to negotiate the TLS first, but we set up the SASL phase now
 
 #if P_SASL2
+  PXMLElement * mechList = pdu.GetRootElement()->GetElement("mechanisms");
   if (!mechList || !m_SASL.Init(m_JID.GetServer(), ourMechSet))
   {
     // SASL initialisation failed, goodbye...
