@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.5  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.4  1999/02/16 08:12:22  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -51,13 +54,10 @@
 #include <ptlib/semaphor.h>
 
 
-class PMutex : public PSemaphore
-{
-  PCLASSINFO(PMutex, PSemaphore)
-/* This class defines a thread mutual exclusion object. A mutex is where a
+/**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
-      <CODE>
+\begin{verbatim}
       PMutex mutex;
 
       ...
@@ -69,16 +69,24 @@ class PMutex : public PSemaphore
       mutex.Signal();
 
       ...
-      </CODE>
-    The first thread will pass through the <A>Wait()</A> function, a second
+\end{verbatim}
+    The first thread will pass through the #Wait()# function, a second
     thread will block on that function until the first calls the
-    <A>Signal()</A> function, releasing the second thread.
+    #Signal()# function, releasing the second thread.
  */
+class PMutex : public PSemaphore
+{
+  PCLASSINFO(PMutex, PSemaphore);
 
   public:
-    PMutex();
     /* Create a new mutex.
+       Initially the mutex will not be "set", so the first call to Wait() will
+       never wait.
      */
+    PMutex();
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

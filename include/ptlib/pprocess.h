@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.42  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.41  1999/02/16 08:11:09  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -158,10 +161,10 @@
 #include <ptlib/mutex.h>
 
 
-/*$MACRO PCREATE_PROCESS(cls)
+/**Create a process.
    This macro is used to create the components necessary for a user PWLib
    process. For a PWLib program to work correctly on all platforms the
-   <CODE>main()</CODE> function must be defined in the same module as the
+   #main()# function must be defined in the same module as the
    instance of the application.
  */
 #define PCREATE_PROCESS(cls) \
@@ -174,11 +177,12 @@
 /*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
    This macro is used to declare the components necessary for a user PWLib
    process. This will declare the PProcess descendent class, eg PApplication,
-   and create an instance of the class. See the <A>PCREATE_PROCESS</A> macro
+   and create an instance of the class. See the #PCREATE_PROCESS# macro
    for more details.
  */
 #define PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build) \
-  PDECLARE_CLASS(cls, ancestor) \
+  class cls : public ancestor { \
+    PCLASSINFO(cls, ancestor); \
     public: \
       cls() : ancestor(manuf, name, major, minor, status, build) { } \
     private: \
@@ -189,14 +193,14 @@
 PLIST(PInternalTimerList, PTimer);
 
 class PTimerList : PInternalTimerList // Want this to be private
-/* This class defines a list of <A>PTimer</A> objects. It is primarily used
+/* This class defines a list of #PTimer# objects. It is primarily used
    internally by the library and the user should never create an instance of
-   it. The <A>PProcess</A> instance for the application maintains an instance
+   it. The #PProcess# instance for the application maintains an instance
    of all of the timers created so that it may decrements them at regular
    intervals.
  */
 {
-  PCLASSINFO(PTimerList, PInternalTimerList)
+  PCLASSINFO(PTimerList, PInternalTimerList);
 
   public:
     PTimerList();
@@ -204,7 +208,7 @@ class PTimerList : PInternalTimerList // Want this to be private
 
     PTimeInterval Process();
     /* Decrement all the created timers and dispatch to their callback
-       functions if they have expired. The <A>PTimer::Tick()</A> function
+       functions if they have expired. The #PTimer::Tick()# function
        value is used to determine the time elapsed since the last call to
        Process().
 
@@ -212,7 +216,7 @@ class PTimerList : PInternalTimerList // Want this to be private
        needs to be despatched. The function need not be called again for this
        amount of time, though it can (and usually is).
        
-       <H2>Returns:</H2>
+       @return
        maximum time interval before function should be called again.
      */
 
@@ -232,205 +236,222 @@ class PTimerList : PInternalTimerList // Want this to be private
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-class PProcess : public PThread
-{
-  PCLASSINFO(PProcess, PThread)
-/* This class represents an operating system process. This is a running
+/**This class represents an operating system process. This is a running
    "programme" in the  context of the operating system. Note that there can
    only be one instance of a PProcess class in a given programme.
    
-   The instance of a PProcess or its GUI descendent <A>PApplication</A> is
+   The instance of a PProcess or its GUI descendent #PApplication# is
    usually a static variable created by the application writer. This is the
    initial "anchor" point for all data structures in an application. As the
    application writer never needs to access the standard system
-   <CODE>main()</CODE> function, it is in the library, the programmes
-   execution begins with the virtual function <A>PThread::Main()</A> on a
+   #main()# function, it is in the library, the programmes
+   execution begins with the virtual function #PThread::Main()# on a
    process.
  */
+class PProcess : public PThread
+{
+  PCLASSINFO(PProcess, PThread);
 
   public:
+  /**@name Construction */
+  //@{
+    /// Release status for the program.
     enum CodeStatus {
-      AlphaCode,    // Code is still very much under construction.
-      BetaCode,     // Code is largely complete and is under test.
-      ReleaseCode,  // Code has all known bugs removed and is shipping.
+      /// Code is still very much under construction.
+      AlphaCode,    
+      /// Code is largely complete and is under test.
+      BetaCode,     
+      /// Code has all known bugs removed and is shipping.
+      ReleaseCode,  
       NumCodeStatuses
     };
+
+    /** Create a new process instance.
+     */
     PProcess(
-      const char * manuf = "",         // Name of manufacturer
-      const char * name = "",          // Name of product
-      WORD majorVersion = 1,           // Major version number of the product
-      WORD minorVersion = 0,           // Minor version number of the product
-      CodeStatus status = ReleaseCode, // Development status of the product
-      WORD buildNumber = 1             // Build number of the product
+      const char * manuf = "",         /// Name of manufacturer
+      const char * name = "",          /// Name of product
+      WORD majorVersion = 1,           /// Major version number of the product
+      WORD minorVersion = 0,           /// Minor version number of the product
+      CodeStatus status = ReleaseCode, /// Development status of the product
+      WORD buildNumber = 1             /// Build number of the product
     );
-    // Create a new process instance.
+  //@}
 
-
-  // Overrides from class PObject
-    Comparison Compare(
-      const PObject & obj   // Other process to compare against.
-    ) const;
-    /* Compare two process instances. This should almost never be called as
+  /**@name Overrides from class PObject */
+  //@{
+    /**Compare two process instances. This should almost never be called as
        a programme only has access to a single process, its own.
 
-       <H2>Returns:</H2>
-       <CODE>EqualTo</CODE> if the two process object have the same name.
+       @return
+       #EqualTo# if the two process object have the same name.
      */
+    Comparison Compare(
+      const PObject & obj   /// Other process to compare against.
+    ) const;
+  //@}
 
+  /**@name Overrides from class PThread */
+  //@{
+    /**Terminate the process. Usually only used in abnormal abort situation.
+     */
+    virtual void Terminate();
+  //@}
 
-  // New functions for class
-    static PProcess & Current();
-    /* Get the current processes object instance. The <I>current process</I>
+  /**@name Process information functions */
+  //@{
+    /**Get the current processes object instance. The {\it current process}
        is the one the application is running in.
        
-       <H2>Returns:</H2>
+       @return
        pointer to current process instance.
      */
+    static PProcess & Current();
 
-    static PString GetOSClass();
-    /* Get the class of the operating system the process is running on, eg
-       "unix".
-       
-       <H2>Returns:</H2>
-       String for OS class.
+    /**Set the termination value for the process.
+    
+       The termination value is an operating system dependent integer which
+       indicates the processes termiantion value. It can be considered a
+       "return value" for an entire programme.
      */
-
-    static PString GetOSName();
-    /* Get the name of the operating system the process is running on, eg
-       "Linux".
-       
-       <H2>Returns:</H2>
-       String for OS name.
-     */
-
-    static PString GetOSHardware();
-    /* Get the hardware the process is running on, eg "sparc".
-       
-       <H2>Returns:</H2>
-       String for OS name.
-     */
-
-    static PString GetOSVersion();
-    /* Get the version of the operating system the process is running on, eg
-       "2.0.33".
-       
-       <H2>Returns:</H2>
-       String for OS version.
-     */
-
-    static PDirectory GetOSConfigDir();
-    /* Get the configuration directory of the operating system the process is
-       running on, eg "/etc" for Unix, "c:\windows" for Win95 or
-       "c:\winnt\system32\drivers\etc" for NT.
-
-       <H2>Returns:</H2>
-       Directory for OS configuration files.
-     */
-
-
-    virtual void Terminate();
-    /* Terminate the process. Usually only used in abnormal abort situation.
-     */
-
     void SetTerminationValue(
-      int value  // Value to return a process termination status.
+      int value  /// Value to return a process termination status.
     );
-    /* Set the termination value for the process.
-    
-       The termination value is an operating system dependent integer which
-       indicates the processes termiantion value. It can be considered a
-       "return value" for an entire programme.
-     */
 
-    int GetTerminationValue() const;
-    /* Get the termination value for the process.
+    /**Get the termination value for the process.
     
        The termination value is an operating system dependent integer which
        indicates the processes termiantion value. It can be considered a
        "return value" for an entire programme.
        
-       <H2>Returns:</H2>
+       @return
        integer termination value.
      */
+    int GetTerminationValue() const;
 
-    PArgList & GetArguments();
-    /* Get the programme arguments. Programme arguments are a set of strings
+    /**Get the programme arguments. Programme arguments are a set of strings
        provided to the programme in a platform dependent manner.
     
-       <H2>Returns:</H2>
+       @return
        argument handling class instance.
      */
+    PArgList & GetArguments();
 
-    const PString & GetManufacturer() const;
-    /* Get the name of the manufacturer of the software. This is used in the
+    /**Get the name of the manufacturer of the software. This is used in the
        default "About" dialog box and for determining the location of the
-       configuration information as used by the <A>PConfig<A/> class.
+       configuration information as used by the #PConfig# class.
 
        The default for this information is the empty string.
     
-       <H2>Returns:</H2>
+       @return
        string for the manufacturer name eg "Equivalence".
      */
+    const PString & GetManufacturer() const;
 
-    const PString & GetName() const;
-    /* Get the name of the process. This is used in the
+    /**Get the name of the process. This is used in the
        default "About" dialog box and for determining the location of the
-       configuration information as used by the <A>PConfig<A/> class.
+       configuration information as used by the #PConfig# class.
 
        The default is the title part of the executable image file.
-    
-       <H2>Returns:</H2>
-       string for the process name eg ".
+
+       @return
+       string for the process name eg "MyApp".
      */
+    const PString & GetName() const;
 
-    PString GetVersion(BOOL full) const;
-    /* Get the version of the software. This is used in the default "About"
+    /**Get the version of the software. This is used in the default "About"
        dialog box and for determining the location of the configuration
-       information as used by the <A>PConfig<A/> class.
+       information as used by the #PConfig# class.
 
-       If the <CODE>full</CODE> parameter is TRUE then a version string
+       If the #full# parameter is TRUE then a version string
        built from the major, minor, status and build veriosn codes is
        returned. If FALSE then only the major and minor versions are
        returned.
 
        The default for this information is "1.0".
     
-       <H2>Returns:</H2>
+       @return
        string for the version eg "1.0b3".
      */
+    PString GetVersion(
+      BOOL full = TRUE /// TRUE for full version, FALSE for short version.
+    ) const;
 
-    const PFilePath & GetFile() const;
-    /* Get the processes executable image file path.
+    /**Get the processes executable image file path.
 
-       <H2>Returns:</H2>
+       @return
        file path for program.
      */
+    const PFilePath & GetFile() const;
 
-    PString GetUserName() const;
-    /* Get the effective user name of the owner of the process, eg "root" etc.
+    /**Get the platform dependent process identifier for the process. This is
+       an arbitrary (and unique) integer attached to a process by the operating
+       system.
+
+       @return
+       Process ID for process.
+     */
+    DWORD GetProcessID() const;
+
+    /**Get the effective user name of the owner of the process, eg "root" etc.
        This is a platform dependent string only provided by platforms that are
        multi-user. Note that some value may be returned as a "simulated" user.
        For example, in MS-DOS an environment variable
 
-       <H2>Returns:</H2>
+       @return
        user name of processes owner.
      */
+    PString GetUserName() const;
+  //@}
 
-    DWORD GetProcessID() const;
-    /* Get the platform dependent process identifier for the process. This is
-       an arbitrary (and unique) integer attached to a process by the operating
-       system.
-
-       <H2>Returns:</H2>
-       Process ID for process.
+  /**@name Operating System information functions */
+  //@{
+    /**Get the class of the operating system the process is running on, eg
+       "unix".
+       
+       @return
+       String for OS class.
      */
+    static PString GetOSClass();
 
+    /**Get the name of the operating system the process is running on, eg
+       "Linux".
+       
+       @return
+       String for OS name.
+     */
+    static PString GetOSName();
+
+    /**Get the hardware the process is running on, eg "sparc".
+       
+       @return
+       String for OS name.
+     */
+    static PString GetOSHardware();
+
+    /**Get the version of the operating system the process is running on, eg
+       "2.0.33".
+       
+       @return
+       String for OS version.
+     */
+    static PString GetOSVersion();
+
+    /**Get the configuration directory of the operating system the process is
+       running on, eg "/etc" for Unix, "c:\windows" for Win95 or
+       "c:\winnt\system32\drivers\etc" for NT.
+
+       @return
+       Directory for OS configuration files.
+     */
+    static PDirectory GetOSConfigDir();
+  //@}
 
     PTimerList * GetTimerList();
     /* Get the list of timers handled by the application. This is an internal
        function and should not need to be called by the user.
        
-       <H2>Returns:</H2>
+       @return
        list of timers.
      */
 
@@ -440,7 +461,7 @@ class PProcess : public PThread
       char ** envp  // Array of string for the system environment
     );
     /* Internal initialisation function called directly from
-       <CODE>_main()</CODE>. The user should never call this function.
+       #_main()#. The user should never call this function.
      */
 
     virtual int _main(void * arg = NULL);
@@ -506,5 +527,8 @@ class PProcess : public PThread
 
   friend class PThread;
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.13  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.12  1999/02/16 08:11:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -73,143 +76,232 @@
 #endif
 
 
+/** Remote Access Connection class.
+*/
 class PRemoteConnection : public PObject
 {
-  PCLASSINFO(PRemoteConnection, PObject)
+  PCLASSINFO(PRemoteConnection, PObject);
+
   public:
+  /**@name Construction */
+  //@{
+    /// Create a new remote connection.
     PRemoteConnection();
-    PRemoteConnection(
-      const PString & name
-    );
-    // Create a new remote connection.
 
-    ~PRemoteConnection();
-
-    virtual Comparison Compare(const PObject & obj) const;
-    virtual PINDEX HashFunction() const;
-
-    BOOL Open(BOOL existing = FALSE);
-    BOOL Open(
-      const PString & name,
-      BOOL existing = FALSE
-    );
-    BOOL Open(
-      const PString & name,
-      const PString & username,
-      const PString & password,
-      BOOL existing = FALSE
-    );
-    void Close();
-
-    const PString & GetName() const { return remoteName; }
-    /* Get the name of the RAS connection.
-
-       <H2>Returns:</H2>
-       String for IP address, or empty string if none.
+    /**Create a new remote connection.
+       This will initiate the connection using the specified settings.
      */
+    PRemoteConnection(
+      const PString & name  /// Name of RAS configuration.
+    );
 
+    /// Disconnect remote connection.
+    ~PRemoteConnection();
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Compare two connections.
+      @return EqualTo of same RAS connectionconfiguration.
+     */
+    virtual Comparison Compare(
+      const PObject & obj     /// Another connection instance.
+    ) const;
+
+    /** Get has value for the connection
+        @return Hash value of the connection name string.
+      */
+    virtual PINDEX HashFunction() const;
+  //@}
+
+  /**@name Dial/Hangup functions */
+  //@{
+    /** Open the remote connection.
+     */
+    BOOL Open(
+      BOOL existing = FALSE  /// Flag for open only if already connected.
+    );
+
+    /** Open the remote connection.
+     */
+    BOOL Open(
+      const PString & name,   /// RAS name of of connection to open.
+      BOOL existing = FALSE   /// Flag for open only if already connected.
+    );
+
+    /** Open the remote connection.
+     */
+    BOOL Open(
+      const PString & name,     /// RAS name of of connection to open.
+      const PString & username, /// Username for remote log in.
+      const PString & password, /// password for remote log in.
+      BOOL existing = FALSE     /// Flag for open only if already connected.
+    );
+
+    /** Close the remote connection.
+        This will hang up/dosconnect the connection, net access will no longer
+        be available to this site.
+      */
+    void Close();
+  //@}
+
+  /**@name Error/Status functions */
+  //@{
+    /// Status codes for remote connection.
     enum Status {
+      /// Connection has not been made and no attempt is being made.
       Idle,
+      /// Connection is completed and active.
       Connected,
+      /// Connection is in progress.
       InProgress,
+      /// Connection failed due to the line being busy.
       LineBusy,
+      /// Connection failed due to the line havin no dial tone.
       NoDialTone,
+      /// Connection failed due to the remote not answering.
       NoAnswer,
+      /// Connection failed due to the port being in use.
       PortInUse,
+      /// Connection failed due to the RAS setting name/number being incorrect.
       NoNameOrNumber,
+      /// Connection failed due to insufficient privilege.
       AccessDenied,
+      /// Connection failed due to a hardware failure.
       HardwareFailure,
+      /// Connection failed due to a general failure.
       GeneralFailure,
+      /// Connection was lost after successful establishment.
       ConnectionLost,
+      /// The Remote Access Operating System support is not installed.
       NotInstalled,
       NumStatuses
     };
-    Status GetStatus() const;
-    /* Get the current status of the RAS connection.
 
-       <H2>Returns:</H2>
+    /**Get the current status of the RAS connection.
+
+       @return
        Status code.
      */
+    Status GetStatus() const;
 
-    PString GetAddress();
-    /* Get the IP address in dotted decimal form for the RAS connection.
+    /**Get the error code for the last operation.
 
-       <H2>Returns:</H2>
-       String for IP address, or empty string if none.
-     */
-
-    DWORD GetErrorCode() const { return osError; }
-    /* Get the error code for the last operation.
-
-       <H2>Returns:</H2>
+       @return
        Operating system error code.
      */
+    DWORD GetErrorCode() const { return osError; }
+  //@}
 
+  /**@name Information functions */
+  //@{
+    /**Get the name of the RAS connection.
 
-    static PStringArray GetAvailableNames();
-    /* Get an array of names for all of the available remote connections on
+       @return
+       String for IP address, or empty string if none.
+     */
+    const PString & GetName() const { return remoteName; }
+
+    /**Get the IP address in dotted decimal form for the RAS connection.
+
+       @return
+       String for IP address, or empty string if none.
+     */
+    PString GetAddress();
+
+    /**Get an array of names for all of the available remote connections on
        this system.
 
-       <H2>Returns:</H2>
+       @return
        Array of strings for remote connection names.
      */
+    static PStringArray GetAvailableNames();
+  //@}
 
+  /**@name Configuration functions */
+  //@{
+    /// Structure for a RAS configuration.
     struct Configuration {
+      /// Device name for connection eg /dev/modem
       PString device;
+      /// Telephone number to call to make the connection.
       PString phoneNumber;
+      /// IP address of local machine after connection is made.
       PString ipAddress;
+      /// DNS host on remote site.
       PString dnsAddress;
+      /// Script name for doing remote log in.
       PString script;
+      /// Sub-entry number when Multi-link PPP is used.
       PINDEX  subEntries;
+      /// Always establish maximum bandwidth when Multi-link PPP is used.
       BOOL    dialAllSubEntries;
     };
 
+    /**Get the configuration of the specified remote access connection.
+
+       @return
+       #Connected# if the configuration information was obtained,
+       #NoNameOrNumber# if the particular RAS name does not exist,
+       #NotInstalled# if there is no RAS support in the operating system,
+       #GeneralFailure# on any other error.
+     */
     Status GetConfiguration(
-      Configuration & config  // Configuration of remote connection
+      Configuration & config  /// Configuration of remote connection
     );
+
+    /**Get the configuration of the specified remote access connection.
+
+       @return
+       #Connected# if the configuration information was obtained,
+       #NoNameOrNumber# if the particular RAS name does not exist,
+       #NotInstalled# if there is no RAS support in the operating system,
+       #GeneralFailure# on any other error.
+     */
     static Status GetConfiguration(
-      const PString & name,   // Remote connection name to get configuration
+      const PString & name,   /// Remote connection name to get configuration
       Configuration & config  // Configuration of remote connection
     );
-    /* Get the configuration of the specified remote access connection.
 
-       <H2>Returns:</H2>
-       <CODE>Connected</CODE> if the configuration information was obtained,
-       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
-       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
-       <CODE>GeneralFailure</CODE> on any other error.
+    /**Set the configuration of the specified remote access connection.
+
+       @return
+       #Connected# if the configuration information was set,
+       #NoNameOrNumber# if the particular RAS name does not exist,
+       #NotInstalled# if there is no RAS support in the operating system,
+       #GeneralFailure# on any other error.
      */
-
     Status SetConfiguration(
-      const Configuration & config,  // Configuration of remote connection
-      BOOL create = FALSE            // Flag to create connection if not present
+      const Configuration & config,  /// Configuration of remote connection
+      BOOL create = FALSE            /// Flag to create connection if not present
     );
+
+    /**Set the configuration of the specified remote access connection.
+
+       @return
+       #Connected# if the configuration information was set,
+       #NoNameOrNumber# if the particular RAS name does not exist,
+       #NotInstalled# if there is no RAS support in the operating system,
+       #GeneralFailure# on any other error.
+     */
     static Status SetConfiguration(
-      const PString & name,          // Remote connection name to configure
-      const Configuration & config,  // Configuration of remote connection
-      BOOL create = FALSE            // Flag to create connection if not present
+      const PString & name,          /// Remote connection name to configure
+      const Configuration & config,  /// Configuration of remote connection
+      BOOL create = FALSE            /// Flag to create connection if not present
     );
-    /* Set the configuration of the specified remote access connection.
 
-       <H2>Returns:</H2>
-       <CODE>Connected</CODE> if the configuration information was set,
-       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
-       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
-       <CODE>GeneralFailure</CODE> on any other error.
+    /**Remove the specified remote access connection.
+
+       @return
+       #Connected# if the configuration information was removed,
+       #NoNameOrNumber# if the particular RAS name does not exist,
+       #NotInstalled# if there is no RAS support in the operating system,
+       #GeneralFailure# on any other error.
      */
-
     static Status RemoveConfiguration(
-      const PString & name          // Remote connection name to configure
+      const PString & name          /// Remote connection name to configure
     );
-    /* Remove the specified remote access connection.
-
-       <H2>Returns:</H2>
-       <CODE>Connected</CODE> if the configuration information was removed,
-       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
-       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
-       <CODE>GeneralFailure</CODE> on any other error.
-     */
-
+  //@}
     
   protected:
     PString remoteName;
@@ -222,5 +314,8 @@ class PRemoteConnection : public PObject
     void operator=(const PRemoteConnection &) { }
     void Construct();
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
