@@ -43,6 +43,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timing", "samples\timing\ti
 		{85F4F26A-1A5D-4685-A48A-448102C5C5BC} = {85F4F26A-1A5D-4685-A48A-448102C5C5BC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vxmltest", "samples\vxmltest\vxmltest.vcproj", "{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -93,6 +97,12 @@ Global
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.Pseudo-Debug.Build.0 = Debug|Win32
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.Release.ActiveCfg = Release|Win32
 		{6766F4B9-E8F3-4BA9-8ECF-46361BD1CB97}.Release.Build.0 = Release|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Debug.ActiveCfg = Debug|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Debug.Build.0 = Debug|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Pseudo-Debug.ActiveCfg = Debug|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Pseudo-Debug.Build.0 = Debug|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Release.ActiveCfg = Release|Win32
+		{7E636B64-DA9D-4711-9F5D-4E1C2EFA8DB2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
