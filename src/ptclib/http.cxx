@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.4 1996/01/28 14:19:09 robertj Exp $
+ * $Id: http.cxx,v 1.5 1996/01/30 23:32:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.5  1996/01/30 23:32:40  robertj
+ * Added single .
+ *
  * Revision 1.4  1996/01/28 14:19:09  robertj
  * Split HTML into separate source file.
  * Beginning of pass through resource type.
@@ -286,7 +289,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res)
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       pos = node->children.Append(PNEW PHTTPSpace(path[i]));
-    node = &children[pos];
+    node = &node->children[pos];
     if (node->resource != NULL)
       return FALSE;   // Already a resource in tree in partial path
   }
@@ -310,7 +313,7 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       return NULL;
-    node = &children[pos];
+    node = &node->children[pos];
     if (node->resource != NULL)
       return node->resource;
   }
@@ -774,6 +777,12 @@ PHTTPSocket::StatusCode PHTTPResource::Post(const PURL &,
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPString
+
+PHTTPString::PHTTPString(const PURL & url)
+  : PHTTPResource(url, "text/html")
+{
+}
+
 
 PHTTPString::PHTTPString(const PURL & url, const PString & str)
   : PHTTPResource(url, "text/html"), string(str)
