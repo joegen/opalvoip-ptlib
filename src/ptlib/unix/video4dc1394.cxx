@@ -38,8 +38,8 @@
  * You needs the following softwares to compile the 1394 camera support
  * module in PWLib.
  * 
- * - libdc1394 later than Feb. 1, 2002
- * - Linux 2.4.17 or later, which is required by the above version of
+ * - libdc1394 0.9.0 or later.
+ * - Linux 2.4.19 or later, which is required by the above version of
  *   libdc1394
  * - libraw1394 0.9.0 or later
  * 
@@ -77,13 +77,9 @@
  * This module was tested against:
  *
  * Pentium III  
- * Linux 2.4.18
+ * Linux 2.4.19
  * libraw1394 0.9.0
- * libdc1394 CVS version (Mar. 2, 2002)
- * pwlib 1.2.12
- * openh323 1.8.0
- * ohphone 1.2.0
- * GnomeMeeting 0.12.2
+ * libdc1394 0.9.0
  *
  * Irez StealthFire Camera (http://www.irez.com)
  * OrangeMicro iBot Camera (http://www.orangemicro.com)
@@ -141,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.8  2002/08/21 00:00:31  dereks
+ * Patches from Ryutaroh, to improve firewire (linux only) support. Many thanks.
+ *
  * Revision 1.7  2002/05/30 22:49:35  dereks
  * correct implementation of GetInputDeviceNames().
  *
@@ -175,6 +174,7 @@
 #include <ptlib/videoio1394dc.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/file.h>
+#include <sys/utsname.h>
 
 #ifndef P_DC1394_DEFAULT_SPEED
 #define P_DC1394_DEFAULT_SPEED  SPEED_400
@@ -204,8 +204,43 @@ PVideoInput1394DcDevice::~PVideoInput1394DcDevice()
   Close();
 }
 
+#define OK 1
+#define NG 0
+static int kernel_version_ok(void)
+{
+  struct utsname utsbuf;
+  unsigned major_ver, minor_ver, minorminor_ver;
+
+  if (uname(&utsbuf) == -1)
+    return NG;
+
+  /* utsbuf.release looks like "2.4.19-pre8". */
+  if (sscanf(utsbuf.release, "%u.%u.%u", &major_ver, &minor_ver,
+             &minorminor_ver) < 3)
+    return NG; /* Should we return OK? */
+
+  if (major_ver >= 3)
+    return OK;
+  else if (major_ver <= 1)
+    return NG;
+
+  if (minor_ver >= 6)
+    return OK;
+  else if (minor_ver <= 3)
+    return NG;
+  else if (minor_ver == 4)
+    return minorminor_ver >= 19;
+  else /* if (minor_ver == 5) */
+    return minorminor_ver >= 9;
+}
+
 BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
 {
+  if (!kernel_version_ok()) {
+    PTRACE(0, "The Linux kernel version is too old.");
+    return FALSE;
+  }
+
   if (IsOpen()) {
     PTRACE(0, "You cannot open PVideoInput1394DcDevice twice.");
     return FALSE;
@@ -246,7 +281,7 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
   if (numCameras<1)
   {
     PTRACE(0, "no cameras found :(\n");
-    raw1394_destroy_handle(handle);
+    dc1394_destroy_handle(handle);
     handle = NULL;
     return FALSE;
   }
@@ -279,7 +314,7 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
              "for more information see the FAQ at \n"
              "http://linux1394.sourceforge.net/faq.html#DCbusmgmt\n"
              "\n");
-      raw1394_destroy_handle(handle);
+      dc1394_destroy_handle(handle);
       handle = NULL;
       return FALSE;
     }
@@ -323,7 +358,7 @@ BOOL PVideoInput1394DcDevice::Close()
   if (IsOpen()) {
     if (IsCapturing())
       Stop();
-    raw1394_destroy_handle(handle);
+    dc1394_destroy_handle(handle);
     handle = NULL;
     return TRUE;
   } else
@@ -345,9 +380,6 @@ BOOL PVideoInput1394DcDevice::Start()
     return FALSE;
   }
   PTRACE(1, deviceName << " " << channelNumber);
-
-  // In order to compile the following line, you need libdc1394 later than Feb. 1, 2002.
-  camera.dma_device_file = deviceName.GetPointer();
 
   quadlet_t supported_framerates;
   if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
@@ -377,12 +409,13 @@ BOOL PVideoInput1394DcDevice::Start()
     return FALSE;
   }  
 
+  // In order to compile the following line, you need libdc1394 0.9.0 or later.
   if ((UseDMA &&dc1394_dma_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
                            FORMAT_VGA_NONCOMPRESSED,
                            dc1394_mode,
                            P_DC1394_DEFAULT_SPEED,
-                           framerate, 4,
+                           framerate, 4, 1, deviceName,
 			 &camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
@@ -596,6 +629,7 @@ BOOL PVideoInput1394DcDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesR
 {
   if (!IsCapturing()) return FALSE;
 
+  PTRACE(3, "We are going to single capture.\n");
   if ((UseDMA && dc1394_dma_single_capture(&camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_single_capture(handle,&camera)!=DC1394_SUCCESS)){
     PTRACE(1, "dc1394_single_capture() failed.");
