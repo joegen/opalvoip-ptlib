@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.53  2000/02/17 12:09:19  robertj
+# Added better random number generator after finding major flaws in MSVCRT version.
+#
 # Revision 1.52  2000/02/15 23:11:34  robertj
 # Audio support for FreeBSD, thanks Roger Hardiman.
 #
@@ -257,6 +260,7 @@ SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/ipacl.cxx \
 	  $(COMPONENT_SRC_DIR)/modem.cxx \
 	  $(COMPONENT_SRC_DIR)/cypher.cxx \
+	  $(COMPONENT_SRC_DIR)/random.cxx \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
 	  $(COMPONENT_SRC_DIR)/asner.cxx \
 	  $(SOUND_SOURCE) \
