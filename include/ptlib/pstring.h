@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.59  2003/12/07 05:50:49  csoutheren
+ * Blocked operator = for PRegularExpression
+ *
  * Revision 1.58  2003/12/04 13:10:38  csoutheren
  * Made PRegularExpression copy constructor private to avoid accidental usage (and subsequent crash)
  *
@@ -3022,10 +3025,10 @@ class PRegularExpression : public PObject
 
   private:
     /// Don't allow regular expression copying.
-    PRegularExpression(
-      const PRegularExpression &
-    )
+    PRegularExpression(const PRegularExpression &)
     { }  
+    PRegularExpression & operator =(const PRegularExpression &)
+    {  }  
 };
 
 
