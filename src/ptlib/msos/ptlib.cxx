@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.16 1995/06/04 12:48:06 robertj Exp $
+ * $Id: ptlib.cxx,v 1.17 1995/06/04 13:10:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.17  1995/06/04 13:10:19  robertj
+ * Fixed rename bug.
+ *
  * Revision 1.16  1995/06/04 12:48:06  robertj
  * Changed unknown error string to hex.
  * Added missing GetInfo function for directory entries
@@ -423,13 +426,14 @@ BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL forc
     errno = EINVAL;
     return FALSE;
   }
-  if (rename(oldname, oldname.GetDirectory() + newname) == 0)
+  PString fullname = oldname.GetDirectory() + newname;
+  if (rename(oldname, fullname) == 0)
     return TRUE;
-  if (!force || errno == ENOENT || !Exists(newname))
+  if (!force || errno == ENOENT || !Exists(fullname))
     return FALSE;
-  if (!Remove(newname, TRUE))
+  if (!Remove(fullname, TRUE))
     return FALSE;
-  return rename(oldname, oldname.GetDirectory() + newname) == 0;
+  return rename(oldname, fullname) == 0;
 }
 
 
