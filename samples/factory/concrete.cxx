@@ -10,6 +10,7 @@ class ConcreteClass : public AbstractClass
 };
 
 PAbstractFactory<AbstractClass, ConcreteClass> concreteFactory("concrete");
+PINSTANTIATE_FACTORY(AbstractClass)
 
 class Concrete2Class : public AbstractClass
 {
