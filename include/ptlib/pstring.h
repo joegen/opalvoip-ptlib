@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.10 1995/04/02 09:27:23 robertj Exp $
+ * $Id: pstring.h,v 1.11 1995/06/04 12:34:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.11  1995/06/04 12:34:57  robertj
+ * Better C++ compatibility (with BC++)
+ *
  * Revision 1.10  1995/04/02 09:27:23  robertj
  * Added "balloon" help.
  *
@@ -670,7 +673,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     ) const;
     /* Extract a portion of the string into a new string. The original string
        is not changed and a new unique reference to a string is returned.
-       
+
        A substring from the end of the string for the number of characters
        specified is extracted.
        
@@ -981,7 +984,7 @@ PDECLARE_CLASS(PCaselessString, PString)
    oeprations are affected. So printing etc will still display the string as
    entered.
  */
- 
+
   public:
     PCaselessString();
     /* Create a new, empty, caseless string.
@@ -1056,7 +1059,7 @@ PDECLARE_CLASS(PCaselessString, PString)
     /* Locate the position within the string of the character or substring. The
        search will begin at the character offset provided. The case of either
        string or character is ignored.
-       
+
        If <CODE>offset</CODE> is beyond the length of the string, then the
        function will always return <CODE>P_MAX_INDEX</CODE>.
        
@@ -1240,7 +1243,7 @@ PDECLARE_ARRAY(PStringArray, PString)
  */
 
   public:
-    PStringArray(PINDEX count, char **strarr);
+    PStringArray(PINDEX count, char const * const * strarr);
     PINDEX GetStringsIndex(const PString & str) const;
 };
 
@@ -1427,6 +1430,13 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
   protected:
     PStringDictionary(int dummy, const PStringDictionary * c)
       : PAbstractDictionary(dummy, c) { }
+
+  private:
+    PObject * GetAt(PINDEX) const { return NULL; }
+    PObject * GetAt(const PObject &) const { return NULL; }
+    BOOL SetAt(PINDEX, PObject *) { return FALSE; }
+    BOOL SetAt(const PObject &, PObject *) { return FALSE; }
+    BOOL SetDataAt(PINDEX, PObject *) { return FALSE; }
 };
 
 
