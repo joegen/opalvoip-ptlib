@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.7 1996/05/23 10:03:00 robertj Exp $
+ * $Id: svcproc.h,v 1.8 1996/07/20 05:33:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.8  1996/07/20 05:33:06  robertj
+ * Fixed some Win95 service bugs and missing functionality (service stop).
+ *
  * Revision 1.7  1996/05/23 10:03:00  robertj
  * Windows 95 support.
  *
@@ -57,7 +60,7 @@
        thread will signal at its termination.
     */
 
-    static DWORD EXPORTED StaticThreadEntry(LPVOID);
+    static void StaticThreadEntry(void *);
     /* Internal function called to begin the work of the service process. This
        essentially just calls the <A>Main()</A> function on the
        PServiceProcess instance.
