@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.6 1994/06/25 11:55:15 robertj Exp $
+ * $Id: timeint.h,v 1.7 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.6  1994/06/25 11:55:15  robertj
+ * Revision 1.7  1994/07/02 03:03:49  robertj
+ * Timer redesign consequences and ability to compare a time interval against
+ * ordinary integer milliseconds.
+ *
+ * Revision 1.6  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.5  1994/01/03  04:42:23  robertj
@@ -33,15 +37,14 @@
 // Difference between two system times
 
 PDECLARE_CLASS(PTimeInterval, PObject)
+  // Arbitrary time interval to millisecond accuracy. Can be both positive and
+  // negative intervals.
 
   public:
     PTimeInterval(long milliseconds = 0,
                 int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
       // Make a new time interval object
 
-    PTimeInterval(const PTimeInterval & ti);
-    PTimeInterval & operator=(const PTimeInterval & ti);
-      // Make a copy of the time interval object
 
     // Overrides from class PObject
     PObject * Clone() const;
@@ -49,20 +52,39 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     virtual ostream & PrintOn(ostream & strm) const;
     virtual istream & ReadFrom(istream & strm);
 
+
     // New member functions
     long GetMilliseconds() const;
     long GetSeconds() const;
     long GetMinutes() const;
     int GetHours() const;
     int GetDays() const;
+      // Get the time interval in the specified magnitude.
 
-    void SetInterval(long milliseconds = 0,
+    void SetInterval(long milliseconds,
                 int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
+      //Set the value of the time interval.
 
     PTimeInterval operator+(const PTimeInterval & t) const;
     PTimeInterval & operator+=(const PTimeInterval & t);
     PTimeInterval operator-(const PTimeInterval & t) const;
     PTimeInterval & operator-=(const PTimeInterval & t);
+      // Arithmetic with time intervals.
+
+    BOOL operator==(const PTimeInterval & t) const;
+    BOOL operator!=(const PTimeInterval & t) const;
+    BOOL operator> (const PTimeInterval & t) const;
+    BOOL operator>=(const PTimeInterval & t) const;
+    BOOL operator< (const PTimeInterval & t) const;
+    BOOL operator<=(const PTimeInterval & t) const;
+
+    BOOL operator==(long msecs) const;
+    BOOL operator!=(long msecs) const;
+    BOOL operator> (long msecs) const;
+    BOOL operator>=(long msecs) const;
+    BOOL operator< (long msecs) const;
+    BOOL operator<=(long msecs) const;
+      // Relational operators so can compare against integers
 
 
   protected:
