@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.13.4.4  2004/07/13 08:13:04  csoutheren
+ * Lots of implementation of factory-based PWAVFile
+ *
  * Revision 1.13.4.3  2004/07/12 09:17:19  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -184,6 +187,18 @@ class PWAVFileFormat
     virtual BOOL ReadExtraChunks(PWAVFile & /*file*/)
     { return TRUE; }
 
+     /**
+      * called before the reading/writing starts
+      */
+    virtual void OnStart()
+    { }
+
+     /**
+      * called after the reading/writing stops
+      */
+    virtual void OnStop()
+    { }
+
     /**
       * write data to the file
       */
@@ -260,7 +275,7 @@ class PWAVFile : public PFile
     PWAVFile(
       unsigned format = fmt_PCM /// Type of WAV File to create
     );
-    static PWAVFile * PWAVFile_format(
+    static PWAVFile * format(
       const PString & format    /// Type of WAV File to create
     );
 
@@ -281,7 +296,7 @@ class PWAVFile : public PFile
       int opts = ModeDefault, /// #OpenOptions enum# for open operation.
       unsigned format = fmt_PCM /// Type of WAV File to create
     );
-    static PWAVFile * PWAVFile_format(
+    static PWAVFile * format(
       const PString & format,  /// Type of WAV File to create
       PFile::OpenMode mode,          /// Mode in which to open the file.
       int opts = PFile::ModeDefault /// #OpenOptions enum# for open operation.
@@ -427,14 +442,17 @@ class PWAVFile : public PFile
        mono and 2 for stereo.
     */
     virtual unsigned GetChannels() const;
+    virtual void SetChannels(unsigned v);
 
     /**Find out the sample rate of the WAV file in Hz.
     */
     virtual unsigned GetSampleRate() const;
+    virtual void SetSampleRate(unsigned v);
 
     /**Find out how may bits there are per sample, eg 8 or 16.
     */
     virtual unsigned GetSampleSize() const;
+    virtual void SetSampleSize(unsigned v);
 
     /**Find out the size of WAV header presented in the file.
     */
@@ -461,8 +479,7 @@ class PWAVFile : public PFile
     /**
       * enable autoconversion between PCM-16 and the native format
       */
-    void SetAutoconvert(BOOL v = TRUE)
-    { autoConvert = v; }
+    void SetAutoconvert();
 
   //@}
  
