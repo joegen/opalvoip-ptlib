@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.145  2002/11/20 02:51:53  robertj
+# Fixed endian-ness on sparc OpenBSD
+#
 # Revision 1.144  2002/11/12 11:56:46  rogerh
 # Reinstate IPv6 support on the BSD platforms.
 #
@@ -792,6 +795,10 @@ P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
+endif
+
+ifeq ($(MACHTYPE),sparc)
+ENDIAN          := PBIG_ENDIAN
 endif
 
 LDLIBS		+= -lossaudio
