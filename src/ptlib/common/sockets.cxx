@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.159  2003/04/28 02:55:50  robertj
+ * Added function to see at run time if IPv6 available, thanks Sebastien Josset
+ *
  * Revision 1.158  2003/04/15 07:40:08  robertj
  * Removed redundent variable.
  * Fixed IPv6 support for multiple IP address DNS lookups.
@@ -551,29 +554,46 @@ static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 #endif
 
 
-const void PIPSocket::SetDefaultIpAddressFamily(int ipAdressFamily)
+int PIPSocket::GetDefaultIpAddressFamily()
+{
+  return defaultIpAddressFamily;
+}
+
+
+void PIPSocket::SetDefaultIpAddressFamily(int ipAdressFamily)
 {
   defaultIpAddressFamily = ipAdressFamily;
 }
 
 
-const void PIPSocket::SetDefaultIpAddressFamilyV4()
+void PIPSocket::SetDefaultIpAddressFamilyV4()
 {
   SetDefaultIpAddressFamily(PF_INET);
 }
 
-const void PIPSocket::SetDefaultIpAddressFamilyV6()
+
+#if P_HAS_IPV6
+
+void PIPSocket::SetDefaultIpAddressFamilyV6()
 {
   SetDefaultIpAddressFamily(PF_INET6);
 }
 
 
-const int PIPSocket::GetDefaultIpAddressFamily()
+BOOL PIPSocket::IsIpAddressFamilyV6Supported()
 {
-  return defaultIpAddressFamily;
+  int s = ::socket(PF_INET6, SOCK_DGRAM, 0);
+  if (s < 0)
+    return FALSE;
+
+  ::close(s);
+  return TRUE;
 }
 
-const PIPSocket::Address PIPSocket::GetDefaultIpAny()
+#endif
+
+
+PIPSocket::Address PIPSocket::GetDefaultIpAny()
 {
 #if P_HAS_IPV6
   if (defaultIpAddressFamily == PF_INET6)
