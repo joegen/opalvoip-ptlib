@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.9  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.8  2001/04/09 10:44:36  yurik
  * Removed ifdefs around wince version
  *
@@ -51,13 +55,23 @@
  *
  */
 
-
 #ifndef _PVIDEOIO
+
 #ifndef _WIN32_WCE
 #include <vfw.h>
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoDevice
+
+#define _PVIDEOIO_PLATFORM_INCLUDE
 #include "../../videoio.h"
+
+#endif
+#ifdef _PVIDEOIO_PLATFORM_INCLUDE
+#undef _PVIDEOIO_PLATFORM_INCLUDE
+
   public:
     virtual BOOL SetColourFormat(const PString & colourFormat);
     virtual BOOL SetFrameRate(unsigned rate);
@@ -83,6 +97,8 @@
     BOOL          isCapturingNow;
 
   friend class PVideoInputThread;
-};
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

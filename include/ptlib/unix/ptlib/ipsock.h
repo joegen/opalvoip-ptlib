@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.8  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.7  1999/02/22 13:26:53  robertj
  * BeOS port changes.
  *
@@ -63,10 +67,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
+#define _PIPSOCKET_PLATFORM_INCLUDE
 #include "../../ipsock.h"
-};
-
-
-ostream & operator << (ostream & strm, const PIPSocket::Address & addr);
 
 #endif
+#ifdef _PIPSOCKET_PLATFORM_INCLUDE
+#undef _PIPSOCKET_PLATFORM_INCLUDE
+
+  friend ostream & operator << (ostream & strm, const PIPSocket::Address & addr);
+
+#endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

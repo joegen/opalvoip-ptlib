@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.9  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.8  1998/11/30 02:55:29  robertj
  * New directory structure
  *
@@ -57,7 +61,16 @@
 
 #ifndef _PSERIALCHANNEL
 
+///////////////////////////////////////////////////////////////////////////////
+// PSerialChannel
+
+#define _PSERIALCHANNEL_PLATFORM_INCLUDE
 #include "..\..\serchan.h"
+
+#endif
+#ifdef _PSERIALCHANNEL_PLATFORM_INCLUDE
+#undef _PSERIALCHANNEL_PLATFORM_INCLUDE
+
   public:
     // Overrides from class PChannel
     virtual PString GetName() const;
@@ -99,7 +112,9 @@
 #else
     BYTE biosParm;
 #endif
-};
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.12  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.11  2000/12/16 13:11:09  rogerh
  * Remote the 'public:' line. It is redundant as 'public:' is already
  * specified in the ../../mutex.h header file. Problem spotted following a
@@ -72,7 +76,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex
 
+#define _PMUTEX_PLATFORM_INCLUDE
 #include "../../mutex.h"
+
+#endif
+#ifdef _PMUTEX_PLATFORM_INCLUDE
+#undef _PMUTEX_PLATFORM_INCLUDE
+
 #if defined(P_PTHREADS) || defined(BE_THREADS)
     ~PMutex();
     virtual void Wait();
@@ -94,7 +104,9 @@
 #endif
 
 #endif
-};
 
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

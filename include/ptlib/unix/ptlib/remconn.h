@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.8  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.7  1998/12/04 12:12:58  robertj
  * Fixed missing forward reference.
  *
@@ -58,13 +62,21 @@ class PPipeChannel;
 class PXRemoteThread;
 
 
+#define _PREMOTECONNECTION_PLATFORM_INCLUDE
 #include "../../remconn.h"
+
+#endif
+#ifdef _PREMOTECONNECTION_PLATFORM_INCLUDE
+#undef _PREMOTECONNECTION_PLATFORM_INCLUDE
+
   protected:
     PString        pppDeviceName;
     PPipeChannel * pipeChannel;
     BOOL           wasConnected;
     Status         status;
     PString        deviceStr;
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

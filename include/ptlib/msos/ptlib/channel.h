@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.6  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.5  1998/11/30 02:55:04  robertj
  * New directory structure
  *
@@ -47,13 +51,6 @@
 
 #ifndef _PCHANNEL
 
-///////////////////////////////////////////////////////////////////////////////
-// PChannel
-
-#include "../../channel.h"
-};
-
-
 class PWin32Overlapped : public OVERLAPPED
 {
   // Support class for overlapped I/O in Win32.
@@ -64,5 +61,13 @@ class PWin32Overlapped : public OVERLAPPED
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+#include "../../channel.h"
+
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

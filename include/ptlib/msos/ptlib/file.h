@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.6  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.5  1998/11/30 02:55:10  robertj
  * New directory structure
  *
@@ -77,11 +81,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
+#define _PFILE_PLATFORM_INCLUDE
 #include "../../file.h"
+
+#endif
+#ifdef _PFILE_PLATFORM_INCLUDE
+#undef _PFILE_PLATFORM_INCLUDE
+
   protected:
     virtual BOOL IsTextFile() const;
       // Return TRUE if text file translation is required
-};
-
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

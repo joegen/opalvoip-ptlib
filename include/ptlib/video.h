@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.4  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.3  2001/03/07 01:42:59  dereks
  * miscellaneous video fixes. Works on linux now. Add debug statements
  * (at PTRACE level of 1)
@@ -209,8 +213,10 @@ class PVideoChannel : public PChannel
   private:
     void Construct();
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/video.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

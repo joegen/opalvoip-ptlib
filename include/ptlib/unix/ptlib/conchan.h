@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: conchan.h,v $
+ * Revision 1.2  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.1  1999/06/14 08:39:57  robertj
  * Added PConsoleChannel class for access to stdin/stdout/stderr
  *
@@ -36,10 +40,18 @@
 
 #pragma interface
 
+#define _PCONSOLECHANNEL_PLATFORM_INCLUDE
 #include "../../conchan.h"
+
+#endif
+#ifdef _PCONSOLECHANNEL_PLATFORM_INCLUDE
+#undef _PCONSOLECHANNEL_PLATFORM_INCLUDE
+
   public:
     PString GetName() const;
     BOOL Close();
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

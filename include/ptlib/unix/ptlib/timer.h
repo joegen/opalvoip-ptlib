@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  1998/11/30 22:07:27  robertj
  * New directory structure.
  *
@@ -51,8 +55,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
+#define _PTIMER_PLATFORM_INCLUDE
 #include "../../timer.h"
-};
+
+#endif
+#ifdef _PTIMER_PLATFORM_INCLUDE
+#undef _PTIMER_PLATFORM_INCLUDE
 
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

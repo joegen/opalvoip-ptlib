@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  1998/11/30 02:55:08  robertj
  * New directory structure
  *
@@ -43,14 +47,20 @@
 
 #ifndef _PDYNALINK
 
+///////////////////////////////////////////////////////////////////////////////
+// PDynaLink
 
+#define _PDYNALINK_PLATFORM_INCLUDE
 #include "../../dynalink.h"
+
+#endif
+#ifdef _PDYNALINK_PLATFORM_INCLUDE
+#undef _PDYNALINK_PLATFORM_INCLUDE
+
   protected:
 #if defined(_WINDOWS) || defined(_WIN32)
     HINSTANCE _hDLL;
 #endif
-};
-
 
 #endif
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  1998/11/30 22:07:19  robertj
  * New directory structure.
  *
@@ -51,10 +55,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
 
+#define _PTCPSOCKET_PLATFORM_INCLUDE
 #include "../../tcpsock.h"
+
+#endif
+#ifdef _PTCPSOCKET_PLATFORM_INCLUDE
+#undef _PTCPSOCKET_PLATFORM_INCLUDE
+
   public:
     virtual BOOL Read(void * buf, PINDEX len);
 
-};
-
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

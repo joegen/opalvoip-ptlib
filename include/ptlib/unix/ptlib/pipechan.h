@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.9  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.8  1999/08/17 07:38:02  robertj
  * Fixed inlines so are inlined in optimised version
  *
@@ -59,14 +63,22 @@
 
 #include <signal.h>
 
+
+#define _PPIPECHANNEL_PLATFORM_INCLUDE
 #include "../../pipechan.h"
+
+#endif
+#ifdef _PPIPECHANNEL_PLATFORM_INCLUDE
+#undef _PPIPECHANNEL_PLATFORM_INCLUDE
+
   protected:
     int toChildPipe[2];
     int fromChildPipe[2];
     int stderrChildPipe[2];
     int childPid;
     int retVal;
-};
-
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

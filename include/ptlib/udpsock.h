@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.17  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.16  1999/08/27 08:18:52  robertj
  * Added ability to get the host/port of the the last packet read/written to UDP socket.
  *
@@ -171,8 +175,10 @@ class PUDPSocket : public PIPDatagramSocket
     Address lastReceiveAddress;
     WORD    lastReceivePort;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/udpsock.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

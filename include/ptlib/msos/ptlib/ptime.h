@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  1998/11/30 02:55:25  robertj
  * New directory structure
  *
@@ -50,7 +54,9 @@
 // PTime
 
 #include "../../ptime.h"
-};
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

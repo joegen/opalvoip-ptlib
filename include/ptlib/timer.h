@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.20  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.19  2000/08/30 03:16:59  robertj
  * Improved multithreaded reliability of the timers under stress.
  *
@@ -291,9 +295,10 @@ class PTimer : public PTimeInterval
   friend class PTimerList;
     PTimerList * timerList;
 
-  
-#ifdef DOC_PLUS_PLUS
+
+// Include platform dependent part of class
+#include <ptlib/timer.h>
 };
-#endif
-  
-// Class declaration continued in platform specific header file ///////////////
+
+
+// End Of File ///////////////////////////////////////////////////////////////
