@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.28  2004/06/02 06:17:21  csoutheren
+ * Removed unnecessary buffer copying and removed potential busy loop
+ *
  * Revision 1.27  2004/03/23 04:48:42  csoutheren
  * Improved ability to start VXML scripts as needed
  *
@@ -135,6 +138,8 @@ class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
+class PVXMLTransferOptions;
+class PVXMLTransferResult;
 
 class PVXMLGrammar : public PObject
 {
@@ -276,7 +281,7 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType);
     virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn);
 
-    PDECLARE_NOTIFIER(PThread, PVXMLSession, DialogExecute);
+    PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
     void AllowClearCall();
     PURL NormaliseResourceName(const PString & src);
@@ -288,13 +293,30 @@ class PVXMLSession : public PIndirectChannel
     BOOL TraverseGrammar();
     BOOL TraverseRecord();
 
+    BOOL TraverseIf();
+    BOOL TraverseExit();
+
+    virtual BOOL TraverseTransfer();
+
+    virtual BOOL DoTransfer(PVXMLTransferOptions &) { return TRUE; }
+    virtual BOOL DoExit() { return TRUE; }
+
+    virtual void OnTransfer(PVXMLTransferResult&);
+
+    void SetCallingToken( PString& token ) { callingCallToken = token; }
+
     PXMLElement * FindHandler(const PString & event);
 
     void SayAs(const PString & className, const PString & text);
     static PTimeInterval StringToTime(const PString & str);
 
   protected:
-    BOOL ExecuteWithoutLock();
+    friend class PVXMLChannel;
+
+    void ProcessNode();
+    void ProcessGrammar();
+
+    PSyncPoint waitForEvent;
 
     PMutex sessionMutex;
 
@@ -319,6 +341,7 @@ class PVXMLSession : public PIndirectChannel
     BOOL emptyAction;
 
     PThread * vxmlThread;
+    BOOL threadRunning;
     BOOL forceEnd;
 
     PVXMLChannel * incomingChannel;
@@ -335,6 +358,14 @@ class PVXMLSession : public PIndirectChannel
     static PDirectory cacheDir;
     static PVXMLCache * resourceCache;
     static PINDEX cacheCount;
+
+  private:
+    void      ExecuteDialog();
+
+    PString       callingCallToken;
+    PSyncPoint    transferSync;
+    PSyncPoint    answerSync;
+
 };
 
 
@@ -478,11 +509,10 @@ class PVXMLChannel : public PIndirectChannel
     BOOL IsRecording() const { return recording; }
 
     // Outgoing channel functions
-    virtual BOOL ReadFrame(PINDEX amount) = 0;
-    virtual void CreateSilenceFrame(PINDEX amount) = 0;
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount) = 0;
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount) = 0;
     virtual void GetBeepData(PBYTEArray &, unsigned) { }
 
-    virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
@@ -493,6 +523,8 @@ class PVXMLChannel : public PIndirectChannel
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
     void SetPause(BOOL _pause) { paused = _pause; }
+
+    virtual void HandleDelay(PINDEX amount);
 
   protected:
     PVXMLSession & vxml;
@@ -507,6 +539,7 @@ class PVXMLChannel : public PIndirectChannel
     PMutex channelMutex;
     PAdaptiveDelay delay;
     BOOL closed;
+    PINDEX delayBytes;
 
     // Incoming audio variables
     BOOL recording;
@@ -518,9 +551,6 @@ class PVXMLChannel : public PIndirectChannel
     BOOL playing;
     PMutex queueMutex;
     PVXMLQueue playQueue;
-
-    PBYTEArray frameBuffer;
-    PINDEX frameLen, frameOffs;
 
     BOOL paused;
     int silentCount;
@@ -541,10 +571,11 @@ class PVXMLChannelPCM : public PVXMLChannel
   protected:
     // overrides from PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(PINDEX amount);
-    virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
     virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
+    virtual void HandleDelay(PINDEX amount);
 };
 
 
@@ -556,8 +587,8 @@ class PVXMLChannelG7231 : public PVXMLChannel
 
     // overrides from PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(PINDEX amount);
-    virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
     virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
 };
 
@@ -570,11 +601,61 @@ class PVXMLChannelG729 : public PVXMLChannel
 
     // overrides from PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(PINDEX amount);
-    virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
+    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
     virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
 };
 
+////////////////////////////////////////////////////////////////////
+
+class PVXMLTransferOptions : public PObject
+{
+  PCLASSINFO(PVXMLTransferOptions, PObject);
+  public:
+    PVXMLTransferOptions() { }
+
+    void SetCallingToken( PString& calling) { callingToken = calling; }
+    PString& GetCallingToken( ) { return callingToken; }
+    
+    void SetCalledToken( PString& called) { calledToken = called; }
+    PString& GetCalledToken( ) { return calledToken; }
+
+    void SetSourceDNR( PString& src ) { source = src; }
+    PString& GetSourceDNR() { return source; }
+
+    void SetDestinationDNR( PString& dest ) { destination = dest; }
+    PString& GetDestinationDNR() { return destination; }
+
+    void SetTimeout( unsigned int time ) { timeout = time; }
+    unsigned int GetTimeout() { return timeout; }
+
+    void SetBridge( bool brdg ) { bridge = brdg; }
+    bool GetBridge() { return bridge; }
+
+  private:
+    PString callingToken;
+    PString calledToken;
+    PString destination;
+    PString source;
+    unsigned int timeout;
+    bool bridge;
+};
+
+class PVXMLTransferResult : public PString
+{
+  PCLASSINFO(PVXMLTransferResult, PString);
+  public:
+    PVXMLTransferResult(){ }
+    PVXMLTransferResult( char* cstr ) : PString( cstr ) {}
+    PVXMLTransferResult( PString& str ) : PString( str ) {}
+
+    void SetName( PString& n ) { name = n; }
+    PString& GetName() { return name; } 
+    // Mainly a couple of transfer states, 
+    // like busy, noanswer, network_busy, neer_end_disconnect, far_end_disconnect, network_disconnect
+  private:
+    PString name;
+};
 
 #endif
 
