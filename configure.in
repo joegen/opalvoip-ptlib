@@ -1,5 +1,7 @@
 AC_INIT(include/ptlib.h)
 
+AC_CONFIG_SUBDIRS(plugins)
+
 AC_PROG_CXX
 
 dnl ########################################################################
@@ -19,7 +21,6 @@ else
 fi
 
 AC_SUBST(INSTALLPREFIX)
-
 
 dnl ########################################################################
 dnl set LIBDIR accordingly
@@ -245,46 +246,60 @@ if test ${OSTYPE} != Darwin ; then
   AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
 fi
 
-dnl #########################################################################
-dnl  Check for FIREWIRE if available, from GnomeMeeting
+
 dnl ########################################################################
-AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
-AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
-AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
+dnl check for regex library
+AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
+if test "x$HAS_REGEX" != "x" ; then
+  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
+fi
+AC_SUBST(HAS_REGEX)
+AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
 
-AC_SUBST(TRY_1394DC, 0)
-AC_SUBST(TRY_1394AVC, 0)
-firewiredc="no"
-firewireavc="no"
 
-AC_ARG_ENABLE(firewiredc, [  --enable-firewiredc     enable Firewire support for DC cameras], firewiredc="yes")
-if test ${DC1394HDR:-unset} != "unset" -a "${firewiredc}" != "no" ; then     
-   AC_DEFINE(TRY_1394DC, 1, "Firewire DC1394 support enabled")
-   AC_SUBST(TRY_1394DC, 1)
-   ENDLDLIBS="$ENDLDLIBS -lraw1394 -ldc1394_control"	     
-   echo "Firewire DC1394 support enabled"
+dnl ########################################################################
+dnl check for dynamic library code (dlopen and friends)
+dnl do this before checking for plugins
+
+dnl MSWIN DLL Support,,P_DYNALINK
+
+LIBS=""
+if test ${OSTYPE} = Darwin ; then
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
 else
-if test "${firewiredc}" != "no"; then
-AC_MSG_ERROR([***Firewire camera headers (libdc1394, libdv, rom1394) not found.])
-fi
+  AC_CHECK_HEADERS(dlfcn.h, P_DYNALINK=1)
+  if test "u${P_DYNALINK:-nset}" != "unset" ; then
+    AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+  else
+    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
+    if test ${HAS_LIBDL} = yes ; then
+      AC_DEFINE(P_DYNALINK, 1, "dlopen found")
+    fi
+  fi
 fi
 
-AC_ARG_ENABLE(firewireavc, [  --enable-firewireavc    enable Firewire support for AVC cameras], firewireavc="yes")
-if test ${AVC1394HDR:-unset} != "unset" -a ${DVHDR:-unset} != "unset" -a "${firewireavc}" != "no" ; then     
-   AC_DEFINE(TRY_1394AVC, 1, "Firewire AVC1394 support enabled")
-   AC_SUBST(TRY_1394AVC, 1)
-   ENDLDLIBS="$ENDLDLIBS -lraw1394 -lavc1394 -lrom1394 -ldv"
-   echo "Firewire AVC1394 support enabled"
+dnl #########################################################################
+dnl check to see if plugins enabled
+dnl MSWIN Plugin Support,,P_HAS_PLUGINS
+plugins="no"
+AC_MSG_CHECKING(if plugins support needs to be compiled)
+AC_ARG_ENABLE(plugins,
+       [  --enable-plugins        enable plugins' support in PWLIB],
+       plugins="yes")
+
+if test "${plugins}" = "no" ; then
+  AC_MSG_RESULT(no)
+  AC_SUBST(HAS_PLUGINS, 0)
+elif test "${P_DYNALINK:-unset}" = "unset" ; then
+  AC_MSG_RESULT(disabled as dlopen not available)
+  AC_SUBST(HAS_PLUGINS, 0)
 else
-if test "${firewireavc}" != "no"; then
-AC_MSG_ERROR([***Firewire camera headers (libavc1394, libdv) not found.])
-fi
-fi
-
-if test "${firewireavc}" != "no" -a "${firewiredc}" != "no"; then
-AC_MSG_ERROR([***You can currently not compile DC and AVC Firewire camera support at the same time.])
+  AC_MSG_RESULT(yes)
+  AC_SUBST(HAS_PLUGINS, 1)
+  AC_DEFINE(P_HAS_PLUGINS, 1, "Plugins enabled")
 fi
 
+AC_DEFINE_UNQUOTED(P_DEFAULTPLUGINDIR, "${INSTALLPREFIX}/pwlib/lib")
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
@@ -514,20 +529,6 @@ if test "${HAS_SDL:-unset}" != "unset" ; then
 fi
 
 
-dnl ########################################################################
-dnl check for dynamic library code (dlopen end friends)
-
-dnl MSWIN DLL Support,,P_DYNALINK
-
-LIBS=""
-if test ${OSTYPE} != Darwin ; then
-  AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
-  if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-    AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
-  fi
-else
-  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
-fi
 
 dnl ########################################################################
 dnl look for IPV6 functions
@@ -542,34 +543,6 @@ AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
 if test $HAS_IPV6 = yes ; then
   AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
 fi
-
-dnl ########################################################################
-dnl check for video capture support.
-dnl videodev.h on linux
-dnl machine/ioctl_meteor on FreeBSD
-dnl i386/ioctl_meteor on OpenBSD
-dnl dev/ic/bt8xx on NetBSD
-
-HAS_VIDEO_CAPTURE=no
-AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
-if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
-  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
-  echo "No Video Capture support"
-fi
-
-
-dnl ########################################################################
-dnl check for regex library
-AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
-if test "x$HAS_REGEX" != "x" ; then
-  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
-fi
-AC_SUBST(HAS_REGEX)
-AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
-
 
 dnl ########################################################################
 dnl check for various functions
@@ -593,12 +566,9 @@ if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
 fi
 
 dnl dl needs to be at the end
-if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  if test "${OSTYPE}" != "Darwin" ; then
-    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
-    if test ${HAS_LIBDL} = yes ; then
-      ENDLDLIBS="$ENDLDLIBS -ldl"
-    fi
+if test "u${P_DYNALINK:-nset}" != "unset" ; then
+  if test "${HAS_LIBDL}" = "yes" ; then
+    ENDLDLIBS="$ENDLDLIBS -ldl"
   fi
 fi
 
@@ -606,6 +576,7 @@ AC_SUBST(STDCCFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
+
 
 AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES([make/ptlib-config], [chmod a+x make/ptlib-config])

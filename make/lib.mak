@@ -24,6 +24,10 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.37.2.1  2003/10/07 01:33:19  csoutheren
+# Initial checkin of pwlib code to do plugins.
+# Modified from original code and concept provided by Snark of Gnomemeeting
+#
 # Revision 1.37  2003/09/08 22:13:18  dereksmithies
 # Fix patch implementation. Thanks to  Zygmuntowicz Michal <m.zygmuntowicz@onet.pl>
 #
@@ -155,7 +159,7 @@ ifeq ($(P_SHAREDLIB),1)
     # Also, when building a shared library x that references symbols in libraries y,
     # the y libraries need to be added to the linker command
     LDSOOPTS = -nostdlib -nostart
-    EXTLIBS = -lstdc++.r4
+    EXTLIBS += -lstdc++.r4
   else
     ifeq ($(OSTYPE),Darwin)
       LDSOOPTS = -dynamiclib
@@ -165,7 +169,7 @@ ifeq ($(P_SHAREDLIB),1)
   endif
 
   ifeq ($(OSTYPE),rtems)
-    EXTLIBS = -lstdc++
+    EXTLIBS += -lstdc++
   endif
 
   ifneq ($(OSTYPE), QNX)
@@ -200,8 +204,6 @@ ifeq ($(P_SHAREDLIB),1)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MIN) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
   $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
-	@echo EXTLIBS = $(EXTLIBS)
-	@echo SYSLIBS = $(SYSLIBS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
