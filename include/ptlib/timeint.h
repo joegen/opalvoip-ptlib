@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.8 1994/08/22 00:46:48 robertj Exp $
+ * $Id: timeint.h,v 1.9 1994/08/23 11:32:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.8  1994/08/22 00:46:48  robertj
+ * Revision 1.9  1994/08/23 11:32:52  robertj
+ * Oops
+ *
+ * Revision 1.8  1994/08/22  00:46:48  robertj
  * Added pragma fro GNU C++ compiler.
  *
  * Revision 1.7  1994/07/02  03:03:49  robertj
@@ -35,7 +38,7 @@
 
 #define _PTIMEINTERVAL
 
-#ifdef __GNU__
+#ifdef __GNUC__
 #pragma interface
 #endif
 
