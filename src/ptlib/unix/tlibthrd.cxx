@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.100  2002/10/23 04:29:32  robertj
+ * Improved debugging for thread create/start/stop/destroy.
+ * Fixed race condition bug if auto-delete thread starts and completes before
+ *   pthread_create returns, PX_threadId is not set yet!
+ *
  * Revision 1.99  2002/10/22 07:42:52  robertj
  * Added extra debugging for file handle and thread leak detection.
  *
@@ -581,7 +586,7 @@ PThread::PThread(PINDEX stackSize,
 
   traceBlockIndentLevel = 0;
 
-  PTRACE(5, "PWLib\tCreated thread " << threadName);
+  PTRACE(5, "PWLib\tCreated thread " << this << ' ' << threadName);
 }
 
 
@@ -600,7 +605,7 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  PTRACE(5, "PWLib\tDestroyed thread " << threadName);
+  PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
 }
 
 
@@ -916,6 +921,7 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_detach(threadId);
 
   PThread * thread = (PThread *)arg;
+  thread->PX_threadId = threadId;
   thread->SetThreadName(thread->GetThreadName());
 
   PProcess & process = PProcess::Current();
@@ -935,7 +941,7 @@ void * PThread::PX_ThreadStart(void * arg)
   // make sure the cleanup routine is called when the thread exits
   pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
 
-  PTRACE(5, "PWLib\tStarted thread " << thread->threadName);
+  PTRACE(5, "PWLib\tStarted thread " << thread << ' ' << thread->threadName);
 
   // now call the the thread main routine
   thread->Main();
@@ -958,7 +964,7 @@ void PThread::PX_ThreadEnd(void * arg)
     return;
   }
 
-  PTRACE(5, "PWLib\tEnded thread " << thread->threadName);
+  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
 
   // remove this thread from the active thread list
   PProcess & process = PProcess::Current();
