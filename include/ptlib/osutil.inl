@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.20 1994/09/25 10:41:19 robertj Exp $
+ * $Id: osutil.inl,v 1.21 1994/10/23 04:49:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.20  1994/09/25 10:41:19  robertj
+ * Revision 1.21  1994/10/23 04:49:00  robertj
+ * Chnaged PDirectory to descend of PString.
+ * Added PDirectory Exists() function.
+ * Implemented PPipeChannel.
+ *
+ * Revision 1.20  1994/09/25  10:41:19  robertj
  * Moved PFile::DestroyContents() to cxx file.
  * Added PTextFile constructors for DOS/NT platforms.
  * Added Pipe channel.
@@ -272,38 +277,29 @@ PINLINE void PChannel::AbortCommandString()
 // PDirectory
 
 PINLINE PDirectory::PDirectory()
-  : path(".") { Construct(); }
+  : PString(".") { Construct(); }
   
 PINLINE PDirectory::PDirectory(const PString & pathname)
-  : path(pathname) { Construct(); }
+  : PString(pathname) { Construct(); }
   
 
-PINLINE PObject::Comparison PDirectory::Compare(const PObject & obj) const
-  { return path.Compare(((const PDirectory &)obj).path); }
-
-PINLINE ostream & PDirectory::PrintOn(ostream & strm) const
-  { return strm << path; }
-
-PINLINE BOOL PDirectory::SetSize(PINDEX newSize)
-  { return newSize == 1; }
-
 PINLINE void PDirectory::DestroyContents()
-  { Close(); }
+  { Close(); PString::DestroyContents(); }
 
 PINLINE void PDirectory::CloneContents(const PDirectory * d)
   { CopyContents(*d); }
 
-PINLINE PString PDirectory::GetPath() const
-  { return path; }
+PINLINE BOOL PDirectory::Exists() const
+  { return Exists(*this); }
 
 PINLINE BOOL PDirectory::Change() const
-  { return Change(path); }
+  { return Change(*this); }
 
 PINLINE BOOL PDirectory::Create(int perm) const
-  { return Create(path, perm); }
+  { return Create(*this, perm); }
 
 PINLINE BOOL PDirectory::Remove()
-  { Close(); return Remove(path); }
+  { Close(); return Remove(*this); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -409,6 +405,10 @@ PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
+
+PINLINE PPipeChannel::PPipeChannel(const PString & subProgram,
+                                                OpenMode mode, BOOL searchPath)
+  { Construct(subProgram, NULL, mode, searchPath); }
 
 PINLINE PPipeChannel::PPipeChannel(const PString & subProgram,
                 const char * const * arguments, OpenMode mode, BOOL searchPath)
