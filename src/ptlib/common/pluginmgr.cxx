@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.22  2004/06/24 23:10:28  csoutheren
+ * Require plugins to have _pwplugin suffix
+ *
  * Revision 1.21  2004/06/03 13:30:59  csoutheren
  * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
  * Added documentaton on new PINSTANTIATE_FACTORY macro
@@ -99,7 +102,14 @@
 
 #define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
 
+#define PWPLUGIN_SUFFIX       "_pwplugin"
+
 //////////////////////////////////////////////////////
+
+void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
+{ 
+  PLoadPluginDirectory<PPluginManager>(*this, dir, PWPLUGIN_SUFFIX); 
+}
 
 PStringArray PPluginManager::GetPluginDirs()
 {
@@ -117,16 +127,6 @@ PPluginManager & PPluginManager::GetPluginManager()
   return systemPluginMgr;
 }
 
-//////////////////////////////////////////////////////
-
-PPluginManager::PPluginManager()
-{
-}
-
-PPluginManager::~PPluginManager()
-{
-}
-
 BOOL PPluginManager::LoadPlugin(const PString & fileName)
 {
   PWaitAndSignal m(pluginListMutex);
@@ -138,33 +138,38 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
 
   else {
     unsigned (*GetAPIVersion)();
-    if(!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
-      PTRACE(3, "Failed to recognize a plugin in " << fileName);
+    if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
+      PTRACE(3, fileName << " is not a PWLib plugin");
     }
 
     else {
-      if ((*GetAPIVersion)() != PWLIB_PLUGIN_API_VERSION) {
-        PTRACE(3, fileName << " is a plugin, but the version mismatch");
-      }
+      int version = (*GetAPIVersion)();
+      switch (version) {
+        case 0 : // old-style service plugins, and old-style codec plugins
+          {
+            // declare local pointer to register function
+            void (*triggerRegister)(PPluginManager *);
 
-      else {
+            // call the register function (if present)
+            if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
+              (*triggerRegister)(this);
+            else {
+              PTRACE(3, fileName << " has no registration-trigger function");
+            }
+          }
+          // fall through to new version
 
-        // declare local pointer to register function
-        void (*triggerRegister)(PPluginManager *);
+        case 1 : // factory style plugins
+          // call the notifier
+          CallNotifier(*dll, 0);
 
-        // call the register function (if present)
-        if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
-          (*triggerRegister)(this);
-        else {
-          PTRACE(3, "Failed to find the registration-triggering function in " << fileName);
-        }
+          // add the plugin to the list of plugins
+          pluginList.Append(dll);
+          return TRUE;
 
-        // call the notifier
-        CallNotifier(*dll, 0);
-
-        // add the plugin to the list of plugins
-        pluginList.Append(dll);
-        return TRUE;
+        default:
+          PTRACE(3, fileName << " uses version " << version << " of the PWLIB PLUGIN API, which is not supported");
+          break;
       }
     }
   }
