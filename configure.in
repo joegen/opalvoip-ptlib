@@ -225,7 +225,7 @@ AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
 $CXX $CFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -felide-constructors"
+  CXXFLAGS="$CXXFLAGS -felide-constructors"
 else
   AC_MSG_RESULT(no)
 fi
@@ -235,7 +235,7 @@ AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
 $CXX $CFLAGS -Wreorder conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -Wreorder"
+  CXXFLAGS="$CXXFLAGS -Wreorder"
 else
   AC_MSG_RESULT(no)
 fi
@@ -974,6 +974,7 @@ if test "${OSTYPE}" != "Darwin" ; then
 fi
 
 AC_SUBST(STDCCFLAGS)
+AC_SUBST(CXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
