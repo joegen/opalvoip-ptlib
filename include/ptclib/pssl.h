@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.15  2001/12/06 04:06:03  robertj
+ * Removed "Win32 SSL xxx" build configurations in favour of system
+ *   environment variables to select optional libraries.
+ *
  * Revision 1.14  2001/10/31 01:30:40  robertj
  * Added enhancements for saving/loading/creating certificates and keys.
  *
@@ -69,8 +73,8 @@
  *
  */
 
-#ifndef _PHTTPS
-#define _PHTTPS
+#ifndef _PSSL_H
+#define _PSSL_H
 
 #ifdef __GNUC__
 #pragma interface
@@ -473,4 +477,4 @@ class PSSLChannel : public PIndirectChannel
     ssl_st      * ssl;
 };
 
-#endif
+#endif // _PSSL_H
