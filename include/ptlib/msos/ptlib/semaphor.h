@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.8  2002/01/23 04:46:11  craigs
+ * Added copy Constructors for PSemaphore, PMutex and PSyncPoint
+ *
  * Revision 1.7  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -66,9 +69,14 @@
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return handle; }
+    unsigned GetInitialVal() const  { return initialVal; }
+    unsigned GetMaxCountVal() const { return maxCountVal; }
+
   protected:
     PSemaphore(HANDLE h);
     HANDLE handle;
+    unsigned initialVal;
+    unsigned maxCountVal;
 #endif
 
 #endif
