@@ -6,6 +6,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: pdns.h,v $
+ * Revision 1.2  2003/04/15 08:06:24  craigs
+ * Added Unix implementation
+ *
  * Revision 1.1  2003/04/15 04:06:56  craigs
  * Initial version
  *
@@ -21,12 +24,6 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
-
-#if defined(_WIN32)
-#include <windns.h>
-#else
-#include <resolv.h>
-#endif
 
 // implement DNS lookup for MX and SRV records
 
