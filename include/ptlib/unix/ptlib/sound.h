@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.14  2003/02/19 10:22:22  rogerh
+ * Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
+ *
  * Revision 1.13  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -68,6 +71,10 @@
  */
 
 #ifndef _PSOUND
+
+#ifdef USE_ESD
+#include <ptclib/delaychan.h>
+#endif
 
 #ifdef __BEOS__
 #include <media/MediaFormats.h>
@@ -162,6 +169,10 @@ class JRingBuffer;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
     unsigned actualSampleRate;
+
+#ifdef USE_ESD
+    PAdaptiveDelay writeDelay;
+#endif
 
 #endif
 
