@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.22  2002/08/30 05:05:54  craigs
+ * Added changes for PVXMLGrammar from Alexander Kovatch
+ *
  * Revision 1.21  2002/08/29 00:16:12  craigs
  * Fixed typo, thanks to Peter Robinson
  *
@@ -108,6 +111,9 @@
 #define MEDIUM_BREAK_MSECS  2500
 #define LARGE_BREAK_MSECS   5000
 
+// LATER: Lookup what this value should be
+#define DEFAULT_TIMEOUT     20000
+
 #define CACHE_BUFFER_SIZE   1024
 
 #include <ptclib/vxml.h>
@@ -171,6 +177,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   loaded          = FALSE;
   forceEnd        = FALSE;
   textToSpeech    = NULL;
+  listening       = FALSE;
 
   SetTextToSpeech(_tts, autoDelete);
 
@@ -290,36 +297,12 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
   if (root == NULL)
     return FALSE;
 
-/////NEW 
-
   // find the first form
   if ((currentForm = FindForm("")) == NULL)
 	  return FALSE;
 
-  // current node is first node in the first form
-  currentNode = currentForm->GetElement(0);
-
-/////NEW 
-
-#if 0
-  // find all dialogs in the document
-  PINDEX i;
-  for (i = 0; i < root->GetSize(); i++) {
-    PXMLObject * xmlObject = root->GetElement(i);
-    if (xmlObject->IsElement()) {
-      PXMLElement * xmlElement = (PXMLElement *)xmlObject;
-      PVXMLDialog * dialog = NULL;
-
-      if (xmlElement->GetName() == "form") {
-        dialog = new PVXMLFormDialog(*this, *xmlElement);
-        dialog->Load();
-      }
-
-      if (dialog != NULL)
-        dialogArray.SetAt(dialogArray.GetSize(), dialog);
-    }
-  }
-#endif
+  // start processing with this <form> element
+  currentNode = currentForm;
 
   return TRUE;
 }
@@ -617,31 +600,54 @@ BOOL PVXMLSession::ExecuteWithoutLock()
 
 void PVXMLSession::DialogExecute(PThread &, INT)
 {
-#if 0
-  // find the first dialog that has an undefined form variable
-  PINDEX i;
-  for (i = 0; i < dialogArray.GetSize(); i++) {
-    PVXMLDialog & dialog = dialogArray[i];
+  // If we have an active grammar then check to see if there has been some recognition
+  if (activeGrammar) {
 
-    // if this form is not yet defined, then enter it
-    if (!dialog.GetGuardCondition()) {
+    // If we've got a recognition then find a handler and move on
+    //  (this basically handles the barge-in case)
+    if (activeGrammar->GetState() == PVXMLGrammar::FILLED) {
+      PString value = activeGrammar->GetValue();
+      ((PXMLElement*)currentField)->SetAttribute("_value", value, TRUE);
 
-      // execute the form, and clear call if error
-      if (!dialog.Execute())
-        break;
+      // Stop the grammar
+      LoadGrammar(NULL);
+      listening = FALSE;
+
+      // Find the handler and move there
+
+      // otherwise move on to the next node (already pointed there)
+    }
+    // if we're on the last (delay) prompt then we can either wait longer
+    // or quit
+    else if (listening) {
+      // give it more time if we're still playing
+      if (IsPlaying())
+        return;
+      // otherwise stop the grammar and see what we've got
+      else {
+        activeGrammar->Stop();
+        PVXMLGrammar::GrammarState state = activeGrammar->GetState();
+        PString value = activeGrammar->GetValue();
+        LoadGrammar(NULL);
+        listening = FALSE;
+
+        switch (state)
+        {
+          case PVXMLGrammar::NOINPUT:
+            // Find the <noinput> handler in the current form
+            // otherwise find the <noinput> handler in the default document (which we don't have yet)
+            // continue execution
+            break;
+          case PVXMLGrammar::NOMATCH:
+            // Find the <nomatch> handler in the current form
+            // otherwise find the <nomatch> handler in the default document (which we don't have yet)
+            // continue execution
+            break;
+        }
+      }
     }
   }
 
-  // if all forms defined, nothing playing, and nothing recording, then end of call
-  if (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
-    if (OnEmptyAction())
-      forceEnd = TRUE;
-  }
-
-#endif
-
-/////NEW 
-  
 	// Process the current node
 	if (currentNode != NULL) {
 
@@ -658,10 +664,13 @@ void PVXMLSession::DialogExecute(PThread &, INT)
       }
 
 			else if (nodeType *= "block") {
-				// Nothing to do but go on to the next element
+        // check 'cond' attribute to see if this element's children are to be skipped
+
+				// go on and process the children
 			}
 
 			else if (nodeType *= "break") {
+        TraverseAudio();
 			}
 
 			else if (nodeType *= "disconnect") {
@@ -669,18 +678,32 @@ void PVXMLSession::DialogExecute(PThread &, INT)
 			}
 
 			else if (nodeType *= "field") {
+        currentField = (PXMLElement*)currentNode;
+        timeout = DEFAULT_TIMEOUT;
 			}
 
 			else if (nodeType *= "form") {
 				// this is now the current element - go on
 				currentForm = element;
+        currentField = NULL;  // no active field in a new form
 			}
 
 			else if (nodeType *= "goto") {
 				TraverseGoto();
 			}
 
+			else if (nodeType *= "grammar") {
+        TraverseGrammar();  // this will set activeGrammar
+			}
+
 			else if (nodeType *= "prompt") {
+        // LATER:
+        // check 'cond' attribute to see if the children of this node should be processed
+        // check 'count' attribute to see if this node should be processed
+        // update timeout of current recognition (if 'timeout' attribute is set)
+        // flush all prompts if 'bargein' attribute is set to false
+
+        // go on to process the children
 			}
 
 			else if (nodeType *= "record") {
@@ -699,28 +722,32 @@ void PVXMLSession::DialogExecute(PThread &, INT)
 
 	}
 
-	// if there is nothing else to process then flush out the queue and quit
-	if (currentNode == NULL)
-		; //outgoingChannel->FlushQueue();		
-
-	// else if the current node has children, then process the first child
-  else if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
+	// if the current node has children, then process the first child
+  if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
     currentNode = ((PXMLElement *)currentNode)->GetElement(0);
 
 	// else process the next sibling
 	else {
-		while ((currentNode != NULL) && currentNode->GetNextObject() == NULL)
+    // Keep moving up the parents until we find a next sibling
+    while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
 			currentNode = currentNode->GetParent();
+
+      // if we are on the backwards traversal through a <field> then wait
+      // for a grammar recognition and throw events if necessary
+      if ((currentNode->IsElement() == TRUE) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
+        listening = TRUE;
+        PlaySilence(timeout);
+      }
+    }
 
 		if (currentNode != NULL)
 			currentNode = currentNode->GetNextObject();
 	}
 
-  if ((currentNode == NULL) && !IsPlaying() && !IsRecording()) {
+  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
     if (OnEmptyAction())
       forceEnd = TRUE;
   }
-/////NEW 
 }
 
 BOOL PVXMLSession::TraverseGoto()		// <goto>
@@ -764,29 +791,52 @@ BOOL PVXMLSession::TraverseGoto()		// <goto>
 	return FALSE;
 }
 
-BOOL PVXMLSession::OnUserInput(char /*ch*/)
+BOOL PVXMLSession::TraverseGrammar()		// <grammar>
+{
+  // load the grammar for this field, if we can build it
+  PVXMLGrammar * grammar = NULL;
+  PString grammarType = ((PXMLElement*)currentNode)->GetAttribute("type");
+  if (grammarType == "digits") {
+    PString lengthStr = ((PXMLElement*)currentNode)->GetAttribute("length");
+    if (!lengthStr.IsEmpty()) {
+      grammar = new PVXMLDigitsGrammar((PXMLElement*)currentNode, lengthStr.AsInteger());
+    }
+  }
+  else
+  {
+    // LATER: throw 'error.unsupported'
+    return FALSE;
+  }
+
+  if (grammar != NULL)
+    return LoadGrammar(grammar);
+
+  return TRUE;
+}
+
+
+BOOL PVXMLSession::OnUserInput(const PString & str)
 {
   PWaitAndSignal m(sessionMutex);
 
-////OLD
-#if 0
   if (activeGrammar != NULL) {
 
     // if the grammar has not completed, continue
-    if (!activeGrammar->OnUserInput(ch))
+    if (!activeGrammar->OnUserInput(str))
       return TRUE;
 
-    // if the grammar has completed, save the value and define the field
-    activeGrammar->GetField().SetFormValue(activeGrammar->GetValue());
-
-    // remove the grammar
-    LoadGrammar(NULL);
-
-    // execute whatever is going on
-    ExecuteWithoutLock();
+// ALEX: handle this in main loop?
+//
+//    // if the grammar has completed, save the value and define the field
+//    
+//    activeGrammar->GetValue();
+//
+//    // remove the grammar
+//    LoadGrammar(NULL);
+//
+//    // execute whatever is going on
+//    ExecuteWithoutLock();
   }
-#endif
-////OLD
 
   return TRUE;
 }
@@ -907,6 +957,18 @@ BOOL PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
     outgoingChannel->QueueResource(url, repeat, delay);
     AllowClearCall();
   }
+
+  return TRUE;
+}
+
+BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
+{
+  if (activeGrammar != NULL) {
+    delete activeGrammar;
+    activeGrammar = FALSE;
+  }
+
+  activeGrammar = grammar;
 
   return TRUE;
 }
@@ -1632,56 +1694,49 @@ void PVXMLIncomingChannelG7231::DelayFrame(PINDEX /*len*/)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0
-
-BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * /*grammar*/)
-{
-  if (activeGrammar != NULL) {
-    delete activeGrammar;
-    activeGrammar = FALSE;
-  }
-
-  activeGrammar = grammar;
-
-  return TRUE;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-PVXMLGrammar::PVXMLGrammar(PVXMLFieldItem & _field)
-  : field(_field)
+PVXMLGrammar::PVXMLGrammar(PXMLElement * _field)
+  : field(_field), state(PVXMLGrammar::NOINPUT)
 {
 }
 
 //////////////////////////////////////////////////////////////////
 
-PVXMLMenuGrammar::PVXMLMenuGrammar(PVXMLFieldItem & _field)
+PVXMLMenuGrammar::PVXMLMenuGrammar(PXMLElement * _field)
   : PVXMLGrammar(_field)
 {
 }
 
 //////////////////////////////////////////////////////////////////
 
-PVXMLDigitsGrammar::PVXMLDigitsGrammar(PVXMLFieldItem & _field, PINDEX _digitCount)
+PVXMLDigitsGrammar::PVXMLDigitsGrammar(PXMLElement * _field, PINDEX _digitCount)
   : PVXMLGrammar(_field), digitCount(_digitCount)
 {
 }
 
-BOOL PVXMLDigitsGrammar::OnUserInput(char ch)
+BOOL PVXMLDigitsGrammar::OnUserInput(const PString & str)
 {
-  value += ch;
+  value += str;
 
-  if (value.GetLength() < digitCount)
+  if (value.GetLength() != digitCount)
     return FALSE;
 
   cout << "grammar \"digits\" completed: value = " << value << endl;
 
+  state = PVXMLGrammar::FILLED;   // the grammar is filled!
+
   return TRUE;
 }
 
-#endif
+
+void PVXMLDigitsGrammar::Stop()
+{
+  // Stopping recognition here may change the state if something was
+  // recognized but it didn't fill the number of digits requested
+  if (!value.IsEmpty())
+    state = PVXMLGrammar::NOMATCH;
+  // otherwise the state will stay as NOINPUT
+}
 
 //////////////////////////////////////////////////////////////////
-
 
 #endif 
