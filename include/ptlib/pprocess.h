@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.69  2005/01/26 05:37:54  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.68  2004/06/30 12:17:04  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -620,9 +623,11 @@ class PProcess : public PThread
       int newLimit  /// New limit on file handles
     );
 
+#ifdef P_CONFIG_FILE
     /**Get the default file to use in PConfig instances.
       */
     virtual PString GetConfigurationFile();
+#endif
 
     /**Set the default file or set of directories to search for use in PConfig.
        To find the .ini file for use in the default PConfig() instance, this
