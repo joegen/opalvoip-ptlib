@@ -27,8 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
- * Revision 1.21  2001/09/09 02:03:49  yurik
- * no message
+ * Revision 1.22  2001/09/09 02:17:11  yurik
+ * Returned to 1.20
  *
  * Revision 1.20  2001/07/01 02:45:01  yurik
  * WinCE compiler wants implicit cast to format
@@ -823,9 +823,6 @@ BOOL PSoundChannel::OpenDevice(unsigned id)
     return FALSE;
 
   os_handle = id;
-
-  srand( (unsigned)time( NULL ) );
-
   return TRUE;
 }
 
@@ -885,9 +882,7 @@ BOOL PSoundChannel::Close()
 
   if (hWaveIn != NULL) {
     while ((osError = waveInClose(hWaveIn)) == WAVERR_STILLPLAYING)
-	{
       waveInReset(hWaveIn);
-	}
     hWaveIn = NULL;
   }
 
@@ -1152,7 +1147,6 @@ BOOL PSoundChannel::StartRecording()
 
 BOOL PSoundChannel::Read(void * data, PINDEX size)
 {
-
   lastReadCount = 0;
 
   if (hWaveIn == NULL) {
@@ -1161,50 +1155,31 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
   }
 
   if (!StartRecording())  // Start the first read, queue all the buffers
-  {
-	PTRACE(0, ">> Exit on !StartRecording()" << endl );
     return FALSE;
-  }
 
   if (!WaitForRecordBufferFull())
-  {
-	PTRACE(0, ">> Exit on !WaitForRecordBufferFull()" << endl );
     return FALSE;
-  }
 
   PWaitAndSignal mutex(bufferMutex);
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
   PINDEX bytesRecorded = buffer.header.dwBytesRecorded;
-  PTRACE(0, ">> Recorded " << bytesRecorded << "is full? " << IsRecordBufferFull() << endl );
-
   lastReadCount = bytesRecorded - bufferByteOffset;
   if (lastReadCount > size)
     lastReadCount = size;
 
-  lastReadCount = size;
-
   if (lastReadCount == 0 || bufferByteOffset == P_MAX_INDEX)
-  {
-	PTRACE(0, ">> Exit on lastReadCount == 0 || bufferByteOffset == P_MAX_INDEX" << endl );
     return FALSE;
-  }
 
   memcpy(data, &buffer[bufferByteOffset], lastReadCount);
 
   bufferByteOffset += lastReadCount;
   if (bufferByteOffset >= buffer.GetSize()) {
     if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
-	{
-	  PTRACE(0, ">> Exit on !buffer.Prepare" << endl );
       return FALSE;
-	}
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-	{
-	  PTRACE(0, ">> Exit on !waveInAddBuffer" << endl );
       return FALSE;
-	}
 
     bufferIndex = (bufferIndex+1)%buffers.GetSize();
     bufferByteOffset = 0;
@@ -1293,7 +1268,7 @@ BOOL PSoundChannel::IsRecordBufferFull()
   if (bufferByteOffset == P_MAX_INDEX)
     return TRUE;
 
-  return ((buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0);
+  return (buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0;
 }
 
 
@@ -1385,3 +1360,4 @@ PString PSoundChannel::GetErrorText() const
 
 
 // End of File ///////////////////////////////////////////////////////////////
+
