@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.13  2004/05/19 06:54:11  csoutheren
+ * Removed unused code
+ *
  * Revision 1.12  2004/05/18 06:01:06  csoutheren
  * Deferred plugin loading until after main has executed by using abstract factory classes
  *
@@ -143,28 +146,10 @@ class PPluginManager : public PObject
     PList<PNotifier> notifierList;
 };
 
-
-
-/*
-// helper classes to make sure plugin manager gets declared
-#define PWLIB_PLUGIN_MODULE_LOADER(name) \
-class name##_PluginLoader; \
-extern name##_PluginLoader name##_PluginLoader_Instance; \
-static name##_PluginLoader * name##_PluginLoader_Static = &name##_PluginLoader_Instance; \
-
-#define PWLIB_PLUGIN_MODULE_LOADER_IMPLEMENT(name, mgrclass) \
-class name##_PluginLoader  { public: name##_PluginLoader(); } name##_PluginLoader_Instance; \
-name##_PluginLoader::name##_PluginLoader() { mgrclass::GetManager(); } \
-mgrclass & mgrclass::GetManager()\
-{\
-  static PMutex mutex; \
-  static mgrclass * systemMgr = NULL;\
-  PWaitAndSignal m(mutex);\
-  if (systemMgr == NULL)\
-    systemMgr = new mgrclass;\
-  return *systemMgr;\
-}\
-*/
+//////////////////////////////////////////////////////
+//
+//  Manager for plugin modules
+//
 
 class PPluginModuleManager : public PObject
 {
@@ -193,17 +178,5 @@ class PPluginModuleManager : public PObject
     const char * signatureFunctionName;
     PPluginManager * pluginMgr;
 };
-
-/*
-#define PWLIB_PLUGIN_MANAGER_CLASS(mgr) \
-class mgr : public PPluginModuleManager\
-{\
-  public: \
-    static mgr & GetManager();\
-
-#ifdef DOCPLUSPLUS
-}
-#endif
-*/
 
 #endif // ifndef _PLUGINMGR_H
