@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.34 1995/06/04 12:41:08 robertj Exp $
+ * $Id: osutils.cxx,v 1.35 1995/07/31 12:09:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.35  1995/07/31 12:09:25  robertj
+ * Added semaphore class.
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.34  1995/06/04 12:41:08  robertj
  * Fixed bug in accessing argument strings with no argument.
  *
@@ -741,27 +745,11 @@ PChannel::PChannel()
 }
 
 
-void PChannel::DestroyContents()
+PChannel::~PChannel()
 {
   flush();
   delete (PChannelStreamBuffer *)rdbuf();
   init(NULL);
-}
-
-void PChannel::CloneContents(const PChannel *)
-{
-  init(PNEW PChannelStreamBuffer(this));
-}
-
-void PChannel::CopyContents(const PChannel & c)
-{
-#ifdef __BORLANDC__
-  init(((PChannel&)c).rdbuf());
-#else
-  init(c.rdbuf());
-#endif
-  ((PChannelStreamBuffer*)rdbuf())->channel = this;
-  os_handle = c.os_handle;
 }
 
 
@@ -1028,10 +1016,9 @@ BOOL PChannel::SendCommandString(const PString & command)
 
 #if defined(_PFILE)
 
-void PFile::DestroyContents()
+PFile::~PFile()
 {
   Close();
-  PChannel::DestroyContents();
 }
 
 
@@ -1225,16 +1212,9 @@ PSerialChannel::PSerialChannel(PConfig & cfg)
 }
 
 
-void PSerialChannel::CloneContents(const PSerialChannel *)
-{
-  PAssertAlways("Cannot clone serial channel");
-}
-
-
-void PSerialChannel::DestroyContents()
+PSerialChannel::~PSerialChannel()
 {
   Close();
-  PChannel::DestroyContents();
 }
 
 
@@ -1707,7 +1687,15 @@ void PArgList::Parse(const char * theArgumentSpec)
   optionCount.SetSize(l);
   argumentList.SetSize(l);
 
+  arg_count -= shift;
+  arg_values += shift;
+
   while (arg_count > 0 && arg_values[0][0] == '-') {
+    if (arg_values[0][1] == '\0') {
+      --arg_count;
+      ++arg_values;
+      return;
+    }
     while ((c = *++arg_values[0]) != 0) {
       if ((p = argumentSpec.Find(c)) == P_MAX_INDEX)
         UnknownOption (c);
@@ -1782,10 +1770,11 @@ PString PArgList::GetParameter(PINDEX num) const
 
 void PArgList::Shift(int sh) 
 {
-  if ((sh < 0) && (shift > 0))
-    shift -= sh;
-  else if ((sh > 0) && (shift < arg_count))
-    shift += sh;
+  shift += sh;
+  if (shift < 0)
+    shift = 0;
+  else if (shift >= arg_count)
+    shift = arg_count-1;
 }
 
 
@@ -1894,9 +1883,14 @@ void PThread::Suspend(BOOL susp)
         status = Suspended;
       break;
 
-    case Blocked :
+    case BlockedIO :
       if (IsSuspended())
-        status = SuspendedBlock;
+        status = SuspendedBlockIO;
+      break;
+
+    case BlockedSem :
+      if (IsSuspended())
+        status = SuspendedBlockSem;
       break;
 
     case Suspended :
@@ -1904,9 +1898,14 @@ void PThread::Suspend(BOOL susp)
         status = Waiting;
       break;
 
-    case SuspendedBlock :
+    case SuspendedBlockIO :
       if (!IsSuspended())
-        status = Blocked;
+        status = BlockedIO;
+      break;
+
+    case SuspendedBlockSem :
+      if (!IsSuspended())
+        status = BlockedSem;
       break;
 
     default :
@@ -1997,7 +1996,7 @@ void PThread::Yield()
         }
         break;
 
-      case Blocked :
+      case BlockedIO :
         if (thread->IsNoLongerBlocked()) {
           thread->ClearBlock();
           next = thread;
@@ -2085,6 +2084,70 @@ int PProcess::GetTerminationValue() const
   return terminationValue;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PSemaphore
+
+#ifndef P_PLATFORM_HAS_THREADS
+
+PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
+{
+  PAssert(maxCount > 0, "Invalid semaphore maximum.");
+  if (initial > maxCount)
+    initial = maxCount;
+  currentCount = initial;
+  maximumCount = maxCount;
+}
+
+
+PSemaphore::~PSemaphore()
+{
+  PAssert(blockedThreads.IsEmpty(),
+                        "Semaphore destroyed while still has blocked threads");
+}
+
+
+void PSemaphore::Wait()
+{
+  if (currentCount > 0)
+    currentCount--;
+  else {
+    PThread * thread = PThread::Current();
+    blockedThreads.Enqueue(thread);
+    thread->status = PThread::BlockedSem;
+    PThread::Yield();
+  }
+}
+
+
+void PSemaphore::Signal()
+{
+  if (blockedThreads.GetSize() > 0) {
+    PThread * thread = blockedThreads.Dequeue();
+    switch (thread->status) {
+      case PThread::BlockedSem :
+        thread->status = PThread::Waiting;
+        break;
+      case PThread::SuspendedBlockSem :
+        thread->status = PThread::Suspended;
+        break;
+      default:
+        PAssertAlways("Semaphore unblock of thread that is not blocked");
+    }
+    PThread::Yield();
+  }
+  else if (currentCount < maximumCount)
+    currentCount++;
+}
+
+
+BOOL PSemaphore::WillBlock() const
+{
+  return currentCount == 0;
+}
+
+
+#endif
 
 
 #endif
