@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.48  1999/08/22 12:54:35  robertj
+ * Fixed warnings about inlines on older GNU compiler
+ *
  * Revision 1.47  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -202,6 +205,12 @@ void PCollection::RemoveAll()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void PArrayObjects::CopyContents(const PArrayObjects & array)
+{
+  theArray = array.theArray;
+}
+
 
 void PArrayObjects::DestroyContents()
 {
