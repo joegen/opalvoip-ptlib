@@ -99,7 +99,7 @@ struct Variables {
 #define VARIABLE ((struct Variables*)parseParam)
 
 
-#define YYPURE
+#define YYPURE		1
 #define YYLEX_PARAM	VARIABLE->yyInput
 #define YYPARSE_PARAM	parseParam
 
