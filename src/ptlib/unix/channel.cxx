@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.21  1998/10/16 01:15:38  craigs
+ * Added Yield to help with cooperative multithreading.
+ *
  * Revision 1.20  1998/10/11 02:23:16  craigs
  * Fixed problem with socket writes not correctly detecting EOF
  *
@@ -174,7 +177,9 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
 
     int sendResult = ::write(os_handle,
                   ((const char *)buf)+lastWriteCount, len);
-    if (sendResult <= 0) {
+    if (sendResult > 0)
+      PThread::Yield();
+    else {
       if (errno != EWOULDBLOCK)
         return ConvertOSError(sendResult);
 
