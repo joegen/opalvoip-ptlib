@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.23 1998/02/16 00:14:36 robertj Exp $
+ * $Id: cypher.cxx,v 1.24 1998/07/24 06:58:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.24  1998/07/24 06:58:13  robertj
+ * Improved robustness of encrypted data decoding, error on illegal tail block size.
+ *
  * Revision 1.23  1998/02/16 00:14:36  robertj
  * Fixed ability to register in one stage instead of always having to use 2.
  *
@@ -534,15 +537,17 @@ BOOL PCypher::Decode(const PBYTEArray & coded, PBYTEArray & clear)
   PINDEX length = coded.GetSize();
   BYTE * out = clear.GetPointer(length);
 
-  while (length > 0) {
+  for (PINDEX count = 0; count < length; count += blockSize) {
     DecodeBlock(in, out);
     in += blockSize;
     out += blockSize;
-    length -= blockSize;
   }
 
-  if (blockSize != 1)
-    clear.SetSize(clear.GetSize() - blockSize + *--out);
+  if (blockSize != 1) {
+    if (*--out >= blockSize)
+      return FALSE;
+    clear.SetSize(length - blockSize + *out);
+  }
 
   return TRUE;
 }
