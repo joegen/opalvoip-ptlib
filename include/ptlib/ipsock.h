@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.34  1998/12/18 04:34:14  robertj
+ * PPC Linux GNU C compatibility.
+ *
  * Revision 1.33  1998/11/30 08:57:32  robertj
  * New directory structure
  *
@@ -167,6 +170,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         Address & operator=(const Address & addr);
         Address & operator=(const PString & dotNotation);
         Address & operator=(DWORD dw);
+        PString AsString() const;
         operator PString() const;
         operator DWORD() const;
         BYTE Byte1() const;
