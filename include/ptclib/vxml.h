@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.3  2004/07/06 01:38:57  csoutheren
+ * Changed PVXMLChannel to use PDelayChannel
+ * Fixed bug where played files were deleted after playing
+ *
  * Revision 1.30.2.2  2004/07/02 07:22:37  csoutheren
  * Updated for latest factory changes
  *
@@ -441,8 +445,8 @@ class PVXMLPlayable : public PObject
     PVXMLPlayable()
     { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; }
 
-    virtual BOOL Open(PINDEX _delay, PINDEX _repeat, BOOL v)
-    { delay = _delay; repeat = _repeat; autoDelete = v; return TRUE; }
+    virtual BOOL Open(PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+    { delay = _delay; repeat = _repeat; autoDelete = _autoDelete; return TRUE; }
 
     virtual BOOL Open(const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
     { arg = _arg; return Open(_delay, _repeat, v); }
@@ -484,11 +488,11 @@ PQUEUE(PVXMLQueue, PVXMLPlayable);
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLChannel : public PIndirectChannel
+class PVXMLChannel : public PDelayChannel
 {
-  PCLASSINFO(PVXMLChannel, PIndirectChannel);
+  PCLASSINFO(PVXMLChannel, PDelayChannel);
   public:
-    PVXMLChannel();
+    PVXMLChannel(unsigned frameDelay, PINDEX frameSize);
     ~PVXMLChannel();
 
     virtual BOOL Open(PVXMLChannelInterface * _vxml, BOOL incoming);
@@ -539,8 +543,6 @@ class PVXMLChannel : public PIndirectChannel
 
     void SetPause(BOOL _pause) { paused = _pause; }
 
-    virtual void HandleDelay(PINDEX amount);
-
     void SetName(const PString & name) { channelName = name; }
 
   protected:
@@ -549,15 +551,11 @@ class PVXMLChannel : public PIndirectChannel
 
     unsigned sampleFrequency;
     PString formatName;
-    PINDEX frameBytes;
-    unsigned frameTime;
     unsigned wavFileType;
     PString wavFilePrefix;
 
     PMutex channelMutex;
-    PAdaptiveDelay delay;
     BOOL closed;
-    PINDEX delayBytes;
 
     // Incoming audio variables
     BOOL recording;
