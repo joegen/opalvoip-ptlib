@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.18  2002/08/27 02:46:56  craigs
+ * Removed need for application to call AllowClearCall
+ *
  * Revision 1.17  2002/08/27 02:20:09  craigs
  * Added <break> command in prompt blocks
  * Fixed potential deadlock
@@ -372,16 +375,21 @@ void PVXMLSession::SetVar(const PString & ostr, const PString & val)
 
 BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
 {
-  if (outgoingChannel != NULL)
+  if (outgoingChannel != NULL) {
     outgoingChannel->QueueFile(fn, repeat, delay, autoDelete);
+    AllowClearCall();
+  }
 
   return TRUE;
 }
 
 BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel != NULL)
+  if (outgoingChannel != NULL) {
     outgoingChannel->QueueData(data, repeat, delay);
+    AllowClearCall();
+  }
+
 
   return TRUE;
 }
@@ -391,6 +399,7 @@ BOOL PVXMLSession::PlaySilence(PINDEX msecs)
   if (outgoingChannel != NULL) {
     PBYTEArray nothing;
     outgoingChannel->QueueData(nothing, 1, msecs);
+    AllowClearCall();
   }
 
   return TRUE;
