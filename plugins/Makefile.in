@@ -49,6 +49,17 @@ DEFAULT_VIDINPUT	= vidinput_avc1394
 endif
 endif
 
+HAS_DC1394		= @HAS_DC1394@
+
+ifeq (1,$(HAS_DC1394))
+SUBDIRS += vidinput_dc
+ifeq (,$(DEFAULT_VIDINPUT))
+DEFAULT_VIDINPUT	= vidinput_dc1394
+endif
+endif
+
+
+
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),$(MAKE)  -C $(dir) opt;)
 
