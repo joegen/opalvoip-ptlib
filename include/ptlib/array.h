@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.28  2004/03/02 10:29:59  rjongbloed
+ * Changed base array declaration macro to be consistent with the
+ *   object array one, thanks Guilhem Tardy
+ *
  * Revision 1.27  2003/04/17 07:24:47  robertj
  * Fixed GNU 3.x problem (why no other compiler?)
  *
@@ -552,12 +556,12 @@ template <class T> class PBaseArray : public PAbstractArray
    information.
  */
 #define PDECLARE_BASEARRAY(cls, T) \
-  PBASEARRAY(PBaseArray_##cls, T); \
-  PDECLARE_CLASS(cls, PBaseArray_##cls) \
+  PBASEARRAY(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
     cls(PINDEX initialSize = 0) \
-      : PBaseArray_##cls(initialSize) { } \
+      : cls##_PTemplate(initialSize) { } \
     cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
-      : PBaseArray_##cls(buffer, length, dynamic) { } \
+      : cls##_PTemplate(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
