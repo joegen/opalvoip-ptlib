@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.14 1996/02/08 12:30:41 robertj Exp $
+ * $Id: win32.cxx,v 1.15 1996/02/15 14:54:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.15  1996/02/15 14:54:06  robertj
+ * Compensated for C library bug in time().
+ *
  * Revision 1.14  1996/02/08 12:30:41  robertj
  * Time zone changes.
  * Added OS identification strings to PProcess.
@@ -231,6 +234,22 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
+PTime::PTime()
+{
+  struct tm t;
+  SYSTEMTIME st;
+  GetLocalTime(&st);
+  t.tm_sec   = st.wSecond;
+  t.tm_min   = st.wMinute;
+  t.tm_hour  = st.wHour;
+  t.tm_mday  = st.wDay;
+  t.tm_mon   = st.wMonth-1;
+  t.tm_year  = st.wYear-1900;
+  t.tm_isdst = IsDaylightSavings();
+  theTime = mktime(&t);
+}
+
+
 PString PTime::GetTimeSeparator()
 {
   PString str;
@@ -315,12 +334,11 @@ BOOL PTime::IsDaylightSavings()
 }
 
 
-long PTime::GetTimeZone()
+int PTime::GetTimeZone(TimeZoneType type)
 {
   TIME_ZONE_INFORMATION tz;
-  DWORD result = GetTimeZoneInformation(&tz);
-  PAssertOS(result != 0xffffffff);
-  if (result == TIME_ZONE_ID_DAYLIGHT)
+  PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
+  if (type == DaylightSavings)
     tz.Bias += tz.DaylightBias;
   return tz.Bias;
 }
