@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.11  2003/01/06 18:41:08  rogerh
+ * Add NetBSD patches, taken from the NetBSD pkg patches.
+ * Submitted by Andreas Wrede
+ *
  * Revision 1.10  2002/05/08 22:38:53  dereks
  * Adjust formatting to the pwlib standard.
  *
@@ -106,7 +110,7 @@ PStringList PVideoChannel::GetDeviceNames(Directions /*dir*/)
 
 PString PVideoChannel::GetDefaultDevice(Directions /*dir*/)
 {
-#if defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD)  || defined(P_NETBSD)
   return "/dev/bktr0";
 #endif
 
