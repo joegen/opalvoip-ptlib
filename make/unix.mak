@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.45  1999/07/11 14:53:38  robertj
+# Temporarily removed pthreads for linux as is not very portable on various linuxes
+#
 # Revision 1.44  1999/07/11 13:42:13  craigs
 # pthreads support for Linux
 #
@@ -202,7 +205,7 @@ endif
 ifeq ($(OSTYPE),linux)
 
 # P_SSL		= $(PWLIBDIR)
-P_PTHREADS	= 1
+#P_PTHREADS	= 1
 
 # i486 Linux for x86, using gcc 2.7.2
 STDCCFLAGS	+= -DP_LINUX
