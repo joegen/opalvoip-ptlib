@@ -88,7 +88,7 @@
  * Coriander program even when ohphone or GnomeMeeting is being used.
  * Please use Coriander.
  *
- * PVideoInput1394DC does not allow creation of two or more instances.
+ * PVideoInput1394DcDevice does not allow creation of two or more instances.
  *
  *
  * Acknowledgment:
@@ -111,6 +111,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.2  2002/02/20 20:27:28  dereks
+ * updates to previous checkin.
+ *
  * Revision 1.1  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -295,10 +298,9 @@ BOOL PVideoInput1394DcDevice::Start()
   }
   PTRACE(1, deviceName << " " << channelNumber);
 
-  // We can remove nasty (char *)((const char *) in the following line
-  // with the future version of libdc1394.
-  //  This line may not be needed::
-  //                 camera.dma_device_file = (char *)((const char *)deviceName);
+  // In order to compile the following line, you need libdc1394 later than Feb. 1, 2002.
+  camera.dam_device_file = deviceName.GetPointer();
+
   if ((UseDMA &&dc1394_dma_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
                            FORMAT_VGA_NONCOMPRESSED,
