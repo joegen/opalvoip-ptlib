@@ -1,5 +1,5 @@
 /*
- * $Id: pethsock.cxx,v 1.1 1998/08/31 12:59:55 robertj Exp $
+ * $Id: pethsock.cxx,v 1.2 1998/09/14 12:37:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: pethsock.cxx,v $
+ * Revision 1.2  1998/09/14 12:37:51  robertj
+ * Added function to parse type and payload address out of ethernet/802.2 packet.
+ *
  * Revision 1.1  1998/08/31 12:59:55  robertj
  * Initial revision
  *
@@ -86,6 +89,43 @@ PEthSocket::Address::operator PString() const
 }
 
 
+void PEthSocket::Frame::Parse(WORD & type, BYTE * & payload, PINDEX & length)
+{
+  WORD len_or_type = ntohs(snap.length);
+  if (len_or_type > sizeof(*this)) {
+    type = len_or_type;
+    payload = ether.payload;
+    // Subtract off the Ethernet II header
+    length -= sizeof(dst_addr)+sizeof(src_addr)+sizeof(snap.length);
+    return;
+  }
+
+  if (snap.dsap == 0xaa && snap.ssap == 0xaa) {
+    type = ntohs(snap.type);   // SNAP header
+    payload = snap.payload;
+    // Subtract off the 802.2 header and SNAP data
+    length = len_or_type - (sizeof(snap)-sizeof(snap.payload));
+    return;
+  }
+  
+  if (snap.dsap == 0xff && snap.ssap == 0xff) {
+    type = TypeIPX;   // Special case for Novell netware's stuffed up 802.3
+    payload = &snap.dsap;
+    length = len_or_type;  // Whole thing is IPX payload
+    return;
+  }
+
+  if (snap.dsap == 0xe0 && snap.ssap == 0xe0)
+    type = TypeIPX;   // Special case for Novell netware's 802.2
+  else
+    type = snap.dsap;    // A pure 802.2 protocol id
+
+  payload = snap.oui;
+  // Subtract off the 802.2 header
+  length = len_or_type - (sizeof(snap.dsap)+sizeof(snap.ssap)+sizeof(snap.ctrl));
+}
+
+
 const char * PEthSocket::GetProtocolName() const
 {
   return "eth";
@@ -129,30 +169,8 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
 
   dest = frame->dst_addr;
   src = frame->src_addr;
-  WORD len_or_type = ntohs(frame->snap.length);
-  if (len_or_type > sizeof(Frame)) {
-    type = len_or_type;
-    length = lastReadCount - MinFrameSize;
-    payload = frame->ether.payload;
-  }
-  else if (frame->snap.dsap == 0xaa && frame->snap.ssap == 0xaa) {
-    type = ntohs(frame->snap.type);   // SNAP header
-    payload = frame->snap.payload;
-    length = len_or_type - 8;  // Subtract off the 802.2 header and SNAP data
-  }
-  else if (frame->snap.dsap == 0xff && frame->snap.ssap == 0xff) {
-    type = TypeIPX;   // Special case for Novell netware's stuffed up 802.3
-    payload = &frame->snap.dsap;
-    length = len_or_type;  // Whole thing is IPX payload
-  }
-  else {
-    if (frame->snap.dsap == 0xe0 && frame->snap.ssap == 0xe0)
-      type = TypeIPX;   // Special case for Novell netware's 802.2
-    else
-      type = frame->snap.dsap;    // A pure 802.2 protocol id
-    payload = frame->snap.oui;
-    length = len_or_type - 3;     // Subtract off the 802.2 header
-  }
+  length = lastReadCount;
+  frame->Parse(type, payload, length);
 
   return TRUE;
 }
