@@ -134,6 +134,35 @@ if test "$enable_dc" = "yes" ; then
   if test "${DC1394HDR:-unset}" != "unset" -a ${RAW1394HDR:-unset} != "unset"; then
     AC_SUBST(HAS_DC1394, 1)
     AC_MSG_RESULT(yes)
+    AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
+    AC_COMPILE_IFELSE([[
+#include "libdc1394/dc1394_control.h"
+int main(int ac,char **av)
+{
+  raw1394handle_t handle;
+  nodeid_t node;
+  int channel;
+  int format;
+  int mode;
+  int speed;
+  int frame_rate; 
+  int num_dma_buffers;
+  int do_extra_buffering;
+  int drop_frames;
+  const char *dma_device_file;
+  dc1394_cameracapture *camera;
+  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
+			   do_extra_buffering, drop_frames, dma_device_file, camera);
+  return 0;
+}
+]],NEW_DC_API=1, NEW_DC_API=0)
+    if test "$NEW_DC_API" = "1" ; then
+      AC_SUBST(DC_CFLAGS, -DNEW_DC_API)
+      AC_MSG_RESULT(yes)
+    else
+      AC_SUBST(DC_CFLAGS)
+      AC_MSG_RESULT(no)
+    fi
   else
     AC_MSG_RESULT(no)
   fi
@@ -146,5 +175,6 @@ dnl ########################################################################
 dnl output header file
 
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(vidinput_dc/Makefile)
 
 AC_OUTPUT()
