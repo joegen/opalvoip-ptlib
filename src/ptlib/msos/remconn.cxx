@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.23  1998/10/15 05:41:51  robertj
+ * New memory leak check code.
+ *
  * Revision 1.22  1998/09/24 03:30:55  robertj
  * Added open software license.
  *
@@ -107,6 +110,7 @@ PDECLARE_CLASS(PRASDLL, PDynaLink)
   DWORD (FAR PASCAL *GetProjectionInfo)(HRASCONN, RASPROJECTION, LPVOID, LPDWORD);
 } Ras;
 
+
 PRASDLL::PRASDLL()
 #ifdef _WIN32
   : PDynaLink("RASAPI32.DLL")
@@ -127,6 +131,9 @@ PRASDLL::PRASDLL()
   GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
   GetFunction("RasGetProjectionInfoA", (Function &)GetProjectionInfo);
 }
+
+
+#define new PNEW
 
 
 static BOOL IsWinVer401()
