@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.18 1996/01/30 23:30:40 robertj Exp $
+ * $Id: collect.cxx,v 1.19 1996/02/03 11:07:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.19  1996/02/03 11:07:59  robertj
+ * A bit more bullet proofing of sorted list class.
+ *
  * Revision 1.18  1996/01/30 23:30:40  robertj
  * Added optimisation to sorted list GetAt() to use cached element.
  *
@@ -677,7 +680,7 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
       info->lastElement = info->root->OrderSelect(index+1);
   }
 
-  return info->lastElement->data;
+  return PAssertNULL(info->lastElement)->data;
 }
 
 
