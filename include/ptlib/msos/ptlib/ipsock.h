@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.10  2003/02/04 22:28:19  robertj
+ * Fixed use of NETDB_SUCCESS symbol in WinCE, thanks Joerg Schoemer
+ *
  * Revision 1.9  2002/12/04 00:41:12  robertj
  * Added sockets symbol not in winsock for getXbyY functions.
  *
@@ -86,9 +89,10 @@
 #define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
 
-#define NETDB_SUCCESS 0
-
 #endif
+
+
+#define NETDB_SUCCESS 0
 
 
 ///////////////////////////////////////////////////////////////////////////////
