@@ -2135,7 +2135,7 @@ EXPORTS
     ?FindLast@PString@@QBEHABV1@H@Z @1293 NONAME ;public: int __thiscall PString::FindLast(class PString const &,int)const 
     ?FindLast@PString@@QBEHDH@Z @1294 NONAME ;public: int __thiscall PString::FindLast(char,int)const 
     ?FindLast@PString@@QBEHPBDH@Z @1295 NONAME ;public: int __thiscall PString::FindLast(char const *,int)const 
-    ?FindLetter@PFakeVideoInputDevice@@QAEPAUOneVFakeLetterData@@I@Z @4865 NONAME ;public: struct OneVFakeLetterData * __thiscall PFakeVideoInputDevice::FindLetter(unsigned int)
+    ?FindLetter@PFakeVideoInputDevice@@QAEPAUOneVFakeLetterData@@D@Z @4873 NONAME ;public: struct OneVFakeLetterData * __thiscall PFakeVideoInputDevice::FindLetter(char)
     ?FindOneOf@PString@@QBEHABV1@H@Z @1296 NONAME ;public: int __thiscall PString::FindOneOf(class PString const &,int)const 
     ?FindOneOf@PString@@QBEHPBDH@Z @1297 NONAME ;public: int __thiscall PString::FindOneOf(char const *,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@AAH1HH@Z @1298 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int &,int &,int,int)const 
