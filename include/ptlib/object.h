@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.9 1995/02/05 00:48:07 robertj Exp $
+ * $Id: object.h,v 1.10 1995/02/19 04:19:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.9  1995/02/05 00:48:07  robertj
+ * Revision 1.10  1995/02/19 04:19:14  robertj
+ * Added dynamically linked command processing.
+ *
+ * Revision 1.9  1995/02/05  00:48:07  robertj
  * Fixed template version.
  *
  * Revision 1.8  1995/01/15  04:51:31  robertj
@@ -264,7 +267,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
 
 #else // defined(PMEMORY_CHECK)
 
-#define PNEW          new
+#define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
 
 
@@ -281,8 +284,8 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
   public: \
     static const char * Class() \
       { return #cls; } \
-    virtual const char * GetClass() const \
-      { return cls::Class(); } \
+    virtual const char * GetClass(unsigned ancestor = 0) const \
+      { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
     virtual BOOL IsClass(const char * clsName) const \
       { return strcmp(clsName, cls::Class()) == 0; } \
     virtual BOOL IsDescendant(const char * clsName) const \
@@ -333,7 +336,13 @@ PCLASS PObject {
        Returns: pointer to C string literal.
      */      
 
-    virtual const char * GetClass() const;
+    virtual const char * GetClass(
+      unsigned ancestor = 0
+      /* Level of ancestor to get the class name for. A value of zero is the
+         instances class name, one is its ancestor, two for the ancestors
+         ancestor etc.
+       */
+    ) const;
     /* Get the current dynamic type of the object instance.
 
        When comparing class names, always use the $B$strcmp()$B$ function
