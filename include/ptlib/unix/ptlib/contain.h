@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.24  2004/04/11 13:34:51  csoutheren
+ * Sigh. gcc needs a namespace directive in order to compile correctly :(
+ *
  * Revision 1.23  2004/04/11 06:15:35  csoutheren
  * Modified to use Atomic_word if available
  *
@@ -155,4 +158,6 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 #else
 #define PCONTAINER_USES_CRITSEC   1
 #endif
+
+using namespace std;
 
