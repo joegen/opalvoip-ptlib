@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.11 1996/11/16 10:50:26 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.12 1997/01/03 06:33:23 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.12  1997/01/03 06:33:23  robertj
+ * Removed slash from operating system version string, so says Windows NT rather than Windows/NT
+ *
  * Revision 1.11  1996/11/16 10:50:26  robertj
  * ??
  *
@@ -106,7 +109,7 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << PHTML::TableData()
        << gifText
        << PHTML::TableData()
-       << GetOSClass() << '/' << GetOSName()
+       << GetOSClass() << ' ' << GetOSName()
        << " Version " << GetVersion(TRUE)
        << ", " << compilationDate.AsString("d MMM yy")
        << PHTML::BreakLine()
