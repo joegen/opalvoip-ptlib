@@ -30,6 +30,8 @@ public:
     int  ipfx(int =0);
     void isfx() { unlockbuf(); unlock(); }
 
+	istream& operator>>(istream& (__cdecl* _f)(istream&));
+	istream& operator>>(ios& (__cdecl* _f)(ios&));
 	istream& operator>>(streambuf *);
     istream& operator>>(char *);
     inline istream& operator>>(unsigned char *);
@@ -94,6 +96,8 @@ private:
     int x_gcount;
 };
 
+inline istream& istream::operator>>(istream& (__cdecl* _f)(istream&)) { (*_f)(*this); return *this; }
+inline istream& istream::operator>>(ios& (__cdecl* _f)(ios&)) { (*_f)(*this); return *this; }
 
 inline istream& istream::operator>>(unsigned char * _s) { return operator>>((char *)_s); }
 inline istream& istream::operator>>(  signed char * _s) { return operator>>((char *)_s); }
