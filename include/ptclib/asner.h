@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.13  2000/07/11 18:23:03  robertj
+ * Added ability to set/get BMP string data as PWORDArray.
+ *
  * Revision 1.12  2000/04/10 17:30:42  robertj
  * Added [] operator for char access on ASN string classes.
  *
@@ -558,7 +561,9 @@ class PASN_BMPString : public PASN_ConstrainedObject
     PASN_BMPString & operator=(const PString & v);
     PASN_BMPString & operator=(const PWORDArray & v);
     operator PString() const { return GetValue(); }
+    operator PWORDArray() const { return value; }
     PString GetValue() const;
+    void GetValue(PWORDArray & v) const { v = value; }
     void SetValue(const PString & v) { operator=(v); }
     void SetValue(const PWORDArray & v) { operator=(v); }
 
