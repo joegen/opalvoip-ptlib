@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.12  2004/06/30 12:17:04  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.11  2004/06/17 06:35:12  csoutheren
  * Use attribute (( constructor )) to guarantee that factories are
  * instantiated when loaded from a shared library
@@ -84,7 +88,7 @@
  *
  * These templates implement an Abstract Factory that allows
  * creation of a class "factory" that can be used to create
- * "concrete" instance that are descended from a abstract case class
+ * "concrete" instance that are descended from a abstract base class
  *
  * Given an abstract class A with a descendant concrete class B, the 
  * concrete class is registered by instantiating the PAbstractFactory
@@ -111,104 +115,229 @@
  *
  * Finally, note that the factory lists are all thread safe for addition,
  * creation, and obtaining the key lists.
- *
- * On Windows, static variables declared within functions in DLLs are put into
- * seperate data spaces. As the factory code uses a template that declares
- * the factory instance within a static function, this results in each DLL and
- * the main program all getting seperate factories. As a result, the factory
- * instance must be defined seperately using the PINSTANTIATE_FACTORY macro.
- * This ensures that the static function that contains the factory instance
- * is only declared in one compile unit, and hence, all usages must use the
- * same factory instance.
- *
- * Using the example above, the factory is instantiated as follows:
- * 
- *      PINSTANTIATE_FACTORY(A)
- *
- * Note that INSTANTIATE_FACTORY assumes the default key type is being used (PString)
- * If another key type is used, then the PINSTANTIATE_GENERIC_FACTORY macro
- * can be used as follows
- *
- *      PINSTANTIATE_GENERIC_FACTORY(C, unsigned)
- *  
  */
 
+/** Base class for generic factories.
+    This classes reason for existance and the FactoryMap contained within it
+    is to resolve issues with static global construction order and Windows DLL
+    multiple instances issues. THis mechanism guarantees that the one and one
+    only global variable (inside the GetFactories() function) is initialised
+    before any other factory related instances of classes.
+  */
+class PFactoryBase
+{
+  protected:
+    PFactoryBase()
+    { }
+  public:
+    virtual ~PFactoryBase()
+    { }
+
+  protected:
+    class FactoryMap : public std::map<std::string, PFactoryBase *>
+    {
+      public:
+        FactoryMap() { }
+        ~FactoryMap();
+    };
+    static FactoryMap & GetFactories();
+
+    PMutex mutex;
+
+  private:
+    PFactoryBase(const PFactoryBase &) {}
+    void operator=(const PFactoryBase &) {}
+};
+
+
+/** Template class for generic factories of an abstract class.
+  */
 template <class _Abstract_T, typename _Key_T = PString>
-class PGenericFactory
+class PFactory : PFactoryBase
 {
   public:
     typedef _Key_T      Key_T;
     typedef _Abstract_T Abstract_T;
-    typedef _Abstract_T * (*CreatorFunction_T)();
 
-    class AbstractInfo {
-      public:
-        AbstractInfo()
-          : creator(NULL), isSingleton(FALSE), instance(NULL)
+    class WorkerBase
+    {
+      protected:
+        WorkerBase(bool singleton)
+          : isDynamic(false),
+            isSingleton(singleton),
+            singletonInstance(NULL),
+            deleteSingleton(false)
         { }
-        AbstractInfo(CreatorFunction_T creat, BOOL single)
-          : creator(creat), isSingleton(single), instance(NULL)
+        WorkerBase(Abstract_T * instance)
+          : isSingleton(true),
+            singletonInstance(instance),
+            deleteSingleton(true)
         { }
-        AbstractInfo(_Abstract_T * inst, BOOL single)
-          : creator(NULL), isSingleton(single), instance(inst)
-        { }
-        CreatorFunction_T creator;
-        BOOL isSingleton;
-        _Abstract_T * instance;
+
+        virtual ~WorkerBase()
+        {
+          if (deleteSingleton)
+            delete singletonInstance;
+        }
+
+        Abstract_T * CreateInstance()
+        {
+          if (!isSingleton)
+            return Create();
+
+          if (singletonInstance == NULL)
+            singletonInstance = Create();
+          return singletonInstance;
+        }
+
+        virtual Abstract_T * Create() const { return singletonInstance; }
+
+        bool         isDynamic;
+        bool         isSingleton;
+        Abstract_T * singletonInstance;
+        bool         deleteSingleton;
+
+      friend class PFactory<_Abstract_T, _Key_T>;
     };
 
-    typedef std::map<_Key_T, AbstractInfo> KeyMap_T;
+    template <class _Concrete_T>
+    class Worker : WorkerBase
+    {
+      public:
+        Worker(const Key_T & key, bool singleton)
+          : WorkerBase(singleton)
+        {
+          PFactory<_Abstract_T>::Register(key, this);
+        }
+
+      protected:
+        virtual Abstract_T * Create() const { return new _Concrete_T; }
+    };
+
+    typedef std::map<_Key_T, WorkerBase *> KeyMap_T;
     typedef std::vector<_Key_T> KeyList_T;
 
-    static void Register(const _Key_T & key, CreatorFunction_T func, BOOL isSingleton)
-    { Register(key, AbstractInfo(func, isSingleton)); }
-
-    static void Register(const _Key_T & key, _Abstract_T * instance, BOOL isSingleton)
-    { Register(key, AbstractInfo(instance, isSingleton)); }
-
-    static void Register(const _Key_T & key, const AbstractInfo & info)
+    static void Register(const _Key_T & key, WorkerBase * worker)
     {
-      PWaitAndSignal m(GetMutex());
-      KeyMap_T & keyMap = GetKeyMap();
-      if (keyMap.find(key) == keyMap.end())
-        keyMap[key] = info;
+      GetInstance().Register_Internal(key, worker);
+    }
+
+    static void Register(const _Key_T & key, Abstract_T * instance)
+    {
+      GetInstance().Register_Internal(key, new WorkerBase(instance));
     }
 
     static void Unregister(const _Key_T & key)
     {
-      PWaitAndSignal m(GetMutex());
-      KeyMap_T & keyMap = GetKeyMap();
-      keyMap.erase(key);
+      GetInstance().Unregister_Internal(key);
+    }
+
+    static void UnregisterAll()
+    {
+      GetInstance().UnregisterAll_Internal();
+    }
+
+    static bool IsRegistered(const _Key_T & key)
+    {
+      return GetInstance().IsRegistered_Internal(key);
     }
 
     static _Abstract_T * CreateInstance(const _Key_T & key)
     {
-      PWaitAndSignal m(GetMutex());
-      KeyMap_T & keyMap = GetKeyMap();
-      _Abstract_T * instance = NULL;
-      typename KeyMap_T::const_iterator entry = keyMap.find(key);
-      if (entry != keyMap.end()) {
-        if (entry->second.isSingleton && entry->second.instance != NULL)
-          instance = entry->second.instance;
-        else if (entry->second.creator != NULL)
-          instance = (*(entry->second.creator))();
-      }
-      return instance;
+      return GetInstance().CreateInstance_Internal(key);
     }
 
     static BOOL IsSingleton(const _Key_T & key)
     {
-      PWaitAndSignal m(GetMutex());
-      KeyMap_T & keyMap = GetKeyMap();
-      if (keyMap.find(key) == keyMap.end())
-        return FALSE;
-      return keyMap[key].isSingleton;
+      return GetInstance().IsSingleton_Internal(key);
     }
 
     static KeyList_T GetKeyList()
     { 
-      PWaitAndSignal m(GetMutex());
-      KeyMap_T & keyMap = GetKeyMap();
+      return GetInstance().GetKeyList_Internal();
+    }
+
+    static KeyMap_T & GetKeyMap()
+    { 
+      return GetInstance().keyMap;
+    }
+
+    static PMutex & GetMutex()
+    {
+      return GetInstance().mutex;
+    }
+
+  protected:
+    PFactory()
+    { }
+
+    ~PFactory()
+    {
+      typename KeyMap_T::const_iterator entry;
+      for (entry = keyMap.begin(); entry != keyMap.end(); ++entry) {
+        if (entry->second->isDynamic)
+          delete entry->second;
+      }
+    }
+
+    static PFactory & GetInstance()
+    {
+      std::string className = typeid(PFactory).name();
+      FactoryMap & factories = GetFactories();
+      FactoryMap::const_iterator entry = factories.find(className);
+      if (entry != factories.end())
+        return *(dynamic_cast<PFactory*>(entry->second));
+
+      PFactory * factory = new PFactory;
+      factories[className] = factory;
+      return *factory;
+    }
+
+    void Register_Internal(const _Key_T & key, WorkerBase * worker)
+    {
+      PWaitAndSignal m(mutex);
+      if (keyMap.find(key) == keyMap.end())
+        keyMap[key] = worker;
+    }
+
+    void Unregister_Internal(const _Key_T & key)
+    {
+      PWaitAndSignal m(mutex);
+      keyMap.erase(key);
+    }
+
+    void UnregisterAll_Internal()
+    {
+      PWaitAndSignal m(mutex);
+      keyMap.erase(keyMap.begin(), keyMap.end());
+    }
+
+    bool IsRegistered_Internal(const _Key_T & key)
+    {
+      PWaitAndSignal m(mutex);
+      return keyMap.find(key) != keyMap.end();
+    }
+
+    _Abstract_T * CreateInstance_Internal(const _Key_T & key)
+    {
+      PWaitAndSignal m(mutex);
+      typename KeyMap_T::const_iterator entry = keyMap.find(key);
+      if (entry != keyMap.end())
+        return entry->second->CreateInstance();
+      return NULL;
+    }
+
+    bool IsSingleton_Internal(const _Key_T & key)
+    {
+      PWaitAndSignal m(mutex);
+      if (keyMap.find(key) == keyMap.end())
+        return false;
+      return keyMap[key]->isSingleton;
+    }
+
+    KeyList_T GetKeyList_Internal()
+    { 
+      PWaitAndSignal m(mutex);
       KeyList_T list;
       typename KeyMap_T::const_iterator entry;
       for (entry = keyMap.begin(); entry != keyMap.end(); ++entry)
@@ -216,82 +345,12 @@ class PGenericFactory
       return list;
     }
 
-    static PMutex & GetMutex()
-    { return GetFactory().mutex; }
-
-    static KeyMap_T & GetKeyMap()
-    { return GetFactory().keyMap; }
-
-  protected:
-    PGenericFactory()
-    { }
-
-    static PGenericFactory & GetFactory();
-
-    PMutex mutex;
     KeyMap_T keyMap;
 
   private:
-    PGenericFactory(const PGenericFactory &) {}
-    void operator=(const PGenericFactory &) {}
+    PFactory(const PFactory &) {}
+    void operator=(const PFactory &) {}
 };
 
-#ifdef __GNUC__
-#define	P_LOAD_FACTORY(Abstract_T, Key_T) \
-void __attribute__ ((constructor)) PWLib_LoadFactory##Abstract_T##_##Key_T(void) \
-{ PGenericFactory<Abstract_T, Key_T>::GetMutex(); } 
-#else
-#define	P_LOAD_FACTORY(Abstract_T, Key_T)
-#endif
-
-#define PINSTANTIATE_GENERIC_FACTORY(Abstract_T, Key_T) \
-PGenericFactory<Abstract_T, Key_T> & PGenericFactory<Abstract_T, Key_T>::GetFactory() \
-{ \
-  static PGenericFactory<Abstract_T, Key_T> factory; \
-  return factory; \
-} \
-P_LOAD_FACTORY(Abstract_T, Key_T) \
-
-#define PINSTANTIATE_FACTORY(Abstract_T) \
-PINSTANTIATE_GENERIC_FACTORY(Abstract_T, PString)
-
-template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
-class PAbstractFactory
-{
-  public:
-    PAbstractFactory(const _Key_T & key)
-    { PGenericFactory<_Abstract_T>::Register(key, &CreateInstance, FALSE); }
-
-    static _Abstract_T * CreateInstance()
-    { return new ConcreteType; }
-
-  private:
-    PAbstractFactory(const PAbstractFactory &) {}
-    void operator=(const PAbstractFactory &) {}
-};
-
-
-template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
-class PAbstractSingletonFactory
-{
-  public:
-    PAbstractSingletonFactory(const _Key_T & key)
-    { PGenericFactory<_Abstract_T>::Register(key, &CreateInstance, TRUE); }
-
-    static _Abstract_T * CreateInstance()
-    { return &GetInstance(); }
-
-    static ConcreteType & GetInstance()
-    {
-      static ConcreteType * instance = NULL;
-      if (instance == NULL)
-        instance = new ConcreteType;
-      return *instance;
-    }
-
-  private:
-    PAbstractSingletonFactory(const PAbstractSingletonFactory &) {}
-    void operator=(const PAbstractSingletonFactory &) {}
-};
 
 #endif // _PFACTORY_H

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.47  2004/06/30 12:17:04  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.46  2004/06/19 09:10:24  csoutheren
  * Removed MSVC warnings for <queue>
  *
@@ -194,6 +198,7 @@ and from the pre-processor options for this project"
 #pragma warning(disable:4705)  // disable warning about statement has no effect
 #pragma warning(disable:4710)  // inline not expanded warning
 #pragma warning(disable:4711)  // auto inlining warning
+#pragma warning(disable:4786)  // identifier was truncated to '255' characters in the debug information
 #pragma warning(disable:4097)  // typedef synonym for class
 
 #if _MSC_VER>=800
