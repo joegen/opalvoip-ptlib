@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.14  2004/02/04 09:37:00  rjongbloed
+ * Fixed memory leak and race condition, thanks Rossano Ravelli
+ *
  * Revision 1.13  2004/01/17 17:45:29  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -394,7 +397,8 @@ BOOL PLDAPSession::Add(const PString & dn, const PList<ModAttrib> & attributes)
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
-  errorNumber = ldap_result2error(ldapContext, result, TRUE);
+  if (result)
+    errorNumber = ldap_result2error(ldapContext, result, TRUE);
 
   return errorNumber == LDAP_SUCCESS;
 }
@@ -437,7 +441,8 @@ BOOL PLDAPSession::Modify(const PString & dn, const PList<ModAttrib> & attribute
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
-  errorNumber = ldap_result2error(ldapContext, result, TRUE);
+  if (result)
+    errorNumber = ldap_result2error(ldapContext, result, TRUE);
 
   return errorNumber == LDAP_SUCCESS;
 }
@@ -474,7 +479,8 @@ BOOL PLDAPSession::Delete(const PString & dn)
   P_timeval tval = timeout;
   LDAPMessage * result = NULL;
   ldap_result(ldapContext, msgid, LDAP_MSG_ALL, tval, &result);
-  errorNumber = ldap_result2error(ldapContext, result, TRUE);
+  if (result)
+    errorNumber = ldap_result2error(ldapContext, result, TRUE);
 
   return errorNumber == LDAP_SUCCESS;
 }
@@ -582,6 +588,9 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context, PStringToString & da
     ldap_memfree(attrib);
     attrib = ldap_next_attribute(ldapContext, context.message, ber);
   }
+
+  if (ber != NULL)
+    ber_free (ber, 0);
 
   return TRUE;
 }
@@ -763,7 +772,8 @@ BOOL PLDAPSession::GetNextSearchResult(SearchContext & context)
     ldap_msgfree(context.result);
   } while (ldap_result(ldapContext, context.msgid, LDAP_MSG_ONE, tval, &context.result) > 0);
 
-  errorNumber = ldap_result2error(ldapContext, context.result, FALSE);
+  if (context.result)
+    errorNumber = ldap_result2error(ldapContext, context.result, FALSE);
   if (errorNumber == 0)
     errorNumber = LDAP_OTHER;
   return FALSE;
@@ -913,3 +923,4 @@ void PLDAPStructBase::EndConstructor()
 
 
 // End of file ////////////////////////////////////////////////////////////////
+
