@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.11 1995/06/17 11:13:35 robertj Exp $
+ * $Id: thread.h,v 1.12 1995/07/31 12:10:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.12  1995/07/31 12:10:40  robertj
+ * Added semaphore class.
+ *
  * Revision 1.11  1995/06/17 11:13:35  robertj
  * Documentation update.
  *
@@ -94,8 +97,8 @@ PDECLARE_CLASS(PThread, PObject)
     // Codes for thread priorities.
 
     PThread(
-      PINDEX stackSize,             // Size of stack to use for thread.
-      BOOL startSuspended = FALSE,  // Thread does not execute immediately.
+      PINDEX stackSize,                 // Size of stack to use for thread.
+      BOOL startSuspended = TRUE,       // Thread does not execute immediately.
       Priority priorityLevel = NormalPriority  // Initial priority of thread.
     );
     /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
@@ -241,9 +244,6 @@ PDECLARE_CLASS(PThread, PObject)
 
 
   protected:
-    PThread();
-    // Create a new thread instance as part of a PProcess class.
-
     void InitialiseProcessThread();
     /* Initialialise the primordial thread, the one in the PProcess. This is
        required due to the bootstrap logic of processes and threads.
@@ -263,6 +263,12 @@ PDECLARE_CLASS(PThread, PObject)
 #endif
 
   private:
+    PThread();
+    // Create a new thread instance as part of a PProcess class.
+
+    friend class PProcess;
+    // So a PProcess can get at PThread() constructor but nothing else.
+
     PThread(const PThread &) { }
     // Empty constructor to prevent copying of thread instances.
 
@@ -360,8 +366,10 @@ PDECLARE_CLASS(PThread, PObject)
       Waiting,          // Thread is waiting to be scheduled.
       Sleeping,         // Thread is sleeping until sleepTimer is up.
       Suspended,        // Thread is currently suspended.
-      Blocked,          // Thread is currently blocked, eg in I/O.
-      SuspendedBlock,   // Thread is blocked <EM>and</EM> suspended.
+      BlockedIO,        // Thread is currently blocked in I/O.
+      SuspendedBlockIO, // Thread is blocked <EM>and</EM> suspended.
+      BlockedSem,       // Thread is currently blocked by a semaphore.
+      SuspendedBlockSem,// Thread is blocked <EM>and</EM> suspended.
       Terminating,      // Thread is terminating but has not died yet.
       Terminated        // Thread has terminated.
     } status;
@@ -388,6 +396,8 @@ PDECLARE_CLASS(PThread, PObject)
        This variable is not present for platforms that support threads.
      */
 
+
+    friend class PSemaphore;
 #endif
 
 
