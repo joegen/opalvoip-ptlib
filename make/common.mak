@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.39  2000/01/22 00:51:18  craigs
+# Added ability to compile in any directory, and to create shared libs
+#
 # Revision 1.38  1999/07/10 03:32:02  robertj
 # Improved release version detection code.
 #
@@ -90,6 +93,9 @@
 #
 ######################################################################
 
+ifndef OBJDIR
+OBJDIR	=	./$(OBJBASE)
+endif
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
@@ -165,7 +171,8 @@ ifndef TARGET
 ifndef	SHAREDLIB
 TARGET = $(OBJDIR)/$(PROG)
 else
-TARGET = $(OBJDIR)/$(PROG)_dll
+#TARGET = $(OBJDIR)/$(PROG)_dll
+TARGET = $(OBJDIR)/$(PROG)
 endif
 endif
 
@@ -175,20 +182,24 @@ endif
 
 ifndef STATIC
 
-$(TARGET):	$(OBJS) $(PTLIB_FILE)
+$(TARGET):	$(OBJS) $(PW_LIBDIR)/$(PTLIB_FILE)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
 
 else
 
-$(TARGET):	$(OBJS) $(PTLIB_FILE)
+$(TARGET):	$(OBJS) $(PW_LIBDIR)/$(PTLIB_FILE)
+ifdef STATIC_LIBS
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
           ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
 	done
+endif
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
+ifdef STATIC_LIBS
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
 	done
+endif
 
 endif
 
@@ -329,11 +340,14 @@ clean :: optclean debugclean
 bothdepend :: optdepend debugdepend
 
 
-shared ::
-	$(MAKE) SHAREDLIB=1 
+optshared ::
+	$(MAKE) SHAREDLIB=1 opt
+
+debugshared ::
+	$(MAKE) SHAREDLIB=1 debug
 
 bothshared ::
-	$(MAKE) DEBUG= shared; $(MAKE) DEBUG=1 shared
+	$(MAKE) optshared debugshared
 
 
 
