@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.10  2001/03/08 02:23:17  robertj
+ * Added improved defaulting of video formats so Open() does not fail.
+ *
  * Revision 1.9  2001/03/07 00:10:05  robertj
  * Improved the device list, uses /proc, thanks Thorsten Westheider.
  *
@@ -195,10 +198,20 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
   int format = fmt[newFormat];
 
   // set the information
-  if (::ioctl(videoFd, METEORSFMT, &format) < 0)
+  if (::ioctl(videoFd, METEORSFMT, &format) >= 0)
+    return TRUE;
+
+  if (newFormat != Auto)
     return FALSE;
 
-  return TRUE;  
+  if (SetVideoFormat(PAL))
+    return TRUE;
+  if (SetVideoFormat(NTSC))
+    return TRUE;
+  if (SetVideoFormat(SECAM))
+    return TRUE;
+
+  return FALSE;  
 }
 
 
