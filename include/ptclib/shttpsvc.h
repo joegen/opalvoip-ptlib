@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.h,v $
+ * Revision 1.3  2001/05/16 06:02:05  craigs
+ * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
+ *
  * Revision 1.2  2001/03/27 03:56:01  craigs
  * Added hack to allow secure servers to act as non-secure servers
  *
@@ -55,8 +58,14 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
       const PFilePath & certFile
     );
 
+    virtual BOOL OnDetectedNonSSLConnection(PChannel * chan, const PString & line);
+
+    virtual PString CreateNonSSLMessage(const PString & url);
+    virtual PString CreateRedirectMessage(const PString & url);
+
   protected:
     PSSLContext * sslContext;
+
 #ifdef _DEBUG
     static BOOL secureServerHack;
 #endif
