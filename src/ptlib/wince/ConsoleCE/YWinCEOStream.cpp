@@ -6,9 +6,9 @@
 // PWLib extras
 
 //Yuriy Gorvitovskiy 23.06.00
-#include "ptlib.h"
-
 #pragma init_seg(lib)
+
+#include "ptlib.h"
 
 YWinCEOStream cerr;
 YWinCEOStream cout;
@@ -31,6 +31,7 @@ public:
 
 	HWND m_hWnd;
 	UINT m_MessageID;
+    YWinCEOStreamCB m_pCB; // pointer to callback function
 };
 
 YWinCEOStreamBuffer::YWinCEOStreamBuffer():
@@ -51,9 +52,17 @@ int YWinCEOStreamBuffer::sync()
 	if (ipos>0)
 	{
 		Buffer[ipos]=0;
-		if (::IsWindow(m_hWnd))
-			::SendMessage(m_hWnd,m_MessageID,(WPARAM)(void*)Buffer,0);
-	
+	    
+		if (NULL != m_hWnd) // Window call
+		{
+			if (::IsWindow(m_hWnd))
+				::SendMessage(m_hWnd,m_MessageID,(WPARAM)(void*)Buffer,0);
+		}
+	    else 
+		if (NULL != m_pCB) // Callback call
+		{
+			(*m_pCB)((WPARAM)(void*)Buffer);
+		}
 	}
 	setp(Buffer,Buffer+BufferSize);
     return 0;
@@ -87,8 +96,9 @@ void YWinCEOStream::Subscribe(HWND Reciever,UINT MessageID)
 	lockbuf();
 	if (bp)
 	{
-		((YWinCEOStreamBuffer*)bp)->m_hWnd=Reciever;
-		((YWinCEOStreamBuffer*)bp)->m_MessageID=MessageID;
+		((YWinCEOStreamBuffer*)bp)->m_hWnd = Reciever;
+		((YWinCEOStreamBuffer*)bp)->m_MessageID = MessageID;
+		((YWinCEOStreamBuffer*)bp)->m_pCB = NULL;
 	}
 	unlockbuf();
 }
@@ -97,7 +107,8 @@ void YWinCEOStream::Subscribe(HWND Reciever,UINT MessageID)
 void YWinCEOStream::UnSubscribe()
 {
 	lockbuf();
-	((YWinCEOStreamBuffer*)bp)->m_hWnd=NULL;	
+	((YWinCEOStreamBuffer*)bp)->m_hWnd=NULL;
+	((YWinCEOStreamBuffer*)bp)->m_pCB = NULL;
 	unlockbuf();
 }
 
