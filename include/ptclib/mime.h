@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.15  2001/09/28 00:41:18  robertj
+ * Added SetInteger() function to set numeric MIME fields.
+ * Removed HasKey() as is confusing due to ancestor Contains().
+ * Overrides of SetAt() and Contains() to assure PCaselessString used.
+ *
  * Revision 1.14  2000/11/09 00:18:26  robertj
  * Cosmetic change: removed blank lines.
  *
@@ -121,6 +126,70 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     );
 
 
+  // Overrides from class PStringToString
+    /**Add a new value to the MIME info. If the value is already in the
+       dictionary then this overrides the previous value.
+
+       @return
+       TRUE if the object was successfully added.
+     */
+    BOOL SetAt(
+      const char * key,
+      const PString value
+    ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
+
+    /**Add a new value to the MIME info. If the value is already in the
+       dictionary then this overrides the previous value.
+
+       @return
+       TRUE if the object was successfully added.
+     */
+    BOOL SetAt(
+      const PString & key,
+      const PString value
+    ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
+
+    /**Add a new value to the MIME info. If the value is already in the
+       dictionary then this overrides the previous value.
+
+       @return
+       TRUE if the object was successfully added.
+     */
+    BOOL SetAt(
+      const PCaselessString & key,
+      const PString value
+    ) { return AbstractSetAt(PCaselessString(key), PNEW PString(value)); }
+
+    /** Determine if the specified key is present in the MIME information
+       set.
+
+       @return
+       TRUE if the MIME variable is present.
+     */
+    BOOL Contains(
+      const char * key       // Key into MIME dictionary to get info.
+    ) const { return GetAt(PCaselessString(key)) != NULL; }
+
+    /** Determine if the specified key is present in the MIME information
+       set.
+
+       @return
+       TRUE if the MIME variable is present.
+     */
+    BOOL Contains(
+      const PString & key       // Key into MIME dictionary to get info.
+    ) const { return GetAt(PCaselessString(key)) != NULL; }
+
+    /** Determine if the specified key is present in the MIME information
+       set.
+
+       @return
+       TRUE if the MIME variable is present.
+     */
+    BOOL Contains(
+      const PCaselessString & key       // Key into MIME dictionary to get info.
+    ) const { return GetAt(key) != NULL; }
+
   // New functions for class.
     /** Read MIME information from the socket.
 
@@ -139,16 +208,6 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     BOOL Write(
       PInternetProtocol & socket   // Application socket to write MIME info.
     ) const;
-
-    /** Determine if the specified key is present in the MIME information
-       set.
-
-       @return
-       TRUE if the MIME variable is present.
-     */
-    BOOL HasKey(
-      const PString & key       // Key into MIME dictionary to get info.
-    ) const { return GetAt(PCaselessString(key)) != NULL; }
 
     /** Get a string for the particular MIME info field with checking for
        existance. The #dflt# parameter is substituted if the field
@@ -171,8 +230,15 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
      */
     long GetInteger(
       const PString & key,    // Key into MIME dictionary to get info.
-      long dflt               // Default value of field if not in MIME info.
+      long dflt = 0           // Default value of field if not in MIME info.
     ) const;
+
+    /** Set an integer value for the particular MIME info field.
+     */
+    void SetInteger(
+      const PCaselessString & key,  // Key into MIME dictionary to get info.
+      long value                    // New value of field.
+    );
 
 
     /** Set an association between a file type and a MIME content type. The
