@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.18  2001/12/05 08:32:06  rogerh
+# ln -sf complains if the file already exists on Solaris. So do rm -f first
+#
 # Revision 1.17  2001/12/01 17:41:07  rogerh
 # Use locall defined compiler binary instead of hard coded gcc
 #
@@ -96,9 +99,9 @@ EXTLIBS =
 endif
 
 $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
-	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
-	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
+	cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
+	cd $(LIBDIR) ; rm -f $(LIBNAME_MAJ) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
+	cd $(LIBDIR) ; rm -f $(LIBNAME_MIN) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
