@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.151  2001/01/02 07:47:44  robertj
+ * Fixed very narrow race condition in timers (destroyed while in OnTimeout()).
+ *
  * Revision 1.150  2000/12/21 12:37:03  craigs
  * Fixed deadlock problem with creating PTimer inside OnTimeout
  *
@@ -776,14 +779,14 @@ void PTimer::Construct()
   timerList->Append(this);
   timerList->listMutex.Signal();
 
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   StartRunning(TRUE);
 }
 
 
 PTimer & PTimer::operator=(DWORD milliseconds)
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   resetTime.SetInterval(milliseconds);
   StartRunning(oneshot);
   return *this;
@@ -792,7 +795,7 @@ PTimer & PTimer::operator=(DWORD milliseconds)
 
 PTimer & PTimer::operator=(const PTimeInterval & time)
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   resetTime = time;
   StartRunning(oneshot);
   return *this;
@@ -804,12 +807,14 @@ PTimer::~PTimer()
   timerList->listMutex.Wait();
   timerList->Remove(this);
   timerList->listMutex.Signal();
+  timerList->inTimeoutMutex.Wait();
+  timerList->inTimeoutMutex.Signal();
 }
 
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   resetTime = time;
   StartRunning(FALSE);
 }
@@ -827,34 +832,34 @@ void PTimer::StartRunning(BOOL once)
 #endif
 
   // This must have been set by the caller
-  timerList->timeoutMutex.Signal();
+  timerList->processingMutex.Signal();
 }
 
 
 void PTimer::Stop()
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   state = Stopped;
   SetInterval(0);
-  timerList->timeoutMutex.Signal();
+  timerList->processingMutex.Signal();
 }
 
 
 void PTimer::Pause()
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   if (IsRunning())
     state = Paused;
-  timerList->timeoutMutex.Signal();
+  timerList->processingMutex.Signal();
 }
 
 
 void PTimer::Resume()
 {
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
   if (state == Paused)
     state = Starting;
-  timerList->timeoutMutex.Signal();
+  timerList->processingMutex.Signal();
 }
 
 
@@ -867,11 +872,11 @@ void PTimer::OnTimeout()
 
 void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
-  /*Ideally there should be a timeoutMutex for each individual timer, but
+  /*Ideally there should be a processingMutex for each individual timer, but
     that seems incredibly profligate of system resources as there  can be a
     LOT of PTimer instances about. So use one one mutex for all.
    */
-  timerList->timeoutMutex.Wait();
+  timerList->processingMutex.Wait();
 
   switch (state) {
     case Starting :
@@ -898,7 +903,7 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
             minTimeLeft = resetTime;
         }
 
-        timerList->timeoutMutex.Signal();
+        timerList->processingMutex.Signal();
 
         /* This must be outside the mutex or if OnTimeout() changes the
            timer value (quite plausible) it deadlocks.
@@ -912,7 +917,7 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
       break;
   }
 
-  timerList->timeoutMutex.Signal();
+  timerList->processingMutex.Signal();
 }
 
 
@@ -945,9 +950,11 @@ PTimeInterval PTimerList::Process()
 
   for (i = 0; i < GetSize(); i++) {
     PTimer & timer = (*this)[i];
+    inTimeoutMutex.Wait();
     listMutex.Signal();
     timer.Process(sampleTime, minTimeLeft);
     listMutex.Wait();
+    inTimeoutMutex.Signal();
   }
   
   listMutex.Signal();
