@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.28 1995/01/18 09:02:43 robertj Exp $
+ * $Id: osutils.cxx,v 1.29 1995/01/27 11:15:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.28  1995/01/18 09:02:43  robertj
+ * Revision 1.29  1995/01/27 11:15:17  robertj
+ * Removed enum to int warning from GCC.
+ *
+ * Revision 1.28  1995/01/18  09:02:43  robertj
  * Added notifier to timer.
  *
  * Revision 1.27  1995/01/15  04:57:15  robertj
@@ -1084,7 +1087,8 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname, BOOL force)
   if (!oldfile.IsOpen())
     return FALSE;
 
-  PFile newfile(newname, WriteOnly, Create|Truncate|(force ? 0 : Exclusive));
+  PFile newfile(newname,
+                   WriteOnly, Create|Truncate|(force ? MustExist : Exclusive));
   if (!newfile.IsOpen())
     return FALSE;
 
