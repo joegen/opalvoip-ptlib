@@ -27,6 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.21  2004/04/29 14:07:06  csoutheren
+# Changed install target to use $(INSTALL)
+# Various makefile cleanups and verified install and uninstall targets
+# Removed some vestiges of old GUI code
+#
 # Revision 1.20  2004/04/20 10:02:46  csoutheren
 # Remove usage of asnparser from the Makefile
 #
@@ -213,14 +218,7 @@ docs:
 	doc++ --dir html --tables pwlib.dxx
 
 install:
-	mkdir -p $(DESTDIR)$(PREFIX)/include
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib
-	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	mkdir -p $(DESTDIR)$(LIBDIR)
-	mkdir -p $(DESTDIR)$(LIBDIR)/pwlib
-	chmod a+r lib/*@SHAREDLIBEXT@*
-	cp -f  lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)/
+	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)/
 	(cd $(DESTDIR)$(LIBDIR) ; \
 	rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
 	ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ \
@@ -240,27 +238,33 @@ install:
 	rm -f  libpt.@SHAREDLIBEXT@ ; \
 	ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
-###	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
 ifeq (1, $(HAS_PLUGINS))
-	cp -rf plugins/pwlib         $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 444 plugins/pwlib/*.so             $(DESTDIR)$(LIBDIR)
 endif
-	cp -rf include/ptclib        $(DESTDIR)$(PREFIX)/include/
-	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
-	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
-	cp -rf include/ptlib.h       $(DESTDIR)$(PREFIX)/include/
-	cp -rf make/*.mak    $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	cp make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	( for dir in $(DESTDIR)$(PREFIX)/include/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptclib \
+                     $(DESTDIR)$(PREFIX)/share/pwlib/make \
+          ; do mkdir -p $$dir ; chmod 555 $$dir ; done )
+	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 444 include/ptlib/*.h              $(DESTDIR)$(PREFIX)/include/ptlib
+	$(INSTALL) -m 444 include/ptlib/*.inl            $(DESTDIR)$(PREFIX)/include/ptlib
+	$(INSTALL) -m 444 include/ptlib/unix/ptlib/*.h   $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib
+	$(INSTALL) -m 444 include/ptlib/unix/ptlib/*.inl $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib
+	$(INSTALL) -m 444 include/ptclib/*.h             $(DESTDIR)$(PREFIX)/include/ptclib
+	$(INSTALL) -m 444 make/*.mak                     $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	$(INSTALL) -m 555 make/ptlib-config              $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/CVS/
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/CVS/
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib/CVS/
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptclib/CVS/
-	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(LIBDIR)/pwlib/
-	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/bin/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/ 
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ $(DESTDIR)$(LIBDIR)/pwlib/
-	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so 
-
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
+	       $(DESTDIR)$(PREFIX)/include/ptclib \
+	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
+	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
+	       $(DESTDIR)$(PREFIX)/share/pwlib \
+	       $(DESTDIR)$(LIBDIR)/pwlib/ \
+	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
+              @libdir@/libpt.so 
 
 # End of Makefile.in
