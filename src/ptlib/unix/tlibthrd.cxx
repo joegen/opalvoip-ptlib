@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.56  2001/02/24 13:24:24  rogerh
+ * Add PThread support for Mac OS X and Darwin. There is one major issue. This
+ * OS does not suport pthread_kill() and sigwait() so we cannot support the
+ * Suspend() and Resume() functions to start and stop threads and we cannot
+ * create new threads in 'suspended' mode.
+ * Calling Suspend() raises an assertion. Calling Resume() does nothing.
+ * Threads started in 'suspended' mode start immediatly.
+ *
  * Revision 1.55  2001/02/21 22:48:42  robertj
  * Fixed incorrect test in PSemaphore::WillBlock() just added, thank Artis Kugevics.
  *
@@ -290,10 +298,13 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   return retval;
 }
 
+// Mac OS X does not support sigwait()
+#ifndef P_MACOSX
 
 static void sigSuspendHandler(int)
 {
   // wait for a resume signal
+
   sigset_t waitSignals;
   sigemptyset(&waitSignals);
   sigaddset(&waitSignals, RESUME_SIG);
@@ -303,7 +314,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
@@ -312,7 +323,8 @@ static void sigSuspendHandler(int)
     if (sig == RESUME_SIG)
       return;
   }
-}
+
+#endif // P_MACOSX
 
 
 void HouseKeepingThread::Main()
@@ -332,10 +344,14 @@ void HouseKeepingThread::Main()
 void PProcess::Construct()
 {
   // make sure we don't get upset by resume signals
+  // This does not apply to Mac OS X which does not support the
+  // required signal operations for Suspend and Resume
+#ifndef P_MACOSX
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
+#endif // P_MACOSX
 
   // set the file descriptor limit to something sensible
   struct rlimit rl;
@@ -472,11 +488,15 @@ void * PThread::PX_ThreadStart(void * arg)
   PProcess & process = PProcess::Current();
 
   // block RESUME_SIG
+  // This does not apply to Mac OS X which does not support thread signals
+  // properly.
+#ifndef P_MACOSX
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
   sigaddset(&blockedSignals, RESUME_SIG);
   //sigaddset(&blockedSignals, P_IO_BREAK_SIGNAL);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
+#endif
 
   // add thread to thread list
   process.threadMutex.Wait();
@@ -495,13 +515,25 @@ void * PThread::PX_ThreadStart(void * arg)
   //else {
   //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
 
+
+// Mac OS X with Darwin 1.2 does not support pthread_kill() to send signals
+// to threads and does not support sigwait() either.
+// So always start threads immediatly on Mac OS X and do not
+// support suspended start mode.
+
+#ifdef P_MACOSX
+  if (thread->PX_suspendCount != 0) {
+    thread->PX_suspendCount = 0;
+  }
+
+#else
   if (thread->PX_suspendCount != 0) {
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
 #if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-  int sig;
-  sigwait(&waitSignals, &sig);
+    int sig;
+    sigwait(&waitSignals, &sig);
 #else
     sigwait(&waitSignals);
 #endif
@@ -512,6 +544,8 @@ void * PThread::PX_ThreadStart(void * arg)
   memset(&suspend_action, 0, sizeof(suspend_action));
   suspend_action.sa_handler = sigSuspendHandler;
   sigaction(SUSPEND_SIG, &suspend_action, 0);
+
+#endif // P_MACOSX
 
   // now call the the thread main routine
   //PTRACE(1, "tlibthrd\tAbout to call Main");
@@ -621,15 +655,39 @@ BOOL PThread::IsTerminated() const
     return TRUE;
   }
 
+// MacOS X does not support pthread_kill so we cannot use it
+// to test the validity of the thread
+
+#ifndef P_MACOSX
   if (pthread_kill(PX_threadId, 0) != 0)  {
     //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") terminated");
     return TRUE;
   }
+#endif
 
   //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") not dead yet");
   return FALSE;
 }
 
+// Mac OS X and Darwin 1.2 does not support pthread_kill() or sigwait()
+// so we cannot impkement suspend and resume using signals.
+// So, for Mac OS X, we will accept Resume() calls (or Suspend(FALSE))
+// but reject Suspend(TRUE) calls with an Assertion. This will indicate
+// to a user that we cannot Suspend threads on Mac OS X
+
+#ifdef P_MACOSX
+void PThread::Suspend(BOOL susp)
+{
+  if (susp) {
+    // Suspend - warn the user with an Assertion
+    PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
+  } else {
+    // Resume - threads should never be suspended on Mac OS X
+    // so just continue.
+  }
+}
+
+#else // P_MACOSX
 
 void PThread::Suspend(BOOL susp)
 {
@@ -671,6 +729,7 @@ void PThread::Suspend(BOOL susp)
     PAssertOS(pthread_mutex_unlock(&PX_suspendMutex) == 0);
 }
 
+#endif // P_MACOSX
 
 void PThread::Resume()
 {
