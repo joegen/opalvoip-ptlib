@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.22  2002/06/14 13:20:37  robertj
+ * Added PBitArray class.
+ *
  * Revision 1.21  2002/02/14 23:37:53  craigs
  * Added fix for optimisation for PArray [] operator, thanks to Vyacheslav Frolov
  *
@@ -1186,5 +1189,160 @@ information.
 
 #endif // PHAS_TEMPLATES
 
+
+/**This class represents a dynamic bit array.
+ */
+class PBitArray : public PBYTEArray
+{
+  PCLASSINFO(PBitArray, PBYTEArray);
+
+  public:
+  /**@name Construction */
+  //@{
+    /**Construct a new dynamic array of bits.
+     */
+    PBitArray(
+      PINDEX initialSize = 0  /// Initial number of bits in the array.
+    );
+    
+    /**Construct a new dynamic array of elements of the specified type.
+     */
+    PBitArray(
+      const void * buffer,   /// Pointer to an array of the elements of type {\bf T}.
+      PINDEX length,         /// Number of bits (not bytes!) pointed to by #buffer#.
+      BOOL dynamic = TRUE    /// Buffer is copied and dynamically allocated.
+    );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Clone the object.
+     */
+    virtual PObject * Clone() const;
+  //@}
+
+  /**@name Overrides from class PContainer */
+  //@{
+    /**Get the current size of the container.
+       This represents the number of things the container contains. For some
+       types of containers this will always return 1.
+
+       @return number of objects in container.
+     */
+    virtual PINDEX GetSize() const;
+
+    /**Set the size of the array in bits. A new array may be allocated to
+       accomodate the new number of bits. If the array increases in size
+       then the new bytes are initialised to zero. If the array is made smaller
+       then the data beyond the new size is lost.
+
+       @return
+       TRUE if the memory for the array was allocated successfully.
+     */
+    virtual BOOL SetSize(
+      PINDEX newSize  /// New size of the array in bits, not bytes.
+    );
+
+    /**Set the specific bit in the array. The array will automatically
+       expand, if necessary, to fit the new element in.
+
+       @return
+       TRUE if new memory for the array was successfully allocated.
+     */
+    BOOL SetAt(
+      PINDEX index,   /// Position in the array to set the new value.
+      BOOL val           /// Value to set in the array.
+    );
+
+    /**Get a bit from the array. If the #index# is beyond the end
+       of the allocated array then FALSE is returned.
+
+       @return
+       value at the array position.
+     */
+    BOOL GetAt(
+      PINDEX index  /// Position on the array to get value from.
+    ) const;
+
+    /**Attach a pointer to a static block to the bit array type. The pointer
+       is used directly and will not be copied to a dynamically allocated
+       buffer. If the SetSize() function is used to change the size of the
+       buffer, the object will be converted to a dynamic form with the
+       contents of the static buffer copied to the allocated buffer.
+       
+       Any dynamically allocated buffer will be freed.
+     */
+    void Attach(
+      const void * buffer,   /// Pointer to an array of elements.
+      PINDEX bufferSize      /// Number of bits (not bytes!) pointed to by buffer.
+    );
+
+    /**Get a pointer to the internal array and assure that it is of at least
+       the specified size. This is useful when the array contents are being
+       set by some external or system function eg file read.
+
+       It is unsafe to assume that the pointer is valid for very long after
+       return from this function. The array may be resized or otherwise
+       changed and the pointer returned invalidated. It should be used for
+       simple calls to atomic functions, or very careful examination of the
+       program logic must be performed.
+
+       @return
+       pointer to the array memory.
+     */
+    BYTE * GetPointer(
+      PINDEX minSize = 0    /// Minimum size in bits (not bytes!) for returned buffer pointer.
+    );
+  //@}
+
+  /**@name New functions for class */
+  //@{
+    /**Get a value from the array. If the #index# is beyond the end
+       of the allocated array then a zero value is returned.
+
+       This is functionally identical to the #PContainer::GetAt()#
+       function.
+
+       @return
+       value at the array position.
+     */
+    BOOL operator[](
+      PINDEX index  /// Position on the array to get value from.
+    ) const { return GetAt(index); }
+
+    /**Set a bit to the array.
+
+       This is functionally identical to the #PContainer::SetAt(index, TRUE)#
+       function.
+     */
+    PBitArray & operator+=(
+      PINDEX index  /// Position on the array to get value from.
+    ) { SetAt(index, TRUE); return *this; }
+
+    /**Set a bit to the array.
+
+       This is functionally identical to the #PContainer::SetAt(index, TRUE)#
+       function.
+     */
+    PBitArray & operator-=(
+      PINDEX index  /// Position on the array to get value from.
+    ) { SetAt(index, FALSE); return *this; }
+
+    /**Concatenate one array to the end of this array.
+       This function will allocate a new array large enough for the existing 
+       contents and the contents of the parameter. The paramters contents is then
+       copied to the end of the existing array.
+       
+       Note this does nothing and returns FALSE if the target array is not
+       dynamically allocated.
+
+       @return
+       TRUE if the memory allocation succeeded.
+     */
+    BOOL Concatenate(
+      const PBitArray & array  /// Other array to concatenate
+    );
+  //@}
+};
 
 // End Of File ///////////////////////////////////////////////////////////////
