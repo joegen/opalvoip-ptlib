@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.48 1996/05/09 12:15:34 robertj Exp $
+ * $Id: osutil.inl,v 1.49 1996/05/15 10:09:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.49  1996/05/15 10:09:53  robertj
+ * Changed millisecond access functions to get 64 bit integer.
+ *
  * Revision 1.48  1996/05/09 12:15:34  robertj
  * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
  *
@@ -173,8 +176,11 @@ PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(milliseconds); }
 
-PINLINE long PTimeInterval::GetMilliseconds() const
-  { return (long)milliseconds; }
+PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
+  { return milliseconds; }
+
+PINLINE DWORD PTimeInterval::GetInterval() const
+  { return (DWORD)milliseconds; }
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(milliseconds/1000); }
