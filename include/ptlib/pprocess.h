@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.59  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.58  2002/12/11 22:23:59  robertj
  * Added ability to set user identity temporarily and permanently.
  * Added get and set users group functions.
@@ -204,7 +208,7 @@
  *
  */
 
-
+#ifndef _PPROCESS
 #define _PPROCESS
 
 #ifdef P_USE_PRAGMA
@@ -212,6 +216,7 @@
 #endif
 
 #include <ptlib/mutex.h>
+#include <ptlib/syncpoint.h>
 
 
 /**Create a process.
@@ -708,17 +713,6 @@ class PProcess : public PThread
     /* return the time at which the program was started 
     */
 
-  protected:
-#if !defined(P_PLATFORM_HAS_THREADS)
-
-    virtual void OperatingSystemYield();
-    /* Yield to the platforms operating system. This is an internal function
-       and should never be called by the user. It is provided on platforms
-       that do not provide multiple threads in a single process.
-     */
-
-#endif
-
   private:
     void Construct();
 
@@ -779,8 +773,13 @@ class PProcess : public PThread
 
 
 // Include platform dependent part of class
-#include <ptlib/pprocess.h>
+#ifdef _WIN32
+#include "win32/ptlib/pprocess.h"
+#else
+#include "unix/ptlib/pprocess.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

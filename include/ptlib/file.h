@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.40  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.39  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -152,12 +156,12 @@
  */
 
 
+#ifndef _PFILE
 #define _PFILE
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
@@ -662,8 +666,13 @@ class PFile : public PChannel
 
 
 // Include platform dependent part of class
-#include <ptlib/file.h>
+#ifdef _WIN32
+#include "win32/ptlib/file.h"
+#else
+#include "unix/ptlib/file.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

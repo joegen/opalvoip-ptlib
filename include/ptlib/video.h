@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.15  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.14  2003/04/15 21:10:29  dereks
  * Patches for Firewire video. Thanks Georgi Georgiev.
  *
@@ -80,6 +84,7 @@
  *
  */
 
+#ifndef _PVIDEO
 #define _PVIDEO
 
 #ifdef P_USE_PRAGMA
@@ -292,8 +297,14 @@ class PVideoChannel : public PChannel
 
 
 // Include platform dependent part of class
-#include <ptlib/video.h>
+#ifdef _WIN32
+#include "win32/ptlib/video.h"
+#else
+#include "unix/ptlib/video.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

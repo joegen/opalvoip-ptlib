@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.20  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.19  2002/11/19 10:32:26  robertj
  * Changed PFilePath so can be empty string, indicating illegal path.
  *
@@ -92,7 +96,7 @@
  *
  */
 
-
+#ifndef _PFILEPATH
 #define _PFILEPATH
 
 #ifdef P_USE_PRAGMA
@@ -352,8 +356,13 @@ class PFilePath : public PFilePathString
 
 
 // Include platform dependent part of class
-#include <ptlib/filepath.h>
+#ifdef _WIN32
+#include "win32/ptlib/filepath.h"
+#else
+#include "unix/ptlib/filepath.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

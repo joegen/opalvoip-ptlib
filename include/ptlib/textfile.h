@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: textfile.h,v $
+ * Revision 1.18  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.17  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -79,6 +83,7 @@
  *
  */
 
+#ifndef _PTEXTFILE
 #define _PTEXTFILE
 
 #ifdef P_USE_PRAGMA
@@ -163,8 +168,14 @@ class PTextFile : public PFile
 
 
 // Include platform dependent part of class
-#include <ptlib/textfile.h>
+#ifdef _WIN32
+#include "win32/ptlib/textfile.h"
+#else
+#include "unix/ptlib/textfile.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

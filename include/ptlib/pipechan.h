@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.21  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.20  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -92,7 +96,7 @@
  *
  */
 
-
+#ifndef _PPIPECHANNEL
 #define _PPIPECHANNEL
 
 #ifdef P_USE_PRAGMA
@@ -454,8 +458,13 @@ class PPipeChannel : public PChannel
 
 
 // Include platform dependent part of class
-#include <ptlib/pipechan.h>
+#ifdef _WIN32
+#include "win32/ptlib/pipechan.h"
+#else
+#include "unix/ptlib/pipechan.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,7 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.40  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.39  2003/06/06 15:04:17  dsandras
+ *
  * Fixed compilation warning with gcc 3.3 by removing the PINLINE
  *
  * Revision 1.38  2002/11/20 00:13:43  robertj
@@ -147,6 +152,7 @@
  */
 
 
+#ifndef _PDIRECTORY
 #define _PDIRECTORY
 
 #ifdef P_USE_PRAGMA
@@ -155,6 +161,16 @@
 
 #ifdef Fifo
 #undef Fifo
+#endif
+
+#ifdef _WIN32
+#define PDIR_SEPARATOR '\/'
+#define P_MAX_PATH    (_POSIX_PATH_MAX)
+typedef PCaselessString PFilePathString;
+#else
+#define PDIR_SEPARATOR '/'
+#define P_MAX_PATH    (_POSIX_PATH_MAX)
+typedef PString PFilePathString;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,10 +580,15 @@ class PDirectory : public PFilePathString
     /// Mask of file types that the directory scan will return.
     int scanMask;
 
-
 // Include platform dependent part of class
-#include <ptlib/pdirect.h>
+#ifdef _WIN32
+#include "win32/ptlib/pdirect.h"
+#else
+#include "unix/ptlib/pdirect.h"
+#endif
+
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

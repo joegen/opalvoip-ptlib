@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.15  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.14  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -73,17 +77,16 @@
  *
  */
 
+#ifndef _PETHSOCKET
 #define _PETHSOCKET
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-
 #ifndef _PSOCKET
-#include <socket.h>
+#include <ptlib/socket.h>
 #endif
-
 
 /**This class describes a type of socket that will communicate using
    raw ethernet packets.
@@ -429,8 +432,13 @@ class PEthSocket : public PSocket
 
 
 // Include platform dependent part of class
-#include <ptlib/ethsock.h>
+#ifdef _WIN32
+#include "win32/ptlib/ethsock.h"
+#else
+#include "unix/ptlib/ethsock.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

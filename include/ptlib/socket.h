@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.43  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.42  2002/10/18 08:07:41  robertj
  * Fixed use of FD_ZERO as (strangely) crashes on some paltforms and would
  *   not have cleared enough of an enlarges fd_set anyway.
@@ -162,10 +166,12 @@
  *
  */
 
+#ifndef _PSOCKETS
+#define _PSOCKETS
+
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
 
 #ifndef _PCHANNEL
 #include <ptlib/channel.h>
@@ -582,9 +588,12 @@ class PSocket : public PChannel
     /// Port to be used by the socket when opening the channel.
     WORD port;
 
-
 // Include platform dependent part of class
-#include <ptlib/socket.h>
+#ifdef _WIN32
+#include "win32/ptlib/socket.h"
+#else
+#include "unix/ptlib/socket.h"
+#endif
 };
 
 
@@ -653,6 +662,6 @@ class P_timeval {
     BOOL infinite;
 };
 
-
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
