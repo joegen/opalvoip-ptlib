@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.90  2005/01/26 05:37:45  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.89  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -651,7 +654,7 @@ PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
 ///////////////////////////////////////////////////////////////////////////////
 // PConfig
 
-#ifdef _PCONFIG
+#ifdef P_CONFIG_FILE
 
 PINLINE PConfig::PConfig(Source src)
   : defaultSection("Options") { Construct(src, "", ""); }
@@ -741,7 +744,7 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
   { SetTime(defaultSection, key, value); }
 
 
-#endif
+#endif // P_CONFIG_FILE
 
 
 ///////////////////////////////////////////////////////////////////////////////
