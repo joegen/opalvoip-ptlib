@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.1 1996/03/04 12:12:51 robertj Exp $
+ * $Id: inetmail.cxx,v 1.2 1996/03/16 04:51:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.2  1996/03/16 04:51:28  robertj
+ * Changed lastResponseCode to an integer.
+ * Added ParseReponse() for splitting reponse line into code and info.
+ *
  * Revision 1.1  1996/03/04 12:12:51  robertj
  * Initial revision
  *
@@ -83,7 +87,7 @@ BOOL PSMTPSocket::Connect(const PString & address)
   if (!PApplicationSocket::Connect(address))
     return FALSE;
 
-  if (ReadResponse() && lastResponseCode[0] == '2')
+  if (ReadResponse() && lastResponseCode/100 == 2)
     return TRUE;
 
   Close();
@@ -180,7 +184,7 @@ BOOL PSMTPSocket::EndMessage()
   stuffingState = DontStuff;
   if (!WriteString(CRLFdotCRLF))
     return FALSE;
-  return ReadResponse() && lastResponseCode[0] == '2';
+  return ReadResponse() && lastResponseCode/100 == 2;
 }
 
 
@@ -665,7 +669,7 @@ BOOL PPOP3Socket::Connect(const PString & address)
   if (!PApplicationSocket::Connect(address))
     return FALSE;
 
-  if (ReadResponse() && lastResponseCode[0] == '+')
+  if (ReadResponse() && lastResponseCode > 0)
     return TRUE;
 
   Close();
@@ -689,7 +693,7 @@ BOOL PPOP3Socket::Close()
   BOOL ok = TRUE;
   if (IsOpen() && loggedIn) {
     SetReadTimeout(60000);
-    ok = ExecuteCommand(QUIT, "") == '+';
+    ok = ExecuteCommand(QUIT, "") > 0;
   }
   return PApplicationSocket::Close() && ok;
 }
@@ -697,10 +701,10 @@ BOOL PPOP3Socket::Close()
 
 BOOL PPOP3Socket::LogIn(const PString & username, const PString & password)
 {
-  if (ExecuteCommand(USER, username) != '+')
+  if (ExecuteCommand(USER, username) <= 0)
     return FALSE;
 
-  if (ExecuteCommand(PASS, password) != '+')
+  if (ExecuteCommand(PASS, password) <= 0)
     return FALSE;
 
   loggedIn = TRUE;
@@ -710,7 +714,7 @@ BOOL PPOP3Socket::LogIn(const PString & username, const PString & password)
 
 int PPOP3Socket::GetMessageCount()
 {
-  if (ExecuteCommand(STAT, "") != '+')
+  if (ExecuteCommand(STAT, "") <= 0)
     return -1;
 
   return (int)lastResponseInfo.AsInteger();
@@ -721,7 +725,7 @@ PUnsignedArray PPOP3Socket::GetMessageSizes()
 {
   PUnsignedArray sizes;
 
-  if (ExecuteCommand(LIST, "") == '+') {
+  if (ExecuteCommand(LIST, "") > 0) {
     PString msgInfo;
     while (ReadLine(msgInfo, TRUE))
       sizes.SetAt((PINDEX)msgInfo.AsInteger()-1,
@@ -738,7 +742,7 @@ PStringArray PPOP3Socket::GetMessageHeaders()
 
   int count = GetMessageCount();
   for (int msgNum = 1; msgNum <= count; msgNum++) {
-    if (ExecuteCommand(TOP, PString(PString::Unsigned, msgNum) + " 0") == '+'){
+    if (ExecuteCommand(TOP, PString(PString::Unsigned,msgNum) + " 0") > 0) {
       PString headerLine;
       while (ReadLine(headerLine, TRUE))
         headers[msgNum-1] += headerLine;
@@ -750,13 +754,25 @@ PStringArray PPOP3Socket::GetMessageHeaders()
 
 BOOL PPOP3Socket::BeginMessage(PINDEX messageNumber)
 {
-  return ExecuteCommand(RETR, PString(PString::Unsigned,messageNumber)) == '+';
+  return ExecuteCommand(RETR, PString(PString::Unsigned, messageNumber)) > 0;
 }
 
 
 BOOL PPOP3Socket::DeleteMessage(PINDEX messageNumber)
 {
-  return ExecuteCommand(DELE, PString(PString::Unsigned,messageNumber)) == '+';
+  return ExecuteCommand(DELE, PString(PString::Unsigned, messageNumber)) > 0;
+}
+
+
+BOOL PPOP3Socket::ParseResponse(const PString & line)
+{
+  lastResponseCode = line[0] == '+';
+  PINDEX endCode = line.Find(' ');
+  if (endCode != P_MAX_INDEX)
+    lastResponseInfo = line.Mid(endCode+1);
+  else
+    lastResponseInfo = PString();
+  return TRUE;
 }
 
 
