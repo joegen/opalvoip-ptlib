@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2002/10/23 15:58:18  craigs
+ * Fixed problem with parsing requests, and added sample return value
+ *
  * Revision 1.1  2002/10/02 08:58:20  craigs
  * Initial version
  *
@@ -140,21 +143,18 @@ void Xmlrpcsrvr::FunctionNotifier(PXMLRPCServerParms & args, INT)
 
   PINDEX i;
   for (i = 0; i < args.request.GetParamCount(); i++) {
-    PXMLElement * param = args.request.GetParam(i);
-    if (param != NULL) {
-      PString type = param->GetName();
-      if (type == "struct") {
-        PStringToString dict;
-        args.request.GetParam(i, dict);
-        PTRACE(2, "XMLRPC argument " << i << " is struct: " << dict);
-      } else {
-        PString type;
-        PString value;
-        args.request.GetParam(i, type, value);
-        PTRACE(2, "XMLRPC argument " << i << " is " << type << " with value " << value);
-      }
-    }
+    PStringToString dict;
+    PString type;
+    PString value;
+    if (args.request.GetParam(i, dict))
+      PTRACE(2, "XMLRPC argument " << i << " is struct: " << dict);
+    else if (args.request.GetParam(i, type, value))
+      PTRACE(2, "XMLRPC argument " << i << " is " << type << " with value " << value);
+    else
+      PTRACE(2, "Cannot parse XMLRPC argument " << i);
   }
+
+  args.response.AddParam("return value");
 }
 
 // End of File ///////////////////////////////////////////////////////////////
