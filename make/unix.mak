@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.88  2001/02/24 13:25:58  rogerh
+# Turn on pthread support for Mac OS X / Darwin and rename the object
+# directory from macos to Darwin
+#
 # Revision 1.87  2001/02/14 14:01:24  rogerh
 # Handle uname of 'darwin' for Macos X machines
 #
@@ -290,11 +294,11 @@ OSTYPE := OpenBSD
 endif
 
 ifneq (,$(findstring macos,$(OSTYPE)))
-OSTYPE := macos
+OSTYPE := Darwin
 endif
 
 ifneq (,$(findstring darwin,$(OSTYPE)))
-OSTYPE := macos
+OSTYPE := Darwin
 endif
 
 ifneq (,$(findstring AIX,$(OSTYPE)))
@@ -341,7 +345,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos AIX Nucleus))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin AIX Nucleus))
 
 all ::
 	@echo
@@ -355,7 +359,7 @@ all ::
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD OpenBSD NetBSD beos macos"
+	@echo "              FreeBSD OpenBSD NetBSD beos Darwin"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -663,15 +667,14 @@ endif # hpux
 
 ####################################################
  
-ifeq ($(OSTYPE),macos)
+ifeq ($(OSTYPE),Darwin)
  
-# MacOS X or later (derived from FreeBSD)
+# MacOS X or later / Darwin
  
 STDCCFLAGS	+= -DP_MACOSX
  
-# pthreads not working in DP3, will revisit this on next release of OS X        - krp 03/17/00
-#P_PTHREADS	:= 1    # DP3 system file <pthreads.h> has bug in macros "pthread_cleanup_push" and "pthread_cleanup_pop"
-  
+P_PTHREADS	:= 1
+
 ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 else
@@ -683,7 +686,7 @@ P_USE_RANLIB		:= 1
 CC              := cc
 CPLUS           := c++
  
-endif # macos
+endif # Darwin
  
  
 ###############################################################################
@@ -852,7 +855,7 @@ else
 OPTCCFLAGS	+= -O2 -DNDEBUG
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
-ifneq ($(OSTYPE),macos)
+ifneq ($(OSTYPE),Darwin)
 # Apple does not support -s to remove symbol table/relocation information 
 LDFLAGS		+= -s
 endif
