@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.3 1996/08/08 13:36:38 robertj Exp $
+ * $Id: httpsvc.h,v 1.4 1996/08/19 13:43:46 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.4  1996/08/19 13:43:46  robertj
+ * Fixed race condition in system restart logic.
+ *
  * Revision 1.3  1996/08/08 13:36:38  robertj
  * Fixed Registation page so no longer has static link, ie can be DLLed.
  *
@@ -42,8 +45,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     virtual void OnConfigChanged() = 0;
     virtual BOOL Initialise(const char * initMsg) = 0;
 
-    BOOL GetRestartSystem() const { return restartSystem; }
-    void SetRestartSystem(BOOL b) { restartSystem = b; }
+    void BeginRestartSystem();
+    void CompleteRestartSystem();
 
     PString GetPageGraphic();
     void GetPageHeader(PHTML &);
@@ -54,7 +57,9 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
   protected:
     PString    gifText;
-    BOOL       restartSystem;
+
+  private:
+    PThread *  restartThread;
 };
 
 
