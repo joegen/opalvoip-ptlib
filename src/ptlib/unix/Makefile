@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.45  1999/06/21 00:57:10  robertj
+# Fixed inclusion of getdate.tab.c to clean files.
+#
 # Revision 1.44  1999/06/09 15:41:18  robertj
 # Added better UI to make files.
 #
@@ -200,6 +203,7 @@ ifeq ($(OSTYPE),beos)
 SOUND_SOURCE = beaudio.cxx
 endif
 
+GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/ipacl.cxx \
@@ -208,7 +212,7 @@ SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
 	  $(COMPONENT_SRC_DIR)/asner.cxx \
 	  $(SOUND_SOURCE) \
-	  $(COMMON_SRC_DIR)/getdate.tab.c \
+	  $(GETDATE_SOURCE) \
 	  uicmp.cxx \
 	  $(COMMON_SRC_DIR)/sockets.cxx \
 	  socket.cxx \
@@ -256,18 +260,18 @@ $(OBJDIR)/switch.o: ./switch.cxx
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
-CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
+CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
-$(OBJDIR)/getdate.tab.o:	$(COMMON_SRC_DIR)/getdate.tab.c
+$(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 
-$(DEPDIR)/getdate.tab.dep:	$(COMMON_SRC_DIR)/getdate.tab.c
+$(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(CC) $(STDCCFLAGS) -M $< >> $@
 
-$(COMMON_SRC_DIR)/getdate.tab.c:	$(COMMON_SRC_DIR)/getdate.y
+$(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y
 
 ifdef SHAREDLIB
