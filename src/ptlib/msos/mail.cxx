@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.8 1997/02/05 11:48:08 robertj Exp $
+ * $Id: mail.cxx,v 1.9 1997/05/16 12:05:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.9  1997/05/16 12:05:05  robertj
+ * Added BCC capability to send mail.
+ *
  * Revision 1.8  1997/02/05 11:48:08  robertj
  * Fixed compatibility with MSVC debug memory allocation macros.
  *
@@ -201,7 +204,8 @@ BOOL PMail::SendNote(const PString & recipient,
 
 BOOL PMail::SendNote(const PStringList & recipients,
                      const PString & subject,
-                     const char * body)
+                     const char * body,
+					 BOOL blindCC)
 {
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
@@ -212,7 +216,8 @@ BOOL PMail::SendNote(const PStringList & recipients,
     memset(message.recipients, 0, recipients.GetSize()*sizeof(CMC_recipient));
 
     for (PINDEX i = 0 ; i < recipients.GetSize(); i++) {
-      message.recipients[i].role = i == 0 ? CMC_ROLE_TO : CMC_ROLE_CC;
+      message.recipients[i].role =
+              i != 0 ? blindCC ? CMC_ROLE_BCC : CMC_ROLE_CC : CMC_ROLE_TO;
       message.recipients[i].name = (CMC_string)(const char *)recipients[i];
     }
     message.recipients[i-1].recip_flags = CMC_RECIP_LAST_ELEMENT;
@@ -239,7 +244,7 @@ BOOL PMail::SendNote(const PStringList & recipients,
     memset(message.lpRecips, 0, message.nRecipCount*sizeof(MapiRecipDesc));
 
     for (PINDEX i = 0 ; i < recipients.GetSize(); i++) {
-      message.lpRecips[i].ulRecipClass = i == 0 ? MAPI_TO : MAPI_CC;
+      message.lpRecips[i].ulRecipClass = i != 0 ? blindCC ? MAPI_BCC : MAPI_CC : MAPI_TO;
       message.lpRecips[i].lpszName = (char *)(const char *)recipients[i];
     }
 
