@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.10  1999/08/09 04:06:39  robertj
+ * Change to avoid name space problem with X windows library
+ *
  * Revision 1.9  1999/02/22 13:26:54  robertj
  * BeOS port changes.
  *
@@ -258,7 +261,7 @@ PICMPSocket::PingInfo::PingInfo(WORD id)
   sequenceNum = 0;
   ttl = 255;
   buffer = NULL;
-  status = Success;
+  status = PingSuccess;
 }
 
 
