@@ -1048,7 +1048,7 @@ case "$target_os" in
   netbsd)          OSTYPE=NetBSD ;
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
 
-  solaris2 | sunos ) OSTYPE=solaris ;
+  solaris* | sunos ) OSTYPE=solaris ;
 		   OSRELEASE="5.$OSVER" ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
