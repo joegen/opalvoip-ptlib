@@ -796,6 +796,14 @@ dnl MSWIN_DIR_SYMBOL sapi,SAPI_DIR
 dnl MSWIN_CHECK_DIR  sapi,\Program Files\Microsoft Speech SDK 5.1\
 
 dnl ########################################################################
+dnl SASL
+
+dnl MSWIN_DISPLAY    sasl,Cyrus SASL
+dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL=1
+dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
+dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
+
+dnl ########################################################################
 dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
