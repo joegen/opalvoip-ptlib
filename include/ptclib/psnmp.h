@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psnmp.h,v $
+ * Revision 1.5  1998/11/30 02:50:55  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/23 06:27:38  robertj
  * Added open source copyright license.
  *
@@ -66,8 +69,8 @@
 #pragma interface
 #endif
 
-#include <sockets.h>
-#include "pasn.h"
+#include <ptlib/sockets.h>
+#include <ptclib/pasn.h>
 
 
 //////////////////////////////////////////////////////////////////////////
