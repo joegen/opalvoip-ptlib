@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.73  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.72  2003/02/11 07:58:40  robertj
  * Added ignore allocations so don't get meaningless memory leak at end of run
  *   cause by system log stream not being deleted, thanks Sebastian Meyer
@@ -276,7 +279,7 @@
 #include <io.h>
 
 #include <ptlib/svcproc.h>
-#include <ptlib/debstrm.h>
+#include <ptlib/msos/ptlib/debstrm.h>
 
 
 #define UWM_SYSTRAY (WM_USER + 1)
