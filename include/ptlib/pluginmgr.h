@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.16  2004/08/05 03:45:35  csoutheren
+ * Fixed problems with plugin suffix not being propagated to sudirectories
+ *
  * Revision 1.15  2004/06/24 23:10:27  csoutheren
  * Require plugins to have _pwplugin suffix
  *
@@ -75,7 +78,7 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
   do {
     PString entry = dir + dir.GetEntryName();
     if (dir.IsSubDir())
-      PLoadPluginDirectory<C>(obj, entry);
+      PLoadPluginDirectory<C>(obj, entry, suffix);
     else {
       PFilePath fn(entry);
       if (
