@@ -428,13 +428,14 @@ default_serial=yes
 default_pop3smtp=yes
 default_audio=yes
 default_video=yes
-default_alsa=yes
 default_http=yes
 default_httpsvc=yes
 default_soap=yes
 default_xmlrpc=yes
 default_jabber=yes
 default_configfile=yes
+default_alsa=yes
+default_oss=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -459,13 +460,14 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
-  default_alsa=yes
   default_http=yes
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
   default_configfile=no
+  default_alsa=yes
+  default_oss=yes
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -489,13 +491,14 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_pop3smtp=no
   default_audio=yes
   default_video=yes
-  default_alsa=yes
   default_http=yes
   default_httpsvc=no
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
   default_configfile=no
+  default_alsa=yes
+  default_oss=no
 fi
 
 
@@ -1370,6 +1373,7 @@ fi
 
 HAS_VIDEO=
 HAS_VIDEO_CAPTURE=
+
 if test "$enable_video" = "no" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
 else
@@ -1390,17 +1394,16 @@ else
       HAS_VIDEO=1
     fi
   fi
+  dnl these are needed to pass through to plugin configure
+  AC_ARG_ENABLE(v4l,      [  --enable-v4l            enable V4L video support])
+  AC_ARG_ENABLE(v4l2,     [  --enable-v4l2           enable V4L2 video support])
+  AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support])
+  AC_ARG_ENABLE(avc,      [  --enable-avc            enable IEEE1394/AVC video support])
+  AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
 fi
+
 AC_SUBST(HAS_VIDEO)
 AC_SUBST(HAS_VIDEO_CAPTURE)
-
-dnl these are needed to pass through to plugin configure
-AC_ARG_ENABLE(v4l,      [  --enable-v4l            enable V4L video support])
-AC_ARG_ENABLE(v4l2,     [  --enable-v4l2           enable V4L2 video support])
-AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support])
-AC_ARG_ENABLE(avc,      [  --enable-avc            enable IEEE1394/AVC video support])
-AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
-
 
 dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
@@ -1769,31 +1772,56 @@ fi
 AC_SUBST(HAS_AUDIO)
 
 dnl ########################################################################
-dnl check for whether to use Alsa driver instead of OSS for non-plugin driver
+dnl check for for audio drivers
 
 HAS_ALSA=
+HAS_OSS=
 if test "$enable_audio" = "yes" ; then
-  AC_ARG_ENABLE(alsa, [  --enable-alsa           disable non-plugin ALSA audio support],enable_alsa=$enableval)
-  if test "${enable_alsa}z" = "z" ; then
-    enable_alsa=$default_alsa
-  fi
+
+  dnl these are needed to pass through to the plugin configure program
+  AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],enable_alsa=$enableval)
+  AC_ARG_ENABLE(oss,  [  --enable-oss            enable OSS audio support],enable_oss=$enableval)
 
   if test "$enable_plugins" = "no" ; then
+
+    if test "${enable_alsa}z" = "z" ; then
+      enable_alsa=$default_alsa
+    fi
+
+    if test "${enable_oss}z" = "z" ; then
+      enable_oss=$default_oss
+    fi
+
     if test "$enable_alsa" = "yes" ; then
       AC_CHECK_HEADER(alsa/asoundlib.h, HAS_ALSA=1)
       AC_MSG_CHECKING(for ALSA sound support)
       if test "${HAS_ALSA}z" != "z"; then
         AC_MSG_RESULT(yes)
         ENDLDLIBS="$ENDLDLIBS -lasound"
+        HAS_ALSA=1
       else
         AC_MSG_RESULT(no)
       fi
     fi
+
+    if test "${HAS_ALSA}z" = "z" ; then
+      if test "$enable_oss" = "yes" ; then
+        AC_CHECK_HEADER(sys/soundcard.h, SNDCARDHDR=1)
+        AC_MSG_CHECKING(for OSS sound support)
+        if test "${SNDCARDHDR}z" != "z"; then
+          AC_SUBST(HAS_OSS, 1)
+          AC_MSG_RESULT(yes)
+        else
+          AC_MSG_RESULT(no)
+        fi
+      fi
+    fi
   fi
 fi
-AC_SUBST(HAS_ALSA)
 
-AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support])
+AC_SUBST(HAS_ALSA)
+AC_SUBST(HAS_OSS)
+
 
 dnl ########################################################################
 dnl check for various functions
