@@ -56,23 +56,13 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
   if (errno != EINPROGRESS)
     return -1;
 
-  // because we have to know whether the except or write bit gets set, we
-  // have to a full-blown select
-  fd_set rfd, wfd, efd;
-  FD_ZERO(&rfd); FD_ZERO(&wfd); FD_ZERO(&efd);
-  FD_SET(os_handle, &wfd);
-  FD_SET(os_handle, &efd);
-  PIntArray osHandles(2);
-  osHandles[0] = os_handle;
-  osHandles[1] = 2+4;
+  // wait for the connect to occur, or not
+  val = PThread::Current()->PXBlockOnIO(os_handle, PXConnectBlock, readTimeout);
 
-  val = PThread::Current()->PXBlockOnIO(os_handle+1,
-                                            rfd, wfd, efd,
-                                            PMaxTimeInterval,
-	 		                    osHandles);
+  // check the response
   if (val < 0)
     return -1;
-  if (val == 0 || FD_ISSET(os_handle, &efd)) {
+  else if (val == 0) {
     errno = ECONNREFUSED;
     return -1;
   }
