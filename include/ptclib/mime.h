@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.16  2001/10/03 00:24:57  robertj
+ * Split out function for adding a single line of MIME info, reduces
+ *    duplicated code and is useful in some other areas such as HTTP/1.1
+ *
  * Revision 1.15  2001/09/28 00:41:18  robertj
  * Added SetInteger() function to set numeric MIME fields.
  * Removed HasKey() as is confusing due to ancestor Contains().
@@ -208,6 +212,18 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
     BOOL Write(
       PInternetProtocol & socket   // Application socket to write MIME info.
     ) const;
+
+    /**Add a MIME field given a "name: value" format string.
+       Note that if the field name was already in the MIME dictionary then
+       this will append the new value after a '\n' character to the previous
+       value.
+
+       @return
+       TRUE is a field was added.
+      */
+    BOOL AddMIME(
+      const PString & line
+    );
 
     /** Get a string for the particular MIME info field with checking for
        existance. The #dflt# parameter is substituted if the field
