@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.25  2000/01/19 03:38:12  robertj
+ * Fixed support for parsing multiple IMPORTS
+ *
  * Revision 1.24  1999/09/18 04:17:40  robertj
  * Added generation of C++ inlines for some  functions.
  * Optimised CreateObject() switch statements, collapsing common cases.
@@ -254,7 +257,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 3, AlphaCode, 1)
+  : PProcess("Equivalence", "ASNParse", 1, 3, AlphaCode, 2)
 {
 }
 
