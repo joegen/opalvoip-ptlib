@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.74  2000/04/10 11:36:16  rogerh
+# Add NetBSD pthreads support
+#
 # Revision 1.73  2000/04/10 06:45:59  rogerh
 # NetBSD needs the ossaudio liobrary
 #
@@ -453,8 +456,7 @@ endif # OpenBSD
 
 ifeq ($(OSTYPE),NetBSD)
 
-# Do not use PThreads on NetBSD yet.
-##P_PTHREADS	:= 1
+P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
@@ -464,7 +466,9 @@ STDCCFLAGS	+= -DP_NETBSD
 LDLIBS		+= -lossaudio
 
 ifdef P_PTHREADS
-CFLAGS	+= -pthread
+STDCCFLAGS += -I/usr/pkg/pthreads/include
+LDFLAGS	+= -L/usr/pkg/pthreads/lib
+LDLIBS	+= -lpthread
 endif
 
 RANLIB		:= 1
