@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2004/11/08 04:10:36  csoutheren
+ * Fixed handling of sound driver and device names
+ *
  * Revision 1.5  2004/08/17 04:59:28  csoutheren
  * Cleaned up help message and added factory based routines
  *
@@ -179,56 +182,65 @@ void PluginTest::Main()
 
 
   if (args.HasOption('a') || args.HasOption('A')) {
-    PString service;
+    PString driver;
     BOOL useFactory = FALSE;
     if (args.HasOption('a'))
-      service = args.GetOptionString('a');
+      driver = args.GetOptionString('a');
     else {
-      service = args.GetOptionString('A');
+      driver = args.GetOptionString('A');
       useFactory = TRUE;
     }
+
+    PStringList driverList;
+    if (useFactory)
+      driverList = PStringList::container<std::vector<PString> >(PFactory<PSoundChannel>::GetKeyList());
+    else
+      driverList = PSoundChannel::GetDriverNames();
+
+    if (driver *= "default") {
+      if (driverList.GetSize() == 0) {
+        cout << "No sound device drivers available\n";
+        return;
+      }
+      driver = driverList[0];
+    }
+    else if (driver *= "list") {
+      cout << "Drivers: " << setfill('\n') << driverList << endl;
+      return;
+    }
+
+
+    PStringList deviceList = PSoundChannel::GetDeviceNames(driver, PSoundChannel::Player);
+    if (deviceList.GetSize() == 0) {
+      cout << "No devices for sound driver " << driver << endl;
+      return;
+    }
+
     PString device;
+
     if (args.GetCount() > 0) {
-      device  = args[0];
-      if (device *= "list") {
-        PStringList deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
+      device = args[0];
+      if (driver *= "list") {
         cout << "Devices = " << deviceList << endl;
         return;
       }
     }
-    else if (service != "default") {
-      PStringList deviceList;
-      if (useFactory)
-        deviceList = PStringList::container<std::vector<PString> >(PFactory<PSoundChannel>::GetKeyList());
-      else
-        deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
-
-      if (deviceList.GetSize() == 0) {
-        cout << "No devices for sound service " << service << endl;
-        return;
-      }
+    else {
       device = deviceList[0];
     }
     
-    cout << "Using sound service " << service << " with device " << device << endl;
+    cout << "Using sound driver" << driver << " with device " << device << endl;
 
-    PSoundChannel * snd;
-    if (service == "default") {
-      snd = new PSoundChannel();
-      device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
-    }
-    else {
-      snd = PSoundChannel::CreateChannel(service);
-      if (snd == NULL) {
-        cout << "Failed to create sound service " << service << " with device " << device << endl;
-        return;
-      }
+    PSoundChannel * snd = PSoundChannel::CreateChannel(driver);
+    if (snd == NULL) {
+      cout << "Failed to create sound channel with " << driver << endl;
+      return;
     }
 
-    cout << "Opening sound service " << service << " with device " << device << endl;
+    cout << "Opening sound driver " << driver << " with device " << device << endl;
 
     if (!snd->Open(device, PSoundChannel::Player)) {
-      cout << "Failed to open sound service " << service << " with device " << device << endl;
+      cout << "Failed to open sound driver " << driver  << " with device " << device << endl;
       return;
     }
 
