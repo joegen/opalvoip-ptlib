@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.6 1996/08/03 12:09:51 craigs Exp $
+ * $Id: thread.h,v 1.7 1996/12/30 03:23:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.7  1996/12/30 03:23:52  robertj
+ * Added timeout to block on child process function.
+ *
  * Revision 1.6  1996/08/03 12:09:51  craigs
  * Changed for new common directories
  *
@@ -57,7 +60,8 @@ class PSemaphore;
                const PTimeInterval & timeout,
                const PIntArray & osHandles);
 
-    int PXBlockOnChildTerminate(int pid);
+    int PXBlockOnChildTerminate(int pid,
+                                const PTimeInterval & timeout);
                      
   protected:
     void PXSetOSHandleBlock  (int fd, int type);
