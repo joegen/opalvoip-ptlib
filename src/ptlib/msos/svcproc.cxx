@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.24 1997/07/14 11:47:20 robertj Exp $
+ * $Id: svcproc.cxx,v 1.25 1997/07/17 12:43:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.25  1997/07/17 12:43:29  robertj
+ * Fixed bug for auto-start of service under '95.
+ *
  * Revision 1.24  1997/07/14 11:47:20  robertj
  * Added "const" to numerous variables.
  *
@@ -777,8 +780,8 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
   }
 
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
-                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunService",
-                           &key)) != ERROR_SUCCESS)
+                            "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunServices",
+                            &key)) != ERROR_SUCCESS)
     return FALSE;
 
   error = RegSetValueEx(key, svc->GetName(), 0, REG_SZ,
@@ -801,8 +804,8 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
   }
 
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
-                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunService",
-                           &key)) != ERROR_SUCCESS)
+                            "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunServices",
+                            &key)) != ERROR_SUCCESS)
     return FALSE;
 
   error = RegDeleteValue(key, (char *)(const char *)svc->GetName());
