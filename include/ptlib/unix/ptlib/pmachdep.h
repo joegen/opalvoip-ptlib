@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.64  2004/05/14 05:23:39  ykiryanov
+ * Added stl header
+ *
  * Revision 1.63  2004/04/18 05:45:55  ykiryanov
  * Added TCP_NODELAY definition and removed BE_BONELESS. BeOS is boned now
  *
@@ -417,6 +420,7 @@ struct servent * getservbyname(const char *, const char *);
 #include <termios.h>
 #include <sys/socket.h>
 #include <OS.h>
+#include <cpp/stl.h>
 
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
