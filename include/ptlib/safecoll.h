@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.14  2004/11/08 02:34:18  csoutheren
+ * Refactored code to (hopefully) compile on Linux
+ *
  * Revision 1.13  2004/11/07 12:55:38  rjongbloed
  * Fixed safe ptr casting so keeps associated collection for use in for loops.
  *
@@ -557,11 +560,12 @@ class PSafePtrBase : public PObject
     const PSafeCollection * GetCollection() const { return collection; }
   //@}
 
-  protected:
     void Assign(const PSafePtrBase & ptr);
     void Assign(const PSafeCollection & safeCollection);
     void Assign(PSafeObject * obj);
     void Assign(PINDEX idx);
+
+  protected:
     void Next();
     void Previous();
 
@@ -776,6 +780,7 @@ template <class T> class PSafePtr : public PSafePtrBase
   /**Cast the pointer to a different type. The pointer being cast to MUST
      be a derived class or NULL is returned.
     */
+      /*
   template <class Base>
   static PSafePtr<T> DownCast(const PSafePtr<Base> & oldPtr)
   {
@@ -785,6 +790,7 @@ template <class T> class PSafePtr : public PSafePtrBase
       newPtr.Assign(oldPtr);
     return newPtr;
   }
+  */
 };
 
 
@@ -794,7 +800,12 @@ template <class T> class PSafePtr : public PSafePtrBase
 template <class Base, class Derived>
 PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
 {
-  return PSafePtr<Derived>::DownCast<Base>(oldPtr);
+//  return PSafePtr<Derived>::DownCast<Base>(oldPtr);
+    PSafePtr<Derived> newPtr;
+    Base * realPtr = oldPtr;
+    if (realPtr != NULL && PIsDescendant(realPtr, Derived))
+      newPtr.Assign(oldPtr);
+    return newPtr;
 }
 
 
