@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.28  1998/09/24 07:40:34  robertj
+# Moved structured file to common.
+# Removed small files only containing pragma implementations
+#
 # Revision 1.27  1998/09/24 04:20:50  robertj
 # Added open software license.
 #
@@ -124,14 +128,13 @@ SOURCES		= switch.cxx \
 		  serchan.cxx \
 		  pipechan.cxx \
 		  svcproc.cxx \
-		  utfile.cxx \
-		  usfile.cxx \
 		  socket.cxx \
 		  uicmp.cxx \
 		  udll.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
+		  $(COMMONSRC)/sfile.cxx \
 		  $(COMMONSRC)/ptime.cxx \
 		  $(COMMONSRC)/collect.cxx \
 		  $(COMMONSRC)/sockets.cxx \
