@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.141  2004/11/17 12:50:44  csoutheren
+ * Win32 DCOM support, thanks to Simon Horne
+ *
  * Revision 1.140  2004/10/31 22:22:06  csoutheren
  * Added pragma to include ole32.lib for static builds
  *
@@ -515,10 +518,12 @@
 #pragma comment(lib, "mpr.lib")
 #endif
 
-// needed for CoInitialize
-#pragma comment(lib, "ole32.lib")
-
 #define new PNEW
+
+#if defined(_WIN32_DCOM) 
+  #include <objbase.h>
+  #pragma comment(lib, _OLE_LIB)
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1150,11 +1155,15 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   process.SignalTimerChange();
 
-  ::CoInitialize(NULL);
+#if defined(_WIN32_DCOM)
+  ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+#endif
 
   thread->Main();
 
-  CoUninitialize();
+#if defined(_WIN32_DCOM)
+  ::CoUninitialize();
+#endif
 
   return 0;
 }
