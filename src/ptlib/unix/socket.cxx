@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.35  1998/11/24 09:39:22  robertj
+ * FreeBSD port.
+ *
  * Revision 1.34  1998/11/22 08:11:37  craigs
  * *** empty log message ***
  *
@@ -160,18 +163,21 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
                        const PTimeInterval & timeout)
 {
-  int new_fd;
   if (!PXSetIOBlock(PXAcceptBlock, sock, timeout)) {
     errno = EINTR;
     return -1;
   }
 
+#if defined(E_PROTO)
   while (1) {
-    new_fd = ::accept(sock, addr, (socklen_t *)size);
+    int new_fd = ::accept(sock, addr, (socklen_t *)size);
     if ((new_fd >= 0) || (errno != EPROTO))
       return new_fd;
     //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
   }
+#else
+  return ::accept(sock, addr, (socklen_t *)size);
+#endif
 }
 
 int PSocket::os_select(int maxHandle,
@@ -557,31 +563,6 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 
 }
 
-/*
-PString PEthSocket::GetGatewayInterface() const
-{
-  PTextFile procfile;
-  if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
-    return PString();
-
-  char iface[20];
-  long net_addr, dest_addr, net_mask;
-  int flags, refcnt, use, metric;
-
-  do {
-    // Ignore heading line or remainder of route line
-    procfile.ignore(1000, '\n');
-    procfile >> iface >> ::hex >> net_addr >> dest_addr >> flags 
-                      >> ::dec >> refcnt >> use >> metric 
-                      >> ::hex >> net_mask;
-    if (procfile.fail())
-      return PString();
-  } while (net_addr != 0 || net_mask != 0);
-
-  return iface;
-}
-*/
-
 
 BOOL PEthSocket::GetAddress(Address & addr)
 {
@@ -755,6 +736,77 @@ BOOL PEthSocket::Write(const void * buf, PINDEX len)
   sockaddr to;
   strcpy(to.sa_data, channelName);
   return os_sendto(buf, len, 0, &to, sizeof(to)) && lastWriteCount >= len;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+BOOL PIPSocket::GetGatewayAddress(Address & addr)
+{
+  RouteTable table;
+  if (GetRouteTable(table)) {
+    for (PINDEX i = 0; i < table.GetSize(); i++) {
+      if (table[i].GetNetwork() == 0) {
+        addr = table[i].GetDestination();
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+
+
+PString PIPSocket::GetGatewayInterface()
+{
+  RouteTable table;
+  if (GetRouteTable(table)) {
+    for (PINDEX i = 0; i < table.GetSize(); i++) {
+      if (table[i].GetNetwork() == 0)
+        return table[i].GetInterface();
+    }
+  }
+  return PString();
+}
+
+
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
+#if defined(P_LINUX)
+
+  PTextFile procfile;
+  if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
+    return FALSE;
+
+  for (;;) {
+    // Ignore heading line or remainder of route line
+    procfile.ignore(1000, '\n');
+    if (procfile.eof())
+      return TRUE;
+
+    char iface[20];
+    long net_addr, dest_addr, net_mask;
+    int flags, refcnt, use, metric;
+    procfile >> iface >> ::hex >> net_addr >> dest_addr >> flags 
+                      >> ::dec >> refcnt >> use >> metric 
+                      >> ::hex >> net_mask;
+    if (procfile.bad())
+      return FALSE;
+
+    RouteEntry * entry = new RouteEntry(net_addr);
+    entry->net_mask = net_mask;
+    entry->destination = dest_addr;
+    entry->interfaceName = iface;
+    entry->metric = metric;
+    table.Append(entry);
+  }
+
+#else
+
+#warning Platform requires implemetation of GetRouteTable()
+  return FALSE;
+
+#endif
 }
 
 
