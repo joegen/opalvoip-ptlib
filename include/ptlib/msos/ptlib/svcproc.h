@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.26  2001/03/23 05:35:06  robertj
+ * Added ability for a service to output trace/system log to file while in debug mode.
+ *
  * Revision 1.25  2001/02/15 01:12:15  robertj
  * Moved some often repeated HTTP service code into PHTTPServiceProcess.
  *
@@ -184,6 +187,7 @@
     HANDLE                terminationEvent;
     HWND                  controlWindow;
     HWND                  debugWindow;
+    PCaselessString       systemLogFileName;
 
 #endif
 
