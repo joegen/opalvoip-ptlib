@@ -22,6 +22,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4131 4701)
@@ -109,11 +110,17 @@ struct Variables {
 #define yyerror		PTime_yyerror
 
 static int yyparse(void *); 
+static int yylex();
+
 #ifdef __GNUC__
 static int yyerror();
-static int yylex();
+#else
+static void yyerror();
 #endif
+
+
 static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
+
 
 %}
 
