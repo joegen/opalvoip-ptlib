@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2003/09/26 13:41:32  rjongbloed
+ * Added special test to give more indicative error if try to compile without Expat support.
+ *
  * Revision 1.3  2003/04/17 00:03:23  craigs
  * Changed default port from 6666 to 8000 to remove conflicts with other programs
  * that use that port by default
@@ -23,6 +26,12 @@
 #include <ptlib.h>
 #include "main.h"
 #include "custom.h"
+
+#if !P_EXPAT
+#error Must have Expat XML support for this application
+#endif
+
+
 
 PCREATE_PROCESS(Xmlrpcsrvr);
 
