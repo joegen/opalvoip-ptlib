@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.15  1999/04/29 08:41:26  robertj
+ * Fixed problems with uninitialised mutexes in PProcess.
+ *
  * Revision 1.14  1999/03/16 10:54:16  robertj
  * Added parameterless version of WaitForTermination.
  *
@@ -199,6 +202,10 @@ void PThread::InitialiseProcessThread()
   autoDelete          = FALSE;
   PX_waitingSemaphore = NULL;
   PX_threadId         = pthread_self();
+  PX_suspendCount     = 0;
+
+  PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
+  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
@@ -216,6 +223,8 @@ PThread::PThread(PINDEX stackSize,
 
   PX_waitingSemaphore = NULL;
   pthread_mutex_init(&PX_WaitSemMutex, NULL);
+
+  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
   // throw the new thread
   PX_NewThread(TRUE);
@@ -235,7 +244,6 @@ void PThread::PX_NewThread(BOOL startSuspended)
 {
   // initialise suspend counter and create mutex
   PX_suspendCount = startSuspended ? 1 : 0;
-  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
   // throw the thread
   pthread_attr_t threadAttr;
