@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_SASL HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2128,14 +2128,6 @@ _ACEOF
 
 fi
 
-if test ${OSTYPE} != Darwin ; then
-
-cat >>confdefs.h <<\_ACEOF
-#define P_HAS_SEMAPHORES 1
-_ACEOF
-
-fi
-
 
 if test "x${SHAREDLIBEXT}" = "x" ; then
   SHAREDLIBEXT="so"
@@ -2741,6 +2733,66 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+
+
+if test ${OSTYPE} != Darwin ; then
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <semaphore.h>
+int
+main ()
+{
+sem_t *s; sem_init(s, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  P_HAS_SEMAPHORES=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  echo "$as_me:$LINENO: checking if Unix semaphores are available" >&5
+echo $ECHO_N "checking if Unix semaphores are available... $ECHO_C" >&6
+  if test "${P_HAS_SEMAPHORES}x" != "x" ; then
+    cat >>confdefs.h <<\_ACEOF
+#define P_HAS_SEMAPHORES 1
+_ACEOF
+
+    echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+  else
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { echo "$as_me:$LINENO: WARNING: This host does not support semaphores which are essential" >&5
+echo "$as_me: WARNING: This host does not support semaphores which are essential" >&2;}
+    { echo "$as_me:$LINENO: WARNING: to implement 'critical sections'. This feature was added" >&5
+echo "$as_me: WARNING: to implement 'critical sections'. This feature was added" >&2;}
+    { echo "$as_me:$LINENO: WARNING: in PWLib 1.7.0 and improves the stability of multithreaded" >&5
+echo "$as_me: WARNING: in PWLib 1.7.0 and improves the stability of multithreaded" >&2;}
+    { echo "$as_me:$LINENO: WARNING: programs. This feature has been disabled for this host" >&5
+echo "$as_me: WARNING: programs. This feature has been disabled for this host" >&2;}
+  fi
+fi
 
 
 
@@ -4399,6 +4451,153 @@ fi
 
 
 
+echo "$as_me:$LINENO: checking for sasl_client_auth in -lsasl" >&5
+echo $ECHO_N "checking for sasl_client_auth in -lsasl... $ECHO_C" >&6
+if test "${ac_cv_lib_sasl_sasl_client_auth+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsasl $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char sasl_client_auth ();
+int
+main ()
+{
+sasl_client_auth ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_sasl_sasl_client_auth=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_sasl_sasl_client_auth=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_sasl_sasl_client_auth" >&5
+echo "${ECHO_T}$ac_cv_lib_sasl_sasl_client_auth" >&6
+if test $ac_cv_lib_sasl_sasl_client_auth = yes; then
+  HAS_SASL=1
+else
+  HAS_SASL=
+fi
+
+if test ${HAS_SASL:-unset} = "unset" ; then
+  echo "$as_me:$LINENO: checking for sasl_version in -lsasl2" >&5
+echo $ECHO_N "checking for sasl_version in -lsasl2... $ECHO_C" >&6
+if test "${ac_cv_lib_sasl2_sasl_version+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsasl2 $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char sasl_version ();
+int
+main ()
+{
+sasl_version ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_sasl2_sasl_version=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_sasl2_sasl_version=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_sasl2_sasl_version" >&5
+echo "${ECHO_T}$ac_cv_lib_sasl2_sasl_version" >&6
+if test $ac_cv_lib_sasl2_sasl_version = yes; then
+  HAS_SASL2=1
+else
+  HAS_SASL2=
+fi
+
+fi
+
+if test ${HAS_SASL:-unset} != "unset" ; then
+  HAS_SASL=1
+  ENDLDLIBS="$ENDLDLIBS -lsasl"
+  cat >>confdefs.h <<\_ACEOF
+#define P_SASL 1
+_ACEOF
+
+  HAS_SASL=1
+
+elif test ${HAS_SASL2:-unset} != "unset" ; then
+  HAS_SASL=1
+  ENDLDLIBS="$ENDLDLIBS -lsasl2"
+  cat >>confdefs.h <<\_ACEOF
+#define P_SASL 1
+_ACEOF
+
+  HAS_SASL=1
+
+else
+  HAS_SASL=0
+fi
+
+
+
 # Check whether --enable-openldap or --disable-openldap was given.
 if test "${enable_openldap+set}" = set; then
   enableval="$enable_openldap"
@@ -4412,6 +4611,9 @@ if test "$openldap" = "no" ; then
 #define P_LDAP 0
 _ACEOF
 
+elif test $HAS_SASL = 0 ; then
+  { echo "$as_me:$LINENO: OpenLDAP disabled as SASL is not available" >&5
+echo "$as_me: OpenLDAP disabled as SASL is not available" >&6;}
 else
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
 
@@ -4724,139 +4926,11 @@ _ACEOF
     fi
     if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
       LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
-    fi
-
-            echo "$as_me:$LINENO: checking for sasl_client_auth in -lsasl" >&5
-echo $ECHO_N "checking for sasl_client_auth in -lsasl... $ECHO_C" >&6
-if test "${ac_cv_lib_sasl_sasl_client_auth+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsasl $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char sasl_client_auth ();
-int
-main ()
-{
-sasl_client_auth ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_sasl_sasl_client_auth=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_sasl_sasl_client_auth=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_sasl_sasl_client_auth" >&5
-echo "${ECHO_T}$ac_cv_lib_sasl_sasl_client_auth" >&6
-if test $ac_cv_lib_sasl_sasl_client_auth = yes; then
-  HAS_SASL=1
-else
-  HAS_SASL=
-fi
-
-    if test ${HAS_SASL:-unset} = "unset" ; then
-      echo "$as_me:$LINENO: checking for sasl_version in -lsasl2" >&5
-echo $ECHO_N "checking for sasl_version in -lsasl2... $ECHO_C" >&6
-if test "${ac_cv_lib_sasl2_sasl_version+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsasl2 $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char sasl_version ();
-int
-main ()
-{
-sasl_version ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_sasl2_sasl_version=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_sasl2_sasl_version=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_sasl2_sasl_version" >&5
-echo "${ECHO_T}$ac_cv_lib_sasl2_sasl_version" >&6
-if test $ac_cv_lib_sasl2_sasl_version = yes; then
-  HAS_SASL2=1
-else
-  HAS_SASL2=
-fi
-
-    fi
-    if test ${HAS_SASL:-unset} != "unset" ; then
-      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl"
-    elif test ${HAS_SASL2:-unset} != "unset" ; then
-      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl2"
-    else
       ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber"
     fi
   fi
 fi
+
 
 
 
@@ -5413,6 +5487,7 @@ _ACEOF
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
+
 
 
 
@@ -6865,6 +6940,7 @@ s,@CXXCPP@,$CXXCPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@HAS_REGEX@,$HAS_REGEX,;t t
 s,@HAS_PLUGINS@,$HAS_PLUGINS,;t t
+s,@HAS_SASL@,$HAS_SASL,;t t
 s,@HAS_OPENLDAP@,$HAS_OPENLDAP,;t t
 s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@P_STATIC_ENDLDLIBS@,$P_STATIC_ENDLDLIBS,;t t
