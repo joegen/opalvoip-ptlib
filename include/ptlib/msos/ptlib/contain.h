@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.39  2004/04/13 03:13:29  csoutheren
+ * VS.net won't compile without "using namespace std"
+ *
  * Revision 1.38  2004/04/12 03:04:10  csoutheren
  * Removed <vector> warnings under Windows
  *
@@ -443,6 +446,8 @@ extern "C" char ** __argv;
 #include <vector>
 #pragma warning(pop)
 
+// VS.net won't work without this :(
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
