@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.4  1998/11/30 02:55:38  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:30:31  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@
 #ifndef _PTCPSOCKET
 
 
-#include "../../common/ptlib/tcpsock.h"
+#include "../../tcpsock.h"
 };
 
 
