@@ -48,18 +48,18 @@ extern ostream * PErrorStream;
 // define some basic types and their limits
 //
 
-typedef int		   BOOL;
+typedef int	           BOOL;
 typedef unsigned char	   BYTE;	// 1 byte
 
-typedef	short	   	   PInt16;	// 16 bit
+typedef	signed short	   PInt16;	// 16 bit
 typedef unsigned short	   WORD;
 
-typedef	int    	           PInt32;	// 32 bit
+typedef	signed int         PInt32;	// 32 bit
 typedef unsigned int 	   DWORD;
 
 #ifdef P_HAS_INT64
-typedef signed long long   PInt64;
-typedef unsigned long long PUInt64;	// 8 bytes
+typedef signed long long int   PInt64;
+typedef unsigned long long int PUInt64;	// 64 bit
 #endif
 
 typedef size_t 		      PINDEX;
