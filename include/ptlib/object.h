@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.32  1998/10/15 07:47:21  robertj
+ * Added ability to ignore G++lib memory leaks.
+ *
  * Revision 1.31  1998/10/15 01:53:58  robertj
  * GNU compatibility.
  *
@@ -397,6 +400,7 @@ class PMemoryHeap {
     Header * listTail;
 
     DWORD allocationRequest;
+    DWORD firstRealObject;
     BYTE  flags;
 
     char  allocFillChar;
