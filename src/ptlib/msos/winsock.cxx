@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.60.2.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.60  2003/11/12 04:40:58  csoutheren
  * Fixed linking problem on systems without QoS or IPV6
  *
@@ -533,21 +538,71 @@ BOOL PSocket::os_sendto(const void * buf,
 }
 
 
-int PSocket::os_select(int maxfds,
-                       fd_set * readfds,
-                       fd_set * writefds,
-                       fd_set * exceptfds,
-                       const PIntArray &,
-                       const PTimeInterval & timeout)
+PChannel::Errors PSocket::Select(SelectList & read,
+	SelectList & write,
+	SelectList & except,
+	const PTimeInterval & timeout)
 {
-  struct timeval tv_buf;
-  struct timeval * tv = NULL;
-  if (timeout != PMaxTimeInterval) {
-    tv = &tv_buf;
-    tv->tv_usec = (long)(timeout.GetMilliSeconds()%1000)*1000;
-    tv->tv_sec = timeout.GetSeconds();
+  PINDEX i;
+  
+  P_fd_set readfds;
+  for (i = 0; i < read.GetSize(); i++) {
+    if (!read[i].IsOpen())
+      return NotOpen;
+    readfds += read[i].GetHandle();
   }
-  return select(maxfds, readfds, writefds, exceptfds, tv);
+
+  P_fd_set writefds;
+  for (i = 0; i < write.GetSize(); i++) {
+    if (!write[i].IsOpen())
+      return NotOpen;
+    writefds += write[i].GetHandle();
+  }
+
+  P_fd_set exceptfds;
+  for (i = 0; i < except.GetSize(); i++) {
+    if (!except[i].IsOpen())
+      return NotOpen;
+    exceptfds += except[i].GetHandle();
+  }
+  
+  P_timeval tval = timeout;
+  int retval = select(INT_MAX, readfds, writefds, exceptfds, tval);
+  
+  Errors lastError;
+  int osError;
+  if (!ConvertOSError(retval, lastError, osError))
+    return lastError;
+	
+  if (retval > 0) {
+    for (i = 0; i < read.GetSize(); i++) {
+	  int h = read[i].GetHandle();
+	  if (h < 0)
+	    return Interrupted;
+      if (!readfds.IsPresent(h))
+	    read.RemoveAt(i--);
+    }
+    for (i = 0; i < write.GetSize(); i++) {
+	  int h = write[i].GetHandle();
+	  if (h < 0)
+	    return Interrupted;
+      if (!writefds.IsPresent(h))
+	    write.RemoveAt(i--);
+    }
+    for (i = 0; i < except.GetSize(); i++) {
+	  int h = except[i].GetHandle();
+	  if (h < 0)
+	    return Interrupted;
+      if (!exceptfds.IsPresent(h))
+	    except.RemoveAt(i--);
+    }
+  } else {
+    read.RemoveAll();
+    write.RemoveAll();
+    except.RemoveAll();
+  }
+  
+  return NoError;
 }
 
 

@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.70.4.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.70  2003/09/26 13:46:18  rjongbloed
  * Fixed problem in Win32 NTFS security support, crashes if file has no security at all.
  *
@@ -1101,7 +1106,11 @@ BOOL PFile::Open(OpenMode mode, int opts)
   else if ((opts&(DenySharedRead|DenySharedWrite)) != 0)
     sflags = _SH_DENYWR;
 
-  return ConvertOSError(os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE));
+  os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE);
+  
+  // As ConvertOSError tests for < 0 and some return values _sopen may be
+  // negative, only pass -1 through
+  return ConvertOSError(os_handle == -1 ? -1 : 0);
 }
 
 

@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.7.2.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.7  2004/01/17 17:45:59  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -124,11 +129,12 @@ void PSOAPMessage::GetMethod( PString & name, PString & nameSpace )
 {
   PString fullMethod = pSOAPMethod->GetName();
   PINDEX sepLocation = fullMethod.Find(':');
-  PString methodID = fullMethod.Left( sepLocation  );
-  name = fullMethod.Right( fullMethod.GetSize() - 2 - sepLocation );
+  if (sepLocation != P_MAX_INDEX) {
+    PString methodID = fullMethod.Left( sepLocation  );
+    name = fullMethod.Right( fullMethod.GetSize() - 2 - sepLocation );
 
-  nameSpace = pSOAPMethod->GetAttribute( "xmlns:" + methodID );
-
+    nameSpace = pSOAPMethod->GetAttribute( "xmlns:" + methodID );
+  }
 }
 
 
@@ -253,7 +259,9 @@ PINDEX stringToFaultCode( PString & faultStr )
 BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
 {
   PXMLElement* pElement = GetParameter( name );
-
+  if (pElement == NULL)
+    return FALSE;
+	
   if ( pElement->GetAttribute( "xsi:type") == "xsd:string" )
   {
     value = pElement->GetData();
@@ -267,7 +275,9 @@ BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
 BOOL PSOAPMessage::GetParameter( const PString & name, int & value )
 {
   PXMLElement* pElement = GetParameter( name );
-
+  if (pElement == NULL)
+    return FALSE;
+	
   if ( pElement->GetAttribute( "xsi:type") == "xsd:int" )
   {
     value = pElement->GetData().AsInteger();
@@ -431,7 +441,7 @@ BOOL PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
   if ( pSOAPAction )
   {
     // If it's available check if we are expecting a special header value
-    if ( soapAction == " " )
+    if (soapAction.IsEmpty() || soapAction == " ")
     {
       // A space means anything goes
       ok = OnSOAPRequest( request.entityBody, reply );
