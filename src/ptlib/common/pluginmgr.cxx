@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.6  2004/01/17 16:02:59  dereksmithies
+ * make test for plugin names case insensitive.
+ *
  * Revision 1.5  2003/11/18 10:39:56  csoutheren
  * Changed PTRACE levels to give better output at trace level 3
  *
@@ -171,7 +174,7 @@ PStringList PPluginManager::GetPluginsProviding(const PString & serviceType) con
 
   PStringList result;
   for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    if (serviceList[i].serviceType == serviceType)
+    if (serviceList[i].serviceType *= serviceType)
       result.AppendString(serviceList[i].serviceName);
   }
   return result;
@@ -183,8 +186,8 @@ PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor (const PString &
   PWaitAndSignal n(serviceListMutex);
 
   for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
-    if (serviceList[i].serviceName == serviceName &&
-        serviceList[i].serviceType == serviceType)
+    if ((serviceList[i].serviceName *= serviceName) &&
+        (serviceList[i].serviceType *= serviceType))
       return serviceList[i].descriptor;
   }
   return NULL;
