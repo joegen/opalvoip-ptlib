@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.9  2003/07/22 22:55:20  dereksmithies
+ * Add memory allocation feature.
+ *
  * Revision 1.8  2003/05/21 03:59:10  dereksmithies
  * Fix close down bug.
  *
@@ -56,6 +59,8 @@
 
 #include <ptlib.h>
 #include <ptclib/vsdl.h>
+
+#define new PNEW
 
 #if P_SDL
 
