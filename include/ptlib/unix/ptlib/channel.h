@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.23.4.1  2004/07/04 02:02:42  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.23  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -119,5 +124,7 @@
     PThread   * px_readThread;
     PThread   * px_writeThread;
     PMutex      px_writeMutex;
+	PThread   * px_selectThread;
+	PMutex      px_selectMutex;
 
 // End Of File ////////////////////////////////////////////////////////////////

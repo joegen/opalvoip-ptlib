@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.42.2.1  2004/07/04 02:02:42  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.42  2004/03/23 05:59:17  csoutheren
  * Moved the Base64 routines into cypher.cxx, which is a more sensible
  * place and reduces the inclusion of unrelated code
@@ -476,7 +481,7 @@ PString PMessageDigest::CompleteDigest()
 {
   Result result;
   CompleteDigest(result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 void PMessageDigest::CompleteDigest(Result & result)
@@ -746,7 +751,7 @@ PString PMessageDigest5::Encode(const void * data, PINDEX length)
 {
   Result result;
   Encode(data, length, result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 
@@ -806,9 +811,6 @@ void PMessageDigest5::Complete(Code & codeResult)
 
 #pragma comment(lib, P_SSL_LIB1)
 #pragma comment(lib, P_SSL_LIB2)
-#pragma comment(linker, "/delayload:ssleay32.dll")
-#pragma comment(linker, "/delayload:libeay32.dll")
-#pragma comment(lib, "Delayimp.lib")
 
 #endif
 
@@ -891,7 +893,7 @@ PString PMessageDigestSHA1::Encode(const void * data, PINDEX length)
 {
   Result result;
   Encode(data, length, result);
-  return PBase64::Encode(&result, sizeof(result));
+  return PBase64::Encode(result.GetPointer(), result.GetSize());
 }
 
 
