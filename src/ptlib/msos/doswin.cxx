@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.7 1995/08/24 12:41:10 robertj Exp $
+ * $Id: doswin.cxx,v 1.8 1995/12/10 11:56:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.8  1995/12/10 11:56:42  robertj
+ * Moved error code for specific WIN32 and MS-DOS versions.
+ *
  * Revision 1.7  1995/08/24 12:41:10  robertj
  * Changed PChannel so not a PContainer.
  *
@@ -147,6 +150,63 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
                                                   fullpath(pos+4, P_MAX_INDEX);
 
   return fullpath.ToUpper();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+PString PChannel::GetErrorText() const
+{
+  if (osError == 0)
+    return PString();
+
+  if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
+    return _sys_errlist[osError];
+
+  return psprintf("OS error %u", osError);
+}
+
+
+BOOL PChannel::ConvertOSError(int error)
+{
+  if (error >= 0) {
+    lastError = NoError;
+    osError = 0;
+    return TRUE;
+  }
+
+  osError = errno;
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+      return TRUE;
+    case ENOENT :
+      lastError = NotFound;
+      break;
+    case EEXIST :
+      lastError = FileExists;
+      break;
+    case EACCES :
+      lastError = AccessDenied;
+      break;
+    case ENOMEM :
+      lastError = NoMemory;
+      break;
+    case ENOSPC :
+      lastError = DiskFull;
+      break;
+    case EINVAL :
+      lastError = BadParameter;
+      break;
+    case EBADF :
+      lastError = NotOpen;
+      break;
+    default :
+      lastError = Miscellaneous;
+  }
+
+  return FALSE;
 }
 
 
