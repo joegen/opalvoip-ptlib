@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.100  2003/10/27 04:06:14  csoutheren
+ * Added code to allow compilation of new QoS code on Unix
+ *
  * Revision 1.99  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -280,6 +283,7 @@
 #pragma implementation "tcpsock.h"
 #pragma implementation "ipdsock.h"
 #pragma implementation "ethsock.h"
+#pragma implementation "qos.h"
 
 
 #include <ptlib.h>
