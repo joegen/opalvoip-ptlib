@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.126  2002/05/07 01:57:51  craigs
+# Always link with -ldl, not just when using shared libraries
+#
 # Revision 1.125  2002/04/18 05:12:20  robertj
 # Changed /usr/include to SYSINCDIR helps with X-compiling, thanks Bob Lindell
 #
@@ -605,8 +608,8 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
-ifeq ($(P_SHAREDLIB),1)
 LDLIBS		+= -ldl
+ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
 STDCCFLAGS	+= -fPIC
 endif # PROG
