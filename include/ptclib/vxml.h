@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.9  2002/07/29 15:03:58  craigs
+ * Added access to queue functions
+ * Added autodelete option to AddFile
+ *
  * Revision 1.8  2002/07/29 14:15:47  craigs
  * Added asynchronous VXML execution
  *
@@ -318,6 +322,9 @@ class PVXMLQueueItem : public PObject
 
     virtual void Play(PVXMLOutgoingChannel & outgoingChannel) = 0;
 
+    virtual void OnStart() { }
+    virtual void OnStop() { }
+
     PINDEX repeat;
     PINDEX delay;
 };
@@ -342,14 +349,18 @@ class PVXMLQueueFilenameItem : public PVXMLQueueItem
 {
   PCLASSINFO(PVXMLQueueFilenameItem, PObject);
   public:
-    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX repeat = 1, PINDEX delay = 0)
-      : PVXMLQueueItem(repeat, delay), fn(_fn)
+    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL _autoDelete = FALSE)
+      : PVXMLQueueItem(repeat, delay), fn(_fn), autoDelete(_autoDelete)
     { }
 
     void Play(PVXMLOutgoingChannel & outgoingChannel);
 
+    void OnStop() 
+    { if (autoDelete) PFile::Remove(fn); }
+
   protected:
     PFilePath fn;
+    BOOL autoDelete;
 };
 
 PQUEUE(PVXMLQueue, PVXMLQueueItem);
@@ -391,7 +402,8 @@ class PVXMLOutgoingChannel : public PVXMLChannel
     virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
-    virtual void PlayFile(PFile * chan);
+    virtual void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem);
+    //virtual void PlayFile(PFile * chan);
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
