@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.28 1997/04/27 05:50:13 robertj Exp $
+ * $Id: pprocess.h,v 1.29 1997/07/08 13:13:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.29  1997/07/08 13:13:46  robertj
+ * DLL support.
+ *
  * Revision 1.28  1997/04/27 05:50:13  robertj
  * DLL support.
  *
@@ -122,8 +125,7 @@
       cls() : ancestor(manuf, name, major, minor, status, build) { } \
     private: \
       virtual void Main(); \
-  }; \
-  PCREATE_PROCESS(cls)
+  };
 
 
 PLIST(PInternalTimerList, PTimer);
