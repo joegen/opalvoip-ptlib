@@ -491,11 +491,36 @@
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
+!IF  "$(CFG)" == "Console - Win32 Release"
+
 ..\common\osutils.cxx : \
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+..\common\osutils.cxx : \
+	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+..\common\osutils.cxx : \
+	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+..\common\osutils.cxx : \
+	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\pethsock.cxx : \
@@ -594,65 +619,15 @@
 
 !ENDIF 
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 .\pipe.cxx : \
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\pipe.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-.\pipe.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-.\pipe.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 ..\common\pipechan.cxx : \
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\pipechan.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\pipechan.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-..\common\pipechan.cxx : \
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
@@ -981,39 +956,11 @@
 
 !ENDIF 
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 ..\common\regex\regerror.c : \
 	"..\common\regex\regerror.ih"\
 	"..\common\regex\regex.h"\
 	"..\common\regex\utils.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\regex\regerror.c : \
-	"..\common\regex\regerror.ih"\
-	"..\common\regex\regex.h"\
-	"..\common\regex\utils.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
-
-..\common\regex\regerror.c : \
-	"..\common\regex\regerror.ih"\
-	"..\common\regex\regex.h"\
-	"..\common\regex\utils.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
-
-..\common\regex\regerror.c : \
-	"..\common\regex\regerror.ih"\
-	"..\common\regex\regex.h"\
-	"..\common\regex\utils.h"\
-	
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
