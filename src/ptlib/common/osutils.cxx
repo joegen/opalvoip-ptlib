@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.138  2000/05/25 11:05:55  robertj
+ * Added PConfigArgs class so can save program arguments to config files.
+ *
  * Revision 1.137  2000/05/05 10:08:29  robertj
  * Fixed some GNU compiler warnings
  *
@@ -1191,6 +1194,117 @@ void PArgList::UnknownOption(const PString & option) const
 void PArgList::MissingArgument(const PString & option) const
 {
   PError << "option \"" << option << "\" requires argument\n";
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConfigArgs
+
+PConfigArgs::PConfigArgs(const PArgList & args)
+  : PArgList(args),
+    negationPrefix("no-"),
+    sectionName(config.GetDefaultSection())
+{
+}
+
+
+PINDEX PConfigArgs::GetOptionCount(char option) const
+{
+  PINDEX count;
+  if ((count = PArgList::GetOptionCount(option)) > 0)
+    return count;
+
+  PString stropt = CharToString(option);
+  if (stropt.IsEmpty())
+    return 0;
+
+  return GetOptionCount(stropt);
+}
+
+
+PINDEX PConfigArgs::GetOptionCount(const char * option) const
+{
+  return GetOptionCount(PString(option));
+}
+
+
+PINDEX PConfigArgs::GetOptionCount(const PString & option) const
+{
+  // if specified on the command line, use that option
+  PINDEX count = PArgList::GetOptionCount(option);
+  if (count > 0)
+    return count;
+
+  // if user has specified "no-option", then ignore config file
+  if (PArgList::GetOptionCount(negationPrefix + option) > 0)
+    return 0;
+
+  return config.HasKey(sectionName, option) ? 1 : 0;
+}
+
+
+PString PConfigArgs::GetOptionString(char option, const char * dflt) const
+{
+  if (PArgList::HasOption(option))
+    return PArgList::GetOptionString(option, dflt);
+
+  PString stropt = CharToString(option);
+  if (stropt.IsEmpty())
+    return dflt;
+
+  return GetOptionString(stropt, dflt);
+}
+
+
+PString PConfigArgs::GetOptionString(const char * option, const char * dflt) const
+{
+  return GetOptionString(PString(option), dflt);
+}
+
+
+PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) const
+{
+  // if specified on the command line, use that option
+  if (PArgList::HasOption(option))
+    return PArgList::GetOptionString(option, dflt);
+
+  // if user has specified "no-option", then ignore config file
+  if (PArgList::HasOption(negationPrefix + option))
+    return dflt;
+
+  return config.GetString(sectionName, option, dflt != NULL ? dflt : "");
+}
+
+
+void PConfigArgs::Save(const PString & saveOptionName)
+{
+  if (!PArgList::HasOption(saveOptionName))
+    return;
+
+  config.DeleteSection(sectionName);
+
+  for (PINDEX i = 0; i < optionCount.GetSize(); i++) {
+    PString optionName = optionNames[i];
+    if (optionCount[i] > 0 && optionName != saveOptionName) {
+      if (optionString.GetAt(i) != NULL)
+        config.SetString(sectionName, optionName, optionString[i]);
+      else
+        config.SetBoolean(sectionName, optionName, TRUE);
+    }
+  }
+}
+
+
+PString PConfigArgs::CharToString(char ch) const
+{
+  PINDEX index = optionLetters.Find(ch);
+  if (index == P_MAX_INDEX)
+    return PString();
+
+  if (optionNames.GetAt(index) == NULL)
+    return PString();
+
+  return optionNames[index];
 }
 
 
