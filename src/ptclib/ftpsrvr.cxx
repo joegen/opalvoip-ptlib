@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.8  2000/06/21 01:10:18  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.7  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -656,7 +659,7 @@ BOOL PFTPServer::OnSYST(const PCaselessString &)
 
 BOOL PFTPServer::OnSTAT(const PCaselessString &)
 {
-  OnNotImplemented(STAT);
+  OnNotImplemented(STATcmd);
   return TRUE;
 }
 
