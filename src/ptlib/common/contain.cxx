@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.116  2002/06/24 06:18:36  robertj
+ * Fixed bug when getting extra space at start of outputing PBaseArray.
+ * Added ability to not include ASCII in PbaseArray output using ios::fixed.
+ *
  * Revision 1.115  2002/06/19 04:04:30  robertj
  * Fixed bug in setting/getting bits from PBitArray, could exceed array bounds.
  *
@@ -737,6 +741,7 @@ void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed)
   PINDEX line_width = strm.width();
   if (line_width == 0)
     line_width = 16/size;
+  strm.width(0);
 
   PINDEX indent = strm.precision();
 
@@ -794,14 +799,16 @@ void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed)
       }
       strm << ' ';
     }
-    strm << "  ";
-    for (j = 0; j < line_width; j++) {
-      if (i+j < GetSize()) {
-        long val = GetNumberValueAt(i+j);
-        if (val >= 0 && val < 256 && isprint(val))
-          strm << (char)val;
-        else
-          strm << '.';
+    if ((strm.flags()&ios::floatfield) != ios::fixed) {
+      strm << "  ";
+      for (j = 0; j < line_width; j++) {
+        if (i+j < GetSize()) {
+          long val = GetNumberValueAt(i+j);
+          if (val >= 0 && val < 256 && isprint(val))
+            strm << (char)val;
+          else
+            strm << '.';
+        }
       }
     }
     i += line_width;
