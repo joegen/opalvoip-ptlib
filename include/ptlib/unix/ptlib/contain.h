@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.12  1999/01/08 01:27:43  robertj
+ * Moved include of pmachdep to earlier in inclusions.
+ *
  * Revision 1.11  1998/11/30 22:06:35  robertj
  * New directory structure.
  *
@@ -41,9 +44,10 @@
 #ifndef _PCONTAIN
 #define _PCONTAIN
 
-#include <sys/types.h>
+#include "pmachdep.h"
 #include <unistd.h>
 #include <ctype.h>
+
 
 ///////////////////////////////////////////
 //
