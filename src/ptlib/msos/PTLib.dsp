@@ -136,8 +136,9 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
-USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
+USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	"$(InputDir)\ptlib.ignore"	
 # Begin Custom Build - Merging exported library symbols
+InputDir=\Work\pwlib\include\ptlib\msos
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
@@ -180,8 +181,9 @@ SOURCE=..\..\..\include\ptlib\msos\ptlibd.dtf
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
 
 # PROP Ignore_Default_Tool 1
-USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	
+USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	"$(InputDir)\ptlib.ignore"	
 # Begin Custom Build - Merging exported library symbols
+InputDir=\Work\pwlib\include\ptlib\msos
 IntDir=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 TargetName=PTLibd
