@@ -1,11 +1,15 @@
 /*
- * $Id: httpsvc.cxx,v 1.8 1996/10/08 13:08:29 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.9 1996/10/14 03:06:29 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.9  1996/10/14 03:06:29  robertj
+ * Fixed timestamp compatibility with linux.
+ * Fixed E-mail strings.
+ *
  * Revision 1.8  1996/10/08 13:08:29  robertj
  * Changed standard graphic to use PHTML class.
  *
@@ -39,8 +43,9 @@
 #include <ptlib.h>
 #include <httpsvc.h>
 
-#define HOME_PAGE "http://www.ozemail.com.au/~equival"
-#define EMAIL "mailto:equival@ozemail.com.au"
+const PString EMailAddres = "equival@ozemail.com.au";
+const PString EMailURL = "mailto:" + EMailAddres;
+const PString HomePageURL = "http://www.ozemail.com.au/~equival";
 
 
 PHTTPServiceProcess::PHTTPServiceProcess(
@@ -62,7 +67,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
-  PTime compilationDate = __DATE__;
+  PTime compilationDate = PString(__DATE__);
 
   PHTML html = PHTML::InBody;
   html << PHTML::TableStart()
@@ -75,9 +80,9 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << ", " << compilationDate.AsString("d MMM yy")
        << PHTML::BreakLine()
        << "Copyright &copy;" << compilationDate.AsString("yyyy") << " by "
-       << PHTML::HotLink(HOME_PAGE) << GetManufacturer() << PHTML::HotLink()
+       << PHTML::HotLink(HomePageURL) << GetManufacturer() << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink(EMAIL) << EMAIL << PHTML::HotLink()
+       << PHTML::HotLink(EMailURL) << EMailAddres << PHTML::HotLink()
        << PHTML::TableEnd();
 
   return html;
@@ -371,7 +376,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "Order Form"
        << PHTML::Heading(1)
        << PHTML::Paragraph()
-       << PHTML::Form("POST", EMAIL)
+       << PHTML::Form("POST", EMailURL)
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
