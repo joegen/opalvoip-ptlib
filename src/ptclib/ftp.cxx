@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.3 1996/03/18 13:33:15 robertj Exp $
+ * $Id: ftp.cxx,v 1.4 1996/03/26 00:50:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.4  1996/03/26 00:50:30  robertj
+ * FTP Client Implementation.
+ *
  * Revision 1.3  1996/03/18 13:33:15  robertj
  * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
@@ -87,11 +90,10 @@ PFTPSocket::PFTPSocket(WORD port)
 
 
 PFTPSocket::PFTPSocket(const PString & address, WORD port)
-  : PApplicationSocket(NumCommands, FTPCommands, address, port)
+  : PApplicationSocket(NumCommands, FTPCommands, port)
 {
   Construct();
-  if (!Connect(address))
-    return;
+  Connect(address);
   // do not put any implementation here - put into Connect instead
 }
 
@@ -156,6 +158,184 @@ BOOL PFTPSocket::Connect(const PString & address)
 
   return TRUE;
 }
+
+
+BOOL PFTPSocket::LogIn(const PString & username, const PString & password)
+{
+  if (ExecuteCommand(USER, username)/100 != 3)
+    return FALSE;
+  return ExecuteCommand(PASS, password)/100 == 2;
+}
+
+
+PString PFTPSocket::GetSystemType()
+{
+  if (ExecuteCommand(SYST, "")/100 != 2)
+    return PString();
+
+  return lastResponseInfo.Left(lastResponseInfo.Find(' '));
+}
+
+
+BOOL PFTPSocket::SetType(RepresentationType type)
+{
+  static const char * const typeCode[] = { "A", "E", "I" };
+  PAssert(type < PARRAYSIZE(typeCode), PInvalidParameter);
+  return ExecuteCommand(TYPE, typeCode[type])/100 == 2;
+}
+
+
+BOOL PFTPSocket::ChangeDirectory(const PString & dirPath)
+{
+  return ExecuteCommand(CWD, dirPath)/100 == 2;
+}
+
+
+PString PFTPSocket::GetCurrentDirectory()
+{
+  if (ExecuteCommand(PWD, "") != 257)
+    return PString();
+
+  PINDEX quote1 = lastResponseInfo.Find('"');
+  if (quote1 == P_MAX_INDEX)
+    return PString();
+
+  PINDEX quote2 = quote1 + 1;
+  do {
+    quote2 = lastResponseInfo.Find('"', quote2);
+    if (quote2 == P_MAX_INDEX)
+      return PString();
+
+    while (lastResponseInfo[quote2]=='"' && lastResponseInfo[quote2+1]=='"')
+      quote2 += 2;
+
+  } while (lastResponseInfo[quote2] != '"');
+
+  return lastResponseInfo(quote1+1, quote2-1);
+}
+
+
+PStringArray PFTPSocket::GetDirectoryNames(NameTypes type)
+{
+  return GetDirectoryNames(PString(), type);
+}
+
+
+PStringArray PFTPSocket::GetDirectoryNames(const PString & path,
+                                          NameTypes type)
+{
+  SetType(PFTPSocket::ASCII);
+
+  PTCPSocket * socket =
+            NormalClientTransfer(type == DetailedNames ? LIST : NLST, path);
+  if (socket == NULL)
+    return PStringArray();
+
+  PString str;
+  int count = 0;
+  while (socket->Read(str.GetPointer(count+1000)+count, 1000))
+    count += socket->GetLastReadCount();
+  str.SetSize(count+1);
+
+  delete socket;
+  ReadResponse();
+  return str.Lines();
+}
+
+
+PString PFTPSocket::GetFileStatus(const PString & path)
+{
+  if (ExecuteCommand(STAT, path)/100 != 2)
+    return PString();
+
+  PINDEX start = lastResponseInfo.Find('\n');
+  if (start != P_MAX_INDEX)
+    return PString();
+
+  PINDEX end = lastResponseInfo.Find('\n', ++start);
+  if (end != P_MAX_INDEX)
+    return PString();
+
+  return lastResponseInfo(start, end-1);
+}
+
+
+PTCPSocket * PFTPSocket::NormalClientTransfer(Commands cmd,
+                                              const PString & args)
+{
+  // setup a socket so we can tell the host where to connect to
+  PTCPSocket listenSocket;
+  listenSocket.Listen();
+
+  // get host address and port to send to other end
+  WORD localPort = listenSocket.GetPort();
+  PIPSocket::Address localAddr;
+  PIPSocket::GetHostAddress(localAddr);
+
+  // send PORT command to host
+  if (!SendPORT(localAddr, localPort))
+    return NULL;
+
+  if (ExecuteCommand(cmd, args)/100 != 1)
+    return NULL;
+
+  PTCPSocket * socket = new PTCPSocket(listenSocket);
+  if (socket->IsOpen())
+    return socket;
+
+  delete socket;
+  return NULL;
+}
+
+
+PTCPSocket * PFTPSocket::PassiveClientTransfer(Commands cmd,
+                                               const PString & args)
+{
+  PIPSocket::Address passiveAddress;
+  WORD passivePort;
+
+  if (ExecuteCommand(PASV, "") != 227)
+    return NULL;
+
+  PINDEX start = lastResponseInfo.FindOneOf("0123456789");
+  if (start == P_MAX_INDEX)
+    return NULL;
+
+  PStringArray bytes = lastResponseInfo(start, P_MAX_INDEX).Tokenise(",");
+  if (bytes.GetSize() != 6)
+    return NULL;
+
+  passiveAddress = PIPSocket::Address((BYTE)bytes[0].AsInteger(),
+                                      (BYTE)bytes[1].AsInteger(),
+                                      (BYTE)bytes[2].AsInteger(),
+                                      (BYTE)bytes[3].AsInteger());
+  passivePort = (WORD)(bytes[4].AsInteger()*256 + bytes[5].AsInteger());
+
+  PTCPSocket * socket = new PTCPSocket(passiveAddress, passivePort);
+  if (socket->IsOpen())
+    if (WriteCommand(cmd, args)/100 == 1)
+      return socket;
+
+  delete socket;
+  return NULL;
+}
+
+
+PTCPSocket * PFTPSocket::GetFile(const PString & filename,
+                                 DataChannelType channel)
+{
+  return channel != Passive ? NormalClientTransfer(RETR, filename)
+                            : PassiveClientTransfer(RETR, filename);
+}
+
+
+PTCPSocket * PFTPSocket::PutFile(const PString & filename,
+                                 DataChannelType channel)
+{
+  return channel != Passive ? NormalClientTransfer(STOR, filename)
+                            : PassiveClientTransfer(STOR, filename);
+}
+
 
 
 PString PFTPSocket::GetHelloString(const PString & user) const
@@ -735,7 +915,7 @@ BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
   if (!WriteCommand(PORT, str))
     return FALSE;
 
-  return ReadResponse(code, info);
+  return ReadResponse(code, info) && lastResponseCode/100 == 2;
 }
 
 
