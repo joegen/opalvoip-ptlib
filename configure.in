@@ -1,0 +1,566 @@
+AC_INIT(include/ptlib.h)
+
+dnl ########################################################################
+dnl set the PWLIB directory to the current directory
+
+PWLIBDIR=`pwd`
+AC_SUBST(PWLIBDIR)
+
+dnl ########################################################################
+dnl set the PREFIX accordingly
+if test "x$prefix" = "xNONE"; then
+   INSTALLPREFIX="/usr/local"
+else
+   INSTALLPREFIX="${prefix}"
+fi
+
+AC_SUBST(INSTALLPREFIX)
+
+dnl ########################################################################
+dnl extract the PWLIB version
+MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+BUILD_NUMBER=`cat ${PWLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+PWLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
+AC_SUBST(PWLIB_VERSION)
+
+echo "PTLib version is ${PWLIB_VERSION}"
+
+dnl ########################################################################
+dnl set the OSTYPE and MACHTYPE
+
+AC_CANONICAL_TARGET()
+
+OSTYPE=
+
+case "$target_os" in
+  linux\-gnu)      OSTYPE=linux ;  
+                   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
+
+  freebsd* )       OSTYPE=FreeBSD ;
+                   OSRELEASE=`sysctl -n kern.osreldate` ;
+                   STDCCFLAGS="-DP_FREEBSD=$OSRELEASE" ;;
+
+  openbsd* )       OSTYPE=OpenBSD ;
+                   OSRELEASE=`sysctl -n kern.osrevision` ;
+		   ENDLDLIBS="-lossaudio" ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_OPENBSD=$OSRELEASE" ;;
+
+  netbsd* )        OSTYPE=NetBSD ;
+                   OSRELEASE=`/sbin/sysctl -n kern.osrevision` ;
+		   ENDLDLIBS="-lossaudio" ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_NETBSD=$OSRELEASE" ;;
+
+  solaris* | sunos ) OSTYPE=solaris ;
+                   OSRELEASE=`uname -r | sed "s/5\.//g"` ;
+                   STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
+
+  darwin* )	   OSTYPE=Darwin ;
+		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
+                   STDCCFLAGS="-DP_MACOSX=$OSRELEASE -DNO_LONG_DOUBLE" ;
+                   SHAREDLIBEXT="dylib";;
+
+  * )		   OSTYPE="$target_os" ;
+  		   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="-DP_UNKNOWN=$OSTYPE_$OSRELEASE" ;
+		   echo "OS $target_os not recognized - proceed with caution!" ;;
+esac
+
+MACHTYPE=
+
+case "$target_cpu" in
+   x86 | i686 | i586 | i486 | i386 ) MACHTYPE=x86 ;;
+
+   x86_64)	   MACHTYPE=x86_64 ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   alpha | alphaev56) MACHTYPE=alpha ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   sparc )         MACHTYPE=sparc ;;
+
+   powerpc )       MACHTYPE=ppc ;;
+
+   ia64)	   MACHTYPE=ia64 ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   s390x)	   MACHTYPE=s390x ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   * )		   MACHTYPE=$target_cpu ;
+		   echo "CPU $target_cpu not recognized - proceed with caution!" ;;
+esac
+
+echo "OSTYPE set to $OSTYPE";
+echo "OSRLEASE set to $OSRELEASE";
+echo "MACHTYPE set to $MACHTYPE";
+
+AC_SUBST(MACHTYPE,  $MACHTYPE)
+AC_SUBST(OSTYPE,    $OSTYPE)
+AC_SUBST(OSRELEASE, $OSRELEASE)
+
+dnl ########################################################################
+dnl set the shared library extension, if not already set
+
+if test "x${SHAREDLIBEXT}" = "x" ; then
+  SHAREDLIBEXT="so"
+fi
+AC_SUBST(SHAREDLIBEXT, $SHAREDLIBEXT)
+AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
+
+dnl ########################################################################
+dnl check the endianness
+
+dnl MSWIN Byte Order,,PBYTE_ORDER,PLITTLE_ENDIAN
+
+AC_C_BIGENDIAN()
+if test ${ac_cv_c_bigendian} = yes ; then
+  PBYTE_ORDER=PBIG_ENDIAN
+else
+  PBYTE_ORDER=PLITTLE_ENDIAN
+fi
+
+AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
+
+dnl ########################################################################
+dnl look for compile flags
+AC_LANG(C++)
+AC_LANG(C)
+
+AC_MSG_CHECKING(if compiler accepts -fno-rtti)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+else
+  AC_MSG_RESULT(no)
+fi
+
+GCSECTIONS=0
+
+AC_MSG_CHECKING(if linker accepts --gc-sections)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -Wl,--gc-sections conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+
+  AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CC $CFLAGS -ffunction-sections -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
+  fi
+
+  AC_MSG_CHECKING(if compiler accepts -fdata-sections)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CC $CFLAGS -fdata-sections -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -fdata-sections"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
+  fi
+
+  AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CPLUSPLUS $CFLAGS -fvtable-gc -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
+  fi
+
+  if test $GCSECTIONS = 1; then
+    if test "${OSTYPE}" != "Darwin" ; then
+      LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+    fi
+  fi
+
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl ########################################################################
+dnl check for pthreads library
+
+dnl MSWIN Semaphore Support,,P_HAS_SEMAPHORES
+
+dnl Linux, Mac OS X use libpthread and -lpthread
+dnl FreeBSD uses the -pthread compiler option and uses libc_r
+
+AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+if test ${HAS_PTHREADS} = yes ; then
+  ENDLDLIBS="$ENDLDLIBS -lpthread"
+  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+else
+  dnl FreeBSD checks
+  AC_CHECK_LIB(c_r, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+  if test ${HAS_PTHREADS} = yes ; then
+    ENDLDLIBS="$ENDLDLIBS -pthread"
+    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+  fi
+fi
+
+
+if test ${HAS_PTHREADS} != yes ; then
+  AC_MSG_FAILURE(must have pthreads!)
+fi
+
+AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+dnl
+dnl posix semaphore support in darwin/macosx is broken
+dnl 
+if test ${OSTYPE} != Darwin ; then
+  AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
+fi
+
+dnl #########################################################################
+dnl  Check for FIREWIRE if available, from GnomeMeeting
+dnl ########################################################################
+AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
+AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
+AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
+
+AC_SUBST(TRY_1394DC, 0)
+AC_SUBST(TRY_1394AVC, 0)
+firewiredc="no"
+firewireavc="no"
+
+AC_ARG_ENABLE(firewiredc, [  --enable-firewiredc     enable Firewire support for DC cameras], firewiredc="yes")
+if test ${DC1394HDR:-unset} != "unset" -a "${firewiredc}" != "no" ; then     
+   AC_DEFINE(TRY_1394DC, 1, "Firewire DC1394 support enabled")
+   AC_SUBST(TRY_1394DC, 1)
+   ENDLDLIBS="$ENDLDLIBS -lraw1394 -ldc1394_control"	     
+   echo "Firewire DC1394 support enabled"
+else
+if test "${firewiredc}" != "no"; then
+AC_MSG_ERROR([***Firewire camera headers (libdc1394, libdv, rom1394) not found.])
+fi
+fi
+
+AC_ARG_ENABLE(firewireavc, [  --enable-firewireavc    enable Firewire support for AVC cameras], firewireavc="yes")
+if test ${AVC1394HDR:-unset} != "unset" -a ${DVHDR:-unset} != "unset" -a "${firewireavc}" != "no" ; then     
+   AC_DEFINE(TRY_1394AVC, 1, "Firewire AVC1394 support enabled")
+   AC_SUBST(TRY_1394AVC, 1)
+   ENDLDLIBS="$ENDLDLIBS -lraw1394 -lavc1394 -lrom1394 -ldv"
+   echo "Firewire AVC1394 support enabled"
+else
+if test "${firewireavc}" != "no"; then
+AC_MSG_ERROR([***Firewire camera headers (libavc1394, libdv) not found.])
+fi
+fi
+
+if test "${firewireavc}" != "no" -a "${firewiredc}" != "no"; then
+AC_MSG_ERROR([***You can currently not compile DC and AVC Firewire camera support at the same time.])
+fi
+
+
+dnl ########################################################################
+dnl look for DNS resolver code (must be done before OpenLDAP)
+dnl on some systems, the resolver is in libc
+
+dnl MSWIN DNS Resolver,resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
+
+AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  RESOLVER_LIBS=""
+else
+  LIBS=""
+  AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=1)
+  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    RESOLVER_LIBS="${LIBS}"
+  fi
+fi
+
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  AC_DEFINE(P_DNS, 1, "resolver libraries found")
+fi
+
+dnl ########################################################################
+dnl look for OpenLDAP
+
+dnl MSWIN Open LDAP,openldap,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\,..\external\openldap\,\openldap\,c:\openldap\
+
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
+  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+    AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-llber $RESOLVER_LIBS)
+  else
+    AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
+    if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+      OPENLDAPINCLUDEDIR=/usr/local/include
+      OPENLDAPLIBDIR=/usr/local/lib
+    fi
+  fi
+fi
+
+if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+  AC_SUBST(HAS_OPENLDAP, 1)
+  AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
+  if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
+  fi
+  if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
+fi
+
+dnl ########################################################################
+dnl look for OpenSSL
+dnl check for environment variable, then assume standard system install
+dnl this process is made incredibly more complex by the fact that RedHad 9
+dnl is completely fscked. The default OpenSSL installation requires Kerberos,
+dnl even when Kerberos is not installed, requiring an explicit #define to
+dnl make it compile
+dnl As if that is not enough, autoconf gets very confused if configure.in
+dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
+dnl to ensure that it is always called
+
+dnl MSWIN Open SSL,openssl,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\,..\external\openssl\,\openssl\,c:\openssl\
+
+dnl see if openssl.h is in the system include paths
+AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
+
+dnl check to see OPENSSLDIR is set
+if test ${OPENSSLDIR:-unset} != "unset" ; then
+  echo "Using ${OPENSSLDIR} for SSL"
+  HAVE_LIBSSL=1
+  SSLINCLUDEDIR="${OPENSSLDIR}/include"
+  SSLLIBDIR="${OPENSSLDIR}/lib"
+
+else
+
+  dnl see if OpenSSL is in the system include path
+  dnl and do the crazy RedHat checks
+
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if openssl/ssl.h works with OPENSSL_NO_KRB5... "
+    AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include <openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+    else
+      echo "no"
+    fi
+  fi
+
+  dnl check if OpenSSL is in /usr/local/openssl
+  dnl and do the crazy RedHat checks
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works... "
+    AC_COMPILE_IFELSE([[#include "/usr/local/openssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/openssl/include"
+      SSLLIBDIR="/usr/local/openssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include "/usr/local/openssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/openssl/include"
+        SSLLIBDIR="/usr/local/openssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+
+  dnl check if OpenSSL is in /usr/local/ssl
+  dnl and do the crazy RedHat checks
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works... "
+    AC_COMPILE_IFELSE([[#include "/usr/local/ssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/ssl/include"
+      SSLLIBDIR="/usr/local/ssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include "/usr/local/ssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/ssl/include"
+        SSLLIBDIR="/usr/local/ssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+fi
+
+if test ${SSLHDR:-unset} != "unset" ; then
+  AC_SUBST(HAS_OPENSSL, 1)
+  AC_DEFINE(P_SSL, 1, "OpenSSL found")
+  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+  fi
+  if test ${SSLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS $STDCCFLAGS -L${SSLLIBDIR}"
+  fi
+  STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
+  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
+fi
+
+dnl ########################################################################
+dnl look for expat XML parser
+
+dnl MSWIN Expat XML,expat,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\,..\external\expat\,\expat,c:\expat\
+
+AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
+  AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
+else
+  AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
+  if test "${HAS_EXPAT:-unset}" != "unset" ; then
+    EXPATINCLUDEDIR=/usr/local/include
+    EXPATLIBDIR=/usr/local/lib
+  fi
+fi
+
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
+  AC_SUBST(HAS_EXPAT, 1)
+  AC_DEFINE(P_EXPAT, 1, "expat found")
+  if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
+  fi
+  if test ${EXPATLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -lexpat"
+fi
+
+
+dnl ########################################################################
+dnl Speech
+
+dnl MSWIN Speech API,sapi,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
+
+
+dnl ########################################################################
+dnl look for SDL, but only if we have pthreads
+dnl MSWIN Simple DirectMedia Layer,libsdl,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\,..\external\sdl\,\sdl\c:\sdl\
+
+
+AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
+fi
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  AC_SUBST(HAS_SDL, 1)
+  AC_DEFINE(P_SDL, 1, "SDL found")
+  if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
+  fi
+  if test ${SDLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -lSDL"
+fi
+
+
+dnl ########################################################################
+dnl check for dynamic library code (dlopen end friends)
+
+dnl MSWIN DLL Support,,P_DYNALINK
+
+LIBS=""
+if test ${OSTYPE} != Darwin ; then
+  AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
+  if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+    AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
+  fi
+else
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
+fi
+
+dnl ########################################################################
+dnl look for IPV6 functions
+
+dnl MSWIN IPv6 Support,ipv6,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program Files\Microsoft Visual Studio\VC98\Include\,\Program Files\Microsoft SDK\
+
+AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
+[AC_TRY_COMPILE([#include <sys/types.h>
+                 #include <netinet/in.h>],
+                 [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
+
+if test $HAS_IPV6 = yes ; then
+  AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+fi
+
+dnl ########################################################################
+dnl check for video capture support.
+dnl videodev.h on linux
+dnl machine/ioctl_meteor on FreeBSD
+dnl i386/ioctl_meteor on OpenBSD
+dnl dev/ic/bt8xx on NetBSD
+
+HAS_VIDEO_CAPTURE=no
+AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
+if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
+  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
+  echo "No Video Capture support"
+fi
+
+dnl ########################################################################
+dnl output make directives
+
+dnl resolver needs to be at the end
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
+    ENDLDLIBS="$ENDLDLIBS $RESOLVER_LIBS"
+  fi
+fi
+
+dnl dl needs to be at the end
+if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+  if test "${OSTYPE}" != "Darwin" ; then
+    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
+    if test ${HAS_LIBDL} = yes ; then
+      ENDLDLIBS="$ENDLDLIBS -ldl"
+    fi
+  fi
+fi
+
+AC_SUBST(STDCCFLAGS)
+AC_SUBST(OPTSTDCCFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(ENDLDLIBS)
+
+AC_CONFIG_FILES(make/ptbuildopts.mak)
+AC_CONFIG_FILES(make/ptlib-config)
+AC_CONFIG_FILES(Makefile)
+
+dnl ########################################################################
+dnl output header file
+
+AC_CONFIG_HEADERS(include/ptbuildopts.h)
+
+AC_OUTPUT()
