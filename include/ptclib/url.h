@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.21  2002/11/19 10:36:08  robertj
+ * Added functions to set anf get "file:" URL. as PFilePath and do the right
+ *   things with platform dependent directory components.
+ *
  * Revision 1.20  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -117,6 +121,10 @@ class PURL : public PObject
     PURL(
       const PString & str   /// String representation of the URL.
     );
+    /**Construct a new URL object from the file path. */
+    PURL(
+      const PFilePath & path   /// File path to turn into a "file:" URL.
+    );
 
   /**@name Overrides from class PObject */
   //@{
@@ -189,6 +197,11 @@ class PURL : public PObject
     PString AsString(
       UrlFormat fmt = FullURL   /// The type of string to be returned.
     ) const;
+
+    /**Get the "file:" URL as a file path.
+       If the URL is not a "file:" URL then returns an empty string.
+      */
+    PFilePath AsFilePath() const;
 
     /// Type for translation of strings to URL format,
     enum TranslationType {
@@ -266,6 +279,9 @@ class PURL : public PObject
 
     /// Set the path field of the URL as a string.
     void SetPathStr(const PString & pathStr);
+
+    /// Set the path field of the URL as a string.
+    void SetPathStr(const PFilePath & pathStr);
 
     /// Get the path field of the URL as a string array.
     const PStringArray & GetPath() const { return path; }
