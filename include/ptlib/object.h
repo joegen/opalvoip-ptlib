@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.8 1995/01/15 04:51:31 robertj Exp $
+ * $Id: object.h,v 1.9 1995/02/05 00:48:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.8  1995/01/15 04:51:31  robertj
+ * Revision 1.9  1995/02/05 00:48:07  robertj
+ * Fixed template version.
+ *
+ * Revision 1.8  1995/01/15  04:51:31  robertj
  * Mac compatibility.
  * Added levels of memory checking.
  *
@@ -187,7 +190,7 @@ extern ostream * PSTATIC PErrorStream;
 ///////////////////////////////////////////////////////////////////////////////
 // The low level object support, memory checks, run time typing etc.
 
-#if defined(PMEMORY_CHECK) && MEMORY_CHECK>2
+#if defined(PMEMORY_CHECK) && PMEMORY_CHECK>2
 
 /*$MACRO PMALLOC(s)
    This macro is used to allocate memory via the memory check system selected
@@ -221,7 +224,7 @@ extern ostream * PSTATIC PErrorStream;
  */
 #define PFREE(p) PObject::MemoryCheckDeallocate(p, NULL)
 
-#else // defined(PMEMORY_CHECK) && MEMORY_CHECK>1
+#else // defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
 
 
 #define PMALLOC(s)    malloc(s)
@@ -236,7 +239,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
 #define PFREE(p)      free(p)
 
 
-#endif // defined(PMEMORY_CHECK) && MEMORY_CHECK>1
+#endif // defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
 
 
 #if defined(PMEMORY_CHECK)
@@ -1158,24 +1161,6 @@ PDECLARE_CLASS(PSmartPointer, PObject)
 };
 
 
-#ifdef PHAS_TEMPLATES
-
-template <class cls>
-PDECLARE_CLASS(PPointer, PSmartPointer)
-  public:
-    PPointer(
-      cls * obj = NULL
-    ) : PSmartPointer(obj) { }
-    cls * operator->() const { return (cls *)PAssertNULL(object); }
-    cls & operator*() const { return *(cls *)PAssertNULL(object); }
-};
-
-
-#define PSMART_POINTER(cls, type) typedef PPointer<type> cls
-
-#else
-
-
 /*$MACRO PDECLARE_POINTER_CLASS(cls, par, type)
    This macro is used to declare a smart pointer class. The class is not
    closed off allowing customisation of the new class being declared.
@@ -1264,8 +1249,6 @@ PDECLARE_CLASS(PPointer, PSmartPointer)
         { return (type *)PAssertNULL(object); } \
       type & operator*() const \
         { return *(type *)PAssertNULL(object); } \
-
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
