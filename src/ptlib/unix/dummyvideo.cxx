@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.2  2001/06/27 17:43:32  rogerh
+ * MakeOpen to return FALSE. Also change every things else to return failure.
+ *
  * Revision 1.1  2001/06/27 17:27:23  rogerh
  * Dummy video allows code dependent on PVideoInputDevice to compile and link.
  * It has no functionality.
@@ -47,36 +50,36 @@ PVideoInputDevice::PVideoInputDevice()
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
-  return TRUE;    
+  return FALSE;    
 }
 
 
 BOOL PVideoInputDevice::IsOpen() 
 {
-  return TRUE;    
+  return FALSE;    
 }
 
 
 BOOL PVideoInputDevice::Close()
 {
-  return TRUE;    
+  return FALSE;    
 }
 
 BOOL PVideoInputDevice::Start()
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 BOOL PVideoInputDevice::Stop()
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 BOOL PVideoInputDevice::IsCapturing()
 {
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -84,42 +87,37 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
 {
   PStringList list;
 
-  list.AppendString("/dev/bktr0");
-  list.AppendString("/dev/bktr1");
-  list.AppendString("/dev/meteor0");
-  list.AppendString("/dev/meteor1");
-
   return list;
 }
 
 
 BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 int PVideoInputDevice::GetNumChannels() 
 {
-  return TRUE;
+  return 0;
 }
 
 
 BOOL PVideoInputDevice::SetChannel(int newChannel)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -128,13 +126,13 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
-  return TRUE;
+  return FALSE;
 }
 
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -147,7 +145,7 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  return TRUE;
+  return FALSE;
 }
 
 
