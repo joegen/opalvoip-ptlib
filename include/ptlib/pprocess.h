@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.52  2002/07/30 02:55:48  craigs
+ * Added program start time to PProcess
+ * Added virtual to GetVersion etc
+ *
  * Revision 1.51  2002/02/14 05:13:33  robertj
  * Fixed possible deadlock if a timer is deleted (however indirectly) in the
  *   OnTimeout of another timer.
@@ -435,7 +439,7 @@ class PProcess : public PThread
        @return
        string for the manufacturer name eg "Equivalence".
      */
-    const PString & GetManufacturer() const;
+    virtual const PString & GetManufacturer() const;
 
     /**Get the name of the process. This is used in the
        default "About" dialog box and for determining the location of the
@@ -446,7 +450,7 @@ class PProcess : public PThread
        @return
        string for the process name eg "MyApp".
      */
-    const PString & GetName() const;
+    virtual const PString & GetName() const;
 
     /**Get the version of the software. This is used in the default "About"
        dialog box and for determining the location of the configuration
@@ -462,7 +466,7 @@ class PProcess : public PThread
        @return
        string for the version eg "1.0b3".
      */
-    PString GetVersion(
+    virtual PString GetVersion(
       BOOL full = TRUE /// TRUE for full version, FALSE for short version.
     ) const;
 
@@ -594,6 +598,10 @@ class PProcess : public PThread
     virtual int _main(void * arg = NULL);
     // Main function for process, called from real main after initialisation
 
+    PTime GetStartTime() const;
+    /* return the time at which the program was started 
+    */
+
   protected:
 #if !defined(P_PLATFORM_HAS_THREADS)
 
@@ -646,6 +654,9 @@ class PProcess : public PThread
 
     PTimerList timers;
     // List of active timers in system
+
+    PTime programStartTime;
+    // time at which process was intantiated, i.e. started
 
 #if !defined(P_PLATFORM_HAS_THREADS)
 
