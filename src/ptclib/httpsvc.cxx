@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.92  2004/03/23 03:40:57  csoutheren
+ * Change service process default to be more useful in some environments
+ *
  * Revision 1.91  2004/01/17 17:44:54  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -361,9 +364,9 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
     productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
     gifHTML(inf.gifHTML),
-    copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : EQUIVALENCE),
-    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : HOME_PAGE),
-    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : EMAIL)
+    copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : inf.manufacturerName),
+    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : manufacturersHomePage),
+    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : manufacturersEmail)
 {
   ignoreSignatures = FALSE;
 
