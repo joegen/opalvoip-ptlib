@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.64  2003/02/06 21:03:13  dereks
+ * Patch from Klaus Kaempf to fix warning message on compiling with gcc 3.x Thanks!
+ *
  * Revision 1.63  2002/11/22 10:14:58  robertj
  * Fixed correct free of memory blocks in exceptional circumstances. Partially
  *   trashed heap or objects etc.
@@ -238,7 +241,11 @@
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
+#if defined(__GNUC__) && __GNUC__ > 2
+#include <strstream>
+#else
 #include <strstream.h>
+#endif
 #include <signal.h>
 #endif
 
