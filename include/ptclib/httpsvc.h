@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.10 1997/06/16 13:20:14 robertj Exp $
+ * $Id: httpsvc.h,v 1.11 1997/06/16 14:12:55 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.11  1997/06/16 14:12:55  robertj
+ * Changed private to protected.
+ *
  * Revision 1.10  1997/06/16 13:20:14  robertj
  * Fixed bug where PHTTPThread crashes on exit.
  *
@@ -108,7 +111,6 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     PStringArray    securedKeys;
     PTEACypher::Key signatureKey;
 
-  private:
     void ShutdownListener();
     void BeginRestartSystem();
     void CompleteRestartSystem();
