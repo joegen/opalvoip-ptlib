@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.29  2000/10/12 23:11:48  robertj
+ * Fixed problem with BER encoding of ASN with optional fields.
+ *
  * Revision 1.28  2000/06/26 13:14:46  robertj
  * Nucleus++ port.
  *
@@ -266,7 +269,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 3, BetaCode, 3)
+  : PProcess("Equivalence", "ASNParse", 1, 3, BetaCode, 4)
 {
 }
 
@@ -1943,21 +1946,15 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   cxx << GetTemplatePrefix()
       << "PINDEX " << GetClassNameString() << "::GetDataLength() const\n"
          "{\n"
-         "  return ";
+         "  PINDEX length = 0;\n";
 
-  outputEnum = FALSE;
   for (i = 0; i < numFields; i++) {
-    if (outputEnum)
-      cxx << " +\n"
-             "         ";
-    else
-      outputEnum = TRUE;
-    cxx << "m_" << fields[i].GetIdentifier() << ".GetObjectLength()";
+    if (fields[i].IsOptional())
+      cxx << "  if (HasOptionalField(e_" << fields[i].GetIdentifier() << "))\n  ";
+    cxx << "  length += m_" << fields[i].GetIdentifier() << ".GetObjectLength();\n";
   }
-  if (!outputEnum)
-    cxx << '0';
 
-  cxx << ";\n"
+  cxx << "  return length;\n"
          "}\n"
          "\n"
          "\n"
