@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.40  1999/02/19 11:34:15  robertj
+ * Added platform dependent function for "system configuration" directory.
+ *
  * Revision 1.39  1999/02/06 05:49:44  robertj
  * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
  *
@@ -236,6 +239,11 @@ PString PProcess::GetOSVersion()
 #warning No GetOSVersion specified
   return PString("?.?");
 #endif
+}
+
+PDirectory PProcess::GetOSConfigDir()
+{
+  return "/etc";
 }
 
 PDirectory PProcess::PXGetHomeDir ()
