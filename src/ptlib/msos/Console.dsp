@@ -112,6 +112,14 @@ SOURCE=..\common\osutils.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\Common\pchannel.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\Common\pconfig.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\pethsock.cxx
 # End Source File
 # Begin Source File
@@ -139,6 +147,10 @@ SOURCE=..\common\regex.cxx
 # Begin Source File
 
 SOURCE=.\remconn.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\Common\serial.cxx
 # End Source File
 # Begin Source File
 
