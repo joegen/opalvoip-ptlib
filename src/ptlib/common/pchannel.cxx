@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.30  2004/06/08 01:31:08  csoutheren
+ * Make the test sense correct for the init(NULL)
+ *
  * Revision 1.29  2004/06/08 01:29:00  csoutheren
  * Removed memory leak on VS.net caused by unobvious iostream allocation
  *
@@ -260,7 +263,7 @@ PChannel::~PChannel()
   flush();
   Close();
   delete (PChannelStreamBuffer *)rdbuf();
-#ifdef _WIN32
+#ifndef _WIN32
   init(NULL);
 #endif
 }
