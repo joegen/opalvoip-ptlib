@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.37  2002/09/25 00:54:50  robertj
+ * Fixed memory leak on assertion.
+ *
  * Revision 1.36  2002/09/23 07:17:24  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -376,9 +379,13 @@ void PAssertFunc(const char * msg)
 #endif
 
   str << ends;
+  const char * pstr = str.str();
+  // Unfreeze str so frees memory
+  str.rdbuf()->freeze(0);
+  // Must do nothing to str after this or it invalidates pstr
 
   if (PProcess::Current().IsServiceProcess()) {
-    PSystemLog::Output(PSystemLog::Fatal, str.str());
+    PSystemLog::Output(PSystemLog::Fatal, pstr);
 #if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
@@ -392,7 +399,7 @@ void PAssertFunc(const char * msg)
 #endif
 
   if (PProcess::Current().IsGUIProcess()) {
-    switch (MessageBox(NULL, str.str(), "Portable Windows Library",
+    switch (MessageBox(NULL, pstr, "Portable Windows Library",
                               MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
         FatalExit(1);  // Never returns
@@ -407,7 +414,7 @@ void PAssertFunc(const char * msg)
   }
 
   for (;;) {
-    cerr << str.str() << "\n<A>bort, <B>reak, <I>gnore? ";
+    cerr << pstr << "\n<A>bort, <B>reak, <I>gnore? ";
     cerr.flush();
     switch (cin.get()) {
       case 'A' :
