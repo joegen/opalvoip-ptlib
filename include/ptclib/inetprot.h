@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.1 1995/06/04 13:17:16 robertj Exp $
+ * $Id: inetprot.h,v 1.2 1995/06/17 00:39:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.2  1995/06/17 00:39:53  robertj
+ * More implementation.
+ *
  * Revision 1.1  1995/06/04 13:17:16  robertj
  * Initial revision
  *
@@ -75,6 +78,22 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
      */
 
 
+  // Overrides from class PChannel.
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Low level write to the channel.
+
+       This override assures that the sequence CR/LF/./CR/LF does not occur by
+       byte stuffing an extra '.' character into the data stream, whenever a
+       line begins with a '.' character.
+
+       <H2>Returns:</H2>
+       TRUE if at least len bytes were written to the channel.
+     */
+
+
   // New functions for class.
     BOOL WriteLine(
       const PString & line // String to write as a command line.
@@ -88,10 +107,16 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
      */
 
     BOOL ReadLine(
-      PString & line // String to receive a CR/LF terminated line.
+      PString & line,           // String to receive a CR/LF terminated line.
+      BOOL unstuffLine = FALSE  // Flag to remove '.' characters from lines.
     );
     /* Read a string from the socket channel up to a CR/LF pair.
     
+       If the <CODE>unstuffLine</CODE> parameter is set then the function will
+       remove the '.' character from the start of any line that begins with
+       two consecutive '.' characters. A line that has is exclusively a '.'
+       character will make the function return FALSE.
+
        Note this function will block for the time specified by the
        <A>PChannel::SetReadTimeout()</A> function.
 
@@ -209,10 +234,23 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
     PStringArray commandNames;
     // Names of each of the command codes.
 
+    enum {
+      DontStuff, StuffIdle, StuffCR, StuffCRLF, StuffCRLFdot, StuffCRLFdotCR
+    } stuffingState, unstuffingState;
+    // Do byte stuffing of '.' characters in output.
+
+    BOOL newLineToCRLF;
+    // Translate \n characters to CR/LF pairs.
+
     PString lastResponseCode;
     PString lastResponseInfo;
     // Response 
+
+
+  private:
+    void Construct();
 };
+
 
 
 PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
@@ -233,26 +271,40 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        a "listening" socket is specified then the channel is also opened.
      */
 
+    ~PSMTPSocket();
+    /* Destroy the socket object. This will close the socket and if used as a
+       client, QUIT from remote SMTP server.
+     */
 
-  // Overrides from class PChannel.
-    virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+
+  // Overrides from class PSocket.
+    virtual BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
     );
-    /* Low level write to the channel. This function will block until the
-       requested number of characters are written or the write timeout is
-       reached. The GetLastWriteCount() function returns the actual number
-       of bytes written.
-
-       The GetErrorCode() function should be consulted after Write() returns
-       FALSE to determine what caused the failure.
-
-       This override assures that the sequence CR/LF/./CR/LF does not occur by
-       byte stuffing an extra '.' character into the data stream, whenever a
-       line begins with a '.' character.
+    /* Connect a socket to a remote host on the specified port number.
 
        <H2>Returns:</H2>
-       TRUE if at least len bytes were written to the channel.
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+    virtual BOOL Close();
+    /* Close the socket, and if connected as a client, QUITs from server.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was closed and the QUIT accepted by the server.
      */
 
 
@@ -284,6 +336,13 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
      */
 
 
+    enum Commands {
+      HELO, EHLO, QUIT, HELP, NOOP,
+      TURN, RSET, VRFY, EXPN, RCPT,
+      MAIL, SEND, SAML, SOML, DATA,
+      NumCommands
+    };
+
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
@@ -293,15 +352,8 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        received or the <A>OnUnknown()</A> function returns FALSE.
      */
 
-    enum Commands {
-      HELO, EHLO, QUIT, HELP, NOOP,
-      TURN, RSET, VRFY, EXPN, RCPT,
-      MAIL, SEND, SAML, SOML, DATA,
-      NumCommands
-    };
-
-    void Reset();
-    // Reset the state of the SMTP socket.
+    void ServerReset();
+    // Reset the state of the SMTP server socket.
 
     enum LookUpResult {
       ValidUser,      // User name was valid and unique.
@@ -449,15 +501,288 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
     BOOL        haveHello;
     BOOL        extendedHello;
     BOOL        eightBitMIME;
-    BOOL        sendingData;
     PString     fromName;
+    PString     fromHost;
     PStringList toNames;
+    PStringList toHosts;
     PINDEX      messageBufferSize;
     enum { WasMAIL, WasSEND, WasSAML, WasSOML } sendCommand;
-    enum { GotNothing, GotCR, GotCRLF, GotCRLFdot, GotCRLFdotCR } stuffingState;
 
   private:
+    void Construct();
     BOOL _BeginMessage();
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PPOP3Socket
+
+PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
+/* A TCP/IP socket for Simple Mail Transfer Protocol.
+ */
+
+  public:
+    PPOP3Socket();
+    // Create an unopened TCP/IP SMPTP protocol socket channel.
+
+    PPOP3Socket(
+      const PString & address   // Address of remote machine to connect to.
+    );
+    PPOP3Socket(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+       a "listening" socket is specified then the channel is also opened.
+     */
+
+    ~PPOP3Socket();
+    /* Destroy the socket object. This will close the socket and if used as a
+       client, QUIT from remote POP3 server.
+     */
+
+
+  // Overrides from class PSocket.
+    virtual BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
+    );
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
+
+       The port number as defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number. This is an
+       "accepting" socket. When a "listening" socket has a pending connection
+       to make, this will accept a connection made by the "connecting" socket
+       created to establish a link.
+
+       The port that the socket uses is the one used in the <A>Listen()</A>
+       command of the <CODE>socket</CODE> parameter.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+    virtual BOOL Close();
+    /* Close the socket, and if connected as a client, QUITs from server.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was closed and the QUIT accepted by the server.
+     */
+
+
+  // New functions for class.
+    BOOL LogIn(
+      const PString & username,   // User name on remote system.
+      const PString & password    // Password for user name.
+    );
+    /* Log into the POP server using the mailbox and access codes specified.
+
+       <H2>Returns:</H2>
+       TRUE if logged in.
+     */
+
+    int GetMessageCount();
+    /* Get a count of the number of messages in the mail box.
+
+       <H2>Returns:</H2>
+       Number of messages in mailbox or -1 if an error occurred.
+     */
+
+    PUnsignedArray GetMessageSizes();
+    /* Get an array of a integers representing the sizes of each of the
+       messages in the mail box.
+
+       <H2>Returns:</H2>
+       Array of integers representing the size of each message.
+     */
+
+    PStringArray GetMessageHeaders();
+    /* Get an array of a strings representing the standard internet message
+       headers of each of the messages in the mail box.
+
+       Note that the remote server may not support this function, in which
+       case an empty array will be returned.
+
+       <H2>Returns:</H2>
+       Array of strings continaing message headers.
+     */
+
+
+    BOOL BeginMessage(
+      PINDEX messageNumber
+        /* Number of message to retrieve. This is an integer from 1 to the
+           maximum number of messages available.
+         */
+    );
+    /* Begin the retrieval of an entire message. The application may then use
+       the <A>PApplicationSocket::ReadLine()</A> function with the
+       <CODE>unstuffLine</CODE> parameter set to TRUE. Repeated calls until
+       its return valus is FALSE will read the message headers and body.
+
+       <H2>Returns:</H2>
+       Array of strings continaing message headers.
+     */
+
+    BOOL DeleteMessage(
+      PINDEX messageNumber
+        /* Number of message to retrieve. This is an integer from 1 to the
+           maximum number of messages available.
+         */
+    );
+    /* Delete the message specified from the mail box.
+
+       <H2>Returns:</H2>
+       Array of strings continaing message headers.
+     */
+
+
+    enum Commands {
+      USER, PASS, QUIT, RSET, NOOP, STAT,
+      LIST, RETR, DELE, APOP, TOP,  UIDL,
+      NumCommands
+    };
+
+    BOOL ProcessCommand();
+    /* Process commands, dispatching to the appropriate virtual function. This
+       is used when the socket is acting as a server.
+
+       <H2>Returns:</H2>
+       TRUE if more precessing may be done, FALSE if the QUIT command was
+       received or the <A>OnUnknown()</A> function returns FALSE.
+     */
+
+    virtual BOOL HandleOpenMailbox(
+      const PString & username,  // User name for mail box
+      const PString & password   // Password for user name
+    );
+    /* Log the specified user into the mail system and return sizes of each
+       message in mail box.
+
+       The user override of this function is expected to populate the protected
+       member fields <CODE>messageSizes</CODE> and <CODE>messageIDs</CODE>.
+
+       <H2>Returns:</H2>
+       TRUE if user and password were valid.
+     */
+
+    virtual void HandleSendMessage(
+      PINDEX messageNumber, // Number of message to send.
+      const PString & id,   // Unique id of message to send.
+      PINDEX lines          // Nuumber of lines in body of message to send.
+    );
+    /* Handle the sending of the specified message to the remote client. The
+       data written to the socket will automatically have the '.' character
+       stuffing enabled.
+
+       <H2>Returns:</H2>
+       TRUE if successfully sent message.
+     */
+    
+    virtual void HandleDeleteMessage(
+      PINDEX messageNumber, // Number of message to send.
+      const PString & id    // Unique id of message to send.
+    );
+    /* Handle the deleting of the specified message from the mail box. This is
+       called when the OnQUIT command is called for each message that was
+       deleted using the DELE command.
+
+       <H2>Returns:</H2>
+       TRUE if successfully sent message.
+     */
+    
+
+  protected:
+    virtual void OnUSER(
+      const PString & name  // Name of user.
+    );
+    // Specify user name (mailbox).
+
+    virtual void OnPASS(
+      const PString & passwd  // Password for account.
+    );
+    // Specify password and log user in.
+
+    virtual void OnQUIT();
+    // End connection, saving all changes (delete messages).
+
+    virtual void OnRSET();
+    // Reset connection (undelete messages).
+
+    virtual void OnNOOP();
+    // Do nothing.
+
+    virtual void OnSTAT();
+    // Get number of messages in mailbox.
+
+    virtual void OnLIST(
+      PINDEX msg  // Number of message.
+    );
+    /* Get the size of a message in mailbox. If <CODE>msg</CODE> is 0 then get
+       sizes of all messages in mailbox.
+     */
+
+    virtual void OnRETR(
+      PINDEX msg  // Number of message.
+    );
+    // Retrieve a message from mailbox.
+
+    virtual void OnDELE(
+      PINDEX msg  // Number of message.
+    );
+    // Delete a message from mailbox.
+
+    virtual void OnTOP(
+      PINDEX msg,  // Number of message.
+      PINDEX count // Count of messages
+    );
+    // Get the message header and top <CODE>count</CODE> lines of message.
+
+    virtual void OnUIDL(
+      PINDEX msg  // Number of message.
+    );
+    /* Get unique ID for message in mailbox. If <CODE>msg</CODE> is 0 then get
+       all IDs for all messages in mailbox.
+     */
+
+    virtual BOOL OnUnknown(
+      const PCaselessString & command  // Complete command line received.
+    );
+    /* handle an unknown command.
+
+       <H2>Returns:</H2>
+       TRUE if more precessing may be done, FALSE if the
+       <A>ProcessCommand()</A> function is to return FALSE.
+     */
+
+
+  // Member variables
+    BOOL loggedIn;
+
+    PString        username;
+    PUnsignedArray messageSizes;
+    PStringArray   messageIDs;
+    PBYTEArray     messageDeletions;
+
+    static PString okResponse;
+    static PString errResponse;
+
+
+  private:
+    void Construct();
 };
 
 
