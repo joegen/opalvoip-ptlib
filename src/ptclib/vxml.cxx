@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.20  2002/08/28 08:05:16  craigs
+ * Reorganised VXMLSession class as per code from Alexander Kovatch
+ *
  * Revision 1.19  2002/08/28 05:10:57  craigs
  * Added ability to load resources via URI
  * Added cache
@@ -114,10 +117,50 @@ PDirectory PVXMLSession::cacheDir;
 PVXMLCache * PVXMLSession::resourceCache = NULL;
 PINDEX       PVXMLSession::cacheCount = 0;
 
+//////////////////////////////////////////////////////////
+
+static PURL FilenameToURL(const PFilePath & fn)
+{
+  PString url;
+#ifdef WIN32
+  url = fn.GetDirectory() + fn.GetFileName();
+  PINDEX pos = url.Find(":");
+  if (pos > 0) {
+    url = url.Left(pos) + url.Mid(pos+1);
+  }
+  url = "file://" + url;
+  url.Replace('\\', '/', TRUE);
+#else
+  url = "file://" + fn.GetDirectory() + fn.GetFileName();
+#endif
+
+  return url;
+}
+
+//////////////////////////////////////////////////////////
+
+static PFilePath URLToFilename(const PURL & url)
+{
+  PFilePath fn;
+
+#ifdef WIN32
+  PString fnStr = url.GetPathStr();
+  if ((fnStr.GetSize() > 1) && (fnStr[1] == '/'))
+    fnStr = fnStr.Left(1) + ":" + fnStr.Mid(1);
+  fnStr.Replace('/', '\\', TRUE);
+  fn = fnStr;
+#else
+  fn = = url.GetPathStr();
+#endif
+
+  return fn;
+}
+
+//////////////////////////////////////////////////////////
 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
-  activeGrammar   = NULL;
+  //activeGrammar   = NULL;
   recording       = FALSE;
   vxmlThread      = NULL;
   incomingChannel = NULL;
@@ -211,21 +254,7 @@ BOOL PVXMLSession::Load(const PString & filename)
   }
 
   // create a file URL from the filename
-  PFilePath fn = filename;
-  PString url;
-#ifdef WIN32
-  url = fn.GetDirectory() + fn.GetFileName();
-  pos = url.Find(":");
-  if (pos > 0) {
-    url = url.Left(pos) + url.Mid(pos+1);
-  }
-  url = "file://" + url;
-  url.Replace('\\', '/', TRUE);
-#else
-  url = "file://" + fn.GetDirectory() + fn.GetFileName();
-#endif
-
-  return LoadURL(url);
+  return LoadURL(FilenameToURL(filename));
 }
 
 BOOL PVXMLSession::LoadURL(const PURL & url)
@@ -258,6 +287,18 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
   if (root == NULL)
     return FALSE;
 
+/////NEW 
+
+  // find the first form
+  if ((currentForm = FindForm("")) == NULL)
+	  return FALSE;
+
+  // current node is first node in the first form
+  currentNode = currentForm->GetElement(0);
+
+/////NEW 
+
+#if 0
   // find all dialogs in the document
   PINDEX i;
   for (i = 0; i < root->GetSize(); i++) {
@@ -275,6 +316,7 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
         dialogArray.SetAt(dialogArray.GetSize(), dialog);
     }
   }
+#endif
 
   return TRUE;
 }
@@ -294,7 +336,7 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
     pathStr += path[0];
     PINDEX i;
     for (i = 1; i < path.GetSize()-1; i++)
-      pathStr += "/" + path[0];
+      pathStr += "/" + path[i];
     pathStr += "/" + src;
     url.SetPathStr(pathStr);
   }
@@ -420,15 +462,7 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
   // files on the local file system get loaded locally
   else if (url.GetScheme() *= "file") {
 
-#ifdef WIN32
-    PString fnStr = url.GetPathStr();
-    if ((fnStr.GetSize() > 1) && (fnStr[1] == '/'))
-      fnStr = fnStr.Left(1) + ":" + fnStr.Mid(1);
-    fnStr.Replace('/', '\\', TRUE);
-    fn = fnStr;
-#else
-    fn = = url.GetPathStr();
-#endif
+    fn = URLToFilename(url);
     loadFile = TRUE;
   }
 
@@ -472,6 +506,30 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
 
   return TRUE;
 }
+
+PXMLElement * PVXMLSession::FindForm(const PString & id)
+{
+	// NOTE: should have some flag to know if it is loaded
+	PXMLElement * root = xmlFile.GetRootElement();
+	if (root == NULL)
+		return NULL;
+
+	// Only handle search of top level nodes for <form> element
+	PINDEX i;
+	for (i = 0; i < root->GetSize(); i++) {
+		PXMLObject * xmlObject = root->GetElement(i); 
+    if (xmlObject->IsElement()) {
+			PXMLElement * xmlElement = (PXMLElement*)xmlObject;
+			if (
+          (xmlElement->GetName() *= "form") && 
+          (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
+         )
+				return xmlElement;
+		}
+	}
+	return NULL;
+}
+
 
 
 BOOL PVXMLSession::Open(BOOL isPCM)
@@ -546,7 +604,7 @@ BOOL PVXMLSession::ExecuteWithoutLock()
   //    no outgoing channel
   // then just return silence
   //
-  if (!loaded || (vxmlThread != NULL) || (activeGrammar != NULL) || recording || (outgoingChannel == NULL))
+  if (!loaded || (vxmlThread != NULL) || /*(activeGrammar != NULL) || */ recording || (outgoingChannel == NULL))
     return TRUE;
 
   // throw a thread to execute the VXML, because this can take some time
@@ -556,6 +614,7 @@ BOOL PVXMLSession::ExecuteWithoutLock()
 
 void PVXMLSession::DialogExecute(PThread &, INT)
 {
+#if 0
   // find the first dialog that has an undefined form variable
   PINDEX i;
   for (i = 0; i < dialogArray.GetSize(); i++) {
@@ -571,17 +630,143 @@ void PVXMLSession::DialogExecute(PThread &, INT)
   }
 
   // if all forms defined, nothing playing, and nothing recording, then end of call
-  if ((activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
+  if (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
     if (OnEmptyAction())
       forceEnd = TRUE;
   }
+
+#endif
+
+/////NEW 
+  
+	// Process the current node
+	if (currentNode != NULL) {
+
+		if (!currentNode->IsElement())
+			TraverseAudio();
+    
+    else {
+      PXMLElement * element = (PXMLElement*)currentNode;
+			PCaselessString nodeType = element->GetName();
+      PTRACE(3, "PVXML\tProcessing node of type " << nodeType);
+
+      if (nodeType *= "audio") {
+        TraverseAudio();
+      }
+
+			else if (nodeType *= "block") {
+				// Nothing to do but go on to the next element
+			}
+
+			else if (nodeType *= "break") {
+			}
+
+			else if (nodeType *= "disconnect") {
+				currentNode = NULL;
+			}
+
+			else if (nodeType *= "field") {
+			}
+
+			else if (nodeType *= "form") {
+				// this is now the current element - go on
+				currentForm = element;
+			}
+
+			else if (nodeType *= "goto") {
+				TraverseGoto();
+			}
+
+			else if (nodeType *= "prompt") {
+			}
+
+			else if (nodeType *= "record") {
+			}
+
+			else if (nodeType *= "say-as") {
+			}
+
+			else if (nodeType *= "value") {
+        TraverseAudio();
+			}
+
+			else if (nodeType *= "var") {
+			}
+		}
+
+	}
+
+	// if there is nothing else to process then flush out the queue and quit
+	if (currentNode == NULL)
+		; //outgoingChannel->FlushQueue();		
+
+	// else if the current node has children, then process the first child
+  else if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
+    currentNode = ((PXMLElement *)currentNode)->GetElement(0);
+
+	// else process the next sibling
+	else {
+		while ((currentNode != NULL) && currentNode->GetNextObject() == NULL)
+			currentNode = currentNode->GetParent();
+
+		if (currentNode != NULL)
+			currentNode = currentNode->GetNextObject();
+	}
+
+  if ((currentNode == NULL) && !IsPlaying() && !IsRecording()) {
+    if (OnEmptyAction())
+      forceEnd = TRUE;
+  }
+/////NEW 
 }
 
+BOOL PVXMLSession::TraverseGoto()		// <goto>
+{
+	PAssert(currentNode != NULL, "ProcessGotoElement(): Expected valid node");
+	if (currentNode == NULL)
+		return FALSE;
 
-BOOL PVXMLSession::OnUserInput(char ch)
+	// LATER: handle expr, expritem, fetchaudio, fetchhint, fetchtimeout, maxage, maxstale
+
+	PAssert(currentNode->IsElement(), "ProcessGotoElement(): Expected element");
+
+	// nextitem
+	PString nextitem = ((PXMLElement*)currentNode)->GetAttribute("nextitem");
+	if (!nextitem.IsEmpty()) {
+		// LATER: Take out the optional #
+		currentForm = FindForm(nextitem);
+    currentNode = currentForm;
+		if (currentForm == NULL) {
+			// LATER: throw "error.semantic" or "error.badfetch" -- lookup which
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	// next
+	PString next = ((PXMLElement*)currentNode)->GetAttribute("next");
+	// LATER: fixup filename to prepend path
+	if (!next.IsEmpty())
+	{
+		Load(next);
+		// LATER: handle '#' for picking the correct form
+		if (currentForm == NULL)
+		{
+			// LATER: throw 'error.badfetch'
+			return FALSE;
+		}
+		return TRUE;
+	}
+	
+	return FALSE;
+}
+
+BOOL PVXMLSession::OnUserInput(char /*ch*/)
 {
   PWaitAndSignal m(sessionMutex);
 
+////OLD
+#if 0
   if (activeGrammar != NULL) {
 
     // if the grammar has not completed, continue
@@ -597,6 +782,8 @@ BOOL PVXMLSession::OnUserInput(char ch)
     // execute whatever is going on
     ExecuteWithoutLock();
   }
+#endif
+////OLD
 
   return TRUE;
 }
@@ -616,16 +803,21 @@ PString PVXMLSession::GetXMLError() const
   return psprintf("(%i:%i) ", xmlFile.GetErrorLine(), xmlFile.GetErrorColumn()) + xmlFile.GetErrorString();
 }
 
-BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
+PString PVXMLSession::EvaluateExpr(const PString & oexpr)
 {
-  if (activeGrammar != NULL) {
-    delete activeGrammar;
-    activeGrammar = FALSE;
+  PString expr = oexpr.Trim();
+
+  // see if all digits
+  PINDEX i;
+  BOOL allDigits = TRUE;
+  for (i = 0; i < expr.GetLength(); i++) {
+    allDigits = allDigits && isdigit(expr[i]);
   }
 
-  activeGrammar = grammar;
+  if (allDigits)
+    return expr;
 
-  return TRUE;
+  return GetVar(expr);
 }
 
 PString PVXMLSession::GetVar(const PString & ostr) const
@@ -779,262 +971,106 @@ void PVXMLSession::AllowClearCall()
   loaded = TRUE;
 }
 
-///////////////////////////////////////////////////////////////
-
-PVXMLElement::PVXMLElement(PVXMLSession & _vxml, PXMLElement & _xmlElement)
-  : vxml(_vxml), xmlElement(_xmlElement)
+BOOL PVXMLSession::TraverseAudio()
 {
-  name = xmlElement.GetAttribute("name");
-  if (name.IsEmpty())
-    name = psprintf("item_%08x", (int)this);
-}
+  if (!currentNode->IsElement()) {
+    PlayText(((PXMLData *)currentNode)->GetString());
+  }
 
-PString PVXMLElement::GetVar(const PString & str) const
-{
-  return vars(str);
-}
+  else {
+    PXMLElement * element = (PXMLElement *)currentNode;
 
-void PVXMLElement::SetVar(const PString & str, const PString & val)
-{
-  vars.SetAt(str, val); 
-}
+    if (element->GetName() *= "value") {
+      PString className = element->GetAttribute("class");
+      PString value = EvaluateExpr(element->GetAttribute("expr"));
+      SayAs(className, value);
+    }
 
-BOOL PVXMLElement::GetGuardCondition() const
-{ 
-  return !GetFormValue().IsEmpty();
-}
-
-PString PVXMLElement::GetFormValue() const
-{ 
-  return PVXMLElement::GetVar(name);
-}
-
-void PVXMLElement::SetFormValue(const PString & v)
-{ 
-  PVXMLElement::SetVar(name, v);
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLDialog::PVXMLDialog(PVXMLSession & _vxml, PXMLElement & _xmlForm)
-  : PVXMLElement(_vxml, _xmlForm)
-{
-}
-
-BOOL PVXMLDialog::Load()
-{
-  // find all items in form
-  PINDEX i;
-  for (i = 0; i < xmlElement.GetSize(); i++) {
-    PXMLObject * object = xmlElement.GetElement(i);
-    if (object->IsElement()) {
-      PXMLElement * element = (PXMLElement *)object;
-      PVXMLFormItem * formItem = NULL;
-
-      if (element->GetName() == "block" || element->GetName() == "prompt")
-        formItem = new PVXMLBlockItem(vxml, *element, *this);
-
-      else if (element->GetName() == "var") 
-        formItem = new PVXMLVarItem(vxml, *element, *this);
-
-      else if (element->GetName() == "field") 
-        formItem = new PVXMLFieldItem(vxml, *element, *this);
-
-      else if (element->GetName() == "record") 
-        formItem = new PVXMLRecordItem(vxml, *element, *this);
-
-      if (formItem != NULL) {
-        formItem->Load();
-        itemArray.SetAt(itemArray.GetSize(), formItem);
+    else if (element->GetName() *= "sayas") {
+      PString className = element->GetAttribute("class");
+      PXMLObject * object = element->GetElement();
+      if (!object->IsElement()) {
+        PString text = ((PXMLData *)object)->GetString();
+        SayAs(className, text);
       }
     }
-  }
 
-  return TRUE;
-}
-
-BOOL PVXMLDialog::Execute()
-{
-  // return TRUE if we executed 
-  PINDEX i;
-  for (i = 0; i < itemArray.GetSize(); i++) {
-    PVXMLFormItem & item = itemArray[i];
-    if (!item.GetGuardCondition())
-      return item.Execute();
-  }
-
-  return FALSE;
-}
-
-PString PVXMLDialog::GetVar(const PString & ostr) const
-{
-  PString str = ostr;
-
-  // if the variable has scope, check to see if dialog otherwise move up the chain
-  PINDEX pos = ostr.Find('.');
-  if (pos != P_MAX_INDEX) {
-    PString scope = str.Left(pos);
-    if (!(scope *= "dialog"))
-      return vxml.GetVar(ostr);
-
-    str = str.Mid(pos+1);
-  }
-
-  // see if local
-  if (vars.Contains(str))
-    return PVXMLElement::GetVar(str);
-
-  return vxml.GetVar(ostr);
-}
-
-void PVXMLDialog::SetVar(const PString & ostr, const PString & val)
-{
-  PString str = ostr;
-  PString scope;
-
-  // get scope if present
-  PINDEX pos = str.Find('.');
-  if (pos != P_MAX_INDEX) {
-    scope = str.Left(pos);
-    str = str.Mid(pos+1);
-  }
-
-  // if scope is not dialog, for
-  if (scope.IsEmpty() || (scope *= "dialog")) {
-    PVXMLElement::SetVar(str, val);
-    return;
-  }
-
-  PTRACE(3, "PVXML\tDialog(" << name << "): " << ostr << " = \"" << val << "\"");
-
-  vxml.SetVar(ostr, val);
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLFormDialog::PVXMLFormDialog(PVXMLSession & vxml, PXMLElement & xmlItem)
-  : PVXMLDialog(vxml, xmlItem)
-{
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLFormItem::PVXMLFormItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
-  : PVXMLElement(_vxml, _xmlItem), parentDialog(_parentDialog)
-{
-}
-
-PString PVXMLFormItem::GetFormValue() const
-{
-  return GetVar("dialog." + name);
-}
-
-void PVXMLFormItem::SetFormValue(const PString & v)
-{
-  SetVar("dialog." + name, v);
-}
-
-BOOL PVXMLFormItem::ProcessPrompt(PXMLElement & rootElement)
-{
-  PINDEX i;
-  for (i = 0; i < rootElement.GetSize(); i++) {
-    PXMLObject * object = rootElement.GetElement(i);
-    if (object->IsData())
-      vxml.PlayText(((PXMLData *)object)->GetString());
-
-    else {
-      PXMLElement * element = (PXMLElement *)object;
-      if (element->GetName() *= "value") {
-        PString className = element->GetAttribute("class");
-        PString value = EvaluateExpr(element->GetAttribute("expr"));
-        SayAs(className, value);
+    else if (element->GetName() *= "break") {
+      if (element->HasAttribute("msecs"))
+        PlaySilence(element->GetAttribute("msecs").AsInteger());
+      
+      else if (element->HasAttribute("size")) {
+        PString size = element->GetAttribute("size");
+        if (size *= "none")
+          ;
+        else if (size *= "small")
+          PlaySilence(SMALL_BREAK_MSECS);
+        else if (size *= "large")
+          PlaySilence(LARGE_BREAK_MSECS);
+        else 
+          PlaySilence(MEDIUM_BREAK_MSECS);
+      } 
+      
+      // default to medium pause
+      else {
+        PlaySilence(MEDIUM_BREAK_MSECS);
       }
+    }
 
-      else if (element->GetName() *= "sayas") {
-        PString className = element->GetAttribute("class");
-        PXMLObject * object = element->GetElement();
-        if (object->IsData()) {
-          PString text = ((PXMLData *)object)->GetString();
-          SayAs(className, text);
-        }
-      }
+    else if (element->GetName() *= "audio") {
+      BOOL loaded = FALSE;
 
-      else if (element->GetName() *= "break") {
-        if (element->HasAttribute("msecs"))
-          vxml.PlaySilence(element->GetAttribute("msecs").AsInteger());
-        
-        else if (element->HasAttribute("size")) {
-          PString size = element->GetAttribute("size");
-          if (size *= "none")
-            ;
-          else if (size *= "small")
-            vxml.PlaySilence(SMALL_BREAK_MSECS);
-          else if (size *= "large")
-            vxml.PlaySilence(LARGE_BREAK_MSECS);
-          else 
-            vxml.PlaySilence(MEDIUM_BREAK_MSECS);
-        } 
-        
-        // default to medium pause
-        else {
-          vxml.PlaySilence(MEDIUM_BREAK_MSECS);
-        }
-      }
+      if (element->HasAttribute("src")) {
 
-      else if (element->GetName() *= "audio") {
+        PFilePath fn; 
+        BOOL haveFn = FALSE;
 
-        BOOL loaded = FALSE;
+        // get a normalised name for the resource
+        PURL url = NormaliseResourceName(element->GetAttribute("src"));
 
-        if (element->HasAttribute("src")) {
+        if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
 
-          PFilePath fn; 
-          BOOL haveFn = FALSE;
-
-          // get a normalised name for the resource
-          PURL url = vxml.NormaliseResourceName(element->GetAttribute("src"));
-
-          if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
-
-            PString contentType;
-            PBYTEArray data;
-            if (vxml.RetrieveResource(url, data, contentType, fn))
-              haveFn = TRUE;
-          }
-
-          // attempt to load the resource if a file
-          else if (url.GetScheme() *= "file") {
-            fn = url.GetPathStr();
+          PString contentType;
+          PBYTEArray data;
+          if (RetrieveResource(url, data, contentType, fn))
             haveFn = TRUE;
-          }
+        }
 
-          // check the file type
-          if (haveFn) {
-            PWAVFile * wavFile = vxml.CreateWAVFile(fn, 
-                                                    PFile::ReadOnly, 
-                                                    PFile::ModeDefault, 
-                                                    vxml.GetOutgoingChannel()->GetWavFileType());
-            if (wavFile == NULL)
-              PTRACE(3, "PVXML\tCannot create audio file " + fn);
-            else {
-              if (wavFile->IsOpen())
-                loaded = TRUE;
-              delete wavFile;
-              if (loaded)
-                vxml.PlayFile(fn);
+        // attempt to load the resource if a file
+        else if (url.GetScheme() *= "file") {
+          fn = URLToFilename(url);
+          haveFn = TRUE;
+        }
+
+        // check the file type
+        if (haveFn) {
+          PWAVFile * wavFile = outgoingChannel->CreateWAVFile(fn);
+          if (wavFile == NULL)
+            PTRACE(3, "PVXML\tCannot create audio file " + fn);
+          else {
+            if (wavFile->IsOpen())
+              loaded = TRUE;
+            delete wavFile;
+            if (loaded) {
+              PlayFile(fn);
+
+              // skip to the next node
+              if (element->HasSubObjects())
+					      currentNode = element->GetElement(element->GetSize() - 1);
             }
           }
         }
-
-        // if not loaded, then see process body if it exists
-        if (!loaded)
-          ProcessPrompt(*element);
       }
     }
+
+    else 
+      PTRACE(3, "PVXML\tUnknown audio tag " << element->GetName() << " encountered");
   }
+
   return TRUE;
 }
 
-void PVXMLFormItem::SayAs(const PString & className, const PString & text)
+void PVXMLSession::SayAs(const PString & className, const PString & text)
 {
   if (!text.IsEmpty()) {
     PTextToSpeech::TextType type = PTextToSpeech::Literal;
@@ -1066,217 +1102,11 @@ void PVXMLFormItem::SayAs(const PString & className, const PString & text)
     else if (className *= "duration")
       type = PTextToSpeech::Duration;
 
-    vxml.PlayText(text, type);
+    PlayText(text, type);
   }
-}
-
-PString PVXMLFormItem::EvaluateExpr(const PString & oexpr)
-{
-  PString expr = oexpr.Trim();
-
-  // see if all digits
-  PINDEX i;
-  BOOL allDigits = TRUE;
-  for (i = 0; i < expr.GetLength(); i++) {
-    allDigits = allDigits && isdigit(expr[i]);
-  }
-
-  if (allDigits)
-    return expr;
-
-  return GetVar(expr);
-}
-
-PString PVXMLFormItem::GetVar(const PString & ostr) const
-{
-  PString str = ostr;
-  PString scope;
-
-  // get scope
-  PINDEX pos = str.Find('.');
-  if (pos != P_MAX_INDEX) {
-    scope = str.Left(pos);
-    str   = str.Mid(pos+1);
-  }
-
-  if (scope.IsEmpty()) {
-    if (vars.Contains(str))
-      return PVXMLElement::GetVar(str);
-  }
-
-  return parentDialog.GetVar(ostr);
-}
-
-void PVXMLFormItem::SetVar(const PString & ostr, const PString & val)
-{
-  PString str = ostr;
-  PString scope;
-
-  // get scope
-  PINDEX pos = str.Find('.');
-  if (pos != P_MAX_INDEX) {
-    scope = str.Left(pos);
-    str   = str.Mid(pos+1);
-  }
-
-  if (scope.IsEmpty())
-    PVXMLElement::SetVar(str, val);
-
-  parentDialog.SetVar(ostr, val);
 }
 
 ///////////////////////////////////////////////////////////////
-
-PVXMLBlockItem::PVXMLBlockItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
-  : PVXMLFormItem(_vxml, _xmlItem, _parentDialog)
-{
-}
-
-BOOL PVXMLBlockItem::Execute()
-{
-  PINDEX i;
-  for (i = 0; i < xmlElement.GetSize(); i++) {
-    PXMLObject * object = xmlElement.GetElement(i);
-    if (object->IsData())
-      vxml.PlayText(((PXMLData *)object)->GetString());
-    else {
-      PXMLElement * element = (PXMLElement *)object;
-      if (element->GetName() == "prompt")
-        ProcessPrompt(*element);
-    }
-  }
-  this->SetFormValue("1");
-
-  return TRUE;
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLVarItem::PVXMLVarItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
-  : PVXMLFormItem(_vxml, _xmlItem, _parentDialog)
-{
-}
-
-BOOL PVXMLVarItem::Execute()
-{
-  PString name = xmlElement.GetAttribute("name");
-  PString expr = xmlElement.GetAttribute("expr");
-
-  PTRACE(3, "PVXML\tAssigning expr \"" << expr << "\" to var \"" << name << "\" in scope of dialog \"" << parentDialog.GetName());
-
-  parentDialog.SetVar(name, expr);
-
-  return TRUE;
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLRecordItem::PVXMLRecordItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
-  : PVXMLFormItem(_vxml, _xmlItem, _parentDialog)
-{
-  // get DTMF termination flag
-  PString str = _xmlItem.GetAttribute("dtmfterm");
-  if (str.IsEmpty())
-    dtmfTerm = TRUE;
-  else
-    dtmfTerm = str *= "true";
-
-  // get maximum record duration
-  str = _xmlItem.GetAttribute("maxtime");
-  if (str.IsEmpty())
-    maxTime = -1;
-  else
-    maxTime = str.AsInteger();
-
-  // get final silence duration
-  str = _xmlItem.GetAttribute("finalsilence");
-  if (str.IsEmpty())
-    finalSilence = -1;
-  else
-    finalSilence = str.AsInteger();
-}
-
-BOOL PVXMLRecordItem::Execute()
-{
-  PFilePath recordFn("vxml"); 
-  vxml.StartRecord(recordFn, dtmfTerm, maxTime, finalSilence);
-  return TRUE;
-}
-
-
-///////////////////////////////////////////////////////////////
-
-PVXMLFieldItem::PVXMLFieldItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
-  : PVXMLFormItem(_vxml, _xmlItem, _parentDialog)
-{
-}
-
-BOOL PVXMLFieldItem::Execute()
-{
-  PINDEX i;
-
-  // queue up the prompts
-  for (i = 0; i < xmlElement.GetSize(); i++) {
-    PXMLObject * object = xmlElement.GetElement(i);
-    if (object->IsData())
-      vxml.PlayText(((PXMLData *)object)->GetString());
-    else {
-      PXMLElement * element = (PXMLElement *)object;
-      if (element->GetName() == "prompt")
-        ProcessPrompt(*element);
-    }
-  }
-
-  // load the grammar for this field, if we can build it
-  PVXMLGrammar * grammar = NULL;
-  PString grammarType = xmlElement.GetAttribute("type");
-  if (grammarType == "digits") {
-    PString lengthStr = xmlElement.GetAttribute("length");
-    if (!lengthStr.IsEmpty()) {
-      grammar = new PVXMLDigitsGrammar(*this, lengthStr.AsInteger());
-    }
-  }
-
-  if (grammar != NULL)
-    return vxml.LoadGrammar(grammar);
-
-  return FALSE;
-}
-
-//////////////////////////////////////////////////////////////////
-
-PVXMLGrammar::PVXMLGrammar(PVXMLFieldItem & _field)
-  : field(_field)
-{
-}
-
-//////////////////////////////////////////////////////////////////
-
-PVXMLMenuGrammar::PVXMLMenuGrammar(PVXMLFieldItem & _field)
-  : PVXMLGrammar(_field)
-{
-}
-
-//////////////////////////////////////////////////////////////////
-
-PVXMLDigitsGrammar::PVXMLDigitsGrammar(PVXMLFieldItem & _field, PINDEX _digitCount)
-  : PVXMLGrammar(_field), digitCount(_digitCount)
-{
-}
-
-BOOL PVXMLDigitsGrammar::OnUserInput(char ch)
-{
-  value += ch;
-
-  if (value.GetLength() < digitCount)
-    return FALSE;
-
-  cout << "grammar \"digits\" completed: value = " << value << endl;
-
-  return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////
 
 BOOL PVXMLChannel::IsOpen() const
 {
@@ -1798,5 +1628,57 @@ void PVXMLIncomingChannelG7231::DelayFrame(PINDEX /*len*/)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
+#if 0
+
+BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * /*grammar*/)
+{
+  if (activeGrammar != NULL) {
+    delete activeGrammar;
+    activeGrammar = FALSE;
+  }
+
+  activeGrammar = grammar;
+
+  return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+PVXMLGrammar::PVXMLGrammar(PVXMLFieldItem & _field)
+  : field(_field)
+{
+}
+
+//////////////////////////////////////////////////////////////////
+
+PVXMLMenuGrammar::PVXMLMenuGrammar(PVXMLFieldItem & _field)
+  : PVXMLGrammar(_field)
+{
+}
+
+//////////////////////////////////////////////////////////////////
+
+PVXMLDigitsGrammar::PVXMLDigitsGrammar(PVXMLFieldItem & _field, PINDEX _digitCount)
+  : PVXMLGrammar(_field), digitCount(_digitCount)
+{
+}
+
+BOOL PVXMLDigitsGrammar::OnUserInput(char ch)
+{
+  value += ch;
+
+  if (value.GetLength() < digitCount)
+    return FALSE;
+
+  cout << "grammar \"digits\" completed: value = " << value << endl;
+
+  return TRUE;
+}
+
+#endif
+
+//////////////////////////////////////////////////////////////////
+
 
 #endif 
