@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.9 1995/02/21 11:25:33 robertj Exp $
+ * $Id: telnet.h,v 1.10 1995/03/14 12:42:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.9  1995/02/21 11:25:33  robertj
+ * Revision 1.10  1995/03/14 12:42:47  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.9  1995/02/21  11:25:33  robertj
  * Further implementation of telnet socket, feature complete now.
  *
  * Revision 1.8  1995/01/03  09:36:23  robertj
@@ -75,9 +78,9 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        The TELNET channel intercepts and escapes commands in the data stream to
        implement the TELNET protocol.
 
-       Returns: TRUE indicates that at least one character was read from the
-                channel. FALSE means no bytes were read due to timeout or
-                some other I/O error.
+       <H2>Returns:</H2>
+       TRUE indicates that at least one character was read from the channel.
+       FALSE means no bytes were read due to timeout or some other I/O error.
      */
 
     BOOL Write(
@@ -104,16 +107,18 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       WORD port = 0             // Port number to use for the connection.
     );
     /* Open a socket to a remote host on the specified port number. If the
-       $B$port$B$ parameter is zero then the port number as defined by the
-       object instance construction or the $B$SetPort()$B$ function is used.
+       <CODE>port</CODE> parameter is zero then the port number as defined by
+       the object instance construction or the <A><CODE>SetPort()</CODE></A>
+       function is used.
 
-       Returns: TRUE if the checnnel was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the checnnel was successfully opened.
      */
 
 
     virtual void OnOutOfBand(
       const void * buf,   // Data to be received as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by $B$buf$B$.
+      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
     );
     /* This is callback function called by the system whenever out of band data
        from the TCP/IP stream is received. A descendent class may interpret
@@ -151,16 +156,18 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       Command cmd,  // Command code to send
       int opt = 0  // Option for command code.
     );
-    /* Send an escaped IAC command. The $B$opt$B$ parameters meaning depends
-       on the command being sent:
+    /* Send an escaped IAC command. The <CODE>opt</CODE> parameters meaning
+       depends on the command being sent:
 
-          DO, DONT, WILL, WONT    $B$opt$B$ is Options code.
+       <DL>
+       <DT>DO, DONT, WILL, WONT    <DD><CODE>opt</CODE> is Options code.
 
-          AbortOutput             TRUE is flush buffer.
+       <DT>AbortOutput             <DD>TRUE is flush buffer.
 
-          InterruptProcess,       
+       <DT>InterruptProcess,
           Break, AbortProcess,
-          SuspendProcess          TRUE is synchronise.
+          SuspendProcess           <DD>TRUE is synchronise.
+       </DL>
 
        Synchronises the TELNET streams, inserts the data mark into outgoing
        data stream and sends an out of band data to the remote to flush all
@@ -181,7 +188,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       OutputPageSize      = 9,    // Negotiate about output page size.
       CRDisposition       = 10,   // Negotiate about CR disposition.
       HorizontalTabsStops = 11,   // Negotiate about horizontal tabstops.
-      HorizTabDisposition = 12,   // Negotiate about horizontal tab disposition.
+      HorizTabDisposition = 12,   // Negotiate about horizontal tab disposition
       FormFeedDisposition = 13,   // Negotiate about formfeed disposition.
       VerticalTabStops    = 14,   // Negotiate about vertical tab stops.
       VertTabDisposition  = 15,   // Negotiate about vertical tab disposition.
@@ -260,7 +267,8 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        The default action is to send a WILL for options that are understood by
        the standard TELNET class and a WONT for all others.
 
-       Returns: TRUE if option is accepted.
+       <H2>Returns:</H2>
+       TRUE if option is accepted.
      */
 
     virtual void OnDont(
@@ -315,10 +323,11 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     /* This callback function is called by the system when it receives an
        telnet command that it does not do anything with.
 
-       The default action displays a message to the $H$PError stream (when
-       $B$debug$B$ is TRUE) and returns TRUE;
+       The default action displays a message to the <A>PError</A> stream
+       (when <CODE>debug</CODE> is TRUE) and returns TRUE;
 
-       Returns: TRUE if next byte is not part of the command.
+       <H2>Returns:</H2>
+       TRUE if next byte is not part of the command.
      */
 
 
