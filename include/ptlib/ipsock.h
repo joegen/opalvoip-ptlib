@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.24 1996/09/14 13:09:21 robertj Exp $
+ * $Id: ipsock.h,v 1.25 1996/11/04 03:40:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.25  1996/11/04 03:40:54  robertj
+ * Moved address printer from inline to source.
+ *
  * Revision 1.24  1996/09/14 13:09:21  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -124,8 +127,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         BYTE Byte2() const;
         BYTE Byte3() const;
         BYTE Byte4() const;
-      friend ostream & operator<<(ostream & s, Address & a)
-        { return s << (PString)a; }
+      friend ostream & operator<<(ostream & s, Address & a);
     };
 
 
