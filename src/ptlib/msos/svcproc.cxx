@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.52  1999/04/21 01:57:09  robertj
+ * Added confirmation dialog to menu commands.
+ *
  * Revision 1.51  1999/03/09 10:30:19  robertj
  * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
  *
@@ -839,10 +842,14 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         default :
-          if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds)
-            ProcessCommand(ServiceCommandNames[wParam-SvcCmdBaseMenuID]);
           if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
+          else if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds) {
+            const char * cmdname = ServiceCommandNames[wParam-SvcCmdBaseMenuID];
+            if (MessageBox(hWnd, cmdname & GetName(), GetName(),
+                           MB_ICONQUESTION|MB_YESNO) == IDYES)
+              ProcessCommand(cmdname);
+          }
       }
       break;
 
