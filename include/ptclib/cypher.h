@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.19  2004/02/04 02:31:34  csoutheren
+ * Remove SHA-1 functions when OpenSSL is disabled
+ *
  * Revision 1.18  2003/04/17 03:34:07  craigs
  * Fixed problem with delete'ing a void *
  *
@@ -272,7 +275,7 @@ class PMessageDigest5 : public PMessageDigest
     PUInt64 count;
 };
 
-#ifdef P_SSL
+#if P_SSL
 
 /** SHA1 Digest.
  A class to produce a Message Digest for a block of text/data using the
