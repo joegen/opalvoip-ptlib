@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.27  2002/07/12 01:25:25  craigs
+ * Repaired reintroduced problem with SID frames in WAV files
+ *
  * Revision 1.26  2002/07/02 06:25:25  craigs
  * Added ability to create files in MS G.723.1 format
  *
@@ -288,9 +291,9 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
       return SetErrorValues(Miscellaneous, EINVAL, LastWriteError);
 
     BYTE writebuf[24];
-    memcpy(writebuf, frame, frameSize);
-    if (frameSize < 24)
-      memset(&writebuf[frameSize], 0, 24-frameSize);
+    memset(writebuf, 0, sizeof(writebuf));
+    if (frameSize >= 20)
+      memcpy(writebuf, frame, frameSize);
 
     if (!PFile::Write(writebuf, sizeof(writebuf)))
       return FALSE;
