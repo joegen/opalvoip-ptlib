@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.11 1994/01/03 04:42:23 robertj Exp $
+ * $Id: contain.inl,v 1.12 1994/01/13 05:33:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Revision 1.12  1994/01/13 05:33:41  robertj
+ * Added contructor to get caseless string from ordinary string.
+ *
+ * Revision 1.11  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.10  1993/12/31  06:48:46  robertj
@@ -174,6 +177,9 @@ PINLINE PCaselessString::PCaselessString(const char * cstr)
 
 PINLINE PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
+
+PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
+  { return PString::operator=(str); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
