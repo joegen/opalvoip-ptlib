@@ -1,5 +1,3 @@
-%expect 8
-
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
