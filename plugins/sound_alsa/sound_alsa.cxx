@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.24  2004/11/07 20:23:00  dsandras
+ * Removed erroneous update of lastReadCount in previous commit.
+ *
  * Revision 1.23  2004/11/07 20:01:32  dsandras
  * Make sure lastWriteCount is updated.
  *
@@ -506,7 +509,6 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
 
   char *buf2 = (char *) buf;
   int pos = 0, max_try = 0;
-  int to_read = len;
 
   lastReadCount = 0;
   PWaitAndSignal m(device_mutex);
@@ -558,8 +560,6 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
   }
   
   
-  lastReadCount = len;
-
   return TRUE;
 }
 
