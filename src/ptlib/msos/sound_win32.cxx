@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.10  2005/01/04 07:44:04  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.9  2004/10/23 11:16:17  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -171,7 +175,14 @@
  *
  */
 
+#define P_FORCE_STATIC_PLUGIN
+
 #include <ptlib.h>
+
+#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
+#error "sound_win32.cxx must be compiled without precompiled headers"
+#endif
+
 #include <process.h>
 
 #include <ptlib/plugin.h>
