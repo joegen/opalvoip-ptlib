@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.48 1996/02/13 12:59:30 robertj Exp $
+ * $Id: osutils.cxx,v 1.49 1996/02/15 14:44:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.49  1996/02/15 14:44:09  robertj
+ * Used string constructor for PTime, more "efficient".
+ *
  * Revision 1.48  1996/02/13 12:59:30  robertj
  * Changed GetTimeZone() so can specify standard/daylight time.
  * Split PTime into separate module after major change to ReadFrom().
@@ -1388,10 +1391,7 @@ void PConfig::SetReal(const PString & section, const PString & key, double value
 
 PTime PConfig::GetTime(const PString & section, const PString & key, const PTime & dflt)
 {
-  PStringStream s = GetString(section, key, dflt.AsString());
-  PTime t;
-  s >> t;
-  return t;
+  return GetString(section, key, dflt.AsString());
 }
 
 
