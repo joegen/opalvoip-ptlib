@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.20  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.19  2001/02/25 19:40:35  rogerh
  * Add a suspend Semaphore for MAC OS threads started as 'suspended'
  *
@@ -117,6 +121,8 @@ class PSemaphore;
                const PTimeInterval & timeout,
                const PIntArray & osHandles);
 
+    void PXAbortIO() const;
+
 #ifdef P_PTHREADS
 
   public:
@@ -143,7 +149,7 @@ class PSemaphore;
     pthread_mutex_t PX_WaitSemMutex;
 #endif
 
-    int termPipe[2];
+    int unblockPipe[2];
     friend class PSocket;
 
 #elif defined(BE_THREADS)

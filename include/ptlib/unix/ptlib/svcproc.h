@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.12  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.11  2001/03/20 01:02:32  robertj
  * Fixed some difficulties with terminating a service process from signals or
  *   from simply dropping out of Main().
@@ -72,6 +76,7 @@
     ~PServiceProcess();
     virtual void Terminate();
   protected:
+    int  InitialiseService();
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.21  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.20  2001/03/12 02:35:20  robertj
  * Fixed PDirectory::Exists so only returns TRUE if a directory and not file.
  *
@@ -101,9 +105,6 @@ PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
   { return unlink(name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE void PChannel::Construct()
-  { os_handle = -1; }
 
 PINLINE PString PChannel::GetName() const
   { return channelName; }

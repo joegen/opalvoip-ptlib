@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.61  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.60  2001/03/14 01:16:11  robertj
  * Fixed signals processing, now uses housekeeping thread to handle signals
  *   synchronously. This also fixes issues with stopping PServiceProcess.
@@ -232,10 +236,11 @@
 #define P_IO_BREAK_SIGNAL SIGPROF
 #endif
 
-PDECLARE_CLASS(HouseKeepingThread, PThread)
+PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
-    HouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread) { closing = FALSE; Resume(); }
+    PHouseKeepingThread()
+      : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
+      { closing = FALSE; Resume(); }
 
     void Main();
     void SetClosing() { closing = TRUE; }
@@ -245,8 +250,13 @@ PDECLARE_CLASS(HouseKeepingThread, PThread)
 };
 
 
+#define new PNEW
+
+
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
+  //PTRACE(1,"PThread::PXBlockOnIO(" << handle << ',' << type << ')');
+
   // make sure we flush the buffer before doing a write
   fd_set tmp_rfd, tmp_wfd, tmp_efd;
   fd_set * read_fds      = &tmp_rfd;
@@ -291,8 +301,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 
     // include the termination pipe into all blocking I/O functions
     int width = handle+1;
-    FD_SET(termPipe[0], read_fds);
-    width = PMAX(width, termPipe[0]+1);
+    FD_SET(unblockPipe[0], read_fds);
+    width = PMAX(width, unblockPipe[0]+1);
   
     retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
 
@@ -300,15 +310,23 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
       break;
   }
 
-  if ((retval == 1) && FD_ISSET(termPipe[0], read_fds)) {
+  if ((retval == 1) && FD_ISSET(unblockPipe[0], read_fds)) {
     BYTE ch;
-    ::read(termPipe[0], &ch, 1);
+    ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
+    //PTRACE(1,"Unblocked I/O");
   }
 
   return retval;
 }
+
+void PThread::PXAbortIO() const
+{
+  BYTE ch;
+  ::write(unblockPipe[1], &ch, 1);
+}
+
 
 // Mac OS X does not support sigwait()
 #ifndef P_MACOSX
@@ -338,7 +356,7 @@ static void sigSuspendHandler(int)
 #endif // P_MACOSX
 
 
-void HouseKeepingThread::Main()
+void PHouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
@@ -395,8 +413,9 @@ void PProcess::Construct()
 
 PProcess::~PProcess()
 {
-  if (housekeepingThread != NULL) {
-    ((HouseKeepingThread *)housekeepingThread)->SetClosing();
+  // Don't wait for housekeeper to stop if Terminate() is called from it.
+  if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
+    housekeepingThread->SetClosing();
     SignalTimerChange();
     housekeepingThread->WaitForTermination();
     delete housekeepingThread;
@@ -417,7 +436,7 @@ void PThread::InitialiseProcessThread()
   autoDelete          = FALSE;
   PX_threadId         = pthread_self();
   PX_suspendCount     = 0;
-  ::pipe(termPipe);
+  ::pipe(unblockPipe);
 
 #ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
@@ -449,7 +468,7 @@ PThread::PThread(PINDEX stackSize,
 
   PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
-  ::pipe(termPipe);
+  ::pipe(unblockPipe);
 
   // throw the new thread
   PX_NewThread(TRUE);
@@ -461,8 +480,8 @@ PThread::~PThread()
   if (!IsTerminated()) 
     Terminate();
 
-  ::close(termPipe[0]);
-  ::close(termPipe[1]);
+  ::close(unblockPipe[0]);
+  ::close(unblockPipe[1]);
 
 #ifndef P_HAS_SEMAPHORES
   //PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
@@ -590,8 +609,15 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PProcess::SignalTimerChange()
 {
-  if (housekeepingThread == NULL)
-    housekeepingThread = PNEW HouseKeepingThread;
+  if (housekeepingThread == NULL) {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+    housekeepingThread = new PHouseKeepingThread;
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+  }
 
   BYTE ch;
   write(timerChangePipe[1], &ch, 1);
@@ -644,11 +670,11 @@ void PThread::Terminate()
 
   PTRACE(1, "tlibthrd\tForcing termination of thread " << (void *)this);
 
-  WaitForTermination();
-
   if (Current() == this)
     pthread_exit(NULL);
   else {
+    WaitForTermination();
+
 #ifndef P_HAS_SEMAPHORES
     PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
     if (PX_waitingSemaphore != NULL) {
@@ -845,8 +871,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
 
 void PThread::WaitForTermination() const
 {
-  BYTE ch;
-  ::write(termPipe[1], &ch, 1);
+  PAssert(Current() != this, "Waiting for self termination!");
+  
+  PXAbortIO();
 
   while (!IsTerminated())
     Current()->Sleep(10);
@@ -855,9 +882,10 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
+  PAssert(Current() != this, "Waiting for self termination!");
+  
   //PTRACE(1, "tlibthrd\tWaitForTermination(delay)");
-  BYTE ch;
-  ::write(termPipe[1], &ch, 1);
+  PXAbortIO();
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
