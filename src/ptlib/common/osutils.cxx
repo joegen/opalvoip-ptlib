@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.125  1999/09/14 13:02:52  robertj
+ * Fixed PTRACE to PSYSTEMLOG conversion problem under Unix.
+ *
  * Revision 1.124  1999/09/13 13:15:07  robertj
  * Changed PTRACE so will output to system log in PServiceProcess applications.
  *
@@ -533,7 +536,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 ostream & PTrace::End(ostream & s)
 {
-  s << '\n' << flush;
+  if ((Options&SystemLogStream) != 0)
+    s.flush();
+  else
+    s << endl;
 
   PTraceMutex.Signal();
 
