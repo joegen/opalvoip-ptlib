@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.170  2004/04/18 00:50:14  ykiryanov
+ * Removed BE_BONELESS ifdefs. Be is boned now. More funcitonality
+ *
  * Revision 1.169  2004/04/03 08:22:22  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -1375,24 +1378,16 @@ BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int
 
 BOOL PSocket::GetOption(int option, int & value, int level)
 {
-#ifdef BE_BONELESS
-  return FALSE;
-#else
   socklen_t valSize = sizeof(value);
   return ConvertOSError(::getsockopt(os_handle, level, option,
                                      (char *)&value, &valSize));
-#endif
 }
 
 
 BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize, int level)
 {
-#ifdef BE_BONELESS
-  return FALSE;
-#else
   return ConvertOSError(::getsockopt(os_handle, level, option,
                                      (char *)valuePtr, (socklen_t *)&valueSize));
-#endif
 }
 
 
@@ -1404,7 +1399,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -1416,7 +1411,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -1479,7 +1474,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
+#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
@@ -2850,10 +2845,6 @@ BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
 BOOL PUDPSocket::ApplyQoS()
 {
 #ifdef _WIN32_WCE
-    return FALSE;   //QoS not supported
-#endif
-
-#ifdef __BEOS__
     return FALSE;   //QoS not supported
 #endif
 
