@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.23  2002/12/19 01:35:24  robertj
+ * Fixed problem with returning incorrect lastWriteLength on translated output.
+ *
  * Revision 1.22  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -1200,12 +1203,21 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
     writePartHeaders = FALSE;
   }
 
+  BOOL ok;
   if (base64 == NULL)
-    return PIndirectChannel::Write(buf, len);
+    ok = PIndirectChannel::Write(buf, len);
+  else {
+    base64->ProcessEncoding(buf, len);
+    PString str = base64->GetEncodedString();
+    ok = PIndirectChannel::Write(str.GetPointer(), str.GetLength());
+  }
 
-  base64->ProcessEncoding(buf, len);
-  PString str = base64->GetEncodedString();
-  return PIndirectChannel::Write(str.GetPointer(), str.GetLength());
+  // Always return the lastWriteCount as the number of bytes expected to be
+  // written, not teh actual number which with base64 encoding etc may be
+  // significantly more.
+  if (ok)
+    lastWriteCount = len;
+  return ok;
 }
 
 
