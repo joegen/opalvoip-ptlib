@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.49  2001/09/28 08:55:15  robertj
+ * More changes to support restartable PHTTPClient
+ *
  * Revision 1.48  2001/09/28 00:42:54  robertj
  * Added automatic setting of some outward MIME fields.
  * Added "user agent" string field for automatic inclusion.
@@ -463,7 +466,7 @@ class PHTTPClient : public PHTTP
      */
     int ExecuteCommand(
       Commands cmd,
-      const PString & url,
+      const PURL & url,
       PMIMEInfo & outMIME,
       const PString & dataBody,
       PMIMEInfo & replyMime,
@@ -471,7 +474,7 @@ class PHTTPClient : public PHTTP
     );
     int ExecuteCommand(
       const PString & cmdName,
-      const PString & url,
+      const PURL & url,
       PMIMEInfo & outMIME,
       const PString & dataBody,
       PMIMEInfo & replyMime,
@@ -482,13 +485,13 @@ class PHTTPClient : public PHTTP
     BOOL WriteCommand(
       Commands cmd,
       const PString & url,
-      const PMIMEInfo & outMIME,
+      PMIMEInfo & outMIME,
       const PString & dataBody
     );
     BOOL WriteCommand(
       const PString & cmdName,
       const PString & url,
-      const PMIMEInfo & outMIME,
+      PMIMEInfo & outMIME,
       const PString & dataBody
     );
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.25  2001/09/28 08:55:15  robertj
+ * More changes to support restartable PHTTPClient
+ *
  * Revision 1.24  2001/09/28 00:43:47  robertj
  * Added automatic setting of some outward MIME fields.
  * Added "user agent" string field for automatic inclusion.
@@ -256,7 +259,7 @@ PHTTPClient::PHTTPClient(const PString & userAgent)
 
 
 int PHTTPClient::ExecuteCommand(Commands cmd,
-                                const PString & url,
+                                const PURL & url,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
@@ -267,23 +270,47 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
 
 
 int PHTTPClient::ExecuteCommand(const PString & cmdName,
-                                const PString & url,
+                                const PURL & url,
                                 PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
                                 BOOL persist)
 {
+  if (!outMIME.Contains(DateTag))
+    outMIME.SetAt(DateTag, PTime().AsString());
+
+  if (!userAgentName && !outMIME.Contains(UserAgentTag))
+    outMIME.SetAt(UserAgentTag, userAgentName);
+
   if (persist)
     outMIME.SetAt(ConnectionTag, KeepAliveTag);
 
-  if (WriteCommand(cmdName, url, outMIME, dataBody)) {
+  while (AssureConnect(url, outMIME)) {
+    if (!WriteCommand(cmdName, url.AsString(PURL::URIOnly), outMIME, dataBody)) {
+      lastResponseCode = -1;
+      lastResponseInfo = GetErrorText(LastWriteError);
+      break;
+    }
+
+    // If not persisting need to shut down write so other end stops reading
     if (!persist)
       Shutdown(ShutdownWrite);
-    ReadResponse(replyMime);
-  }
-  else {
-    lastResponseCode = -1;
-    lastResponseInfo = GetErrorText(LastWriteError);
+
+    // Await a response, if all OK exit loop
+    if (ReadResponse(replyMime))
+      break;
+
+    // If not persisting, we have no oppurtunity to write again, just error out
+    if (!persist)
+      break;
+
+    // If have had a failure to read a response but there was no error then
+    // we have a shutdown socket probably due to a lack of persistence so ...
+    if (GetErrorCode(LastReadError) != NoError)
+      break;
+
+    // ... we close the channel and allow AssureConnet() to reopen it.
+    Close();
   }
 
   return lastResponseCode;
@@ -292,7 +319,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 
 BOOL PHTTPClient::WriteCommand(Commands cmd,
                                const PString & url,
-                               const PMIMEInfo & outMIME,
+                               PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
   return WriteCommand(commandNames[cmd], url, outMIME, dataBody);
@@ -301,24 +328,22 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 
 BOOL PHTTPClient::WriteCommand(const PString & cmdName,
                                const PString & url,
-                               const PMIMEInfo & outMIME,
+                               PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
+  PINDEX len = dataBody.GetSize()-1;
+  if (!outMIME.Contains(ContentLengthTag))
+    outMIME.SetInteger(ContentLengthTag, len);
+
   if (cmdName.IsEmpty())
     *this << "GET";
   else
     *this << cmdName;
+
   *this << ' ' << url << " HTTP/1.0\r\n"
         << setfill('\r') << outMIME;
 
-  PINDEX len = dataBody.GetSize()-1;
-  if (!Write((const char *)dataBody, len))
-    return FALSE;
-
-  if (len < 2 || (dataBody[len-2] == '\r' && dataBody[len-1] == '\n'))
-    return TRUE;
-
-  return Write("\r\n", 2);
+  return Write((const char *)dataBody, len);
 }
 
 
@@ -350,10 +375,8 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     lastResponseCode = -1;
     if (GetErrorCode(LastReadError) != NoError)
       lastResponseInfo = GetErrorText(LastReadError);
-    else {
+    else
       lastResponseInfo = "Remote shutdown";
-      SetErrorValues(ProtocolFailure, 0, LastReadError);
-    }
     return FALSE;
   }
 
@@ -403,10 +426,7 @@ BOOL PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & replyMIME,
                               BOOL persist)
 {
-  if (!AssureConnect(url, outMIME))
-    return FALSE;
-
-  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME, persist) == OK;
+  return ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist) == OK;
 }
 
 
@@ -415,10 +435,7 @@ BOOL PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & replyMIME,
                             BOOL persist)
 {
-  if (!AssureConnect(url, outMIME))
-    return FALSE;
-
-  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME, persist) == OK;
+  return ExecuteCommand(HEAD, url, outMIME, PString(), replyMIME, persist) == OK;
 }
 
 
@@ -428,36 +445,19 @@ BOOL PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & replyMIME,
                            BOOL persist)
 {
-  if (!AssureConnect(url, outMIME))
-    return FALSE;
-
-  if (!outMIME.Contains(ContentTypeTag))
+  PString dataBody = data;
+  if (!outMIME.Contains(ContentTypeTag)) {
     outMIME.SetAt(ContentTypeTag, "application/x-www-form-urlencoded");
+    dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
+  }
 
-  if (!outMIME.Contains(ContentLengthTag))
-    outMIME.SetInteger(ContentLengthTag, data.GetLength());
-
-  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, data, replyMIME, persist) == OK;
+  return ExecuteCommand(POST, url, outMIME, data, replyMIME, persist) == OK;
 }
 
 
 BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 {
   PString host = url.GetHostName();
-
-  // If already open check that the other end has not shut down
-  if (IsOpen()) {
-    PTimeInterval oldTimeout = GetReadTimeout();
-    SetReadTimeout(0);
-
-    char c;
-    if (Read(&c, 1))
-      UnRead(c);
-    else
-      Close();
-
-    SetReadTimeout(oldTimeout);
-  }
 
   // Is not open or other end shut down, restablish connection
   if (!IsOpen()) {
@@ -485,12 +485,6 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         outMIME.SetAt(HostTag, sock->GetHostName());
     }
   }
-
-  if (!outMIME.Contains(DateTag))
-    outMIME.SetAt(DateTag, PTime().AsString());
-
-  if (!userAgentName && !outMIME.Contains(UserAgentTag))
-    outMIME.SetAt(UserAgentTag, userAgentName);
 
   return TRUE;
 }
