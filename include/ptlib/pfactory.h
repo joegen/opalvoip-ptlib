@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.7  2004/05/23 12:33:56  rjongbloed
+ * Made some subtle changes to the way the static variables are instantiated in
+ *   the factoris to fix problems with DLL's under windows. May not be final solution.
+ *
  * Revision 1.6  2004/05/19 06:48:39  csoutheren
  * Added new functions to allow handling of singletons without concrete classes
  *
@@ -104,6 +108,12 @@ class PGenericFactory
         AbstractInfo()
           : creator(NULL), isSingleton(FALSE), instance(NULL)
         { }
+        AbstractInfo(CreatorFunctionType creat, BOOL single)
+          : creator(creat), isSingleton(single), instance(NULL)
+        { }
+        AbstractInfo(AbstractType * inst, BOOL single)
+          : creator(NULL), isSingleton(single), instance(inst)
+        { }
         CreatorFunctionType creator;
         BOOL isSingleton;
         AbstractType * instance;
@@ -111,9 +121,6 @@ class PGenericFactory
 
     typedef std::map<TypeKey, AbstractInfo> KeyMap;
     typedef std::vector<TypeKey> KeyList;
-
-    static PGenericFactory & GetFactory()
-    { static PGenericFactory factory; return factory; }
 
     static AbstractType * CreateInstance(const TypeKey & key)
     {
@@ -132,17 +139,20 @@ class PGenericFactory
 
     static void Register(const TypeKey & key, CreatorFunctionType func, BOOL isSingleton)
     {
-      AbstractInfo info;
-      info.creator     = func;
-      info.isSingleton = isSingleton;
-      Register(key, info);
+      Register(key, AbstractInfo(func, isSingleton));
     }
 
-    static void Register(const TypeKey & key, AbstractInfo info)
+    static void Register(const TypeKey & key, AbstractType * instance, BOOL isSingleton)
+    {
+      Register(key, AbstractInfo(instance, isSingleton));
+    }
+
+    static void Register(const TypeKey & key, const AbstractInfo & info)
     {
       PWaitAndSignal m(GetMutex());
       KeyMap & keyMap = GetKeyMap();
-      keyMap[key]     = info;
+      if (keyMap.find(key) == keyMap.end())
+        keyMap[key] = info;
     }
 
     static BOOL IsSingleton(const TypeKey & key)
@@ -166,35 +176,74 @@ class PGenericFactory
     }
 
     static PMutex & GetMutex()
-    { static PMutex mutex; return mutex; }
+    {
+      return GetFactory().mutex;
+    }
 
     static KeyMap & GetKeyMap()
-    { static KeyMap keyMap; return keyMap; }
+    {
+      return GetFactory().keyMap;
+    }
+
+  protected:
+    PGenericFactory()
+    {
+    }
+
+    static PGenericFactory & GetFactory()
+    {
+      static PGenericFactory factory;
+      return factory;
+    }
+
+    PMutex mutex;
+    KeyMap keyMap;
+
+  private:
+    PGenericFactory(const PGenericFactory &) {}
+    void operator=(const PGenericFactory &) {}
 };
+
 
 template <class AbstractType, class ConcreteType, typename TypeKey = PString>
 class PAbstractFactory
 {
   public:
-    static AbstractType * CreateInstance()
-    { return new ConcreteType; }
-
     PAbstractFactory(const TypeKey & key)
-    { PGenericFactory<AbstractType>::Register(key, &CreateInstance, FALSE); }
+    {
+      PGenericFactory<AbstractType>::Register(key, &CreateInstance, FALSE);
+    }
+
+    static AbstractType * CreateInstance()
+    {
+      return new ConcreteType;
+    }
+
+  private:
+    PAbstractFactory(const PAbstractFactory &) {}
+    void operator=(const PAbstractFactory &) {}
 };
+
 
 template <class AbstractType, class ConcreteType, typename TypeKey = PString>
 class PAbstractSingletonFactory
 {
   public:
-    static AbstractType & GetInstance()
-    { static ConcreteType instance; return instance; }
-
-    static AbstractType * CreateInstance()
-    { return &GetInstance(); }
-
     PAbstractSingletonFactory(const TypeKey & key)
-    { PGenericFactory<AbstractType>::Register(key, &CreateInstance, TRUE); }
+    {
+      PGenericFactory<AbstractType>::Register(key, &GetInstance(), TRUE);
+    }
+
+    static ConcreteType & GetInstance()
+    {
+      static ConcreteType instance;
+      return instance;
+    }
+
+  private:
+    PAbstractSingletonFactory(const PAbstractSingletonFactory &) {}
+    void operator=(const PAbstractSingletonFactory &) {}
 };
+
 
 #endif // _PFACTORY_H
