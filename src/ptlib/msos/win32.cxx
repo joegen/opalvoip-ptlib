@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.105  2001/05/04 05:42:23  yurik
+ * GetUserName for Pocket PC (Windows CE 3.0) implemented
+ *
  * Revision 1.104  2001/04/26 06:07:34  yurik
  * UI improvements
  *
@@ -1447,20 +1450,36 @@ PDirectory PProcess::GetOSConfigDir()
 #endif
 }
 
-
 PString PProcess::GetUserName() const
 {
-#ifndef _WIN32_WCE
   PString username;
   unsigned long size = 50;
+#ifndef _WIN32_WCE
   ::GetUserName(username.GetPointer((PINDEX)size), &size);
-  username.MakeMinimumSize();
 #else
-  PString username("User");
+  TCHAR wcsuser[50] = {0};
+  HKEY hKeyComm, hKeyIdent;
+  RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Comm"), 0, 0, &hKeyComm);
+  RegOpenKeyEx(hKeyComm, _T("Ident"), 0, 0, &hKeyIdent);
+
+  DWORD dwType = REG_SZ; DWORD dw = 50;
+  if( ERROR_SUCCESS != RegQueryValueEx(
+	  hKeyIdent, _T("Username"), NULL, &dwType, (LPBYTE) wcsuser, &dw) 
+	  || !*wcsuser )
+  {
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Ident"), 0, 0, &hKeyIdent);
+	dw = 50L;
+	if( ERROR_SUCCESS == RegQueryValueEx( 
+		hKeyIdent, _T("Name"), NULL, &dwType, (LPBYTE) wcsuser, &dw))
+			wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
+  }
+  
+  USES_CONVERSION;
+  username = T2A(wcsuser);
 #endif
+  username.MakeMinimumSize();
   return username;
 }
-
 
 DWORD PProcess::GetProcessID() const
 {
