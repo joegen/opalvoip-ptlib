@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.52  2004/07/28 02:01:51  csoutheren
+ * Removed deadlock in some call shutdown scenarios
+ *
  * Revision 1.51  2004/07/27 05:26:46  csoutheren
  * Fixed recording
  *
@@ -934,6 +937,7 @@ BOOL PVXMLSession::Close()
       // Signal all syncpoints that could be waiting for things
       transferSync.Signal();
       answerSync.Signal();
+      vxmlChannel->Close();
 
       vxmlThread->WaitForTermination();
       delete vxmlThread;
@@ -2328,9 +2332,6 @@ BOOL PVXMLChannel::IsOpen() const
 BOOL PVXMLChannel::Close()
 { 
   closed = TRUE; 
-
-  PWaitAndSignal m1(channelReadMutex);
-  PWaitAndSignal m2(channelWriteMutex);
 
   PDelayChannel::Close(); 
   return TRUE; 
