@@ -40,6 +40,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
 # ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\include\pwlib\mswin" /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /D P_LDAP=0$(OPENLDAPFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /D P_SAPI=0$(SAPIFLAG) /Yu"precompile.h" /FD /c
@@ -52,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 ptclib.lib ptlib.lib $(OPENSSLLIBS) $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /machine:I386 /libpath:"..\..\lib" /libpath:"$(OPENLDAPDIR)/DLLRelease" /libpath:"$(OPENSSLDIR)/out32" /libpath:"$(EXPATDIR)/Release"
+# ADD LINK32 ptclib.lib ptlib.lib $(OPENLDAPLIBS) $(OPENSSLLIBS) $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /machine:I386 /libpath:"..\..\lib" /libpath:"$(OPENLDAPDIR)/DLLRelease" /libpath:"$(OPENSSLDIR)/out32" /libpath:"$(EXPATDIR)/Release"
 
 !ELSEIF  "$(CFG)" == "ldaptest - Win32 Debug"
 
@@ -78,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 ptclibd.lib ptlibd.lib $(OPENLDAPLIBS) $(OPENSSLLIBS) $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\..\lib" /libpath:"$(OPENLDAPDIR)/DLLDebug" /libpath:"$(OPENSSLDIR)/out32.dbg" /libpath:"$(EXPATDIR)/Debug"
+# ADD LINK32 ptclibd.lib ptlibd.lib $(OPENLDAPLIBS) $(OPENSSLLIBS) $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\..\lib" /libpath:"$(OPENLDAPDIR)/DLLRelease" /libpath:"$(OPENSSLDIR)/out32.dbg" /libpath:"$(EXPATDIR)/Debug"
 
 !ENDIF 
 
