@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.61  2003/12/13 23:08:46  csoutheren
+ * Changed PRegularExpression to allow a copy constructor and operator =
+ *
  * Revision 1.60  2003/12/10 03:28:50  csoutheren
  * Removed compile time warning under Linux
  *
@@ -2855,6 +2858,20 @@ class PRegularExpression : public PObject
       int flags = IgnoreCase      /// Pattern match options
     );
 
+    /**
+      * Copy a regular expression
+      */
+    PRegularExpression(
+      const PRegularExpression &
+    );
+
+    /**
+      * Assign a regular expression
+      */
+    PRegularExpression & operator =(
+      const PRegularExpression &
+    );
+
     /// Release storage for the compiled regular expression.
     ~PRegularExpression();
   //@}
@@ -3023,15 +3040,11 @@ class PRegularExpression : public PObject
   //@}
 
   protected:
+    PString patternSaved;
+    int flagsSaved;
+
     regex_t * expression;
     int lastError;
-
-  private:
-    /// Don't allow regular expression copying.
-    PRegularExpression(const PRegularExpression &)
-    { }  
-    PRegularExpression & operator =(const PRegularExpression &)
-    { return *this; }  
 };
 
 
