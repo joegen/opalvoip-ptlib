@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.2 1996/03/18 13:33:10 robertj Exp $
+ * $Id: ftp.h,v 1.3 1996/03/26 00:50:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,8 +9,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.3  1996/03/26 00:50:28  robertj
+ * FTP Client Implementation.
+ *
  * Revision 1.2  1996/03/18 13:33:10  robertj
- * FireDoorV10
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
  * Revision 1.1  1996/03/04 12:14:18  robertj
  * Initial revision
@@ -69,6 +72,110 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
+     */
+
+    BOOL LogIn(
+      const PString & username,   // User name for FTP log in.
+      const PString & password    // Password for the specified user name.
+    );
+    /* Log in to the remote host for FTP.
+
+       <H2>Returns:</H2>
+       TRUE if the log in was successfull.
+     */
+
+    PString GetSystemType();
+    /* Get the type of the remote FTP server system, eg Unix, WindowsNT etc.
+
+       <H2>Returns:</H2>
+       String for the type of system.
+     */
+
+    enum RepresentationType {
+      ASCII,
+      EBCDIC,
+      Image
+    };
+    BOOL SetType(
+      RepresentationType type   // RepresentationTypeof file to transfer
+    );
+    /* Set the transfer type.
+
+       <H2>Returns:</H2>
+       TRUE if transfer type set.
+     */
+
+    BOOL ChangeDirectory(
+      const PString & dirPath     // New directory
+    );
+    /* Change the current directory on the remote FTP host.
+
+       <H2>Returns:</H2>
+       TRUE if the log in was successfull.
+     */
+
+    PString GetCurrentDirectory();
+    /* Get the current working directory on the remote FTP host.
+
+       <H2>Returns:</H2>
+       String for the directory path, or empty string if an error occurred.
+     */
+
+    enum NameTypes {
+      ShortNames,
+      DetailedNames
+    };
+    PStringArray GetDirectoryNames(
+      NameTypes type = ShortNames    // Detail level on a directory entry.
+    );
+    PStringArray GetDirectoryNames(
+      const PString & path,          // Name to get details for.
+      NameTypes type = ShortNames    // Detail level on a directory entry.
+    );
+    /* Get a list of files from the current working directory on the remote
+       FTP host.
+
+       <H2>Returns:</H2>
+       String array for the files in the directory.
+     */
+
+    PString GetFileStatus(
+      const PString & path   // Path to get status for.
+    );
+    /* Get status information for the file path specified.
+
+       <H2>Returns:</H2>
+       String giving file status.
+     */
+
+    enum DataChannelType {
+      NormalPort,
+      Passive
+    };
+    PTCPSocket * GetFile(
+      const PString & filename,   // Name of file to get
+      DataChannelType channel = NormalPort // Data channel type.
+    );
+    /* Begin retreiving a file from the remote FTP server. The second
+       parameter indicates that the transfer is on a normal or passive data
+       channel. In short, a normal transfer the server connects to the
+       client and in passive mode the client connects to the server.
+
+       <H2>Returns:</H2>
+       Socket to read data from, or NULL if an error occurred.
+     */
+
+    PTCPSocket * PutFile(
+      const PString & filename,   // Name of file to get
+      DataChannelType channel = NormalPort // Data channel type.
+    );
+    /* Begin storing a file to the remote FTP server. The second parameter
+       indicates that the transfer is on a normal or passive data channel.
+       In short, a normal transfer the server connects to the client and in
+       passive mode the client connects to the server.
+
+       <H2>Returns:</H2>
+       Socket to write data to, or NULL if an error occurred.
      */
 
 
@@ -233,6 +340,14 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
   protected:
     void Construct();
     void ConstructServerSocket(const PString & readyString);
+    PTCPSocket * NormalClientTransfer(
+      Commands cmd,
+      const PString & args
+    );
+    PTCPSocket * PassiveClientTransfer(
+      Commands cmd,
+      const PString & args
+    );
 
     enum { NotConnected, NeedUser, NeedPassword, Connected } state;
 
