@@ -2488,3 +2488,4 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
+    ?GetOSConfigDir@PProcess@@SA?AVPDirectory@@XZ @2545 NONAME ;public: static class PDirectory  __cdecl PProcess::GetOSConfigDir(void)
