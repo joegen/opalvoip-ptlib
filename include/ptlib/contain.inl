@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.23 1994/10/23 04:41:45 robertj Exp $
+ * $Id: contain.inl,v 1.24 1994/10/30 11:50:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.23  1994/10/23 04:41:45  robertj
+ * Revision 1.24  1994/10/30 11:50:27  robertj
+ * Split into Object classes and Container classes.
+ * Changed mechanism for doing notification callback functions.
+ *
+ * Revision 1.23  1994/10/23  04:41:45  robertj
  * Added implemtation for PString constructor used by Clone().
  * Added PStringDictionary function.
  *
@@ -75,34 +79,6 @@
  * Fixed RCS keywords.
  *
  */
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-PINLINE BOOL PObject::operator==(const PObject & obj) const
-  { return Compare(obj) == EqualTo; }
-
-PINLINE BOOL PObject::operator!=(const PObject & obj) const
-  { return Compare(obj) != EqualTo; }
-
-PINLINE BOOL PObject::operator<(const PObject & obj) const
-  { return Compare(obj) == LessThan; }
-
-PINLINE BOOL PObject::operator>(const PObject & obj) const
-  { return Compare(obj) == GreaterThan; }
-
-PINLINE BOOL PObject::operator<=(const PObject & obj) const
-  { return Compare(obj) != GreaterThan; }
-
-PINLINE BOOL PObject::operator>=(const PObject & obj) const
-  { return Compare(obj) != LessThan; }
-
-PINLINE ostream & operator<<(ostream &strm, const PObject & obj)
-  { return obj.PrintOn(strm); }
-
-PINLINE istream & operator>>(istream &strm, PObject & obj)
-  { return obj.ReadFrom(strm); }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,7 +241,7 @@ PINLINE void PCollection::DisallowDeleteObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
-  : theArray(initialSize) { }
+  : theArray(PNEW ObjPtrArray(initialSize)) { }
 
 PINLINE void PArrayObjects::CopyContents(const PArrayObjects & array)
   { theArray = array.theArray; }
