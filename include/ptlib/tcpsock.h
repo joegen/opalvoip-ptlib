@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.28  2002/10/08 12:41:51  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.27  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -275,7 +278,14 @@ class PTCPSocket : public PIPSocket
 
 
   protected:
+    // Open an IPv4 socket (for backward compatibility)
     virtual BOOL OpenSocket();
+
+    // Open an IPv4 or IPv6 socket
+    virtual BOOL OpenSocket(
+      int ipAdressFamily
+    );
+
     virtual const char * GetProtocolName() const;
 
 

@@ -7,7 +7,7 @@ PString =<theArray,s>
 PContainer=<,t> size=<reference->size> ref=<reference->count>
 PAbstractArray =<,t> size=<reference->size> ref=<reference->count>
 PArrayObjects =<,t> size=<theArray->reference->size> ref=<reference->count>
-PIPSocket::Address =<S_un.S_un_b.s_b1,u>.<S_un.S_un_b.s_b2,u>.<S_un.S_un_b.s_b3,u>.<S_un.S_un_b.s_b4,u>
+PIPSocket::Address =<v.four.S_un.S_un_b.s_b1,u>.<v.four.S_un.S_un_b.s_b2,u>.<v.four.S_un.S_un_b.s_b3,u>.<v.four.S_un.S_un_b.s_b4,u>
 PTimeInterval = <milliseconds>
 PTime = <theTime>
 
