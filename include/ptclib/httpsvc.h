@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.5 1996/09/14 13:09:12 robertj Exp $
+ * $Id: httpsvc.h,v 1.6 1996/11/04 03:55:20 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.6  1996/11/04 03:55:20  robertj
+ * Changed to accept separate copyright and manufacturer strings.
+ *
  * Revision 1.5  1996/09/14 13:09:12  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -36,16 +39,25 @@
 
 /////////////////////////////////////////////////////////////////////
 
+class POrderPage;
+
 PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
+
+  friend class POrderPage;
+
   public:
     PHTTPServiceProcess(
-      const char * gifText, // text for gif file in page headers
-      const char * manuf,   // Name of manufacturer
-      const char * name,    // Name of product
+      const char * name,      // Name of product
+      const char * manuf,     // Name of manufacturer
+      const char * gifText,   // text for gif file in page headers
+
       WORD majorVersion,    // Major version number of the product
       WORD minorVersion,    // Minor version number of the product
       CodeStatus status,    // Development status of the product
-      WORD buildNumber      // Build number of the product
+      WORD buildNumber,     // Build number of the product
+
+      const char * homePage = NULL,  // WWW address of manufacturers home page
+      const char * email = NULL      // contact email for manufacturer
     );
 
     virtual void OnConfigChanged() = 0;
@@ -54,15 +66,21 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     void BeginRestartSystem();
     void CompleteRestartSystem();
 
-    PString GetPageGraphic();
+    virtual PString GetPageGraphic();
     void GetPageHeader(PHTML &);
     void GetPageHeader(PHTML &, const PString & title);
+
+    virtual PString GetCopyrightText();
 
     static PHTTPServiceProcess * Current() 
       { return (PHTTPServiceProcess *)PServiceProcess::Current(); }
 
   protected:
     PString    gifText;
+    PINDEX     gifWidth, gifHeight;
+
+    PString    email;
+    PString    homePage;
 
   private:
     PThread *  restartThread;
