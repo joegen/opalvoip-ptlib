@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.17 1996/06/07 13:52:20 robertj Exp $
+ * $Id: http.h,v 1.18 1996/06/28 13:15:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.18  1996/06/28 13:15:23  robertj
+ * Modified HTTPAuthority so gets PHTTPReqest (mainly for URL) passed in.
+ * Moved HTTP form resource to another compilation module.
+ *
  * Revision 1.17  1996/06/07 13:52:20  robertj
  * Added PUT to HTTP proxy FTP. Necessitating redisign of entity body processing.
  *
@@ -573,6 +577,29 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PHTTPRequest
+
+PDECLARE_CLASS(PHTTPRequest, PObject)
+/* This object describes a HyperText Transport Protocol request. An individual
+   request is passed to handler functions on <A>PHTTPResource</A> descendant
+   classes.
+ */
+
+  public:
+    PHTTPRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME      // Extra MIME information in command.
+    );
+
+    const PURL & url;               // Universal Resource Locator for document.
+    const PMIMEInfo & inMIME;       // Extra MIME information in command.
+    PHTTPSocket::StatusCode code;   // Status code for OnError() reply.
+    PMIMEInfo outMIME;              // MIME information used in reply.
+    PINDEX contentSize;             // Size of the body of the resource data.
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPAuthority
 
 PDECLARE_CLASS(PHTTPAuthority, PObject)
@@ -582,7 +609,9 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
 
   public:
   // New functions for class.
-    virtual PString GetRealm() const = 0;
+    virtual PString GetRealm(
+      const PHTTPRequest & request   // Request information.
+    ) const = 0;
     /* Get the realm or name space for the user authorisation name and
        password as required by the basic authorisation system of HTTP/1.0.
 
@@ -591,7 +620,8 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
      */
 
     virtual BOOL Validate(
-      const PString & authInfo  // Authority information string.
+      const PHTTPRequest & request,  // Request information.
+      const PString & authInfo       // Authority information string.
     ) const = 0;
     /* Validate the user and password provided by the remote HTTP client for
        the realm specified by the class instance.
@@ -599,6 +629,13 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
        <H2>Returns:</H2>
        TRUE if the user and password are authorised in the realm.
      */
+
+  protected:
+    static void DecodeBasicAuthority(
+      const PString & authInfo,   // Authority information string.
+      PString & username,         // User name decoded from authInfo
+      PString & password          // Password decoded from authInfo
+    );
 };
 
 
@@ -631,7 +668,9 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
 
 
   // Overrides from class PHTTPAuthority.
-    virtual PString GetRealm() const;
+    virtual PString GetRealm(
+      const PHTTPRequest & request   // Request information.
+    ) const;
     /* Get the realm or name space for the user authorisation name and
        password as required by the basic authorisation system of HTTP/1.0.
 
@@ -640,7 +679,8 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
      */
 
     virtual BOOL Validate(
-      const PString & authInfo  // Authority information string.
+      const PHTTPRequest & request,  // Request information.
+      const PString & authInfo       // Authority information string.
     ) const;
     /* Validate the user and password provided by the remote HTTP client for
        the realm specified by the class instance.
@@ -668,29 +708,6 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
     PString realm;
     PString username;
     PString password;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPRequest
-
-PDECLARE_CLASS(PHTTPRequest, PObject)
-/* This object describes a HyperText Transport Protocol request. An individual
-   request is passed to handler functions on <A>PHTTPResource</A> descendant
-   classes.
- */
-
-  public:
-    PHTTPRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME      // Extra MIME information in command.
-    );
-
-    const PURL & url;               // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME;       // Extra MIME information in command.
-    PHTTPSocket::StatusCode code;   // Status code for OnError() reply.
-    PMIMEInfo outMIME;              // MIME information used in reply.
-    PINDEX contentSize;             // Size of the body of the resource data.
 };
 
 
@@ -944,9 +961,9 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 
   protected:
     BOOL CheckAuthority(
-      PHTTPSocket & socket,   // Socket to send response to.
-      const PMIMEInfo & info, // Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo
+      PHTTPSocket & socket,               // Socket to send response to.
+      const PHTTPRequest & request,       // Information on this request.
+      const PHTTPConnectionInfo & conInfo // Information on the connection
     );
     /* See if the resource is authorised given the mime info
      */
@@ -1243,481 +1260,6 @@ PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
   );
 
   PString fakeIndex;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PHTTPForm
-
-PDECLARE_CLASS(PHTTPField, PObject)
-/* This class is the abstract base class for fields in a <A>PHTTPForm</A>
-   resource type.
- */
-  public:
-    PHTTPField(
-      const char * name,   // Name (identifier) for the field.
-      const char * title,  // Title text for field (defaults to name).
-      const char * help    // Help text for the field.
-    );
-    // Create a new field in a HTTP form.
-
-    virtual Comparison Compare(
-      const PObject & obj
-    ) const;
-    /* Compare the fields using the field names.
-
-       <H2>Returns:</H2>
-       Comparison of the name fields of the two fields.
-     */
-
-    const PCaselessString & GetName() const { return name; }
-    /* Get the identifier name of the field.
-
-       <H2>Returns:</H2>
-       String for field name.
-     */
-
-    const PString & GetTitle() const { return title; }
-    /* Get the title of the field.
-
-       <H2>Returns:</H2>
-       String for title placed next to the field.
-     */
-
-    const PString & GetHelp() const { return help; }
-    /* Get the title of the field.
-
-       <H2>Returns:</H2>
-       String for title placed next to the field.
-     */
-
-    void SetHelp(
-      const PString & text        // Help text.
-    ) { help = text; }
-    void SetHelp(
-      const PString & hotLinkURL, // URL for link to help page.
-      const PString & linkText    // Help text in the link.
-    );
-    void SetHelp(
-      const PString & hotLinkURL, // URL for link to help page.
-      const PString & imageURL,   // URL for image to be displayed in link.
-      const PString & imageText   // Text in the link when image unavailable.
-    );
-    // Set the help text for the field.
-
-    virtual void GetHTML(
-      PHTML & html    // HTML to receive the field info.
-    ) = 0;
-    /* Convert the field to HTML for inclusion into the HTTP page.
-     */
-
-    virtual PString GetValue() const = 0;
-    /* Get the value of the field.
-
-       <H2>Returns:</H2>
-       String for field value.
-     */
-
-    virtual void SetValue(
-      const PString & val   // New value for the field.
-    ) = 0;
-    /* Set the value of the field.
-     */
-
-    virtual BOOL Validated(
-      const PString & newVal, // Proposed new value for the field.
-      PStringStream & msg     // Stream to take error HTML if value not valid.
-    ) const;
-    /* Validate the new field value before <A>SetValue()</A> if called.
-
-       <H2>Returns:</H2>
-       BOOL if the new field value is OK.
-     */
-
-    BOOL NotYetInHTML() const { return notInHTML; }
-
-  protected:
-    PCaselessString name;
-    PString title;
-    PString help;
-    BOOL notInHTML;
-};
-
-
-PDECLARE_CLASS(PHTTPStringField, PHTTPField)
-  public:
-    PHTTPStringField(
-      const char * name,
-      PINDEX size,
-      const char * initVal = NULL,
-      const char * help = NULL
-    );
-    PHTTPStringField(
-      const char * name,
-      const char * title,
-      PINDEX size,
-      const char * initVal = NULL,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-
-    virtual PString GetValue() const;
-
-    virtual void SetValue(
-      const PString & val
-    );
-
-
-  protected:
-    PString value;
-    PINDEX size;
-};
-
-
-PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
-  public:
-    PHTTPPasswordField(
-      const char * name,
-      PINDEX size,
-      const char * initVal = NULL,
-      const char * help = NULL
-    );
-    PHTTPPasswordField(
-      const char * name,
-      const char * title,
-      PINDEX size,
-      const char * initVal = NULL,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-};
-
-
-PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
-  public:
-    PHTTPIntegerField(
-      const char * name,
-      int low, int high,
-      int initVal = 0,
-      const char * units = NULL,
-      const char * help = NULL
-    );
-    PHTTPIntegerField(
-      const char * name,
-      const char * title,
-      int low, int high,
-      int initVal = 0,
-      const char * units = NULL,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-
-    virtual PString GetValue() const;
-
-    virtual void SetValue(
-      const PString & val
-    );
-
-    virtual BOOL Validated(
-      const PString & newVal,
-      PStringStream & msg
-    ) const;
-
-
-  protected:
-    int low, high, value;
-    PString units;
-};
-
-
-PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
-  public:
-    PHTTPBooleanField(
-      const char * name,
-      BOOL initVal = FALSE,
-      const char * help = NULL
-    );
-    PHTTPBooleanField(
-      const char * name,
-      const char * title,
-      BOOL initVal = FALSE,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-
-    virtual PString GetValue() const;
-
-    virtual void SetValue(
-      const PString & val
-    );
-
-
-  protected:
-    BOOL value;
-};
-
-
-PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
-  public:
-    PHTTPRadioField(
-      const char * name,
-      const PStringArray & valueArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      const PStringArray & valueArray,
-      const PStringArray & titleArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      PINDEX count,
-      const char * const * valueStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      PINDEX count,
-      const char * const * valueStrings,
-      const char * const * titleStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      const char * groupTitle,
-      const PStringArray & valueArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      const char * groupTitle,
-      const PStringArray & valueArray,
-      const PStringArray & titleArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      const char * groupTitle,
-      PINDEX count,
-      const char * const * valueStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPRadioField(
-      const char * name,
-      const char * groupTitle,
-      PINDEX count,
-      const char * const * valueStrings,
-      const char * const * titleStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-
-    virtual PString GetValue() const;
-
-    virtual void SetValue(
-      const PString & val
-    );
-
-
-  protected:
-    PStringArray values;
-    PStringArray titles;
-    PString value;
-};
-
-
-PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
-  public:
-    PHTTPSelectField(
-      const char * name,
-      const PStringArray & valueArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPSelectField(
-      const char * name,
-      PINDEX count,
-      const char * const * valueStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPSelectField(
-      const char * name,
-      const char * title,
-      const PStringArray & valueArray,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-    PHTTPSelectField(
-      const char * name,
-      const char * title,
-      PINDEX count,
-      const char * const * valueStrings,
-      PINDEX initVal = 0,
-      const char * help = NULL
-    );
-
-    virtual void GetHTML(
-      PHTML & html
-    );
-
-    virtual PString GetValue() const;
-
-    virtual void SetValue(
-      const PString & val
-    );
-
-
-  protected:
-    PStringArray values;
-    PString value;
-};
-
-
-PDECLARE_CLASS(PHTTPForm, PHTTPString)
-  public:
-    PHTTPForm(
-      const PURL & url
-    );
-    PHTTPForm(
-      const PURL & url,
-      const PHTTPAuthority & auth
-    );
-    PHTTPForm(
-      const PURL & url,
-      const PString & html
-    );
-    PHTTPForm(
-      const PURL & url,
-      const PString & html,
-      const PHTTPAuthority & auth
-    );
-
-
-    virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
-    );
-
-
-    PHTTPField * Add(
-      PHTTPField * fld
-    );
-
-    enum BuildOptions {
-      CompleteHTML,
-      InsertIntoForm,
-      InsertIntoHTML
-    };
-
-    void BuildHTML(
-      const char * heading
-    );
-    void BuildHTML(
-      const PString & heading
-    );
-    void BuildHTML(
-      PHTML & html,
-      BuildOptions option = CompleteHTML
-    );
-
-
-  protected:
-    PLIST(FieldList, PHTTPField);
-    FieldList fields;
-    PStringSet fieldNames;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPConfig
-
-PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
-  public:
-    PHTTPConfig(
-      const PURL & url,
-      const PString & section
-    );
-    PHTTPConfig(
-      const PURL & url,
-      const PString & section,
-      const PHTTPAuthority & auth
-    );
-    PHTTPConfig(
-      const PURL & url,
-      const PString & section,
-      const PString & html
-    );
-    PHTTPConfig(
-      const PURL & url,
-      const PString & section,
-      const PString & html,
-      const PHTTPAuthority & auth
-    );
-
-    virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
-    );
-
-
-    const PString & GetConfigSection() const { return section; }
-    /* Get the configuration file section that the page will alter.
-
-       <H2>Returns:</H2>
-       String for config file section.
-     */
-
-    void SetConfigSection(
-      const PString & sect   // New section for the config page.
-    ) { section = sect; }
-    // Set the configuration file section.
-
-    void SetConfigValues();
-    /* Set all of the field values to the config files current values. Their
-       current values are used as the defaults if no entry is present in the
-       config file.
-     */
-
-    void AddNewKeyFields(
-      PHTTPField * keyFld,  // Field for the key to be added.
-      PHTTPField * valFld   // Field for the value of the key yto be added.
-    );
-    /* Add fields to the HTTP form for adding a new key to the config file
-       section.
-     */
-
-
-  protected:
-    PString section;
-    PHTTPField * keyField;
-    PHTTPField * valField;
 };
 
 
