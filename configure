@@ -2016,6 +2016,12 @@ case "$target_os" in
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
+  beos*)           OSTYPE=beos ;
+                   OS_TAG="P_BEOS" ;
+                   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
+		   ;;
+
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
   		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
@@ -2101,10 +2107,13 @@ _ACEOF
 
 fi
 
+if test ${OSTYPE} != beos ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_PTHREADS 1
 _ACEOF
+
+fi
 
 if test ${OSTYPE} != Darwin ; then
 
@@ -3352,7 +3361,14 @@ fi
 LIBS=""
 HAS_LIBDL=no
 P_DYNALINK=0
-if test ${OSTYPE} = Darwin ; then
+if test ${OSTYPE} = beos ; then
+  P_DYNALINK=1
+
+cat >>confdefs.h <<\_ACEOF
+#define P_DYNALINK 1
+_ACEOF
+
+elif test ${OSTYPE} = Darwin ; then
   P_DYNALINK=1
 
 cat >>confdefs.h <<\_ACEOF
