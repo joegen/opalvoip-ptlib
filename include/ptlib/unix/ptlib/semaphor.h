@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.8  1999/03/02 05:41:58  robertj
+ * More BeOS changes
+ *
  * Revision 1.7  1999/01/09 03:35:56  robertj
  * Fixed problem with closing thread waiting on semaphore.
  *
@@ -58,6 +61,7 @@
 
 #include "../../semaphor.h"
 #ifdef P_PTHREADS
+
   protected:
     pthread_mutex_t mutex;
     pthread_cond_t  condVar;
@@ -65,9 +69,20 @@
     unsigned maximumCount;
     unsigned queuedLocks;
   friend BOOL PThread::Terminate();
+
+#elif defined(BE_THREADS)
+
+  public:
+    PSemaphore( sem_id anId );
+  protected:
+    sem_id semId;
+
 #else
+
+  protected:
     PQUEUE(ThreadQueue, PThread);
     ThreadQueue waitQueue;
+
 #endif
 };
 

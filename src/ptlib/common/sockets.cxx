@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.89  1999/03/02 05:41:58  robertj
+ * More BeOS changes
+ *
  * Revision 1.88  1999/02/26 04:10:39  robertj
  * More BeOS port changes
  *
@@ -734,10 +737,12 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
+#ifndef __BEOS__
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
   else
+#endif
     return PString(PString::Unsigned, port);
 }
 
