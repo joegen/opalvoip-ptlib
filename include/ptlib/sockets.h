@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.8 1996/09/14 13:09:44 robertj Exp $
+ * $Id: sockets.h,v 1.9 1996/10/08 13:05:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.9  1996/10/08 13:05:38  robertj
+ * More IPX support.
+ *
  * Revision 1.8  1996/09/14 13:09:44  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -90,6 +93,8 @@
 #include <tcpsock.h>
 
 
+#ifdef PIPX
+
 ///////////////////////////////////////////////////////////////////////////////
 // PIPXSocket
 
@@ -101,6 +106,7 @@
 
 #include <spxsock.h>
 
+#endif // PIPX
 
 #endif // _SOCKETS_H
 
