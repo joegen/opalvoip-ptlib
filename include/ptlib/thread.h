@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.35  2003/10/08 21:39:34  dereksmithies
+ * Add a #define to cope with backward compatability issues for PThreadIdentifier
+ * Thanks to Andrey S Pankov and Craig Southeren for their input.
+ *
  * Revision 1.34  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -145,6 +149,8 @@
 #endif
 
 class PSemaphore;
+
+#define PThreadIdentifer PThreadIdentifier
 
 typedef P_THREADIDENTIFIER PThreadIdentifier;
 
