@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.12 1996/10/18 11:22:14 robertj Exp $
+ * $Id: svcproc.cxx,v 1.13 1996/10/31 12:54:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.13  1996/10/31 12:54:01  robertj
+ * Fixed bug in window not being displayed when command line used.
+ *
  * Revision 1.12  1996/10/18 11:22:14  robertj
  * Fixed problems with window not being shown under NT.
  *
@@ -225,7 +228,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 
   BOOL processedCommand = FALSE;
   while (--argc > 0) {
-    if (!CreateControlWindow())
+    if (!CreateControlWindow(TRUE))
       return 1;
 
     switch (ProcessCommand(*++argv)) {
@@ -247,7 +250,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     return GetTerminationValue();
   }
 
-  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Error;
+  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!processedCommand && !debugMode && !isWin95) {
     static SERVICE_TABLE_ENTRY dispatchTable[] = {
@@ -260,16 +263,14 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
       return GetTerminationValue();
 
     PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
-    debugMode = TRUE;
-    if (!CreateControlWindow())
+    if (!CreateControlWindow(TRUE))
       return 1;
-    debugMode = FALSE;
     PError << "Not run as a service!" << endl;
     RunMessageLoop();
     return 1;
   }
 
-  if (!CreateControlWindow())
+  if (!CreateControlWindow(debugMode))
     return 1;
 
   PConfig cfg;
@@ -309,7 +310,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 }
 
 
-BOOL PServiceProcess::CreateControlWindow()
+BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 {
   if (controlWindow == NULL) {
     WNDCLASS wclass;
@@ -364,7 +365,7 @@ BOOL PServiceProcess::CreateControlWindow()
       return FALSE;
   }
 
-  if (debugMode && debugWindow == NULL) {
+  if (createDebugWindow) {
     debugWindow = CreateWindow("edit",
                                "",
                                WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
