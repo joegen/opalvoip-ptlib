@@ -1,11 +1,14 @@
 /*
- * $Id: snmpclnt.cxx,v 1.3 1996/10/08 13:06:24 robertj Exp $
+ * $Id: snmpclnt.cxx,v 1.4 1996/11/04 04:00:00 robertj Exp $
  *
  * SNMP Client Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.4  1996/11/04 04:00:00  robertj
+ * Added support for UDP packet truncation is reading SNMP reply.
+ *
  * Revision 1.3  1996/10/08 13:06:24  robertj
  * Fixed SNMP timeout (GNU compatibility).
  *
@@ -32,20 +35,27 @@ static const char defaultCommunity[] = "public";
 //  PSNMPClient
 //
 
-PSNMPClient::PSNMPClient(PINDEX retry, PINDEX timeout)
+PSNMPClient::PSNMPClient(PINDEX retry, PINDEX timeout,
+                         PINDEX rxSize, PINDEX txSize)
  : community(defaultCommunity),
    version(SNMP_VERSION),
-   retryMax(retry)
+   retryMax(retry),
+   maxRxSize(rxSize),
+   maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
+  requestId = rand() % 0x7fffffff;
 }
 
 
-PSNMPClient::PSNMPClient(const PString & host, PINDEX retry, PINDEX timeout)
+PSNMPClient::PSNMPClient(const PString & host, PINDEX retry,
+                         PINDEX timeout, PINDEX rxSize, PINDEX txSize)
  : hostName(host),
    community(defaultCommunity),
    version(SNMP_VERSION),
-   retryMax(retry)
+   retryMax(retry),
+   maxRxSize(rxSize),
+   maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
   Open(PNEW PUDPSocket(host, SNMP_PORT));
@@ -127,6 +137,68 @@ PString PSNMPClient::GetLastErrorText() const
   return PSNMP::GetErrorText(lastErrorCode);
 }
 
+BOOL PSNMPClient::ReadRequest(PBYTEArray & readBuffer)
+{
+  readBuffer.SetSize(maxRxSize);
+  PINDEX rxSize = 0;
+
+  for (;;) {
+
+    if (!Read(readBuffer.GetPointer()+rxSize, maxRxSize - rxSize)) {
+
+      // if the buffer was too small, then we are receiving datagrams
+      // and the datagram was too big
+      if (PChannel::GetErrorCode() == PChannel::BufferTooSmall) 
+        lastErrorCode = RxBufferTooSmall;
+      else
+        lastErrorCode = NoResponse;
+      return FALSE;
+
+    } else if ((rxSize + GetLastReadCount()) >= 10)
+      break;
+
+    else 
+      rxSize += GetLastReadCount();
+  }
+
+  rxSize += GetLastReadCount();
+
+  PINDEX hdrLen = 1;
+
+  // if not a valid sequence header, then stop reading
+  WORD len;
+  if ((readBuffer[0] != 0x30) ||
+      !PASNObject::DecodeASNLength(readBuffer, hdrLen, len)) {
+    lastErrorCode = MalformedResponse;
+    return FALSE;
+  }
+
+  // length of packet is length of header + length of data
+  len += hdrLen;
+
+  // return TRUE if we have the packet, else return FALSE
+  if (len <= maxRxSize) 
+    return TRUE;
+
+  lastErrorCode = RxBufferTooSmall;
+  return FALSE;
+
+#if 0
+  // and get a new data ptr
+  if (maxRxSize < len) 
+    readBuffer.SetSize(len);
+
+  // read the remainder of the packet
+  while (rxSize < len) {
+    if (!Read(readBuffer.GetPointer()+rxSize, len - rxSize)) {
+      lastErrorCode = NoResponse;
+      return FALSE;
+    }
+    rxSize += GetLastReadCount();
+  }
+  return TRUE;
+#endif
+}
 
 BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
                                PSNMPVarBindingList & vars,
@@ -164,8 +236,12 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
   PBYTEArray sendBuffer;
   pdu.Encode(sendBuffer);
 
+  if (sendBuffer.GetSize() > maxTxSize) {
+    lastErrorCode = TxDataTooBig;
+    return FALSE;
+  }
+
   varsOut.RemoveAll();
-  PBYTEArray readBuffer;
 
   PINDEX retry = retryMax;
 
@@ -178,18 +254,15 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
     }
 
     // receive a packet
-    if (Read(readBuffer.GetPointer(1500), 1500))
-      break;   // if we received some data, them we are done
-
-    // if no response, then return error code
-    if (--retry <= 0) {
-      lastErrorCode = NoResponse;
+    if (ReadRequest(readBuffer))
+      break;
+    else if (lastErrorCode != NoResponse)
       return FALSE;
-    }
+    else
+      retry--;
   }
 
   // parse the response
-  readBuffer.SetSize(GetLastReadCount());
   PASNSequence response(readBuffer);
   PINDEX seqLen = response.GetSize();
 
