@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.78 1996/11/30 12:08:42 robertj Exp $
+ * $Id: osutils.cxx,v 1.79 1996/12/05 11:44:22 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.79  1996/12/05 11:44:22  craigs
+ * Made indirect close from different thread less likely to have
+ * race condition
+ *
  * Revision 1.78  1996/11/30 12:08:42  robertj
  * Removed extraneous compiler warning.
  *
@@ -919,14 +923,18 @@ BOOL PIndirectChannel::Close()
 {
   flush();
 
-  if (readAutoDelete)
-    delete readChannel;
-
-  if (writeAutoDelete && readChannel != writeChannel)
-    delete writeChannel;
+  PChannel * r = readChannel;
+  PChannel * w = writeChannel;
 
   readChannel = NULL;
   writeChannel = NULL;
+
+  if (readAutoDelete)
+    delete r;
+
+  if (writeAutoDelete && r != w)
+    delete w;
+
   return TRUE;
 }
 
@@ -948,9 +956,15 @@ BOOL PIndirectChannel::Read(void * buf, PINDEX len)
   flush();
   readChannel->SetReadTimeout(readTimeout);
   BOOL ret = readChannel->Read(buf, len);
-  lastError = readChannel->GetErrorCode();
-  osError = readChannel->GetErrorNumber();
-  lastReadCount = readChannel->GetLastReadCount();
+  if (readChannel == NULL) {
+    lastError     = Interrupted;
+    osError       = EINTR;
+    lastReadCount = 0;
+  } else {
+    lastError = readChannel->GetErrorCode();
+    osError = readChannel->GetErrorNumber();
+    lastReadCount = readChannel->GetLastReadCount();
+  }
   return ret;
 }
 
@@ -961,9 +975,15 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
   flush();
   writeChannel->SetWriteTimeout(writeTimeout);
   BOOL ret = writeChannel->Write(buf, len);
-  lastError = writeChannel->GetErrorCode();
-  osError = writeChannel->GetErrorNumber();
-  lastWriteCount = writeChannel->GetLastWriteCount();
+  if (writeChannel == NULL) {
+    lastError      = Interrupted;
+    osError        = EINTR;
+    lastWriteCount = 0;
+  } else {
+    lastError = writeChannel->GetErrorCode();
+    osError = writeChannel->GetErrorNumber();
+    lastWriteCount = writeChannel->GetLastWriteCount();
+  }
   return ret;
 }
 
