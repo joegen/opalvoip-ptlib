@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.13.2.1  2003/10/07 02:50:22  csoutheren
+ * Initial checkin of pwlib code to do plugins.
+ * Modified from original code and concept provided by Snark of Gnomemeeting
+ *
  * Revision 1.13  2003/09/17 09:00:59  csoutheren
  * Moved PSmartPointer and PNotifier into seperate files
  * Added detection for system regex libraries on all platforms
@@ -283,6 +287,14 @@
 #undef TRY_1394AVC
 #undef TRY_1394DC
 
+
+/////////////////////////////////////////////////
+//
+//  Plugins
+//
+
+#undef P_HAS_PLUGINS
+#define P_DEFAULTPLUGINDIR "c:\\pwlib_plugins"
 
 /////////////////////////////////////////////////
 //
