@@ -17,7 +17,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
 
-DECLARE_CLASS(PFile,PContainer)
+DECLARE_CLASS(PFile, PContainer)
 
   public:
     PFile();
@@ -58,7 +58,7 @@ DECLARE_CLASS(PFile,PContainer)
     // New member functions
     PString GetFullName() const;
       // Return the full, unambiguous, path name for the file.
-      
+
     PString GetVolume() const;
       // Get the drive/volume name component of the full file specification.
       // Note this may not be relevent on some platforms and returns "".
@@ -75,33 +75,34 @@ DECLARE_CLASS(PFile,PContainer)
       // string.
 
 
-    BOOL Exists();
+    BOOL Exists() const;
     inline static BOOL Exists(const PString & name);
       // Return TRUE if the file exists.
       
-    BOOL Access(OpenMode mode);
+    BOOL Access(OpenMode mode) const;
     static BOOL Access(const PString & name, OpenMode mode);
       // Return TRUE if the file may be opened in the specified mode
       
-    BOOL Remove();
+    BOOL Remove() const;
     inline static BOOL Remove(const PString & name);
       // Delete the specified file.
       
     BOOL Rename(const PString & newname);
     inline static BOOL Rename(const PString & oldname, const PString & newname);
-      // Change the specified files name.
+      // Change the specified files name. Note that this object then refers to
+      // the new filename.
 
 
-    struct PStatus {
+    struct Status {
       PFileTypes type;
       PTime created;
       PTime modified;
       PTime accessed;
-      long  filesize;
-      PPermissions permission;
+      DWORD filesize;
+      int permissions;
     };
-    BOOL GetStatus(PStatus & status);
-    static BOOL GetStatus(const PString & name, PStatus & status);
+    BOOL GetStatus(Status & status) const;
+    static BOOL GetStatus(const PString & name, Status & status);
 
     BOOL Open(OpenMode  mode, int opts = Normal);
       // Open the file in the spcvified mode.
@@ -128,7 +129,11 @@ DECLARE_CLASS(PFile,PContainer)
       // Get the current active position in the file for the next read/write
       // operation.
       
-    enum FilePositionOrigin { Start = SEEK_SET, Current = SEEK_CUR, End = SEEK_END };
+    enum FilePositionOrigin {
+      Start = SEEK_SET,
+      Current = SEEK_CUR,
+      End = SEEK_END
+    };
     BOOL SetPosition(off_t pos, FilePositionOrigin origin = Start);
       // Set the current active position in the file for the next read/write
       // operation.
@@ -138,10 +143,11 @@ DECLARE_CLASS(PFile,PContainer)
 
     enum Errors {
       NoError,
-      EndOfFile,
       FileNotFound,
-      PathNotFound,
-      AccessDenied
+      FileExists,
+      DiskFull,
+      AccessDenied,
+      Miscellaneous
     };
     Errors LastError(PString * errtext = NULL);
       // Return the error result of the last file I/O operation in this object.
@@ -164,7 +170,5 @@ DECLARE_CLASS(PFile,PContainer)
     PString fullname;
       // The fully qualified path name for the file.
       
-    Errors lastError;
-
 
 // Class declaration continued in platform specific header file ///////////////
