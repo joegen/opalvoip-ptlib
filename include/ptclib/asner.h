@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.18  2001/04/12 03:25:22  robertj
+ * Fixed PASN_Boolean cosntructor to be compatible with usage in ASN parser.
+ * Changed all PASN_xxx types so constructor can take real type as only
+ *   parameter. eg PASN_OctetString s = "fred";
+ *
  * Revision 1.17  2001/03/21 03:32:35  robertj
  * Aded ability to get at the data bits buffer in a PASN_BitString
  *
@@ -233,9 +238,8 @@ class PASN_Boolean : public PASN_Object
 {
     PCLASSINFO(PASN_Boolean, PASN_Object);
   public:
-    PASN_Boolean(BOOL val = FALSE,
-                 unsigned tag = UniversalBoolean,
-                 TagClass tagClass = UniversalTagClass);
+    PASN_Boolean(BOOL val = FALSE);
+    PASN_Boolean(unsigned tag, TagClass tagClass, BOOL val = FALSE);
 
     PASN_Boolean & operator=(BOOL v) { value = v; return *this; }
     operator BOOL() const { return value; }
@@ -262,9 +266,8 @@ class PASN_Integer : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_Integer, PASN_ConstrainedObject);
   public:
-    PASN_Integer(unsigned tag = UniversalInteger,
-                 TagClass tagClass = UniversalTagClass,
-                 unsigned val = 0);
+    PASN_Integer(unsigned val = 0);
+    PASN_Integer(unsigned tag, TagClass tagClass, unsigned val = 0);
 
     PASN_Integer & operator=(unsigned value);
     operator unsigned() const { return value; }
@@ -295,8 +298,9 @@ class PASN_Enumeration : public PASN_Object
 {
     PCLASSINFO(PASN_Enumeration, PASN_Object);
   public:
-    PASN_Enumeration(unsigned tag = UniversalEnumeration,
-                     TagClass tagClass = UniversalTagClass,
+    PASN_Enumeration(unsigned val = 0);
+    PASN_Enumeration(unsigned tag,
+                     TagClass tagClass,
                      unsigned nEnums = P_MAX_INDEX,
                      BOOL extendable = FALSE,
                      unsigned val = 0);
@@ -339,9 +343,8 @@ class PASN_Real : public PASN_Object
 {
     PCLASSINFO(PASN_Real, PASN_Object);
   public:
-    PASN_Real(unsigned tag = UniversalEnumeration,
-              TagClass tagClass = UniversalTagClass,
-              double val = 0);
+    PASN_Real(double val = 0);
+    PASN_Real(unsigned tag, TagClass tagClass, double val = 0);
 
     PASN_Real & operator=(double val) { value = val; return *this; }
     operator double() const { return value; }
@@ -368,8 +371,8 @@ class PASN_ObjectId : public PASN_Object
 {
     PCLASSINFO(PASN_ObjectId, PASN_Object);
   public:
-    PASN_ObjectId(unsigned tag = UniversalObjectId,
-                  TagClass tagClass = UniversalTagClass);
+    PASN_ObjectId(const char * dotstr = NULL);
+    PASN_ObjectId(unsigned tag, TagClass tagClass);
 
     PASN_ObjectId(const PASN_ObjectId & other);
     PASN_ObjectId & operator=(const PASN_ObjectId & other);
@@ -409,15 +412,14 @@ class PASN_BitString : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_BitString, PASN_ConstrainedObject);
   public:
-    PASN_BitString(unsigned tag = UniversalBitString,
-                   TagClass tagClass = UniversalTagClass,
-                   unsigned nBits = 0);
+    PASN_BitString(unsigned nBits = 0, const BYTE * buf = NULL);
+    PASN_BitString(unsigned tag, TagClass tagClass, unsigned nBits = 0);
 
     PASN_BitString(const PASN_BitString & other);
     PASN_BitString & operator=(const PASN_BitString & other);
 
     void SetData(unsigned nBits, const PBYTEArray & bytes);
-    void SetData(unsigned nBits, const BYTE * buf, PINDEX size);
+    void SetData(unsigned nBits, const BYTE * buf, PINDEX size = 0);
 
     const BYTE * GetDataPointer() const { return bitData; }
 
@@ -456,8 +458,8 @@ class PASN_OctetString : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_OctetString, PASN_ConstrainedObject);
   public:
-    PASN_OctetString(unsigned tag = UniversalOctetString,
-                     TagClass tagClass = UniversalTagClass);
+    PASN_OctetString(const char * str = NULL, PINDEX size = 0);
+    PASN_OctetString(unsigned tag, TagClass tagClass);
 
     PASN_OctetString(const PASN_OctetString & other);
     PASN_OctetString & operator=(const PASN_OctetString & other);
@@ -507,6 +509,7 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     PASN_ConstrainedString & operator=(const PString & str) { return operator=((const char *)str); }
     operator const PString &() const { return value; }
     const PString & GetValue() const { return value; }
+    void SetValue(const char * v) { operator=(v); }
     void SetValue(const PString & v) { operator=(v); }
     char operator[](PINDEX idx) const { return value[idx]; }
 
@@ -545,8 +548,8 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
   class PASN_##name##String : public PASN_ConstrainedString { \
     PCLASSINFO(PASN_##name##String, PASN_ConstrainedString); \
     public: \
-      PASN_##name##String(unsigned tag = UniversalNumericString, \
-                          TagClass tagClass = UniversalTagClass); \
+      PASN_##name##String(const char * str = NULL); \
+      PASN_##name##String(unsigned tag, TagClass tagClass); \
       PASN_##name##String & operator=(const char * str); \
       PASN_##name##String & operator=(const PString & str); \
       virtual PObject * Clone() const; \
@@ -566,8 +569,9 @@ class PASN_BMPString : public PASN_ConstrainedObject
 {
     PCLASSINFO(PASN_BMPString, PASN_ConstrainedObject);
   public:
-    PASN_BMPString(unsigned tag = UniversalBMPString,
-                   TagClass tagClass = UniversalTagClass);
+    PASN_BMPString(const char * str = NULL);
+    PASN_BMPString(const PWORDArray & wstr);
+    PASN_BMPString(unsigned tag, TagClass tagClass);
 
     PASN_BMPString(const PASN_BMPString & other);
     PASN_BMPString & operator=(const PASN_BMPString & other);
@@ -600,6 +604,7 @@ class PASN_BMPString : public PASN_ConstrainedObject
     void EncodePER(PPER_Stream & strm) const;
 
   protected:
+    void Construct();
     BOOL IsLegalCharacter(WORD ch);
 
     PWORDArray value;
