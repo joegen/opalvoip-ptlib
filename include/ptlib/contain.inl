@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.49  2004/01/18 13:43:48  rjongbloed
+ * Fixed broken PString::MakeEmpty() function and moved implementations to .inl file.
+ *
  * Revision 1.48  2002/10/31 05:52:37  robertj
  * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
  *   there are far too many inheerent assumptions every to make it 16 bit.
@@ -212,7 +215,7 @@ PINLINE BOOL PContainer::IsUnique() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PString::PString()
-  : PCharArray(Empty()) { }
+  : PCharArray(1) { }
 
 PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
@@ -222,6 +225,12 @@ PINLINE PString::PString(int, const PString * str)
 
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
+
+PINLINE PString PString::Empty()
+  { return PString(); }
+
+PINLINE PString & PString::MakeEmpty()
+  { SetSize(1); *theArray = '\0'; return *this; }
 
 PINLINE PString & PString::operator=(const PString & str)
   { AssignContents(str); return *this; }
