@@ -35,9 +35,24 @@ OBJS		:= $(SOURCES:cxx=o) $(OBJS)
 OBJS		:= $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(OBJS)))
 
 #
+# create list of dependency files 
+#
+DEPDIR		:= $(OBJDIR)
+DEPS		:= $(SOURCES:cxx=dep)
+DEPS		:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
+
+#
+# define rule for .dep files
+#
+$(DEPDIR)/%.dep : %.cxx 
+	@if [ ! -d $(DEPDIR) ] ; then mkdir $(DEPDIR) ; fi
+	@echo -n $(OBJDIR)/ > $@
+	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
+
+#
 # add in good files to delete
 #
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS)
+CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS) $(DEPS)
 CLEAN_FILES	:= $(CLEAN_FILES) core
 
 ######################################################################
@@ -81,10 +96,9 @@ endif
 #
 ######################################################################
 
-depend: $(SOURCES)
-	@md -- $(STDCCFLAGS) -- $(SOURCES)
-	@mv Makefile Makefile.bak
-	@sed '/^# Do not delete/,$$s%$(PWLIBDIR)%$$(PWLIBDIR)%g' < Makefile.bak > Makefile
+depend: $(DEPS)
+
+
 
 ######################################################################
 #
@@ -171,4 +185,10 @@ $(RESCXX) $(RESCODE) $(RESHDR): $(RESOURCE)
 
 endif
 endif
+
+
+#
+# Include all of the dependencies
+#
+-include $(DEPDIR)/*.dep
 
