@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.7  1998/10/13 14:06:34  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.6  1998/09/23 06:22:40  robertj
  * Added open source copyright license.
  *
@@ -49,6 +52,8 @@
 
 #include <ptlib.h>
 #include <psnmp.h>
+
+#define new PNEW
 
 
 #define	SNMP_VERSION		0
@@ -85,7 +90,7 @@ PSNMPClient::PSNMPClient(const PString & host, PINDEX retry,
    maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
-  Open(PNEW PUDPSocket(host, SNMP_PORT));
+  Open(new PUDPSocket(host, SNMP_PORT));
   requestId = rand() % 0x7fffffff;
 }
 
@@ -232,8 +237,8 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
                                PSNMPVarBindingList & varsOut)
 {
   PASNSequence pdu;
-  PASNSequence * pduData     = PNEW PASNSequence((BYTE)requestCode);
-  PASNSequence * bindingList = PNEW PASNSequence();
+  PASNSequence * pduData     = new PASNSequence((BYTE)requestCode);
+  PASNSequence * bindingList = new PASNSequence();
 
   lastErrorIndex = 0;
 
@@ -253,7 +258,7 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
   // build the binding list
   PINDEX i;
   for (i = 0; i < vars.GetSize(); i++) {
-    PASNSequence * binding = PNEW PASNSequence();
+    PASNSequence * binding = new PASNSequence();
     bindingList->Append(binding);
     binding->AppendObjectID(vars.GetObjectID(i));
     binding->Append((PASNObject *)vars[i].Clone());
@@ -453,8 +458,8 @@ void PSNMP::WriteTrap(                 PChannel & channel,
                        const PIPSocket::Address & agentAddress)
 {
   PASNSequence pdu;
-  PASNSequence * pduData     = PNEW PASNSequence((BYTE)Trap);
-  PASNSequence * bindingList = PNEW PASNSequence();
+  PASNSequence * pduData     = new PASNSequence((BYTE)Trap);
+  PASNSequence * bindingList = new PASNSequence();
 
   // build a trap PDU PDU
   pdu.AppendInteger(1);
@@ -463,15 +468,15 @@ void PSNMP::WriteTrap(                 PChannel & channel,
 
   // build the PDU data
   pduData->AppendObjectID(enterprise);               // enterprise
-  pduData->Append(PNEW PASNIPAddress(agentAddress)); // agent address
+  pduData->Append(new PASNIPAddress(agentAddress)); // agent address
   pduData->AppendInteger((int)trapType);             // trap type
   pduData->AppendInteger(specificTrap);              // specific trap
-  pduData->Append(PNEW PASNTimeTicks(timeTicks));    // time of event
+  pduData->Append(new PASNTimeTicks(timeTicks));    // time of event
   pduData->Append(bindingList);                      // binding list
 
   // build the binding list
   for (PINDEX i = 0; i < vars.GetSize(); i++) {
-    PASNSequence * binding = PNEW PASNSequence();
+    PASNSequence * binding = new PASNSequence();
     bindingList->Append(binding);
     binding->AppendObjectID(vars.GetObjectID(i));
     binding->Append((PASNObject *)vars[i].Clone());
