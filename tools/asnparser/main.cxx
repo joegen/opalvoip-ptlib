@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.43  2003/02/26 01:57:44  robertj
+ * Added XML encoding rules to ASN system, thanks Federico Pinna
+ *
  * Revision 1.42  2003/02/19 14:18:55  craigs
  * Fixed ifdef problem with multipart cxx files
  *
@@ -350,6 +353,7 @@ void App::Main()
              "o-output:"
              "m-module:"
              "r-rename:"
+             "x-xml."
              "-classheader:"
              "-classheaderfile:");
 
@@ -378,6 +382,7 @@ void App::Main()
               "  -o --output file    Output filename/directory\n"
               "  -m --module name    Module name prefix/namespace\n"
               "  -r --rename from=to Rename import module\n"
+              "  -x --xml            X.693 support (XER)\n"
            << endl;
     return;
   }
@@ -1701,6 +1706,8 @@ TypeBase * EnumeratedType::FlattenThisType(const TypeBase & parent)
 void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   PINDEX i;
+  PArgList & args = PProcess::Current().GetArguments();
+  BOOL xml_output = args.HasOption('x');
 
   BeginGenerateCplusplus(hdr, cxx);
 
@@ -1744,6 +1751,60 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "    )\n"
          "{\n";
   GenerateCplusplusConstraints(PString(), hdr, cxx);
+
+  if (xml_output)
+  {
+    hdr << "    BOOL DecodeXER(PXER_Stream & strm);\n"
+           "    void EncodeXER(PXER_Stream & strm) const;\n";
+
+    cxx << "}\n"
+           "\n"
+        << GetTemplatePrefix()
+        << "BOOL " << GetClassNameString() << "::DecodeXER(PXER_Stream & strm)\n"
+           "{\n"
+           "  PXMLElement * elem = strm.GetCurrentElement();\n"
+           "  PXMLObject * sub_elem = elem->GetElement();\n"
+           "\n"
+           "  if (!elem || !elem->IsElement())\n"
+           "    return FALSE;\n"
+           "\n"
+           "  PCaselessString id = ((PXMLElement *)sub_elem)->GetName();\n"
+           "\n"
+           " ";
+
+    for (i = 0 ; i < enumerations.GetSize() ; i++) {
+      cxx << " if (id == \"" << enumerations[i].GetName() << "\") {\n"
+             "    value = " << enumerations[i].GetNumber() << ";\n"
+             "    return TRUE;\n"
+             "  }\n"
+             "  else";
+    }
+
+    cxx << "\n"
+           "    return FALSE;\n"
+           "}\n"
+           "\n";
+
+    cxx << GetTemplatePrefix()
+        << "void " << GetClassNameString() << "::EncodeXER(PXER_Stream & strm) const\n"
+           "{\n"
+           "  PXMLElement * elem = strm.GetCurrentElement();\n"
+           "  PString id;\n"
+           "\n"
+           "  switch(value)\n"
+           "  {\n";
+
+    for (i = 0 ; i < enumerations.GetSize() ; i++) {
+      cxx << "  case " << enumerations[i].GetNumber() << ":\n"
+             "    elem->AddChild(new PXMLElement(elem, \"" << enumerations[i].GetName() << "\"));\n"
+             "    break;\n";
+    }
+
+    cxx << "  default:\n"
+           "    break;\n"
+           "  }\n";
+  }
+
   EndGenerateCplusplus(hdr, cxx);
 }
 
@@ -1963,6 +2024,9 @@ BOOL SequenceType::IsPrimitiveType() const
 
 void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
+  PArgList & args = PProcess::Current().GetArguments();
+  BOOL xml_output = args.HasOption('x');
+
   PINDEX i;
 
   BeginGenerateCplusplus(hdr, cxx);
@@ -2017,6 +2081,16 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "#ifndef PASN_NOPRINTON\n"
          "    void PrintOn(ostream & strm) const;\n"
          "#endif\n";
+
+  if (xml_output)
+  {
+    hdr << "    BOOL PreambleDecodeXER(PXER_Stream & strm);\n";
+
+    if (fields.GetSize())
+      hdr << "    void PreambleEncodeXER(PXER_Stream &) const;\n";
+  }
+
+
   if (numFields > 0)
     hdr << "    Comparison Compare(const PObject & obj) const;\n";
 
@@ -2053,6 +2127,76 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "#endif\n"
          "\n"
          "\n";
+
+  if (xml_output)
+  {
+    cxx << GetTemplatePrefix()
+        << "BOOL " << GetClassNameString() << "::PreambleDecodeXER(PXER_Stream & strm)\n"
+           "{\n";
+
+    if (fields.GetSize())
+    {
+      cxx << "  PXMLElement * elem = strm.GetCurrentElement();\n"
+             "  PXMLElement * sub_elem;\n"
+             "  BOOL result;\n"
+             "\n";
+
+      for (i = 0; i < fields.GetSize(); i++)
+      {
+        PString id = fields[i].GetIdentifier();
+        cxx << "  if ((sub_elem = (PXMLElement *)elem->GetElement(\"" << id << "\")) && sub_elem->IsElement())\n"
+               "  {\n";
+
+        if (i >= numFields || fields[i].IsOptional())
+          cxx << "    IncludeOptionalField(e_" << id << ");\n";
+
+        cxx << "    strm.SetCurrentElement(sub_elem);\n"
+               "    result = m_" << id << ".Decode(strm);\n"
+               "    strm.SetCurrentElement(sub_elem);\n"
+               "    if (!result)\n"
+               "      return FALSE;\n"
+               "  }\n"
+               "\n";
+      }
+    }
+
+    cxx << "  return TRUE;\n"
+           "}\n"
+           "\n";
+
+    if (fields.GetSize())
+    {
+      cxx << GetTemplatePrefix()
+          << "void " << GetClassNameString() << "::PreambleEncodeXER(PXER_Stream & strm) const\n"
+             "{\n";
+
+      cxx << "  PXMLElement * elem = strm.GetCurrentElement();\n"
+             "  PXMLElement * sub_elem;\n"
+             "\n";
+
+      for (i = 0; i < fields.GetSize(); i++)
+      {
+        PString id = fields[i].GetIdentifier();
+
+        if (i >= numFields || fields[i].IsOptional())
+          cxx << "  if (HasOptionalField(e_" << id << "))\n"
+                 "  {\n";
+
+        cxx << "    sub_elem = elem->AddChild(new PXMLElement(elem, \"" << id << "\"));\n"
+               "    strm.SetCurrentElement(sub_elem);\n"
+               "    m_" << id << ".Encode(strm);\n";
+
+        if (i >= numFields || fields[i].IsOptional())
+          cxx << "  }\n";
+
+        cxx << "\n";
+      }
+
+      cxx << "  strm.SetCurrentElement(elem);\n"
+             "}\n"
+             "\n";
+    }
+  }
 
   if (numFields > 0) {
     cxx << GetTemplatePrefix()
@@ -2100,6 +2244,12 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "  if (!PreambleDecode(strm))\n"
          "    return FALSE;\n\n";
 
+  if (xml_output)
+  {
+    cxx << "  if (strm.IsDescendant(\"PXER_Stream\"))\n"
+           "    return TRUE;\n\n";
+  }
+
   for (i = 0; i < numFields; i++) {
     cxx << "  if (";
     if (fields[i].IsOptional())
@@ -2123,6 +2273,12 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
       << "void " << GetClassNameString() << "::Encode(PASN_Stream & strm) const\n"
          "{\n"
          "  PreambleEncode(strm);\n\n";
+
+  if (xml_output)
+  {
+    cxx << "  if (strm.IsDescendant(\"PXER_Stream\"))\n"
+           "    return;\n\n";
+  }
 
   for (i = 0; i < numFields; i++) {
     if (fields[i].IsOptional())
@@ -2470,7 +2626,6 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   }
 
   else {
-
     // declare an array of flags indicating whether the tag has been output or not
     PBYTEArray flags(fields.GetSize());
     for (i = 0; i < fields.GetSize(); i++)
@@ -3575,6 +3730,8 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                                          BOOL useInlines,
                                          BOOL verbose)
 {
+  PArgList & args = PProcess::Current().GetArguments();
+  BOOL xml_output = args.HasOption('x');
   PINDEX i;
 
   usingInlines = useInlines;
@@ -3684,8 +3841,13 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
              "#ifdef P_USE_PRAGMA\n"
              "#pragma interface\n"
              "#endif\n"
-             "\n"
-             "#include <ptclib/asner.h>\n"
+             "\n";
+
+  if (xml_output)
+    hdrFile << "#define P_EXPAT 1\n"
+               "#include <ptclib/pxml.h>\n";
+
+  hdrFile << "#include <ptclib/asner.h>\n"
              "\n";
 
   // Start the first (and maybe only) cxx file
