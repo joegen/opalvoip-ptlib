@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.34 1995/01/07 04:39:38 robertj Exp $
+ * $Id: pwlib.h,v 1.35 1995/01/22 07:29:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.34  1995/01/07 04:39:38  robertj
+ * Revision 1.35  1995/01/22 07:29:39  robertj
+ * Added font & colour standard dialogs.
+ *
+ * Revision 1.34  1995/01/07  04:39:38  robertj
  * Redesigned font enumeration code and changed font styles.
  *
  * Revision 1.33  1994/10/23  04:53:25  robertj
@@ -469,6 +472,18 @@
 // PPrintJobDialog
 
 #include <prjobdlg.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFontDialog
+
+#include <fontdlg.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PColourDialog
+
+#include <colordlg.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
