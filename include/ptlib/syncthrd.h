@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.5  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.4  1998/11/30 02:52:01  robertj
  * New directory structure
  *
@@ -53,7 +56,9 @@
 #include <ptlib/syncpoint.h>
 
 
-PDECLARE_CLASS(PSyncPointAck, PSyncPoint)
+class PSyncPointAck : public PSyncPoint
+{
+  PCLASSINFO(PSyncPointAck, PSyncPoint)
 /* This class defines a thread synchonisation object.
 
    This may be used to send signals to a thread and await an acknowldegement
@@ -88,7 +93,9 @@ PDECLARE_CLASS(PSyncPointAck, PSyncPoint)
 };
 
 
-PDECLARE_CLASS(PCondMutex, PMutex)
+class PCondMutex : public PMutex
+{
+  PCLASSINFO(PCondMutex, PMutex)
 /* This class defines a thread synchonisation object.
 
    This is a special type of mutual exclusion, where a thread wishes to get
@@ -124,7 +131,9 @@ PDECLARE_CLASS(PCondMutex, PMutex)
 };
 
 
-PDECLARE_CLASS(PIntCondMutex, PCondMutex)
+class PIntCondMutex : public PCondMutex
+{
+  PCLASSINFO(PIntCondMutex, PCondMutex)
 /* This class defines a thread synchonisation object.
 
    This is a PCondMutex for which the conditional is the value of an integer.
@@ -175,7 +184,9 @@ PDECLARE_CLASS(PIntCondMutex, PCondMutex)
 };
 
 
-PDECLARE_CLASS(PReadWriteMutex, PObject)
+class PReadWriteMutex : public PObject
+{
+  PCLASSINFO(PReadWriteMutex, PObject)
 /* This class defines a thread synchonisation object.
 
    This is a special type of mutual exclusion, where the excluded area may

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.15  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.14  1998/10/13 14:06:15  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -146,7 +149,9 @@ class PSystemLog : public PObject, public iostream {
 
 
 
-PDECLARE_CLASS(PServiceProcess, PProcess)
+class PServiceProcess : public PProcess
+{
+  PCLASSINFO(PServiceProcess, PProcess)
 /* A process type that may be a service under the Windows NT operating system.
  */
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.14  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.13  1998/09/23 06:21:47  robertj
  * Added open source copyright license.
  *
@@ -74,7 +77,9 @@
 #pragma interface
 #endif
 
-PDECLARE_CLASS(PUDPSocket, PIPDatagramSocket)
+class PUDPSocket : public PIPDatagramSocket
+{
+  PCLASSINFO(PUDPSocket, PIPDatagramSocket)
 /* Create a socket channel that uses the UDP transport on the Internal
    Protocol.
  */
