@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.136  2004/05/21 00:28:40  csoutheren
+ * Moved PProcessStartup creation to PProcess::Initialise
+ * Added PreShutdown function and called it from ~PProcess to handle PProcessStartup removal
+ *
  * Revision 1.135  2004/04/09 06:52:18  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -1444,6 +1448,9 @@ void PProcess::SignalTimerChange()
 
 PProcess::~PProcess()
 {
+  // do whatever needs to shutdown
+  PreShutdown();
+
   Sleep(100);  // Give threads time to die a natural death
 
   // Get rid of the house keeper (majordomocide)
