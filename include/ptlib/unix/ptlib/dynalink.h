@@ -1,5 +1,5 @@
 /*
- * $Id: dynalink.h,v 1.2 1996/08/03 12:08:19 craigs Exp $
+ * $Id: dynalink.h,v 1.3 1997/04/22 11:00:44 craigs Exp $
  */
 
 #ifndef _PDYNALINK
@@ -10,6 +10,8 @@
 // PDynaLink
 
 #include "../../common/ptlib/dynalink.h"
+  protected:
+    void * dllHandle;
 };
 
 
