@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.6  2004/05/19 06:48:39  csoutheren
+ * Added new functions to allow handling of singletons without concrete classes
+ *
  * Revision 1.5  2004/05/18 06:01:06  csoutheren
  * Deferred plugin loading until after main has executed by using abstract factory classes
  *
@@ -71,7 +74,7 @@
  *
  * To instantiate the an object of type B, use the following
  *
- *       B * codec = PGenericFactory<A>::CreateInstance("B");
+ *       A * b = PGenericFactory<A>::CreateInstance("B");
  *
  * A vector containing the names of all of the concrete classes for an
  * abstract type can be obtained as follows:
@@ -83,8 +86,8 @@
  * is needed, then it is necessary to specify the key type:
  *
  *       PAbstractFactory<C, D, unsigned> aFactory(42);
- *       C * codec = PGenericFactory<A, unsigned>::CreateInstance(42);
- *       std::vector<unsigned> list = PGenericFactory<A, unsigned>::GetKeyList()
+ *       C * d = PGenericFactory<C, unsigned>::CreateInstance(42);
+ *       std::vector<unsigned> list = PGenericFactory<C, unsigned>::GetKeyList()
  *
  * Finally, note that the factory lists are all thread safe for addition,
  * creation, and obtaining the key lists
@@ -96,9 +99,14 @@ class PGenericFactory
 {
   public:
     typedef AbstractType * (*CreatorFunctionType)();
-    struct AbstractInfo {
-      CreatorFunctionType creator;
-      BOOL isSingleton;
+    class AbstractInfo {
+      public:
+        AbstractInfo()
+          : creator(NULL), isSingleton(FALSE), instance(NULL)
+        { }
+        CreatorFunctionType creator;
+        BOOL isSingleton;
+        AbstractType * instance;
     };
 
     typedef std::map<TypeKey, AbstractInfo> KeyMap;
@@ -113,19 +121,28 @@ class PGenericFactory
       KeyMap & keyMap = GetKeyMap();
       AbstractType * instance = NULL;
       typename KeyMap::const_iterator entry = keyMap.find(key);
-      if (entry != keyMap.end())
-        instance = (*(entry->second.creator))();
+      if (entry != keyMap.end()) {
+        if (entry->second.isSingleton && entry->second.instance != NULL)
+          instance = entry->second.instance;
+        else if (entry->second.creator != NULL)
+          instance = (*(entry->second.creator))();
+      }
       return instance;
     }
 
     static void Register(const TypeKey & key, CreatorFunctionType func, BOOL isSingleton)
     {
-      PWaitAndSignal m(GetMutex());
-      KeyMap & keyMap = GetKeyMap();
       AbstractInfo info;
       info.creator     = func;
       info.isSingleton = isSingleton;
-      keyMap[key] = info;
+      Register(key, info);
+    }
+
+    static void Register(const TypeKey & key, AbstractInfo info)
+    {
+      PWaitAndSignal m(GetMutex());
+      KeyMap & keyMap = GetKeyMap();
+      keyMap[key]     = info;
     }
 
     static BOOL IsSingleton(const TypeKey & key)
