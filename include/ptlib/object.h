@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.41  1999/02/23 07:11:26  robertj
+ * Improved trace facility adding trace levels and #define to remove all trace code.
+ *
  * Revision 1.40  1999/02/22 10:48:14  robertj
  * Fixed delete operator prototypes for MSVC6 and GNU compatibility.
  *
@@ -281,36 +284,64 @@ void PSetErrorStream(ostream *);
 ///////////////////////////////////////////////////////////////////////////////
 // Debug and tracing
 
-ostream & PGetTraceStream();
+#if !defined(PTRACING) && defined(_DEBUG)
+#define PTRACING
+#endif
+
 void PSetTraceStream(ostream *);
+void PSetTraceBlock(BOOL enable);
+void PSetTraceLevel(unsigned level);
+BOOL PCanTrace(unsigned level);
+
+ostream & PBeginTrace(const char * fileName, int lineNum);
+ostream & PEndTrace(ostream & s);
+/* If these are used outside of the provided macros, it should be noted that
+   the PEndTrace function must be used at the end of the section of trace
+   output. A mutex is obtained on the call to PBeginTrace which will prevent
+   any other threads from using the trace stream until the PEndTrace. The
+   PEndTrace is used in a similar manner to ::endl or ::flush;
+ */
 
 class PTraceBlock {
 /* This class is used for tracing the entry and exit of program blocks.
  */
   public:
-    inline PTraceBlock(const char * traceName)
-      { PGetTraceStream() << "Entering: " << (name = traceName) << endl; }
-    inline ~PTraceBlock()
-      { PGetTraceStream() << "Leaving : " << name << endl; }
+    PTraceBlock(const char * fileName, int lineNum, const char * traceName);
+    ~PTraceBlock();
   private:
+    const char * file;
+    int          line;
     const char * name;
 };
+
+
+#ifdef PTRACING
 
 /*$MACRO PTRACE_BLOCK(name)
    This macro creates a trace variable for tracking the entry and exit of
    program blocks.
  */
-#define PTRACE_BLOCK(n) PTraceBlock __trace_block_instance(n)
+#define PTRACE_BLOCK(n) PTraceBlock __trace_block_instance(__FILE__, __LINE__, n)
 
 /*$MACRO PTRACE_LINE(name)
    This macro outputs a trace of a file line execution.
  */
-#define PTRACE_LINE() PGetTraceStream() << __FILE__ << '(' << __LINE__ << ')' << endl
+#define PTRACE_LINE() \
+    if (!PCanTrace(1)) ; else PBeginTrace(__FILE__, __LINE__) << PEndTrace
 
 /*$MACRO PTRACE(name)
    This macro outputs a trace of a file line execution.
  */
-#define PTRACE(a) PGetTraceStream() << __FILE__ << '(' << __LINE__ << ')' << ' ' << a << endl
+#define PTRACE(level, a) \
+    if (!PCanTrace(level)) ; else PBeginTrace(__FILE__, __LINE__) << a << PEndTrace
+
+#else
+
+#define PTRACE_BLOCK(n)
+#define PTRACE_LINE()
+#define PTRACE(level, a)
+
+#endif
 
 
 #ifdef PMEMORY_CHECK
