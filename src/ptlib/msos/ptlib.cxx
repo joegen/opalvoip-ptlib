@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.32 1998/03/20 03:20:16 robertj Exp $
+ * $Id: ptlib.cxx,v 1.33 1998/03/29 06:16:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.33  1998/03/29 06:16:51  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.32  1998/03/20 03:20:16  robertj
  * Added MSVC RT debug support.
  *
@@ -683,15 +686,15 @@ BOOL PTextFile::WriteLine(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-int PProcess::_main(int argc, char ** argv, char **)
+void PProcess::Construct()
 {
 #ifdef _DEBUG
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 #endif
+
   PSetErrorStream(&cerr);
-  PreInitialise(argc, argv);
 
 #if !defined(_WIN32) && defined(_MSC_VER) && defined(_WINDOWS)
   _wsetscreenbuf(1, _WINBUFINF);
@@ -701,9 +704,7 @@ int PProcess::_main(int argc, char ** argv, char **)
   _wsetsize(1, &ws);
 #endif
 
-  Main();
-
-  return terminationValue;
+  houseKeeper = NULL;
 }
 
 
