@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.143  2002/12/04 00:52:59  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.142  2002/12/02 12:25:08  craigs
  * Fixed problem with error code from gethostbyname_r not being checked correctly
  *
@@ -907,7 +910,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #endif
 
     int retry = 3;
-    int localErrNo;
+    int localErrNo = NETDB_SUCCESS;
     do {
 #if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || ( defined(__NUCLEUS_PLUS__) ) )
       // this function should really be a static on PIPSocket, but this would
