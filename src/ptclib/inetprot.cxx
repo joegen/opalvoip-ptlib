@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.58  2005/04/06 07:56:58  dsandras
+ * Added continuation line support in MimeInfo to fix problem reported by Jan Schiefer thanks to Craig Southeren.
+ *
  * Revision 1.57  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -730,12 +733,20 @@ void PMIMEInfo::ReadFrom(istream &strm)
   RemoveAll();
 
   PString line;
+  PString lastLine;
   while (strm.good()) {
     strm >> line;
     if (line.IsEmpty())
       break;
-    AddMIME(line);
+    if (line[0] == ' ') 
+      lastLine += line;
+    else {
+      AddMIME(lastLine);
+      lastLine = line;
+    }
   }
+  if (!lastLine.IsEmpty())
+    AddMIME(line);
 }
 
 
