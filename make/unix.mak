@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.123  2002/04/02 15:07:02  rogerh
+# Specify path to expat header and library if expat is in /usr/local.
+# Required for FreeBSD. Reported by Vlad Marchenko <vlad@infonet.com.ua>
+#
 # Revision 1.122  2002/03/15 01:14:12  robertj
 # Added search for expat library in /usr/local as well as /usr
 #
@@ -1165,12 +1169,21 @@ HAS_OPENSSL	= 1
 endif
 endif
 
+
 # define expat (XML parser) variables if installed
-ifneq (,$(wildcard /usr/include/expat.h)$(wildcard /usr/local/include/expat.h))
+ifneq (,$(wildcard /usr/include/expat.h))
 HAS_EXPAT	= 1
 ENDLDLIBS	+= -lexpat
 STDCCFLAGS	+= -DP_EXPAT
 endif
+
+ifneq (,$(wildcard /usr/local/include/expat.h))
+HAS_EXPAT	= 1
+ENDLDLIBS	+= -lexpat
+STDCCFLAGS	+= -DP_EXPAT -I /usr/local/include
+LDFLAGS		+= -L /usr/local/lib
+endif
+
 
 # define ESDDIR variables if installed
 ifdef  ESDDIR
