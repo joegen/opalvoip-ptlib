@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.121  2002/02/25 22:58:04  robertj
+# Moved GCC 3 version check to after CPLUS is assured to be defined.
+#
 # Revision 1.120  2002/02/25 19:51:18  dereks
 # Update Firewire test routine. Thanks Ryutaroh
 #
@@ -534,16 +537,6 @@ endif
 STDCCFLAGS += -Wall
 
 
-# We want to be GCC 3.0 compatible
-GCC_VER = $(shell $(CPLUS) --version | sed 's/\..*//' )
-ifeq    ($(GCC_VER),3)
-USE_GCC3 = 1
-endif
-
-ifdef USE_GCC3
-STDCCFLAGS	+= -DGCC3 -D__USE_STL__
-endif
-
 ####################################################
 
 ifeq ($(OSTYPE),linux)
@@ -983,6 +976,18 @@ ifndef RANLIB
 RANLIB := ranlib
 endif
 
+
+# We want to be GCC 3.0 compatible
+ifeq ($(shell $(CPLUS) --version | sed 's/\..*//'),3)
+USE_GCC3 = 1
+endif
+
+ifdef USE_GCC3
+STDCCFLAGS	+= -DGCC3 -D__USE_STL__
+endif
+
+
+# Further configuration
 
 ifndef ENDIAN
 ENDIAN		:= PLITTLE_ENDIAN
