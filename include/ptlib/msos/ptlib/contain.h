@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.2 1994/06/25 12:13:01 robertj Exp $
+ * $Id: contain.h,v 1.3 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Revision 1.3  1994/07/02 03:18:09  robertj
+ * Support for 16 bit systems.
+ *
+ * Revision 1.2  1994/06/25  12:13:01  robertj
  * Synchronisation.
  *
  * Revision 1.1  1994/04/01  14:38:42  robertj
@@ -32,6 +35,8 @@
 
 #define TRUE 1
 #define FALSE 0
+
+#define NEAR __near
 
 #endif
 
