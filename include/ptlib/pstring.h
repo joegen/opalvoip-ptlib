@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.9 1995/03/14 12:42:16 robertj Exp $
+ * $Id: pstring.h,v 1.10 1995/04/02 09:27:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.10  1995/04/02 09:27:23  robertj
+ * Added "balloon" help.
+ *
  * Revision 1.9  1995/03/14 12:42:16  robertj
  * Updated documentation to use HTML codes.
  *
@@ -85,6 +88,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     PString(
       const char * cstr // Standard '\0' terminated C string.
     );
+    PString(
+      const WORD * ustr // Unicode null terminated string.
+    );
     /* Create a string from the C string array. This is most commonly used with
        a literal string, eg "hello". A new memory block is allocated of a size
        sufficient to take the length of the string and its terminating
@@ -98,7 +104,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
       const char * cstr,  // Pointer to a string of characters.
       PINDEX len          // Length of the string in bytes.
     );
-    /* Create a string from the char array. A new memory block is allocated of
+    PString(
+      const WORD * cstr,  // Pointer to a string of Unicode characters.
+      PINDEX len          // Length of the string in bytes.
+    );
+    /* Create a string from the array. A new memory block is allocated of
        a size equal to <CODE>len</CODE> plus one which is sufficient to take
        the string and a terminating '\0' character.
 
