@@ -2189,7 +2189,6 @@ EXPORTS
     ?GetDefaultDevice@PVideoChannel@@SA?AVPString@@W4Directions@1@@Z @3439 NONAME ;public: static class PString  __cdecl PVideoChannel::GetDefaultDevice(enum PVideoChannel::Directions)
     ?GetDefaultSection@PConfig@@QBE?AVPString@@XZ @1440 NONAME ;public: class PString  __thiscall PConfig::GetDefaultSection(void)const 
     ?GetDeviceID@PSoundChannel@@AAEHABVPString@@W4Directions@1@AAI@Z @4186 NONAME ;private: int __thiscall PSoundChannel::GetDeviceID(class PString const &,enum PSoundChannel::Directions,unsigned int &)
-    ?GetDeviceNames@PFakeVideoInputDevice@@UBE?AVPStringList@@XZ @3475 NONAME ;public: virtual class PStringList  __thiscall PFakeVideoInputDevice::GetDeviceNames(void)const 
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringArray@@W4Directions@1@@Z @2685 NONAME ;public: static class PStringArray  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
     ?GetDeviceNames@PVideoChannel@@SA?AVPStringList@@W4Directions@1@@Z @3440 NONAME ;public: static class PStringList  __cdecl PVideoChannel::GetDeviceNames(enum PVideoChannel::Directions)
     ?GetDeviceNames@PVideoInputDevice@@UBE?AVPStringList@@XZ @3365 NONAME ;public: virtual class PStringList  __thiscall PVideoInputDevice::GetDeviceNames(void)const 
@@ -2267,6 +2266,7 @@ EXPORTS
     ?GetInfo@PFile@@QAEHAAVPFileInfo@@@Z @1488 NONAME ;public: int __thiscall PFile::GetInfo(class PFileInfo &)
     ?GetInfo@PFile@@SAHABVPFilePath@@AAVPFileInfo@@@Z @1489 NONAME ;public: static int __cdecl PFile::GetInfo(class PFilePath const &,class PFileInfo &)
     ?GetInitialVal@PSemaphore@@QBEIXZ @4346 NONAME ;public: unsigned int __thiscall PSemaphore::GetInitialVal(void)const 
+    ?GetInputDeviceNames@PFakeVideoInputDevice@@SA?AVPStringList@@XZ @4348 NONAME ;public: static class PStringList  __cdecl PFakeVideoInputDevice::GetInputDeviceNames(void)
     ?GetInputDeviceNames@PVideoInputDevice@@SA?AVPStringList@@XZ @3693 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetInputDeviceNames(void)
     ?GetInputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1490 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetInputFlowControl(void)const 
     ?GetInt64@PConfig@@QBE_JABVPString@@0_J@Z @1491 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,class PString const &,__int64)const 
