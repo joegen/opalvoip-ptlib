@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.53  2001/03/29 04:48:45  robertj
+# Added tagbuild target to do CVS tag and autoincrement BUILD_NUMBER
+# Changed order so version.h is used before custom.cxx
+#
 # Revision 1.52  2001/03/23 19:59:48  craigs
 # Added detection of broken gcc versions
 #
@@ -304,11 +308,11 @@ ifndef VERSION_FILE
   ifneq (,$(wildcard buildnum.h))
     VERSION_FILE := buildnum.h
   else
-    ifneq (,$(wildcard custom.cxx))
-      VERSION_FILE := custom.cxx
+    ifneq (,$(wildcard version.h))
+      VERSION_FILE := version.h
     else
-      ifneq (,$(wildcard version.h))
-        VERSION_FILE := version.h
+      ifneq (,$(wildcard custom.cxx))
+        VERSION_FILE := custom.cxx
       endif
     endif
   endif
@@ -355,7 +359,10 @@ ifndef VERSION
 release ::
 	@echo Must define VERSION macro or have version.h/custom.cxx file.
 
-else
+tagbuild ::
+	@echo Must define VERSION macro or have version.h/custom.cxx file.
+
+else # ifdef VERSION
 
 RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
 
@@ -367,7 +374,21 @@ release :: $(TARGET) releasefiles
 releasefiles ::
 	-mkdir -p $(RELEASEPROGDIR)
 
+ifndef CVS_TAG
+CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
 endif
+
+tagbuild ::
+	cvs tag -c $(CVS_TAG)
+ifdef VERSION_FILE
+	let BLD=$(BUILD_NUMBER)+1 ; \
+	echo "Incrementing to build number $$BLD"; \
+	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/BUILD_NUMBER $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
+	mv -f $(VERSION_FILE).new $(VERSION_FILE)
+	cvs commit -m "Incremented build number after tagging." $(VERSION_FILE)
+endif
+
+endif # else ifdef VERSION
 
 endif # else ifdef DEBUG
 
