@@ -2,9 +2,12 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.7 1996/05/02 10:53:24 craigs Exp $
+# $Id: Makefile,v 1.8 1996/05/03 13:48:58 craigs Exp $
 # $Log: Makefile,v $
-# Revision 1.7  1996/05/02 10:53:24  craigs
+# Revision 1.8  1996/05/03 13:48:58  craigs
+# Sun4 fixes
+#
+# Revision 1.7  1996/05/02  10:53:24  craigs
 # Fixed problem with SUN4 target
 #
 # Revision 1.6  1996/04/17 11:12:20  craigs
@@ -95,7 +98,12 @@ include common.mak
 
 $(PTLIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+ifndef RANLIB
 	ar rcs $(PTLIB_FILE) $(OBJS)
+else
+	ar rc $(PTLIB_FILE) $(OBJS)
+	ranlib $(PTLIB_FILE)
+endif
 
 
 $(OBJDIR)/osutil.o: ./osutil.cxx 
