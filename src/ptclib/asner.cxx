@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.86  2004/04/22 07:54:01  csoutheren
+ * Fix problem with VS.net asserting on in isprint when chars outside normal range
+ *
  * Revision 1.85  2004/04/18 04:33:37  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -2579,8 +2582,9 @@ void PASN_Stream::PrintOn(ostream & strm) const
     strm << "  ";
     for (j = 0; j < 16; j++) {
       if (i+j < GetSize()) {
-        if (isprint(theArray[i+j]))
-          strm << theArray[i+j];
+        BYTE c = theArray[i+j];
+        if (c < 128 && isprint(c))
+          strm << c;
         else
           strm << ' ';
       }
