@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.3 1996/08/03 12:08:19 craigs Exp $
+ * $Id: pipechan.h,v 1.4 1996/12/30 03:23:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.4  1996/12/30 03:23:52  robertj
+ * Commonised kill and wait functions.
+ *
  * Revision 1.3  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -26,10 +29,6 @@
 #include <signal.h>
 
 #include "../../common/ptlib/pipechan.h"
-  public:
-    void PXWaitForTerminate();
-    void PXKill(int killType = SIGTERM);
-    
   protected:
     int toChildPipe[2];
     int fromChildPipe[2];
