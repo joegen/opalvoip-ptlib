@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.4 1995/07/02 01:19:46 robertj Exp $
+ * $Id: mail.h,v 1.5 1997/05/16 12:14:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.5  1997/05/16 12:14:08  robertj
+ * Added BCC capability to send mail.
+ *
  * Revision 1.4  1995/07/02 01:19:46  robertj
  * Change GetMessageBidy to return BOOL and have body string as
  *   parameter, due to slight change in semantics for large bodies.
@@ -104,7 +107,9 @@ PDECLARE_CLASS(PMail, PObject)
     BOOL SendNote(
       const PStringList & recipients, // Name of recipient of the mail message.
       const PString & subject,        // Subject name for the mail message.
-      const char * body               // Text body of the mail message.
+      const char * body,              // Text body of the mail message.
+	  BOOL blindCC = FALSE
+		// Indicates that all recipients are invisible to each other.
     );
     /* Send a new simple mail message.
 
