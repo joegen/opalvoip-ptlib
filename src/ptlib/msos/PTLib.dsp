@@ -135,7 +135,7 @@ SOURCE=..\..\..\Lib\Release\ptlib.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\ptlib.dtf
+SOURCE=..\..\..\include\ptlib\msos\ptlib.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
@@ -144,7 +144,7 @@ USERDEP__PTLIB="$(OutDir)\ptlibs.lib"
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=.\ptlib.dtf
+InputPath=..\..\..\include\ptlib\msos\ptlib.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
@@ -174,7 +174,7 @@ SOURCE=..\..\..\Lib\Debug\PTLibd.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\ptlibd.dtf
+SOURCE=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
@@ -188,7 +188,7 @@ USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"
 IntDir=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 TargetName=PTLibd
-InputPath=.\ptlibd.dtf
+InputPath=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
