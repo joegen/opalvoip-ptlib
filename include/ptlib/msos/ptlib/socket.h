@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.11 1996/09/14 13:09:46 robertj Exp $
+ * $Id: socket.h,v 1.12 1996/10/08 13:05:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.12  1996/10/08 13:05:01  robertj
+ * More IPX support.
+ *
  * Revision 1.11  1996/09/14 13:09:46  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -54,7 +57,11 @@
 
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
+
 #include <winsock.h>
+
+#define PIPX
+
 #endif
 
 
