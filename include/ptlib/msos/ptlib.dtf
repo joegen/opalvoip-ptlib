@@ -2230,6 +2230,7 @@ EXPORTS
     ?Rename@PFile@@SAHABVPFilePath@@ABVPString@@H@Z @1594 NONAME ;public: static int __cdecl PFile::Rename(class PFilePath const &,class PString const &,int)
     ?Replace@PString@@QAEXABV1@0HH@Z @1595 NONAME ;public: void __thiscall PString::Replace(class PString const &,class PString const &,int,int)
     ?ReportStatus@PServiceProcess@@AAEHKKKK@Z @1596 NONAME ;private: int __thiscall PServiceProcess::ReportStatus(unsigned long,unsigned long,unsigned long,unsigned long)
+    ?Reset@PTimer@@QAEXXZ @3083 NONAME ;public: void __thiscall PTimer::Reset(void)
     ?Reset@PWin32Overlapped@@QAEXXZ @1597 NONAME ;public: void __thiscall PWin32Overlapped::Reset(void)
     ?Resolution@PTimer@@SAIXZ @1598 NONAME ;public: static unsigned int __cdecl PTimer::Resolution(void)
     ?Restart@PThread@@UAEXXZ @1600 NONAME ;public: virtual void __thiscall PThread::Restart(void)

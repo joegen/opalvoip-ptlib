@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.81  2001/11/14 06:06:26  robertj
+ * Added functions on PTimer to get reset value and restart timer to it.
+ *
  * Revision 1.80  2001/09/10 02:51:22  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -441,6 +444,9 @@ PINLINE BOOL PTimer::IsRunning() const
 
 PINLINE BOOL PTimer::IsPaused() const
   { return state == Paused; }
+
+PINLINE const PTimeInterval & PTimer::GetResetTime() const
+  { return resetTime; }
 
 PINLINE const PNotifier & PTimer::GetNotifier() const
   { return callback; }
