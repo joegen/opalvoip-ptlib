@@ -6,7 +6,6 @@
 // PWLib extras
 
 //Yuriy Gorvitovskiy 23.06.00
-#pragma init_seg(lib)
 
 #include "ptlib.h"
 
