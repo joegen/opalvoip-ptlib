@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.41 1998/05/07 05:21:38 robertj Exp $
+ * $Id: svcproc.cxx,v 1.42 1998/05/21 04:29:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.42  1998/05/21 04:29:44  robertj
+ * Fixed "Proxies stopped" dialog appearing when shutting down windows.
+ *
  * Revision 1.41  1998/05/07 05:21:38  robertj
  * Improved formatting of debug window, adding tabs and tab stops.
  *
@@ -302,8 +305,7 @@ void PSystemLog::Output(Level level, const char * msg)
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
       *out << endl;
 
-    if (process.debugWindow != NULL)
-      process.DebugOutput(*(PStringStream*)out);
+    process.DebugOutput(*(PStringStream*)out);
 
     delete out;
     ReleaseMutex(mutex);
@@ -640,18 +642,18 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       break;
 
     case WM_DESTROY :
-    {
-      PNotifyIconData nid(hWnd, NIF_TIP);
-      nid.Delete(); // This removes the systray icon
+      if (debugWindow == (HWND)-1) {
+        PNotifyIconData nid(hWnd, NIF_TIP);
+        nid.Delete(); // This removes the systray icon
+      }
 
       controlWindow = debugWindow = NULL;
 
       PostQuitMessage(0);
       break;
-    }
 
     case WM_ENDSESSION :
-      if (wParam && (debugMode || lParam != ENDSESSION_LOGOFF))
+      if (wParam && (debugMode || lParam != ENDSESSION_LOGOFF) && debugWindow != (HWND)-1)
         OnStop();
       return 0;
 
@@ -810,7 +812,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 void PServiceProcess::DebugOutput(const char * out)
 {
-  if (controlWindow == NULL)
+  if (controlWindow == NULL || debugWindow == NULL)
     return;
 
   if (debugWindow == (HWND)-1) {
