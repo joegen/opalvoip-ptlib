@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.28  2001/10/03 03:12:21  robertj
+ * Changed to use only a single instance of SNMP library to avoid memory leak.
+ *
  * Revision 1.27  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -223,8 +226,8 @@ class PWin32SnmpLibrary
   PCLASSINFO(PWin32SnmpLibrary, PDynaLink)
 #else
 {
-	void Close();
-	BOOL IsLoaded() { return TRUE; }
+    void Close();
+    BOOL IsLoaded() { return TRUE; }
 #endif
   public:
     PWin32SnmpLibrary();
@@ -239,12 +242,11 @@ class PWin32SnmpLibrary
     PString GetInterfaceName(int ifNum);
     PString GetInterfaceName(PIPSocket::Address ipAddr);
 
+    static PWin32SnmpLibrary & Current();
+
   private:
     BOOL (WINAPI *Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
     BOOL (WINAPI *Query)(BYTE,SnmpVarBindList*,AsnInteger32*,AsnInteger32*);
-
-    HANDLE hEvent;
-    AsnObjectIdentifier baseOid;
 };
 
 
@@ -546,13 +548,15 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #endif
 {
 #ifndef _WIN32_WCE
-	if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
+  HANDLE hEvent;
+  AsnObjectIdentifier baseOid;
+  if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
       !GetFunction("SnmpExtensionQuery", (Function &)Query) ||
       !Init(0, &hEvent, &baseOid))
     Close();
 #else
-	Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
-    Query = SnmpExtensionQuery;
+  Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
+  Query = SnmpExtensionQuery;
 #endif
 }
 
@@ -711,6 +715,14 @@ PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
 
   return gatewayInterface;
 }
+
+
+PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
+{
+  static PWin32SnmpLibrary instance;
+  return instance;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1339,8 +1351,6 @@ PEthSocket::PEthSocket(PINDEX nReadBuffers, PINDEX nWriteBuffers, PINDEX size)
     writeBuffers(min(nWriteBuffers, MAXIMUM_WAIT_OBJECTS))
 {
   driver = PWin32PacketDriver::Create();
-  snmp = new PWin32SnmpLibrary;
-
   PINDEX i;
   for (i = 0; i < nReadBuffers; i++)
     readBuffers.SetAt(i, new PWin32PacketBuffer(size));
@@ -1356,7 +1366,6 @@ PEthSocket::~PEthSocket()
   Close();
 
   delete driver;
-  delete snmp;
 }
 
 
@@ -1720,10 +1729,8 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
 
 BOOL PIPSocket::GetGatewayAddress(Address & addr)
 {
-  PWin32SnmpLibrary snmp;
-
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
-  if (!snmp.GetOid(gatewayOid, addr))
+  if (!PWin32SnmpLibrary::Current().GetOid(gatewayOid, addr))
     return FALSE;
 
   gatewayOid.Free();
@@ -1733,7 +1740,7 @@ BOOL PIPSocket::GetGatewayAddress(Address & addr)
 
 PString PIPSocket::GetGatewayInterface()
 {
-  PWin32SnmpLibrary snmp;
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
 
   AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
@@ -1748,7 +1755,7 @@ PString PIPSocket::GetGatewayInterface()
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
-  PWin32SnmpLibrary snmp;
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
 
   table.RemoveAll();
 
@@ -1814,7 +1821,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
-  PWin32SnmpLibrary snmp;
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
 
   table.RemoveAll();
 
@@ -1860,7 +1867,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 #ifdef _WIN32_WCE // Getting rid of ghost ips
     if ( !name.IsEmpty() )
 #endif
-		table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
+      table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
 
     oid[9] = 1;
   }
