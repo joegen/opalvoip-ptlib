@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.3 1996/07/15 10:36:48 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.4 1996/08/08 13:36:39 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.4  1996/08/08 13:36:39  robertj
+ * Fixed Registation page so no longer has static link, ie can be DLLed.
+ *
  * Revision 1.3  1996/07/15 10:36:48  robertj
  * Added registration info to bottom of order form so can be faxed to us.
  *
@@ -21,7 +24,6 @@
 #include <ptlib.h>
 #include <httpsvc.h>
 
-#define ORGANISATION "Equivalence"
 #define HOME_PAGE "http://www.ozemail.com.au/~equival"
 #define EMAIL "mailto:equival@ozemail.com.au"
 
@@ -51,7 +53,7 @@ PString PHTTPServiceProcess::GetPageGraphic()
         " Version " + GetVersion(TRUE) +
         ", " + PTime(__DATE__).AsString("d MMM yy") +
         "<br>Copyright &copy;1996 by "
-        "<A HREF=\"" HOME_PAGE "\">" ORGANISATION "</A>, "
+        "<A HREF=\"" HOME_PAGE "\">" + GetManufacturer() + "</A>, "
         "<A HREF=\"" EMAIL "\">equival@ozemail.com.au</A>"
         "</table>";
   return str;
@@ -157,22 +159,40 @@ BOOL PConfigPage::GetExpirationDate(PTime & when)
 PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
                              const PSecureConfig & securedConf,
                              const PHTTPAuthority & auth)
-  : PConfigPage(app, "register.html", securedConf.GetDefaultSection(), auth)
+  : PConfigPage(app, "register.html", securedConf.GetDefaultSection(), auth),
+    process(app)
 {
   securedKeys = securedConf.GetSecuredKeys();
   securedConf.GetProductKey(productKey);
+}
 
-  static const char disclaimer[] = "The information and code herein is "
-      "provided \"as is\" without warranty of any kind, either expressed or "
-      "implied, including but not limited to the implied warrenties of "
-      "merchantability and fitness for a particular purpose. In no event "
-      "shall " ORGANISATION " be liable for any damages whatsoever including "
-      "direct, indirect, incidental, consequential, loss of business profits "
-      "or special damages, even if " ORGANISATION " has been advised of the "
-      "possibility of such damages.";
 
-  PServiceHTML regPage(app.GetName() & "Registration", "reghelp.html");
+static void AddDisclaimer(PHTML & regPage, const PString & manuf)
+{
+  regPage << PHTML::HRule()
+          << PHTML::Heading(3) << "Disclaimer" << PHTML::Heading(3)
+          << PHTML::Paragraph() << PHTML::Bold()
+          << "The information and code herein is provided \"as is\" "
+             "without warranty of any kind, either expressed or implied, "
+             "including but not limited to the implied warrenties of "
+             "merchantability and fitness for a particular purpose. In "
+             "no event shall " << manuf << " be liable for any damages "
+             "whatsoever including direct, indirect, incidental, "
+             "consequential, loss of business profits or special "
+             "damages, even if " << manuf << " has been advised of the "
+             "possibility of such damages."
+          << PHTML::Bold() << PHTML::Paragraph();
+}
 
+
+PString PRegisterPage::LoadText(PHTTPRequest & request)
+{
+  if (fields.GetSize() > 0)
+    return PConfigPage::LoadText(request);
+
+  PServiceHTML regPage(process.GetName() & "Registration", "reghelp.html");
+
+  PSecureConfig securedConf(productKey, securedKeys);
   PSecureConfig::ValidationState state = securedConf.GetValidation();
 
   PString prefix;
@@ -181,15 +201,12 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
     prefix = securedConf.GetPendingPrefix();
 
   AddFields(prefix);
+
   if (state != PSecureConfig::Defaults)
     Add(new PHTTPStringField("Validation", 34));
 
   if (state == PSecureConfig::Defaults) {
-    regPage << PHTML::HRule()
-            << PHTML::Heading(3) << "Disclaimer" << PHTML::Heading(3)
-            << PHTML::Paragraph() << PHTML::Bold()
-            << disclaimer
-            << PHTML::Bold() << PHTML::Paragraph();
+    AddDisclaimer(regPage, process.GetManufacturer());
     BuildHTML(regPage, InsertIntoHTML);
   }
   else {
@@ -208,7 +225,8 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
       doReorder = TRUE;
 
     } else if (state == PSecureConfig::Pending) {
-      regPage << "has not yet arrived from " ORGANISATION ".";
+      regPage << "has not yet arrived from "
+              << process.GetManufacturer() << '.';
       doReorder = TRUE;
 
     } else {
@@ -237,15 +255,12 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
               << PHTML::Form();
     }
 
-    regPage << PHTML::HRule()
-            << PHTML::Heading(3) << "Disclaimer" << PHTML::Heading(3)
-            << PHTML::Paragraph() << PHTML::Bold()
-            << disclaimer
-            << PHTML::Bold() << PHTML::Paragraph();
+    AddDisclaimer(regPage, process.GetManufacturer());
   }
 
   regPage << PHTML::Body();
   SetString(regPage);
+  return PConfigPage::LoadText(request);
 }
 
 
@@ -397,8 +412,9 @@ PServiceHTML::PServiceHTML(const char * title, const char * help)
 
 void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
 {
-  text.Replace("<!--Standard_" ORGANISATION "_Header-->",
-               PHTTPServiceProcess::Current()->GetPageGraphic());
+  PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+  text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
+               process.GetPageGraphic());
 }
 
 
