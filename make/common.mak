@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.27  1998/11/26 12:48:20  robertj
+# Support for .c files.
+#
 # Revision 1.26  1998/11/26 11:40:03  craigs
 # Added checking for resource compilation
 #
@@ -54,10 +57,10 @@
 ######################################################################
 
 
-VPATH_CXX	:= $(VPATH_CXX) 
 VPATH_H		:= $(VPATH_H) $(COMMONDIR) 
 
 vpath %.cxx $(VPATH_CXX)
+vpath %.c   $(VPATH_C)
 vpath %.h   $(VPATH_H)
 vpath %.o   $(OBJDIR)
 
@@ -72,24 +75,30 @@ STDCCFLAGS	:= $(STDCCFLAGS) -I$(COMMONDIR)
 LDLIBS		:= $(LDLIBS) $(ENDLDLIBS)
 
 #
-# define rule for .cxx files
+# define rule for .cxx and .c files
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
 
+$(OBJDIR)/%.o : %.c 
+	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	$(CC) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
+
 #
 # create list of object files 
 #
-OBJS		:= $(SOURCES:cxx=o) $(OBJS)
-OBJS		:= $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(OBJS)))
+TMP_SRC	:= $(SOURCES:.c=.o)
+OBJS	:= $(TMP_SRC:.cxx=.o) $(OBJS)
+OBJS	:= $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(OBJS)))
 
 #
 # create list of dependency files 
 #
-DEPDIR		:= $(OBJDIR)
-DEPS		:= $(SOURCES:cxx=dep)
-DEPS		:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
+DEPDIR	:= $(OBJDIR)
+TMP_SRC	:= $(SOURCES:.c=.dep)
+DEPS	:= $(TMP_SRC:.cxx=.dep)
+DEPS	:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
 
 #
 # define rule for .dep files
