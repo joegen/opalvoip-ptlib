@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.19 1995/10/14 15:12:29 robertj Exp $
+ * $Id: ptlib.cxx,v 1.20 1995/12/10 11:59:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.20  1995/12/10 11:59:33  robertj
+ * Changes to main() startup mechanism to support Mac.
+ * Fixed bug in time interfval constant variable initialisation. Not guarenteed to work.
+ * Moved error code for specific WIN32 and MS-DOS versions.
+ *
  * Revision 1.19  1995/10/14 15:12:29  robertj
  * Added function to get parent directory.
  *
@@ -93,9 +98,13 @@
 __declspec(dllexport) PProcess * PProcessInstance;
 __declspec(dllexport) ostream * PErrorStream;
 
+#else
+
+PProcess * PSTATIC PProcessInstance;
+ostream * PSTATIC PErrorStream = &cerr;
+
 #endif
 
-const PTimeInterval PMaxTimeInterval = 0x7fffffff;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,85 +139,6 @@ BOOL PChannel::Write(const void *, PINDEX)
 BOOL PChannel::Close()
 {
   PAssertAlways(PUnimplementedFunction);
-  return FALSE;
-}
-
-
-PString PChannel::GetErrorText() const
-{
-  if (osError == 0)
-    return PString();
-
-  if (osError > 0 && osError < _sys_nerr) {
-    if (_sys_errlist[osError][0] != '\0')
-      return _sys_errlist[osError];
-  }
-
-  return psprintf("OS error 0x%04x", osError);
-}
-
-
-BOOL PChannel::ConvertOSError(int error)
-{
-  if (error >= 0) {
-    lastError = NoError;
-    osError = 0;
-    return TRUE;
-  }
-
-#if defined(_WIN32)
-  if (error != -2)
-    osError = errno;
-  else {
-    osError = GetLastError();
-    switch (osError) {
-      case ERROR_INVALID_HANDLE :
-        osError = EBADF;
-        break;
-      case ERROR_INVALID_PARAMETER :
-        osError = EINVAL;
-        break;
-      case ERROR_ACCESS_DENIED :
-        osError = EACCES;
-        break;
-      case ERROR_NOT_ENOUGH_MEMORY :
-        osError = ENOMEM;
-        break;
-      default :
-        osError |= 0x40000000;
-    }
-  }
-#endif
-
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      return TRUE;
-    case ENOENT :
-      lastError = NotFound;
-      break;
-    case EEXIST :
-      lastError = FileExists;
-      break;
-    case EACCES :
-      lastError = AccessDenied;
-      break;
-    case ENOMEM :
-      lastError = NoMemory;
-      break;
-    case ENOSPC :
-      lastError = DiskFull;
-      break;
-    case EINVAL :
-      lastError = BadParameter;
-      break;
-    case EBADF :
-      lastError = NotOpen;
-      break;
-    default :
-      lastError = Miscellaneous;
-  }
-
   return FALSE;
 }
 
@@ -598,6 +528,29 @@ BOOL PTextFile::ReadLine(PString & str)
 BOOL PTextFile::WriteLine(const PString & str)
 {
   return WriteString(str) && WriteChar('\n');
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+int PProcess::_main(int argc, char ** argv, char **)
+{
+  PErrorStream = &cerr;
+  PreInitialise(argc, argv);
+
+#if !defined(_WIN32) && defined(_MSC_VER) && defined(_WINDOWS)
+  _wsetscreenbuf(1, _WINBUFINF);
+  _wsizeinfo ws;
+  ws._version = _QWINVER;
+  ws._type = _WINSIZEMAX;
+  _wsetsize(1, &ws);
+#endif
+
+  Main();
+
+  return terminationValue;
 }
 
 
