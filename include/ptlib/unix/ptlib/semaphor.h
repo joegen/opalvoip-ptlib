@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.16  2002/06/09 16:36:34  rogerh
+ * friend BOOL PThread::Terminate() should be type void (found by gcc 3.1)
+ *
  * Revision 1.15  2002/01/23 04:26:36  craigs
  * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
  * use of default copy constructors for objects containing instances of
@@ -123,7 +126,7 @@
     unsigned currentCount;
     unsigned maximumCount;
     unsigned queuedLocks;
-  friend BOOL PThread::Terminate();
+  friend void PThread::Terminate();
 #endif
 
 #elif defined(BE_THREADS)
