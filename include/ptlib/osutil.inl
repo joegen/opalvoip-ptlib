@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.35 1996/01/03 23:15:34 robertj Exp $
+ * $Id: osutil.inl,v 1.36 1996/01/28 02:51:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.36  1996/01/28 02:51:59  robertj
+ * Added assert into all Compare functions to assure comparison between compatible objects.
+ *
  * Revision 1.35  1996/01/03 23:15:34  robertj
  * Fixed some PTime bugs.
  *
@@ -381,8 +384,6 @@ PINLINE PFile::PFile(OpenMode mode, int opts)
 PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
   { os_handle = -1; removeOnClose = FALSE; Open(name, mode, opts); }
 
-PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
-  { return path.Compare(((const PFile &)obj).path); }
 
 PINLINE BOOL PFile::Exists() const
   { return Exists(path); }
