@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.6  1999/09/02 11:56:35  robertj
+ * Fixed problem with destroying PMutex that is already locked.
+ *
  * Revision 1.5  1999/03/05 07:03:27  robertj
  * Some more BeOS port changes.
  *
@@ -54,6 +57,7 @@
 #include "../../mutex.h"
 #if defined(P_PTHREADS) || defined(BE_THREADS)
   public:
+    ~PMutex();
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
