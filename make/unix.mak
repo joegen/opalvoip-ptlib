@@ -9,15 +9,19 @@ SOURCES		:= $(strip $(SOURCES))
 #  defines for common Unix types
 ###############################################################################
 #
-# Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+# i486 Linux for x86, using gcc 2.6.x
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -486
 ####################################################
-# Sun 4x, using gcc 2.6.3
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
+# Sparc Sun 4x, using gcc 2.6.3
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
 #RANLIB		:= 1
+#ENDLDLIBS	:= -liostream -lg++
 else
-# Solaris 2.x, using gcc 2.6.3
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS
+# Sparc Solaris 2.x, using gcc 2.6.3
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+####################################################
+
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 ####################################################
 
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
