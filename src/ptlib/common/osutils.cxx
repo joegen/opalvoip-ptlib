@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.121  1999/06/14 07:59:38  robertj
+ * Enhanced tracing again to add options to trace output (timestamps etc).
+ *
  * Revision 1.120  1999/04/26 08:06:51  robertj
  * Added missing function in cooperative threading.
  *
@@ -433,94 +436,121 @@ void PSetErrorStream(ostream * s)
 }
 
 
-static ostream * PTraceStream = &cerr;
-static BOOL PTraceBlockEnable;
-static unsigned PTraceLevel = 0;
-static unsigned PIndentLevel = 0;
+///////////////////////////////////////////////////////////////////////////////
 
-void PSetTraceStream(ostream * s)
+ostream * PTrace::Stream = &cerr;
+unsigned PTrace::Options = PTrace::FileAndLine;
+unsigned PTrace::LevelThreshold = 0;
+unsigned PTrace::Block::IndentLevel = 0;
+static PTimeInterval ApplicationStartTick = PTimer::Tick();
+
+void PTrace::SetStream(ostream * s)
 {
-  PTraceStream = s != NULL ? s : &cerr;
+  Stream = s != NULL ? s : &cerr;
 }
 
 
-void PSetTraceBlock(BOOL enable)
+void PTrace::SetOptions(unsigned options)
 {
-  PTraceBlockEnable = enable;
+  Options |= options;
 }
 
 
-void PSetTraceLevel(unsigned level)
+void PTrace::ClearOptions(unsigned options)
 {
-  PTraceLevel = level;
+  Options &= ~options;
 }
 
 
-BOOL PCanTrace(unsigned level)
+void PTrace::SetLevel(unsigned level)
 {
-  return level <= PTraceLevel;
+  LevelThreshold = level;
 }
 
 
-static PMutex TraceMutex;
-
-ostream & PBeginTrace(const char * fileName, int lineNum)
+BOOL PTrace::CanTrace(unsigned level)
 {
-  TraceMutex.Wait();
+  return level <= LevelThreshold;
+}
 
-  const char * file = strrchr(fileName, '/');
-  if (file != NULL)
-    file++;
-  else {
-    file = strrchr(fileName, '\\');
-    if (file != NULL)
-      file++;
-    else
-      file = fileName;
+
+static PMutex PTraceMutex;
+
+ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
+{
+  PTraceMutex.Wait();
+
+  if ((Options&DateAndTime) != 0) {
+    PTime now;
+    *Stream << now.AsString("yyyy/MM/dd hh:mm:ss\t");
   }
 
-  return *PTraceStream << file << '(' << lineNum << ")\t";
+  if ((Options&Timestamp) != 0)
+    *Stream << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
+
+  if ((Options&Thread) != 0)
+    *Stream << PThread::Current() << '\t';
+
+  if ((Options&TraceLevel) != 0)
+    *Stream << level << '\t';
+
+  if ((Options&FileAndLine) != 0 && fileName != NULL) {
+    const char * file = strrchr(fileName, '/');
+    if (file != NULL)
+      file++;
+    else {
+      file = strrchr(fileName, '\\');
+      if (file != NULL)
+        file++;
+      else
+        file = fileName;
+    }
+
+    *Stream << file << '(' << lineNum << ")\t";
+  }
+
+  return *Stream;
 }
 
 
-ostream & PEndTrace(ostream & s)
+ostream & PTrace::End(ostream & s)
 {
   s << '\n' << flush;
 
-  TraceMutex.Signal();
+  PTraceMutex.Signal();
 
   return s;
 }
 
 
-PTraceBlock::PTraceBlock(const char * fileName, int lineNum, const char * traceName)
+PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 {
   file = fileName;
   line = lineNum;
   name = traceName;
 
-  PIndentLevel += 2;
+  IndentLevel += 2;
 
-  if (PTraceBlockEnable) {
-    ostream & s = PBeginTrace(file, line);
-    for (unsigned i = 0; i < PIndentLevel; i++)
+  if ((Options&Blocks) != 0) {
+    ostream & s = PTrace::Begin(1, file, line);
+    for (unsigned i = 0; i < IndentLevel; i++)
       s << '=';
-    s << "> " << name << PEndTrace;
+    s << "> " << name << PTrace::End;
   }
 }
 
 
-PTraceBlock::~PTraceBlock()
+PTrace::Block::~Block()
 {
-  if (PTraceBlockEnable) {
-    ostream & s = PBeginTrace(file, line);
+  if ((Options&Blocks) != 0) {
+    ostream & s = PTrace::Begin(1, file, line);
     s << '<';
-    for (unsigned i = 0; i < PIndentLevel; i++)
+    for (unsigned i = 0; i < IndentLevel; i++)
       s << '=';
-    s << ' ' << name << PEndTrace;
+    s << ' ' << name << PTrace::End;
   }
 
-  PIndentLevel -= 2;
+  IndentLevel -= 2;
 }
 
 
