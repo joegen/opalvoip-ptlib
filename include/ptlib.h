@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.1 1994/04/01 14:41:11 robertj Exp $
+ * $Id: ptlib.h,v 1.2 1994/06/25 12:27:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
- * Revision 1.1  1994/04/01 14:41:11  robertj
+ * Revision 1.2  1994/06/25 12:27:39  robertj
+ * *** empty log message ***
+ *
+ * Revision 1.1  1994/04/01  14:38:42  robertj
  * Initial revision
  *
  */
@@ -16,118 +19,105 @@
 #ifndef _PTLIB_H
 #define _PTLIB_H
 
-#include "contain.h"
 
-#include <windef.h>
-#include <winbase.h>
-#include <iostream.h>
-#include <iomanip.h>
-#include <fstream.h>
-#include <direct.h>
-#include <sys\types.h>
-#include <sys\stat.h>
-#include <dos.h>
-#include <io.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Operating System dependent declarations
-
-const char PDIR_SEPARATOR = '\\';
-
-const PINDEX P_MAX_PATH = _MAX_PATH;
-
-typedef DWORD PMilliseconds;
-const PMilliseconds PMaxMilliseconds = 0xffffffff;
-
-#define EXPORTED __stdcall
-
+#include <contain.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-#include "../../common/ptime.h"
-};
+#include <ptime.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-#include "../../common/timeint.h"
-};
+#include <timeint.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-#include "../../common/timer.h"
-  protected:
-    void SetWindowsTimer();
-    int timerID;
-};
+#include <timer.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
-#include "../../common/pdirect.h"
-  protected:
-    HANDLE hFindFile;
-    WIN32_FIND_DATA fileinfo;
+#include <pdirect.h>
 
-    BOOL Filtered();
-};
+
+///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+#include <channel.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSerialChannel
+
+#include <serchan.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PModem
+
+#include <modem.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFilePath
+
+#include <filepath.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-#include "../../common/file.h"
-};
+#include <file.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-#include "../../common/textfile.h"
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PTextInFile PTextOutFile
-
-#include "../../common/textfio.h"
+#include <textfile.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PStructuredFile
 
-#include "../../common/sfile.h"
-};
+#include <sfile.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConfig
+
+#include <config.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
-#include "../../common/args.h"
+#include <args.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextApplication
+// PThread
 
-#include "../../common/textapp.h"
-};
+#include <thread.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+#include <process.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 
 #if defined(P_USE_INLINES)
-
-#include "../../common/osutil.inl"
-#include "ptlib.inl"
-
+#include <ptlib.inl>
 #endif
 
 
