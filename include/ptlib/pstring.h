@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.76  2004/06/01 05:54:18  csoutheren
+ * Added <vector> and <string>
+ *
  * Revision 1.75  2004/06/01 05:21:38  csoutheren
  * Added conversions between std::string and PString, and vector<PString> and PStringArray
  *
@@ -286,6 +289,9 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <string>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class
