@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.6  2004/04/14 10:01:54  csoutheren
+ * Fixed compile problem on Windows
+ *
  * Revision 1.5  2004/04/14 08:12:02  csoutheren
  * Added support for generic plugin managers
  *
@@ -110,7 +113,7 @@ static name##_PluginLoader * name##_PluginLoader_Static = &name##_PluginLoader_I
 
 #define PWLIB_PLUGIN_MODULE_LOADER_IMPLEMENT(name, mgrclass) \
 class name##_PluginLoader  { public: name##_PluginLoader(); } name##_PluginLoader_Instance; \
-name##_PluginLoader::##name##_PluginLoader() { mgrclass##::GetManager(); } \
+name##_PluginLoader::name##_PluginLoader() { mgrclass::GetManager(); } \
 
 class PPluginModuleManager : public PObject
 {
