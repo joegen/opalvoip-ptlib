@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.66  2004/07/11 07:56:35  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.65  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -328,7 +331,7 @@ class PIPSocket : public PSocket
         bool operator!=(in_addr & addr) const { return !operator==(addr); }
         bool operator==(DWORD dw) const;
         bool operator!=(DWORD dw) const   { return !operator==(dw); }
-#ifdef P_TORNADO 
+#ifdef P_VXWORKS 
         bool operator==(long unsigned int u) const { return  operator==((DWORD)u); }
         bool operator!=(long unsigned int u) const { return !operator==((DWORD)u); }
 #endif
