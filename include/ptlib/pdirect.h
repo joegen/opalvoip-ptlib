@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.26 1997/03/31 11:34:00 robertj Exp $
+ * $Id: pdirect.h,v 1.27 1998/03/05 12:44:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.27  1998/03/05 12:44:34  robertj
+ * Added cluster size.
+ *
  * Revision 1.26  1997/03/31 11:34:00  robertj
  * Fixed default permissions for directories , different from that for files.
  *
@@ -254,8 +257,12 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        TRUE if may be used to separate directories in a path.
      */
 
-    BOOL GetVolumeSpace(PInt64 & total, PInt64 & free) const;
-    /* Determine the total number of bytes and number of byte free on the
+    BOOL GetVolumeSpace(
+      PInt64 & total,     // Total number of bytes available on volume
+      PInt64 & free,      // Number of bytes unused on the volume
+      DWORD & clusterSize // "Quantisation factor" in bytes for files on volume
+    ) const;
+    /* Determine the total number of bytes and number of bytes free on the
        volume that this directory is contained on.
 
        Note that the free space will be the physical limit and if user quotas
