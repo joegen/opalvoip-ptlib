@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.20 2001/05/16 06:02:37 craigs Exp $
+ * $Id: pssl.cxx,v 1.21 2001/05/16 06:31:37 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.21  2001/05/16 06:31:37  robertj
+ * Fixed GNU C++ compatibility
+ *
  * Revision 1.20  2001/05/16 06:02:37  craigs
  * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
  *
@@ -807,12 +810,12 @@ static int Psock_read(BIO * bio, char * out, int outl)
     PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
 
     // redirect the read through the channel so we can intercept data if required
-    //BOOL b = chan->Read(out, outl);
-    BOOL b = PSSLSOCKET(bio)->RawSSLRead(chan, out, outl);
+    PINDEX readBytes = outl;
+    BOOL b = PSSLSOCKET(bio)->RawSSLRead(chan, out, readBytes);
 
     BIO_clear_retry_flags(bio);
     if (b) 
-      ret = outl; //chan->GetLastReadCount();
+      ret = readBytes;
     else if (Psock_should_retry(chan->GetErrorCode())) {
       BIO_set_retry_read(bio);
       ret = -1;
