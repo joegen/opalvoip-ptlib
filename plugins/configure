@@ -4685,7 +4685,7 @@ else
   enable_dc=yes
 fi;
 
-if test "${enable_dc}" = "yesz" ; then
+if test "${enable_dc}z" = "yesz" ; then
   if test "${ac_cv_header_libdc1394_dc1394_control_h+set}" = set; then
   echo "$as_me:$LINENO: checking for libdc1394/dc1394_control.h" >&5
 echo $ECHO_N "checking for libdc1394/dc1394_control.h... $ECHO_C" >&6
