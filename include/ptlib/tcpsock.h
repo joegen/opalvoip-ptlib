@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.14 1996/02/25 03:01:27 robertj Exp $
+ * $Id: tcpsock.h,v 1.15 1996/03/03 07:37:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.15  1996/03/03 07:37:59  robertj
+ * FireDoorV10
+ *
  * Revision 1.14  1996/02/25 03:01:27  robertj
  * Moved some socket functions to platform dependent code.
  *
@@ -105,7 +108,8 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
     virtual BOOL Listen(
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0             // Port number to use for the connection.
+      WORD port = 0,           // Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
     );
     /* Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
