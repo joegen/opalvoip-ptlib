@@ -1,49 +1,62 @@
 //
-// (c) Yuri Kiryanov, home.att.net/~bevox
-// for www.Openh323.org
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
 //
 #ifndef _SOUNDPLAYER_H
 #define _SOUNDPLAYER_H
-
-// We write for PWLib
-#include <ptlib.h>
 
 // Media kit used
 #include <media/MediaDefs.h>
 #include <media/MediaFile.h>
 #include <media/MediaTrack.h>
-#include <media/MediaRoster.h>
 #include <media/TimeSource.h>
+#include <media/Buffer.h>
+#include <media/BufferGroup.h>
 
 // Game kit used also 
 // (Software resampler in BGameSound!)
 #include <game/GameSoundDefs.h>
 #include <game/StreamingGameSound.h>
 
-PQUEUE(POutputSoundQueue, PSound);
+// FIFO!
+#include "BlockFIFO.h"
+
+// Format convertors
+#define FORMATFROMBITSPERSAMPLE(bps) (uint32) ( \
+		(bps) == 8*sizeof(unsigned char) ? gs_audio_format::B_GS_U8 : \
+		(bps) == 8*sizeof(short) ? gs_audio_format::B_GS_S16 : \
+		(bps) == 8*sizeof(int) ? gs_audio_format::B_GS_S32 : \
+		(bps) == 0 ? gs_audio_format::B_GS_F : gs_audio_format::B_GS_U8 )
+
+#define BITSPERSAMPLEFROMFORMAT(fmt) (unsigned) ( (fmt & 0xf)*8 )
+#define DEFAULTSAMPLESIZE BITSPERSAMPLEFROMFORMAT(gs_audio_format::B_GS_U8)
 
 class PSoundPlayer : public BStreamingGameSound
 {
 protected:
-	// Sounds of music
-	PSound* mpSound;
-	POutputSoundQueue mSounds;			
-	size_t bytesPlayed;
+	gs_audio_format mFmt;
 
-	int stopDelay;
-	int timeToStop;
+	BBlockFIFO mFIFO;
 	
-	bool mfDisposeBuffers;
-public:
-	PSoundPlayer(gs_audio_format* format, bool fDisposeBuffers = false);
-	PSoundPlayer(PSound* pSound, bool fStartNow = true);
-	
-	// Sounds
-	void AddSound(PSound* pSound);
-
-	void Abort();
-		
 	virtual void FillBuffer(void * inBuffer, size_t inByteCount);
+
+public:
+	static const uint32 g_byteOrder;
+	static const gs_audio_format g_defaultFmt;
+
+	PSoundPlayer(const char* name, const gs_audio_format* format = &g_defaultFmt, 
+		int32 bufSize = g_defaultFmt.buffer_size * (g_defaultFmt.format & 0xf) );
+
+	~PSoundPlayer();
+	
+	bool StartPlayer();
+	bool StopPlayer();
+
+	void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample, 
+			unsigned bufSize = g_defaultFmt.buffer_size * (g_defaultFmt.format & 0xf) );
+			
+	bool Play(const void * buf, size_t size);
 };
+
 #endif // _SOUNDPLAYER_H
 

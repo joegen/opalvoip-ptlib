@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.54  2000/04/19 00:13:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.53  2000/04/09 18:19:23  rogerh
  * Add my changes for NetBSD support.
  *
@@ -801,7 +804,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
   
   char * n;
   if (dir == NULL) {
-    n = tempnam(NULL, prefix);
+    n = tempnam(NULL, (char *)prefix);
     *this = CanonicaliseFilename(n);
     runtime_free (n);
   } else {
