@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.30  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.29  2001/10/23 02:49:48  robertj
  * Fixed problem with Abort() not always breaking I/O blocked threads.
  *
@@ -1407,6 +1410,18 @@ PString PSoundChannel::GetErrorText(ErrorGroup group) const
   }
 
   return str;
+}
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
+  return FALSE;
 }
 
 
