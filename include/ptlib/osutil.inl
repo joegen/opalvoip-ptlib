@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.74  2000/05/25 11:07:26  robertj
+ * Added PConfig::HasKey() function to determine if value actually set.
+ *
  * Revision 1.73  2000/04/05 02:50:16  robertj
  * Added microseconds to PTime class.
  *
@@ -640,6 +643,9 @@ PINLINE void PConfig::DeleteSection()
 
 PINLINE void PConfig::DeleteKey(const PString & key)
   { DeleteKey(defaultSection, key); }
+
+PINLINE BOOL PConfig::HasKey(const PString & key) const
+  { return HasKey(defaultSection, key); }
 
 PINLINE PString PConfig::GetString(const PString & key) const
   { return GetString(defaultSection, key, PString()); }
