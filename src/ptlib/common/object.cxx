@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.56  2002/06/27 06:10:39  robertj
+ * Removed PAssert on allocation breakpoint as can often caus a deadlock.
+ *
  * Revision 1.55  2002/06/25 10:33:55  robertj
  * REmoved usage of sstream for GNU v3 as it is completely different to the
  *   old ostrstream classes.
@@ -453,7 +456,13 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
     firstRealObject = allocationRequest;
 
-  PAssert(allocationRequest != allocationBreakpoint, "Break on memory allocation.");
+  if (allocationRequest == allocationBreakpoint) {
+#ifdef _WIN32
+    __asm int 3;
+#else
+    kill(getpid(), SIGABRT);
+#endif 
+  }
 
   currentMemoryUsage += nSize;
   if (currentMemoryUsage > peakMemoryUsage)
@@ -514,7 +523,13 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
     return NULL;
   }
 
-  PAssert(mem->allocationRequest != allocationBreakpoint, "Break on memory allocation.");
+  if (mem->allocationRequest == mem->allocationBreakpoint) {
+#ifdef _WIN32
+    __asm int 3;
+#else
+    kill(getpid(), SIGABRT);
+#endif 
+  }
 
   mem->currentMemoryUsage -= obj->size;
   mem->currentMemoryUsage += nSize;
