@@ -24,6 +24,9 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.4  2003/11/25 10:49:31  dsandras
+ * Removed double declaration.
+ *
  * Revision 1.3  2003/11/24 08:25:27  csoutheren
  * Patches from Snark to fix compile problems
  *
@@ -243,7 +246,7 @@ class PVideoInput1394AvcDevice : public PVideoInputDevice
 
 
  protected:
-    PINDEX frameBytes;
+
     raw1394handle_t handle;
     BOOL is_capturing;
     BOOL UseDMA;
