@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.34  1998/10/26 11:05:26  robertj
+ * Added raw free for things allocated within the runtime library.
+ *
  * Revision 1.33  1998/10/18 14:26:55  robertj
  * Improved tracing functions.
  *
@@ -463,6 +466,9 @@ class PMemoryHeap {
  */
 #define realloc(p,s) PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__)
 
+
+inline void runtime_free(void * ptr) { free(ptr); }
+
 /*$MACRO free(p)
    This macro is used to deallocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
@@ -499,6 +505,7 @@ inline void * operator new[](size_t nSize, const char * file, int line)
 
 #define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
+#define runtime_free(p) free(p)
 
 #endif // _DEBUG
 
