@@ -1,2 +1,2 @@
-GUILIB	= -L/usr/X11R6/lib -lX11 
-STDCCFLAGS      := $(STDCCFLAGS) -I/usr/X11R6/include 
+GUILIB	= -L$(PWLIB_GUIDIR)/lib -lX11 
+STDCCFLAGS      := $(STDCCFLAGS) -I$(PWLIB_GUIDIR)/include 
