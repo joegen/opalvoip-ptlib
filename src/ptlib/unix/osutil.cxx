@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.48  1999/08/17 07:37:36  robertj
+ * Fixed inlines so are inlined for optimised version
+ *
  * Revision 1.47  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
  *
@@ -147,7 +150,7 @@
 
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
-#ifndef P_USE_INLINES
+#if !P_USE_INLINES
 #include <ptlib/osutil.inl>
 #include <ptlib/ptlib.inl>
 #endif
