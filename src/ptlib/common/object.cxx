@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.23 1997/02/09 02:28:42 craigs Exp $
+ * $Id: object.cxx,v 1.24 1997/02/09 03:45:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,8 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
- * Revision 1.23  1997/02/09 02:28:42  craigs
- * .
+ * Revision 1.24  1997/02/09 03:45:28  robertj
+ * Fixed unix/dos compatibility with include file.
  *
  * Revision 1.23  1997/02/05 11:54:12  robertj
  * Fixed problems with memory check and leak detection.
@@ -88,8 +88,11 @@
 
 #include <ptlib.h>
 #include <ctype.h>
+#ifdef _WIN32
 #include <strstrea.h>
-
+#else
+#include <strstream.h>
+#endif
 
 void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 {
