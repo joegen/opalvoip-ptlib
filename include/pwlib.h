@@ -1256,6 +1256,13 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PTimer
+
+#include "../../common/timer.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PResourceData
 
 #include "../../common/resdata.h"
@@ -1303,7 +1310,6 @@ typedef int PDIMENSION;
 
     PList(NonModalDict, PDialog);
     NonModalDict NonModalDialogs;
-
 
     friend LRESULT FAR PASCAL _export
                     WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
