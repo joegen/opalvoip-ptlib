@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.15 1996/03/18 13:33:13 robertj Exp $
+ * $Id: inetprot.cxx,v 1.16 1996/03/26 00:58:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.16  1996/03/26 00:58:46  robertj
+ * Fixed ParseResponse() return value.
+ *
  * Revision 1.15  1996/03/18 13:33:13  robertj
  * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
@@ -403,7 +406,7 @@ PINDEX PApplicationSocket::ParseResponse(const PString & line)
 
   lastResponseCode = line.Left(endCode).AsInteger();
   lastResponseInfo = line.Mid(endCode+1);
-  return endCode;
+  return line[endCode] != ' ' ? endCode : 0;
 }
 
 
