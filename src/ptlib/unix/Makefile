@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.134  2005/01/26 05:38:04  csoutheren
+# Added ability to remove config file support
+#
 # Revision 1.133  2005/01/11 06:22:10  csoutheren
 # Fixed problem with removing HTTP classes
 #
@@ -655,6 +658,10 @@ ifdef HAS_PLUGINS
 SOURCES += $(COMMON_SRC_DIR)/pluginmgr.cxx 
 endif
 
+ifdef HAS_CONFIG_FILE
+SOURCES += config.cxx 
+endif
+
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	+= \
@@ -669,7 +676,6 @@ SOURCES	+= \
 	$(GETDATE_SOURCE) \
 	uicmp.cxx \
 	socket.cxx \
-	config.cxx \
 	udll.cxx \
 	channel.cxx \
 	osutil.cxx \
