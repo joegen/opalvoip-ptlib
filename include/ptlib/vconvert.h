@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.13  2003/03/17 07:44:20  robertj
+ * Removed redundant toggle function.
+ *
  * Revision 1.12  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -136,11 +139,6 @@ class PColourConverter : public PObject
     void SetVFlipState(BOOL vFlipState) 
       { doVFlip = vFlipState; }
     
-    /**Toggle the video conversion vertical flip state
-     */
-    void ToggleVFlipState() 
-      {doVFlip = !doVFlip; }
-
     /**Set the frame size to be used.
 
        Default behaviour calls SetSrcFrameSize() and SetDstFrameSize().
