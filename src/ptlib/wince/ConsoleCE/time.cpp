@@ -8,7 +8,6 @@
 //
 
 #include <time.h>
-#include <winbase.h>
 
 static tm tb;
 static int _lpdays[] = { -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
@@ -162,4 +161,311 @@ time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime)
         aTm.tm_yday = _days[aTm.tm_mon] + aTm.tm_mday;
 
 	return mktime(&aTm);
+}
+
+const __int64 n1SecIn100NS = (__int64)10000000;
+
+static __int64 GetDeltaSecs(FILETIME f1, FILETIME f2)
+{
+	__int64 t1 = f1.dwHighDateTime;
+	t1 <<= 32;				
+	t1 |= f1.dwLowDateTime;
+
+	__int64 t2 = f2.dwHighDateTime;
+	t2 <<= 32;				
+	t2 |= f2.dwLowDateTime;
+
+	__int64 iTimeDiff = (t2 - t1) / n1SecIn100NS;
+	return iTimeDiff;
+}
+
+static SYSTEMTIME TmToSystemTime(tm &t)
+{
+	SYSTEMTIME s;
+
+	s.wYear      = t.tm_year + 1900;
+	s.wMonth     = t.tm_mon+1;
+	s.wDayOfWeek = t.tm_wday;
+	s.wDay       = t.tm_mday;
+	s.wHour      = t.tm_hour;
+	s.wMinute    = t.tm_min;
+	s.wSecond    = t.tm_sec;
+	s.wMilliseconds = 0;
+
+	return s;
+}
+
+static TIME_ZONE_INFORMATION gTZInfoCache;
+static BOOL gbTZInfoCacheInitialized = FALSE;
+
+static void GetTZBias(int* pTZBiasSecs = NULL, int* pDSTBiasSecs = NULL)
+{
+	if(!gbTZInfoCacheInitialized)
+	{
+		if( GetTimeZoneInformation(&gTZInfoCache) == 0xFFFFFFFF)
+			return;
+		gbTZInfoCacheInitialized = TRUE;
+	}
+
+	if(pTZBiasSecs != NULL)
+	{
+		*pTZBiasSecs = gTZInfoCache.Bias * 60;
+		if (gTZInfoCache.StandardDate.wMonth != 0)
+			*pTZBiasSecs += (gTZInfoCache.StandardBias * 60);
+	}
+
+	if(pDSTBiasSecs != NULL)
+	{
+		if ((gTZInfoCache.DaylightDate.wMonth != 0) && (gTZInfoCache.DaylightBias != 0))
+			*pDSTBiasSecs = (gTZInfoCache.DaylightBias - gTZInfoCache.StandardBias) * 60;
+		else
+			*pDSTBiasSecs = 0;
+	}
+}
+
+static FILETIME YearToFileTime(WORD wYear)
+{	
+	SYSTEMTIME sbase;
+
+	sbase.wYear         = wYear;
+	sbase.wMonth        = 1;
+	sbase.wDayOfWeek    = 1;
+	sbase.wDay          = 1;
+	sbase.wHour         = 0;
+	sbase.wMinute       = 0;
+	sbase.wSecond       = 0;
+	sbase.wMilliseconds = 0;
+
+	FILETIME fbase;
+	SystemTimeToFileTime( &sbase, &fbase );
+
+	return fbase;
+}
+
+static FILETIME Int64ToFileTime(__int64 iTime)
+{
+	FILETIME f;
+
+	f.dwHighDateTime = (DWORD)((iTime >> 32) & 0x00000000FFFFFFFF);
+	f.dwLowDateTime  = (DWORD)( iTime        & 0x00000000FFFFFFFF);
+
+	return f;
+}
+
+static time_t SystemTimeToYDay(SYSTEMTIME s)
+{
+	FILETIME fMidnightJan1 = YearToFileTime(s.wYear);
+	FILETIME f;              SystemTimeToFileTime(&s, &f);
+	return (time_t)(GetDeltaSecs(fMidnightJan1, f) / (__int64)86400);
+}
+
+static tm SystemTimeToTm(SYSTEMTIME &s)
+{
+	tm t;
+
+	t.tm_year  = s.wYear - 1900;
+	t.tm_mon   = s.wMonth-1;
+	t.tm_wday  = s.wDayOfWeek;
+	t.tm_mday  = s.wDay;
+	t.tm_yday  = SystemTimeToYDay(s);
+	t.tm_hour  = s.wHour;
+	t.tm_min   = s.wMinute;
+	t.tm_sec   = s.wSecond;
+	t.tm_isdst = 0;
+
+	return t;
+}
+
+typedef struct {
+		int  yr;
+		int  yd;
+		long ms;
+} transitionTime;
+
+static void cvtdate (int trantype, int year, int month, int week, int dayofweek,
+			             int date, int hour, int min, int sec, int msec,
+						 transitionTime* pDST)
+{
+	const int days[]           = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
+	const int leapYearDays[]   = {-1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	const int DAY_MILLISEC     = (24L * 60L * 60L * 1000L);
+	const int BASE_DOW         = 4; //
+	const int LEAP_YEAR_ADJUST = 17L; 
+	BOOL bIsLeapYear = ((year & 3) == 0);
+
+	int yearday;
+	int monthdow;
+	int DSTBiasSecs;
+	GetTZBias(NULL, &DSTBiasSecs);
+
+	yearday = 1 + (bIsLeapYear ? leapYearDays[month - 1] : days[month - 1]);
+	monthdow = (yearday + ((year - 70) * 365) + ((year - 1) >> 2) -
+				LEAP_YEAR_ADJUST + BASE_DOW) % 7;
+	if ( monthdow <= dayofweek )
+		yearday += (dayofweek - monthdow) + (week - 1) * 7;
+	else 
+		yearday += (dayofweek - monthdow) + week * 7;
+
+	if ((week == 5) && (yearday > (bIsLeapYear ? leapYearDays[month] : days[month])))
+		yearday -= 7;
+
+	if ( trantype == 1 ) 
+	{   
+		pDST->yd = yearday;
+		pDST->ms = (long)msec + (1000L * (sec + 60L * (min + 60L * hour)));
+		pDST->yr = year;
+	}
+	else 
+	{   
+		pDST->yd = yearday;
+		pDST->ms = (long)msec + (1000L * (sec + 60L * (min + 60L * hour)));
+		if ((pDST->ms += (DSTBiasSecs * 1000L)) < 0) 
+		{
+			pDST->ms += DAY_MILLISEC;
+			pDST->ms--;
+		}
+		else if (pDST->ms >= DAY_MILLISEC) 
+		{
+			pDST->ms -= DAY_MILLISEC;
+			pDST->ms++;
+		}
+		pDST->yr = year;
+	}
+}
+
+static gbUseDST = TRUE;
+
+int isindst(struct tm *pt)
+{
+	transitionTime DSTStart = { -1, 0, 0L }, DSTEnd = { -1, 0, 0L };
+
+	if(!gbUseDST) 
+		return 0;
+
+	if(!gbTZInfoCacheInitialized)
+		GetTZBias();
+
+	if((pt->tm_year != DSTStart.yr) || (pt->tm_year != DSTEnd.yr)) 
+	{	
+		if (gTZInfoCache.DaylightDate.wYear != 0 || gTZInfoCache.StandardDate.wYear != 0)
+			return 0;
+
+		cvtdate(1,
+					pt->tm_year,
+					gTZInfoCache.DaylightDate.wMonth,
+					gTZInfoCache.DaylightDate.wDay,
+					gTZInfoCache.DaylightDate.wDayOfWeek,
+					0,
+					gTZInfoCache.DaylightDate.wHour,
+					gTZInfoCache.DaylightDate.wMinute,
+					gTZInfoCache.DaylightDate.wSecond,
+					gTZInfoCache.DaylightDate.wMilliseconds,
+					&DSTStart);
+
+		cvtdate(0,
+					pt->tm_year,
+					gTZInfoCache.StandardDate.wMonth,
+					gTZInfoCache.StandardDate.wDay,
+					gTZInfoCache.StandardDate.wDayOfWeek,
+					0,
+					gTZInfoCache.StandardDate.wHour,
+					gTZInfoCache.StandardDate.wMinute,
+					gTZInfoCache.StandardDate.wSecond,
+					gTZInfoCache.StandardDate.wMilliseconds,
+					&DSTEnd);
+	}
+
+	if (DSTStart.yd < DSTEnd.yd) 
+	{
+		if ((pt->tm_yday < DSTStart.yd) || (pt->tm_yday > DSTEnd.yd))
+			return 0;
+		if ((pt->tm_yday > DSTStart.yd) && (pt->tm_yday < DSTEnd.yd))
+			return 1;
+	}
+	else 
+	{
+		if ( (pt->tm_yday < DSTEnd.yd) || (pt->tm_yday > DSTStart.yd) )
+			return 1;
+		if ( (pt->tm_yday > DSTEnd.yd) && (pt->tm_yday < DSTStart.yd) )
+			return 0;
+	}
+
+	long ms = 1000L * (pt->tm_sec + 60L * pt->tm_min + 3600L * pt->tm_hour);
+
+	if ( pt->tm_yday == DSTStart.yd ) 
+	{
+		if ( ms >= DSTStart.ms )
+			return 1;
+		else
+			return 0;
+	}
+	else 
+	{
+		// pt->tm_yday == DSTEnd.yd
+		if ( ms < DSTEnd.ms )
+			return 1;
+		else
+			return 0;
+	}
+}
+
+tm* localtime(const time_t *ptime)
+{
+	static const __int64 iOffset = 
+		GetDeltaSecs(YearToFileTime(1601), YearToFileTime(1970));
+
+	static tm  t;
+	FILETIME   f;
+	SYSTEMTIME s;
+	int		   TZBiasSecs;
+	int        DSTBiasSecs;
+
+	memset(&t, 0, sizeof(tm));
+	GetTZBias(&TZBiasSecs, &DSTBiasSecs);
+
+	__int64 iTime = ((__int64)*ptime + iOffset - (__int64)TZBiasSecs) * n1SecIn100NS;
+
+	f = Int64ToFileTime(iTime);
+
+	if(FileTimeToSystemTime(&f, &s))
+	{
+		struct tm t2 = SystemTimeToTm(s);
+		if(isindst(&t2))
+		{
+			f = Int64ToFileTime(iTime - DSTBiasSecs * n1SecIn100NS);
+			FileTimeToSystemTime(&f, &s);
+		}
+		t = SystemTimeToTm(s);
+	}
+
+	return &t;
+}
+
+time_t mktime(struct tm* pt)
+{
+	static const FILETIME f1970 = YearToFileTime(1970);
+
+	SYSTEMTIME s = TmToSystemTime(*pt);
+
+	pt->tm_yday = SystemTimeToYDay(s);
+
+	FILETIME f;
+	SystemTimeToFileTime( &s, &f );
+
+	int TZBiasSecs;
+	int DSTBiasSecs;
+	GetTZBias(&TZBiasSecs, &DSTBiasSecs);
+	if (isindst(pt))
+		TZBiasSecs += DSTBiasSecs;
+	
+	return (time_t)(GetDeltaSecs(f1970, f) + TZBiasSecs);
+}
+
+time_t time( time_t *timer )
+{
+	SYSTEMTIME s;
+	GetLocalTime( &s );
+	tm t = SystemTimeToTm(s);
+
+	return mktime( &t );
 }
