@@ -1,10 +1,9 @@
 //
-// (c) Yuri Kiryanov, openh323@kiryanov.com
-// for Openh323, www.Openh323.org
-//
-// Windows CE Port
-// Extra Multimedia declarations  
+// (c) 2000 Yuri Kiryanov, openh323@kiryanov.com
+// and Yuriy Gorvitovskiy
 // 
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
+// PWLib extras
 
 #ifndef __MMSYSTEMX_H__
 #define __MMSYSTEMX_H__
