@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.12 1996/06/28 13:08:55 robertj Exp $
+ * $Id: html.cxx,v 1.13 1996/08/19 13:40:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.13  1996/08/19 13:40:31  robertj
+ * Fixed incorrect formatting of HTML tags (cosmetic only).
+ *
  * Revision 1.12  1996/06/28 13:08:55  robertj
  * Changed PHTML class so can create html fragments.
  * Fixed nesting problem in tables.
@@ -169,7 +172,7 @@ void PHTML::Element::Output(PHTML & html) const
   PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
                                                 "HTML element out of context");
 
-  if (crlf == OpenCRLF && !html.Is(inElement))
+  if (crlf == BothCRLF || (crlf == OpenCRLF && !html.Is(inElement)))
     html << "\r\n";
 
   html << '<';
@@ -183,7 +186,7 @@ void PHTML::Element::Output(PHTML & html) const
     html << ' ' << attr;
 
   html << '>';
-  if (crlf != NoCRLF && (crlf == BothCRLF || html.Is(inElement)))
+  if (crlf == BothCRLF || (crlf == CloseCRLF && html.Is(inElement)))
     html << "\r\n";
 
   if (inElement != NumElementsInSet)
@@ -197,7 +200,7 @@ void PHTML::Element::AddAttr(PHTML &) const
 
 
 PHTML::HTML::HTML(const char * attr)
-  : Element("HTML", attr, InHTML, NumElementsInSet, NoCRLF)
+  : Element("HTML", attr, InHTML, NumElementsInSet, BothCRLF)
 {
 }
 
@@ -337,7 +340,7 @@ void PHTML::Heading::AddAttr(PHTML & html) const
 
 
 PHTML::BreakLine::BreakLine(const char * attr)
-  : Element("BR", attr, NumElementsInSet, InBody, BothCRLF)
+  : Element("BR", attr, NumElementsInSet, InBody, CloseCRLF)
 {
 }
 
@@ -617,7 +620,7 @@ void PHTML::TableStart::AddAttr(PHTML & html) const
 
 
 PHTML::TableEnd::TableEnd()
-  : Element("TABLE", "", InTable, InBody, OpenCRLF)
+  : Element("TABLE", "", InTable, InBody, BothCRLF)
 {
 }
 
