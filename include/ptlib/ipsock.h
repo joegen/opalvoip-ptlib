@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.45  2001/03/05 04:18:27  robertj
+ * Added net mask to interface info returned by GetInterfaceTable()
+ *
  * Revision 1.44  2001/01/29 06:41:18  robertj
  * Added printing of entry of interface table.
  *
@@ -523,7 +526,12 @@ class PIPSocket : public PSocket
 
       public:
         /// create an interface entry from a name, IP addr and MAC addr
-        InterfaceEntry(const PString & _name, const Address & _addr, const PString & _macAddr);
+        InterfaceEntry(
+          const PString & _name,
+          const Address & _addr,
+          const Address & _mask,
+          const PString & _macAddr
+        );
 
         /// Print to specified stream
         virtual void PrintOn(
@@ -536,12 +544,16 @@ class PIPSocket : public PSocket
         /// Get the address associated with the interface
         Address GetAddress() const { return ipAddr; }
 
+        /// Get the net mask associated with the interface
+        Address GetNetMask() const { return netMask; }
+
         /// Get the MAC address associate with the interface
         const PString & GetMACAddress() const { return macAddr; }
 
       protected:
         PString name;
         Address ipAddr;
+        Address netMask;
         PString macAddr;
     };
 
