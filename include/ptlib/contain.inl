@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.12 1994/01/13 05:33:41 robertj Exp $
+ * $Id: contain.inl,v 1.13 1994/01/13 08:42:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.12  1994/01/13 05:33:41  robertj
+ * Revision 1.13  1994/01/13 08:42:29  robertj
+ * Fixed missing copy constuctor and assignment operator for PString.
+ *
+ * Revision 1.12  1994/01/13  05:33:41  robertj
  * Added contructor to get caseless string from ordinary string.
  *
  * Revision 1.11  1994/01/03  04:42:23  robertj
@@ -100,6 +103,9 @@ PINLINE BOOL PAbstractArray::MakeUnique()
 PINLINE PString::PString()
   : PCharArray(1) { }
 
+PINLINE PString::PString(const PString & str)
+  : PCharArray(str) { }
+
 PINLINE PString::PString(const char * cstr)
   : PCharArray(strlen(PAssertNULL(cstr))+1) { strcpy(theArray, cstr); }
 
@@ -117,6 +123,9 @@ PINLINE BOOL PString::MakeMinimumSize()
 
 PINLINE PINDEX PString::Length() const
   { return strlen(theArray); }
+
+PINLINE PString & PString::operator=(const PString & str)
+  { PCharArray::operator=(str); return *this; }
 
 PINLINE PString PString::operator+(const PString & str) const
   { return operator+((const char *)str); }
