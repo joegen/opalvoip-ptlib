@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.40  1998/11/14 06:31:15  robertj
+ * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
+ *
  * Revision 1.39  1998/09/24 03:31:02  robertj
  * Added open software license.
  *
@@ -223,7 +226,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 BOOL PSocket::Write(const void * buf, PINDEX len)
 {
   flush();
-  return os_sendto(((char *)buf)+lastWriteCount, len, 0, NULL, 0);
+  return os_sendto(buf, len, 0, NULL, 0) && lastWriteCount >= len;
 }
 
 
@@ -415,6 +418,9 @@ BOOL PSocket::os_sendto(const void * buf,
 
   int sendResult = ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
   if (!ConvertOSError(sendResult))
+    return FALSE;
+
+  if (sendResult == 0)
     return FALSE;
 
   lastWriteCount = sendResult;
