@@ -29,10 +29,14 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.28  1999/01/02 00:55:48  robertj
-# Improved OSTYPE detection.
-# Supported solaris x86
+# Revision 1.29  1999/01/08 01:43:44  robertj
+# Changes to minimise the command line length.
+# FreeBSD pthreads support
 #
+# Changes to minimise the command line length.
+# FreeBSD pthreads support
+#
+# Revision 1.28  1999/01/02 00:55:48  robertj
 # Improved OSTYPE detection.
 # Supported solaris x86
 #
@@ -153,11 +157,17 @@ endif # linux
 
 ####################################################
 
+ifeq ($(OSTYPE),FreeBSD)
+
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64
 endif
+
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD
+
+ifdef P_PTHREADS
 CFLAGS	:= $(CFLAGS) -pthread
 endif
 
@@ -273,7 +283,7 @@ ENDLDLIBS	:= $(ENDLDLIBS) -lssl -lcrypto
 endif
 #
 
-STDCCFLAGS          := $(STDCCFLAGS) -DP_PLATFORM_HAS_THREADS -DP_PTHREADS
+
 # define Posix threads stuff
 ifdef P_PTHREADS
 #
@@ -296,7 +306,7 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DP_PTHREADS
 #
 endif
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR -Wall
+
 
 # compiler flags for all modes
 STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
