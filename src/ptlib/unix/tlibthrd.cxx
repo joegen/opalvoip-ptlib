@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.95  2002/10/16 11:26:29  rogerh
+ * Add missing include. Noticed by Matthias on the GnomeMeeting IRC
+ *
  * Revision 1.94  2002/10/10 03:09:48  robertj
  * Fixed high load race condition when starting threads.
  *
@@ -336,6 +339,7 @@
  *
  */
 
+#include <sched.h>	// for sched_yield
 #include <pthread.h>
 #include <sys/resource.h>
 
