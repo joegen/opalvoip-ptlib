@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.15  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.14  2002/01/28 21:22:10  dereks
  * Fix the method for returning the device name.
  *
@@ -613,14 +616,14 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
       if ( (wi>width/3)&&(wi<width*2/3)&&
 	   ( ((gCount+hi)%height)<16)&&
 	   ( (hi%4)<2)                     )
-	frame[(hi*width)+wi] = (u_char) 16;
+	frame[(hi*width)+wi] = 16;
       else
-	frame[(hi*width)+wi] = (u_char)(((colourNumber+((wi*7)/width))%7)*35+26);
+	frame[(hi*width)+wi] = (BYTE)(((colourNumber+((wi*7)/width))%7)*35+26);
 
   for(hi=1; hi<=height; hi++)                 //fast moving block going downwards.
     for(wi=width/9; wi<(2*width/9); wi++) 
       if(  (( (gCount*4)+hi)%height)<20)
-	frame[((height-hi)*width)+wi] = (u_char) 16;
+	frame[((height-hi)*width)+wi] = 16;
 
   int halfWidth  = width/2;
   int halfHeight = height/2;
