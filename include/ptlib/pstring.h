@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.6 1995/01/15 04:50:20 robertj Exp $
+ * $Id: pstring.h,v 1.7 1995/02/05 00:48:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.6  1995/01/15 04:50:20  robertj
+ * Revision 1.7  1995/02/05 00:48:09  robertj
+ * Fixed template version.
+ *
+ * Revision 1.6  1995/01/15  04:50:20  robertj
  * Added inlines on friend functions, required by GNU compiler.
  *
  * Revision 1.5  1995/01/10  11:43:41  robertj
@@ -1253,7 +1256,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
     virtual BOOL SetAt(
       const K & key,       // Key for position in dictionary to add object.
       const PString & str  // New string value to put into the dictionary.
-    ) { return PAbstractDictionary::SetAt(index, PNEW PString(str)); }
+    ) { return PAbstractDictionary::SetAt(key, PNEW PString(str)); }
     /* Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
        AllowDeleteObjects option is set then the old object is also deleted.
@@ -1293,7 +1296,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 
   protected:
-    PDictionary(int dummy, const cls * c)
+    PStringDictionary(int dummy, const PStringDictionary * c)
       : PAbstractDictionary(dummy, c) { }
 };
 
@@ -1311,11 +1314,11 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
    See the $H$PStringDictionary and $H$PAbstractDictionary classes for more
    information.
  */
-#define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
-  PDECLARE_CLASS(cls, POrdinalDictionary<K>)
+#define PDECLARE_STRING_DICTIONARY(cls, K) \
+  PDECLARE_CLASS(cls, PStringDictionary<K>) \
   protected: \
     cls(int dummy, const cls * c) \
-      : POrdinalDictionary<K>(dummy, c) { } \
+      : PStringDictionary<K>(dummy, c) { } \
   public: \
     cls() \
       : PDictionary<K>() { } \
@@ -1335,7 +1338,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
    See the $H$PStringDictionary class and $H$PDECLARE_STRING_DICTIONARY macro
    for more information.
  */
-#define PORDINAL_DICTIONARY(cls, K) typedef POrdinalDictionary<K> cls
+#define PSTRING_DICTIONARY(cls, K) typedef PStringDictionary<K> cls
 
 
 #else // PHAS_TEMPLATES
