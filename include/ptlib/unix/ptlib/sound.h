@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.11  2001/07/09 06:16:15  yurik
+ * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
+ *
  * Revision 1.10  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -59,17 +62,18 @@
 
 #ifndef _PSOUND
 
-#pragma interface
-
-
-///////////////////////////////////////////////////////////////////////////////
-// declare type for sound handle dictionary
-
 #ifdef __BEOS__
-class PSoundInput;
-class PSoundPlayer;
-#endif
-
+#include <media/MediaFormats.h>
+ 
+class BSoundPlayer;
+class BMediaRecorder;
+ 
+class P_CircularBuffer;
+template <class ISample, class IntSample, class OSample> class BaseResampler;
+typedef class BaseResampler<short, long, short> Resampler;
+#endif // __BEOS__
+ 
+#pragma interface
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
@@ -86,6 +90,45 @@ class PSoundPlayer;
     BOOL Write(const void * buf, PINDEX len);
     BOOL Read(void * buf, PINDEX len);
   
+#ifdef __BEOS__
+
+  public:
+    virtual BOOL IsOpen() const;
+    
+  private:
+  	// Only one of the following pointers can be non-NULL at a time.
+	BMediaRecorder		   *mRecorder;
+	BSoundPlayer		   *mPlayer;
+
+	// Raw media format specifier used for sound player.
+	// It also stores the parameters (number of channels, sample rate etc) so
+	// no need to store them separately here.
+	// For the recorder, a media_format struct is created temporarily with
+	// the data from this raw format spec.
+	media_raw_audio_format	mFormat;
+
+	// The class holds a circular buffer whose size is set with SetBuffers.
+	// We only need one buffer for BeOS. The number of buffers that was set
+	// is only kept for reference.
+	friend class P_CircularBuffer;
+	P_CircularBuffer	   *mBuffer;			// The internal buffer
+	PINDEX					mNumBuffers;		// for reference only!
+	
+	// Just some helpers so that the Open function doesn't get too big
+	BOOL OpenPlayer(void);
+	BOOL OpenRecorder(const PString &dev);
+
+	// internal buffer setting function so we can disable the SetBuffers
+	// function for debug purposes
+	// size is the total size, threshold is the fill/drain threshold on
+	// the buffer
+	BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
+
+	// Input resampler
+	Resampler			   *mResampler;
+
+#else // !__BEOS__
+
   protected:
     BOOL  Setup();
 
@@ -95,11 +138,6 @@ class PSoundPlayer;
     PString device;
     BOOL isInitialised;
 
-#ifdef __BEOS__
-    PSoundInput* mpInput;
-    PSoundPlayer* mpOutput;
-#endif
-
     unsigned mNumChannels;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
@@ -107,5 +145,6 @@ class PSoundPlayer;
 
 #endif
 
+#endif // _PSOUND_PLATFORM_INCLUDE
 
 // End Of File ////////////////////////////////////////////////////////////////
