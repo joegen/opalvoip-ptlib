@@ -2338,6 +2338,7 @@ EXPORTS
     ?GetDeviceNames@PVideoOutputDevicePPM@@UBE?AVPStringList@@XZ @4679 NONAME ;public: virtual class PStringList  __thiscall PVideoOutputDevicePPM::GetDeviceNames(void)const 
     ?GetDirectory@PFilePath@@QBE?AVPDirectory@@XZ @1441 NONAME ;public: class PDirectory  __thiscall PFilePath::GetDirectory(void)const 
     ?GetDSR@PSerialChannel@@QAEHXZ @1442 NONAME ;public: int __thiscall PSerialChannel::GetDSR(void)
+    ?GetDstColourFormat@PColourConverter@@QAEABVPString@@XZ @4847 NONAME ;public: class PString const & __thiscall PColourConverter::GetDstColourFormat(void)
     ?GetDstFrameSize@PColourConverter@@QBEHAAI0@Z @3789 NONAME ;public: int __thiscall PColourConverter::GetDstFrameSize(unsigned int &,unsigned int &)const 
     ?GetElementAt@Table@PHashTable@@QAEPAVElement@2@ABVPObject@@@Z @1443 NONAME ;public: class PHashTable::Element * __thiscall PHashTable::Table::GetElementAt(class PObject const &)
     ?GetElementsIndex@Table@PHashTable@@QBEHPBVPObject@@HH@Z @1444 NONAME ;public: int __thiscall PHashTable::Table::GetElementsIndex(class PObject const *,int,int)const 
@@ -2591,6 +2592,7 @@ EXPORTS
     ?GetSize@PContainer@@UBEHXZ @1600 NONAME ;public: virtual int __thiscall PContainer::GetSize(void)const 
     ?GetSize@PWaveFormat@@QBEHXZ @2691 NONAME ;public: int __thiscall PWaveFormat::GetSize(void)const 
     ?GetSpeed@PSerialChannel@@QBEKXZ @1601 NONAME ;public: unsigned long __thiscall PSerialChannel::GetSpeed(void)const 
+    ?GetSrcColourFormat@PColourConverter@@QAEABVPString@@XZ @4848 NONAME ;public: class PString const & __thiscall PColourConverter::GetSrcColourFormat(void)
     ?GetSrcFrameSize@PColourConverter@@QBEHAAI0@Z @3790 NONAME ;public: int __thiscall PColourConverter::GetSrcFrameSize(unsigned int &,unsigned int &)const 
     ?GetStartTime@PProcess@@QBE?AVPTime@@XZ @4494 NONAME ;public: class PTime  __thiscall PProcess::GetStartTime(void)const 
     ?GetStatus@PRemoteConnection@@QBE?AW4Status@1@XZ @1602 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetStatus(void)const 
