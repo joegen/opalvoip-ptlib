@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.5 1996/02/03 11:01:25 robertj Exp $
+ * $Id: html.h,v 1.6 1996/02/08 11:50:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.6  1996/02/08 11:50:38  robertj
+ * More implementation.
+ *
  * Revision 1.5  1996/02/03 11:01:25  robertj
  * Further implementation.
  *
@@ -26,7 +29,7 @@
  */
 
 #ifndef _PHTML
-#if _MSC_VER > 800
+#if !defined(_MSC_VER) || _MSC_VER > 800
 #define _PHTML
 
 #ifdef __GNUC__
@@ -99,9 +102,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       InAbbrev,
       InInsertedText,
       InDeletedText,
-      InUnorderedList,
-      InOrderedList,
-      InDefinitionList,
+      InList,
       InListHeading,
       InDefinitionTerm,
       InTable,
@@ -118,17 +119,19 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     class Element {
       protected:
-        enum OptionalCRLF { NoCRLF, CloseCRLF, BothCRLF };
+        enum OptionalCRLF { NoCRLF, OpenCRLF, CloseCRLF, BothCRLF };
         Element(
           const char * nam,
           ElementInSet elmt,
+          ElementInSet req,
           OptionalCRLF opt
-        ) { name = nam; inElement = elmt; crlf = opt; }
+        ) { name = nam; inElement = elmt; reqElement = req; crlf = opt; }
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
         const char * name;
         ElementInSet inElement;
+        ElementInSet reqElement;
         OptionalCRLF crlf;
       friend ostream & operator<<(ostream & strm, const Element & elmt)
         { elmt.Output((PHTML&)strm); return strm; }
@@ -159,14 +162,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         const char * titleString;
     };
 
-    class BodyElement : public Element {
-      protected:
-        BodyElement(const char * nam, ElementInSet elmt, OptionalCRLF opt)
-          : Element(nam, elmt, opt) { }
-        virtual void Output(PHTML & html) const;
-    };
-
-    class Banner : public BodyElement {
+    class Banner : public Element {
       public:
         Banner();
     };
@@ -175,10 +171,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
       ClearDefault, ClearLeft, ClearRight, ClearAll, ClearEn, ClearPixels,
       NumClearCodes
     };
-    class ClearedElement : public BodyElement {
+    class ClearedElement : public Element {
       protected:
-        ClearedElement(const char * nam, ElementInSet elmt, OptionalCRLF opt,
-                       ClearCodes clear, int distance);
+        ClearedElement(const char * nam,
+                       ElementInSet elmt,
+                       ElementInSet req,
+                       OptionalCRLF opt,
+                       ClearCodes clear,
+                       int distance);
         virtual void AddAttr(PHTML & html) const;
       private:
         ClearCodes clearCode;
@@ -196,8 +196,14 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
     class ComplexElement : public ClearedElement {
       protected:
-        ComplexElement(const char * nam, ElementInSet elmt, OptionalCRLF opt,
-                AlignCodes align, NoWrapCodes noWrap, ClearCodes clear, int distance);
+        ComplexElement(const char * nam,
+                       ElementInSet elmt,
+                       ElementInSet req,
+                       OptionalCRLF opt,
+                       AlignCodes align,
+                       NoWrapCodes noWrap,
+                       ClearCodes clear,
+                       int distance);
         virtual void AddAttr(PHTML & html) const;
       private:
         AlignCodes alignCode;
@@ -265,7 +271,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         int width;
     };
 
-    class Anchor : public BodyElement {
+    class Anchor : public Element {
       public:
         Anchor(const char * href = NULL);
         Anchor(const PString & hrefStr);
@@ -277,9 +283,15 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
     class ImageElement : public ComplexElement {
       protected:
-        ImageElement(const char * nam, ElementInSet elmt, OptionalCRLF opt,
-                     const char * image, AlignCodes align, NoWrapCodes noWrap,
-                     ClearCodes clear, int distance);
+        ImageElement(const char * nam,
+                     ElementInSet elmt,
+                     ElementInSet req,
+                     OptionalCRLF opt,
+                     const char * image,
+                     AlignCodes align,
+                     NoWrapCodes noWrap,
+                     ClearCodes clear,
+                     int distance);
         virtual void AddAttr(PHTML & html) const;
         const char * srcString;
     };
@@ -346,14 +358,12 @@ PDECLARE_CLASS(PHTML, PStringStream)
                    int distance = 1);
     };
 
-    class Credit : public BodyElement {
+    class Credit : public Element {
       public:
         Credit();
-      protected:
-        virtual void Output(PHTML & html) const;
     };
 
-    class SetTab : public BodyElement {
+    class SetTab : public Element {
       public:
         SetTab(const char * id);
         SetTab(const PString & idStr);
@@ -383,77 +393,77 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
-    class Bold : BodyElement {
-      public: Bold() : BodyElement("B", InBold, NoCRLF) { }
+    class Bold : Element {
+      public: Bold() : Element("B", InBold, InBody, NoCRLF) { }
     };
-    class Italic : BodyElement {
-      public: Italic() : BodyElement("I", InItalic, NoCRLF) { }
+    class Italic : Element {
+      public: Italic() : Element("I", InItalic, InBody, NoCRLF) { }
     };
-    class TeleType : BodyElement {
-      public: TeleType() : BodyElement("TT", InTeleType, NoCRLF) { }
+    class TeleType : Element {
+      public: TeleType() : Element("TT", InTeleType, InBody, NoCRLF) { }
     };
-    class Underline : BodyElement {
-      public: Underline() : BodyElement("U", InUnderline, NoCRLF) { }
+    class Underline : Element {
+      public: Underline() : Element("U", InUnderline, InBody, NoCRLF) { }
     };
-    class StrikeThrough : BodyElement {
-      public: StrikeThrough() : BodyElement("S", InStrikeThrough, NoCRLF) { }
+    class StrikeThrough : Element {
+      public: StrikeThrough() : Element("S",InStrikeThrough,InBody,NoCRLF) { }
     };
-    class Big : BodyElement {
-      public: Big() : BodyElement("BIG", InBig, NoCRLF) { }
+    class Big : Element {
+      public: Big() : Element("BIG", InBig, InBody, NoCRLF) { }
     };
-    class Small : BodyElement {
-      public: Small() : BodyElement("SMALL", InSmall, NoCRLF) { }
+    class Small : Element {
+      public: Small() : Element("SMALL", InSmall, InBody, NoCRLF) { }
     };
-    class Subscript : BodyElement {
-      public: Subscript() : BodyElement("SUB", InSubscript, NoCRLF) { }
+    class Subscript : Element {
+      public: Subscript() : Element("SUB", InSubscript, InBody, NoCRLF) { }
     };
-    class Superscript : BodyElement {
-      public: Superscript() : BodyElement("SUP", InSuperscript, NoCRLF) { }
+    class Superscript : Element {
+      public: Superscript() : Element("SUP", InSuperscript, InBody, NoCRLF) { }
     };
-    class Emphasis : BodyElement {
-      public: Emphasis() : BodyElement("EM", InEmphasis, NoCRLF) { }
+    class Emphasis : Element {
+      public: Emphasis() : Element("EM", InEmphasis, InBody, NoCRLF) { }
     };
-    class Cite : BodyElement {
-      public: Cite() : BodyElement("CITE", InCite, NoCRLF) { }
+    class Cite : Element {
+      public: Cite() : Element("CITE", InCite, InBody, NoCRLF) { }
     };
-    class Strong : BodyElement {
-      public: Strong() : BodyElement("STRONG", InStrong, NoCRLF) { }
+    class Strong : Element {
+      public: Strong() : Element("STRONG", InStrong, InBody, NoCRLF) { }
     };
-    class Code : BodyElement {
-      public: Code() : BodyElement("CODE", InCode, NoCRLF) { }
+    class Code : Element {
+      public: Code() : Element("CODE", InCode, InBody, NoCRLF) { }
     };
-    class Sample : BodyElement {
-      public: Sample() : BodyElement("SAMP", InSample, NoCRLF) { }
+    class Sample : Element {
+      public: Sample() : Element("SAMP", InSample, InBody, NoCRLF) { }
     };
-    class Keyboard : BodyElement {
-      public: Keyboard() : BodyElement("KBD", InKeyboard, NoCRLF) { }
+    class Keyboard : Element {
+      public: Keyboard() : Element("KBD", InKeyboard, InBody, NoCRLF) { }
     };
-    class Variable : BodyElement {
-      public: Variable() : BodyElement("VAR", InVariable, NoCRLF) { }
+    class Variable : Element {
+      public: Variable() : Element("VAR", InVariable, InBody, NoCRLF) { }
     };
-    class Definition : BodyElement {
-      public: Definition() : BodyElement("DFN", InDefinition, NoCRLF) { }
+    class Definition : Element {
+      public: Definition() : Element("DFN", InDefinition, InBody, NoCRLF) { }
     };
-    class Quote : BodyElement {
-      public: Quote() : BodyElement("Q", InQuote, NoCRLF) { }
+    class Quote : Element {
+      public: Quote() : Element("Q", InQuote, InBody, NoCRLF) { }
     };
-    class Author : BodyElement {
-      public: Author() : BodyElement("AU", InAuthor, NoCRLF) { }
+    class Author : Element {
+      public: Author() : Element("AU", InAuthor, InBody, NoCRLF) { }
     };
-    class Person : BodyElement {
-      public: Person() : BodyElement("PERSON", InPerson, NoCRLF) { }
+    class Person : Element {
+      public: Person() : Element("PERSON", InPerson, InBody, NoCRLF) { }
     };
-    class Acronym : BodyElement {
-      public: Acronym() : BodyElement("ACRONYM", InAcronym, NoCRLF) { }
+    class Acronym : Element {
+      public: Acronym() : Element("ACRONYM", InAcronym, InBody, NoCRLF) { }
     };
-    class Abbrev : BodyElement {
-      public: Abbrev() : BodyElement("ABBREV", InAbbrev, NoCRLF) { }
+    class Abbrev : Element {
+      public: Abbrev() : Element("ABBREV", InAbbrev, InBody, NoCRLF) { }
     };
-    class InsertedText : BodyElement {
-      public: InsertedText() : BodyElement("INS", InInsertedText, NoCRLF) { }
+    class InsertedText : Element {
+      public: InsertedText() : Element("INS",InInsertedText,InBody,NoCRLF) { }
     };
-    class DeletedText : BodyElement {
-      public: DeletedText() : BodyElement("DEL", InDeletedText, NoCRLF) { }
+    class DeletedText : Element {
+      public: DeletedText() : Element("DEL", InDeletedText, InBody, NoCRLF) { }
     };
 
 
@@ -464,7 +474,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
     class ListElement : public ClearedElement {
       protected:
         ListElement(
-          const char * nam, ElementInSet elmt,
+          const char * nam,
           CompactCodes compact = NotCompact,
           ClearCodes clear = ClearDefault,
           int distance = 1
@@ -525,8 +535,6 @@ PDECLARE_CLASS(PHTML, PStringStream)
     class ListHeading : public Element {
       public:
         ListHeading();
-      protected:
-        virtual void Output(PHTML & html) const;
     };
 
     class ListItem : public ClearedElement {
@@ -567,7 +575,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       NoBorder,
       Border
     };
-    class Table : public BodyElement {
+    class Table : public Element {
       public:
         Table(BorderCodes border = NoBorder);
       protected:
@@ -576,7 +584,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         BOOL borderFlag;
     };
 
-    class TableElement : public BodyElement {
+    class TableElement : public Element {
       public:
         TableElement(
           const char * nam,
@@ -606,44 +614,44 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
-    class Form : public BodyElement {
+    class Form : public Element {
       public:
         Form(
+          const char * method = NULL,
           const char * action = NULL,
-          const char * method = NULL,
           const char * encoding = NULL,
           const char * script = NULL
         );
         Form(
+          const PString & methodStr,
+          const char * action = NULL,
+          const char * mimeType = NULL,
+          const char * script = NULL
+        );
+        Form(
+          const PString & methodStr,
           const PString & actionStr,
-          const char * method = NULL,
-          const char * encoding = NULL,
+          const char * mimeType = NULL,
+          const char * script = NULL
+        );
+        Form(
+          const PString & methodStr,
+          const PString & actionStr,
+          const PString & mimeType,
           const char * script = NULL
         );
         Form(
           const PString & actionStr,
           const PString & methodStr,
-          const char * encoding = NULL,
-          const char * script = NULL
-        );
-        Form(
-          const PString & actionStr,
-          const PString & methodStr,
-          const PString & encoding,
-          const char * script = NULL
-        );
-        Form(
-          const PString & actionStr,
-          const PString & methodStr,
-          const PString & encoding,
+          const PString & mimeType,
           const PString & script
         );
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * actionString;
         const char * methodString;
-        const char * encodingString;
+        const char * actionString;
+        const char * mimeTypeString;
         const char * scriptString;
     };
 
@@ -651,7 +659,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
       Enabled,
       Disabled
     };
-    class FieldElement : public BodyElement {
+    class FieldElement : public Element {
       protected:
         FieldElement(
           const char * nam,
@@ -769,6 +777,22 @@ PDECLARE_CLASS(PHTML, PStringStream)
         InputText(
           const PString & fnameStr,
           int size,
+          const char * init = NULL,
+          int maxLength = 0,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        InputText(
+          const char * fnameStr,
+          int size,
+          const PString & init,
+          int maxLength = 0,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        InputText(
+          const PString & fnameStr,
+          int size,
           const PString & init,
           int maxLength = 0,
           DisableCodes disabled = Enabled,
@@ -779,6 +803,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
           const char * type,
           const char * fname,
           int size,
+          const char * init,
           int maxLength,
           DisableCodes disabled,
           const char * error
@@ -794,6 +819,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
         InputPassword(
           const char * fname,
           int size,
+          const char * init = NULL,
           int maxLength = 0, 
           DisableCodes disabled = Enabled,
           const char * error = NULL
@@ -801,6 +827,23 @@ PDECLARE_CLASS(PHTML, PStringStream)
         InputPassword(
           const PString & fnameStr,
           int size,
+          const char * init = NULL,
+          int maxLength = 0, 
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        InputPassword(
+          const char * fname,
+          int size,
+          const PString & initStr,
+          int maxLength = 0, 
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        InputPassword(
+          const PString & fnameStr,
+          int size,
+          const PString & initStr,
           int maxLength = 0, 
           DisableCodes disabled = Enabled,
           const char * error = NULL
@@ -815,13 +858,13 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         CheckBox(
           const char * fname,
-          CheckedCodes check = Checked,
+          CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         CheckBox(
           const PString & fnameStr,
-          CheckedCodes check = Checked,
+          CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
@@ -842,13 +885,13 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         RadioButton(
           const char * fname,
-          CheckedCodes check = Checked,
+          CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         RadioButton(
           const PString & fnameStr,
-          CheckedCodes check = Checked,
+          CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
