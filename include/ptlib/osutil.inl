@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.25 1995/01/15 04:51:09 robertj Exp $
+ * $Id: osutil.inl,v 1.26 1995/01/18 09:00:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.25  1995/01/15 04:51:09  robertj
+ * Revision 1.26  1995/01/18 09:00:40  robertj
+ * Added notifiers to timers.
+ *
+ * Revision 1.25  1995/01/15  04:51:09  robertj
  * Mac compatibility.
  * Added structure function to structured files.
  *
@@ -236,6 +239,12 @@ PINLINE BOOL PTimer::IsRunning() const
 
 PINLINE BOOL PTimer::IsPaused() const
   { return state == Paused; }
+
+PINLINE const PNotifier & PTimer::GetNotifier() const
+  { return callback; }
+
+PINLINE void PTimer::SetNotifier(const PNotifier & func)
+  { callback = func; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
