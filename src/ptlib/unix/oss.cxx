@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.19  2000/07/02 04:55:18  craigs
+ * Fixed stupid mistake with fix for OSS race condition
+ *
  * Revision 1.18  2000/07/02 04:50:44  craigs
  * Fixed potential race condition in OSS initialise
  *
@@ -359,10 +362,6 @@ BOOL PSoundChannel::Setup()
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
-  // ensure device is marked as initialised
-  isInitialised       = TRUE;
-  entry.isInitialised = TRUE;
-
   // set default return status
   BOOL stat = TRUE;
 
@@ -404,6 +403,10 @@ BOOL PSoundChannel::Setup()
       }
     }
   }
+
+  // ensure device is marked as initialised
+  isInitialised       = TRUE;
+  entry.isInitialised = TRUE;
 
   return stat;
 }
