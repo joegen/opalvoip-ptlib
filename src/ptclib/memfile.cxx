@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.cxx,v $
+ * Revision 1.4  2002/12/19 03:35:43  robertj
+ * Fixed missing set of lastWriteCount in Write() function.
+ *
  * Revision 1.3  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -88,6 +91,7 @@ BOOL PMemoryFile::Write(const void * buf, PINDEX len)
 {
   memcpy(data.GetPointer(position+len) + position, buf, len);
   position += len;
+  lastWriteCount = len;
   return TRUE;
 }
 
