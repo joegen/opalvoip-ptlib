@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.34  2001/09/20 05:23:39  robertj
+ * Fixed race deadlock problem in channel abort I/O function
+ *
  * Revision 1.33  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -293,13 +296,12 @@ BOOL PChannel::Close()
 static void AbortIO(PThread * & thread, PMutex & mutex)
 {
   mutex.Wait();
-  while (thread != NULL) {
+  if (thread != NULL)
     thread->PXAbortBlock();
-    mutex.Signal();
-    PThread::Yield();
-    mutex.Wait();
-  }
   mutex.Signal();
+
+  while (thread != NULL)
+    PThread::Yield();
 }
 
 BOOL PChannel::PXClose()
