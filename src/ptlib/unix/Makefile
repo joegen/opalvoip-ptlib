@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.80  2001/07/20 07:36:59  rogerh
+# Move ESD detection.
+#
 # Revision 1.79  2001/07/19 09:53:29  rogerh
 # Add the PWAVFile class to read and write .wav files
 #
@@ -363,14 +366,14 @@ SOUND_SOURCE = beaudio.cxx \
 	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
 endif
 
-ifdef HAS_ESD
-SOUND_SOURCE = esdaudio.cxx
-endif
-
 VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
                $(COMMON_SRC_DIR)/videoio.cxx \
 	       	   video4beos.cxx \
 	       	   $(COMMON_SRC_DIR)/vconvert.cxx
+endif
+
+ifdef HAS_ESD
+SOUND_SOURCE = esdaudio.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
