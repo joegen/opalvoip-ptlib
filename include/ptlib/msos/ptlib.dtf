@@ -304,6 +304,7 @@ EXPORTS
     ??0P_YUV420P_YUV411P_Registration@@QAE@XZ @257 NONAME ;public: __thiscall P_YUV420P_YUV411P_Registration::P_YUV420P_YUV411P_Registration(void)
     ??0P_YUV422_YUV420P_Registration@@QAE@XZ @258 NONAME ;public: __thiscall P_YUV422_YUV420P_Registration::P_YUV422_YUV420P_Registration(void)
     ??0P_YUV422_YUV422_Registration@@QAE@XZ @259 NONAME ;public: __thiscall P_YUV422_YUV422_Registration::P_YUV422_YUV422_Registration(void)
+    ??0Reference@PContainer@@QAE@H@Z @4834 NONAME ;public: __thiscall PContainer::Reference::Reference(int)
     ??0RegistryKey@@QAE@ABVPString@@W4OpenMode@0@@Z @260 NONAME ;public: __thiscall RegistryKey::RegistryKey(class PString const &,enum RegistryKey::OpenMode)
     ??0SecurityID@@QAE@PAU_SID_IDENTIFIER_AUTHORITY@@EKKKKKKKK@Z @261 NONAME ;public: __thiscall SecurityID::SecurityID(struct _SID_IDENTIFIER_AUTHORITY *,unsigned char,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)
     ??0SecurityID@@QAE@PBD0PADPAKPAW4_SID_NAME_USE@@@Z @262 NONAME ;public: __thiscall SecurityID::SecurityID(char const *,char const *,char *,unsigned long *,enum _SID_NAME_USE *)
