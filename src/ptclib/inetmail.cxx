@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.3 1996/03/18 13:33:16 robertj Exp $
+ * $Id: inetmail.cxx,v 1.4 1996/05/26 03:46:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.4  1996/05/26 03:46:51  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.3  1996/03/18 13:33:16  robertj
  * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
@@ -543,7 +546,7 @@ BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
 
 BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer)
 {
-  int count = 0;
+  PINDEX count = 0;
   int c;
   while ((c = ReadChar()) >= 0) {
     if (count >= buffer.GetSize())
