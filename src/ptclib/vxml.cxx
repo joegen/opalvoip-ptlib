@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.17  2002/08/27 02:20:09  craigs
+ * Added <break> command in prompt blocks
+ * Fixed potential deadlock
+ * Added <prompt> command in top level fields, thanks to Alexander Kovatch
+ *
  * Revision 1.16  2002/08/15 04:11:16  robertj
  * Fixed shutdown problems with closing vxml session, leaks a thread.
  * Fixed potential problems with indirect channel Close() function.
@@ -85,6 +90,10 @@
 #if P_EXPAT
 
 #define G7231_FRAME_SIZE  30
+
+#define SMALL_BREAK_MSECS   1000
+#define MEDIUM_BREAK_MSECS  2500
+#define LARGE_BREAK_MSECS   5000
 
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
@@ -212,18 +221,17 @@ BOOL PVXMLSession::Execute()
 
 BOOL PVXMLSession::ExecuteWithoutLock()
 {
-  if (forceEnd) {
-    OnEndSession();
-    Close(); 
-    return TRUE;
-  }
-
   // check to see if a vxml thread has stopped since last we looked
   if ((vxmlThread != NULL) && (vxmlThread->IsTerminated())) {
     vxmlThread->WaitForTermination();
     delete vxmlThread;
     vxmlThread = NULL;
-    return vxmlStatus;
+  }
+
+  // check to see if we are ending a call
+  if (forceEnd) {
+    OnEndSession();
+    return FALSE;
   }
 
   // if:
@@ -263,8 +271,6 @@ void PVXMLSession::DialogExecute(PThread &, INT)
     if (OnEmptyAction())
       forceEnd = TRUE;
   }
-
-  vxmlStatus = FALSE;
 }
 
 
@@ -376,6 +382,16 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
 {
   if (outgoingChannel != NULL)
     outgoingChannel->QueueData(data, repeat, delay);
+
+  return TRUE;
+}
+
+BOOL PVXMLSession::PlaySilence(PINDEX msecs)
+{
+  if (outgoingChannel != NULL) {
+    PBYTEArray nothing;
+    outgoingChannel->QueueData(nothing, 1, msecs);
+  }
 
   return TRUE;
 }
@@ -496,7 +512,7 @@ BOOL PVXMLDialog::Load()
       PXMLElement * element = (PXMLElement *)object;
       PVXMLFormItem * formItem = NULL;
 
-      if (element->GetName() == "block")
+      if (element->GetName() == "block" || element->GetName() == "prompt")
         formItem = new PVXMLBlockItem(vxml, *element, *this);
 
       else if (element->GetName() == "var") 
@@ -621,6 +637,28 @@ BOOL PVXMLFormItem::ProcessPrompt(PXMLElement & rootElement)
         if (object->IsData()) {
           PString text = ((PXMLData *)object)->GetString();
           SayAs(className, text);
+        }
+      }
+
+      else if (element->GetName() *= "break") {
+        if (element->HasAttribute("msecs"))
+          vxml.PlaySilence(element->GetAttribute("msecs").AsInteger());
+        
+        else if (element->HasAttribute("size")) {
+          PString size = element->GetAttribute("size");
+          if (size *= "none")
+            ;
+          else if (size *= "small")
+            vxml.PlaySilence(SMALL_BREAK_MSECS);
+          else if (size *= "large")
+            vxml.PlaySilence(LARGE_BREAK_MSECS);
+          else 
+            vxml.PlaySilence(MEDIUM_BREAK_MSECS);
+        } 
+        
+        // default to medium pause
+        else {
+          vxml.PlaySilence(MEDIUM_BREAK_MSECS);
         }
       }
     }
@@ -987,8 +1025,10 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
       }
 
       // if nothing in queue, then re-execute VXML
-      if (qSize == 0)
-        vxml.Execute();
+      if (qSize == 0) {
+        if (!vxml.Execute())
+          return FALSE;
+      }
 
       // otherwise queue the next data item
       else {
@@ -1049,8 +1089,10 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
             PWaitAndSignal m(queueMutex);
             qSize = playQueue.GetSize();
           }
-          if (qSize == 0)
-            vxml.Execute();
+          if (qSize == 0) {
+            if (!vxml.Execute())
+              return FALSE;
+          }
         }
       }
     }
