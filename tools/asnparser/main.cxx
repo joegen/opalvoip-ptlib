@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.26  2000/01/19 12:33:07  robertj
+ * Fixed parsing of OID's in IMPORTS section.
+ *
  * Revision 1.25  2000/01/19 03:38:12  robertj
  * Fixed support for parsing multiple IMPORTS
  *
@@ -3285,9 +3288,9 @@ ImportModule::ImportModule(PString * name, TypesList * syms)
 
 void ImportModule::PrintOn(ostream & strm) const
 {
-  strm << "  " << fullModuleName << " (" << shortModuleName << "): ";
+  strm << "  " << fullModuleName << " (" << shortModuleName << "):\n";
   for (PINDEX i = 0; i < symbols.GetSize(); i++)
-    strm << symbols[i] << ' ';
+    strm << "    " << symbols[i];
   strm << '\n';
 }
 
