@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.78  2001/11/14 10:37:32  rogerh
+ * Define _SIZEOF_ADDR_IFREQ as OpenBSD does not have it
+ *
  * Revision 1.77  2001/10/28 23:00:10  robertj
  * Fixed Solaris and IRIX compatibility issue, thanks Andre Schulze
  *
@@ -1323,6 +1326,15 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
       }
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+
+// Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
+#ifndef _SIZEOF_ADDR_IFREQ
+#define _SIZEOF_ADDR_IFREQ(ifr) \
+        ((ifr).ifr_addr.sa_len > sizeof(struct sockaddr) ? \
+         (sizeof(struct ifreq) - sizeof(struct sockaddr) + \
+          (ifr).ifr_addr.sa_len) : sizeof(struct ifreq))
+#endif
+
       // move the ifName pointer along to the next ifreq entry
       ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #else
