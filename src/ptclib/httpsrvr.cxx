@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.42  2002/08/27 23:49:08  robertj
+ * Fixed security hole where possible to get any file on disk when using
+ *   PHTTPDirectory HTTP resource.
+ *
  * Revision 1.41  2002/07/17 08:43:52  robertj
  * Fixed closing of html msg on generated post output.
  *
@@ -1834,7 +1838,22 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                           const PMultipartFormInfoArray & multipartFormInfo,
 			                    PHTTPServer & socket)
 {
-  return new PHTTPDirRequest(url, inMIME, multipartFormInfo, socket);
+  PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, socket);
+
+  const PStringArray & path = url.GetPath();
+  request->realPath = basePath;
+  PINDEX i;
+  for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)
+    request->realPath += path[i] + PDIR_SEPARATOR;
+
+  // append the last path element
+  if (i < path.GetSize())
+    request->realPath += path[i];
+
+  if (request->realPath.Find(basePath) != 0)
+    request->realPath = basePath;
+
+  return request;
 }
 
 
@@ -1874,24 +1893,11 @@ BOOL PHTTPDirectory::CheckAuthority(PHTTPServer & server,
                              const PHTTPRequest & request,
                       const PHTTPConnectionInfo & conInfo)
 {
-  PFilePath & realPath = ((PHTTPDirRequest&)request).realPath;
-
-  // construct the real path name
-  const PStringArray & path = request.url.GetPath();
-  realPath = basePath;
-  PINDEX i;
-  for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)
-    realPath += path[i] + PDIR_SEPARATOR;
-
-  // append the last path element
-  if (i < path.GetSize())
-    realPath += path[i];
-
   // if access control is enabled, then search parent directories for password files
   PStringToString authorisations;
   PString newRealm;
   if (authorisationRealm.IsEmpty() ||
-      !FindAuthorisations(realPath.GetDirectory(), newRealm, authorisations) ||
+      !FindAuthorisations(((PHTTPDirRequest&)request).realPath.GetDirectory(), newRealm, authorisations) ||
       authorisations.GetSize() == 0)
     return TRUE;
 
