@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pethsock.cxx,v $
+ * Revision 1.6  2004/04/18 04:33:38  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.5  2001/10/03 03:13:05  robertj
  * Changed to allow use of NULL pointer to indicate address of all zeros.
  *
@@ -114,7 +118,7 @@ PEthSocket::Address & PEthSocket::Address::operator=(const PString & str)
 }
 
 
-BOOL PEthSocket::Address::operator==(const BYTE * eth) const
+bool PEthSocket::Address::operator==(const BYTE * eth) const
 {
   if (eth != NULL)
     return memcmp(b, eth, sizeof(b)) == 0;
@@ -123,7 +127,7 @@ BOOL PEthSocket::Address::operator==(const BYTE * eth) const
 }
 
 
-BOOL PEthSocket::Address::operator!=(const BYTE * eth) const
+bool PEthSocket::Address::operator!=(const BYTE * eth) const
 {
   if (eth != NULL)
     return memcmp(b, eth, sizeof(b)) != 0;
