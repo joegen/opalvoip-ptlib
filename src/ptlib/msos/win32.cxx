@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.80  1999/01/30 14:28:25  robertj
+ * Added GetOSConfigDir() function.
+ *
  * Revision 1.79  1999/01/16 02:00:29  robertj
  * Added hardware description funtion.
  *
@@ -1172,6 +1175,25 @@ PString PProcess::GetOSVersion()
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
   return psprintf("v%u.%u", info.dwMajorVersion, info.dwMinorVersion);
+}
+
+
+PDirectory PProcess::GetOSConfigDir()
+{
+  OSVERSIONINFO info;
+  info.dwOSVersionInfoSize = sizeof(info);
+  GetVersionEx(&info);
+
+  char dir[_MAX_PATH];
+
+  if (info.dwPlatformId != VER_PLATFORM_WIN32_NT) {
+    PAssertOS(GetWindowsDirectory(dir, sizeof(dir)) != 0);
+    return dir;
+  }
+
+  PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
+  PDirectory sysdir = dir;
+  return sysdir + "drivers\\etc";
 }
 
 
