@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.18 1994/06/25 11:55:15 robertj Exp $
+ * $Id: contain.cxx,v 1.19 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.18  1994/06/25 11:55:15  robertj
+ * Revision 1.19  1994/07/17 10:46:06  robertj
+ * Added number conversions to PString.
+ *
+ * Revision 1.18  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.17  1994/04/20  12:17:44  robertj
@@ -489,7 +492,7 @@ static void TranslateEscapes(const char * src, char * dst)
 }
 
 
-PString::PString(StringType type, const char * str)
+PString::PString(ConversionType type, const char * str)
 {
   switch (type) {
     case Pascal :
@@ -513,6 +516,61 @@ PString::PString(StringType type, const char * str)
       TranslateEscapes(str, theArray);
       PAssert(MakeMinimumSize(), POutOfMemory);
       break;
+
+    default :
+      PAssertAlways(PInvalidParameter);
+  }
+}
+
+
+static void ltostr(long value, unsigned base, char * str)
+{
+  if (value >= (long)base)
+    ltostr(value/base, base, str+1);
+  else if (value < 10)
+    *str = (char)(value + '0');
+  else
+    *str = (char)(value + 'A'-10);
+}
+
+
+PString::PString(ConversionType type, long value, unsigned base)
+  : PCharArray(100)
+{
+  PAssert(base >= 2 && base <= 36, PInvalidParameter);
+  switch (type) {
+    case Signed :
+      if (value < 0) {
+        *theArray = '-';
+        ltostr(-value, base, theArray+1);
+        break;
+      }
+      // Otherwise do Unsigned case
+
+    case Unsigned :
+      ltostr(value, base, theArray);
+      break;
+
+    default :
+      PAssertAlways(PInvalidParameter);
+  }
+  MakeMinimumSize();
+}
+
+
+PString::PString(ConversionType type, double value, unsigned places)
+{
+  switch (type) {
+    case Decimal :
+      sprintf("%0.*f", places, value);
+      break;
+
+    case Exponent :
+      sprintf("%0.*e", places, value);
+      break;
+
+    default :
+      PAssertAlways(PInvalidParameter);
   }
 }
 
@@ -690,12 +748,14 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
   PINDEX len = GetLength();
   if (offset > len)
     offset = len;
-  do {
-    if (theArray[offset] == ch)
-      return offset;
+
+  while (theArray[offset] != ch) {
+    if (offset == 0)
+      return P_MAX_INDEX;
     offset--;
-  } while(offset > 0);
-  return P_MAX_INDEX;
+  }
+
+  return offset;
 }
 
 
