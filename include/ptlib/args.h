@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.24  2003/09/17 01:18:01  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.23  2003/03/27 07:27:07  robertj
  * Added function to get a bunch of arguments as a string array.
  *
@@ -108,7 +112,6 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
 
 /** This class allows the parsing of a set of program arguments. This translates
    the standard argc/argv style variables passed into the main() function into
@@ -517,7 +520,6 @@ class PConfigArgs : public PArgList
     PString sectionName;
     PString negationPrefix;
 };
-
 
 #endif
 
