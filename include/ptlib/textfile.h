@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.3 1993/08/21 01:50:33 robertj Exp $
+ * $Id: textfile.h,v 1.4 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
- * Revision 1.3  1993/08/21 01:50:33  robertj
+ * Revision 1.4  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.3  1993/08/21  01:50:33  robertj
  * Made Clone() function optional, default will assert if called.
  *
  * Revision 1.2  1993/07/14  12:49:16  robertj
@@ -22,7 +25,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Text Files
 
-DECLARE_CLASS(PTextFile, PFile)
+PDECLARE_CLASS(PTextFile, PFile)
 
   public:
     PTextFile();

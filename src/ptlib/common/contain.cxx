@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.10 1993/12/31 06:53:02 robertj Exp $
+ * $Id: contain.cxx,v 1.11 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.10  1993/12/31 06:53:02  robertj
+ * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.10  1993/12/31  06:53:02  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.9  1993/12/24  04:20:52  robertj
@@ -62,7 +65,9 @@
  * Fixed header comment for RCS.
  */
 
+#define _CONTAIN_CXX
 #include <contain.h>
+
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -89,7 +94,7 @@ void PObject::operator delete(void * ptr)
 
 ostream & PObject::PrintOn(ostream & strm) const
 {
-  return strm << ClassName();
+  return strm << GetClassName();
 }
 
 
@@ -106,6 +111,20 @@ PINDEX PObject::HashFunction() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+PContainer::PContainer(PINDEX initialSize)
+  : reference(new Reference(initialSize))
+{
+  PAssertNULL(reference);
+}
+
+
+PContainer::PContainer(const PContainer * cont)
+  : reference(new Reference(0))
+{                                                            
+  *PAssertNULL(reference) = *cont->reference;
+}
+
 
 PContainer::PContainer(const PContainer & cont)
   : reference(PAssertNULL(cont.reference))
@@ -131,12 +150,15 @@ PContainer & PContainer::operator=(const PContainer & cont)
 }
 
 
-PContainer::~PContainer()
+void PContainer::Destruct()
 {
-  if (!IsUnique())
-    reference->count--;
-  else {
-    delete reference;
+  if (reference != NULL) {
+    if (reference->count > 1)
+      reference->count--;
+    else {
+      DestroyContents();
+      delete reference;
+    }
     reference = NULL;
   }
 }
@@ -185,38 +207,25 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 }
 
 
-PAbstractArray::PAbstractArray(const PAbstractArray & array)
-  : PContainer(array),
-    elementSize(array.elementSize),
-    theArray(array.theArray)
-{
-}
-
-
-PAbstractArray::PAbstractArray(const PAbstractArray * array)
-  : PContainer(*array),
-    elementSize(array->elementSize),
-    theArray(array->theArray)
-{
-  MakeUnique();
-}
-
-
-PAbstractArray & PAbstractArray::operator=(const PAbstractArray & array)
-{
-  PContainer::operator=(array);
-  elementSize = array.elementSize;
-  theArray = array.theArray;
-  return *this;
-}
-
-
 void PAbstractArray::DestroyContents()
 {
-  if (theArray != NULL && IsUnique()) {
-    delete[] theArray;
-    theArray = NULL;
-  }
+  delete[] theArray;
+  theArray = NULL;
+}
+
+
+void PAbstractArray::CopyContents(const PAbstractArray & array)
+{
+  elementSize = array.elementSize;
+  theArray = array.theArray;
+}
+
+
+void PAbstractArray::CloneContents(const PAbstractArray * array)
+{
+  elementSize = array->elementSize;
+  theArray = array->theArray;
+  MakeUnique();
 }
 
 
@@ -833,18 +842,17 @@ void PCollection::RemoveAll()
 
 void PArrayObjects::DestroyContents()
 {
-  if (deleteObjects && IsUnique()) {
+  if (reference->deleteObjects) {
     PAssertNULL(theArray);
     for (PINDEX i = 0; i < theArray.GetSize(); i++) {
       if (theArray[i] != NULL)
         delete theArray[i];
     }
-    deleteObjects = FALSE;
   }
 }
 
 
-PArrayObjects::PArrayObjects(const PArrayObjects * array)
+void PArrayObjects::CloneContents(const PArrayObjects * array)
 {
   for (PINDEX i = 0; i < array->GetSize(); i++) {
     PObject * ptr = array->GetAt(i);
@@ -912,7 +920,7 @@ BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
                    (index >= theArray.GetSize() && !theArray.SetSize(index+1)))
     return FALSE;
   PObject * oldObj = theArray.GetAt(index);
-  if (oldObj != NULL && deleteObjects)
+  if (oldObj != NULL && reference->deleteObjects)
     delete oldObj;
   theArray[index] = obj;
   return TRUE;
@@ -934,7 +942,7 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
   for (PINDEX i = index; i < GetSize(); i++)
     theArray[i] = theArray[i+1];
   SetSize(GetSize()-1);
-  if (obj != NULL && deleteObjects)
+  if (obj != NULL && reference->deleteObjects)
     delete obj;
   return obj;
 }
@@ -973,38 +981,26 @@ PStringArray::PStringArray(PINDEX count, char **strarr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractList::PAbstractList(const PAbstractList & list)
-  : PCollection(list),
-    info(list.info)
+void PAbstractList::DestroyContents()
 {
+  RemoveAll();
+  delete info;
 }
 
 
-PAbstractList::PAbstractList(const PAbstractList * list)
-  : info(new ListInfo)
+void PAbstractList::CopyContents(const PAbstractList & list)
 {
+  info = list.info;
+}
+
+
+void PAbstractList::CloneContents(const PAbstractList * list)
+{
+  info = new ListInfo;
   PAssertNULL(info);
   for (PListElement * element = list->info->head;
                                       element != NULL; element = element->next)
     Append(element->data->Clone());
-}
-
-
-PAbstractList & PAbstractList::operator=(const PAbstractList & list)
-{
-  PCollection::operator=(list);
-  info = list.info;
-  return *this;
-}
-
-
-void PAbstractList::DestroyContents()
-{
-  if (info != NULL && IsUnique()) {
-    RemoveAll();
-    delete info;
-    info = NULL;
-  }
 }
 
 
@@ -1122,7 +1118,7 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
   reference->size--;
 
   PObject * obj = elmt->data;
-  if (obj != NULL && deleteObjects) {
+  if (obj != NULL && reference->deleteObjects) {
     delete obj;
     obj = NULL;
   }
@@ -1223,9 +1219,25 @@ PListElement::PListElement(PObject * theData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
-  : info(new SortedListInfo)
+void PAbstractSortedList::DestroyContents()
 {
+  if (info->root != NULL) {
+    info->root->DeleteSubTrees(reference->deleteObjects);
+    delete info->root;
+  }
+  delete info;
+}
+
+
+void PAbstractSortedList::CopyContents(const PAbstractSortedList & list)
+{
+  info = list.info;
+}
+
+
+void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
+{
+  info = new SortedListInfo;
   PAssertNULL(info);
   PSortedListElement * element = list->info->root;
   while (element->left != NULL)
@@ -1234,22 +1246,6 @@ PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
     Append(element->data->Clone());
     element = element->Successor();
   }
-}
-
-
-PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList & list)
-  : PCollection(list),
-    info(list.info)
-{
-}
-
-
-PAbstractSortedList &
-              PAbstractSortedList::operator=(const PAbstractSortedList & list)
-{
-  PCollection::operator=(list);
-  info = list.info;
-  return *this;
 }
 
 
@@ -1421,19 +1417,6 @@ BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * inf) const
     element = element->Successor();
   }
   return TRUE;
-}
-
-
-void PAbstractSortedList::DestroyContents()
-{
-  if (info != NULL && IsUnique()) {
-    if (info->root != NULL) {
-      info->root->DeleteSubTrees(deleteObjects);
-      delete info->root;
-    }
-    delete info;
-    info = NULL;
-  }
 }
 
 
@@ -1693,27 +1676,25 @@ PHashTable::PHashTable()
 }
 
 
-PHashTable::PHashTable(const PHashTable & ht)
-  : PCollection(ht),
-    hashTable(ht.hashTable)
+void PHashTable::DestroyContents()
 {
+  hashTable->reference->deleteObjects = reference->deleteObjects;
+  delete hashTable;
+}
+
+
+void PHashTable::CopyContents(const PHashTable & hash)
+{
+  hashTable = hash.hashTable;
 }
 
   
-PHashTable::PHashTable(const PHashTable * ht)
-  : hashTable((PInternalHashTable *)ht->hashTable->Clone())
+void PHashTable::CloneContents(const PHashTable * hash)
 {
+  hashTable = (PInternalHashTable *)hash->hashTable->Clone();
 }
 
 
-PHashTable & PHashTable::operator=(const PHashTable & ht)
-{
-  PCollection::operator=(ht);
-  hashTable = ht.hashTable;
-  return *this;
-}
-
-  
 PObject::Comparison PHashTable::Compare(const PObject & obj) const
 {
   return reference != ((const PHashTable &)obj).reference
@@ -1727,12 +1708,23 @@ BOOL PHashTable::SetSize(PINDEX)
 }
 
 
-void PHashTable::DestroyContents()
+void PInternalHashTable::DestroyContents()
 {
-  if (hashTable != NULL && IsUnique()) {
-    delete hashTable;
-    hashTable = NULL;
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PHashTableElement * list = GetAt(i);
+    if (list != NULL) {
+      PHashTableElement * elmt = list;
+      do {
+        PHashTableElement * nextElmt = elmt->next;
+        if (elmt->data != NULL && reference->deleteObjects)
+          delete elmt->data;
+        delete elmt->key;
+        delete elmt;
+        elmt = nextElmt;
+      } while (elmt != list);
+    }
   }
+  PAbstractArray::DestroyContents();
 }
 
 
@@ -1938,18 +1930,6 @@ BOOL PAbstractSet::Enumerate(PEnumerator func, PObject * info) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
-PObject * PAbstractDictionary::Clone() const
-{
-  PAbstractDictionary * newDict = new PAbstractDictionary();
-  PInternalHashTable * ht = (PInternalHashTable *)hashTable.Clone();
-  newDict->hashTable = *ht;
-  delete ht;
-  return newDict;
-}
-*/
-
-
 PINDEX PAbstractDictionary::Append(PObject *)
 {
   PAssertAlways();
@@ -2020,7 +2000,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 {
   if (obj == NULL) {
     obj = hashTable->RemoveElement(key);
-    if (deleteObjects)
+    if (reference->deleteObjects)
       delete obj;
     reference->size--;
   }
@@ -2031,7 +2011,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
       reference->size++;
     }
     else {
-      if (deleteObjects)
+      if (reference->deleteObjects)
         delete hashTable->lastElement->data;
       hashTable->lastElement->data = obj;
     }
@@ -2045,11 +2025,6 @@ PObject * PAbstractDictionary::GetAt(const PObject & key) const
   PHashTableElement * element = hashTable->GetElementAt(key);
   return element != NULL ? element->data : NULL;
 }
-
-
-#ifndef P_USE_INLINES
-#include "../contain.inl"
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

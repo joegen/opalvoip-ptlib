@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.4 1993/08/31 03:38:02 robertj Exp $
+ * $Id: timeint.h,v 1.5 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.4  1993/08/31 03:38:02  robertj
+ * Revision 1.5  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.4  1993/08/31  03:38:02  robertj
  * Added copy constructor and assignement oeprator due to G++ strangeness.
  *
  * Revision 1.3  1993/08/27  18:17:47  robertj
@@ -26,7 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Difference between two system times
 
-DECLARE_CLASS(PTimeInterval,PObject)
+PDECLARE_CLASS(PTimeInterval, PObject)
 
   public:
     PTimeInterval(long milliseconds = 0,

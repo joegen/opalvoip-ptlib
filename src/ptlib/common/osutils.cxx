@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.5 1993/12/31 06:53:02 robertj Exp $
+ * $Id: osutils.cxx,v 1.6 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.5  1993/12/31 06:53:02  robertj
+ * Revision 1.6  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.5  1993/12/31  06:53:02  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.4  1993/12/29  04:41:26  robertj
@@ -340,11 +343,6 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname)
 }
 
 
-#endif
-
-
-#ifndef P_USE_INLINES
-#include "../osutil.inl"
 #endif
 
 
