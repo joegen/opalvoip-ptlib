@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.96  1999/08/30 02:21:03  robertj
+ * Added ability to listen to specific interfaces for IP sockets.
+ *
  * Revision 1.95  1999/08/27 08:18:52  robertj
  * Added ability to get the host/port of the the last packet read/written to UDP socket.
  *
@@ -1262,7 +1265,16 @@ BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
 }
 
 
-BOOL PIPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
+BOOL PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+{
+  return Listen(INADDR_ANY, queueSize, newPort, reuse);
+}
+
+
+BOOL PIPSocket::Listen(const Address & bindAddr,
+                       unsigned,
+                       WORD newPort,
+                       Reusability reuse)
 {
   // make sure we have a port
   if (newPort != 0)
@@ -1281,7 +1293,7 @@ BOOL PIPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
     sockaddr_in sin;
     memset(&sin, 0, sizeof(sin));
     sin.sin_family      = AF_INET;
-    sin.sin_addr.s_addr = htonl(INADDR_ANY);
+    sin.sin_addr.s_addr = bindAddr;
     sin.sin_port        = htons(port);       // set the port
 
     if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
@@ -1462,7 +1474,16 @@ BOOL PTCPSocket::Write(const void * buf, PINDEX len)
 
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
-  if (PIPSocket::Listen(queueSize, newPort, reuse) &&
+  return Listen(INADDR_ANY, queueSize, newPort, reuse);
+}
+
+
+BOOL PTCPSocket::Listen(const Address & bindAddr,
+                        unsigned queueSize,
+                        WORD newPort,
+                        Reusability reuse)
+{
+  if (PIPSocket::Listen(bindAddr, queueSize, newPort, reuse) &&
       ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
 

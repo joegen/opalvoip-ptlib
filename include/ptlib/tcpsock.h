@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.23  1999/08/30 02:21:03  robertj
+ * Added ability to listen to specific interfaces for IP sockets.
+ *
  * Revision 1.22  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -197,6 +200,12 @@ class PTCPSocket : public PIPSocket
     virtual BOOL Listen(
       unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
       WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+    );
+    virtual BOOL Listen(
+      const Address & bind,     /// Local interface address to bind to.
+      unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
+      WORD port = 0,            /// Port number to use for the connection.
       Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
     );
 
