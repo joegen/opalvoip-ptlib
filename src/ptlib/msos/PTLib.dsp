@@ -182,5 +182,9 @@ InputPath=.\ptlibd.dtf
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=.\Version.rc
+# End Source File
 # End Target
 # End Project
