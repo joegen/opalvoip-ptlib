@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.25 1996/11/04 03:40:54 robertj Exp $
+ * $Id: ipsock.h,v 1.26 1996/11/16 10:48:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.26  1996/11/16 10:48:49  robertj
+ * Fixed missing const in PIPSocket::Address stream output operator..
+ *
  * Revision 1.25  1996/11/04 03:40:54  robertj
  * Moved address printer from inline to source.
  *
@@ -127,7 +130,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         BYTE Byte2() const;
         BYTE Byte3() const;
         BYTE Byte4() const;
-      friend ostream & operator<<(ostream & s, Address & a);
+      friend ostream & operator<<(ostream & s, const Address & a);
     };
 
 
