@@ -291,16 +291,15 @@ if test "${plugins}" = "no" ; then
   AC_MSG_RESULT(no)
   AC_SUBST(HAS_PLUGINS, 0)
 elif test "${P_DYNALINK:-unset}" = "unset" ; then
-  AC_MSG_RESULT(disabled as dlopen not available)
+  AC_MSG_RESULT(Plugins disabled as dlopen not available)
   AC_SUBST(HAS_PLUGINS, 0)
 else
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(Plugins yes)
   AC_SUBST(HAS_PLUGINS, 1)
   AC_DEFINE(P_HAS_PLUGINS, 1, "Plugins enabled")
 fi
 
 AC_DEFINE_UNQUOTED(P_DEFAULTPLUGINDIR, "${INSTALLPREFIX}/pwlib/lib")
-
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
