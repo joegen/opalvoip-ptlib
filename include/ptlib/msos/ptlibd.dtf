@@ -1613,6 +1613,7 @@ EXPORTS
     ?Compare@PAbstractList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1081 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractList::Compare(class PObject const &)const 
     ?Compare@PAbstractSortedList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1082 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractSortedList::Compare(class PObject const &)const 
     ?Compare@PArrayObjects@@UBE?AW4Comparison@PObject@@ABV3@@Z @1083 NONAME ;public: virtual enum PObject::Comparison  __thiscall PArrayObjects::Compare(class PObject const &)const 
+    ?Compare@PChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @3795 NONAME ;public: virtual enum PObject::Comparison  __thiscall PChannel::Compare(class PObject const &)const 
     ?Compare@PFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @1084 NONAME ;public: virtual enum PObject::Comparison  __thiscall PFile::Compare(class PObject const &)const 
     ?Compare@PHashTable@@UBE?AW4Comparison@PObject@@ABV3@@Z @1085 NONAME ;public: virtual enum PObject::Comparison  __thiscall PHashTable::Compare(class PObject const &)const 
     ?Compare@PIndirectChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @1086 NONAME ;public: virtual enum PObject::Comparison  __thiscall PIndirectChannel::Compare(class PObject const &)const 
@@ -2385,6 +2386,7 @@ EXPORTS
     ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @3354 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
     ?HandleVideo@PVideoInputDevice@@IAEJPAUvideohdr_tag@@@Z @3355 NONAME ;protected: long __thiscall PVideoInputDevice::HandleVideo(struct videohdr_tag *)
     ?HasAged@PIPCacheData@@QBEHXZ @1640 NONAME ;public: int __thiscall PIPCacheData::HasAged(void)const 
+    ?HashFunction@PChannel@@UBEHXZ @3796 NONAME ;public: virtual int __thiscall PChannel::HashFunction(void)const 
     ?HashFunction@PIPCacheKey@@UBEHXZ @1641 NONAME ;public: virtual int __thiscall PIPCacheKey::HashFunction(void)const 
     ?HashFunction@PObject@@UBEHXZ @1642 NONAME ;public: virtual int __thiscall PObject::HashFunction(void)const 
     ?HashFunction@POrdinalKey@@UBEHXZ @1643 NONAME ;public: virtual int __thiscall POrdinalKey::HashFunction(void)const 
