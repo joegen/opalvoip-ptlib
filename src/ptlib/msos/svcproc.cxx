@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.11 1996/10/14 03:09:58 robertj Exp $
+ * $Id: svcproc.cxx,v 1.12 1996/10/18 11:22:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.12  1996/10/18 11:22:14  robertj
+ * Fixed problems with window not being shown under NT.
+ *
  * Revision 1.11  1996/10/14 03:09:58  robertj
  * Fixed major bug in debug outpuit locking up (infinite loop)
  * Changed menus so cannot start service if in debug mode
@@ -86,17 +89,17 @@ static const char * ServiceCommandNames[NumSvcCmds] = {
 void PSystemLog::Output(Level level, const char * msg)
 {
   PServiceProcess & process = *PServiceProcess::Current();
-  if (level > process.GetLogLevel())
+  if (level != NumLogLevels && level > process.GetLogLevel())
     return;
 
   DWORD err = GetLastError();
 
-  if (process.debugMode || process.isWin95) {
+  if (process.isWin95 || process.debugWindow != NULL) {
     static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
     WaitForSingleObject(mutex, INFINITE);
 
     ostream * out;
-    if (process.debugMode)
+    if (process.debugWindow != NULL)
       out = new PStringStream;
     else {
       PString dir;
@@ -104,22 +107,23 @@ void PSystemLog::Output(Level level, const char * msg)
       out = new ofstream(dir+"\\"+process.GetName()+" Log.TXT", ios::app);
     }
 
-    static const char * levelName[NumLogLevels] = {
+    static const char * levelName[NumLogLevels+1] = {
       "Fatal error",
       "Error",
       "Warning",
       "Info",
-      "Debug"
+      "Debug",
+      "Message"
     };
     PTime now;
     *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
     if (msg[0] != '\0')
       *out << ": " << msg;
-    if (level != Info && err != 0)
+    if (level < Info && err != 0)
       *out << " - error = " << err;
     *out << endl;
 
-    if (process.debugMode)
+    if (process.debugWindow != NULL)
       process.DebugOutput(*(PStringStream*)out);
 
     delete out;
@@ -133,7 +137,7 @@ void PSystemLog::Output(Level level, const char * msg)
       return;
 
     char errbuf[25];
-    if (level != Info && err != 0)
+    if (level < Info && err != 0)
       ::sprintf(errbuf, "\nError code = %d", err);
     else
       errbuf[0] = '\0';
@@ -143,16 +147,17 @@ void PSystemLog::Output(Level level, const char * msg)
     strings[1] = errbuf;
     strings[2] = level != Fatal ? "" : " Program aborted.";
 
-    static const WORD levelType[NumLogLevels] = {
+    static const WORD levelType[NumLogLevels+1] = {
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_WARNING_TYPE,
+      EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_INFORMATION_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
                 levelType[level],     // event type
-                0,                    // event category
+                level,                // event category
                 1,                    // event ID
                 NULL,                 // current user's SID
                 PARRAYSIZE(strings),  // number of strings
@@ -205,14 +210,14 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : PProcess(manuf, name, major, minor, stat, build)
 {
-  controlWindow = NULL;
+  controlWindow = debugWindow = NULL;
   currentLogLevel = PSystemLog::Warning;
 }
 
 
 int PServiceProcess::_main(int argc, char ** argv, char **)
 {
-  PErrorStream = new PSystemLog(PSystemLog::Error);
+  PErrorStream = new PSystemLog(PSystemLog::NumLogLevels);
   PreInitialise(1, argv);
 
   debugMode = FALSE;
@@ -255,9 +260,11 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
       return GetTerminationValue();
 
     PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
+    debugMode = TRUE;
     if (!CreateControlWindow())
       return 1;
-    PError << endl;
+    debugMode = FALSE;
+    PError << "Not run as a service!" << endl;
     RunMessageLoop();
     return 1;
   }
@@ -304,59 +311,73 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 
 BOOL PServiceProcess::CreateControlWindow()
 {
-  if (controlWindow != NULL)
-    return TRUE;
+  if (controlWindow == NULL) {
+    WNDCLASS wclass;
+    wclass.style = CS_HREDRAW|CS_VREDRAW;
+    wclass.lpfnWndProc = (WNDPROC)StaticWndProc;
+    wclass.cbClsExtra = 0;
+    wclass.cbWndExtra = 0;
+    wclass.hInstance = hInstance;
+    wclass.hIcon = NULL;
+    wclass.hCursor = NULL;
+    wclass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    wclass.lpszMenuName = NULL;
+    wclass.lpszClassName = GetName();
+    if (RegisterClass(&wclass) == 0)
+      return FALSE;
 
-  WNDCLASS wclass;
-  wclass.style = CS_HREDRAW|CS_VREDRAW;
-  wclass.lpfnWndProc = (WNDPROC)StaticWndProc;
-  wclass.cbClsExtra = 0;
-  wclass.cbWndExtra = 0;
-  wclass.hInstance = hInstance;
-  wclass.hIcon = NULL;
-  wclass.hCursor = NULL;
-  wclass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-  wclass.lpszMenuName = NULL;
-  wclass.lpszClassName = GetName();
-  if (RegisterClass(&wclass) == 0)
-    return FALSE;
+    HMENU menubar = CreateMenu();
+    HMENU menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, 101, "&Hide");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdVersion, "&Version");
+    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(menu, MF_STRING, 100, "E&xit");
+    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
 
-  HMENU menubar = CreateMenu();
-  HMENU menu = CreatePopupMenu();
-  AppendMenu(menu, MF_STRING, 101, "&Hide");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdVersion, "&Version");
-  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-  AppendMenu(menu, MF_STRING, 100, "E&xit");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
+    menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdInstall, "&Install");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdRemove, "&Remove");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdDeinstall, "&Deinstall");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdStart, "&Start");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdStop, "S&top");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdPause, "&Pause");
+    AppendMenu(menu, MF_STRING, 1000+SvcCmdResume, "R&esume");
+    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
 
-  menu = CreatePopupMenu();
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdInstall, "&Install");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdRemove, "&Remove");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdDeinstall, "&Deinstall");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdStart, "&Start");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdStop, "S&top");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdPause, "&Pause");
-  AppendMenu(menu, MF_STRING, 1000+SvcCmdResume, "R&esume");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
+    menu = CreatePopupMenu();
+    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Fatal, "&Fatal Error");
+    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Error, "&Error");
+    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Warning, "&Warning");
+    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Info, "&Information");
+    AppendMenu(menu, MF_STRING, 2000+PSystemLog::Debug, "&Debug");
+    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
 
-  menu = CreatePopupMenu();
-  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Fatal, "&Fatal Error");
-  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Error, "&Error");
-  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Warning, "&Warning");
-  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Info, "&Information");
-  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Debug, "&Debug");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+    if (CreateWindow(GetName(),
+                     GetName(),
+                     WS_OVERLAPPEDWINDOW,
+                     CW_USEDEFAULT, CW_USEDEFAULT,
+                     CW_USEDEFAULT, CW_USEDEFAULT, 
+                     NULL,
+                     menubar,
+                     hInstance,
+                     NULL) == NULL)
+      return FALSE;
+  }
 
-  CreateWindow(GetName(),
-               GetName(),
-               WS_OVERLAPPEDWINDOW,
-               CW_USEDEFAULT, CW_USEDEFAULT,
-               CW_USEDEFAULT, CW_USEDEFAULT, 
-               NULL,
-               menubar,
-               hInstance,
-               NULL);
-  return controlWindow != NULL && debugWindow != NULL;
+  if (debugMode && debugWindow == NULL) {
+    debugWindow = CreateWindow("edit",
+                               "",
+                               WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
+                                      ES_MULTILINE|ES_READONLY,
+                               0, 0, 0, 0,
+                               controlWindow,
+                               (HMENU)200,
+                               hInstance,
+                               NULL);
+    SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 64000, 0);
+  }
+
+  return TRUE;
 }
 
 
@@ -371,16 +392,6 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
   switch (msg) {
     case WM_CREATE :
       controlWindow = hWnd;
-      debugWindow = CreateWindow("edit",
-                                 "",
-                                 WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
-                                        ES_MULTILINE|ES_READONLY,
-                                 0, 0, 0, 0,
-                                 hWnd,
-                                 (HMENU)200,
-                                 hInstance,
-                                 NULL);
-      SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 64000, 0);
       break;
 
     case WM_DESTROY :
@@ -389,7 +400,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       break;
 
     case WM_SIZE :
-      MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+      if (debugWindow != NULL)
+        MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
       break;
 
     case WM_INITMENUPOPUP :
@@ -519,7 +531,7 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
     return;
 
   // report the status to Service Control Manager.
-  if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 3000))
+  if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 30000))
     return;
 
   // create the event object. The control handler function signals
@@ -529,6 +541,8 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
     return;
 
   GetArguments().SetArgs(argc, argv);
+  PConfig cfg;
+  cfg.SetInteger("Pid", GetProcessID());
 
   // start the thread that performs the work of the service.
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
@@ -536,6 +550,7 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
     WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
 
   CloseHandle(terminationEvent);
+  cfg.SetInteger("Pid", 0);
   ReportStatus(SERVICE_STOPPED, 0);
 }
 
