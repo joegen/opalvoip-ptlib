@@ -4,8 +4,8 @@
 #
 ######################################################################
 
-VPATH_CXX	:= $(VPATH_CXX) $(COMMONDIR)/src 
-VPATH_H		:= $(VPATH_H) $(COMMONDIR)
+VPATH_CXX	:= $(VPATH_CXX) $(COMMONDIR)/ptlib/src $(COMMONDIR)/pwlib/src
+VPATH_H		:= $(VPATH_H) $(COMMONDIR) 
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.h   $(VPATH_H)
