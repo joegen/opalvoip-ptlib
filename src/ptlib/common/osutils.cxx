@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.222  2004/05/21 00:28:39  csoutheren
+ * Moved PProcessStartup creation to PProcess::Initialise
+ * Added PreShutdown function and called it from ~PProcess to handle PProcessStartup removal
+ *
  * Revision 1.221  2004/05/18 21:49:25  csoutheren
  * Added ability to display trace output from program startup via environment
  * variable or by application creating a PProcessStartup descendant
@@ -1841,9 +1845,26 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 int PProcess::_main(void *)
 {
+  Main();
+  return terminationValue;
+}
+
+typedef std::map<PString, PProcessStartup *> PProcessStartupList;
+
+static PProcessStartupList & GetPProcessStartupList()
+{
+  static PProcessStartupList list; return list;
+}
+
+void PProcess::PreInitialise(int c, char ** v, char ** e)
+{
+  p_argc = c;
+  p_argv = v;
+  p_envp = e;
+
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory
-  std::map<PString, PProcessStartup *> startups;
+  PProcessStartupList & startups = GetPProcessStartupList();
   {
     PProcessStartup * levelSet = PGenericFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
     if (levelSet != NULL) 
@@ -1864,15 +1885,17 @@ int PProcess::_main(void *)
       }
     }
   }
+}
 
-  // now call the main process
-  Main();
+void PProcess::PreShutdown()
+{
+  PProcessStartupList & startups = GetPProcessStartupList();
 
   // call OnShutfdown for the PProcessInstances previously created
   // make sure we handle singletons correctly
   {
     while (startups.size() > 0) {
-      std::map<PString, PProcessStartup *>::iterator r = startups.begin();
+      PProcessStartupList::iterator r = startups.begin();
       PProcessStartup * instance = r->second;
       instance->OnShutdown();
       if (!PProcessStartupFactory::IsSingleton(r->first))
@@ -1880,16 +1903,6 @@ int PProcess::_main(void *)
       startups.erase(r);
     }
   }
-
-  return terminationValue;
-}
-
-
-void PProcess::PreInitialise(int c, char ** v, char ** e)
-{
-  p_argc = c;
-  p_argv = v;
-  p_envp = e;
 }
 
 
