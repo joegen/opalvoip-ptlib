@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.165  2003/10/30 11:32:57  rjongbloed
+ * Added bullet proofing for converting from inaddr
+ *
  * Revision 1.164  2003/10/27 09:48:47  csoutheren
  * Changed use of P_HAS_QOS to ensure that setsockopt is still used
  * for diffserv if available. Thanks to Henry Harrison
@@ -2216,20 +2219,24 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
 {
   switch (ai_family) {
 #if P_HAS_IPV6
-    case AF_INET6: 
+    case AF_INET6:
+      if (ai_addrlen < sizeof(sockaddr_in6))
+        break;
+
       version = 6;
       v.six = ((struct sockaddr_in6 *)ai_addr)->sin6_addr;
       //sin6_scope_id, should be taken into account for link local addresses
-      break;
+      return;
 #endif
     case AF_INET: 
+      if (ai_addrlen < sizeof(sockaddr_in))
+        break;
+
       version = 4;
       v.four = ((struct sockaddr_in  *)ai_addr)->sin_addr;
-      break;
-
-    default :
-      version = 0;
+      return;
   }
+  version = 0;
 }
 
 #endif
