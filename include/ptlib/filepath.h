@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.8 1995/03/14 12:41:25 robertj Exp $
+ * $Id: filepath.h,v 1.9 1995/04/22 00:43:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
+ * Revision 1.9  1995/04/22 00:43:43  robertj
+ * Added Move() function and changed semantics of Rename().
+ * Changed all file name strings to PFilePath objects.
+ *
  * Revision 1.8  1995/03/14 12:41:25  robertj
  * Updated documentation to use HTML codes.
  *
@@ -151,6 +155,20 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
 
        <H2>Returns:</H2>
        string for the file name part of the file specification.
+     */
+
+    PDirectory GetDirectory() const;
+    /* Get the the directory that the file is contained in.  This may be 
+       identical to <CODE>GetVolume() + GetPath()</CODE> depending on the 
+       platform. eg for DOS file "C:\SRC\PWLIB\FRED.TXT" this would be 
+       "C:\SRC\PWLIB\".
+
+       Note that for Unix platforms, this returns the <EM>physical</EM> path
+       of the directory. That is all symlinks are resolved. Thus the directory
+       returned may not be the same as the value of <CODE>GetPath()</CODE>.
+
+       <H2>Returns:</H2>
+       Directory that the file is contained in.
      */
 
     void SetType(
