@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.44  2001/06/30 06:59:06  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.43  2001/03/07 06:54:56  yurik
  * Changed email to current one
  *
@@ -361,7 +364,7 @@ typedef int socklen_t;
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
 
-#ifdef BE_BONE
+#ifndef BE_BONELESS
 #include <bone/arpa/inet.h>
 #else
 #define INADDR_NONE INADDR_BROADCAST
