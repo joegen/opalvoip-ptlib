@@ -1,11 +1,32 @@
 /*
  * pxmlrpcs.h
  *
- * PWLib application header file for PXMLRPCS
+ * XML parser support
  *
- * Copyright 2002 Equivalence
+ * Portable Windows Library
+ *
+ * Copyright (c) 2002 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.h,v $
+ * Revision 1.2  2002/11/06 22:47:24  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.1  2002/10/02 08:54:34  craigs
  * Added support for XMLRPC server
  *
