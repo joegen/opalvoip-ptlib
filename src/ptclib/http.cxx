@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.35 1996/08/19 13:42:40 robertj Exp $
+ * $Id: http.cxx,v 1.36 1996/08/22 13:22:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.36  1996/08/22 13:22:26  robertj
+ * Fixed bug in print of URLs, extra @ signs.
+ *
  * Revision 1.35  1996/08/19 13:42:40  robertj
  * Fixed errors in URL parsing and display.
  * Fixed "Forbidden" problem out of HTTP authorisation system.
@@ -510,8 +513,8 @@ PString PURL::AsString(UrlFormat fmt) const
           if (!username.IsEmpty() || !password.IsEmpty())
             str << username
                 << ':'
-                << password;
-            str << '@';
+                << password
+                << '@';
         }
 
         if (schemeInfo->type == HostPort ||
