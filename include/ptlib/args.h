@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.23  2003/03/27 07:27:07  robertj
+ * Added function to get a bunch of arguments as a string array.
+ *
  * Revision 1.22  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -315,6 +318,15 @@ class PArgList : public PObject
        @return count of parameters.
      */
     PINDEX GetCount() const;
+
+    /** Get the parameters that were parsed in the argument list.
+
+       @return array of parameter strings at the specified index range.
+     */
+    PStringArray GetParameters(
+      PINDEX first = 0,
+      PINDEX last = P_MAX_INDEX
+    ) const;
 
     /** Get the parameter that was parsed in the argument list.
 
