@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.4 1993/09/27 16:35:25 robertj Exp $
+ * $Id: contain.cxx,v 1.5 1993/12/04 05:22:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,11 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.4  1993/09/27 16:35:25  robertj
+ * Revision 1.5  1993/12/04 05:22:38  robertj
+ * Added more string functions.
+ *
+ * Revision 1.4  1993/09/27  16:35:25  robertj
  * Fixed bugs in sorted list.
  * Fixed compatibility problem with sprintf return value (SVR4).
  * Change function for making string array to a constructor.
- * /.
  *
  * Revision 1.3  1993/08/27  18:17:47  robertj
  * Fixed bugs in PAbstractSortedList (including some formatting).
@@ -421,23 +423,52 @@ PString & PString::operator+=(const char * cstr)
 
 PString PString::operator()(PINDEX start, PINDEX end) const
 {
-  PString newstr;
-
   if (end < start)
-    return newstr;
+    return PString();
 
   register PINDEX len = Length();
   if (start > len)
-    return newstr;
+    return PString();
 
   if (end >= len)
     end = len-1;
   len = end - start + 1;
 
-  newstr.SetSize(len+1);
-  memcpy(newstr.theArray, theArray+start, len);
-  newstr.theArray[len] = '\0';
-  return newstr;
+  return PString(theArray+start, len);
+}
+
+
+PString PString::Left(PINDEX len) const
+{
+  if (len == 0)
+    return PString();
+
+  if (len >= Length())
+    return *this;
+
+  return PString(theArray, len);
+}
+
+
+PString PString::Right(PINDEX len) const
+{
+  if (len == 0)
+    return PString();
+
+  PINDEX srclen = Length();
+  if (len >= srclen)
+    return *this;
+
+  return PString(theArray+srclen-len, len);
+}
+
+
+PString PString::Mid(PINDEX start, PINDEX len) const
+{
+  if (start+len <= start) // Beware of wraparound
+    return operator()(start, P_MAX_INDEX);
+  else
+    return operator()(start, start+len-1);
 }
 
 
@@ -548,6 +579,48 @@ PStringArray PString::Lines() const
 }
 
 
+PString PString::LeftTrim() const
+{
+  const char * lpos = theArray;
+  while (*lpos == ' ')
+    lpos++;
+  return PString(lpos);
+}
+
+
+PString PString::RightTrim() const
+{
+  char * rpos = theArray+Length()-1;
+  if (*rpos != ' ')
+    return *this;
+
+  while (*rpos == ' ') {
+    if (rpos == theArray)
+      return PString();
+    rpos--;
+  }
+  return PString(theArray, rpos - theArray);
+}
+
+
+PString PString::Trim() const
+{
+  const char * lpos = theArray;
+  while (*lpos == ' ')
+    lpos++;
+  if (*lpos == '\0')
+    return PString();
+
+  char * rpos = theArray+Length()-1;
+  if (*rpos != ' ')
+    return PString(lpos);
+
+  while (*rpos == ' ')
+    rpos--;
+  return PString(lpos, rpos - lpos);
+}
+
+
 PString PString::ToLower() const
 {
   PString newStr(theArray);
@@ -612,7 +685,7 @@ PString PString::ToLiteral() const
         }
       }
       if (i >= PARRAYSIZE(PStringEscapeValue))
-        str += PString().sprintf("\\%03o", *p & 0xff);
+        str += psprintf("\\%03o", *p & 0xff);
     }
   }
   return str + '"';
@@ -633,6 +706,22 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
   PAssert(strlen(theArray) < 1000);
   PAssert(MakeMinimumSize());
   return *this;
+}
+
+
+PString psprintf(const char * fmt, ...)
+{
+  PString str;
+  va_list args;
+  va_start(args, fmt);
+  return str.vsprintf(fmt, args);
+}
+
+
+PString pvsprintf(const char * fmt, va_list arg)
+{
+  PString str;
+  return str.vsprintf(fmt, arg);
 }
 
 
