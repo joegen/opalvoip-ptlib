@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.21 1998/01/04 08:29:37 craigs Exp $
+# $Id: Makefile,v 1.22 1998/01/04 09:41:20 robertj Exp $
 # $Log: Makefile,v $
+# Revision 1.22  1998/01/04 09:41:20  robertj
+# Changed perasn.cxx to asner.cxx
+#
 # Revision 1.21  1998/01/04 08:29:37  craigs
 # Changed for Linux
 #
@@ -95,7 +98,6 @@ SOURCES		= switch.cxx \
 		  uhttpsvc.cxx \
 		  uhttpform.cxx \
 		  uasn.cxx \
-		  uperasn.cxx \
 		  usnmp.cxx \
 		  usocket.cxx \
 		  uicmp.cxx \
@@ -111,7 +113,8 @@ SOURCES		= switch.cxx \
 		  $(COMMONSRC)/httpclnt.cxx \
 		  $(COMMONSRC)/httpsrvr.cxx \
 		  $(COMMONSRC)/ftpclnt.cxx \
-		  $(COMMONSRC)/ftpsrvr.cxx 
+		  $(COMMONSRC)/ftpsrvr.cxx \
+		  $(COMMONSRC)/asner.cxx 
 
 OBJS	= $(OBJDIR)/regex.o
 
