@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.22  2003/01/28 07:42:17  robertj
+ * Improved trace output of errors.
+ *
  * Revision 1.21  2002/12/16 06:53:19  robertj
  * Added ability to specify certain elemets (by name) that are exempt from
  *   the indent formatting. Useful for XML/RPC where leading white space is
@@ -737,7 +740,11 @@ BOOL PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & args
   if (!MakeRequest(request, response))
     return FALSE;
 
-  return response.GetParams(reply);
+  if (response.GetParams(reply))
+    return TRUE;
+
+  PTRACE(2, "XMLRPC\tParsing response failed: " << response.GetFaultText());
+  return FALSE;
 }
 
 
@@ -812,7 +819,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 
   // validate the response
   if (!response.ValidateResponse()) {
-    PTRACE(2, "XMLRPC\t" << response.GetFaultText());
+    PTRACE(2, "XMLRPC\tValidation of response failed: " << response.GetFaultText());
     return FALSE;
   }
 
