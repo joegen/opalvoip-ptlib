@@ -1951,6 +1951,7 @@ EXPORTS
     ?_main@PProcess@@UAEHPAX@Z @1784 NONAME ;public: virtual int __thiscall PProcess::_main(void *)
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
+    ?__setprecision@@YAAAVios@@AAV1@H@Z @2246 NONAME ;class ios & __cdecl __setprecision(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
     _PTimeGetChar@4 @2126 NONAME ;_PTimeGetChar@4
     _PTimeGetDateOrder@0 @2127 NONAME ;_PTimeGetDateOrder@0
@@ -1959,4 +1960,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?__setprecision@@YAAAVios@@AAV1@H@Z @2246 NONAME ;class ios & __cdecl __setprecision(class ios &,int)
+    ?GetLevel@PTrace@@SAIXZ @2247 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
+    ?GetOptions@PTrace@@SAIXZ @2248 NONAME ;public: static unsigned int __cdecl PTrace::GetOptions(void)
