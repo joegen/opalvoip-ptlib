@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.171  2004/04/18 04:33:38  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.170  2004/04/18 00:50:14  ykiryanov
  * Removed BE_BONELESS ifdefs. Be is boned now. More funcitonality
  *
@@ -2313,7 +2317,7 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
 
 
 #if P_HAS_IPV6
-BOOL PIPSocket::Address::operator==(in6_addr & addr) const
+bool PIPSocket::Address::operator==(in6_addr & addr) const
 {
   PIPSocket::Address a(addr);
   return Compare(a) == EqualTo;
@@ -2321,14 +2325,14 @@ BOOL PIPSocket::Address::operator==(in6_addr & addr) const
 #endif
 
 
-BOOL PIPSocket::Address::operator==(in_addr & addr) const
+bool PIPSocket::Address::operator==(in_addr & addr) const
 {
   PIPSocket::Address a(addr);
   return Compare(a) == EqualTo;
 }
 
 
-BOOL PIPSocket::Address::operator==(DWORD dw) const
+bool PIPSocket::Address::operator==(DWORD dw) const
 {
   if (dw != 0)
     return (DWORD)*this == dw;
