@@ -76,7 +76,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\PTLib.pdb" /debug /debugtype:both /machine:I386 /def:"..\..\..\Lib\Release\ptlib.def" /out:"$(OUTDIR)\PTLib.dll" /implib:"$(OUTDIR)\PTLib.lib" /libpath:"..\..\..\lib" 
+LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\PTLib.pdb" /debug /debugtype:both /machine:I386 /def:"..\..\..\Lib\Release\ptlib.def" /out:"$(OUTDIR)\PTLib.dll" /implib:"$(OUTDIR)\PTLib.lib" /libpath:"..\..\..\lib" 
 DEF_FILE= \
 	"$(INTDIR)\ptlib.def"
 LINK32_OBJS= \
@@ -148,7 +148,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\PTLibd.pdb" /debug /machine:I386 /def:"..\..\..\Lib\Debug\PTLibd.def" /out:"$(OUTDIR)\PTLibd.dll" /implib:"$(OUTDIR)\PTLibd.lib" /libpath:"..\lib" 
+LINK32_FLAGS=vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\PTLibd.pdb" /debug /machine:I386 /def:"..\..\..\Lib\Debug\PTLibd.def" /out:"$(OUTDIR)\PTLibd.dll" /implib:"$(OUTDIR)\PTLibd.lib" /libpath:"..\lib" 
 DEF_FILE= \
 	"$(INTDIR)\PTLibd.def"
 LINK32_OBJS= \
