@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.35 1998/05/08 11:52:03 robertj Exp $
+ * $Id: winsock.cxx,v 1.36 1998/08/06 00:55:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.36  1998/08/06 00:55:21  robertj
+ * Fixed conversion of text to IPX address, was swapping nibbles.
+ *
  * Revision 1.35  1998/05/08 11:52:03  robertj
  * Added workaround for winsock bug where getpeername() doesn't work immediately after connect().
  *
@@ -587,19 +590,27 @@ PIPXSocket::Address::Address(const PString & str)
 
   memset(node, 0, sizeof(node));
 
-  PINDEX byte = 11;
+  int shift = 0;
+  PINDEX byte = 5;
   PINDEX pos = str.GetLength();
   while (--pos > colon) {
     int c = str[pos];
-    if (isdigit(c))
-      node[byte/2] = (BYTE)((node[byte/2] << 4) + c - '0');
-    else if (isxdigit(c))
-      node[byte/2] = (BYTE)((node[byte/2] << 4) + toupper(c) - 'A' + 10);
-    else {
-      memset(this, 0, sizeof(*this));
-      return;
+    if (c != '-') {
+      if (isdigit(c))
+        node[byte] |= (c - '0') << shift;
+      else if (isxdigit(c))
+        node[byte] |= (toupper(c) - 'A' + 10) << shift;
+      else {
+        memset(this, 0, sizeof(*this));
+        return;
+      }
+      if (shift == 0)
+        shift = 4;
+      else {
+        shift = 0;
+        byte--;
+      }
     }
-    byte--;
   }
 }
 
