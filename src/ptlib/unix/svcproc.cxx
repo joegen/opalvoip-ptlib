@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.80  2002/12/02 08:27:43  robertj
+ * Fixed incorrectly set #if statement from RTEMS patch.
+ *
  * Revision 1.79  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -625,7 +628,7 @@ int PServiceProcess::InitialiseService()
     cout << "usage: [-c] -v|-d|-h|-x\n"
             "  -h --help           output this help message and exit\n"
             "  -v --version        display version information and exit\n"
-#if defined(BE_THREADS) && defined(P_RTEMS)
+#if !defined(BE_THREADS) && !defined(P_RTEMS)
             "  -d --daemon         run as a daemon\n"
 #endif
             "  -u --uid uid        set user id to run as\n"
@@ -732,7 +735,7 @@ int PServiceProcess::InitialiseService()
     }
   }
 
-#if defined(BE_THREADS) && defined(P_RTEMS)
+#if !defined(BE_THREADS) && !defined(P_RTEMS)
   if (!args.HasOption('d'))
     return -1;
 
