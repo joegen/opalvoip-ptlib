@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.78  1998/11/08 12:05:04  robertj
+ * Fixed multiple thread access problem with DNS aliases array.
+ *
  * Revision 1.77  1998/10/01 09:05:35  robertj
  * Added check that port number is between 1 and 65535.
  *
@@ -618,12 +621,12 @@ PDECLARE_CLASS(PIPCacheData, PObject)
     PIPCacheData(struct hostent * ent, const char * original);
     const PString & GetHostName() const { return hostname; }
     const PIPSocket::Address & GetHostAddress() const { return address; }
-    const PStringArray & GetHostAliases() const { return aliases; }
+    const PStringList & GetHostAliases() const { return aliases; }
     BOOL HasAged() const;
   private:
     PString            hostname;
     PIPSocket::Address address;
-    PStringArray       aliases;
+    PStringList        aliases;
     PTime              birthDate;
 };
 
@@ -637,21 +640,20 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
   hostname = host_info->h_name;
   memcpy(&address, host_info->h_addr, sizeof(address));
 
-  PINDEX count = 0;
-  aliases[count++] = host_info->h_name;
+  aliases.AppendString(host_info->h_name);
 
   PINDEX i;
   for (i = 0; host_info->h_aliases[i] != NULL; i++)
-    aliases[count++] = host_info->h_aliases[i];
+    aliases.AppendString(host_info->h_aliases[i]);
 
   for (i = 0; host_info->h_addr_list[i] != NULL; i++)
-    aliases[count++] = inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]);
+    aliases.AppendString(inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]));
 
-  for (i = 0; i < count; i++)
+  for (i = 0; i < aliases.GetSize(); i++)
     if (aliases[i] *= original)
       return;
 
-  aliases[i++] = original;
+  aliases.AppendString(original);
 }
 
 
@@ -715,8 +717,12 @@ BOOL PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
 {
   PIPCacheData * host = GetHost(name);
 
-  if (host != NULL)
-    aliases = host->GetHostAliases();
+  if (host != NULL) {
+    const PStringList & a = host->GetHostAliases();
+    aliases.SetSize(a.GetSize());
+    for (PINDEX i = 0; i < a.GetSize(); i++)
+      aliases[i] = a[i];
+  }
 
   mutex.Signal();
   return host != NULL;
@@ -825,8 +831,12 @@ BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray &
 {
   PIPCacheData * host = GetHost(addr);
 
-  if (host != NULL)
-    aliases = host->GetHostAliases();
+  if (host != NULL) {
+    const PStringList & a = host->GetHostAliases();
+    aliases.SetSize(a.GetSize());
+    for (PINDEX i = 0; i < a.GetSize(); i++)
+      aliases[i] = a[i];
+  }
 
   mutex.Signal();
   return host != NULL;
