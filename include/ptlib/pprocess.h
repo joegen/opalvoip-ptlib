@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.25 1996/06/13 13:30:49 robertj Exp $
+ * $Id: pprocess.h,v 1.26 1996/06/28 13:17:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.26  1996/06/28 13:17:08  robertj
+ * Fixed incorrect declaration of internal timer list.
+ *
  * Revision 1.25  1996/06/13 13:30:49  robertj
  * Rewrite of auto-delete threads, fixes Windows95 total crash.
  *
@@ -117,7 +120,7 @@
   PCREATE_PROCESS(cls)
 
 
-PLIST(PInternalTimerList, PAbstractList);
+PLIST(PInternalTimerList, PTimer);
 
 class PTimerList : PInternalTimerList // Want this to be private
 /* This class defines a list of <A>PTimer</A> objects. It is primarily used
@@ -154,9 +157,6 @@ class PTimerList : PInternalTimerList // Want this to be private
   private:
     PSemaphore    mutex;
     // Mutual exclusion for multi tasking
-
-    PThread * processingThread;
-    // Thread that currently has the mutex in Process()
 
     PTimeInterval lastSample;
     // The last system timer tick value that was used to process timers.
