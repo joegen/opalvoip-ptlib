@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.2  2004/04/23 06:07:24  csoutheren
+ * Added #if P_SASL to allow operation without SASL
+ *
  * Revision 1.1  2004/04/22 12:31:00  rjongbloed
  * Added PNotifier extensions and XMPP (Jabber) support,
  *   thanks to Federico Pinna and Reitek S.p.A.
@@ -99,7 +102,9 @@ class XMPP_C2S : public XMPPStreamHandler
     const PString       m_Server;
     PString             m_Resource; // the resource can change: the server can force one
     const PString       m_Password;
+#if P_SASL
     PSASLClient         m_SASL;
+#endif
     PString             m_Mechanism;
     BOOL                m_HasBind;
     BOOL                m_HasSession;
@@ -134,7 +139,9 @@ class XMPP_C2S : public XMPPStreamHandler
     // State handlers
     virtual void    HandleNullState(PXML& pdu);
     virtual void    HandleTLSStartedState(PXML& pdu);
+#if P_SASL
     virtual void    HandleSASLStartedState(PXML& pdu);
+#endif
     virtual void    HandleStreamSentState(PXML& pdu);
     virtual void    HandleBindSentState(PXML& pdu);
     virtual void    HandleSessionSentState(PXML& pdu);
