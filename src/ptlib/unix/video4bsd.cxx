@@ -21,9 +21,12 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.5  2001/01/11 13:26:39  rogerh
+ * Add me in the Contributors section
+ *
  * Revision 1.4  2001/01/05 18:12:30  rogerh
  * First fully working version of video4bsd.
  * Note that Start() and Stop() are not called, hence the first time hacks
