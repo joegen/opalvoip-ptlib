@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.8 1998/05/07 05:19:29 robertj Exp $
+ * $Id: asner.cxx,v 1.9 1998/05/11 06:01:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.9  1998/05/11 06:01:55  robertj
+ * Why did this compile under MSC?
+ *
  * Revision 1.8  1998/05/07 05:19:29  robertj
  * Fixed problems with using copy constructor/assignment oeprator on PASN_Objects.
  *
@@ -1907,105 +1910,105 @@ PASN_Object & PASN_Choice::GetObject() const
 PASN_Choice::operator PASN_Null &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Null::Class()), PInvalidCast);
-  return (PASN_Null &)choice;
+  return *(PASN_Null *)choice;
 }
 
 
 PASN_Choice::operator PASN_Boolean &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Boolean::Class()), PInvalidCast);
-  return (PASN_Boolean &)choice;
+  return *(PASN_Boolean *)choice;
 }
 
 
 PASN_Choice::operator PASN_Integer &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Integer::Class()), PInvalidCast);
-  return (PASN_Integer &)choice;
+  return *(PASN_Integer *)choice;
 }
 
 
 PASN_Choice::operator PASN_Enumeration &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Enumeration::Class()), PInvalidCast);
-  return (PASN_Enumeration &)choice;
+  return *(PASN_Enumeration *)choice;
 }
 
 
 PASN_Choice::operator PASN_Real &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Real::Class()), PInvalidCast);
-  return (PASN_Real &)choice;
+  return *(PASN_Real *)choice;
 }
 
 
 PASN_Choice::operator PASN_ObjectId &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_ObjectId::Class()), PInvalidCast);
-  return (PASN_ObjectId &)choice;
+  return *(PASN_ObjectId *)choice;
 }
 
 
 PASN_Choice::operator PASN_BitString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_BitString::Class()), PInvalidCast);
-  return (PASN_BitString &)choice;
+  return *(PASN_BitString *)choice;
 }
 
 
 PASN_Choice::operator PASN_OctetString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_OctetString::Class()), PInvalidCast);
-  return (PASN_OctetString &)choice;
+  return *(PASN_OctetString *)choice;
 }
 
 
 PASN_Choice::operator PASN_NumericString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_NumericString::Class()), PInvalidCast);
-  return (PASN_NumericString &)choice;
+  return *(PASN_NumericString *)choice;
 }
 
 
 PASN_Choice::operator PASN_PrintableString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_PrintableString::Class()), PInvalidCast);
-  return (PASN_PrintableString &)choice;
+  return *(PASN_PrintableString *)choice;
 }
 
 
 PASN_Choice::operator PASN_VisibleString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_VisibleString::Class()), PInvalidCast);
-  return (PASN_VisibleString &)choice;
+  return *(PASN_VisibleString *)choice;
 }
 
 
 PASN_Choice::operator PASN_IA5String &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_IA5String::Class()), PInvalidCast);
-  return (PASN_IA5String &)choice;
+  return *(PASN_IA5String *)choice;
 }
 
 
 PASN_Choice::operator PASN_GeneralString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_GeneralString::Class()), PInvalidCast);
-  return (PASN_GeneralString &)choice;
+  return *(PASN_GeneralString *)choice;
 }
 
 
 PASN_Choice::operator PASN_BMPString &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_BMPString::Class()), PInvalidCast);
-  return (PASN_BMPString &)choice;
+  return *(PASN_BMPString *)choice;
 }
 
 
 PASN_Choice::operator PASN_Sequence &() const
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Sequence::Class()), PInvalidCast);
-  return (PASN_Sequence &)choice;
+  return *(PASN_Sequence *)choice;
 }
 
 
