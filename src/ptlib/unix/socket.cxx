@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.107  2004/07/03 23:50:42  csoutheren
+ * Removed warnings under Solaris
+ *
  * Revision 1.106  2004/05/06 11:28:30  rjongbloed
  * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
  *
@@ -1420,7 +1423,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 	  goto Return;
 	}
 	if (rc == 0
-	    && strbuf.len >= sizeof(struct T_optmgmt_ack)
+	    && strbuf.len >= (int)sizeof(struct T_optmgmt_ack)
 	    && toa->PRIM_type == T_OPTMGMT_ACK
 	    && toa->MGMT_flags == T_SUCCESS
 	    && req->len == 0) {
@@ -1428,7 +1431,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 	  goto Return;		/* this is EOD msg */
 	}
 
-	if (strbuf.len >= sizeof(struct T_error_ack)
+	if (strbuf.len >= (int)sizeof(struct T_error_ack)
 	    && tea->PRIM_type == T_ERROR_ACK) {
 	    errno = (tea->TLI_error == TSYSERR) ? tea->UNIX_error : EPROTO;
 #ifdef SOL_COMPLAIN
@@ -1438,7 +1441,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 	}
 			
 	if (rc != MOREDATA
-	    || strbuf.len < sizeof(struct T_optmgmt_ack)
+	    || strbuf.len < (int)sizeof(struct T_optmgmt_ack)
 	    || toa->PRIM_type != T_OPTMGMT_ACK
 	    || toa->MGMT_flags != T_SUCCESS) {
 	    errno = ENOMSG;
