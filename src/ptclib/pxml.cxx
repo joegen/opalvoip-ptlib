@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.29  2003/04/02 09:13:55  rogerh
+ * Add type casts because the variable 'expat' is now a void *
+ *
  * Revision 1.28  2003/03/31 06:20:56  craigs
  * Split the expat wrapper from the XML file handling to allow reuse of the parser
  *
@@ -139,13 +142,13 @@ PXMLParser::PXMLParser(int _options)
   else
     expat = XML_ParserCreate(NULL);
 
-  XML_SetUserData(expat, this);
+  XML_SetUserData((XML_Parser)expat, this);
 
-  XML_SetElementHandler      (expat, PXML_StartElement, PXML_EndElement);
-  XML_SetCharacterDataHandler(expat, PXML_CharacterDataHandler);
-  XML_SetXmlDeclHandler      (expat, PXML_XmlDeclHandler);
-  XML_SetDoctypeDeclHandler  (expat, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
-  XML_SetNamespaceDeclHandler(expat, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
+  XML_SetElementHandler      ((XML_Parser)expat, PXML_StartElement, PXML_EndElement);
+  XML_SetCharacterDataHandler((XML_Parser)expat, PXML_CharacterDataHandler);
+  XML_SetXmlDeclHandler      ((XML_Parser)expat, PXML_XmlDeclHandler);
+  XML_SetDoctypeDeclHandler  ((XML_Parser)expat, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
+  XML_SetNamespaceDeclHandler((XML_Parser)expat, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
 
   rootElement = NULL;
   currentElement = NULL;
@@ -154,7 +157,7 @@ PXMLParser::PXMLParser(int _options)
 
 PXMLParser::~PXMLParser()
 {
-  XML_ParserFree(expat);
+  XML_ParserFree((XML_Parser)expat);
 }
 
 PXMLElement * PXMLParser::GetXMLTree() const
@@ -171,15 +174,15 @@ PXMLElement * PXMLParser::SetXMLTree(PXMLElement * newRoot)
 
 BOOL PXMLParser::Parse(const char * data, int dataLen, BOOL final)
 {
-  return XML_Parse(expat, data, dataLen, final) != 0;  
+  return XML_Parse((XML_Parser)expat, data, dataLen, final) != 0;  
 }
 
 void PXMLParser::GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine)
 {
-  XML_Error err = XML_GetErrorCode(expat);
+  XML_Error err = XML_GetErrorCode((XML_Parser)expat);
   errorString = PString(XML_ErrorString(err));
-  errorCol    = XML_GetCurrentColumnNumber(expat);
-  errorLine   = XML_GetCurrentLineNumber(expat);
+  errorCol    = XML_GetCurrentColumnNumber((XML_Parser)expat);
+  errorLine   = XML_GetCurrentLineNumber((XML_Parser)expat);
 }
 
 void PXMLParser::StartElement(const char * name, const char **attrs)
