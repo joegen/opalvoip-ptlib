@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.15 1996/01/03 11:09:34 robertj Exp $
+ * $Id: ptime.h,v 1.16 1996/02/03 11:04:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.16  1996/02/03 11:04:52  robertj
+ * Added string constructor for times, parses date/time from string.
+ *
  * Revision 1.15  1996/01/03 11:09:34  robertj
  * Added Universal Time and Time Zones to PTime class.
  *
@@ -86,6 +89,9 @@ PDECLARE_CLASS(PTime, PObject)
     PTime(
       time_t t = time(NULL),  // Time in seconds since 1 January 1970.
       TimeZone tz = Local     // local time or UTC
+    );
+    PTime(
+      const PString & str     // local time or UTC
     );
     PTime(
       int second,           // Second from 0 to 59.
