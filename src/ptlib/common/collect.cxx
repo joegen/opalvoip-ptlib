@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.3 1994/07/02 03:03:49 robertj Exp $
+ * $Id: collect.cxx,v 1.4 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.3  1994/07/02 03:03:49  robertj
+ * Revision 1.4  1994/07/17 10:46:06  robertj
+ * Fixed searching in sorted lists.
+ *
+ * Revision 1.3  1994/07/02  03:03:49  robertj
  * Added container searching facilities..
  *
  * Revision 1.2  1994/06/25  11:55:15  robertj
@@ -641,12 +644,14 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * inf) const
 {
   PSortedListElement * element = info->root;
-  while (element->left != NULL)
-    element = element->left;
-  while (element != NULL) {
-    if (!func(*element->data, inf))
-      return FALSE;
-    element = element->Successor();
+  if (element != NULL) {
+    while (element->left != NULL)
+      element = element->left;
+    while (element != NULL) {
+      if (!func(*element->data, inf))
+        return FALSE;
+      element = element->Successor();
+    }
   }
   return TRUE;
 }
@@ -654,13 +659,13 @@ BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * inf) const
 
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
-  return info->root->ValueSelect(*obj);
+  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(*obj);
 }
 
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  return info->root->ValueSelect(obj);
+  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(obj);
 }
 
 
@@ -876,13 +881,15 @@ PINDEX PSortedListElement::ValueSelect(const PObject & obj)
 {
   switch (data->Compare(obj)) {
     case PObject::LessThan :
-      if (left != NULL)
-        return left->ValueSelect(obj);
+      if (right != NULL) {
+        PINDEX index = right->ValueSelect(obj);
+        return index != P_MAX_INDEX ? LeftTreeSize() + index : P_MAX_INDEX;
+      }
       break;
 
     case PObject::GreaterThan :
       if (left != NULL)
-        return LeftTreeSize() + right->ValueSelect(obj);
+        return left->ValueSelect(obj);
       break;
 
     default :
