@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.17  2001/12/01 17:41:07  rogerh
+# Use locall defined compiler binary instead of hard coded gcc
+#
 # Revision 1.16  2001/11/30 00:37:16  robertj
 # Fixed incorrect library filename when building static library during shared
 #   library build.
@@ -99,7 +102,7 @@ $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_FILENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
+	$(CPLUS) $(LDSOOPTS) -Wl,-soname,$(LIB_FILENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
