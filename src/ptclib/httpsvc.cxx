@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.75  2001/08/28 06:44:45  craigs
+ * Added ability to override PHTTPServer creation
+ *
  * Revision 1.74  2001/06/30 06:59:06  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -542,7 +545,8 @@ PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   socket.SetOption(SO_LINGER, &ling, sizeof(ling));
 #endif
 
-  PHTTPServer * server = new PHTTPServer(httpNameSpace);
+  PHTTPServer * server = OnCreateHTTPServer(httpNameSpace);
+
   if (server->Open(socket))
     return server;
 
@@ -550,6 +554,10 @@ PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   return NULL;
 }
 
+PHTTPServer * PHTTPServiceProcess::OnCreateHTTPServer(const PHTTPSpace & httpNameSpace)
+{
+  return new PHTTPServer(httpNameSpace);
+}
 
 //////////////////////////////////////////////////////////////
 
