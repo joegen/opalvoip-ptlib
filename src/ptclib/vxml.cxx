@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.9  2002/07/29 15:03:36  craigs
+ * Added access to queue functions
+ * Added autodelete option to AddFile
+ *
  * Revision 1.8  2002/07/29 14:16:05  craigs
  * Added asynchronous VXML execution
  *
@@ -705,18 +709,23 @@ BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
 
 void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay)
 {
-  PWaitAndSignal mutex(queueMutex);
   PTRACE(3, "OpalVXML\tEnqueueing file " << fn << " for playing");
-  playQueue.Enqueue(new PVXMLQueueFilenameItem(fn, repeat, delay));
+  QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay));
 }
 
 void PVXMLOutgoingChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  PWaitAndSignal mutex(queueMutex);
   PTRACE(3, "OpalVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
-  playQueue.Enqueue(new PVXMLQueueDataItem(data, repeat, delay));
+  QueueItem(new PVXMLQueueDataItem(data, repeat, delay));
 }
 
+void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem)
+{
+  PWaitAndSignal mutex(queueMutex);
+  playQueue.Enqueue(newItem);
+}
+
+/*
 void PVXMLOutgoingChannel::PlayFile(PFile * chan)
 { 
   PWaitAndSignal mutex(channelMutex);
@@ -730,6 +739,7 @@ void PVXMLOutgoingChannel::PlayFile(PFile * chan)
   totalData = 0;
   SetReadChannel(chan, TRUE);
 }
+*/
 
 void PVXMLOutgoingChannel::FlushQueue()
 {
@@ -793,6 +803,7 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
         {
           PWaitAndSignal m(queueMutex);
           PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
+          qItem->OnStart();
           qItem->Play(*this);
         }
         doSilence = FALSE;
@@ -827,8 +838,10 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
           delay = qItem->delay;
 
           // if the repeat count is zero, then dequeue entry 
-          if (--qItem->repeat == 0)
+          if (--qItem->repeat == 0) {
+            qItem->OnStop();
             delete playQueue.Dequeue();
+          }
         }
 
         // if delay required, then setup the delay
