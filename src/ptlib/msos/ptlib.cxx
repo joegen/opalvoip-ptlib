@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.5 1994/07/21 12:35:18 robertj Exp $
+ * $Id: ptlib.cxx,v 1.6 1994/07/27 06:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.5  1994/07/21 12:35:18  robertj
+ * Revision 1.6  1994/07/27 06:00:10  robertj
+ * Backup
+ *
+ * Revision 1.5  1994/07/21  12:35:18  robertj
  * *** empty log message ***
  *
  * Revision 1.4  1994/07/17  11:01:04  robertj
@@ -34,6 +37,7 @@
 #include <malloc.h>
 
 #ifndef P_USE_INLINES
+#include <osutil.inl>
 #include <ptlib.inl>
 #endif
 
@@ -79,8 +83,10 @@ PString PChannel::GetErrorText() const
   if (osError == 0)
     return PString();
 
-  if (osError > 0 && osError < _sys_nerr)
-    return _sys_errlist[osError];
+  if (osError > 0 && osError < _sys_nerr) {
+    if (_sys_errlist[osError][0] != '\0')
+      return _sys_errlist[osError];
+  }
 
   return psprintf("OS error %d", osError);
 }

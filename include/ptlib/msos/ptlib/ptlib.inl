@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.4 1994/07/21 12:35:18 robertj Exp $
+ * $Id: ptlib.inl,v 1.5 1994/07/27 06:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,21 +8,23 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.4  1994/07/21 12:35:18  robertj
+ * Revision 1.5  1994/07/27 06:00:10  robertj
+ * Backup
+ *
+ * Revision 1.4  1994/07/21  12:35:18  robertj
  * *** empty log message ***
  *
-# Revision 1.3  1994/07/02  03:18:09  robertj
-# Multi-threading support.
-# Fixed bug in time intervals being signed.
-#
-# Revision 1.2  1994/06/25  12:13:01  robertj
-# Synchronisation.
-#
+ * Revision 1.3  1994/07/02  03:18:09  robertj
+ * Multi-threading support.
+ * Fixed bug in time intervals being signed.
+ *
+ * Revision 1.2  1994/06/25  12:13:01  robertj
+ * Synchronisation.
+ *
  * Revision 1.1  1994/04/01  14:38:42  robertj
  * Initial revision
  */
 
-#include "../../common/osutil.inl"
 
 
 ///////////////////////////////////////////////////////////////////////////////
