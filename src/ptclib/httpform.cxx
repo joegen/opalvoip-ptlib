@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.38  2000/12/20 02:23:39  robertj
+ * Fixed variable array size value (caused extra blank entry ever commit).
+ *
  * Revision 1.37  2000/12/18 12:13:08  robertj
  * Fixed bug in auto-generated HTML in fixed size arrays, should not have add/delete box.
  *
@@ -1053,7 +1056,7 @@ PINDEX PHTTPFieldArray::GetSize() const
   PAssert(size > 0, PLogicError);
   if (canAddElements)
     size--;
-  return fields.GetSize();
+  return size;
 }
 
 
