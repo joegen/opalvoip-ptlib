@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.40  2003/08/01 16:00:51  csoutheren
+ * Changed #if to #ifdef to (maybe) avoid compiler problems with gcc 2.95.2
+ *
  * Revision 1.39  2003/08/01 02:12:34  csoutheren
  * Changed to allow easy isolation of PER, BER and XER encoding/decoding routines
  *
@@ -430,7 +433,7 @@ class PASN_Enumeration : public PASN_Object
     void EncodePER(PPER_Stream & strm) const;
 #endif
 
-#if P_INCLUDE_XER
+#ifdef P_INCLUDE_XER
     virtual BOOL DecodeXER(PXER_Stream & strm);
     virtual void EncodeXER(PXER_Stream & strm) const;
 #endif
@@ -871,7 +874,7 @@ class PASN_Choice : public PASN_Object
     virtual void EncodePER(PPER_Stream &) const;
 #endif
 
-#if P_INCLUDE_XER
+#ifdef P_INCLUDE_XER
     BOOL DecodeXER(PXER_Stream &);
     void EncodeXER(PXER_Stream &) const;
 #endif
@@ -952,7 +955,7 @@ class PASN_Sequence : public PASN_Object
     void UnknownExtensionsEncodePER(PPER_Stream & strm) const;
 #endif
 
-#if P_INCLUDE_XER
+#ifdef P_INCLUDE_XER
     virtual BOOL PreambleDecodeXER(PXER_Stream & strm);
     virtual void PreambleEncodeXER(PXER_Stream & strm) const;
     virtual BOOL KnownExtensionDecodeXER(PXER_Stream & strm, PINDEX fld, PASN_Object & field);
