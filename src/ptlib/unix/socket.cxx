@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.80  2001/12/10 07:07:27  rogerh
+ * Take out some #includes which were already in pachdep.h. Fixes openBSD 2.9
+ *
  * Revision 1.79  2001/11/22 12:29:57  rogerh
  * Take out the cloned flag on OpenBSD so it compiles
  *
@@ -234,12 +237,6 @@
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX)
 #define ifr_netmask ifr_addr
 
-#include <sys/param.h>
-#include <sys/file.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-
-#include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
 #include <net/route.h>
