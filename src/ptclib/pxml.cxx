@@ -102,7 +102,7 @@ PXML::PXML(const PString & data, int _options)
 
 PXML::~PXML()
 {
-  delete rootElement;
+  RemoveAll();
 }
 
 PXML::PXML(const PXML & xml)
@@ -229,6 +229,14 @@ BOOL PXML::Save(PString & data, int _options)
   strm << *this;
   data = strm;
   return TRUE;
+}
+
+void PXML::RemoveAll()
+{
+  if (rootElement != NULL) {
+    delete rootElement;
+    rootElement = NULL;
+  }
 }
 
 PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
