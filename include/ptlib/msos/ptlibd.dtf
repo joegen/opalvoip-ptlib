@@ -299,6 +299,8 @@ EXPORTS
     ??0PUnSerialiser@@QAE@AAVistream@@@Z @239 NONAME ;public: __thiscall PUnSerialiser::PUnSerialiser(class istream &)
     ??0PUnsignedArray@@QAE@H@Z @3126 NONAME ;public: __thiscall PUnsignedArray::PUnsignedArray(int)
     ??0PUnsignedArray@@QAE@PBIHH@Z @3127 NONAME ;public: __thiscall PUnsignedArray::PUnsignedArray(unsigned int const *,int,int)
+    ??0PVideoDevice@@QAE@W4VideoFormat@0@IW4ColourFormat@0@@Z @3322 NONAME ;public: __thiscall PVideoDevice::PVideoDevice(enum PVideoDevice::VideoFormat,unsigned int,enum PVideoDevice::ColourFormat)
+    ??0PVideoInputDevice@@QAE@W4VideoFormat@PVideoDevice@@IW4ColourFormat@2@@Z @3342 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(enum PVideoDevice::VideoFormat,unsigned int,enum VideoFormat::ColourFormat)
     ??0PWaitAndSignal@@QAE@AAVPSemaphore@@@Z @2496 NONAME ;public: __thiscall PWaitAndSignal::PWaitAndSignal(class PSemaphore &)
     ??0PWaveBuffer@@AAE@H@Z @2602 NONAME ;private: __thiscall PWaveBuffer::PWaveBuffer(int)
     ??0PWaveFormat@@QAE@ABV0@@Z @2603 NONAME ;public: __thiscall PWaveFormat::PWaveFormat(class PWaveFormat const &)
@@ -457,6 +459,8 @@ EXPORTS
     ??1PUDPSocket@@UAE@XZ @356 NONAME ;public: virtual __thiscall PUDPSocket::~PUDPSocket(void)
     ??1PUnSerialiser@@UAE@XZ @357 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PUnsignedArray@@UAE@XZ @3136 NONAME ;public: virtual __thiscall PUnsignedArray::~PUnsignedArray(void)
+    ??1PVideoDevice@@UAE@XZ @3323 NONAME ;public: virtual __thiscall PVideoDevice::~PVideoDevice(void)
+    ??1PVideoInputDevice@@UAE@XZ @3343 NONAME ;public: virtual __thiscall PVideoInputDevice::~PVideoInputDevice(void)
     ??1PWaitAndSignal@@QAE@XZ @2497 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
     ??1PWaveBuffer@@EAE@XZ @2607 NONAME ;private: virtual __thiscall PWaveBuffer::~PWaveBuffer(void)
     ??1PWaveFormat@@UAE@XZ @3073 NONAME ;public: virtual __thiscall PWaveFormat::~PWaveFormat(void)
@@ -699,6 +703,8 @@ EXPORTS
     ??3PUnSerialiser@@SAXPAX@Z @498 NONAME ;public: static void __cdecl PUnSerialiser::operator delete(void *)
     ??3PUnsignedArray@@SAXPAX@Z @3158 NONAME ;public: static void __cdecl PUnsignedArray::operator delete(void *)
     ??3PUnsignedArray@@SAXPAXPBDH@Z @3159 NONAME ;public: static void __cdecl PUnsignedArray::operator delete(void *,char const *,int)
+    ??3PVideoDevice@@SAXPAX@Z @3324 NONAME ;public: static void __cdecl PVideoDevice::operator delete(void *)
+    ??3PVideoInputDevice@@SAXPAX@Z @3344 NONAME ;public: static void __cdecl PVideoInputDevice::operator delete(void *)
     ??3PWaveBuffer@@SAXPAX@Z @2652 NONAME ;public: static void __cdecl PWaveBuffer::operator delete(void *)
     ??3PWaveBuffer@@SAXPAXPBDH@Z @2653 NONAME ;public: static void __cdecl PWaveBuffer::operator delete(void *,char const *,int)
     ??3PWaveFormat@@SAXPAX@Z @3074 NONAME ;public: static void __cdecl PWaveFormat::operator delete(void *)
@@ -1118,6 +1124,8 @@ EXPORTS
     ??_7PUDPSocket@@6BPObject@@@ @824 NONAME ;const  PUDPSocket::`vftable'{for `PObject'}
     ??_7PUnSerialiser@@6B@ @825 NONAME ;const  PUnSerialiser::`vftable'
     ??_7PUnsignedArray@@6B@ @3172 NONAME ;const  PUnsignedArray::`vftable'
+    ??_7PVideoDevice@@6B@ @3325 NONAME ;const  PVideoDevice::`vftable'
+    ??_7PVideoInputDevice@@6B@ @3345 NONAME ;const  PVideoInputDevice::`vftable'
     ??_7PWaveBuffer@@6B@ @2666 NONAME ;const  PWaveBuffer::`vftable'
     ??_7PWaveFormat@@6B@ @3075 NONAME ;const  PWaveFormat::`vftable'
     ??_7PWin32PacketBuffer@@6B@ @2456 NONAME ;const  PWin32PacketBuffer::`vftable'
@@ -1378,6 +1386,8 @@ EXPORTS
     ?Class@PUDPSocket@@SAPBDXZ @1021 NONAME ;public: static char const * __cdecl PUDPSocket::Class(void)
     ?Class@PUnSerialiser@@SAPBDXZ @1022 NONAME ;public: static char const * __cdecl PUnSerialiser::Class(void)
     ?Class@PUnsignedArray@@SAPBDXZ @3180 NONAME ;public: static char const * __cdecl PUnsignedArray::Class(void)
+    ?Class@PVideoDevice@@SAPBDXZ @3326 NONAME ;public: static char const * __cdecl PVideoDevice::Class(void)
+    ?Class@PVideoInputDevice@@SAPBDXZ @3346 NONAME ;public: static char const * __cdecl PVideoInputDevice::Class(void)
     ?Class@PWaveBuffer@@SAPBDXZ @2674 NONAME ;public: static char const * __cdecl PWaveBuffer::Class(void)
     ?Class@PWaveFormat@@SAPBDXZ @3076 NONAME ;public: static char const * __cdecl PWaveFormat::Class(void)
     ?Class@PWin32PacketBuffer@@SAPBDXZ @2461 NONAME ;public: static char const * __cdecl PWin32PacketBuffer::Class(void)
@@ -1463,6 +1473,7 @@ EXPORTS
     ?Close@PSerialChannel@@UAEHXZ @1078 NONAME ;public: virtual int __thiscall PSerialChannel::Close(void)
     ?Close@PSocket@@UAEHXZ @1079 NONAME ;public: virtual int __thiscall PSocket::Close(void)
     ?Close@PSoundChannel@@UAEHXZ @2676 NONAME ;public: virtual int __thiscall PSoundChannel::Close(void)
+    ?Close@PVideoInputDevice@@UAEHXZ @3351 NONAME ;public: virtual int __thiscall PVideoInputDevice::Close(void)
     ?Close@PWin32PacketDriver@@QAEXXZ @2360 NONAME ;public: void __thiscall PWin32PacketDriver::Close(void)
     ?Compare@PAbstractArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @1080 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractArray::Compare(class PObject const &)const 
     ?Compare@PAbstractList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1081 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractList::Compare(class PObject const &)const 
@@ -1593,6 +1604,8 @@ EXPORTS
     ?CompareObjectMemoryDirect@PUDPSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1185 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUDPSocket::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PUnSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @1186 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUnSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PUnsignedArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @3196 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUnsignedArray::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PVideoDevice@@UBE?AW4Comparison@PObject@@ABV3@@Z @3327 NONAME ;public: virtual enum PObject::Comparison  __thiscall PVideoDevice::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PVideoInputDevice@@UBE?AW4Comparison@PObject@@ABV3@@Z @3347 NONAME ;public: virtual enum PObject::Comparison  __thiscall PVideoInputDevice::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWaveBuffer@@UBE?AW4Comparison@PObject@@ABV3@@Z @2679 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveBuffer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWaveFormat@@UBE?AW4Comparison@PObject@@ABV3@@Z @3077 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveFormat::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWin32PacketBuffer@@UBE?AW4Comparison@PObject@@ABV3@@Z @2469 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWin32PacketBuffer::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1693,6 +1706,7 @@ EXPORTS
     ?EnumIpAddress@PWin32PacketVxD@@UAEHHAAVAddress@PIPSocket@@0@Z @2370 NONAME ;public: virtual int __thiscall PWin32PacketVxD::EnumIpAddress(int,class PIPSocket::Address &,class PIPSocket::Address &)
     ?EnumKey@RegistryKey@@QAEHHAAVPString@@@Z @1269 NONAME ;public: int __thiscall RegistryKey::EnumKey(int,class PString &)
     ?EnumValue@RegistryKey@@QAEHHAAVPString@@@Z @1270 NONAME ;public: int __thiscall RegistryKey::EnumValue(int,class PString &)
+    ?ErrorHandler@PVideoInputDevice@@KGJPAUHWND__@@HPBD@Z @3352 NONAME ;protected: static long __stdcall PVideoInputDevice::ErrorHandler(struct HWND__ *,int,char const *)
     ?EscapeString@PRegularExpression@@SA?AVPString@@ABV2@@Z @1272 NONAME ;public: static class PString  __cdecl PRegularExpression::EscapeString(class PString const &)
     ?Exclude@PStringSet@@QAEXABVPString@@@Z @1273 NONAME ;public: void __thiscall PStringSet::Exclude(class PString const &)
     ?Execute@PPipeChannel@@QAEHXZ @1274 NONAME ;public: int __thiscall PPipeChannel::Execute(void)
@@ -1755,6 +1769,7 @@ EXPORTS
     ?GetBoolean@PConfig@@QBEHABVPString@@0H@Z @1327 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,class PString const &,int)const 
     ?GetBoolean@PConfig@@QBEHABVPString@@H@Z @1328 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,int)const 
     ?GetBuffers@PSoundChannel@@QAEHAAH0@Z @2681 NONAME ;public: int __thiscall PSoundChannel::GetBuffers(int &,int &)
+    ?GetChannel@PVideoDevice@@UBEIXZ @3328 NONAME ;public: virtual unsigned int __thiscall PVideoDevice::GetChannel(void)const 
     ?GetChannels@PSound@@QBEIXZ @2907 NONAME ;public: unsigned int __thiscall PSound::GetChannels(void)const 
     ?GetClass@?$PArray@VPString@@@@UBEPBDI@Z @1329 NONAME ;public: virtual char const * __thiscall PArray<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PArray@VPWaveBuffer@@@@UBEPBDI@Z @2682 NONAME ;public: virtual char const * __thiscall PArray<class PWaveBuffer>::GetClass(unsigned int)const 
@@ -1869,6 +1884,8 @@ EXPORTS
     ?GetClass@PUDPSocket@@UBEPBDI@Z @1419 NONAME ;public: virtual char const * __thiscall PUDPSocket::GetClass(unsigned int)const 
     ?GetClass@PUnSerialiser@@UBEPBDI@Z @1420 NONAME ;public: virtual char const * __thiscall PUnSerialiser::GetClass(unsigned int)const 
     ?GetClass@PUnsignedArray@@UBEPBDI@Z @3204 NONAME ;public: virtual char const * __thiscall PUnsignedArray::GetClass(unsigned int)const 
+    ?GetClass@PVideoDevice@@UBEPBDI@Z @3329 NONAME ;public: virtual char const * __thiscall PVideoDevice::GetClass(unsigned int)const 
+    ?GetClass@PVideoInputDevice@@UBEPBDI@Z @3348 NONAME ;public: virtual char const * __thiscall PVideoInputDevice::GetClass(unsigned int)const 
     ?GetClass@PWaveBuffer@@UBEPBDI@Z @2684 NONAME ;public: virtual char const * __thiscall PWaveBuffer::GetClass(unsigned int)const 
     ?GetClass@PWaveFormat@@UBEPBDI@Z @3078 NONAME ;public: virtual char const * __thiscall PWaveFormat::GetClass(unsigned int)const 
     ?GetClass@PWin32PacketBuffer@@UBEPBDI@Z @2475 NONAME ;public: virtual char const * __thiscall PWin32PacketBuffer::GetClass(unsigned int)const 
@@ -1878,6 +1895,7 @@ EXPORTS
     ?GetClass@RouteEntry@PIPSocket@@UBEPBDI@Z @2476 NONAME ;public: virtual char const * __thiscall PIPSocket::RouteEntry::GetClass(unsigned int)const 
     ?GetClass@SelectList@PSocket@@UBEPBDI@Z @1422 NONAME ;public: virtual char const * __thiscall PSocket::SelectList::GetClass(unsigned int)const 
     ?GetClass@Table@PHashTable@@UBEPBDI@Z @1423 NONAME ;public: virtual char const * __thiscall PHashTable::Table::GetClass(unsigned int)const 
+    ?GetColourFormat@PVideoDevice@@QBE?AW4ColourFormat@1@XZ @3330 NONAME ;public: enum PVideoDevice::ColourFormat  __thiscall PVideoDevice::GetColourFormat(void)const 
     ?GetConfiguration@PRemoteConnection@@QAE?AW4Status@1@AAUConfiguration@1@@Z @1424 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetConfiguration(struct PRemoteConnection::Configuration &)
     ?GetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@AAUConfiguration@1@@Z @1425 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::GetConfiguration(class PString const &,struct PRemoteConnection::Configuration &)
     ?GetCount@PArgList@@QBEHXZ @1426 NONAME ;public: int __thiscall PArgList::GetCount(void)const 
@@ -1922,6 +1940,9 @@ EXPORTS
     ?GetFilter@PEthSocket@@QAEHAAIAAG@Z @2377 NONAME ;public: int __thiscall PEthSocket::GetFilter(unsigned int &,unsigned short &)
     ?GetFormatInfoData@PSound@@QBEPBXXZ @2687 NONAME ;public: void const * __thiscall PSound::GetFormatInfoData(void)const 
     ?GetFormatInfoSize@PSound@@QBEHXZ @2688 NONAME ;public: int __thiscall PSound::GetFormatInfoSize(void)const 
+    ?GetFrame@PVideoInputDevice@@UAEHAAVPBYTEArray@@@Z @3363 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrame(class PBYTEArray &)
+    ?GetFrameData@PVideoInputDevice@@UAEHPAEPAH@Z @3364 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrameData(unsigned char *,int *)
+    ?GetFrameSize@PVideoDevice@@UBEHAAI0@Z @3331 NONAME ;public: virtual int __thiscall PVideoDevice::GetFrameSize(unsigned int &,unsigned int &)const 
     ?GetFunction@PDynaLink@@QAEHABVPString@@AAP6AXXZ@Z @1459 NONAME ;public: int __thiscall PDynaLink::GetFunction(class PString const &,void (__cdecl*&)(void))
     ?GetFunction@PDynaLink@@QAEHHAAP6AXXZ@Z @1460 NONAME ;public: int __thiscall PDynaLink::GetFunction(int,void (__cdecl*&)(void))
     ?GetGatewayAddress@PIPSocket@@SAHAAVAddress@1@@Z @2477 NONAME ;public: static int __cdecl PIPSocket::GetGatewayAddress(class PIPSocket::Address &)
@@ -1988,6 +2009,8 @@ EXPORTS
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1508 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
     ?GetLogLevel@PServiceProcess@@QBE?AW4Level@PSystemLog@@XZ @1509 NONAME ;public: enum PSystemLog::Level  __thiscall PServiceProcess::GetLogLevel(void)const 
     ?GetManufacturer@PProcess@@QBEABVPString@@XZ @1510 NONAME ;public: class PString const & __thiscall PProcess::GetManufacturer(void)const 
+    ?GetMaxFrameBytes@PVideoInputDevice@@UAEHXZ @3361 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetMaxFrameBytes(void)
+    ?GetMaxFrameSize@PVideoDevice@@UBEHAAI0@Z @3332 NONAME ;public: virtual int __thiscall PVideoDevice::GetMaxFrameSize(unsigned int &,unsigned int &)const 
     ?GetMedium@PEthSocket@@QAE?AW4MediumTypes@1@XZ @2381 NONAME ;public: enum PEthSocket::MediumTypes  __thiscall PEthSocket::GetMedium(void)
     ?GetMessageAttachments@PMail@@QAEHABVPString@@AAVPStringArray@@HH@Z @1511 NONAME ;public: int __thiscall PMail::GetMessageAttachments(class PString const &,class PStringArray &,int,int)
     ?GetMessageBody@PMail@@QAEHABVPString@@AAV2@H@Z @1512 NONAME ;public: int __thiscall PMail::GetMessageBody(class PString const &,class PString &,int)
@@ -1995,6 +2018,7 @@ EXPORTS
     ?GetMessageIDs@PMail@@QAE?AVPStringArray@@H@Z @1514 NONAME ;public: class PStringArray  __thiscall PMail::GetMessageIDs(int)
     ?GetMicrosecond@PTime@@QBEJXZ @3112 NONAME ;public: long __thiscall PTime::GetMicrosecond(void)const 
     ?GetMilliSeconds@PTimeInterval@@QBE_JXZ @1515 NONAME ;public: __int64 __thiscall PTimeInterval::GetMilliSeconds(void)const 
+    ?GetMinFrameSize@PVideoDevice@@UBEHAAI0@Z @3333 NONAME ;public: virtual int __thiscall PVideoDevice::GetMinFrameSize(unsigned int &,unsigned int &)const 
     ?GetMinute@PTime@@QBEHXZ @1516 NONAME ;public: int __thiscall PTime::GetMinute(void)const 
     ?GetMinutes@PTimeInterval@@QBEJXZ @1517 NONAME ;public: long __thiscall PTimeInterval::GetMinutes(void)const 
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @1518 NONAME ;public: enum PTime::Months  __thiscall PTime::GetMonth(void)const 
@@ -2022,6 +2046,7 @@ EXPORTS
     ?GetNumberValueAt@PShortArray@@UBEJH@Z @1535 NONAME ;public: virtual long __thiscall PShortArray::GetNumberValueAt(int)const 
     ?GetNumberValueAt@PUnsignedArray@@UBEJH@Z @1536 NONAME ;public: virtual long __thiscall PUnsignedArray::GetNumberValueAt(int)const 
     ?GetNumberValueAt@PWORDArray@@UBEJH@Z @1537 NONAME ;public: virtual long __thiscall PWORDArray::GetNumberValueAt(int)const 
+    ?GetNumChannels@PVideoDevice@@UBEIXZ @3334 NONAME ;public: virtual unsigned int __thiscall PVideoDevice::GetNumChannels(void)const 
     ?GetObjectsIndex@PAbstractDictionary@@UBEHPBVPObject@@@Z @1538 NONAME ;public: virtual int __thiscall PAbstractDictionary::GetObjectsIndex(class PObject const *)const 
     ?GetObjectsIndex@PAbstractList@@UBEHPBVPObject@@@Z @1539 NONAME ;public: virtual int __thiscall PAbstractList::GetObjectsIndex(class PObject const *)const 
     ?GetObjectsIndex@PAbstractSet@@UBEHPBVPObject@@@Z @1540 NONAME ;public: virtual int __thiscall PAbstractSet::GetObjectsIndex(class PObject const *)const 
@@ -2148,6 +2173,7 @@ EXPORTS
     ?GetValuesIndex@PAbstractSortedList@@UBEHABVPObject@@@Z @1629 NONAME ;public: virtual int __thiscall PAbstractSortedList::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1630 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
     ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1631 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
+    ?GetVideoFormat@PVideoDevice@@UBE?AW4VideoFormat@1@XZ @3335 NONAME ;public: virtual enum PVideoDevice::VideoFormat  __thiscall PVideoDevice::GetVideoFormat(void)const 
     ?GetVolume@PDirectory@@QBE?AVPCaselessString@@XZ @1632 NONAME ;public: class PCaselessString  __thiscall PDirectory::GetVolume(void)const 
     ?GetVolume@PFilePath@@QBE?AVPCaselessString@@XZ @1633 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetVolume(void)const 
     ?GetVolumeSpace@PDirectory@@QBEHAA_J0AAK@Z @1634 NONAME ;public: int __thiscall PDirectory::GetVolumeSpace(__int64 &,__int64 &,unsigned long &)const 
@@ -2155,6 +2181,8 @@ EXPORTS
     ?GetWriteTimeout@PChannel@@QBE?AVPTimeInterval@@XZ @1636 NONAME ;public: class PTimeInterval  __thiscall PChannel::GetWriteTimeout(void)const 
     ?GetYear@PTime@@QBEHXZ @1637 NONAME ;public: int __thiscall PTime::GetYear(void)const 
     ?GuardBytes@Header@PMemoryHeap@@2PADA @3093 NONAME ;public: static char *  PMemoryHeap::Header::GuardBytes
+    ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @3354 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
+    ?HandleVideo@PVideoInputDevice@@IAEJPAUvideohdr_tag@@@Z @3355 NONAME ;protected: long __thiscall PVideoInputDevice::HandleVideo(struct videohdr_tag *)
     ?HasAged@PIPCacheData@@QBEHXZ @1640 NONAME ;public: int __thiscall PIPCacheData::HasAged(void)const 
     ?HashFunction@PIPCacheKey@@UBEHXZ @1641 NONAME ;public: virtual int __thiscall PIPCacheKey::HashFunction(void)const 
     ?HashFunction@PObject@@UBEHXZ @1642 NONAME ;public: virtual int __thiscall PObject::HashFunction(void)const 
@@ -2307,6 +2335,8 @@ EXPORTS
     ?IsClass@PUDPSocket@@UBEHPBD@Z @1766 NONAME ;public: virtual int __thiscall PUDPSocket::IsClass(char const *)const 
     ?IsClass@PUnSerialiser@@UBEHPBD@Z @1767 NONAME ;public: virtual int __thiscall PUnSerialiser::IsClass(char const *)const 
     ?IsClass@PUnsignedArray@@UBEHPBD@Z @3212 NONAME ;public: virtual int __thiscall PUnsignedArray::IsClass(char const *)const 
+    ?IsClass@PVideoDevice@@UBEHPBD@Z @3336 NONAME ;public: virtual int __thiscall PVideoDevice::IsClass(char const *)const 
+    ?IsClass@PVideoInputDevice@@UBEHPBD@Z @3349 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsClass(char const *)const 
     ?IsClass@PWaveBuffer@@UBEHPBD@Z @2696 NONAME ;public: virtual int __thiscall PWaveBuffer::IsClass(char const *)const 
     ?IsClass@PWaveFormat@@UBEHPBD@Z @3079 NONAME ;public: virtual int __thiscall PWaveFormat::IsClass(char const *)const 
     ?IsClass@PWin32PacketBuffer@@UBEHPBD@Z @2489 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsClass(char const *)const 
@@ -2431,6 +2461,8 @@ EXPORTS
     ?IsDescendant@PUDPSocket@@UBEHPBD@Z @1862 NONAME ;public: virtual int __thiscall PUDPSocket::IsDescendant(char const *)const 
     ?IsDescendant@PUnSerialiser@@UBEHPBD@Z @1863 NONAME ;public: virtual int __thiscall PUnSerialiser::IsDescendant(char const *)const 
     ?IsDescendant@PUnsignedArray@@UBEHPBD@Z @3220 NONAME ;public: virtual int __thiscall PUnsignedArray::IsDescendant(char const *)const 
+    ?IsDescendant@PVideoDevice@@UBEHPBD@Z @3337 NONAME ;public: virtual int __thiscall PVideoDevice::IsDescendant(char const *)const 
+    ?IsDescendant@PVideoInputDevice@@UBEHPBD@Z @3350 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsDescendant(char const *)const 
     ?IsDescendant@PWaveBuffer@@UBEHPBD@Z @2699 NONAME ;public: virtual int __thiscall PWaveBuffer::IsDescendant(char const *)const 
     ?IsDescendant@PWaveFormat@@UBEHPBD@Z @3080 NONAME ;public: virtual int __thiscall PWaveFormat::IsDescendant(char const *)const 
     ?IsDescendant@PWin32PacketBuffer@@UBEHPBD@Z @2494 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsDescendant(char const *)const 
@@ -2454,6 +2486,7 @@ EXPORTS
     ?IsOpen@PICMPSocket@@UBEHXZ @1876 NONAME ;public: virtual int __thiscall PICMPSocket::IsOpen(void)const 
     ?IsOpen@PIndirectChannel@@UBEHXZ @1877 NONAME ;public: virtual int __thiscall PIndirectChannel::IsOpen(void)const 
     ?IsOpen@PPipeChannel@@UBEHXZ @1878 NONAME ;public: virtual int __thiscall PPipeChannel::IsOpen(void)const 
+    ?IsOpen@PVideoInputDevice@@UBEHXZ @3356 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsOpen(void)const 
     ?IsOpen@PWin32PacketDriver@@QBEHXZ @2395 NONAME ;public: int __thiscall PWin32PacketDriver::IsOpen(void)const 
     ?IsPast@PTime@@QBEHXZ @1879 NONAME ;public: int __thiscall PTime::IsPast(void)const 
     ?IsPaused@PTimer@@QBEHXZ @1880 NONAME ;public: int __thiscall PTimer::IsPaused(void)const 
@@ -2546,6 +2579,7 @@ EXPORTS
     ?Open@PSerialChannel@@UAEHAAVPConfig@@@Z @2532 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PConfig &)
     ?Open@PSerialChannel@@UAEHABVPString@@KEW4Parity@1@EW4FlowControl@1@2@Z @1954 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PString const &,unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?Open@PSoundChannel@@QAEHABVPString@@W4Directions@1@III@Z @2701 NONAME ;public: int __thiscall PSoundChannel::Open(class PString const &,enum PSoundChannel::Directions,unsigned int,unsigned int,unsigned int)
+    ?Open@PVideoInputDevice@@UAEHABVPString@@H@Z @3362 NONAME ;public: virtual int __thiscall PVideoInputDevice::Open(class PString const &,int)
     ?OpenDevice@PSoundChannel@@AAEHI@Z @2912 NONAME ;private: int __thiscall PSoundChannel::OpenDevice(unsigned int)
     ?OpenManager@NT_ServiceManager@@AAEHXZ @1955 NONAME ;private: int __thiscall NT_ServiceManager::OpenManager(void)
     ?OpenSocket@PEthSocket@@MAEHXZ @2398 NONAME ;protected: virtual int __thiscall PEthSocket::OpenSocket(void)
@@ -2726,6 +2760,7 @@ EXPORTS
     ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2111 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @2112 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @2113 NONAME ;public: void __thiscall PTimer::RunContinuous(class PTimeInterval const &)
+    ?Save@PConfigArgs@@QAEXABVPString@@@Z @3321 NONAME ;public: void __thiscall PConfigArgs::Save(class PString const &)
     ?Save@PSound@@QAEHABVPFilePath@@@Z @2708 NONAME ;public: int __thiscall PSound::Save(class PFilePath const &)
     ?SaveSettings@PSerialChannel@@UAEXAAVPConfig@@@Z @2533 NONAME ;public: virtual void __thiscall PSerialChannel::SaveSettings(class PConfig &)
     ?seekoff@Buffer@PStringStream@@UAEJJW4seek_dir@ios@@H@Z @2114 NONAME ;public: virtual long __thiscall PStringStream::Buffer::seekoff(long,enum ios::seek_dir,int)
@@ -2771,6 +2806,8 @@ EXPORTS
     ?SetBoolean@PConfig@@QAEXABVPString@@H@Z @2146 NONAME ;public: void __thiscall PConfig::SetBoolean(class PString const &,int)
     ?SetBreak@PSerialChannel@@QAEXH@Z @2147 NONAME ;public: void __thiscall PSerialChannel::SetBreak(int)
     ?SetBuffers@PSoundChannel@@QAEHHH@Z @2709 NONAME ;public: int __thiscall PSoundChannel::SetBuffers(int,int)
+    ?SetChannel@PVideoDevice@@UAEHI@Z @3338 NONAME ;public: virtual int __thiscall PVideoDevice::SetChannel(unsigned int)
+    ?SetColourFormat@PVideoDevice@@UAEHW4ColourFormat@1@@Z @3339 NONAME ;public: virtual int __thiscall PVideoDevice::SetColourFormat(enum PVideoDevice::ColourFormat)
     ?SetCommsParam@PSerialChannel@@AAEHKEW4Parity@1@EW4FlowControl@1@1@Z @2148 NONAME ;private: int __thiscall PSerialChannel::SetCommsParam(unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?SetConfiguration@PRemoteConnection@@QAE?AW4Status@1@ABUConfiguration@1@H@Z @2149 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::SetConfiguration(struct PRemoteConnection::Configuration const &,int)
     ?SetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@ABUConfiguration@1@H@Z @2150 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::SetConfiguration(class PString const &,struct PRemoteConnection::Configuration const &,int)
@@ -2790,6 +2827,7 @@ EXPORTS
     ?SetFormat@PSoundChannel@@QAEHIII@Z @2710 NONAME ;public: int __thiscall PSoundChannel::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXIII@Z @2711 NONAME ;public: void __thiscall PWaveFormat::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXPBXH@Z @2916 NONAME ;public: void __thiscall PWaveFormat::SetFormat(void const *,int)
+    ?SetFrameSize@PVideoDevice@@UAEHII@Z @3340 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetIgnoreAllocations@PMemoryHeap@@SAXH@Z @2163 NONAME ;public: static void __cdecl PMemoryHeap::SetIgnoreAllocations(int)
     ?SetInputFlowControl@PSerialChannel@@QAEHW4FlowControl@1@@Z @2164 NONAME ;public: int __thiscall PSerialChannel::SetInputFlowControl(enum PSerialChannel::FlowControl)
     ?SetInt64@PConfig@@QAEXABVPString@@0_J@Z @2165 NONAME ;public: void __thiscall PConfig::SetInt64(class PString const &,class PString const &,__int64)
@@ -2846,6 +2884,7 @@ EXPORTS
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @2207 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @2208 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @2209 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
+    ?SetVideoFormat@PVideoDevice@@UAEHW4VideoFormat@1@@Z @3341 NONAME ;public: virtual int __thiscall PVideoDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?setw@@YA?AV__SMANIP_int@@H@Z @2210 NONAME ;class __SMANIP_int  __cdecl setw(int)
     ?SetWriteChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @2211 NONAME ;public: int __thiscall PIndirectChannel::SetWriteChannel(class PChannel *,int)
     ?SetWriteTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @2212 NONAME ;public: void __thiscall PChannel::SetWriteTimeout(class PTimeInterval const &)
@@ -2865,6 +2904,7 @@ EXPORTS
     ?Splice@PString@@QAEXPBDHH@Z @2226 NONAME ;public: void __thiscall PString::Splice(char const *,int,int)
     ?sprintf@PString@@QAAAAV1@PBDZZ @2227 NONAME ;public: class PString & __cdecl PString::sprintf(char const *,...)
     ?Start@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2228 NONAME ;public: virtual int __thiscall NT_ServiceManager::Start(class PServiceProcess *)
+    ?Start@PVideoInputDevice@@UAEHXZ @3358 NONAME ;public: virtual int __thiscall PVideoInputDevice::Start(void)
     ?Start@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2229 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Start(class PServiceProcess *)
     ?StartRead@PReadWriteMutex@@QAEXXZ @2230 NONAME ;public: void __thiscall PReadWriteMutex::StartRead(void)
     ?StartRecording@PSoundChannel@@QAEHXZ @2918 NONAME ;public: int __thiscall PSoundChannel::StartRecording(void)
@@ -2876,6 +2916,7 @@ EXPORTS
     ?StaticWndProc@PServiceProcess@@CGJPAUHWND__@@IIJ@Z @2236 NONAME ;private: static long __stdcall PServiceProcess::StaticWndProc(struct HWND__ *,unsigned int,unsigned int,long)
     ?Stop@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2237 NONAME ;public: virtual int __thiscall NT_ServiceManager::Stop(class PServiceProcess *)
     ?Stop@PTimer@@QAEXXZ @2238 NONAME ;public: void __thiscall PTimer::Stop(void)
+    ?Stop@PVideoInputDevice@@UAEHXZ @3359 NONAME ;public: virtual int __thiscall PVideoInputDevice::Stop(void)
     ?Stop@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2239 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Stop(class PServiceProcess *)
     ?Successor@Element@PAbstractSortedList@@ABEPAV12@XZ @2241 NONAME ;private: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Successor(void)const 
     ?Suspend@PThread@@UAEXH@Z @2242 NONAME ;public: virtual void __thiscall PThread::Suspend(int)
@@ -2902,6 +2943,7 @@ EXPORTS
     ?UnSerialise@PObject@@UAEXAAVPUnSerialiser@@@Z @2263 NONAME ;public: virtual void __thiscall PObject::UnSerialise(class PUnSerialiser &)
     ?Validate@PMemoryHeap@@SA?AW4Validation@1@PAXPBDPAVostream@@@Z @2264 NONAME ;public: static enum PMemoryHeap::Validation  __cdecl PMemoryHeap::Validate(void *,char const *,class ostream *)
     ?ValueSelect@Element@PAbstractSortedList@@AAEHABVPObject@@AAPAV12@@Z @2265 NONAME ;private: int __thiscall PAbstractSortedList::Element::ValueSelect(class PObject const &,class PAbstractSortedList::Element * &)
+    ?VideoHandler@PVideoInputDevice@@KGJPAUHWND__@@PAUvideohdr_tag@@@Z @3360 NONAME ;protected: static long __stdcall PVideoInputDevice::VideoHandler(struct HWND__ *,struct videohdr_tag *)
     ?vsprintf@PString@@QAEAAV1@ABV1@PAD@Z @2266 NONAME ;public: class PString & __thiscall PString::vsprintf(class PString const &,char *)
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @2267 NONAME ;public: class PString & __thiscall PString::vsprintf(char const *,char *)
     ?Wait@PSemaphore@@UAEHABVPTimeInterval@@@Z @2268 NONAME ;public: virtual int __thiscall PSemaphore::Wait(class PTimeInterval const &)
@@ -2952,4 +2994,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?Save@PConfigArgs@@QAEXABVPString@@@Z @3321 NONAME ;public: void __thiscall PConfigArgs::Save(class PString const &)
+    ?GetDeviceNames@PVideoInputDevice@@UBE?AVPStringList@@XZ @3365 NONAME ;public: virtual class PStringList  __thiscall PVideoInputDevice::GetDeviceNames(void)const 
