@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.39  1999/02/19 11:33:02  robertj
+ * Fixed compatibility problems with GNU/MSVC6
+ *
  * Revision 1.38  1999/02/16 08:12:22  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -506,30 +509,51 @@ inline void runtime_free(void * ptr) { free(ptr); }
  */
 #define PNEW new(__FILE__, __LINE__)
 
+#ifdef __GNUC__
+#define PSPECIAL_DELETE_FUNCTION
+#else
+#define PSPECIAL_DELETE_FUNCTION \
+    void operator delete(void * ptr, const char *, int) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    void operator delete[](void * ptr, const char *, int) \
+      { PMemoryHeap::Deallocate(ptr, Class()); }
+#endif
+
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
       { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
-    void operator delete(void * ptr, const char *, int) \
-      { PMemoryHeap::Deallocate(ptr, Class()); } \
     void * operator new(size_t nSize) \
       { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete(void * ptr) \
-      { PMemoryHeap::Deallocate(ptr, Class()); }
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    void * operator new[](size_t nSize, const char * file, int line) \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+    void * operator new[](size_t nSize) \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
+    void operator delete[](void * ptr) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    PSPECIAL_DELETE_FUNCTION
+
 
 inline void * operator new(size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
 
-inline void operator delete(void * ptr, const char *, int)
-  { PMemoryHeap::Deallocate(ptr, NULL); }
-
 inline void * operator new[](size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
+
+#ifndef __GNUC__
+inline void operator delete(void * ptr)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+
+inline void operator delete(void * ptr, const char *, int)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
 
 inline void operator delete[](void * ptr)
   { PMemoryHeap::Deallocate(ptr, NULL); }
 
 inline void operator delete[](void * ptr, const char *, int)
   { PMemoryHeap::Deallocate(ptr, NULL); }
+#endif
 
 
 #else // _DEBUG
