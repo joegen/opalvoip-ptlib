@@ -8,6 +8,11 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.9  2002/06/19 04:03:21  robertj
+ * Added default allowance boolean if ACL empty.
+ * Added ability to override the creation of ACL entry objects with descendents
+ *   so an application can add information/functionality to each entry.
+ *
  * Revision 1.8  2002/02/13 02:08:12  robertj
  * Added const to IsAllowed() function.
  * Added missing function that takes a socket.
@@ -274,7 +279,8 @@ BOOL PIpAccessControlEntry::Match(PIPSocket::Address & addr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PIpAccessControlList::PIpAccessControlList()
+PIpAccessControlList::PIpAccessControlList(BOOL defAllow)
+  : defaultAllowance(defAllow)
 {
 }
 
@@ -459,31 +465,41 @@ void PIpAccessControlList::Save(PConfig & cfg, const PString & baseName)
 }
 
 
+BOOL PIpAccessControlList::Add(PIpAccessControlEntry * entry)
+{
+  if (!entry->IsValid()) {
+    delete entry;
+    return FALSE;
+  }
+
+  PINDEX idx = GetValuesIndex(*entry);
+  if (idx == P_MAX_INDEX) {
+    Append(entry);
+    return TRUE;
+  }
+
+  // Return TRUE if the newly added entry is identical to an existing one
+  PIpAccessControlEntry & existing = operator[](idx);
+  BOOL ok = existing.IsClass(PIpAccessControlEntry::Class()) &&
+            entry->IsClass(PIpAccessControlEntry::Class()) &&
+            existing.IsAllowed() == entry->IsAllowed();
+
+  delete entry;
+  return ok;
+}
+
+
 BOOL PIpAccessControlList::Add(const PString & description)
 {
-  PIpAccessControlEntry entry(description);
-
-  if (!entry.IsValid())
-    return FALSE;
-
-  return InternalAddEntry(entry);
+  return Add(CreateControlEntry(description));
 }
 
 
 BOOL PIpAccessControlList::Add(PIPSocket::Address addr, PIPSocket::Address mask, BOOL allow)
 {
-  PIpAccessControlEntry entry(addr, mask, allow);
-  return InternalAddEntry(entry);
-}
-
-
-BOOL PIpAccessControlList::InternalAddEntry(PIpAccessControlEntry & entry)
-{
-  PINDEX idx = GetValuesIndex(entry);
-  if (idx == P_MAX_INDEX)
-    idx = Append(new PIpAccessControlEntry(entry));
-
-  return operator[](idx).IsAllowed() == entry.IsAllowed();
+  PStringStream description;
+  description << (allow ? '+' : '-') << addr << '/' << mask;
+  return Add(description);
 }
 
 
@@ -516,8 +532,33 @@ BOOL PIpAccessControlList::InternalRemoveEntry(PIpAccessControlEntry & entry)
 }
 
 
+PIpAccessControlEntry * PIpAccessControlList::CreateControlEntry(const PString & description)
+{
+  return new PIpAccessControlEntry(description);
+}
+
+
+PIpAccessControlEntry * PIpAccessControlList::Find(PIPSocket::Address address) const
+{
+  PINDEX size = GetSize();
+  if (size == 0)
+    return NULL;
+
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PIpAccessControlEntry & entry = operator[](i);
+    if (entry.Match(address))
+      return &entry;
+  }
+
+  return NULL;
+}
+
+
 BOOL PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
 {
+  if (IsEmpty())
+    return defaultAllowance;
+
   PIPSocket::Address address;
   if (socket.GetPeerAddress(address))
     return IsAllowed(address);
@@ -528,17 +569,14 @@ BOOL PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
 
 BOOL PIpAccessControlList::IsAllowed(PIPSocket::Address address) const
 {
-  PINDEX size = GetSize();
-  if (size == 0)
-    return TRUE;
+  if (IsEmpty())
+    return defaultAllowance;
 
-  for (PINDEX i = 0; i < size; i++) {
-    PIpAccessControlEntry & entry = operator[](i);
-    if (entry.Match(address))
-      return entry.IsAllowed();
-  }
+  PIpAccessControlEntry * entry = Find(address);
+  if (entry == NULL)
+    return FALSE;
 
-  return FALSE;
+  return entry->IsAllowed();
 }
 
 
