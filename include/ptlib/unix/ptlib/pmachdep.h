@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.65  2004/06/17 23:37:04  csoutheren
+ * Added definition of upad128_t for Solaris
+ *
  * Revision 1.64  2004/05/14 05:23:39  ykiryanov
  * Added stl header
  *
@@ -319,6 +322,11 @@ typedef int socklen_t;
 #include <dlfcn.h>
 #include <net/if.h>
 #include <sys/sockio.h>
+
+typedef union {
+  long double _q;
+  uint32_t _l[4];
+} upad128_t;
 
 #define PSETPGRP()  setpgrp()
 
