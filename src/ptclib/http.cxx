@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.8 1996/02/08 12:26:29 robertj Exp $
+ * $Id: http.cxx,v 1.9 1996/02/13 13:09:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.9  1996/02/13 13:09:17  robertj
+ * Added extra parameters to callback function in PHTTPResources, required
+ *   by descendants to make informed decisions on data being loaded.
+ *
  * Revision 1.8  1996/02/08 12:26:29  robertj
  * Redesign of resource callback mechanism.
  * Added new resource types for HTML data entry forms.
@@ -784,7 +788,7 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
 
   socket.StartResponse(code, outMIME, size);
   PCharArray data;
-  while (LoadData(data)) {
+  while (LoadData(data, outMIME, url, info)) {
     socket.Write(data, data.GetSize());
     data.SetSize(0);
   }
@@ -884,10 +888,13 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 }
 
 
-BOOL PHTTPResource::LoadData(PCharArray & data)
+BOOL PHTTPResource::LoadData(PCharArray & data,
+                              PMIMEInfo & outMIME,
+                             const PURL & url,
+                        const PMIMEInfo & inMIME)
 {
   PString text = LoadText();
-  OnLoadedText(text);
+  OnLoadedText(text, outMIME, url, inMIME);
   text.SetSize(text.GetLength());  // Lose the trailing '\0'
   data = text;
   return FALSE;
@@ -901,7 +908,10 @@ PString PHTTPResource::LoadText()
 }
 
 
-void PHTTPResource::OnLoadedText(PString &)
+void PHTTPResource::OnLoadedText(PString &,
+                               PMIMEInfo &,
+                              const PURL &,
+                         const PMIMEInfo &)
 {
   // Do nothing
 }
@@ -1054,10 +1064,13 @@ BOOL PHTTPFile::LoadHeaders(const PURL & url,
 }
 
 
-BOOL PHTTPFile::LoadData(PCharArray & data)
+BOOL PHTTPFile::LoadData(PCharArray & data,
+                          PMIMEInfo & outMIME,
+                         const PURL & url,
+                    const PMIMEInfo & inMIME)
 {
   if (contentType(0, 4) == "text/")
-    return PHTTPResource::LoadData(data);
+    return PHTTPResource::LoadData(data, outMIME, url, inMIME);
 
   PAssert(file.IsOpen(), PLogicError);
 
