@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.29 1994/07/17 10:46:06 robertj Exp $
+ * $Id: pwlib.h,v 1.30 1994/07/25 03:31:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.29  1994/07/17 10:46:06  robertj
+ * Revision 1.30  1994/07/25 03:31:41  robertj
+ * Renamed common pwlib to pwmisc to avoid name conflict.
+ *
+ * Revision 1.29  1994/07/17  10:46:06  robertj
  * Reordered classes to fix class references.
  *
  * Revision 1.28  1994/06/25  11:55:15  robertj
@@ -498,6 +501,7 @@
 
 #if defined(P_USE_INLINES)
 #include <pwlib.inl>
+#include <pwmisc.inl>
 #include <graphics.inl>
 #include <interact.inl>
 #endif
