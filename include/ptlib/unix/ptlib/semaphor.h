@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.18  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.17  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -142,6 +145,13 @@
   protected:
     sem_id semId;
     volatile int32 benaphoreCount;
+
+#elif defined(VX_TASKS)
+
+  public:
+    PSemaphore( SEM_ID anId );
+  protected:
+    SEM_ID semId;
 
 #else
 

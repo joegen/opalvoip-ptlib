@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.48  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.47  2002/06/27 07:51:48  robertj
  * GNU 3.1 compatibility under Solaris
  *
@@ -480,6 +483,39 @@ typedef int socklen_t;
 
 #define PSETPGRP()  setpgrp()
 
+#elif defined (P_VXWORKS)
+
+#include <taskLib.h>
+#include <semLib.h>
+#include <sysLib.h>
+#include <time.h>
+#include <ioLib.h>
+#include <unistd.h>
+#include <selectLib.h>
+#include <inetLib.h>
+#include <hostLib.h>
+#include <ioctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
+
+#define HAS_IFREQ
+
+#define _exit(i)	exit(i)
+
+typedef int socklen_t;
+
+extern int h_errno;
+
+#define SUCCESS 	0
+#define NOTFOUND 	1
+
+struct hostent * Vx_gethostbyname(char *name, struct hostent *hp);
+struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
+
+#define strcasecmp strcmp
+
 #else
 
 // Other operating systems here
@@ -488,9 +524,20 @@ typedef int socklen_t;
 
 #include <netdb.h>
 
+
 #if defined(P_PTHREADS)
+
 #define P_PLATFORM_HAS_THREADS
 #include <pthread.h>
+
+#elif defined(VX_TASKS)
+
+#define P_PLATFORM_HAS_THREADS
+#define P_HAS_SEMAPHORES
+#define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+#include <taskLib.h>
+
 #endif
 
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.15  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.14  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -86,7 +89,17 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <sys/socket.h>
+
+#ifdef P_VXWORKS
+#include <sys/times.h>
+#include <time.h>
+#include <ioctl.h>
+#include <ioLib.h>
+#include <socklib.h>
+#include <net/if.h>
+#else
 #include <sys/time.h>
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

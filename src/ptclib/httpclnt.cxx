@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.29  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.28  2002/05/28 01:41:50  robertj
  * Fixed bug in reading chunked data, thanks David Iodice
  *
@@ -366,7 +369,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     UnRead(http);
 
     if (http.Find("HTTP/") == P_MAX_INDEX) {
-      lastResponseCode = PHTTP::OK;
+      lastResponseCode = PHTTP::RequestOK;
       lastResponseInfo = "HTTP/0.9";
       return TRUE;
     }
@@ -473,7 +476,7 @@ BOOL PHTTPClient::GetDocument(const PURL & url,
                               PMIMEInfo & replyMIME,
                               BOOL persist)
 {
-  return ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist) == OK;
+  return ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist) == RequestOK;
 }
 
 
@@ -482,7 +485,7 @@ BOOL PHTTPClient::GetHeader(const PURL & url,
                             PMIMEInfo & replyMIME,
                             BOOL persist)
 {
-  return ExecuteCommand(HEAD, url, outMIME, PString(), replyMIME, persist) == OK;
+  return ExecuteCommand(HEAD, url, outMIME, PString(), replyMIME, persist) == RequestOK;
 }
 
 
@@ -498,7 +501,7 @@ BOOL PHTTPClient::PostData(const PURL & url,
     dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
   }
 
-  return ExecuteCommand(POST, url, outMIME, data, replyMIME, persist) == OK;
+  return ExecuteCommand(POST, url, outMIME, data, replyMIME, persist) == RequestOK;
 }
 
 
