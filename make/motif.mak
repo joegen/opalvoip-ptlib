@@ -1,30 +1,32 @@
 DEFAULT_X11_DIR = /usr/X11R6
 
-ifneq (,$(wildcard /usr/local/lib/libXm*))
-MOTIF_DIR	= /usr/local
-else
-  # Search for LessTif's Motif 2.0 support. Some systems install LessTif with
-  # the Motif 1.2 libraries as the default libraries in /usr/X11R6/lib.
-  ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/lib/libXm*))
-  MOTIF_DIR	= /usr/X11R6/LessTif/Motif2.0
-  else
-    ifneq (,$(wildcard $(DEFAULT_X11_DIR)/lib/libXm*))
-    MOTIF_DIR	= $(DEFAULT_X11_DIR)
-    else
-      ifneq (,$(wildcard /usr/openwin/lib/libXm*))
-      MOTIF_DIR	= /usr/openwin
-      endif
-    endif
-  endif
+ifneq (,$(wildcard $(PWLIB_GUIDIR)/include/Xm/Combox.h))
+all::
+	echo Your Motif version is not Motif 2.0 compliant
 endif
 
-# Specify the MOTIF include and library paths.
+# Specify the MOTIF library path
+GUILIB		:= -L$(PWLIB_GUIDIR)/lib
+
+#
+#  Motif needs libXpm in order to link, so use that to detect whether
+#  we are actually using Motif or Lesstif
+#
+ifneq (,$(wildcard $(PWLIB_GUIDIR)/lib/libXp*))
+GUILIB		:= $(GUILIB) -lXp 
+else
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LESSTIF
+GUI_TYPE	= lesstif
+GUI_SRC_NAME	:= motif
+endif
+
+# Specify the MOTIF libraries and include paths
 # These must come before any X11 paths incase they override them.
-GUILIB		:= -L$(MOTIF_DIR)/lib -lMrm -lXm -lXt -lXmu -lX11
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(MOTIF_DIR)/include 
+GUILIB		:= $(GUILIB) -lMrm -lXm -lXt -lXmu -lX11
+STDCCFLAGS	:= $(STDCCFLAGS) -I$(PWLIB_GUIDIR)/include 
 
 # Include the X11 paths if needed.
-ifneq ($(DEFAULT_X11_DIR), $(MOTIF_DIR))
+ifneq ($(DEFAULT_X11_DIR), $(PWLIB_GUIDIR))
 GUILIB		:= $(GUILIB) -L$(DEFAULT_X11_DIR)/lib
 STDCCFLAGS	:= $(STDCCFLAGS) -I$(DEFAULT_X11_DIR)/include 
 endif
