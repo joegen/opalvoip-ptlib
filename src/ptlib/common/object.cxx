@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.54  2002/06/25 02:23:57  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.53  2002/06/13 08:50:11  rogerh
  * GCC 3.1 uses slightly different #includes
  *
@@ -212,8 +216,21 @@
 #include <signal.h>
 #endif
 
-void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
+void PAssertFunc(const char * file,
+                 int line,
+                 const char * className,
+                 PStandardAssertMessage msg)
 {
+  if (msg == POutOfMemory) {
+    // Special case, do not use ostrstream in other PAssertFunc if have
+    // a memory out situation as that would probably also fail!
+    static const char fmt[] = "Out of memory at file %.100s, line %u, class %.30s";
+    char msgbuf[sizeof(fmt)+100+10+30];
+    sprintf(msgbuf, fmt, file, line, className);
+    PAssertFunc(msgbuf);
+    return;
+  }
+
   static const char * const textmsg[PMaxStandardAssertMessage] = {
     NULL,
     "Out of memory",
@@ -235,12 +252,34 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
   if (msg < PMaxStandardAssertMessage)
     theMsg = textmsg[msg];
   else {
-    sprintf(msgbuf, "Error code: %i", msg);
+    sprintf(msgbuf, "Assertion %i", msg);
     theMsg = msgbuf;
   }
-  PAssertFunc(file, line, theMsg);
+  PAssertFunc(file, line, className, theMsg);
 }
 
+
+void PAssertFunc(const char * file, int line, const char * className, const char * msg)
+{
+#if defined(_WIN32)
+  DWORD err = GetLastError();
+#else
+  int err = errno;
+#endif
+
+  ostrstream str;
+  str << "Assertion fail: ";
+  if (msg != NULL)
+    str << msg << ", ";
+  str << "file " << file << ", line " << line;
+  if (className != NULL)
+    str << ", class " << className;
+  if (err != 0)
+    str << ", Error=" << err;
+  str << ends;
+
+  PAssertFunc(str.str());
+}
 
 
 #if PMEMORY_CHECK
