@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.162  2004/06/08 01:31:07  csoutheren
+ * Make the test sense correct for the init(NULL)
+ *
  * Revision 1.161  2004/06/08 01:29:00  csoutheren
  * Removed memory leak on VS.net caused by unobvious iostream allocation
  *
@@ -2663,7 +2666,7 @@ PStringStream::PStringStream(const char * cstr)
 PStringStream::~PStringStream()
 {
   delete (PStringStream::Buffer *)rdbuf();
-#ifdef _WIN32
+#ifndef _WIN32
   init(NULL);
 #endif
 }
