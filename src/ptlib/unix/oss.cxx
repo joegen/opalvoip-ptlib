@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.6  1999/07/19 01:31:49  craigs
+ * Major rewrite to assure ioctls are all done in the correct order as OSS seems
+ *    to be incredibly sensitive to this.
+ *
  * Revision 1.5  1999/07/11 13:42:13  craigs
  * pthreads support for Linux
  *
@@ -171,24 +175,23 @@ PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
 
 
 BOOL PSoundChannel::Open(const PString & _device,
-                         Directions _dir,
-                         unsigned numChannels,
-                         unsigned sampleRate,
-                         unsigned bitsPerSample)
+                              Directions _dir,
+                                unsigned _numChannels,
+                                unsigned _sampleRate,
+                                unsigned _bitsPerSample)
 {
   Close();
 
-  // make the direction value either 1 or 2
-  int dir = _dir+1;
-
-  // save the new device name
-  device = _device;
-
+  // lock the dictionary
   dictMutex.Wait();
 
-  // if the entry is in the dictionary, then see if we can reuse the handle
-  if (handleDict.Contains(device)) {
-    PSoundHandleEntry & entry = handleDict[device];
+  // make the direction value 1 or 2
+  int dir = _dir + 1;
+
+  // if this device in in the dictionary
+  if (handleDict.Contains(_device)) {
+
+    PSoundHandleEntry & entry = handleDict[_device];
 
     // see if the sound channel is already open in this direction
     if ((entry.direction & dir) != 0) {
@@ -196,43 +199,104 @@ BOOL PSoundChannel::Open(const PString & _device,
       return FALSE;
     }
 
-    // indicate the device is now open in both directions
+    // flag this entry as open in this direction
     entry.direction |= dir;
-
-    // and indicate that this channel is now open
     os_handle = entry.handle;
-    direction = dir;
 
-    dictMutex.Signal();
+  } else {
 
-    return TRUE;
+    // this is the first time this device has been used
+    // open the device in read/write mode always
+    if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
+      dictMutex.Signal();
+      return TRUE;
+    }
+
+    // add the device to the dictionary
+    PSoundHandleEntry * entry = PNEW PSoundHandleEntry;
+    handleDict.SetAt(_device, entry);
+
+    // save the information into the dictionary entry
+    entry->handle        = os_handle;
+    entry->direction     = dir;
+    entry->numChannels   = _numChannels;
+    entry->sampleRate    = _sampleRate;
+    entry->bitsPerSample = _bitsPerSample;
+    entry->isInitialised = FALSE;
+    entry->fragmentValue = 0x7fff0008;
+  }
     
-  } 
-
-  // open the device in read/write mode always
-  if (!ConvertOSError(os_handle = ::open((const char *)device, O_RDWR)))
-    return FALSE;
-
-  // always open in full duplex mode always
-  //if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETDUPLEX, 0)))
-  //  return FALSE;
-
-  // add the device to the dictionary
-  PSoundHandleEntry * entry = PNEW PSoundHandleEntry;
-  handleDict.SetAt(device, entry);
-
-  // save the direction
-  direction = dir;
-
-  // save the information into the dictionary entry
-  entry->handle    = os_handle;
-  entry->direction = dir;
-    
+  // unlock the dictionary
   dictMutex.Signal();
 
-  return SetFormat(numChannels, sampleRate, bitsPerSample);
+  // save the direction and device
+  direction     = _dir;
+  device        = _device;
+  isInitialised = FALSE;
+
+  return TRUE;
 }
 
+BOOL PSoundChannel::Setup()
+{
+  if (os_handle < 0)
+    return FALSE;
+
+  if (isInitialised)
+    return TRUE;
+
+  // lock the dictionary
+  dictMutex.Wait();
+
+  // the device must always be in the dictionary
+  PAssertOS(handleDict.Contains(device));
+
+  // get record for the device
+  PSoundHandleEntry & entry = handleDict[device];
+
+  BOOL stat = FALSE;
+  if (entry.isInitialised)  {
+    isInitialised = TRUE;
+    stat          = TRUE;
+  } else {
+
+  // must always set paramaters in the following order:
+  //   buffer paramaters
+  //   sample format (number of bits)
+  //   number of channels (mon/stereo)
+  //   speed (sampling rate)
+
+    int arg, val;
+
+    // reset the device first so it will accept the new parms
+    if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_RESET, &arg))) {
+
+      arg = val = entry.fragmentValue;
+      //if (ConvertOSError(ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg)) || (arg != val)) {
+      ::ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg); {
+
+        arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
+        if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val)) {
+
+          arg = val = (entry.numChannels == 2) ? 1 : 0;
+          if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val)) {
+
+            arg = val = entry.sampleRate;
+            if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val)) 
+              stat = TRUE;
+          }
+        }
+      }
+    }
+  }
+
+  entry.isInitialised = TRUE;
+  isInitialised       = TRUE;
+
+  dictMutex.Signal();
+
+  return stat;
+}
 
 BOOL PSoundChannel::Close()
 {
@@ -246,7 +310,7 @@ BOOL PSoundChannel::Close()
   PAssert((entry = handleDict.GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
 
   // modify the directions bit mask in the dictionary
-  entry->direction ^= direction;
+  entry->direction ^= (direction+1);
 
   // if this is the last usage of this entry, then remove it
   if (entry->direction == 0) {
@@ -261,37 +325,57 @@ BOOL PSoundChannel::Close()
   return TRUE;
 }
 
+BOOL PSoundChannel::Write(const void * buf, PINDEX len)
+{
+  if (!Setup())
+    return FALSE;
+
+  return ConvertOSError(::write(os_handle, buf, len));
+}
+
+BOOL PSoundChannel::Read(void * buf, PINDEX len)
+{
+  if (!Setup())
+    return FALSE;
+
+  return ConvertOSError(::read(os_handle, (void *)buf, len));
+}
+
 
 BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
+  // check parameters
+  PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
+  PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
+
   Abort();
 
-  // must always set paramaters in the following order:
-  //   sample format (number of bits)
-  //   number of channels (mon/stereo)
-  //   speed (sampling rate)
+  // lock the dictionary
+  dictMutex.Wait();
 
-  int arg, val;
+  // the device must always be in the dictionary
+  PAssertOS(handleDict.Contains(device));
 
-  // reset the device first so it will accept the new parms
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_RESET, &arg)))
-    return FALSE;
+  // get record for the device
+  PSoundHandleEntry & entry = handleDict[device];
 
-  PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
-  arg = val = (bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val))
-    return FALSE;
+  entry.numChannels   = numChannels;
+  entry.sampleRate    = sampleRate;
+  entry.bitsPerSample = bitsPerSample;
+  entry.isInitialised  = FALSE;
 
-  PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
-  arg = val = (numChannels == 2) ? 1 : 0;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val))
-    return FALSE;
+  // unlock dictionary
+  dictMutex.Signal();
 
-  arg = val = sampleRate;
-  if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val))
-    return FALSE;
+  // mark this channel as uninitialised
+  isInitialised = FALSE;
 
   return TRUE;
 }
@@ -299,22 +383,60 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 
 BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   Abort();
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
   int arg = 1;
-  while (size < (PINDEX)(1 << arg))
+  while (size > (PINDEX)(1 << arg))
     arg++;
+
   arg |= count << 16;
-  return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg));
+
+  // lock the dictionary
+  dictMutex.Wait();
+
+  // the device must always be in the dictionary
+  PAssertOS(handleDict.Contains(device));
+
+  // get record for the device
+  PSoundHandleEntry & entry = handleDict[device];
+
+  // set information in the common record
+  entry.fragmentValue = arg;
+  entry.isInitialised = FALSE;
+
+  // flag this channel as not initialised
+  isInitialised       = FALSE;
+
+  dictMutex.Signal();
+
+  return TRUE;
 }
 
 
 BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  int arg;
-  if (!ConvertOSError(ioctl(os_handle, SNDCTL_DSP_GETBLKSIZE, &arg)))
+  if (os_handle < 0) {
+    lastError = NotOpen;
     return FALSE;
+  }
+
+  // lock the dictionary
+  dictMutex.Wait();
+
+  // the device must always be in the dictionary
+  PAssertOS(handleDict.Contains(device));
+
+  PSoundHandleEntry & entry = handleDict[device];
+
+  int arg = entry.fragmentValue;
+
+  dictMutex.Signal();
 
   count = arg >> 16;
   size = 1 << (arg&0xffff);
@@ -324,6 +446,11 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 
 BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
@@ -338,12 +465,22 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 
 BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   return FALSE;
 }
 
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info)))
     return FALSE;
@@ -354,24 +491,44 @@ BOOL PSoundChannel::HasPlayCompleted()
 
 BOOL PSoundChannel::WaitForPlayCompletion()
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
 }
 
 
 BOOL PSoundChannel::RecordSound(PSound & sound)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   return FALSE;
 }
 
 
 BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   return FALSE;
 }
 
 
 BOOL PSoundChannel::StartRecording()
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   fd_set fds;
   FD_ZERO(&fds);
   FD_SET(os_handle, &fds);
@@ -385,6 +542,11 @@ BOOL PSoundChannel::StartRecording()
 
 BOOL PSoundChannel::IsRecordBufferFull()
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
     return FALSE;
@@ -395,6 +557,11 @@ BOOL PSoundChannel::IsRecordBufferFull()
 
 BOOL PSoundChannel::AreAllRecordBuffersFull()
 {
+  if (os_handle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
     return FALSE;
