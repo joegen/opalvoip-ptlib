@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.20  2004/06/03 12:47:59  csoutheren
+ * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
+ *
  * Revision 1.19  2004/06/01 05:44:57  csoutheren
  * Added OnShutdown to allow cleanup on exit
  *
@@ -292,6 +295,8 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
 
   OnLoadPlugin(dll, code);
 }
+
+INSTANTIATE_FACTORY(PPluginModuleManager)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
