@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: netif.cxx,v $
+ * Revision 1.2  2002/01/09 14:08:57  rogerh
+ * Fix incorrect error message.
+ *
  * Revision 1.1  2001/10/03 10:31:27  rogerh
  * Add netif, a program to display detains of the network interfaces
  * and the routing table.
@@ -63,7 +66,7 @@ void NetTest::Main()
 
   // Read the Interface Table
   if ( !PIPSocket::GetInterfaceTable( if_table ) ) {
-        cout << "no interface table" << endl;
+        cout << "GetInterfaceTable() failed. No interface table" << endl;
         exit(0);
   }
 
@@ -85,7 +88,7 @@ void NetTest::Main()
   PIPSocket::RouteTable rt_table;
 
   if ( !PIPSocket::GetRouteTable( rt_table ) ) {
-        cout << "no interface table" << endl;
+        cout << "GetRouteTable() failed. No routing table" << endl;
         exit(0);
   }
 
