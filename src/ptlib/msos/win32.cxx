@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.139  2004/10/23 10:50:28  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.138  2004/09/17 04:05:12  csoutheren
  * Changed Windows PDirectory semantics to be the same as Unix
  *
@@ -505,7 +508,9 @@
 #include <winsock2.h>
 #include<ws2tcpip.h>
 
+#ifndef _WIN32_WCE
 #pragma comment(lib, "mpr.lib")
+#endif
 
 #define new PNEW
 
