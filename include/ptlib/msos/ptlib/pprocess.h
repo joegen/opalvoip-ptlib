@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.30  2001/04/15 03:37:45  yurik
+ * Removed shutdown flag. Use IsTerminated() instead
+ *
  * Revision 1.29  2001/04/14 04:47:57  yurik
  * To prevent trace from being called when process is shutting down, introduced a flag (CE only)
  *
@@ -171,8 +174,6 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #else
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
-  public:
-    bool isShuttingDown;
 #endif
 
 #endif
