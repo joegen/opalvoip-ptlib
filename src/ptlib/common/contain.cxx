@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.83  2000/01/25 14:05:35  robertj
+ * Added optimisation to array comparisons if referencing same array.
+ *
  * Revision 1.82  1999/08/18 01:45:13  robertj
  * Added concatenation function to "base type" arrays.
  *
@@ -484,30 +487,31 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PAbstractArray::Class()), PInvalidCast);
-  const PAbstractArray & array = (const PAbstractArray &)obj;
+  const PAbstractArray & other = (const PAbstractArray &)obj;
 
-  if (elementSize < array.elementSize)
+  char * otherArray = other.theArray;
+  if (theArray == otherArray)
+    return EqualTo;
+
+  if (elementSize < other.elementSize)
     return LessThan;
 
-  if (elementSize > array.elementSize)
+  if (elementSize > other.elementSize)
     return GreaterThan;
 
   PINDEX thisSize = GetSize();
-  PINDEX arraySize = array.GetSize();
+  PINDEX otherSize = other.GetSize();
 
-  if (thisSize < arraySize)
+  if (thisSize < otherSize)
     return LessThan;
 
-  if (thisSize > arraySize)
+  if (thisSize > otherSize)
     return GreaterThan;
 
   if (thisSize == 0)
     return EqualTo;
 
-  char * p2 = array.theArray;
-  PINDEX len = elementSize*thisSize;
-
-  int retval = memcmp(theArray, p2, len);
+  int retval = memcmp(theArray, otherArray, elementSize*thisSize);
   if (retval < 0)
     return LessThan;
   if (retval > 0)
