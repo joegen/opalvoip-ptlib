@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.11  2004/06/17 06:35:12  csoutheren
+ * Use attribute (( constructor )) to guarantee that factories are
+ * instantiated when loaded from a shared library
+ *
  * Revision 1.10  2004/06/03 13:30:57  csoutheren
  * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
  * Added documentaton on new PINSTANTIATE_FACTORY macro
@@ -232,12 +236,21 @@ class PGenericFactory
     void operator=(const PGenericFactory &) {}
 };
 
+#ifdef __GNUC__
+#define	P_LOAD_FACTORY(Abstract_T, Key_T) \
+void __attribute__ ((constructor)) PWLib_LoadFactory##Abstract_T##_##Key_T(void) \
+{ PGenericFactory<Abstract_T, Key_T>::GetMutex(); } 
+#else
+#define	P_LOAD_FACTORY(Abstract_T, Key_T)
+#endif
+
 #define PINSTANTIATE_GENERIC_FACTORY(Abstract_T, Key_T) \
 PGenericFactory<Abstract_T, Key_T> & PGenericFactory<Abstract_T, Key_T>::GetFactory() \
 { \
   static PGenericFactory<Abstract_T, Key_T> factory; \
   return factory; \
 } \
+P_LOAD_FACTORY(Abstract_T, Key_T) \
 
 #define PINSTANTIATE_FACTORY(Abstract_T) \
 PINSTANTIATE_GENERIC_FACTORY(Abstract_T, PString)
