@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.9  2004/04/22 07:55:30  csoutheren
+ * Fix problem with generic plugin manager having pure virtual. Thanks to Ben Lear
+ *
  * Revision 1.8  2004/04/14 11:14:10  csoutheren
  * Final fix for generic plugin manager
  *
@@ -143,7 +146,8 @@ class PPluginModuleManager : public PObject
     void LoadPluginDirectory(const PDirectory &directory)
     { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }
 
-    virtual void OnLoadPlugin(PDynaLink & dll, INT code) = 0;
+    virtual void OnLoadPlugin(PDynaLink & /*dll*/, INT /*code*/)
+    { }
 
     virtual PluginListType GetPluginList() const
     { return pluginList; }
