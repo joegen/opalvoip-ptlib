@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.56 1998/02/16 00:10:45 robertj Exp $
+ * $Id: win32.cxx,v 1.57 1998/03/05 12:48:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.57  1998/03/05 12:48:37  robertj
+ * Fixed bug in get free space on volume.
+ * Added cluster size.
+ * MemCheck fixes.
+ *
  * Revision 1.56  1998/02/16 00:10:45  robertj
  * Added function to open a URL in a browser.
  * Added functions to validate characters in a filename.
@@ -406,16 +411,22 @@ PCaselessString PDirectory::GetVolume() const
 
 void PDirectory::Close()
 {
-  if (hFindFile != INVALID_HANDLE_VALUE)
+  if (hFindFile != INVALID_HANDLE_VALUE) {
     FindClose(hFindFile);
+    hFindFile = INVALID_HANDLE_VALUE;
+  }
 }
 
 
 PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 {
+  PString partialpath = path;
+  if (path.IsEmpty())
+    partialpath = ".";
+
   LPSTR dummy;
   PString fullpath;
-  PINDEX len = (PINDEX)GetFullPathName(path,
+  PINDEX len = (PINDEX)GetFullPathName(partialpath,
                            _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
@@ -426,15 +437,15 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 }
 
 
-BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
+BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
   PString root;
   if ((*this)[1] == ':')
-    root = Mid(3);
+    root = Left(3);
   else {
     PINDEX slash = FindOneOf("\\/", 2);
     if (slash != P_MAX_INDEX)
-      root = Mid(slash+1);
+      root = Left(slash+1);
     else
       root = *this;
   }
@@ -451,9 +462,11 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
                         &totalNumberOfClusters))
     return FALSE;
 
-  PInt64 clusterSize = bytesPerSector*sectorsPerCluster;
-  free = numberOfFreeClusters*clusterSize;
-  total = totalNumberOfClusters*clusterSize;
+  free = numberOfFreeClusters;
+  total = totalNumberOfClusters;
+  clusterSize = bytesPerSector*sectorsPerCluster;
+  free *= clusterSize;
+  total *= clusterSize;
   return TRUE;
 }
 
@@ -461,7 +474,10 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
-static PString IllegalFilenameCharacters = "<>:\"/\\|";
+static PString IllegalFilenameCharacters =
+  "\\/:*?\"<>|"
+  "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\0x10"
+  "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f";
 
 BOOL PFilePath::IsValid(char c)
 {
@@ -1648,7 +1664,7 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
             location += proc.GetManufacturer();
           else
             location += "PWLib";
-          location += PString(PDIR_SEPARATOR);
+          location += PDIR_SEPARATOR;
           if (appname.IsEmpty())
             location += proc.GetName();
           else
