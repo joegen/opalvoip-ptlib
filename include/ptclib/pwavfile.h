@@ -28,6 +28,23 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.14  2004/07/15 03:12:41  csoutheren
+ * Migrated changes from crs_vxnml_devel branch into main trunk
+ *
+ * Revision 1.13.4.4  2004/07/13 08:13:04  csoutheren
+ * Lots of implementation of factory-based PWAVFile
+ *
+ * Revision 1.13.4.3  2004/07/12 09:17:19  csoutheren
+ * Fixed warnings and errors under Linux
+ *
+ * Revision 1.13.4.2  2004/07/12 08:30:16  csoutheren
+ * More fixes for abstract factory implementation of PWAVFile
+ *
+ * Revision 1.13.4.1  2004/07/07 07:07:41  csoutheren
+ * Changed PWAVFile to use abstract factories (extensively)
+ * Removed redundant blocking/unblocking when using G.723.1
+ * More support for call transfer
+ *
  * Revision 1.13  2003/03/07 06:12:05  robertj
  * Added more WAV file "magic numbers".
  *
@@ -93,6 +110,128 @@
 //#pragma interface
 //#endif
 
+class PWAVFile;
+
+namespace PWAV {
+
+#ifdef __GNUC__
+#define P_PACKED    __attribute__ ((packed));
+#else
+#define P_PACKED
+#pragma pack(1)
+#endif
+
+struct ChunkHeader
+{
+  char    tag[4] P_PACKED;
+  PInt32l len    P_PACKED;
+};
+
+struct RIFFChunkHeader 
+{
+  ChunkHeader hdr    P_PACKED;
+  char        tag[4] P_PACKED;
+};
+
+struct FMTChunk
+{
+  ChunkHeader hdr          P_PACKED;  // chunk header
+  PUInt16l format          P_PACKED;  // Format 
+  PUInt16l numChannels     P_PACKED;  // Channels 0x01 = mono, 0x02 = stereo
+  PUInt32l sampleRate      P_PACKED;  // Sample Rate in Hz
+  PUInt32l bytesPerSec     P_PACKED;  // Average bytes Per Second
+  PUInt16l bytesPerSample  P_PACKED;  // Bytes Per Sample, eg 2
+  PUInt16l bitsPerSample   P_PACKED;  // Bits Per Sample, eg 16
+};
+
+}; // namespace PWAV
+
+#ifdef __GNUC__
+#undef P_PACKED
+#else
+#pragma pack()
+#endif
+
+/**
+  * abstract factory class for handling WAV files formats
+  */
+class PWAVFileFormat
+{
+  public:
+    /**
+      * return a PWAVFile format code
+      */
+    virtual unsigned GetFormat() const = 0;
+
+    /**
+      * return a string that can be used as a media format
+      */
+    virtual PString GetFormatString() const = 0;
+
+    /**
+     *  return a string that can be used as a text description
+     */
+    virtual PString GetDescription() const = 0;
+
+    /**
+     *  populate the header with the correct values
+     */
+    virtual void CreateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader) = 0;
+
+    /**
+      * write any extra headers after the FORMAT chunk
+      */
+    virtual BOOL WriteExtraChunks(PWAVFile & /*file*/)
+    { return TRUE; }
+
+    /**
+      * read any extra headers after the FORMAT chunk
+      */
+    virtual BOOL ReadExtraChunks(PWAVFile & /*file*/)
+    { return TRUE; }
+
+     /**
+      * called before the reading/writing starts
+      */
+    virtual void OnStart()
+    { }
+
+     /**
+      * called after the reading/writing stops
+      */
+    virtual void OnStop()
+    { }
+
+    /**
+      * write data to the file
+      */
+    virtual BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
+
+    /**
+      * read data from the file
+      */
+    virtual BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
+};
+
+typedef PFactory<PWAVFileFormat> PWAVFileFormatByFormatFactory;
+typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
+
+/**
+  * abstract factory class for autoconversion of WAV files to/from PCM-16
+  */
+class PWAVFileConverter 
+{
+  public:
+    virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
+    virtual off_t GetPosition     (const PWAVFile & file) const = 0;
+    virtual BOOL SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
+    virtual unsigned GetSampleSize(const PWAVFile & file) const = 0;
+    virtual off_t GetDataLength   (PWAVFile & file) = 0;
+    virtual BOOL Read             (PWAVFile & file, void * buf, PINDEX len)  = 0;
+    virtual BOOL Write            (PWAVFile & file, const void * buf, PINDEX len) = 0;
+};
+
+typedef PFactory<PWAVFileConverter, unsigned> PWAVFileConverterFactory;
 
 /**A class representing a WAV audio file.
   */
@@ -120,10 +259,12 @@ class PWAVFile : public PFile
       fmt_VivoG7231   = 0x111,  /// VivoActive G.723.1
 
       // For backward compatibility
-      PCM_WavFile = fmt_PCM,
-      G7231_WavFile = fmt_VivoG7231
-    };
+      PCM_WavFile     = fmt_PCM,
+      G7231_WavFile   = fmt_VivoG7231,
 
+      // allow opening files without knowing the format
+      fmt_NotKnown    = 0x10000
+    };
 
     /**Create a WAV file object but do not open it. It does not
        initially have a valid file name. However, an attempt to open the file
@@ -136,6 +277,9 @@ class PWAVFile : public PFile
      */
     PWAVFile(
       unsigned format = fmt_PCM /// Type of WAV File to create
+    );
+    static PWAVFile * format(
+      const PString & format    /// Type of WAV File to create
     );
 
     /**Create a unique temporary file name, and open the file in the specified
@@ -155,6 +299,11 @@ class PWAVFile : public PFile
       int opts = ModeDefault, /// #OpenOptions enum# for open operation.
       unsigned format = fmt_PCM /// Type of WAV File to create
     );
+    static PWAVFile * format(
+      const PString & format,  /// Type of WAV File to create
+      PFile::OpenMode mode,          /// Mode in which to open the file.
+      int opts = PFile::ModeDefault /// #OpenOptions enum# for open operation.
+    );
 
     /**Create a WAV file object with the specified name and open it in
        the specified mode and with the specified options.
@@ -170,6 +319,12 @@ class PWAVFile : public PFile
       OpenMode mode = ReadWrite,  /// Mode in which to open the file.
       int opts = ModeDefault,     /// #OpenOptions enum# for open operation.
       unsigned format = fmt_PCM /// Type of WAV File to create
+    );
+    PWAVFile(
+      const PString & format,  /// Type of WAV File to create
+      const PFilePath & name,     /// Name of file to open.
+      OpenMode mode = PFile::ReadWrite,  /// Mode in which to open the file.
+      int opts = PFile::ModeDefault     /// #OpenOptions enum# for open operation.
     );
 
     /**Close the file before destruction.
@@ -279,23 +434,28 @@ class PWAVFile : public PFile
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
     virtual BOOL SetFormat(unsigned fmt);
+    virtual BOOL SetFormat(const PString & format);
 
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
     virtual unsigned GetFormat() const;
+    virtual PString GetFormatAsString() const;
 
     /**Find out the number of channels the WAV file has. Typically this is 1 for
        mono and 2 for stereo.
     */
     virtual unsigned GetChannels() const;
+    virtual void SetChannels(unsigned v);
 
     /**Find out the sample rate of the WAV file in Hz.
     */
     virtual unsigned GetSampleRate() const;
+    virtual void SetSampleRate(unsigned v);
 
     /**Find out how may bits there are per sample, eg 8 or 16.
     */
     virtual unsigned GetSampleSize() const;
+    virtual void SetSampleSize(unsigned v);
 
     /**Find out the size of WAV header presented in the file.
     */
@@ -312,27 +472,81 @@ class PWAVFile : public PFile
       FALSE indicates that the WAV file is invalid
     */
     BOOL IsValid() const { return isValidWAV; }
+
+    /**
+      *Return a string that describes the WAV format
+      */
+    PString GetFormatString() const
+    { if (formatHandler == NULL) return PString("N/A"); else return formatHandler->GetFormat(); }
+
+    /**
+      * enable autoconversion between PCM-16 and the native format
+      */
+    void SetAutoconvert();
+
   //@}
  
+    friend class PWAVFileConverter;
+
+    BOOL RawRead(void * buf, PINDEX len);
+    BOOL RawWrite(const void * buf, PINDEX len);
+
+    BOOL FileRead(void * buf, PINDEX len);
+    BOOL FileWrite(const void * buf, PINDEX len);
+
+    off_t RawGetPosition() const;
+    BOOL RawSetPosition(off_t pos, FilePositionOrigin origin);
+    off_t RawGetDataLength();
+
+    void SetLastReadCount(PINDEX v) { lastReadCount = v; } 
+
+    PWAV::FMTChunk wavFmtChunk;
+    PBYTEArray extendedHeader;
 
   protected:
+    void Construct();
+    void SelectFormat(unsigned fmt);
+    void SelectFormat(const PString & format);
+
+    PBYTEArray wavHeaderData;
+
     BOOL ProcessHeader();
     BOOL GenerateHeader();
     BOOL UpdateHeader();
 
     BOOL     isValidWAV;
 
-    unsigned format;
-    unsigned numChannels;
-    unsigned sampleRate;
-    unsigned bitsPerSample;
+    PWAVFileFormat * formatHandler;
 
-    off_t    lenHeader;
-    off_t    lenData;
+    BOOL     autoConvert;
+    PWAVFileConverter * autoConverter;
+
+    off_t lenHeader;
+    off_t lenData;
 
     BOOL     header_needs_updating;
-
 };
+
+#ifdef _WIN32
+
+#  ifndef P_DISABLE_FACTORY_INSTANCES
+
+#    ifndef  P_FACTORY_INSTANCE_PWAVFileConverter
+#      define P_FACTORY_INSTANCE_PWAVFileConverter 1
+#        pragma message("Including PWAVFileConverter factory loader")
+         PLOAD_FACTORY(PWAVFileConverter, unsigned)
+#    endif
+
+#    ifndef  P_FACTORY_INSTANCE_PWAVFileFormat
+#      define P_FACTORY_INSTANCE_PWAVFileFormat 1
+#        pragma message("Including PWAVFileFormat factory loader")
+         PLOAD_FACTORY(PWAVFileFormat, unsigned)
+#    endif
+
+# endif
+
+#endif
+
 
 #endif
 
