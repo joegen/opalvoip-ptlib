@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.19  2001/11/05 01:03:20  dereks
+ * Fix error in collection of video data. Frame rate is now double of that
+ * obtained previously.
+ *
  * Revision 1.18  2001/08/22 02:04:43  robertj
  * Resolved confusion with YUV411P and YUV420P video formats, thanks Mark Cooke.
  *
@@ -578,15 +582,13 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
         frameBuffer[1].width  = frameWidth;
         frameBuffer[1].height = frameHeight;
 
-	if ((::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[0]) != 0) ||
-	    (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[1]) != 0)) {
-	    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (A)");
+        currentFrame = 0;
+	if (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]) != 0) {
+	  PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (A)");
 	  canMap = 0;
 	  ::munmap(videoBuffer, frame.size);
 	  videoBuffer = NULL;
-	}
-	
-        currentFrame = 0;
+	}	
       }
     }
   }
@@ -623,23 +625,47 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
       *bytesReturned = frameBytes;
     return TRUE;
   }
+
+  /*****************************
+   * According to Gerd Knorr, in the xawtv package Programming-FAQ, 
+   * http://bytesex.org/xawtv/index.html, for streaming video with 
+   * video4linux at the full frame rate (25 hz PAL, 30 hz NTSC),
+   * you need to 
+   *
+   *   videoiomcapture frame 0                         (setup)
+   *
+   *   videoiomcapture frame 1   (returns immediately)
+   *   videoiocsync    frame 0   (waits on the data)
+   *
+   *   videoiomcapture frame 0   (returns immediately)
+   *   videoiocsync    frame 1   (waits on the data)
+   *
+   */
+
+  // trigger capture of next frame in this buffer.
+  // fallback to read() on errors.
+  int ret = -1;
+  
+  ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[ 1 - currentFrame ]);
+  if ( ret < 0 ) {
+    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (MCAPTURE failed)");
+    canMap = 0;
+    ::munmap(videoBuffer, frame.size);
+    videoBuffer = NULL;
+  }
+
   
   // device does support memory mapping, get data
 
-  // wait for the frame to load.  Careful about signals.
-  int ret = -1;
-  while (ret < 0) {
-    ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
-    if ((ret < 0) && (errno == EINTR))
-      continue;
+  // wait for the frame to load. 
+  ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
     
-    if (ret < 0) {
-      PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (CSYNC failed)");
-      canMap = 0;
-      ::munmap(videoBuffer, frame.size);
-      videoBuffer = NULL;
-      return FALSE;
-    }
+  if (ret < 0) {
+    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (CSYNC failed)");
+    canMap = 0;
+    ::munmap(videoBuffer, frame.size);
+    videoBuffer = NULL;
+    return FALSE;
   }
   
   // If converting on the fly do it from frame store to output buffer, otherwise do
@@ -650,15 +676,6 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     memcpy(buffer, videoBuffer + frame.offsets[currentFrame], frameBytes);
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
-  }
-  
-  // trigger capture of next frame in this buffer.
-  // fallback to read() on errors.
-  if (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]) != 0) {
-    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (B)");
-    canMap = 0;
-    ::munmap(videoBuffer, frame.size);
-    videoBuffer = NULL;
   }
   
   // change buffers
