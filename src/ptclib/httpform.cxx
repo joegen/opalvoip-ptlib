@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.31  2000/06/19 11:35:01  robertj
+ * Fixed bug in setting current value of options in select form fields.
+ *
  * Revision 1.30  1999/02/10 13:19:45  robertj
  * Fixed PConfig update problem when POSTing to the form. Especiall with arrays.
  *
@@ -200,7 +203,7 @@ static BOOL FindSpliceBlock(const PRegularExpression & startExpr,
     return FALSE;
 
   PINDEX endpos, endlen;
-  if (!text.FindRegEx(endExpr, endpos, endlen, pos))
+  if (!text.FindRegEx(endExpr, endpos, endlen, pos+len))
     return TRUE;
 
   start = pos + len;
@@ -352,8 +355,8 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
   PINDEX len = 0;
   static PRegularExpression StartOption("<[ \t\r\n]*option[^>]*>",
                                         PRegularExpression::IgnoreCase);
-  static PRegularExpression EndOption("<[ \t\r\n]*/option[^>]*>",
-                                      PRegularExpression::IgnoreCase);
+  static PRegularExpression EndOption("<[ \t\r\n]*/?option[^>]*>",
+                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish) && pos < end) {
     PCaselessString option = text(pos, start-1);
     PINDEX before, after;
