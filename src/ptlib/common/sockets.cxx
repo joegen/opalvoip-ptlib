@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.71 1998/08/21 05:26:10 robertj Exp $
+ * $Id: sockets.cxx,v 1.72 1998/08/25 11:09:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.72  1998/08/25 11:09:20  robertj
+ * Fixed parsing of 802.x header on ethernet frames.
+ * Changed DNS cache to not cache temporary lookup failures, only an authoratative 'no such host'.
+ *
  * Revision 1.71  1998/08/21 05:26:10  robertj
  * Fixed bug where write streams out to non-stream socket.
  * Added ethernet socket.
@@ -666,7 +670,13 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
   PCaselessString key = name;
   PIPCacheData * host = GetAt(key);
-  if (host == NULL || host->HasAged()) {
+
+  if (host->HasAged()) {
+    SetAt(key, NULL);
+    host = NULL;
+  }
+
+  if (host == NULL) {
     mutex.Signal();
 #ifdef P_PTHREADS
     // this function should really be a static on PIPSocket, but this would
@@ -682,10 +692,19 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
      host = new PIPCacheData(::gethostbyname(name), name);
 #endif
     mutex.Wait();
+
+    if (h_errno == TRY_AGAIN) {
+      delete host;
+      return NULL;
+    }
+
     SetAt(key, host);
   }
 
-  return host->GetHostAddress() != 0 ? host : 0;
+  if (host->GetHostAddress() == 0)
+    return NULL;
+
+  return host;
 }
 
 
@@ -760,7 +779,13 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
   PIPCacheKey key = addr;
   PIPCacheData * host = GetAt(key);
-  if (host == NULL || host->HasAged()) {
+
+  if (host->HasAged()) {
+    SetAt(key, NULL);
+    host = NULL;
+  }
+
+  if (host == NULL) {
     mutex.Signal();
 #if defined(P_PTHREADS)
 // this function should really be a static on PIPSocket, but this would
@@ -781,10 +806,19 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #endif
     host = new PIPCacheData(host_info, inet_ntoa(addr));
     mutex.Wait();
+
+    if (h_errno == TRY_AGAIN) {
+      delete host;
+      return FALSE;
+    }
+
     SetAt(key, host);
   }
 
-  return host->GetHostAddress() != 0 ? host : 0;
+  if (host->GetHostAddress() == 0)
+    return NULL;
+
+  return host;
 }
 
 
@@ -1474,15 +1508,28 @@ BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
   dest = frame->dst_addr;
   src = frame->src_addr;
   WORD len_or_type = ntohs(frame->snap.length);
-  if (len_or_type > sizeof(frame->snap.payload)) {
+  if (len_or_type > sizeof(Frame)) {
     type = len_or_type;
     length = lastReadCount - MinFrameSize;
     payload = frame->ether.payload;
   }
-  else {
-    type = ntohs(frame->snap.type);
-    length = len_or_type;
+  else if (frame->snap.dsap == 0xaa && frame->snap.ssap == 0xaa) {
+    type = ntohs(frame->snap.type);   // SNAP header
     payload = frame->snap.payload;
+    length = len_or_type - 8;  // Subtract off the 802.2 header and SNAP data
+  }
+  else if (frame->snap.dsap == 0xff && frame->snap.ssap == 0xff) {
+    type = TypeIPX;   // Special case for Novell netware's stuffed up 802.3
+    payload = &frame->snap.dsap;
+    length = len_or_type;  // Whole thing is IPX payload
+  }
+  else {
+    if (frame->snap.dsap == 0xe0 && frame->snap.ssap == 0xe0)
+      type = TypeIPX;   // Special case for Novell netware's 802.2
+    else
+      type = frame->snap.dsap;    // A pure 802.2 protocol id
+    payload = frame->snap.oui;
+    length = len_or_type - 3;     // Subtract off the 802.2 header
   }
 
   return TRUE;
