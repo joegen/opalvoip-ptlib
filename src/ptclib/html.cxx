@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.7 1996/03/16 04:54:06 robertj Exp $
+ * $Id: html.cxx,v 1.8 1996/03/31 09:03:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.8  1996/03/31 09:03:07  robertj
+ * Changed HTML token so doesn't have trailing CRLF.
+ *
  * Revision 1.7  1996/03/16 04:54:06  robertj
- * FireDoorV10
+ * Made the assert for unclosed HTML elements only on debug version.
  *
  * Revision 1.6  1996/03/12 11:30:33  robertj
  * Fixed resetting of HTML output using operator=.
@@ -156,7 +159,7 @@ void PHTML::Element::AddAttr(PHTML &) const
 
 
 PHTML::HTML::HTML(const char * attr)
-  : Element("HTML", attr, InHTML, NumElementsInSet, BothCRLF)
+  : Element("HTML", attr, InHTML, NumElementsInSet, NoCRLF)
 {
 }
 
