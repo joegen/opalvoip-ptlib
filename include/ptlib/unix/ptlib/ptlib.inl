@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.34  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.33  2004/04/18 12:37:40  csoutheren
  * Modified to detect sem_wait etc on Linux systems
  *
@@ -178,7 +181,7 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef P_HAS_SEMAPHORES
+#if defined P_HAS_SEMAPHORES && !defined VX_TASKS
 
 PINLINE PCriticalSection::PCriticalSection()
 { ::sem_init(&sem, 0, 1); }

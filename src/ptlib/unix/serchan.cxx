@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.29  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.28  2004/02/22 04:06:47  ykiryanov
  * ifdef'd all functions because BeOS don't support it
  *
@@ -182,6 +185,7 @@ BOOL PSerialChannel::Close()
 {
 #if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
+  return FALSE;
 #else
   if (os_handle >= 0) {
 

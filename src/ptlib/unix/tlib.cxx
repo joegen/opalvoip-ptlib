@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.70  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.69  2003/09/18 23:52:08  dereksmithies
  * Fix checks on NULL pointers. Many thanks to Chris Rankin.
  *
@@ -245,6 +248,8 @@
 #include <time.h>
 #include <hostLib.h>
 #include <remLib.h>
+#include <taskLib.h>
+#include <intLib.h>
 #else
 #include <sys/time.h>
 #include <pwd.h>

@@ -2,6 +2,46 @@
  * tlibvx.cxx
  *
  * Thread library implementation for VxWorks
+ *
+ * Portable Windows Library
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s):  ______________________________________.
+ *
+ * $Log: tlibvx.cxx,v $
+ * Revision 1.4  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
+ * 
+ * Revision 1.3  2003/05/21 00:49:16  csoutheren
+ *  Added PreShutdown to ~PProcess
+ * 
+ * Revision 1.2  2003/02/26 01:14:27  robertj
+ *  Fixed race condition where thread can terminatebefore an IsSuspeded() call
+ *  occurs and cause an assert, thanks Sebastian Meyer
+ * 
+ * Revision 1.1  2002/11/05 01:43:39  robertj
+ *  Added missing VxWorks files. Thanks Andreas Sikkema
+ *
+ * Revision 1.0 ?????????????
 */
 
 
@@ -9,12 +49,71 @@ class PProcess;
 class PSemaphore;
 
 #include <ptlib.h>
+#include <ptlib/socket.h>
+#include <trclib.h>
+#include <usrlib.h>
+// Forward to undocumented system call
+extern "C" void dbgPrintCall(INSTR * callAdrs, int funcAdrs, int nargs,
+                             UINT32 * pArgs);
 
 #define VX_LOWEST_PRIORITY          250
 #define VX_LOW_PRIORITY             200
 #define VX_NORMAL_PRIORITY          150
 #define VX_DISPLAY_PRIORITY         100
 #define VX_URGENT_DISPLAY_PRIORITY  50  
+
+///////////////////////////////////////////////////////////////////////////////
+// Critical Section Implementation
+// -------------------------------
+class CCriticalSection {
+public:
+  CCriticalSection();
+  ~CCriticalSection();
+
+  void Lock();
+  void Unlock();
+
+private:
+  int    intLevel;
+  STATUS taskLocked;
+  bool   locked;
+};
+
+CCriticalSection::CCriticalSection()
+{
+  intLevel   = 0;
+  taskLocked = ERROR;
+  locked     = false;
+}
+
+CCriticalSection::~CCriticalSection()
+{
+  // Unlock anyway when someone forgot to call Unlock after Lock
+  if (locked == true)
+    Unlock();
+}
+
+void CCriticalSection::Lock()
+{
+  if (locked == false) {
+    if (::intContext() == FALSE)
+      taskLocked = ::taskLock();
+    else
+      taskLocked = ERROR;
+    intLevel = ::intLock();
+    locked = true;
+  }
+}
+
+void CCriticalSection::Unlock()
+{
+  if (locked == true) {
+    ::intUnlock(intLevel);
+    if (taskLocked == OK) 
+      ::taskUnlock();
+    locked = false;
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
@@ -29,21 +128,47 @@ static int const priorities[] = {
 int PThread::ThreadFunction(void *threadPtr)
 {
 	PAssertNULL(threadPtr);
-
   PThread * thread = (PThread *)threadPtr;
-
   PProcess & process = PProcess::Current();
   process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->PX_threadId, thread);
   process.activeThreadMutex.Signal();
-
   process.SignalTimerChange();
 
+  if (::semTake(thread->syncPoint, WAIT_FOREVER) == OK) {
+    if (::semDelete(thread->syncPoint) == OK)
+      thread->syncPoint = NULL;
   thread->Main();
+  }
+  else
+    printf("::ThreadFunction> ::semTake failed, errno=0x%X\n",errno);
+  
+  // And delete from administration
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(thread->PX_threadId, NULL);
+  process.activeThreadMutex.Signal();
+  thread->PX_threadId = 0;
 
   return 0;
 }
 
+void PThread::Trace(PThreadIdentifer threadId)
+{
+  if (threadId == 0)
+    threadId = PThread::GetCurrentThreadId();
+
+  printf("Task name=%s\n", ::taskName(threadId));
+
+  ::taskRegsShow(threadId); 
+  REG_SET regSet;       
+  if (::taskRegsGet(threadId, &regSet) != ERROR)
+    ::trcStack(&regSet, (FUNCPTR)dbgPrintCall, threadId);
+  else
+    printf("::Terminate> ::taskRegsGet failed, errno=0x%X\n", errno);
+  ::taskShow(0, 2);
+  printf("\n");
+  ::checkStack(0);
+}
 
 PThread::PThread()
  : PX_threadId(ERROR),
@@ -59,28 +184,52 @@ PThread::PThread(PINDEX stackSize,
 )
 {
   PAssert(stackSize > 0, PInvalidParameter);
-  autoDelete = deletion == AutoDeleteThread;
+  autoDelete = (deletion == AutoDeleteThread);
   originalStackSize = stackSize;
 
   priority = priorities[priorityLevel];
 
-  PX_threadId =  ::taskSpawn(
-					name,                         // Name
+  syncPoint = ::semMCreate(SEM_Q_FIFO);
+  if (syncPoint != NULL) {
+    if (::semTake(syncPoint, NO_WAIT) == OK) {
+      STATUS taskLocked;
+      taskLocked = ::taskLock();
+      PX_threadId = ::taskSpawn(name,                         // Name
 					priority,                     // Priority 
 					0,                            // options	
 					stackSize,                    // stacksize
 					(FUNCPTR)ThreadFunction,      // entrypoint
 					(int)this,0,0,0,0,0,0,0,0,0); // arg 1 --- arg 10
 
+      if (PX_threadId != ERROR) {
+        // threads are created suspended
+        Suspend();
+        ::semGive(syncPoint);
 
-  PAssertOS(PX_threadId != ERROR);
-  // threads are created suspended
-  Suspend();
-  if (autoDelete) {
-    PProcess & process = PProcess::Current();
-    process.deleteThreadMutex.Wait();
-    process.autoDeleteThreads.Append(this);
-    process.deleteThreadMutex.Signal();
+        if (taskLocked == OK) 
+          ::taskUnlock();
+
+        if (autoDelete) {
+          PProcess & process = PProcess::Current();
+          process.deleteThreadMutex.Wait();
+          process.autoDeleteThreads.Append(this);
+          process.deleteThreadMutex.Signal();
+        }
+      }
+      else {
+        if (taskLocked == OK) 
+          ::taskUnlock();
+        printf("::PThread> ::taskSpawn failed, errno=0x%X\n", errno);
+        PX_threadId = 0;
+        ::semDelete(syncPoint);
+        syncPoint = NULL;
+      }                 
+    }
+    else {
+      printf("::PThread> ::semTake failed, errno=0x%X\n", errno);
+      ::semDelete(syncPoint);
+      syncPoint = NULL;
+    }
   }
 }
 
@@ -90,11 +239,6 @@ PThread::~PThread()
   if (originalStackSize <= 0)
     return;
 
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, NULL);
-  process.activeThreadMutex.Signal();
-  
   if (!IsTerminated())
     Terminate();
 }
@@ -102,33 +246,48 @@ PThread::~PThread()
 
 void PThread::Restart()
 {
-  char *name = ::taskName(PX_threadId);
-  PAssert(IsTerminated(), "Cannot restart running thread");
-
-  PX_threadId =  ::taskSpawn(
-					name, 										    // Name
+  if (IsTerminated()) {
+    PX_threadId = ::taskSpawn(NULL,                         // Auto name tn
 					priority, 										// Priority 
 					0,														// options	
 					originalStackSize,            // stacksize
 					(FUNCPTR)ThreadFunction,			// entrypoint
 					(int)this,0,0,0,0,0,0,0,0,0);	// arg 1 --- arg 10
          
-  PAssertOS(PX_threadId != ERROR);
+    if (PX_threadId == ERROR) {
+      printf("::Restart> ::taskSpawn failed, errno=0x%X\n", errno);
+      PX_threadId = 0;
+    }                  
+  }
+  else
+    printf("::Restart> Cannot restart running thread\n");
 }
-
 
 void PThread::Terminate()
 {
-	PAssert(!IsTerminated(), "Cannot terminate a thread which is already terminated");
-	PAssert(originalStackSize > 0, PLogicError);
+  if (originalStackSize <= 0)
+    return;
 	
-	::taskDelete(PX_threadId);
+  if (!IsTerminated()) {
+    if (::taskDelete(PX_threadId) == ERROR)
+      printf("::Terminate> ::taskDelete failed, errno=0x%X\n", errno);
+    
+    // And delete from administration
+    PProcess & process = PProcess::Current();
+    process.activeThreadMutex.Wait();
+    process.activeThreads.SetAt(PX_threadId, NULL);
+    process.activeThreadMutex.Signal();
+    PX_threadId = 0;
+  }
 }
 
 
 BOOL PThread::IsTerminated() const
 {
-		STATUS stat = taskIdVerify(PX_threadId);
+  STATUS stat = ERROR;
+  if (PX_threadId != 0)
+    stat = ::taskIdVerify(PX_threadId);
+
 		return stat == ERROR;
 }
 
@@ -148,9 +307,8 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
-    if (timeout == 0)	{
+    if (timeout == 0)
       return FALSE;
-		}
     Current()->Sleep(100);
   }
  return TRUE;
@@ -159,36 +317,41 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
 void PThread::Suspend(BOOL susp)
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-  if (susp)
-  {
-    STATUS result = ::taskSuspend(PX_threadId);
-
-    PAssert(result != ERROR, "Thread don't want to be suspended");
+  if (!IsTerminated()) {
+    if (susp) {
+      if (::taskSuspend(PX_threadId) == ERROR)
+        printf("::Suspend> Thread doesn't want to suspend, errno=0x%X\n", errno);
   }
   else {
-    Resume();
+      if (::taskResume(PX_threadId) == ERROR)
+        printf("::Suspend> Thread doesn't want to resume, errno=0x%X\n", errno);
+    }
 	}
+  else
+    printf("::Suspend> Operation on terminated thread\n");
 }
 
 
 void PThread::Resume()
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
 	if (!IsTerminated()) {
-	  STATUS result = ::taskResume(PX_threadId);
-	  PAssert(result != ERROR, "Thread doesn't want to resume");
+    if (::taskResume(PX_threadId) == ERROR)
+      printf("::Resume> Thread doesn't want to resume, errno=0x%X\n", errno);
 	}
+  else
+    printf("::Resume> Operation on terminated thread\n");
 }
 
 
 BOOL PThread::IsSuspended() const
 {
-  struct TASK_DESC info;
-  STATUS result = ::taskInfoGet(PX_threadId, &info);
+  BOOL isSuspended = FALSE;
+  if (!IsTerminated())
+    isSuspended = ::taskIsSuspended(PX_threadId);
+  else
+    printf("::IsSuspended> Operation on terminated thread\n");
 
-  PAssert(result != ERROR || PX_threadId != info.td_id, "Thread info inaccessible");
-  return taskIsSuspended(PX_threadId);
+  return isSuspended;
 }
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
@@ -199,22 +362,21 @@ void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 
 void PThread::SetPriority(Priority priorityLevel)
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-
+  if (!IsTerminated()) {
   priority = priorities[priorityLevel];
-  STATUS result = ::taskPrioritySet(PX_threadId, priority );
-
-  PAssert(result != ERROR, "Thread priority change error");
+      if (::taskPrioritySet(PX_threadId, priority ) == ERROR)
+        printf("::SetPriority> ::taskPrioritySet failed, errno: 0x%X\n", errno);
+  }
+  else
+    printf("::SetPriority> Operation on terminated thread\n");
 }
 
 
 PThread::Priority PThread::GetPriority() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-
+  if (!IsTerminated()) {
 	int prio;
-	taskPriorityGet(PX_threadId, &prio);
-
+    if (::taskPriorityGet(PX_threadId, &prio) == OK) {
   switch (prio) {
     case VX_LOWEST_PRIORITY :
       return LowestPriority;
@@ -226,19 +388,28 @@ PThread::Priority PThread::GetPriority() const
       return HighPriority;
     case VX_URGENT_DISPLAY_PRIORITY :
       return HighestPriority;
+        default:
+          printf("::GetPriority> Priority %d not mapped\n", prio);
+          break;
   }
-  PAssertAlways(POperatingSystemError);
+    }                                               
+    else
+      printf("::GetPriority> ::taskPriorityGet failed, errno=0x%X\n", errno);
+  }
+  else
+    printf("::GetPriority> Operation on terminated thread\n");
+
   return LowestPriority;
 }
 
 void PThread::Yield()
 {
-  taskDelay(NO_WAIT);
+  ::taskDelay(NO_WAIT);
 }
 
 void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for in microsec.
 {
-  taskDelay(delay.GetInterval()*sysClkRateGet()/1000);
+  ::taskDelay(delay.GetInterval()*sysClkRateGet()/1000);
 }
 
 void PThread::InitialiseProcessThread()
@@ -247,7 +418,7 @@ void PThread::InitialiseProcessThread()
   autoDelete = FALSE;
 
   PX_threadId = ::taskIdSelf();
-  PAssertOS(PX_threadId >= OK);
+  PAssertOS((PX_threadId != ERROR) && (PX_threadId != 0));
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(PX_threadId, this);
@@ -259,7 +430,7 @@ PThread * PThread::Current()
   PProcess & process = PProcess::Current();
   process.activeThreadMutex.Wait();
   
-  PThread * thread = process.activeThreads.GetAt( taskIdSelf() );
+  PThread * thread = process.activeThreads.GetAt(::taskIdSelf());
 
   process.activeThreadMutex.Signal();
   return thread;
@@ -267,7 +438,6 @@ PThread * PThread::Current()
 
 int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/) // Fix timeout
 {
-
   while (!IsTerminated()) {
     Current()->Sleep(100);
   }
@@ -276,7 +446,6 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
-
   // make sure we flush the buffer before doing a write
   fd_set tmp_rfd, tmp_wfd, tmp_efd;
   fd_set * read_fds      = &tmp_rfd;
@@ -304,48 +473,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
       return 0;
   }
 
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) { // Clean up for infinite timeout
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-
-    if (timeout < oneDay) {
-
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-  int retval = ::select(handle+1, read_fds, write_fds, exception_fds, tptr);
-
-  return retval;
-}
-
-int PThread::PXBlockOnIO(int maxHandles,
-           fd_set * readBits,
-           fd_set * writeBits,
-           fd_set * exceptionBits,
-           const PTimeInterval & timeout,
-           const PIntArray & /*osHandles*/)
-{
-  // make sure we flush the buffer before doing a write
-  fd_set * read_fds      = readBits;
-  fd_set * write_fds     = writeBits;
-  fd_set * exception_fds = exceptionBits;
-
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) { // Clean up for infinite timeout
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-    if (timeout < oneDay) {
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-  int retval = ::select(maxHandles, read_fds, write_fds, exception_fds, tptr);
-
-  return retval;
+  P_timeval tval = timeout;
+  return ::select(handle+1, read_fds, write_fds, exception_fds, tval);
 }
 
 void PThread::PXAbortBlock() const
@@ -364,7 +493,7 @@ void PProcess::Construct()
 }
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(5000, NoAutoDeleteThread, LowPriority)
+  : PThread(10000, NoAutoDeleteThread, HighPriority, PString("HKeeping"))
 {
   Resume();
 }
@@ -375,35 +504,36 @@ void PProcess::HouseKeepingThread::Main()
 
 	while(1) {
 		process.deleteThreadMutex.Wait();
-		for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++)
-		{
+    for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
 			PThread * pThread = (PThread *) process.autoDeleteThreads.GetAt(i);
 			if( pThread->IsTerminated() )
-			{
 				process.autoDeleteThreads.RemoveAt(i--);
 			}
-		}
 		process.deleteThreadMutex.Signal();
 		PTimeInterval nextTimer = process.timers.Process();
-    if (nextTimer != PMaxTimeInterval)
-		{
+    if (nextTimer != PMaxTimeInterval) {
 			if ( nextTimer.GetInterval() > 10000 )
-			{
 				nextTimer = 10000;
 			}
-		}
 		breakBlock.Wait( nextTimer );
 	}
 }
 
 void PProcess::SignalTimerChange()
 {
+  if (houseKeeper == NULL) {
+    // Prevent reentrance before the following assignment is done
+    // Placed after above if-statement due to efficiency, and so 
+    // requires an another NULL-test.
+    CCriticalSection section;
+    section.Lock();
   if (houseKeeper == NULL)
      houseKeeper = new HouseKeepingThread;  
+    section.Unlock();
+  }
   else
     houseKeeper->breakBlock.Signal();
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -437,27 +567,53 @@ PProcess::~PProcess()
 
 PSemaphore::PSemaphore(SEM_ID anId)
 {
+  initialVar = 1;
+  maxCountVar = UINT_MAX;
   semId = anId;
-  PAssertOS(semId != 0);
+  PAssertOS(semId != NULL);
 }
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
-  semId = semCCreate(SEM_Q_FIFO, initial);
+  if (initial > maxCount)
+    initial = maxCount;
+  initialVar = initial;
+  maxCountVar = maxCount;
+  semId = ::semCCreate(SEM_Q_FIFO, initial);
+  PAssertOS(semId != NULL);
+}
+
+PSemaphore::PSemaphore(const PSemaphore & sem)
+{
+  initialVar = sem.GetInitial();
+  maxCountVar = sem.GetMaxCount();
+
+  if (initialVar > maxCountVar)
+    initialVar = maxCountVar;
+  semId = ::semCCreate(SEM_Q_FIFO, initialVar);
   PAssertOS(semId != NULL);
 }
 
 PSemaphore::~PSemaphore()
-{
-	if ( semId != 0 )
 	{
-		::semDelete(semId);
+  if (semId != NULL) {
+    if (::semDelete(semId) == OK)
+      semId = NULL;
+    else
+      printf("~PSemaphore> Error delete with ID=0x%X with errno: 0x%X\n", 
+             (unsigned int)semId, errno);
 	}
 }
 
 void PSemaphore::Wait()
 {
-	STATUS result = semTake(semId, WAIT_FOREVER);
+  STATUS result = ::semTake(semId, WAIT_FOREVER);
+  if (result == OK) {
+    CCriticalSection section;
+    section.Lock();
+    initialVar--;
+    section.Unlock();
+  }
 	PAssertOS(result != ERROR);
 }
 
@@ -472,23 +628,37 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 	 int ticks = sysClkRateGet();
 	 wait = (timeout.GetInterval() * ticks);
  	 wait = wait / 1000;
+    wait++; // wait at least one tick
 	}
-
-	STATUS result = semTake(semId, wait);
-
-  return result == ERROR;
+  STATUS result = ::semTake(semId, wait);
+  if (result == OK) {
+    CCriticalSection section;
+    section.Lock();
+    initialVar--;
+    section.Unlock();
+  }
+  PAssertOS((result != ERROR) || (errno == S_objLib_OBJ_TIMEOUT));
+  return result != ERROR;
 }
 
 void PSemaphore::Signal()
 {
-	semGive(semId);
+  CCriticalSection section;
+  section.Lock();
+  if (initialVar < maxCountVar) {
+    section.Unlock();
+    STATUS result = ::semGive(semId);
+    section.Lock();
+    if (result == OK)
+      initialVar++;
+    PAssertOS(result != ERROR);
+  }
+  section.Unlock();
 }
 
 BOOL PSemaphore::WillBlock() const
 {
-	STATUS result = semTake(semId, WAIT_FOREVER);
-	PAssertOS(result != ERROR);
-  return result == ERROR;
+  return initialVar == 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,14 +668,25 @@ PMutex::PMutex()
 {
 }
 
+PMutex::PMutex(const PMutex & mutex)
+: PSemaphore(::semMCreate(SEM_Q_FIFO))
+{
+}
+
 PMutex::~PMutex()
 {
-	PAssertOS(::semDelete(semId) == 0);
+  if (semId != NULL) {
+    if (::semDelete(semId) == OK)
+      semId = NULL;
+    else
+      printf("~PMutex> Error delete with ID=0x%X with errno: 0x%X\n", 
+             (unsigned int)semId, errno);
+  }
 }
 
 void PMutex::Wait()
 {
-  STATUS result = semTake(semId, WAIT_FOREVER);	// wait forever
+  STATUS result = ::semTake(semId, WAIT_FOREVER);
 	PAssertOS(result == OK);
 }
 
@@ -519,9 +700,11 @@ BOOL PMutex::Wait(const PTimeInterval & timeout)
 	 int ticks = sysClkRateGet();
 	 wait = (timeout.GetMilliSeconds() * ticks);
 	 wait = wait / 1000;
+    wait++; // wait at least one tick
 	}
-	STATUS result = semTake(semId, wait);
-  return result == ERROR;
+  STATUS result = ::semTake(semId, wait);
+  PAssertOS((result != ERROR) || (errno == S_objLib_OBJ_TIMEOUT));
+  return result != ERROR;
 }
 
 void PMutex::Signal()
@@ -531,8 +714,10 @@ void PMutex::Signal()
 
 BOOL PMutex::WillBlock() const 
 {
-    STATUS result = semTake(semId, WAIT_FOREVER);	// wait forever
-		PAssertOS(result == OK);
+  STATUS result = ::semTake(semId, NO_WAIT);
+  PAssertOS((result != ERROR) || (errno == S_objLib_OBJ_UNAVAILABLE));
+  if (result != ERROR)
+    ::semGive(semId);
 		return result == ERROR;
 }
 
@@ -541,6 +726,11 @@ BOOL PMutex::WillBlock() const
 
 PSyncPoint::PSyncPoint()
   : PSemaphore(0, 1)
+{
+}
+
+PSyncPoint::PSyncPoint(const PSyncPoint & syncPoint)
+  : PSemaphore(syncPoint)
 {
 }
 

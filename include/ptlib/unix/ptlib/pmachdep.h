@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.66  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.65  2004/06/17 23:37:04  csoutheren
  * Added definition of upad128_t for Solaris
  *
@@ -563,9 +566,14 @@ typedef int socklen_t;
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
-
 #include <sys/times.h>
 #include <socklib.h>
+#include <signal.h>
+
+// Prevent conflict between net/mbuf.h and some ASN.1 header files
+// VxWorks uses some #define m_data <to-something-else> constructions
+#undef m_data
+#undef m_type
 
 #define HAS_IFREQ
 
@@ -587,7 +595,6 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 #define _THREAD_SAFE
 #define P_THREAD_SAFE_CLIB
 #define	P_THREADIDENTIFIER long
-#include <taskLib.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -663,7 +670,9 @@ extern "C" {
 #include <netinet/in.h>
 #include <errno.h>
 #include <sys/socket.h>
+#ifndef P_VXWORKS
 #include <sys/time.h>
+#endif
 
 #ifndef __BEOS__
 #include <arpa/inet.h>
