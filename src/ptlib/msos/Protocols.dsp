@@ -45,7 +45,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\..\..\Lib\ptclib.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\Release\proto.lib"
 
 !ELSEIF  "$(CFG)" == "Protocols - Win32 Debug"
 
@@ -66,7 +66,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\Debug\proto.lib"
 
 !ENDIF 
 

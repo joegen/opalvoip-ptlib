@@ -38,6 +38,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name Protocols
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -184,9 +187,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name PTLib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Protocols
     End Project Dependency
 }}}
 
