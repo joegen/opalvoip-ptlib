@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.24  1999/08/05 00:44:28  robertj
+ * Fixed PER encoding problems for large integer values.
+ *
  * Revision 1.23  1999/07/22 06:48:54  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -3971,6 +3974,8 @@ void PPER_Stream::SmallUnsignedEncode(unsigned value)
     return;
   }
 
+  SingleBitEncode(1);  // 10.6.2
+
   PINDEX len = 4;
   if (value < 256)
     len = 1;
@@ -3978,7 +3983,7 @@ void PPER_Stream::SmallUnsignedEncode(unsigned value)
     len = 2;
   else if (value < 0x1000000)
     len = 3;
-  LengthEncode(len, 0, INT_MAX);  // 10.6.2
+  LengthEncode(len, 0, INT_MAX);  // 10.9
   ByteAlign();
   MultiBitEncode(value, len*8);
 }
@@ -4026,7 +4031,7 @@ void PPER_Stream::UnsignedEncode(int value, unsigned lower, unsigned upper)
 
   if (aligned && (range == 0 || range > 255)) { // not 10.5.6 and not 10.5.7.1
     if (nBits > 16) {                           // not 10.5.7.4
-      int numBytes = value == 0 ? 1 : (((CountBits(value))+7)/8);
+      int numBytes = value == 0 ? 1 : (((CountBits(value - lower))+7)/8);
       LengthEncode(numBytes, 1, (nBits+7)/8);    // 12.2.6
       nBits = numBytes*8;
     }
