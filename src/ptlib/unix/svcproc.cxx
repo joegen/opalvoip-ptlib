@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.70  2002/09/06 13:29:06  robertj
+ * Added missing help line for status command.
+ *
  * Revision 1.69  2002/07/15 06:39:23  craigs
  * Added function to allow raising of per-process file handle limit
  *
@@ -572,6 +575,7 @@ int PServiceProcess::InitialiseService()
             "  -p --pid-file       name or directory for pid file\n"
             "  -t --terminate      orderly terminate process in pid file\n"
             "  -k --kill           preemptively kill process in pid file\n"
+            "  -s --status         check to see if daemon is running\n"
             "  -c --console        output messages to stdout rather than syslog\n"
             "  -l --log-file file  output messages to file or directory instead of syslog\n"
             "  -x --execute        execute as a normal program\n"
