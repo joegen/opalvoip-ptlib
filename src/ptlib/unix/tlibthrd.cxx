@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.86  2002/06/27 06:38:58  robertj
+ * Changes to remove memory leak display for things that aren't memory leaks.
+ *
  * Revision 1.85  2002/06/27 02:04:01  robertj
  * Fixed NetBSD compatibility issue, thanks Motoyuki OHMORI.
  *
@@ -357,11 +360,11 @@ void PProcess::SignalTimerChange()
 {
   if (housekeepingThread == NULL) {
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(TRUE);
+    BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
     housekeepingThread = new PHouseKeepingThread;
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
+    PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
 #endif
   }
 
