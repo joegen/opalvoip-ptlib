@@ -11,6 +11,9 @@
  *
  *
  * $Log: serial.cxx,v $
+ * Revision 1.4  2005/03/18 21:06:09  dereksmithies
+ * Add help messages. Enable different flow control options.
+ *
  * Revision 1.3  2005/03/14 07:33:51  dereksmithies
  * Fix console input handling.  Concatenate characters split by PSerialChannel reading.
  *
@@ -50,7 +53,7 @@ protected:
 
     PINDEX stopBits;
 
-    BOOL hardwareFlow;
+    PString flowControlString;
 
     PINDEX hardwarePort;
 
@@ -106,7 +109,7 @@ void Serial::Main()
  PConfigArgs args(GetArguments());
 
 // Example command line is :
-// serial --hardwareport 0 --baud 4800 --parity odd --stopbits 1 --databits 8 --hardwareflow off
+// serial --hardwareport 0 --baud 4800 --parity odd --stopbits 1 --databits 8 --flowcontrol XonXoff
 
   args.Parse(
 #if PTRACING
@@ -120,9 +123,10 @@ void Serial::Main()
              "-databits:"
              "-parity:"
              "-stopbits:"
-             "-hardwareflow:"
+             "-flowcontrol:"
              "-hardwareport:"
-             "v-version"
+             "v-version."
+	     "h-help."
           , FALSE);
 
 #if PMEMORY_CHECK
@@ -149,6 +153,26 @@ void Serial::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
+  if (args.HasOption('h')) {
+      cout << endl
+#if PTRACING
+           <<  "-t   --trace                     Debugging. Using more times for more detail" << endl
+	   <<  "-o   --output                    name of trace output file. If not specified, goes to stdout" << endl
+#endif
+#ifdef PMEMORY_CHECK
+           <<  "     --setallocationbreakpoint   stop program on allocation of memory block number" << endl
+#endif
+           <<  "     --baud                      Set the data rate for serial comms" << endl
+	   <<  "     --databits                  Set the number of data bits (5, 6, 7, 8)" << endl
+	   <<  "     --parity                    Set parity, even, odd or none " << endl
+	   <<  "     --stopbits                  Set the number of stop bits (0, 1, 2) " << endl
+           <<  "     --flowcontrol               Specifiy flow control, (none rtscts, xonxoff)" << endl
+           <<  "     --hardwareport              Which serial port to use, 0, 1, 2..." << endl
+           <<  "-v   --version                   Print version information and exit" << endl
+	   <<  "-h   --help                      Write this help out.                   " << endl
+	   << endl;
+      return;
+  }
 
 
   if (!Initialise(args)) {
@@ -248,18 +272,18 @@ BOOL Serial::Initialise(PConfigArgs & args)
     }
 
     PString flow;
-    if (!args.HasOption("hardwareflow")) {
-	cout << "hardwareflow not specified. Hardware flow is set to off" << endl;
-	flow = "off";
+    if (!args.HasOption("flowcontrol")) {
+	cout << "Flow control not specified. Flow control set to XonXoff" << endl;
+	flow = "XonXoff";
     } else {
-	flow = args.GetOptionString("hardwareflow");
-	cout << "hardwareflow is specified.  Hardware flow is set to " << flow << endl;
+	flow = args.GetOptionString("flowcontrol");
+	cout << "Flow control is specified.  Flow control is set to " << flow << endl;
     }
 
-    if ((flow *= "on") || (flow *= "off"))
-	hardwareFlow = (flow *= "on");
+    if ((flow *= "xonxoff") || (flow *= "rtscts") || (flow *= "none"))
+	flowControlString = flow;
     else {
-	cout << "Valid args to hardware flow are on or off" << endl;
+	cout << "Valid args to flowcontrol are \"XonXoff\" or \"RtsCts\" or \"none\"" << endl;
 	return FALSE;
     }
     
@@ -295,11 +319,21 @@ BOOL Serial::Initialise(PConfigArgs & args)
 	return FALSE;
     }
     
-    PSerialChannel::FlowControl flowControl;
-    if (hardwareFlow)
-	flowControl = PSerialChannel::RtsCts;
-    else
+    PSerialChannel::FlowControl flowControl = PSerialChannel::DefaultFlowControl;
+    if (flowControlString *= "xonxoff"){
 	flowControl = PSerialChannel::XonXoff;
+	PTRACE(3, "Using xonxoff flow control");
+    }
+
+    if (flowControlString *= "rtscts") {
+	flowControl = PSerialChannel::RtsCts;
+	PTRACE(3, "Using rts cts flow conrol ");
+    }
+
+    if (flowControlString *= "none") {
+	flowControl = PSerialChannel::NoFlowControl;
+	PTRACE(3, "Not using any flow control of any sort");
+    }
     
     if (!serial.Open(portName, baud, dataBits, pValue, stopBits, flowControl, flowControl)) {
 	cout << "Failed to open serial port " << endl;
