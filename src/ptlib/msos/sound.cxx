@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.28  2001/10/12 03:50:27  robertj
+ * Fixed race condition on using Abort() which Reading from another thread.
+ * Fixed failure to start recording if called WaitForXXXFull() functions.
+ *
  * Revision 1.27  2001/10/10 03:29:34  yurik
  * Added open with format other than PCM
  *
@@ -1195,18 +1199,14 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
   if (hWaveIn == NULL)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
-  if (!StartRecording())  // Start the first read, queue all the buffers
-    return FALSE;
-
   if (!WaitForRecordBufferFull())
     return FALSE;
 
-#ifdef _WIN32_WCE
-  if( bufferByteOffset == P_MAX_INDEX )
-	  return TRUE;
-#endif
-
   PWaitAndSignal mutex(bufferMutex);
+
+  // Check to see if Abort() was called in another thread
+  if (bufferByteOffset == P_MAX_INDEX)
+    return FALSE;
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
@@ -1234,9 +1234,6 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
 BOOL PSoundChannel::RecordSound(PSound & sound)
 {
-  if (!StartRecording())  // Start the first read, queue all the buffers
-    return FALSE;
-
   if (!WaitForAllRecordBuffersFull())
     return FALSE;
 
@@ -1272,9 +1269,6 @@ BOOL PSoundChannel::RecordSound(PSound & sound)
 
 BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 {
-  if (!StartRecording())  // Start the first read, queue all the buffers
-    return FALSE;
-
   if (!WaitForAllRecordBuffersFull())
     return FALSE;
 
@@ -1302,9 +1296,6 @@ BOOL PSoundChannel::IsRecordBufferFull()
 {
   PWaitAndSignal mutex(bufferMutex);
 
-  if (bufferByteOffset == P_MAX_INDEX)
-    return TRUE;
-
   return (buffers[bufferIndex].header.dwFlags&WHDR_DONE) != 0 &&
           buffers[bufferIndex].header.dwBytesRecorded > 0;
 }
@@ -1314,11 +1305,9 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 {
   PWaitAndSignal mutex(bufferMutex);
 
-  if (bufferByteOffset == P_MAX_INDEX)
-    return TRUE;
-
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-    if ((buffers[i].header.dwFlags&WHDR_DONE) == 0)
+    if ((buffers[i].header.dwFlags&WHDR_DONE) == 0 ||
+         buffers[i].header.dwBytesRecorded    == 0)
       return FALSE;
   }
 
@@ -1328,7 +1317,7 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 
 BOOL PSoundChannel::WaitForRecordBufferFull()
 {
-  if (bufferByteOffset == P_MAX_INDEX)
+  if (!StartRecording())  // Start the first read, queue all the buffers
     return FALSE;
 
   while (!IsRecordBufferFull()) {
@@ -1342,7 +1331,7 @@ BOOL PSoundChannel::WaitForRecordBufferFull()
 
 BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  if (bufferByteOffset == P_MAX_INDEX)
+  if (!StartRecording())  // Start the first read, queue all the buffers
     return FALSE;
 
   while (!AreAllRecordBuffersFull()) {
