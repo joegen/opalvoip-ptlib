@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.22  1999/08/23 05:14:13  robertj
+ * Removed blocking of interrupt signals as does not work in Linux threads.
+ *
  * Revision 1.21  1999/07/30 00:40:32  robertj
  * Fixed problem with signal variable in non-Linux platforms
  *
@@ -179,6 +182,7 @@ void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
+#if 0
   // In this thread we really do want these signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
@@ -187,6 +191,7 @@ void HouseKeepingThread::Main()
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
   PAssertOS(pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL) == 0);
+#endif
 
   for (;;) {
     PTimeInterval waitTime = process.timers.Process();
@@ -203,10 +208,12 @@ void PProcess::Construct()
   // make sure we don't get upset by resume signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
+#if 0
   sigaddset(&blockedSignals, SIGHUP);
   sigaddset(&blockedSignals, SIGINT);
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
+#endif
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
@@ -308,10 +315,12 @@ void * PThread::PX_ThreadStart(void * arg)
   // block RESUME_SIG
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
+#if 0
   sigaddset(&blockedSignals, SIGHUP);
   sigaddset(&blockedSignals, SIGINT);
   sigaddset(&blockedSignals, SIGQUIT);
   sigaddset(&blockedSignals, SIGTERM);
+#endif
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
