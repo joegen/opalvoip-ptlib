@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.13  1999/05/01 11:29:19  robertj
+ * Alpha linux port changes.
+ *
  * Revision 1.12  1999/01/08 01:27:43  robertj
  * Moved include of pmachdep to earlier in inclusions.
  *
@@ -83,13 +86,19 @@ typedef unsigned short	   WORD;
 typedef	signed int         PInt32;	// 32 bit
 typedef unsigned int 	   DWORD;
 
-#ifdef P_HAS_INT64
-typedef signed long long int   PInt64;
+#ifndef P_NEEDS_INT64
+typedef   signed long long int PInt64;
 typedef unsigned long long int PUInt64;	// 64 bit
 #endif
 
-typedef size_t 		      PINDEX;
-typedef int		      INT;
+// Integer type that is same size as a pointer type.
+#ifdef P_64BIT
+typedef long INT;
+#else
+typedef int  INT;
+#endif
+
+typedef size_t PINDEX;
 
 #define P_MAX_INDEX 		0x7fffffff
 #define PABSINDEX(idx) 		(idx)		// careful - size_t may be signed!
