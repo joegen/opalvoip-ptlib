@@ -1,8 +1,32 @@
 # Microsoft Developer Studio Generated Dependency File, included by Console Components.mak
 
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
 ..\..\Ptclib\Asner.cxx : \
 	"..\..\..\Include\PtCLib\asner.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -54,6 +78,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -115,6 +140,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -176,6 +202,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -240,6 +267,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -255,11 +283,35 @@
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\ptclib\delaychan.cxx : \
 	"..\..\..\include\ptclib\delaychan.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Ftp.cxx : \
@@ -279,6 +331,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -357,6 +410,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -385,6 +439,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -463,6 +518,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -491,6 +547,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -569,6 +626,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -577,11 +635,35 @@
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\Html.cxx : \
 	"..\..\..\Include\PtCLib\html.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Http.cxx : \
@@ -604,6 +686,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -691,6 +774,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -722,6 +806,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -809,6 +894,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -831,6 +917,7 @@
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	
 
@@ -879,6 +966,7 @@
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	
 
@@ -906,6 +994,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -993,6 +1082,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1028,6 +1118,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1130,6 +1221,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1160,6 +1252,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1241,6 +1334,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1269,6 +1363,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1347,6 +1442,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1374,6 +1470,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1449,6 +1546,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1463,6 +1561,7 @@
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
@@ -1487,6 +1586,7 @@
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
@@ -1510,6 +1610,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1585,6 +1686,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1613,6 +1715,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1691,6 +1794,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1757,6 +1861,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1949,6 +2054,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -1957,15 +2063,63 @@
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\ptclib\qchannel.cxx : \
 	"..\..\..\include\ptclib\qchannel.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
 ..\..\ptclib\random.cxx : \
 	"..\..\..\include\ptclib\random.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\shttpsvc.cxx : \
@@ -1994,6 +2148,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2102,6 +2257,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2131,6 +2287,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2209,6 +2366,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2237,6 +2395,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2315,6 +2474,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2342,6 +2502,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2417,6 +2578,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2444,6 +2606,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
@@ -2519,6 +2682,7 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
 	"..\..\..\Include\PtLib\spxsock.h"\
