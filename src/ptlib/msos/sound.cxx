@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.15  2000/07/04 04:30:47  robertj
+ * Fixed shutdown issues with buffers in use, again.
+ *
  * Revision 1.14  2000/07/01 09:39:31  robertj
  * Fixed shutdown issues with buffers in use.
  *
@@ -575,14 +578,14 @@ DWORD PWaveBuffer::Release()
   // sound driver has finished with the buffer before releasing it.
 
   if (hWaveOut != NULL) {
-    while ((err = waveOutUnprepareHeader(hWaveOut, &header, sizeof(header))) == WAVERR_STILLPLAYING)
-      PThread::Yield();
+    if ((err = waveOutUnprepareHeader(hWaveOut, &header, sizeof(header))) == WAVERR_STILLPLAYING)
+      return err;
     hWaveOut = NULL;
   }
 
   if (hWaveIn != NULL) {
-    while ((err = waveInUnprepareHeader(hWaveIn, &header, sizeof(header))) == WAVERR_STILLPLAYING)
-      PThread::Yield();
+    if ((err = waveInUnprepareHeader(hWaveIn, &header, sizeof(header))) == WAVERR_STILLPLAYING)
+      return err;
     hWaveIn = NULL;
   }
 
@@ -1283,8 +1286,14 @@ BOOL PSoundChannel::Abort()
 
   PWaitAndSignal mutex(bufferMutex);
 
-  for (PINDEX i = 0; i < buffers.GetSize(); i++)
-    buffers[i].Release();
+  for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+    if (buffers[i].Release() == WAVERR_STILLPLAYING) {
+      if (hWaveOut != NULL)
+        waveOutReset(hWaveOut);
+      if (hWaveIn != NULL)
+        waveInReset(hWaveIn);
+    }
+  }
 
   bufferByteOffset = P_MAX_INDEX;
   bufferIndex = 0;
