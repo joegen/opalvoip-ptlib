@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.89  2003/02/19 07:23:45  robertj
+ * Changes to allow for single threaded HTTP service processes.
+ *
  * Revision 1.88  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -465,7 +468,7 @@ BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener,
   }
 
   if (stackSize > 1000)
-    new PHTTPServiceThread(stackSize, *this, *httpListeningSocket);
+    new PHTTPServiceThread(stackSize, *this);
 
   return TRUE;
 }
@@ -563,6 +566,56 @@ void PHTTPServiceProcess::GetPageHeader(PHTML & html, const PString & title)
 }
 
 
+PTCPSocket * PHTTPServiceProcess::AcceptHTTP()
+{
+  if (httpListeningSocket == NULL)
+    return NULL;
+
+  if (!httpListeningSocket->IsOpen())
+    return NULL;
+
+  // get a socket when a client connects
+  PTCPSocket * socket = new PTCPSocket;
+  if (socket->Accept(*httpListeningSocket))
+    return socket;
+
+  if (socket->GetErrorCode() != PChannel::Interrupted)
+    PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket->GetErrorText());
+
+  if (httpListeningSocket != NULL && httpListeningSocket->IsOpen())
+    return socket;
+
+  delete socket;
+  return NULL;
+}
+
+
+BOOL PHTTPServiceProcess::ProcessHTTP(PTCPSocket & socket)
+{
+  if (!socket.IsOpen())
+    return TRUE;
+
+  PHTTPServer * server = CreateHTTPServer(socket);
+  if (server == NULL) {
+    PSYSTEMLOG(Error, "HTTP server creation/open failed.");
+    return TRUE;
+  }
+
+  // process requests
+  while (server->ProcessCommand())
+    ;
+
+  // always close after the response has been sent
+  delete server;
+
+  // if a restart was requested, then do it, but only if we are not shutting down
+  if (httpListeningSocket->IsOpen())
+    CompleteRestartSystem();
+
+  return TRUE;
+}
+
+
 void PHTTPServiceProcess::BeginRestartSystem()
 {
   if (restartThread == NULL) {
@@ -624,25 +677,26 @@ PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   return NULL;
 }
 
+
 PHTTPServer * PHTTPServiceProcess::OnCreateHTTPServer(const PHTTPSpace & httpNameSpace)
 {
   return new PHTTPServer(httpNameSpace);
 }
 
+
 //////////////////////////////////////////////////////////////
 
 PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
-                                       PHTTPServiceProcess & app,
-                                       PSocket & listeningSocket)
+                                       PHTTPServiceProcess & app)
   : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service:%x"),
-    process(app),
-    listener(listeningSocket)
+    process(app)
 {
   process.httpThreadsMutex.Wait();
   process.httpThreads.Append(this);
   process.httpThreadsMutex.Signal();
 
   myStackSize = stackSize;
+  socket = NULL;
   Resume();
 }
 
@@ -652,41 +706,24 @@ PHTTPServiceThread::~PHTTPServiceThread()
   process.httpThreadsMutex.Wait();
   process.httpThreads.Remove(this);
   process.httpThreadsMutex.Signal();
+  delete socket;
+}
+
+
+void PHTTPServiceThread::Close()
+{
+  if (socket != NULL)
+    socket->Close();
 }
 
 
 void PHTTPServiceThread::Main()
 {
-  if (!listener.IsOpen())
-    return;
-
-  // get a socket when a client connects
-  if (!socket.Accept(listener)) {
-    if (socket.GetErrorCode() != PChannel::Interrupted)
-      PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket.GetErrorText());
-    if (listener.IsOpen())
-      new PHTTPServiceThread(myStackSize, process, listener);
-    return;
+  PTCPSocket * socket = process.AcceptHTTP();
+  if (socket != NULL) {
+    new PHTTPServiceThread(myStackSize, process);
+    process.ProcessHTTP(*socket);
   }
-
-  new PHTTPServiceThread(myStackSize, process, listener);
-
-  PHTTPServer * server = process.CreateHTTPServer(socket);
-  if (server == NULL) {
-    PSYSTEMLOG(Error, "HTTP server creation/open failed.");
-    return;
-  }
-
-  // process requests
-  while (server->ProcessCommand())
-    ;
-
-  // always close after the response has been sent
-  delete server;
-
-  // if a restart was requested, then do it, but only if we are not shutting down
-  if (listener.IsOpen())
-    process.CompleteRestartSystem();
 }
 
 
