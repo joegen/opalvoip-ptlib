@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.4  2004/04/12 00:58:45  csoutheren
+ * Fixed PAtomicInteger on Linux, and modified PMutex to use it
+ *
  * Revision 1.3  2004/04/12 00:36:04  csoutheren
  * Added new class PAtomicInteger and added Windows implementation
  *
@@ -116,22 +119,22 @@ class PAtomicInteger
 {
 #ifdef _WIN32
     public:
-      inline PAtomicInteger(unsigned v = 0)
+      inline PAtomicInteger(long v = 0)
         : value(v) { }
-      BOOL IsZero() const                { return value == 0; }
-      inline operator++()                { InterlockedIncrement(&value); }
-      inline operator--()                { InterlockedDecrement(&value); }
-      inline operator unsigned () const  { return value; }
+      BOOL IsZero() const                 { return value == 0; }
+      inline long operator++()            { InterlockedIncrement(&value); return value;}
+      inline long operator--()            { InterlockedDecrement(&value); return value;}
+      inline operator long () const       { return value; }
     protected:
       long value;
 #elif P_HAS_ATOMIC_INT
     public:
-      inline PAtomicInteger(unsigned v = 0)
+      inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline operator++()                { __atomic_add(&cont.reference->count, 1); }
-      inline operator--()                {  __atomic_add(&cont.reference->count, -1); }
-      inline operator unsigned () const  { return value; }
+      inline int operator++()            { __atomic_add(&value, 1); return value;}
+      inline int unsigned operator--()   {  __atomic_add(&value, -1); return value;}
+      inline operator int () const       { return value; }
     protected:
       _Atomic_word value;
 #else 
@@ -139,14 +142,14 @@ class PAtomicInteger
     protected:
       PCriticalSection critSec;
     public:
-      inline PAtomicInteger(unsigned v = 0)
+      inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline operator++()                { PEnterAndLeave m(critsec); value++; }
-      inline operator--()                { PEnterAndLeave m(critsec); value--; }
-      inline operator unsigned () const  { return value; }
+      inline int operator++()            { PEnterAndLeave m(critsec); value++; return value;}
+      inline int operator--()            { PEnterAndLeave m(critsec); value--; return value;}
+      inline operator int () const       { return value; }
     protected:
-      unsigned value;
+      int value;
 #endif
 };
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.22  2004/04/12 00:58:45  csoutheren
+ * Fixed PAtomicInteger on Linux, and modified PMutex to use it
+ *
  * Revision 1.21  2004/04/11 07:58:08  csoutheren
  * Added configure.in check for recursive mutexes, and changed implementation
  * without recursive mutexes to use PCriticalSection or atomic word structs
@@ -122,12 +125,7 @@
 #  if defined(P_PTHREADS) && !defined(VX_TASKS)
 #    ifndef P_HAS_RECURSIVE_MUTEX
        pthread_t ownerThreadId;
-#      if P_HAS_ATOMIC_INT && defined(__GNUC__)
-         _Atomic_word lockCount;
-#      else
-         PCriticalSection lock;
-         unsigned lockCount;
-#      endif
+       PAtomicInteger lockCount;
 #    endif
 
 #  elif defined(BE_THREADS)
