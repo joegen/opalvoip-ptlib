@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.43  1999/02/22 13:26:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.42  1998/12/12 01:06:24  robertj
  * Fixed off by one error in month on FreeBSD platform
  *
@@ -658,8 +661,10 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
     status.type = PFileInfo::CharDevice;
   else if (S_ISBLK(s.st_mode))
     status.type = PFileInfo::BlockDevice;
+#ifndef __BEOS__
   else if (S_ISSOCK(s.st_mode))
     status.type = PFileInfo::SocketDevice;
+#endif // !__BEOS__
 
   return TRUE;
 }
