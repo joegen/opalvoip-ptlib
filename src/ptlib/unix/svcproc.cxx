@@ -87,7 +87,7 @@ void killpidfile()
 }
 #endif
 
-int PServiceProcess::_main()
+int PServiceProcess::_main(void *)
 {
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
