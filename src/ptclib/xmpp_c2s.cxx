@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.4  2004/04/28 11:26:43  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.3  2004/04/26 01:51:58  rjongbloed
  * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
  *
@@ -106,7 +109,7 @@ BOOL XMPP::C2S::TCPTransport::Close()
 XMPP::C2S::StreamHandler::StreamHandler(const JID& jid, const PString& pwd)
   : m_VersionMajor(1), m_VersionMinor(0),
     m_JID(jid), m_Password(pwd),
-#if P_SASL
+#if P_SASL2
     m_SASL("xmpp", m_JID.GetShortFormat(), m_JID.GetUser(), m_Password),
 #endif
     m_HasBind(FALSE), m_HasSession(FALSE),
@@ -233,7 +236,7 @@ void XMPP::C2S::StreamHandler::OnClose(XMPP::Stream& stream, INT extra)
 
 void XMPP::C2S::StreamHandler::StartAuthNegotiation()
 {
-#if P_SASL
+#if P_SASL2
   // We have SASL, but we might have not found a mechanism in
   // common, or we are just supporting the old jabber protocol
   if (m_VersionMajor == 0 || m_Mechanism.IsEmpty())
@@ -249,7 +252,7 @@ void XMPP::C2S::StreamHandler::StartAuthNegotiation()
     m_Stream->Write(auth);
     SetState(XMPP::C2S::StreamHandler::NonSASLStarted);
   }
-#if P_SASL
+#if P_SASL2
   else {
     // Go with SASL!
     PString output;
@@ -303,7 +306,7 @@ void XMPP::C2S::StreamHandler::OnElement(PXML& pdu)
     HandleTLSStartedState(pdu);
     break;
 
-#if P_SASL
+#if P_SASL2
   case SASLStarted:
     HandleSASLStartedState(pdu);
     break;
@@ -362,7 +365,7 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
 
   // We might have to negotiate the TLS first, but we set up the SASL phase now
 
-#if P_SASL
+#if P_SASL2
   if (!mechList || !m_SASL.Init(m_JID.GetServer(), ourMechSet))
   {
     // SASL initialisation failed, goodbye...
@@ -399,7 +402,7 @@ void XMPP::C2S::StreamHandler::HandleTLSStartedState(PXML& /*pdu*/)
 }
 
 
-#if P_SASL
+#if P_SASL2
 void XMPP::C2S::StreamHandler::HandleSASLStartedState(PXML& pdu)
 {
   PString name = pdu.GetRootElement()->GetName();

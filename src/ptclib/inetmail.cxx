@@ -24,6 +24,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.28  2004/04/28 11:26:43  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.27  2004/04/26 01:33:20  rjongbloed
  * Fixed minor problem with SASL authentication, thanks Federico Pinna, Reitek S.p.A.
  *
@@ -117,7 +120,7 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/inetmail.h>
-#if P_SASL
+#if P_SASL2
 #include <ptclib/psasl.h>
 #endif
 
@@ -183,7 +186,7 @@ BOOL PSMTPClient::Close()
 BOOL PSMTPClient::LogIn(const PString & username,
                         const PString & password)
 {
-#if P_SASL
+#if P_SASL2
   PString localHost;
   PIPSocket * socket = GetSocket();
   if (socket != NULL) {
@@ -944,7 +947,7 @@ BOOL PPOP3Client::Close()
 
 BOOL PPOP3Client::LogIn(const PString & username, const PString & password, int options)
 {
-#if P_SASL
+#if P_SASL2
   PString mech;
   PSASLClient auth("pop", username, username, password);
 
@@ -1024,7 +1027,7 @@ BOOL PPOP3Client::LogIn(const PString & username, const PString & password, int 
     if (ExecuteCommand(PASS, password) <= 0)
       return FALSE;
 
-#if P_SASL
+#if P_SASL2
   }
 #endif
 
