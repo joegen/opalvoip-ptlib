@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.9  2002/01/28 21:22:10  dereks
+ * Fix the method for returning the device name.
+ *
  * Revision 1.8  2002/01/16 03:49:23  dereks
  * Add new test image.
  *
@@ -70,7 +73,7 @@
 */
 class PFakeVideoInputDevice : public PVideoInputDevice
 {
-    PCLASSINFO(PFakeVideoInputDevice,PVideoInputDevice);
+    PCLASSINFO(PFakeVideoInputDevice, PVideoInputDevice);
  public:
   /** Create a new (fake) video input device.
    */
@@ -106,7 +109,7 @@ class PFakeVideoInputDevice : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
       */
-    PStringList GetDeviceNames() const ;
+    static PStringList GetInputDeviceNames();
 
     /**Get the maximum frame size in bytes.
 
