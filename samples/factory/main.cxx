@@ -2,7 +2,6 @@
 #include "abstract.h"
 
 extern unsigned PTraceCurrentLevel;
-PAbstractFactory<PProcessStartup, PTraceLevelSetStartup<4> > level("SetTraceLevel");
 
 class Factory : public PProcess
 {
@@ -16,8 +15,8 @@ PCREATE_PROCESS(Factory)
 
 void Factory::Main()
 {
-  PGenericFactory<AbstractClass>::KeyList keyList = PGenericFactory<AbstractClass>::GetKeyList();
-  PGenericFactory<AbstractClass>::KeyList::const_iterator r;
+  PGenericFactory<AbstractClass>::KeyList_T keyList = PGenericFactory<AbstractClass>::GetKeyList();
+  PGenericFactory<AbstractClass>::KeyList_T::const_iterator r;
 
   cout << "List of concrete types:" << endl;
   for (r = keyList.begin(); r != keyList.end(); ++r)
