@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.39  1999/01/11 11:27:11  robertj
+ * Added function to get the hardware process is running on.
+ *
  * Revision 1.38  1998/11/30 02:51:00  robertj
  * New directory structure
  *
@@ -285,8 +288,15 @@ PDECLARE_CLASS(PProcess, PThread)
      */
 
     static PString GetOSName();
-    /* Get the class of the operating system the process is running on, eg
-       "linux".
+    /* Get the name of the operating system the process is running on, eg
+       "Linux".
+       
+       <H2>Returns:</H2>
+       String for OS name.
+     */
+
+    static PString GetOSHardware();
+    /* Get the hardware the process is running on, eg "sparc".
        
        <H2>Returns:</H2>
        String for OS name.
@@ -294,7 +304,7 @@ PDECLARE_CLASS(PProcess, PThread)
 
     static PString GetOSVersion();
     /* Get the version of the operating system the process is running on, eg
-       "v1.3pl1".
+       "2.0.33".
        
        <H2>Returns:</H2>
        String for OS version.
