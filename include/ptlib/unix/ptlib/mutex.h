@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.21  2004/04/11 07:58:08  csoutheren
+ * Added configure.in check for recursive mutexes, and changed implementation
+ * without recursive mutexes to use PCriticalSection or atomic word structs
+ *
  * Revision 1.20  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -117,8 +121,13 @@
 
 #  if defined(P_PTHREADS) && !defined(VX_TASKS)
 #    ifndef P_HAS_RECURSIVE_MUTEX
-        pthread_t ownerThreadId;
-        PINDEX lockCount;
+       pthread_t ownerThreadId;
+#      if P_HAS_ATOMIC_INT && defined(__GNUC__)
+         _Atomic_word lockCount;
+#      else
+         PCriticalSection lock;
+         unsigned lockCount;
+#      endif
 #    endif
 
 #  elif defined(BE_THREADS)
