@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.131  2000/03/02 05:43:12  robertj
+ * Fixed handling of NULL pointer on current thread in PTRACE output.
+ *
  * Revision 1.130  2000/02/29 12:26:14  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -537,23 +540,24 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
     if ((PTraceOptions&Thread) != 0) {
       PThread * thread = PThread::Current();
-
-      PString name;
-      if (thread != NULL)
-        name = thread->GetThreadName();
-
-      if (!name)
-        *PTraceStream << setw(23) << name.Left(23) << '\t';
+      if (thread == NULL)
+        *PTraceStream << setw(23) << "<<unknown>>";
       else {
-        name = thread->GetClass();
-        if ((PTraceOptions&ThreadAddress) != 0)
-          *PTraceStream << setw(23) << name.Left(23) << '\t';
-        else
-          *PTraceStream << setw(15) << name.Left(15) << ':'
-                        << hex << setfill('0')
-                        << setw(7) << (unsigned)thread
-                        << dec << setfill(' ') << '\t';
+        PString name = thread->GetThreadName();
+        if (!name)
+          *PTraceStream << setw(23) << name.Left(23);
+        else {
+          name = thread->GetClass();
+          if ((PTraceOptions&ThreadAddress) != 0)
+            *PTraceStream << setw(23) << name.Left(23);
+          else
+            *PTraceStream << setw(15) << name.Left(15) << ':'
+                          << hex << setfill('0')
+                          << setw(7) << (unsigned)thread
+                          << dec << setfill(' ');
+        }
       }
+      *PTraceStream << '\t';
     }
 
     if ((PTraceOptions&ThreadAddress) != 0)
