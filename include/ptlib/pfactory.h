@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.2  2004/05/13 14:59:00  csoutheren
+ * Removed warning under gcc
+ *
  * Revision 1.1  2004/05/13 14:53:35  csoutheren
  * Add "abstract factory" template classes
  *
@@ -35,8 +38,6 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
-
-#pragma warning(disable:4786)
 
 #include <ptlib.h>
 #include <string>
@@ -86,7 +87,7 @@ class PGenericFactory
     {
       PWaitAndSignal m(mutex);
       AbstractType * instance = NULL;
-      KeyMap::const_iterator entry = keyMap.find(key);
+      typename KeyMap::const_iterator entry = keyMap.find(key);
       if (entry != keyMap.end())
         instance = entry->second();
       return instance;
