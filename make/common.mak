@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.38  1999/07/10 03:32:02  robertj
+# Improved release version detection code.
+#
 # Revision 1.37  1999/07/03 04:31:53  robertj
 # Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
 #
@@ -222,15 +225,23 @@ endif
 
 ifndef VERSION
 ifneq (,$(wildcard custom.cxx))
+VERSION_FILE := custom.cxx
+endif
+ifneq (,$(wildcard version.h))
+VERSION_FILE := version.h
+endif
+
+ifdef VERSION_FILE
 VERSION:=$(strip \
 	$(subst \#define,, $(subst MAJOR_VERSION,,\
-		$(shell grep "define *MAJOR_VERSION" custom.cxx)))).$(strip \
+		$(shell grep "define *MAJOR_VERSION" $(VERSION_FILE))))).$(strip \
 	$(subst \#define,,$(subst MINOR_VERSION,,\
-		$(shell grep "define *MINOR_VERSION" custom.cxx))))$(strip \
-	$(subst \#define,,$(subst BUILD_TYPE,,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
-		$(shell grep "define *BUILD_TYPE" custom.cxx))))))$(strip \
+		$(shell grep "define *MINOR_VERSION" $(VERSION_FILE)))))$(strip \
+	$(subst \#define,,$(subst BUILD_TYPE,,\
+		$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
+		$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))$(strip \
 	$(subst \#define,,$(subst BUILD_NUMBER,,\
-		$(shell grep "define *BUILD_NUMBER" custom.cxx))))
+		$(shell grep "define *BUILD_NUMBER" $(VERSION_FILE)))))
 endif
 endif
 
@@ -238,7 +249,7 @@ endif
 ifndef VERSION
 
 release ::
-	@echo Must define VERSION macro or have custom.cxx file.
+	@echo Must define VERSION macro or have version.h/custom.cxx file.
 
 else
 
