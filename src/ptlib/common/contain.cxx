@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.42 1995/06/17 00:46:20 robertj Exp $
+ * $Id: contain.cxx,v 1.43 1995/10/14 15:07:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.43  1995/10/14 15:07:42  robertj
+ * Changed arrays to not break references, but strings still need to.
+ *
  * Revision 1.42  1995/06/17 00:46:20  robertj
  * Added flag for PStringArray constructor to create caseless strings.
  * Fixed bug in arrays when size set to zero.
@@ -340,41 +343,28 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 {
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
+
+  if (newsizebytes == oldsizebytes)
+    return TRUE;
+
   char * newArray;
 
-  if (IsUnique()) {
-    if (newsizebytes == oldsizebytes)
-      return TRUE;
-    if (theArray != NULL) {
-      if (newsizebytes == 0) {
-        PFREE(theArray);
-        newArray = NULL;
-      }
-      else if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
-        return FALSE;
-    }
-    else if (newsizebytes != 0) {
-      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
-        return FALSE;
-    }
-    else
+  if (theArray != NULL) {
+    if (newsizebytes == 0) {
+      PFREE(theArray);
       newArray = NULL;
-    reference->size = newSize;
-  }
-  else {
-    if (newsizebytes == 0)
-      newArray = NULL;
-    else {
-      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
-        return FALSE;
-
-      if (theArray != NULL)
-        memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
     }
-
-    reference->count--;
-    reference = new Reference(newSize);
+    else if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
+      return FALSE;
   }
+  else if (newsizebytes != 0) {
+    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+      return FALSE;
+  }
+  else
+    newArray = NULL;
+
+  reference->size = newSize;
 
   if (newsizebytes > oldsizebytes)
     memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
@@ -656,6 +646,46 @@ BOOL PString::IsEmpty() const
 #else
   return *theArray == '\0';
 #endif
+}
+
+
+BOOL PString::SetSize(PINDEX newSize)
+{
+  if (IsUnique())
+    return PAbstractArray::SetSize(newSize);
+
+  PINDEX newsizebytes = elementSize*newSize;
+  PINDEX oldsizebytes = elementSize*GetSize();
+  char * newArray;
+
+  if (newsizebytes == 0)
+    newArray = NULL;
+  else {
+    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+      return FALSE;
+
+    if (theArray != NULL)
+      memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
+  }
+
+  reference->count--;
+  reference = new Reference(newSize);
+
+  if (newsizebytes > oldsizebytes)
+    memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
+
+  theArray = newArray;
+  return TRUE;
+}
+
+
+BOOL PString::MakeUnique()
+{
+  if (IsUnique())
+    return TRUE;
+
+  SetSize(GetSize());
+  return FALSE;
 }
 
 
