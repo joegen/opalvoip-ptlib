@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.104  1998/10/29 05:35:17  robertj
+ * Fixed porblem with GetCount() == 0 if do not call Parse() function.
+ *
  * Revision 1.103  1998/10/28 03:26:43  robertj
  * Added multi character arguments (-abc style) and options precede parameters mode.
  *
@@ -1478,8 +1481,6 @@ PArgList::PArgList(int theArgc, char ** theArgv,
 
 void PArgList::SetArgs(const PString & argStr)
 {
-  shift = 0;
-
   argumentArray.SetSize(0);
 
   const char * str = argStr;
@@ -1516,13 +1517,20 @@ void PArgList::SetArgs(const PString & argStr)
       }
     }
   }
+
+  SetArgs(argumentArray);
 }
 
 
-void PArgList::SetArgs(int argc, char ** argv)
+void PArgList::SetArgs(const PStringArray & theArgs)
 {
-  argumentArray = PStringArray(argc, argv);
+  argumentArray = theArgs;
   shift = 0;
+  optionLetters = "";
+  optionNames.SetSize(0);
+  parameterIndex.SetSize(argumentArray.GetSize());
+  for (PINDEX i = 0; i < argumentArray.GetSize(); i++)
+    parameterIndex[i] = i;
 }
 
 
@@ -1530,11 +1538,19 @@ void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
   PAssertNULL(spec);
 
+  // Find starting point
+  PINDEX arg = 0;
+
+  // If not in parse all mode, have been parsed before, and had some parameters
+  // from last time, then start argument parsing somewhere along instead of start.
+  if (optionsBeforeParams && !optionLetters && parameterIndex.GetSize() > 0)
+    arg = parameterIndex[parameterIndex.GetSize()-1] + 1;
+
+  // Parse the option specification
   optionLetters = "";
   optionNames.SetSize(0);
   PIntArray canHaveOptionString;
 
-  // First parse the argument specification
   PINDEX codeCount = 0;
   while (*spec != '\0') {
     if (*spec == '-')
@@ -1562,11 +1578,6 @@ void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
   optionCount.SetSize(codeCount);
   optionString.SetSize(0);
   optionString.SetSize(codeCount);
-
-  // Find starting point
-  PINDEX arg = 0;
-  if (optionsBeforeParams && parameterIndex.GetSize() > 0)
-    arg = parameterIndex[parameterIndex.GetSize()-1] + 1;
 
   // Clear parameter indexes
   parameterIndex.SetSize(0);
