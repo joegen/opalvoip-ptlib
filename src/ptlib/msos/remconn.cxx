@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.11 1996/11/16 10:53:17 robertj Exp $
+ * $Id: remconn.cxx,v 1.12 1996/12/01 07:01:28 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.12  1996/12/01 07:01:28  robertj
+ * Changed debugging asserts to simple PError output.
+ *
  * Revision 1.11  1996/11/16 10:53:17  robertj
  * Added missing SetlastError() so assert has correct error value.
  *
@@ -203,7 +206,7 @@ static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
   rasError = Ras.GetConnectStatus(rasConnection, &status);
   SetLastError(rasError);
   if (rasError == ERROR_INVALID_HANDLE) {
-    PAssertAlways("RAS Connection Status failed");
+    PError << "RAS Connection Status invalid handle, retrying.";
     rasError = Ras.GetConnectStatus(rasConnection, &status);
     SetLastError(rasError);
   }
@@ -211,7 +214,7 @@ static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
   if (rasError == 0)
     return status.rasconnstate;
 
-  PAssertAlways("RAS Connection Lost");
+  PError << "RAS Connection Status failed (" << rasError << "), retrying.";
   rasError = Ras.GetConnectStatus(rasConnection, &status);
   SetLastError(rasError);
 
@@ -255,7 +258,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
       return InProgress;
   }
 
-  PAssertAlways("RAS Connection Status Retry");
+  PError << "RAS Connection Status disconnected, retrying.";
   switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
     case RASCS_Connected :
       return Connected;
