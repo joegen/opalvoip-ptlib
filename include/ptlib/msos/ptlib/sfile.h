@@ -1,5 +1,5 @@
 /*
- * $Id: sfile.h,v 1.2 1995/04/25 11:31:47 robertj Exp $
+ * $Id: sfile.h,v 1.3 1996/08/08 10:09:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sfile.h,v $
+ * Revision 1.3  1996/08/08 10:09:13  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.2  1995/04/25 11:31:47  robertj
  * Fixed Borland compiler warnings.
  *
@@ -29,7 +32,7 @@
 #pragma warn -hid
 #endif
 
-#include "../../common/sfile.h"
+#include "../../common/ptlib/sfile.h"
 };
 
 #ifdef __BORLANDC__
