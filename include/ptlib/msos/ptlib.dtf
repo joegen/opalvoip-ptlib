@@ -203,6 +203,7 @@ EXPORTS
     ??0PVideoChannel@@QAE@XZ @2503 NONAME ;public: __thiscall PVideoChannel::PVideoChannel(void)
     ??0PVideoDevice@@IAE@XZ @2781 NONAME ;protected: __thiscall PVideoDevice::PVideoDevice(void)
     ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@@Z @2469 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *)
+    ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@G@Z @3163 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *,unsigned short)
     ??0PVideoInputDevice@@QAE@XZ @2782 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(void)
     ??0PVideoOutputDevice@@QAE@XZ @2783 NONAME ;public: __thiscall PVideoOutputDevice::PVideoOutputDevice(void)
     ??0PWaveBuffer@@AAE@H@Z @2030 NONAME ;private: __thiscall PWaveBuffer::PWaveBuffer(int)
@@ -881,6 +882,7 @@ EXPORTS
     ?Append@PAbstractSortedList@@UAEHPAVPObject@@@Z @604 NONAME ;public: virtual int __thiscall PAbstractSortedList::Append(class PObject *)
     ?Append@PArrayObjects@@UAEHPAVPObject@@@Z @605 NONAME ;public: virtual int __thiscall PArrayObjects::Append(class PObject *)
     ?AppendElement@Table@PHashTable@@QAEHPAVPObject@@0@Z @606 NONAME ;public: int __thiscall PHashTable::Table::AppendElement(class PObject *,class PObject *)
+    ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@@Z @3164 NONAME ;public: int __thiscall PVideoDeviceBitmap::ApplyFormat(struct HWND__ *)
     ?AreAllRecordBuffersFull@PSoundChannel@@QAEHXZ @2104 NONAME ;public: int __thiscall PSoundChannel::AreAllRecordBuffersFull(void)
     ?Ascend@PMultiMediaFile@@QAEHAAU_MMCKINFO@@I@Z @1996 NONAME ;public: int __thiscall PMultiMediaFile::Ascend(struct _MMCKINFO &,unsigned int)
     ?AsInt64@PString@@QBE_JI@Z @610 NONAME ;public: __int64 __thiscall PString::AsInt64(unsigned int)const 
