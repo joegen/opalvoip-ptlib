@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.18 1996/03/26 00:55:20 robertj Exp $
+ * $Id: object.cxx,v 1.19 1996/05/09 12:19:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.19  1996/05/09 12:19:29  robertj
+ * Fixed up 64 bit integer class for Mac platform.
+ * Fixed incorrect use of memcmp/strcmp return value.
+ *
  * Revision 1.18  1996/03/26 00:55:20  robertj
  * Added keypress before dumping memory leaks.
  *
@@ -374,7 +378,12 @@ BOOL PObject::IsDescendant(const char * clsName) const
 
 PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
 {
-  return (Comparison)memcmp(this, &obj, sizeof(PObject));
+  int retval = memcmp(this, &obj, sizeof(PObject));
+  if (retval < 0)
+    return LessThan;
+  if (retval > 0)
+    return GreaterThan;
+  return EqualTo;
 }
 
 
@@ -776,53 +785,55 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 
 void PInt64__::Add(const PInt64__ & v)
 {
-  WORD * a = (WORD *)&low;
-  WORD * b = (WORD *)&v.low;
-  DWORD s = 0;
-  for (int i = 0; i < 4; i++) {
-    s = (DWORD)*a + (DWORD)*b + (s >> 16);
-    *a = (WORD)s;
-    a++;
-    b++;
-  }
+  unsigned long old = low;
+  high += v.high;
+  low += v.low;
+  if (low < old)
+    high++;
 }
 
 
 void PInt64__::Sub(const PInt64__ & v)
 {
-  WORD * a = (WORD *)&low;
-  WORD * b = (WORD *)&v.low;
-  DWORD s = 0x10000;
-  for (int i = 0; i < 4; i++) {
-    s = (DWORD)*a - (DWORD)*b - (s >> 16) + 1;
-    *a = (WORD)s;
-    a++;
-    b++;
-  }
+  unsigned long old = low;
+  high -= v.high;
+  low -= v.low;
+  if (low > old)
+    high--;
 }
 
 
 void PInt64__::Mul(const PInt64__ & v)
 {
-  WORD * a = (WORD *)&low;
-  WORD * b = (WORD *)&v.low;
-  DWORD p = 0;
-  for (int i = 0; i < 4; i++) {
-    p = (DWORD)*a * (DWORD)*b + (p >> 16);
-    *a = (WORD)p;
-    a++;
-    b++;
-  }
+  DWORD p1 = (low&0xffff)*(v.low&0xffff);
+  DWORD p2 = (low >> 16)*(v.low >> 16);
+  DWORD p3 = (high&0xffff)*(v.high&0xffff);
+  DWORD p4 = (high >> 16)*(v.high >> 16);
+  low = p1 + (p2 << 16);
+  high = (p2 >> 16) + p3 + (p4 << 16);
 }
 
 
 void PInt64__::Div(const PInt64__ & v)
 {
+  long double dividend = high;
+  dividend *=  4294967296.0;
+  dividend += low;
+  long double divisor = high;
+  divisor *=  4294967296.0;
+  divisor += low;
+  long double quotient = dividend/divisor;
+  low = quotient;
+  high = quotient/4294967296.0;
 }
 
 
 void PInt64__::Mod(const PInt64__ & v)
 {
+  PInt64__ t = *this;
+  t.Div(v);
+  t.Mul(t);
+  Sub(t);
 }
 
 
@@ -900,27 +911,32 @@ BOOL PUInt64::Gt(const PUInt64 & v) const
 
 static void Out64(ostream & stream, PUInt64 num)
 {
-  int base;
-  switch (stream.flags()&ios::basefield) {
-    case ios::oct :
-      base = 8;
-      break;
-    case ios::hex :
-      base = 16;
-      break;
-    default :
-      base = 10;
-  }
-
   char buf[25];
   char * p = &buf[sizeof(buf)];
   *--p = '\0';
 
-  while (num != 0) {
-    *--p = num%base + '0';
-    if (*p > '9')
-      *p += 7;
-    num /= base;
+  switch (stream.flags()&ios::basefield) {
+    case ios::oct :
+      while (num != 0) {
+        *--p = (num&7) + '0';
+        num >>= 3;
+      }
+      break;
+
+    case ios::hex :
+      while (num != 0) {
+        *--p = (num&15) + '0';
+        if (*p > '9')
+          *p += 7;
+        num >>= 4;
+      }
+      break;
+
+    default :
+      while (num != 0) {
+        *--p = num%10 + '0';
+        num /= 10;
+      }
   }
 
   if (*p == '\0')
