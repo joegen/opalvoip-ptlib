@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.3 1995/01/15 04:49:23 robertj Exp $
+ * $Id: lists.h,v 1.4 1995/02/05 00:48:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
- * Revision 1.3  1995/01/15 04:49:23  robertj
+ * Revision 1.4  1995/02/05 00:48:05  robertj
+ * Fixed template version.
+ *
+ * Revision 1.3  1995/01/15  04:49:23  robertj
  * Fixed errors in template version.
  *
  * Revision 1.2  1994/12/21  11:53:12  robertj
@@ -280,7 +283,8 @@ PDECLARE_CLASS(PList, PAbstractList)
      */
 
   protected:
-    PList(int dummy, const PList * c) : PAbstractList(dummy, c) { }
+    PList(int dummy, const PList * c)
+      : PAbstractList(dummy, c) { }
 };
 
 
@@ -364,7 +368,7 @@ PDECLARE_CLASS(PQueue, PAbstractList)
      */
 
   protected:
-    PQueue(int dummy, const cls * c)
+    PQueue(int dummy, const PQueue * c)
       : PAbstractList(dummy, c)
       { reference->deleteObjects = c->reference->deleteObjects; }
 };
@@ -383,7 +387,7 @@ PDECLARE_CLASS(PQueue, PAbstractList)
    See the $H$PQueue and $H$PAbstractList classes for more information.
  */
 #define PDECLARE_QUEUE(cls, T) \
-  PDECLARE_CLASS(cls, PQueue<T>)
+  PDECLARE_CLASS(cls, PQueue<T>) \
   protected: \
     cls(int dummy, const cls * c) \
       : PQueue<T>(dummy, c) { } \
@@ -434,14 +438,14 @@ PDECLARE_CLASS(PStack, PAbstractList)
      */
 
     virtual PObject * Clone() const
-      { return PNEW cls(0, this); }
+      { return PNEW PStack(0, this); }
     /* Make a complete duplicate of the stack. Note that all objects in the
        array are also cloned, so this will make a complete copy of the stack.
      */
 
     virtual void Push(
       T * obj    // Object to add to the stack.
-    ) { PAbstractList::InsertAt(0, t); }
+    ) { PAbstractList::InsertAt(0, obj); }
     /* Add an object to the stack. This object will be on "top" of the stack
        and will be the object returned by the $B$Pop()$B$ function.
      */
@@ -463,7 +467,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
 
 
   protected:
-    cls(int dummy, const cls * c)
+    PStack(int dummy, const PStack * c)
       : PAbstractList(dummy, c)
       { reference->deleteObjects = c->reference->deleteObjects; }
 };
@@ -481,7 +485,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
    See the $H$PStack and $H$PAbstractList classes for more information.
  */
 #define PDECLARE_STACK(cls, T) \
-  PDECLARE_CLASS(cls, PStack<T>)
+  PDECLARE_CLASS(cls, PStack<T>) \
   protected: \
     cls(int dummy, const cls * c) \
       : PStack<T>(dummy, c) { } \
@@ -843,7 +847,7 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
      */
 
   protected:
-    PSortedList(int dummy, const cls * c)
+    PSortedList(int dummy, const PSortedList * c)
       : PAbstractSortedList(dummy, c) { }
 };
 
@@ -861,7 +865,7 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
    information.
  */
 #define PDECLARE_SORTED_LIST(cls, T) \
-  PDECLARE_CLASS(cls, PSortedList<T>)
+  PDECLARE_CLASS(cls, PSortedList<T>) \
   protected: \
     cls(int dummy, const cls * c) \
       : PSortedList<T>(dummy, c) { } \
@@ -882,7 +886,7 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
    See the $H$PSortedList class and $H$PDECLARE_SORTED_LIST macro for more
    information.
  */
-#define PSORTEDLIST(cls, T) typedef PSortedList<T> cls
+#define PSORTED_LIST(cls, T) typedef PSortedList<T> cls
 
 
 #else // PHAS_TEMPLATES
