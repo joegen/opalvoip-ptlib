@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.16 1997/05/16 12:07:21 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.17 1997/06/16 13:20:15 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.17  1997/06/16 13:20:15  robertj
+ * Fixed bug where PHTTPThread crashes on exit.
+ *
  * Revision 1.16  1997/05/16 12:07:21  robertj
  * Added operating system and version to hidden fields on registration form.
  *
@@ -89,7 +92,8 @@ PHTTPServiceProcess::PHTTPServiceProcess(
   : PServiceProcess(manuf, name, majorVersion,
                     minorVersion, status, buildNumber),
     gifText(_gifName),
-    securedKeys(securedKeyCount, securedKeys)
+    securedKeys(securedKeyCount, securedKeys),
+    httpThreadClosed(0)
 {
   if (_email != NULL)
     email = _email;
@@ -107,7 +111,17 @@ PHTTPServiceProcess::PHTTPServiceProcess(
   if (sigKey != NULL)
     signatureKey = *sigKey;
 
+  if (_gifName != NULL)
+    httpNameSpace.AddResource(new PServiceHTTPFile(_gifName));
+
   restartThread = NULL;
+  httpListeningSocket = NULL;
+}
+
+
+PHTTPServiceProcess::~PHTTPServiceProcess()
+{
+  ShutdownListener();
 }
 
 
@@ -116,6 +130,48 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
   PHTTPServiceProcess & process = (PHTTPServiceProcess &)PProcess::Current();
   PAssert(process.IsDescendant(PHTTPServiceProcess::Class()), "Not a HTTP service!");
   return process;
+}
+
+
+BOOL PHTTPServiceProcess::ListenForHTTP(WORD port, BOOL startThread)
+{
+  if (httpListeningSocket != NULL &&
+      httpListeningSocket->GetPort() == port &&
+      httpListeningSocket->IsOpen())
+    return TRUE;
+
+  return ListenForHTTP(new PTCPSocket(port), startThread);
+}
+
+
+BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener, BOOL startThread)
+{
+  if (httpListeningSocket != NULL)
+    ShutdownListener();
+
+  httpListeningSocket = PAssertNULL(listener);
+  if (!httpListeningSocket->Listen())
+    return FALSE;
+
+  if (startThread)
+    new PHTTPServiceThread(*this, *httpListeningSocket, httpNameSpace);
+
+  return TRUE;
+}
+
+
+void PHTTPServiceProcess::ShutdownListener()
+{
+  if (httpListeningSocket == NULL)
+    return;
+
+  if (!httpListeningSocket->IsOpen())
+    return;
+
+  httpListeningSocket->Close();
+  httpThreadClosed.Wait();
+  delete httpListeningSocket;
+  httpListeningSocket = NULL;
 }
 
 
@@ -147,7 +203,7 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
        << " Version " << GetVersion(TRUE)
-       << ", " << compilationDate.AsString("d MMM yy")
+       << ", " << compilationDate.AsString("d MMMM yy")
        << PHTML::BreakLine()
        << "By "
        << PHTML::HotLink(homePage) << GetManufacturer() << PHTML::HotLink()
@@ -204,7 +260,7 @@ PHTTPServiceThread::PHTTPServiceThread(PHTTPServiceProcess & app,
   : PThread(10000, AutoDeleteThread),
     process(app),
     listener(listeningSocket),
-    httpSpace(http)
+    httpNameSpace(http)
 {
   Resume();
 }
@@ -212,20 +268,24 @@ PHTTPServiceThread::PHTTPServiceThread(PHTTPServiceProcess & app,
 
 void PHTTPServiceThread::Main()
 {
-  if (!listener.IsOpen())
-    return;
-
-  // get a socket when a client connects
-  PHTTPServer server(httpSpace);
-  if (!server.Accept(listener)) {
-    if (server.GetErrorCode() == PChannel::Interrupted)
-      PNEW PHTTPServiceThread(process, listener, httpSpace);
-    else
-      PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
+  if (!listener.IsOpen()) {
+    process.httpThreadClosed.Signal();
     return;
   }
 
-  PNEW PHTTPServiceThread(process, listener, httpSpace);
+  // get a socket when a client connects
+  PHTTPServer server(httpNameSpace);
+  if (!server.Accept(listener)) {
+    if (server.GetErrorCode() != PChannel::Interrupted)
+      PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
+    if (listener.IsOpen())
+      PNEW PHTTPServiceThread(process, listener, httpNameSpace);
+    else
+      process.httpThreadClosed.Signal();
+    return;
+  }
+
+  PNEW PHTTPServiceThread(process, listener, httpNameSpace);
 
   // process requests
   while (server.ProcessCommand())
@@ -508,7 +568,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "Order Form"
        << PHTML::Heading(1)
        << PHTML::Paragraph()
-       << PHTML::Form("POST", "mailto:" + process.email)
+       << PHTML::Form("POST", "mailto:" + process.GetEMailAddress())
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
