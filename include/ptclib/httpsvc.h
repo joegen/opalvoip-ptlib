@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.30  2000/12/11 13:15:17  robertj
+ * Added macro to include signed or unsigned chunks of HTML.
+ * Added flag to globally ignore HTML signatures (useful for develeopment).
+ *
  * Revision 1.29  2000/11/02 21:57:00  craigs
  * Added extra constructor
  *
@@ -189,6 +193,8 @@ class PHTTPServiceProcess : public PServiceProcess
     const PTEACypher::Key & GetProductKey() const { return productKey; }
     const PStringArray & GetSecuredKeys() const { return securedKeys; }
     const PTEACypher::Key & GetSignatureKey() const { return signatureKey; }
+    BOOL ShouldIgnoreSignatures() const { return ignoreSignatures; }
+    void SetIgnoreSignatures(BOOL ig) { ignoreSignatures = ig; }
 
     static PHTTPServiceProcess & Current();
 
@@ -204,6 +210,7 @@ class PHTTPServiceProcess : public PServiceProcess
     PTEACypher::Key productKey;
     PStringArray    securedKeys;
     PTEACypher::Key signatureKey;
+    BOOL            ignoreSignatures;
 
     PTime      compilationDate;
     PString    manufacturersHomePage;
