@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.65  2001/11/27 22:42:13  robertj
+# Changed to make system to better support non-shared library building.
+#
 # Revision 1.64  2001/10/31 00:45:20  robertj
 # Added debuglibs, optlibs and bothlibs targets, moving help to where these
 #   targets are in teh make file system.
@@ -196,10 +199,10 @@ ifdef PWLIB_GUI_FLAG
 STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
 endif
 
-#
-# add any trailing libraries
-#
-LDLIBS += $(ENDLDLIBS)
+ifneq ($(P_SHAREDLIB),1)
+ENDLDFLAGS += -Xlinker -Bstatic
+endif
+
 
 #  clean whitespace out of source file list
 SOURCES         := $(strip $(SOURCES))
@@ -257,11 +260,7 @@ CLEAN_FILES += $(OBJS) $(DEPS) core
 ifdef	PROG
 
 ifndef TARGET
-ifeq	($(P_SHAREDLIB),0)
 TARGET = $(OBJDIR)/$(PROG)
-else
-TARGET = $(OBJDIR)/$(PROG)
-endif
 endif
 
 ifdef BUILDFILES
@@ -280,7 +279,7 @@ ifeq ($(OSTYPE),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PW_LIBDIR) lib; fi
 endif
-	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
+	$(CPLUS) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
 
 ifdef DEBUG
 

@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.15  2001/11/27 22:42:13  robertj
+# Changed to make system to better support non-shared library building.
+#
 # Revision 1.14  2001/07/07 06:51:52  robertj
 # Added fix to remove shared libraries in make clean, thanks Jac Goudsmit
 #
@@ -45,13 +48,16 @@
 #
 
 
-LIBNAME_MAJ		= $(LIB_BASENAME).$(MAJOR_VERSION)
+LIBNAME_MAJ		= $(LIB_FILENAME).$(MAJOR_VERSION)
 LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
 LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
 
-CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
+CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
-ifeq ($(P_SHAREDLIB),1)
+ifneq ($(P_SHAREDLIB),1)
+STATIC_LIB_FILE=$(LIBDIR)/$(LIB_FILENAME)
+else
+STATIC_LIB_FILE=$(LIBDIR)/$(LIB_BASENAME)_s.a
 
 ifndef MAJOR_VERSION
 MAJOR_VERSION	:= 1
@@ -82,31 +88,34 @@ LDSOOPTS = -shared
 EXTLIBS =
 endif
 
-$(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIB_BASENAME)
+$(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
+	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
 	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
 	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
-$(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
+$(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
+	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_FILENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
-	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
+	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_FILENAME)
 	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
 	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
 
-else
+endif # P_SHAREDLIB
 
-$(LIBDIR)/$(LIB_BASENAME): $(OBJS)
+
+$(STATIC_LIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 ifdef P_USE_RANLIB
-	$(AR) rc $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
-	$(RANLIB) $(LIBDIR)/$(LIB_BASENAME)
+	$(AR) rc $(STATIC_LIB_FILE) $(OBJS)
+	$(RANLIB) $(STATIC_LIB_FILE)
 else
-	$(AR) rcs $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
+	$(AR) rcs $(STATIC_LIB_FILE) $(OBJS)
 endif
 
-endif
+
+
+# End of file ################################################################
 
