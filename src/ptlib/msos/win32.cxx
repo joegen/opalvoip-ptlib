@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.52 1997/08/21 12:44:56 robertj Exp $
+ * $Id: win32.cxx,v 1.53 1997/08/21 13:27:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.53  1997/08/21 13:27:41  robertj
+ * Attempt to fix very slight possibility of endless loop in housekeeping thread.
+ *
  * Revision 1.52  1997/08/21 12:44:56  robertj
  * Removed extension from DLL "short" name.
  *
@@ -2078,7 +2081,7 @@ void PProcess::HouseKeepingThread::Main()
       PThread & thread = process.activeThreads.GetDataAt(i);
       DWORD id = thread.CleanUpOnTerminated();
       if (id != 0) {
-        process.activeThreads.SetAt(id, NULL);
+        process.activeThreads.SetAt(process.activeThreads.GetKeyAt(i), NULL);
         numHandles = 1;
         i = -1;
       }
