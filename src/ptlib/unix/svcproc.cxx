@@ -6,6 +6,7 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <fstream.h>
+#include <pthread.h>
 
 #include "uerror.h"
 
@@ -18,12 +19,23 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_INFO,    // LogInfo,    
 };
 
+#ifdef P_PTHREADS
+
+static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
+
+#endif
 
 void PSystemLog::Output(Level level, const char * cmsg)
 {
-  if (PServiceProcess::Current().consoleMessages)
+  if (PServiceProcess::Current().consoleMessages) {
+#ifdef P_PTHREADS
+    pthread_mutex_lock(&logMutex);
+#endif
     PError << cmsg << endl;
-  else
+#ifdef P_PTHREADS
+    pthread_mutex_unlock(&logMutex);
+#endif
+  } else
     syslog(PwlibLogToUnixLog[level], "%s", cmsg);
 }
 
