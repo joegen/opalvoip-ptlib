@@ -24,6 +24,8 @@
 #pragma implementation "contain.h"
 
 #include <ptlib.h>
+#include <url.h>
+
 
 #include <fcntl.h>
 #include <time.h>
@@ -706,6 +708,18 @@ PDirectory PFilePath::GetDirectory() const
 }
 
 
+BOOL PFilePath::IsValid(char c)
+{
+  return c != '/';
+}
+
+
+BOOL PFilePath::IsValid(const PString & str)
+{
+  return str.Find('/') == P_MAX_INDEX;
+}
+
+
 //////////////////////////////////////////////////////
 //
 //  PTime
@@ -910,6 +924,14 @@ struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
 {
   return ::gmtime(clock);
 #endif
+}
+
+
+//////////
+
+BOOL PURL::OpenBrowser(const PString & url)
+{
+  return FALSE;
 }
 
 
