@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.12 1994/04/01 14:06:48 robertj Exp $
+ * $Id: osutil.inl,v 1.13 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.12  1994/04/01 14:06:48  robertj
+ * Revision 1.13  1994/04/20 12:17:44  robertj
+ * assert stuff
+ *
+ * Revision 1.12  1994/04/01  14:06:48  robertj
  * Text file streams.
  *
  * Revision 1.11  1994/03/07  07:45:40  robertj
@@ -40,6 +43,7 @@
  * Fixed RCS keywords.
  *
  */
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,6 +155,16 @@ PINLINE PTimerList::PTimerList()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+PINLINE PChannelStreamBuffer::PChannelStreamBuffer(const PChannelStreamBuffer & sbuf)
+  : channel(sbuf.channel) { setb(buffer, &buffer[sizeof(buffer)-1]); }
+
+PINLINE PChannelStreamBuffer &
+          PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
+  { channel = sbuf.channel; return *this; }
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
 PINLINE PDirectory::PDirectory()
@@ -190,11 +204,23 @@ PINLINE BOOL PDirectory::Remove()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PFile::PFile(const PString & name)
-  : fullname(name) { Construct(); }
+PINLINE PFilePath::PFilePath()
+  { }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PINLINE PFile::PFile()
+  { os_handle = -1; }
+
+PINLINE PFile::PFile(OpenMode mode, int opts)
+  { os_handle = -1; Open(mode, opts); }
+
+PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
+  { os_handle = -1; Open(name, mode, opts); }
 
 PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
-  { return fullname.Compare(((const PFile &)obj).fullname); }
+  { return path.Compare(((const PFile &)obj).path); }
 
 PINLINE BOOL PFile::SetSize(PINDEX newSize)
   { return newSize == 1; }
@@ -206,32 +232,32 @@ PINLINE void PFile::CloneContents(const PFile * f)
   { CopyContents(*f); }
 
 PINLINE BOOL PFile::Exists() const
-  { return Exists(fullname); }
+  { return Exists(path); }
 
 PINLINE BOOL PFile::Access(OpenMode mode) const
-  { return Access(fullname, mode); }
+  { return Access(path, mode); }
 
 PINLINE BOOL PFile::Remove()
-  { Close(); return Remove(fullname); }
+  { Close(); return Remove(path); }
 
 PINLINE BOOL PFile::Copy(const PString & newname)
-  { return Copy(fullname, newname); }
+  { return Copy(path, newname); }
 
-PINLINE BOOL PFile::GetInfo(Info & info) const
-  { return GetInfo(fullname, info); }
+PINLINE BOOL PFile::GetInfo(PFileInfo & info) const
+  { return GetInfo(path, info); }
 
 
-PINLINE PString PFile::GetFullName() const
-  { return fullname; }
+PINLINE const PFilePath & PFile::GetFilePath() const
+  { return path; }
       
 
 PINLINE BOOL PFile::IsOpen() const
   { return os_handle >= 0; }
 
 PINLINE int PFile::GetHandle() const
-  { PAssert(os_handle >= 0); return os_handle; }
+  { PAssert(os_handle >= 0, PFileNotOpen); return os_handle; }
 
-PINLINE BOOL PFile::WriteChar(BYTE c)
+PINLINE BOOL PFile::WriteChar(char c)
   { return Write(&c, 1); }
 
 PINLINE off_t PFile::GetPosition() const
@@ -243,14 +269,13 @@ PINLINE BOOL PFile::IsEndOfFile() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 PINLINE PTextFile::PTextFile()
-  : PFile() { }
+  { }
 
-PINLINE PTextFile::PTextFile(const PString & name)
-  : PFile(name) { }
+PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
+  : PFile(mode, opts) { }
 
-PINLINE PTextFile::PTextFile(const PString & name, OpenMode mode, int opts)
+PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
   : PFile(name, mode, opts) { }
 
 PINLINE void PTextFile::DestroyContents()
@@ -265,39 +290,17 @@ PINLINE void PTextFile::CopyContents(const PTextFile &)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PTextFileStreamBuffer::PTextFileStreamBuffer(const PTextFileStreamBuffer & sbuf)
-  : file(sbuf.file) { setb(buffer, &buffer[sizeof(buffer)-1]); }
-
-PINLINE PTextFileStreamBuffer &
-          PTextFileStreamBuffer::operator=(const PTextFileStreamBuffer & sbuf)
-  { file = sbuf.file; return *this; }
-
-PINLINE BOOL PTextInFile::Open()
-  { return PTextFile::Open(ReadOnly, Normal); }
-
-PINLINE BOOL PTextOutFile::Open(int opts)
-  { return PTextFile::Open(WriteOnly, opts); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 PINLINE PStructuredFile::PStructuredFile()
-  : PFile(), structureSize(1) { }
+  { structureSize = 1; }
 
-PINLINE PStructuredFile::PStructuredFile(const PString & name)
-  : PFile(name), structureSize(1) { }
+PINLINE PStructuredFile::PStructuredFile(OpenMode mode, int opts)
+  : PFile(mode, opts) { structureSize = 1; }
 
-PINLINE PStructuredFile::PStructuredFile(const PString & name,
+PINLINE PStructuredFile::PStructuredFile(const PFilePath & name,
                                                       OpenMode mode, int opts)
-  : PFile(name, mode, opts), structureSize(1) { }
+  : PFile(name, mode, opts) { structureSize = 1; }
 
-
-PINLINE BOOL PStructuredFile::Read(void * buffer)
-  { return PFile::Read(buffer, structureSize); }
-      
-PINLINE BOOL PStructuredFile::Write(void * buffer)
-  { return PFile::Write(buffer, structureSize); }
 
 PINLINE size_t PStructuredFile::GetStructureSize()
   { return structureSize; }
@@ -337,7 +340,7 @@ PINLINE const PArgList & PTextApplication::GetArguments() const
 PINLINE PString PTextApplication::GetAppName() const
   { return applicationName; }
 
-PINLINE const PFile & PTextApplication::GetAppFile() const
+PINLINE const PFilePath & PTextApplication::GetAppFile() const
   { return applicationFile; }
 
 PINLINE void PTextApplication::AddTimer(PTimer * timer)
