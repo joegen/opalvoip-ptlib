@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.28 1995/03/12 04:41:16 robertj Exp $
+ * $Id: osutil.inl,v 1.29 1995/04/22 00:49:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.29  1995/04/22 00:49:19  robertj
+ * Fixed missing common construct code call in edit box constructor.
+ *
  * Revision 1.28  1995/03/12 04:41:16  robertj
  * Moved GetHandle() function from PFile to PChannel.
  *
@@ -360,7 +363,7 @@ PINLINE BOOL PFile::Access(OpenMode mode)
 PINLINE BOOL PFile::Remove(BOOL force)
   { Close(); return ConvertOSError(Remove(path, force) ? 0 : -1); }
 
-PINLINE BOOL PFile::Copy(const PString & newname, BOOL force)
+PINLINE BOOL PFile::Copy(const PFilePath & newname, BOOL force)
   { return ConvertOSError(Copy(path, newname, force) ? 0 : -1); }
 
 PINLINE BOOL PFile::GetInfo(PFileInfo & info)
