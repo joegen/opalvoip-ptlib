@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.4  1998/11/30 22:06:41  robertj
+ * New directory structure.
+ *
  * Revision 1.3  1998/09/24 04:11:35  robertj
  * Added open software license.
  *
@@ -50,7 +53,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-#include "../../common/ptlib/file.h"
+#include "../../file.h"
 };
 
 #define	_read(fd,vp,st)		::read(fd, vp, (size_t)st)
