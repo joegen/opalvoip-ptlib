@@ -25,24 +25,23 @@ Contents
 PWLib is a moderately large class library that has its genesis many years ago as
 a method to product applications to run on both Microsoft Windows and Unix
 X-Windows systems. It also was to have a Macintosh port as well but this never
-eventuated.
+eventuated. The parts of the library relating to GUI functions have also been 
+removed.
 
-Since then the system has grown to having quite good application to areas other
-than mere Windows GUI portability. Classes for I/O portability, multi-threading
+Since then the system has grown to include many classes that assist in writing
+complete multi-platform applications. Classes for I/O portability, multi-threading
 portability, aid in producing unix daemons and NT services portably and all
 sorts of internet protocols were added over the years.
 
 All this over and above basic "container" classes such as arrays, linear lists,
 sorted lists (RB Tree) and dictionaries (hash tables) which were all created
-before STL became the answer to all our prayers. Unfortunately, due to intertia
-and the GNU C++ inadequate support of templates, this library will probably not
-be ported to STL in the near future.
+before STL was standardized. Future versions of PWLib will see many of these
+classes replaced or supplemented by STL.
 
 The library was used extensively for all our in-house products. Then we decided
 to support the open H323 project by throwing in some of the code written for
 one of our products. Thus, required PWLib so it got thrown into the open source
 world as well.
-
 
 
 
@@ -71,7 +70,6 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 
 
 
-
 ================================================================================
 
 3. CVS Access
@@ -86,7 +84,7 @@ The available modules are:
 	pwlib			This ReadMe.txt file only
 	ptlib_unix		Unix libraries only
 	ptlib_win32		Windows libraries only
-	pwlib_win32		Windows libraries + GUI (needed for OpenPhone)
+	pwlib_win32		Windows libraries + GUI (no longer supported)
 	openh323		OpenH323 only
 
 Note that the ptlib_unix, ptlib_win32 and pwlib_win32 modules all extract 
@@ -103,6 +101,7 @@ If you would like see the structure of the CVS, then use the View CVS tool at:
 
 	http://cvs.sourceforge.net/viewcvs.py/openh323/
 
+
 ================================================================================
 
 4. Building PWLib
@@ -115,6 +114,11 @@ system for all of the various unix systems.
 
 4.1. For Windows
 ----------------
+
+Note that more complete instructions can be found at the following URL, but here 
+are the basics:
+
+	http://www.postincrement.com/openh323/windows_build.html
 
 1.  Note you will need the bison and flex tools to compile some parts of the
     system. You can get a copy from http://www.openh323.org/bin/flexbison.zip,
@@ -130,8 +134,6 @@ system for all of the various unix systems.
     dialog, open the Projects folder, VC++ Directories item. In the 'Show
     Directories for:' list, select 'Include files'.
 	
-		C:\PWLib\Include\PwLib\MSWIN  (if you have the full PWLIB version)
-		C:\PWLib\Include\PtLib\MSOS
 		C:\PWLib\Include
 		
     Add the following to the Lib Files path and the Executable Files path:
@@ -339,7 +341,6 @@ The classes in PWLib fall into the following broad categories
 	Containers
 	I/O
 	Threads & Processes
-	GUI
 
 
 5.2.1. Containers
@@ -361,14 +362,6 @@ These classes support lightweight threading and functionality to do with the
 process as a whole (for example argument parsing). The threading will be
 pre-emptive on platforms that support it (Win32, platforms with pthreads eg
 Linux and FreeBSD) and cooperative on those that don't.
-
-5.2.4. GUI
-
-There are a very large number of classes to support a GUI interface. This is not
-very complete at this time. The Win32 implementation is quite usable, though it
-doesn't include the latest and greatest out of Redmond. The pure xlib
-implementation has quite a lot implemented but is by no means complete. A motif
-implementation is in the works but has not progressed very far.
 
 
 
@@ -1348,6 +1341,5 @@ Home of OpenH323 and the Open Phone Abstraction Library (OPAL)
 
 support@equival.com.au
 http://www.equival.com.au (US Mirror - http://www.equival.com)
-Fax: +61 2 4368 1395   Voice: +61 2 4368 2118
 
 ================================================================================
