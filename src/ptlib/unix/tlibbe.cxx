@@ -1,4 +1,4 @@
- /*
+/* 
  * tlibbe.cxx
  *
  * Thread library implementation for BeOS
@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.23  2004/04/25 04:32:37  ykiryanov
+ * Fixed very old bug - no get thread id code in InitialiseProcessThread
+ *
  * Revision 1.22  2004/04/18 00:23:40  ykiryanov
  * Rearranged code to be more reliable. We nearly there
  *
@@ -76,8 +79,12 @@ class PProcess;
 class PSemaphore;
 
 #include <ptlib.h>
+#include <ptlib/socket.h>
+#include <posix/rlimit.h>
 
 //#define DEBUG_THREADS
+
+int PX_NewHandle(const char *, int);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
@@ -116,6 +123,27 @@ PThread::PThread()
 {
 }
 
+void PThread::InitialiseProcessThread()
+{
+  autoDelete = FALSE;
+
+  mId = find_thread(NULL);
+  mPriority = B_NORMAL_PRIORITY;
+  mStackSize = 0;
+  mSuspendCount = 1;
+  
+  PAssert(::pipe(mUnblockPipe) == 0, "Pipe creation failed in InitialiseProcessThread!");
+  PAssertOS(mUnblockPipe[0]);
+  PAssertOS(mUnblockPipe[1]);
+  
+  #ifdef DEBUG_THREADS
+  PError << ">>> New pipe, 0 is " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl;
+  #endif
+
+  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
+  ((PProcess *)this)->activeThreads.SetAt(mId, this);
+}
+
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
@@ -142,11 +170,13 @@ PThread::PThread(PINDEX stackSize,
   threadName.sprintf(name, mId);
   ::rename_thread(mId, (const char*) threadName); // real, unique name - with id
 
+  PAssert(::pipe(mUnblockPipe) == 0, "Pipe creation failed in PThread constructor");
+  PX_NewHandle("Thread unblock pipe", PMAX(mUnblockPipe[0], mUnblockPipe[1]));
+
   #ifdef DEBUG_THREADS
+  PError << ">>> New pipe, 0 is " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl; 
   PError << ">>> Spawned thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
   #endif
-  
-  ::pipe(mUnblockPipe);
 }
 
 PThread::~PThread()
@@ -154,15 +184,18 @@ PThread::~PThread()
   if (!IsTerminated())
     Terminate();
 
-//  /*/ remove this thread from the active thread list
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt((unsigned) mId, NULL);
-  process.activeThreadMutex.Signal();
-//  */
+  #ifdef DEBUG_THREADS
+  PError << ">>> Closing pipe " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl;
+  #endif
 
   ::close(mUnblockPipe[0]);
   ::close(mUnblockPipe[1]);
+
+  //  remove this thread from the active thread list
+  PProcess & process = PProcess::Current();
+  process.activeThreadMutex.Wait();
+  process.activeThreads.RemoveAt((unsigned) mId);
+  process.activeThreadMutex.Signal();
 }
 
 
@@ -345,7 +378,8 @@ void PThread::SetPriority(Priority priorityLevel)
 
 PThread::Priority PThread::GetPriority() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
+  if(!IsTerminated())
+  {
 
   switch (mPriority) {
     case 0 :
@@ -360,6 +394,8 @@ PThread::Priority PThread::GetPriority() const
       return HighestPriority;
   }
   PAssertAlways(POperatingSystemError);
+  
+  }
   return LowestPriority;
 }
 
@@ -376,18 +412,6 @@ void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for
  
   status_t result = ::snooze( microseconds ) ; // delay in ms, snooze in microsec
   PAssert(result == B_OK, "Thread has insomnia");
-}
-
-void PThread::InitialiseProcessThread()
-{
-  mStackSize = 0;
-
-  autoDelete = FALSE;
-  
-  ::pipe(mUnblockPipe);
-
-  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(mId, this);
 }
 
 
@@ -450,109 +474,75 @@ PThreadIdentifier PThread::GetCurrentThreadId(void)
   return ::find_thread(NULL);
 }
 
-int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
-{
-  int retval = 0;
-
-  // make sure we flush the buffer before doing a write
-  fd_set tmp_rfd, tmp_wfd, tmp_efd;
-  fd_set * read_fds      = &tmp_rfd;
-  fd_set * write_fds     = &tmp_wfd;
-  fd_set * exception_fds = &tmp_efd;
-
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) { // Clean up for infinite timeout
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-    if (timeout < oneDay) {
-    
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-
-  #ifdef DEBUG_THREADS
-  PError << ">> PXBlockOnIO Timeval, sec " << timeout_val.tv_sec << ", usec" << timeout_val.tv_usec << endl;
-  #endif
-
-  for (;;) 
-  { 
-	  FD_ZERO (read_fds);
-	  FD_ZERO (write_fds);
-	  FD_ZERO (exception_fds);
-	
-	  switch (type) {
-	    case PChannel::PXReadBlock:
-	    case PChannel::PXAcceptBlock:
-	      FD_SET (handle, read_fds);
-	      break;
-	    case PChannel::PXWriteBlock:
-	      FD_SET (handle, write_fds);
-	      break;
-	    case PChannel::PXConnectBlock:
-	      FD_SET (handle, write_fds);
-	      FD_SET (handle, exception_fds);
-	      break;
-	    default:
-	      PAssertAlways(PLogicError);
-	      return 0;
-	  
-	  } // switch(type)
-	
-    // include the termination pipe into all blocking I/O functions
-    int width = handle+1;
-    FD_SET(mUnblockPipe[0], read_fds);
-    width = PMAX(width, mUnblockPipe[0]+1);
-  
-    retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
-
-    if ((retval >= 0) || (errno != EINTR))
-      break;
-  } // end for (;;)
-
-  if ((retval == 1) && FD_ISSET(mUnblockPipe[0], read_fds)) 
-  {
-    BYTE ch;
-    ::read(mUnblockPipe[0], &ch, 1);
-    errno = EINTR;
-    retval =  -1;
-    #ifdef DEBUG_THREADS
-    PError << ">>> Unblocked I/O" << endl;
-    #endif
-  }
-
-  return retval;
-}
-
 int PThread::PXBlockOnIO(int maxHandles,
            fd_set * readBits,
            fd_set * writeBits,
            fd_set * exceptionBits,
            const PTimeInterval & timeout,
-           const PIntArray & /*osHandles*/)
+           const PIntArray & ) // osHandles
 {
-  int retval = 0;
+  PAssertAlways("Block IO called in error");
+  return -1;
+}
 
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) 
-  { 
-    // Clean up for infinite timeout
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-    if (timeout < oneDay) {
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
+int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
+{
+  PTRACE(7, "PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
+
+  if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
+    PTRACE(2, "PWLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
+    errno = EBADF;
+    return -1;
   }
 
-   #ifdef DEBUG_THREADS
-  PError << ">> PXBlockOnIO Timeval, sec " << timeout_val.tv_sec << ", usec" << timeout_val.tv_usec << endl;
-  #endif
+  // make sure we flush the buffer before doing a write
+  P_fd_set read_fds;
+  P_fd_set write_fds;
+  P_fd_set exception_fds;
 
-  retval = ::select(maxHandles, readBits, writeBits, exceptionBits, tptr);
-  PProcess::Current().PXCheckSignals();
+  int retval;
+  do {
+    switch (type) {
+      case PChannel::PXReadBlock:
+      case PChannel::PXAcceptBlock:
+        read_fds = handle;
+        write_fds.Zero();
+        exception_fds.Zero();
+        break;
+      case PChannel::PXWriteBlock:
+        read_fds.Zero();
+        write_fds = handle;
+        exception_fds.Zero();
+        break;
+      case PChannel::PXConnectBlock:
+        read_fds.Zero();
+        write_fds = handle;
+        exception_fds = handle;
+        break;
+      default:
+        PAssertAlways(PLogicError);
+        return 0;
+    }
+
+    // include the termination pipe into all blocking I/O functions
+    #ifdef DEBUG_THREADS 
+    PError << "Trying to get pipe[0[, thread " << find_thread(NULL) << endl;
+    #endif
+
+    read_fds += mUnblockPipe[0];
+
+    P_timeval tval = timeout;
+    retval = ::select(PMAX(handle, mUnblockPipe[0])+1,
+                      read_fds, write_fds, exception_fds, tval);
+  } while (retval < 0 && errno == EINTR);
+
+  if ((retval == 1) && read_fds.IsPresent(mUnblockPipe[0])) {
+    BYTE ch;
+    ::read(mUnblockPipe[0], &ch, 1);
+    errno = EINTR;
+    retval =  -1;
+    PTRACE(6, "PWLib\tUnblocked I/O");
+  }
 
   return retval;
 }
@@ -560,6 +550,10 @@ int PThread::PXBlockOnIO(int maxHandles,
 void PThread::PXAbortBlock(void) const
 {
   BYTE ch;
+  #ifdef DEBUG_THREADS
+  PError << ">>> About to write in unblock pipe, thread " << find_thread(NULL) << endl;
+  #endif
+
   ::write(mUnblockPipe[1], &ch, 1);
 }
 
@@ -568,7 +562,7 @@ void PThread::PXAbortBlock(void) const
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, NormalPriority, "PWLib Housekeeper")
+      : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
       { closing = FALSE; Resume(); }
 
     void Main();
@@ -580,6 +574,12 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 
 void PProcess::Construct()
 {
+  // get the file descriptor limit
+  struct rlimit rl;
+  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+  maxHandles = rl.rlim_cur;
+  PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
+
   ::pipe(timerChangePipe);
 
   // initialise the housekeeping thread
@@ -596,43 +596,52 @@ void PHouseKeepingThread::Main()
     PTimeInterval delay = process.timers.Process();
 
     int fd = process.timerChangePipe[0];
-    
-    fd_set tmp_rfd;
-    fd_set * read_fds = &tmp_rfd;
 
-    FD_ZERO(read_fds);
-    FD_SET(fd, read_fds);
-    
-    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
-    struct timeval * tptr = NULL;
-    timeval tval;
-    if (delay < oneDay) {
-      tval.tv_usec = (delay.GetMilliSeconds() % 1000) * 1000;
-      tval.tv_sec  = delay.GetSeconds();
-      tptr                = &tval;
-    }
-    if (::select(fd+1, read_fds, NULL, NULL, tptr) == 1) {
+    P_fd_set read_fds = fd;
+    P_timeval tval = delay;
+    if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
       BYTE ch;
       ::read(fd, &ch, 1);
     }
 
     process.PXCheckSignals();
-  }
+  }    
 }
 
 void PProcess::SignalTimerChange()
 {
+  #ifdef DEBUG_THREADS
+  PError << ">>> Creating housekeeper , thread " << find_thread(NULL) << endl;
+  #endif
+
+  activeThreadMutex.Wait();
   if (housekeepingThread == NULL) {
     housekeepingThread = new PHouseKeepingThread;
   }
+  activeThreadMutex.Signal();
 
   BYTE ch;
   write(timerChangePipe[1], &ch, 1);
 }
 
-BOOL PProcess::SetMaxHandles(int)
+BOOL PProcess::SetMaxHandles(int newMax)
 {
-  return TRUE;
+  // get the current process limit
+  struct rlimit rl;
+  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+
+  // set the new current limit
+  rl.rlim_cur = newMax;
+  if (setrlimit(RLIMIT_NOFILE, &rl) == 0) {
+    PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+    maxHandles = rl.rlim_cur;
+    if (maxHandles == newMax) {
+      PTRACE(2, "PWLib\tNew maximum per-process file handles set to " << maxHandles);
+      return TRUE;
+    }
+  }    
+
+  return FALSE;
 }
 
 PProcess::~PProcess()
