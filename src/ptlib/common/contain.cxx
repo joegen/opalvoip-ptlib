@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.36 1995/01/10 11:44:13 robertj Exp $
+ * $Id: contain.cxx,v 1.37 1995/01/15 04:56:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.36  1995/01/10 11:44:13  robertj
+ * Revision 1.37  1995/01/15 04:56:28  robertj
+ * Fixed PStringStream for correct pointer calculations in output.
+ *
+ * Revision 1.36  1995/01/10  11:44:13  robertj
  * Removed PString parameter in stdarg function for GNU C++ compatibility.
  *
  * Revision 1.35  1995/01/09  12:32:56  robertj
@@ -156,7 +159,6 @@
 #include <contain.h>
 
 #include <ctype.h>
-#include <iomanip.h>
 
 #if !defined(P_USE_INLINES)
 #include "contain.inl"
@@ -1121,7 +1123,8 @@ int PStringStream::Buffer::overflow(int c)
     int gpos = gptr() - eback();
     int ppos = pptr() - pbase();
     char * newptr = string->GetPointer(string->GetSize() + 10);
-    setp(newptr + ppos, newptr + string->GetSize() - 1);
+    setp(newptr, newptr + string->GetSize() - 1);
+    pbump(ppos);
     setg(newptr, newptr + gpos, newptr + ppos);
   }
   if (c != EOF) {
