@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.109  2003/01/08 08:47:51  rogerh
+ * Add new Sleep() function for GNU PTH threads.
+ * Taken from NetBSD's package which uses PTH.
+ * Note: I am not sure this works correctly.
+ *
  * Revision 1.108  2003/01/06 18:49:15  rogerh
  * Back out pthead_kill to pthread_cancel change on NetBSD
  *
@@ -837,6 +842,30 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 #endif
 
 
+#ifdef P_GNU_PTH
+// GNU PTH threads version (used by NetBSD)
+// Taken from NetBSD pkg patches
+void PThread::Sleep(const PTimeInterval & timeout)
+{
+  PTime lastTime;
+  PTime targetTime = PTime() + timeout;
+
+  sched_yield();
+  lastTime = PTime();
+
+  while (lastTime < targetTime) {
+    P_timeval tval = targetTime - lastTime;
+    if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
+      break;
+
+    pthread_testcancel();
+
+    lastTime = PTime();
+  }
+}
+
+#else
+// Normal Posix threads version
 void PThread::Sleep(const PTimeInterval & timeout)
 {
   PTime lastTime;
@@ -853,7 +882,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
     lastTime = PTime();
   } while (lastTime < targetTime);
 }
-
+#endif
 
 void PThread::Yield()
 {
