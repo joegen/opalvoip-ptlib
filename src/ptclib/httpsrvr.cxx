@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.25  1998/11/30 04:51:59  robertj
+ * New directory structure
+ *
  * Revision 1.24  1998/11/14 01:11:38  robertj
  * PPC linux GNU compatibility.
  *
@@ -106,8 +109,8 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <http.h>
+#include <ptlib/sockets.h>
+#include <ptclib/http.h>
 #include <ctype.h>
 
 #define new PNEW
