@@ -20,4 +20,4 @@ asn_lex.cxx: asn_lex.l
 	flex -t $< > $@
 
 tarfiles:
-	@echo $(patsubst %, tools/asnparser/%, $(notdir $(TAR_SOURCES)))
+	@echo $(patsubst %, $(notdir $(shell cd ..;pwd))/$(notdir $(shell pwd))/%, $(TAR_SOURCES))
