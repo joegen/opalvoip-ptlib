@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.29 1996/02/25 11:30:08 robertj Exp $
+ * $Id: sockets.cxx,v 1.30 1996/03/02 03:25:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.30  1996/03/02 03:25:13  robertj
+ * Added Capability to get and set Berkeley socket options.
+ *
  * Revision 1.29  1996/02/25 11:30:08  robertj
  * Changed Listen so can do a listen on a socket that is connected.
  *
@@ -116,6 +119,35 @@ static PTCPSocket dummyForWINSOCK; // Assure winsock is initialised
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
+
+BOOL PSocket::SetOption(int option, int value)
+{
+  return ConvertOSError(setsockopt(os_handle,
+                           SOL_SOCKET, option, (char *)&value, sizeof(value)));
+}
+
+
+BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize)
+{
+  return ConvertOSError(setsockopt(os_handle,
+                             SOL_SOCKET, option, (char *)valuePtr, valueSize));
+}
+
+
+BOOL PSocket::GetOption(int option, int & value)
+{
+  int valSize = sizeof(value);
+  return ConvertOSError(getsockopt(os_handle,
+                                SOL_SOCKET, option, (char *)&value, &valSize));
+}
+
+
+BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize)
+{
+  return ConvertOSError(getsockopt(os_handle,
+                            SOL_SOCKET, option, (char *)valuePtr, &valueSize));
+}
+
 
 int PSocket::Select(PSocket & sock1, PSocket & sock2)
 {
@@ -627,8 +659,10 @@ BOOL PTCPSocket::Connect(const PString & host)
     return FALSE;
 
   // attempt to connect
-  if (_Connect(host))
-    return TRUE;
+  if (_Connect(host)) {
+    static const linger ling = { 0, 0 };
+    return SetOption(SO_LINGER, &ling, sizeof(ling));
+  }
 
   _Close();
   return FALSE;
@@ -674,9 +708,8 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 
   port = ntohs(address.sin_port);
 
-  static const linger ling = { 1, 10 };
-  return ConvertOSError(setsockopt(os_handle,
-                               SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
+  static const linger ling = { 0, 0 };
+  return SetOption(SO_LINGER, &ling, sizeof(ling));
 }
 
 
