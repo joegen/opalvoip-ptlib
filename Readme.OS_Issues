@@ -1,0 +1,75 @@
+PWLIB - Platform and Operating System Specific Issues
+=====================================================
+
+Contents
+--------
+	1.	Introduction
+	2.1	FreeBSD Issues
+	2.2	OpenBSD Issues
+	2.3	NetBSD Issues
+	2.4	Mac OS X (Darwin) Issues
+	3.	Help Required
+
+1. Introduction
+---------------
+PWLib has been ported to several platforms.
+However on some systems not all of the PWLib functionality has been
+implemented. This could be use to OS specific problems or simply due to lack
+of time or documentation when developing the port.
+
+This file lists the specific issues for some of the operating systems
+PWLib has been ported to.
+
+
+2.1 FreeBSD Issues
+------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+
+
+2.2 OpenBSD Issues
+------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+
+2.3 NetBSD Issues
+-----------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+
+The is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+Video Capture using the bktr driver has not been added, just due to a lack
+of time. It is easy to add, being 99.99% identical to the FreeBSD and
+OpenBSD support.
+
+
+2.4 Mac OS X (Darwin) Issues
+----------------------------
+Port Maintained by Roger Hardiman <roger@freebsd.org>
+
+Threads cannot be suspended once they are running, and trying to Suspend
+a running thread will generate an Assertion Error.
+Theads can be created in 'suspended' mode and then started with Resume
+This is due to a lack of pthread_kill() in Dawrin 1.2
+
+There is no support for GetRouteTable() in socket.cxx
+due to lack of time by the port maintainer.
+
+localtime_r() and gm_time() are missing.
+So in osutil.cxx I have implemented os_localtime() and os_gmtime()
+with localtime() and gm_time() which may not be thread safe.
+
+
+3. Help Required 
+----------------
+If you can help with any of these issues, please contact the Port Maintainer
+and the OpenH323 mailing list, openh323@openh323.org
+
+
