@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.83  2002/05/21 09:13:00  robertj
+ * Fixed problem when using posix recursive mutexes, thanks Artis Kugevics
+ *
  * Revision 1.82  2002/04/24 01:11:37  robertj
  * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
  *
@@ -1220,9 +1223,11 @@ void PMutex::Signal()
 
 BOOL PMutex::WillBlock() const
 {
+#ifndef P_HAS_RECURSIVE_MUTEX
   pthread_t currentThreadId = pthread_self();
   if (currentThreadId == ownerThreadId)
     return FALSE;
+#endif
 
   pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
   if (pthread_mutex_trylock(mp) != 0)
