@@ -33,16 +33,11 @@
 
 #include <ptlib.h>
 
-//  Used to create XML tags
-static const PString ID_TAG_LEFT    ("<");
-static const PString ID_TAG_RIGHT   (">");
-static const PString ID_TAG_END     ("</");
-static const PString ID_TAG_NO_DATA ("/>");
-
 
 class PXMLObject;
 class PXMLElement;
 class PXMLData;
+
 
 ////////////////////////////////////////////////////////////
 
@@ -102,17 +97,10 @@ class PXML : public PObject
     virtual void EndDocTypeDecl();
 
      // static methods to create XML tags
-     static PString CreateStartTag (const PString & text)
-       { return PString(ID_TAG_LEFT + text + ID_TAG_RIGHT); }
-
-     static PString CreateEndTag (const PString & text)
-       { return PString(ID_TAG_END + text + ID_TAG_RIGHT); }
-
-     static PString CreateTagNoData (const PString & text)
-       { return PString(ID_TAG_LEFT + text + ID_TAG_NO_DATA); }
-
-     static PString CreateTag (const PString & text, const PString & data)
-       { return PString(CreateStartTag(text) + data + CreateEndTag(text)); }
+     static PString CreateStartTag (const PString & text);
+     static PString CreateEndTag (const PString & text);
+     static PString CreateTagNoData (const PString & text);
+     static PString CreateTag (const PString & text, const PString & data);
 
   protected:
     void Construct();
