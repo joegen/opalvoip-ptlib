@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.64 1998/08/20 06:05:28 robertj Exp $
+ * $Id: win32.cxx,v 1.65 1998/09/18 13:56:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.65  1998/09/18 13:56:20  robertj
+ * Added support of REG_BINARY registry types in PConfig class.
+ *
  * Revision 1.64  1998/08/20 06:05:28  robertj
  * Allowed Win32 class to be used in other compilation modules
  *
@@ -1621,10 +1624,11 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
     case REG_SZ :
     case REG_MULTI_SZ :
     case REG_EXPAND_SZ :
+    case REG_BINARY :
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
 
-    case REG_DWORD :
+    case REG_DWORD : {
       DWORD num;
       size = sizeof(num);
       if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
@@ -1632,6 +1636,9 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
         str = PString(PString::Signed, num);
         return TRUE;
       }
+    }
+    default :
+      PAssertAlways("Unsupported registry type.");
   }
   return FALSE;
 }
@@ -1648,13 +1655,19 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
     return FALSE;
 
   switch (type) {
+    case REG_BINARY :
+      if (size > sizeof(DWORD))
+        return FALSE;
+
+      num = 0;
+      // Do REG_DWORD case
+
     case REG_DWORD :
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                                   &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
 
-    case REG_SZ :
+    case REG_SZ : {
       PString str;
-      DWORD size = 20;
       if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
                 &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) {
         num = str.AsInteger();
@@ -1664,6 +1677,10 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num, BOOL boolean)
         }
         return TRUE;
       }
+      break;
+    }
+    default :
+      PAssertAlways("Unsupported registry type.");
   }
 
   return FALSE;
