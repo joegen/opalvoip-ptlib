@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.3 1995/03/12 05:00:10 robertj Exp $
+ * $Id: winsock.cxx,v 1.4 1995/06/04 12:49:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.4  1995/06/04 12:49:51  robertj
+ * Fixed bugs in socket read and write function return status.
+ * Fixed bug in socket close setting object state to "closed".
+ *
  * Revision 1.3  1995/03/12 05:00:10  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -74,7 +78,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
     return FALSE;
 
   lastReadCount = recvResult;
-  return TRUE;
+  return lastReadCount > 0;
 }
 
 
@@ -105,15 +109,17 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
     return FALSE;
 
   lastWriteCount = sendResult;
-  return TRUE;
+  return lastWriteCount >= len;
 }
 
 
 BOOL PSocket::Close()
 {
-  if (IsOpen())
+  if (!IsOpen())
     return FALSE;
-  return ConvertOSError(closesocket(os_handle));
+  BOOL ret = ConvertOSError(closesocket(os_handle));
+  os_handle = -1;
+  return ret;
 }
 
 
