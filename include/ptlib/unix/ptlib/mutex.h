@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.24  2004/04/30 16:15:13  ykiryanov
+ * BeOS modifications derived from BLocker use
+ *
  * Revision 1.23  2004/04/12 03:35:27  csoutheren
  * Fixed problems with non-recursuve mutexes and critical sections on
  * older compilers and libc
@@ -118,7 +121,7 @@
     virtual ~PMutex();
 #endif
 
-#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
+#if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
@@ -131,9 +134,6 @@
        pthread_t ownerThreadId;
        PAtomicInteger lockCount;
 #    endif
-
-#  elif defined(BE_THREADS)
-    int32 benaphoreCount;
 #  endif
 
 #endif
