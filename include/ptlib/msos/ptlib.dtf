@@ -199,6 +199,8 @@ EXPORTS
     ??0PWinSock@@QAE@XZ @160 NONAME ;public: __thiscall PWinSock::PWinSock(void)
     ??0Reference@PContainer@@QAE@H@Z @161 NONAME ;public: __thiscall PContainer::Reference::Reference(int)
     ??0RegistryKey@@QAE@ABVPString@@W4OpenMode@0@@Z @162 NONAME ;public: __thiscall RegistryKey::RegistryKey(class PString const &,enum RegistryKey::OpenMode)
+    ??0SecurityID@@QAE@PAU_SID_IDENTIFIER_AUTHORITY@@EKKKKKKKK@Z @2485 NONAME ;public: __thiscall SecurityID::SecurityID(struct _SID_IDENTIFIER_AUTHORITY *,unsigned char,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)
+    ??0SecurityID@@QAE@PBD0PADPAKPAW4_SID_NAME_USE@@@Z @2486 NONAME ;public: __thiscall SecurityID::SecurityID(char const *,char const *,char *,unsigned long *,enum _SID_NAME_USE *)
     ??1?$PArray@VPString@@@@UAE@XZ @165 NONAME ;public: virtual __thiscall PArray<class PString>::~PArray<class PString>(void)
     ??1?$PArray@VPWaveBuffer@@@@UAE@XZ @2081 NONAME ;public: virtual __thiscall PArray<class PWaveBuffer>::~PArray<class PWaveBuffer>(void)
     ??1?$PArray@VPWin32PacketBuffer@@@@UAE@XZ @1820 NONAME ;public: virtual __thiscall PArray<class PWin32PacketBuffer>::~PArray<class PWin32PacketBuffer>(void)
@@ -1727,7 +1729,6 @@ EXPORTS
     ?Open@PDirectory@@QAEHH@Z @1457 NONAME ;public: int __thiscall PDirectory::Open(int)
     ?Open@PDynaLink@@QAEHABVPString@@@Z @1458 NONAME ;public: int __thiscall PDynaLink::Open(class PString const &)
     ?Open@PFile@@QAEHABVPFilePath@@W4OpenMode@1@H@Z @1459 NONAME ;public: int __thiscall PFile::Open(class PFilePath const &,enum PFile::OpenMode,int)
-    ?Open@PFile@@QAEHW4OpenMode@1@H@Z @1460 NONAME ;public: int __thiscall PFile::Open(enum PFile::OpenMode,int)
     ?Open@PIndirectChannel@@QAEHAAVPChannel@@@Z @1461 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel &)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@0HH@Z @1462 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,class PChannel *,int,int)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@H@Z @1463 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,int)
@@ -2125,5 +2126,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??0SecurityID@@QAE@PAU_SID_IDENTIFIER_AUTHORITY@@EKKKKKKKK@Z @2485 NONAME ;public: __thiscall SecurityID::SecurityID(struct _SID_IDENTIFIER_AUTHORITY *,unsigned char,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)
-    ??0SecurityID@@QAE@PBD0PADPAKPAW4_SID_NAME_USE@@@Z @2486 NONAME ;public: __thiscall SecurityID::SecurityID(char const *,char const *,char *,unsigned long *,enum _SID_NAME_USE *)
+    ?Open@PFile@@UAEHW4OpenMode@1@H@Z @2487 NONAME ;public: virtual int __thiscall PFile::Open(enum PFile::OpenMode,int)
