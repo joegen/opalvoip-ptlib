@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.9  1999/02/22 13:26:54  robertj
+ * BeOS port changes.
+ *
  * Revision 1.8  1998/11/30 21:52:06  robertj
  * New directory structure.
  *
@@ -232,10 +235,14 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 
 BOOL PICMPSocket::OpenSocket()
 {
+#ifndef __BEOS__
   struct protoent * p = ::getprotobyname(GetProtocolName());
   if (p == NULL)
     return ConvertOSError(-1);
   return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_RAW, p->p_proto));
+#else  // Raw sockets not supported in BeOS R4.
+  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP));
+#endif //!__BEOS__
 }
 
 

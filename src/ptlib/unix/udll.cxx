@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.7  1999/02/22 13:26:54  robertj
+ * BeOS port changes.
+ *
  * Revision 1.6  1999/02/06 05:49:44  robertj
  * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
  *
@@ -54,7 +57,7 @@
 
 
 #ifndef RTLD_LAZY
-#message "No implementation for dynamic library functions"
+#warning "No implementation for dynamic library functions"
 #else
 
 PDynaLink::PDynaLink()

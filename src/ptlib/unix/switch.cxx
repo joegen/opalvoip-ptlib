@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.16  1999/02/22 13:26:54  robertj
+ * BeOS port changes.
+ *
  * Revision 1.15  1998/12/21 06:50:36  robertj
  * Linux PPC support
  *
@@ -62,6 +65,10 @@
 
 #ifdef P_FREEBSD
 #define	SET_STACK	context[0]._jb[2] = (int)stackTop-16;
+#endif
+
+#ifdef __BEOS__
+#define	SET_STACK	context[0].__jmpbuf[JB_SP] = (int)stackTop-16;
 #endif
 
 #ifdef P_SUN4
