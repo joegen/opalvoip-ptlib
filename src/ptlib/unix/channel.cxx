@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.12 1996/09/21 05:38:28 craigs Exp $
+ * $Id: channel.cxx,v 1.13 1996/11/03 04:35:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.13  1996/11/03 04:35:32  craigs
+ * Added PSocket::Read to fix recv/read problem
+ *
  * Revision 1.12  1996/09/21 05:38:28  craigs
  * Added indchan pragma
  *
@@ -181,6 +184,10 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
     case 0 :
       lastError = NoError;
       return TRUE;
+
+    case EMSGSIZE:
+      lastError = BufferTooSmall;
+      break;
 
     case EINTR:
       lastError = Interrupted;
