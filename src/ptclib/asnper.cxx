@@ -6,6 +6,9 @@
  * Portable Windows Library
  *
  * $Log: asnper.cxx,v $
+ * Revision 1.8  2004/01/17 17:43:42  csoutheren
+ * Fixed problem with the upper limit on various constrained types not being correctly enforced
+ *
  * Revision 1.7  2004/01/17 09:23:43  csoutheren
  * Fixed problem with the upper limit on constrained unsigned integers not being correctly enforced
  *
@@ -1287,6 +1290,11 @@ BOOL PPER_Stream::LengthDecode(unsigned lower, unsigned upper, unsigned & len)
     if (!MultiBitDecode(CountBits(upper - lower + 1), base))
       return FALSE;
     len = lower + base;   // 10.9.4.1
+
+    // clamp value to upper limit
+    if (len > upper)
+      len = upper;
+
     return TRUE;
   }
 
@@ -1298,13 +1306,21 @@ BOOL PPER_Stream::LengthDecode(unsigned lower, unsigned upper, unsigned & len)
   if (IsAtEnd())
     return FALSE;
 
-  if (SingleBitDecode() == 0)
-    return MultiBitDecode(7, len);   // 10.9.3.6
+  if (SingleBitDecode() == 0) {
+    if (!MultiBitDecode(7, len))   // 10.9.3.6
+      return FALSE;                // 10.9.3.8 unsupported
+  }
 
-  if (SingleBitDecode() == 0)
-    return MultiBitDecode(14, len);    // 10.9.3.7
+  else if (SingleBitDecode() == 0) {
+    if (!MultiBitDecode(14, len))    // 10.9.3.7
+      return FALSE;                  // 10.9.3.8 unsupported
+  }
 
-  return FALSE;  // 10.9.3.8 unsupported
+  // clamp value to upper limit
+  if (len > upper)
+    len = upper;
+
+  return TRUE;  
 }
 
 
