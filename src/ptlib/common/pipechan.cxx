@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.cxx,v 1.1 1996/04/14 02:54:14 robertj Exp $
+ * $Id: pipechan.cxx,v 1.2 1996/05/09 12:18:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.2  1996/05/09 12:18:41  robertj
+ * Fixed syntax error found by Mac platform.
+ *
  * Revision 1.1  1996/04/14 02:54:14  robertj
  * Initial revision
  *
@@ -29,7 +32,8 @@ PPipeChannel::PPipeChannel(const PString & subProgram,
                 const PStringArray & arguments, OpenMode mode, BOOL searchPath)
 {
   PConstCharStarArray args(arguments.GetSize()+1);
-  for (PINDEX i = 0; i < arguments.GetSize(); i++)
+  PINDEX i;
+  for (i = 0; i < arguments.GetSize(); i++)
     args[i] = arguments[i];
   args[i] = NULL;
   Construct(subProgram, args, mode, searchPath);
