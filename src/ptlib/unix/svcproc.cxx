@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.45  2001/03/23 01:05:32  robertj
+ * Added check that log file is writable after setuid but before fork.
+ *
  * Revision 1.44  2001/03/22 22:48:25  robertj
  * Fixed errors in usage help text.
  *
@@ -407,13 +410,6 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('i'))
     SetConfigurationPath(args.GetOptionString('i'));
 
-  // open the system logger for this program
-  if (systemLogFile.IsEmpty())
-    openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
-  else if (systemLogFile == "-")
-    PError << "All output for " << GetName() << " is to console." << endl;
-
-  // Set the gid we are running under
   if (args.HasOption('g')) {
     PString gidstr = args.GetOptionString('g');
     if (gidstr.IsEmpty())
@@ -459,6 +455,20 @@ int PServiceProcess::InitialiseService()
     }
   }
 
+  // open the system logger for this program
+  if (systemLogFile.IsEmpty())
+    openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
+  else if (systemLogFile == "-")
+    PError << "All output for " << GetName() << " is to console." << endl;
+  else {
+    ofstream logfile(systemLogFile, ios::app);
+    if (!logfile.is_open()) {
+      PError << "Could not open log file \"" << systemLogFile << "\" : " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
+  // Set the gid we are running under
   // Run as a daemon, ie fork
 #ifndef BE_THREADS
   if (args.HasOption('d')) {
