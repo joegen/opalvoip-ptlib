@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.85  2004/04/18 04:33:37  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.84  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -930,7 +934,7 @@ void PASN_ObjectId::SetValue(const unsigned * numbers, PINDEX size)
 }
 
 
-BOOL PASN_ObjectId::operator==(const char * dotstr) const
+bool PASN_ObjectId::operator==(const char * dotstr) const
 {
   PASN_ObjectId id;
   id.SetValue(dotstr);
@@ -1177,7 +1181,7 @@ BOOL PASN_BitString::SetSize(unsigned nBits)
 }
 
 
-BOOL PASN_BitString::operator[](PINDEX bit) const
+bool PASN_BitString::operator[](PINDEX bit) const
 {
   if ((unsigned)bit < totalBits)
     return (bitData[bit>>3] & (1 << (7 - (bit&7)))) != 0;

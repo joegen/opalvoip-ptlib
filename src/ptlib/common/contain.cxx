@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.156  2004/04/18 04:33:37  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.155  2004/04/15 03:50:35  csoutheren
  * Fixed problem with MakeUnique
  *
@@ -1786,10 +1790,10 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 }
 
 
-BOOL PString::operator*=(const char * cstr) const
+bool PString::operator*=(const char * cstr) const
 {
   if (cstr == NULL)
-    return IsEmpty();
+    return IsEmpty() != FALSE;
 
   const char * pstr = theArray;
   while (*pstr != '\0' && *cstr != '\0') {
