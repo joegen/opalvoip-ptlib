@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.37  2001/08/28 06:44:30  craigs
+ * Added ability to override PHTTPServer creation
+ *
  * Revision 1.36  2001/06/23 00:32:15  robertj
  * Added parameter to be able to set REUSEADDR on listener socket.
  *
@@ -237,6 +240,7 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void AddUnregisteredText(PHTML & html);
     virtual BOOL SubstituteEquivalSequence(PHTTPRequest & request, const PString &, PString &);
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
+    virtual PHTTPServer * OnCreateHTTPServer(const PHTTPSpace & urlSpace);
 
   protected:
     PSocket  * httpListeningSocket;
