@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.37  2002/06/09 16:53:17  rogerh
+ * The default for osError in PChannel::GetErrorText() is already specified in
+ * the prototype. (found by gcc 3.1)
+ *
  * Revision 1.36  2002/01/26 23:58:15  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -354,7 +358,7 @@ BOOL PChannel::PXClose()
   return stat;
 }
 
-PString PChannel::GetErrorText(Errors normalisedError, int osError = 0)
+PString PChannel::GetErrorText(Errors normalisedError, int osError /* =0 */)
 {
   if (osError == 0) {
     if (normalisedError == NoError)
