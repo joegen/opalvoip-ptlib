@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.11 1996/02/25 03:13:12 robertj Exp $
+ * $Id: winsock.cxx,v 1.12 1996/02/25 11:23:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.12  1996/02/25 11:23:40  robertj
+ * Fixed bug in Read for when a timeout occurs on select, not returning error code.
+ *
  * Revision 1.11  1996/02/25 03:13:12  robertj
  * Moved some socket functions to platform dependent code.
  *
@@ -104,7 +107,12 @@ BOOL PSocket::_WaitForData(BOOL reading)
                               reading ? NULL : &fds,
                               NULL,
                               &tval);
-  return ConvertOSError(selectResult);
+  if (selectResult != 0)
+    return ConvertOSError(selectResult);
+
+  lastError = Timeout;
+  osError = EAGAIN;
+  return FALSE;
 }
 
 
