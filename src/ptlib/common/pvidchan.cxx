@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.5  2001/10/23 02:11:00  dereks
+ * Extend video channel so it can display raw data, using attached video devices.
+ *
  * Revision 1.4  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -207,6 +210,25 @@ BOOL PVideoChannel::IsRenderOpen()
     return mpOutput->IsOpen();
   else
     return FALSE; 
+}
+
+BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
+{
+  if( (mpOutput==NULL)  ||  (mpInput==NULL) )
+    return FALSE;
+
+  PINDEX length=0;
+
+  int frameWidth  = GetGrabWidth();
+  int frameHeight = GetGrabHeight();
+  PTRACE(3,"Video\t data direct:: camera-->render, size "
+	 << frameWidth << "x" << frameHeight );
+      
+  SetRenderFrameSize( frameWidth, frameHeight);
+  Read( videoBuffer, length);
+  Write((const void *)videoBuffer, length);
+
+  return TRUE;      
 }
 
 ///////////////////////////////////////////////////////////////////////////
