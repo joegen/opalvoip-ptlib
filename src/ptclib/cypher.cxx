@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.36  2003/04/17 07:34:46  robertj
+ * Fixed correct test for P_SSL
+ *
  * Revision 1.35  2003/04/17 01:21:55  craigs
  * Fixed problem with delete'ing a void *
  *
@@ -500,7 +503,7 @@ void PMessageDigest5::Complete(Code & codeResult)
 ///////////////////////////////////////////////////////////////////////////////
 // PMessageDigestSHA1
 
-#ifdef P_SSL
+#if P_SSL
 
 #include <openssl/sha.h>
 
