@@ -4,14 +4,21 @@
 #pragma implementation "modem.h"
 
 #include <ptlib.h>
-
-#include <unistd.h>
+#include <fcntl.h>
 #include <sys/ioctl.h>
+
+#if 0
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <termio.h>
 #include <signal.h>
+#endif
+
+#if defined(P_SUN4)
+#include <sys/termio.h>
+extern "C" int ioctl(int, int, void *);
+#endif
 
 //#define BINARY_LOCK	1
 #define	LOCK_PREFIX	"/var/spool/uucp/LCK.."
