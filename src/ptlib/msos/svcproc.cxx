@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.51  1999/03/09 10:30:19  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
  * Revision 1.50  1999/02/16 08:08:07  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -480,11 +483,11 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 
 int PServiceProcess::_main(void * arg)
 {
-#ifdef PMEMORY_CHECK
+#if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
-#ifdef PMEMORY_CHECK
+#if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(FALSE);
 #endif
 
@@ -801,7 +804,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           ShowWindow(hWnd, SW_HIDE);
           break;
 
-#ifdef _DEBUG
+#if PMEMORY_CHECK
         case MarkMenuID :
           allocationNumber = PMemoryHeap::GetAllocationRequest();
           break;

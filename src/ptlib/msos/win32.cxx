@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.83  1999/03/09 10:30:19  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
  * Revision 1.82  1999/03/09 08:19:15  robertj
  * Adjustment found during documentation frenzy.
  *
@@ -1117,7 +1120,7 @@ PProcess::~PProcess()
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
-#ifndef PMEMORY_CHECK
+#if !PMEMORY_CHECK
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
 #endif
