@@ -1,13 +1,35 @@
 /*
- * $Id: httpform.cxx,v 1.25 1998/08/20 05:51:06 robertj Exp $
+ * httpform.cxx
+ *
+ * Forms using HTTP user interface.
  *
  * Portable Windows Library
  *
- * Operating System Classes Implementation
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1994 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.26  1998/09/23 06:22:11  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.25  1998/08/20 05:51:06  robertj
  * Fixed bug where substitutions did not always occur if near end of macro block.
  * Improved internationalisation. Allow HTML override of strings in macros.
