@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.84  2002/08/13 01:57:15  robertj
+ * Fixed "last dump object" position in Memory Dump macro.
+ *
  * Revision 1.83  2002/08/13 01:30:27  robertj
  * Added UpTime macro for time service has been running.
  * Added IfQuery macro blcok to add chunks of HTML depending on the value
@@ -1727,6 +1730,7 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 
 
 #if PMEMORY_CHECK
+
 PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
 {
   BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
@@ -1737,6 +1741,7 @@ PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
   return str;
 }
 
+
 PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
 {
   static lastObjectNumber = 0;
@@ -1744,15 +1749,17 @@ PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
   PStringToString vars = request.url.GetQueryVars();
   if (vars.Contains("object"))
     objectNumber = vars["object"].AsUnsigned();
-  lastObjectNumber = objectNumber;
 
   BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
   PStringStream str;
   str.SetSize(20000);
+  str << "Dumping objects from #" << objectNumber << '\n';
   PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
   PMemoryHeap::DumpObjectsSince(objectNumber, str);
+  lastObjectNumber = PMemoryHeap::GetAllocationRequest();
   return str;
 }
+
 #endif
 
 
