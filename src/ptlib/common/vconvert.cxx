@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.22  2001/12/03 02:21:50  dereks
+ * Add YUV420P to RGB24F, RGB32F converters.
+ *
  * Revision 1.21  2001/12/02 21:53:56  dereks
  * Additional debug information
  *
@@ -155,7 +158,8 @@ class PStandardColourConverter : public PColourConverter
       const BYTE * yuv,
       BYTE * rgb,
       PINDEX * bytesReturned,
-      unsigned rgbIncrement
+      unsigned rgbIncrement,
+      BOOL flipVertical
     ) const;
     void ResizeYUV422(
       const BYTE * src,
@@ -618,11 +622,13 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned,
-                                            unsigned rgbIncrement) const
+                                            unsigned rgbIncrement,
+					    BOOL     flipVertical) const
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
 
+  BYTE          *dstImageFrame;
   unsigned int   nbytes    = srcFrameWidth*srcFrameHeight;
   const BYTE    *yplane    = srcFrameBuffer;           		// 1 byte Y (luminance) for each pixel
   const BYTE    *uplane    = yplane+nbytes;              	// 1 byte U for a block of 4 pixels
@@ -634,6 +640,16 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   long     int   cr, cb, rd, gd, bd;
   long     int   l, r, g, b;
             
+  if(flipVertical) {
+    dstImageFrame = dstFrameBuffer + ((srcFrameHeight-2) * srcFrameWidth * rgbIncrement);
+    pixpos[0] = srcFrameWidth;
+    pixpos[1] = srcFrameWidth +1;
+    pixpos[2] = 0;
+    pixpos[3] = 1;
+  }
+  else
+    dstImageFrame = dstFrameBuffer;
+
   for (y = 0; y < srcFrameHeight; y += 2)
   {
     for (x = 0; x < srcFrameWidth; x += 2)
@@ -660,22 +676,25 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
         g = l+gd;
         b = l+bd;
         
-        *(dstFrameBuffer+rgbIncrement*pixpos[p])   = LIMIT(b);
-        *(dstFrameBuffer+rgbIncrement*pixpos[p]+1) = LIMIT(g);
-        *(dstFrameBuffer+rgbIncrement*pixpos[p]+2) = LIMIT(r);
+        *(dstImageFrame + rgbIncrement*pixpos[p])   = LIMIT(b);
+        *(dstImageFrame + rgbIncrement*pixpos[p]+1) = LIMIT(g);
+        *(dstImageFrame + rgbIncrement*pixpos[p]+2) = LIMIT(r);
         if (rgbIncrement == 4)
-          *(dstFrameBuffer+4*pixpos[p]+3) = 0;
+          *(dstImageFrame + 4*pixpos[p]+3) = 0;
       }
       
       yplane += 2;
-      dstFrameBuffer += rgbIncrement*2;
+      dstImageFrame += rgbIncrement*2;
       
       uplane++;
       vplane++;
     }
-
+ 
     yplane += srcFrameWidth;
-    dstFrameBuffer += rgbIncrement*srcFrameWidth;  
+    if (flipVertical)
+      dstImageFrame -= 3*rgbIncrement*srcFrameWidth;
+    else
+      dstImageFrame += rgbIncrement*srcFrameWidth;  
   }
 
   if (bytesReturned != NULL)
@@ -687,13 +706,24 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, FALSE);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32)
 {
-  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4);
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, FALSE);
+}
+
+PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24F)
+{
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, TRUE);
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32F)
+{
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, TRUE);
 }
 
 
