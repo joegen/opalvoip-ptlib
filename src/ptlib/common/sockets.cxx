@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.101  2000/05/02 08:14:40  craigs
+ * Fixed problem with "memory leak" reporting under Unix
+ *
  * Revision 1.100  2000/04/27 02:43:45  robertj
  * Fixed warning about signedness mismatch.
  *
@@ -376,8 +379,13 @@ class PHostByName : PHostByName_private
     PIPCacheData * GetHost(const PString & name);
     PMutex mutex;
   friend void PIPSocket::ClearNameCache();
-} pHostByName;
+};
 
+static PHostByName & pHostByName()
+{
+  static PHostByName t;
+  return t;
+}
 
 class PIPCacheKey : public PObject
 {
@@ -408,8 +416,13 @@ class PHostByAddr : PHostByAddr_private
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
     PMutex mutex;
   friend void PIPSocket::ClearNameCache();
-} pHostByAddr;
+};
 
+static PHostByAddr & pHostByAddr()
+{
+  static PHostByAddr t;
+  return t;
+}
 
 #define new PNEW
 
@@ -1034,10 +1047,10 @@ PIPSocket::PIPSocket()
 
 void PIPSocket::ClearNameCache()
 {
-  pHostByName.mutex.Wait();
-  pHostByAddr.mutex.Wait();
-  pHostByName.RemoveAll();
-  pHostByAddr.RemoveAll();
+  pHostByName().mutex.Wait();
+  pHostByAddr().mutex.Wait();
+  pHostByName().RemoveAll();
+  pHostByAddr().RemoveAll();
 #if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
   static PTimeInterval delay = GetConfigTime("NT Bug Delay", 0);
   if (delay != 0) {
@@ -1045,8 +1058,8 @@ void PIPSocket::ClearNameCache()
     ::gethostbyname("www.microsoft.com");
   }
 #endif
-  pHostByName.mutex.Signal();
-  pHostByAddr.mutex.Signal();
+  pHostByName().mutex.Signal();
+  pHostByAddr().mutex.Signal();
 }
 
 
@@ -1079,7 +1092,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
     return GetHostName(temp);
 
   PString canonicalname;
-  if (pHostByName.GetHostName(hostname, canonicalname))
+  if (pHostByName().GetHostName(hostname, canonicalname))
     return canonicalname;
 
   return hostname;
@@ -1092,7 +1105,7 @@ PString PIPSocket::GetHostName(const Address & addr)
     return addr;
 
   PString hostname;
-  if (pHostByAddr.GetHostName(addr, hostname))
+  if (pHostByAddr().GetHostName(addr, hostname))
     return hostname;
 
   return addr;
@@ -1101,7 +1114,7 @@ PString PIPSocket::GetHostName(const Address & addr)
 
 BOOL PIPSocket::GetHostAddress(Address & addr)
 {
-  return pHostByName.GetHostAddress(GetHostName(), addr);
+  return pHostByName().GetHostAddress(GetHostName(), addr);
 }
 
 
@@ -1116,7 +1129,7 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
     return TRUE;
 
   // otherwise lookup the name as a host name
-  return pHostByName.GetHostAddress(hostname, addr);
+  return pHostByName().GetHostAddress(hostname, addr);
 }
 
 
@@ -1127,9 +1140,9 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   // lookup the host address using inet_addr, assuming it is a "." address
   Address addr = hostname;
   if (addr != 0)
-    pHostByAddr.GetHostAliases(addr, aliases);
+    pHostByAddr().GetHostAliases(addr, aliases);
   else
-    pHostByName.GetHostAliases(hostname, aliases);
+    pHostByName().GetHostAliases(hostname, aliases);
 
   return aliases;
 }
@@ -1139,7 +1152,7 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
   PStringArray aliases;
 
-  pHostByAddr.GetHostAliases(addr, aliases);
+  pHostByAddr().GetHostAliases(addr, aliases);
 
   return aliases;
 }
