@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.19  2004/02/23 21:23:09  ykiryanov
+ * Removed assert line to enable semaphore constructor
+ *
  * Revision 1.18  2004/02/23 20:37:17  ykiryanov
  * Changed function definition PXBlockIO to prototype one
  *
@@ -601,7 +604,6 @@ PSemaphore::PSemaphore(sem_id anId, int32 initialBenaphore, int32 param)
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 	: semId(0), benaphoreCount(0)
 {
-   PAssertOS(FALSE); // This constructor is never called
 }
 
 PSemaphore::~PSemaphore()
