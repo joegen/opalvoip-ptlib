@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: defaultgui.mak,v $
+# Revision 1.10  2000/10/06 08:19:52  rogerh
+# Fix bug introduced in last commit. Only build motif when pwlib source exists
+#
 # Revision 1.9  2000/10/01 01:08:11  craigs
 # Fixed problems with Motif build
 #
@@ -90,15 +93,15 @@ TRIAL_GUI	= motif
 endif
 
 ifeq (motif,$(TRIAL_GUI))
-  ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/include/Xm))
-    PWLIB_GUIDIR  = /usr/X11R6/LessTif/Motif2.0
-    PWLIB_GUI_FLAG=P_LESSTIF
-  else
-    ifneq (,$(wildcard /usr/local/LessTif/Motif2.0/include/Xm))
-      PWLIB_GUIDIR  = /usr/local/LessTif/Motif2.0
+  ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/motif))
+    ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/include/Xm))
+      PWLIB_GUIDIR  = /usr/X11R6/LessTif/Motif2.0
       PWLIB_GUI_FLAG=P_LESSTIF
     else
-      ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/motif))
+      ifneq (,$(wildcard /usr/local/LessTif/Motif2.0/include/Xm))
+        PWLIB_GUIDIR  = /usr/local/LessTif/Motif2.0
+        PWLIB_GUI_FLAG=P_LESSTIF
+      else
         ifndef PWLIB_GUIDIR
           ifneq (,$(wildcard /usr/X11R6/include/Xm/ComboBox.h))
             PWLIB_GUIDIR = /usr/X11R6
