@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.3 1995/07/02 01:22:50 robertj Exp $
+ * $Id: mail.cxx,v 1.4 1995/08/24 12:41:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.4  1995/08/24 12:41:25  robertj
+ * Implementation of mail for GUIs.
+ *
  * Revision 1.3  1995/07/02 01:22:50  robertj
  * Changed mail to use CMC then MAPI if available.
  *
@@ -22,9 +25,12 @@
 #include <ptlib.h>
 #include <mail.h>
 
+#include <ctype.h>
+
+#if P_HAS_CMC
 #include <xcmcext.h>
 #include <xcmcmsxt.h>
-#include <ctype.h>
+#endif
 
 
 
@@ -40,7 +46,7 @@ PMail::PMail()
 PMail::PMail(const PString & username, const PString & password)
 {
   Construct();
-  LogOn(username, password);
+  LogOnCommonInterface(username, password, NULL);
 }
 
 
@@ -49,7 +55,7 @@ PMail::PMail(const PString & username,
              const PString & service)
 {
   Construct();
-  LogOn(username, password, service);
+  LogOnCommonInterface(username, password, service);
 }
 
 
@@ -68,13 +74,21 @@ void PMail::Construct()
 
 BOOL PMail::LogOn(const PString & username, const PString & password)
 {
-  return LogOn(username, password, PString());
+  return LogOnCommonInterface(username, password, NULL);
 }
 
 
 BOOL PMail::LogOn(const PString & username,
                   const PString & password,
                   const PString & service)
+{
+  return LogOnCommonInterface(username, password, service);
+}
+
+
+BOOL PMail::LogOnCommonInterface(const char * username,
+                                 const char * password,
+                                 const char * service)
 {
   if (!LogOff())
     return FALSE;
@@ -91,9 +105,9 @@ BOOL PMail::LogOn(const PString & username,
     extension.item_data = PARRAYSIZE(support);
     extension.item_reference = support;
     extension.extension_flags = CMC_EXT_LAST_ELEMENT;
-    lastError = cmc.logon((CMC_string)(const char *)service,
-                          (CMC_string)(const char *)username,
-                          (CMC_string)(const char *)password,
+    lastError = cmc.logon((CMC_string)service,
+                          (CMC_string)username,
+                          (CMC_string)password,
                           NULL,
                           (CMC_ui_id)hUserInterface,
                           100,
@@ -108,7 +122,7 @@ BOOL PMail::LogOn(const PString & username,
 
 #if P_HAS_MAPI
   if (mapi.IsLoaded()) {
-    PAssert(service.IsEmpty(), "Cannot have variable services");
+    PAssert(service == NULL, "Cannot have variable services");
 
     lastError = mapi.Logon((HWND)hUserInterface,
                          username, password, MAPI_ALLOW_OTHERS, 0, &sessionId);
@@ -302,6 +316,7 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
 }
 
 
+#if P_HAS_CMC
 class CMC_message_reference_ptr
 {
   public:
@@ -341,6 +356,7 @@ CMC_message_reference_ptr::CMC_message_reference_ptr(const PString & id)
     memcpy(ref->string, (const char *)id, len);
   }
 }
+#endif
 
 
 BOOL PMail::GetMessageHeader(const PString & id,
