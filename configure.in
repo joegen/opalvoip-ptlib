@@ -300,7 +300,7 @@ else
   AC_DEFINE(P_HAS_PLUGINS, 1, "plugins enabled")
 fi
 
-AC_DEFINE_UNQUOTED(P_DEFAULT_PLUGIN_DIR, "${INSTALLPREFIX}/pwlib/lib")
+AC_DEFINE_UNQUOTED(P_DEFAULT_PLUGIN_DIR, "${INSTALLPREFIX}/lib/pwlib")
 
 dnl #########################################################################
 dnl  Check for FIREWIRE if available, from GnomeMeeting
