@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.70  2002/08/28 08:06:11  craigs
+ * Fixed problem (again) with file:// URLs
+ *
  * Revision 1.69  2002/08/28 05:11:23  craigs
  * Fixed problem with file:// URLs
  *
@@ -300,7 +303,8 @@ enum SchemeFormat {
   HostPort = 1,
   UserPasswordHostPort = 2,
   HostOnly = 3,
-  Other = 4
+  Other = 4,
+  NoHost = 5
 };
 
 class schemeStruct {
@@ -323,7 +327,7 @@ static schemeStruct const schemeInfo[] = {
 
   { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT },
   { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT },
-  { "file",      Other,                TRUE },
+  { "file",      NoHost,               TRUE },
   { "mailto",    Other, FALSE},
   { "news",      Other, FALSE},
   { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT },
