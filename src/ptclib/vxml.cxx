@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.28  2002/11/08 03:39:27  craigs
+ * Fixed problem with G.723.1 files
+ *
  * Revision 1.27  2002/09/24 13:47:41  robertj
  * Added support for more vxml commands, thanks Alexander Kovatch
  *
@@ -1519,7 +1522,8 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 
 PWAVFile * PVXMLOutgoingChannel::CreateWAVFile(const PFilePath & fn)
 { 
-  PWAVFile * file = vxml.CreateWAVFile(fn, PFile::ReadOnly, PFile::ModeDefault, GetWavFileType()); 
+  PString nfn = AdjustFn(fn);
+  PWAVFile * file = vxml.CreateWAVFile(nfn, PFile::ReadOnly, PFile::ModeDefault, GetWavFileType()); 
   if (!IsWAVFileValid(*file)) {
     delete file;
     file = NULL;
@@ -1615,12 +1619,7 @@ void PVXMLOutgoingChannelPCM::CreateSilenceFrame(PINDEX amount)
 
 ///////////////////////////////////////////////////////////////
 
-PVXMLOutgoingChannelG7231::PVXMLOutgoingChannelG7231(PVXMLSession & vxml)
-  : PVXMLOutgoingChannel(vxml)
-{
-}
-
-void PVXMLOutgoingChannelG7231::QueueFile(const PString & ofn, PINDEX repeat, PINDEX delay)
+static PString AdjustFnForG7231(const PString & ofn)
 {
   PString fn = ofn;;
 
@@ -1636,7 +1635,17 @@ void PVXMLOutgoingChannelG7231::QueueFile(const PString & ofn, PINDEX repeat, PI
       basename += "_g7231";
     fn = basename + "." + ext;
   }
-  PVXMLOutgoingChannel::QueueFile(fn, repeat, delay);
+  return fn;
+}
+
+PVXMLOutgoingChannelG7231::PVXMLOutgoingChannelG7231(PVXMLSession & vxml)
+  : PVXMLOutgoingChannel(vxml)
+{
+}
+
+PString PVXMLOutgoingChannelG7231::AdjustFn(const PString & fn)
+{
+  return AdjustFnForG7231(fn);
 }
 
 BOOL PVXMLOutgoingChannelG7231::IsWAVFileValid(PWAVFile & chan) 
@@ -1786,7 +1795,8 @@ BOOL PVXMLIncomingChannel::EndRecording()
 
 PWAVFile * PVXMLIncomingChannel::CreateWAVFile(const PFilePath & fn)
 { 
-  return vxml.CreateWAVFile(fn, PFile::WriteOnly, PFile::ModeDefault, GetWavFileType()); 
+  PString nfn = AdjustFn(fn);
+  return vxml.CreateWAVFile(nfn, PFile::WriteOnly, PFile::ModeDefault, GetWavFileType()); 
 }
 
 ///////////////////////////////////////////////////////////////
@@ -1828,6 +1838,12 @@ void PVXMLIncomingChannelG7231::DelayFrame(PINDEX /*len*/)
   // We must delay by the actual sample time.
   delay.Delay(G7231_FRAME_SIZE);
 }
+
+PString PVXMLIncomingChannelG7231::AdjustFn(const PString & fn)
+{
+  return AdjustFnForG7231(fn);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
