@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.cxx,v $
+ * Revision 1.3  2005/01/03 12:48:42  csoutheren
+ * Added new configure options and ability to disable/enable modules
+ *
  * Revision 1.2  1999/03/09 08:18:24  robertj
  * Adjustment found during documentation frenzy.
  *
@@ -38,6 +41,8 @@
 #ifdef __GNUC__
 #pragma implementation "sfile.h"
 #endif
+
+#pragma message ("sfile.cxx is deprecated - please remove from the build")
 
 #include <ptlib.h>
 
