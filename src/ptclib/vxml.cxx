@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.2  2002/06/28 01:30:29  robertj
+ * Fixed ability to compile if do not have expat library.
+ *
  * Revision 1.1  2002/06/27 05:27:49  craigs
  * Initial version
  *
@@ -33,6 +36,9 @@
 #endif
 
 #include <ptlib.h>
+
+#if P_EXPAT
+
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
 
@@ -575,3 +581,4 @@ BOOL PVXMLDigitsGrammar::OnUserInput(char ch)
 
 ///////////////////////////////////////////////////////////////
 
+#endif 
