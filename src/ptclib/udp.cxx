@@ -33,9 +33,14 @@
 #include <cstdio>
 #include <cstring>
 #include <errno.h>
-#include <iostream>
 #include <stdlib.h>
 #include <time.h>
+
+#if defined(__GNUC__) && __GNUC__ > 2
+#include <iostream>
+#else
+#include <iostream.h>
+#endif
 
 #ifdef WIN32
 
