@@ -343,6 +343,10 @@ typedef int PDIMENSION;
 // PCursor
 
 #include "../../common/cursor.h"
+  public:
+    HCURSOR GetHCURSOR() const;
+      // Get the MS-Windows cursor
+
   protected:
     HCURSOR hCursor;
 };
@@ -384,15 +388,15 @@ typedef int PDIMENSION;
     virtual HDC GetHDC();
       // Return the MS-Windows GDI Device Context, create if does not exist.
 
+    void SetHDC(HDC newDC);
+      // Function to associate the MS-Windows GDI Device Context to the canvas
+      // object.
+
     BOOL NullHDC() const;
       // Return TRUE if the hDC is NULL, ie not used by any OnRedraw().
 
 
   protected:
-    void SetUpDC(HDC newDC);
-      // Internal function to set the MS-Windows GDI Device Context to the
-      // values assigned by default to the drawing tools.
-
     void MakePen();
       // Make a MS-Windows GDI pen for the canvas
 
@@ -508,6 +512,9 @@ typedef int PDIMENSION;
 
     void SetWndFont();
       // Set the windows font when it is created or changed.
+      
+    void SetWndCursor();
+      // Set the windows cursor when it is changed in this interactor.
       
     virtual const char * GetWinClsName() const;
       // Return the MS-Windows class name string as required by CreateWindow().
@@ -695,6 +702,9 @@ typedef int PDIMENSION;
       // Translate the windows notification message code to the PWLib
       // notify function code. This returns -1 if the windows message is to be
       // ignored.
+
+
+    friend class PInteractor;
 };
 
 
@@ -894,6 +904,20 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PButtonBar
+
+#include "../../common/butbar.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PStatusBar
+
+#include "../../common/statbar.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PTitledWindow
 
 #include "../../common/titlewnd.h"
@@ -954,8 +978,8 @@ typedef int PDIMENSION;
 
     // Member variables
     short resourceID;
-    const PControlBindings * resourceBindings;
-    PINDEX numResourceBindings;
+    const PControlCreators * resourceCreators;
+    PINDEX numResourceCreators;
       // Resource information needed for delayed creation of MS-Windows dialog.
 
     friend BOOL CALLBACK _export
@@ -1180,7 +1204,7 @@ typedef int PDIMENSION;
 
   protected:
     PSubMenu(HMENU hSubMenu, PSubMenu * menu, const char * menuTitle,
-                            const PMenuBindings * funcs, PINDEX numFuncs);
+                                                  const PMenuBindings * funcs);
       // Helper constructor for when creating menu from a resource. Creates
       // the object given the menu ID as used in the resource template.
 
@@ -1191,7 +1215,7 @@ typedef int PDIMENSION;
 
 
     // New functions for class
-    void LoadSubMenu(const PMenuBindings * funcs, PINDEX numFuncs);
+    void LoadSubMenu(const PMenuBindings * funcs);
       // Function for recursively creating menu items and sub-menus from the
       // menu loaded from a resource.
 
@@ -1213,6 +1237,17 @@ typedef int PDIMENSION;
 // PSound
 
 #include "../../common/sound.h"
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PResourceData
+
+#include "../../common/resdata.h"
+  protected:
+    // Member variables
+    HGLOBAL hResource;
+    LPSTR lpResource;
 };
 
 
