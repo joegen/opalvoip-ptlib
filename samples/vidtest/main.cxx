@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2003/12/14 10:01:25  rjongbloed
+ * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
+ *
  * Revision 1.5  2003/12/08 01:28:52  dereksmithies
  * Compiles now with new video plugins.
  *
@@ -83,12 +86,10 @@ void VidTest::Main()
        << "  video type              device name" << endl;
   PStringList drivers = PVideoInputDevice::GetDriverNames();
   for (int i = 0; i < drivers.GetSize(); i++) {
-    grabber = PVideoInputDevice::CreateDevice(drivers[i]);
-    PStringList devices = grabber->GetDeviceNames(drivers[i]);
+    PStringList devices = PVideoInputDevice::GetDriversDeviceNames(drivers[i]);
     for (int j = 0; j < devices.GetSize(); j++) {
       cout << "   " << drivers[i] << "                    " << devices[j] << endl;
     }
-    delete grabber;
   }
   PString videoDevice = args.GetOptionString("videodevice");
   if (videoDevice.IsEmpty()) {
