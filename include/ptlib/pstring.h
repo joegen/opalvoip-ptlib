@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.53  2002/10/31 05:53:44  robertj
+ * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
+ *   there are far too many inheerent assumptions every to make it 16 bit.
+ * Added UTF-8/UCS-2 conversion functions to PString.
+ *
  * Revision 1.52  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -212,21 +217,9 @@
 class PStringArray;
 class PRegularExpression;
 
-#ifdef PHAS_UNICODE
-#define PSTRING_ANCESTOR_CLASS PWordArray
-#else
-#define PSTRING_ANCESTOR_CLASS PCharArray
-#endif
-
 /**The character string class. It supports a wealth of additional functions
    for string processing and conversion. Operators are provided so that
    strings can virtually be treated as a basic type.
-
-   The #PSTRING_ANCESTOR_CLASS# is dependent on whether UNICODE
-   support is selected. The {\bf entire library and application} must be
-   compiled with or without UNICODE or undefined results will occur.
-   #PSTRING_ANCESTOR_CLASS# macro is normally set to
-   #PCharArray#.
 
    An important feature of the string class, which is not present in other
    container classes, is that when the string contents is changed, that is
@@ -248,11 +241,19 @@ class PRegularExpression;
 
    Note that the array is a '\0' terminated string as in C strings. Thus the
    memory allocated, and the length of the string may be different values.
+
+   Also note that the PString is inherently an 8 bit string. The character set
+   is not defined for most operations and it may be any 8 bit character set.
+   However when conversions are being made to or from 2 byte formats then the
+   PString is assumed to be the UTF-8 format. The 2 byte format is nominally
+   UCS-2 (aka BMP string) and while it is not exactly the same as UNICODE
+   they are compatible enough for them to be treated the same for most real
+   world usage.
  */
 #ifdef DOC_PLUS_PLUS
 class PString : public PCharArray {
 #endif
-PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
+PDECLARE_CLASS(PString, PCharArray);
   public:
   /**@name Construction */
   //@{
@@ -277,27 +278,27 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
        sufficient to take the length of the string and its terminating
        '\0' character.
 
-       If UNICODE is used then each char from the char pointer is mapped to a
-       single UNICODE character.
+       If UCS-2 is used then each char from the char pointer is mapped to a
+       single UCS-2 character.
      */
     PString(
       const char * cstr /// Standard '\0' terminated C string.
     );
 
-    /**Create a string from the Unicode string array.
+    /**Create a string from the UCS-2 string array.
        A new memory block is allocated of a size sufficient to take the length
        of the string and its terminating '\0' character.
      */
     PString(
-      const WORD * ustr /// Unicode null terminated string.
+      const WORD * ustr /// UCS-2 null terminated string.
     );
 
     /**Create a string from the array. A new memory block is allocated of
        a size equal to #len# plus one which is sufficient to take
        the string and a terminating '\0' character.
 
-       If UNICODE is used then each char from the char pointer is mapped to a
-       single UNICODE character.
+       If UCS-2 is used then each char from the char pointer is mapped to a
+       single UCS-2 character.
 
        Note that this function will allow a string with embedded '\0'
        characters to be created, but most of the functions here will be unable
@@ -310,8 +311,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
       PINDEX len          /// Length of the string in bytes.
     );
 
-    /**Create a string from the array. A new memory block is allocated of
-       a size equal to #len# plus one which is sufficient to take
+    /**Create a string from the UCS-2 array. A new memory block is allocated
+       of a size equal to #len# plus one which is sufficient to take
        the string and a terminating '\0' character.
 
        Note that this function will allow a string with embedded '\0'
@@ -321,8 +322,22 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
        #'\0'# character will be lost.
      */
     PString(
-      const WORD * cstr,  /// Pointer to a string of Unicode characters.
+      const WORD * ustr,  /// Pointer to a string of UCS-2 characters.
       PINDEX len          /// Length of the string in bytes.
+    );
+
+    /**Create a string from the UCS-2 array. A new memory block is allocated
+       of a size equal to #len# plus one which is sufficient to take
+       the string and a terminating '\0' character.
+
+       Note that this function will allow a string with embedded '\0'
+       characters to be created, but most of the functions here will be unable
+       to access characters beyond the first '\0'. Furthermore, if the
+       #MakeMinimumSize()# function is called, all data beyond that first
+       #'\0'# character will be lost.
+     */
+    PString(
+      const PWORDArray & ustr /// UCS-2 null terminated string.
     );
 
     /**Create a string from the single character. This is most commonly used
@@ -330,7 +345,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
        used in a string expression. A new memory block is allocated of two
        characters to take the char and its terminating '\0' character.
 
-       If UNICODE is used then the char is mapped to a single UNICODE
+       If UCS-2 is used then the char is mapped to a single UCS-2
        character.
      */
     PString(
@@ -1619,6 +1634,10 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
      */
     double AsReal() const;
      
+    /**Convert UTF-8 string to UCS-2.
+       Note the resultant PWORDArray will have the trailing null included.
+      */
+    PWORDArray AsUCS2() const;
 
     /**Convert a standard null terminated string to a "pascal" style string.
        This consists of a songle byte for the length of the string and then
@@ -1642,7 +1661,6 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
      */
     PString ToLiteral() const;
 
-#ifndef PHAS_UNICODE
     /**Get the internal buffer as a pointer to unsigned characters. The
        standard "operator const char *" function is provided by the
        #PCharArray# ancestor class.
@@ -1651,11 +1669,14 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
        pointer to character buffer.
      */
     operator const unsigned char *() const;
-#endif
   //@}
 
 
   protected:
+    void InternalFromUCS2(
+      const WORD * ptr,
+      PINDEX len
+    );
     virtual Comparison InternalCompare(
       PINDEX offset,      // Offset into string to compare.
       char c              // Character to compare against.
