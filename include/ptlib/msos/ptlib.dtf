@@ -67,7 +67,6 @@ EXPORTS
     ??0PCollection@@QAE@H@Z @52 NONAME ;public: __thiscall PCollection::PCollection(int)
     ??0PColourConverter@@QAE@ABVPString@@0II@Z @2779 NONAME ;public: __thiscall PColourConverter::PColourConverter(class PString const &,class PString const &,unsigned int,unsigned int)
     ??0PColourConverterRegistration@@QAE@ABVPString@@0@Z @2683 NONAME ;public: __thiscall PColourConverterRegistration::PColourConverterRegistration(class PString const &,class PString const &)
-    ??0PColourConverterRegistrations@@QAE@XZ @2684 NONAME ;public: __thiscall PColourConverterRegistrations::PColourConverterRegistrations(void)
     ??0PConfigArgs@@QAE@ABVPArgList@@@Z @2408 NONAME ;public: __thiscall PConfigArgs::PConfigArgs(class PArgList const &)
     ??0PConsoleChannel@@QAE@W4ConsoleType@0@@Z @2153 NONAME ;public: __thiscall PConsoleChannel::PConsoleChannel(enum PConsoleChannel::ConsoleType)
     ??0PConsoleChannel@@QAE@XZ @2154 NONAME ;public: __thiscall PConsoleChannel::PConsoleChannel(void)
@@ -276,7 +275,6 @@ EXPORTS
     ??1PCollection@@UAE@XZ @200 NONAME ;public: virtual __thiscall PCollection::~PCollection(void)
     ??1PColourConverter@@UAE@XZ @2693 NONAME ;public: virtual __thiscall PColourConverter::~PColourConverter(void)
     ??1PColourConverterRegistration@@UAE@XZ @2694 NONAME ;public: virtual __thiscall PColourConverterRegistration::~PColourConverterRegistration(void)
-    ??1PColourConverterRegistrations@@UAE@XZ @2695 NONAME ;public: virtual __thiscall PColourConverterRegistrations::~PColourConverterRegistrations(void)
     ??1PConfig@@UAE@XZ @201 NONAME ;public: virtual __thiscall PConfig::~PConfig(void)
     ??1PConfigArgs@@UAE@XZ @2411 NONAME ;public: virtual __thiscall PConfigArgs::~PConfigArgs(void)
     ??1PConsoleChannel@@UAE@XZ @2168 NONAME ;public: virtual __thiscall PConsoleChannel::~PConsoleChannel(void)
@@ -632,7 +630,6 @@ EXPORTS
     ??_7PCollection@@6B@ @467 NONAME ;const  PCollection::`vftable'
     ??_7PColourConverter@@6B@ @2705 NONAME ;const  PColourConverter::`vftable'
     ??_7PColourConverterRegistration@@6B@ @2706 NONAME ;const  PColourConverterRegistration::`vftable'
-    ??_7PColourConverterRegistrations@@6B@ @2707 NONAME ;const  PColourConverterRegistrations::`vftable'
     ??_7PConfig@@6B@ @468 NONAME ;const  PConfig::`vftable'
     ??_7PConfigArgs@@6B@ @2412 NONAME ;const  PConfigArgs::`vftable'
     ??_7PConsoleChannel@@6Biostream@@@ @2155 NONAME ;const  PConsoleChannel::`vftable'{for `iostream'}
@@ -999,7 +996,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@PCollection@@UBE?AW4Comparison@PObject@@ABV3@@Z @713 NONAME ;public: virtual enum PObject::Comparison  __thiscall PCollection::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PColourConverter@@UBE?AW4Comparison@PObject@@ABV3@@Z @2717 NONAME ;public: virtual enum PObject::Comparison  __thiscall PColourConverter::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PColourConverterRegistration@@UBE?AW4Comparison@PObject@@ABV3@@Z @2718 NONAME ;public: virtual enum PObject::Comparison  __thiscall PColourConverterRegistration::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@PColourConverterRegistrations@@UBE?AW4Comparison@PObject@@ABV3@@Z @2719 NONAME ;public: virtual enum PObject::Comparison  __thiscall PColourConverterRegistrations::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PConfig@@UBE?AW4Comparison@PObject@@ABV3@@Z @714 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConfig::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PConfigArgs@@UBE?AW4Comparison@PObject@@ABV3@@Z @2413 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConfigArgs::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PConsoleChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @2160 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConsoleChannel::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1119,7 +1115,6 @@ EXPORTS
     ?Convert@P_YUV411P_RGB32@@UAEHPBEPAEPAH@Z @2835 NONAME ;public: virtual int __thiscall P_YUV411P_RGB32::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV411P_YUV411P@@UAEHPBEPAEPAH@Z @2865 NONAME ;public: virtual int __thiscall P_YUV411P_YUV411P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV422_YUV411P@@UAEHPBEPAEPAH@Z @2836 NONAME ;public: virtual int __thiscall P_YUV422_YUV411P::Convert(unsigned char const *,unsigned char *,int *)
-    ?converters@PColourConverter@@1VPColourConverterRegistrations@@A @2724 NONAME ;protected: static class PColourConverterRegistrations  PColourConverter::converters
     ?ConvertInPlace@PColourConverter@@UAEHPAEPAHH@Z @2804 NONAME ;public: virtual int __thiscall PColourConverter::ConvertInPlace(unsigned char *,int *,int)
     ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
     ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @2249 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
@@ -1271,7 +1266,6 @@ EXPORTS
     ?GetClass@PCollection@@UBEPBDI@Z @919 NONAME ;public: virtual char const * __thiscall PCollection::GetClass(unsigned int)const 
     ?GetClass@PColourConverter@@UBEPBDI@Z @2731 NONAME ;public: virtual char const * __thiscall PColourConverter::GetClass(unsigned int)const 
     ?GetClass@PColourConverterRegistration@@UBEPBDI@Z @2732 NONAME ;public: virtual char const * __thiscall PColourConverterRegistration::GetClass(unsigned int)const 
-    ?GetClass@PColourConverterRegistrations@@UBEPBDI@Z @2733 NONAME ;public: virtual char const * __thiscall PColourConverterRegistrations::GetClass(unsigned int)const 
     ?GetClass@PConfig@@UBEPBDI@Z @920 NONAME ;public: virtual char const * __thiscall PConfig::GetClass(unsigned int)const 
     ?GetClass@PConfigArgs@@UBEPBDI@Z @2414 NONAME ;public: virtual char const * __thiscall PConfigArgs::GetClass(unsigned int)const 
     ?GetClass@PConsoleChannel@@UBEPBDI@Z @2161 NONAME ;public: virtual char const * __thiscall PConsoleChannel::GetClass(unsigned int)const 
@@ -1665,7 +1659,6 @@ EXPORTS
     ?IsClass@PCollection@@UBEHPBD@Z @1237 NONAME ;public: virtual int __thiscall PCollection::IsClass(char const *)const 
     ?IsClass@PColourConverter@@UBEHPBD@Z @2737 NONAME ;public: virtual int __thiscall PColourConverter::IsClass(char const *)const 
     ?IsClass@PColourConverterRegistration@@UBEHPBD@Z @2738 NONAME ;public: virtual int __thiscall PColourConverterRegistration::IsClass(char const *)const 
-    ?IsClass@PColourConverterRegistrations@@UBEHPBD@Z @2739 NONAME ;public: virtual int __thiscall PColourConverterRegistrations::IsClass(char const *)const 
     ?IsClass@PConfig@@UBEHPBD@Z @1238 NONAME ;public: virtual int __thiscall PConfig::IsClass(char const *)const 
     ?IsClass@PConfigArgs@@UBEHPBD@Z @2416 NONAME ;public: virtual int __thiscall PConfigArgs::IsClass(char const *)const 
     ?IsClass@PConsoleChannel@@UBEHPBD@Z @2163 NONAME ;public: virtual int __thiscall PConsoleChannel::IsClass(char const *)const 
@@ -1790,7 +1783,6 @@ EXPORTS
     ?IsDescendant@PCollection@@UBEHPBD@Z @1325 NONAME ;public: virtual int __thiscall PCollection::IsDescendant(char const *)const 
     ?IsDescendant@PColourConverter@@UBEHPBD@Z @2740 NONAME ;public: virtual int __thiscall PColourConverter::IsDescendant(char const *)const 
     ?IsDescendant@PColourConverterRegistration@@UBEHPBD@Z @2741 NONAME ;public: virtual int __thiscall PColourConverterRegistration::IsDescendant(char const *)const 
-    ?IsDescendant@PColourConverterRegistrations@@UBEHPBD@Z @2742 NONAME ;public: virtual int __thiscall PColourConverterRegistrations::IsDescendant(char const *)const 
     ?IsDescendant@PConfig@@UBEHPBD@Z @1326 NONAME ;public: virtual int __thiscall PConfig::IsDescendant(char const *)const 
     ?IsDescendant@PConfigArgs@@UBEHPBD@Z @2417 NONAME ;public: virtual int __thiscall PConfigArgs::IsDescendant(char const *)const 
     ?IsDescendant@PConsoleChannel@@UBEHPBD@Z @2164 NONAME ;public: virtual int __thiscall PConsoleChannel::IsDescendant(char const *)const 
@@ -2112,7 +2104,6 @@ EXPORTS
     ?RecordSound@PSoundChannel@@QAEHAAVPSound@@@Z @2110 NONAME ;public: int __thiscall PSoundChannel::RecordSound(class PSound &)
     ?Redraw@PVideoChannel@@UAEHPBX@Z @2539 NONAME ;public: virtual int __thiscall PVideoChannel::Redraw(void const *)
     ?Redraw@PVideoOutputDevice@@UAEHPBX@Z @2772 NONAME ;public: virtual int __thiscall PVideoOutputDevice::Redraw(void const *)
-    ?Register@PColourConverterRegistrations@@QAEXPAVPColourConverterRegistration@@@Z @2744 NONAME ;public: void __thiscall PColourConverterRegistrations::Register(class PColourConverterRegistration *)
     ?Release@PWaveBuffer@@AAEKXZ @2069 NONAME ;private: unsigned long __thiscall PWaveBuffer::Release(void)
     ?Remove@PAbstractDictionary@@EAEHPBVPObject@@@Z @1566 NONAME ;private: virtual int __thiscall PAbstractDictionary::Remove(class PObject const *)
     ?Remove@PAbstractList@@UAEHPBVPObject@@@Z @1567 NONAME ;public: virtual int __thiscall PAbstractList::Remove(class PObject const *)
