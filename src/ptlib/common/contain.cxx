@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.164  2004/07/19 13:55:00  csoutheren
+ * Fixed typo flagged as warning by gcc 3.5-20040704
+ *
  * Revision 1.163  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -2601,7 +2604,7 @@ streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int m
 
     case ios::end :
       if (off < -len)
-        newpptr = newpptr = newgptr = eback();
+        newpptr = newgptr = eback();
       else if (off >= 0)
         newpptr = newgptr = egptr();
       else
