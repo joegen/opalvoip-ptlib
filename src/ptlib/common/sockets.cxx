@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.123  2002/10/08 23:31:44  robertj
+ * Added missing GetSize() implementation in ip address.
+ *
  * Revision 1.122  2002/10/08 12:41:52  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -1959,6 +1962,22 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
 
   a = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
   return s;
+}
+
+
+PINDEX PIPSocket::Address::GetSize() const
+{
+  switch (version) {
+#if P_HAS_IPV6
+    case 6 :
+      return 16;
+#endif
+
+    case 4 :
+      return 4;
+  }
+
+  return 0;
 }
 
 
