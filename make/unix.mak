@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.194  2005/01/14 11:49:17  csoutheren
+# Removed -s flag so executables are not stripped by default
+#
 # Revision 1.193  2004/11/16 00:32:34  csoutheren
 # Added Cygwin support
 #
@@ -914,13 +917,6 @@ ifneq ($(OSTYPE),Darwin)
   OPTCCFLAGS	+= -Os 
 else
   OPTCCFLAGS	+= -O2
-endif
-
-ifneq ($(OSTYPE),Carbon)
-ifneq ($(OSTYPE),Darwin)
-# Apple does not support -s to remove symbol table/relocation information 
-LDFLAGS		+= -s
-endif
 endif
 
 endif # DEBUG
