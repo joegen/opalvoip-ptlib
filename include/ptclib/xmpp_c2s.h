@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.4  2004/04/26 19:44:30  dsandras
+ * Fixes compilation with P_SASL = 0.
+ *
  * Revision 1.3  2004/04/26 01:51:57  rjongbloed
  * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
  *
@@ -151,7 +154,9 @@ namespace XMPP
       // State handlers
       virtual void    HandleNullState(PXML& pdu);
       virtual void    HandleTLSStartedState(PXML& pdu);
+#if P_SASL
       virtual void    HandleSASLStartedState(PXML& pdu);
+#endif
       virtual void    HandleNonSASLStartedState(PXML& pdu);
       virtual void    HandleStreamSentState(PXML& pdu);
       virtual void    HandleBindSentState(PXML& pdu);
