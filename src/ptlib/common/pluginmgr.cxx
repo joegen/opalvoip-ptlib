@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.17  2004/05/06 11:29:35  rjongbloed
+ * Added "current directory" to default plug in path.
+ *
  * Revision 1.16  2004/05/02 17:06:42  ykiryanov
  * Ifdefd inclusion of algorithm for BeOS
  *
@@ -68,9 +71,9 @@
 
 #ifndef	P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
-#    define	P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
+#    define	P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
 #  else
-#    define	P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
+#    define	P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
 #  endif
 #endif
 
