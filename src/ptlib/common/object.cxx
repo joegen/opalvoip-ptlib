@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.12 1995/04/25 11:30:34 robertj Exp $
+ * $Id: object.cxx,v 1.14 1995/11/21 11:51:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.14  1995/11/21 11:51:54  robertj
+ * Improved streams compatibility.
+ *
  * Revision 1.12  1995/04/25 11:30:34  robertj
  * Fixed Borland compiler warnings.
  * Fixed function hiding ancestors virtual.
@@ -52,6 +55,7 @@
  */
 
 #include <contain.h>
+#include <ctype.h>
 
 
 void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
