@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.2 1993/07/14 12:49:16 robertj Exp $
+ * $Id: ptime.h,v 1.3 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,12 +8,18 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.2  1993/07/14 12:49:16  robertj
+ * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Made time functions common to all platforms.
+ * Moved timer resolution function to PTimeInterval wher it belongs.
+ *
+ * Revision 1.2  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
 
 #define _PTIME
+
+#include <time.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +57,10 @@ DECLARE_CLASS(PTime,PObject)
     PTime operator-(const PTimeInterval & t) const;
     PTime & operator-=(const PTimeInterval & t);
 
-    static long Resolution();
+
+  protected:
+    // Member variables
+    time_t theTime;
 
 
 // Class declaration continued in platform specific header file ///////////////
