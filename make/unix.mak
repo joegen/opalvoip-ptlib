@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.106  2001/11/25 23:28:04  robertj
+# Fixed correct setting of HAS_VIDEO_CAPTURE compile flag
+#
 # Revision 1.105  2001/10/31 00:45:20  robertj
 # Added debuglibs, optlibs and bothlibs targets, moving help to where these
 #   targets are in teh make file system.
@@ -472,6 +475,10 @@ STDCCFLAGS += -Wall
 
 ifeq ($(OSTYPE),linux)
 
+# i486 Linux for x86, using gcc 2.7.2
+STDCCFLAGS	+= -DP_LINUX
+
+
 # Enable pthreads if we are using glibc 6
 ifneq (,$(shell grep define.\*__GNU_LIBRARY__.\*6 /usr/include/features.h))
 P_PTHREADS	= 1
@@ -481,9 +488,9 @@ PTLIB_ALT = libc5
 endif
 endif
 
-
-# i486 Linux for x86, using gcc 2.7.2
-STDCCFLAGS	+= -DP_LINUX
+ifneq (,$(wildcard /usr/include/linux/videodev.h))
+STDCCFLAGS	+= -DHAS_VIDEO_CAPTURE
+endif
 
 
 ifeq ($(MACHTYPE),x86)
