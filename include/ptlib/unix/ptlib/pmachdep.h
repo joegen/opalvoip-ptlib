@@ -69,9 +69,10 @@ struct hostent * gethostbyaddr(const char *, int, int);
 #undef TOSTOP
 #undef FLUSHO
 #undef PENDIN
+};
+
 #endif
 
-};
 
 #endif
 
