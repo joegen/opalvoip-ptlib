@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.7  2002/08/13 03:02:07  robertj
+ * Removed previous fix for memory leak, as object was already deleted.
+ *
  * Revision 1.6  2002/08/13 01:54:47  craigs
  * Fixed memory leak on PXMLRPCRequest class
  *
@@ -54,10 +57,6 @@ PXMLRPCRequest::PXMLRPCRequest(const PString & method)
   rootElement->AddChild(params = new PXMLRPCParams(rootElement));
 }
 
-PXMLRPCRequest::~PXMLRPCRequest()
-{
-  delete rootElement;
-}
 
 ////////////////////////////////////////////////////////
 
