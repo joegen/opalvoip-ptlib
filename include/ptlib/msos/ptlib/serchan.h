@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ * $Id: serchan.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Using system timers for serial channel timeouts.
+ *
+ * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
  *
  */
@@ -28,8 +31,8 @@
     static BOOL IsReadBlocked(PObject * obj);
     static BOOL IsWriteBlocked(PObject * obj);
 
-    PTimeInterval readTimeoutTarget;
-    PTimeInterval writeTimeoutTarget;
+    PTimer readTimer;
+    PTimer writeTimer;
 #ifdef _WINDOWS
     enum { InputQueueSize = 2048, OutputQueueSize = 1024 };
 #else
