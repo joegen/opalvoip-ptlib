@@ -4,6 +4,9 @@ EXPORTS
     ??0?$PBaseArray@D@@QAE@ABV0@@Z @2 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(class PBaseArray<char> const &)
     ??0?$PBaseArray@D@@QAE@H@Z @3 NONAME ;public: __thiscall PBaseArray<char>::PBaseArray<char>(int)
     ??0?$PBaseArray@E@@QAE@H@Z @2192 NONAME ;public: __thiscall PBaseArray<unsigned char>::PBaseArray<unsigned char>(int)
+    ??0?$PBaseArray@F@@QAE@H@Z @2270 NONAME ;public: __thiscall PBaseArray<short>::PBaseArray<short>(int)
+    ??0?$PBaseArray@G@@QAE@H@Z @2271 NONAME ;public: __thiscall PBaseArray<unsigned short>::PBaseArray<unsigned short>(int)
+    ??0?$PBaseArray@H@@QAE@H@Z @2272 NONAME ;public: __thiscall PBaseArray<int>::PBaseArray<int>(int)
     ??0?$PBaseArray@J@@QAE@H@Z @1798 NONAME ;public: __thiscall PBaseArray<long>::PBaseArray<long>(int)
     ??0?$PBaseArray@PAVPObject@@@@QAE@H@Z @2193 NONAME ;public: __thiscall PBaseArray<class PObject *>::PBaseArray<class PObject *>(int)
     ??0?$PList@VPString@@@@QAE@XZ @2194 NONAME ;public: __thiscall PList<class PString>::PList<class PString>(void)
@@ -136,7 +139,9 @@ EXPORTS
     ??0PStringStream@@QAE@PBD@Z @125 NONAME ;public: __thiscall PStringStream::PStringStream(char const *)
     ??0PStringStream@@QAE@XZ @126 NONAME ;public: __thiscall PStringStream::PStringStream(void)
     ??0PStringToOrdinal@@QAE@HPBUInitialiser@0@H@Z @127 NONAME ;public: __thiscall PStringToOrdinal::PStringToOrdinal(int,struct PStringToOrdinal::Initialiser const *,int)
+    ??0PStringToOrdinal@@QAE@XZ @2361 NONAME ;public: __thiscall PStringToOrdinal::PStringToOrdinal(void)
     ??0PStringToString@@QAE@HPBUInitialiser@0@HH@Z @128 NONAME ;public: __thiscall PStringToString::PStringToString(int,struct PStringToString::Initialiser const *,int,int)
+    ??0PStringToString@@QAE@XZ @2362 NONAME ;public: __thiscall PStringToString::PStringToString(void)
     ??0PStructuredFile@@QAE@ABVPFilePath@@W4OpenMode@PFile@@H@Z @129 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(class PFilePath const &,enum PFile::OpenMode,int)
     ??0PStructuredFile@@QAE@W4OpenMode@PFile@@H@Z @130 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(enum PFile::OpenMode,int)
     ??0PStructuredFile@@QAE@XZ @131 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(void)
@@ -185,6 +190,9 @@ EXPORTS
     ??1?$PArray@VPWin32PacketBuffer@@@@UAE@XZ @1820 NONAME ;public: virtual __thiscall PArray<class PWin32PacketBuffer>::~PArray<class PWin32PacketBuffer>(void)
     ??1?$PBaseArray@D@@UAE@XZ @166 NONAME ;public: virtual __thiscall PBaseArray<char>::~PBaseArray<char>(void)
     ??1?$PBaseArray@E@@UAE@XZ @2200 NONAME ;public: virtual __thiscall PBaseArray<unsigned char>::~PBaseArray<unsigned char>(void)
+    ??1?$PBaseArray@F@@UAE@XZ @2275 NONAME ;public: virtual __thiscall PBaseArray<short>::~PBaseArray<short>(void)
+    ??1?$PBaseArray@G@@UAE@XZ @2276 NONAME ;public: virtual __thiscall PBaseArray<unsigned short>::~PBaseArray<unsigned short>(void)
+    ??1?$PBaseArray@H@@UAE@XZ @2277 NONAME ;public: virtual __thiscall PBaseArray<int>::~PBaseArray<int>(void)
     ??1?$PBaseArray@J@@UAE@XZ @1821 NONAME ;public: virtual __thiscall PBaseArray<long>::~PBaseArray<long>(void)
     ??1?$PBaseArray@PAVElement@PHashTable@@@@UAE@XZ @168 NONAME ;public: virtual __thiscall PBaseArray<class PHashTable::Element *>::~PBaseArray<class PHashTable::Element *>(void)
     ??1?$PBaseArray@PAVPObject@@@@UAE@XZ @169 NONAME ;public: virtual __thiscall PBaseArray<class PObject *>::~PBaseArray<class PObject *>(void)
@@ -230,6 +238,7 @@ EXPORTS
     ??1PContainer@@UAE@XZ @202 NONAME ;public: virtual __thiscall PContainer::~PContainer(void)
     ??1PDebugStream@@UAE@XZ @1823 NONAME ;public: virtual __thiscall PDebugStream::~PDebugStream(void)
     ??1PDirectory@@UAE@XZ @203 NONAME ;public: virtual __thiscall PDirectory::~PDirectory(void)
+    ??1PDWORDArray@@UAE@XZ @2336 NONAME ;public: virtual __thiscall PDWORDArray::~PDWORDArray(void)
     ??1PDynaLink@@UAE@XZ @204 NONAME ;public: virtual __thiscall PDynaLink::~PDynaLink(void)
     ??1PEthSocket@@UAE@XZ @1824 NONAME ;public: virtual __thiscall PEthSocket::~PEthSocket(void)
     ??1PFile@@UAE@XZ @205 NONAME ;public: virtual __thiscall PFile::~PFile(void)
@@ -268,6 +277,7 @@ EXPORTS
     ??1PSerialChannel@@UAE@XZ @1958 NONAME ;public: virtual __thiscall PSerialChannel::~PSerialChannel(void)
     ??1PSerialiser@@UAE@XZ @235 NONAME ;public: virtual __thiscall PSerialiser::~PSerialiser(void)
     ??1PServiceProcess@@UAE@XZ @236 NONAME ;public: virtual __thiscall PServiceProcess::~PServiceProcess(void)
+    ??1PShortArray@@UAE@XZ @2280 NONAME ;public: virtual __thiscall PShortArray::~PShortArray(void)
     ??1PSmartPointer@@UAE@XZ @237 NONAME ;public: virtual __thiscall PSmartPointer::~PSmartPointer(void)
     ??1PSocket@@UAE@XZ @238 NONAME ;public: virtual __thiscall PSocket::~PSocket(void)
     ??1PSortedStringList@@UAE@XZ @239 NONAME ;public: virtual __thiscall PSortedStringList::~PSortedStringList(void)
@@ -294,6 +304,7 @@ EXPORTS
     ??1PTimerList@@UAE@XZ @258 NONAME ;public: virtual __thiscall PTimerList::~PTimerList(void)
     ??1PUDPSocket@@UAE@XZ @259 NONAME ;public: virtual __thiscall PUDPSocket::~PUDPSocket(void)
     ??1PUnSerialiser@@UAE@XZ @260 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
+    ??1PUnsignedArray@@UAE@XZ @2281 NONAME ;public: virtual __thiscall PUnsignedArray::~PUnsignedArray(void)
     ??1PWaveBuffer@@EAE@XZ @2034 NONAME ;private: virtual __thiscall PWaveBuffer::~PWaveBuffer(void)
     ??1PWaveFormat@@UAE@XZ @2234 NONAME ;public: virtual __thiscall PWaveFormat::~PWaveFormat(void)
     ??1PWin32AsnAny@@QAE@XZ @1827 NONAME ;public: __thiscall PWin32AsnAny::~PWin32AsnAny(void)
@@ -305,12 +316,18 @@ EXPORTS
     ??1PWin32PacketVxD@@UAE@XZ @1832 NONAME ;public: virtual __thiscall PWin32PacketVxD::~PWin32PacketVxD(void)
     ??1PWin32SnmpLibrary@@UAE@XZ @1833 NONAME ;public: virtual __thiscall PWin32SnmpLibrary::~PWin32SnmpLibrary(void)
     ??1PWinSock@@UAE@XZ @262 NONAME ;public: virtual __thiscall PWinSock::~PWinSock(void)
+    ??1PWORDArray@@UAE@XZ @2282 NONAME ;public: virtual __thiscall PWORDArray::~PWORDArray(void)
     ??1RegistryKey@@QAE@XZ @263 NONAME ;public: __thiscall RegistryKey::~RegistryKey(void)
     ??1RouteEntry@PIPSocket@@UAE@XZ @1834 NONAME ;public: virtual __thiscall PIPSocket::RouteEntry::~RouteEntry(void)
     ??1SecurityID@@QAE@XZ @264 NONAME ;public: __thiscall SecurityID::~SecurityID(void)
     ??1SelectList@PSocket@@UAE@XZ @265 NONAME ;public: virtual __thiscall PSocket::SelectList::~SelectList(void)
     ??1Table@PHashTable@@UAE@XZ @266 NONAME ;public: virtual __thiscall PHashTable::Table::~Table(void)
     ??4?$PBaseArray@D@@QAEAAV0@ABV0@@Z @268 NONAME ;public: class PBaseArray<char> & __thiscall PBaseArray<char>::operator=(class PBaseArray<char> const &)
+    ??4?$PBaseArray@E@@QAEAAV0@ABV0@@Z @2363 NONAME ;public: class PBaseArray<unsigned char> & __thiscall PBaseArray<unsigned char>::operator=(class PBaseArray<unsigned char> const &)
+    ??4?$PBaseArray@F@@QAEAAV0@ABV0@@Z @2364 NONAME ;public: class PBaseArray<short> & __thiscall PBaseArray<short>::operator=(class PBaseArray<short> const &)
+    ??4?$PBaseArray@G@@QAEAAV0@ABV0@@Z @2365 NONAME ;public: class PBaseArray<unsigned short> & __thiscall PBaseArray<unsigned short>::operator=(class PBaseArray<unsigned short> const &)
+    ??4?$PBaseArray@H@@QAEAAV0@ABV0@@Z @2366 NONAME ;public: class PBaseArray<int> & __thiscall PBaseArray<int>::operator=(class PBaseArray<int> const &)
+    ??4?$PBaseArray@J@@QAEAAV0@ABV0@@Z @2368 NONAME ;public: class PBaseArray<long> & __thiscall PBaseArray<long>::operator=(class PBaseArray<long> const &)
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @1835 NONAME ;public: BT01 volatile PEthSocket::* & __thiscall PEthSocket::Address::operator=(...) throw( ?? )
     ??4Address@PEthSocket@@QAEAAT01@ABVPString@@@Z @1836 NONAME ;public: BVPString volatile PEthSocket::* & __thiscall PEthSocket::Address::operator=()
     ??4Address@PIPSocket@@QAEAAV01@ABUin_addr@@@Z @269 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(struct in_addr const &)
@@ -331,6 +348,8 @@ EXPORTS
     ??4PStringArray@@QAEAAV0@ABV0@@Z @2202 NONAME ;public: class PStringArray & __thiscall PStringArray::operator=(class PStringArray const &)
     ??4PStringStream@@QAEAAV0@ABVPString@@@Z @290 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(class PString const &)
     ??4PStringStream@@QAEAAV0@PBD@Z @291 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(char const *)
+    ??4PStringToOrdinal@@QAEAAV0@ABV0@@Z @2372 NONAME ;public: class PStringToOrdinal & __thiscall PStringToOrdinal::operator=(class PStringToOrdinal const &)
+    ??4PStringToString@@QAEAAV0@ABV0@@Z @2373 NONAME ;public: class PStringToString & __thiscall PStringToString::operator=(class PStringToString const &)
     ??4PTimeInterval@@QAEAAV0@ABV0@@Z @292 NONAME ;public: class PTimeInterval & __thiscall PTimeInterval::operator=(class PTimeInterval const &)
     ??4PTimer@@QAEAAV0@ABVPTimeInterval@@@Z @293 NONAME ;public: class PTimer & __thiscall PTimer::operator=(class PTimeInterval const &)
     ??4PTimer@@QAEAAV0@K@Z @294 NONAME ;public: class PTimer & __thiscall PTimer::operator=(unsigned long)
@@ -419,6 +438,7 @@ EXPORTS
     ??BAddress@PIPXSocket@@QBE?AVPString@@XZ @378 NONAME ;public: __thiscall PIPXSocket::Address::operator class PString(void)const 
     ??EPIntCondMutex@@QAEAAV0@XZ @382 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator++(void)
     ??FPIntCondMutex@@QAEAAV0@XZ @383 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator--(void)
+    ??GPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2266 NONAME ;public: class PTime  __thiscall PTime::operator-(class PTimeInterval const &)const 
     ??GPTime@@QBE?AVPTimeInterval@@ABV0@@Z @385 NONAME ;public: class PTimeInterval  __thiscall PTime::operator-(class PTime const &)const 
     ??GPTimeInterval@@QBE?AV0@ABV0@@Z @386 NONAME ;public: class PTimeInterval  __thiscall PTimeInterval::operator-(class PTimeInterval const &)const 
     ??H@YA?AVPString@@DABV0@@Z @387 NONAME ;class PString  __cdecl operator+(char,class PString const &)
@@ -426,6 +446,7 @@ EXPORTS
     ??HPString@@QBE?AV0@ABV0@@Z @389 NONAME ;public: class PString  __thiscall PString::operator+(class PString const &)const 
     ??HPString@@QBE?AV0@D@Z @390 NONAME ;public: class PString  __thiscall PString::operator+(char)const 
     ??HPString@@QBE?AV0@PBD@Z @391 NONAME ;public: class PString  __thiscall PString::operator+(char const *)const 
+    ??HPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2267 NONAME ;public: class PTime  __thiscall PTime::operator+(class PTimeInterval const &)const 
     ??I@YA?AVPString@@PBDABV0@@Z @395 NONAME ;class PString  __cdecl operator&(char const *,class PString const &)
     ??IPString@@QBE?AV0@ABV0@@Z @396 NONAME ;public: class PString  __thiscall PString::operator&(class PString const &)const 
     ??IPString@@QBE?AV0@D@Z @397 NONAME ;public: class PString  __thiscall PString::operator&(char)const 
@@ -438,7 +459,9 @@ EXPORTS
     ??YPIntCondMutex@@QAEAAV0@H@Z @421 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator+=(int)
     ??YPString@@QAEAAV0@D@Z @423 NONAME ;public: class PString & __thiscall PString::operator+=(char)
     ??YPString@@QAEAAV0@PBD@Z @424 NONAME ;public: class PString & __thiscall PString::operator+=(char const *)
+    ??YPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2268 NONAME ;public: class PTime & __thiscall PTime::operator+=(class PTimeInterval const &)
     ??ZPIntCondMutex@@QAEAAV0@H@Z @428 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator-=(int)
+    ??ZPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2269 NONAME ;public: class PTime & __thiscall PTime::operator-=(class PTimeInterval const &)
     ??_4PString@@QAEAAV0@D@Z @434 NONAME ;public: class PString & __thiscall PString::operator&=(char)
     ??_4PString@@QAEAAV0@PBD@Z @435 NONAME ;public: class PString & __thiscall PString::operator&=(char const *)
     ??_7?$PArray@VPString@@@@6B@ @436 NONAME ;const  PArray<class PString>::`vftable'
@@ -446,6 +469,9 @@ EXPORTS
     ??_7?$PArray@VPWin32PacketBuffer@@@@6B@ @1844 NONAME ;const  PArray<class PWin32PacketBuffer>::`vftable'
     ??_7?$PBaseArray@D@@6B@ @437 NONAME ;const  PBaseArray<char>::`vftable'
     ??_7?$PBaseArray@E@@6B@ @2204 NONAME ;const  PBaseArray<unsigned char>::`vftable'
+    ??_7?$PBaseArray@F@@6B@ @2283 NONAME ;const  PBaseArray<short>::`vftable'
+    ??_7?$PBaseArray@G@@6B@ @2284 NONAME ;const  PBaseArray<unsigned short>::`vftable'
+    ??_7?$PBaseArray@H@@6B@ @2285 NONAME ;const  PBaseArray<int>::`vftable'
     ??_7?$PBaseArray@J@@6B@ @1845 NONAME ;const  PBaseArray<long>::`vftable'
     ??_7?$PBaseArray@PAVPObject@@@@6B@ @439 NONAME ;const  PBaseArray<class PObject *>::`vftable'
     ??_7?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @440 NONAME ;const  PDictionary<class PCaselessString,class PIPCacheData>::`vftable'
@@ -486,6 +512,7 @@ EXPORTS
     ??_7PContainer@@6B@ @469 NONAME ;const  PContainer::`vftable'
     ??_7PDebugStream@@6B@ @1847 NONAME ;const  PDebugStream::`vftable'
     ??_7PDirectory@@6B@ @470 NONAME ;const  PDirectory::`vftable'
+    ??_7PDWORDArray@@6B@ @2340 NONAME ;const  PDWORDArray::`vftable'
     ??_7PDynaLink@@6B@ @471 NONAME ;const  PDynaLink::`vftable'
     ??_7PEthSocket@@6Biostream@@@ @1848 NONAME ;const  PEthSocket::`vftable'{for `iostream'}
     ??_7PEthSocket@@6BPObject@@@ @1849 NONAME ;const  PEthSocket::`vftable'{for `PObject'}
@@ -531,6 +558,7 @@ EXPORTS
     ??_7PSerialChannel@@6BPObject@@@ @1960 NONAME ;const  PSerialChannel::`vftable'{for `PObject'}
     ??_7PSerialiser@@6B@ @508 NONAME ;const  PSerialiser::`vftable'
     ??_7PServiceProcess@@6B@ @509 NONAME ;const  PServiceProcess::`vftable'
+    ??_7PShortArray@@6B@ @2288 NONAME ;const  PShortArray::`vftable'
     ??_7PSmartPointer@@6B@ @510 NONAME ;const  PSmartPointer::`vftable'
     ??_7PSocket@@6Biostream@@@ @511 NONAME ;const  PSocket::`vftable'{for `iostream'}
     ??_7PSocket@@6BPObject@@@ @512 NONAME ;const  PSocket::`vftable'{for `PObject'}
@@ -565,6 +593,7 @@ EXPORTS
     ??_7PUDPSocket@@6Biostream@@@ @539 NONAME ;const  PUDPSocket::`vftable'{for `iostream'}
     ??_7PUDPSocket@@6BPObject@@@ @540 NONAME ;const  PUDPSocket::`vftable'{for `PObject'}
     ??_7PUnSerialiser@@6B@ @541 NONAME ;const  PUnSerialiser::`vftable'
+    ??_7PUnsignedArray@@6B@ @2289 NONAME ;const  PUnsignedArray::`vftable'
     ??_7PWaveBuffer@@6B@ @2041 NONAME ;const  PWaveBuffer::`vftable'
     ??_7PWaveFormat@@6B@ @2235 NONAME ;const  PWaveFormat::`vftable'
     ??_7PWin32PacketBuffer@@6B@ @1851 NONAME ;const  PWin32PacketBuffer::`vftable'
@@ -574,6 +603,7 @@ EXPORTS
     ??_7PWin32SnmpLibrary@@6B@ @1855 NONAME ;const  PWin32SnmpLibrary::`vftable'
     ??_7PWinSock@@6Biostream@@@ @542 NONAME ;const  PWinSock::`vftable'{for `iostream'}
     ??_7PWinSock@@6BPObject@@@ @543 NONAME ;const  PWinSock::`vftable'{for `PObject'}
+    ??_7PWORDArray@@6B@ @2290 NONAME ;const  PWORDArray::`vftable'
     ??_7RouteEntry@PIPSocket@@6B@ @1856 NONAME ;const  PIPSocket::RouteEntry::`vftable'
     ??_7SelectList@PSocket@@6B@ @544 NONAME ;const  PSocket::SelectList::`vftable'
     ??_7Table@PHashTable@@6B@ @545 NONAME ;const  PHashTable::Table::`vftable'
@@ -676,6 +706,9 @@ EXPORTS
     ?Clone@?$PArray@VPWin32PacketBuffer@@@@UBEPAVPObject@@XZ @1866 NONAME ;public: virtual class PObject * __thiscall PArray<class PWin32PacketBuffer>::Clone(void)const 
     ?Clone@?$PBaseArray@D@@UBEPAVPObject@@XZ @628 NONAME ;public: virtual class PObject * __thiscall PBaseArray<char>::Clone(void)const 
     ?Clone@?$PBaseArray@E@@UBEPAVPObject@@XZ @2206 NONAME ;public: virtual class PObject * __thiscall PBaseArray<unsigned char>::Clone(void)const 
+    ?Clone@?$PBaseArray@F@@UBEPAVPObject@@XZ @2291 NONAME ;public: virtual class PObject * __thiscall PBaseArray<short>::Clone(void)const 
+    ?Clone@?$PBaseArray@G@@UBEPAVPObject@@XZ @2292 NONAME ;public: virtual class PObject * __thiscall PBaseArray<unsigned short>::Clone(void)const 
+    ?Clone@?$PBaseArray@H@@UBEPAVPObject@@XZ @2293 NONAME ;public: virtual class PObject * __thiscall PBaseArray<int>::Clone(void)const 
     ?Clone@?$PBaseArray@J@@UBEPAVPObject@@XZ @1867 NONAME ;public: virtual class PObject * __thiscall PBaseArray<long>::Clone(void)const 
     ?Clone@?$PBaseArray@PAVPObject@@@@UBEPAVPObject@@XZ @630 NONAME ;public: virtual class PObject * __thiscall PBaseArray<class PObject *>::Clone(void)const 
     ?Clone@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPAVPObject@@XZ @631 NONAME ;public: virtual class PObject * __thiscall PDictionary<class PCaselessString,class PIPCacheData>::Clone(void)const 
@@ -689,12 +722,14 @@ EXPORTS
     ?Clone@PBYTEArray@@UBEPAVPObject@@XZ @637 NONAME ;public: virtual class PObject * __thiscall PBYTEArray::Clone(void)const 
     ?Clone@PCaselessString@@UBEPAVPObject@@XZ @638 NONAME ;public: virtual class PObject * __thiscall PCaselessString::Clone(void)const 
     ?Clone@PCharArray@@UBEPAVPObject@@XZ @639 NONAME ;public: virtual class PObject * __thiscall PCharArray::Clone(void)const 
+    ?Clone@PDWORDArray@@UBEPAVPObject@@XZ @2344 NONAME ;public: virtual class PObject * __thiscall PDWORDArray::Clone(void)const 
     ?Clone@PIntArray@@UBEPAVPObject@@XZ @640 NONAME ;public: virtual class PObject * __thiscall PIntArray::Clone(void)const 
     ?Clone@PIPCacheKey@@UBEPAVPObject@@XZ @641 NONAME ;public: virtual class PObject * __thiscall PIPCacheKey::Clone(void)const 
     ?Clone@PLongArray@@UBEPAVPObject@@XZ @1868 NONAME ;public: virtual class PObject * __thiscall PLongArray::Clone(void)const 
     ?Clone@PObject@@UBEPAV1@XZ @642 NONAME ;public: virtual class PObject * __thiscall PObject::Clone(void)const 
     ?Clone@POrdinalKey@@UBEPAVPObject@@XZ @643 NONAME ;public: virtual class PObject * __thiscall POrdinalKey::Clone(void)const 
     ?Clone@POrdinalToString@@UBEPAVPObject@@XZ @644 NONAME ;public: virtual class PObject * __thiscall POrdinalToString::Clone(void)const 
+    ?Clone@PShortArray@@UBEPAVPObject@@XZ @2296 NONAME ;public: virtual class PObject * __thiscall PShortArray::Clone(void)const 
     ?Clone@PSortedStringList@@UBEPAVPObject@@XZ @645 NONAME ;public: virtual class PObject * __thiscall PSortedStringList::Clone(void)const 
     ?Clone@PString@@UBEPAVPObject@@XZ @646 NONAME ;public: virtual class PObject * __thiscall PString::Clone(void)const 
     ?Clone@PStringArray@@UBEPAVPObject@@XZ @647 NONAME ;public: virtual class PObject * __thiscall PStringArray::Clone(void)const 
@@ -705,6 +740,8 @@ EXPORTS
     ?Clone@PTCPSocket@@UBEPAVPObject@@XZ @1980 NONAME ;public: virtual class PObject * __thiscall PTCPSocket::Clone(void)const 
     ?Clone@PTime@@UBEPAVPObject@@XZ @651 NONAME ;public: virtual class PObject * __thiscall PTime::Clone(void)const 
     ?Clone@PTimeInterval@@UBEPAVPObject@@XZ @652 NONAME ;public: virtual class PObject * __thiscall PTimeInterval::Clone(void)const 
+    ?Clone@PUnsignedArray@@UBEPAVPObject@@XZ @2297 NONAME ;public: virtual class PObject * __thiscall PUnsignedArray::Clone(void)const 
+    ?Clone@PWORDArray@@UBEPAVPObject@@XZ @2298 NONAME ;public: virtual class PObject * __thiscall PWORDArray::Clone(void)const 
     ?Clone@Table@PHashTable@@UBEPAVPObject@@XZ @653 NONAME ;public: virtual class PObject * __thiscall PHashTable::Table::Clone(void)const 
     ?CloneContents@PAbstractArray@@IAEXPBV1@@Z @654 NONAME ;protected: void __thiscall PAbstractArray::CloneContents(class PAbstractArray const *)
     ?CloneContents@PAbstractList@@IAEXPBV1@@Z @655 NONAME ;protected: void __thiscall PAbstractList::CloneContents(class PAbstractList const *)
@@ -749,6 +786,9 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PArray@VPWin32PacketBuffer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1871 NONAME ;public: virtual enum PObject::Comparison  __thiscall PArray<class PWin32PacketBuffer>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@D@@UBE?AW4Comparison@PObject@@ABV3@@Z @688 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<char>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@E@@UBE?AW4Comparison@PObject@@ABV3@@Z @2208 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<unsigned char>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PBaseArray@F@@UBE?AW4Comparison@PObject@@ABV3@@Z @2299 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<short>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PBaseArray@G@@UBE?AW4Comparison@PObject@@ABV3@@Z @2300 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<unsigned short>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PBaseArray@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @2301 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<int>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@J@@UBE?AW4Comparison@PObject@@ABV3@@Z @1872 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<long>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PBaseArray@PAVPObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @690 NONAME ;public: virtual enum PObject::Comparison  __thiscall PBaseArray<class PObject *>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @691 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDictionary<class PCaselessString,class PIPCacheData>::CompareObjectMemoryDirect(class PObject const &)const 
@@ -781,6 +821,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PConsoleChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @2160 NONAME ;public: virtual enum PObject::Comparison  __thiscall PConsoleChannel::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PContainer@@UBE?AW4Comparison@PObject@@ABV3@@Z @715 NONAME ;public: virtual enum PObject::Comparison  __thiscall PContainer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PDirectory@@UBE?AW4Comparison@PObject@@ABV3@@Z @716 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDirectory::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PDWORDArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @2348 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDWORDArray::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PDynaLink@@UBE?AW4Comparison@PObject@@ABV3@@Z @717 NONAME ;public: virtual enum PObject::Comparison  __thiscall PDynaLink::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PEthSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1873 NONAME ;public: virtual enum PObject::Comparison  __thiscall PEthSocket::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @718 NONAME ;public: virtual enum PObject::Comparison  __thiscall PFile::CompareObjectMemoryDirect(class PObject const &)const 
@@ -815,6 +856,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PSerialChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @1966 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSerialChannel::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @745 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PServiceProcess@@UBE?AW4Comparison@PObject@@ABV3@@Z @746 NONAME ;public: virtual enum PObject::Comparison  __thiscall PServiceProcess::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PShortArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @2304 NONAME ;public: virtual enum PObject::Comparison  __thiscall PShortArray::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSmartPointer@@UBE?AW4Comparison@PObject@@ABV3@@Z @747 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSmartPointer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @748 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSocket::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSortedStringList@@UBE?AW4Comparison@PObject@@ABV3@@Z @749 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSortedStringList::CompareObjectMemoryDirect(class PObject const &)const 
@@ -841,11 +883,13 @@ EXPORTS
     ?CompareObjectMemoryDirect@PTimerList@@UBE?AW4Comparison@PObject@@ABV3@@Z @768 NONAME ;public: virtual enum PObject::Comparison  __thiscall PTimerList::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PUDPSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @769 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUDPSocket::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PUnSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @770 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUnSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PUnsignedArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @2305 NONAME ;public: virtual enum PObject::Comparison  __thiscall PUnsignedArray::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWaveBuffer@@UBE?AW4Comparison@PObject@@ABV3@@Z @2048 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveBuffer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWaveFormat@@UBE?AW4Comparison@PObject@@ABV3@@Z @2236 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveFormat::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWin32PacketBuffer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1875 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWin32PacketBuffer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWin32SnmpLibrary@@UBE?AW4Comparison@PObject@@ABV3@@Z @1876 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWin32SnmpLibrary::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWinSock@@UBE?AW4Comparison@PObject@@ABV3@@Z @771 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWinSock::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PWORDArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @2306 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWORDArray::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@RouteEntry@PIPSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @1877 NONAME ;public: virtual enum PObject::Comparison  __thiscall PIPSocket::RouteEntry::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@SelectList@PSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @772 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSocket::SelectList::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@Table@PHashTable@@UBE?AW4Comparison@PObject@@ABV4@@Z @773 NONAME ;public: virtual enum PObject::Comparison  __thiscall PHashTable::Table::CompareObjectMemoryDirect(class PObject const &)const 
@@ -972,6 +1016,9 @@ EXPORTS
     ?GetClass@?$PArray@VPWin32PacketBuffer@@@@UBEPBDI@Z @1888 NONAME ;public: virtual char const * __thiscall PArray<class PWin32PacketBuffer>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@D@@UBEPBDI@Z @894 NONAME ;public: virtual char const * __thiscall PBaseArray<char>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@E@@UBEPBDI@Z @2210 NONAME ;public: virtual char const * __thiscall PBaseArray<unsigned char>::GetClass(unsigned int)const 
+    ?GetClass@?$PBaseArray@F@@UBEPBDI@Z @2307 NONAME ;public: virtual char const * __thiscall PBaseArray<short>::GetClass(unsigned int)const 
+    ?GetClass@?$PBaseArray@G@@UBEPBDI@Z @2308 NONAME ;public: virtual char const * __thiscall PBaseArray<unsigned short>::GetClass(unsigned int)const 
+    ?GetClass@?$PBaseArray@H@@UBEPBDI@Z @2309 NONAME ;public: virtual char const * __thiscall PBaseArray<int>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@J@@UBEPBDI@Z @1889 NONAME ;public: virtual char const * __thiscall PBaseArray<long>::GetClass(unsigned int)const 
     ?GetClass@?$PBaseArray@PAVPObject@@@@UBEPBDI@Z @896 NONAME ;public: virtual char const * __thiscall PBaseArray<class PObject *>::GetClass(unsigned int)const 
     ?GetClass@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPBDI@Z @897 NONAME ;public: virtual char const * __thiscall PDictionary<class PCaselessString,class PIPCacheData>::GetClass(unsigned int)const 
@@ -1004,6 +1051,7 @@ EXPORTS
     ?GetClass@PConsoleChannel@@UBEPBDI@Z @2161 NONAME ;public: virtual char const * __thiscall PConsoleChannel::GetClass(unsigned int)const 
     ?GetClass@PContainer@@UBEPBDI@Z @921 NONAME ;public: virtual char const * __thiscall PContainer::GetClass(unsigned int)const 
     ?GetClass@PDirectory@@UBEPBDI@Z @922 NONAME ;public: virtual char const * __thiscall PDirectory::GetClass(unsigned int)const 
+    ?GetClass@PDWORDArray@@UBEPBDI@Z @2352 NONAME ;public: virtual char const * __thiscall PDWORDArray::GetClass(unsigned int)const 
     ?GetClass@PDynaLink@@UBEPBDI@Z @923 NONAME ;public: virtual char const * __thiscall PDynaLink::GetClass(unsigned int)const 
     ?GetClass@PEthSocket@@UBEPBDI@Z @1890 NONAME ;public: virtual char const * __thiscall PEthSocket::GetClass(unsigned int)const 
     ?GetClass@PFile@@UBEPBDI@Z @924 NONAME ;public: virtual char const * __thiscall PFile::GetClass(unsigned int)const 
@@ -1038,6 +1086,7 @@ EXPORTS
     ?GetClass@PSerialChannel@@UBEPBDI@Z @1967 NONAME ;public: virtual char const * __thiscall PSerialChannel::GetClass(unsigned int)const 
     ?GetClass@PSerialiser@@UBEPBDI@Z @951 NONAME ;public: virtual char const * __thiscall PSerialiser::GetClass(unsigned int)const 
     ?GetClass@PServiceProcess@@UBEPBDI@Z @952 NONAME ;public: virtual char const * __thiscall PServiceProcess::GetClass(unsigned int)const 
+    ?GetClass@PShortArray@@UBEPBDI@Z @2312 NONAME ;public: virtual char const * __thiscall PShortArray::GetClass(unsigned int)const 
     ?GetClass@PSmartPointer@@UBEPBDI@Z @953 NONAME ;public: virtual char const * __thiscall PSmartPointer::GetClass(unsigned int)const 
     ?GetClass@PSocket@@UBEPBDI@Z @954 NONAME ;public: virtual char const * __thiscall PSocket::GetClass(unsigned int)const 
     ?GetClass@PSortedStringList@@UBEPBDI@Z @955 NONAME ;public: virtual char const * __thiscall PSortedStringList::GetClass(unsigned int)const 
@@ -1064,11 +1113,13 @@ EXPORTS
     ?GetClass@PTimerList@@UBEPBDI@Z @974 NONAME ;public: virtual char const * __thiscall PTimerList::GetClass(unsigned int)const 
     ?GetClass@PUDPSocket@@UBEPBDI@Z @975 NONAME ;public: virtual char const * __thiscall PUDPSocket::GetClass(unsigned int)const 
     ?GetClass@PUnSerialiser@@UBEPBDI@Z @976 NONAME ;public: virtual char const * __thiscall PUnSerialiser::GetClass(unsigned int)const 
+    ?GetClass@PUnsignedArray@@UBEPBDI@Z @2313 NONAME ;public: virtual char const * __thiscall PUnsignedArray::GetClass(unsigned int)const 
     ?GetClass@PWaveBuffer@@UBEPBDI@Z @2052 NONAME ;public: virtual char const * __thiscall PWaveBuffer::GetClass(unsigned int)const 
     ?GetClass@PWaveFormat@@UBEPBDI@Z @2237 NONAME ;public: virtual char const * __thiscall PWaveFormat::GetClass(unsigned int)const 
     ?GetClass@PWin32PacketBuffer@@UBEPBDI@Z @1892 NONAME ;public: virtual char const * __thiscall PWin32PacketBuffer::GetClass(unsigned int)const 
     ?GetClass@PWin32SnmpLibrary@@UBEPBDI@Z @1893 NONAME ;public: virtual char const * __thiscall PWin32SnmpLibrary::GetClass(unsigned int)const 
     ?GetClass@PWinSock@@UBEPBDI@Z @977 NONAME ;public: virtual char const * __thiscall PWinSock::GetClass(unsigned int)const 
+    ?GetClass@PWORDArray@@UBEPBDI@Z @2314 NONAME ;public: virtual char const * __thiscall PWORDArray::GetClass(unsigned int)const 
     ?GetClass@RouteEntry@PIPSocket@@UBEPBDI@Z @1894 NONAME ;public: virtual char const * __thiscall PIPSocket::RouteEntry::GetClass(unsigned int)const 
     ?GetClass@SelectList@PSocket@@UBEPBDI@Z @978 NONAME ;public: virtual char const * __thiscall PSocket::SelectList::GetClass(unsigned int)const 
     ?GetClass@Table@PHashTable@@UBEPBDI@Z @979 NONAME ;public: virtual char const * __thiscall PHashTable::Table::GetClass(unsigned int)const 
@@ -1298,6 +1349,9 @@ EXPORTS
     ?IsClass@?$PArray@VPWin32PacketBuffer@@@@UBEHPBD@Z @1917 NONAME ;public: virtual int __thiscall PArray<class PWin32PacketBuffer>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@D@@UBEHPBD@Z @1212 NONAME ;public: virtual int __thiscall PBaseArray<char>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@E@@UBEHPBD@Z @2212 NONAME ;public: virtual int __thiscall PBaseArray<unsigned char>::IsClass(char const *)const 
+    ?IsClass@?$PBaseArray@F@@UBEHPBD@Z @2315 NONAME ;public: virtual int __thiscall PBaseArray<short>::IsClass(char const *)const 
+    ?IsClass@?$PBaseArray@G@@UBEHPBD@Z @2316 NONAME ;public: virtual int __thiscall PBaseArray<unsigned short>::IsClass(char const *)const 
+    ?IsClass@?$PBaseArray@H@@UBEHPBD@Z @2317 NONAME ;public: virtual int __thiscall PBaseArray<int>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@J@@UBEHPBD@Z @1918 NONAME ;public: virtual int __thiscall PBaseArray<long>::IsClass(char const *)const 
     ?IsClass@?$PBaseArray@PAVPObject@@@@UBEHPBD@Z @1214 NONAME ;public: virtual int __thiscall PBaseArray<class PObject *>::IsClass(char const *)const 
     ?IsClass@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEHPBD@Z @1215 NONAME ;public: virtual int __thiscall PDictionary<class PCaselessString,class PIPCacheData>::IsClass(char const *)const 
@@ -1330,6 +1384,7 @@ EXPORTS
     ?IsClass@PConsoleChannel@@UBEHPBD@Z @2163 NONAME ;public: virtual int __thiscall PConsoleChannel::IsClass(char const *)const 
     ?IsClass@PContainer@@UBEHPBD@Z @1239 NONAME ;public: virtual int __thiscall PContainer::IsClass(char const *)const 
     ?IsClass@PDirectory@@UBEHPBD@Z @1240 NONAME ;public: virtual int __thiscall PDirectory::IsClass(char const *)const 
+    ?IsClass@PDWORDArray@@UBEHPBD@Z @2356 NONAME ;public: virtual int __thiscall PDWORDArray::IsClass(char const *)const 
     ?IsClass@PDynaLink@@UBEHPBD@Z @1241 NONAME ;public: virtual int __thiscall PDynaLink::IsClass(char const *)const 
     ?IsClass@PEthSocket@@UBEHPBD@Z @1919 NONAME ;public: virtual int __thiscall PEthSocket::IsClass(char const *)const 
     ?IsClass@PFile@@UBEHPBD@Z @1242 NONAME ;public: virtual int __thiscall PFile::IsClass(char const *)const 
@@ -1364,6 +1419,7 @@ EXPORTS
     ?IsClass@PSerialChannel@@UBEHPBD@Z @1968 NONAME ;public: virtual int __thiscall PSerialChannel::IsClass(char const *)const 
     ?IsClass@PSerialiser@@UBEHPBD@Z @1269 NONAME ;public: virtual int __thiscall PSerialiser::IsClass(char const *)const 
     ?IsClass@PServiceProcess@@UBEHPBD@Z @1270 NONAME ;public: virtual int __thiscall PServiceProcess::IsClass(char const *)const 
+    ?IsClass@PShortArray@@UBEHPBD@Z @2320 NONAME ;public: virtual int __thiscall PShortArray::IsClass(char const *)const 
     ?IsClass@PSmartPointer@@UBEHPBD@Z @1271 NONAME ;public: virtual int __thiscall PSmartPointer::IsClass(char const *)const 
     ?IsClass@PSocket@@UBEHPBD@Z @1272 NONAME ;public: virtual int __thiscall PSocket::IsClass(char const *)const 
     ?IsClass@PSortedStringList@@UBEHPBD@Z @1273 NONAME ;public: virtual int __thiscall PSortedStringList::IsClass(char const *)const 
@@ -1390,11 +1446,13 @@ EXPORTS
     ?IsClass@PTimerList@@UBEHPBD@Z @1292 NONAME ;public: virtual int __thiscall PTimerList::IsClass(char const *)const 
     ?IsClass@PUDPSocket@@UBEHPBD@Z @1293 NONAME ;public: virtual int __thiscall PUDPSocket::IsClass(char const *)const 
     ?IsClass@PUnSerialiser@@UBEHPBD@Z @1294 NONAME ;public: virtual int __thiscall PUnSerialiser::IsClass(char const *)const 
+    ?IsClass@PUnsignedArray@@UBEHPBD@Z @2321 NONAME ;public: virtual int __thiscall PUnsignedArray::IsClass(char const *)const 
     ?IsClass@PWaveBuffer@@UBEHPBD@Z @2058 NONAME ;public: virtual int __thiscall PWaveBuffer::IsClass(char const *)const 
     ?IsClass@PWaveFormat@@UBEHPBD@Z @2238 NONAME ;public: virtual int __thiscall PWaveFormat::IsClass(char const *)const 
     ?IsClass@PWin32PacketBuffer@@UBEHPBD@Z @1921 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsClass(char const *)const 
     ?IsClass@PWin32SnmpLibrary@@UBEHPBD@Z @1922 NONAME ;public: virtual int __thiscall PWin32SnmpLibrary::IsClass(char const *)const 
     ?IsClass@PWinSock@@UBEHPBD@Z @1295 NONAME ;public: virtual int __thiscall PWinSock::IsClass(char const *)const 
+    ?IsClass@PWORDArray@@UBEHPBD@Z @2322 NONAME ;public: virtual int __thiscall PWORDArray::IsClass(char const *)const 
     ?IsClass@RouteEntry@PIPSocket@@UBEHPBD@Z @1923 NONAME ;public: virtual int __thiscall PIPSocket::RouteEntry::IsClass(char const *)const 
     ?IsClass@SelectList@PSocket@@UBEHPBD@Z @1296 NONAME ;public: virtual int __thiscall PSocket::SelectList::IsClass(char const *)const 
     ?IsClass@Table@PHashTable@@UBEHPBD@Z @1297 NONAME ;public: virtual int __thiscall PHashTable::Table::IsClass(char const *)const 
@@ -1404,6 +1462,9 @@ EXPORTS
     ?IsDescendant@?$PArray@VPWin32PacketBuffer@@@@UBEHPBD@Z @1924 NONAME ;public: virtual int __thiscall PArray<class PWin32PacketBuffer>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@D@@UBEHPBD@Z @1300 NONAME ;public: virtual int __thiscall PBaseArray<char>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@E@@UBEHPBD@Z @2214 NONAME ;public: virtual int __thiscall PBaseArray<unsigned char>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PBaseArray@F@@UBEHPBD@Z @2323 NONAME ;public: virtual int __thiscall PBaseArray<short>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PBaseArray@G@@UBEHPBD@Z @2324 NONAME ;public: virtual int __thiscall PBaseArray<unsigned short>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PBaseArray@H@@UBEHPBD@Z @2325 NONAME ;public: virtual int __thiscall PBaseArray<int>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@J@@UBEHPBD@Z @1925 NONAME ;public: virtual int __thiscall PBaseArray<long>::IsDescendant(char const *)const 
     ?IsDescendant@?$PBaseArray@PAVPObject@@@@UBEHPBD@Z @1302 NONAME ;public: virtual int __thiscall PBaseArray<class PObject *>::IsDescendant(char const *)const 
     ?IsDescendant@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEHPBD@Z @1303 NONAME ;public: virtual int __thiscall PDictionary<class PCaselessString,class PIPCacheData>::IsDescendant(char const *)const 
@@ -1436,6 +1497,7 @@ EXPORTS
     ?IsDescendant@PConsoleChannel@@UBEHPBD@Z @2164 NONAME ;public: virtual int __thiscall PConsoleChannel::IsDescendant(char const *)const 
     ?IsDescendant@PContainer@@UBEHPBD@Z @1327 NONAME ;public: virtual int __thiscall PContainer::IsDescendant(char const *)const 
     ?IsDescendant@PDirectory@@UBEHPBD@Z @1328 NONAME ;public: virtual int __thiscall PDirectory::IsDescendant(char const *)const 
+    ?IsDescendant@PDWORDArray@@UBEHPBD@Z @2360 NONAME ;public: virtual int __thiscall PDWORDArray::IsDescendant(char const *)const 
     ?IsDescendant@PDynaLink@@UBEHPBD@Z @1329 NONAME ;public: virtual int __thiscall PDynaLink::IsDescendant(char const *)const 
     ?IsDescendant@PEthSocket@@UBEHPBD@Z @1926 NONAME ;public: virtual int __thiscall PEthSocket::IsDescendant(char const *)const 
     ?IsDescendant@PFile@@UBEHPBD@Z @1330 NONAME ;public: virtual int __thiscall PFile::IsDescendant(char const *)const 
@@ -1470,6 +1532,7 @@ EXPORTS
     ?IsDescendant@PSerialChannel@@UBEHPBD@Z @1969 NONAME ;public: virtual int __thiscall PSerialChannel::IsDescendant(char const *)const 
     ?IsDescendant@PSerialiser@@UBEHPBD@Z @1357 NONAME ;public: virtual int __thiscall PSerialiser::IsDescendant(char const *)const 
     ?IsDescendant@PServiceProcess@@UBEHPBD@Z @1358 NONAME ;public: virtual int __thiscall PServiceProcess::IsDescendant(char const *)const 
+    ?IsDescendant@PShortArray@@UBEHPBD@Z @2328 NONAME ;public: virtual int __thiscall PShortArray::IsDescendant(char const *)const 
     ?IsDescendant@PSmartPointer@@UBEHPBD@Z @1359 NONAME ;public: virtual int __thiscall PSmartPointer::IsDescendant(char const *)const 
     ?IsDescendant@PSocket@@UBEHPBD@Z @1360 NONAME ;public: virtual int __thiscall PSocket::IsDescendant(char const *)const 
     ?IsDescendant@PSortedStringList@@UBEHPBD@Z @1361 NONAME ;public: virtual int __thiscall PSortedStringList::IsDescendant(char const *)const 
@@ -1496,11 +1559,13 @@ EXPORTS
     ?IsDescendant@PTimerList@@UBEHPBD@Z @1380 NONAME ;public: virtual int __thiscall PTimerList::IsDescendant(char const *)const 
     ?IsDescendant@PUDPSocket@@UBEHPBD@Z @1381 NONAME ;public: virtual int __thiscall PUDPSocket::IsDescendant(char const *)const 
     ?IsDescendant@PUnSerialiser@@UBEHPBD@Z @1382 NONAME ;public: virtual int __thiscall PUnSerialiser::IsDescendant(char const *)const 
+    ?IsDescendant@PUnsignedArray@@UBEHPBD@Z @2329 NONAME ;public: virtual int __thiscall PUnsignedArray::IsDescendant(char const *)const 
     ?IsDescendant@PWaveBuffer@@UBEHPBD@Z @2060 NONAME ;public: virtual int __thiscall PWaveBuffer::IsDescendant(char const *)const 
     ?IsDescendant@PWaveFormat@@UBEHPBD@Z @2239 NONAME ;public: virtual int __thiscall PWaveFormat::IsDescendant(char const *)const 
     ?IsDescendant@PWin32PacketBuffer@@UBEHPBD@Z @1928 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsDescendant(char const *)const 
     ?IsDescendant@PWin32SnmpLibrary@@UBEHPBD@Z @1929 NONAME ;public: virtual int __thiscall PWin32SnmpLibrary::IsDescendant(char const *)const 
     ?IsDescendant@PWinSock@@UBEHPBD@Z @1383 NONAME ;public: virtual int __thiscall PWinSock::IsDescendant(char const *)const 
+    ?IsDescendant@PWORDArray@@UBEHPBD@Z @2330 NONAME ;public: virtual int __thiscall PWORDArray::IsDescendant(char const *)const 
     ?IsDescendant@RouteEntry@PIPSocket@@UBEHPBD@Z @1930 NONAME ;public: virtual int __thiscall PIPSocket::RouteEntry::IsDescendant(char const *)const 
     ?IsDescendant@SelectList@PSocket@@UBEHPBD@Z @1384 NONAME ;public: virtual int __thiscall PSocket::SelectList::IsDescendant(char const *)const 
     ?IsDescendant@Table@PHashTable@@UBEHPBD@Z @1385 NONAME ;public: virtual int __thiscall PHashTable::Table::IsDescendant(char const *)const 
@@ -1633,6 +1698,7 @@ EXPORTS
     ?Pause@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1494 NONAME ;public: virtual int __thiscall NT_ServiceManager::Pause(class PServiceProcess *)
     ?Pause@PTimer@@QAEXXZ @1495 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1496 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
+    ?PDummyFunctionToMakeSureSymbolsAreInDEFFile@@YAXXZ @2331 NONAME ;void __cdecl PDummyFunctionToMakeSureSymbolsAreInDEFFile(void)
     ?PGetErrorStream@@YAAAVostream@@XZ @1497 NONAME ;class ostream & __cdecl PGetErrorStream(void)
     ?pHostByAddr@@3VPHostByAddr@@A @1499 NONAME ;class PHostByAddr  pHostByAddr
     ?pHostByName@@3VPHostByName@@A @1500 NONAME ;class PHostByName  pHostByName
@@ -1969,7 +2035,17 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??GPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2266 NONAME ;public: class PTime  __thiscall PTime::operator-(class PTimeInterval const &)const 
-    ??HPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2267 NONAME ;public: class PTime  __thiscall PTime::operator+(class PTimeInterval const &)const 
-    ??YPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2268 NONAME ;public: class PTime & __thiscall PTime::operator+=(class PTimeInterval const &)
-    ??ZPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2269 NONAME ;public: class PTime & __thiscall PTime::operator-=(class PTimeInterval const &)
+    ??0PDWORDArray@@QAE@H@Z @2374 NONAME ;public: __thiscall PDWORDArray::PDWORDArray(int)
+    ??0POrdinalToString@@QAE@XZ @2375 NONAME ;public: __thiscall POrdinalToString::POrdinalToString(void)
+    ??0PStringSet@@QAE@H@Z @2376 NONAME ;public: __thiscall PStringSet::PStringSet(int)
+    ??0PUnsignedArray@@QAE@H@Z @2377 NONAME ;public: __thiscall PUnsignedArray::PUnsignedArray(int)
+    ??4PDWORDArray@@QAEAAV0@ABV0@@Z @2378 NONAME ;public: class PDWORDArray & __thiscall PDWORDArray::operator=(class PDWORDArray const &)
+    ??4POrdinalToString@@QAEAAV0@ABV0@@Z @2379 NONAME ;public: class POrdinalToString & __thiscall POrdinalToString::operator=(class POrdinalToString const &)
+    ??4PStringSet@@QAEAAV0@ABV0@@Z @2380 NONAME ;public: class PStringSet & __thiscall PStringSet::operator=(class PStringSet const &)
+    ??4PUnsignedArray@@QAEAAV0@ABV0@@Z @2381 NONAME ;public: class PUnsignedArray & __thiscall PUnsignedArray::operator=(class PUnsignedArray const &)
+    ??A?$PBaseArray@I@@QAEAAIH@Z @2382 NONAME ;public: unsigned int & __thiscall PBaseArray<unsigned int>::operator[](int)
+    ??A?$PBaseArray@K@@QAEAAKH@Z @2383 NONAME ;public: unsigned long & __thiscall PBaseArray<unsigned long>::operator[](int)
+    ?GetAt@?$PBaseArray@I@@QBEIH@Z @2384 NONAME ;public: unsigned int __thiscall PBaseArray<unsigned int>::GetAt(int)const 
+    ?GetAt@?$PBaseArray@K@@QBEKH@Z @2385 NONAME ;public: unsigned long __thiscall PBaseArray<unsigned long>::GetAt(int)const 
+    ?SetAt@?$PBaseArray@I@@QAEHHI@Z @2386 NONAME ;public: int __thiscall PBaseArray<unsigned int>::SetAt(int,unsigned int)
+    ?SetAt@?$PBaseArray@K@@QAEHHK@Z @2387 NONAME ;public: int __thiscall PBaseArray<unsigned long>::SetAt(int,unsigned long)
