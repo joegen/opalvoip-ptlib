@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.7 1995/01/04 10:57:08 robertj Exp $
+ * $Id: sockets.cxx,v 1.8 1995/01/15 04:55:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.7  1995/01/04 10:57:08  robertj
+ * Revision 1.8  1995/01/15 04:55:47  robertj
+ * Moved all Berkley socket functions inside #ifdef.
+ *
+ * Revision 1.7  1995/01/04  10:57:08  robertj
  * Changed for HPUX and GNU2.6.x
  *
  * Revision 1.6  1995/01/03  09:37:52  robertj
@@ -175,13 +178,6 @@ BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 }
 
 
-#endif
-
-void PTCPSocket::OnOutOfBand(const void *, PINDEX)
-{
-}
-
-
 BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 {
   int count = ::send(os_handle, (const char *)buf, len, MSG_OOB);
@@ -194,6 +190,35 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
     return TRUE;
   }
 }
+
+
+WORD PTCPSocket::GetPort(const PString & serviceName) const
+{
+  struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
+  if (service != NULL)
+    return service->s_port;
+  else
+    return 0;
+}
+
+
+PString PTCPSocket::GetService(WORD port) const
+{
+  struct servent * service = ::getservbyport(port, "tcp");
+  if (service != NULL)
+    return PString(service->s_name);
+  else
+    return PString();
+}
+
+
+#endif
+
+
+void PTCPSocket::OnOutOfBand(const void *, PINDEX)
+{
+}
+
 
 void PTCPSocket::SetPort(WORD newPort)
 {
@@ -217,26 +242,6 @@ WORD PTCPSocket::GetPort() const
 PString PTCPSocket::GetService() const
 {
   return GetService(port);
-}
-
-
-WORD PTCPSocket::GetPort(const PString & serviceName) const
-{
-  struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
-  if (service != NULL)
-    return service->s_port;
-  else
-    return 0;
-}
-
-
-PString PTCPSocket::GetService(WORD port) const
-{
-  struct servent * service = ::getservbyport(port, "tcp");
-  if (service != NULL)
-    return PString(service->s_name);
-  else
-    return PString();
 }
 
 
