@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.11  2004/09/09 23:50:49  csoutheren
+ * Fixed problem with duplicate definition of sinetab causing problems
+ *
  * Revision 1.10  2004/09/09 05:23:38  dereksmithies
  * Add utility function to report on dtmf characters used.
  *
@@ -178,19 +181,11 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes)
 #define TWO32	      4294967296.0	/* 2^32 */
 
 
-static double sinetab[SINELEN];
-
 static double amptab[2] = { 8191.75, 16383.5 };
 
 static inline int ifix(double x) 
 { 
   return (x >= 0.0) ? (int) (x+0.5) : (int) (x-0.5); 
-}
-
-// given 32-bit pointer ptr, return corresponding element from sine table
-static inline double sine(unsigned int ptr)
-{ 
-  return sinetab[ptr >> (32-SINEBITS)];
 }
 
 // given frequency f, return corresponding phase increment 
@@ -267,7 +262,8 @@ void PDTMFEncoder::MakeSineTable()
   if (!sineTabInit) {
     for (int k = 0; k < SINELEN; k++) { 
       double th = TWOPI * (double) k / (double) SINELEN;
-      sinetab[k] = sin(th);
+      double v = sin(th);
+      sinetab[k] = v;
     }
     sineTabInit = TRUE;
   }
