@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.4  1998/11/05 09:58:30  craigs
+ * Added static buffer for reentrant routines
+ *
  * Revision 1.3  1998/09/24 04:11:43  robertj
  * Added open software license.
  *
@@ -61,6 +64,8 @@
     DIR           * directory;
     struct dirent * entry;
     PFileInfo     * entryInfo;
+    BYTE dirb[sizeof(struct dirent) + NAME_MAX];
 };
 
 #endif
+
