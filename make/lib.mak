@@ -24,6 +24,10 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.11  2001/03/23 03:18:01  robertj
+# Fixed addition of trailing dot at end of release versions of so libraries
+#   caused to removal of the "pl" build type, changing it to a dot.
+#
 # Revision 1.10  2001/03/14 06:24:55  robertj
 # Fixed setting of symlinks for shared libraries to be relative paths.
 #
@@ -45,7 +49,7 @@ endif
 ifndef BUILD_TYPE
 BUILD_TYPE	:= a
 else
-BUILD_TYPE	:= $(subst pl,,$(subst beta,b,$(subst alpha,a,$(BUILD_TYPE))))
+BUILD_TYPE	:= $(subst .,,$(subst beta,b,$(subst alpha,a,$(BUILD_TYPE))))
 endif
 
 ifndef BUILD_NUMBER
