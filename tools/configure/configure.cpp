@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.13  2004/03/13 02:50:56  rjongbloed
+ * Fixed anomalous message where even though a feature was disabled, a "Located "
+ *   directiory message is still displayed causing confusion.
+ * Added --disable-<feature> as synonym to existing --no-<feature> to be compatible
+ *   with autoconf.
+ * Added default value to defines of 1 rather than blank.
+ *
  * Revision 1.12  2004/01/30 02:33:58  csoutheren
  * More fixups
  *
@@ -105,6 +112,7 @@ class Feature
       string defineValue;
     };
     list<CheckFileInfo> checkFiles;
+    list<string> checkDirectories;
 
     string directory;
     bool   enabled;
@@ -166,7 +174,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   else if (optionName == "DIR_SYMBOL")
     directorySymbol = '@' + optionValue + '@';
   else if (optionName == "CHECK_DIR")
-    Locate(optionValue.c_str());
+    checkDirectories.push_back(optionValue);
 }
 
 
@@ -183,8 +191,13 @@ static bool CompareName(const string & line, const string & name)
 void Feature::Adjust(string & line)
 {
   if (enabled && line.find("#undef") != string::npos) {
-    if (!simpleDefineName.empty() && CompareName(line, simpleDefineName))
-      line = "#define " + simpleDefineName + ' ' + simpleDefineValue;
+    if (!simpleDefineName.empty() && CompareName(line, simpleDefineName)) {
+      line = "#define " + simpleDefineName + ' ';
+      if (simpleDefineValue.empty())
+        line += '1';
+      else
+        line += simpleDefineValue;
+    }
 
     for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
       if (file->found && CompareName(line, file->defineName)) {
@@ -204,6 +217,9 @@ void Feature::Adjust(string & line)
 
 bool Feature::Locate(const char * testDir)
 {
+  if (!enabled)
+    return true;
+
   if (!directory.empty())
     return true;
 
@@ -412,7 +428,7 @@ int main(int argc, char* argv[])
   bool searchDisk = true;
   char *externDir = 0;
   for (int i = 1; i < argc; i++) {
-    if (stricmp(argv[i], "--no-search") == 0)
+    if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
 	    externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
@@ -429,7 +445,7 @@ int main(int argc, char* argv[])
               "  --exclude-dir=dir dir\t\tExclude dir from search path.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (feature->featureName[0] != '\0') {
-          cout << "  --no-" << feature->featureName
+          cout << "  --disable-" << feature->featureName
                << "\t\tDisable " << feature->displayName << '\n';
           if (!feature->checkFiles.empty())
             cout << "  --" << feature->featureName << "-dir=dir"
@@ -440,7 +456,8 @@ int main(int argc, char* argv[])
     }
     else {
       for (feature = features.begin(); feature != features.end(); feature++) {
-        if (stricmp(argv[i], ("--no-"+feature->featureName).c_str()) == 0)
+        if (stricmp(argv[i], ("--no-"     +feature->featureName).c_str()) == 0 ||
+            stricmp(argv[i], ("--disable-"+feature->featureName).c_str()) == 0)
           feature->enabled = false;
 	else if (strstr(argv[i], ("--" + feature->featureName+"-dir=").c_str()) == argv[i])
 	  if (!feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
@@ -450,32 +467,42 @@ int main(int argc, char* argv[])
     }
   }
 
-  if (searchDisk) {
-    bool foundAll = true;
-    for (feature = features.begin(); feature != features.end(); feature++) {
-      if (feature->enabled && !feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
+  bool foundAll = true;
+  for (feature = features.begin(); feature != features.end(); feature++) {
+    if (feature->enabled && !feature->checkFiles.empty()) {
+      bool foundOne = false;
+      list<string>::iterator dir;
+      for (dir = feature->checkDirectories.begin(); dir != feature->checkDirectories.end(); dir++) {
+        if (feature->Locate(dir->c_str())) {
+          foundOne = true;
+          break;
+        }
+      }
+      if (!foundOne) {
         foundAll = false;
+        break;
+      }
+    }
+  }
+
+  if (searchDisk && !foundAll) {
+    // Do search of entire system
+    char drives[100];
+    if (!externDir){
+	    if (!GetLogicalDriveStrings(sizeof(drives), drives))
+	      strcpy(drives, "C:\\");
+    } else {
+	    strcpy(drives, externDir);	
     }
 
-    if (!foundAll) {
-      // Do search of entire system
-      char drives[100];
-      if (!externDir){
-	      if (!GetLogicalDriveStrings(sizeof(drives), drives))
-	        strcpy(drives, "C:\\");
-      } else {
-	      strcpy(drives, externDir);	
+    const char * drive = drives;
+    while (*drive != '\0') {
+      if (GetDriveType(drive) == DRIVE_FIXED) {
+        cout << "Searching " << drive << endl;
+        if (TreeWalk(drive))
+          break;
       }
-
-      const char * drive = drives;
-      while (*drive != '\0') {
-        if (GetDriveType(drive) == DRIVE_FIXED) {
-          cout << "Searching " << drive << endl;
-          if (TreeWalk(drive))
-            break;
-        }
-        drive += strlen(drive)+1;
-      }
+      drive += strlen(drive)+1;
     }
   }
 
