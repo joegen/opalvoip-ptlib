@@ -58,6 +58,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\pssl.obj"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -102,7 +103,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\pssl.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -156,6 +158,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.sbr"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\Psnmp.sbr"
+	-@erase "$(INTDIR)\pssl.obj"
+	-@erase "$(INTDIR)\pssl.sbr"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\random.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
@@ -202,7 +206,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\pssl.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -233,7 +238,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\pssl.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -602,6 +608,29 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 !ENDIF 
 
 SOURCE=..\..\ptclib\pssl.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\pssl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\pssl.obj"	"$(INTDIR)\pssl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
 SOURCE=..\..\ptclib\random.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"

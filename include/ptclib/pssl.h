@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.9  2000/08/25 08:11:02  robertj
+ * Fixed OpenSSL support so can operate as a server channel.
+ *
  * Revision 1.8  2000/08/04 12:52:18  robertj
  * SSL changes, added error functions, removed need to have openssl include directory in app.
  *
@@ -64,72 +67,178 @@ struct ssl_st;
 struct ssl_ctx_st;
 
 
+/**Context for SSL channels.
+   This class embodies a common environment for all connections made via SSL
+   using the PSSLChannel class. It includes such things as the version of SSL
+   and certificates, CA's etc.
+  */
+class PSSLContext {
+  public:
+    /**Create a new context for SSL channels.
+       An optional session ID may be provided in the context. This is used
+       to identify sessions across multiple channels in this context. The
+       session ID is a completely arbitrary block of data. If sessionId is
+       non NULL and idSize is zero, then sessionId is assumed to be a pointer
+       to a C string.
+      */
+    PSSLContext(
+      const void * sessionId = NULL,  /// Pointer to session ID
+      PINDEX idSize = 0               /// Size of session ID
+    );
+
+    /**Clean up the SSL context.
+      */
+    ~PSSLContext();
+
+    /**Get the internal SSL context structure.
+      */
+    operator ssl_ctx_st *() const { return context; }
+
+    /**Set the path to locate CA certificates.
+      */
+    BOOL SetCAPath(
+      const PDirectory & caPath   /// Directory for CA certificates
+    );
+
+    /**Set the CA certificate file.
+      */
+    BOOL SetCAFile(
+      const PFilePath & caFile    /// CA certificate file
+    );
+
+    /**Use the certificate specified.
+       The type of the certificate (eg SSL_FILETYPE_PEM) can be specified
+       explicitly, or if -1 it will be determined from the file extension.
+      */
+    BOOL UseCertificate(
+      const PFilePath & certFile, /// Certificate file
+      int fileType = -1           /// Type of certificate file
+    );
+
+    /**Use the private key file specified.
+       The type of the key file (eg SSL_FILETYPE_PEM) can be specified
+       explicitly, or if -1 it will be determined from the file extension.
+      */
+    BOOL UsePrivateKey(
+      const PFilePath & keyFile,  /// Key file
+      int fileType = -1           /// Type of key file
+    );
+
+    /**Set the available ciphers to those listed.
+      */
+    BOOL SetCipherList(
+      const PString & ciphers   /// List of cipher names.
+    );
+
+  protected:
+    ssl_ctx_st * context;
+};
+
+
+/**This class will start a secure SSL based channel.
+  */
 class PSSLChannel : public PIndirectChannel
 {
   PCLASSINFO(PSSLChannel, PIndirectChannel)
   public:
-    enum {
+    /**Create a new channel given the context.
+       If no context is given a default one is created.
+      */
+    PSSLChannel(
+      PSSLContext * context = NULL,   /// Context for SSL channel
+      BOOL autoDeleteContext = FALSE  /// Flag for context to be automatically deleted.
+    );
+    PSSLChannel(
+      PSSLContext & context           /// Context for SSL channel
+    );
+
+    /**Close and clear the SSL channel.
+      */
+    ~PSSLChannel();
+
+    // Overrides from PChannel
+    virtual BOOL Read(void * buf, PINDEX len);
+    virtual BOOL Write(const void * buf, PINDEX len);
+    virtual BOOL Close();
+    virtual BOOL Shutdown(ShutdownValue) { return TRUE; }
+    virtual PString GetErrorText() const;
+    virtual BOOL ConvertOSError(int error);
+
+    // New functions
+    /**Accept a new inbound connection (server).
+       This version expects that the indirect channel has already been opened
+       using Open() beforehand.
+      */
+    BOOL Accept();
+
+    /**Accept a new inbound connection (server).
+      */
+    BOOL Accept(
+      PChannel & channel  /// Channel to attach to.
+    );
+
+    /**Accept a new inbound connection (server).
+      */
+    BOOL Accept(
+      PChannel * channel,     /// Channel to attach to.
+      BOOL autoDelete = TRUE  /// Flag for if channel should be automatically deleted.
+    );
+
+
+    /**Connect to remote server.
+       This version expects that the indirect channel has already been opened
+       using Open() beforehand.
+      */
+    BOOL Connect();
+
+    /**Connect to remote server.
+      */
+    BOOL Connect(
+      PChannel & channel  /// Channel to attach to.
+    );
+
+    /**Connect to remote server.
+      */
+    BOOL Connect(
+      PChannel * channel,     /// Channel to attach to.
+      BOOL autoDelete = TRUE  /// Flag for if channel should be automatically deleted.
+    );
+
+    enum CertificateStatus {
       CertificateOK,
       UnknownCertificate,
       UnknownPrivateKey,
       PrivateKeyMismatch,
     };
 
-    enum {
+    CertificateStatus SetClientCertificate(const PString & certFile);
+    CertificateStatus SetClientCertificate(const PString & certFile, const PString & keyFile);
+
+    enum VerifyMode {
       VerifyNone,
       VerifyPeer,
       VerifyPeerMandatory,
     };
 
-    PSSLChannel();
-    ~PSSLChannel();
+    void SetVerifyMode(VerifyMode mode);
 
-    static BOOL SetCAPath(const PDirectory & caPath);
-    static BOOL SetCAFile(const PFilePath & caFile);
-    static BOOL SetCAPathAndFile(const PDirectory & caPath, const PFilePath & caFile);
-
-    void SetVerifyMode(int mode);
-
-    int SetClientCertificate(const PString & certFile);
-    int SetClientCertificate(const PString & certFile, const PString & keyFile);
-
-
-    // Overrides from PChannel
-    virtual BOOL   Read(void * buf, PINDEX len);
-    virtual BOOL   Write(const void * buf, PINDEX len);
-    virtual PString GetErrorText() const;
-    virtual BOOL ConvertOSError(int error);
-
-    BOOL   RawRead(void * buf, PINDEX len);
-    PINDEX RawGetLastReadCount() const;
-    BOOL   RawWrite(const void * buf, PINDEX len);
-    PINDEX RawGetLastWriteCount() const;
-
-    BOOL Accept(PChannel & channel);
-    BOOL Connect(PChannel & channel);
-    BOOL Shutdown(ShutdownValue) { return TRUE; }
 
   protected:
     /**This callback is executed when the Open() function is called with
        open channels. It may be used by descendent channels to do any
        handshaking required by the protocol that channel embodies.
 
-       The default behaviour is to simply return TRUE.
+       The default behaviour "connects" the channel to the OpenSSL library.
 
        @return
        Returns TRUE if the protocol handshaking is successful.
      */
     virtual BOOL OnOpen();
 
-    int  SetClientCertificate(const char * certFile, const char * keyFile);
-
-    static BOOL SetCAPathAndFile(const char * caPath, const char * caFile);
-    static void Cleanup();
-
-
-    ssl_st * ssl;
-    static ssl_ctx_st * context;
-    static PMutex initFlag;
+  protected:
+    PSSLContext * context;
+    BOOL          autoDeleteContext;
+    ssl_st      * ssl;
 };
 
 #endif
