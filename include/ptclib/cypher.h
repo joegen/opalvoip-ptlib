@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.1 1996/01/23 13:04:20 robertj Exp $
+ * $Id: cypher.h,v 1.2 1996/01/28 02:41:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.2  1996/01/28 02:41:00  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ * Added the secure configuration mechanism for protecting applications.
+ *
  * Revision 1.1  1996/01/23 13:04:20  robertj
  * Initial revision
  *
@@ -44,8 +48,8 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
       const PBYTEArray & data  // Data block to be part of the MD5
     );
     void Process(
-      PConstMemoryPointer dataBlock,  // Pointer to data to be part of the MD5
-      PINDEX length                   // Length of the data block.
+      const BYTE * dataBlock,  // Pointer to data to be part of the MD5
+      PINDEX length            // Length of the data block.
     );
     // Incorporate the specified data into the message digest.
 
@@ -85,13 +89,13 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
       Code result              // The resultant 128 bit MD5 code
     );
     static PString Encode(
-      PConstMemoryPointer dataBlock,  // Pointer to data to be encoded to MD5
-      PINDEX length                   // Length of the data block.
+      const BYTE * dataBlock,  // Pointer to data to be encoded to MD5
+      PINDEX length            // Length of the data block.
     );
     static void Encode(
-      PConstMemoryPointer dataBlock,  // Pointer to data to be encoded to MD5
-      PINDEX length,                  // Length of the data block.
-      Code result                     // The resultant 128 bit MD5 code
+      const BYTE * dataBlock,  // Pointer to data to be encoded to MD5
+      PINDEX length,           // Length of the data block.
+      Code result              // The resultant 128 bit MD5 code
     );
     /* Encode the data in memory to and MD5 hash value.
     
@@ -100,7 +104,7 @@ PDECLARE_CLASS(PMessageDigest5, PObject)
      */
 
   private:
-    void Transform(PConstMemoryPointer block);
+    void Transform(const BYTE * block);
 
     BYTE buffer[64];  // input buffer
     DWORD state[4];   // state (ABCD)
@@ -206,15 +210,15 @@ PDECLARE_CLASS(PCypher, PObject)
     // Initialise the encoding/decoding sequence.
 
     virtual void EncodeBlock(
-      PConstMemoryPointer in,  // Pointer to clear n bit block.
-      PMemoryPointer out       // Pointer to coded n bit block.
+      const BYTE * in,    // Pointer to clear n bit block.
+      BYTE * out          // Pointer to coded n bit block.
     ) = 0;
     // Encode an n bit block of memory according to the encryption algorithm.
 
 
     virtual void DecodeBlock(
-      PConstMemoryPointer in,  // Pointer to coded n bit block.
-      PMemoryPointer out       // Pointer to clear n bit block.
+      const BYTE * in,  // Pointer to coded n bit block.
+      BYTE * out        // Pointer to clear n bit block.
     ) = 0;
     // Dencode an n bit block of memory according to the encryption algorithm.
 
@@ -268,14 +272,14 @@ PDECLARE_CLASS(PTEACypher, PCypher)
     // Initialise the encoding/decoding sequence.
 
     virtual void EncodeBlock(
-      PConstMemoryPointer in,  // Pointer to clear n bit block.
-      PMemoryPointer out       // Pointer to coded n bit block.
+      const BYTE * in,  // Pointer to clear n bit block.
+      BYTE * out        // Pointer to coded n bit block.
     );
     // Encode an n bit block of memory according to the encryption algorithm.
 
     virtual void DecodeBlock(
-      PConstMemoryPointer in,  // Pointer to coded n bit block.
-      PMemoryPointer out       // Pointer to clear n bit block.
+      const BYTE * in,  // Pointer to coded n bit block.
+      BYTE * out        // Pointer to clear n bit block.
     );
     // Dencode an n bit block of memory according to the encryption algorithm.
 
@@ -283,6 +287,52 @@ PDECLARE_CLASS(PTEACypher, PCypher)
     DWORD k0, k1, k2, k3;
 };
 
+
+
+PDECLARE_CLASS(PSecureConfig, PConfig)
+/* This class defines a set of configuration keys which may be secured by an
+   encrypted hash function. Thus values contained in keys specified by this
+   class cannot be changed without invalidating the hash function.
+ */
+
+  public:
+    PSecureConfig(
+      const char * encryptPhrase,         // Phrase to be used for encryption.
+      const char * const * securedKeys,   // List of secured keys.
+      PINDEX count,                       // Number of secured keys in list.
+      const char * securedSection = "Secured Options",
+        // Section for secured key values
+      Source src = Application      // Standard source for the configuration.
+    );
+    /* Create a secured configuration. 
+     */
+
+
+  // New functions for class
+    void SetValidation(
+      const char * validationKey = "Validation" // Key to store validation.
+    );
+    /* Set the configuration file key with an encoded validation of all of the
+       values attached to the keys specified in the constructor.
+     */
+
+    BOOL IsValid(
+      const char * validationKey = "Validation" // Key validation stored in.
+    );
+    /* Check the current values attached to the keys specified in the
+       constructor against an encoded validation key.
+
+       <H2>Returns:</H2>
+       TRUE if secure key values are valid.
+     */
+
+
+  protected:
+    PString CalculateValidation();
+
+    PTEACypher::Key cryptKey;
+    PStringArray    securedKey;
+};
 
 
 #endif // _PCYPHER
