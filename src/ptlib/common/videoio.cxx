@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.24  2002/01/08 01:32:20  robertj
+ * Tidied up some PTRACE debug output.
+ *
  * Revision 1.23  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -213,15 +216,13 @@ static struct {
 
 BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
 {
-  PTRACE(3,"PVideoDevice::SetColourFormatConverter " << colourFmt);
   if (converter) {    
     delete converter;
     converter = NULL;
   }
   
   if (SetColourFormat(colourFmt)) {
-    PTRACE(3,"PVideoDevice::SetColourFormatConverter Success");
-    PTRACE(3,"PVideoDevice::SetColourFormatConverter get " << colourFmt);    
+    PTRACE(3, "PVidDev\tSetColourFormatConverter success for " << colourFmt);    
     return TRUE;
   }
   
@@ -239,20 +240,19 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
   PINDEX knownFormatIdx = 0;
   while (knownFormatIdx < PARRAYSIZE(colourFormatBPPTab)) {
     PString formatToTry = colourFormatBPPTab[knownFormatIdx].colourFormat;
-    PTRACE(3,"PVideodevice::SetColourFormatConverter SEARCH " << colourFmt);
-    PTRACE(3,"PVideodevice::SetColourFormatConverter TRY "    << formatToTry);
+    PTRACE(4,"PVidDev\tSetColourFormatConverter, want " << colourFmt << " trying " << formatToTry);
     if (SetColourFormat(formatToTry)) {
-      PTRACE(3,"PVideodevice::SetColourFormatConverter SUCCESS. set camera to "<< formatToTry);
+      PTRACE(4,"PVidDev\tSetColourFormatConverter set camera to "<< formatToTry);
       converter = PColourConverter::Create(formatToTry, colourFmt, frameWidth, frameHeight);
       if (converter != NULL) {
-	PTRACE(3,"PVideodevice::SetColourFormatConverter " << formatToTry << " SUCCEEDED");
+	PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " camera using " << formatToTry);
         return TRUE;
       } 
     } 
     knownFormatIdx++;
   }
 
-  PTRACE(3,"PVideodevice::SetColourFormatConverter  FAILED for "<< colourFmt);
+  PTRACE(2, "PVidDev\tSetColourFormatConverter  FAILED for " << colourFmt);
   return FALSE;
 }
 
@@ -325,20 +325,17 @@ static struct {
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
 					 BOOL bScaleNotCrop)
 {
-  PTRACE(3,"PVideoDevice::SetFrameSizeConverter for "<<width<<"x"<<height);
   if (SetFrameSize(width, height))
     return TRUE;
   
   if (!converter)
-    converter = PColourConverter::Create(colourFormat, colourFormat,
-					 width, height);
+    converter = PColourConverter::Create(colourFormat, colourFormat, width, height);
   if (!converter) {
-    PTRACE(1,"PVideoDevice::SetFrameSizeConverter Colour converter creation failed");
+    PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
     return FALSE;
   }
   
-  PTRACE(1,"PVideoDevice::SetFrameSizeConverter Colour converter created OK for "
-	 <<width<<"x"<<height);
+  PTRACE(3,"PVidDev\tColour converter created for " << width << 'x' << height);
   
   PINDEX prefResizeIdx = 0;
   while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
@@ -349,17 +346,17 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
                        prefResizeTable[prefResizeIdx].device_height)) {
 	BOOL converterOK= converter->SetDstFrameSize(width, height, bScaleNotCrop);
 	if (converterOK){
-  	  PTRACE(3,"PVideoDevice\t SetFrameSizeConverter succceded for " <<
-		 prefResizeTable[prefResizeIdx].device_width << "x" <<
-		 prefResizeTable[prefResizeIdx].device_height << " ---> " <<
-		 width<<"x"<<height);	       
+  	  PTRACE(4,"PVidDev\tSetFrameSizeConverter succceded for "
+                 << prefResizeTable[prefResizeIdx].device_width << 'x'
+                 << prefResizeTable[prefResizeIdx].device_height
+                 << " --> " << width<< 'x' <<height);	       
 
 	  return TRUE;
 	}
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter FAILED for " <<
-	       prefResizeTable[prefResizeIdx].device_width << "x" <<
-	       prefResizeTable[prefResizeIdx].device_height << " ---> " <<
-	       width<<"x"<<height);	       
+	PTRACE(2,"PVidDev\tSetFrameSizeConverter FAILED for "
+               << prefResizeTable[prefResizeIdx].device_width << 'x'
+               << prefResizeTable[prefResizeIdx].device_height 
+               << " --> " << width << 'x' << height);	       
       }
     }    
     prefResizeIdx++;
@@ -374,21 +371,26 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
 
   if (SetFrameSize(maxWidth, maxHeight)){
-    PTRACE(3,"PVideoDevice\t Success set hardware size to "<<maxWidth<<"x"<<maxHeight);
+    PTRACE(4,"PVidDev\tSuccess set hardware size to " << maxWidth << 'x' << maxHeight);
     if (converter->SetDstFrameSize(width, height, bScaleNotCrop)){
-      PTRACE(3,"PVideoDeviceSetFrameSizeConvert SUCCEEDED for "<<width<<"x"<<height);
+      PTRACE(3,"PVidDev\tSetFrameSizeConvert SUCCEEDED for " << width << 'x' << height);
       return TRUE;
     }
   }
-  PTRACE(3,"PVideoDeviceSetFrameSizeConverter FAILED for "<<width<<"x"<<height);
+
+  PTRACE(2,"PVidDev\tSetFrameSizeConverter FAILED for " << width << 'x' << height);
   return FALSE;
 }
 
 
 BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  unsigned minWidth, minHeight, maxWidth, maxHeight;
+#if PTRACING
+  unsigned oldWidth = frameWidth;
+  unsigned oldHeight = frameHeight;
+#endif
 
+  unsigned minWidth, minHeight, maxWidth, maxHeight;
   GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
 
   if (width < minWidth)
@@ -405,13 +407,16 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
   else
     frameHeight = height;
 
-  PTRACE(3,"PVideoDevice\t SetFrameSize for "<<width<<"x"<<height);
-
-  if (converter) {
-    converter->SetSrcFrameSize(width,height);
-    converter->SetDstFrameSize(width,height, FALSE);    
+  if (converter != NULL) {
+    if (!converter->SetSrcFrameSize(width, height) ||
+        !converter->SetDstFrameSize(width, height, FALSE)) {
+      PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
+      return FALSE;
+    }
   }
-  
+
+  PTRACE_IF(2, oldWidth != frameWidth || oldHeight != frameHeight,
+            "PVidDev\tSetFrameSize to " << frameWidth << 'x' << frameHeight);
   return TRUE;
 }
 
