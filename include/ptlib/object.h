@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.94  2004/04/03 08:57:31  csoutheren
+ * Replaced pseudo-RTTI with real RTTI
+ *
  * Revision 1.93  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -775,7 +778,7 @@ of compatibility with documentation systems.
 #define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
 #define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
 
-#include <typeinfo.h>
+#include <typeinfo>
 
 #define PBASECLASSINFO(cls, par) \
   public: \
