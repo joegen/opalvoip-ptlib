@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.132  2003/11/10 20:52:26  dereksmithies
+ * add fix from Diego Tartara to recognize win XP and 2003 Server. Many thanks.
+ *
  * Revision 1.131  2003/11/08 01:43:05  rjongbloed
  * Fixed race condition that could start two housekeeping threads, thanks Ted Szoczei
  *
@@ -1486,7 +1489,12 @@ PString PProcess::GetOSName()
     case VER_PLATFORM_WIN32_NT :
       if (info.dwMajorVersion < 5)
         return "NT";
-      return "2000";
+	  else if (info.dwMinorVersion == 0) 
+		return "2000";
+	  else if (info.dwMinorVersion == 1)
+		return "XP";
+	  else
+        return "Server 2003";
   }
   return "?";
 }
