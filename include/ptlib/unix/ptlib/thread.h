@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.11  1998/11/30 22:07:23  robertj
+ * New directory structure.
+ *
  * Revision 1.10  1998/09/24 04:12:03  robertj
  * Added open software license.
  *
@@ -74,7 +77,7 @@ class PSemaphore;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#include "../../common/ptlib/thread.h"
+#include "../../thread.h"
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
