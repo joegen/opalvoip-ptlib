@@ -163,6 +163,11 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pssl.cxx
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\random.cxx
 # End Source File
 # Begin Source File

@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.9 2000/01/10 02:24:09 craigs Exp $
+ * $Id: pssl.cxx,v 1.10 2000/08/04 12:52:18 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.10  2000/08/04 12:52:18  robertj
+ * SSL changes, added error functions, removed need to have openssl include directory in app.
+ *
  * Revision 1.9  2000/01/10 02:24:09  craigs
  * Updated for new OpenSSL
  *
@@ -105,37 +108,41 @@
 #include <ptlib.h>
 
 #include <ptclib/pssl.h>
-#include <openssl/buffer.h>
+
+#define USE_SOCKETS
+
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include <openssl/crypto.h>
+#include <openssl/buffer.h>
+
 
 PMutex PSSLChannel::initFlag;
 
 SSL_CTX * PSSLChannel::context = NULL;
 
-extern "C" {
-typedef int (verifyCallBackType)();
-};
 
 ///////////////////////////////////////////////////////////////////////////////
-
-static PMutex semaphores[CRYPTO_NUM_LOCKS];
 
 extern "C" {
 
 void locking_callback(int mode, int type, const char * /* file */, int /* line */)
 {
-	if (mode & CRYPTO_LOCK) 
-		semaphores[type].Wait();
-	else
-		semaphores[type].Signal();
+  static PMutex semaphores[CRYPTO_NUM_LOCKS];
+  if (mode & CRYPTO_LOCK) 
+    semaphores[type].Wait();
+  else
+    semaphores[type].Signal();
 }
 
 };
 
+#if 0
 static void thread_setup()
 {
 	CRYPTO_set_locking_callback((void (*)(int,int,const char *,int))locking_callback);
 }
+#endif
 
 void PSSLChannel::Cleanup()
 {
@@ -158,7 +165,7 @@ static int verifyCallBack(int ok, X509_STORE_CTX * ctx)
   char buf[256];
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
 
-  PError << "Verify callback depth " << depth << " : cert name = " << buf << endl;
+  PTRACE(1, "Verify callback depth " << depth << " : cert name = " << buf);
 
   return ok;
 }
@@ -296,6 +303,7 @@ void PSSLChannel::SetVerifyMode(int mode)
   int verify;
 
   switch (mode) {
+    default :
     case VerifyNone:
       verify = SSL_VERIFY_NONE;
       break;
@@ -308,7 +316,7 @@ void PSSLChannel::SetVerifyMode(int mode)
       verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
   }
 
-  SSL_set_verify(ssl, verify, (verifyCallBackType *)verifyCallBack);
+  SSL_set_verify(ssl, verify, verifyCallBack);
 }
 
 
@@ -319,68 +327,98 @@ BOOL PSSLChannel::Accept(PChannel & channel)
   if (!Open(channel))
     return FALSE;
 
-  // set the "fd" to use with this SSL context
-  Set_SSL_Fd();
-
   // connect the SSL layer
-  return SSL_accept(ssl) > 0;
+  return ConvertOSError(SSL_accept(ssl));
 }
+
 
 BOOL PSSLChannel::Connect(PChannel & channel)
 {
   if (!Open(channel))
     return FALSE;
 
-  // set the "fd" to use with this SSL context
-  Set_SSL_Fd();
-
   // connect the SSL layer
-  return SSL_connect(ssl) > 0;
+  return ConvertOSError(SSL_connect(ssl));
 }
 
 
 BOOL PSSLChannel::Read(void * buf, PINDEX len)
 {
-  int r = SSL_read(ssl, (char *)buf, len);
   lastReadCount = 0;
-  if (!ConvertOSError(r))
+
+  int readResult = SSL_read(ssl, (char *)buf, len);
+  if (!ConvertOSError(readResult))
     return FALSE;
-  lastReadCount = r;
+
+  lastReadCount = readResult;
   return TRUE;
 }
 
 BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 {
   lastWriteCount = 0;
+
   while (len > 0) {
-    int sendResult = SSL_write(ssl, ((char *)buf)+lastWriteCount, len);
-    if (!ConvertOSError(sendResult))
+    int writeResult = SSL_write(ssl, ((char *)buf)+lastWriteCount, len);
+    if (!ConvertOSError(writeResult))
       return FALSE;
-    lastWriteCount += sendResult;
-    len -= sendResult;
+
+    lastWriteCount += writeResult;
+    len -= writeResult;
   }
+
   return TRUE;
 }
+
 
 BOOL PSSLChannel::RawRead(void * buf, PINDEX len)
 {
   return readChannel->Read(buf, len);
 }
 
+
 PINDEX PSSLChannel::RawGetLastReadCount() const
 {
   return readChannel->GetLastReadCount();
 }
+
 
 BOOL PSSLChannel::RawWrite(const void * buf, PINDEX len)
 {
   return writeChannel->Write(buf, len);
 }
 
+
 PINDEX PSSLChannel::RawGetLastWriteCount() const
 {
   return writeChannel->GetLastWriteCount();
 }
+
+
+BOOL PSSLChannel::ConvertOSError(int error)
+{
+  long errCode = SSL_get_error(ssl, error);
+  if (errCode == SSL_ERROR_NONE) {
+    osError = 0;
+    lastError = NoError;
+    return TRUE;
+  }
+
+  osError = errCode|0x20000000;
+  lastError = Miscellaneous;
+  return FALSE;
+}
+
+
+PString PSSLChannel::GetErrorText() const
+{
+  if ((osError&0x20000000) == 0)
+    return PIndirectChannel::GetErrorText();
+
+  char buf[200];
+  return ERR_error_string(osError&0x1fffffff, buf);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -392,38 +430,37 @@ PINDEX PSSLChannel::RawGetLastWriteCount() const
 
 extern "C" {
 
-#include <stdio.h>
-#include <errno.h>
-#define USE_SOCKETS
-
-//#include <openssl/cryptlib.h>
-#include <openssl/err.h>
-#include <openssl/buffer.h>
-
-static int  Psock_write(BIO *h,char *buf,int num);
-static int  Psock_read(BIO *h,char *buf,int size);
-static int  Psock_puts(BIO *h,char *str);
-static int  Psock_gets(BIO *h,char *str,int size);
-static long Psock_ctrl(BIO *h,int cmd,long arg1,char *arg2);
-static int  Psock_new(BIO *h);
-static int  Psock_free(BIO *data);
-static int  Psock_should_retry(int s);
-
 typedef int (*ifptr)();
 typedef long (*lfptr)();
 
-static BIO_METHOD methods_Psock =
+
+static int Psock_new(BIO * bio)
 {
-  BIO_TYPE_SOCKET,
-  "ptlib socket",
-  (ifptr)Psock_write,
-  (ifptr)Psock_read,
-  (ifptr)Psock_puts,
-  (ifptr)Psock_gets, 
-  (lfptr)Psock_ctrl,
-  (ifptr)Psock_new,
-  (ifptr)Psock_free
-};
+  bio->init     = 0;
+  bio->num      = 0;    // this is really (PSSLChannel *), not int
+  bio->ptr      = NULL;
+  bio->flags    = 0;
+
+  return(1);
+}
+
+
+static int Psock_free(BIO * bio)
+{
+  if (bio == NULL)
+    return 0;
+
+  if (bio->shutdown) {
+    if (bio->init) {
+      PSSLSOCKET(bio)->Shutdown(PSocket::ShutdownReadAndWrite);
+      PSSLSOCKET(bio)->Close();
+    }
+    bio->init  = 0;
+    bio->flags = 0;
+  }
+  return 1;
+}
+
 
 static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
 {
@@ -436,7 +473,7 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
     //
 //    case BIO_CTRL_SET:
     case BIO_C_SET_FD:
-      if (bio != NULL);
+      if (bio != NULL)
         Psock_free(bio);
       bio->num      = *((int *)ptr);
       bio->shutdown = (int)num;
@@ -498,31 +535,6 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
   return ret;
 }
 
-static int Psock_new(BIO * bio)
-{
-  bio->init     = 0;
-  bio->num      = 0;    // this is really (PSSLChannel *), not int
-  bio->ptr      = NULL;
-  bio->flags    = 0;
-
-  return(1);
-}
-
-static int Psock_free(BIO * bio)
-{
-  if (bio == NULL)
-    return 0;
-
-  if (bio->shutdown) {
-    if (bio->init) {
-      PSSLSOCKET(bio)->Shutdown(PSocket::ShutdownReadAndWrite);
-      PSSLSOCKET(bio)->Close();
-    }
-    bio->init  = 0;
-    bio->flags = 0;
-  }
-  return 1;
-}
 
 static int Psock_should_retry(int i)
 {
@@ -552,6 +564,7 @@ static int Psock_read(BIO * bio, char * out, int outl)
   return(ret);
 }
 
+
 static int Psock_write(BIO * bio, char * in, int inl)
 {
   int ret = 0;
@@ -576,6 +589,7 @@ static int Psock_gets(BIO *,char *, int)
   return -1;
 }
 
+
 static int Psock_puts(BIO * bio,char * str)
 {
   int n,ret;
@@ -588,15 +602,27 @@ static int Psock_puts(BIO * bio,char * str)
 
 };
 
-int PSSLChannel::Set_SSL_Fd()
-{
-  int ret=0;
-  BIO * bio = NULL;
 
-  bio = BIO_new(&methods_Psock);
+static BIO_METHOD methods_Psock =
+{
+  BIO_TYPE_SOCKET,
+  "ptlib socket",
+  (ifptr)Psock_write,
+  (ifptr)Psock_read,
+  (ifptr)Psock_puts,
+  (ifptr)Psock_gets, 
+  (lfptr)Psock_ctrl,
+  (ifptr)Psock_new,
+  (ifptr)Psock_free
+};
+
+
+BOOL PSSLChannel::OnOpen()
+{
+  BIO * bio = BIO_new(&methods_Psock);
   if (bio == NULL) {
     SSLerr(SSL_F_SSL_SET_FD,ERR_R_BUF_LIB);
-    goto err;
+    return FALSE;
   }
 
   SSL_set_bio(ssl, bio, bio);
@@ -614,8 +640,7 @@ int PSSLChannel::Set_SSL_Fd()
   ssl->wbio = bio;
   ret = 1;
 */
-err:
-  return(ret);
+  return TRUE;
 }
 
 
