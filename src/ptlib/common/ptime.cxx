@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.36  2001/01/02 06:06:07  robertj
+ * Fixed inclusion of microseconds in arithmetic functions.
+ *
  * Revision 1.35  2000/04/29 08:11:06  robertj
  * Fixed problem with stream output width in PTimeInterval
  *
@@ -658,16 +661,34 @@ void PTime::ReadFrom(istream & strm)
 
 PTime PTime::operator+(const PTimeInterval & t) const
 {
-  PInt64 msecs = (PInt64)theTime*1000 + t.GetMilliSeconds();
-  return PTime((time_t)(msecs/1000), (long)(msecs%1000)*1000);
+  time_t secs = theTime + t.GetSeconds();
+  long usecs = (long)(microseconds + (t.GetMilliSeconds()%1000)*1000);
+  if (usecs < 0) {
+    usecs += 1000000;
+    secs--;
+  }
+  else if (usecs >= 1000000) {
+    usecs -= 1000000;
+    secs++;
+  }
+
+  return PTime(secs, usecs);
 }
 
 
 PTime & PTime::operator+=(const PTimeInterval & t)
 {
-  PInt64 msecs = (PInt64)theTime*1000 + t.GetMilliSeconds();
-  theTime = (time_t)(msecs/1000);
-  microseconds = (long)(msecs%1000)*1000;
+  theTime += t.GetSeconds();
+  microseconds += (long)(t.GetMilliSeconds()%1000)*1000;
+  if (microseconds < 0) {
+    microseconds += 1000000;
+    theTime--;
+  }
+  else if (microseconds >= 1000000) {
+    microseconds -= 1000000;
+    theTime++;
+  }
+
   return *this;
 }
 
@@ -691,16 +712,16 @@ PTimeInterval PTime::operator-(const PTime & t) const
 PTime PTime::operator-(const PTimeInterval & t) const
 {
   time_t secs = theTime - t.GetSeconds();
-  long msecs = (long)(microseconds/1000 - t.GetMilliSeconds()%1000);
-  if (msecs < 0) {
-    msecs += 1000;
+  long usecs = (long)(microseconds + (t.GetMilliSeconds()%1000)*1000);
+  if (usecs < 0) {
+    usecs += 1000000;
     secs--;
   }
-  else if (msecs >= 1000) {
-    msecs -= 1000;
+  else if (usecs >= 1000000) {
+    usecs -= 1000000;
     secs++;
   }
-  return PTime(secs, msecs*1000);
+  return PTime(secs, usecs);
 }
 
 
