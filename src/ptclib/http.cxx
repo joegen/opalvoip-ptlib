@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.18 1996/03/31 09:05:07 robertj Exp $
+ * $Id: http.cxx,v 1.19 1996/04/05 01:46:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.19  1996/04/05 01:46:30  robertj
+ * Assured PSocket::Write always writes the number of bytes specified, no longer need write loops.
+ * Added workaraound for NT Netscape Navigator bug with persistent connections.
+ *
  * Revision 1.18  1996/03/31 09:05:07  robertj
  * HTTP 1.1 upgrade.
  *
@@ -582,8 +586,8 @@ BOOL PHTTPSocket::WriteCommand(Commands cmd,
                                const PString & dataBody)
 {
   return PApplicationSocket::WriteCommand(cmd, url & "HTTP/1.0") &&
-      outMIME.Write(*this) &&
-      WriteString(dataBody);
+         outMIME.Write(*this) &&
+         WriteString(dataBody);
 }
 
 BOOL PHTTPSocket::ReadResponse(PMIMEInfo & replyMIME)
@@ -751,7 +755,6 @@ BOOL PHTTPSocket::ProcessCommand()
   switch (cmd) {
     case GET :
       persist = OnGET(url, mimeInfo, connectInfo);
-//      Shutdown(ShutdownWrite);
       break;
 
     case HEAD :
@@ -768,6 +771,7 @@ BOOL PHTTPSocket::ProcessCommand()
       OnUnknown(args, connectInfo);
       return connectInfo.IsPersistant();
   }
+
 
   // if the function just indicated that the connection is to persist,
   // and so did the client, then return TRUE. Note that all of the OnXXXX
@@ -1097,33 +1101,32 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
     request->outMIME.SetAt(ContentTypeStr, contentType);
 
   PCharArray data;
-  char * ptr;
-  PINDEX len, slen;
   if (LoadData(*request, data)) {
     socket.StartResponse(request->code,request->outMIME,request->contentSize);
     do {
-      slen = data.GetSize();
-      len = 0;
-      ptr = data.GetPointer();
-      while (len < slen && socket.Write(ptr+len, slen - len))
-        len += socket.GetLastWriteCount();
+      socket.Write(data, data.GetSize());
       data.SetSize(0);
     } while (LoadData(*request, data));
   }
   else
     socket.StartResponse(request->code, request->outMIME, data.GetSize());
 
-  if (data.GetSize() > 0) {
-    slen = data.GetSize();
-    len = 0;
-    ptr = data.GetPointer();
-    while (len < slen && socket.Write(ptr+len, slen - len))
-      len += socket.GetLastWriteCount();
+  socket.Write(data, data.GetSize());
+
+  BOOL retval = request->outMIME.Contains(ContentLengthStr);
+
+  // The following is a work around for a strange bug in the NT version of
+  // Netscape where it locks up when a persistent connection is made and data
+  // less than 1k (including MIME headers) is sent. Go figure....
+  if (retval && data.GetSize() < 1024 &&
+                         request->outMIME[ContentTypeStr].Left(5) != "text/") {
+    PString agent = info("User-Agent");
+    if (agent.Find("Mozilla") != P_MAX_INDEX)
+      retval = agent.Find("WinNT") == P_MAX_INDEX;
   }
 
-  BOOL retVal = request->outMIME.Contains(ContentLengthStr);
   delete request;
-  return retVal;
+  return retval;
 }
 
 
