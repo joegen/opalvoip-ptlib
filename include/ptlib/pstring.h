@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.57  2003/05/14 00:46:47  rjongbloed
+ * Added constructor to string lists/arrays etc that takes a single PString.
+ *
  * Revision 1.56  2003/03/31 01:23:56  robertj
  * Added ReadFrom functions for standard container classes such as
  *   PIntArray and PStringList etc
@@ -2016,6 +2019,11 @@ PDECLARE_ARRAY(PStringArray, PString);
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
     );
+    /**Create a PStringArray of length one from the single string.
+     */
+    PStringArray(
+      const PString & str  /// Single string to convert to an array of one.
+    );
     /**Create a PStringArray from the list of strings.
      */
     PStringArray(
@@ -2131,6 +2139,11 @@ PDECLARE_LIST(PStringList, PString);
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
     );
+    /**Create a PStringList of length one from the single string.
+     */
+    PStringList(
+      const PString & str  /// Single string to convert to a list of one.
+    );
     /**Create a PStringList from the array of strings.
      */
     PStringList(
@@ -2225,6 +2238,11 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
     );
+    /**Create a PSortedStringList of length one from the single string.
+     */
+    PSortedStringList(
+      const PString & str  /// Single string to convert to a list of one.
+    );
     /**Create a PSortedStringList from the array of strings.
      */
     PSortedStringList(
@@ -2313,6 +2331,11 @@ PDECLARE_SET(PStringSet, PString, TRUE);
       PINDEX count,                 /// Count of strings in array
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+    /**Create a PStringSet containing the single string.
+     */
+    PStringSet(
+      const PString & str  /// Single string to convert to a list of one.
     );
   //@}
 
