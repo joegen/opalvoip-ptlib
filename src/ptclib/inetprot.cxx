@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.42  1998/12/04 10:08:01  robertj
+ * Fixed bug in PMIMInfo read functions, should clear entries before loading.
+ *
  * Revision 1.41  1998/11/30 04:52:02  robertj
  * New directory structure
  *
@@ -658,6 +661,8 @@ void PMIMEInfo::PrintOn(ostream &strm) const
 
 void PMIMEInfo::ReadFrom(istream &strm)
 {
+  RemoveAll();
+
   PString line;
   while (strm.good()) {
     strm >> line;
@@ -678,6 +683,8 @@ void PMIMEInfo::ReadFrom(istream &strm)
 
 BOOL PMIMEInfo::Read(PInternetProtocol & socket)
 {
+  RemoveAll();
+
   PString line;
   while (socket.ReadLine(line, TRUE)) {
     if (line.IsEmpty())
