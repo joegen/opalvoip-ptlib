@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.7  2001/01/24 06:45:41  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.6  2000/09/05 02:28:38  robertj
  * Removed PAssert with registry access denied error, changed to PTRACE.
  *
@@ -63,7 +66,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
-
+#ifndef _WIN32_WCE
 class SecurityID
 {
   public:
@@ -210,7 +213,7 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   return RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
 }
-
+#endif // _WIN32_WCE
 
 RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 {
@@ -292,8 +295,11 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
       basekey = HKEY_CURRENT_USER;
   }
 
+#ifndef _WIN32_WCE
   error = SecureCreateKey(basekey, subkey, key);
   if (error != ERROR_SUCCESS) {
+#endif
+
     DWORD disposition;
     error = RegCreateKeyEx(basekey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
@@ -302,7 +308,9 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
              << (basekey != NULL ? "" : "HKEY_LOCAL_MACHINE\\") << subkey);
       key = NULL;
     }
+#ifndef _WIN32_WCE
   }
+#endif // _WIN32_WCE
 }
 
 
