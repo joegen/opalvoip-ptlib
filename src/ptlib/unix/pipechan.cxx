@@ -54,12 +54,12 @@ void PPipeChannel::Construct(const PString & subProgram,
     array = subProgram.Tokenise(" ", FALSE);
     l = array.GetSize();
     args = new char *[l+2];
-    for (PINDEX i = 0; i < l; i++) 
-      args[i+1] = array[i];
+    for (i = 0; i < l; i++) 
+      args[i+1] = array[i].GetPointer();
     cmd     = array[0];
   }
   PString arg0Str = PFilePath(cmd).GetTitle();
-  args[0]   = arg0Str;
+  args[0]   = arg0Str.GetPointer();
   args[l+1] = NULL;
 
   

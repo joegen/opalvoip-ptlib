@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.9 1996/05/03 13:11:35 craigs Exp $
+ * $Id: channel.cxx,v 1.10 1996/05/25 06:06:33 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.10  1996/05/25 06:06:33  craigs
+ * Sun4 fixes and updated for gcc 2.7.2
+ *
  * Revision 1.9  1996/05/03 13:11:35  craigs
  * More Sun4 fixes
  *
@@ -55,6 +58,11 @@ BOOL PChannel::PXSetIOBlock (int type, PTimeInterval timeout)
 
 BOOL PChannel::PXSetIOBlock (int type, int blockHandle, PTimeInterval timeout)
 {
+  if (blockHandle < 0) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   int stat = PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
 
   // if select returned < 0, then covert errno into lastError and return FALSE
@@ -178,6 +186,7 @@ BOOL PChannel::ConvertOSError(int err)
     case EISDIR:
     case EROFS:
     case EACCES:
+    case EPERM:
       lastError = AccessDenied;
       break;
 
