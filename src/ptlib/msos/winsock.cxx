@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.30 1997/01/03 04:37:11 robertj Exp $
+ * $Id: winsock.cxx,v 1.31 1997/12/11 10:41:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.31  1997/12/11 10:41:55  robertj
+ * Added DWORD operator for IP addresses.
+ *
  * Revision 1.30  1997/01/03 04:37:11  robertj
  * Fixed '95 problem with send timeouts.
  *
@@ -388,6 +391,19 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
   S_un.S_un_b.s_b2 = b2;
   S_un.S_un_b.s_b3 = b3;
   S_un.S_un_b.s_b4 = b4;
+}
+
+
+PIPSocket::Address::Address(DWORD dw)
+{
+  S_un.S_addr = dw;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
+{
+  S_un.S_addr = dw;
+  return *this;
 }
 
 
