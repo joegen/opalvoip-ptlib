@@ -1,13 +1,36 @@
 # Microsoft Developer Studio Generated Dependency File, included by Console Components.mak
 
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
 ..\..\Ptclib\Asner.cxx : \
 	"..\..\..\Include\PtCLib\asner.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -15,8 +38,15 @@
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
+	"..\..\..\Include\PtLib\Channel.h"\
+	"..\..\..\include\ptlib\conchan.h"\
+	"..\..\..\Include\PtLib\Config.h"\
+	"..\..\..\Include\PtLib\Contain.h"\
 	"..\..\..\include\ptlib\contain.inl"\
 	"..\..\..\Include\PtLib\Dict.h"\
+	"..\..\..\Include\PtLib\Dynalink.h"\
+	"..\..\..\Include\PtLib\File.h"\
+	"..\..\..\Include\PtLib\filepath.h"\
 	"..\..\..\Include\PtLib\Indchan.h"\
 	"..\..\..\Include\PtLib\Lists.h"\
 	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
@@ -41,39 +71,31 @@
 	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\mutex.h"\
 	"..\..\..\Include\PtLib\object.h"\
 	"..\..\..\include\ptlib\osutil.inl"\
+	"..\..\..\Include\PtLib\Pdirect.h"\
+	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
+	"..\..\..\Include\PtLib\Ptime.h"\
 	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\semaphor.h"\
+	"..\..\..\Include\PtLib\Sfile.h"\
+	"..\..\..\Include\PtLib\Sound.h"\
+	"..\..\..\Include\PtLib\syncpoint.h"\
 	"..\..\..\Include\PtLib\syncthrd.h"\
+	"..\..\..\Include\PtLib\Textfile.h"\
+	"..\..\..\Include\PtLib\thread.h"\
+	"..\..\..\Include\PtLib\Timeint.h"\
+	"..\..\..\Include\PtLib\Timer.h"\
 	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\include\ptlib\video.h"\
+	"..\..\..\include\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -81,7 +103,14 @@
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
+	"..\..\..\Include\PtLib\Channel.h"\
+	"..\..\..\include\ptlib\conchan.h"\
+	"..\..\..\Include\PtLib\Config.h"\
+	"..\..\..\Include\PtLib\Contain.h"\
 	"..\..\..\Include\PtLib\Dict.h"\
+	"..\..\..\Include\PtLib\Dynalink.h"\
+	"..\..\..\Include\PtLib\File.h"\
+	"..\..\..\Include\PtLib\filepath.h"\
 	"..\..\..\Include\PtLib\Indchan.h"\
 	"..\..\..\Include\PtLib\Lists.h"\
 	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
@@ -105,38 +134,30 @@
 	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\mutex.h"\
 	"..\..\..\Include\PtLib\object.h"\
+	"..\..\..\Include\PtLib\Pdirect.h"\
+	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
+	"..\..\..\Include\PtLib\Ptime.h"\
 	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\semaphor.h"\
+	"..\..\..\Include\PtLib\Sfile.h"\
+	"..\..\..\Include\PtLib\Sound.h"\
+	"..\..\..\Include\PtLib\syncpoint.h"\
 	"..\..\..\Include\PtLib\syncthrd.h"\
+	"..\..\..\Include\PtLib\Textfile.h"\
+	"..\..\..\Include\PtLib\thread.h"\
+	"..\..\..\Include\PtLib\Timeint.h"\
+	"..\..\..\Include\PtLib\Timer.h"\
 	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\include\ptlib\video.h"\
+	"..\..\..\include\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -144,7 +165,14 @@
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
+	"..\..\..\Include\PtLib\Channel.h"\
+	"..\..\..\include\ptlib\conchan.h"\
+	"..\..\..\Include\PtLib\Config.h"\
+	"..\..\..\Include\PtLib\Contain.h"\
 	"..\..\..\Include\PtLib\Dict.h"\
+	"..\..\..\Include\PtLib\Dynalink.h"\
+	"..\..\..\Include\PtLib\File.h"\
+	"..\..\..\Include\PtLib\filepath.h"\
 	"..\..\..\Include\PtLib\Indchan.h"\
 	"..\..\..\Include\PtLib\Lists.h"\
 	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
@@ -168,38 +196,30 @@
 	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\mutex.h"\
 	"..\..\..\Include\PtLib\object.h"\
+	"..\..\..\Include\PtLib\Pdirect.h"\
+	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
+	"..\..\..\Include\PtLib\Ptime.h"\
 	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\semaphor.h"\
+	"..\..\..\Include\PtLib\Sfile.h"\
+	"..\..\..\Include\PtLib\Sound.h"\
+	"..\..\..\Include\PtLib\syncpoint.h"\
 	"..\..\..\Include\PtLib\syncthrd.h"\
+	"..\..\..\Include\PtLib\Textfile.h"\
+	"..\..\..\Include\PtLib\thread.h"\
+	"..\..\..\Include\PtLib\Timeint.h"\
+	"..\..\..\Include\PtLib\Timer.h"\
 	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\include\ptlib\video.h"\
+	"..\..\..\include\ptlib\videoio.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -207,8 +227,15 @@
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
+	"..\..\..\Include\PtLib\Channel.h"\
+	"..\..\..\include\ptlib\conchan.h"\
+	"..\..\..\Include\PtLib\Config.h"\
+	"..\..\..\Include\PtLib\Contain.h"\
 	"..\..\..\include\ptlib\contain.inl"\
 	"..\..\..\Include\PtLib\Dict.h"\
+	"..\..\..\Include\PtLib\Dynalink.h"\
+	"..\..\..\Include\PtLib\File.h"\
+	"..\..\..\Include\PtLib\filepath.h"\
 	"..\..\..\Include\PtLib\Indchan.h"\
 	"..\..\..\Include\PtLib\Lists.h"\
 	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
@@ -233,46 +260,68 @@
 	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\mutex.h"\
 	"..\..\..\Include\PtLib\object.h"\
 	"..\..\..\include\ptlib\osutil.inl"\
+	"..\..\..\Include\PtLib\Pdirect.h"\
+	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
+	"..\..\..\Include\PtLib\Ptime.h"\
 	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\semaphor.h"\
+	"..\..\..\Include\PtLib\Sfile.h"\
+	"..\..\..\Include\PtLib\Sound.h"\
+	"..\..\..\Include\PtLib\syncpoint.h"\
 	"..\..\..\Include\PtLib\syncthrd.h"\
+	"..\..\..\Include\PtLib\Textfile.h"\
+	"..\..\..\Include\PtLib\thread.h"\
+	"..\..\..\Include\PtLib\Timeint.h"\
+	"..\..\..\Include\PtLib\Timer.h"\
 	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\include\ptlib\video.h"\
+	"..\..\..\include\ptlib\videoio.h"\
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\delaychan.cxx : \
 	"..\..\..\include\ptclib\delaychan.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -282,16 +331,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -299,6 +343,11 @@
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -308,16 +357,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -325,6 +370,11 @@
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -334,16 +384,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -351,6 +397,11 @@
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -360,16 +411,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -379,6 +425,11 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -388,16 +439,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -405,6 +451,11 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -414,16 +465,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -431,6 +478,11 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -440,16 +492,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -457,6 +505,11 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -466,16 +519,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -485,6 +533,11 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -494,16 +547,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -511,6 +559,11 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -520,16 +573,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -537,6 +586,11 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -546,16 +600,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -563,6 +613,11 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -572,24 +627,43 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Html.cxx : \
 	"..\..\..\Include\PtCLib\html.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Http.cxx : \
@@ -598,6 +672,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -607,16 +686,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -627,6 +701,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -636,16 +715,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -656,6 +731,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -665,16 +745,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -685,6 +761,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -694,16 +775,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -716,6 +792,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -725,16 +806,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -745,6 +821,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -754,16 +835,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -774,6 +851,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -783,16 +865,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -803,6 +881,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -812,16 +895,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -836,10 +914,10 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -852,10 +930,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -868,10 +947,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -884,10 +964,10 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	
 
 !ENDIF 
@@ -900,6 +980,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -909,16 +994,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -929,6 +1009,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -938,16 +1023,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -958,6 +1039,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -967,16 +1053,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -987,6 +1069,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -996,16 +1083,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1021,6 +1103,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1031,17 +1118,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1055,6 +1137,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1065,17 +1152,13 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -1089,6 +1172,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1099,17 +1187,13 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -1123,6 +1207,11 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1133,17 +1222,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1154,6 +1238,11 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1163,16 +1252,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1181,6 +1265,11 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1190,16 +1279,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -1208,6 +1293,11 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1217,16 +1307,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -1235,6 +1321,11 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1244,16 +1335,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1263,6 +1349,11 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1272,16 +1363,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1289,6 +1375,11 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1298,16 +1389,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -1315,6 +1402,11 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1324,16 +1416,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -1341,6 +1429,11 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1350,16 +1443,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1368,6 +1456,11 @@
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1377,22 +1470,22 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1402,22 +1495,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1427,22 +1521,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1452,16 +1547,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1479,6 +1569,7 @@
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
@@ -1487,6 +1578,7 @@
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
 
@@ -1504,6 +1596,11 @@
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1513,22 +1610,22 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1538,22 +1635,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1563,22 +1661,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1588,16 +1687,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -1607,6 +1701,11 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1616,16 +1715,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1633,6 +1727,11 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1642,16 +1741,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -1659,6 +1754,11 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1668,16 +1768,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -1685,6 +1781,11 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -1694,203 +1795,443 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
+..\..\ptclib\pssl.cxx : \
+	{$(INCLUDE)}"openssl\asn1.h"\
+	{$(INCLUDE)}"openssl\bio.h"\
+	{$(INCLUDE)}"openssl\blowfish.h"\
+	{$(INCLUDE)}"openssl\bn.h"\
+	{$(INCLUDE)}"openssl\cast.h"\
+	{$(INCLUDE)}"openssl\crypto.h"\
+	{$(INCLUDE)}"openssl\des.h"\
+	{$(INCLUDE)}"openssl\dh.h"\
+	{$(INCLUDE)}"openssl\dsa.h"\
+	{$(INCLUDE)}"openssl\e_os2.h"\
+	{$(INCLUDE)}"openssl\err.h"\
+	{$(INCLUDE)}"openssl\evp.h"\
+	{$(INCLUDE)}"openssl\idea.h"\
+	{$(INCLUDE)}"openssl\lhash.h"\
+	{$(INCLUDE)}"openssl\md2.h"\
+	{$(INCLUDE)}"openssl\md5.h"\
+	{$(INCLUDE)}"openssl\mdc2.h"\
+	{$(INCLUDE)}"openssl\objects.h"\
+	{$(INCLUDE)}"openssl\opensslconf.h"\
+	{$(INCLUDE)}"openssl\opensslv.h"\
+	{$(INCLUDE)}"openssl\pem.h"\
+	{$(INCLUDE)}"openssl\pem2.h"\
+	{$(INCLUDE)}"openssl\pkcs7.h"\
+	{$(INCLUDE)}"openssl\rand.h"\
+	{$(INCLUDE)}"openssl\rc2.h"\
+	{$(INCLUDE)}"openssl\rc4.h"\
+	{$(INCLUDE)}"openssl\rc5.h"\
+	{$(INCLUDE)}"openssl\ripemd.h"\
+	{$(INCLUDE)}"openssl\rsa.h"\
+	{$(INCLUDE)}"openssl\safestack.h"\
+	{$(INCLUDE)}"openssl\sha.h"\
+	{$(INCLUDE)}"openssl\ssl.h"\
+	{$(INCLUDE)}"openssl\ssl2.h"\
+	{$(INCLUDE)}"openssl\ssl23.h"\
+	{$(INCLUDE)}"openssl\ssl3.h"\
+	{$(INCLUDE)}"openssl\stack.h"\
+	{$(INCLUDE)}"openssl\tls1.h"\
+	{$(INCLUDE)}"openssl\x509.h"\
+	{$(INCLUDE)}"openssl\x509_vfy.h"\
+	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
+
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\pssl.cxx : \
+	{$(INCLUDE)}"openssl\asn1.h"\
+	{$(INCLUDE)}"openssl\bio.h"\
+	{$(INCLUDE)}"openssl\blowfish.h"\
+	{$(INCLUDE)}"openssl\bn.h"\
+	{$(INCLUDE)}"openssl\cast.h"\
+	{$(INCLUDE)}"openssl\crypto.h"\
+	{$(INCLUDE)}"openssl\des.h"\
+	{$(INCLUDE)}"openssl\dh.h"\
+	{$(INCLUDE)}"openssl\dsa.h"\
+	{$(INCLUDE)}"openssl\e_os2.h"\
+	{$(INCLUDE)}"openssl\err.h"\
+	{$(INCLUDE)}"openssl\evp.h"\
+	{$(INCLUDE)}"openssl\idea.h"\
+	{$(INCLUDE)}"openssl\lhash.h"\
+	{$(INCLUDE)}"openssl\md2.h"\
+	{$(INCLUDE)}"openssl\md5.h"\
+	{$(INCLUDE)}"openssl\mdc2.h"\
+	{$(INCLUDE)}"openssl\objects.h"\
+	{$(INCLUDE)}"openssl\opensslconf.h"\
+	{$(INCLUDE)}"openssl\opensslv.h"\
+	{$(INCLUDE)}"openssl\pem.h"\
+	{$(INCLUDE)}"openssl\pem2.h"\
+	{$(INCLUDE)}"openssl\pkcs7.h"\
+	{$(INCLUDE)}"openssl\rand.h"\
+	{$(INCLUDE)}"openssl\rc2.h"\
+	{$(INCLUDE)}"openssl\rc4.h"\
+	{$(INCLUDE)}"openssl\rc5.h"\
+	{$(INCLUDE)}"openssl\ripemd.h"\
+	{$(INCLUDE)}"openssl\rsa.h"\
+	{$(INCLUDE)}"openssl\safestack.h"\
+	{$(INCLUDE)}"openssl\sha.h"\
+	{$(INCLUDE)}"openssl\ssl.h"\
+	{$(INCLUDE)}"openssl\ssl2.h"\
+	{$(INCLUDE)}"openssl\ssl23.h"\
+	{$(INCLUDE)}"openssl\ssl3.h"\
+	{$(INCLUDE)}"openssl\stack.h"\
+	{$(INCLUDE)}"openssl\tls1.h"\
+	{$(INCLUDE)}"openssl\x509.h"\
+	{$(INCLUDE)}"openssl\x509_vfy.h"\
+	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\ptclib\pssl.cxx : \
+	{$(INCLUDE)}"openssl\asn1.h"\
+	{$(INCLUDE)}"openssl\bio.h"\
+	{$(INCLUDE)}"openssl\blowfish.h"\
+	{$(INCLUDE)}"openssl\bn.h"\
+	{$(INCLUDE)}"openssl\cast.h"\
+	{$(INCLUDE)}"openssl\crypto.h"\
+	{$(INCLUDE)}"openssl\des.h"\
+	{$(INCLUDE)}"openssl\dh.h"\
+	{$(INCLUDE)}"openssl\dsa.h"\
+	{$(INCLUDE)}"openssl\e_os2.h"\
+	{$(INCLUDE)}"openssl\err.h"\
+	{$(INCLUDE)}"openssl\evp.h"\
+	{$(INCLUDE)}"openssl\idea.h"\
+	{$(INCLUDE)}"openssl\lhash.h"\
+	{$(INCLUDE)}"openssl\md2.h"\
+	{$(INCLUDE)}"openssl\md5.h"\
+	{$(INCLUDE)}"openssl\mdc2.h"\
+	{$(INCLUDE)}"openssl\objects.h"\
+	{$(INCLUDE)}"openssl\opensslconf.h"\
+	{$(INCLUDE)}"openssl\opensslv.h"\
+	{$(INCLUDE)}"openssl\pem.h"\
+	{$(INCLUDE)}"openssl\pem2.h"\
+	{$(INCLUDE)}"openssl\pkcs7.h"\
+	{$(INCLUDE)}"openssl\rand.h"\
+	{$(INCLUDE)}"openssl\rc2.h"\
+	{$(INCLUDE)}"openssl\rc4.h"\
+	{$(INCLUDE)}"openssl\rc5.h"\
+	{$(INCLUDE)}"openssl\ripemd.h"\
+	{$(INCLUDE)}"openssl\rsa.h"\
+	{$(INCLUDE)}"openssl\safestack.h"\
+	{$(INCLUDE)}"openssl\sha.h"\
+	{$(INCLUDE)}"openssl\ssl.h"\
+	{$(INCLUDE)}"openssl\ssl2.h"\
+	{$(INCLUDE)}"openssl\ssl23.h"\
+	{$(INCLUDE)}"openssl\ssl3.h"\
+	{$(INCLUDE)}"openssl\stack.h"\
+	{$(INCLUDE)}"openssl\tls1.h"\
+	{$(INCLUDE)}"openssl\x509.h"\
+	{$(INCLUDE)}"openssl\x509_vfy.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\Include\PtLib\Args.h"\
-	"..\..\..\Include\PtLib\Array.h"\
-	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\Include\PtLib\Dict.h"\
-	"..\..\..\Include\PtLib\Indchan.h"\
-	"..\..\..\Include\PtLib\Lists.h"\
-	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
-	"..\..\..\include\ptlib\msos\ptlib\conchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\config.h"\
-	"..\..\..\include\ptlib\msos\ptlib\contain.h"\
-	"..\..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\file.h"\
-	"..\..\..\include\ptlib\msos\ptlib\filepath.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\mutex.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pdirect.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pprocess.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptime.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\semaphor.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sfile.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sound.h"\
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\syncpoint.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\textfile.h"\
-	"..\..\..\include\ptlib\msos\ptlib\thread.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timeint.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\object.h"\
-	"..\..\..\include\ptlib\osutil.inl"\
-	"..\..\..\Include\PtLib\Pstring.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	"..\..\..\Include\PtLib\syncthrd.h"\
-	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\ptclib\pssl.cxx : \
+	{$(INCLUDE)}"openssl\asn1.h"\
+	{$(INCLUDE)}"openssl\bio.h"\
+	{$(INCLUDE)}"openssl\blowfish.h"\
+	{$(INCLUDE)}"openssl\bn.h"\
+	{$(INCLUDE)}"openssl\cast.h"\
+	{$(INCLUDE)}"openssl\crypto.h"\
+	{$(INCLUDE)}"openssl\des.h"\
+	{$(INCLUDE)}"openssl\dh.h"\
+	{$(INCLUDE)}"openssl\dsa.h"\
+	{$(INCLUDE)}"openssl\e_os2.h"\
+	{$(INCLUDE)}"openssl\err.h"\
+	{$(INCLUDE)}"openssl\evp.h"\
+	{$(INCLUDE)}"openssl\idea.h"\
+	{$(INCLUDE)}"openssl\lhash.h"\
+	{$(INCLUDE)}"openssl\md2.h"\
+	{$(INCLUDE)}"openssl\md5.h"\
+	{$(INCLUDE)}"openssl\mdc2.h"\
+	{$(INCLUDE)}"openssl\objects.h"\
+	{$(INCLUDE)}"openssl\opensslconf.h"\
+	{$(INCLUDE)}"openssl\opensslv.h"\
+	{$(INCLUDE)}"openssl\pem.h"\
+	{$(INCLUDE)}"openssl\pem2.h"\
+	{$(INCLUDE)}"openssl\pkcs7.h"\
+	{$(INCLUDE)}"openssl\rand.h"\
+	{$(INCLUDE)}"openssl\rc2.h"\
+	{$(INCLUDE)}"openssl\rc4.h"\
+	{$(INCLUDE)}"openssl\rc5.h"\
+	{$(INCLUDE)}"openssl\ripemd.h"\
+	{$(INCLUDE)}"openssl\rsa.h"\
+	{$(INCLUDE)}"openssl\safestack.h"\
+	{$(INCLUDE)}"openssl\sha.h"\
+	{$(INCLUDE)}"openssl\ssl.h"\
+	{$(INCLUDE)}"openssl\ssl2.h"\
+	{$(INCLUDE)}"openssl\ssl23.h"\
+	{$(INCLUDE)}"openssl\ssl3.h"\
+	{$(INCLUDE)}"openssl\stack.h"\
+	{$(INCLUDE)}"openssl\tls1.h"\
+	{$(INCLUDE)}"openssl\x509.h"\
+	{$(INCLUDE)}"openssl\x509_vfy.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\Include\PtLib\Args.h"\
-	"..\..\..\Include\PtLib\Array.h"\
-	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\Include\PtLib\Dict.h"\
-	"..\..\..\Include\PtLib\Indchan.h"\
-	"..\..\..\Include\PtLib\Lists.h"\
-	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
-	"..\..\..\include\ptlib\msos\ptlib\conchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\config.h"\
-	"..\..\..\include\ptlib\msos\ptlib\contain.h"\
-	"..\..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\file.h"\
-	"..\..\..\include\ptlib\msos\ptlib\filepath.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\mutex.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pdirect.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pprocess.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptime.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\semaphor.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sfile.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sound.h"\
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\syncpoint.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\textfile.h"\
-	"..\..\..\include\ptlib\msos\ptlib\thread.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timeint.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\video.h"\
-	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\object.h"\
-	"..\..\..\include\ptlib\osutil.inl"\
-	"..\..\..\Include\PtLib\Pstring.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	"..\..\..\Include\PtLib\syncthrd.h"\
-	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\ptclib\pxml.cxx : \
+	"..\..\..\..\expat\lib\expat.h"\
+	"..\..\..\include\ptclib\pxml.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\pxml.cxx : \
+	"..\..\..\..\expat\lib\expat.h"\
+	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\pxml.cxx : \
+	"..\..\..\..\expat\lib\expat.h"\
+	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\pxml.cxx : \
+	"..\..\..\..\expat\lib\expat.h"\
+	"..\..\..\include\ptclib\pxml.h"\
+	
+
+!ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\qchannel.cxx : \
 	"..\..\..\include\ptclib\qchannel.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	
+
+!ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
 ..\..\ptclib\random.cxx : \
 	"..\..\..\include\ptclib\random.h"\
 	
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	
+
+!ENDIF 
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
+..\..\ptclib\shttpsvc.cxx : \
+	"..\..\..\Include\PtCLib\cypher.h"\
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\Include\PtCLib\http.h"\
+	"..\..\..\Include\PtCLib\httpform.h"\
+	"..\..\..\Include\PtCLib\httpsvc.h"\
+	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\include\ptclib\shttpsvc.h"\
+	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
+
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\shttpsvc.cxx : \
+	"..\..\..\Include\PtCLib\cypher.h"\
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\Include\PtCLib\http.h"\
+	"..\..\..\Include\PtCLib\httpform.h"\
+	"..\..\..\Include\PtCLib\httpsvc.h"\
+	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\include\ptclib\shttpsvc.h"\
+	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
@@ -1905,83 +2246,28 @@
 	"..\..\..\Include\PtCLib\pssl.h"\
 	"..\..\..\include\ptclib\shttpsvc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\Include\PtLib\Args.h"\
-	"..\..\..\Include\PtLib\Array.h"\
-	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\Include\PtLib\Dict.h"\
-	"..\..\..\Include\PtLib\Indchan.h"\
-	"..\..\..\Include\PtLib\Lists.h"\
-	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
-	"..\..\..\include\ptlib\msos\ptlib\conchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\config.h"\
-	"..\..\..\include\ptlib\msos\ptlib\contain.h"\
-	"..\..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\file.h"\
-	"..\..\..\include\ptlib\msos\ptlib\filepath.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\mutex.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pdirect.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pprocess.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptime.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\semaphor.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sfile.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sound.h"\
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\syncpoint.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\textfile.h"\
-	"..\..\..\include\ptlib\msos\ptlib\thread.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timeint.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\video.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\object.h"\
-	"..\..\..\include\ptlib\osutil.inl"\
-	"..\..\..\Include\PtLib\Pstring.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	"..\..\..\Include\PtLib\syncthrd.h"\
-	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -1997,137 +2283,82 @@
 	"..\..\..\Include\PtCLib\pssl.h"\
 	"..\..\..\include\ptclib\shttpsvc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\Include\PtLib\Args.h"\
-	"..\..\..\Include\PtLib\Array.h"\
-	"..\..\..\include\ptlib\contain.inl"\
-	"..\..\..\Include\PtLib\Dict.h"\
-	"..\..\..\Include\PtLib\Indchan.h"\
-	"..\..\..\Include\PtLib\Lists.h"\
-	"..\..\..\include\ptlib\msos\ptlib\channel.h"\
-	"..\..\..\include\ptlib\msos\ptlib\conchan.h"\
-	"..\..\..\include\ptlib\msos\ptlib\config.h"\
-	"..\..\..\include\ptlib\msos\ptlib\contain.h"\
-	"..\..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\file.h"\
-	"..\..\..\include\ptlib\msos\ptlib\filepath.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\mutex.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pdirect.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pprocess.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptime.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
-	"..\..\..\include\ptlib\msos\ptlib\semaphor.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sfile.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\sound.h"\
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
-	"..\..\..\include\ptlib\msos\ptlib\syncpoint.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\textfile.h"\
-	"..\..\..\include\ptlib\msos\ptlib\thread.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timeint.h"\
-	"..\..\..\include\ptlib\msos\ptlib\timer.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\video.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Svcproc.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
+
+!ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+..\..\Ptclib\Snmpclnt.cxx : \
+	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
+	"..\..\..\Include\PtLib\sockets.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\Ptclib\Snmpclnt.cxx : \
+	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
+	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
-	"..\..\..\Include\PtLib\object.h"\
-	"..\..\..\include\ptlib\osutil.inl"\
-	"..\..\..\Include\PtLib\Pstring.h"\
-	"..\..\..\include\ptlib\pwavfile.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	"..\..\..\Include\PtLib\syncthrd.h"\
-	"..\..\..\include\ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\Channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\Config.h"\
-	{$(INCLUDE)}"PtLib\Contain.h"\
-	{$(INCLUDE)}"PtLib\Dynalink.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\File.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"PtLib\Pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\Ptime.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\Sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\Sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Svcproc.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\Timeint.h"\
-	{$(INCLUDE)}"PtLib\Timer.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
-..\..\Ptclib\Snmpclnt.cxx : \
-	"..\..\..\Include\PtCLib\pasn.h"\
-	"..\..\..\Include\PtCLib\psnmp.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-..\..\Ptclib\Snmpclnt.cxx : \
-	"..\..\..\Include\PtCLib\pasn.h"\
-	"..\..\..\Include\PtCLib\psnmp.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\ipxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
-	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
-	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
-	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -2135,6 +2366,11 @@
 ..\..\Ptclib\Snmpclnt.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2144,16 +2380,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -2161,6 +2393,11 @@
 ..\..\Ptclib\Snmpclnt.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2170,16 +2407,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -2189,6 +2421,11 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2198,16 +2435,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -2215,6 +2447,11 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2224,16 +2461,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
@@ -2241,6 +2474,11 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2250,16 +2488,12 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -2267,6 +2501,11 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2276,16 +2515,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -2294,6 +2528,11 @@
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2303,22 +2542,22 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2328,22 +2567,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2353,22 +2593,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2378,16 +2619,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
@@ -2396,6 +2632,11 @@
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2405,22 +2646,22 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2430,22 +2671,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2455,22 +2697,23 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\Include\PtLib\Ethsock.h"\
+	"..\..\..\Include\PtLib\Icmpsock.h"\
+	"..\..\..\Include\PtLib\Ipdsock.h"\
+	"..\..\..\Include\PtLib\ipsock.h"\
+	"..\..\..\Include\PtLib\ipxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ethsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\icmpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipdsock.h"\
@@ -2480,16 +2723,11 @@
 	"..\..\..\include\ptlib\msos\ptlib\spxsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\tcpsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\udpsock.h"\
+	"..\..\..\Include\PtLib\socket.h"\
 	"..\..\..\Include\PtLib\sockets.h"\
-	{$(INCLUDE)}"PtLib\Ethsock.h"\
-	{$(INCLUDE)}"PtLib\Icmpsock.h"\
-	{$(INCLUDE)}"PtLib\Ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\Tcpsock.h"\
-	{$(INCLUDE)}"PtLib\Udpsock.h"\
+	"..\..\..\Include\PtLib\spxsock.h"\
+	"..\..\..\Include\PtLib\Tcpsock.h"\
+	"..\..\..\Include\PtLib\Udpsock.h"\
 	
 
 !ENDIF 
