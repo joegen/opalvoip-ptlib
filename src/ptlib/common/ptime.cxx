@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.27  1999/08/08 12:39:24  robertj
+ * Fixed bug in display of PTimeIntervals larger than 24 hours.
+ *
  * Revision 1.26  1999/06/14 07:58:39  robertj
  * Fixed bug in PTimeInteerval output, left stream fill char as '0'.
  * Added ability to set the width of the PTimeInterval stream output.
@@ -163,9 +166,12 @@ void PTimeInterval::PrintOn(ostream & strm) const
       strm << tmp << ':';
       hadPrevious = TRUE;
     }
-  }
 
-  tmp = (long)(ms%86400000)/3600000;
+    tmp = (long)(ms%86400000)/3600000;
+  }
+  else
+    tmp = (long)(ms/3600000);
+
   if (hadPrevious || tmp > 0 || width > (precision+6)) {
     if (hadPrevious)
       strm.width(2);
