@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.63  2001/11/08 00:32:49  robertj
+ * Added parsing of ';' based parameter fields into string dictionary if there are multiple parameters, with '=' values.
+ *
  * Revision 1.62  2001/10/31 01:33:07  robertj
  * Added extra const for constant HTTP tag name strings.
  *
@@ -455,17 +458,36 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
 }
 
 
+static void SplitVars(const PString & str, PStringToString & vars, char sep1, char sep2)
+{
+  PINDEX sep1prev = 0;
+  do {
+    PINDEX sep1next = str.Find(sep1, sep1prev);
+    if (sep1next == P_MAX_INDEX)
+      sep1next--; // Implicit assumption string is not a couple of gigabytes long ...
+
+    PINDEX sep2pos = str.Find(sep2, sep1prev);
+    if (sep2pos > sep1next)
+      sep2pos = sep1next;
+
+    PCaselessString key = PURL::UntranslateString(str(sep1prev, sep2pos-1), PURL::QueryTranslation);
+    if (!key) {
+      PString data = PURL::UntranslateString(str(sep2pos+1, sep1next-1), PURL::QueryTranslation);
+
+      if (vars.Contains(key))
+        vars.SetAt(key, vars[key] + ',' + data);
+      else
+        vars.SetAt(key, data);
+    }
+
+    sep1prev = sep1next+1;
+  } while (sep1prev != P_MAX_INDEX);
+}
+
+
 void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 {
-  PStringArray tokens = queryStr.Tokenise("&=", TRUE);
-  for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-    PCaselessString key = UntranslateString(tokens[i], QueryTranslation);
-    PString data = UntranslateString(tokens[i+1], QueryTranslation);
-    if (queryVars.Contains(key))
-      queryVars.SetAt(key, queryVars[key] + ',' + data);
-    else
-      queryVars.SetAt(key, data);
-  }
+  SplitVars(queryStr, queryVars, '&', '=');
 }
 
 
@@ -573,13 +595,6 @@ void PURL::Parse(const char * cstr)
     }
   }
 
-  // chop off any trailing fragment
-  pos = url.Find('#');
-  if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
-    url.Delete(pos, P_MAX_INDEX);
-  }
-
   // chop off any trailing query
   pos = url.Find('?');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
@@ -591,7 +606,16 @@ void PURL::Parse(const char * cstr)
   // chop off any trailing parameters
   pos = url.Find(';');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    parameters = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
+    PString paramStr = url(pos+1, P_MAX_INDEX);
+    SplitVars(paramStr, paramVars, ';', '=');
+    parameters = UntranslateString(paramStr, PathTranslation);
+    url.Delete(pos, P_MAX_INDEX);
+  }
+
+  // chop off any trailing fragment
+  pos = url.Find('#');
+  if (pos != P_MAX_INDEX /* && pos > 0 */) {
+    fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
     url.Delete(pos, P_MAX_INDEX);
   }
 

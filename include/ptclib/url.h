@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.17  2001/11/08 00:32:49  robertj
+ * Added parsing of ';' based parameter fields into string dictionary if there are multiple parameters, with '=' values.
+ *
  * Revision 1.16  2001/09/28 00:32:24  robertj
  * Broke out internal static function for unstranslating URL strings.
  *
@@ -237,6 +240,8 @@ class PURL : public PObject
     const PStringArray & GetPath() const        { return path; }
     /// Get the parameter (;) field of the URL.
     const PString & GetParameters() const       { return parameters; }
+    /// Get the parameter (;) field(s) of the URL as a string dictionary.
+    PStringToString GetParamVars() const        { return paramVars; }
     /// Get the fragment (##) field of the URL.
     const PString & GetFragment() const         { return fragment; }
     /// Get the Query (?) field of the URL as a string.
@@ -267,6 +272,7 @@ class PURL : public PObject
     PString pathStr;
     PStringArray path;
     PString parameters;
+    PStringToString paramVars;
     PString fragment;
     PString queryStr;
     PStringToString queryVars;
