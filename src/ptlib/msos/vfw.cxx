@@ -25,6 +25,10 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.27  2005/01/04 07:44:04  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.26  2004/10/23 10:50:52  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -115,7 +119,14 @@
  *
  */
 
+#define P_FORCE_STATIC_PLUGIN
+
 #include <ptlib.h>
+
+#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
+#error "vfw.cxx must be compiled without precompiled headers"
+#endif
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
@@ -124,125 +135,6 @@
 #endif
 
 #define STEP_GRAB_CAPTURE 1
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**This class defines a video input device.
- */
-class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
-{
-  PCLASSINFO(PVideoInputDevice_VideoForWindows, PVideoInputDevice);
-
-  public:
-    /** Create a new video input device.
-     */
-    PVideoInputDevice_VideoForWindows();
-
-    /**Close the video input device on destruction.
-      */
-    ~PVideoInputDevice_VideoForWindows() { Close(); }
-
-    /** Is the device a camera, and obtain video
-     */
-    static PStringList GetInputDeviceNames();
-
-    virtual PStringList GetDeviceNames() const
-      { return GetInputDeviceNames(); }
-
-    /**Open the device given the device name.
-      */
-    virtual BOOL Open(
-      const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
-    );
-
-    /**Determine if the device is currently open.
-      */
-    virtual BOOL IsOpen();
-
-    /**Close the device.
-      */
-    virtual BOOL Close();
-
-    /**Start the video device I/O.
-      */
-    virtual BOOL Start();
-
-    /**Stop the video device I/O capture.
-      */
-    virtual BOOL Stop();
-
-    /**Determine if the video device I/O capture is in progress.
-      */
-    virtual BOOL IsCapturing();
-
-    /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
-    virtual PINDEX GetMaxFrameBytes();
-
-    /**Grab a frame.
-      */
-    virtual BOOL GetFrame(
-      PBYTEArray & frame
-    );
-
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    virtual BOOL GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    virtual BOOL GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
-    /**Try all known video formats & see which ones are accepted by the video driver
-     */
-    virtual BOOL TestAllFormats();
-
-  protected:
-
-   /**Check the hardware can do the asked for size.
-
-       Note that not all cameras can provide all frame sizes.
-     */
-    virtual BOOL VerifyHardwareFrameSize(unsigned width, unsigned height);
-
-  public:
-    virtual BOOL SetColourFormat(const PString & colourFormat);
-    virtual BOOL SetFrameRate(unsigned rate);
-    virtual BOOL SetFrameSize(unsigned width, unsigned height);
-
-  protected:
-    static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
-    LRESULT HandleError(int id, LPCSTR err);
-    static LRESULT CALLBACK VideoHandler(HWND hWnd, LPVIDEOHDR vh);
-    LRESULT HandleVideo(LPVIDEOHDR vh);
-    BOOL InitialiseCapture();
-    void HandleCapture();
-
-    PThread     * captureThread;
-    PSyncPoint    threadStarted;
-
-    HWND          hCaptureWindow;
-
-    PSyncPoint    frameAvailable;
-    LPBYTE        lastFramePtr;
-    unsigned      lastFrameSize;
-    PMutex        lastFrameMutex;
-    BOOL          isCapturingNow;
-
-  friend class PVideoInputThread;
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
