@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.23  2002/07/15 06:40:00  craigs
+ * Added function to allow raising of per-process file handle limit
+ *
  * Revision 1.22  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -140,6 +143,8 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
     static void PXShowSystemWarning(PINDEX code);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
+
+    BOOL SetMaxFileHandles(int maxFileHandles);
 
   protected:
     void         CommonConstruct();
