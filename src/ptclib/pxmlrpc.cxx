@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.10  2002/10/08 11:36:56  craigs
+ * Fixed fault parsing
+ *
  * Revision 1.9  2002/10/08 08:22:18  craigs
  * Fixed problem with parsing struct parameters
  *
@@ -230,8 +233,11 @@ BOOL PXMLRPCBlock::ValidateResponse()
     // assume fault is a simple struct
     PStringToString faultInfo;
     PXMLElement * value = params->GetElement("value");
-    if ((value == NULL) ||
-         !ParseStruct(value, faultInfo) ||
+    if (value == NULL) {
+      PStringStream txt;
+      txt << "Fault does not contain value\n" << *this;
+      SetFault(PXMLRPC::FaultyFault, txt);
+    } else if (!ParseStruct(value->GetElement("struct"), faultInfo) ||
          (faultInfo.GetSize() != 2) ||
          (!faultInfo.Contains("faultCode")) ||
          (!faultInfo.Contains("faultString"))
