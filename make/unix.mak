@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.116  2002/01/28 00:19:59  craigs
+# Made gcc 3 changes dependent on having gcc 3.0 installed
+#
 # Revision 1.115  2002/01/26 23:57:08  craigs
 # Changed for GCC 3.0 compatibility, thanks to manty@manty.net
 #
@@ -516,8 +519,9 @@ endif
 STDCCFLAGS += -Wall
 
 # We want to be GCC 3.0 compatible
+ifdef USE_GCC3
 STDCCFLAGS	+= -DGCC3 -D__USE_STL__
-
+endif
 
 ####################################################
 
