@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.3  2001/05/07 23:27:06  robertj
+ * Added SO_LINGER setting to HTTP sockets to help with clearing up sockets
+ *   when the application exits, which prevents new run of app as "port in use".
+ *
  * Revision 1.2  2001/03/27 03:55:48  craigs
  * Added hack to allow secure servers to act as non-secure servers
  *
@@ -59,6 +63,11 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 #ifdef _DEBUG
   if (secureServerHack)
     return PHTTPServiceProcess::CreateHTTPServer(socket);
+#endif
+
+#ifdef SO_LINGER
+  const linger ling = { 1, 5 };
+  socket.SetOption(SO_LINGER, &ling, sizeof(ling));
 #endif
 
   PSSLChannel * ssl = new PSSLChannel(sslContext);
