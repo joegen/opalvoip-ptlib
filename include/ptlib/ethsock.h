@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.8  1998/11/19 05:18:21  robertj
+ * Added route table manipulation functions to PIPSocket class.
+ *
  * Revision 1.7  1998/10/12 09:34:40  robertj
  * New method for getting IP addresses of interfaces.
  *
@@ -220,34 +223,6 @@ PDECLARE_CLASS(PEthSocket, PSocket)
 
        <H2>Returns:</H2>
        TRUE if an interface has the index supplied.
-     */
-
-    BOOL GetGatewayAddress(
-      PIPSocket::Address & addr     // Variable to receive the IP address.
-    ) const;
-    /* Return the IP address that is being used as the gateway, that is, the
-       computer that packets on the default route will be sent.
-
-       The string returned may be used in the Connect() function to open that
-       interface.
-
-       Note that the driver does not need to be open for this function to work.
-
-       <H2>Returns:</H2>
-       TRUE if there was a gateway.
-     */
-
-    PString GetGatewayInterface() const;
-    /* Return the name for the interface that is being used as the gateway,
-       that is, the interface that packets on the default route will be sent.
-
-       The string returned may be used in the Connect() function to open that
-       interface.
-
-       Note that the driver does not need to be open for this function to work.
-
-       <H2>Returns:</H2>
-       String name of the gateway device, or empty string if there is none.
      */
 
 
