@@ -63,46 +63,42 @@ int  _write(int nHandle, const void *p, unsigned int s)
 	//[YG]???? FlushFileBuffers((HANDLE)nHandle);
 	return size;
 }
-
 int	_open( const char *filename, int oflag , int pmode)
 {
 	USES_CONVERSION;
-	
-    HANDLE	osfh;                    // OS handle of opened file 
-    DWORD	fileaccess;               // OS file access (requested)
-    DWORD	fileshare;                // OS file sharing mode 
-    DWORD	filecreate;               // OS method of opening/creating 
-    DWORD	fileattrib;               // OS file attribute flags 
+    HANDLE	osfh;                    /* OS handle of opened file */
+    DWORD	fileaccess;               /* OS file access (requested) */
+    DWORD	fileshare;                /* OS file sharing mode */
+    DWORD	filecreate;               /* OS method of opening/creating */
+    DWORD	fileattrib;               /* OS file attribute flags */
     
-    //
-    // decode the access flags
-    //
+    /*
+     * decode the access flags
+     */
     switch( oflag & (_O_RDONLY | _O_WRONLY | _O_RDWR) ) 
 	{
-        case _O_RDONLY:         // read access
+        case _O_RDONLY:         /* read access */
                 fileaccess = GENERIC_READ;
                 break;
-        case _O_WRONLY:         // write access
+        case _O_WRONLY:         /* write access */
                 fileaccess = GENERIC_WRITE;
                 break;
-        case _O_RDWR:           // read and write access
+        case _O_RDWR:           /* read and write access */
                 fileaccess = GENERIC_READ | GENERIC_WRITE;
                 break;
-        default:                // error, bad oflag
+        default:                /* error, bad oflag */
                 set_errno(EINVAL);
                 return -1;
     }
 
-    // set the share flag
+    /*
+     * decode sharing flags
+     */
 	fileshare = FILE_SHARE_READ | FILE_SHARE_WRITE;
 
-    // Remove the text flag - not supported
-	if( oflag & _O_TEXT )
-		oflag &= ~_O_TEXT;
-	
-	//
-    // decode open/create method flags
-    //
+    /*
+     * decode open/create method flags
+     */
     switch ( oflag & (_O_CREAT | _O_EXCL | _O_TRUNC) ) 
 	{
             case 0:
@@ -134,64 +130,61 @@ int	_open( const char *filename, int oflag , int pmode)
                 return -1;
 	}
 
-    //
-    // decode file attribute flags if _O_CREAT was specified
-    //
-    fileattrib = FILE_ATTRIBUTE_NORMAL;     // default
+    /*
+     * decode file attribute flags if _O_CREAT was specified
+     */
+    fileattrib = FILE_ATTRIBUTE_NORMAL;     /* default */
 
     if ( oflag & _O_CREAT ) 
 	{
-        //
-        // set up variable argument list stuff
-        //
-        
-		if ( pmode & _O_RDONLY )
+        /*
+         * set up variable argument list stuff
+         */
+        if ( !(pmode & _S_IWRITE) )
             fileattrib = FILE_ATTRIBUTE_READONLY;
     }
 
-    //
-    // Set temporary file (delete-on-close) attribute if requested.
-    //
+    /*
+     * Set temporary file (delete-on-close) attribute if requested.
+     */
     if ( oflag & _O_TEMPORARY ) 
 	{
         fileattrib |= FILE_FLAG_DELETE_ON_CLOSE;
         fileaccess |= DELETE;
     }
 
-    //
-    // Set temporary file (delay-flush-to-disk) attribute if requested.
-    //
+    /*
+     * Set temporary file (delay-flush-to-disk) attribute if requested.
+     */
     if ( oflag & _O_SHORT_LIVED )
         fileattrib |= FILE_ATTRIBUTE_TEMPORARY;
 
-    //
-    // Set sequential or random access attribute if requested.
-    //
+    /*
+     * Set sequential or random access attribute if requested.
+     */
     if ( oflag & _O_SEQUENTIAL )
         fileattrib |= FILE_FLAG_SEQUENTIAL_SCAN;
     else if ( oflag & _O_RANDOM )
         fileattrib |= FILE_FLAG_RANDOM_ACCESS;
 
-    //
-    // get an available handle.
-    //
-    // multi-thread note: the returned handle is locked!
-    //
-    //
-    // try to open/create the file
-    //
-    TCHAR wcsPath[_MAX_PATH] = { 0 };
-	mbstowcs( wcsPath, filename, _MAX_PATH );
-	if ( (osfh = ::CreateFile( _T("Trace.txt"), // wcsPath,
-                             0, //fileaccess,
+    /*
+     * get an available handle.
+     *
+     * multi-thread note: the returned handle is locked!
+     */
+    /*
+     * try to open/create the file
+     */
+    if ( (osfh = CreateFile( A2T(filename),
+                             fileaccess,
                              fileshare,
                              NULL,
-                             CREATE_NEW, //filecreate,
-                             0, //fileattrib,
+                             filecreate,
+                             fileattrib,
                              NULL ))
          == INVALID_HANDLE_VALUE )
     {
-		return -1;                      // return error to caller 
+        return -1;                      /* return error to caller */
     }
 	return (int)osfh;
 }
