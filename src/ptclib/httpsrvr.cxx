@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.21  1998/10/13 14:06:23  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.20  1998/09/23 06:22:13  robertj
  * Added open source copyright license.
  *
@@ -98,6 +101,8 @@
 #include <http.h>
 #include <ctype.h>
 
+#define new PNEW
+
 
 // undefine to remove support for persistant connections
 #define HAS_PERSISTANCE
@@ -160,7 +165,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
-      pos = node->children.Append(PNEW PHTTPSpace(path[i], node));
+      pos = node->children.Append(new PHTTPSpace(path[i], node));
 
     node = &node->children[pos];
   }
@@ -700,7 +705,7 @@ PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
 
 PObject * PHTTPSimpleAuth::Clone() const
 {
-  return PNEW PHTTPSimpleAuth(realm, username, password);
+  return new PHTTPSimpleAuth(realm, username, password);
 }
 
 
@@ -745,7 +750,7 @@ PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_,
 
 PObject * PHTTPMultiSimpAuth::Clone() const
 {
-  return PNEW PHTTPMultiSimpAuth(realm, users);
+  return new PHTTPMultiSimpAuth(realm, users);
 }
 
 
@@ -1135,7 +1140,7 @@ PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
                                             const PMIMEInfo & inMIME,
 				            PHTTPServer & socket)
 {
-  return PNEW PHTTPRequest(url, inMIME, socket);
+  return new PHTTPRequest(url, inMIME, socket);
 }
 
 
@@ -1300,7 +1305,7 @@ PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
 				        PHTTPServer & server)
 {
-  return PNEW PHTTPFileRequest(url, inMIME, server);
+  return new PHTTPFileRequest(url, inMIME, server);
 }
 
 
@@ -1383,7 +1388,7 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
 									        PHTTPServer & socket)
 {
-  return PNEW PHTTPDirRequest(url, inMIME, socket);
+  return new PHTTPDirRequest(url, inMIME, socket);
 }
 
 
