@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.12 1995/03/12 04:43:26 robertj Exp $
+ * $Id: pprocess.h,v 1.13 1995/03/14 12:42:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.12  1995/03/12 04:43:26  robertj
+ * Revision 1.13  1995/03/14 12:42:14  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.12  1995/03/12  04:43:26  robertj
  * Remvoed redundent destructor.
  *
  * Revision 1.11  1995/01/11  09:45:09  robertj
@@ -56,12 +59,13 @@ PDECLARE_CLASS(PProcess, PThread)
    "programme" in the  context of the operating system. Note that there can
    only be one instance of a PProcess class in a given programme.
    
-   The instance of a PProcess or it GUI descendent $H$PApplication is usually
-   a static variable created by the application writer. This is the initial
-   "anchor" point for all data structures in an application. As the application
-   writer never needs to access the standard system $B$main()$B$ function, it
-   is in the library, the programmes exexcution begins with the virtual
-   function $B$Main()$B$ on a process.
+   The instance of a PProcess or it GUI descendent <A>PApplication</A> is
+   usually a static variable created by the application writer. This is the
+   initial "anchor" point for all data structures in an application. As the
+   application writer never needs to access the standard system
+   <CODE>main()</CODE> function, it is in the library, the programmes
+   execution begins with the virtual function <A><CODE>Main()</CODE></A> on a
+   process.
  */
 
   public:
@@ -76,16 +80,18 @@ PDECLARE_CLASS(PProcess, PThread)
     /* Compare two process instances. This should almost never be called as
        a programme only has access to a single process, its own.
 
-       Returns: EqualTo if the two process object have the same name.
+       <H2>Returns:</H2>
+       <CODE>EqualTo</CODE> if the two process object have the same name.
      */
 
 
   // New functions for class
     static PProcess * Current();
-    /* Get the current processes object instance. The $I$current process$I$ is
-       the one the application is running in.
+    /* Get the current processes object instance. The <I>current process</I>
+       is the one the application is running in.
        
-       Returns: pointer to current process instance.
+       <H2>Returns:</H2>
+       pointer to current process instance.
      */
 
     virtual void Terminate();
@@ -109,27 +115,31 @@ PDECLARE_CLASS(PProcess, PThread)
        indicates the processes termiantion value. It can be considered a
        "return value" for an entire programme.
        
-       Returns: integer termination value.
+       <H2>Returns:</H2>
+       integer termination value.
      */
 
     PArgList & GetArguments();
     /* Get the programme arguments. Programme arguments are a set of strings
        provided to the programme in a platform dependent manner.
     
-       Returns: argument handling class instance.
+       <H2>Returns:</H2>
+       argument handling class instance.
      */
 
     PString GetName() const;
     /* Get the name of the process. This is usually the title part of the
        executable image file.
     
-       Returns: string for the process name.
+       <H2>Returns:</H2>
+       string for the process name.
      */
 
     const PFilePath & GetFile() const;
     /* Get the processes executable image file path.
 
-       Returns: file path for program.
+       <H2>Returns:</H2>
+       file path for program.
      */
 
     PString GetUserName() const;
@@ -138,14 +148,16 @@ PDECLARE_CLASS(PProcess, PThread)
        multi-user. Note that some value may be returned as a "simulated" user.
        For example, in MS-DOS an environment variable
 
-       Returns: user name of processes owner.
+       <H2>Returns:</H2>
+       user name of processes owner.
      */
 
     PTimerList * GetTimerList();
     /* Get the list of timers handled by the application. This is an internal
        function and should not need to be called by the user.
        
-       Returns: list of timers.
+       <H2>Returns:</H2>
+       list of timers.
      */
 
 
@@ -167,16 +179,16 @@ PDECLARE_CLASS(PProcess, PThread)
       char ** argv  // Array of strings for program arguments.
     );
     /* The main() system entry point to programme. This does platform dependent
-       initialisation and then calls the $B$PreInitialise()$B$ function, then
-       the $B$Main()$B$ function.
+       initialisation and then calls the <A><CODE>PreInitialise()</CODE></A>
+       function, then the <A><CODE>Main()</CODE></A> function.
      */
 
     void PreInitialise(
       int argc,     // Number of program arguments.
       char ** argv  // Array of strings for program arguments.
     );
-    /* Internal initialisation function called directly from $B$main()$B$. The
-       user should never call this function.
+    /* Internal initialisation function called directly from
+       <CODE>main()</CODE>. The user should never call this function.
      */
 
 
