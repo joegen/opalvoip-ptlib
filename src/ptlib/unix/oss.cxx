@@ -27,6 +27,12 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.57  2003/01/06 19:25:07  rogerh
+ * Add NetBSD video support.
+ * Add correct includes for OSS ioctls (note the proper way to do this now
+ * is via pwlib commands)
+ * From Andreas Wrede, taken in part from NetBSD's package system
+ *
  * Revision 1.56  2003/01/06 19:10:22  rogerh
  * NetBSD uses /dev/audio and not /dev/dsp
  *
@@ -226,7 +232,6 @@
 
 #ifdef P_LINUX
 #include <sys/soundcard.h>
-#include <sys/time.h>
 #endif
 
 #ifdef P_FREEBSD
