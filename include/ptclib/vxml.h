@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.16  2002/08/28 08:04:31  craigs
+ * Reorganised VXMLSession class as per code from Alexander Kovatch
+ *
  * Revision 1.15  2002/08/28 05:10:27  craigs
  * Added ability to load resources via URI
  * Added cache
@@ -92,134 +95,7 @@ class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
-
-class PVXMLElement : public PObject
-{
-  PCLASSINFO(PVXMLElement, PObject);
-  public:
-    PVXMLElement(PVXMLSession & vxml, PXMLElement & xmlElement);
-
-    virtual BOOL Load()     { return TRUE; }
-    virtual BOOL Execute()  { return TRUE; }
-
-    virtual PString GetVar(const PString & str) const;
-    virtual void    SetVar(const PString & str, const PString & val);
-
-    virtual BOOL GetGuardCondition() const;
-
-    virtual PString GetFormValue() const;
-    virtual void SetFormValue(const PString & v);
-
-    PString GetName() const { return name; }
-
-  protected:
-    PVXMLSession & vxml;
-    PXMLElement  & xmlElement;
-    PStringToString vars;
-    PString name;
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLFormItem : public PVXMLElement 
-{
-  PCLASSINFO(PVXMLFormItem, PObject);
-  public:
-    PVXMLFormItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
-    BOOL ProcessPrompt(PXMLElement & element);
-    void SayAs(const PString & className, const PString & text);
-
-    PVXMLDialog & GetParentDialog() { return parentDialog; }
-
-    PString EvaluateExpr(const PString & oexpr);
-
-    PString GetFormValue() const;
-    void SetFormValue(const PString & v);
-
-    PString GetVar(const PString & str) const;
-    void    SetVar(const PString & str, const PString & val);
-
-  protected:
-    PVXMLDialog & parentDialog;
-    PStringToString formVars;
-};
-
-PARRAY(PVXMLFormItemArray, PVXMLFormItem);
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLBlockItem : public PVXMLFormItem
-{
-  PCLASSINFO(PVXMLBlockItem, PVXMLFormItem);
-  public:
-    PVXMLBlockItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
-    BOOL Execute();
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLFieldItem : public PVXMLFormItem
-{
-  PCLASSINFO(PVXMLFieldItem, PVXMLFormItem);
-  public:
-    PVXMLFieldItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
-    BOOL Execute();
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLVarItem : public PVXMLFormItem
-{
-  PCLASSINFO(PVXMLVarItem, PVXMLFormItem);
-  public:
-    PVXMLVarItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
-    BOOL Execute();
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLRecordItem : public PVXMLFormItem
-{
-  PCLASSINFO(PVXMLRecordItem, PVXMLFormItem);
-  public:
-    PVXMLRecordItem(PVXMLSession & vxml, PXMLElement & xmlItem, PVXMLDialog & parentDialog);
-    BOOL Execute();
-
-  protected:
-    BOOL dtmfTerm;
-    int maxTime;
-    int finalSilence;
-};
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLDialog : public PVXMLElement
-{
-  PCLASSINFO(PVXMLDialog, PObject);
-  public:
-    PVXMLDialog(PVXMLSession & vxml, PXMLElement & xmlItem);
-    BOOL Load();
-    BOOL Execute();
-
-    PString GetVar(const PString & str) const;
-    void SetVar(const PString & ostr, const PString & val);
-
-  protected:
-    PVXMLFormItemArray itemArray;
-};
-
-PARRAY(PVXMLDialogArray, PVXMLDialog);
-
-//////////////////////////////////////////////////////////////////
-
-class PVXMLFormDialog : public PVXMLDialog
-{
-  PCLASSINFO(PVXMLFormDialog, PVXMLDialog);
-  public:
-    PVXMLFormDialog(PVXMLSession & vxml, PXMLElement & xmlItem);
-};
-
-//////////////////////////////////////////////////////////////////
+#if 0
 
 class PVXMLGrammar : public PObject
 {
@@ -258,6 +134,8 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
     PINDEX digitCount;
     PString digits;
 };
+
+#endif
 
 //////////////////////////////////////////////////////////////////
 
@@ -303,7 +181,7 @@ class PVXMLSession : public PIndirectChannel
 
     BOOL Execute();
 
-    BOOL LoadGrammar(PVXMLGrammar * grammar);
+    //BOOL LoadGrammar(PVXMLGrammar * grammar);
 
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
@@ -329,6 +207,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
+    virtual PString PVXMLSession::EvaluateExpr(const PString & oexpr);
 
     virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType);
     virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn);
@@ -338,15 +217,22 @@ class PVXMLSession : public PIndirectChannel
     void AllowClearCall();
     PURL NormaliseResourceName(const PString & src);
 
+    PXMLElement * FindForm(const PString & id);
+
+    BOOL TraverseAudio();
+    BOOL TraverseGoto();
+
+    void SayAs(const PString & className, const PString & text);
+
   protected:
     BOOL ExecuteWithoutLock();
 
     PMutex sessionMutex;
 
     PXML xmlFile;
-    PVXMLDialogArray dialogArray;
 
-    PVXMLGrammar * activeGrammar;
+    //PVXMLDialogArray dialogArray;
+    //PVXMLGrammar * activeGrammar;
 
     PStringToString sessionVars;
     PStringToString documentVars;
@@ -366,6 +252,9 @@ class PVXMLSession : public PIndirectChannel
     PVXMLOutgoingChannel * outgoingChannel;
     PTextToSpeech * textToSpeech;
     BOOL autoDeleteTextToSpeech;
+
+    PXMLElement * currentForm;
+	  PXMLObject  * currentNode;
 
     static PMutex cacheMutex;
     static PDirectory cacheDir;
