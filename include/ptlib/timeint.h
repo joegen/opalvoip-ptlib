@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.2 1993/07/14 12:49:16 robertj Exp $
+ * $Id: timeint.h,v 1.3 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.2  1993/07/14 12:49:16  robertj
+ * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Added function to set the interval of a PTieInterval object.
+ * Used a common type for number of milliseconds.
+ *
+ * Revision 1.2  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
@@ -23,7 +27,7 @@ DECLARE_CLASS(PTimeInterval,PObject)
 
   public:
     PTimeInterval(long milliseconds = 0,
-                   int seconds = 0,int minutes = 0,int hours = 0,int days = 0);
+                int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
 
     // Overrides from class PObject
     PObject * Clone() const;
@@ -38,10 +42,18 @@ DECLARE_CLASS(PTimeInterval,PObject)
     int Hours() const;
     int Days() const;
 
+    void SetInterval(long milliseconds = 0,
+                int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
+
     PTimeInterval operator+(const PTimeInterval & t) const;
     PTimeInterval & operator+=(const PTimeInterval & t);
     PTimeInterval operator-(const PTimeInterval & t) const;
     PTimeInterval & operator-=(const PTimeInterval & t);
+
+
+  protected:
+    // Member variables
+    PMilliseconds milliseconds;
 
 
 // Class declaration continued in platform specific header file ///////////////
