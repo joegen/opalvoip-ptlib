@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.34  2000/05/02 03:17:13  robertj
+ * Added display of thread name in SystemLog, thanks Ashley Unitt.
+ *
  * Revision 1.33  2000/04/03 18:36:50  robertj
  * Fix for BeOS support (stupid prototype in system header files).
  *
@@ -135,9 +138,13 @@ void PSystemLog::Output(Level level, const char * cmsg)
       out = new ofstream(systemLogFile, ios::app);
 
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss ")
-         << (void *)PThread::Current()
-         << ' '
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss ");
+    PString threadName = PThread::Current()->GetThreadName();
+    if (!threadName)
+      *out << setw(15) << threadName.Left(15);
+    else
+      *out << (void *)PThread::Current();
+    *out << '\t'
          << PLevelName[level+1]
          << '\t'
          << cmsg << endl;
