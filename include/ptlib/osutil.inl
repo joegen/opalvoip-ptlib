@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.42 1996/03/17 05:43:21 robertj Exp $
+ * $Id: osutil.inl,v 1.43 1996/03/31 08:48:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.43  1996/03/31 08:48:14  robertj
+ * Fixed WriteString() so works with sockets.
+ *
  * Revision 1.42  1996/03/17 05:43:21  robertj
  * Changed PTimeInterval to 64 bit integer.
  *
@@ -324,9 +327,6 @@ PINLINE PTimeInterval PChannel::GetWriteTimeout() const
 
 PINLINE PINDEX PChannel::GetLastWriteCount() const
   { return lastWriteCount; }
-
-PINLINE BOOL PChannel::WriteString(const PString & str)
-  { return Write((const char *)str, str.GetLength()); }
 
 PINLINE int PChannel::GetHandle() const
   { PAssert(os_handle >= 0, PChannelNotOpen); return os_handle; }
