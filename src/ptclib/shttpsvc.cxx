@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.5  2001/05/24 01:01:28  robertj
+ * Fixed GNU C++ warning
+ *
  * Revision 1.4  2001/05/16 06:02:37  craigs
  * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
  *
@@ -55,7 +58,7 @@ class HTTP_PSSLChannel : public PSSLChannel
     enum { PreRead_Size = 4 };
 
     PSecureHTTPServiceProcess * svc;
-    int preReadLen;
+    PINDEX preReadLen;
     char preRead[PreRead_Size];
 };
 
@@ -172,7 +175,7 @@ PString PSecureHTTPServiceProcess::CreateRedirectMessage(const PString & url)
 HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext * context)
   : PSSLChannel(context), svc(_svc)
 {
-  preReadLen = -1;
+  preReadLen = P_MAX_INDEX;
 }
 
 
@@ -181,7 +184,7 @@ BOOL HTTP_PSSLChannel::RawSSLRead(PChannel * chan, void * buf, PINDEX & len)
   if (preReadLen == 0)
     return PSSLChannel::RawSSLRead(chan, buf, len); 
 
-  if (preReadLen < 0) {
+  if (preReadLen == P_MAX_INDEX) {
 
     // read some bytes from the channel
     preReadLen = 0;
