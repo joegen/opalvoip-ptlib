@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.65  2001/04/18 00:19:07  robertj
+ * Removed newline from error code string in NT event.
+ *
  * Revision 1.64  2001/04/16 23:04:25  craigs
  * Fixed problem with unknown command causing page fault due to missing comma in command list
  *
@@ -423,7 +426,7 @@ void PSystemLog::Output(Level level, const char * msg)
 
     char errbuf[25];
     if (level > StdError && level < Info && err != 0)
-      ::sprintf(errbuf, "\nError code = %d", err);
+      ::sprintf(errbuf, "Error code = %d", err);
     else
       errbuf[0] = '\0';
 
