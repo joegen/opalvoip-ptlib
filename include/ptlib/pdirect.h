@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.14 1994/08/23 11:32:52 robertj Exp $
+ * $Id: pdirect.h,v 1.15 1994/10/23 04:49:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.14  1994/08/23 11:32:52  robertj
+ * Revision 1.15  1994/10/23 04:49:25  robertj
+ * Chnaged PDirectory to descend of PString.
+ * Added PDirectory Exists() function.
+ *
+ * Revision 1.14  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.13  1994/08/22  00:46:48  robertj
@@ -97,7 +101,8 @@ struct PFileInfo {
 };
 
 
-PDECLARE_CONTAINER(PDirectory, PContainer)
+PDECLARE_CONTAINER(PDirectory, PString)
+  // Class to represent a directory in the operating system file system.
 
   public:
     PDirectory();
@@ -107,15 +112,7 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
       // Create a directory object of the specified directory
       
 
-    // Overrides from class PObject
-    Comparison Compare(const PObject & obj) const;
-    virtual ostream & PrintOn(ostream & strm) const;
-    virtual istream & ReadFrom(istream & strm);
-
     // New member functions
-    PString GetPath() const;
-      // Return the full, unambigous, path name for the directory
-
     PString GetVolume() const;
       // Return the volume name that the directory is in.
 
@@ -126,6 +123,10 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
       // Return TRUE if the character is a directory path separator.
 
 
+    BOOL Exists() const;
+    static BOOL Exists(const PString & p);
+      // Change to the specified directory.
+      
     BOOL Change() const;
     static BOOL Change(const PString & p);
       // Change to the specified directory.
@@ -166,17 +167,12 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
 
 
   protected:
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-
-
     // New functions for class
     void Construct();
       // Common constructor code
 
 
     // Member variables
-    PString path;
     int     scanMask;
 
 
