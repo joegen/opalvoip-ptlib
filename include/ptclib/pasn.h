@@ -1,11 +1,14 @@
 /*
- * $Id: pasn.h,v 1.1 1996/09/14 12:58:57 robertj Exp $
+ * $Id: pasn.h,v 1.2 1996/11/04 03:56:00 robertj Exp $
  *
  * ASN Classes
  *
  * Copyright 1996 Equivalence
  *
  * $Log: pasn.h,v $
+ * Revision 1.2  1996/11/04 03:56:00  robertj
+ * Added ASN types to class.
+ *
  * Revision 1.1  1996/09/14 12:58:57  robertj
  * Initial revision
  *
@@ -136,13 +139,6 @@ PDECLARE_CLASS(PASNObject, PObject)
     virtual PObject * Clone() const;
     /* Virtual function used to duplicate objects */
 
-  protected:
-    PASNObject();
-    /* Create an empty ASN object. Used only by descendant constructors */
-
-    static BYTE ASNTypeToType[ASNTypeMax];
-    /* Table to map <A>enum ASNType</A> values to ASN identifiers */
-
     static void EncodeASNLength (
       PBYTEArray & buffer,		// buffer to encode into
       WORD length			// ASN length to encode
@@ -226,6 +222,14 @@ PDECLARE_CLASS(PASNObject, PObject)
       ASNType type = TimeTicks	        // actual integer type
     );
     // Decode an ASN integer value in the specified buffer 
+
+  protected:
+    PASNObject();
+    /* Create an empty ASN object. Used only by descendant constructors */
+
+    static BYTE ASNTypeToType[ASNTypeMax];
+    /* Table to map <A>enum ASNType</A> values to ASN identifiers */
+
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -474,6 +478,8 @@ PDECLARE_CLASS(PASNSequence, PASNObject)
     WORD GetEncodedLength();
     ASNType GetType() const;
     PString GetTypeAsString() const;
+
+    BOOL Encode(PBYTEArray & buffer, PINDEX maxLen) ;
 
   private:
     PASNObjectList sequence;
