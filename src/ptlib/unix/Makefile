@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.111  2003/04/16 08:05:50  craigs
+# CHanged checks of variosu vars to use ifeq
+#
 # Revision 1.110  2003/04/15 08:05:43  craigs
 # Added pdns.cxx
 #
@@ -388,12 +391,12 @@ CFLAGS += -DPTRACING=1
 # global statics will be constructed/destructed in the correct order
 
 
-ifdef HAS_OPENLDAP
+ifeq (1,$(HAS_OPENLDAP))
 LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx \
                $(COMPONENT_SRC_DIR)/pils.cxx
 endif
 
-ifdef HAS_OPENSSL
+ifeq (1,$(HAS_OPENSSL))
 SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
@@ -511,7 +514,7 @@ ifeq ($(OSTYPE),QNX)
 SOUND_SOURCE = qsa.cxx
 endif
 
-ifdef HAS_EXPAT
+ifeq (1,$(HAS_EXPAT))
 PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
