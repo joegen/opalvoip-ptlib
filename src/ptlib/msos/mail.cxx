@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.9 1997/05/16 12:05:05 robertj Exp $
+ * $Id: mail.cxx,v 1.10 1997/07/14 11:47:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.10  1997/07/14 11:47:19  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.9  1997/05/16 12:05:05  robertj
  * Added BCC capability to send mail.
  *
@@ -694,7 +697,7 @@ int PMail::GetErrorCode() const
 PString PMail::GetErrorText() const
 {
 #if P_HAS_CMC
-  static const char * cmcErrMsg[] = {
+  static const char * const cmcErrMsg[] = {
     "CMC_SUCCESS",
     "CMC_E_AMBIGUOUS_RECIPIENT",
     "CMC_E_ATTACHMENT_NOT_FOUND",
@@ -742,7 +745,7 @@ PString PMail::GetErrorText() const
 #endif
 
 #if P_HAS_MAPI
-  static const char * mapiErrMsg[] = {
+  static const char * const mapiErrMsg[] = {
     "SUCCESS_SUCCESS",
     "MAPI_USER_ABORT",
     "MAPI_E_FAILURE",
