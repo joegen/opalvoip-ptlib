@@ -136,7 +136,7 @@ class Constraint : public PObject
     BOOL HasPrefix(Prefix pref);
     BOOL IsExtendable() const { return extendable; }
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
 
   protected:
     ValueElementList standard;
@@ -155,7 +155,7 @@ class ValueElementBase : public PObject
     ValueElementBase();
     void SetExclusions(ValueElementBase * excl) { exclusions = excl; }
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
     virtual BOOL HasPrefix(Constraint::Prefix pref);
 
   protected:
@@ -179,7 +179,7 @@ class ListValueElement : public ValueElementBase
     ListValueElement(ValueElementList * list);
     void PrintOn(ostream &) const;
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
     virtual BOOL HasPrefix(Constraint::Prefix pref);
 
   protected:
@@ -197,7 +197,7 @@ class SingleValueElement : public ValueElementBase
     ~SingleValueElement();
     void PrintOn(ostream &) const;
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
 
   protected:
     ValueBase * value;
@@ -212,7 +212,7 @@ class ValueRangeElement : public ValueElementBase
     ~ValueRangeElement();
     void PrintOn(ostream &) const;
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
 
   protected:
     ValueBase * lower;
@@ -241,7 +241,7 @@ class ConstraintValueElement : public ValueElementBase
     ~ConstraintValueElement();
     void PrintOn(ostream &) const;
 
-    virtual BOOL GenerateConstructor(ostream & hdr, ostream & cxx);
+    virtual void GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx);
     virtual BOOL HasPrefix(Constraint::Prefix pref);
 
   protected:
@@ -260,6 +260,7 @@ class TypeBase : public PObject
     void PrintOn(ostream &) const;
 
     virtual int GetIdentifierTokenContext() const;
+    virtual int GetBraceTokenContext() const;
 
     const PString & GetName() const { return name; }
     void SetName(PString * name);
@@ -286,7 +287,8 @@ class TypeBase : public PObject
     BOOL IsGenerated() const { return isGenerated; }
     void BeginGenerateCplusplus(ostream & hdr, ostream & cxx);
     void EndGenerateCplusplus(ostream & hdr, ostream & cxx);
-    void GenerateConstructorParams(ostream &, ostream & cxx, BOOL passThru);
+    void GenerateCplusplusConstructor(ostream & hdr, ostream & cxx);
+    void GenerateCplusplusConstraints(const PString & prefix, ostream & hdr, ostream & cxx);
 
   protected:
     TypeBase(unsigned tagNum);
@@ -402,6 +404,7 @@ class BitStringType : public TypeBase
     BitStringType();
     BitStringType(NamedNumberList *);
     virtual int GetIdentifierTokenContext() const;
+    virtual int GetBraceTokenContext() const;
     virtual const char * GetAncestorClass() const;
   protected:
     NamedNumberList allowedBits;
@@ -514,117 +517,126 @@ class ExternalType : public TypeBase
 };
 
 
-class BMPStringType : public TypeBase
+class StringTypeBase : public TypeBase
 {
-    PCLASSINFO(BMPStringType, TypeBase)
+    PCLASSINFO(StringTypeBase, TypeBase)
+  public:
+    StringTypeBase(int tag);
+    virtual int GetBraceTokenContext() const;
+};
+
+
+class BMPStringType : public StringTypeBase
+{
+    PCLASSINFO(BMPStringType, StringTypeBase)
   public:
     BMPStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class GeneralStringType : public TypeBase
+class GeneralStringType : public StringTypeBase
 {
-    PCLASSINFO(GeneralStringType, TypeBase)
+    PCLASSINFO(GeneralStringType, StringTypeBase)
   public:
     GeneralStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class GraphicStringType : public TypeBase
+class GraphicStringType : public StringTypeBase
 {
-    PCLASSINFO(GraphicStringType, TypeBase)
+    PCLASSINFO(GraphicStringType, StringTypeBase)
   public:
     GraphicStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class IA5StringType : public TypeBase
+class IA5StringType : public StringTypeBase
 {
-    PCLASSINFO(IA5StringType, TypeBase)
+    PCLASSINFO(IA5StringType, StringTypeBase)
   public:
     IA5StringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class ISO646StringType : public TypeBase
+class ISO646StringType : public StringTypeBase
 {
-    PCLASSINFO(ISO646StringType, TypeBase)
+    PCLASSINFO(ISO646StringType, StringTypeBase)
   public:
     ISO646StringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class NumericStringType : public TypeBase
+class NumericStringType : public StringTypeBase
 {
-    PCLASSINFO(NumericStringType, TypeBase)
+    PCLASSINFO(NumericStringType, StringTypeBase)
   public:
     NumericStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class PrintableStringType : public TypeBase
+class PrintableStringType : public StringTypeBase
 {
-    PCLASSINFO(PrintableStringType, TypeBase)
+    PCLASSINFO(PrintableStringType, StringTypeBase)
   public:
     PrintableStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class TeletexStringType : public TypeBase
+class TeletexStringType : public StringTypeBase
 {
-    PCLASSINFO(TeletexStringType, TypeBase)
+    PCLASSINFO(TeletexStringType, StringTypeBase)
   public:
     TeletexStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class T61StringType : public TypeBase
+class T61StringType : public StringTypeBase
 {
-    PCLASSINFO(T61StringType, TypeBase)
+    PCLASSINFO(T61StringType, StringTypeBase)
   public:
     T61StringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class UniversalStringType : public TypeBase
+class UniversalStringType : public StringTypeBase
 {
-    PCLASSINFO(UniversalStringType, TypeBase)
+    PCLASSINFO(UniversalStringType, StringTypeBase)
   public:
     UniversalStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class VideotexStringType : public TypeBase
+class VideotexStringType : public StringTypeBase
 {
-    PCLASSINFO(VideotexStringType, TypeBase)
+    PCLASSINFO(VideotexStringType, StringTypeBase)
   public:
     VideotexStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class VisibleStringType : public TypeBase
+class VisibleStringType : public StringTypeBase
 {
-    PCLASSINFO(VisibleStringType, TypeBase)
+    PCLASSINFO(VisibleStringType, StringTypeBase)
   public:
     VisibleStringType();
     virtual const char * GetAncestorClass() const;
 };
 
 
-class UnrestrictedCharacterStringType : public TypeBase
+class UnrestrictedCharacterStringType : public StringTypeBase
 {
-    PCLASSINFO(UnrestrictedCharacterStringType, TypeBase)
+    PCLASSINFO(UnrestrictedCharacterStringType, StringTypeBase)
   public:
     UnrestrictedCharacterStringType();
     virtual const char * GetAncestorClass() const;
@@ -758,6 +770,20 @@ class NullValue : public ValueBase
 };
 
 
+class CharacterValue : public ValueBase
+{
+    PCLASSINFO(CharacterValue, ValueBase)
+  public:
+    CharacterValue(BYTE c);
+    CharacterValue(BYTE t1, BYTE t2);
+    CharacterValue(BYTE q1, BYTE q2, BYTE q3, BYTE q4);
+    void PrintOn(ostream &) const;
+    virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
+  protected:
+    unsigned value;
+};
+
+
 class CharacterStringValue : public ValueBase
 {
     PCLASSINFO(CharacterStringValue, ValueBase)
@@ -799,6 +825,17 @@ class MaxValue : public ValueBase
   public:
     void PrintOn(ostream &) const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
+};
+
+
+class SequenceValue : public ValueBase
+{
+    PCLASSINFO(SequenceValue, ValueBase)
+  public:
+    SequenceValue(ValuesList * list = NULL);
+    void PrintOn(ostream &) const;
+  protected:
+    ValuesList values;
 };
 
 
