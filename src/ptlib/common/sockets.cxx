@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.21 1996/01/23 13:19:13 robertj Exp $
+ * $Id: sockets.cxx,v 1.22 1996/01/28 14:08:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.22  1996/01/28 14:08:13  robertj
+ * Changed service parameter to PString for ease of use in GetPortByService function
+ * Fixed up comments.
+ * Added default value in string for service name.
+ *
  * Revision 1.21  1996/01/23 13:19:13  robertj
  * Moved Accept() function to platform dependent code.
  *
@@ -94,7 +99,7 @@ PIPSocket::PIPSocket(WORD portNum)
 }
 
 
-PIPSocket::PIPSocket(const char * protocol, const char * service)
+PIPSocket::PIPSocket(const char * protocol, const PString & service)
 {
   port = GetPortByService(protocol, service);
 }
@@ -254,15 +259,20 @@ PString PIPSocket::GetService() const
 }
 
 
-WORD PIPSocket::GetPortByService(const char * protocol, const char * service)
+WORD PIPSocket::GetPortByService(const char * protocol, const PString & service)
 {
-  struct servent * serv = ::getservbyname(service, protocol);
+  PINDEX space = service.FindOneOf(" \t\r\n");
+  struct servent * serv = ::getservbyname(service(0, space-1), protocol);
   if (serv != NULL)
     return ntohs(serv->s_port);
-  else if (isdigit(service[0]))
+
+  if (space == P_MAX_INDEX)
+    return (WORD)atoi(service(space+1, P_MAX_INDEX));
+
+  if (isdigit(service[0]))
     return (WORD)atoi(service);
-  else
-    return 0;
+
+  return 0;
 }
 
 
