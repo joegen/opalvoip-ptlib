@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.10  2001/03/14 06:24:55  robertj
+# Fixed setting of symlinks for shared libraries to be relative paths.
+#
 # Revision 1.9  2000/05/19 01:26:31  robertj
 # Added copyright notice
 #
@@ -54,12 +57,9 @@ LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
 LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
 
 $(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
-	@rm -f $(LIBDIR)/$(LIB_BASENAME)
-	ln -s $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME)
-	@rm -f $(LIBDIR)/$(LIBNAME_MAJ)
-	ln -s $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIBNAME_MAJ)
-	@rm -f $(LIBDIR)/$(LIBNAME_MIN)
-	ln -s $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIBNAME_MIN)
+	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIB_BASENAME)
+	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
+	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
