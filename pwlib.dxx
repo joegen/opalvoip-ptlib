@@ -117,7 +117,6 @@ window as a descendent off the \Ref{PMainWindow} class.
 		//@Include: include/ptlib/sfile.h
 		//@Include: include/ptlib/filepath.h
 		//@Include: include/ptlib/pdirect.h
-		//@Include: include/ptlib/vfakeio.h
 		//@Include: include/ptlib/vconvert.h
 	    //@}
 	/**@name Socket Classes
