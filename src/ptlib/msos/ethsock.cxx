@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.11  1998/11/14 06:31:41  robertj
+ * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
+ * Added support for MSDUN1.3 DHCP registry entries.
+ *
  * Revision 1.10  1998/10/23 04:09:08  robertj
  * Fixes for NT support.
  * Allowed both old and new driver by compilation option.
@@ -827,6 +831,22 @@ BOOL PWin32PacketVxD::EnumIpAddress(PINDEX idx,
         return TRUE;
       }
     }
+    else if (dhcpRegistry.QueryValue("HardwareAddress", str) &&
+             str.GetSize() >= sizeof(PEthSocket::Address)) {
+      PEthSocket::Address hardwareAddress;
+      memcpy(&hardwareAddress, (const char *)str, sizeof(hardwareAddress));
+      if (hardwareAddress == macAddress) {
+        if (dhcpRegistry.QueryValue("DhcpIPAddress", str) &&
+            str.GetSize() >= sizeof(addr)) {
+          memcpy(&addr, (const char *)str, sizeof(addr));
+          if (dhcpRegistry.QueryValue("DhcpSubnetMask", str) &&
+              str.GetSize() >= sizeof(net_mask)) {
+            memcpy(&net_mask, (const char *)str, sizeof(net_mask));
+            return TRUE;
+          }
+        }
+      }
+    }
   }
 
   return FALSE;
@@ -1303,13 +1323,23 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
       handles[idx] = buffer.GetEvent();
     }
 
-    DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
-    if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers)
-      return ConvertOSError(-1);
+    DWORD result;
+    PINDEX retries = 100;
+    for (;;) {
+      result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
+      if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0+numBuffers)
+        break;
+
+      if (::GetLastError() != ERROR_INVALID_HANDLE || retries == 0)
+        return ConvertOSError(-1);
+
+      retries--;
+    }
 
     idx = result - WAIT_OBJECT_0;
     if (!buffers[idx].ReadComplete(*driver))
       return ConvertOSError(-1);
+
   } while (!buffers[idx].IsType(filterType));
 
   lastReadCount = buffers[idx].GetData(data, length);
