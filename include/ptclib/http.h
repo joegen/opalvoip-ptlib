@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.44  2001/01/15 06:16:53  robertj
+ * Set HTTP resource members to private to assure are not modified by
+ *   dscendents in non-threadsafe manner.
+ *
  * Revision 1.43  2000/09/04 03:57:58  robertj
  * Added ability to change the persistent connection parameters (timeout etc).
  *
@@ -1090,12 +1094,6 @@ class PHTTPResource : public PObject
      */
     const PString & GetContentType() const { return contentType; }
 
-    /** Set the current content type for the resource.
-     */
-    void SetContentType(
-      const PString & newType
-    ) { contentType = newType; }
-
     /** Get the current authority for the resource.
 
        @return
@@ -1317,6 +1315,7 @@ class PHTTPResource : public PObject
       BOOL  IsGet
     );
 
+  private:
     /// Base URL for the resource, may accept URLS with a longer hierarchy
     PURL             baseURL;
     /// MIME content type for the resource
