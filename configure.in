@@ -303,7 +303,22 @@ dnl check for pthreads library
 
 dnl MSWIN Semaphore Support,P_HAS_SEMAPHORES
 
+dnl Linux, Mac OS X use libpthread and -lpthread
+dnl FreeBSD uses the -pthread compiler option and uses libc_r
+
 AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+if test ${HAS_PTHREADS} = yes ; then
+  ENDLDLIBS="$ENDLDLIBS -lpthread"
+  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+else
+  dnl FreeBSD checks
+  AC_CHECK_LIB(c_r, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+  if test ${HAS_PTHREADS} = yes ; then
+    ENDLDLIBS="$ENDLDLIBS -pthread"
+    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+  fi
+fi
+
 
 if test ${HAS_PTHREADS} = yes ; then
   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
@@ -313,8 +328,6 @@ if test ${HAS_PTHREADS} = yes ; then
   if test ${OSTYPE} != Darwin ; then
     AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
   fi
-  ENDLDLIBS="$ENDLDLIBS -lpthread"
-  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 fi
 
 
