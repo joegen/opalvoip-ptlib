@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.7 1996/01/28 14:13:04 robertj Exp $
+ * $Id: assert.cxx,v 1.8 1996/03/04 12:39:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.8  1996/03/04 12:39:35  robertj
+ * Fixed Win95 support for console tasks.
+ *
  * Revision 1.7  1996/01/28 14:13:04  robertj
  * Made PServiceProcess special case global not just WIN32.
  *
@@ -58,7 +61,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
   PString wndClassName;
   GetClassName(hWnd, wndClassName.GetPointer(100), 100);
-  if (wndClassName != "ConsoleWindowClass")
+  if (wndClassName != "ConsoleWindowClass" && wndClassName != "tty")
     return TRUE;
 
   DWORD wndProcess;
