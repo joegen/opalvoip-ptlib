@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.135  2000/04/27 04:19:27  robertj
+ * Fixed bug in restarting free running timers, thanks Ashley Unitt.
+ *
  * Revision 1.134  2000/04/03 18:42:40  robertj
  * Added function to determine if PProcess instance is initialised.
  *
@@ -713,6 +716,14 @@ void PTimer::StartRunning(BOOL once)
 
   if (IsRunning() && timeoutThread == NULL)
     PProcess::Current().GetTimerList()->AppendTimer(this);
+  if (IsRunning()) {
+    if (timeoutThread == NULL)
+      PProcess::Current().GetTimerList()->AppendTimer(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+    else
+      PProcess::Current().SignalTimerChange();
+#endif
+  }
 }
 
 
