@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.11  2002/06/20 00:51:38  craigs
+ * Added virtuals to allow overriding
+ *
  * Revision 1.10  2002/05/21 01:56:53  robertj
  * Removed the enum which made yet another set of magic numbers for audio
  *   formats, now uses the WAV file format numbers.
@@ -244,7 +247,7 @@ class PWAVFile : public PFile
        @return
        TRUE if the new file position was set.
      */
-    BOOL SetPosition(
+    virtual BOOL SetPosition(
       off_t pos,                         /// New position to set.
       FilePositionOrigin origin = Start  /// Origin for position change.
     );
@@ -256,31 +259,31 @@ class PWAVFile : public PFile
        @return
        current file position relative to the end of the WAV header.
      */
-    off_t GetPosition() const;
+    virtual off_t GetPosition() const;
   //@}
 
   /**@name Member variable access */
   //@{
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
-    BOOL SetFormat(unsigned fmt);
+    virtual BOOL SetFormat(unsigned fmt);
 
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
-    unsigned GetFormat() const;
+    virtual unsigned GetFormat() const;
 
     /**Find out the number of channels the WAV file has. Typically this is 1 for
        mono and 2 for stereo.
     */
-    unsigned GetChannels() const;
+    virtual unsigned GetChannels() const;
 
     /**Find out the sample rate of the WAV file in Hz.
     */
-    unsigned GetSampleRate() const;
+    virtual unsigned GetSampleRate() const;
 
     /**Find out how may bits there are per sample, eg 8 or 16.
     */
-    unsigned GetSampleSize() const;
+    virtual unsigned GetSampleSize() const;
 
     /**Find out the size of WAV header presented in the file.
     */
@@ -288,7 +291,7 @@ class PWAVFile : public PFile
 
     /**Find out how many bytes of audio data there are.
     */
-    off_t GetDataLength();
+    virtual off_t GetDataLength();
 
     /**Determine if the WAV file is a valid wave file.
 
