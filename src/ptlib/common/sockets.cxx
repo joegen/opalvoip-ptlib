@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.129  2002/10/17 07:17:43  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.128  2002/10/17 01:24:11  robertj
  * Fixed so internal sockaddr classes GetSize() returns correct size for
  *   particular sockaddr it represents, thanks Sébastien Josset.
@@ -643,6 +646,7 @@ static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
   return cfg.GetInteger(key, dflt);
 }
 
+
 BOOL PIPCacheData::HasAged() const
 {
   static PTimeInterval retirement = GetConfigTime("Age Limit", 300000); // 5 minutes
@@ -908,6 +912,78 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// P_fd_set
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4127)
+#endif
+
+P_fd_set::P_fd_set()
+{
+  Construct();
+  FD_ZERO(set);
+}
+
+
+P_fd_set::P_fd_set(SOCKET fd)
+{
+  Construct();
+  FD_ZERO(set);
+  FD_SET(fd, set);
+}
+
+
+P_fd_set & P_fd_set::operator=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  FD_ZERO(set);
+  FD_SET(fd, set);
+  return *this;
+}
+
+
+P_fd_set & P_fd_set::operator+=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  FD_SET(fd, set);
+  return *this;
+}
+
+
+P_fd_set & P_fd_set::operator-=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  FD_CLR(fd, set);
+  return *this;
+}
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////////
+// P_timeval
+
+P_timeval::P_timeval()
+{
+  tval.tv_usec = 0;
+  tval.tv_sec = 0;
+  infinite = FALSE;
+}
+
+
+P_timeval & P_timeval::operator=(const PTimeInterval & time)
+{
+  infinite = time == PMaxTimeInterval;
+  tval.tv_usec = (long)(time.GetMilliSeconds()%1000)*1000;
+  tval.tv_sec = time.GetSeconds();
+  return *this;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PSocket
 
 PSocket::PSocket()
@@ -1113,28 +1189,16 @@ int PSocket::Select(PSocket & sock1,
   int h1 = sock1.GetHandle();
   int h2 = sock2.GetHandle();
 
-#ifdef _MSC_VER
-#pragma warning(disable:4018 4127)
-#endif
-  fd_set readfds;
-  FD_ZERO(&readfds);
-  FD_SET(h1, &readfds);
-  FD_SET(h2, &readfds);
-  fd_set writefds;
-  FD_ZERO(&writefds);
-  fd_set exceptfds;
-  FD_ZERO(&exceptfds);
-#ifdef _MSC_VER
-#pragma warning(default:4018 4127)
-#endif
+  P_fd_set readfds;
+  readfds += h1;
+  readfds += h2;
 
   PIntArray allfds(4);
   allfds[0] = h1;
   allfds[1] = 1;
   allfds[2] = h2;
   allfds[3] = 1;
-  int rval = os_select(PMAX(h1, h2)+1,
-                                readfds, writefds, exceptfds, allfds, timeout);
+  int rval = os_select(PMAX(h1, h2)+1, readfds, NULL, NULL, allfds, timeout);
 
   Errors lastError;
   int osError;
@@ -1142,9 +1206,9 @@ int PSocket::Select(PSocket & sock1,
     return lastError;
 
   rval = 0;
-  if (FD_ISSET(h1, &readfds))
+  if (readfds.IsPresent(h1))
     rval -= 1;
-  if (FD_ISSET(h2, &readfds))
+  if (readfds.IsPresent(h2))
     rval -= 2;
 
   return rval;
@@ -1198,43 +1262,37 @@ PChannel::Errors PSocket::Select(SelectList & read,
   PINDEX nextfd = 0;
   PIntArray allfds(2*(read.GetSize()+write.GetSize()+except.GetSize()));
 
-#ifdef _MSC_VER
-#pragma warning(disable:4018 4127)
-#endif
-  fd_set readfds;
-  FD_ZERO(&readfds);
+  P_fd_set readfds;
   PINDEX i;
   for (i = 0; i < read.GetSize(); i++) {
     if (!read[i].IsOpen())
       return NotOpen;
     int h = read[i].GetHandle();
-    FD_SET(h, &readfds);
+    readfds += h;
     if (h > maxfds)
       maxfds = h;
     allfds[nextfd++] = h;
     allfds[nextfd++] = 1;
   }
 
-  fd_set writefds;
-  FD_ZERO(&writefds);
+  P_fd_set writefds;
   for (i = 0; i < write.GetSize(); i++) {
     if (!write[i].IsOpen())
       return NotOpen;
     int h = write[i].GetHandle();
-    FD_SET(h, &writefds);
+    writefds += h;
     if (h > maxfds)
       maxfds = h;
     allfds[nextfd++] = h;
     allfds[nextfd++] = 2;
   }
 
-  fd_set exceptfds;
-  FD_ZERO(&exceptfds);
+  P_fd_set exceptfds;
   for (i = 0; i < except.GetSize(); i++) {
     if (!except[i].IsOpen())
       return NotOpen;
     int h = except[i].GetHandle();
-    FD_SET(h, &exceptfds);
+    exceptfds += h;
     if (h > maxfds)
       maxfds = h;
     allfds[nextfd++] = h;
