@@ -1018,7 +1018,6 @@ EXPORTS
     ??A?$PList@VPSocket@@@@QBEAAVPSocket@@H@Z @631 NONAME ;public: class PSocket & __thiscall PList<class PSocket>::operator[](int)const 
     ??A?$PList@VPString@@@@QBEAAVPString@@H@Z @632 NONAME ;public: class PString & __thiscall PList<class PString>::operator[](int)const 
     ??A?$PList@VPThread@@@@QBEAAVPThread@@H@Z @633 NONAME ;public: class PThread & __thiscall PList<class PThread>::operator[](int)const 
-    ??A?$PList@VPTimer@@@@QBEAAVPTimer@@H@Z @634 NONAME ;public: class PTimer & __thiscall PList<class PTimer>::operator[](int)const 
     ??A?$PList@VRouteEntry@PIPSocket@@@@QBEAAVRouteEntry@PIPSocket@@H@Z @2451 NONAME ;public: class PIPSocket::RouteEntry & __thiscall PList<class PIPSocket::RouteEntry>::operator[](int)const 
     ??A?$PSortedList@VPString@@@@QBEAAVPString@@H@Z @3546 NONAME ;public: class PString & __thiscall PSortedList<class PString>::operator[](int)const 
     ??AAddress@PIPSocket@@QBEEH@Z @2952 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 

@@ -192,7 +192,6 @@ EXPORTS
     ??0PTime@@QAE@XZ @147 NONAME ;public: __thiscall PTime::PTime(void)
     ??0PTimeInterval@@QAE@ABVPString@@@Z @2264 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)
     ??0PTimeInterval@@QAE@JJJJH@Z @149 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(long,long,long,long,int)
-    ??0PTimeInterval@@QAE@_J@Z @2488 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(__int64)
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @151 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
     ??0PTimer@@QAE@JHHHH@Z @152 NONAME ;public: __thiscall PTimer::PTimer(long,int,int,int,int)
     ??0PTimerList@@QAE@XZ @153 NONAME ;public: __thiscall PTimerList::PTimerList(void)
