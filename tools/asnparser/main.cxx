@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.22  1999/09/07 09:56:04  robertj
+ * Fixed failure to put "using anmespace" in every generated .cxx file.
+ *
  * Revision 1.21  1999/08/28 01:48:55  robertj
  * Fixed anomaly to always include non-optional extensions in encodings.
  *
@@ -244,7 +247,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 3)
+  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 4)
 {
 }
 
@@ -3429,8 +3432,11 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
 
       cxxFile << "#include <ptlib.h>\n"
                  "#include \"" << headerName << "\"\n"
-                 "\n"
-                 "#define new PNEW\n"
+                 "\n";
+      if (useNamespaces)
+        cxxFile << "using namespace " << moduleName << ";\n"
+                   "\n";
+      cxxFile << "#define new PNEW\n"
                  "\n"
                  "\n";
     }
