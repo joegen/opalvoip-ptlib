@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.49  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.48  1999/08/10 10:45:09  robertj
  * Added mutex in memory check detection code.
  *
@@ -202,7 +205,15 @@
 // Disable inlines when debugging for faster compiles (the compiler doesn't
 // actually inline the function with debug on any way).
 
-#ifdef P_USE_INLINES
+#ifndef P_USE_INLINES
+#ifdef _DEBUG
+#define P_USE_INLINES 0
+#else
+#define P_USE_INLINES 1
+#endif
+#endif
+
+#if P_USE_INLINES
 #define PINLINE inline
 #else
 #define PINLINE
@@ -304,8 +315,12 @@ and NT GUI applications. An application could change this pointer to a
 ///////////////////////////////////////////////////////////////////////////////
 // Debug and tracing
 
-#if !defined(PTRACING) && defined(_DEBUG)
-#define PTRACING
+#ifndef PTRACING
+#ifndef _DEBUG
+#define PTRACING 0
+#else
+#define PTRACING 1
+#endif
 #endif
 
 /**Class to encapsulate tracing functions.
@@ -441,7 +456,7 @@ private:
 friend class Block;
 };
 
-#ifndef PTRACING
+#if !PTRACING
 
 #define PTRACE_BLOCK(n)
 #define PTRACE_LINE()
@@ -476,10 +491,10 @@ output operators. The output is only made if the trace level set by the
 #endif
 
 #ifndef PMEMORY_CHECK
-#ifdef _DEBUG
-#define PMEMORY_CHECK 1
-#else
+#ifndef _DEBUG
 #define PMEMORY_CHECK 0
+#else
+#define PMEMORY_CHECK 1
 #endif
 #endif
 
