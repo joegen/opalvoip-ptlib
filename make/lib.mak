@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.22  2002/01/15 07:47:30  robertj
+# Fixed previous fix
+#
 # Revision 1.21  2002/01/14 23:14:29  robertj
 # Added ENDLDFLAGS to shared library link, thanks Paul a écrit
 #
@@ -126,7 +129,7 @@ $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(LD) $(LDSOOPTS)  -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
+	$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
