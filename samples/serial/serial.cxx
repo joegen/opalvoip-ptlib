@@ -11,6 +11,9 @@
  *
  *
  * $Log: serial.cxx,v $
+ * Revision 1.2  2005/03/12 06:44:22  dereksmithies
+ * Fix typo in setting stopbits.  Program now reports all serial parameters that are used.
+ *
  * Revision 1.1  2005/03/10 09:21:46  dereksmithies
  * Initial release of a program to illustrate the operation of the serial port.
  *
@@ -208,33 +211,44 @@ BOOL Serial::Initialise(PConfigArgs & args)
     if (!args.HasOption("baud")) {
 	baud = 4800;
 	cout << "Baud not specifed.          Using 4800" << endl;
-    } else
+    } else {
 	baud = args.GetOptionString("baud").AsInteger();
-    
+	cout << "Baud specified.             Using " << baud << endl;
+    }
+
     if (!args.HasOption("databits")) {
-	cout << "databits not specified.     Using 1" << endl;
+	cout << "databits not specified.     Using 8" << endl;
 	dataBits = 1;
-    } else
+    } else {
 	dataBits = args.GetOptionString("databits").AsInteger();
-    
+	cout << "databits specified.         Using " << dataBits << endl;
+    }
+
     if (!args.HasOption("parity")) {
 	cout << "parity not specified.       Using \"odd\"" << endl;
 	parity = "odd";
-    } else
+    } else {
 	parity = args.GetOptionString("parity");
-    
+	cout << "parity specified            Using \"" << parity << "\"" << endl;
+    }
+
     if (!args.HasOption("stopbits")) {
 	cout << "stopbits not specified.     Using 1" << endl;
 	stopBits = 1;
+    } else {
+	stopBits = args.GetOptionString("stopbits").AsInteger();
+	cout << "stopbits specified.         Using " << stopBits << endl;
     }
-    stopBits = args.GetOptionString("stopbits").AsInteger();
-    
+
     PString flow;
     if (!args.HasOption("hardwareflow")) {
 	cout << "hardwareflow not specified. Hardware flow is set to off" << endl;
 	flow = "off";
-    } else
+    } else {
 	flow = args.GetOptionString("hardwareflow");
+	cout << "hardwareflow is specified.  Hardware flow is set to " << flow << endl;
+    }
+
     if ((flow *= "on") || (flow *= "off"))
 	hardwareFlow = (flow *= "on");
     else {
@@ -278,7 +292,7 @@ BOOL Serial::Initialise(PConfigArgs & args)
     if (hardwareFlow)
 	flowControl = PSerialChannel::RtsCts;
     else
-	flowControl = PSerialChannel::NoFlowControl;
+	flowControl = PSerialChannel::XonXoff;
     
     if (!serial.Open(portName, baud, dataBits, pValue, stopBits, flowControl, flowControl)) {
 	cout << "Failed to open serial port " << endl;
