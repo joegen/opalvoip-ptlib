@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.7  2003/11/25 20:13:48  dsandras
+ * Added #pragma.
+ *
  * Revision 1.6  2003/11/25 09:58:01  dsandras
  * Removed Abort call from PlaySound ().
  *
@@ -42,13 +45,10 @@
  *
  */
 
+#pragma implementation "sound_alsa.h"
+
 #include "sound_alsa.h"
 
-#if !P_USE_INLINES
-#include <ptlib/contain.inl>
-#endif
-
-#include <ptlib.h>
 
 PCREATE_SOUND_PLUGIN(ALSA, PSoundChannelALSA)
 
