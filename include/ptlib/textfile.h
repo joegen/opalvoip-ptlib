@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.10 1995/03/14 12:42:48 robertj Exp $
+ * $Id: textfile.h,v 1.11 1995/06/17 11:13:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
+ * Revision 1.11  1995/06/17 11:13:34  robertj
+ * Documentation update.
+ *
  * Revision 1.10  1995/03/14 12:42:48  robertj
  * Updated documentation to use HTML codes.
  *
@@ -57,32 +60,31 @@ PDECLARE_CONTAINER(PTextFile, PFile)
     PTextFile();
     /* Create a text file object but do not open it. It does not initially
        have a valid file name. However, an attempt to open the file using the
-       <A><CODE>Open()</CODE></A> function will generate a unique temporary
-       file.
+       <A>PFile::Open()</A> function will generate a unique temporary file.
      */
 
     PTextFile(
       OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // <A>OpenOptions</A> for open operation.
+      int opts = ModeDefault  // <A>OpenOptions enum</A> for open operation.
     );
     /* Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       The <A>PChannel::IsOpen()</A> function may be used after object
        construction to determine if the file was successfully opened.
      */
       
     PTextFile(
-      const PFilePath & name,     // Name of file to open.
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault     // <A>OpenOptions enum</A> for open operation.
     );
     /* Create a text file object with the specified name and open it in the
        specified mode and with the specified options.
 
-       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       The <A>PChannel::IsOpen()</A> function may be used after object
        construction to determine if the file was successfully opened.
      */
 
@@ -92,8 +94,8 @@ PDECLARE_CONTAINER(PTextFile, PFile)
     /* Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the <A><CODE>GetLastError()</CODE></A> function to determine if
-       there was some error other than end of file.
+       Use the <A>PChannel::GetLastError()</A> function to determine if there
+       was some error other than end of file.
        
        <H2>Returns:</H2>
        TRUE if successful, FALSE if at end of file or a read error.
@@ -103,9 +105,9 @@ PDECLARE_CONTAINER(PTextFile, PFile)
     /* Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the <A><CODE>GetLastError()</CODE></A> function to determine the
+       Use the <A>PChannel::GetLastError()</A> function to determine the
        failure mode.
-       
+
        <H2>Returns:</H2>
        TRUE if successful, FALSE if an error occurred.
      */
