@@ -259,6 +259,7 @@ EXPORTS
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @232 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
     ??0PTimer@@QAE@JHHHH@Z @233 NONAME ;public: __thiscall PTimer::PTimer(long,int,int,int,int)
     ??0PTimerList@@QAE@XZ @234 NONAME ;public: __thiscall PTimerList::PTimerList(void)
+    ??0PTraceBlock@@QAE@PBDH0@Z @2942 NONAME ;public: __thiscall PTraceBlock::PTraceBlock(char const *,int,char const *)
     ??0PUDPSocket@@QAE@ABVPString@@0@Z @235 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &,class PString const &)
     ??0PUDPSocket@@QAE@ABVPString@@@Z @236 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &)
     ??0PUDPSocket@@QAE@ABVPString@@G@Z @237 NONAME ;public: __thiscall PUDPSocket::PUDPSocket(class PString const &,unsigned short)
@@ -405,6 +406,7 @@ EXPORTS
     ??1PTimeInterval@@UAE@XZ @353 NONAME ;public: virtual __thiscall PTimeInterval::~PTimeInterval(void)
     ??1PTimer@@UAE@XZ @354 NONAME ;public: virtual __thiscall PTimer::~PTimer(void)
     ??1PTimerList@@UAE@XZ @355 NONAME ;public: virtual __thiscall PTimerList::~PTimerList(void)
+    ??1PTraceBlock@@QAE@XZ @2943 NONAME ;public: __thiscall PTraceBlock::~PTraceBlock(void)
     ??1PUDPSocket@@UAE@XZ @356 NONAME ;public: virtual __thiscall PUDPSocket::~PUDPSocket(void)
     ??1PUnSerialiser@@UAE@XZ @357 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PWaitAndSignal@@QAE@XZ @2497 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
@@ -2303,8 +2305,9 @@ EXPORTS
     ?Pause@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1982 NONAME ;public: virtual int __thiscall NT_ServiceManager::Pause(class PServiceProcess *)
     ?Pause@PTimer@@QAEXXZ @1983 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1984 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
+    ?PBeginTrace@@YAAAVostream@@PBDH@Z @2944 NONAME ;class ostream & __cdecl PBeginTrace(char const *,int)
+    ?PEndTrace@@YAAAVostream@@AAV1@@Z @2945 NONAME ;class ostream & __cdecl PEndTrace(class ostream &)
     ?PGetErrorStream@@YAAAVostream@@XZ @1987 NONAME ;class ostream & __cdecl PGetErrorStream(void)
-    ?PGetTraceStream@@YAAAVostream@@XZ @1988 NONAME ;class ostream & __cdecl PGetTraceStream(void)
     ?pHostByAddr@@3VPHostByAddr@@A @1989 NONAME ;class PHostByAddr  pHostByAddr
     ?pHostByName@@3VPHostByName@@A @1990 NONAME ;class PHostByName  pHostByName
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @1991 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
@@ -2315,6 +2318,7 @@ EXPORTS
     ?Predecessor@Element@PAbstractSortedList@@ABEPAV12@XZ @1996 NONAME ;private: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Predecessor(void)const 
     ?PreInitialise@PProcess@@SAXHPAPAD0@Z @1997 NONAME ;public: static void __cdecl PProcess::PreInitialise(int,char * *,char * *)
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEIN__@@@Z @2703 NONAME ;private: unsigned long __thiscall PWaveBuffer::Prepare(struct HWAVEIN__ *)
+    ?Prepare@PWaveBuffer@@AAEKPAUHWAVEOUT__@@AAH@Z @2941 NONAME ;private: unsigned long __thiscall PWaveBuffer::Prepare(struct HWAVEOUT__ *,int &)
     ?PrepareCommon@PWaveBuffer@@AAEXH@Z @2705 NONAME ;private: void __thiscall PWaveBuffer::PrepareCommon(int)
     ?PreSerialise@PObject@@UAEHAAVPSerialiser@@@Z @1998 NONAME ;public: virtual int __thiscall PObject::PreSerialise(class PSerialiser &)
     ?PrintNumbersOn@PAbstractArray@@IBEXAAVostream@@HH@Z @1999 NONAME ;protected: void __thiscall PAbstractArray::PrintNumbersOn(class ostream &,int,int)const 
@@ -2338,6 +2342,8 @@ EXPORTS
     ?Process@PTimerList@@QAE?AVPTimeInterval@@XZ @2017 NONAME ;public: class PTimeInterval  __thiscall PTimerList::Process(void)
     ?ProcessCommand@PServiceProcess@@AAEHPBD@Z @2018 NONAME ;private: int __thiscall PServiceProcess::ProcessCommand(char const *)
     ?PSetErrorStream@@YAXPAVostream@@@Z @2019 NONAME ;void __cdecl PSetErrorStream(class ostream *)
+    ?PSetTraceBlock@@YAXH@Z @2948 NONAME ;void __cdecl PSetTraceBlock(int)
+    ?PSetTraceLevel@@YAXI@Z @2949 NONAME ;void __cdecl PSetTraceLevel(unsigned int)
     ?PSetTraceStream@@YAXPAVostream@@@Z @2020 NONAME ;void __cdecl PSetTraceStream(class ostream *)
     ?psprintf@@YA?AVPString@@PBDZZ @2021 NONAME ;class PString  __cdecl psprintf(char const *,...)
     ?PutData@PWin32PacketBuffer@@QAEHPBXH@Z @2399 NONAME ;public: int __thiscall PWin32PacketBuffer::PutData(void const *,int)
@@ -2833,4 +2839,4 @@ EXPORTS
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
     __real@4@4008fa00000000000000 @2906 NONAME ;__real@4@4008fa00000000000000
-    ?Prepare@PWaveBuffer@@AAEKPAUHWAVEOUT__@@AAH@Z @2941 NONAME ;private: unsigned long __thiscall PWaveBuffer::Prepare(struct HWAVEOUT__ *,int &)
+    ?PCanTrace@@YAHI@Z @2951 NONAME ;int __cdecl PCanTrace(unsigned int)
