@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.26  2003/04/23 11:55:13  craigs
+ * Added ability to record audio
+ *
  * Revision 1.25  2003/04/08 05:09:41  craigs
  * Added ability to use commands as an audio source
  *
@@ -48,13 +51,13 @@
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
  *
  * Revision 1.18  2002/09/03 04:11:14  craigs
- * More changes from Alexander Kovatch
+ * More VXML changes
  *
  * Revision 1.17  2002/08/30 05:06:13  craigs
- * Added changes for PVXMLGrammar from Alexander Kovatch
+ * Added changes for PVXMLGrammar
  *
  * Revision 1.16  2002/08/28 08:04:31  craigs
- * Reorganised VXMLSession class as per code from Alexander Kovatch
+ * Reorganised VXMLSession class as per contributed code
  *
  * Revision 1.15  2002/08/28 05:10:27  craigs
  * Added ability to load resources via URI
@@ -243,15 +246,16 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL PlayCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
+    virtual BOOL PlaySilence(const PTimeInterval & timeout);
+    virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 
-    virtual BOOL StartRecording(const PFilePath & fn);
+    virtual BOOL StartRecording(const PFilePath & fn, BOOL recordDTMFTerm, const PTimeInterval & recordMaxTime, const PTimeInterval & recordFinalSilence);
+    virtual void RecordEnd();
     virtual BOOL EndRecording();
     virtual BOOL IsPlaying() const;
     virtual BOOL IsRecording() const;
 
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt);
-
-    virtual void StartRecord(const PFilePath & recordfn, BOOL dtmfTerm, int maxTime, int finalSilence);
 
     virtual BOOL OnUserInput(const PString & str);
 
@@ -277,10 +281,12 @@ class PVXMLSession : public PIndirectChannel
     BOOL TraverseAudio();
     BOOL TraverseGoto();
     BOOL TraverseGrammar();
+    BOOL TraverseRecord();
 
     PXMLElement * FindHandler(const PString & event);
 
     void SayAs(const PString & className, const PString & text);
+    static PTimeInterval StringToTime(const PString & str);
 
   protected:
     BOOL ExecuteWithoutLock();
@@ -299,8 +305,10 @@ class PVXMLSession : public PIndirectChannel
     BOOL recording;
     PFilePath recordFn;
     BOOL recordDTMFTerm;
-    int recordMaxTime;
-    int recordFinalSilence;
+    PTimeInterval recordMaxTime;
+    PTimeInterval recordFinalSilence;
+    PSyncPoint    recordSync;
+
     BOOL loaded;
     PURL rootURL;
 
@@ -457,14 +465,16 @@ class PVXMLChannel : public PIndirectChannel
 
     // Incoming channel functions
     virtual BOOL WriteFrame(const void * buf, PINDEX len) = 0;
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const = 0;
 
-    BOOL StartRecording(const PFilePath & fn);
+    BOOL StartRecording(const PFilePath & fn, unsigned finalSilence = 2000);
     BOOL EndRecording();
-    BOOL IsRecording() const { return wavFile != NULL; }
+    BOOL IsRecording() const { return recording; }
 
     // Outgoing channel functions
     virtual BOOL ReadFrame(PINDEX amount) = 0;
     virtual void CreateSilenceFrame(PINDEX amount) = 0;
+    virtual void GetBeepData(PBYTEArray &, unsigned) { }
 
     virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
@@ -490,13 +500,16 @@ class PVXMLChannel : public PIndirectChannel
     PAdaptiveDelay delay;
     BOOL closed;
 
-    // Incoming call variables
+    // Incoming audio variables
+    BOOL recording;
     PWAVFile * wavFile;
+    unsigned finalSilence;
+    unsigned silenceRun;
 
-    // Outgoing call variables
+    // Outgoing audio variables
+    BOOL playing;
     PMutex queueMutex;
     PVXMLQueue playQueue;
-    BOOL playing;
 
     PBYTEArray frameBuffer;
     PINDEX frameLen, frameOffs;
@@ -521,6 +534,8 @@ class PVXMLChannelPCM : public PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
     virtual BOOL ReadFrame(PINDEX amount);
     virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
+    virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 };
 
 
@@ -534,6 +549,7 @@ class PVXMLChannelG7231 : public PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
     virtual BOOL ReadFrame(PINDEX amount);
     virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
 };
 
 
@@ -547,6 +563,7 @@ class PVXMLChannelG729 : public PVXMLChannel
     virtual BOOL WriteFrame(const void * buf, PINDEX len);
     virtual BOOL ReadFrame(PINDEX amount);
     virtual void CreateSilenceFrame(PINDEX amount);
+    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
 };
 
 
