@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.5  2004/04/14 08:12:02  csoutheren
+ * Added support for generic plugin managers
+ *
  * Revision 1.4  2004/03/23 04:43:42  csoutheren
  * Modified plugin manager to allow code modules to be notified when plugins
  * are loaded or unloaded
@@ -28,7 +31,6 @@
 #define DEFAULT_PLUGINDIR "/usr/lib/pwlib"
 
 #include <ptlib/plugin.h>
-
 
 //////////////////////////////////////////////////////
 //
@@ -98,5 +100,57 @@ class PPluginManager : public PObject
     PMutex notifierMutex;
     PList<PNotifier> notifierList;
 };
+
+
+// helper classes to make sure plugin manager gets declared
+#define PWLIB_PLUGIN_MODULE_LOADER(name) \
+class name##_PluginLoader; \
+extern name##_PluginLoader name##_PluginLoader_Instance; \
+static name##_PluginLoader * name##_PluginLoader_Static = &name##_PluginLoader_Instance; \
+
+#define PWLIB_PLUGIN_MODULE_LOADER_IMPLEMENT(name, mgrclass) \
+class name##_PluginLoader  { public: name##_PluginLoader(); } name##_PluginLoader_Instance; \
+name##_PluginLoader::##name##_PluginLoader() { mgrclass##::GetManager(); } \
+
+class PPluginModuleManager : public PObject
+{
+  public:
+    typedef PDictionary<PString, PDynaLink> PluginListType;
+
+    PPluginModuleManager(const char * _signatureFunctionName, PPluginManager * pluginMgr = NULL);
+
+    BOOL LoadPlugin(const PString & fileName)
+    { if (pluginMgr == NULL) return FALSE; else return pluginMgr->LoadPlugin(fileName); }
+
+    void LoadPluginDirectory(const PDirectory &directory)
+    { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }
+
+    virtual void OnLoadPlugin(PDynaLink & dll, INT code) = 0;
+
+    virtual PluginListType GetPluginList() const
+    { return pluginList; }
+
+  protected:
+    PluginListType pluginList;
+    PDECLARE_NOTIFIER(PDynaLink, PPluginModuleManager, OnLoadModule);
+
+  protected:
+    const char * signatureFunctionName;
+    PPluginManager * pluginMgr;
+};
+
+#define PWLIB_PLUGIN_MANAGER_CLASS(mgr) \
+class mgr : public PPluginModuleManager\
+{\
+  public: \
+    static mgr & GetManager()\
+    {\
+      static PMutex mutex; \
+      static mgr * systemMgr = NULL;\
+      PWaitAndSignal m(mutex);\
+      if (systemMgr == NULL)\
+        systemMgr = new mgr;\
+      return *systemMgr;\
+    }\
 
 #endif // ifndef _PLUGINMGR_H
