@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.7  2004/04/21 11:22:56  csoutheren
+ * Modified to work with gcc 3.4.0
+ *
  * Revision 1.6  2004/04/14 06:58:00  csoutheren
  * Fixed PAtomicInteger and PSmartPointer to use real atomic operations
  *
@@ -48,6 +51,14 @@
 
 #ifndef _PCRITICALSECTION
 #define _PCRITICALSECTION
+
+#if P_HAS_ATOMIC_INT
+#if P_NEEDS_GNU_CXX_NAMESPACE
+#define	EXCHANGE_AND_ADD(v,i)	__gnu_cxx::__exchange_and_add(v,i)
+#else
+#define	EXCHANGE_AND_ADD(v,i)	__exchange_and_add(v,i)
+#endif
+#endif
 
 /** This class implements critical section mutexes using the most
   * efficient mechanism available on the host platform.
@@ -140,8 +151,8 @@ class PAtomicInteger
       inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline int operator++()            { return __exchange_and_add(&value, 1) + 1; }
-      inline int unsigned operator--()   { return __exchange_and_add(&value, -1) - 1; }
+      inline int operator++()            { return EXCHANGE_AND_ADD(&value, 1) + 1; }
+      inline int unsigned operator--()   { return EXCHANGE_AND_ADD(&value, -1) - 1; }
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
     protected:
