@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.19 1998/02/03 06:16:44 robertj Exp $
+ * $Id: remconn.cxx,v 1.20 1998/03/05 12:49:54 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.20  1998/03/05 12:49:54  robertj
+ * MemCheck fixes.
+ *
  * Revision 1.19  1998/02/03 06:16:44  robertj
  * Added more error codes.
  *
@@ -422,8 +425,8 @@ PRemoteConnection::Status
   if ((entry->dwfOptions&RASEO_UseCountryAndAreaCodes) == 0)
     config.phoneNumber = entry->szLocalPhoneNumber;
   else
-    config.phoneNumber = psprintf("+%u ", entry->dwCountryCode) +
-                      entry->szAreaCode + PString(' ') + entry->szLocalPhoneNumber;
+    config.phoneNumber = psprintf("+%u %s %s",
+                       entry->dwCountryCode, entry->szAreaCode, entry->szLocalPhoneNumber);
 
   if ((entry->dwfOptions&RASEO_SpecificIpAddr) == 0)
     config.ipAddress = "";
