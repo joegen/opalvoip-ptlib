@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.105  2001/10/31 00:45:20  robertj
+# Added debuglibs, optlibs and bothlibs targets, moving help to where these
+#   targets are in teh make file system.
+#
 # Revision 1.104  2001/10/11 02:20:54  robertj
 # Added IRIX support (no audio/video), thanks Andre Schulze.
 #
@@ -456,27 +460,6 @@ $(STANDARD_TARGETS) :: default_target
 else
 
 default_target : help
-
-help:
-	@echo "The following targets are available:"
-	@echo "    make debug       Make debug version of application"
-	@echo "    make opt         Make optimised version of application"
-	@echo "    make both        Make both versions of application"
-	@echo
-	@echo "    make debugclean  Remove debug files"
-	@echo "    make optclean    Remove optimised files"
-	@echo "    make clean       Remove both debug and optimised files"
-	@echo
-	@echo "    make debugdepend Create debug dependency files"
-	@echo "    make optdepend   Create optimised dependency files"
-	@echo "    make bothdepend  Create both debug and optimised dependency files"
-	@echo
-	@echo "    make all         Create debug & optimised dependencies & libraries"
-	@echo "    make libs        Make libraries project depends on"
-	@echo
-	@echo "    make version     Display version for project"
-	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
-	@echo "    make release     Package up optimised version int tar.gz file"
 
 endif
 
