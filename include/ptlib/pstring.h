@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.20 1996/02/19 13:17:33 robertj Exp $
+ * $Id: pstring.h,v 1.21 1996/03/10 13:15:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.21  1996/03/10 13:15:50  robertj
+ * Added operator() to template version.
+ *
  * Revision 1.20  1996/02/19 13:17:33  robertj
  * Removed PCaselessString hash function to fix dictionary match failure.
  * Added operator() to do string dictionary lookup with default value.
@@ -1552,6 +1555,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
        <H2>Returns:</H2>
        reference to the object indexed by the key.
      */
+    PString operator()(const K & key, const char * dflt = "") const
+      { return Contains(key) ? (*this)[key] : dflt; }
 
     virtual PString * GetAt(
       const K & key   // Key for position in dictionary to get object.
