@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.6  2003/08/04 05:13:17  dereksmithies
+ * Reinforce the disablement if the command lines specifies --no-XXXX to a feature.
+ *
  * Revision 1.5  2003/08/04 05:07:08  dereksmithies
  * Command line option now disables feature when feature found on disk.
  *
@@ -334,9 +337,10 @@ int main(int argc, char* argv[])
     }
     else {
       for (feature = features.begin(); feature != features.end(); feature++) {
-        if (stricmp(argv[i], ("--no-"+feature->cmdLineArgument).c_str()) == 0)
+        if (stricmp(argv[i], ("--no-"+feature->cmdLineArgument).c_str()) == 0) {
+	  feature->defineName = "";
           feature->found = false;
-        else if (stricmp(argv[i], ("--"+feature->cmdLineArgument+"-dir=").c_str()) == 0)
+        } else if (stricmp(argv[i], ("--"+feature->cmdLineArgument+"-dir=").c_str()) == 0)
           if (!feature->Locate(argv[i]))
             cerr << feature->displayName << " not found in " << argv[i] << endl;
       }
