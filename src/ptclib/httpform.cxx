@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.34  2000/12/12 07:21:35  robertj
+ * Added ability to expand fields based on regex into repeated chunks of HTML.
+ *
  * Revision 1.33  2000/11/02 21:55:28  craigs
  * Added extra constructor
  *
@@ -1743,11 +1746,42 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
     }
   }
 
-  // Locate <!--#form array name--> macros and expand them
-  static PRegularExpression ArrayRegEx("<!--#form[ \t\r\n]+array[ \t\r\n]+[^-]+-->",
+  // Locate <!--#form list name--> macros and expand them
+  static PRegularExpression ListRegEx("<!--#form[ \t\r\n]+listfields[ \t\r\n]+[^-]+-->",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   static PRegularExpression EndBlock("<?!--#form[ \t\r\n]+end[ \t\r\n]+[^-]+-->?",
                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  pos = len = 0;
+  while (FindSpliceBlock(ListRegEx, EndBlock, text, pos+len, pos, len, start, finish)) {
+    if (start != finish) {
+      PString repeat = text(start, finish);
+
+      PINDEX namePos, nameEnd;
+      PRegularExpression fieldsRegEx;
+      if (FindSpliceName(text, pos, start-1, namePos, nameEnd))
+        fieldsRegEx.Compile(text(namePos, nameEnd), PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+      else
+        fieldsRegEx.Compile(".*");
+
+      PString insert;
+      for (PINDEX f = 0; f < fields.GetSize(); f++) {
+        if (fields[f].GetName().FindRegEx(fieldsRegEx) != P_MAX_INDEX) {
+          PString iteration = repeat;
+          static PRegularExpression FieldNameRegEx("<?!--#form[ \t\r\n]+fieldname[ \t\r\n]*-->?",
+                                                   PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+          PINDEX npos, nlen;
+          while (iteration.FindRegEx(FieldNameRegEx, npos, nlen))
+            iteration.Splice(fields[f].GetName(), npos, nlen);
+          insert += iteration;
+        }
+      }
+      text.Splice(insert, pos, len);
+    }
+  }
+
+  // Locate <!--#form array name--> macros and expand them
+  static PRegularExpression ArrayRegEx("<!--#form[ \t\r\n]+array[ \t\r\n]+[^-]+-->",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   pos = len = 0;
   while (FindSpliceField(ArrayRegEx, EndBlock, text, pos+len, fields, pos, len, start, finish, field)) {
     if (start != finish && field != NULL)
