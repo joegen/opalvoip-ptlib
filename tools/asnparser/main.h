@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.15  2003/10/03 00:13:04  rjongbloed
+ * Added ability to specify CHOICE field selection by function rather than operator as the operator technique does not work with some dumb compilers.
+ * Added ability to specify that the header file name be different from the module name and module prefix string.
+ *
  * Revision 1.14  2003/02/27 04:04:14  robertj
  * Added ability to have alternate directories for header file
  *   includes in generated C++ code.
@@ -1169,6 +1173,7 @@ class ImportModule : public PObject
   protected:
     PString   fullModuleName;
     PString   shortModuleName;
+    PString   filename;
     PString   directoryPrefix;
     TypesList symbols;
 };
@@ -1207,6 +1212,7 @@ class ModuleDefinition : public PObject
     void SetIndentLevel(int delta) { indentLevel += delta; }
 
     BOOL UsingInlines() const { return usingInlines; }
+    BOOL UsingOperators() const { return usingOperators; }
 
     void GenerateCplusplus(const PFilePath & path,
                            const PString & modName,
@@ -1214,6 +1220,7 @@ class ModuleDefinition : public PObject
                            unsigned numFiles,
                            BOOL useNamespaces,
                            BOOL useInlines,
+                           BOOL useOperators,
                            BOOL verbose);
 
 
@@ -1233,6 +1240,7 @@ class ModuleDefinition : public PObject
     MibList         mibs;
     int             indentLevel;
     BOOL            usingInlines;
+    BOOL            usingOperators;
 };
 
 
