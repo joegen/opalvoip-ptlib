@@ -10,15 +10,18 @@ SOURCES		:= $(strip $(SOURCES))
 ###############################################################################
 #
 # Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR #-DPHAS_TEMPLATES
-RELLDFLAGS	:= -s
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -486
+####################################################
+# Sun 4x, using gcc 2.6.3
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
+#RANLIB		:= 1
+else
+# Solaris 2.x, using gcc 2.6.3
+#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS
 ####################################################
 
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
-# Sun 4x, using gcc 2.6.2
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
-
 
 
 ###############################################################################
@@ -41,7 +44,7 @@ CPLUS		= g++
 #
 endif
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -Wall -m486
+STDCCFLAGS	:= $(STDCCFLAGS) -Wall
 #STDCCFLAGS      := $(STDCCFLAGS) -fomit-frame-pointer
 #STDCCFLAGS      := $(STDCCFLAGS) -fno-default-inline
 
@@ -65,7 +68,7 @@ LIBID		= r
 OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
-LDFLAGS		:= $(RELLDFLAGS)
+LDFLAGS		:= -s
 
 endif # DEBUG
 
