@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.10  1996/05/03 13:11:35  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.9  1996/05/02 12:11:54  craigs
  * Sun4 fixes
  *
@@ -44,10 +47,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #define VIRTUAL_STACK_SIZE (stackSize*5)
-#endif
-
-#if defined(P_SUN4)
-pid_t wait3(int *status, int options, struct rusage *rusage);
 #endif
 
 #if defined(P_LINUX) || defined(P_SUN4)

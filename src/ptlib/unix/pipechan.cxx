@@ -1,10 +1,6 @@
 
 #pragma implementation "pipechan.h"
 
-#if defined (P_SUN4)
-extern "C" int vfork();
-#endif
-
 #include <ptlib.h>
 
 #include <unistd.h>
@@ -114,7 +110,7 @@ void PPipeChannel::Construct(const PString & subProgram,
 
     // and set ourselves as out own process group so we don't get signals
     // from our parent's terminal (hopefully!)
-    setpgrp();
+    PSETPGRP();
 
     // execute the child as required
     if (searchPath)

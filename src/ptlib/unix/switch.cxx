@@ -6,6 +6,7 @@ void PThread::SwitchContext(PThread * from)
     return;
 
   if (status == Starting) {
+
     if (setjmp(context) != 0) {
       status = Running;
       Main();
@@ -13,6 +14,12 @@ void PThread::SwitchContext(PThread * from)
     }
 #if defined(P_LINUX)
     context[0].__sp = (__ptr_t)stackTop-16;  // Change the stack pointer in jmp_buf
+#elif defined (P_SUN4)
+    context[2] = (__ptr_t)stackTop-1024;  // Change the stack pointer in jmp_buf
+    context[2] &= 7;
+#elif defined (P_SOLARIS)
+    context[1] = (__ptr_t)stackTop-1024;  // Change the stack pointer in jmp_buf
+    context[1] &= 7;
 #else
 #warning No lightweight thread context switch mechanism defined
 #endif
