@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.26 1995/01/11 09:45:14 robertj Exp $
+ * $Id: osutils.cxx,v 1.27 1995/01/15 04:57:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.26  1995/01/11 09:45:14  robertj
+ * Revision 1.27  1995/01/15 04:57:15  robertj
+ * Implemented PTime::ReadFrom.
+ * Fixed flush of iostream at end of file.
+ *
+ * Revision 1.26  1995/01/11  09:45:14  robertj
  * Documentation and normalisation.
  *
  * Revision 1.25  1995/01/10  11:44:15  robertj
@@ -177,7 +181,9 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 
 static BOOL IsTimeDateSeparator(istream &strm, const PString & sep)
 {
-  strm.eatwhite();  // Clear out white space
+  while (isspace(strm.peek()))  // Clear out white space
+    strm.get();
+
   PINDEX pos = 0;
   while (pos < sep.GetLength()) {
     if (strm.eof())
@@ -196,7 +202,9 @@ void PTime::ReadFrom(istream &strm)
 {
   *this = PTime();   // Default time in case of error
 
-  strm.eatwhite();  // Clear out white space
+  while (isspace(strm.peek()))  // Clear out white space
+    strm.get();
+
   if (!isdigit(strm.peek()))   // No date or time?
     return;
 
@@ -602,8 +610,6 @@ PTimeInterval PTimerList::Process()
 PChannelStreamBuffer::PChannelStreamBuffer(PChannel * chan)
   : channel(PAssertNULL(chan))
 {
-  setb(buffer, &buffer[sizeof(buffer)]);
-  unbuffered(FALSE);
 }
 
 
@@ -611,16 +617,16 @@ int PChannelStreamBuffer::overflow(int c)
 {
   if (pbase() == NULL) {
     if (eback() == 0)
-      setp(base(), ebuf());
+      setp(buffer, &buffer[sizeof(buffer)]);
     else {
-      char * halfway = base()+(ebuf()-base())/2;
-      setp(base(), halfway);
-      setg(halfway, ebuf(), ebuf());
+      char * halfway = &buffer[sizeof(buffer)/2];
+      setp(buffer, halfway);
+      setg(halfway, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
     }
   }
 
-  int bufSize = out_waiting();
-  if (bufSize != 0) {
+  int bufSize = pptr() - pbase();
+  if (bufSize > 0) {
     setp(pbase(), epptr());
     if (!channel->Write(pbase(), bufSize))
       return EOF;
@@ -640,11 +646,11 @@ int PChannelStreamBuffer::underflow()
 {
   if (eback() == NULL) {
     if (pbase() == 0)
-      setg(base(), ebuf(), ebuf());
+      setg(buffer, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
     else {
-      char * halfway = base()+(ebuf()-base())/2;
-      setp(base(), halfway);
-      setg(halfway, ebuf(), ebuf());
+      char * halfway = &buffer[sizeof(buffer)/2];
+      setp(buffer, halfway);
+      setg(halfway, &buffer[sizeof(buffer)], &buffer[sizeof(buffer)]);
     }
   }
 
@@ -665,14 +671,14 @@ int PChannelStreamBuffer::underflow()
 
 int PChannelStreamBuffer::sync()
 {
-  int inAvail = in_avail();
-  if (inAvail != 0) {
+  int inAvail = egptr() - gptr();
+  if (inAvail > 0) {
     setg(eback(), egptr(), egptr());
     if (channel->IsDescendant(PFile::Class()))
       ((PFile *)channel)->SetPosition(-inAvail, PFile::Current);
   }
 
-  if (out_waiting() != 0)
+  if (pptr() > pbase())
     return overflow();
 
   return 0;
@@ -1010,7 +1016,7 @@ BOOL PFile::Close()
     return FALSE;
   }
 
-  rdbuf()->sync();
+  flush();
 
   BOOL ok = ConvertOSError(_close(os_handle));
 
@@ -1025,7 +1031,7 @@ BOOL PFile::Close()
 
 BOOL PFile::Read(void * buffer, PINDEX amount)
 {
-  rdbuf()->sync();
+  flush();
   lastReadCount = _read(GetHandle(), buffer, amount);
   return ConvertOSError(lastReadCount) && lastReadCount > 0;
 }
@@ -1033,7 +1039,7 @@ BOOL PFile::Read(void * buffer, PINDEX amount)
 
 BOOL PFile::Write(const void * buffer, PINDEX amount)
 {
-  rdbuf()->sync();
+  flush();
   lastWriteCount = _write(GetHandle(), buffer, amount);
   return ConvertOSError(lastWriteCount) && lastWriteCount >= amount;
 }
@@ -1052,6 +1058,13 @@ off_t PFile::GetLength() const
   off_t len = _lseek(GetHandle(), 0, SEEK_END);
   PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) == pos);
   return len;
+}
+
+
+BOOL PFile::IsEndOfFile() const
+{
+  ((PFile *)this)->flush();
+  return GetPosition() >= GetLength();
 }
 
 
