@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.8  2000/07/02 14:15:55  craigs
+ * Fixed minor formatting issues
+ *
  * Revision 1.7  2000/05/02 08:28:34  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -63,15 +66,15 @@ class PSoundPlayer;
 // PSound
 
 #include "../../sound.h"
-
-  BOOL Close();
-  BOOL Write(const void * buf, PINDEX len);
-  BOOL Read(void * buf, PINDEX len);
-
+  public:
+    BOOL Close();
+    BOOL Write(const void * buf, PINDEX len);
+    BOOL Read(void * buf, PINDEX len);
+  
   protected:
     BOOL  Setup();
 
-    static PMutex           dictMutex;
+    static PMutex dictMutex;
 
     Directions direction;
     PString device;
