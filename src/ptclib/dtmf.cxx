@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.9  2004/09/09 04:22:46  csoutheren
+ * Added sine table for DTMF encoder
+ *
  * Revision 1.8  2004/09/09 04:00:01  csoutheren
  * Added DTMF encoding functions
  *
@@ -216,6 +219,8 @@ static double dtmfFreqs[16][2] = {
 };
 
 ////////////////////////////////////////////////////////////////////////
+
+double PDTMFEncoder::sinetab[1 << 11];
 
 PMutex & PDTMFEncoder::GetMutex()
 {
