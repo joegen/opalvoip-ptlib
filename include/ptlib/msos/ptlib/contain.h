@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.49  2004/10/23 11:34:14  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.48  2004/08/15 06:45:48  rjongbloed
  * Disabled warning about conversion from int to bool type.
  *
@@ -181,8 +184,10 @@
  */
 
 #ifndef _CONTAIN_H
+#ifndef _WIN32_WCE
 #error "Please remove pwlib\include\ptlib\msos from the tool include path \"
 and from the pre-processor options for this project"
+#endif // !_WIN32_WCE
 #endif
 
 #ifndef _OBJECT_H
@@ -397,7 +402,7 @@ class RegistryKey
 #pragma warning(push)
 #pragma warning(disable:4127 4706)
 
-#if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
+#if defined(P_WINSOCKv1)
 
   #include <winsock.h>
 
