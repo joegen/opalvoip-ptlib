@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.36 1995/11/09 12:22:58 robertj Exp $
+ * $Id: osutils.cxx,v 1.37 1995/11/21 11:50:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.37  1995/11/21 11:50:57  robertj
+ * Added timeout on semaphore wait.
+ *
  * Revision 1.36  1995/11/09 12:22:58  robertj
  * Fixed bug in stream when reading an FF (get EOF).
  *
@@ -2006,6 +2009,12 @@ void PThread::Yield()
         }
         break;
 
+      case BlockedSem :
+      case SuspendedBlockedSem :
+        if (blockingSemaphore->timer != 0)
+          blockingSemaphore->Signal();
+        break;
+
       case Starting :
         next = thread;
         break;
@@ -2112,12 +2121,22 @@ PSemaphore::~PSemaphore()
 
 void PSemaphore::Wait()
 {
+  Wait(PMaxTimeInterval);
+}
+
+
+BOOL PSemaphore::Wait(const PTimeInterval & time)
+{
   if (currentCount > 0)
     currentCount--;
   else {
     PThread * thread = PThread::Current();
     blockedThreads.Enqueue(thread);
+    thread->blockingSemaphore = this;
     thread->status = PThread::BlockedSem;
+    timeout = time;
+    if (time == PMaxTimeInterval)
+      timeout.Pause();
     PThread::Yield();
   }
 }
@@ -2137,6 +2156,7 @@ void PSemaphore::Signal()
       default:
         PAssertAlways("Semaphore unblock of thread that is not blocked");
     }
+    thread->sleepTimer = 0;
     PThread::Yield();
   }
   else if (currentCount < maximumCount)
