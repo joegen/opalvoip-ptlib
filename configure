@@ -1413,7 +1413,7 @@ case "$target_os" in
 
   darwin* )	   OSTYPE=Darwin ;
 		   OSRELEASE=`uname -r | sed "s/\.//g"` ;
-                   STDCCFLAGS='-DP_MACOSX=$(OSRELEASE) -DNO_LONG_DOUBLE' ;
+                   STDCCFLAGS="-DP_MACOSX=$OSRELEASE -DNO_LONG_DOUBLE" ;
                    SHAREDLIBEXT="dylib";;
 
   * )		   OSTYPE="$target_os" ;
