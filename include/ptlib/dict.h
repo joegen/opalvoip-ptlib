@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.9 1995/06/04 08:45:57 robertj Exp $
+ * $Id: dict.h,v 1.10 1995/06/17 11:12:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.10  1995/06/17 11:12:29  robertj
+ * Documentation update.
+ *
  * Revision 1.9  1995/06/04 08:45:57  robertj
  * Better C++ compatibility (with BC++)
  *
@@ -327,7 +330,7 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. The hash table is used to locate the entry.
 
        <H2>Returns:</H2>
@@ -341,7 +344,7 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     );
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. The hash table is used to locate the entry.
 
        <H2>Returns:</H2>
@@ -410,9 +413,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
        also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the
-       <A><CODE>Compare()</CODE></A> function. The hash table is used to
-       locate the entry.
+       the collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
      */
 
     void Exclude(
@@ -422,9 +424,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
        then the object is also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the
-       <A><CODE>Compare()</CODE></A> function. The hash table is used to
-       locate the entry.
+       the collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
      */
 
     BOOL operator[](
@@ -432,7 +433,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
     ) { return Contains(key); }
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. The hash table is used to locate the entry.
 
        <H2>Returns:</H2>
@@ -556,8 +557,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
       PObject * obj   // New object to place into the collection.
     );
     /* Insert a new object at the specified index. The index is converted to
-       a <A>POrdinalKey</A> type before being used in the
-       <A><CODE>SetAt()</CODE></A> function.
+       a <A>POrdinalKey</A> type before being used in the <A>SetAt()</A>
+       function.
 
        <H2>Returns:</H2>
        <CODE>index</CODE> parameter.
@@ -581,11 +582,11 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
       PINDEX index   // Index position in collection to place the object.
     );
     /* Remove an object at the specified index. The index is converted to
-       a <A>POrdinalKey</A> type before being used in the
-       <A><CODE>GetAt()</CODE></A> function. The returned pointer is then
-       removed using the <A><CODE>SetAt()</CODE></A> function to set that key
-       value to NULL. If the AllowDeleteObjects option is set then the object
-       is also deleted.
+       a <A>POrdinalKey</A> type before being used in the <A>GetAt()</A>
+       function. The returned pointer is then removed using the <A>SetAt()</A>
+       function to set that key value to NULL. If the
+       <CODE>AllowDeleteObjects</CODE> option is set then the object is also
+       deleted.
 
        <H2>Returns:</H2>
        pointer to the object being removed, or NULL if it was deleted.
@@ -635,7 +636,7 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. The hash table is used to locate the entry.
 
        <H2>Returns:</H2>
