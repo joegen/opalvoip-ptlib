@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.111  2004/10/23 11:27:24  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.110  2004/08/31 23:40:51  csoutheren
  * Fixed problem with absolute file paths in URLs
  *
@@ -1213,7 +1216,12 @@ BOOL PURL::OpenBrowser(const PString & url)
   ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
   sei.cbSize = sizeof(SHELLEXECUTEINFO);
   sei.lpVerb = TEXT("open");
-  sei.lpFile = url;
+ #ifndef _WIN32_WCE
+   sei.lpFile = url;
+ #else
+   USES_CONVERSION;
+   sei.lpFile = A2T(url);
+ #endif // _WIN32_WCE
 
   if (ShellExecuteEx(&sei) != 0)
     return TRUE;
@@ -1221,7 +1229,6 @@ BOOL PURL::OpenBrowser(const PString & url)
 #ifndef _WIN32_WCE
   MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
 #else
-  USES_CONVERSION;
   MessageBox(NULL, _T("Unable to open page"), A2T(PProcess::Current().GetName()), MB_APPLMODAL);
 #endif // _WIN32_WCE
 
