@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.19  2002/11/19 10:32:26  robertj
+ * Changed PFilePath so can be empty string, indicating illegal path.
+ *
  * Revision 1.18  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -113,6 +116,8 @@ class PFilePathString : public PString { };
 /**This class describes a full description for a file on the particular
    platform. This will always uniquely identify the file on currently mounted
    volumes.
+
+   An empty string for a PFilePath indicates an illegal path.
 
    The ancestor class is dependent on the platform. For file systems that are
    case sensitive, eg Unix, the ancestor is #PString#. For other
