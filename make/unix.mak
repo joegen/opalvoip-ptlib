@@ -29,6 +29,12 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.95  2001/07/19 09:27:12  rogerh
+# Add support for EsounD and esd (the Enlightenment Sound Daemon).
+# This allows OhPhone to run on platforms where EsounD and esd have been
+# ported which includes Mac OS X.
+# Code written by Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>.
+#
 # Revision 1.94  2001/07/09 06:16:15  yurik
 # Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
 #
@@ -727,7 +733,10 @@ ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
  
+# STDCCFLAGS	+= -DP_MACOSX
+# use CoreAudio with esd
 STDCCFLAGS	+= -DP_MACOSX
+ENDLDLIBS	+= -framework CoreAudio
  
 P_PTHREADS	:= 1
 
@@ -933,6 +942,12 @@ HAS_OPENSSL	= 1
 endif
 endif
 
+# define ESDDIR variables if installed
+ifdef  ESDDIR
+STDCCFLAGS	+= -I$(ESDDIR)/include
+ENDLDLIBS	+= $(ESDDIR)/lib/libesd.a  # to avoid name conflicts
+HAS_ESD		= 1
+endif
 
 # define Posix threads stuff
 ifdef P_PTHREADS
