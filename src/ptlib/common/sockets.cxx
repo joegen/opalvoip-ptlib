@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.82  1998/12/22 10:25:01  robertj
+ * Added clone() function to support SOCKS in FTP style protocols.
+ * Fixed internal use of new operator in IP cache.
+ *
  * Revision 1.81  1998/12/18 04:34:37  robertj
  * PPC Linux GNU C compatibility.
  *
@@ -287,6 +291,289 @@ static PWinSock dummyForWinSock; // Assure winsock is initialised
 #if defined(P_PTHREADS)
 #define REENTRANT_BUFFER_LEN 1024
 #endif
+
+
+PDECLARE_CLASS(PIPCacheData, PObject)
+  public:
+    PIPCacheData(struct hostent * ent, const char * original);
+    const PString & GetHostName() const { return hostname; }
+    const PIPSocket::Address & GetHostAddress() const { return address; }
+    const PStringList & GetHostAliases() const { return aliases; }
+    BOOL HasAged() const;
+  private:
+    PString            hostname;
+    PIPSocket::Address address;
+    PStringList        aliases;
+    PTime              birthDate;
+};
+
+
+PDICTIONARY(PHostByName_private, PCaselessString, PIPCacheData);
+
+class PHostByName : PHostByName_private
+{
+  public:
+    BOOL GetHostName(const PString & name, PString & hostname);
+    BOOL GetHostAddress(const PString & name, PIPSocket::Address & address);
+    BOOL GetHostAliases(const PString & name, PStringArray & aliases);
+  private:
+    PIPCacheData * GetHost(const PString & name);
+    PMutex mutex;
+  friend void PIPSocket::ClearNameCache();
+} pHostByName;
+
+
+PDECLARE_CLASS(PIPCacheKey, PObject)
+  public:
+    PIPCacheKey(const PIPSocket::Address & a)
+      { addr = a; }
+
+    PObject * Clone() const
+      { return new PIPCacheKey(*this); }
+
+    PINDEX HashFunction() const
+      { return (addr.Byte2() + addr.Byte3() + addr.Byte4())%41; }
+
+  private:
+    PIPSocket::Address addr;
+};
+
+PDICTIONARY(PHostByAddr_private, PIPCacheKey, PIPCacheData);
+
+class PHostByAddr : PHostByAddr_private
+{
+  public:
+    BOOL GetHostName(const PIPSocket::Address & addr, PString & hostname);
+    BOOL GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address);
+    BOOL GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
+  private:
+    PIPCacheData * GetHost(const PIPSocket::Address & addr);
+    PMutex mutex;
+  friend void PIPSocket::ClearNameCache();
+} pHostByAddr;
+
+
+#define new PNEW
+
+
+//////////////////////////////////////////////////////////////////////////////
+// IP Caching
+
+PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
+{
+  if (host_info == NULL) {
+    address.s_addr = 0;
+    return;
+  }
+
+  hostname = host_info->h_name;
+  memcpy(&address, host_info->h_addr, sizeof(address));
+
+  aliases.AppendString(host_info->h_name);
+
+  PINDEX i;
+  for (i = 0; host_info->h_aliases[i] != NULL; i++)
+    aliases.AppendString(host_info->h_aliases[i]);
+
+  for (i = 0; host_info->h_addr_list[i] != NULL; i++)
+    aliases.AppendString(inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]));
+
+  for (i = 0; i < aliases.GetSize(); i++)
+    if (aliases[i] *= original)
+      return;
+
+  aliases.AppendString(original);
+}
+
+
+static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
+{
+  PConfig cfg("DNS Cache");
+  return cfg.GetInteger(key, dflt);
+}
+
+BOOL PIPCacheData::HasAged() const
+{
+  static PTimeInterval retirement = GetConfigTime("Age Limit", 300000); // 5 minutes
+  PTime now;
+  PTimeInterval age = now - birthDate;
+  return age > retirement;
+}
+
+
+BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL)
+    hostname = host->GetHostName();
+
+  mutex.Signal();
+
+  return host != NULL;
+}
+
+
+BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & address)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL)
+    address = host->GetHostAddress();
+
+  mutex.Signal();
+
+  return host != NULL;
+}
+
+
+BOOL PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
+{
+  PIPCacheData * host = GetHost(name);
+
+  if (host != NULL) {
+    const PStringList & a = host->GetHostAliases();
+    aliases.SetSize(a.GetSize());
+    for (PINDEX i = 0; i < a.GetSize(); i++)
+      aliases[i] = a[i];
+  }
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+PIPCacheData * PHostByName::GetHost(const PString & name)
+{
+  mutex.Wait();
+
+  PCaselessString key = name;
+  PIPCacheData * host = GetAt(key);
+
+  if (host != NULL && host->HasAged()) {
+    SetAt(key, NULL);
+    host = NULL;
+  }
+
+  if (host == NULL) {
+    mutex.Signal();
+#ifdef P_PTHREADS
+    // this function should really be a static on PIPSocket, but this would
+    // require allocating thread-local storage for the data and that's too much
+    // of a pain!
+    struct hostent hostEnt;
+    int localErrNo;
+    char buffer[REENTRANT_BUFFER_LEN];
+    host = new PIPCacheData(
+                ::gethostbyname_r(name, &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo),
+                name);
+#else
+     host = new PIPCacheData(::gethostbyname(name), name);
+#endif
+    mutex.Wait();
+
+    if (h_errno == TRY_AGAIN) {
+      delete host;
+      return NULL;
+    }
+
+    SetAt(key, host);
+  }
+
+  if (host->GetHostAddress() == 0)
+    return NULL;
+
+  return host;
+}
+
+
+BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostname)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL)
+    hostname = host->GetHostName();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL)
+    address = host->GetHostAddress();
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+
+BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases)
+{
+  PIPCacheData * host = GetHost(addr);
+
+  if (host != NULL) {
+    const PStringList & a = host->GetHostAliases();
+    aliases.SetSize(a.GetSize());
+    for (PINDEX i = 0; i < a.GetSize(); i++)
+      aliases[i] = a[i];
+  }
+
+  mutex.Signal();
+  return host != NULL;
+}
+
+PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
+{
+  mutex.Wait();
+
+  PIPCacheKey key = addr;
+  PIPCacheData * host = GetAt(key);
+
+  if (host != NULL && host->HasAged()) {
+    SetAt(key, NULL);
+    host = NULL;
+  }
+
+  if (host == NULL) {
+    mutex.Signal();
+#if defined(P_PTHREADS)
+// this function should really be a static on PIPSocket, but this would
+// require allocating thread-local storage for the data and that's too much
+// of a pain!
+    struct hostent hostEnt;
+    int localErrNo;
+    char buffer[REENTRANT_BUFFER_LEN];
+    struct hostent * host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
+                                           &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
+#else
+    struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+#if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
+    extern P_IsOldWin95();
+    if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
+      host_info->h_addr_list[1] = NULL;
+#endif
+#endif
+    host = new PIPCacheData(host_info, inet_ntoa(addr));
+    mutex.Wait();
+
+    if (h_errno == TRY_AGAIN) {
+      delete host;
+      return FALSE;
+    }
+
+    SetAt(key, host);
+  }
+
+  if (host->GetHostAddress() == 0)
+    return NULL;
+
+  return host;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
@@ -618,285 +905,6 @@ PChannel::Errors PSocket::Select(SelectList & read,
   }
 
   return NoError;
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// IP Caching
-
-PDECLARE_CLASS(PIPCacheData, PObject)
-  public:
-    PIPCacheData(struct hostent * ent, const char * original);
-    const PString & GetHostName() const { return hostname; }
-    const PIPSocket::Address & GetHostAddress() const { return address; }
-    const PStringList & GetHostAliases() const { return aliases; }
-    BOOL HasAged() const;
-  private:
-    PString            hostname;
-    PIPSocket::Address address;
-    PStringList        aliases;
-    PTime              birthDate;
-};
-
-PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
-{
-  if (host_info == NULL) {
-    address.s_addr = 0;
-    return;
-  }
-
-  hostname = host_info->h_name;
-  memcpy(&address, host_info->h_addr, sizeof(address));
-
-  aliases.AppendString(host_info->h_name);
-
-  PINDEX i;
-  for (i = 0; host_info->h_aliases[i] != NULL; i++)
-    aliases.AppendString(host_info->h_aliases[i]);
-
-  for (i = 0; host_info->h_addr_list[i] != NULL; i++)
-    aliases.AppendString(inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]));
-
-  for (i = 0; i < aliases.GetSize(); i++)
-    if (aliases[i] *= original)
-      return;
-
-  aliases.AppendString(original);
-}
-
-
-static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
-{
-  PConfig cfg("DNS Cache");
-  return cfg.GetInteger(key, dflt);
-}
-
-BOOL PIPCacheData::HasAged() const
-{
-  static PTimeInterval retirement = GetConfigTime("Age Limit", 300000); // 5 minutes
-  PTime now;
-  PTimeInterval age = now - birthDate;
-  return age > retirement;
-}
-
-
-PDICTIONARY(PHostByName_private, PCaselessString, PIPCacheData);
-
-class PHostByName : PHostByName_private
-{
-  public:
-    BOOL GetHostName(const PString & name, PString & hostname);
-    BOOL GetHostAddress(const PString & name, PIPSocket::Address & address);
-    BOOL GetHostAliases(const PString & name, PStringArray & aliases);
-  private:
-    PIPCacheData * GetHost(const PString & name);
-    PMutex mutex;
-  friend void PIPSocket::ClearNameCache();
-} pHostByName;
-
-
-BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
-{
-  PIPCacheData * host = GetHost(name);
-
-  if (host != NULL)
-    hostname = host->GetHostName();
-
-  mutex.Signal();
-
-  return host != NULL;
-}
-
-
-BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & address)
-{
-  PIPCacheData * host = GetHost(name);
-
-  if (host != NULL)
-    address = host->GetHostAddress();
-
-  mutex.Signal();
-
-  return host != NULL;
-}
-
-
-BOOL PHostByName::GetHostAliases(const PString & name, PStringArray & aliases)
-{
-  PIPCacheData * host = GetHost(name);
-
-  if (host != NULL) {
-    const PStringList & a = host->GetHostAliases();
-    aliases.SetSize(a.GetSize());
-    for (PINDEX i = 0; i < a.GetSize(); i++)
-      aliases[i] = a[i];
-  }
-
-  mutex.Signal();
-  return host != NULL;
-}
-
-
-PIPCacheData * PHostByName::GetHost(const PString & name)
-{
-  mutex.Wait();
-
-  PCaselessString key = name;
-  PIPCacheData * host = GetAt(key);
-
-  if (host != NULL && host->HasAged()) {
-    SetAt(key, NULL);
-    host = NULL;
-  }
-
-  if (host == NULL) {
-    mutex.Signal();
-#ifdef P_PTHREADS
-    // this function should really be a static on PIPSocket, but this would
-    // require allocating thread-local storage for the data and that's too much
-    // of a pain!
-    struct hostent hostEnt;
-    int localErrNo;
-    char buffer[REENTRANT_BUFFER_LEN];
-    host = new PIPCacheData(
-                ::gethostbyname_r(name, &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo),
-                name);
-#else
-     host = new PIPCacheData(::gethostbyname(name), name);
-#endif
-    mutex.Wait();
-
-    if (h_errno == TRY_AGAIN) {
-      delete host;
-      return NULL;
-    }
-
-    SetAt(key, host);
-  }
-
-  if (host->GetHostAddress() == 0)
-    return NULL;
-
-  return host;
-}
-
-
-PDECLARE_CLASS(PIPCacheKey, PObject)
-  public:
-    PIPCacheKey(const PIPSocket::Address & a)
-      { addr = a; }
-
-    PObject * Clone() const
-      { return new PIPCacheKey(*this); }
-
-    PINDEX HashFunction() const
-      { return (addr.Byte2() + addr.Byte3() + addr.Byte4())%41; }
-
-  private:
-    PIPSocket::Address addr;
-};
-
-PDICTIONARY(PHostByAddr_private, PIPCacheKey, PIPCacheData);
-
-class PHostByAddr : PHostByAddr_private
-{
-  public:
-    BOOL GetHostName(const PIPSocket::Address & addr, PString & hostname);
-    BOOL GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address);
-    BOOL GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
-  private:
-    PIPCacheData * GetHost(const PIPSocket::Address & addr);
-    PMutex mutex;
-  friend void PIPSocket::ClearNameCache();
-} pHostByAddr;
-
-
-BOOL PHostByAddr::GetHostName(const PIPSocket::Address & addr, PString & hostname)
-{
-  PIPCacheData * host = GetHost(addr);
-
-  if (host != NULL)
-    hostname = host->GetHostName();
-
-  mutex.Signal();
-  return host != NULL;
-}
-
-
-BOOL PHostByAddr::GetHostAddress(const PIPSocket::Address & addr, PIPSocket::Address & address)
-{
-  PIPCacheData * host = GetHost(addr);
-
-  if (host != NULL)
-    address = host->GetHostAddress();
-
-  mutex.Signal();
-  return host != NULL;
-}
-
-
-BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases)
-{
-  PIPCacheData * host = GetHost(addr);
-
-  if (host != NULL) {
-    const PStringList & a = host->GetHostAliases();
-    aliases.SetSize(a.GetSize());
-    for (PINDEX i = 0; i < a.GetSize(); i++)
-      aliases[i] = a[i];
-  }
-
-  mutex.Signal();
-  return host != NULL;
-}
-
-PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
-{
-  mutex.Wait();
-
-  PIPCacheKey key = addr;
-  PIPCacheData * host = GetAt(key);
-
-  if (host != NULL && host->HasAged()) {
-    SetAt(key, NULL);
-    host = NULL;
-  }
-
-  if (host == NULL) {
-    mutex.Signal();
-#if defined(P_PTHREADS)
-// this function should really be a static on PIPSocket, but this would
-// require allocating thread-local storage for the data and that's too much
-// of a pain!
-    struct hostent hostEnt;
-    int localErrNo;
-    char buffer[REENTRANT_BUFFER_LEN];
-    struct hostent * host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
-                                           &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
-#else
-    struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
-#if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    extern P_IsOldWin95();
-    if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
-      host_info->h_addr_list[1] = NULL;
-#endif
-#endif
-    host = new PIPCacheData(host_info, inet_ntoa(addr));
-    mutex.Wait();
-
-    if (h_errno == TRY_AGAIN) {
-      delete host;
-      return FALSE;
-    }
-
-    SetAt(key, host);
-  }
-
-  if (host->GetHostAddress() == 0)
-    return NULL;
-
-  return host;
 }
 
 
@@ -1293,6 +1301,12 @@ PTCPSocket::PTCPSocket(PSocket & socket)
 PTCPSocket::PTCPSocket(PTCPSocket & tcpSocket)
 {
   Accept(tcpSocket);
+}
+
+
+PObject * PTCPSocket::Clone() const
+{
+  return new PTCPSocket(port);
 }
 
 
