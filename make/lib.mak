@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.14  2001/07/07 06:51:52  robertj
+# Added fix to remove shared libraries in make clean, thanks Jac Goudsmit
+#
 # Revision 1.13  2001/07/03 04:41:25  yurik
 # Corrections to Jac's submission from 6/28
 #
@@ -41,6 +44,12 @@
 # Added copyright notice
 #
 
+
+LIBNAME_MAJ		= $(LIB_BASENAME).$(MAJOR_VERSION)
+LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
+LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
+
+CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
 ifeq ($(P_SHAREDLIB),1)
 
@@ -73,10 +82,6 @@ LDSOOPTS = -shared
 EXTLIBS =
 endif
 
-LIBNAME_MAJ		= $(LIB_BASENAME).$(MAJOR_VERSION)
-LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
-LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
-
 $(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
 	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIB_BASENAME)
 	cd $(LIBDIR) ; ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
@@ -85,8 +90,6 @@ $(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
 $(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
-
-CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
@@ -104,8 +107,6 @@ ifdef P_USE_RANLIB
 else
 	$(AR) rcs $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
 endif
-
-CLEAN_FILES += $(LIBDIR)/$(LIB_BASENAME)
 
 endif
 
