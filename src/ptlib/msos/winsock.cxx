@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.23 1996/08/08 10:06:07 robertj Exp $
+ * $Id: winsock.cxx,v 1.24 1996/09/14 13:09:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.24  1996/09/14 13:09:47  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.23  1996/08/08 10:06:07  robertj
  * Fixed incorrect value in write, causes incorrect output if send is split.
  *
@@ -92,28 +98,37 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PSocket
+// PWinSock
 
-BOOL PSocket::WinSockStarted = FALSE;
+PWinSock::PWinSock()
+{
+  WSADATA winsock;
+  PAssert(WSAStartup(0x101, &winsock) == 0, POperatingSystemError);
+  PAssert(LOBYTE(winsock.wVersion) == 1 &&
+          HIBYTE(winsock.wVersion) == 1, POperatingSystemError);
+}
 
-static void SocketCleanup()
+
+PWinSock::~PWinSock()
 {
   WSACleanup();
 }
 
 
-PSocket::PSocket()
+BOOL PWinSock::OpenSocket()
 {
-  if (!WinSockStarted) {
-    WSADATA winsock;
-    PAssert(WSAStartup(0x101, &winsock) == 0, POperatingSystemError);
-    PAssert(LOBYTE(winsock.wVersion) == 1 &&
-            HIBYTE(winsock.wVersion) == 1, POperatingSystemError);
-    atexit(SocketCleanup);
-    WinSockStarted = TRUE;
-  }
+  return FALSE;
 }
 
+
+const char * PWinSock::GetProtocolName() const
+{
+  return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PSocket
 
 PSocket::~PSocket()
 {
@@ -220,9 +235,9 @@ int PSocket::os_close()
 }
 
 
-int PSocket::os_socket(int af, int type, int protocol)
+int PSocket::os_socket(int af, int type, int proto)
 {
-  return ::socket(af, type, protocol);
+  return ::socket(af, type, proto);
 }
 
 
@@ -260,6 +275,46 @@ int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
   }
   return ::accept(sock, addr, size);
 }
+
+BOOL PSocket::os_recvfrom(void * buf,
+                          PINDEX len,
+                          int flags,
+                          struct sockaddr * from,
+                          int * fromlen)
+{
+  int timeout;
+  if (readTimeout == PMaxTimeInterval)
+    timeout = 0;
+  else if (readTimeout == 0)
+    timeout = 1;
+  else
+    timeout = readTimeout.GetInterval();
+  if (!SetOption(SO_RCVTIMEO, timeout))
+    return FALSE;
+
+  return ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
+}
+
+
+BOOL PSocket::os_sendto(const void * buf,
+                        PINDEX len,
+                        int flags,
+                        struct sockaddr * to,
+                        int tolen)
+{
+  int timeout;
+  if (writeTimeout == PMaxTimeInterval)
+    timeout = 0;
+  else if (writeTimeout == 0)
+    timeout = 1;
+  else
+    timeout = writeTimeout.GetInterval();
+  if (!SetOption(SO_SNDTIMEO, timeout))
+    return FALSE;
+
+  return ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
+}
+
 
 int PSocket::os_select(int maxfds,
                        fd_set & readfds,
@@ -357,30 +412,257 @@ BYTE PIPSocket::Address::Byte4() const
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PIPDatagramSocket
+// PIPXSocket
 
-BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
-                                                   Address & addr, WORD & port)
+PIPXSocket::Address::Address()
+{
+  memset(this, 0, sizeof(*this));
+}
+
+
+PIPXSocket::Address::Address(const Address & addr)
+{
+  memcpy(this, &addr, sizeof(*this));
+}
+
+
+PIPXSocket::Address::Address(const PString & str)
+{
+  memset(this, 0, sizeof(*this));
+
+  PINDEX colon = str.Find(':');
+  if (colon == P_MAX_INDEX)
+    colon = 0;
+  else
+    network.dw = str.Left(colon++).AsInteger();
+
+  PINDEX byte = 11;
+  PINDEX pos = str.GetLength();
+  do {
+    pos--;
+    int c = str[pos];
+    if (isdigit(c))
+      node[byte/2] = (BYTE)((node[byte/2] << 4) + c - '0');
+    else if (isxdigit(c))
+      node[byte/2] = (BYTE)((node[byte/2] << 4) + toupper(c) - 'A' + 10);
+    byte--;
+  } while (pos > colon);
+}
+
+
+PIPXSocket::Address::Address(DWORD netNum, const char * nodeNum)
+{
+  network.dw = netNum;
+  memcpy(node, nodeNum, sizeof(node));
+}
+
+
+PIPXSocket::Address & PIPXSocket::Address::operator=(const Address & addr)
+{
+  memcpy(this, &addr, sizeof(*this));
+  return *this;
+}
+
+
+PIPXSocket::Address::operator PString() const
+{
+  return psprintf("%lu:%02X%02X%02X%02X%02X%02X",
+                  network.dw,
+                  node[0], node[1], node[2], node[3], node[4], node[5]);
+}
+
+
+PIPXSocket::PIPXSocket(WORD newPort)
+{
+  SetPort(newPort);
+}
+
+
+PString PIPXSocket::GetName() const
+{
+  Address addr;
+  if (((PIPXSocket*)this)->GetPeerAddress(addr))
+    return addr;
+  else
+    return PString();
+}
+
+
+BOOL PIPXSocket::OpenSocket()
+{
+  return ConvertOSError(os_handle = os_socket(AF_IPX, SOCK_DGRAM, NSPROTO_IPX));
+}
+
+
+const char * PIPXSocket::GetProtocolName() const
+{
+  return "ipx";
+}
+
+
+PString PIPXSocket::GetHostName(const Address & addr)
+{
+  return addr;
+}
+
+
+BOOL PIPXSocket::GetHostAddress(Address & addr)
+{
+  return FALSE;
+}
+
+
+BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
+{
+  return FALSE;
+}
+
+
+static void AssignAddress(sockaddr_ipx & sip, const PIPXSocket::Address & addr)
+{
+  memcpy(sip.sa_netnum, &addr.network, sizeof(sip.sa_netnum));
+  memcpy(sip.sa_nodenum, addr.node, sizeof(sip.sa_nodenum));
+}
+
+
+static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
+{
+  memcpy(&addr.network, sip.sa_netnum, sizeof(addr.network));
+  memcpy(addr.node, sip.sa_nodenum, sizeof(addr.node));
+}
+
+
+BOOL PIPXSocket::GetLocalAddress(Address & addr)
+{
+  sockaddr_ipx sip;
+  int size = sizeof(sip);
+  if (!ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&sip, &size)))
+    return FALSE;
+
+  AssignAddress(addr, sip);
+  return TRUE;
+}
+
+
+BOOL PIPXSocket::GetLocalAddress(Address & addr, WORD & portNum)
+{
+  sockaddr_ipx sip;
+  int size = sizeof(sip);
+  if (!ConvertOSError(::getsockname(os_handle, (struct sockaddr *)&sip, &size)))
+    return FALSE;
+
+  AssignAddress(addr, sip);
+  portNum = sip.sa_socket;
+  return TRUE;
+}
+
+
+BOOL PIPXSocket::GetPeerAddress(Address & addr)
+{
+  sockaddr_ipx sip;
+  int size = sizeof(sip);
+  if (!ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&sip, &size)))
+    return FALSE;
+
+  AssignAddress(addr, sip);
+  return TRUE;
+}
+
+
+BOOL PIPXSocket::GetPeerAddress(Address & addr, WORD & portNum)
+{
+  sockaddr_ipx sip;
+  int size = sizeof(sip);
+  if (!ConvertOSError(::getpeername(os_handle, (struct sockaddr *)&sip, &size)))
+    return FALSE;
+
+  AssignAddress(addr, sip);
+  portNum = sip.sa_socket;
+  return TRUE;
+}
+
+
+BOOL PIPXSocket::Connect(const PString & host)
+{
+  Address addr;
+  if (GetHostAddress(host, addr))
+    return Connect(addr);
+  return FALSE;
+}
+
+
+BOOL PIPXSocket::Connect(const Address & addr)
+{
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
+  // make sure we have a port
+  PAssert(port != 0, "Cannot connect socket without setting port");
+
+  // attempt to create a socket
+  if (!OpenSocket())
+    return FALSE;
+
+  // attempt to lookup the host name
+  sockaddr_ipx sip;
+  memset(&sip, 0, sizeof(sip));
+  sip.sa_family = AF_IPX;
+  AssignAddress(sip, addr);
+  sip.sa_socket  = port;  // set the port
+  if (ConvertOSError(os_connect((struct sockaddr *)&sip, sizeof(sip))))
+    return TRUE;
+
+  os_close();
+  return FALSE;
+}
+
+
+BOOL PIPXSocket::Listen(unsigned, WORD newPort, Reusability reuse)
+{
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+
+  // close the port if it is already open
+  if (!IsOpen()) {
+    // attempt to create a socket
+    if (!OpenSocket())
+      return FALSE;
+  }
+
+  // attempt to listen
+  if (SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+    // attempt to listen
+    sockaddr_ipx sip;
+    memset(&sip, 0, sizeof(sip));
+    sip.sa_family = AF_IPX;
+    sip.sa_socket = port;       // set the port
+
+    if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sip, sizeof(sip)))) {
+      int size = sizeof(sip);
+      if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sip, &size))) {
+        port = sip.sa_socket;
+        return TRUE;
+      }
+    }
+  }
+
+  os_close();
+  return FALSE;
+}
+
+
+BOOL PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
   lastReadCount = 0;
 
-  int timeout;
-  if (readTimeout == PMaxTimeInterval)
-    timeout = 0;
-  else if (readTimeout == 0)
-    timeout = 1;
-  else
-    timeout = readTimeout.GetInterval();
-  if (!SetOption(SO_RCVTIMEO, timeout))
-    return FALSE;
-
-  sockaddr_in sockAddr;
-  int addrLen = sizeof(sockAddr);
-  int recvResult = recvfrom(os_handle,
-                  (char *)buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
+  sockaddr_ipx sip;
+  int addrLen = sizeof(sip);
+  int recvResult = os_recvfrom(buf, len, 0, (struct sockaddr *)&sip, &addrLen);
   if (ConvertOSError(recvResult)) {
-    addr = sockAddr.sin_addr;
-    port = ntohs(sockAddr.sin_port);
+    AssignAddress(addr, sip);
+    port = sip.sa_socket;
 
     lastReadCount = recvResult;
   }
@@ -389,31 +671,68 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 }
 
 
-BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
-                                               const Address & addr, WORD port)
+BOOL PIPXSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WORD port)
 {
   lastWriteCount = 0;
 
-  int timeout;
-  if (writeTimeout == PMaxTimeInterval)
-    timeout = 0;
-  else if (writeTimeout == 0)
-    timeout = 1;
-  else
-    timeout = writeTimeout.GetInterval();
-  if (!SetOption(SO_SNDTIMEO, timeout))
-    return FALSE;
-
-  sockaddr_in sockAddr;
-  sockAddr.sin_family = AF_INET;
-  sockAddr.sin_addr = addr;
-  sockAddr.sin_port = htons(port);
-  int sendResult = ::sendto(os_handle, (const char *)buf, len, 0,
-                               (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+  sockaddr_ipx sip;
+  sip.sa_family = AF_IPX;
+  AssignAddress(sip, addr);
+  sip.sa_socket = port;
+  int sendResult = os_sendto(buf, len, 0, (struct sockaddr *)&sip, sizeof(sip));
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
 
   return lastWriteCount >= len;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PSPXSocket
+
+PSPXSocket::PSPXSocket(WORD port)
+  : PIPXSocket(port)
+{
+}
+
+
+BOOL PSPXSocket::OpenSocket()
+{
+  return ConvertOSError(os_handle = os_socket(AF_IPX, SOCK_STREAM, NSPROTO_SPX));
+}
+
+
+const char * PSPXSocket::GetProtocolName() const
+{
+  return "spx";
+}
+
+
+BOOL PSPXSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
+{
+  if (PIPXSocket::Listen(queueSize, newPort, reuse) &&
+      ConvertOSError(::listen(os_handle, queueSize)))
+    return TRUE;
+
+  os_close();
+  return FALSE;
+}
+
+
+BOOL PSPXSocket::Accept(PSocket & socket)
+{
+  PAssert(socket.IsDescendant(PIPXSocket::Class()), "Invalid listener socket");
+
+  sockaddr_ipx sip;
+  sip.sa_family = AF_IPX;
+  int size = sizeof(sip);
+  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
+                                          (struct sockaddr *)&sip, &size,
+                                           socket.GetReadTimeout())))
+    return FALSE;
+
+  port = ((PIPXSocket &)socket).GetPort();
+  return TRUE;
 }
 
 
