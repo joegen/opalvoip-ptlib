@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.113  2001/09/14 08:00:38  robertj
+ * Added new versions of Conenct() to allow binding to a specific local interface.
+ *
  * Revision 1.112  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -1344,18 +1347,30 @@ BOOL PIPSocket::Connect(const PString & host)
 {
   Address ipnum;
   if (GetHostAddress(host, ipnum))
-    return Connect(ipnum);
+    return Connect(INADDR_ANY, 0, ipnum);
   return FALSE;
 }
 
 
 BOOL PIPSocket::Connect(const Address & addr)
 {
-  return Connect(0, addr);
+  return Connect(INADDR_ANY, 0, addr);
 }
 
 
 BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
+{
+  return Connect(INADDR_ANY, localPort, addr);
+}
+
+
+BOOL PIPSocket::Connect(const Address & iface, const Address & addr)
+{
+  return Connect(iface, 0, addr);
+}
+
+
+BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & addr)
 {
   // close the port if it is already open
   if (IsOpen())
@@ -1370,14 +1385,14 @@ BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
 
   // attempt to connect
   sockaddr_in sin;
-  if (localPort != 0) {
+  if (localPort != 0 || iface != INADDR_ANY) {
     if (!SetOption(SO_REUSEADDR, 1)) {
       os_close();
       return FALSE;
     }
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = htonl(INADDR_ANY);
+    sin.sin_addr.s_addr = iface;
     sin.sin_port        = htons(localPort);       // set the port
     if (!ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
       os_close();
