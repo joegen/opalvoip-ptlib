@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.46  2001/10/17 05:09:22  robertj
+ * Added contructors and assigmnent operators so integer types can be
+ *   automatically converted to strings.
+ *
  * Revision 1.45  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -307,6 +311,71 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
       char ch    /// Single character to initialise string.
     );
 
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      short n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      unsigned short n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      int n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      unsigned int n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      long n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      unsigned long n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      PInt64 n   /// Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      PUInt64 n   /// Integer to convert
+    );
+
+ 
     enum ConversionType {
       Pascal,   // Data is a length byte followed by characters.
       Basic,    // Data is two length bytes followed by characters.
@@ -374,6 +443,70 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS);
      */
     PString & operator=(
       char ch            /// Character to assign.
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      short n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      unsigned short n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      int n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      unsigned int n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      long n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      unsigned long n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      PInt64 n   /// Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      PUInt64 n   /// Integer to convert
     );
   //@}
 

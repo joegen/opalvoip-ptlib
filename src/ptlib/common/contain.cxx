@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.105  2001/10/17 05:09:22  robertj
+ * Added contructors and assigmnent operators so integer types can be
+ *   automatically converted to strings.
+ *
  * Revision 1.104  2001/08/11 15:01:44  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -1034,10 +1038,10 @@ PString::PString(ConversionType type, const char * str, ...)
 }
 
 
-static char * ltostr(DWORD value, unsigned base, char * str)
+template <class T> char * p_unsigned2string(T value, T base, char * str)
 {
   if (value >= base)
-    str = ltostr(value/base, base, str);
+    str = p_unsigned2string<T>(value/base, base, str);
   value %= base;
   if (value < 10)
     *str = (char)(value + '0');
@@ -1047,21 +1051,91 @@ static char * ltostr(DWORD value, unsigned base, char * str)
 }
 
 
+template <class T> char * p_signed2string(T value, T base, char * str)
+{
+  if (value >= 0)
+    return p_unsigned2string<T>(value, base, str);
+
+  *str = '-';
+  return p_unsigned2string<T>(-value, base, str+1);
+}
+
+
+PString::PString(short n)
+  : PCharArray(sizeof(short)*3+1)
+{
+  p_signed2string<int>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(unsigned short n)
+  : PCharArray(sizeof(unsigned short)*3+1)
+{
+  p_unsigned2string<unsigned int>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(int n)
+  : PCharArray(sizeof(int)*3+1)
+{
+  p_signed2string<int>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(unsigned int n)
+  : PCharArray(sizeof(unsigned int)*3+1)
+{
+  p_unsigned2string<unsigned int>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(long n)
+  : PCharArray(sizeof(long)*3+1)
+{
+  p_signed2string<long>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(unsigned long n)
+  : PCharArray(sizeof(unsigned long)*3+1)
+{
+  p_unsigned2string<unsigned long>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(PInt64 n)
+  : PCharArray(sizeof(PInt64)*3+1)
+{
+  p_signed2string<PInt64>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
+PString::PString(PUInt64 n)
+  : PCharArray(sizeof(PUInt64)*3+1)
+{
+  p_unsigned2string<PUInt64>(n, 10, theArray);
+  MakeMinimumSize();
+}
+
+
 PString::PString(ConversionType type, long value, unsigned base)
-  : PCharArray(100)
+  : PCharArray(sizeof(long)*3+1)
 {
   PAssert(base >= 2 && base <= 36, PInvalidParameter);
   switch (type) {
     case Signed :
-      if (value < 0) {
-        *theArray = '-';
-        ltostr(-value, base, theArray+1);
-        break;
-      }
-      // Otherwise do Unsigned case
+      p_signed2string<long>(-value, base, theArray+1);
+      break;
 
     case Unsigned :
-      ltostr(value, base, theArray);
+      p_unsigned2string<unsigned long>(value, base, theArray);
       break;
 
     default :
@@ -1085,6 +1159,78 @@ PString::PString(ConversionType type, double value, unsigned places)
     default :
       PAssertAlways(PInvalidParameter);
   }
+}
+
+
+PString & PString::operator=(short n)
+{
+  SetMinSize(sizeof(short)*3+1);
+  p_signed2string<int>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(unsigned short n)
+{
+  SetMinSize(sizeof(unsigned short)*3+1);
+  p_unsigned2string<unsigned int>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(int n)
+{
+  SetMinSize(sizeof(int)*3+1);
+  p_signed2string<int>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(unsigned int n)
+{
+  SetMinSize(sizeof(unsigned int)*3+1);
+  p_unsigned2string<unsigned int>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(long n)
+{
+  SetMinSize(sizeof(long)*3+1);
+  p_signed2string<long>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(unsigned long n)
+{
+  SetMinSize(sizeof(unsigned long)*3+1);
+  p_unsigned2string<unsigned long>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(PInt64 n)
+{
+  SetMinSize(sizeof(PInt64)*3+1);
+  p_signed2string<PInt64>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
+}
+
+
+PString & PString::operator=(PUInt64 n)
+{
+  SetMinSize(sizeof(PUInt64)*3+1);
+  p_unsigned2string<PUInt64>(n, 10, theArray);
+  MakeMinimumSize();
+  return *this;
 }
 
 
