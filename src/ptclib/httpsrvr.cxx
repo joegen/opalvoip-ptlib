@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.2 1996/10/26 03:31:05 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.3 1996/11/10 21:09:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.3  1996/11/10 21:09:33  robertj
+ * Removed redundent GetSocket() call.
+ * Added flush of stream after processing request, important on persistent connections.
+ *
  * Revision 1.2  1996/10/26 03:31:05  robertj
  * Changed OnError so can pass in full HTML page as parameter.
  *
@@ -303,11 +307,8 @@ BOOL PHTTPServer::ProcessCommand()
     url = "https://" + tokens[0];
   else {
     url = tokens[0];
-    if (url.GetPort() == 0) {
-      PIPSocket * socket = GetSocket();
-      if (socket != NULL)
-        url.SetPort(myPort);
-    }
+    if (url.GetPort() == 0)
+      url.SetPort(myPort);
   }
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
@@ -345,6 +346,8 @@ BOOL PHTTPServer::ProcessCommand()
       persist = OnUnknown(args, connectInfo);
   }
 
+  flush();
+
   // if the function just indicated that the connection is to persist,
   // and so did the client, then return TRUE. Note that all of the OnXXXX
   // routines above must make sure that their return value is FALSE if
@@ -356,8 +359,7 @@ BOOL PHTTPServer::ProcessCommand()
     return TRUE;
 
   // close the output stream now and return FALSE
-  if (socket != NULL)
-    socket->Shutdown(PIPSocket::ShutdownWrite);
+  Shutdown(ShutdownWrite);
   return FALSE;
 }
 
