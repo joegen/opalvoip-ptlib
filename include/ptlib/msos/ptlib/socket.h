@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.19  2002/09/23 07:17:23  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.18  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -96,7 +99,13 @@
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 
+#ifdef P_WINSOCK1
 #include <winsock.h>
+#else
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#define P_HAS_IPV6
+#endif
 
 #define PIPX
 
