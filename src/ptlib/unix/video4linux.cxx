@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.32  2002/04/17 21:54:06  dereks
+ * Improve searching of proc file system for video device names. Thanks Guilhem Tardy.
+ *
  * Revision 1.31  2002/04/13 07:54:38  rogerh
  * Add CPiA camera hint to work around driver bug.
  * From Damien Sandras and Keith Packard.
@@ -384,18 +387,29 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
     if (procvideo.Open(PFileInfo::RegularFile)) {
       do {
         entry = procvideo.GetEntryName();
-      
-        if (entry.Left(5) == "video") {
-          PString thisDevice = "/dev/" + entry;
+	
+	if (entry.Left(7) == "capture") {
+          PString thisDevice = "/dev/video" + entry.Right(1);
           int videoFd;  
           if ((videoFd = open(thisDevice, O_RDONLY))) {
             struct video_capability  videoCaps;
             if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 &&
-                   (videoCaps.type & VID_TYPE_CAPTURE) != 0)
+		(videoCaps.type & VID_TYPE_CAPTURE) != 0)
               devlist.AppendString(thisDevice);
             close(videoFd);
-          }
-        }
+         }
+	} else
+	  if (entry.Left(5) == "video") {
+	    PString thisDevice = "/dev/" + entry;
+	    int videoFd;  
+	    if ((videoFd = open(thisDevice, O_RDONLY))) {
+	      struct video_capability  videoCaps;
+	      if (ioctl(videoFd, VIDIOCGCAP, &videoCaps) >= 0 &&
+		  (videoCaps.type & VID_TYPE_CAPTURE) != 0)
+              devlist.AppendString(thisDevice);
+	      close(videoFd);
+	    }
+	  }
       } while (procvideo.Next());
     }   
   }
