@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.8  2004/05/12 04:36:13  csoutheren
+ * Fixed problems with using sem_wait and friends on systems that do not
+ * support atomic integers
+ *
  * Revision 1.7  2004/04/21 11:22:56  csoutheren
  * Modified to work with gcc 3.4.0
  *
@@ -158,7 +162,6 @@ class PAtomicInteger
     protected:
       _Atomic_word value;
 #else 
-#define PCONTAINER_USES_CRITSEC 1
     protected:
       PCriticalSection critSec;
     public:
