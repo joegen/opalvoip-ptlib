@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.87 1998/01/04 07:22:16 robertj Exp $
+ * $Id: osutils.cxx,v 1.88 1998/01/26 00:47:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.88  1998/01/26 00:47:13  robertj
+ * Added functions to get/set 64bit integers from a PConfig.
+ *
  * Revision 1.87  1998/01/04 07:22:16  robertj
  * Fixed bug in thread deletion not removing it from active thread list.
  *
@@ -1282,6 +1285,24 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 }
 
 #endif
+
+
+PInt64 PConfig::GetInt64(const PString & section, const PString & key, PInt64 dflt) const
+{
+  PString str = GetString(section, key, "");
+  if (!str)
+    return str.AsInt64();
+  return dflt;
+}
+
+
+void PConfig::SetInt64(const PString & section, const PString & key, PInt64 value)
+{
+  PStringStream strm;
+  strm << value;
+  SetString(section, key, strm);
+}
+
 
 double PConfig::GetReal(const PString & section, const PString & key, double dflt) const
 {
