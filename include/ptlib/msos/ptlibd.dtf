@@ -847,6 +847,7 @@ EXPORTS
     ??4PFilePath@@QAEAAV0@ABVPString@@@Z @521 NONAME ;public: class PFilePath & __thiscall PFilePath::operator=(class PString const &)
     ??4PFilePath@@QAEAAV0@PBD@Z @522 NONAME ;public: class PFilePath & __thiscall PFilePath::operator=(char const *)
     ??4PHashTable@@QAEAAV0@ABV0@@Z @3262 NONAME ;public: class PHashTable & __thiscall PHashTable::operator=(class PHashTable const &)
+    ??4PInt32l@@QAEAAU0@J@Z @3841 NONAME ;public: struct PInt32l & __thiscall PInt32l::operator=(long)
     ??4PIntArray@@QAEAAV0@ABV0@@Z @3240 NONAME ;public: class PIntArray & __thiscall PIntArray::operator=(class PIntArray const &)
     ??4PIntCondMutex@@QAEAAV0@H@Z @523 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator=(int)
     ??4PLongArray@@QAEAAV0@ABV0@@Z @3241 NONAME ;public: class PLongArray & __thiscall PLongArray::operator=(class PLongArray const &)
@@ -2111,7 +2112,7 @@ EXPORTS
     ?GetDataAt@?$PDictionary@VPOrdinalKey@@VPThread@@@@QBEAAVPThread@@H@Z @1429 NONAME ;public: class PThread & __thiscall PDictionary<class POrdinalKey,class PThread>::GetDataAt(int)const 
     ?GetDataAt@?$PStringDictionary@VPString@@@@QBEAAVPString@@H@Z @1430 NONAME ;public: class PString & __thiscall PStringDictionary<class PString>::GetDataAt(int)const 
     ?GetDataBits@PSerialChannel@@QBEEXZ @1431 NONAME ;public: unsigned char __thiscall PSerialChannel::GetDataBits(void)const 
-    ?GetDataLength@PWAVFile@@QBEJXZ @3820 NONAME ;public: long __thiscall PWAVFile::GetDataLength(void)const 
+    ?GetDataLength@PWAVFile@@QAEJXZ @3842 NONAME ;public: long __thiscall PWAVFile::GetDataLength(void)
     ?GetDateOrder@PTime@@SA?AW4DateOrder@1@XZ @1432 NONAME ;public: static enum PTime::DateOrder  __cdecl PTime::GetDateOrder(void)
     ?GetDateSeparator@PTime@@SA?AVPString@@XZ @1433 NONAME ;public: static class PString  __cdecl PTime::GetDateSeparator(void)
     ?GetDay@PTime@@QBEHXZ @1434 NONAME ;public: int __thiscall PTime::GetDay(void)const 
