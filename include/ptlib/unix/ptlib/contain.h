@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.26  2005/03/10 06:37:21  csoutheren
+ * Removed use of typeid on WIndows to get class name because it is not threadsafe
+ * In fact, lets just use #classname everywhere because that will always work
+ * Thanks to Vyacheslav Frolov
+ *
  * Revision 1.25  2004/05/12 04:36:18  csoutheren
  * Fixed problems with using sem_wait and friends on systems that do not
  * support atomic integers
@@ -155,7 +160,6 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 #endif
 
 #define	P_HAS_TYPEINFO	1
-#define	PCLASSNAME(cls)	(#cls)
 
 using namespace std;
 
