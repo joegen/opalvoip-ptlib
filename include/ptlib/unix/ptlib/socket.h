@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.12  1998/11/30 22:07:11  robertj
+ * New directory structure.
+ *
  * Revision 1.11  1998/09/24 04:11:56  robertj
  * Added open software license.
  *
@@ -76,7 +79,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
 
-#include "../../common/ptlib/socket.h"
+#include "../../socket.h"
   public:
     BOOL Read(void * ptr, PINDEX len);
     ~PSocket();
