@@ -1,0 +1,259 @@
+# Microsoft Developer Studio Generated Dependency File, included by asnparser.mak
+
+.\asn_grammar.cxx : \
+	"..\..\include\ptlib.h"\
+	"..\..\Include\PtLib\Args.h"\
+	"..\..\Include\PtLib\Array.h"\
+	"..\..\Include\PtLib\Channel.h"\
+	"..\..\include\ptlib\conchan.h"\
+	"..\..\Include\PtLib\Config.h"\
+	"..\..\Include\PtLib\Contain.h"\
+	"..\..\include\ptlib\contain.inl"\
+	"..\..\Include\PtLib\Dict.h"\
+	"..\..\Include\PtLib\Dynalink.h"\
+	"..\..\Include\PtLib\File.h"\
+	"..\..\Include\PtLib\filepath.h"\
+	"..\..\Include\PtLib\Indchan.h"\
+	"..\..\Include\PtLib\Lists.h"\
+	"..\..\include\ptlib\msos\ptlib\channel.h"\
+	"..\..\include\ptlib\msos\ptlib\conchan.h"\
+	"..\..\include\ptlib\msos\ptlib\config.h"\
+	"..\..\include\ptlib\msos\ptlib\contain.h"\
+	"..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\include\ptlib\msos\ptlib\file.h"\
+	"..\..\include\ptlib\msos\ptlib\filepath.h"\
+	"..\..\include\ptlib\msos\ptlib\mutex.h"\
+	"..\..\include\ptlib\msos\ptlib\pdirect.h"\
+	"..\..\include\ptlib\msos\ptlib\pprocess.h"\
+	"..\..\include\ptlib\msos\ptlib\ptime.h"\
+	"..\..\include\ptlib\msos\ptlib\ptlib.inl"\
+	"..\..\include\ptlib\msos\ptlib\semaphor.h"\
+	"..\..\include\ptlib\msos\ptlib\sfile.h"\
+	"..\..\include\ptlib\msos\ptlib\sound.h"\
+	"..\..\include\ptlib\msos\ptlib\syncpoint.h"\
+	"..\..\include\ptlib\msos\ptlib\textfile.h"\
+	"..\..\include\ptlib\msos\ptlib\thread.h"\
+	"..\..\include\ptlib\msos\ptlib\timeint.h"\
+	"..\..\include\ptlib\msos\ptlib\timer.h"\
+	"..\..\include\ptlib\msos\ptlib\video.h"\
+	"..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\Include\PtLib\mutex.h"\
+	"..\..\Include\PtLib\object.h"\
+	"..\..\include\ptlib\osutil.inl"\
+	"..\..\Include\PtLib\Pdirect.h"\
+	"..\..\Include\PtLib\pprocess.h"\
+	"..\..\Include\PtLib\Pstring.h"\
+	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\Include\PtLib\semaphor.h"\
+	"..\..\Include\PtLib\Sfile.h"\
+	"..\..\Include\PtLib\Sound.h"\
+	"..\..\Include\PtLib\syncpoint.h"\
+	"..\..\Include\PtLib\syncthrd.h"\
+	"..\..\Include\PtLib\Textfile.h"\
+	"..\..\Include\PtLib\thread.h"\
+	"..\..\Include\PtLib\Timeint.h"\
+	"..\..\Include\PtLib\Timer.h"\
+	"..\..\include\ptlib\vfakeio.h"\
+	"..\..\include\ptlib\video.h"\
+	"..\..\include\ptlib\videoio.h"\
+	".\main.h"\
+	
+
+!IF  "$(CFG)" == "ASNParser - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
+
+!ENDIF 
+
+.\asn_lex.cxx : \
+	"..\..\include\ptlib.h"\
+	"..\..\Include\PtLib\Args.h"\
+	"..\..\Include\PtLib\Array.h"\
+	"..\..\Include\PtLib\Channel.h"\
+	"..\..\include\ptlib\conchan.h"\
+	"..\..\Include\PtLib\Config.h"\
+	"..\..\Include\PtLib\Contain.h"\
+	"..\..\include\ptlib\contain.inl"\
+	"..\..\Include\PtLib\Dict.h"\
+	"..\..\Include\PtLib\Dynalink.h"\
+	"..\..\Include\PtLib\File.h"\
+	"..\..\Include\PtLib\filepath.h"\
+	"..\..\Include\PtLib\Indchan.h"\
+	"..\..\Include\PtLib\Lists.h"\
+	"..\..\include\ptlib\msos\ptlib\channel.h"\
+	"..\..\include\ptlib\msos\ptlib\conchan.h"\
+	"..\..\include\ptlib\msos\ptlib\config.h"\
+	"..\..\include\ptlib\msos\ptlib\contain.h"\
+	"..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\include\ptlib\msos\ptlib\file.h"\
+	"..\..\include\ptlib\msos\ptlib\filepath.h"\
+	"..\..\include\ptlib\msos\ptlib\mutex.h"\
+	"..\..\include\ptlib\msos\ptlib\pdirect.h"\
+	"..\..\include\ptlib\msos\ptlib\pprocess.h"\
+	"..\..\include\ptlib\msos\ptlib\ptime.h"\
+	"..\..\include\ptlib\msos\ptlib\ptlib.inl"\
+	"..\..\include\ptlib\msos\ptlib\semaphor.h"\
+	"..\..\include\ptlib\msos\ptlib\sfile.h"\
+	"..\..\include\ptlib\msos\ptlib\sound.h"\
+	"..\..\include\ptlib\msos\ptlib\syncpoint.h"\
+	"..\..\include\ptlib\msos\ptlib\textfile.h"\
+	"..\..\include\ptlib\msos\ptlib\thread.h"\
+	"..\..\include\ptlib\msos\ptlib\timeint.h"\
+	"..\..\include\ptlib\msos\ptlib\timer.h"\
+	"..\..\include\ptlib\msos\ptlib\video.h"\
+	"..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\include\ptlib\msos\unistd.h"\
+	"..\..\Include\PtLib\mutex.h"\
+	"..\..\Include\PtLib\object.h"\
+	"..\..\include\ptlib\osutil.inl"\
+	"..\..\Include\PtLib\Pdirect.h"\
+	"..\..\Include\PtLib\pprocess.h"\
+	"..\..\Include\PtLib\Pstring.h"\
+	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\Include\PtLib\semaphor.h"\
+	"..\..\Include\PtLib\Sfile.h"\
+	"..\..\Include\PtLib\Sound.h"\
+	"..\..\Include\PtLib\syncpoint.h"\
+	"..\..\Include\PtLib\syncthrd.h"\
+	"..\..\Include\PtLib\Textfile.h"\
+	"..\..\Include\PtLib\thread.h"\
+	"..\..\Include\PtLib\Timeint.h"\
+	"..\..\Include\PtLib\Timer.h"\
+	"..\..\include\ptlib\vfakeio.h"\
+	"..\..\include\ptlib\video.h"\
+	"..\..\include\ptlib\videoio.h"\
+	".\asn_grammar.h"\
+	".\main.h"\
+	
+
+!IF  "$(CFG)" == "ASNParser - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
+
+!ENDIF 
+
+.\main.cxx : \
+	"..\..\include\ptlib.h"\
+	"..\..\Include\PtLib\Args.h"\
+	"..\..\Include\PtLib\Array.h"\
+	"..\..\Include\PtLib\Channel.h"\
+	"..\..\include\ptlib\conchan.h"\
+	"..\..\Include\PtLib\Config.h"\
+	"..\..\Include\PtLib\Contain.h"\
+	"..\..\include\ptlib\contain.inl"\
+	"..\..\Include\PtLib\Dict.h"\
+	"..\..\Include\PtLib\Dynalink.h"\
+	"..\..\Include\PtLib\File.h"\
+	"..\..\Include\PtLib\filepath.h"\
+	"..\..\Include\PtLib\Indchan.h"\
+	"..\..\Include\PtLib\Lists.h"\
+	"..\..\include\ptlib\msos\ptlib\channel.h"\
+	"..\..\include\ptlib\msos\ptlib\conchan.h"\
+	"..\..\include\ptlib\msos\ptlib\config.h"\
+	"..\..\include\ptlib\msos\ptlib\contain.h"\
+	"..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\include\ptlib\msos\ptlib\file.h"\
+	"..\..\include\ptlib\msos\ptlib\filepath.h"\
+	"..\..\include\ptlib\msos\ptlib\mutex.h"\
+	"..\..\include\ptlib\msos\ptlib\pdirect.h"\
+	"..\..\include\ptlib\msos\ptlib\pprocess.h"\
+	"..\..\include\ptlib\msos\ptlib\ptime.h"\
+	"..\..\include\ptlib\msos\ptlib\ptlib.inl"\
+	"..\..\include\ptlib\msos\ptlib\semaphor.h"\
+	"..\..\include\ptlib\msos\ptlib\sfile.h"\
+	"..\..\include\ptlib\msos\ptlib\sound.h"\
+	"..\..\include\ptlib\msos\ptlib\syncpoint.h"\
+	"..\..\include\ptlib\msos\ptlib\textfile.h"\
+	"..\..\include\ptlib\msos\ptlib\thread.h"\
+	"..\..\include\ptlib\msos\ptlib\timeint.h"\
+	"..\..\include\ptlib\msos\ptlib\timer.h"\
+	"..\..\include\ptlib\msos\ptlib\video.h"\
+	"..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\Include\PtLib\mutex.h"\
+	"..\..\Include\PtLib\object.h"\
+	"..\..\include\ptlib\osutil.inl"\
+	"..\..\Include\PtLib\Pdirect.h"\
+	"..\..\Include\PtLib\pprocess.h"\
+	"..\..\Include\PtLib\Pstring.h"\
+	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\Include\PtLib\semaphor.h"\
+	"..\..\Include\PtLib\Sfile.h"\
+	"..\..\Include\PtLib\Sound.h"\
+	"..\..\Include\PtLib\syncpoint.h"\
+	"..\..\Include\PtLib\syncthrd.h"\
+	"..\..\Include\PtLib\Textfile.h"\
+	"..\..\Include\PtLib\thread.h"\
+	"..\..\Include\PtLib\Timeint.h"\
+	"..\..\Include\PtLib\Timer.h"\
+	"..\..\include\ptlib\vfakeio.h"\
+	"..\..\include\ptlib\video.h"\
+	"..\..\include\ptlib\videoio.h"\
+	".\asn_grammar.h"\
+	".\main.h"\
+	
+
+.\PreCompile.cpp : \
+	"..\..\include\ptlib.h"\
+	"..\..\Include\PtLib\Args.h"\
+	"..\..\Include\PtLib\Array.h"\
+	"..\..\Include\PtLib\Channel.h"\
+	"..\..\include\ptlib\conchan.h"\
+	"..\..\Include\PtLib\Config.h"\
+	"..\..\Include\PtLib\Contain.h"\
+	"..\..\include\ptlib\contain.inl"\
+	"..\..\Include\PtLib\Dict.h"\
+	"..\..\Include\PtLib\Dynalink.h"\
+	"..\..\Include\PtLib\File.h"\
+	"..\..\Include\PtLib\filepath.h"\
+	"..\..\Include\PtLib\Indchan.h"\
+	"..\..\Include\PtLib\Lists.h"\
+	"..\..\include\ptlib\msos\ptlib\channel.h"\
+	"..\..\include\ptlib\msos\ptlib\conchan.h"\
+	"..\..\include\ptlib\msos\ptlib\config.h"\
+	"..\..\include\ptlib\msos\ptlib\contain.h"\
+	"..\..\include\ptlib\msos\ptlib\dynalink.h"\
+	"..\..\include\ptlib\msos\ptlib\file.h"\
+	"..\..\include\ptlib\msos\ptlib\filepath.h"\
+	"..\..\include\ptlib\msos\ptlib\mutex.h"\
+	"..\..\include\ptlib\msos\ptlib\pdirect.h"\
+	"..\..\include\ptlib\msos\ptlib\pprocess.h"\
+	"..\..\include\ptlib\msos\ptlib\ptime.h"\
+	"..\..\include\ptlib\msos\ptlib\ptlib.inl"\
+	"..\..\include\ptlib\msos\ptlib\semaphor.h"\
+	"..\..\include\ptlib\msos\ptlib\sfile.h"\
+	"..\..\include\ptlib\msos\ptlib\sound.h"\
+	"..\..\include\ptlib\msos\ptlib\syncpoint.h"\
+	"..\..\include\ptlib\msos\ptlib\textfile.h"\
+	"..\..\include\ptlib\msos\ptlib\thread.h"\
+	"..\..\include\ptlib\msos\ptlib\timeint.h"\
+	"..\..\include\ptlib\msos\ptlib\timer.h"\
+	"..\..\include\ptlib\msos\ptlib\video.h"\
+	"..\..\include\ptlib\msos\ptlib\videoio.h"\
+	"..\..\Include\PtLib\mutex.h"\
+	"..\..\Include\PtLib\object.h"\
+	"..\..\include\ptlib\osutil.inl"\
+	"..\..\Include\PtLib\Pdirect.h"\
+	"..\..\Include\PtLib\pprocess.h"\
+	"..\..\Include\PtLib\Pstring.h"\
+	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\Include\PtLib\semaphor.h"\
+	"..\..\Include\PtLib\Sfile.h"\
+	"..\..\Include\PtLib\Sound.h"\
+	"..\..\Include\PtLib\syncpoint.h"\
+	"..\..\Include\PtLib\syncthrd.h"\
+	"..\..\Include\PtLib\Textfile.h"\
+	"..\..\Include\PtLib\thread.h"\
+	"..\..\Include\PtLib\Timeint.h"\
+	"..\..\Include\PtLib\Timer.h"\
+	"..\..\include\ptlib\vfakeio.h"\
+	"..\..\include\ptlib\video.h"\
+	"..\..\include\ptlib\videoio.h"\
+	
