@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.7 1996/10/29 13:27:17 robertj Exp $
+ * $Id: icmp.cxx,v 1.8 1997/10/03 13:32:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.8  1997/10/03 13:32:46  robertj
+ * Changed to late binding so do not need icmp.lib to compile system.
+ *
  * Revision 1.7  1996/10/29 13:27:17  robertj
  * Change ICMP to use DLL rather than Winsock
  *
@@ -81,40 +84,38 @@ typedef struct icmp_echo_reply {
      struct ip_info Options; /* reply options */
 } ICMPECHO;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-//
-// create an ICMP "handle"
-// returns INVALID_HANDLE_VALUE on error 
-//
-//
+PDECLARE_CLASS(PICMPDLL, PDynaLink)
+  public:
+    PICMPDLL()
+      : PDynaLink("ICMP.DLL")
+    {
+      if (!GetFunction("IcmpCreateFile", (Function &)IcmpCreateFile) ||
+	  !GetFunction("IcmpCloseHandle", (Function &)IcmpCloseHandle) ||
+	  !GetFunction("IcmpSendEcho", (Function &)IcmpSendEcho))
+	Close();
+    }
 
-HANDLE PASCAL IcmpCreateFile(void);
+    // create an ICMP "handle"
+    // returns INVALID_HANDLE_VALUE on error 
+    HANDLE (WINAPI *IcmpCreateFile)(void);
 
+    // close a handle allocated by IcmpCreateFile
+    // returns FALSE on error
+    BOOL (PASCAL *IcmpCloseHandle)(HANDLE handle);
 
-//
-// close a handle allocated by IcmpCreateFile
-// returns FALSE on error
-//
-
-BOOL PASCAL IcmpCloseHandle(HANDLE handle);
-
-DWORD PASCAL IcmpSendEcho(
-     HANDLE   handle,           /* handle returned from IcmpCreateFile() */
-     u_long   destAddr,         /* destination IP address (in network order) */
-     void   * sendBuffer,       /* pointer to buffer to send */
-     WORD     sendLength,       /* length of data in buffer */
-     IPINFO * requestOptions,   /* see structure definition above */
-     void   * replyBuffer,      /* structure definitionm above */
-     DWORD    replySize,        /* size of reply buffer */
-     DWORD    timeout           /* time in milliseconds to wait for reply */
-);
-
-#ifdef __cplusplus
-};
-#endif
+    // Send the ICMP echo command for a "ping"
+    DWORD (PASCAL *IcmpSendEcho)(
+	 HANDLE   handle,           /* handle returned from IcmpCreateFile() */
+	 u_long   destAddr,         /* destination IP address (in network order) */
+	 void   * sendBuffer,       /* pointer to buffer to send */
+	 WORD     sendLength,       /* length of data in buffer */
+	 IPINFO * requestOptions,   /* see structure definition above */
+	 void   * replyBuffer,      /* structure definitionm above */
+	 DWORD    replySize,        /* size of reply buffer */
+	 DWORD    timeout           /* time in milliseconds to wait for reply */
+    );
+} ICMP;
 
 
 PICMPSocket::PICMPSocket()
@@ -130,16 +131,17 @@ BOOL PICMPSocket::IsOpen() const
 
 BOOL PICMPSocket::OpenSocket()
 {
-  return (icmpHandle = IcmpCreateFile()) != NULL;
+  return ICMP.IsLoaded() && (icmpHandle = ICMP.IcmpCreateFile()) != NULL;
 }
 
 
 BOOL PICMPSocket::Close()
 {
-  if (icmpHandle != NULL) 
-    return IcmpCloseHandle(icmpHandle);
-  else
-	return TRUE;
+  if (icmpHandle == NULL) 
+    return TRUE;
+
+  PAssert(ICMP.IsLoaded(), PLogicError);
+  return ICMP.IcmpCloseHandle(icmpHandle);
 }
 
 const char * PICMPSocket::GetProtocolName() const
@@ -156,6 +158,11 @@ BOOL PICMPSocket::Ping(const PString & host)
 
 BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
+  if (!ICMP.IsLoaded()) {
+    lastError = NotOpen;
+    return FALSE;
+  }
+
   // find address of the host
   PIPSocket::Address addr;
   if (!GetHostAddress(host, addr)) {
@@ -173,13 +180,12 @@ BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 
   requestOptions.Ttl = 255;
 
-  if (IcmpSendEcho(
-	         icmpHandle, 
-	         addr,
-             sendBuffer, sizeof(sendBuffer),   
-             &requestOptions,      
-             replyBuffer, sizeof(replyBuffer), 
-             GetReadTimeout().GetInterval()) == 0)
+  if (ICMP.IcmpSendEcho(icmpHandle, 
+		        addr,
+		        sendBuffer, sizeof(sendBuffer),   
+		        &requestOptions,      
+		        replyBuffer, sizeof(replyBuffer), 
+		        GetReadTimeout().GetInterval()) == 0)
     return FALSE;
 
   ICMPECHO * reply = (ICMPECHO *)replyBuffer;
