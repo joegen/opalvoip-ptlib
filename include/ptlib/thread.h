@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.19  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.18  1998/11/20 03:18:33  robertj
  * Added thread WaitForTermination() function.
  *
@@ -94,7 +97,9 @@ class PSemaphore;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-PDECLARE_CLASS(PThread, PObject)
+class PThread : public PObject
+{
+  PCLASSINFO(PThread, PObject)
 /* This class defines a thread of execution in the system. A <I>thread</I> is
    an independent flow of processor instructions. This differs from a
    <I>process</I> which also embodies a program address space and resource

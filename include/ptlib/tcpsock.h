@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.21  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.20  1998/12/22 10:23:08  robertj
  * Added clone() function to support SOCKS in FTP style protocols.
  *
@@ -98,7 +101,9 @@
 #endif
 
 
-PDECLARE_CLASS(PTCPSocket, PIPSocket)
+class PTCPSocket : public PIPSocket
+{
+  PCLASSINFO(PTCPSocket, PIPSocket)
 /* Create a socket channel that uses the TCP transport on the Internal
    Protocol.
  */
