@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.2 1997/04/01 06:01:39 robertj Exp $
+ * $Id: httpform.h,v 1.3 1997/06/08 04:49:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.3  1997/06/08 04:49:40  robertj
+ * Adding new llist based form field.
+ *
  * Revision 1.2  1997/04/01 06:01:39  robertj
  * Allowed value list in drop down box to be modified once created.
  *
@@ -91,6 +94,13 @@ PDECLARE_CLASS(PHTTPField, PObject)
     /* Convert the field to HTML for inclusion into the HTTP page.
      */
 
+    virtual PINDEX GetListCount() const;
+    /* Get the number of sub-fields in the field. The default is 1.
+
+       <H2>Returns:</H2>
+       Returns list count.
+     */
+
     virtual PString GetValue() const = 0;
     /* Get the value of the field.
 
@@ -99,28 +109,93 @@ PDECLARE_CLASS(PHTTPField, PObject)
      */
 
     virtual void SetValue(
-      const PString & val   // New value for the field.
+      const PString & newValue   // New value for the field.
     ) = 0;
     /* Set the value of the field.
+     */
+
+    virtual PString GetListValue(
+      PINDEX idx
+    ) const;
+    /* Get the value of the field in a list of fields.
+
+       <H2>Returns:</H2>
+       String for field value.
+     */
+
+    virtual void SetListValue(
+      const PStringToString & data   // New value for the field.
+    );
+    /* Set the value of the field in a list of fields.
      */
 
     virtual BOOL Validated(
       const PString & newVal, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
-    /* Validate the new field value before <A>SetValue()</A> if called.
+    /* Validate the new field value before <A>SetValue()</A> is called.
 
        <H2>Returns:</H2>
        BOOL if the new field value is OK.
      */
 
+    virtual BOOL ValidateList(
+      const PStringToString & data, // Proposed new value for the field.
+      PStringStream & msg     // Stream to take error HTML if value not valid.
+    ) const;
+    /* Validate the new field value in a list before <A>SetValue()</A> is called.
+
+       <H2>Returns:</H2>
+       BOOL if the all the new field values are OK.
+     */
+
     BOOL NotYetInHTML() const { return notInHTML; }
+    void SetInHTML() { notInHTML = FALSE; }
+
 
   protected:
     PCaselessString name;
     PString title;
     PString help;
     BOOL notInHTML;
+};
+
+
+PLIST(PHTTPFieldList, PHTTPField);
+
+PDECLARE_CLASS(PHTTPListField, PHTTPField)
+  public:
+    PHTTPListField(
+      PHTTPField * fld
+    );
+
+    ~PHTTPListField();
+
+
+    virtual void GetHTML(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PINDEX GetListCount() const;
+
+    virtual BOOL ValidateList(
+      const PStringToString & data, // Proposed new value for the field.
+      PStringStream & msg     // Stream to take error HTML if value not valid.
+    ) const;
+
+    virtual PString GetListValue(PINDEX idx) const;
+
+    virtual void SetListValue(
+      const PStringToString & data   // New value for the field.
+    );
+
+
+    const PHTTPFieldList & GetList() const { return fields; }
+
+
+  protected:
+    PHTTPField * templateField;
+    PHTTPFieldList fields;
 };
 
 
@@ -147,7 +222,7 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
     virtual PString GetValue() const;
 
     virtual void SetValue(
-      const PString & val
+      const PString & newVal
     );
 
 
@@ -204,7 +279,7 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
     virtual PString GetValue() const;
 
     virtual void SetValue(
-      const PString & val
+      const PString & newVal
     );
 
     virtual BOOL Validated(
@@ -240,7 +315,7 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
     virtual PString GetValue() const;
 
     virtual void SetValue(
-      const PString & val
+      const PString & newVal
     );
 
 
@@ -319,7 +394,7 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
     virtual PString GetValue() const;
 
     virtual void SetValue(
-      const PString & val
+      const PString & newVal
     );
 
 
@@ -368,7 +443,7 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
     virtual PString GetValue() const;
 
     virtual void SetValue(
-      const PString & val
+      const PString & newVal
     );
 
 
@@ -403,6 +478,10 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     );
 
 
+    virtual void OnLoadedText(
+      PHTTPRequest & request,    // Information on this request.
+      PString & text             // Data used in reply.
+    );
     virtual BOOL Post(
       PHTTPRequest & request,       // Information on this request.
       const PStringToString & data, // Variables in the POST data.
