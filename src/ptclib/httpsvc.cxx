@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.36 1998/04/21 02:43:40 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.37 1998/08/20 06:01:02 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.37  1998/08/20 06:01:02  robertj
+ * Improved internationalisation, registrationpage override.
+ *
  * Revision 1.36  1998/04/21 02:43:40  robertj
  * Fixed conditional around wrong way for requiring signature on HTML files.
  *
@@ -558,6 +561,7 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
     prefix = securedConf.GetPendingPrefix();
 
   AddFields(prefix);
+
   Add(new PHTTPStringField("Validation", 40));
   BuildHTML(regPage, InsertIntoHTML);
 
@@ -632,7 +636,10 @@ static BOOL FindSpliceBlock(const PRegularExpression & regex,
 
 void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
-  PConfigPage::OnLoadedText(request, text);
+  PString block;
+  PINDEX pos, len, start, finish;
+  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
+  PTime expiry = securedConf.GetTime(securedConf.GetExpiryDateKey());
 
   static PRegularExpression Default("<?!--#registration[ \t\n]*start[ \t\n]*Default[ \t\n]*-->?",
                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
@@ -644,11 +651,14 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   static PRegularExpression Invalid("<?!--#registration[ \t\n]*start[ \t\n]*Invalid[ \t\n]*-->?",
                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression Pending("name[ \t\n]*=[ \t\n]*\"" +
+                                    securedConf.GetPendingPrefix() +
+                                    "[^\"]+\"",
+                                    PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
-  PString block;
-  PINDEX pos, len, start, finish;
-  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
-  PTime expiry = securedConf.GetTime(securedConf.GetExpiryDateKey());
+  PServiceHTML::ProcessMacros(request, text,
+                              baseURL.AsString(PURL::PathOnly).Mid(1),
+                              PServiceHTML::LoadFromFile);
 
   switch (securedConf.GetValidation()) {
     case PSecureConfig::Defaults :
@@ -692,6 +702,12 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
       break;
 
     case PSecureConfig::IsValid :
+      start = 0;
+      while (text.FindRegEx(Pending, pos, len)) {
+        static PINDEX pendingLength = securedConf.GetPendingPrefix().GetLength();
+        text.Delete(text.Find('"', pos)+1, pendingLength);
+        start = pos + len - pendingLength;
+      }
       if (expiry.GetYear() < 2011) {
         while (FindSpliceBlock(Default, text, pos, len, start, finish))
           text.Delete(pos, len);
@@ -723,6 +739,7 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
   while (text.FindRegEx(ExpiryDate, pos, len, 0))
     text.Splice(expiry.AsString(PTime::LongDate), pos, len);
 
+  PHTTPConfig::OnLoadedText(request, text);
   PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
 }
 
@@ -734,45 +751,32 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
   if (fields.GetSize() == 0)
     LoadText(request);
 
-  if (!PConfigPage::Post(request, data, reply))
+  BOOL retval = PHTTPConfig::Post(request, data, reply);
+  if (request.code != PHTTP::OK)
     return FALSE;
 
   PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
-
-  BOOL anyEmpty = FALSE;
-  for (PINDEX i = 0; i < fields.GetSize(); i++) 
-    anyEmpty = anyEmpty || fields[i].GetValue().Trim().IsEmpty();
-  if (anyEmpty) {
-    reply = "Registration Error";
-    reply << "Your registration information contains at least one empty "
-              "parameter. Please fill in all fields and try again."
-          << PHTML::Body();
-    request.code = PHTTP::InternalServerError;
-    return FALSE;
-  }
-
-  BOOL good = FALSE;
   switch (sconf.GetValidation()) {
     case PSecureConfig::Defaults :
       sconf.ResetPending();
-      // Then do IsValid case
+      break;
+
     case PSecureConfig::IsValid :
-      good = TRUE;
       break;
+
     case PSecureConfig::Pending :
-      good = sconf.ValidatePending();
+      sconf.ValidatePending();
       break;
+
     default :
       sconf.ResetPending();
   }
 
-  if (good)
-    return TRUE;
+  RemoveAllFields();
+  LoadText(request);
+  OnLoadedText(request, reply);
 
-  reply = "Registration Error";
-  reply << "The entered security key is invalid." << PHTML::Body();
-  request.code = PHTTP::InternalServerError;
-  return FALSE;
+  return retval;
 }
 
 
@@ -889,8 +893,21 @@ PString PServiceHTML::CalculateSignature(const PString & out,
                                          const PTEACypher::Key & sig)
 {
   // calculate the MD5 digest of the HTML data
+  PMessageDigest5 digestor;
+
+  PINDEX p1 = 0;
+  PINDEX p2;
+  while ((p2 = out.FindOneOf("\r\n", p1)) != P_MAX_INDEX) {
+    digestor.Process(out(p1, p2-1));
+    digestor.Process("\r\n", 2);
+    p1 = p2 + 1;
+    if (out[p2] == '\r' && out[p1] == '\n') // CR LF pair
+      p1++;
+  }
+  digestor.Process(out(p1, P_MAX_INDEX));
+
   PMessageDigest5::Code md5;
-  PMessageDigest5::Encode(out, md5);
+  digestor.Complete(md5);
 
   // encode it
   PTEACypher cypher(sig);
@@ -1187,15 +1204,29 @@ CREATE_MACRO(RegEmail,EMPTY,EMPTY)
 }
 
 
-CREATE_MACRO(Registration,EMPTY,EMPTY)
+CREATE_MACRO(Registration,EMPTY,args)
 {
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
   PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
   PString pending = sconf.GetPendingPrefix();
+
+  PString regNow = "Register Now!";
+  PString viewReg = "View Registration";
+  PString demoCopy = "Unregistered Demonstration Copy ***";
+  PINDEX open;
+  PINDEX close = 0;
+  if (FindBrackets(args, open, close)) {
+    regNow = args(open+1, close-1);
+    if (FindBrackets(args, open, close)) {
+      viewReg = args(open+1, close-1);
+      if (FindBrackets(args, open, close))
+        demoCopy = args(open+1, close-1);
+    }
+  }
+
   PHTML out = PHTML::InBody;
   out << "<font size=5>"
-      << sconf.GetString("Name", sconf.GetString(pending+"Name",
-                         "*** Unregistered Demonstration Copy ***"))
+      << sconf.GetString("Name", sconf.GetString(pending+"Name", "*** "+demoCopy+" ***"))
       << PHTML::BreakLine()
       << "<font size=4>"
       << sconf.GetString("Company", sconf.GetString(pending+"Company"))
@@ -1209,8 +1240,7 @@ CREATE_MACRO(Registration,EMPTY,EMPTY)
     process.AddRegisteredText(out);
 
   out << PHTML::HotLink("/register.html")
-      << (sconf.GetString("Name").IsEmpty()
-                               ? "Register Now!" : "View Registration")
+      << (sconf.GetString("Name").IsEmpty() ? regNow : viewReg)
       << PHTML::HotLink();
   return out;
 }
