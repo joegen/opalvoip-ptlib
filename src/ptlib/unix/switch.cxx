@@ -81,11 +81,11 @@ void PThread::AllocateStack(PINDEX stackProtoSize)
   int stackSize = PMAX(STACK_MIN, STACK_MULT*stackProtoSize);
 
 #if defined(P_LINUX)
-  stackBase = mmap(0,
-                   stackSize,
-                   PROT_READ | PROT_WRITE,
-                   MAP_ANON | MAP_PRIVATE,
-                   -1, 0);
+  stackBase = (char *)mmap(0,
+                           stackSize,
+                           PROT_READ | PROT_WRITE,
+                           MAP_ANON | MAP_PRIVATE,
+                           -1, 0);
   PAssert(stackBase != (char *)-1, "Cannot allocate virtual stack for thread");
 #else
   stackBase = (char *)malloc(stackSize);
