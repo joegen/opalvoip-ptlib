@@ -65,9 +65,11 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\..\include\pwlib\mswin" /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"precompile.h" /FD /GZ  /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\..\include\pwlib\mswin" /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG" /d "_AFXDLL"
@@ -92,11 +94,6 @@ LINK32=link.exe
 
 SOURCE=.\main.cxx
 # End Source File
-# Begin Source File
-
-SOURCE=.\precompile.cxx
-# ADD CPP /Yc"precompile.h"
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -104,10 +101,6 @@ SOURCE=.\precompile.cxx
 # Begin Source File
 
 SOURCE=.\main.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\precompile.h
 # End Source File
 # Begin Source File
 
@@ -120,4 +113,3 @@ SOURCE=.\version.h
 # End Group
 # End Target
 # End Project
-
