@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42.2.4  2004/07/07 07:07:43  csoutheren
+ * Changed PWAVFile to use abstract factories (extensively)
+ * Removed redundant blocking/unblocking when using G.723.1
+ * More support for call transfer
+ *
  * Revision 1.42.2.3  2004/07/06 01:38:57  csoutheren
  * Changed PVXMLChannel to use PDelayChannel
  * Fixed bug where played files were deleted after playing
@@ -184,6 +189,8 @@
 #endif
 
 #include <ptlib.h>
+
+#define P_DISABLE_FACTORY_INSTANCES
 
 #if P_EXPAT
 
@@ -755,11 +762,16 @@ BOOL PVXMLSession::Open(BOOL isPCM)
     return Open(VXML_G7231);
 }
 
-BOOL PVXMLSession::Open(const PString & mediaFormat)
+BOOL PVXMLSession::Open(const PString & _mediaFormat)
 {
+  if (IsOpen())
+    Close();
+
+  mediaFormat = _mediaFormat;
+
   PVXMLChannel * chan = PFactory<PVXMLChannel>::CreateInstance(mediaFormat);
   if (chan == NULL) {
-    PTRACE(1, "VXML\tCannot creatre VXML channel with format " << mediaFormat);
+    PTRACE(1, "VXML\tCannot create VXML channel with format " << mediaFormat);
     return FALSE;
   }
 
@@ -2638,13 +2650,13 @@ BOOL PVXMLChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
 
 BOOL PVXMLChannelG7231::ReadFrame(void * buffer, PINDEX /*amount*/)
 {
-  if (!PDelayChannel::Read(buffer, 1))
+  static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
+  if (!PIndirectChannel::Read(buffer, 1))
     return FALSE;
 
-  static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
-  PINDEX len = g7231Lens[((BYTE *)buffer)[0]&3];
+  PINDEX len = g7231Lens[(*(BYTE *)buffer)&3];
   if (len != 1) {
-    if (!PIndirectChannel::Read(buffer, len-1))
+    if (!PIndirectChannel::Read(1+(BYTE *)buffer, len-1))
       return FALSE;
     lastReadCount++;
   } 
@@ -2654,6 +2666,8 @@ BOOL PVXMLChannelG7231::ReadFrame(void * buffer, PINDEX /*amount*/)
 
 PINDEX PVXMLChannelG7231::CreateSilenceFrame(void * buffer, PINDEX /* len */)
 {
+
+
   ((BYTE *)buffer)[0] = 2;
   memset(((BYTE *)buffer)+1, 0, 3);
   return 4;
