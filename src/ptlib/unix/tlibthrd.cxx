@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.134  2004/09/02 07:55:44  csoutheren
+ * Added extra PXAbortBlock to WaitForTermination to assist in terminaing
+ * threads under certain conditions
+ *
  * Revision 1.133  2004/06/24 11:29:44  csoutheren
  * Changed to use pthread_mutex_timedlock for more efficient mutex wait operations
  * Thanks to Michal Zygmuntowicz
@@ -1189,6 +1193,8 @@ void PThread::WaitForTermination() const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
+  PXAbortBlock();   // this assist in clean shutdowns on some systems
+
   while (!IsTerminated()) {
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%
                // CPU usage and also yeilds so other threads can run.
@@ -1198,10 +1204,12 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
+
   PAssert(Current() != this, "Waiting for self termination!");
   
   PTRACE(6, "PWLib\tWaitForTermination(" << maxWait << ')');
 
+  PXAbortBlock();   // this assist in clean shutdowns on some systems
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
