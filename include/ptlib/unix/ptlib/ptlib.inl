@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.30  2004/02/21 21:59:10  ykiryanov
+ * Fixed more Be thread related functions
+ *
  * Revision 1.29  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -144,6 +147,13 @@ PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
 PINLINE PString PChannel::GetName() const
   { return channelName; }
 
+#ifdef BE_THREADS
+
+PINLINE PThreadIdentifier PThread::GetThreadId() const
+  { return threadId; }
+
+#else // !BE_THREADS
+
 PINLINE PThreadIdentifier PThread::GetThreadId() const
   { return PX_threadId; }
 
@@ -154,5 +164,7 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::taskIdSelf(); }
 #endif // !VX_TASKS
+
+#endif // BE_THREADS
 
 // End Of File ///////////////////////////////////////////////////////////////
