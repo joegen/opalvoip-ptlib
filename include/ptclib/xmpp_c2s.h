@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.5  2004/04/28 11:26:42  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.4  2004/04/26 19:44:30  dsandras
  * Fixes compilation with P_SASL = 0.
  *
@@ -154,7 +157,7 @@ namespace XMPP
       // State handlers
       virtual void    HandleNullState(PXML& pdu);
       virtual void    HandleTLSStartedState(PXML& pdu);
-#if P_SASL
+#if P_SASL2
       virtual void    HandleSASLStartedState(PXML& pdu);
 #endif
       virtual void    HandleNonSASLStartedState(PXML& pdu);
@@ -167,7 +170,7 @@ namespace XMPP
       WORD                m_VersionMinor;
       JID                 m_JID;
       const PString       m_Password;
-#if P_SASL
+#if P_SASL2
       PSASLClient         m_SASL;
       PString             m_Mechanism;
 #endif

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.33  2004/04/28 11:26:42  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.32  2004/04/21 11:22:48  csoutheren
  * Modified to work with gcc 3.4.0
  *
@@ -359,12 +362,15 @@
 //
 
 #undef P_SASL 
+#undef P_SASL2
+#undef P_HAS_SASL_SASL_H 
 
-#if defined(_MSC_VER) && P_SASL
+#if defined(_MSC_VER) && (defined(P_SASL) || defined(P_SASL2))
 
 #pragma include_alias(<sasl/sasl.h>, <@SASL_DIR@/include/sasl.h>)
 
 #define P_SASL_LIBRARY "@SASL_DIR@/lib/libsasl.lib"
+#define P_HAS_SASL_SASL_H 1
 
 #endif
 
