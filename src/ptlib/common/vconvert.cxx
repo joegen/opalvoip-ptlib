@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.18  2001/08/22 02:14:08  robertj
+ * Fixed MSVC compatibility.
+ *
  * Revision 1.17  2001/08/22 02:06:17  robertj
  * Resolved confusion with YUV411P and YUV420P video formats, thanks Mark Cooke.
  *
@@ -715,10 +718,11 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
   BYTE *dst0 = dstFrameBuffer + dstFrameWidth * dstFrameHeight;
   BYTE *dst1 = dst0 + linewidth;
 
+  unsigned x, y;
+
   // U plane
-  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
-    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
-      
+  for (y = 0; y < dstFrameHeight; y += 2) {
+    for (x = 0; x < dstFrameWidth; x += 4) {
       *dst0++ = *src++;
       *dst1++ = *src++;
     }
@@ -736,9 +740,8 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
   dst1 = dst0 + linewidth;
   
   // V plane
-  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
-    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
-      
+  for (y = 0; y < dstFrameHeight; y += 2) {
+    for (x = 0; x < dstFrameWidth; x += 4) {
       *dst0++ = *src++;
       *dst1++ = *src++;
     }
@@ -797,9 +800,11 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
   // Output line
   BYTE *dst0 = dstFrameBuffer + dstFrameWidth * dstFrameHeight;
 
+  unsigned x, y;
+
   // U plane
-  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
-    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
+  for (y = 0; y < dstFrameHeight; y += 2) {
+    for (x = 0; x < dstFrameWidth; x += 4) {
       
       // Double up the horizontal samples
       *dst0++ = *src;
@@ -817,8 +822,8 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
   dst0 = dstFrameBuffer + dstFrameWidth * dstFrameHeight * 5 / 4;
   
   // V plane
-  for (unsigned y = 0; y < dstFrameHeight; y += 2) {
-    for (unsigned x = 0; x < dstFrameWidth; x += 4) {
+  for (y = 0; y < dstFrameHeight; y += 2) {
+    for (x = 0; x < dstFrameWidth; x += 4) {
       
       // Double up the samples horizontal samples
       *dst0++ = *src;
