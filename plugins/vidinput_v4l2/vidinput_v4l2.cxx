@@ -34,6 +34,9 @@
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.3  2004/11/07 21:34:21  dominance
+ * v4l2 patch to add verbose device names detection.
+ *
  * Revision 1.2  2004/10/27 09:22:59  dsandras
  * Added patch from Nicola Orru' to make things work better.
  *
@@ -48,13 +51,43 @@
 #pragma implementation "vidinput_v4l2.h"
 
 #include "vidinput_v4l2.h"
-
+#include <sys/utsname.h>
 
 PCREATE_VIDINPUT_PLUGIN(V4L2, PVideoInputV4l2Device);
 
-#define MAJOR(a) (int)((unsigned short) (a) >> 8)
-#define MINOR(a) (int)((unsigned short) (a) & 0xFF)
+#include "vidinput_names.h" 
 
+class V4L2Names : public V4LXNames
+{
+
+  PCLASSINFO(V4L2Names, V4LXNames);
+
+public:
+  
+  V4L2Names() { kernelVersion=KUNKNOWN; };
+
+  virtual void Update ();
+  
+protected:
+  
+  virtual PString V4L2Names::BuildUserFriendly(PString devname);
+
+  enum KernelVersionEnum {
+    K2_4, 
+    K2_6,
+    KUNKNOWN,
+  } kernelVersion;
+
+};
+
+
+static 
+V4L2Names & GetNames()
+{
+  static V4L2Names names;
+  names.Update();
+  return names;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputV4l2Device
@@ -103,18 +136,28 @@ static struct {
 
 BOOL PVideoInputV4l2Device::Open(const PString & devName, BOOL startImmediate)
 {
+  struct utsname buf;
+  PString version;
+  
+  uname (&buf);
+
+  if (buf.release)
+    version = PString (buf.release);
+
   PTRACE(1,"PVidInDev\tOpen()\tvideoFd:" << videoFd);
   Close();
 
-  PTRACE(1,"PVidInDev\tOpen()\tdevName:" << devName << "  videoFd:" << videoFd);
-  deviceName = devName;
-  videoFd = ::open((const char *)devName, O_RDWR);
+  PString name = GetNames().GetDeviceName(devName);
+  PTRACE(1,"PVidInDev\tOpen()\tdevName:" << name << "  videoFd:" << videoFd);
+  
+  videoFd = ::open((const char *)name, O_RDWR);
   if (videoFd < 0) {
     PTRACE(1,"PVidInDev\topen failed : " << ::strerror(errno));
     return FALSE;
   }
-
+  
   PTRACE(6,"PVidInDev\topen, fd=" << videoFd);
+  deviceName=name;
 
   // get the device capabilities
   if (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCapability) < 0) {
@@ -124,7 +167,6 @@ BOOL PVideoInputV4l2Device::Open(const PString & devName, BOOL startImmediate)
     return FALSE;
   }
     
-
   canRead = videoCapability.capabilities & V4L2_CAP_READWRITE;
   canStream = videoCapability.capabilities & V4L2_CAP_STREAMING;
   canSelect = videoCapability.capabilities & V4L2_CAP_ASYNCIO;
@@ -220,7 +262,6 @@ BOOL PVideoInputV4l2Device::Start()
       }
     }
   }
-
   return TRUE;
 }
 
@@ -231,12 +272,12 @@ BOOL PVideoInputV4l2Device::Stop()
     PTRACE(6,"PVidInDev\tstop streaming, fd=" << videoFd);
 
     int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    started = FALSE;
 
     if (::ioctl(videoFd, VIDIOC_STREAMOFF, &type) < 0) {
       PTRACE(3,"PVidInDev\tSTREAMOFF failed : " << ::strerror(errno));
       return FALSE;
     }
-    started = FALSE;
 
     // no need to dequeue filled buffers, as this is handled by V4L2 at the next VIDIOC_STREAMON
   }
@@ -250,92 +291,9 @@ BOOL PVideoInputV4l2Device::IsCapturing()
   return started;
 }
 
-
-/*
-   void PVideoInputV4l2Device::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
-   {
-   if (!devdir.Open())
-   return;
-
-   do {
-   PString filename = devdir.GetEntryName();
-   PString devname = devdir + filename;
-   if (devdir.IsSubDir())
-   ReadDeviceDirectory(devname, vid);
-   else {
-
-   PFileInfo info;
-   if (devdir.GetInfo(info) && info.type == PFileInfo::CharDevice) {
-   struct stat s;
-   if (lstat(devname, &s) == 0) {
-
-   static const int deviceNumbers[] = { 81 };
-   for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
-   if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
-
-   PINDEX num = MINOR(s.st_rdev);
-   if (num <= 63 && num >= 0) {
-   vid.SetAt(num, devname);
-   }
-   }
-   }
-   }
-   }
-   }
-   } while (devdir.Next());
-   }
-
-*/
-
-
 PStringList PVideoInputV4l2Device::GetInputDeviceNames()
 {
-  PDirectory procVideo("/dev/v4l");
-  PStringList devList;
-
-  devList.RemoveAll ();
-  if (procVideo.Exists()) {
-    if (procVideo.Open(PFileInfo::CharDevice)) {
-      do {
-
-	PString entry = procVideo.GetEntryName();
-
-	PString thisDevice = "/dev/v4l/" + entry;
-	int videoFd;
-
-	if ((videoFd = ::open(thisDevice, O_RDONLY)) >= 0) {
-	  struct v4l2_capability videoCaps;
-
-	  if (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 ||
-	      (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-	    devList.AppendString(thisDevice);
-	  }
-	  ::close(videoFd);
-	}
-      } while (procVideo.Next());
-    }   
-  }
-  if (devList.GetSize () == 0) {
-    
-    devList += PString ("/dev/video0");
-    devList += PString ("/dev/video1");
-  }
-  /*  if (devList.GetSize() == 0) {
-      POrdinalToString vid;
-      ReadDeviceDirectory("/dev/", vid);
-
-      for (PINDEX i = 0; i < vid.GetSize(); i++) {
-      PINDEX cardnum = vid.GetKeyAt(i);
-      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
-      if ((fd >= 0) || (errno == EBUSY)) {
-      if (fd >= 0)
-      ::close(fd);
-      devList += vid[cardnum];
-      }
-      }
-      }
-      */
-  return devList;
+  return GetNames().GetInputDeviceNames();  
 }
 
 
@@ -579,20 +537,21 @@ BOOL PVideoInputV4l2Device::SetMapping()
     return FALSE;
 
   struct v4l2_requestbuffers reqbuf;
-  reqbuf.count = 2; // we shouldn't need more
+  reqbuf.count = 1; // we shouldn't need more
   reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   reqbuf.memory = V4L2_MEMORY_MMAP;
 
   if (::ioctl(videoFd, VIDIOC_REQBUFS, &reqbuf) < 0 ||
-      reqbuf.count < 2 ||
+      reqbuf.count < 1 ||
       reqbuf.count > NUM_VIDBUF) {
     PTRACE(3,"PVidInDev\tREQBUFS failed : " << ::strerror(errno));
     return FALSE;
   }
 
   struct v4l2_buffer buf;
+  memset(&buf, 0, sizeof(buf));
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
+  
   videoBufferCount = reqbuf.count;
   for (buf.index = 0; buf.index < videoBufferCount; buf.index++) {
     if (::ioctl(videoFd, VIDIOC_QUERYBUF, &buf) < 0) {
@@ -677,32 +636,7 @@ BOOL PVideoInputV4l2Device::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRet
   if (!started)
     return NormalReadProcess(buffer, bytesReturned);
 
-  /*
-  if (TRUE) {
-    int ret;
-    fd_set rfds;
-    struct timeval tv;
-
-    FD_ZERO(&rfds);
-    FD_SET(videoFd, &rfds);
-    tv.tv_sec = 2; // wait up to 2 seconds
-    tv.tv_usec = 0;
-
-    PTRACE(1,"PVidInDev\tselect");
-
-    do
-      ret = ::select(videoFd+1, &rfds, NULL, NULL, &tv);
-    while (ret < 0 && errno == EINTR);
-
-    if (ret <= 0) {
-      PTRACE(1,"PVidInDev\tselect failed : " << ::strerror(errno));
-      canSelect = FALSE;
-    }
-  }
-  */
   struct v4l2_buffer buf;
-
-  PTRACE(1,"PVidInDev\tdqbuf");
 
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   buf.index = 0;
@@ -1037,5 +971,108 @@ BOOL PVideoInputV4l2Device::TestAllFormats()
   return TRUE;
 }
 
+
+
+// this is used to get more userfriendly names:
+
+void
+V4L2Names::Update()
+{
+  PTRACE(1,"Detecting V4L2 devices");
+  PDirectory   procvideo2_4("/proc/video/dev");
+  PDirectory   procvideo2_6("/sys/class/video4linux");
+  PDirectory * procvideo;
+  PString      entry;
+  PStringList  devlist;
+  PString      oldDevName;
+  // Try and guess kernel version
+  if (procvideo2_6.Exists()) {
+    kernelVersion = K2_6;
+    procvideo=&procvideo2_6;
+  }
+  else if (procvideo2_4.Exists()) {
+    kernelVersion=K2_4;
+    procvideo=&procvideo2_4;
+  } 
+  else {
+    kernelVersion=KUNKNOWN;
+    procvideo=0;
+  }
+  inputDeviceNames.RemoveAll (); // flush the previous run
+  if (procvideo) {
+    PTRACE(2,"PV4L2Plugin\tdetected device metadata at "<<*procvideo);
+    if ((kernelVersion==K2_6 && procvideo->Open(PFileInfo::SubDirectory) || 
+	 (procvideo->Open(PFileInfo::RegularFile)))) {
+      do {
+        entry = procvideo->GetEntryName();
+	if ((entry.Left(5) == "video")) {
+	  PString thisDevice = "/dev/" + entry;
+	  int videoFd=::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
+	  if ((videoFd > 0) || (errno == EBUSY)) {
+	    BOOL valid = FALSE;
+	    struct v4l2_capability videoCaps;
+	    memset(&videoCaps,0,sizeof(videoCaps));
+	    if ((errno == EBUSY) ||
+		(::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 &&
+		 (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE))) {
+	      PTRACE(1,"PV4L2Plugin\tdetected capture device " << videoCaps.card);
+	      valid = TRUE;
+	    }
+	    else {
+	      PTRACE(1,"PV4L2Plugin\t" << thisDevice << "is not deemed valid");
+	    }
+	    if (videoFd>0)
+	      ::close(videoFd);
+	    if(valid)
+	      inputDeviceNames += thisDevice;
+	  }
+	  else {
+	    PTRACE(1,"PV4L2Plugin\tcould not open " << thisDevice);
+	  }
+	}
+      } while (procvideo->Next());
+    }
+  }
+  else {
+    PTRACE(1,"Unable to detect v4l2 directory");
+  }
+  if (inputDeviceNames.GetSize() == 0) {
+    POrdinalToString vid;
+    ReadDeviceDirectory("/dev/", vid);
+
+    for (PINDEX i = 0; i < vid.GetSize(); i++) {
+      PINDEX cardnum = vid.GetKeyAt(i);
+      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
+      if ((fd >= 0) || (errno == EBUSY)) {
+	if (fd >= 0)
+	  ::close(fd);
+	inputDeviceNames += vid[cardnum];
+      }
+    }
+  }
+  PopulateDictionary();
+}
+
+PString V4L2Names::BuildUserFriendly(PString devname)
+{
+  PString Result;
+
+  int fd = ::open((const char *)devname, O_RDONLY);
+  if(fd < 0) {
+    return devname;
+  }
+
+  struct v4l2_capability videocap;
+  memset(&videocap,0,sizeof(videocap));
+  if (::ioctl(fd, VIDIOC_QUERYCAP, &videocap) < 0)  {
+      ::close(fd);
+      return devname;
+    }
+  
+  ::close(fd);
+  PString ufname((const char*)videocap.card);
+
+  return ufname;
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
