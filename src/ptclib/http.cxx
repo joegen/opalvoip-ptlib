@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.7 1996/02/03 11:33:19 robertj Exp $
+ * $Id: http.cxx,v 1.8 1996/02/08 12:26:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.8  1996/02/08 12:26:29  robertj
+ * Redesign of resource callback mechanism.
+ * Added new resource types for HTML data entry forms.
+ *
  * Revision 1.7  1996/02/03 11:33:19  robertj
  * Changed RadCmd() so can distinguish between I/O error and unknown command.
  *
@@ -191,7 +195,7 @@ void PURL::Parse(const char * cstr)
     PStringArray tokens = queryStr.Tokenise("&=", TRUE);
     for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
       PCaselessString key = tokens[i];
-      if (queryVars.GetAt(key) != NULL) 
+      if (queryVars.Contains(key))
         queryVars.SetAt(key, queryVars[key] + "," + tokens[i+1]);
       else
         queryVars.SetAt(key, tokens[i+1]);
@@ -277,9 +281,10 @@ PHTTPSpace::PHTTPSpace()
 }
 
 
-PHTTPSpace::PHTTPSpace(const PString & nam)
+PHTTPSpace::PHTTPSpace(const PString & nam, PHTTPSpace * parentNode)
   : name(nam)
 {
+  parent = parentNode;
   resource = NULL;
 }
 
@@ -305,7 +310,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res)
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
-      pos = node->children.Append(PNEW PHTTPSpace(path[i]));
+      pos = node->children.Append(PNEW PHTTPSpace(path[i], node));
     node = &node->children[pos];
     if (node->resource != NULL)
       return FALSE;   // Already a resource in tree in partial path
@@ -313,6 +318,31 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res)
   if (!node->children.IsEmpty())
     return FALSE;   // Already a resource in tree further down path.
   node->resource = res;
+  return TRUE;
+}
+
+
+BOOL PHTTPSpace::DelResource(const PURL & url)
+{
+  const PStringArray & path = url.GetPath();
+  PHTTPSpace * node = this;
+  for (PINDEX i = 0; i < path.GetSize(); i++) {
+    PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
+    if (pos == P_MAX_INDEX)
+      return FALSE;
+    node = &node->children[pos];
+    if (node->resource != NULL && i < path.GetSize()-1)
+      return FALSE;
+  }
+  if (!node->children.IsEmpty())
+    return FALSE;   // Still a resource in tree further down path.
+
+  do {
+    PHTTPSpace * par = node->parent;
+    par->children.Remove(node);
+    node = par;
+  } while (node != NULL && node->children.IsEmpty());
+
   return TRUE;
 }
 
@@ -350,9 +380,13 @@ static char const * HTTPCommands[PHTTPSocket::NumCommands] = {
   "GET", "HEAD", "POST"
 };
 
-static const PString ContentLengthStr = "Content-Length";
-static const PString ContentTypeStr = "Content-Type";
-
+static const PCaselessString ContentLengthStr = "Content-Length";
+static const PCaselessString ContentTypeStr = "Content-Type";
+static const PCaselessString DateStr = "Date";
+static const PCaselessString MIMEVersionStr = "MIME-Version";
+static const PCaselessString ServerStr = "Server";
+static const PCaselessString ExpiresStr = "Expires";
+static const PCaselessString WWWAuthenticateStr = "WWW-Authenticate";
 
 PHTTPSocket::PHTTPSocket(WORD port)
   : PApplicationSocket(NumCommands, HTTPCommands, port)
@@ -479,29 +513,25 @@ BOOL PHTTPSocket::ProcessCommand()
 
   switch (cmd) {
     case GET :
-      OnGET(url, mimeInfo);
-      break;
+      return OnGET(url, mimeInfo);
 
     case HEAD :
-      OnHEAD(url, mimeInfo);
-      break;
-
-    case POST :
-      PStringToString postData;
-      // break the string into string/value pairs separated by &
-      PStringArray tokens = entityBody.Tokenise("&=", TRUE);
-      for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-        PCaselessString key = tokens[i];
-        if (postData.GetAt(key) != NULL) 
-          postData.SetAt(key, postData[key] + "," + tokens[i+1]);
-        else
-          postData.SetAt(key, tokens[i+1]);
-      }
-      OnPOST(url, mimeInfo, postData);
-      break;
+      return OnHEAD(url, mimeInfo);
   }
 
-  return TRUE;
+  // Must be a POST
+  PStringToString postData;
+
+  // break the string into string/value pairs separated by &
+  tokens = entityBody.Tokenise("&=", TRUE);
+  for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
+    PCaselessString key = tokens[i];
+    if (postData.Contains(key))
+      postData.SetAt(key, postData[key] + "," + tokens[i+1]);
+    else
+      postData.SetAt(key, tokens[i+1]);
+  }
+  return OnPOST(url, mimeInfo, postData);
 }
 
 
@@ -511,27 +541,29 @@ PString PHTTPSocket::GetServerName() const
 }
 
 
-void PHTTPSocket::OnGET(const PURL & url, const PMIMEInfo & info)
+BOOL PHTTPSocket::OnGET(const PURL & url, const PMIMEInfo & info)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
   if (resource == NULL)
     OnError(NotFound, url.AsString());
   else
     resource->OnGET(*this, url, info);
+  return FALSE;
 }
 
 
-void PHTTPSocket::OnHEAD(const PURL & url, const PMIMEInfo & info)
+BOOL PHTTPSocket::OnHEAD(const PURL & url, const PMIMEInfo & info)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
   if (resource == NULL)
     OnError(NotFound, url.AsString());
   else
     resource->OnHEAD(*this, url, info);
+  return FALSE;
 }
 
 
-void PHTTPSocket::OnPOST(const PURL & url,
+BOOL PHTTPSocket::OnPOST(const PURL & url,
                          const PMIMEInfo & info,
                          const PStringToString & data)
 {
@@ -540,13 +572,14 @@ void PHTTPSocket::OnPOST(const PURL & url,
     OnError(NotFound, url.AsString());
   else
     resource->OnPOST(*this, url, info, data);
+PThread::Current()->Sleep(500);
+  return FALSE;
 }
 
 
 BOOL PHTTPSocket::OnUnknown(const PCaselessString & command)
 {
-  OnError(BadRequest, command);
-  return FALSE;
+  return OnError(BadRequest, command);
 }
 
 
@@ -572,8 +605,6 @@ static struct httpStatusCodeStruct {
   { "Bad Gateway",           502, 1 },
 };
 
-const char RFC1123TimeFormat[] = "www, dd MMM yyyy hh:mm:ssg";
-
 void PHTTPSocket::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 PINDEX bodySize)
@@ -593,13 +624,13 @@ void PHTTPSocket::StartResponse(StatusCode code,
 void PHTTPSocket::SetDefaultMIMEInfo(PMIMEInfo & info)
 {
   PTime now;
-  info.SetAt("Date", now.AsString(RFC1123TimeFormat)+" GMT");
-  info.SetAt("MIME-Version", "1.0");
-  info.SetAt("Server", GetServerName());
+  info.SetAt(DateStr, now.AsString(PTime::RFC1123));
+  info.SetAt(MIMEVersionStr, "1.0");
+  info.SetAt(ServerStr, GetServerName());
 }
 
 
-void PHTTPSocket::OnError(StatusCode code, const PString & extra)
+BOOL PHTTPSocket::OnError(StatusCode code, const PString & extra)
 {
   httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
 
@@ -608,7 +639,7 @@ void PHTTPSocket::OnError(StatusCode code, const PString & extra)
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
-    return;
+    return FALSE;
   }
 
 #if !defined(_MSC_VER) || _MSC_VER > 800
@@ -641,8 +672,10 @@ void PHTTPSocket::OnError(StatusCode code, const PString & extra)
 #endif
 
   headers.SetAt(ContentTypeStr, "text/html");
-  StartResponse(code, headers, reply.GetLength());
-  WriteString(reply);
+  PINDEX len = reply.GetLength();
+  StartResponse(code, headers, len);
+  Write((const char *)reply, len);
+  return FALSE;
 }
 
 
@@ -690,6 +723,13 @@ BOOL PHTTPSimpleAuth::Validate(const PString & authInfo) const
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPResource
 
+PHTTPResource::PHTTPResource(const PURL & url)
+  : baseURL(url)
+{
+  authority = NULL;
+}
+
+
 PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
   : baseURL(url), contentType(type)
 {
@@ -716,61 +756,78 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
                           const PURL & url,
                           const PMIMEInfo & info)
 {
-  if (CheckAuthority(socket, info)) {
-    PString modSinceDate = info.GetString("If-Modified-Since", "");
-    if (!modSinceDate.IsEmpty() && IsModifiedSince(PTime(modSinceDate)))
-      socket.OnError(PHTTPSocket::NotModified, url.AsString());
-    else {
-      PString data;
-      PMIMEInfo outMIME;
-      socket.SetDefaultMIMEInfo(outMIME);
-      PTime expiryDate;
-      if (GetExpirationDate(expiryDate))
-        outMIME.SetAt("Expires", expiryDate.AsString(RFC1123TimeFormat));
-      outMIME.SetAt(ContentTypeStr, contentType);
-      PHTTPSocket::StatusCode code = OnLoadData(url, info, data, outMIME);
-      if (code != PHTTPSocket::OK)
-        socket.OnError(code, url.AsString());
-      else {
-        socket.StartResponse(code, outMIME, data.GetSize());
-        socket.Write((const char *)data, data.GetSize());
-      }
-    }
+  if (!CheckAuthority(socket, info))
+    return;
+
+  PString modSinceDate = info.GetString("If-Modified-Since", "");
+  if (!modSinceDate.IsEmpty() && !IsModifiedSince(PTime(modSinceDate))) {
+    socket.OnError(PHTTPSocket::NotModified, url.AsString());
+    return;
   }
+
+  PMIMEInfo outMIME;
+  socket.SetDefaultMIMEInfo(outMIME);
+
+  PTime expiryDate;
+  if (GetExpirationDate(expiryDate))
+    outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123));
+
+  PINDEX size;
+  PHTTPSocket::StatusCode code = PHTTPSocket::OK;
+  if (!LoadHeaders(url, info, code, outMIME, size)) {
+    socket.OnError(code, url.AsString());
+    return;
+  }
+
+  if (!outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
+    outMIME.SetAt(ContentTypeStr, contentType);
+
+  socket.StartResponse(code, outMIME, size);
+  PCharArray data;
+  while (LoadData(data)) {
+    socket.Write(data, data.GetSize());
+    data.SetSize(0);
+  }
+  if (data.GetSize() > 0)
+    socket.Write(data, data.GetSize());
 }
 
 
 void PHTTPResource::OnHEAD(PHTTPSocket & socket,
-                                const PURL & url,
-                                const PMIMEInfo & info)
+                           const PURL & url,
+                           const PMIMEInfo & info)
 {
-  if (CheckAuthority(socket, info)) {
-    PString data;
-    PMIMEInfo outMIME;
-    socket.SetDefaultMIMEInfo(outMIME);
-    PTime expiryDate;
-    if (GetExpirationDate(expiryDate))
-      outMIME.SetAt("Expires", expiryDate.AsString(RFC1123TimeFormat));
-    outMIME.SetAt(ContentTypeStr, contentType);
-    PHTTPSocket::StatusCode code = OnLoadHead(url, info, data, outMIME);
-    if (code != PHTTPSocket::OK)
-      socket.OnError(code, url.AsString());
-    else {
-      socket.StartResponse(code, outMIME, data.GetSize());
-      socket.Write((const char *)data, data.GetSize());
-    }
+  if (!CheckAuthority(socket, info))
+    return;
+
+  PMIMEInfo outMIME;
+  socket.SetDefaultMIMEInfo(outMIME);
+
+  PTime expiryDate;
+  if (GetExpirationDate(expiryDate))
+    outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123));
+
+  PINDEX size;
+  PHTTPSocket::StatusCode code = PHTTPSocket::OK;
+  if (!LoadHeaders(url, info, code, outMIME, size)) {
+    socket.OnError(code, url.AsString());
+    return;
   }
+
+  if (!outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
+    outMIME.SetAt(ContentTypeStr, contentType);
+  socket.StartResponse(code, outMIME, size);
 }
 
 
 void PHTTPResource::OnPOST(PHTTPSocket & socket,
-                                const PURL & url,
-                                const PMIMEInfo & info,
-                                const PStringToString & data)
+                           const PURL & url,
+                           const PMIMEInfo & info,
+                           const PStringToString & data)
 {
   if (CheckAuthority(socket, info)) {
-    Post(url, info, data);
-    socket.OnError(PHTTPSocket::OK, "");
+    PStringStream msg;
+    socket.OnError(Post(url, info, data, msg), msg);
   }
 }
 
@@ -787,7 +844,7 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     // it must be a request for authorisation
     PMIMEInfo reply;
     socket.SetDefaultMIMEInfo(reply);
-    reply.SetAt("WWW-Authenticate",
+    reply.SetAt(WWWAuthenticateStr,
                               "Basic realm=\"" + authority->GetRealm() + "\"");
     socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
     return FALSE;
@@ -798,6 +855,20 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
 
   socket.OnError(PHTTPSocket::Forbidden, "");
   return FALSE;
+}
+
+
+void PHTTPResource::SetAuthority(const PHTTPAuthority & auth)
+{
+  delete authority;
+  authority = (PHTTPAuthority *)auth.Clone();
+}
+
+
+void PHTTPResource::ClearAuthority()
+{
+  delete authority;
+  authority = NULL;
 }
 
 
@@ -813,20 +884,36 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 }
 
 
-PHTTPSocket::StatusCode PHTTPResource::OnLoadHead(const PURL & url,
-                                                  const PMIMEInfo & inMIME,
-                                                  PString & data,
-                                                  PMIMEInfo & outMIME)
+BOOL PHTTPResource::LoadData(PCharArray & data)
 {
-  return OnLoadData(url, inMIME, data, outMIME);
+  PString text = LoadText();
+  OnLoadedText(text);
+  text.SetSize(text.GetLength());  // Lose the trailing '\0'
+  data = text;
+  return FALSE;
+}
+
+
+PString PHTTPResource::LoadText()
+{
+  PAssertAlways(PUnimplementedFunction);
+  return PString();
+}
+
+
+void PHTTPResource::OnLoadedText(PString &)
+{
+  // Do nothing
 }
 
 
 PHTTPSocket::StatusCode PHTTPResource::Post(const PURL &,
                                             const PMIMEInfo &,
-                                            const PStringToString &)
+                                            const PStringToString &,
+                                            PStringStream & msg)
 {
-  return PHTTPSocket::OK;
+  msg = "Post to this resource is not implemented!";
+  return PHTTPSocket::Forbidden;
 }
 
 
@@ -835,6 +922,13 @@ PHTTPSocket::StatusCode PHTTPResource::Post(const PURL &,
 
 PHTTPString::PHTTPString(const PURL & url)
   : PHTTPResource(url, "text/html")
+{
+}
+
+
+PHTTPString::PHTTPString(const PURL & url,
+                         const PHTTPAuthority & auth)
+  : PHTTPResource(url, "text/html", auth)
 {
 }
 
@@ -870,76 +964,125 @@ PHTTPString::PHTTPString(const PURL & url,
 }
 
 
-PHTTPSocket::StatusCode PHTTPString::OnLoadData(const PURL &,
-                                                const PMIMEInfo &,
-                                                PString & data,
-                                                PMIMEInfo &)
+BOOL PHTTPString::LoadHeaders(const PURL &,
+                              const PMIMEInfo &,
+                              PHTTPSocket::StatusCode &,
+                              PMIMEInfo &,
+                              PINDEX & contentSize)
 {
-  data = string;
-  return PHTTPSocket::OK;
+  contentSize = string.GetLength();
+  return TRUE;
+}
+
+
+PString PHTTPString::LoadText()
+{
+  return string;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPFile
 
+PHTTPFile::PHTTPFile(const PURL & url)
+  : PHTTPResource(url)
+{
+}
+
+
 PHTTPFile::PHTTPFile(const PString & filename)
-  : PHTTPResource(filename, ""),
-    filePath(filename)
+  : PHTTPResource(filename)
 {
-  SetContentType(PMIMEInfo::GetContentType(filePath.GetType()));
+  file.SetFilePath(filename);
+  SetContentType(PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
 }
 
 
-PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & file)
-  : PHTTPResource(url, PMIMEInfo::GetContentType(file.GetType())),
-    filePath(file)
+PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & path)
+  : PHTTPResource(url)
 {
+  file.SetFilePath(path);
+  SetContentType(PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
 }
 
 
 PHTTPFile::PHTTPFile(const PURL & url,
-                     const PFilePath & file,
+                     const PFilePath & path,
                      const PString & type)
-  : PHTTPResource(url, type), filePath(file)
+  : PHTTPResource(url, type)
 {
+  file.SetFilePath(path);
 }
 
 
 PHTTPFile::PHTTPFile(const PURL & url,
-                     const PFilePath & file,
+                     const PFilePath & path,
                      const PHTTPAuthority & auth)
-  : PHTTPResource(url, PMIMEInfo::GetContentType(file.GetType()), auth),
-    filePath(file)
+  : PHTTPResource(url, PString(), auth)
 {
+  file.SetFilePath(path);
+  SetContentType(PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
 }
 
 
 PHTTPFile::PHTTPFile(const PURL & url,
-                     const PFilePath & file,
+                     const PFilePath & path,
                      const PString & type,
                      const PHTTPAuthority & auth)
-  : PHTTPResource(url, type, auth), filePath(file)
+  : PHTTPResource(url, type, auth)
 {
+  file.SetFilePath(path);
 }
 
 
-PHTTPSocket::StatusCode PHTTPFile::OnLoadData(const PURL & url,
-                                              const PMIMEInfo &,
-                                              PString & data,
-                                              PMIMEInfo &)
+BOOL PHTTPFile::LoadHeaders(const PURL & url,
+                            const PMIMEInfo &,
+                            PHTTPSocket::StatusCode & code,
+                            PMIMEInfo &,
+                            PINDEX & contentSize)
 {
   if (baseURL != url)
     return PHTTPSocket::NotFound;
 
-  PFile file;
-  if (!file.Open(filePath, PFile::ReadOnly))
-    return PHTTPSocket::NotFound;
+  if (!file.Open(PFile::ReadOnly)) {
+    code = PHTTPSocket::NotFound;
+    return FALSE;
+  }
 
-  PINDEX count = (PINDEX)file.GetLength();
-  file.Read(data.GetPointer(count), count);
+  contentSize = file.GetLength();
+  return TRUE;
+}
 
-  return PHTTPSocket::OK;
+
+BOOL PHTTPFile::LoadData(PCharArray & data)
+{
+  if (contentType(0, 4) == "text/")
+    return PHTTPResource::LoadData(data);
+
+  PAssert(file.IsOpen(), PLogicError);
+
+  PINDEX count = file.GetLength() - file.GetPosition();
+  if (count > 10000)
+    count = 10000;
+
+  PAssert(file.Read(data.GetPointer(count), count), PLogicError);
+
+  if (!file.IsEndOfFile())
+    return TRUE;
+
+  file.Close();
+  return FALSE;
+}
+
+
+PString PHTTPFile::LoadText()
+{
+  PAssert(file.IsOpen(), PLogicError);
+  PINDEX count = file.GetLength();
+  PString text;
+  PAssert(file.Read(text.GetPointer(count+1), count), PLogicError);
+  PAssert(file.Close(), PLogicError);
+  return text;
 }
 
 
@@ -947,7 +1090,7 @@ PHTTPSocket::StatusCode PHTTPFile::OnLoadData(const PURL & url,
 // PHTTPDirectory
 
 PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
-  : PHTTPResource(url, PString()), basePath(dir)
+  : PHTTPFile(url), basePath(dir)
 {
 }
 
@@ -955,15 +1098,16 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
 PHTTPDirectory::PHTTPDirectory(const PURL & url,
                                const PDirectory & dir,
                                const PHTTPAuthority & auth)
-  : PHTTPResource(url, PString(), auth), basePath(dir)
+  : PHTTPFile(url, PString(), auth), basePath(dir)
 {
 }
 
 
-PHTTPSocket::StatusCode PHTTPDirectory::OnLoadData(const PURL & url,
-                                                   const PMIMEInfo &,
-                                                   PString & data,
-                                                   PMIMEInfo & outMIME)
+BOOL PHTTPDirectory::LoadHeaders(const PURL & url,
+                                 const PMIMEInfo &,
+                                 PHTTPSocket::StatusCode & code,
+                                 PMIMEInfo &,
+                                 PINDEX & contentSize)
 {
   const PStringArray & path = url.GetPath();
   PFilePath realPath = basePath;
@@ -975,14 +1119,17 @@ PHTTPSocket::StatusCode PHTTPDirectory::OnLoadData(const PURL & url,
 
   // See if its a normal file
   PFileInfo info;
-  if (!PFile::GetInfo(realPath, info))
-    return PHTTPSocket::NotFound;
+  if (!PFile::GetInfo(realPath, info)) {
+    code = PHTTPSocket::NotFound;
+    return FALSE;
+  }
 
-  // Noew try and open it
-  PFile file;
+  // Now try and open it
   if (info.type != PFileInfo::SubDirectory) {
-    if (!file.Open(realPath, PFile::ReadOnly))
-      return PHTTPSocket::NotFound;
+    if (!file.Open(realPath, PFile::ReadOnly)) {
+      code = PHTTPSocket::NotFound;
+      return FALSE;
+    }
   }
   else {
     for (i = 0; i < PARRAYSIZE(HTMLIndexFiles); i++)
@@ -992,42 +1139,384 @@ PHTTPSocket::StatusCode PHTTPDirectory::OnLoadData(const PURL & url,
   }
 
   if (file.IsOpen()) {
-    PINDEX count = (PINDEX)file.GetLength();
-    file.Read(data.GetPointer(count), count);
-    outMIME.SetAt(ContentTypeStr,
-                      PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
+    contentType = PMIMEInfo::GetContentType(file.GetFilePath().GetType());
+    contentSize = file.GetLength();
+    fakeIndex = "";
+    return TRUE;
+  }
 
+#if !defined(_MSC_VER) || _MSC_VER > 800
+  contentType = "text/html";
+  PHTML reply = "Directory of " + url.AsString();
+  PDirectory dir = realPath;
+  if (dir.Open()) {
+    do {
+      const char * imgName;
+      if (dir.IsSubDir())
+        imgName = "internal-gopher-menu";
+      else if (PMIMEInfo::GetContentType(
+                    PFilePath(dir.GetEntryName()).GetType())(0,4) == "text/")
+        imgName = "internal-gopher-text";
+      else
+        imgName = "internal-gopher-unknown";
+      reply << PHTML::Image(imgName) << ' '
+            << PHTML::Anchor(realPath.GetFileName()+'/'+dir.GetEntryName())
+            << dir.GetEntryName()
+            << PHTML::Anchor()
+            << PHTML::BreakLine();
+    } while (dir.Next());
   }
-#if _MSC_VER > 800
-  else {
-    outMIME.SetAt(ContentTypeStr, "text/html");
-    PHTML reply = "Directory of " + url.AsString();
-    PDirectory dir = realPath;
-    if (dir.Open()) {
-      do {
-        const char * imgName;
-        if (dir.IsSubDir())
-          imgName = "internal-gopher-menu";
-        else if (PMIMEInfo::GetContentType(
-                      PFilePath(dir.GetEntryName()).GetType())(0,4) == "text/")
-          imgName = "internal-gopher-text";
-        else
-          imgName = "internal-gopher-unknown";
-        reply << PHTML::Image(imgName) << ' '
-              << PHTML::Anchor(realPath.GetFileName()+'/'+dir.GetEntryName())
-              << dir.GetEntryName()
-              << PHTML::Anchor()
-              << PHTML::BreakLine();
-      } while (dir.Next());
-    }
-    reply << PHTML::Body();
-    data = reply;
-  }
+  reply << PHTML::Body();
+  fakeIndex = reply;
 #endif
+
+  return TRUE;
+}
+
+
+PString PHTTPDirectory::LoadText()
+{
+  if (fakeIndex.IsEmpty())
+    return PHTTPFile::LoadText();
+
+  return fakeIndex;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPForm
+
+PHTTPForm::PHTTPForm(const PURL & url)
+  : PHTTPString(url)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url, PHTTPAuthority & auth)
+  : PHTTPString(url, auth)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url, const PString & html)
+  : PHTTPString(url, html)
+{
+}
+
+PHTTPForm::PHTTPForm(const PURL & url, const PString & html, PHTTPAuthority & auth)
+  : PHTTPString(url, html, auth)
+{
+}
+
+
+PHTTPForm::Field::Field(const char * nam, const char * titl)
+  : name(nam), title(titl != NULL ? titl : nam)
+{
+  PINDEX pos = 0;
+  while ((pos = name.Find(' ', pos)) != P_MAX_INDEX)
+    name[pos] = '+';
+}
+
+PObject::Comparison PHTTPForm::Field::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(Field::Class()), PInvalidCast);
+  return name.Compare(((const Field &)obj).name);
+}
+
+
+BOOL PHTTPForm::Field::Validated(const PString &, PStringStream &) const
+{
+  return TRUE;
+}
+
+
+PHTTPForm::StringField::StringField(const char * name,
+                                    PINDEX siz,
+                                    const char * initVal)
+  : Field(name), value(initVal)
+{
+  size = siz;
+}
+
+
+PHTTPForm::StringField::StringField(const char * name,
+                                    const char * title,
+                                    PINDEX siz,
+                                    const char * initVal)
+  : Field(name, title), value(initVal)
+{
+  size = siz;
+}
+
+
+PHTML::Element PHTTPForm::StringField::GetHTML() const
+{
+  return PHTML::InputText(name, size, value);
+}
+
+
+void PHTTPForm::StringField::SetValue(const PString & val)
+{
+  value = val;
+}
+
+
+PString PHTTPForm::StringField::GetValue() const
+{
+  return value;
+}
+
+
+PHTTPForm::PasswordField::PasswordField(const char * name,
+                                        PINDEX siz,
+                                        const char * initVal)
+  : StringField(name, siz, initVal)
+{
+}
+
+
+PHTTPForm::PasswordField::PasswordField(const char * name,
+                                        const char * title,
+                                        PINDEX siz,
+                                        const char * initVal)
+  : StringField(name, title, siz, initVal)
+{
+}
+
+
+PHTML::Element PHTTPForm::PasswordField::GetHTML() const
+{
+  return PHTML::InputPassword(name, size, value);
+}
+
+
+PHTTPForm::IntegerField::IntegerField(const char * nam,
+                                      int lo, int hig,
+                                      int initVal,
+                                      const char * unit)
+  : Field(nam), units(unit)
+{
+  low = lo;
+  high = hig;
+  value = initVal;
+}
+
+PHTTPForm::IntegerField::IntegerField(const char * nam,
+                                      const char * titl,
+                                      int lo, int hig,
+                                      int initVal,
+                                      const char * unit)
+  : Field(nam, titl), units(unit)
+{
+  low = lo;
+  high = hig;
+  value = initVal;
+}
+
+
+BOOL PHTTPForm::IntegerField::Validated(const PString & newVal,
+                                                     PStringStream & msg) const
+{
+  int val = newVal.AsInteger();
+  if (val >= low && val <= high)
+    return TRUE;
+
+  msg << "The field \"" << name << "\" should be between "
+      << low << " and " << high << ".<BR>";
+  return FALSE;
+}
+
+
+PHTML::Element PHTTPForm::IntegerField::GetHTML() const
+{
+  return PHTML::InputRange(name, low, high, value);
+}
+
+
+void PHTTPForm::IntegerField::SetValue(const PString & val)
+{
+  value = val.AsInteger();
+}
+
+
+PString PHTTPForm::IntegerField::GetValue() const
+{
+  return PString(PString::Signed, value);
+}
+
+
+PHTTPForm::BooleanField::BooleanField(const char * name, BOOL initVal)
+  : Field(name)
+{
+  value = initVal;
+}
+
+PHTTPForm::BooleanField::BooleanField(const char * name,
+                                      const char * title,
+                                      BOOL initVal)
+  : Field(name, title)
+{
+  value = initVal;
+}
+
+
+PHTML::Element PHTTPForm::BooleanField::GetHTML() const
+{
+  return PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
+}
+
+
+void PHTTPForm::BooleanField::SetValue(const PString & val)
+{
+  value = val[0] != 'F';
+}
+
+
+PString PHTTPForm::BooleanField::GetValue() const
+{
+  return (value ? "T" : "F");
+}
+
+
+void PHTTPForm::Add(Field * fld)
+{
+  PAssertNULL(fld);
+  PAssert(!fieldNames[fld->GetName()], "Field already on form!");
+  fieldNames += fld->GetName();
+  fields.Append(fld);
+}
+
+
+void PHTTPForm::BuildHTML(const char * heading, BOOL complete)
+{
+  PHTML html = heading;
+  BuildHTML(html, complete);
+}
+
+
+void PHTTPForm::BuildHTML(const PString & heading, BOOL complete)
+{
+  PHTML html = heading;
+  BuildHTML(html, complete);
+}
+
+
+void PHTTPForm::BuildHTML(PHTML & html, BOOL complete)
+{
+  html << PHTML::Form("POST")
+       << PHTML::Table();
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    html << PHTML::TableRow()
+         << PHTML::TableData("align=right")
+         << fields[fld].GetTitle()
+         << PHTML::TableData("align=left")
+         << fields[fld].GetHTML();
+  }
+  html << PHTML::Table()
+       << PHTML::Paragraph()
+       << "    " << PHTML::SubmitButton("Accept")
+       << "    " << PHTML::ResetButton("Reset")
+       << PHTML::Form();
+
+  if (complete) {
+    html << PHTML::Body();
+    string = html;
+  }
+}
+
+
+PHTTPSocket::StatusCode PHTTPForm::Post(const PURL &,
+          const PMIMEInfo &, const PStringToString & data, PStringStream & msg)
+{
+  if (data.GetSize() == 0) {
+    msg = "No parameters changed.";
+    return PHTTPSocket::NoContent;
+  }
+
+  BOOL good = TRUE;
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    Field & field = fields[fld];
+    const PCaselessString & name = field.GetName();
+    if (data.Contains(name) && !field.Validated(data[name], msg))
+      good = FALSE;
+  }
+
+  if (!good)
+    return PHTTPSocket::BadRequest;
+
+  for (fld = 0; fld < fields.GetSize(); fld++) {
+    Field & field = fields[fld];
+    const PCaselessString & name = field.GetName();
+    if (data.Contains(name))
+      field.SetValue(data[name]);
+  }
+
+  msg = "Accepted new configuration.";
+  return PHTTPSocket::OK;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPConfig
+
+PHTTPConfig::PHTTPConfig(const PURL & url,
+                         const PString & sect)
+  : PHTTPForm(url), section(sect)
+{
+}
+
+
+PHTTPConfig::PHTTPConfig(const PURL & url,
+                         const PString & sect,
+                         PHTTPAuthority & auth)
+  : PHTTPForm(url, auth), section(sect)
+{
+}
+
+
+PHTTPConfig::PHTTPConfig(const PURL & url,
+                         const PString & html,
+                         const PString & sect)
+  : PHTTPForm(url, html), section(sect)
+{
+}
+
+
+PHTTPConfig::PHTTPConfig(const PURL & url,
+                         const PString & html,
+                         const PString & sect,
+                         PHTTPAuthority & auth)
+  : PHTTPForm(url, html, auth), section(sect)
+{
+}
+
+
+PHTTPSocket::StatusCode PHTTPConfig::Post(const PURL & url,
+                                          const PMIMEInfo & info,
+                                          const PStringToString & data,
+                                          PStringStream & msg)
+{
+  PHTTPSocket::StatusCode code = PHTTPForm::Post(url, info, data, msg);
+  if (code != PHTTPSocket::OK)
+    return code;
+
+  PConfig cfg(section);
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    Field & field = fields[fld];
+    if (data.Contains(field.GetName()))
+      cfg.SetString(field.GetTitle(), field.GetValue());
+  }
 
   return PHTTPSocket::OK;
 }
 
+
+void PHTTPConfig::SetConfigValues()
+{
+  PConfig cfg(section);
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    Field & field = fields[fld];
+    field.SetValue(cfg.GetString(field.GetTitle(), field.GetValue()));
+  }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
