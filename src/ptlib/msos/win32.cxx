@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.22 1996/03/31 09:10:33 robertj Exp $
+ * $Id: win32.cxx,v 1.23 1996/04/01 13:33:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.23  1996/04/01 13:33:19  robertj
+ * Fixed bug in install of service, incorrectly required installation before install.
+ *
  * Revision 1.22  1996/03/31 09:10:33  robertj
  * Added use of "CurrentVersion" key in registry.
  * Added version display to service process.
@@ -2032,7 +2035,7 @@ PServiceProcess::ProcessCommandResult
   }
 
   P_SC_HANDLE schService(schSCManager, this);
-  if (cmdNum != 1 && schService.IsNULL()) {
+  if (cmdNum != 2 && schService.IsNULL()) {
     PError << "Service is not installed." << endl;
     return ProcessCommandError;
   }
