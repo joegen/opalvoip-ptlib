@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.17  1998/11/30 02:55:41  robertj
+ * New directory structure
+ *
  * Revision 1.16  1998/09/24 03:30:34  robertj
  * Added open software license.
  *
@@ -106,7 +109,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#include "../../common/ptlib/thread.h"
+#include "../../thread.h"
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
