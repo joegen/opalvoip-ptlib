@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.5 1993/08/27 18:17:47 robertj Exp $
+ * $Id: contain.inl,v 1.6 1993/12/15 21:10:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.5  1993/08/27 18:17:47  robertj
+ * Revision 1.6  1993/12/15 21:10:10  robertj
+ * Fixed reference system used by container classes.
+ *
+ * Revision 1.5  1993/08/27  18:17:47  robertj
  * Fixed bugs in PSortedList default size.
  *
  * Revision 1.4  1993/07/16  14:40:55  robertj
@@ -51,8 +54,14 @@ inline istream & operator>>(istream &strm, PObject & obj)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PContainer::PContainer(PINDEX initialSize )
-  : size(initialSize), referenceCount(new unsigned(1)) { }
+inline PContainer::PContainer(PINDEX initialSize)
+  : reference(new Reference(initialSize)) { }
+
+inline PContainer::Reference::Reference(PINDEX initialSize)
+  : size(initialSize), count(1) { }
+
+inline BOOL PContainer::IsUnique() const
+  { return PAssertNULL(reference)->count <= 1; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,7 +70,7 @@ inline PAbstractArray::~PAbstractArray()
   { DestroyContents(); }
 
 inline BOOL PAbstractArray::MakeUnique()
-  { return *referenceCount == 1 || SetSize(size); }
+  { return IsUnique() || SetSize(GetSize()); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,26 +200,19 @@ inline PArrayObjects::~PArrayObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractList::PAbstractList()
-  : head(NULL), tail(NULL), lastElement(NULL), lastIndex(0) { }
+  : info(new Info) { }
 
 inline PAbstractList::~PAbstractList()
  { DestroyContents(); }
-
-inline PListElement::PListElement(PObject * theData)
-  : next(NULL), prev(NULL), data(theData) { }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractSortedList::PAbstractSortedList()
-  : root(NULL), lastElement(NULL), lastIndex(0) { }
+  : info(new Info) { }
 
 inline PAbstractSortedList::~PAbstractSortedList()
   { DestroyContents(); }
-
-inline PSortedListElement::PSortedListElement(PObject * theData)
-  : parent(NULL), left(NULL), right(NULL),
-                               colour(Black), subTreeSize(1), data(theData) { }
 
 inline void PSortedListElement::MakeBlack()
   { colour = Black; }
