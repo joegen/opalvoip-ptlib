@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.20  2002/10/24 20:01:53  dereks
+ * Improve  closure of windows capture device, with fix from Diego Tartara. Thanks!
+ *
  * Revision 1.19  2002/09/01 23:54:33  dereks
  * Fix from Diego Tartara to handle (better) disconnection situation.
  *
@@ -327,6 +330,7 @@ BOOL PVideoInputDevice::Close()
       //    terminate the process
       // Any of the two ios better than just hanging
       captureThread->Terminate();
+      hCaptureWindow = NULL;
       PTRACE(1, "PVidInp\tCapture thread failed to stop. Terminated");
   }
 
