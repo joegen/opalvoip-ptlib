@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.12 1997/08/09 07:46:52 robertj Exp $
+ * $Id: httpform.cxx,v 1.13 1997/08/21 12:44:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.13  1997/08/21 12:44:10  robertj
+ * Fixed bug in HTTP form array size field.
+ * Fixed bug where section list was only replacing first instance of macro.
+ *
  * Revision 1.12  1997/08/09 07:46:52  robertj
  * Fixed problems with value of SELECT fields in form
  *
@@ -452,7 +456,7 @@ PString PHTTPFieldArray::GetValueAt(PINDEX idx) const
   if (idx > 0)
     return PHTTPCompositeField::GetValueAt(idx-1);
 
-  return psprintf("%u", fields.GetSize());
+  return psprintf("%u", fields.GetSize()-1);
 }
 
 
@@ -462,11 +466,9 @@ void PHTTPFieldArray::SetValueAt(PINDEX idx, const PString & value)
     PHTTPCompositeField::SetValueAt(idx-1, value);
   else {
     PINDEX newSize = value.AsInteger();
-    if (newSize == 0)
-      newSize = 1;
     while (fields.GetSize() > newSize)
       fields.RemoveAt(fields.GetSize()-1);
-    while (fields.GetSize() < newSize)
+    while (fields.GetSize() <= newSize)
       AddBlankField();
   }
 }
@@ -1103,7 +1105,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
                      PHTML & msg)
 {
   msg = "Error in Request";
-  if (data.GetSize() == 0) {
+  if (fields.GetSize() > 0 && data.GetSize() == 0) {
     msg << "No parameters changed." << PHTML::Body();
     request.code = PHTTP::NoContent;
     return TRUE;
@@ -1363,12 +1365,12 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           text.Splice(repeat, pos, 0);
           text.Replace("<!--#form hotlink-->",
                        editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation),
-                       FALSE, pos);
+                       TRUE, pos);
           if (!additionalValueName)
             text.Replace("<!--#form additional-->",
                          cfg.GetString(nameList[i], additionalValueName, ""),
-                         FALSE, pos);
-          text.Replace("<!--#form section-->", name, FALSE, pos);
+                         TRUE, pos);
+          text.Replace("<!--#form section-->", name, TRUE, pos);
           pos = text.Find(FormListInclude, pos);
         }
       }
