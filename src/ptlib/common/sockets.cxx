@@ -27,7 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.162  2003/10/27 03:22:44  csoutheren
+ * Added handling for QoS
+ *   Thanks to Henry Harrison of AliceStreet
+ *
  * Revision 1.161  2003/05/27 08:53:11  dsandras
+ *
  * Added test error case when the host lookup fails for IPv6.
  *
  * Revision 1.160  2003/05/21 09:34:44  rjongbloed
@@ -544,6 +549,38 @@
 #include <ptlib/sockets.h>
 
 #include <ctype.h>
+
+#ifdef _WIN32
+#include <winbase.h>
+#include <winreg.h>
+
+#ifndef _WIN32_WCE
+
+class PWinQoS : public PObject
+{
+    PCLASSINFO(PWinQoS,PObject);
+
+public:
+    PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen);
+    ~PWinQoS();
+    
+    //QOS qos;
+    //QOS_DESTADDR qosdestaddr;
+protected:
+    sockaddr * sa;
+};
+
+
+void CALLBACK CompletionRoutine(DWORD dwError,
+                                DWORD cbTransferred,
+                                LPWSAOVERLAPPED lpOverlapped,
+                                DWORD dwFlags);
+                                
+
+
+#endif	// _WIN32_WCE
+
+#endif	// _WIN32
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
@@ -1300,6 +1337,7 @@ BOOL PSocket::SetOption(int option, int value, int level)
   if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
     return TRUE;
 #endif
+
   return ConvertOSError(::setsockopt(os_handle, level, option,
                                      (char *)&value, sizeof(value)));
 }
@@ -2737,9 +2775,20 @@ PUDPSocket::PUDPSocket(WORD newPort)
   OpenSocket();
 }
 
-
-PUDPSocket::PUDPSocket(const PString & service)
+PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort)
 {
+  if (qos != NULL)
+      qosSpec = *qos;
+  sendPort = 0;
+  SetPort(newPort);
+  OpenSocket();
+}
+
+
+PUDPSocket::PUDPSocket(const PString & service, PQoS * qos)
+{
+  if (qos != NULL)
+      qosSpec = *qos;
   sendPort = 0;
   SetPort(service);
   OpenSocket();
@@ -2761,15 +2810,250 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
   Connect(address);
 }
 
+BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
+{
+    if (qos==NULL)
+        return FALSE;
+
+    qosSpec = *qos;
+    return TRUE;
+}
+
+
+BOOL PUDPSocket::ApplyQoS()
+{
+#ifdef _WIN32_WCE
+    return FALSE;   //QoS not supported
+#endif
+
+#ifdef __BEOS__
+    return FALSE;   //QoS not supported
+#endif
+
+    char DSCPval = 0;
+    if (qosSpec.GetDSCP() < 0 ||
+        qosSpec.GetDSCP() > 63)
+    {
+        if (qosSpec.GetServiceType() == SERVICETYPE_PNOTDEFINED)
+            return TRUE;
+        else
+        {
+            switch (qosSpec.GetServiceType())
+            {
+            case SERVICETYPE_GUARANTEED:
+                DSCPval = PQoS::guaranteedDSCP;
+                break;
+            case SERVICETYPE_CONTROLLEDLOAD:
+                DSCPval = PQoS::controlledLoadDSCP;
+                break;
+            case SERVICETYPE_BESTEFFORT:
+            default:
+                DSCPval = PQoS::bestEffortDSCP;
+                break;
+            }
+        }
+    }
+    else
+        DSCPval = (char)qosSpec.GetDSCP();
+
+#ifdef _WIN32
+    BOOL usesetsockopt = FALSE;
+
+    OSVERSIONINFO versInfo;
+    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (!(GetVersionEx(&versInfo)))
+        usesetsockopt = TRUE;
+    else
+    {
+        if (versInfo.dwMajorVersion < 5)
+            usesetsockopt = TRUE;
+
+        if (versInfo.dwMajorVersion == 5 &&
+            versInfo.dwMinorVersion == 0)
+            usesetsockopt = TRUE;         //Windows 2000 does not always support QOS_DESTADDR
+    }
+
+    BOOL retval = FALSE;
+    if (!usesetsockopt && sendAddress.IsValid() && sendPort != 0)
+    {
+        sockaddr_in sa;
+        sa.sin_family = AF_INET;
+        sa.sin_port = htons(sendPort);
+        sa.sin_addr = sendAddress;
+        memset(sa.sin_zero,0,8);
+
+        char * inBuf = new char[2048];
+        memset(inBuf,0,2048);
+        DWORD bufLen = 0;
+        PWinQoS wqos(qosSpec, (struct sockaddr *)(&sa), inBuf, bufLen);
+
+        DWORD dummy = 0;
+        int irval = WSAIoctl(os_handle,
+                             SIO_SET_QOS,
+                             inBuf,
+                             bufLen,
+                             NULL,
+                             0,
+                             &dummy,
+                             NULL,
+                             NULL);
+
+        delete[] inBuf;
+
+        if (irval != 0)
+            return FALSE;
+        
+        return TRUE;
+    }
+
+    if (!usesetsockopt)
+        return retval;
+
+#endif
+    unsigned int setDSCP = DSCPval<<2;
+
+    int rv = 0;
+    unsigned int curval = 0;
+    socklen_t cursize = sizeof(curval);
+    rv = ::getsockopt(os_handle,IPPROTO_IP, IP_TOS, (char *)(&curval), &cursize);
+    if (curval == setDSCP)
+        return TRUE;    //Required DSCP already set
+
+
+    rv = ::setsockopt(os_handle, IPPROTO_IP, IP_TOS,
+                                     (char *)&setDSCP, sizeof(setDSCP));
+
+    if (rv != 0)
+    {
+        int err;
+#ifdef _WIN32
+	err = WSAGetLastError();
+#else
+	err = errno;
+#endif
+        PTRACE(3,"QOS\tsetsockopt failed with code " << err);
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
+{
+#ifdef _WIN32_WCE   //QOS not supported
+    return ConvertOSError(os_handle = os_socket(af, type, proto));
+#endif
+
+#ifdef _WIN32
+    DWORD bufferSize = 0;
+    DWORD numProtocols, i;
+    LPWSAPROTOCOL_INFO installedProtocols, qosProtocol;
+    BOOL retval;
+
+    //Try to find a QOS-enabled protocol
+ 
+    retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
+                                                            NULL,
+                                                            &bufferSize));
+    
+    if (numProtocols == SOCKET_ERROR &&
+        WSAGetLastError()!=WSAENOBUFS)
+    {
+        return retval;
+    }
+
+    installedProtocols = (LPWSAPROTOCOL_INFO)(new BYTE[bufferSize]);
+    retval = ConvertOSError(numProtocols = WSAEnumProtocols(((proto==0) ? NULL : &proto),
+                                                            installedProtocols,
+                                                            &bufferSize));
+    if (numProtocols == SOCKET_ERROR)
+    {
+        delete[] installedProtocols;
+        return retval;
+    }
+
+    qosProtocol = installedProtocols;
+    BOOL haveQoSproto = FALSE;
+
+
+    for (i=0; i<numProtocols; qosProtocol++, i++)
+    {
+        if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
+            (qosProtocol->iSocketType == type) &&
+            (qosProtocol->iAddressFamily == af))
+        {
+            haveQoSproto = TRUE;
+            break;
+        }
+    }
+
+    if (haveQoSproto)
+    {
+        retval =  ConvertOSError(os_handle = WSASocket(af,
+                                                       type,
+                                                       proto,
+                                                       qosProtocol,
+                                                       0,
+                                                       WSA_FLAG_OVERLAPPED));
+    }
+    else
+    {    
+        retval = ConvertOSError(os_handle = WSASocket (af,
+                                                       type,
+                                                       proto,
+                                                       NULL,
+                                                       0,
+                                                       WSA_FLAG_OVERLAPPED));
+    }
+
+    delete[] installedProtocols;
+
+    if (os_handle == INVALID_SOCKET)
+        return retval;
+#else
+    BOOL retval = ConvertOSError(os_handle = os_socket(af, type, proto));
+#endif
+    return retval;
+}
 
 BOOL PUDPSocket::OpenSocket()
 {
-  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
+#ifdef _WIN32
+#ifndef _WIN32_WCE
+    OSVERSIONINFO versInfo;
+    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (GetVersionEx(&versInfo))
+    {
+        if (versInfo.dwMajorVersion > 5 ||
+           (versInfo.dwMajorVersion == 5 &&
+            versInfo.dwMinorVersion > 0))
+        return OpenSocketGQOS(AF_INET, SOCK_DGRAM, 0);
+    }
+#endif
+#endif
+    return ConvertOSError(os_handle = os_socket(AF_INET,SOCK_DGRAM, 0));
 }
 
 BOOL PUDPSocket::OpenSocket(int ipAdressFamily)
 {
-  return ConvertOSError(os_handle = os_socket(ipAdressFamily, SOCK_DGRAM, 0));
+#ifdef _WIN32
+#ifndef _WIN32_WCE
+    OSVERSIONINFO versInfo;
+    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (GetVersionEx(&versInfo))
+    {
+        if (versInfo.dwMajorVersion > 5 ||
+           (versInfo.dwMajorVersion == 5 &&
+            versInfo.dwMinorVersion > 0))
+        return OpenSocketGQOS(ipAdressFamily, SOCK_DGRAM, 0);
+    }
+
+#endif
+#endif
+    return ConvertOSError(os_handle = os_socket(ipAdressFamily,SOCK_DGRAM, 0));
 }
 
 const char * PUDPSocket::GetProtocolName() const
@@ -2804,6 +3088,7 @@ void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
 {
   sendAddress = newAddress;
   sendPort    = newPort;
+  ApplyQoS();
 }
 
 
@@ -2826,6 +3111,65 @@ BOOL PICMPSocket::OpenSocket(int)
 {
   return FALSE;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
+#ifndef _WIN32_WCE
+
+PWinQoS::~PWinQoS()
+{
+    delete sa;
+}
+
+PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen)
+{
+    QOS * qos = (QOS *)inBuf;
+    
+    if (pqos.GetTokenRate() == QOS_NOT_SPECIFIED)
+        qos->SendingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT;
+    else
+        qos->SendingFlowspec.ServiceType = pqos.GetServiceType();
+    
+    qos->SendingFlowspec.TokenRate = pqos.GetTokenRate();
+    qos->SendingFlowspec.TokenBucketSize = pqos.GetTokenBucketSize();
+    qos->SendingFlowspec.PeakBandwidth = pqos.GetPeakBandwidth();
+    qos->SendingFlowspec.Latency = QOS_NOT_SPECIFIED;
+    qos->SendingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
+    qos->SendingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
+    qos->SendingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
+
+    qos->ReceivingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT|SERVICE_NO_QOS_SIGNALING;
+    qos->ReceivingFlowspec.TokenRate = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.TokenBucketSize = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.PeakBandwidth = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.Latency = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
+    qos->ReceivingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
+
+    sa = new sockaddr;
+    *sa = *to;
+
+    QOS_DESTADDR qosdestaddr;
+    qosdestaddr.ObjectHdr.ObjectType = QOS_OBJECT_DESTADDR;
+    qosdestaddr.ObjectHdr.ObjectLength = sizeof(qosdestaddr);
+    qosdestaddr.SocketAddress = sa;
+    qosdestaddr.SocketAddressLength = sizeof(*sa);
+
+    qos->ProviderSpecific.len = sizeof(qosdestaddr);
+    qos->ProviderSpecific.buf = inBuf + sizeof(*qos);
+
+    memcpy(inBuf+sizeof(*qos),&qosdestaddr,sizeof(qosdestaddr));
+    bufLen = sizeof(*qos)+sizeof(qosdestaddr);
+}
+
+#endif
+#endif
+
+
+
+  
 
 
 // End Of File ///////////////////////////////////////////////////////////////
