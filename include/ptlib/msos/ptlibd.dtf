@@ -1706,6 +1706,7 @@ EXPORTS
     ?GetOptionString@PArgList@@QBE?AVPString@@PBD0@Z @1551 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(char const *,char const *)const 
     ?GetOptionStringByIndex@PArgList@@ABE?AVPString@@HPBD@Z @1552 NONAME ;private: class PString  __thiscall PArgList::GetOptionStringByIndex(int,char const *)const 
     ?GetOSClass@PProcess@@SA?AVPString@@XZ @1553 NONAME ;public: static class PString  __cdecl PProcess::GetOSClass(void)
+    ?GetOSConfigDir@PProcess@@SA?AVPDirectory@@XZ @2545 NONAME ;public: static class PDirectory  __cdecl PProcess::GetOSConfigDir(void)
     ?GetOSHardware@PProcess@@SA?AVPString@@XZ @2544 NONAME ;public: static class PString  __cdecl PProcess::GetOSHardware(void)
     ?GetOSName@PProcess@@SA?AVPString@@XZ @1554 NONAME ;public: static class PString  __cdecl PProcess::GetOSName(void)
     ?GetOSVersion@PProcess@@SA?AVPString@@XZ @1555 NONAME ;public: static class PString  __cdecl PProcess::GetOSVersion(void)
@@ -2313,7 +2314,6 @@ EXPORTS
     ?Select@PSocket@@SAHAAV1@0ABVPTimeInterval@@@Z @2123 NONAME ;public: static int __cdecl PSocket::Select(class PSocket &,class PSocket &,class PTimeInterval const &)
     ?SendCommandString@PChannel@@QAEHABVPString@@@Z @2124 NONAME ;public: int __thiscall PChannel::SendCommandString(class PString const &)
     ?SendNote@PMail@@QAEHABVPString@@0PBD@Z @2125 NONAME ;public: int __thiscall PMail::SendNote(class PString const &,class PString const &,char const *)
-    ?SendNote@PMail@@QAEHABVPStringList@@ABVPString@@PBDH@Z @2126 NONAME ;public: int __thiscall PMail::SendNote(class PStringList const &,class PString const &,char const *,int)
     ?Serialise@PObject@@UAEXAAVPSerialiser@@@Z @2127 NONAME ;public: virtual void __thiscall PObject::Serialise(class PSerialiser &)
     ?SetAllocationBreakpoint@PMemoryHeap@@SAXK@Z @2128 NONAME ;public: static void __cdecl PMemoryHeap::SetAllocationBreakpoint(unsigned long)
     ?SetArgs@PArgList@@QAEXABVPString@@@Z @2129 NONAME ;public: void __thiscall PArgList::SetArgs(class PString const &)
@@ -2488,4 +2488,5 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    ?GetOSConfigDir@PProcess@@SA?AVPDirectory@@XZ @2545 NONAME ;public: static class PDirectory  __cdecl PProcess::GetOSConfigDir(void)
+    ?SendNote@PMail@@QAEHABVPString@@0PBDABVPStringList@@@Z @2546 NONAME ;public: int __thiscall PMail::SendNote(class PString const &,class PString const &,char const *,class PStringList const &)
+    ?SendNote@PMail@@QAEHABVPString@@ABVPStringList@@10PBD1@Z @2547 NONAME ;public: int __thiscall PMail::SendNote(class PString const &,class PStringList const &,class PStringList const &,class PString const &,char const *,class PStringList const &)
