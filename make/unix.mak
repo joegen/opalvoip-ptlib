@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.113  2002/01/15 12:17:53  craigs
+# Changed Solaris flags to make fd set size 4096.
+# This allows more OpenH323 connections under Solaris
+# Thanks to johan.gnosspelius@pipebeach.com
+#
 # Revision 1.112  2001/12/17 23:33:50  robertj
 # Solaris 8 porting changes, thanks James Dugal
 #
@@ -716,7 +721,9 @@ SYSLIBDIR	:= /opt/openh323/lib
 
 ifdef P_PTHREADS
 ENDLDLIBS	+= -lpthread
-STDCCFLAGS	+= -D_REENTRANT
+# extend fd set size to 4096 to allow more connections,
+# from johan.gnosspelius@pipebeach.com
+STDCCFLAGS	+= -D_REENTRANT -DFD_SETSIZE=4096
 endif
 
 # Rest added by jpd@louisiana.edu, to get .so libs created!
