@@ -27,6 +27,23 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.67.2.1  2005/02/04 05:19:08  csoutheren
+ * Backported patches from Atlas-devel
+ *
+ * Revision 1.71  2005/01/16 21:27:01  csoutheren
+ * Changed PIPSocket::IsAny to be const
+ *
+ * Revision 1.70  2004/12/20 07:59:33  csoutheren
+ * Fixed operator *= for IPV6
+ *
+ * Revision 1.69  2004/12/14 14:24:19  csoutheren
+ * Added PIPSocket::Address::operator*= to compare IPV4 addresses
+ * to IPV4-compatible IPV6 addresses. More documentation needed
+ * once this is tested as working
+ *
+ * Revision 1.68  2004/12/14 06:20:29  csoutheren
+ * Added function to get address of network interface
+ *
  * Revision 1.67  2004/08/24 07:08:13  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -322,7 +339,7 @@ class PIPSocket : public PSocket
         Address & operator=(DWORD dw);
         //@}
 
-        /// Compare two adresses
+        /// Compare two adresses for absolute (in)equality
         Comparison Compare(const PObject & obj) const;
         bool operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
         bool operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
@@ -352,6 +369,14 @@ class PIPSocket : public PSocket
 #endif
         bool operator==(int i) const      { return  operator==((DWORD)i); }
         bool operator!=(int i) const      { return !operator==((DWORD)i); }
+
+	/// Compare two addresses for equivalence. This will return TRUE
+        /// if the two addresses are equivalent even if they are IPV6 and IPV4
+#if P_HAS_IPV6
+        bool operator*=(const Address & addr) const;
+#else
+        bool operator*=(const Address & addr) const { return operator==(addr); }
+#endif
 
         /// Format an address as a string
         PString AsString() const;
@@ -401,7 +426,7 @@ class PIPSocket : public PSocket
 
         /// Check address 0.0.0.0 or :: 
         BOOL IsValid() const;
-        BOOL IsAny();
+        BOOL IsAny() const;
 
         /// Check address 127.0.0.1 or ::1
         BOOL IsLoopback() const;
@@ -780,13 +805,18 @@ class PIPSocket : public PSocket
     PLIST(InterfaceTable, InterfaceEntry);
 
     /** Get a list of all interfaces
-
        @return
        TRUE if the interface table is returned, FALSE if an error occurs.
      */
     static BOOL GetInterfaceTable(
       InterfaceTable & table      /// interface table
     );
+
+    /** Get the address of an interface that corresponds to a real network
+       @return
+       FALSE if only loopback interfaces could be found, else TRUE
+     */
+    static BOOL GetNetworkInterface(PIPSocket::Address & addr);
 
 #if P_HAS_RECVMSG
 
