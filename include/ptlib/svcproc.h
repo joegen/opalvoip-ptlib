@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.8 1997/07/08 13:02:32 robertj Exp $
+ * $Id: svcproc.h,v 1.9 1998/02/03 06:19:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.9  1998/02/03 06:19:14  robertj
+ * Added extra log levels.
+ *
  * Revision 1.8  1997/07/08 13:02:32  robertj
  * DLL support.
  *
@@ -57,11 +60,14 @@ class PSystemLog : public PObject, public iostream {
 
   public:
     enum Level {
-      Fatal,   // Log a fatal error
-      Error,   // Log a non-fatal error
-      Warning, // Log a warning
-      Info,    // Log general information
-      Debug,   // Log debug trace information
+      StdError = -1, // Log from standard error stream
+      Fatal,    // Log a fatal error
+      Error,    // Log a non-fatal error
+      Warning,  // Log a warning
+      Info,     // Log general information
+      Debug,    // Log debugging information
+      Debug2,   // Log more debugging information
+      Debug3,   // Log even more debugging information
       NumLogLevels
     };
     // Type of log message.
