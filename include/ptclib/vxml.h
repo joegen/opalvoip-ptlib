@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.12  2002/08/08 01:03:19  craigs
+ * Added function to re-enable automatic call clearing on script end
+ *
  * Revision 1.11  2002/08/06 07:44:56  craigs
  * Added lots of stuff from OpalVXML
  *
@@ -294,6 +297,8 @@ class PVXMLSession : public PIndirectChannel
     virtual void SetVar(const PString & ostr, const PString & val);
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, DialogExecute);
+
+    void AllowClearCall();
 
   protected:
     BOOL ExecuteWithoutLock();
