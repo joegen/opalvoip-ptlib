@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.79  2002/07/17 09:18:00  robertj
+ * made detection of gif file more intelligent for debug version.
+ *
  * Revision 1.78  2002/07/17 08:03:45  robertj
  * Allowed for adjustable copyright holder.
  * Allowed for not having gif file for product name in default header.
@@ -327,7 +330,13 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   ignoreSignatures = FALSE;
 
   if (inf.gifFilename != NULL) {
-    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, GetFile().GetDirectory()+inf.gifFilename));
+    PDirectory exeDir = GetFile().GetDirectory();
+#if defined(_WIN32) && defined(_DEBUG)
+    // Special check to aid in using DevStudio for debugging.
+    if (exeDir.Find("\\Debug\\") != P_MAX_INDEX)
+      exeDir = exeDir.GetParent();
+#endif
+    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
     if (gifHTML.IsEmpty()) {
       gifHTML = psprintf("<img src=\"/%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
       if (inf.gifWidth != 0 && inf.gifHeight != 0)
