@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.9 1996/01/23 13:13:32 robertj Exp $
+ * $Id: lists.h,v 1.10 1996/05/26 03:25:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.10  1996/05/26 03:25:13  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.9  1996/01/23 13:13:32  robertj
  * Fixed bug in sorted list GetObjectsIndex not checking if is same object
  *
@@ -400,7 +403,7 @@ PDECLARE_CLASS(PQueue, PAbstractList)
 
     virtual void Enqueue(
       T * obj   // Object to add to the queue.
-    ) { PAbstractList::Append(t); }
+    ) { PAbstractList::Append(obj); }
     /* Add a new object to the queue. This places a new link at the "tail" of
        the list, which is the "in" side of the queue.
      */
