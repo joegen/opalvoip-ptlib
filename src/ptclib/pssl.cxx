@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.14 2000/09/01 03:32:46 robertj Exp $
+ * $Id: pssl.cxx,v 1.15 2000/11/03 10:00:43 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.15  2000/11/03 10:00:43  robertj
+ * Fixed initialisation of SSL, needed random number seed for some modes.
+ *
  * Revision 1.14  2000/09/01 03:32:46  robertj
  * Fixed assert on setting directories for CAs.
  *
@@ -129,6 +132,7 @@ extern "C" {
 #include <openssl/err.h>
 #include <openssl/crypto.h>
 #include <openssl/buffer.h>
+#include <openssl/rand.h>
 
 };
 
@@ -168,6 +172,8 @@ static PMutex InitialisationMutex;
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
+  PINDEX i;
+
   InitialisationMutex.Wait();
 
   static BOOL needInitialisation = TRUE;
@@ -175,9 +181,16 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
 
+    // Initialise all of the mutexes for multithreaded operation.
     LockMutexes.SetSize(CRYPTO_num_locks());
-    for (PINDEX i = 0; i < LockMutexes.GetSize(); i++)
+    for (i = 0; i < LockMutexes.GetSize(); i++)
       LockMutexes.SetAt(i, new PMutex);
+
+    // Seed the random number generator
+    BYTE seed[128];
+    for (i = 0; i < sizeof(seed); i++)
+      seed[i] = (BYTE)rand();
+    RAND_seed(seed, sizeof(seed));
 
     needInitialisation = FALSE;
   }
