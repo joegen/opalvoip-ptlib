@@ -305,7 +305,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS PWLIBDIR PWINSTDIR INSTALLPREFIX PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE SHAREDLIBEXT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP TRY_1394DC TRY_1394AVC HAS_OPENLDAP HAS_OPENSSL HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE SHAREDLIBEXT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP TRY_1394DC TRY_1394AVC HAS_OPENLDAP HAS_OPENSSL HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1240,6 +1240,11 @@ if test "x$prefix" = "xNONE"; then
 else
    INSTALLPREFIX="${prefix}"
 fi
+
+
+
+
+LIBDIR="${libdir}"
 
 
 
@@ -5984,6 +5989,7 @@ s,@LIBS@,$LIBS,;t t
 s,@PWLIBDIR@,$PWLIBDIR,;t t
 s,@PWINSTDIR@,$PWINSTDIR,;t t
 s,@INSTALLPREFIX@,$INSTALLPREFIX,;t t
+s,@LIBDIR@,$LIBDIR,;t t
 s,@PWLIB_VERSION@,$PWLIB_VERSION,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
