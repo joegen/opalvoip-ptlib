@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.18 1998/01/26 00:54:58 robertj Exp $
+ * $Id: remconn.cxx,v 1.19 1998/02/03 06:16:44 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.19  1998/02/03 06:16:44  robertj
+ * Added more error codes.
+ *
  * Revision 1.18  1998/01/26 00:54:58  robertj
  * Added function to PRemoteConnection to get at OS error code.
  *
@@ -301,6 +304,13 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
       case ERROR_PORT_ALREADY_OPEN :
       case ERROR_PORT_NOT_AVAILABLE :
         return PortInUse;
+      case ERROR_ACCESS_DENIED :
+      case ERROR_NO_DIALIN_PERMISSION :
+      case ERROR_AUTHENTICATION_FAILURE :
+        return AccessDenied;
+      case ERROR_HARDWARE_FAILURE :
+      case ERROR_PORT_OR_DEVICE :
+        return HardwareFailure;
     }
     return GeneralFailure;
   }
