@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.17  1998/10/31 12:47:59  robertj
+ * Removed ability to start threads immediately, race condition with vtable (Main() function).
+ *
  * Revision 1.16  1998/09/23 06:21:41  robertj
  * Added open source copyright license.
  *
@@ -134,17 +137,11 @@ PDECLARE_CLASS(PThread, PObject)
       AutoDeleteThread,   // Automatically delete thread object on termination.
       NoAutoDeleteThread  // Don't delete thread as it may not be on heap.
     };
-    enum InitialSuspension {
-      StartSuspended,     // Start the thread initially suspended.
-      StartImmediate      // Start the thread as soon as possible.
-    };
 
     PThread(
       PINDEX stackSize,                 // Size of stack to use for thread.
-      AutoDeleteFlag deletion,
+      AutoDeleteFlag deletion = AutoDeleteThread,
         // Automatically delete PThread instance on termination of thread.
-      InitialSuspension start = StartSuspended,
-        // Thread does not execute immediately.
       Priority priorityLevel = NormalPriority  // Initial priority of thread.
     );
     /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
