@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.30 1994/12/12 10:16:27 robertj Exp $
+ * $Id: contain.cxx,v 1.31 1994/12/12 13:13:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.30  1994/12/12 10:16:27  robertj
+ * Revision 1.31  1994/12/12 13:13:17  robertj
+ * Fixed bugs in PString mods just made.
+ *
+ * Revision 1.30  1994/12/12  10:16:27  robertj
  * Restructuring and documentation of container classes.
  * Renaming of some macros for declaring container classes.
  * Added some extra functionality to PString.
@@ -637,7 +640,7 @@ void PString::Delete(PINDEX start, PINDEX len)
   if (start + len > slen)
     SetAt(start, '\0');
   else
-    PSTRING_MOVE(theArray, start, theArray, start+len, slen-start-len);
+    PSTRING_MOVE(theArray, start, theArray, start+len, slen-start-len+1);
   MakeMinimumSize();
 }
 
@@ -1038,15 +1041,17 @@ PINDEX PCaselessString::Find(const char * cstr, PINDEX offset) const
   if (offset > len)
     offset = len;
 
-  const char *cpos = theArray+offset;
-  while (*cpos != '\0') {
+  const char * chpos = theArray+offset;
+  while (*chpos != '\0') {
     const char * cptr = cstr;
-    while (toupper(*cptr) == toupper(*cpos)) {
+    const char * sptr = chpos;
+    while (toupper(*cptr) == toupper(*sptr)) {
       cptr++;
       if (*cptr == '\0')
-        return (int)(cpos - theArray);
+        return (int)(chpos - theArray);
+      sptr++;
     }
-    cpos++;
+    chpos++;
   }
   return P_MAX_INDEX;
 }
