@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.25  1998/10/29 11:58:51  robertj
+ * Added ability to configure the HTTP threads stack size.
+ *
  * Revision 1.24  1998/09/23 06:19:34  robertj
  * Added open source copyright license.
  *
@@ -153,8 +156,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     virtual void OnConfigChanged() = 0;
     virtual BOOL Initialise(const char * initMsg) = 0;
 
-    BOOL ListenForHTTP(WORD port, BOOL startThread = TRUE);
-    BOOL ListenForHTTP(PSocket * listener, BOOL startThread = TRUE);
+    BOOL ListenForHTTP(WORD port, PINDEX stackSize = 0x4000);
+    BOOL ListenForHTTP(PSocket * listener, PINDEX stackSize = 0x4000);
 
     virtual PString GetPageGraphic();
     void GetPageHeader(PHTML &);
@@ -208,7 +211,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
 PDECLARE_CLASS(PHTTPServiceThread, PThread)
   public:
-    PHTTPServiceThread(PHTTPServiceProcess & app,
+    PHTTPServiceThread(PINDEX stackSize,
+                       PHTTPServiceProcess & app,
                        PSocket & listeningSocket,
                        PHTTPSpace & http);
 
@@ -218,6 +222,7 @@ PDECLARE_CLASS(PHTTPServiceThread, PThread)
     PHTTPServiceProcess & process;
     PSocket & listener;
     PHTTPSpace & httpNameSpace;
+    PINDEX myStackSize;
 };
 
 
