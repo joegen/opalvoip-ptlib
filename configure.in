@@ -592,9 +592,6 @@ int main(int argc,char **argv){}]],SSLHDR=1)
   dnl several standard places, and check for crazy RedHat install too
   if test "${SSLHDR:-unset}" = "unset" ; then
 
-    dnl We want to switch to C language to get .c extension for conftest files
-    AC_LANG_PUSH(C)
-
     for openssl_dir in /usr/local/openssl /usr/local/ssl ; do
       AC_MSG_CHECKING([for OpenSSL in $openssl_dir])
       if test ! -f ${openssl_dir}/include/openssl/ssl.h ; then
@@ -602,7 +599,7 @@ int main(int argc,char **argv){}]],SSLHDR=1)
       else
         AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
 int main(int argc,char **argv){ return 0; }]])
-        $CC $CFLAGS -I${openssl_dir}/include -c conftest.c > /dev/null 2>&1
+        $CXX $CXXFLAGS -I${openssl_dir}/include -c conftest.cc > /dev/null 2>&1
         if test $? = 0 ; then
           AC_MSG_RESULT(yes)
           SSLHDR=1
@@ -616,7 +613,7 @@ int main(int argc,char **argv){ return 0; }]])
           AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
 #include "${openssl_dir}/include/openssl/ssl.h"
 int main(int argc,char **argv){}]])
-          $CC $CFLAGS -I${openssl_dir}/openssl/include -c conftest.c > /dev/null 2>&1
+          $CXX $CXXFLAGS -I${openssl_dir}/openssl/include -c conftest.cc > /dev/null 2>&1
           if test $? = 0 ; then
             AC_MSG_RESULT(yes)
             SSLHDR=1
@@ -632,7 +629,6 @@ int main(int argc,char **argv){}]])
         fi
       fi
     done
-    AC_LANG_POP(C)
   fi
 
   if test ${SSLHDR:-unset} != "unset" ; then
