@@ -34,6 +34,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.13  2004/04/03 08:22:23  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.12  2001/10/02 00:56:04  robertj
  * Fixed problem with autonumering enumerated types.
  *
@@ -1152,7 +1155,7 @@ ClassNumber
   : INTEGER 
   | DefinedValue
       {
-	if ($1->IsDescendant(IntegerValue::Class()))
+	if (PIsDescendant($1, IntegerValue))
 	  $$ = *(IntegerValue*)$1;
 	else
 	  PError << StdError(Fatal) << "incorrect value type." << endl;
