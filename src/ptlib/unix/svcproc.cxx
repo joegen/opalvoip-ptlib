@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.62  2001/12/09 23:45:20  craigs
+ * Set debugMode flag when in .... debug mode!
+ *
  * Revision 1.61  2001/09/20 05:35:47  robertj
  * Fixed crash (race condition) if shutdown service via signal and exit main.
  *
@@ -364,6 +367,7 @@ int PServiceProcess::InitialiseService()
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(FALSE);
 #endif
+  debugMode = FALSE;
 
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
@@ -464,8 +468,10 @@ int PServiceProcess::InitialiseService()
   }
 
   // set flag for console messages
-  if (args.HasOption('c'))
+  if (args.HasOption('c')) {
     systemLogFile = '-';
+    debugMode = TRUE;
+  }
 
   if (args.HasOption('l')) {
     systemLogFile = args.GetOptionString('l');
