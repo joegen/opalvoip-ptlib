@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.8 1996/09/14 12:34:23 robertj Exp $
+ * $Id: svcproc.cxx,v 1.9 1996/09/16 12:56:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.9  1996/09/16 12:56:27  robertj
+ * DLL support
+ *
  * Revision 1.8  1996/09/14 12:34:23  robertj
  * Fixed problem with spontaneous exit from app under Win95.
  *
@@ -823,10 +826,14 @@ PServiceProcess::ProcessCommandResult
 }
 
 
+#ifndef PMAKEDLL
+
 extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   return main(__argc, __argv, NULL);
 }
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
