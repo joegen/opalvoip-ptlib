@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.11  2003/12/18 11:16:41  dominance
+ * Removed the ALSA Abort completely upon Damien's request ;)
+ *
  * Revision 1.10  2003/12/18 10:38:55  dominance
  * Removed ALSA Abort as it segfaults in various circumstances.
  * Fix proposed by Damien Sandras <dsandras@seconix.com>.
@@ -368,9 +371,6 @@ BOOL PSoundChannelALSA::Close()
   /* if the channel isn't open, do nothing */
   if (!os_handle)
     return FALSE;
-
-  //if (isInitialised)
-  //  Abort ();
 
   snd_pcm_close (os_handle);
   os_handle = NULL;
