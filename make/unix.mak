@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.125  2002/04/18 05:12:20  robertj
+# Changed /usr/include to SYSINCDIR helps with X-compiling, thanks Bob Lindell
+#
 # Revision 1.124  2002/04/09 02:30:18  robertj
 # Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
 #
@@ -547,6 +550,11 @@ endif
 STDCCFLAGS += -Wall
 
 
+ifndef SYSINCDIR
+SYSINCDIR := /usr/include
+endif
+
+
 ####################################################
 
 ifeq ($(OSTYPE),linux)
@@ -556,7 +564,7 @@ STDCCFLAGS	+= -DP_LINUX
 
 
 # Enable pthreads if we are using glibc 6
-ifneq (,$(shell grep define.\*__GNU_LIBRARY__.\*6 /usr/include/features.h))
+ifneq (,$(shell grep define.\*__GNU_LIBRARY__.\*6 $(SYSINCDIR)/features.h))
 P_PTHREADS	= 1
 else
 ifndef PTLIB_ALT
@@ -564,7 +572,7 @@ PTLIB_ALT = libc5
 endif
 endif
 
-ifeq (,$(wildcard /usr/include/linux/videodev.h))
+ifeq (,$(wildcard $(SYSINCDIR)/linux/videodev.h))
 STDCCFLAGS	+= -DNO_VIDEO_CAPTURE
 endif
 
@@ -605,8 +613,8 @@ endif # PROG
 endif # P_SHAREDLIB
 
 ifdef TRY_1394DC
-ifneq (,$(wildcard /usr/include/libdc1394/dc1394_control.h))
-ifneq (,$(shell grep dma_device_file /usr/include/libdc1394/dc1394_control.h))
+ifneq (,$(wildcard $(SYSINCDIR)/libdc1394/dc1394_control.h))
+ifneq (,$(shell grep dma_device_file $(SYSINCDIR)/libdc1394/dc1394_control.h))
 ENDLDLIBS      += -lraw1394 -ldc1394_control
 STDCCFLAGS     += -DTRY_1394DC
 TRY_1394DC     =  1
@@ -615,7 +623,7 @@ $(warning "Libdc1394 is installed but its version is older than required. The 13
 TRY_1394DC     =
 endif
 else
-$(error "TRY_1394DC is defined but /usr/include/libdc1394/dc1394_control.h does not exist.")
+$(error "TRY_1394DC is defined but $(SYSINCDIR)/libdc1394/dc1394_control.h does not exist.")
 endif
 endif
 
@@ -1141,8 +1149,8 @@ endif # DEBUG
 # define OpenSSL variables if installed
 ifndef OPENSSLDIR
 
-ifneq (,$(wildcard /usr/include/openssl))
-OPENSSLDIR := /usr/include
+ifneq (,$(wildcard $(SYSINCDIR)/openssl))
+OPENSSLDIR := $(SYSINCDIR)
 export OPENSSLDIR
 endif
 
@@ -1164,7 +1172,7 @@ endif
 
 
 # define expat (XML parser) variables if installed
-ifneq (,$(wildcard /usr/include/expat.h))
+ifneq (,$(wildcard $(SYSINCDIR)/expat.h))
 HAS_EXPAT	= 1
 ENDLDLIBS	+= -lexpat
 STDCCFLAGS	+= -DP_EXPAT

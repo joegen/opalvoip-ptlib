@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.89  2002/04/18 05:12:20  robertj
+# Changed /usr/include to SYSINCDIR helps with X-compiling, thanks Bob Lindell
+#
 # Revision 1.88  2002/04/02 11:59:32  craigs
 # Added pxmlrpc
 #
@@ -327,7 +330,7 @@ endif
 
 VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
 
-ifneq (,$(wildcard /usr/include/linux/videodev.h))
+ifneq (,$(wildcard $(SYSINCDIR)/linux/videodev.h))
 VIDEO_CAPTURE_SOURCE = video4linux.cxx
 endif
 
