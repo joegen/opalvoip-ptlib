@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.56  1999/09/13 13:15:08  robertj
+ * Changed PTRACE so will output to system log in PServiceProcess applications.
+ *
  * Revision 1.55  1999/08/07 01:43:41  robertj
  * Added "NoWin" option to prevent display of window in command line commands.
  *
@@ -497,12 +500,13 @@ int PServiceProcess::_main(void * arg)
   PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+  PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
+  PTrace::ClearOptions(PTrace::FileAndLine);
+  PTrace::SetOptions(PTrace::SystemLogStream);
+  PTrace::SetLevel(4);
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(FALSE);
 #endif
-
-  static PDebugStream debugStream;
-  PTrace::SetStream(&debugStream);
 
   hInstance = (HINSTANCE)arg;
 
