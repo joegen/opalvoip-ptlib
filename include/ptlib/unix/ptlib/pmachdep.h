@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.30  2000/01/25 04:55:36  robertj
+ * Added FreeBSD support for distinction between v3.x and later versions. Thanks Roger Hardiman.
+ *
  * Revision 1.29  2000/01/20 08:20:57  robertj
  * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
  *
@@ -121,6 +124,11 @@ typedef size_t socklen_t;
 #include <sys/sockio.h>
 #include <sys/signal.h>
 #include <net/if.h>
+
+/* socklen_t is defined in FreeBSD 4.0 and above in sys/socket.h */
+#if (P_FREEBSD < 4)
+typedef int socklen_t;
+#endif
 
 #define HAS_IFREQ
 
