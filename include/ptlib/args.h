@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.7 1994/12/05 11:15:13 robertj Exp $
+ * $Id: args.h,v 1.8 1995/03/14 12:40:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.7  1994/12/05 11:15:13  robertj
+ * Revision 1.8  1995/03/14 12:40:58  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.7  1994/12/05  11:15:13  robertj
  * Documentation.
  *
  * Revision 1.6  1994/11/26  03:44:19  robertj
@@ -112,7 +115,8 @@ PDECLARE_CLASS(PArgList, PObject)
     /* Get the count of the number of times the option was specified on the
        command line.
 
-       Returns: option repeat count.
+       <H2>Returns:</H2>
+       option repeat count.
      */
 
     BOOL HasOption(
@@ -123,7 +127,8 @@ PDECLARE_CLASS(PArgList, PObject)
     ) const;
     /* Get the whether the option was specified on the command line.
 
-       Returns: TRUE if the option was present.
+       <H2>Returns:</H2>
+       TRUE if the option was present.
      */
 
     PString GetOptionString(
@@ -139,14 +144,17 @@ PDECLARE_CLASS(PArgList, PObject)
        if it had a ':' character folowing it in the specification string passed
        to the Parse() function.
 
-       Returns: the options associated string.
+       <H2>Returns:</H2>
+       the options associated string.
      */
 
     PINDEX GetCount() const;
-    /* Get the number of parameters that may be obtained via the GetParameter()
-       function. Note that this does not include options and option strings.
+    /* Get the number of parameters that may be obtained via the
+       <A><CODE>GetParameter()</CODE><A> function. Note that this does not
+       include options and option strings.
 
-       Returns: count of parameters.
+       <H2>Returns:</H2>
+       count of parameters.
      */
 
     PString GetParameter(
@@ -154,7 +162,8 @@ PDECLARE_CLASS(PArgList, PObject)
     ) const;
     /* Get the parameter that was parsed in the argument list.
 
-       Returns: parameter string at the specified index.
+       <H2>Returns:</H2>
+       parameter string at the specified index.
      */
 
     PString operator[](
@@ -163,7 +172,8 @@ PDECLARE_CLASS(PArgList, PObject)
     /* Get the parameter that was parsed in the argument list. The argument
        list object can thus be treated as an "array" of parameters.
 
-       Returns: parameter string at the specified index.
+       <H2>Returns:</H2>
+       parameter string at the specified index.
      */
 
     void Shift(
@@ -193,7 +203,7 @@ PDECLARE_CLASS(PArgList, PObject)
     ) const;
     /* This function is called when access to illegal parameter index is made
        in the GetParameter function. The default behaviour is to output a
-       message to the standard $H$PError stream.
+       message to the standard <A>PError</A> stream.
      */
 
     virtual void UnknownOption(
@@ -201,7 +211,7 @@ PDECLARE_CLASS(PArgList, PObject)
     ) const;
     /* This function is called when an unknown option was specified on the
        command line. The default behaviour is to output a message to the
-       standard $H$PError stream.
+       standard <A>PError</A> stream.
      */
 
     virtual void MissingArgument(
@@ -210,7 +220,7 @@ PDECLARE_CLASS(PArgList, PObject)
     /* This function is called when an option that requires an associated
        string was specified on the command line but no associated string was
        provided. The default behaviour is to output a message to the standard
-       $H$PError stream.
+       <A>PError</A> stream.
      */
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.4 1995/02/22 10:50:26 robertj Exp $
+ * $Id: array.h,v 1.5 1995/03/14 12:40:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
- * Revision 1.4  1995/02/22 10:50:26  robertj
+ * Revision 1.5  1995/03/14 12:40:58  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.4  1995/02/22  10:50:26  robertj
  * Changes required for compiling release (optimised) version.
  *
  * Revision 1.3  1995/01/15  04:49:09  robertj
@@ -34,37 +37,37 @@ class PArrayObjects;
 PDECLARE_CONTAINER(PAbstractArray, PContainer)
 /* This class contains a variable length array of arbitrary memory blocks.
    These can be anything from individual bytes to large structures. Note that
-   that does $U$not$U$ include class objects that require construction or
+   that does <EM>not</EM> include class objects that require construction or
    destruction. Elements in this array will not execute the contructors or
    destructors of objects.
 
    An abstract array consists of a linear block of memory sufficient to hold
-   $B$GetSize()$B$ elements of $B$elementSize$B$ bytes each. The memory block
-   itself will atuomatically be resized when required and freed when no more
-   references to it are present.
+   <A><CODE>GetSize()</CODE></A> elements of <CODE>elementSize</CODE> bytes
+   each. The memory block itself will atuomatically be resized when required
+   and freed when no more references to it are present.
 
    An important feature of abstract array classes, which is not normally
    present in container classes, is that when the array contents is changed, 
    that is resized or elemnts set, the array is derefrerenced, and a duplicate
    made of its contents. That is this instance of the array is disconnected
    from all other references, if any, and a new array contents created. For
-   example consider the following:$F$
-
+   example consider the following:
+   <PRE><CODE>
           PString s1 = "String"; // New array allocated and set to "String"
           PString s2 = s1;       // s2 has pointer to same array as s1
                                  // and reference count is 2 for both
           s1[0] = 's';           // Breaks references into different strings
-
+   </CODE></PRE>
    at the end s1 is "string" and s2 is "String" both with reference count of 1.
 
    The PAbstractArray class would very rarely be descended from directly by
-   the user. The $H$PDECLARE_BASEARRAY and $H$PBASEARRAY macros would normally be
-   used to create descendent classes. They will instantiate the template based
-   on $H$PBaseArray or directly declare and define the class (using inline
-   functions) if templates are not being used.
+   the user. The <A>PDECLARE_BASEARRAY</A> and <A>PBASEARRAY</A> macros would
+   normally be used to create descendent classes. They will instantiate the
+   template based on <A>PBaseArray</A> or directly declare and define the class
+   (using inline functions) if templates are not being used.
 
-   The $H$PBaseArray class or $H$PDECLARE_BASEARRAY macro will define the
-   correctly typed operators for pointer access (operator const T *) and
+   The <A>PBaseArray</A> class or <A>PDECLARE_BASEARRAY</A> macro will define
+   the correctly typed operators for pointer access (operator const T *) and
    subscript access (operator[]).
  */
 
@@ -78,14 +81,14 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        */
       PINDEX initialSize = 0      // Number of elements to allocate initially.
     );
-    /* Create a new dynamic array of $B$initalSize$B$ elements of
-       $B$elementSizeInBytes$B$ bytes each. The array memory is initialised to
-       zeros.
+    /* Create a new dynamic array of <CODE>initalSize</CODE> elements of
+       <CODE>elementSizeInBytes</CODE> bytes each. The array memory is
+       initialised to zeros.
 
        If the initial size is zero then no memory is allocated. Note that the
        internal pointer is set to NULL, not to a pointer to zero bytes of
        memory. This can be an important distinction when the pointer is
-       obtained via an operator created in the $H$PDECLARE_BASEARRAY macro.
+       obtained via an operator created in the <A>PDECLARE_BASEARRAY</A> macro.
      */
 
     PAbstractArray(
@@ -96,14 +99,15 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
       const void *buffer,         // Pointer to an array of elements.
       PINDEX bufferSizeInElements // Number of elements pointed to by buffer.
     );
-    /* Create a new dynamic array of $B$bufferSizeInElements$B$ elements of
-       $B$elementSizeInBytes$B$ bytes each. The contents of the memory pointed
-       to by buffer is then used to initialise the newly allocated array.
+    /* Create a new dynamic array of <CODE>bufferSizeInElements</CODE>
+       elements of <CODE>elementSizeInBytes</CODE> bytes each. The contents of
+       the memory pointed to by buffer is then used to initialise the newly
+       allocated array.
 
        If the initial size is zero then no memory is allocated. Note that the
        internal pointer is set to NULL, not to a pointer to zero bytes of
        memory. This can be an important distinction when the pointer is
-       obtained via an operator created in the $H$PDECLARE_BASEARRAY macro.
+       obtained via an operator created in the <A>PDECLARE_BASEARRAY</A> macro.
      */
 
   // Overrides from class PObject
@@ -112,21 +116,24 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
     ) const;
     /* Get the relative rank of the two arrays. The following algorithm is
        employed for the comparison:
-        
-        $I$EqualTo$I$     if the two array memory blocks are identical in
-                          length and contents.
-        $I$LessThan$I$    if the array length is less than the $B$obj$B$
-                          parameters array length.
-        $I$GreaterThan$I$ if the array length is greater than the $B$obj$B$
-                          parameters array length.
+          
+          <DL>
+          <DT>EqualTo<DD>     if the two array memory blocks are identical in
+                              length and contents.
+          <DT>LessThan<DD>    if the array length is less than the
+                              <CODE>obj</CODE> parameters array length.
+          <DT>GreaterThan<DD> if the array length is greater than the
+                              <CODE>obj</CODE> parameters array length.
+          </DL>
 
-        If the array sizes are identical then the memcmp() function is used
-        to rank the two arrays.
+        If the array sizes are identical then the <CODE>memcmp()</CODE>
+        function is used to rank the two arrays.
 
-       Returns: comparison of the two objects, $B$EqualTo$B$ for same,
-                $B$LessThan$B$ for $B$obj$B$ logically less than the object
-                and $B$GreaterThan$B$ for $B$obj$B$ logically greater than
-                the object.
+       <H2>Returns:</H2>
+       comparison of the two objects, <CODE>EqualTo</CODE> for same,
+       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
+       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       greater than the object.
      */
 
   // Overrides from class PContainer
@@ -142,7 +149,8 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        references to an array. A new array is allocated and the data from the
        old array copied to it.
 
-       Returns: TRUE if the memory for the array was allocated successfully.
+       <H2>Returns:</H2>
+       TRUE if the memory for the array was allocated successfully.
      */
 
   // New functions for class
@@ -163,7 +171,8 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        references to an array. A new array is allocated and the data from the
        old array copied to it.
 
-       Returns: pointer to the array memory.
+       <H2>Returns:</H2>
+       pointer to the array memory.
      */
 
   protected:
@@ -186,19 +195,21 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
 /* This template class maps the PAbstractArray to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the $H$PDECLARE_BASEARRAY macro will
+   Note that if templates are not used the <A>PDECLARE_BASEARRAY</A> macro will
    simulate the template instantiation.
 
    The following classes are instantiated automatically for the basic scalar
    types:
-        PCharArray
-        PBYTEArray
-        PShortArray
-        PWORDArray
-        PIntArray
-        PUnsignedArray
-        PLongArray
-        PDWORDArray
+        <UL>
+        <LI><A><CODE>PCharArray</A></CODE>
+        <LI><A><CODE>PBYTEArray</A></CODE>
+        <LI><A><CODE>PShortArray</A></CODE>
+        <LI><A><CODE>PWORDArray</A></CODE>
+        <LI><A><CODE>PIntArray</A></CODE>
+        <LI><A><CODE>PUnsignedArray</A></CODE>
+        <LI><A><CODE>PLongArray</A></CODE>
+        <LI><A><CODE>PDWORDArray</A></CODE>
+        </UL>
  */
 
   public:
@@ -212,8 +223,10 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
      */
     
     PBaseArray(
-      T const * buffer, // Pointer to an array of the elements of type $B$T$B$.
-      PINDEX length     // Number of elements pointed to by $B$buffer$B$.
+      T const * buffer,
+      // Pointer to an array of the elements of type <B>T</B>.
+      PINDEX length
+      // Number of elements pointed to by <CODE>buffer</CODE>.
     ) : PAbstractArray(sizeof(T), buffer, length) { }
     /* Construct a new dynamic array of elements of the specified type.
      */
@@ -229,42 +242,47 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        references to an array. A new array is allocated and the data from the
        old array copied to it.
 
-       Returns: TRUE if new memory for the array was successfully allocated.
+       <H2>Returns:</H2>
+       TRUE if new memory for the array was successfully allocated.
      */
 
     T GetAt(
       PINDEX index  // Position on the array to get value from.
     ) const { PASSERTINDEX(index);
                     return index < GetSize() ? ((T *)theArray)[index] : (T)0; }
-    /* Get a value from the array. If the $B$index$B$ is beyond the end of the
-       allocated array then a zero value is returned.
+    /* Get a value from the array. If the <CODE>index</CODE> is beyond the end
+       of the allocated array then a zero value is returned.
 
-       Returns: value at the array position.
+       <H2>Returns:</H2>
+       value at the array position.
      */
 
     T operator[](
       PINDEX index  // Position on the array to get value from.
     ) const { return GetAt(index); }
-    /* Get a value from the array. If the $B$index$B$ is beyond the end of the
-       allocated array then a zero value is returned.
+    /* Get a value from the array. If the <CODE>index</CODE> is beyond the end
+       of the allocated array then a zero value is returned.
 
-       This is functionally identical to the $B$GetAt()$B$ function.
+       This is functionally identical to the <A><CODE>GetAt()</CODE></A>
+       function.
 
-       Returns: value at the array position.
+       <H2>Returns:</H2>
+       value at the array position.
      */
 
     T & operator[](
       PINDEX index  // Position on the array to get value from.
     ) { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory);
         return ((T *)theArray)[index]; }
-    /* Get a reference to value from the array. If the $B$index$B$ is beyond
-       the end of the allocated array then the array is expanded. If a memory
-       allocation failure occurs the function asserts.
+    /* Get a reference to value from the array. If the <CODE>index</CODE> is
+       beyond the end of the allocated array then the array is expanded. If a
+       memory allocation failure occurs the function asserts.
 
-       This is functionally similar to the $B$SetAt()$B$ function and allows
-       the array subscript to be an lvalue.
+       This is functionally similar to the <A><CODE>SetAt()</CODE></A> function
+       and allows the array subscript to be an lvalue.
 
-       Returns: reference to value at the array position.
+       <H2>Returns:</H2>
+       reference to value at the array position.
      */
 
     T * GetPointer(
@@ -284,7 +302,8 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        references to an array. A new array is allocated and the data from the
        old array copied to it.
 
-       Returns: pointer to the array memory.
+       <H2>Returns:</H2>
+       pointer to the array memory.
      */
 
     operator T const *() const { return (T const *)theArray; }
@@ -298,20 +317,22 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        simple calls to atomic functions, or very careful examination of the
        program logic must be performed.
 
-       Returns: constant pointer to the array memory.
+       <H2>Returns:</H2>
+       constant pointer to the array memory.
      */
 };
 
 /*$MACRO PDECLARE_BASEARRAY(cls, T)
    This macro is used to declare a descendent of PAbstractArray class,
-   customised for a particular element type $B$T$B$.
+   customised for a particular element type <B>T</B>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$PBaseArray template class. If templates are not being used then
-   the macro defines a set of inline functions to do all casting of types. The
-   resultant classes have an identical set of functions in either case.
+   of the <A>PBaseArray</A> template class. If templates are not being used
+   then the macro defines a set of inline functions to do all casting of types.
+   The resultant classes have an identical set of functions in either case.
 
-   See the $H$PBaseArray and $H$PAbstractArray classes for more information.
+   See the <A>PBaseArray</A> and <A>PAbstractArray</A> classes for more
+   information.
  */
 #define PDECLARE_BASEARRAY(cls, T) \
   PDECLARE_CLASS(cls, PBaseArray<T>) \
@@ -324,13 +345,13 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
 
 /*$MACRO PBASEARRAY(cls, T)
    This macro is used to declare a descendent of PAbstractArray class,
-   customised for a particular element type $B$T$B$. This macro closes the
+   customised for a particular element type <B>T</B>. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$PBaseArray template class.
+   of the <A>PBaseArray</A> template class.
 
-   See the $H$PDECLARE_BASEARRAY for more information.
+   See the <A>PDECLARE_BASEARRAY</A> for more information.
  */
 #define PBASEARRAY(cls, T) typedef PBaseArray<T> cls
 
@@ -347,9 +368,11 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
     inline BOOL SetAt(PINDEX index, P_##cls##_Base_Type val) \
-      { return SetMinSize(index+1) && val==(((P_##cls##_Base_Type *)theArray)[index] = val); } \
+      { return SetMinSize(index+1) && \
+                     val==(((P_##cls##_Base_Type *)theArray)[index] = val); } \
     inline P_##cls##_Base_Type GetAt(PINDEX index) const \
-      { PASSERTINDEX(index); return index < GetSize() ? ((P_##cls##_Base_Type *)theArray)[index] : (P_##cls##_Base_Type)0; } \
+      { PASSERTINDEX(index); return index < GetSize() ? \
+          ((P_##cls##_Base_Type*)theArray)[index] : (P_##cls##_Base_Type)0; } \
     inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
       { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline P_##cls##_Base_Type operator[](PINDEX index) const \
@@ -381,8 +404,8 @@ PBASEARRAY(PDWORDArray, DWORD);
 
 PDECLARE_CONTAINER(PArrayObjects, PCollection)
 /* This class is a collection of objects which are descendents of the
-   $H$PObject class. It is implemeted as a dynamic, linear array of pointers
-   to the objects.
+   <A>PObject</A> class. It is implemeted as a dynamic, linear array of
+   pointers to the objects.
 
    The implementation of an array allows very fast random access to items in
    the collection, but has severe penalties for inserting and deleting objects
@@ -392,14 +415,14 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
    contain NULL as the object pointer.
 
    The PArrayObjects class would very rarely be descended from directly by
-   the user. The $H$PDECLARE_ARRAY and $H$PARRAY macros would normally be used
-   to create descendent classes. They will instantiate the template based on
-   $H$PArray or directly declare and define the class (using inline functions)
-   if templates are not being used.
+   the user. The <A>PDECLARE_ARRAY</A> and <A>PARRAY</A> macros would normally
+   be used to create descendent classes. They will instantiate the template
+   based on <A>PArray</A> or directly declare and define the class (using
+   inline functions) if templates are not being used.
 
-   The $H$PArray class or $H$PDECLARE_ARRAY macro will define the correctly
-   typed operators for pointer access (operator const T *) and subscript access
-   (operator[]).
+   The <A>PArray</A> class or <A>PDECLARE_ARRAY</A> macro will define the
+   correctly typed operators for pointer access (operator const T *) and
+   subscript access (operator[]).
  */
 
   public:
@@ -415,35 +438,38 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 
   // Overrides from class PObject
     virtual Comparison Compare(
-      const PObject & obj   // Other $H$PAbstractArray to compare against.
+      const PObject & obj   // Other <A>PAbstractArray</A> to compare against.
     ) const;
     /* Get the relative rank of the two arrays. The following algorithm is
        employed for the comparison:
-        
-        $I$EqualTo$I$     if the two array memory blocks are identical in
-                          length and each objects values, not pointer, are
-                          equal.
 
-        $I$LessThan$I$    if the instances object value at an ordinal position
-                          is less than the corresponding objects value in the
-                          $B$obj$B$ parameters array.
+        <DL>
+        <DT>EqualTo<DD>     if the two array memory blocks are identical in
+                            length and each objects values, not pointer, are
+                            equal.
+
+        <DT>LessThan<DD>    if the instances object value at an ordinal
+                            position is less than the corresponding objects
+                            value in the <CODE>obj</CODE> parameters array.
                           
-                          This is also returned if all objects are equal and
-                          the instances array length is less than the $B$obj$B$
-                          parameters array length.
+                            This is also returned if all objects are equal and
+                            the instances array length is less than the
+                            <CODE>obj</CODE> parameters array length.
 
-        $I$GreaterThan$I$ if the instances object value at an ordinal position
-                          is greater than the corresponding objects value in
-                          the $B$obj$B$ parameters array.
+        <DT>GreaterThan<DD> if the instances object value at an ordinal
+                            position is greater than the corresponding objects
+                            value in the <CODE>obj</CODE> parameters array.
                           
-                          This is also returned if all objects are equal and
-                          the instances array length is greater than the
-                          $B$obj$B$ parameters array length.
+                            This is also returned if all objects are equal and
+                            the instances array length is greater than the
+                            <CODE>obj</CODE> parameters array length.
+          </DL>
 
-       Returns: comparison of the two objects, $B$EqualTo$B$ for same,
-                $B$LessThan$B$ for $B$obj$B$ logically less than the object
-                and $B$GreaterThan$B$ for $B$obj$B$ logically greater than
-                the object.
+       <H2>Returns:</H2>
+       comparison of the two objects, <CODE>EqualTo</CODE> for same,
+       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
+       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       greater than the object.
      */
 
   // Overrides from class PContainer
@@ -458,7 +484,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
        then the new object pointers are initialised to NULL. If the array is
        made smaller then the data beyond the new size is lost.
 
-       Returns: TRUE if the memory for the array was allocated successfully.
+       <H2>Returns:</H2>
+       TRUE if the memory for the array was allocated successfully.
      */
 
   // Overrides from class PCollection
@@ -468,7 +495,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     /* Append a new object to the collection. This will increase the size of
        the array by one and place the new object at that position.
     
-       Returns: index of the newly added object.
+       <H2>Returns:</H2>
+       index of the newly added object.
      */
 
     virtual PINDEX Insert(
@@ -477,16 +505,18 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     );
     /* Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the $B$Append()$B$ function is performed.
+       the <A><CODE>Append()</CODE></A> function is performed.
 
-       All objects, including the $B$before$B$ object are shifted up one in
-       the array.
+       All objects, including the <CODE>before</CODE> object are shifted up
+       one in the array.
 
        Note that the object values are compared for the search of the
-       $B$before$B$ parameter, not the pointers. So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function.
+       <CODE>before</CODE> parameter, not the pointers. So the objects in the
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function.
 
-       Returns: index of the newly inserted object.
+       <H2>Returns:</H2>
+       index of the newly inserted object.
      */
 
     virtual PINDEX InsertAt(
@@ -495,12 +525,13 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     );
     /* Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the $B$Append()$B$ function is performed.
+       equivalent of the <A><CODE>Append()</CODE></A> function is performed.
 
-       All objects, including the $B$index$B$ position object are shifted up
-       one in the array.
+       All objects, including the <CODE>index</CODE> position object are
+       shifted up one in the array.
 
-       Returns: index of the newly inserted object.
+       <H2>Returns:</H2>
+       index of the newly inserted object.
      */
 
     virtual BOOL Remove(
@@ -511,7 +542,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 
        All objects are shifted down to fill the vacated position.
 
-       Returns: TRUE if the object was in the collection.
+       <H2>Returns:</H2>
+       TRUE if the object was in the collection.
      */
 
     virtual PObject * RemoveAt(
@@ -525,7 +557,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       Returns: pointer to the object being removed, or NULL if it was deleted.
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
      */
 
     virtual BOOL SetAt(
@@ -536,7 +569,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
        will overwrite the existing entry. If the AllowDeleteObjects option is
        set then the old object is also deleted.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     virtual PObject * GetAt(
@@ -545,7 +579,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     /* Get the object at the specified ordinal position. If the index was
        greater than the size of the collection then NULL is returned.
 
-       Returns: pointer to object at the specified index.
+       <H2>Returns:</H2>
+       pointer to object at the specified index.
      */
 
     virtual PINDEX GetObjectsIndex(
@@ -555,7 +590,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
        object pointers are compared, not the values. A simple linear search
        from ordinal position zero is performed.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
     virtual PINDEX GetValuesIndex(
@@ -563,10 +599,12 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function. A
-       simple linear search from ordinal position zero is performed.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. A simple linear search from ordinal position zero is
+       performed.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
 
@@ -583,7 +621,7 @@ PDECLARE_CLASS(PArray, PArrayObjects)
 /* This template class maps the PArrayObjects to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the $H$PDECLARE_ARRAY macro will
+   Note that if templates are not used the <A>PDECLARE_ARRAY</A> macro will
    simulate the template instantiation.
  */
 
@@ -606,22 +644,26 @@ PDECLARE_CLASS(PArray, PArrayObjects)
 
     T & operator[](
       PINDEX index  // Index position in the collection of the object.
-    ) const { PAssert(GetAt(index) != NULL, PInvalidArrayElement); return *(T *)GetAt(index); }
+    ) const { PAssert(GetAt(index) != NULL, PInvalidArrayElement);
+                                                   return *(T *)GetAt(index); }
     /* Retrieve a reference  to the object in the array. If there was not an
        object at that ordinal position or the index was beyond the size of the
        array then the function asserts.
 
-       Returns: reference to the object at $B$index$B$ position.
+       <H2>Returns:</H2>
+       reference to the object at <CODE>index</CODE> position.
      */
 
     T & operator[](
       PINDEX index  // Index position in the collection of the object.
-    ) { return *(T *)(GetAt(index) != NULL ?  GetAt(index) : ((*theArray)[index] = PNEW T)); }
+    ) { return *(T *)(GetAt(index) != NULL ?  GetAt(index)
+                                           : ((*theArray)[index] = PNEW T)); }
     /* Retrieve a reference  to the object in the array. If there was not an
        object at that ordinal position or the index was beyond the size of the
        array then the function will create a new object.
 
-       Returns: reference to the object at $B$index$B$ position.
+       <H2>Returns:</H2>
+       reference to the object at <CODE>index</CODE> position.
      */
 
 
@@ -632,14 +674,15 @@ PDECLARE_CLASS(PArray, PArrayObjects)
 
 /*$MACRO PDECLARE_ARRAY(cls, T)
    This macro is used to declare a descendent of PArrayObjects class,
-   customised for a particular object type $B$T$B$.
+   customised for a particular object type <B>T</B>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$PArray template class. If templates are not being used then the
-   macro defines a set of inline functions to do all casting of types. The
+   of the <A>PArray</A> template class. If templates are not being used then
+   the macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the $H$PBaseArray and $H$PAbstractArray classes for more information.
+   See the <A>PBaseArray</A> and <A>PAbstractArray</A> classes for more
+   information.
  */
 #define PDECLARE_ARRAY(cls, T) \
   PDECLARE_CLASS(cls, PArray<T>) \
@@ -655,13 +698,13 @@ PDECLARE_CLASS(PArray, PArrayObjects)
 
 /*$MACRO PARRAY(cls, T)
    This macro is used to declare a descendent of PArrayObjects class,
-   customised for a particular object type $B$T$B$. This macro closes the
+   customised for a particular object type <B>T</B>. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$PArray template class.
+   of the <A>PArray</A> template class.
 
-   See the $H$PBaseArray class and $H$PDECLARE_ARRAY macro for more
+   See the <A>PBaseArray</A> class and <A>PDECLARE_ARRAY</A> macro for more
    information.
  */
 #define PARRAY(cls, T) typedef PArray<T> cls
@@ -681,10 +724,11 @@ PDECLARE_CLASS(PArray, PArrayObjects)
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const\
-      { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); return *(T *)(*theArray)[index]; } \
+      { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); \
+                                           return *(T *)(*theArray)[index]; } \
     inline T & operator[](PINDEX index) \
       { return *(T *)((*theArray)[index] != NULL ?  (*theArray)[index] \
-                                            : ((*theArray)[index] = PNEW T)); } \
+                                          : ((*theArray)[index] = PNEW T)); } \
 
 #define PARRAY(cls, T) PDECLARE_ARRAY(cls, T) }
 
