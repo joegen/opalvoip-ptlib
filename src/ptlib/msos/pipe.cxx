@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipe.cxx,v $
+ * Revision 1.5  2004/10/23 10:51:59  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.4  2004/04/03 06:54:30  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -96,6 +99,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     envStr = envBuf.GetPointer();
   }
 
+#ifndef _WIN32_WCE
 
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
@@ -160,6 +164,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     if (startup.hStdOutput != startup.hStdError)
       CloseHandle(startup.hStdError);
   }
+#endif // !_WIN32_WCE
 
   return IsOpen();
 }
@@ -278,6 +283,7 @@ BOOL PPipeChannel::Execute()
 
 BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
 {
+#ifndef _WIN32_WCE
   DWORD available, bytesRead;
   if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
     return ConvertOSError(-2, LastReadError);
@@ -305,6 +311,10 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
   return ConvertOSError(ReadFile(hStandardError,
                         errors.GetPointer(available+2)+1, available,
                         &bytesRead, NULL) ? 0 : -2, LastReadError);
+
+#else
+  return FALSE;
+#endif // !_WIN32_WCE
 }
 
 
