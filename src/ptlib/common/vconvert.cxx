@@ -26,6 +26,13 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.13  2001/08/03 04:21:51  dereks
+ * Add colour/size conversion for YUV422->YUV411P
+ * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
+ * Linux PVideoInputDevice.
+ * Add lots of PTRACE statement for debugging colour conversion.
+ * Add support for Sony Vaio laptop under linux. Requires 2.4.7 kernel.
+ *
  * Revision 1.12  2001/07/20 05:23:51  robertj
  * Added YUV411P to RGB24 converter.
  *
@@ -83,6 +90,12 @@ static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 #define PSTANDARD_COLOUR_CONVERTER(from,to) \
   PCOLOUR_CONVERTER(P_##from##_##to,#from,#to)
 
+static void Yuv422ToYuv422WithResize(
+    unsigned swidth, unsigned sheight, BYTE * src,
+    unsigned dwidth, unsigned dheight, BYTE * dest);
+
+static void Yuv422ToYuv411P(unsigned srcFrameWidth, unsigned srcFrameHeight, 
+			    BYTE *srcFrame, BYTE *dstFrame);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PColourConverter
@@ -109,14 +122,19 @@ PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
                                             unsigned height)
 {
   PString converterName = srcColourFormat + '\t' + destColourFormat;
+  PTRACE(3,"PColourConverter\t Create Require "<<converterName);
 
   PColourConverterRegistration * find = RegisteredColourConvertersListHead;
   while (find != NULL) {
-    if (*find == converterName)
+    PTRACE(3,"PColourConverter\tCreate test for "<< *find);
+    if (*find == converterName) {
+      PTRACE(3,"PColourConverter\t converter exists for "<<*find);
       return find->Create(width, height);
+    }
     find = find->link;
   }
 
+  PTRACE(3,"PColourConverter::\t Create Error. Did not find "<<converterName);
   return NULL;
 }
 
@@ -128,7 +146,8 @@ PColourConverter::PColourConverter(const PString & src,
   : srcColourFormat(src),
     dstColourFormat(dst)
 {
-    SetFrameSize(width, height);
+  PTRACE(3,"PColourconverter constructor. "<<src<<"->"<<dst<<" "<<width<<"x"<<height);
+  SetFrameSize(width,height);
 }
 
 
@@ -136,6 +155,7 @@ BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   BOOL ok1 = SetSrcFrameSize(width, height);
   BOOL ok2 = SetDstFrameSize(width, height, FALSE);
+  PTRACE(3,"PColourConverter::SetFrameSize "<<width<<"x"<<height << ( ( ok1 && ok2 ) ? " OK" : " Failed" ) );
   return ok1 && ok2;
 }
 
@@ -145,6 +165,10 @@ BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
   srcFrameWidth = width;
   srcFrameHeight = height;
   srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
+
+  PTRACE(3,"PColourConvert::SetSrcFrameSize "<< ( (srcFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
+                       <<srcFrameWidth<<"x"<<srcFrameHeight<<"-->"<<srcFrameBytes);
+
   return srcFrameBytes != 0;
 }
 
@@ -157,6 +181,10 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
   scaleNotCrop   = bScale;
   
   dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
+
+  PTRACE(3,"PColourConvert::SetDstFrameSize "<< ( (dstFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
+                       <<dstFrameWidth<<"x"<<dstFrameHeight<<"-->"<<dstFrameBytes);
+
   return dstFrameBytes != 0;
 }
 
@@ -350,36 +378,124 @@ PSTANDARD_COLOUR_CONVERTER(RGB32,YUV411P)
 }
 
 
+// Simple crop/pad version.  
+// Image cropped / padded with black borders as required.
+static void Yuv422ToYuv422WithResize(
+    unsigned swidth, unsigned sheight, BYTE * src,
+    unsigned dwidth, unsigned dheight, BYTE * dest)
+{
+  if ( (dwidth*dheight) > (swidth*sheight) ) { 
+    //     destination is bigger than source. ADD border.
+    unsigned maxIndex = 2*dwidth*dheight;
+    for (unsigned i = 0; i < maxIndex; i+=2) {
+      dest[i]  = BLACK_Y;
+      dest[i+1]= BLACK_U;
+    }
+
+    unsigned yOffset = dheight - sheight;
+    unsigned xOffset = dwidth - swidth;
+    if ( (yOffset<0) || (xOffset<0) ) {
+      PTRACE(1,"YUV422 to YUV422. Err. dest src size mismatch");
+      memset(dest,64,(dwidth*dheight*2));
+      return;
+    }
+    
+    BYTE *s_ptr,*d_ptr;
+    d_ptr = (yOffset * dwidth) + xOffset + dest;
+    s_ptr = (BYTE *)src;
+    for (unsigned y = 0; y < sheight; y++) {
+      memcpy(d_ptr,s_ptr, swidth*2);
+      d_ptr += 2*dwidth;
+      s_ptr += 2*swidth;
+    }
+  } else {  
+    // source is bigger than the destination. Remove the
+    // appropriate border from the source.
+    unsigned yOffset = sheight - dheight;
+    unsigned xOffset = swidth - dwidth;
+    if ( (yOffset<0) || (xOffset<0) ) {
+      PTRACE(1,"YUV422 to YUV422. Err. srce dest size mismatch");
+      memset(dest,64,(dwidth*dheight*2));
+      return;
+    }
+
+    BYTE *s_ptr,*d_ptr;
+    d_ptr = dest;
+    s_ptr = (yOffset * swidth) + xOffset + (BYTE *)src;
+    for (unsigned y = 0; y < dheight; y++) {
+      memcpy(d_ptr,s_ptr, dwidth*2);
+      d_ptr += dwidth*2;
+      s_ptr += swidth*2;
+    }
+  }
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUV422,YUV422)
+{
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+    memcpy(dstFrameBuffer,srcFrameBuffer,srcFrameWidth*srcFrameHeight*2);
+  else
+    Yuv422ToYuv422WithResize(srcFrameWidth, srcFrameHeight, (BYTE *)srcFrameBuffer,
+                             dstFrameWidth, dstFrameHeight, dstFrameBuffer);
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+
+
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV411P)
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
 
+  if( (srcFrameWidth!=dstFrameWidth) || (srcFrameHeight!=dstFrameHeight) ) {
+    //do a resize.  then convert to yuv411p.
+    BYTE intermed[dstFrameWidth*dstFrameHeight*2];
+
+    Yuv422ToYuv422WithResize (srcFrameWidth, srcFrameHeight, (BYTE *)srcFrameBuffer,
+                             dstFrameWidth, dstFrameHeight, intermed);
+    Yuv422ToYuv411P(dstFrameWidth,dstFrameHeight,intermed,dstFrameBuffer);
+  } else
+    Yuv422ToYuv411P(srcFrameWidth,srcFrameHeight,(BYTE *)srcFrameBuffer,dstFrameBuffer);
+
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+
+///No resize here.
+//Colour format change only, YUV422 is turned int o YUV411P.
+static void Yuv422ToYuv411P(unsigned dstFrameWidth, unsigned dstFrameHeight, 
+                            BYTE *srcFrame, BYTE *dstFrame)
+{
   unsigned  a,b;
   BYTE *u,*v;
-  const BYTE * s = srcFrameBuffer;
-  BYTE * y =  dstFrameBuffer;
-  u = y + (srcFrameWidth * srcFrameHeight);
-  v = u + (srcFrameWidth * srcFrameHeight / 4);
+  BYTE * s =  srcFrame;
+  BYTE * y =  dstFrame;
 
-  for (a = srcFrameHeight; a > 0; a -= 2) {
-    for (b = srcFrameWidth; b > 0; b -= 2) {           
+  u = y + (dstFrameWidth * dstFrameHeight);
+  v = u + (dstFrameWidth * dstFrameHeight / 4);
+
+  for (a = 0; a < dstFrameHeight; a+=2) {
+    for (b = 0; b < dstFrameWidth; b+=2) {
       *(y++) = *(s++);
       *(u++) = *(s++);
       *(y++) = *(s++);
       *(v++) = *(s++);
     }
-    for (b = srcFrameWidth; b > 0; b -= 2) {
+    for (b = 0; b < dstFrameWidth; b+=2) {
       *(y++) = *(s++);
       s++;
       *(y++) = *(s++);
       s++;
     }
   }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = dstFrameBytes;
-  return TRUE;
 }
 
 

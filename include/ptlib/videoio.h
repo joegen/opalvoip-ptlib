@@ -24,6 +24,13 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.18  2001/08/03 04:21:51  dereks
+ * Add colour/size conversion for YUV422->YUV411P
+ * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
+ * Linux PVideoInputDevice.
+ * Add lots of PTRACE statement for debugging colour conversion.
+ * Add support for Sony Vaio laptop under linux. Requires 2.4.7 kernel.
+ *
  * Revision 1.17  2001/05/22 23:38:45  robertj
  * Fixed bug in PVideoOutputDevice, removed redundent SetFrameSize.
  *
@@ -342,9 +349,65 @@ class PVideoDevice : public PObject
       */
     int GetLastError() const { return lastError; }
 
+    /**Get the brightness of the image. 0xffff-Very bright.
+     */
+    virtual int GetBrightness() { return frameBrightness; }
 
+    /**Set brightness of the image. 0xffff-Very bright.
+     */
+    virtual BOOL SetBrightness(unsigned newBrightness) 
+      { frameBrightness=newBrightness; return TRUE;}
+
+    /**Get the whiteness of the image. 0xffff-Very bright.
+     */
+    virtual int GetWhiteness() { return frameWhiteness; }
+
+    /**Set whiteness of the image. 0xffff-Very white.
+     */
+    virtual BOOL SetWhiteness(unsigned newWhiteness) 
+      { frameWhiteness=newWhiteness; return TRUE;}
+
+    /**Get the colour of the image. 0xffff-lots of colour.
+     */
+    virtual int GetColour() { return frameColour; }
+
+    /**Set colour of the image. 0xffff-lots of colour.
+     */
+    virtual BOOL SetColour(unsigned newColour) 
+      { frameColour=newColour; return TRUE; }
+
+    /**Get the contrast of the image. 0xffff-High contrast.
+     */
+    virtual int GetContrast() { return frameContrast; }
+
+    /**Set contrast of the image. 0xffff-High contrast.
+     */
+    virtual BOOL SetContrast(unsigned newContrast) 
+      { frameContrast=newContrast; return TRUE; }
+
+    /**Get the hue of the image. 0xffff-High hue.
+     */
+    virtual int GetHue() { return frameHue; }
+
+    /**Set hue of the image. 0xffff-High hue.
+     */
+    virtual BOOL SetHue(unsigned newHue) 
+      { frameHue=newHue; return TRUE; }
+    
+    
+    /** Is the device a camera, and obtain video
+     */
+    virtual BOOL CanCaptureVideo(void)
+      { return deviceCanCaptureVideo; }
+ 
   protected:
-    PString      deviceName;
+    /**Set variable which states this device can capture
+       video. Default value for this variable is False.
+    */
+    virtual void SetCanCaptureVideo(BOOL newState)
+      { deviceCanCaptureVideo = newState; }
+
+   PString      deviceName;
     int          lastError;
     VideoFormat  videoFormat;
     int          channelNumber;
@@ -354,6 +417,14 @@ class PVideoDevice : public PObject
     unsigned     frameHeight;
 
     PColourConverter * converter;
+ 
+    unsigned     frameBrightness;
+    unsigned     frameWhiteness;
+    unsigned     frameContrast;
+    unsigned     frameColour;
+    unsigned     frameHue;
+
+    BOOL         deviceCanCaptureVideo; ///device can grab video from a port. (camera)
 };
 
 
