@@ -33,7 +33,7 @@ EXPORTS
     ??$getline@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@YAAAV?$basic_istream@DU?$char_traits@D@std@@@0@AAV10@AAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@D@Z @5533 NONAME
     ??$getline@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@YAAAV?$basic_istream@GU?$char_traits@G@std@@@0@AAV10@AAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@0@@Z @5534 NONAME
     ??$getline@GU?$char_traits@G@std@@V?$allocator@G@2@@std@@YAAAV?$basic_istream@GU?$char_traits@G@std@@@0@AAV10@AAV?$basic_string@GU?$char_traits@G@std@@V?$allocator@G@2@@0@G@Z @5535 NONAME
-    ??$PLoadPluginDirectory@VPPluginManager@@@@YAXAAVPPluginManager@@ABVPDirectory@@@Z @5996 NONAME
+    ??$PLoadPluginDirectory@VPPluginManager@@@@YAXAAVPPluginManager@@ABVPDirectory@@PBD@Z @6740 NONAME
     ??$p_signed2string@H@@YAPADHHPAD@Z @5536 NONAME
     ??$p_signed2string@J@@YAPADJJPAD@Z @5537 NONAME
     ??$p_signed2string@_J@@YAPAD_J0PAD@Z @5538 NONAME
