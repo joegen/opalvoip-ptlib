@@ -24,7 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.11  2003/06/23 15:17:20  ykiryanov
+ * Modified for WinCE compatibility - Undef'd P_HAS_IPV6 in case of WinCE build
+ *
  * Revision 1.10  2003/05/22 12:20:16  dsandras
+ *
  * Define or not TRY_1394AVC/TRY_1394DC after execution of the configure script.
  *
  * Revision 1.9  2003/05/17 03:22:47  rjongbloed
@@ -75,7 +79,9 @@
 //
 //
 
-#undef P_HAS_IPV6 
+#ifndef _WIN32_WCE
+#undef P_HAS_IPV6
+#endif //  _WIN32_WCE
 
 #if defined(_MSC_VER) && P_HAS_IPV6
 #pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
