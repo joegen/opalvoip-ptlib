@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.31  2000/04/05 02:50:17  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.30  2000/03/08 17:56:33  rogerh
  * Fix error in creation of a PStringStream from a PString
  *
@@ -607,6 +610,70 @@ void PTime::ReadFrom(istream & strm)
   theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone());
 }
 
+
+
+PTime PTime::operator+(const PTimeInterval & t) const
+{
+  PInt64 msecs = theTime*1000 + t.GetMilliSeconds();
+  return PTime((time_t)(msecs/1000), (long)(msecs%1000)*1000);
+}
+
+
+PTime & PTime::operator+=(const PTimeInterval & t)
+{
+  PInt64 msecs = theTime*1000 + t.GetMilliSeconds();
+  theTime = (time_t)(msecs/1000);
+  microseconds = (long)(msecs%1000)*1000;
+  return *this;
+}
+
+
+PTimeInterval PTime::operator-(const PTime & t) const
+{
+  time_t secs = theTime - t.theTime;
+  long usecs = microseconds - t.microseconds;
+  if (usecs < 0) {
+    usecs += 1000000;
+    secs--;
+  }
+  else if (usecs >= 1000000) {
+    usecs -= 1000000;
+    secs++;
+  }
+  return PTimeInterval(usecs/1000, secs);
+}
+
+
+PTime PTime::operator-(const PTimeInterval & t) const
+{
+  time_t secs = theTime - t.GetSeconds();
+  long msecs = (long)(microseconds/1000 - t.GetMilliSeconds()%1000);
+  if (msecs < 0) {
+    msecs += 1000;
+    secs--;
+  }
+  else if (msecs >= 1000) {
+    msecs -= 1000;
+    secs++;
+  }
+  return PTime(secs, msecs*1000);
+}
+
+
+PTime & PTime::operator-=(const PTimeInterval & t)
+{
+  theTime -= t.GetSeconds();
+  microseconds -= (long)(t.GetMilliSeconds()%1000)*1000;
+  if (microseconds < 0) {
+    microseconds += 1000000;
+    theTime--;
+  }
+  else if (microseconds >= 1000000) {
+    microseconds -= 1000000;
+    theTime++;
+  }
+  return *this;
+}
 
 
 // End Of File ///////////////////////////////////////////////////////////////
