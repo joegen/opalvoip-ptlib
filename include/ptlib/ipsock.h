@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.40  1999/08/30 02:21:03  robertj
+ * Added ability to listen to specific interfaces for IP sockets.
+ *
  * Revision 1.39  1999/08/08 09:04:01  robertj
  * Added operator>> for PIPSocket::Address class.
  *
@@ -296,6 +299,12 @@ class PIPSocket : public PSocket
     virtual BOOL Listen(
       unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
       WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+    );
+    virtual BOOL Listen(
+      const Address & bind,     /// Local interface address to bind to.
+      unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
+      WORD port = 0,            /// Port number to use for the connection.
       Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
     );
 
