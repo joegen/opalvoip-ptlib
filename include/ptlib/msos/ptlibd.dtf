@@ -190,6 +190,7 @@ EXPORTS
     ??0PMail@@QAE@XZ @150 NONAME ;public: __thiscall PMail::PMail(void)
     ??0PMemoryHeap@@IAE@XZ @3916 NONAME ;protected: __thiscall PMemoryHeap::PMemoryHeap(void)
     ??0PMultiMediaFile@@QAE@XZ @2548 NONAME ;public: __thiscall PMultiMediaFile::PMultiMediaFile(void)
+    ??0PMutex@@QAE@ABV0@@Z @4343 NONAME ;public: __thiscall PMutex::PMutex(class PMutex const &)
     ??0PMutex@@QAE@XZ @152 NONAME ;public: __thiscall PMutex::PMutex(void)
     ??0PNotifier@@QAE@ABV0@@Z @3406 NONAME ;public: __thiscall PNotifier::PNotifier(class PNotifier const &)
     ??0PNotifier@@QAE@PAVPNotifierFunction@@@Z @153 NONAME ;public: __thiscall PNotifier::PNotifier(class PNotifierFunction *)
@@ -214,6 +215,7 @@ EXPORTS
     ??0PRemoteConnection@@QAE@ABVPString@@@Z @166 NONAME ;public: __thiscall PRemoteConnection::PRemoteConnection(class PString const &)
     ??0PRemoteConnection@@QAE@XZ @167 NONAME ;public: __thiscall PRemoteConnection::PRemoteConnection(void)
     ??0PSemaphore@@IAE@PAX@Z @168 NONAME ;protected: __thiscall PSemaphore::PSemaphore(void *)
+    ??0PSemaphore@@QAE@ABV0@@Z @4344 NONAME ;public: __thiscall PSemaphore::PSemaphore(class PSemaphore const &)
     ??0PSemaphore@@QAE@II@Z @169 NONAME ;public: __thiscall PSemaphore::PSemaphore(unsigned int,unsigned int)
     ??0PSerialChannel@@QAE@AAVPConfig@@@Z @2514 NONAME ;public: __thiscall PSerialChannel::PSerialChannel(class PConfig &)
     ??0PSerialChannel@@QAE@ABVPString@@KEW4Parity@0@EW4FlowControl@0@2@Z @2515 NONAME ;public: __thiscall PSerialChannel::PSerialChannel(class PString const &,unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
@@ -285,6 +287,7 @@ EXPORTS
     ??0PStructuredFile@@QAE@ABVPFilePath@@W4OpenMode@PFile@@H@Z @206 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(class PFilePath const &,enum PFile::OpenMode,int)
     ??0PStructuredFile@@QAE@W4OpenMode@PFile@@H@Z @207 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(enum PFile::OpenMode,int)
     ??0PStructuredFile@@QAE@XZ @208 NONAME ;public: __thiscall PStructuredFile::PStructuredFile(void)
+    ??0PSyncPoint@@QAE@ABV0@@Z @4345 NONAME ;public: __thiscall PSyncPoint::PSyncPoint(class PSyncPoint const &)
     ??0PSyncPoint@@QAE@XZ @209 NONAME ;public: __thiscall PSyncPoint::PSyncPoint(void)
     ??0PSynonymColour@@QAE@ABVPString@@0II@Z @4232 NONAME ;public: __thiscall PSynonymColour::PSynonymColour(class PString const &,class PString const &,unsigned int,unsigned int)
     ??0PSynonymColourRegistration@@QAE@PBD0@Z @4233 NONAME ;public: __thiscall PSynonymColourRegistration::PSynonymColourRegistration(char const *,char const *)
@@ -2263,6 +2266,7 @@ EXPORTS
     ?GetInfo@PDirectory@@QBEHAAVPFileInfo@@@Z @1487 NONAME ;public: int __thiscall PDirectory::GetInfo(class PFileInfo &)const 
     ?GetInfo@PFile@@QAEHAAVPFileInfo@@@Z @1488 NONAME ;public: int __thiscall PFile::GetInfo(class PFileInfo &)
     ?GetInfo@PFile@@SAHABVPFilePath@@AAVPFileInfo@@@Z @1489 NONAME ;public: static int __cdecl PFile::GetInfo(class PFilePath const &,class PFileInfo &)
+    ?GetInitialVal@PSemaphore@@QBEIXZ @4346 NONAME ;public: unsigned int __thiscall PSemaphore::GetInitialVal(void)const 
     ?GetInputDeviceNames@PVideoInputDevice@@SA?AVPStringList@@XZ @3693 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetInputDeviceNames(void)
     ?GetInputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1490 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetInputFlowControl(void)const 
     ?GetInt64@PConfig@@QBE_JABVPString@@0_J@Z @1491 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,class PString const &,__int64)const 
@@ -2297,6 +2301,7 @@ EXPORTS
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1508 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
     ?GetLogLevel@PServiceProcess@@QBE?AW4Level@PSystemLog@@XZ @1509 NONAME ;public: enum PSystemLog::Level  __thiscall PServiceProcess::GetLogLevel(void)const 
     ?GetManufacturer@PProcess@@QBEABVPString@@XZ @1510 NONAME ;public: class PString const & __thiscall PProcess::GetManufacturer(void)const 
+    ?GetMaxCountVal@PSemaphore@@QBEIXZ @4347 NONAME ;public: unsigned int __thiscall PSemaphore::GetMaxCountVal(void)const 
     ?GetMaxDstFrameBytes@PColourConverter@@QAEHXZ @3671 NONAME ;public: int __thiscall PColourConverter::GetMaxDstFrameBytes(void)
     ?GetMaxFrameBytes@PFakeVideoInputDevice@@UAEHXZ @3478 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetMaxFrameBytes(void)
     ?GetMaxFrameBytes@PVideoInputDevice@@UAEHXZ @3361 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetMaxFrameBytes(void)
