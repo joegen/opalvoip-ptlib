@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.69  2000/04/06 11:37:51  rogerh
+# Add MacOS X support from Kevin Packard
+#
 # Revision 1.68  2000/04/03 22:31:08  rogerh
 # Get a more exact FreeBSD version number using a kernel sysctl
 #
@@ -230,6 +233,10 @@ ifneq (,$(findstring openbsd,$(OSTYPE)))
 OSTYPE := OpenBSD
 endif
 
+ifneq (,$(findstring macos,$(OSTYPE)))
+OSTYPE := macos
+endif
+
 ifneq (,$(findstring $(MACHTYPE),sun4))
 MACHTYPE := sparc
 endif
@@ -266,7 +273,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD solaris beos))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD solaris beos macos))
 
 all ::
 	@echo
@@ -280,7 +287,7 @@ all ::
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD OpenBSD beos"
+	@echo "              FreeBSD OpenBSD beos macos"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -511,6 +518,28 @@ STDCCFLAGS	+= -DP_HPUX9
 endif # hpux
 
 
+####################################################
+ 
+ifeq ($(OSTYPE),macos)
+ 
+# MacOS X or later (derived from FreeBSD)
+ 
+STDCCFLAGS	+= -DP_MACOSX
+ 
+# pthreads not working in DP3, will revisit this on next release of OS X        - krp 03/17/00
+#P_PTHREADS	:= 1    # DP3 system file <pthreads.h> has bug in macros "pthread_cleanup_push" and "pthread_cleanup_pop"
+  
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	+= -m486
+else
+ENDIAN		:= PBIG_ENDIAN
+endif
+  
+RANLIB		:= 1
+ 
+endif # macos
+ 
+ 
 ###############################################################################
 #
 # Make sure some things are defined
@@ -558,8 +587,14 @@ endif
 # define some common stuff
 #
 
+ifeq ($(OSTYPE),macos)
+CC              := cc
+CPLUS           := c++
+else
 CC		:= gcc
 CPLUS		:= g++
+endif
+
 SHELL		:= /bin/sh
 
 .SUFFIXES:	.cxx .prc 
@@ -598,7 +633,9 @@ else
 OPTCCFLAGS	+= -O2 -DNDEBUG
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
+ifneq ($(OSTYPE),macos)
 LDFLAGS		+= -s
+endif
 
 endif # DEBUG
 
