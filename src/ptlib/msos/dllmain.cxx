@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dllmain.cxx,v $
+ * Revision 1.2  2004/10/23 10:53:19  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.1  1998/09/25 11:04:09  craigs
  * Initial revision
  *
@@ -36,9 +39,13 @@
 
 #include <windows.h>
 
+#ifndef _WIN32_WCE
 HINSTANCE PDllInstance;
-
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
+#else
+HANDLE PDllInstance;
+BOOL WINAPI DllMain(HANDLE hinstDLL, DWORD fdwReason, LPVOID)
+#endif
 {
   if (fdwReason == DLL_PROCESS_ATTACH)
     PDllInstance = hinstDLL;
