@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.74  2002/11/19 11:21:30  robertj
+ * Changed PFilePath so can be empty string, indicating illegal path.
+ * Added function to extract a path as an array of directories components.
+ *
  * Revision 1.73  2002/10/22 07:42:52  robertj
  * Added extra debugging for file handle and thread leak detection.
  *
@@ -359,9 +363,12 @@ static PString CanonicaliseDirectory (const PString & path)
   return canonical_path;
 }
 
-static PString CanonicaliseFilename(const PString & filename)
 
+static PString CanonicaliseFilename(const PString & filename)
 {
+  if (filename.IsEmpty())
+    return filename;
+
   PINDEX p;
   PString dirname;
 
@@ -722,6 +729,23 @@ PDirectory PDirectory::GetParent() const
   
   return *this + "..";
 }
+
+PStringArray PDirectory::GetPath() const
+{
+  PStringArray path;
+
+  if (IsEmpty())
+    return path;
+
+  path = Tokenise("/", FALSE);
+
+  PINDEX last = path.GetSize()-1;
+  while (path[last].IsEmpty())
+    path.SetSize(last--);
+
+  return path;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
