@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.230  2005/01/26 05:37:59  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.229  2005/01/04 07:44:03  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -1712,6 +1715,7 @@ void PArgList::MissingArgument(const PString & option) const
   PError << "option \"" << option << "\" requires argument\n";
 }
 
+#ifdef P_CONFIG_FILE
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfigArgs
@@ -1829,6 +1833,7 @@ PString PConfigArgs::CharToString(char ch) const
   return optionNames[index];
 }
 
+#endif // P_CONFIG_ARGS
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
