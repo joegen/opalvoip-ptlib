@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.14  2000/06/26 13:20:49  robertj
+# Added ability to append resources to existing file.
+#
 # Revision 1.13  2000/03/20 22:43:10  craigs
 # Added totally new mechanism for detecting GUI
 #
@@ -87,7 +90,7 @@ endif
 #
 PWRC_DIR	= $(PWLIBDIR)/tools/pwrc
 PWRC		= $(PWRC_DIR)/obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_r/pwrc
-PWRC_CMD	= $(PWRC) -a $(GUI_TYPE)
+PWRC_CMD	= $(PWRC) -g $(GUI_TYPE)
 
 #
 # if we are using a resource file, then define the required files
