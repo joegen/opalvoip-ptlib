@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.27  2002/04/12 08:25:12  robertj
+ * Added text string output for tracing video format.
+ *
  * Revision 1.26  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -216,6 +219,9 @@ class PVideoDevice : public PObject
       Auto,
       NumVideoFormats
     };
+#if PTRACING
+    friend ostream & operator<<(ostream &, VideoFormat);
+#endif
 
     /**Set the video format to be used.
 
