@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.20 1997/02/05 11:50:40 robertj Exp $
+ * $Id: svcproc.cxx,v 1.21 1997/03/18 21:23:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.21  1997/03/18 21:23:27  robertj
+ * Fix service manager falsely accusing app of crashing if OnStart() is slow.
+ *
  * Revision 1.20  1997/02/05 11:50:40  robertj
  * Changed current process function to return reference and validate objects descendancy.
  * Changed log file name calculation to occur only once.
@@ -560,10 +563,16 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
     return;
 
   // report the status to Service Control Manager.
-  if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 30000))
+  if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 20000))
     return;
 
-  // create the event object. The control handler function signals
+  // create the start event object. The control handler function signals
+  // this event when it conpletes initialisation.
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (terminationEvent == NULL)
+    return;
+
+  // create the stop event object. The control handler function signals
   // this event when it receives the "stop" control code.
   terminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (terminationEvent == NULL)
@@ -575,9 +584,15 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 
   // start the thread that performs the work of the service.
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
-  if (threadHandle != (HANDLE)-1)
+  if (threadHandle != (HANDLE)-1) {
+    while (WaitForSingleObject(startedEvent, 10000) == WAIT_TIMEOUT) {
+      if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 20000))
+        return;
+    }
     WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
+  }
 
+  CloseHandle(startedEvent);
   CloseHandle(terminationEvent);
   cfg.SetInteger("Pid", 0);
   ReportStatus(SERVICE_STOPPED, 0);
@@ -594,13 +609,19 @@ void PServiceProcess::ThreadEntry()
 {
   threadId = GetCurrentThreadId();
   activeThreads.SetAt(threadId, this);
+
   SetTerminationValue(1);
   if (OnStart()) {
+
+    SetEvent(startedEvent);
     ReportStatus(SERVICE_RUNNING);
     SetTerminationValue(0);
+
     Main();
-    ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+
+    ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 30000);
   }
+
   SetEvent(terminationEvent);
 }
 
@@ -632,7 +653,7 @@ void PServiceProcess::ControlEntry(DWORD code)
     case SERVICE_CONTROL_STOP : // Stop the service.
       // Report the status, specifying the checkpoint and waithint, before
       // setting the termination event.
-      ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+      ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 30000);
       OnStop();
       SetEvent(terminationEvent);
       break;
