@@ -22,9 +22,13 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Federico Pinna and Reitek S.p.A.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.19  2004/04/21 00:29:55  csoutheren
+ * Added SASL authentication to PPOP3Client and PSMTPClient
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.18  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -143,7 +147,7 @@ class PSMTP : public PInternetProtocol
       HELO, EHLO, QUIT, HELP, NOOP,
       TURN, RSET, VRFY, EXPN, RCPT,
       MAIL, SEND, SAML, SOML, DATA,
-      NumCommands
+      AUTH, NumCommands
     };
 
   protected:
@@ -197,6 +201,18 @@ class PSMTPClient : public PSMTP
 
 
   // New functions for class.
+    /** Log into the SMTP server using the mailbox and access codes specified.
+        Login is actually attempted only if the server supports SASL authentication
+        and a common method is found
+
+       @return
+       TRUE if logged in.
+     */
+    BOOL LogIn(
+      const PString & username,   // User name on remote system.
+      const PString & password    // Password for user name.
+    );
+
     /** Begin transmission of a message using the SMTP socket as a client. This
        negotiates with the remote server and establishes the protocol state
        for data transmission. The usual Write() or stream commands may then
@@ -515,7 +531,7 @@ class PPOP3 : public PInternetProtocol
     enum Commands {
       USER, PASS, QUIT, RSET, NOOP, STATcmd,
       LIST, RETR, DELE, APOP, TOP,  UIDL,
-      NumCommands
+      AUTH, NumCommands
     };
 
 
@@ -599,14 +615,24 @@ class PPOP3Client : public PPOP3
 
 
   // New functions for class.
+    enum LoginOptions
+    {
+      AllowUserPass = 1,      // Allow the use of the plain old USER/PASS if APOP
+                              // or SASL are not available
+      UseSASL = 2,            // Use SASL if the AUTH command is supported by
+                              // the server
+      AllowClearTextSASL = 4  // Allow LOGIN and PLAIN mechanisms to be used
+    };
+
     /** Log into the POP server using the mailbox and access codes specified.
 
        @return
        TRUE if logged in.
      */
     BOOL LogIn(
-      const PString & username,   // User name on remote system.
-      const PString & password    // Password for user name.
+      const PString & username,       // User name on remote system.
+      const PString & password,       // Password for user name.
+      int options = AllowUserPass     // See LoginOptions above
     );
 
     /** Get a count of the number of messages in the mail box.
@@ -669,6 +695,7 @@ class PPOP3Client : public PPOP3
 
   // Member variables
     BOOL loggedIn;
+    PString apopBanner;
 };
 
 
