@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.10  2003/05/22 12:20:16  dsandras
+ * Define or not TRY_1394AVC/TRY_1394DC after execution of the configure script.
+ *
  * Revision 1.9  2003/05/17 03:22:47  rjongbloed
  * Removed need to do strange things with main() function.
  *
@@ -251,6 +254,15 @@
 //
 
 #undef NO_VIDEO_CAPTURE
+
+
+/////////////////////////////////////////////////
+//
+// Firewire (Linux only)
+//
+
+#undef TRY_1394AVC
+#undef TRY_1394DC
 
 
 /////////////////////////////////////////////////
