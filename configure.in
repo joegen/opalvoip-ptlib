@@ -40,6 +40,7 @@ dnl set the OSTYPE and MACHTYPE
 
 AC_CANONICAL_TARGET()
 
+TARGETDIR=unix
 OSTYPE=
 
 case "$target_os" in
@@ -116,6 +117,7 @@ echo "MACHTYPE set to $MACHTYPE";
 AC_SUBST(MACHTYPE,  $MACHTYPE)
 AC_SUBST(OSTYPE,    $OSTYPE)
 AC_SUBST(OSRELEASE, $OSRELEASE)
+AC_SUBST(TARGETDIR, $TARGETDIR)
 
 dnl ########################################################################
 dnl set the shared library extension, if not already set
@@ -554,6 +556,17 @@ if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
   echo "No Video Capture support"
 fi
+
+dnl ########################################################################
+dnl check for various functions
+dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
+dnl Solaris swab should not be used
+if test "$OSTYPE" = "solaris" ; then
+  USE_SYSTEM_SWAB=
+else
+  AC_CHECK_FUNC(swab,USE_SYSTEM_SWAB=1)
+fi
+AC_DEFINE(USE_SYSTEM_SWAB)
 
 dnl ########################################################################
 dnl output make directives
