@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.11 1996/07/15 10:32:50 robertj Exp $
+ * $Id: lists.h,v 1.12 1997/02/14 13:53:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.12  1997/02/14 13:53:59  robertj
+ * Major rewrite of sorted list to use sentinel record instead of NULL pointers.
+ *
  * Revision 1.11  1996/07/15 10:32:50  robertj
  * Fixed bug in sorted list (crash on remove).
  *
@@ -842,35 +845,32 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
     class Element {
       public:
         Element(PObject * theData);
+
+        void DeleteSubTrees(BOOL deleteObject);
+        Element * Successor() const;
+        Element * Predecessor() const;
+        Element * OrderSelect(PINDEX index);
+        PINDEX ValueSelect(const PObject & obj, BOOL byPointer);
+
         Element * parent;
         Element * left;
         Element * right;
         PObject * data;
         PINDEX subTreeSize;
         enum { Red, Black } colour;
-        void MakeBlack();
-        void MakeRed();
-        BOOL IsBlack();
-        BOOL IsRed();
-        BOOL IsLeftBlack();
-        BOOL IsRightBlack();
-        void DeleteSubTrees(BOOL deleteObject);
-        BOOL LeftTreeSize();
-        BOOL RightTreeSize();
-        Element * Successor() const;
-        Element * Predecessor() const;
-        Element * OrderSelect(PINDEX index);
-        PINDEX ValueSelect(const PObject & obj, BOOL byPointer);
     };
     friend class Element;
 
+    static Element nil;
+
     class Info {
       public:
-        Info() { root = lastElement = NULL; }
+        Info() { root = &nil; lastElement = NULL; }
         Element * root;
         Element * lastElement;
         PINDEX    lastIndex;
     } * info;
+    friend class Info;
 
     // New functions for class
     void RemoveElement(Element * node);
