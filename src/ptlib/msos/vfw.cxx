@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.9  2001/03/06 23:34:20  robertj
+ * Added static function to get input device names.
+ * Moved some inline virtuals to non-inline.
+ *
  * Revision 1.8  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -365,7 +369,7 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
 }
 
 
-PStringList PVideoInputDevice::GetDeviceNames() const
+PStringList PVideoInputDevice::GetInputDeviceNames()
 {
   PStringList list;
 
