@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.90  2004/07/12 03:42:22  csoutheren
+ * Fixed problem with checking character set constraints too aggressively
+ *
  * Revision 1.89  2004/07/12 01:56:10  csoutheren
  * Fixed incorrect asn decoding check
  *
@@ -324,8 +327,9 @@
 #define new PNEW
 
 
-static PINDEX MaximumArraySize = 128;
-static PINDEX MaximumStringSize = 16*1024;
+static PINDEX MaximumArraySize     = 128;
+static PINDEX MaximumStringSize    = 16*1024;
+static PINDEX MaximumSetSize       = 512;
 
 
 static PINDEX CountBits(unsigned range)
@@ -346,7 +350,7 @@ static PINDEX CountBits(unsigned range)
 inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
 {
   // a 1mbit PDU has got to be an error
-  return (0 <= offset && offset < upper);
+  return (0 <= offset && offset <= upper);
 }
 
 
@@ -450,11 +454,11 @@ void PASN_ConstrainedObject::SetConstraintBounds(ConstraintType ctype,
   }
 
   extendable = ctype == ExtendableConstraint;
-  if ((lower >= 0 || upper < 0x7fffffff) &&
-     (lower < 0 || (unsigned)lower <= upper)) {
+//  if ((lower >= 0 && upper < 0x7fffffff) ||
+//     (lower < 0 && (unsigned)lower <= upper)) {
     lowerLimit = lower;
     upperLimit = upper;
-  }
+//  }
 }
 
 
@@ -1187,16 +1191,20 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 
 BOOL PASN_BitString::SetSize(unsigned nBits)
 {
-  if ((PINDEX)nBits > MaximumStringSize || upperLimit > (unsigned)MaximumStringSize || lowerLimit < 0)
+  if (!CheckByteOffset(nBits))
     return FALSE;
 
   if (constraint == Unconstrained)
     totalBits = nBits;
-  else if (totalBits < (unsigned)lowerLimit)
+  else if (totalBits < (unsigned)lowerLimit) {
+    if (lowerLimit < 0)
+      return FALSE;
     totalBits = lowerLimit;
-  else if ((unsigned)totalBits > upperLimit)
+  } else if ((unsigned)totalBits > upperLimit) {
+    if (upperLimit > (unsigned)MaximumSetSize)
+      return FALSE;
     totalBits = upperLimit;
-  else
+  } else
     totalBits = nBits;
   return bitData.SetSize((totalBits+7)/8);
 }
@@ -1460,14 +1468,19 @@ PINDEX PASN_OctetString::GetDataLength() const
 
 BOOL PASN_OctetString::SetSize(PINDEX newSize)
 {
-  if (newSize > MaximumStringSize || upperLimit > (unsigned)MaximumStringSize || lowerLimit < 0)
+  if (!CheckByteOffset(newSize, MaximumStringSize))
     return FALSE;
 
   if (constraint != Unconstrained) {
-    if (newSize < (PINDEX)lowerLimit)
+    if (newSize < (PINDEX)lowerLimit) {
+      if (lowerLimit < 0)
+        return FALSE;
       newSize = lowerLimit;
-    else if ((unsigned)newSize > upperLimit)
+    } else if ((unsigned)newSize > upperLimit) {
+      if (upperLimit > (unsigned)MaximumStringSize)
+        return FALSE;
       newSize = upperLimit;
+    }
   }
 
   return value.SetSize(newSize);
@@ -1551,9 +1564,9 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
     characterSet.SetSize(canonicalSetSize);
     memcpy(characterSet.GetPointer(), canonicalSet, canonicalSetSize);
   }
-  else if (setSize >= MaximumArraySize ||
-           canonicalSetSize >= MaximumArraySize ||
-           characterSet.GetSize() >= MaximumArraySize)
+  else if (setSize >= MaximumSetSize ||
+           canonicalSetSize >= MaximumSetSize ||
+           characterSet.GetSize() >= MaximumSetSize)
     return;
   else {
     characterSet.SetSize(setSize);
