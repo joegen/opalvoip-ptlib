@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.9  2002/06/13 05:51:01  robertj
+ * Added ignore of some inherently private symbols exported by libraru eg debug
+ *   line number info and real number constants.
+ *
  * Revision 1.8  2000/12/18 07:31:10  robertj
  * Fixed minor irritation with DEF file being reordered when symbol added.
  *
@@ -72,7 +76,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 1, ReleaseCode, 2)
+  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 0)
 {
 }
 
@@ -242,6 +246,8 @@ void MergeSym::Main()
         int namelen = strcspn(namepos, "\r\n\t ");
         PString name(namepos, namelen);
         if (strncmp(name, "??_C@_", 6) != 0 &&
+            strncmp(name, "__real@", 7) != 0 &&
+            strncmp(name, "?__LINE__Var@", 13) != 0 &&
             lib_symbols.GetValuesIndex(name) == P_MAX_INDEX) {
           const char * unmangled = strchr(namepos+namelen, '(');
           if (unmangled == NULL)
