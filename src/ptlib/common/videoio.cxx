@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.22  2001/12/10 22:23:43  dereks
+ * Enable resize of CIF source image into QCIF size.
+ *
  * Revision 1.21  2001/12/06 22:15:09  dereks
  * Additional debugging lines
  *
@@ -309,16 +312,17 @@ BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 static struct {
     unsigned dest_width, dest_height, device_width, device_height;
-} prefResizeTable[] = {
-    
+} prefResizeTable[] = {    
     { 352, 288,    320, 240 },
     { 176, 144,    160, 120 },
-    { 176, 144,    320, 240 }
+    { 176, 144,    320, 240 },
+    { 176, 144,    352, 288 }   //Generate small video when camera only does large.
 };
 
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
 					 BOOL bScaleNotCrop)
 {
+  PTRACE(3,"PVideoDevice::SetFrameSizeConverter for "<<width<<"x"<<height);
   if (SetFrameSize(width, height))
     return TRUE;
   
@@ -330,11 +334,11 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
     return FALSE;
   }
   
-  PTRACE(1,"PVideoDevice::SetFrameSizeConverter Colour converter creation has succeeded");
+  PTRACE(1,"PVideoDevice::SetFrameSizeConverter Colour converter created OK for "
+	 <<width<<"x"<<height);
   
   PINDEX prefResizeIdx = 0;
   while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
-    
     if ((prefResizeTable[prefResizeIdx].dest_width == width) &&
         (prefResizeTable[prefResizeIdx].dest_height == height)) {
 
@@ -354,8 +358,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
 	       prefResizeTable[prefResizeIdx].device_height << " ---> " <<
 	       width<<"x"<<height);	       
       }
-    }
-    
+    }    
     prefResizeIdx++;
   }
 
