@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.21  2002/12/16 06:53:19  robertj
+ * Added ability to specify certain elemets (by name) that are exempt from
+ *   the indent formatting. Useful for XML/RPC where leading white space is
+ *   not ignored by all servers.
+ * Allowed for some servers that only send "string" type for "int" etc
+ * Fixed problem with autodetecting reply that is a single struct.
+ *
  * Revision 1.20  2002/12/13 01:12:24  robertj
  * Added copy constructor and assignment operator to XML/RPC structs
  *
@@ -107,9 +114,13 @@
 #include <ptclib/http.h>
 
 
+static const char NoIndentElements[] = "methodName name string int boolean double dateTime.iso8601";
+
+
 /////////////////////////////////////////////////////////////////
 
 PXMLRPCBlock::PXMLRPCBlock()
+  : PXML(-1, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodResponse");
@@ -117,6 +128,7 @@ PXMLRPCBlock::PXMLRPCBlock()
 }
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method)
+  : PXML(-1, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodCall");
@@ -125,6 +137,7 @@ PXMLRPCBlock::PXMLRPCBlock(const PString & method)
 }
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & data)
+  : PXML(-1, NoIndentElements)
 {
   faultCode = P_MAX_INDEX;
   SetRootElement("methodCall");
@@ -458,7 +471,7 @@ BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement,
         if (!ParseScalar(element, type, value))
           return FALSE;
 
-        if (type != variable->GetType()) {
+        if (type != "string" && type != variable->GetType()) {
           PTRACE(2, "RPCXML\tMember " << i << " is not of expected type: " << variable->GetType());
           return FALSE;
         }
@@ -530,8 +543,11 @@ BOOL PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
 {
   if (params == NULL) 
     return FALSE;
-  
-  if (GetParamCount() == 1) {
+
+  // Special case to allow for server implementations that always return
+  // values as a struct rather than multiple parameters.
+  if (GetParamCount() == 1 &&
+          (data.GetNumVariables() > 1 || data.GetVariable(0).GetStruct() == NULL)) {
     PString type, value;
     if (ParseScalar(GetParam(0), type, value) && type == "struct")
       return GetParam(0, data);
@@ -680,10 +696,11 @@ PXMLElement * PXMLRPCBlock::GetStructParam(PINDEX idx)
 
 ////////////////////////////////////////////////////////
 
-PXMLRPC::PXMLRPC(const PURL & _url)
+PXMLRPC::PXMLRPC(const PURL & _url, unsigned opts)
   : url(_url)
 {
   timeout = 10000;
+  options = opts;
 }
 
 BOOL PXMLRPC::MakeRequest(const PString & method)
@@ -728,7 +745,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   // create XML version of request
   PString requestXML;
-  if (!request.Save(requestXML)) {
+  if (!request.Save(requestXML, options)) {
     PStringStream txt;
     txt << "Error creating request XML ("
         << request.GetErrorLine() 
@@ -745,7 +762,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   // do the request
   PHTTPClient client;
   PMIMEInfo sendMIME, replyMIME;
-  sendMIME.SetAt("Server",              url.GetHostName());
+  sendMIME.SetAt("Server", url.GetHostName());
   sendMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
 
   PTRACE(5, "XMLRPC\tOutgoing XML/RPC:\n" << url << '\n' << sendMIME << requestXML);
