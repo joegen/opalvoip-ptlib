@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.74  2002/11/26 23:29:32  robertj
+ * Added missing const to DecodeSubType() function.
+ *
  * Revision 1.73  2002/11/22 09:43:32  robertj
  * Fixed encoding of a ASN NULL sequence extension field, eg fastConnectRefused
  *
@@ -2070,7 +2073,7 @@ void PPER_Stream::OctetStringEncode(const PASN_OctetString & value)
 }
 
 
-BOOL PASN_OctetString::DecodeSubType(PASN_Object & obj)
+BOOL PASN_OctetString::DecodeSubType(PASN_Object & obj) const
 {
   PPER_Stream stream = GetValue();
   return obj.Decode(stream);
