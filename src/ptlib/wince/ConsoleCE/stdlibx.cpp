@@ -390,6 +390,12 @@ size_t strspn( const char *string, const char *strCharSet )
     return(0);
 }
 
+int stricmp( const char*string1, const char* string2 )
+{
+	USES_CONVERSION;
+	return stricmp( (const unsigned short*) A2T(string1), (const char*) string2);
+}
+
 static void x64toa (unsigned __int64 val,char *buf,unsigned radix,int is_neg)
 {
         char *p;                /* pointer to traverse string */
