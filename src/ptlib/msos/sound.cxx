@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.19  2001/05/04 09:38:07  robertj
+ * Fixed problem with some WAV files having small WAVEFORMATEX chunk.
+ *
  * Revision 1.18  2001/04/10 00:51:11  robertj
  * Fixed bug in using incorrect function to delete event handle, thanks Victor H.
  *
@@ -387,6 +390,8 @@ BOOL PWaveFormat::SetSize(PINDEX sz)
   if (sz == 0)
     waveFormat = NULL;
   else {
+    if (sz < sizeof(WAVEFORMATEX))
+      sz = sizeof(WAVEFORMATEX);
     waveFormat = (WAVEFORMATEX *)calloc(sz, 1);
     waveFormat->cbSize = (WORD)(sz - sizeof(WAVEFORMATEX));
   }
