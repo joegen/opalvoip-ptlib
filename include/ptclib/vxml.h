@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.10  2002/07/29 15:08:34  craigs
+ * Added autodelete option to PlayFile
+ *
  * Revision 1.9  2002/07/29 15:03:58  craigs
  * Added access to queue functions
  * Added autodelete option to AddFile
@@ -265,7 +268,7 @@ class PVXMLSession : public PObject
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
     virtual BOOL PlayText(const PString & text, TextType type = Default, PINDEX repeat = 1, PINDEX delay = 0) = 0;
-    virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0) = 0;
+    virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE) = 0;
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0) = 0;
     virtual BOOL IsPlaying() const = 0;
     virtual BOOL IsRecording() const = 0;
@@ -400,10 +403,9 @@ class PVXMLOutgoingChannel : public PVXMLChannel
       { return new PWAVFile(fn, PFile::ReadOnly); }
 
     virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
-    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem);
-    //virtual void PlayFile(PFile * chan);
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
