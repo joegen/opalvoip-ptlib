@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.18 1996/02/25 11:15:29 robertj Exp $
+ * $Id: win32.cxx,v 1.19 1996/03/04 13:07:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.19  1996/03/04 13:07:33  robertj
+ * Allowed for auto deletion of threads on termination.
+ *
  * Revision 1.18  1996/02/25 11:15:29  robertj
  * Added platform dependent Construct function to PProcess.
  *
@@ -1449,19 +1452,32 @@ DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
   thread->Main();
 
   process->threads.SetAt(thread->threadId, NULL);
+  CloseHandle(thread->threadHandle);
   thread->threadHandle = NULL;
+
+  if (thread->autoDelete)
+    delete thread;
+
   return 0;
 }
 
 
-PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
+PThread::PThread(PINDEX stackSize,
+                 AutoDeleteFlag deletion,
+                 InitialSuspension start,
+                 Priority priorityLevel)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   originalStackSize = stackSize;
-  threadHandle = CreateThread(NULL, stackSize, MainFunction,
-               (LPVOID)this, startSuspended ? CREATE_SUSPENDED : 0, &threadId);
+  threadHandle = CreateThread(NULL,
+                              stackSize,
+                              MainFunction,
+                              (LPVOID)this,
+                              start == StartSuspended ? CREATE_SUSPENDED : 0,
+                              &threadId);
   PAssertOS(threadHandle != NULL);
   SetPriority(priorityLevel);
+  autoDelete = deletion == AutoDeleteThread;
 }
 
 
@@ -1489,7 +1505,10 @@ void PThread::Terminate()
     else
       TerminateThread(threadHandle, 1);
     PProcess::Current()->threads.SetAt(threadId, NULL);
+    CloseHandle(threadHandle);
     threadHandle = NULL;
+    if (autoDelete)
+      delete this;
   }
 }
 
@@ -1502,6 +1521,7 @@ BOOL PThread::IsTerminated() const
 
 void PThread::Suspend(BOOL susp)
 {
+  PAssert(threadHandle != NULL, "Suspend on terminated thread");
   if (susp)
     SuspendThread(threadHandle);
   else
