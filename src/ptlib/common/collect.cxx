@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.34 1998/03/24 02:58:52 robertj Exp $
+ * $Id: collect.cxx,v 1.35 1998/03/25 12:58:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.35  1998/03/25 12:58:41  robertj
+ * Fixed memory leak if resize PArray
+ *
  * Revision 1.34  1998/03/24 02:58:52  robertj
  * Fixed uninitialised variable in dictionary MakeUnique() function.
  *
@@ -202,6 +205,13 @@ PINDEX PArrayObjects::GetSize() const
 
 BOOL PArrayObjects::SetSize(PINDEX newSize)
 {
+  if (reference->deleteObjects) {
+    for (PINDEX i = theArray->GetSize()-1; i > newSize; i--) {
+      PObject * obj = theArray->GetAt(i);
+      if (obj != NULL)
+        delete obj;
+    }
+  }
   return theArray->SetSize(newSize);
 }
 
