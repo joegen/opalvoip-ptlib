@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.16 1995/06/17 00:47:01 robertj Exp $
+ * $Id: sockets.cxx,v 1.17 1995/07/02 01:21:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.17  1995/07/02 01:21:23  robertj
+ * Added static functions to get the current host name/address.
+ *
  * Revision 1.16  1995/06/17 00:47:01  robertj
  * Changed overloaded Open() calls to 3 separate function names.
  * More logical design of port numbers and service names.
@@ -135,6 +138,22 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   }
 
   return aliases;
+}
+
+
+BOOL PIPSocket::GetHostAddress(Address & addr)
+{
+  return GetAddress(GetHostName(), addr);
+}
+
+
+PString PIPSocket::GetHostName()
+{
+  char buf[50];
+  if (gethostname(buf, sizeof(buf)) == 0)
+    return buf;
+  else
+    return PString();
 }
 
 
