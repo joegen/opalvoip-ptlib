@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.27  2004/03/23 04:48:42  csoutheren
+ * Improved ability to start VXML scripts as needed
+ *
  * Revision 1.26  2003/04/23 11:55:13  craigs
  * Added ability to record audio
  *
@@ -247,6 +250,7 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
     virtual BOOL PlaySilence(const PTimeInterval & timeout);
+    virtual void SetPause(BOOL pause);
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 
     virtual BOOL StartRecording(const PFilePath & fn, BOOL recordDTMFTerm, const PTimeInterval & recordMaxTime, const PTimeInterval & recordFinalSilence);
@@ -261,8 +265,9 @@ class PVXMLSession : public PIndirectChannel
 
     PString GetXMLError() const;
 
-    virtual BOOL OnEmptyAction()  { return TRUE; }
-    virtual void OnEndSession()   { }
+    virtual void SetEmptyAction(BOOL v) { emptyAction = v; }
+    virtual BOOL OnEmptyAction()        { return emptyAction; }
+    virtual void OnEndSession()         { }
 
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
@@ -311,6 +316,7 @@ class PVXMLSession : public PIndirectChannel
 
     BOOL loaded;
     PURL rootURL;
+    BOOL emptyAction;
 
     PThread * vxmlThread;
     BOOL forceEnd;
@@ -486,6 +492,8 @@ class PVXMLChannel : public PIndirectChannel
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
+    void SetPause(BOOL _pause) { paused = _pause; }
+
   protected:
     PVXMLSession & vxml;
     BOOL isIncoming;
@@ -514,6 +522,7 @@ class PVXMLChannel : public PIndirectChannel
     PBYTEArray frameBuffer;
     PINDEX frameLen, frameOffs;
 
+    BOOL paused;
     int silentCount;
     int totalData;
     PTimer delayTimer;
