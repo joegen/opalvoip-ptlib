@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.14  2003/03/19 01:35:42  robertj
+ * Fixed bug getting large private .ini file data, thanks Michal Zygmuntowicz
+ *
  * Revision 1.13  2003/02/12 01:59:44  robertj
  * Changed to allow for very large private .INI files.
  *
@@ -643,7 +646,7 @@ static PString PGetPrivateProfileString(const char * lpAppName,
   DWORD size = 100;
   while (size <= 100000 &&
                 ::GetPrivateProfileString(lpAppName, lpKeyName, lpDefault,
-                                          buffer.GetPointer(size+numNulls), size,
+                                          buffer.GetPointer(size+numNulls), size+numNulls,
                                           lpFileName) == size)
     size *= 10;
 
