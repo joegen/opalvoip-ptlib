@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.9  2001/03/07 23:46:18  robertj
+ * Double check the v4l device did actually change colour format, thanks Mark Cooke.
+ *
  * Revision 1.8  2001/03/07 01:42:59  dereks
  * miscellaneous video fixes. Works on linux now. Add debug statements
  * (at PTRACE level of 1)
@@ -302,6 +305,13 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
     return FALSE;
   }
   
+  // Some V4L drivers are lax about returning errors on VIDIOCSPICT
+  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0)
+    return FALSE;
+  
+  if (pictureInfo.palette != colourFormatCode)
+    return FALSE;
+
   // set the new information
   return SetFrameSize(frameWidth, frameHeight);
 }
