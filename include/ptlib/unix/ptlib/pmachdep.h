@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.36  2000/04/10 11:39:49  rogerh
+ * Add NetBSD pthread support
+ *
  * Revision 1.35  2000/04/09 18:29:02  rogerh
  * Add my NetBSD changes
  *
@@ -183,12 +186,15 @@ typedef int socklen_t;
 #define P_THREAD_SAFE_CLIB
 
 #include <pthread.h>
+#include <resolv.h> /* for pthread's h_errno */
 #endif
 
+#include <stdlib.h>
 #include <paths.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <termios.h>
+#include <unistd.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>
 #include <sys/socket.h>
