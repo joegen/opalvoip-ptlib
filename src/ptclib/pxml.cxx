@@ -183,8 +183,10 @@ BOOL PXML::Load(const PString & data, int _options)
     return TRUE;
 
   XML_Error err = XML_GetErrorCode(parser);
-  const char * errorStr = XML_ErrorString(err);
-  PTRACE(2, "XML\tXML parse error " << errorStr << ": line " << XML_GetCurrentLineNumber(parser) << ", col " << XML_GetCurrentColumnNumber(parser));
+  errorString = PString(XML_ErrorString(err));
+  errorCol    = XML_GetCurrentColumnNumber(parser);
+  errorLine   = XML_GetCurrentLineNumber(parser);
+
   return FALSE;
 }
 
