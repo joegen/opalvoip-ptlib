@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.68  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.67  2004/04/03 08:22:21  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -476,7 +480,7 @@ void PAbstractList::CloneContents(const PAbstractList * list)
   Element * element = list->info->head;
 
   info = new Info;
-  PAssertNULL(info);
+  PAssert(info != NULL, POutOfMemory);
 
   while (element != NULL) {
     Element * newElement = new Element(element->data->Clone());
@@ -523,7 +527,10 @@ BOOL PAbstractList::SetSize(PINDEX)
 
 PINDEX PAbstractList::Append(PObject * obj)
 {
-  Element * element = new Element(PAssertNULL(obj));
+  if (PAssertNULL(obj))
+    return P_MAX_INDEX;
+
+  Element * element = new Element(obj);
   if (info->tail != NULL)
     info->tail->next = element;
   element->prev = info->tail;
@@ -540,7 +547,8 @@ PINDEX PAbstractList::Append(PObject * obj)
 
 PINDEX PAbstractList::Insert(const PObject & before, PObject * obj)
 {
-  PAssertNULL(obj);
+  if (PAssertNULL(obj) == NULL)
+    return P_MAX_INDEX;
   
   PINDEX where = GetObjectsIndex(&before);
   InsertAt(where, obj);
@@ -550,8 +558,9 @@ PINDEX PAbstractList::Insert(const PObject & before, PObject * obj)
 
 PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 {
-  PAssertNULL(obj);
-
+  if (PAssertNULL(obj) == NULL)
+    return P_MAX_INDEX;
+  
   if (index >= GetSize())
     return Append(obj);
 
@@ -1018,10 +1027,8 @@ PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 
 void PAbstractSortedList::RemoveElement(Element * node)
 {
-  PAssertNULL(node);
-
   // Don't try an remove one of the special leaf nodes!
-  if (node == &info->nil)
+  if (PAssertNULL(node) == &info->nil)
     return;
 
   if (node->data != NULL && reference->deleteObjects)
@@ -1484,10 +1491,8 @@ void PHashTable::CopyContents(const PHashTable & hash)
   
 void PHashTable::CloneContents(const PHashTable * hash)
 {
-  PAssertNULL(hash);
-  PINDEX sz = hash->GetSize();
-  PAssertNULL(hash->hashTable);
-  PHashTable::Table * original = hash->hashTable;
+  PINDEX sz = PAssertNULL(hash)->GetSize();
+  PHashTable::Table * original = PAssertNULL(hash->hashTable);
 
   hashTable = new PHashTable::Table(original->GetSize());
   PAssert(hashTable != NULL, POutOfMemory);
@@ -1577,7 +1582,10 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 
 BOOL PAbstractSet::Remove(const PObject * obj)
 {
-  if (hashTable->GetElementAt(*PAssertNULL(obj)) == NULL)
+  if (PAssertNULL(obj) == NULL)
+    return FALSE;
+
+  if (hashTable->GetElementAt(*obj) == NULL)
     return FALSE;
 
   hashTable->deleteKeys = hashTable->reference->deleteObjects = reference->deleteObjects;

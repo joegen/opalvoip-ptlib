@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.49  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.48  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -1964,7 +1968,9 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 
 PHTTPField * PHTTPForm::Add(PHTTPField * fld)
 {
-  PAssertNULL(fld);
+  if (PAssertNULL(fld) == NULL)
+    return NULL;
+
   PAssert(!fieldNames[fld->GetName()], "Field already on form!");
   fieldNames += fld->GetName();
   fields.Append(fld);
