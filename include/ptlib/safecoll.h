@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.6  2002/10/29 00:06:14  robertj
+ * Changed template classes so things like PSafeList actually creates the
+ *   base collection class as well.
+ * Allowed for the PSafeList::Append() to return a locked pointer to the
+ *   object just appended.
+ *
  * Revision 1.5  2002/10/04 08:22:40  robertj
  * Changed read/write mutex so can be called by same thread without deadlock
  *   removing the need to a lock count in safe pointer.
@@ -278,14 +284,6 @@ class PSafeCollection : public PObject
   /**@name Operations */
   //@{
   protected:
-    /**Add an object to the collection.
-       This uses the PCollection::Append() function to add the object to the
-       collection, with full mutual exclusion locking on the collection.
-      */
-    virtual PINDEX SafeAppend(
-      PSafeObject * obj     /// Object to add to collection
-    );
-
     /**Remove an object to the collection.
        This function removes the object from the collection itself, but does
        not actually delete the object. It simply moves the object to a list
@@ -306,7 +304,7 @@ class PSafeCollection : public PObject
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual PSafeObject * SafeRemoveAt(
+    virtual BOOL SafeRemoveAt(
       PINDEX idx    /// Object index to remove
     );
 
@@ -329,6 +327,10 @@ class PSafeCollection : public PObject
        instantaneous snapshot of the state of the collection.
       */
     PINDEX GetSize() const { return collection->GetSize(); }
+
+    /**Get the mutex for the collection.
+      */
+    const PMutex & GetMutex() const { return collectionMutex; }
   //@}
 
   protected:
@@ -394,8 +396,8 @@ class PSafePtrBase : public PObject
      */
     PSafePtrBase(
       PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                 /// Locking mode for the object
-      PINDEX idx                        /// Index into collection to point to
+      PSafetyMode mode,                     /// Locking mode for the object
+      PINDEX idx                            /// Index into collection to point to
     );
 
     /**Create a new pointer to a PSafeObject.
@@ -407,8 +409,8 @@ class PSafePtrBase : public PObject
      */
     PSafePtrBase(
       PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                 /// Locking mode for the object
-      PSafeObject * obj                 /// Inital object in collection to point to
+      PSafetyMode mode,                     /// Locking mode for the object
+      PSafeObject * obj                     /// Inital object in collection to point to
     );
 
     /**Copy the pointer to the PSafeObject.
@@ -469,8 +471,8 @@ class PSafePtrBase : public PObject
 
   protected:
     PSafeCollection * collection;
-    PSafeObject     * currentObject;
-    PSafetyMode       lockMode;
+    PSafeObject         * currentObject;
+    PSafetyMode           lockMode;
 };
 
 
@@ -522,8 +524,8 @@ template <class T> class PSafePtr : public PSafePtrBase
      */
     PSafePtr(
       PSafeCollection & safeCollection,   /// Collection pointer will enumerate
-      PSafetyMode mode = PSafeReadWrite,  /// Locking mode for the object
-      PINDEX idx = 0                      /// Index into collection to point to
+      PSafetyMode mode = PSafeReadWrite,      /// Locking mode for the object
+      PINDEX idx = 0                          /// Index into collection to point to
     ) : PSafePtrBase(safeCollection, mode, idx) { }
 
     /**Create a new pointer to a PSafeObject.
@@ -535,8 +537,8 @@ template <class T> class PSafePtr : public PSafePtrBase
      */
     PSafePtr(
       PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                 /// Locking mode for the object
-      PSafeObject * obj                 /// Inital object in collection to point to
+      PSafetyMode mode,                     /// Locking mode for the object
+      PSafeObject * obj                     /// Inital object in collection to point to
     ) : PSafePtrBase(safeCollection, mode, obj) { }
 
     /**Copy the pointer to the PSafeObject.
@@ -665,7 +667,7 @@ template <class T> class PSafePtr : public PSafePtrBase
 };
 
 
-/** This class defines a thread-safe list of objects.
+/** This class defines a thread-safe collection of objects.
 
   This is part of a set of classes to solve the general problem of a
   collection (eg a PList or PDictionary) of objects that needs to be a made
@@ -675,15 +677,15 @@ template <class T> class PSafePtr : public PSafePtrBase
   See the PSafeObject class for more details. Especially in regard to
   enumeration of collections.
  */
-template <class Coll, class Base> class PSafeList : public PSafeCollection
+template <class Coll, class Base> class PSafeColl : public PSafeCollection
 {
-    PCLASSINFO(PSafeList, PSafeCollection);
+    PCLASSINFO(PSafeColl, PSafeCollection);
   public:
   /**@name Construction */
   //@{
     /**Create a safe list collection wrapper around the real collection.
       */
-    PSafeList()
+    PSafeColl()
       : PSafeCollection(new Coll)
       { }
   //@}
@@ -694,10 +696,12 @@ template <class Coll, class Base> class PSafeList : public PSafeCollection
        This uses the PCollection::Append() function to add the object to the
        collection, with full mutual exclusion locking on the collection.
       */
-    virtual PINDEX Append(
-      Base * obj        /// Object to add to safe collection.
+    virtual PSafePtr<Base> Append(
+      Base * obj,       /// Object to add to safe collection.
+      PSafetyMode mode = PSafeReference
     ) {
-        return PSafeCollection::SafeAppend(obj);
+        PWaitAndSignal mutex(collectionMutex);
+        return PSafePtr<Base>(*this, mode, collection->Append(obj));
       }
 
     /**Remove an object to the collection.
@@ -722,10 +726,10 @@ template <class Coll, class Base> class PSafeList : public PSafeCollection
        As for Append() full mutual exclusion locking on the collection itself
        is maintained.
       */
-    virtual Base * RemoveAt(
+    virtual BOOL RemoveAt(
       PINDEX idx     /// Index to remove
     ) {
-        return (Base *)SafeRemoveAt(idx);
+        return SafeRemoveAt(idx);
       }
 
     /**Get the instance in the collection of the index.
@@ -756,6 +760,33 @@ template <class Coll, class Base> class PSafeList : public PSafeCollection
 };
 
 
+/** This class defines a thread-safe array of objects.
+  See the PSafeObject class for more details. Especially in regard to
+  enumeration of collections.
+ */
+template <class Base> class PSafeArray : public PSafeColl<PArray<Base>, Base>
+{
+};
+
+
+/** This class defines a thread-safe list of objects.
+  See the PSafeObject class for more details. Especially in regard to
+  enumeration of collections.
+ */
+template <class Base> class PSafeList : public PSafeColl<PList<Base>, Base>
+{
+};
+
+
+/** This class defines a thread-safe sorted array of objects.
+  See the PSafeObject class for more details. Especially in regard to
+  enumeration of collections.
+ */
+template <class Base> class PSafeSortedList : public PSafeColl<PSortedList<Base>, Base>
+{
+};
+
+
 /** This class defines a thread-safe dictionary of objects.
 
   This is part of a set of classes to solve the general problem of a
@@ -766,15 +797,15 @@ template <class Coll, class Base> class PSafeList : public PSafeCollection
   See the PSafeObject class for more details. Especially in regard to
   enumeration of collections.
  */
-template <class Coll, class Key, class Base> class PSafeDictionary : public PSafeCollection
+template <class Coll, class Key, class Base> class PSafeDictionaryBase : public PSafeCollection
 {
-    PCLASSINFO(PSafeDictionary, PSafeCollection);
+    PCLASSINFO(PSafeDictionaryBase, PSafeCollection);
   public:
   /**@name Construction */
   //@{
     /**Create a safe dictionary wrapper around the real collection.
       */
-    PSafeDictionary()
+    PSafeDictionaryBase()
       : PSafeCollection(new Coll) { }
   //@}
 
@@ -832,6 +863,15 @@ template <class Coll, class Key, class Base> class PSafeDictionary : public PSaf
         return PSafePtr<Base>(*this, mode, ((Coll *)collection)->GetAt(key));
       }
   //@}
+};
+
+
+/** This class defines a thread-safe array of objects.
+  See the PSafeObject class for more details. Especially in regard to
+  enumeration of collections.
+ */
+template <class Key, class Base> class PSafeDictionary : public PSafeDictionaryBase<PDictionary<Key, Base>, Key, Base>
+{
 };
 
 
