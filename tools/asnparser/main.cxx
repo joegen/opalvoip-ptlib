@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.51  2004/04/25 08:58:58  rjongbloed
+ * Fixed GCC 3.4 warning
+ *
  * Revision 1.50  2004/04/21 00:32:02  csoutheren
  * Fixed problem with XER and the new RTTI system
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -457,7 +460,7 @@ void App::Main()
     cout << "Parsing..." << endl;
 
   yyin = _fdopen(prcFile.GetHandle(), "r");
-  PAssertNULL(yyin);
+  PAssert(yyin != NULL, "fdopen failed!");
   yyparse();
 
   if (Module != NULL) {
