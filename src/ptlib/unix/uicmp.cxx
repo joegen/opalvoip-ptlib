@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.11  2001/03/06 22:20:21  craigs
+ * Fixed TTL and other stuff so that traceroute is almost possible!
+ *
  * Revision 1.10  1999/08/09 04:06:39  robertj
  * Change to avoid name space problem with X windows library
  *
@@ -86,6 +89,8 @@
 
 #define	ICMP_ECHO_REPLY	0
 #define	ICMP_ECHO	8
+
+#define	ICMP_TIMXCEED	11
 
 
 typedef struct {
@@ -172,9 +177,15 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
   // clear the packet including data area
   memset(&packet, 0, sizeof(packet));
 
-  packet.type     = ICMP_ECHO;
-  packet.sequence = info.sequenceNum;
-  packet.id       = info.identifier;
+  packet.type       = ICMP_ECHO;
+  packet.sequence   = info.sequenceNum;
+  packet.id         = info.identifier;
+
+  if (info.ttl != 0) {
+    char ttl = (char)info.ttl;
+    if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
+      return FALSE;
+  }
 
   // set the send time
   packet.sendtime = PTimer::Tick().GetMilliSeconds();
@@ -206,9 +217,17 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
     now  = PTimer::Tick().GetMilliSeconds();
     ipHdr      = (IPHdr *)packet;
     icmpPacket = (ICMPPacket *)(packet + ((ipHdr->verIhl & 0xf) << 2));
+
     if ((      icmpPacket->type == ICMP_ECHO_REPLY) && 
-        ((WORD)icmpPacket->id   == info.identifier))
+        ((WORD)icmpPacket->id   == info.identifier)) {
+      info.status = PingSuccess;
       break;
+    }
+
+    if (icmpPacket->type == ICMP_TIMXCEED) {
+      info.status = TtlExpiredTransmit;
+      break;
+    }
 
     if (!timeout.IsRunning())
       return FALSE;
@@ -232,6 +251,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 #endif
 
   info.sequenceNum = icmpPacket->sequence;
+
   return TRUE;
 }
 
