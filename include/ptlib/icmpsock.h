@@ -1,5 +1,5 @@
 /*
- * $Id: icmpsock.h,v 1.2 1996/06/03 10:03:22 robertj Exp $
+ * $Id: icmpsock.h,v 1.3 1996/09/14 13:09:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.3  1996/09/14 13:09:19  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.2  1996/06/03 10:03:22  robertj
  * Changed ping to return more parameters.
  *
@@ -84,9 +90,9 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
 
 
 
-  private:
-    WORD GetPortByService(const PString & serviceName) const;
-    PString GetServiceByPort(WORD port) const;
+  protected:
+    virtual BOOL OpenSocket();
+    virtual const char * GetProtocolName() const;
 
 
 // Class declaration continued in platform specific header file ///////////////
