@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.12  2004/10/04 12:54:33  rjongbloed
+ * Added functions for locking an unlocking to "auto-unlock" classes.
+ *
  * Revision 1.11  2004/08/14 07:42:31  rjongbloed
  * Added trace log at level 6 for helping find PSafeObject reference/dereference errors.
  *
@@ -175,6 +178,71 @@ BOOL PSafeObject::SafelyCanBeDeleted() const
 {
   PWaitAndSignal mutex(safetyMutex);
   return safelyBeingRemoved && safeReferenceCount == 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+PSafeLockReadOnly::PSafeLockReadOnly(const PSafeObject & object)
+  : safeObject((PSafeObject &)object)
+{
+  locked = safeObject.LockReadOnly();
+}
+
+
+PSafeLockReadOnly::~PSafeLockReadOnly()
+{
+  if (locked)
+    safeObject.UnlockReadOnly();
+}
+
+
+BOOL PSafeLockReadOnly::Lock()
+{
+  locked = safeObject.LockReadOnly();
+  return locked;
+}
+
+
+void PSafeLockReadOnly::Unlock()
+{
+  if (locked) {
+    safeObject.UnlockReadOnly();
+    locked = FALSE;
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+PSafeLockReadWrite::PSafeLockReadWrite(const PSafeObject & object)
+  : safeObject((PSafeObject &)object)
+{
+  locked = safeObject.LockReadWrite();
+}
+
+
+PSafeLockReadWrite::~PSafeLockReadWrite()
+{
+  if (locked)
+    safeObject.UnlockReadWrite();
+}
+
+
+BOOL PSafeLockReadWrite::Lock()
+{
+  locked = safeObject.LockReadWrite();
+  return locked;
+}
+
+
+void PSafeLockReadWrite::Unlock()
+{
+  if (locked) {
+    safeObject.UnlockReadWrite();
+    locked = FALSE;
+  }
 }
 
 
