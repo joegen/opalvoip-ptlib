@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.44  1998/10/31 12:49:25  robertj
+ * Added read/write mutex to the HTTP space variable to avoid thread crashes.
+ *
  * Revision 1.43  1998/10/29 11:58:52  robertj
  * Added ability to configure the HTTP threads stack size.
  *
@@ -334,9 +337,15 @@ void PHTTPServiceProcess::CompleteRestartSystem()
   if (restartThread != PThread::Current())
     return;
 
-  if (!Initialise("Configuration changed - reloaded"))
+  httpNameSpace.StartWrite();
+
+  if (Initialise("Restart\tInitialisation"))
+    restartThread = NULL;
+
+  httpNameSpace.EndWrite();
+
+  if (restartThread != NULL)
     Terminate();
-  restartThread = NULL;
 }
 
 
