@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.71  2005/01/04 08:09:43  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.70  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -295,6 +298,8 @@ extern "C" int select(int width,
 #ifdef __BEOS__
 #include "OS.h"
 #endif
+
+#include "../common/pglobalstatic.cxx"
 
 
 PString PProcess::GetOSClass()
