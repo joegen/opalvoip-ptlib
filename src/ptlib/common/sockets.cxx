@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.38 1996/04/15 10:59:41 robertj Exp $
+ * $Id: sockets.cxx,v 1.39 1996/04/29 12:20:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.39  1996/04/29 12:20:01  robertj
+ * Fixed GetHostAliases() so doesn't overwrite names with IP numbers.
+ *
  * Revision 1.38  1996/04/15 10:59:41  robertj
  * Opened socket on UDP sockets so ReadFrom/WriteTo work when no Connect/Listen.
  *
@@ -443,12 +446,13 @@ static void BuildAliases(struct hostent * host_info, PStringArray & aliases)
   if (host_info == NULL)
     return;
 
+  PINDEX count = aliases.GetSize();
   for (PINDEX i = 0; host_info->h_aliases[i] != NULL; i++)
-    aliases[i] = host_info->h_aliases[i];
+    aliases[count++] = host_info->h_aliases[i];
   for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
     PIPSocket::Address temp;
     memcpy(&temp, host_info->h_addr_list[i], sizeof(temp));
-    aliases[i] = temp;
+    aliases[count++] = temp;
   }
 }
 
