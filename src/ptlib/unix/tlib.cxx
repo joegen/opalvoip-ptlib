@@ -13,6 +13,7 @@
 #pragma implementation "args.h"
 #pragma implementation "process.h"
 #pragma implementation "thread.h"
+#pragma implementation "dynalink.h"
 
 
 #include "ptlib.h"
@@ -45,10 +46,6 @@ PProcess::PProcess()
   PProcessInstance = this;
 }
 
-PProcess::~PProcess()
-
-{
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -236,5 +233,57 @@ BOOL PThread::PXBlockOnIO(int handle, BOOL isRead, PTimeInterval timeout)
 
   return FALSE;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDynaLink
+
+PDynaLink::PDynaLink()
+{
+  PAssertAlways(PUnimplementedFunction);
+}
+
+
+PDynaLink::PDynaLink(const PString &)
+{
+  PAssertAlways(PUnimplementedFunction);
+}
+
+
+PDynaLink::~PDynaLink()
+{
+}
+
+
+BOOL PDynaLink::Open(const PString & name)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+void PDynaLink::Close()
+{
+}
+
+
+BOOL PDynaLink::IsLoaded() const
+{
+  return FALSE;
+}
+
+
+BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+{
+  return FALSE;
+}
+
+
+BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+{
+  return FALSE;
+}
+
+
 
 // End Of File ///////////////////////////////////////////////////////////////
