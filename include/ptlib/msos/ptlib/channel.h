@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.5  1998/11/30 02:55:04  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/24 03:29:55  robertj
  * Added open software license.
  *
@@ -47,7 +50,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
 
-#include "../../common/ptlib/channel.h"
+#include "../../channel.h"
 };
 
 
