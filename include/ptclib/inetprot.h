@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.5 1996/02/03 11:33:16 robertj Exp $
+ * $Id: inetprot.h,v 1.6 1996/02/13 12:57:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.6  1996/02/13 12:57:05  robertj
+ * Added access to the last response in an application socket.
+ *
  * Revision 1.5  1996/02/03 11:33:16  robertj
  * Changed RadCmd() so can distinguish between I/O error and unknown command.
  *
@@ -277,6 +280,21 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        <H2>Returns:</H2>
        First character of response string or '\0' if a socket error occurred.
      */
+
+    PINDEX GetLastResponseCode() const;
+    /* Return the code associated with the last response received by the
+       socket.
+
+       <H2>Returns:</H2>
+       Response code
+    */
+
+    PString GetLastResponseInfo() const;
+    /* Return the last response received by the socket.
+
+       <H2>Returns:</H2>
+       Response as a string
+    */
 
 
   protected:
