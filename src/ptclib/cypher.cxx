@@ -24,8 +24,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
- * Revision 1.34  2003/04/16 08:00:19  robertj
- * Windoes psuedo autoconf support
+ * Revision 1.35  2003/04/17 01:21:55  craigs
+ * Fixed problem with delete'ing a void *
  *
  * Revision 1.33  2003/04/10 07:14:27  craigs
  * Fixed link problem in MD5 class
@@ -502,22 +502,21 @@ void PMessageDigest5::Complete(Code & codeResult)
 
 #ifdef P_SSL
 
-#ifdef _MSC_VER
-#pragma comment(lib, P_SSL_LIB1)
-#pragma comment(lib, P_SSL_LIB2)
-#endif
-
 #include <openssl/sha.h>
-
 
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
   shaContext = NULL;
 }
 
+PMessageDigestSHA1::~PMessageDigestSHA1()
+{
+  delete (SHA_CTX *)shaContext;
+}
+
 void PMessageDigestSHA1::Start()
 {
-  delete shaContext;
+  delete (SHA_CTX *)shaContext;
   shaContext = new SHA_CTX;
 
   SHA1_Init((SHA_CTX *)shaContext);
