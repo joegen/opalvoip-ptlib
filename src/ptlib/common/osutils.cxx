@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.175  2001/12/15 04:49:17  robertj
+ * Added stream I/O functions for argument list.
+ *
  * Revision 1.174  2001/12/14 00:42:56  robertj
  * Fixed unix compatibility with trace of threads not created by pwlib.
  *
@@ -1161,6 +1164,24 @@ PArgList::PArgList(int theArgc, char ** theArgv,
   SetArgs(theArgc, theArgv);
   // we got an argument spec - so process them
   Parse(theArgumentSpec, optionsBeforeParams);
+}
+
+
+void PArgList::PrintOn(ostream & strm) const
+{
+  for (PINDEX i = 0; i < argumentArray.GetSize(); i++) {
+    if (i > 0)
+      strm << strm.fill();
+    strm << argumentArray[i];
+  }
+}
+
+
+void PArgList::ReadFrom(istream & strm)
+{
+  PString line;
+  strm >> line;
+  SetArgs(line);
 }
 
 
