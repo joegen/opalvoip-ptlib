@@ -2913,6 +2913,7 @@ EXPORTS
     ?IsOpen@PWin32PacketDriver@@QBEHXZ @2395 NONAME ;public: int __thiscall PWin32PacketDriver::IsOpen(void)const 
     ?IsPast@PTime@@QBEHXZ @1879 NONAME ;public: int __thiscall PTime::IsPast(void)const 
     ?IsPaused@PTimer@@QBEHXZ @1880 NONAME ;public: int __thiscall PTimer::IsPaused(void)const 
+    ?IsPresent@fd_set_class@@QBEHH@Z @4454 NONAME ;public: int __thiscall fd_set_class::IsPresent(int)const 
     ?IsRecordBufferFull@PSoundChannel@@QAEHXZ @2926 NONAME ;public: int __thiscall PSoundChannel::IsRecordBufferFull(void)
     ?IsRenderOpen@PVideoChannel@@UAEHXZ @3456 NONAME ;public: virtual int __thiscall PVideoChannel::IsRenderOpen(void)
     ?IsRoot@PDirectory@@QBEHXZ @1881 NONAME ;public: int __thiscall PDirectory::IsRoot(void)const 
