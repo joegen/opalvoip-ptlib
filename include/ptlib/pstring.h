@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.33 1998/01/05 10:39:35 robertj Exp $
+ * $Id: pstring.h,v 1.34 1998/01/26 00:33:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.34  1998/01/26 00:33:46  robertj
+ * Added FindRegEx function to PString that returns position and length.
+ * Added Execute() functions to PRegularExpression that take PINDEX references instead of PIntArrays.
+ * Added static function to PRegularExpression to escape all special operator characters in a string.
+ *
  * Revision 1.33  1998/01/05 10:39:35  robertj
  * Fixed "typesafe" templates/macros for dictionaries, especially on GNU.
  *
@@ -897,7 +902,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
     PINDEX FindRegEx(
       const PRegularExpression & regex, // regular expression to find
-      PINDEX offset = 0     // Offset into string to begin search.
+      PINDEX offset = 0                 // Offset into string to begin search.
     ) const;
     /* Locate the position within the string of one of the regular expression.
        The search will begin at the character offset provided.
@@ -909,6 +914,14 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        position of regular expression in the string, or P_MAX_INDEX if no
        characters from the set are in the string.
      */
+
+    BOOL FindRegEx(
+      const PRegularExpression & regex, // regular expression to find
+      PINDEX & pos,                     // Position of matched expression
+      PINDEX & len,                     // Length of matched expression
+      PINDEX offset = 0,                // Offset into string to begin search.
+      PINDEX maxPos = P_MAX_INDEX       // Maximum offset into string
+    ) const;
 
 
     void Replace(
@@ -1177,6 +1190,12 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
       unsigned base = 10    // Number base to convert the string in.
     ) const;
     DWORD AsUnsigned(
+      unsigned base = 10    // Number base to convert the string in.
+    ) const;
+    PInt64 AsInt64(
+      unsigned base = 10    // Number base to convert the string in.
+    ) const;
+    PUInt64 AsUnsigned64(
       unsigned base = 10    // Number base to convert the string in.
     ) const;
     /* Convert the string to an integer value using the specified number base.
@@ -2042,6 +2061,28 @@ PDECLARE_CLASS(PRegularExpression, PObject)
 
     BOOL Execute(
       const PString & str,    // Source string to search
+      PINDEX & start,         // First match locations
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const PString & str,    // Source string to search
+      PINDEX & start,         // First match locations
+      PINDEX & len,           // Length of match
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const char * cstr,      // Source string to search
+      PINDEX & start,         // First match locations
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const char * cstr,      // Source string to search
+      PINDEX & start,         // First match locations
+      PINDEX & len,           // Length of match
+      int flags = 0           // Pattern match options
+    ) const;
+    BOOL Execute(
+      const PString & str,    // Source string to search
       PIntArray & starts,     // List of match locations
       int flags = 0           // Pattern match options
     ) const;
@@ -2075,6 +2116,15 @@ PDECLARE_CLASS(PRegularExpression, PObject)
 
        <H2>Returns:</H2>
        TRUE if successfully compiled.
+     */
+
+
+    static PString EscapeString(const PString & str);
+    /* Escape all characters in the <CODE>str</CODE> parameter that have a
+       special meaning.
+
+       <H2>Returns:</H2>
+       String with additional escape ('\') characters.
      */
 
 
