@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.23 1996/07/27 04:14:00 robertj Exp $
+ * $Id: socket.h,v 1.24 1996/09/14 13:09:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.24  1996/09/14 13:09:24  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.23  1996/07/27 04:14:00  robertj
  * Changed Select() calls to return error codes.
  *
@@ -102,10 +108,13 @@ PDECLARE_CLASS(PSocket, PChannel)
    at a remote <I>host</I>.
  */
 
+  protected:
+    PSocket();
+
   public:
     virtual BOOL Connect(
       const PString & address   // Address of remote machine to connect to.
-    ) = 0;
+    );
     /* Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
@@ -125,7 +134,7 @@ PDECLARE_CLASS(PSocket, PChannel)
       unsigned queueSize = 5,  // Number of pending accepts that may be queued.
       WORD port = 0,           // Port number to use for the connection.
       Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
-    ) = 0;
+    );
     /* Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
        a connection by initiating a connection to this socket. An active socket
@@ -143,7 +152,7 @@ PDECLARE_CLASS(PSocket, PChannel)
 
     virtual BOOL Accept(
       PSocket & socket          // Listening socket making the connection.
-    ) = 0;
+    );
     /* Open a socket to a remote host on the specified port number. This is an
        "accepting" socket. When a "listening" socket has a pending connection
        to make, this will accept a connection made by the "connecting" socket
@@ -160,11 +169,13 @@ PDECLARE_CLASS(PSocket, PChannel)
        <CODE>socket</CODE> parameter. This will normally be
        <CODE>PMaxTimeInterval</CODE> which indicates an infinite time.
 
+       The default behaviour is to assert.
+
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
      */
 
-#ifdef P_HAS_BERKELEY_SOCKETS
+
     BOOL SetOption(
       int option,
       int value
@@ -197,13 +208,7 @@ PDECLARE_CLASS(PSocket, PChannel)
        TRUE if the option was successfully retreived.
      */
 
-    enum ShutdownValue {
-      ShutdownRead         = 0,
-      ShutdownWrite        = 1,
-      ShutdownReadAndWrite = 2
-    };
-
-    BOOL Shutdown(
+    virtual BOOL Shutdown(
       ShutdownValue option
     );
     /* Close one or both of the data streams associated with a socket 
@@ -212,7 +217,92 @@ PDECLARE_CLASS(PSocket, PChannel)
        TRUE if the shutdown was performed
      */
     
-#endif
+    virtual WORD GetPortByService(
+      const PString & service   // Name of service to get port number for.
+    ) const;
+    static WORD GetPortByService(
+      const char * protocol,     // Protocol type for port lookup
+      const PString & service    // Name of service to get port number for.
+    );
+    /* Get the port number for the specified service name.
+    
+       A name is a unique string contained in a system database. The parameter
+       here may be either this unique name, an integer value or both separated
+       by a space (name then integer). In the latter case the integer value is
+       used if the name cannot be found in the database.
+    
+       The exact behviour of this function is dependent on whether TCP or UDP
+       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       classes will implement this function.
+
+       The static version of the function is independent of the socket type as
+       its first parameter may be "tcp" or "udp", 
+
+       <H2>Returns:</H2>
+       Port number for service name, or 0 if service cannot be found.
+     */
+
+    virtual PString GetServiceByPort(
+      WORD port   // Number for service to find name of.
+    ) const;
+    static PString GetServiceByPort(
+      const char * protocol,  // Protocol type for port lookup
+      WORD port   // Number for service to find name of.
+    );
+    /* Get the service name from the port number.
+    
+       A service name is a unique string contained in a system database. The
+       parameter here may be either this unique name, an integer value or both
+       separated by a space (name then integer). In the latter case the
+       integer value is used if the name cannot be found in the database.
+    
+       The exact behviour of this function is dependent on whether TCP or UDP
+       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       classes will implement this function.
+
+       The static version of the function is independent of the socket type as
+       its first parameter may be "tcp" or "udp", 
+
+       <H2>Returns:</H2>
+       Service name for port number.
+     */
+
+
+    void SetPort(
+      WORD port   // New port number for the channel.
+    );
+    void SetPort(
+      const PString & service   // Service name to describe the port number.
+    );
+    /* Set the port number for the channel. This a 16 bit number representing
+       an agreed high level protocol type. The string version looks up a
+       database of names to find the number for the string name.
+
+       A service name is a unique string contained in a system database. The
+       parameter here may be either this unique name, an integer value or both
+       separated by a space (name then integer). In the latter case the
+       integer value is used if the name cannot be found in the database.
+    
+       The port number may not be changed while the port is open and the
+       function will assert if an attempt is made to do so.
+     */
+
+    WORD GetPort() const;
+    /* Get the port the TCP socket channel object instance is using.
+
+       <H2>Returns:</H2>
+       Port number.
+     */
+
+    PString GetService() const;
+    /* Get a service name for the port number the TCP socket channel object
+       instance is using.
+
+       <H2>Returns:</H2>
+       string service name or a string representation of the port number if no
+       service with that number can be found.
+     */
+
 
     PDECLARE_CLASS(SelectList, PSocketList)
       public:
@@ -282,7 +372,6 @@ PDECLARE_CLASS(PSocket, PChannel)
      */
 
 
-#ifdef P_HAS_BERKELEY_SOCKETS
     inline static WORD  Host2Net(WORD  v) { return htons(v); }
     inline static DWORD Host2Net(DWORD v) { return htonl(v); }
       // Convert from host to network byte order
@@ -290,27 +379,38 @@ PDECLARE_CLASS(PSocket, PChannel)
     inline static WORD  Net2Host(WORD  v) { return ntohs(v); }
     inline static DWORD Net2Host(DWORD v) { return ntohl(v); }
       // Convert from network to host byte order
-#else
-    inline static WORD  Host2Net(WORD  v);
-    inline static DWORD Host2Net(DWORD v);
-      // Convert from host to network byte order
-
-    inline static WORD  Net2Host(WORD  v);
-    inline static DWORD Net2Host(DWORD v);
-      // Convert from network to host byte order
-#endif
 
 
   protected:
+    virtual BOOL OpenSocket() = 0;
+    /* This function calls os_socket() with the correct parameters for the
+       socket protocol type.
+     */
+
+    virtual const char * GetProtocolName() const = 0;
+    /* This function returns the protocol name for the socket type.
+     */
+
+
     int os_close();
-    int os_socket(
-      int af,
-      int type,
-      int protocol
-    );
+    int os_socket(int af, int type, int proto);
     int os_connect(
       struct sockaddr * sin,
       int size
+    );
+    int os_recvfrom(
+      void * buf,
+      PINDEX len,
+      int flags,
+      struct sockaddr * from,
+      int * fromlen
+    );
+    int os_sendto(
+      const void * buf,
+      PINDEX len,
+      int flags,
+      struct sockaddr * to,
+      int tolen
     );
     int os_accept(
       int sock,
@@ -326,6 +426,11 @@ PDECLARE_CLASS(PSocket, PChannel)
       const PIntArray & allfds,
       const PTimeInterval & timeout
     );
+
+
+  // Member variables
+    WORD port;
+    // Port to be used by the socket when opening the channel.
 
 
 // Class declaration continued in platform specific header file ///////////////
