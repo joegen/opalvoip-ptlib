@@ -1,13 +1,16 @@
 %{
 
 /*
- * $Id: asn_grammar.y,v 1.2 1998/05/21 04:21:46 robertj Exp $
+ * $Id: asn_grammar.y,v 1.3 1998/12/14 06:47:55 robertj Exp $
  *
  * ASN Grammar
  *
  * Copyright 1997 by Equivalence Pty. Ltd.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.3  1998/12/14 06:47:55  robertj
+ * New memory check code support.
+ *
  * Revision 1.2  1998/05/21 04:21:46  robertj
  * Implementing more of the ASN spec.
  *
@@ -17,6 +20,12 @@
  */
 
 #include <ptlib.h>
+
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
+
 #include "main.h"
 
 extern int yylex();
