@@ -41,6 +41,7 @@ BOOL PRemoteConnection::Open(const PString & name)
 
 PObject::Comparison PRemoteConnection::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PRemoteConnection::Class()), PInvalidCast);
   return remoteName.Compare(((const PRemoteConnection &)obj).remoteName);
 }
 
