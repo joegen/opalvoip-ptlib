@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.14  2001/03/08 23:04:19  robertj
+ * Fixed up some documentation.
+ *
  * Revision 1.13  2001/03/08 08:31:34  robertj
  * Numerous enhancements to the video grabbing code including resizing
  *   infrastructure to converters. Thanks a LOT, Mark Cooke.
@@ -163,7 +166,7 @@ class PVideoDevice : public PObject
     /**Set the video format to be used.
 
        Default behaviour sets the value of the videoFormat variable and then
-       returns the IsOpen() status.
+       returns TRUE.
     */
     virtual BOOL SetVideoFormat(
       VideoFormat videoFormat   /// New video format
@@ -179,12 +182,14 @@ class PVideoDevice : public PObject
 
        Default behaviour returns 1.
     */
-    virtual int GetNumChannels() ;
+    virtual int GetNumChannels();
 
     /**Set the video channel to be used on the device.
+       The channel number is an integer from 0 to GetNumChannels()-1. The
+       special value of -1 will find the first working channel number.
 
        Default behaviour sets the value of the channelNumber variable and then
-       returns the IsOpen() status.
+       returns TRUE.
     */
     virtual BOOL SetChannel(
          int channelNumber  /// New channel number for device.
@@ -214,7 +219,7 @@ class PVideoDevice : public PObject
        function.
 
        Default behaviour sets the value of the colourFormat variable and then
-       returns the IsOpen() status.
+       returns TRUE.
     */
     virtual BOOL SetColourFormat(
       const PString & colourFormat // New colour format for device.
@@ -229,7 +234,7 @@ class PVideoDevice : public PObject
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
-       returns the IsOpen() status.
+       returns TRUE.
     */
     virtual BOOL SetFrameRate(
       unsigned rate  /// Frames per 100 seconds
@@ -263,9 +268,6 @@ class PVideoDevice : public PObject
 
     /**Set the frame size to be used, trying converters if available.
 
-       Default behaviour sets the frameWidth and frameHeight variables and
-       returns the IsOpen() status.
-
        If the device does not support the size, a set of alternate resolutions
        are attempted.  A converter is setup if possible.
     */
@@ -277,11 +279,11 @@ class PVideoDevice : public PObject
 
     /**Set the frame size to be used.
 
-       Default behaviour sets the frameWidth and frameHeight variables and
-       returns the IsOpen() status.
-
        Note that devices may not be able to produce the requested size, and
        this function will fail.  See SetFrameSizeConverter().
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns TRUE.
     */
     virtual BOOL SetFrameSize(
       unsigned width,   /// New width of frame
@@ -291,7 +293,7 @@ class PVideoDevice : public PObject
     /**Get the frame size being used.
 
        Default behaviour returns the value of the frameWidth and frameHeight
-       variable and returns the IsOpen() status.
+       variable and returns TRUE.
     */
 
     virtual BOOL GetFrameSize(
@@ -415,7 +417,7 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Determine of the device is currently open.
       */
-    virtual BOOL IsOpen() ;
+    virtual BOOL IsOpen();
 
     /**Close the device.
       */
