@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.21  2003/12/02 08:34:44  rogerhardiman
+ * Tidy some comments
+ *
  * Revision 1.20  2003/11/12 03:29:51  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren of Post Increment
@@ -338,7 +341,7 @@
 
 /////////////////////////////////////////////////
 //
-// Video capture (Linux only)
+// Video capture (Linux and xBSD)
 //
 
 #undef NO_VIDEO_CAPTURE
