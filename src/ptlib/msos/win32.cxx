@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.13 1996/01/28 02:56:56 robertj Exp $
+ * $Id: win32.cxx,v 1.14 1996/02/08 12:30:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.14  1996/02/08 12:30:41  robertj
+ * Time zone changes.
+ * Added OS identification strings to PProcess.
+ *
  * Revision 1.13  1996/01/28 02:56:56  robertj
  * Fixed bug in PFilePath functions for if path ends in a directory separator.
  * Made sure all directory separators are correct character in normalised path.
@@ -302,7 +306,7 @@ PTime::DateOrder PTime::GetDateOrder()
 }
 
 
-BOOL PTime::IsDaylightSavings() const
+BOOL PTime::IsDaylightSavings()
 {
   TIME_ZONE_INFORMATION tz;
   DWORD result = GetTimeZoneInformation(&tz);
@@ -311,18 +315,18 @@ BOOL PTime::IsDaylightSavings() const
 }
 
 
-long PTime::GetTimeZone() const
+long PTime::GetTimeZone()
 {
   TIME_ZONE_INFORMATION tz;
   DWORD result = GetTimeZoneInformation(&tz);
   PAssertOS(result != 0xffffffff);
   if (result == TIME_ZONE_ID_DAYLIGHT)
     tz.Bias += tz.DaylightBias;
-  return tz.Bias*60;
+  return tz.Bias;
 }
 
 
-PString PTime::GetTimeZoneString(TimeZoneType type) const
+PString PTime::GetTimeZoneString(TimeZoneType type)
 {
   TIME_ZONE_INFORMATION tz;
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
@@ -1274,7 +1278,7 @@ void PConfig::SetString(const PString & section,
 
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      RegistryKey registry = location + section;
+      RegistryKey registry(location + section, TRUE);
       registry.SetValue(key, value);
       break;
     }
@@ -1310,7 +1314,7 @@ void PConfig::SetBoolean(const PString & section, const PString & key, BOOL valu
     SetString(section, key, value ? "True" : "False");
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    RegistryKey registry = location + section;
+    RegistryKey registry(location + section, TRUE);
     registry.SetValue(key, value ? 1 : 0);
   }
 }
@@ -1342,7 +1346,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
   }
   else {
     PAssert(!section.IsEmpty(), PInvalidParameter);
-    RegistryKey registry = location + section;
+    RegistryKey registry(location + section, TRUE);
     registry.SetValue(key, value);
   }
 }
@@ -1486,6 +1490,24 @@ void PThread::InitialiseProcessThread()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
+
+PString GetOSClass()
+{
+  return "WIN32";
+}
+
+
+PString GetOSName()
+{
+  return "NT";
+}
+
+
+PString GetOSVersion()
+{
+  return "3.51";
+}
+
 
 PString PProcess::GetUserName() const
 {
