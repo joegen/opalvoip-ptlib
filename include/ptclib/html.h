@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.7 1996/02/19 13:18:25 robertj Exp $
+ * $Id: html.h,v 1.8 1996/02/25 11:14:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.8  1996/02/25 11:14:19  robertj
+ * Radio button support for forms.
+ *
  * Revision 1.7  1996/02/19 13:18:25  robertj
  * Removed MSC_VER test as now completely removed from WIN16 library.
  *
@@ -887,16 +890,36 @@ PDECLARE_CLASS(PHTML, PStringStream)
       public:
         RadioButton(
           const char * fname,
+          const char * value,
           CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
         RadioButton(
           const PString & fnameStr,
+          const char * value,
           CheckedCodes check = UnChecked,
           DisableCodes disabled = Enabled,
           const char * error = NULL
         );
+        RadioButton(
+          const char * fname,
+          const PString & value,
+          CheckedCodes check = UnChecked,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+        RadioButton(
+          const PString & fnameStr,
+          const PString & value,
+          CheckedCodes check = UnChecked,
+          DisableCodes disabled = Enabled,
+          const char * error = NULL
+        );
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        const char * valueString;
     };
 
     class InputRange : public InputField {
