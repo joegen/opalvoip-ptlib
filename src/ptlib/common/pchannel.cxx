@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.4  1999/06/17 13:38:11  robertj
+ * Fixed race condition on indirect channel close, mutex needed in PIndirectChannel.
+ *
  * Revision 1.3  1999/02/22 10:10:12  robertj
  * Changed channel output flush to remove double Write() call.
  *
@@ -478,16 +481,23 @@ PObject::Comparison PIndirectChannel::Compare(const PObject & obj) const
 
 PString PIndirectChannel::GetName() const
 {
-  if (readChannel != NULL && readChannel == writeChannel)
-    return readChannel->GetName();
+  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
 
-  PString name = "R<";
-  if (readChannel != NULL)
-    name += readChannel->GetName();
-  name += "> T<";
-  if (writeChannel != NULL)
-    name += writeChannel->GetName();
-  name += ">";
+  PString name;
+  if (readChannel != NULL && readChannel == writeChannel)
+    name = readChannel->GetName();
+  else {
+    name = "R<";
+    if (readChannel != NULL)
+      name += readChannel->GetName();
+    name += "> T<";
+    if (writeChannel != NULL)
+      name += writeChannel->GetName();
+    name += ">";
+  }
+
+  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+
   return name;
 }
 
@@ -498,23 +508,31 @@ BOOL PIndirectChannel::Close()
 
   flush();
 
+  channelPointerMutex.StartRead();
+
+  if (readChannel != NULL)
+    retval = readChannel->Close();
+
+  if (readChannel != writeChannel && writeChannel != NULL)
+    retval = writeChannel->Close() && retval;
+
+  channelPointerMutex.EndRead();
+
+  channelPointerMutex.StartWrite();
+
   PChannel * r = readChannel;
   PChannel * w = writeChannel;
 
   readChannel = NULL;
   writeChannel = NULL;
 
-  if (r != NULL) {
-    retval = r->Close();
-    if (readAutoDelete)
-      delete r;
-  }
+  if (readAutoDelete)
+    delete r;
 
-  if (r != w && w != NULL) {
-    retval = w->Close() && retval;
-    if (writeAutoDelete)
-      delete w;
-  }
+  if (r != w && writeAutoDelete)
+    delete w;
+
+  channelPointerMutex.EndWrite();
 
   return retval;
 }
@@ -522,61 +540,93 @@ BOOL PIndirectChannel::Close()
 
 BOOL PIndirectChannel::IsOpen() const
 {
-  if (readChannel != NULL && readChannel == writeChannel)
-    return readChannel->IsOpen();
+  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
 
-  BOOL readOk = readChannel != NULL ? readChannel->IsOpen() : FALSE;
-  BOOL writeOk = writeChannel != NULL ? writeChannel->IsOpen() : FALSE;
-  return readOk && writeOk;
+  BOOL returnValue;
+  if (readChannel != NULL && readChannel == writeChannel)
+    returnValue = readChannel->IsOpen();
+  else {
+    returnValue = readChannel != NULL ? readChannel->IsOpen() : FALSE;
+    if (writeChannel != NULL)
+      returnValue = writeChannel->IsOpen() || returnValue;
+  }
+
+  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 BOOL PIndirectChannel::Read(void * buf, PINDEX len)
 {
-  PAssert(readChannel != NULL, "Indirect read though NULL channel");
   flush();
-  readChannel->SetReadTimeout(readTimeout);
-  BOOL ret = readChannel->Read(buf, len);
-  if (readChannel == NULL) {
-    lastError     = Interrupted;
-    osError       = EINTR;
-    lastReadCount = 0;
-  } else {
+
+  channelPointerMutex.StartRead();
+
+  PAssert(readChannel != NULL, "Indirect read though NULL channel");
+
+  BOOL returnValue;
+  if (readChannel == NULL)
+    returnValue = FALSE;
+  else {
+    readChannel->SetReadTimeout(readTimeout);
+
+    returnValue = readChannel->Read(buf, len);
+
     lastError = readChannel->GetErrorCode();
     osError = readChannel->GetErrorNumber();
     lastReadCount = readChannel->GetLastReadCount();
   }
-  return ret;
+
+  channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 {
-  PAssert(writeChannel != NULL, "Indirect write though NULL channel");
   flush();
-  writeChannel->SetWriteTimeout(writeTimeout);
-  BOOL ret = writeChannel->Write(buf, len);
-  if (writeChannel == NULL) {
-    lastError      = Interrupted;
-    osError        = EINTR;
-    lastWriteCount = 0;
-  } else {
+
+  channelPointerMutex.StartRead();
+
+  PAssert(writeChannel != NULL, "Indirect write though NULL channel");
+
+  BOOL returnValue;
+  if (writeChannel == NULL)
+    returnValue = FALSE;
+  else {
+    writeChannel->SetWriteTimeout(writeTimeout);
+
+    returnValue = writeChannel->Write(buf, len);
+
     lastError = writeChannel->GetErrorCode();
     osError = writeChannel->GetErrorNumber();
     lastWriteCount = writeChannel->GetLastWriteCount();
   }
-  return ret;
+
+  channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 BOOL PIndirectChannel::Shutdown(ShutdownValue value)
 {
-  if (readChannel != NULL && readChannel == writeChannel)
-    return readChannel->Shutdown(value);
+  channelPointerMutex.StartRead();
 
-  BOOL readOk = readChannel != NULL ? readChannel->Shutdown(value) : FALSE;
-  BOOL writeOk = writeChannel != NULL ? writeChannel->Shutdown(value) : FALSE;
-  return readOk && writeOk;
+  BOOL returnValue;
+  if (readChannel != NULL && readChannel == writeChannel)
+    returnValue = readChannel->Shutdown(value);
+  else {
+    returnValue = readChannel != NULL ? readChannel->Shutdown(value) : FALSE;
+    if (writeChannel != NULL)
+      returnValue = writeChannel->Shutdown(value) || returnValue;
+  }
+
+  channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
@@ -597,16 +647,16 @@ BOOL PIndirectChannel::Open(PChannel * readChan,
                             BOOL autoDeleteRead,
                             BOOL autoDeleteWrite)
 {
-  if (readAutoDelete)
-    delete readChannel;
+  Close();
 
-  if (writeAutoDelete && readChannel != writeChannel)
-    delete writeChannel;
+  channelPointerMutex.StartWrite();
 
   readChannel = readChan;
   readAutoDelete = autoDeleteRead;
   writeChannel = writeChan;
   writeAutoDelete = autoDeleteWrite;
+
+  channelPointerMutex.EndWrite();
 
   return IsOpen() && OnOpen();
 }
@@ -620,35 +670,63 @@ BOOL PIndirectChannel::OnOpen()
 
 BOOL PIndirectChannel::SetReadChannel(PChannel * channel, BOOL autoDelete)
 {
-  if (readAutoDelete)
-    delete readChannel;
+  if (readChannel != NULL) {
+    lastError = Miscellaneous;
+    osError = EBADF;
+    return FALSE;
+  }
+
+  channelPointerMutex.StartWrite();
 
   readChannel = channel;
   readAutoDelete = autoDelete;
+
+  channelPointerMutex.EndWrite();
+
   return IsOpen();
 }
 
 
 BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
 {
-  if (writeAutoDelete)
-    delete writeChannel;
+  if (writeAutoDelete != NULL) {
+    lastError = Miscellaneous;
+    osError = EBADF;
+    return FALSE;
+  }
+
+  channelPointerMutex.StartWrite();
 
   writeChannel = channel;
   writeAutoDelete = autoDelete;
+
+  channelPointerMutex.EndWrite();
+
   return IsOpen();
 }
 
 
 PChannel * PIndirectChannel::GetBaseReadChannel() const
 {
-  return readChannel != NULL ? readChannel->GetBaseReadChannel() : 0;
+  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
+
+  PChannel * returnValue = readChannel != NULL ? readChannel->GetBaseReadChannel() : 0;
+
+  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 PChannel * PIndirectChannel::GetBaseWriteChannel() const
 {
-  return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
+  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
+
+  PChannel * returnValue = writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
+
+  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
