@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.15 1996/09/21 05:41:41 craigs Exp $
+# $Id: Makefile,v 1.16 1996/10/31 10:30:03 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.16  1996/10/31 10:30:03  craigs
+# Lots of changes
+#
 # Revision 1.15  1996/09/21 05:41:41  craigs
 # Added new common files
 #
@@ -64,7 +67,6 @@ SOURCES		= switch.cxx \
 		  tlib.cxx \
 		  assert.cxx \
 		  config.cxx \
-		  socket.cxx \
 		  remconn.cxx \
 		  serchan.cxx \
 		  pipechan.cxx \
@@ -78,15 +80,15 @@ SOURCES		= switch.cxx \
 		  uhtml.cxx \
 		  ucypher.cxx \
 		  uhttp.cxx \
-		  uicmp.cxx \
 		  uhttpsvc.cxx \
 		  uhttpform.cxx \
 		  uasn.cxx \
 		  usnmp.cxx \
+		  usocket.cxx \
+		  uicmp.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
-		  $(COMMONSRC)/sockets.cxx \
 		  $(COMMONSRC)/pmain.cxx \
 		  $(COMMONSRC)/ptime.cxx \
 		  $(COMMONSRC)/collect.cxx \
@@ -165,58 +167,3 @@ endif
 
 endif
 
-
-$(OBJDIR)/osutil.o: ./osutil.cxx 
-
-$(OBJDIR)/channel.o: channel.cxx 
-
-$(OBJDIR)/tlib.o: tlib.cxx 
-
-$(OBJDIR)/assert.o: assert.cxx 
-
-$(OBJDIR)/config.o: config.cxx 
-
-$(OBJDIR)/socket.o: socket.cxx 
-
-$(OBJDIR)/pipechan.o: pipechan.cxx 
-
-$(OBJDIR)/serchan.o: serchan.cxx 
-
-$(OBJDIR)/svcproc.o: svcproc.cxx 
-
-$(OBJDIR)/remconn.o: remconn.cxx 
-
-$(OBJDIR)/uappsock.o: uappsock.cxx 
-
-$(OBJDIR)/uhttp.o: uhttp.cxx 
-
-$(OBJDIR)/uhttpsvc.o: uhttpsvc.cxx 
-
-$(OBJDIR)/object.o: $(COMMONSRC)/object.cxx 
-
-$(OBJDIR)/contain.o: $(COMMONSRC)/contain.cxx 
-
-$(OBJDIR)/collect.o: $(COMMONSRC)/collect.cxx 
-
-$(OBJDIR)/osutils.o: $(COMMONSRC)/osutils.cxx 
-
-$(OBJDIR)/sockets.o: $(COMMONSRC)/sockets.cxx 
-
-$(OBJDIR)/appsock.o: $(COMMONSRC)/appsock.cxx 
-
-$(OBJDIR)/cypher.o: $(COMMONSRC)/cypher.cxx 
-
-$(OBJDIR)/html.o: $(COMMONSRC)/html.cxx 
-
-$(OBJDIR)/http.o: $(COMMONSRC)/http.cxx 
-
-$(OBJDIR)/pmain.o: $(COMMONSRC)/pmain.cxx 
-
-$(OBJDIR)/ptime.o: $(COMMONSRC)/ptime.cxx 
-
-$(OBJDIR)/telnet.o: $(COMMONSRC)/telnet.cxx 
-
-$(OBJDIR)/mailsock.o: $(COMMONSRC)/mailsock.cxx 
-
-$(OBJDIR)/ftp.o: ../../common/src/ftp.cxx 
-# Do not delete this line - make depend depends upon it
