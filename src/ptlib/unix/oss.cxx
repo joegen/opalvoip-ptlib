@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.56  2003/01/06 19:10:22  rogerh
+ * NetBSD uses /dev/audio and not /dev/dsp
+ *
  * Revision 1.55  2002/12/12 09:03:56  rogerh
  * On two FreeBSD machines, Read() calls from the sound card were not blocking
  * correctly and returned with less bytes than asked for. This made OpenH323
@@ -499,10 +502,12 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         // On Linux devfs systems, the major numbers can change dynamically.
 	// On FreeBSD and other OSs, the major numbes are different to Linux.
 	// So collect devices by looking for dsp(N) and mixer(N).
+        // (or /dev/audio(N) and mixer(N) on NetBSD
 	// Notes. FreeBSD supports audio stream mixing. For /dev/dsp0
 	// there are also entries for /dev/dsp0.0 dsp0.1 dsp0.2 and dsp0.3
 	// We will ignore these N.M devices.
 
+#ifndef P_NETBSD
         // Look for dsp
         if (filename == "dsp") {
           dsp.SetAt(0, devname);
@@ -515,6 +520,20 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
             dsp.SetAt(cardnum+1, devname);
 	  }
         }
+#else
+        // Look for audio on NetBSD 
+        if (filename == "audio") {
+          dsp.SetAt(0, devname);
+        }
+        // Look for audioN. Insert at position cardnum + 1
+        if ((filename.GetLength() > 5) && (filename.Left(5) == "audio")) {
+	  PString numbers = filename.Mid(5); // get everything after 'audio'
+	  if (IsNumericString(numbers)) {
+            PINDEX cardnum = numbers.AsInteger();
+            dsp.SetAt(cardnum+1, devname);
+	  }
+        }
+#endif
         // Look for mixer
         if (filename == "mixer") {
           mixer.SetAt(0, devname);
@@ -604,8 +623,11 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 {
   // Normally /dev/dsp points to the default sound device. If this is not
   // present, probe /dev for sound devices and return the first detected device.
+
   if (PFile::Exists("/dev/dsp")) {
     return "/dev/dsp";
+  } else if (PFile::Exists("/dev/audio")) { // the NetBSD default name
+    return "/dev/audio";
   } else {
     // return the first dsp device detected
     PStringArray devicenames;
