@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.11  2001/08/06 19:35:27  rogerh
+ * Include the relevent header file based on the version of OpenBSD.
+ * Submitted by Marius Aamodt Eriksen <marius@umich.edu>
+ *
  * Revision 1.10  2001/08/06 07:27:21  rogerh
  * Make a note of the new location of a header file, but do not use it yet.
  *
@@ -75,10 +79,11 @@
 #endif
 
 #if defined(P_OPENBSD)
-/* In OpenBSD 2.9 and later the Meteor API header file has been renamed.
-   #include <dev/ic/bt8xx.h>
- */
+#if P_OPENBSD >= 200105
+#include <dev/ic/bt8xx.h> 
+#else 
 #include <i386/ioctl_meteor.h>
+#endif
 #endif
 
 
