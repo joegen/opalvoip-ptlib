@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.26  2000/03/04 08:07:07  robertj
+ * Fixed problem with window not appearing when assert on GUI based win32 apps.
+ *
  * Revision 1.25  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -301,6 +304,21 @@ void PAssertFunc(const char * file, int line, const char * msg)
   static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
   WaitForSingleObject(mutex, INFINITE);
 #endif
+
+  if (PProcess::Current().IsGUIProcess()) {
+    switch (MessageBox(NULL, str.str(), "Portable Windows Library",
+                              MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
+      case IDABORT :
+        FatalExit(1);  // Never returns
+
+      case IDRETRY :
+        DebugBreak();
+    }
+#if defined(_WIN32)
+    ReleaseSemaphore(mutex, 1, NULL);
+#endif
+    return;
+  }
 
   for (;;) {
     cerr << str.str() << "\n<A>bort, <B>reak, <I>gnore? ";
