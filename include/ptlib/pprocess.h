@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.30 1998/03/20 03:16:10 robertj Exp $
+ * $Id: pprocess.h,v 1.31 1998/03/29 06:16:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.31  1998/03/29 06:16:44  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.30  1998/03/20 03:16:10  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -114,7 +117,10 @@
  */
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
-    { static cls instance; return ((PProcess*)&instance)->_main(argc, argv, envp); }
+    { PProcess::PreInitialise(__argc, __argv, (char **)hInst); \
+      static cls instance; \
+      return instance._main(); \
+    }
 
 /*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
    This macro is used to declare the components necessary for a user PWLib
@@ -361,24 +367,19 @@ PDECLARE_CLASS(PProcess, PThread)
        list of timers.
      */
 
-  protected:
-    virtual int _main(
+    static void PreInitialise(
       int argc,     // Number of program arguments.
       char ** argv, // Array of strings for program arguments.
-      char ** envp  // Array of strings for program environment.
-    );
-    /* Internal initialisation function called directly from
-       <CODE>main()</CODE>. The user should never call this function.
-     */
-
-    void PreInitialise(
-      int argc,     // Number of program arguments.
-      char ** argv  // Array of strings for program arguments.
+      char ** envp  // Array of string for the system environment
     );
     /* Internal initialisation function called directly from
        <CODE>_main()</CODE>. The user should never call this function.
      */
 
+    virtual int _main();
+    // Main function for process, called from real main after initialisation
+
+  protected:
 #if !defined(P_PLATFORM_HAS_THREADS)
 
     virtual void OperatingSystemYield();
@@ -393,6 +394,11 @@ PDECLARE_CLASS(PProcess, PThread)
     void Construct();
 
   // Member variables
+    static int argc;
+    static char ** argv;
+    static char ** envp;
+    // main arguments
+
     int terminationValue;
     // Application return value
 
@@ -432,16 +438,6 @@ PDECLARE_CLASS(PProcess, PThread)
 
 
   friend class PThread;
-
-  friend int main(
-      int argc,     // Number of program arguments.
-      char ** argv, // Array of strings for program arguments.
-      char ** envp  // Array of strings for program environment.
-    );
-    /* The main() system entry point to programme. This does platform dependent
-       initialisation and then calls the <A>PreInitialise()</A> function, then
-       the <A>PThread::Main()</A> function.
-     */
 
 
 // Class declaration continued in platform specific header file ///////////////
