@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.2 1995/07/09 00:35:42 craigs Exp $
+# $Id: Makefile,v 1.3 1995/12/08 13:18:13 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.3  1995/12/08 13:18:13  craigs
+# Lots of changes
+#
 # Revision 1.2  1995/07/09 00:35:42  craigs
 # Latest and greatest omnibus change
 #
@@ -25,6 +28,9 @@ SOURCES		= osutil.cxx \
 		  tlib.cxx \
 		  os_main.cxx \
 		  config.cxx \
+		  socket.cxx \
+		  pipechan.cxx \
+		  serchan.cxx \
 		  ../../common/src/object.cxx \
 		  ../../common/src/contain.cxx \
 		  ../../common/src/collect.cxx \
