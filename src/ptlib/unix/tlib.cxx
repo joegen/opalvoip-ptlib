@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.43  1999/05/13 04:44:18  robertj
+ * Added SIGHUP and SIGWINCH handlers to increase and decrease the log levels.
+ *
  * Revision 1.42  1999/03/02 05:41:59  robertj
  * More BeOS changes
  *
@@ -378,6 +381,9 @@ void SetSignals(void (*handler)(int))
 #endif
 #ifdef SIGTERM
   signal(SIGTERM, HANDLER(handler));
+#endif
+#ifdef SIGWINCH
+  signal(SIGWINCH, HANDLER(handler));
 #endif
 //#ifdef SIGCHLD		
 //  signal(SIGCHLD, HANDLER(handler));
