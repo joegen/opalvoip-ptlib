@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.9  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.8  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -76,6 +79,12 @@
 #ifdef _PTIMEINTERVAL_PLATFORM_INCLUDE
 #undef _PTIMEINTERVAL_PLATFORM_INCLUDE
 
+  public:
+    /**Get time interval as a timeval as used by C library functions.
+       If the time interval is PMaxTimeInterval then this returns NULL,
+       otherwise is returns a pointer to the initialised buffer.
+      */
+    struct timeval * AsTimeVal(struct timeval & buffer) const;
 
 #endif
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.65  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.64  2001/09/04 04:15:44  robertj
  * Fixed PFileInfo (stat) of file name that is dangling symlink.
  *
@@ -320,6 +323,22 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
   return strtouq(theArray, &dummy, base);
 #endif
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// time interval
+
+struct timeval * PTimeInterval::AsTimeVal(struct timeval & buffer) const
+{
+  if (*this == PMaxTimeInterval)
+    return NULL;
+
+  buffer.tv_usec = (milliseconds % 1000) * 1000;
+  buffer.tv_sec  =  milliseconds / 1000;
+  return &buffer;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.32  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.31  2001/09/14 05:10:57  robertj
  * Fixed compatibility issue with FreeBSD versionof OSS.
  *
@@ -987,10 +990,8 @@ BOOL PSoundChannel::StartRecording()
   FD_ZERO(&fds);
   FD_SET(os_handle, &fds);
 
-  struct timeval timeout;
-  memset(&timeout, 0, sizeof(timeout));
-
-  return ConvertOSError(::select(1, &fds, NULL, NULL, &timeout));
+  struct timeval instant = {0, 0};
+  return ConvertOSError(::select(1, &fds, NULL, NULL, &instant));
 }
 
 

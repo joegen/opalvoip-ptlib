@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.71  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.70  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -327,8 +330,6 @@ int PSocket::os_select(int maxHandle,
           const PIntArray & osHandles,
       const PTimeInterval & timeout)
 {
-  struct timeval * tptr = NULL;
-
   int stat = PThread::Current()->PXBlockOnIO(maxHandle,
                                          readBits,
                                          writeBits,
@@ -338,10 +339,8 @@ int PSocket::os_select(int maxHandle,
   if (stat <= 0)
     return stat;
 
-  struct timeval tout = {0, 0};
-  tptr = &tout;
-
-  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
+  struct timeval instant = {0, 0};
+  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, &instant);
 }
                      
 #else
@@ -353,22 +352,13 @@ int PSocket::os_select(int width,
           const PIntArray & ,
       const PTimeInterval & timeout)
 {
-  struct timeval * tptr = NULL;
-  struct timeval   timeout_val;
-  if (timeout != PMaxTimeInterval) {
-    if (timeout.GetMilliSeconds() < 1000L*60L*60L*24L) {
-      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-      timeout_val.tv_sec  = timeout.GetSeconds();
-      tptr                = &timeout_val;
-    }
-  }
-
   int unblockPipe = PThread::Current()->unblockPipe[0];
   FD_SET(unblockPipe, &readBits);
   width = PMAX(width, unblockPipe+1);
 
   do {
-    int result = ::select(width, &readBits, &writeBits, &exceptionBits, tptr);
+    struct timeval tval;
+    int result = ::select(width, &readBits, &writeBits, &exceptionBits, timeout.AsTimeVal(tval));
     if (result >= 0) {
       if (FD_ISSET(unblockPipe, &readBits)) {
         FD_CLR(unblockPipe, &readBits);
