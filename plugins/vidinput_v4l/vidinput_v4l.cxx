@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.3  2003/11/25 22:55:13  dsandras
+ * Added fallback using major and minor numbers for detection of devices when /proc/video doesn't exist (some 2.4 kernels and all 2.6 kernels).
+ *
  * Revision 1.2  2003/11/18 10:42:09  csoutheren
  * Changed to work with new plugins
  *
@@ -289,6 +292,9 @@ static struct {
 static PMutex mutex;
 static PDictionary<PString, PString> *dico = NULL;
 
+#define MAJOR(a) (int)((unsigned short) (a) >> 8)
+#define MINOR(a) (int)((unsigned short) (a) & 0xFF)
+
 // Now, the userfriendly translation functions:
 static PString to_userfriendly(PString devname)
 {
@@ -355,6 +361,40 @@ static PString from_userfriendly(PString ufname)
 
   return Result;
 }
+
+
+static void CollectVideoDevices (PDirectory devdir, POrdinalToString & vid)
+{
+  if (!devdir.Open())
+    return;
+
+  do {
+    PString filename = devdir.GetEntryName();
+    PString devname = devdir + filename;
+    if (devdir.IsSubDir())
+      CollectVideoDevices(devname, vid);
+    else {
+
+      PFileInfo info;
+      if (devdir.GetInfo(info) && info.type == PFileInfo::CharDevice) {
+	struct stat s;
+	if (lstat(devname, &s) == 0) {
+	 
+	  static const int deviceNumbers[] = { 81 };
+	  for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
+	    if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
+
+	      PINDEX num = MINOR(s.st_rdev);
+	      if (num <= 63 && num >= 0) 
+		vid.SetAt(num, devname);
+	    }
+	  }
+	}
+      }
+    }
+  } while (devdir.Next());
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputV4lDevice
@@ -579,13 +619,22 @@ PStringList PVideoInputV4lDevice::GetInputDeviceNames()
     }   
     
   }
+  else {
 
-  if (devlist.IsEmpty ()) {
-    
-    devlist.AppendString(to_userfriendly("/dev/video0"));
-    devlist.AppendString(to_userfriendly("/dev/video1"));
+    POrdinalToString vid;
+    CollectVideoDevices("/dev/", vid);
+
+    for (PINDEX i = 0; i < vid.GetSize(); i++) {
+      PINDEX cardnum = vid.GetKeyAt(i);
+
+      int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
+      if (fd >= 0 || errno == EBUSY) {
+	::close(fd);
+	devlist.AppendString(to_userfriendly(vid[cardnum]));
+      }
+    }
   }
-  
+   
   return devlist;
 }
 
