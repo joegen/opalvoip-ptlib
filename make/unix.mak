@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.156  2003/02/18 03:55:59  dereks
+# Add 1394AVC pathces from  Georgi Georgiev. Thanks!
+#
 # Revision 1.155  2003/01/20 10:13:18  rogerh
 # NetBSD thread changes
 #
@@ -785,21 +788,6 @@ $(error "TRY_1394DC is defined but $(SYSINCDIR)/libdc1394/dc1394_control.h does 
 endif
 endif
 
-ifdef TRY_1394AVC
-ifneq (,$(wildcard $(SYSINCDIR)/libavc1394/avc1394.h))
-ifneq (,$(wildcard $(SYSINCDIR)/libdv/dv.h))
-ENDLDLIBS      += -lraw1394 -lavc1394 -lrom1394 -ldv
-STDCCFLAGS     += -DTRY_1394AVC
-TRY_1394AVC    = 1
-else
-$(error "You need the libdv headers. Ignoring TRY_1394AVC")
-TRY_1394AVC     =
-endif
-else
-$(error "You need the libavc1394 headers. Ignoring TRY_1394AVC")
-TRY_1394AVC     =
-endif
-endif
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
