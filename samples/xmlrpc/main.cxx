@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2002/12/04 02:09:17  robertj
+ * Changed macro name prefix to PXMLRPC
+ *
  * Revision 1.4  2002/12/04 00:16:18  robertj
  * Large enhancement to create automatically encoding and decoding structures
  *   using macros to build a class.
@@ -48,20 +51,20 @@
 #include <ptclib/pxmlrpc.h>
 
 
-PXML_STRUCT_BEGIN(NestedStruct)
-    PXML_STRING  (NestedStruct, PString, another_string);
-    PXML_INTEGER (NestedStruct, int, another_integer);
-PXML_STRUCT_END()
+PXMLRPC_STRUCT_BEGIN(NestedStruct)
+    PXMLRPC_STRING  (NestedStruct, PString, another_string);
+    PXMLRPC_INTEGER (NestedStruct, int, another_integer);
+PXMLRPC_STRUCT_END()
 
-PXML_STRUCT_BEGIN(TestStruct)
-    PXML_STRING  (TestStruct, PString, a_string);
-    PXML_INTEGER (TestStruct, int, an_integer);
-    PXML_BOOLEAN (TestStruct, BOOL, a_boolean);
-    PXML_DOUBLE  (TestStruct, double, a_float);
-    PXML_DATETIME(TestStruct, PTime, a_date);
-    PXML_BINARY  (TestStruct, PBYTEArray, a_binary);
-    PXML_STRUCT  (TestStruct, NestedStruct, nested_struct);
-PXML_STRUCT_END()
+PXMLRPC_STRUCT_BEGIN(TestStruct)
+    PXMLRPC_STRING  (TestStruct, PString, a_string);
+    PXMLRPC_INTEGER (TestStruct, int, an_integer);
+    PXMLRPC_BOOLEAN (TestStruct, BOOL, a_boolean);
+    PXMLRPC_DOUBLE  (TestStruct, double, a_float);
+    PXMLRPC_DATETIME(TestStruct, PTime, a_date);
+    PXMLRPC_BINARY  (TestStruct, PBYTEArray, a_binary);
+    PXMLRPC_STRUCT  (TestStruct, NestedStruct, nested_struct);
+PXMLRPC_STRUCT_END()
  
 
 PCREATE_PROCESS(XMLRPCApp);
