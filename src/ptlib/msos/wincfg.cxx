@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.3  1999/12/30 00:32:48  robertj
+ * Allowed absolute registry paths in PConfig::Application instances.
+ *
  * Revision 1.2  1998/12/04 10:10:48  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -442,7 +445,10 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
       break;
 
     case Application :
-      {
+      if (defaultSection.Find("HKEY_LOCAL_MACHINE\\") == 0 || 
+          defaultSection.Find("HKEY_CURRENT_USER\\") == 0)
+        source = Application;
+      else {
         PProcess & proc = PProcess::Current();
         PFilePath appFile = proc.GetFile();
         PFilePath cfgFile = appFile.GetVolume() + appFile.GetPath() + appFile.GetTitle() + ".INI";
