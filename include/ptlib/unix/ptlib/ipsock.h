@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.6  1998/11/30 22:06:49  robertj
+ * New directory structure.
+ *
  * Revision 1.5  1998/09/24 04:11:40  robertj
  * Added open software license.
  *
@@ -55,7 +58,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-#include "../../common/ptlib/ipsock.h"
+#include "../../ipsock.h"
 };
 
 
