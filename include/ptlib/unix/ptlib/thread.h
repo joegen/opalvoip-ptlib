@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.1 1995/01/23 18:43:27 craigs Exp $
+ * $Id: thread.h,v 1.2 1995/07/09 00:35:00 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.2  1995/07/09 00:35:00  craigs
+ * Latest and greatest omnibus change
+ *
  * Revision 1.1  1995/01/23 18:43:27  craigs
  * Initial revision
  *
@@ -32,13 +35,14 @@ class PProcess;
   public:
     friend class PProcess;
     BOOL PXBlockOnIO(int handle, BOOL isRead);
-    BOOL PXBlockOnIO(int handle, BOOL isRead, PTimeInterval timeout);
+    BOOL PXBlockOnIO(int handle, BOOL isRead, const PTimeInterval & timeout);
 
-  private:
+  protected:
     PTimer ioTimer;
     BOOL   hasIOTimer;
     int    blockHandle;
     BOOL   blockRead;
+    BOOL   dataAvailable;
 };
 
 
