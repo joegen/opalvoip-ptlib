@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.19  2002/01/31 15:29:26  rogerh
+ * Fix a problem with .wav files recorded in GoldWave.  The GoldWave copyright
+ * string (embedded at the end of the wav file) was returned as audio data and
+ * heared as noise. Javi <fjmchm@hotmail.com> reported the problem.
+ *
  * Revision 1.18  2002/01/22 03:55:59  craigs
  * Added include of ptclib/pwavfile.cxx as this is now in PTCLib
  *
@@ -176,7 +181,19 @@ PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, WaveType typ
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Read(void * buf, PINDEX len)
 {
-  BOOL rval = PFile::Read(buf, len);
+  // Some wav files have extra data after the sound samples in a LIST chunk.
+  // e.g. WAV files made in GoldWave have a copyright and a URL in this chunk.
+  // We do not want to return this data by mistake.
+
+  PINDEX readlen;
+  if ((GetPosition() + len) > lenData) {
+    PTRACE(1, "Detected non audio data after the sound samples");
+    readlen = lenData-GetPosition(); 
+  } else {
+    readlen = len;
+  }
+
+  BOOL rval = PFile::Read(buf, readlen);
 
   if (rval == FALSE) {
     return (rval);
