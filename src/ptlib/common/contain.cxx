@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.142  2004/02/11 05:09:14  csoutheren
+ * Fixed problems with regex libraries on Solaris, and with host OS numbering
+ * being a quoted string rather than a number. Thanks to Chad Attermann
+ * Fixed problems SSL detection problems thanks to Michal Zygmuntowicz
+ *
  * Revision 1.141  2004/02/08 11:13:20  rjongbloed
  * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
  *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
@@ -521,13 +526,13 @@
  * Fixed header comment for RCS.
  */
 
-#if P_MACOS
-#include <sys/types.h>
-extern "C"  // curse apple
-{
-#include <regex.h>
-};
-#endif
+//#if P_MACOS
+//#include <sys/types.h>
+//extern "C"  // curse apple
+//{
+//#include <regex.h>
+//};
+//#endif
 
 #include <ptlib.h>
 
@@ -537,12 +542,12 @@ extern "C"  // curse apple
 extern "C" int vsprintf(char *, const char *, va_list);
 #endif
 
-#if !P_MACOS
-#ifdef  P_LINUX
+#if P_REGEX
+extern "C" {
 #include <regex.h>
+};
 #else
 #include "regex/regex.h"
-#endif
 #endif
 
 #if !P_USE_INLINES
