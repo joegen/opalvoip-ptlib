@@ -147,6 +147,7 @@ SOURCE=..\..\Ptclib\Html.cxx
 # Begin Source File
 
 SOURCE=..\..\Ptclib\Http.cxx
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -228,6 +229,7 @@ SOURCE=..\..\ptclib\ptts.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\pwavfile.cxx
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
