@@ -6571,6 +6571,10 @@ if test "${OSTYPE}" != "Darwin" ; then
 fi
 
 
+STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+
+
+
 
 
 
