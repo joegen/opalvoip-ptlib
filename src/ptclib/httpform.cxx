@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.28  1998/11/14 11:11:06  robertj
+ * PPC GNU compiler compatibility.
+ *
  * Revision 1.27  1998/10/01 09:05:11  robertj
  * Fixed bug in nested composite field names, array indexes not being set correctly.
  *
@@ -842,7 +845,7 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX & fi
     static PRegularExpression RowControl("<?!--#form[ \t\r\n]+rowcontrol[ \t\r\n]*-->?",
                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     while (text.FindRegEx(RowControl, pos, len, start, finish)) {
-      PHTML html = PHTML::InForm;
+      PHTML html(PHTML::InForm);
       AddArrayControlBox(html, fld);
       SpliceAdjust(html, text, pos, len, finish);
     }
@@ -1740,7 +1743,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(HTMLRegEx, "", text, 0, fields, pos, len, start, finish, field)) {
     if (field != NULL) {
-      PHTML html = PHTML::InForm;
+      PHTML html(PHTML::InForm);
       field->GetHTMLTag(html);
       text.Splice(html, pos, len);
     }
@@ -1800,14 +1803,14 @@ PHTTPField * PHTTPForm::Add(PHTTPField * fld)
 
 void PHTTPForm::BuildHTML(const char * heading)
 {
-  PHTML html = heading;
+  PHTML html(heading);
   BuildHTML(html);
 }
 
 
 void PHTTPForm::BuildHTML(const PString & heading)
 {
-  PHTML html = heading;
+  PHTML html(heading);
   BuildHTML(html);
 }
 
@@ -2113,7 +2116,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
   if (pos != P_MAX_INDEX) {
     PINDEX endpos = text.Find(FormListInclude, pos + sizeof(FormListInclude)-1);
     if (endpos == P_MAX_INDEX) {
-      PHTML html = PHTML::InBody;
+      PHTML html(PHTML::InBody);
       html << PHTML::Form("POST") << PHTML::TableStart();
 
       PINDEX i;
