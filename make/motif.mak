@@ -9,15 +9,10 @@ endif
 GUILIB		:= -L$(PWLIB_GUIDIR)/lib
 
 #
-#  Motif needs libXpm in order to link, so use that to detect whether
-#  we are actually using Motif or Lesstif
+#  Motif needs libXpm in order to link, so include this if present
 #
-ifneq (,$(wildcard $(PWLIB_GUIDIR)/lib/libXp*))
+ifneq (,$(wildcard $(PWLIB_GUIDIR)/lib/libXp.*))
 GUILIB		:= $(GUILIB) -lXp 
-else
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LESSTIF
-GUI_TYPE	= lesstif
-GUI_SRC_NAME	:= motif
 endif
 
 # Specify the MOTIF libraries and include paths

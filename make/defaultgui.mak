@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: defaultgui.mak,v $
+# Revision 1.9  2000/10/01 01:08:11  craigs
+# Fixed problems with Motif build
+#
 # Revision 1.8  2000/04/26 03:00:53  robertj
 # Fixed GUI determination to include pwlib/src directory
 #
@@ -43,7 +46,9 @@
 #  /usr/local/qt		Qt 
 #  /usr/X11R6/include/Xm	Motif
 #  /usr/openwin/include/Xm	Motif
-#  /usr/local/include/Xm	Motif (Lesstif default)
+#  /usr/local/include/Xm	Lesstif
+#  /usr/X11R6/LessTif 		Lesstif
+#  /usr/local/LessTif		Lesstif
 #  /usr/X11R6			Xlib
 #  /usr/openwin			Xlib
 
@@ -68,9 +73,10 @@ ifeq (qt,$(TRIAL_GUI))
         PWLIB_GUIDIR = /usr/local/qt
       endif
     endif
-    ifdef PWLIB_GUIDIR
-      PWLIB_GUI=qt
-    endif
+  endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=qt
+    PWLIB_GUI_FLAG=P_QT
   endif
 endif
 
@@ -84,31 +90,36 @@ TRIAL_GUI	= motif
 endif
 
 ifeq (motif,$(TRIAL_GUI))
-  ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/motif))
-    ifndef PWLIB_GUIDIR
-      ifneq (,$(wildcard /usr/X11R6/include/Xm/ComboBox.h))
-        PWLIB_GUIDIR = /usr/X11R6
-      else
-        ifneq (,$(wildcard /usr/openwin/include/Xm/ComboBox.h))
-          PWLIB_GUIDIR  = /usr/openwin
-        else
-          ifneq (,$(wildcard /usr/local/include/Xm/ComboBox.h))
-            PWLIB_GUIDIR  = /usr/local
+  ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/include/Xm))
+    PWLIB_GUIDIR  = /usr/X11R6/LessTif/Motif2.0
+    PWLIB_GUI_FLAG=P_LESSTIF
+  else
+    ifneq (,$(wildcard /usr/local/LessTif/Motif2.0/include/Xm))
+      PWLIB_GUIDIR  = /usr/local/LessTif/Motif2.0
+      PWLIB_GUI_FLAG=P_LESSTIF
+    else
+      ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/motif))
+        ifndef PWLIB_GUIDIR
+          ifneq (,$(wildcard /usr/X11R6/include/Xm/ComboBox.h))
+            PWLIB_GUIDIR = /usr/X11R6
+            PWLIB_GUI_FLAG=P_MOTIF
           else
-            ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/include/Xm))
-              PWLIB_GUIDIR  = /usr/X11R6/LessTif/Motif2.0
+            ifneq (,$(wildcard /usr/openwin/include/Xm/ComboBox.h))
+              PWLIB_GUIDIR  = /usr/openwin
+              PWLIB_GUI_FLAG=P_MOTIF
             else
-              ifneq (,$(wildcard /usr/local/LessTif/Motif2.0/include/Xm))
-                PWLIB_GUIDIR  = /usr/local/LessTif/Motif2.0
+              ifneq (,$(wildcard /usr/local/include/Xm/ComboBox.h))
+                PWLIB_GUIDIR  = /usr/local
+                PWLIB_GUI_FLAG=P_LESSTIF
               endif
             endif
           endif
         endif
       endif
     endif
-    ifdef PWLIB_GUIDIR
-      PWLIB_GUI=motif
-    endif
+  endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=motif
   endif
 endif
 
@@ -132,9 +143,10 @@ ifeq (xlib,$(TRIAL_GUI))
         endif
       endif
     endif
-    ifdef PWLIB_GUIDIR
-      PWLIB_GUI=xlib
-    endif
+  endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=xlib
+    PWLIB_GUI_FLAG=P_XLIB
   endif
 endif
 
