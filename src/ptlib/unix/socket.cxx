@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.44  1999/09/27 01:04:42  robertj
+ * BeOS support changes.
+ *
  * Revision 1.43  1999/09/12 07:06:23  craigs
  * Added support for getting Solaris interface info
  *
@@ -570,7 +573,7 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     return FALSE;
   }
 
-#ifdef SIO_Get_MAC_Address 
+#if defined(SIO_Get_MAC_Address) && !defined(__BEOS__)
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
