@@ -1,5 +1,5 @@
 /*
- * video4linux2.cxx
+ * vidinput_v4l2.cxx
  *
  * Classes to support streaming video input (grabbing) and output.
  *
@@ -28,12 +28,16 @@
  * This code is based on the Video4Linux 1 code.
  *
  * Contributor(s): Guilhem Tardy (gtardy@salyens.com)
+ * 		   Nicola Orru' <nigu@itadinanta.it>
  *
  * TODO:
  *  - fix the devices detection code using the new code from the V4L1 plugin
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.4  2004/11/07 22:48:47  dominance
+ * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
+ *
  * Revision 1.3  2004/11/07 21:34:21  dominance
  * v4l2 patch to add verbose device names detection.
  *
