@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.16  2004/04/04 01:30:37  csoutheren
+ * Added ability to specify exclude environment variable on configure command line which allows easy switching between MSVC and VS.net 2003
+ *
  * Revision 1.15  2004/03/23 06:32:01  csoutheren
  * Fixed problems with multiple directories in exclude spec
  *
@@ -90,7 +93,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 
 using namespace std;
@@ -417,31 +420,17 @@ int main(int argc, char* argv[])
 
   const char EXTERN_DIR[]  = "--extern-dir=";
   const char EXCLUDE_DIR[] = "--exclude-dir=";
+  const char EXCLUDE_ENV[] = "--exclude-env=";
 
-  char * env = getenv("PWLIB_CONFIGURE_EXCLUDE_DIRS");
-  if (env != NULL) {
-    string str(env);
-    string::size_type offs = 0;
-    while (offs < str.length()) {
-      string::size_type n = str.find(';', offs);
-      string dir;
-      if (n != string::npos) {
-        dir = str.substr(offs, n);
-        offs += n + 1;
-      } else {
-        dir = str.substr(offs);
-        offs += str.length();
-      }
-      excludeDirList.push_back(dir);
-      cout << "Excluding " << dir << " from feature search" << endl;
-    }
-  }
-  
   bool searchDisk = true;
-  char *externDir = 0;
+  char *externDir = NULL;
+  char *externEnv = NULL;
   for (int i = 1; i < argc; i++) {
     if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
+    else if (strnicmp(argv[i], EXCLUDE_ENV, sizeof(EXCLUDE_ENV) - 1) == 0){
+        externEnv = argv[i] + sizeof(EXCLUDE_ENV) - 1; 	
+    }
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
         externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
     }
@@ -460,6 +449,7 @@ int main(int argc, char* argv[])
               "  --no-search           Do not search disk for libraries.\n"
               "  --extern-dir=dir      Specify where to search disk for libraries.\n"
               "  --exclude-dir=dir     Exclude dir from search path.\n";
+              "  --exclude-env=var     Exclude dirs decribed by specified env var from search path.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (feature->featureName[0] != '\0') {
             cout << "  --disable-" << feature->featureName
@@ -476,14 +466,44 @@ int main(int argc, char* argv[])
         if (stricmp(argv[i], ("--no-"     +feature->featureName).c_str()) == 0 ||
             stricmp(argv[i], ("--disable-"+feature->featureName).c_str()) == 0)
           feature->enabled = false;
-	else if (strstr(argv[i], ("--" + feature->featureName+"-dir=").c_str()) == argv[i])
-	  if (!feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
-	    cerr << feature->displayName << " not found in "
-		 << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
+	      else if (strstr(argv[i], ("--" + feature->featureName+"-dir=").c_str()) == argv[i])
+	        if (!feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
+	          cerr << feature->displayName << " not found in "
+		       << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
       }
     }
   }
 
+  for (i = 0; i < 2; i++) {
+    char * env = NULL;
+    switch (i) {
+      case 0: 
+        env = getenv("PWLIB_CONFIGURE_EXCLUDE_DIRS");
+        break;
+      case 1: 
+        if (externEnv != NULL)
+          env = getenv(externEnv);
+        break;
+    }
+    if (env != NULL) {
+      string str(env);
+      string::size_type offs = 0;
+      while (offs < str.length()) {
+        string::size_type n = str.find(';', offs);
+        string dir;
+        if (n != string::npos) {
+          dir = str.substr(offs, n);
+          offs += n + 1;
+        } else {
+          dir = str.substr(offs);
+          offs += str.length();
+        }
+        excludeDirList.push_back(dir);
+        cout << "Excluding " << dir << " from feature search" << endl;
+      }
+    }
+  }
+  
   bool foundAll = true;
   for (feature = features.begin(); feature != features.end(); feature++) {
     if (feature->enabled && !feature->checkFiles.empty()) {
