@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.3 1994/07/17 11:01:04 robertj Exp $
+ * $Id: serchan.h,v 1.4 1994/08/04 13:08:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Revision 1.4  1994/08/04 13:08:43  robertj
+ * Added DCB so can set parameters on closed channel.
+ *
+ * Revision 1.3  1994/07/17  11:01:04  robertj
  * Ehancements, implementation, bug fixes etc.
  *
  * Revision 1.2  1994/07/02  03:18:09  robertj
@@ -54,6 +57,7 @@
     PTimer writeTimer;
 #ifdef _WINDOWS
     enum { InputQueueSize = 2048, OutputQueueSize = 1024 };
+    DCB deviceControlBlock;
 #else
     BYTE biosParm;
 #endif
