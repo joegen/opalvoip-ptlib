@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: spxsock.h,v $
+ * Revision 1.3  1998/11/30 02:51:59  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/23 06:21:29  robertj
  * Added open source copyright license.
  *
@@ -41,7 +44,7 @@
 #pragma interface
 #endif
 
-#include <ipxsock.h>
+#include <ptlib/ipxsock.h>
 
 
 PDECLARE_CLASS(PSPXSocket, PIPXSocket)
