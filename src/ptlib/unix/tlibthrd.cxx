@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.118  2003/04/24 12:03:13  rogerh
+ * Calling pthread_mutex_unlock() on a mutex which is not locked can be
+ * considered an error. NetBSD now enforce this error so we need to quickly
+ * try locking the mutex before unlocking it in ~PThread and ~PSemaphore.
+ *
  * Revision 1.117  2003/04/08 03:29:31  robertj
  * Fixed IsSuspeneded() so returns TRUE if thread not started yet, this makes
  *   it the same as the Win32 semantics.
@@ -673,6 +678,10 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_WaitSemMutex);
 #endif
 
+#ifdef P_NETBSD
+  // If the mutex was not locked, the unlock will fail */
+  pthread_mutex_trylock(&PX_suspendMutex);
+#endif
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
@@ -1230,6 +1239,12 @@ PSemaphore::PSemaphore(const PSemaphore & sem)
 PSemaphore::~PSemaphore()
 {
   pthread_cond_destroy(&condVar);
+
+#ifdef P_NETBSD
+  // If the mutex was not locked, the unlock will fail */
+  pthread_mutex_trylock(&mutex);
+#endif
+
   pthread_mutex_unlock(&mutex);
   pthread_mutex_destroy(&mutex);
 
