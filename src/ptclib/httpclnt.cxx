@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.4 1996/12/21 01:26:21 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.5 1997/03/18 22:04:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.5  1997/03/18 22:04:03  robertj
+ * Fix bug for binary POST commands.
+ *
  * Revision 1.4  1996/12/21 01:26:21  robertj
  * Fixed bug in persistent connections when server closes socket during command.
  *
@@ -183,7 +186,7 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 {
   return PHTTP::WriteCommand(cmd, url & "HTTP/1.0") &&
          outMIME.Write(*this) &&
-         WriteString(dataBody);
+         Write(dataBody, dataBody.GetSize()-1);
 }
 
 
