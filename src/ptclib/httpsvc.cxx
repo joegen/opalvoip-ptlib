@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.42  1998/10/29 11:31:57  robertj
+ * Fixed default URL to have lower case and spaceless product name.
+ * Increased HTTP stack size.
+ *
  * Revision 1.41  1998/10/15 01:53:35  robertj
  * GNU compatibility.
  *
@@ -354,7 +358,7 @@ BOOL PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PStrin
 PHTTPServiceThread::PHTTPServiceThread(PHTTPServiceProcess & app,
                                        PSocket & listeningSocket,
                                        PHTTPSpace & http)
-  : PThread(10000, AutoDeleteThread),
+  : PThread(20000, AutoDeleteThread),
     process(app),
     listener(listeningSocket),
     httpNameSpace(http)
@@ -542,7 +546,8 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
   PString tempURL = mailURL;
   if (process.GetHomePage() == HOME_PAGE) {
     orderURL = "https://home.equival.com.au/purchase.html";
-    tempURL = "http://www.equival.com/" + process.GetName() + "/register.html";
+    tempURL = "http://www.equival.com/" + process.GetName().ToLower() + "/register.html";
+    tempURL.Replace(" ", "", TRUE);
   }
 
   PServiceHTML regPage(process.GetName() & "Registration", NULL);
