@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.33  2000/04/06 11:05:32  rogerh
+ * Add MACOSX support from Kevin Packard
+ *
  * Revision 1.32  2000/04/03 22:03:01  rogerh
  * Fix socklen_t usage for FreeBSD 3.x
  *
@@ -293,6 +296,33 @@ typedef int socklen_t;
 #define INADDR_NONE INADDR_BROADCAST
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
+
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined (P_MACOSX)
+ 
+#if defined(P_PTHREADS)
+#   define _THREAD_SAFE
+#   define P_THREAD_SAFE_CLIB
+#   include <pthread.h>
+#endif
+ 
+#include <paths.h>
+#include <errno.h>
+//#include <dlfcn.h>
+#include <termios.h>
+#include <sys/fcntl.h>
+#include <sys/filio.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/signal.h>
+#include <net/if.h>
+ 
+typedef int socklen_t;
+ 
+#define HAS_IFREQ
+ 
+#define PSETPGRP()  setpgrp(0, 0)
 
 #else
 
