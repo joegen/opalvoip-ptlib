@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.73  2001/06/27 04:14:48  robertj
+ * Added logging for listener thread open/close.
+ *
  * Revision 1.72  2001/06/23 00:32:15  robertj
  * Added parameter to be able to set REUSEADDR on listener socket.
  *
@@ -398,8 +401,11 @@ BOOL PHTTPServiceProcess::ListenForHTTP(PSocket * listener,
     ShutdownListener();
 
   httpListeningSocket = PAssertNULL(listener);
-  if (!httpListeningSocket->Listen(5, 0, reuse))
+  if (!httpListeningSocket->Listen(5, 0, reuse)) {
+    PSYSTEMLOG(Debug, "HTTPSVC\tListen on port " << httpListeningSocket->GetPort()
+                   << " failed: " << httpListeningSocket->GetErrorText());
     return FALSE;
+  }
 
   if (stackSize > 1000)
     new PHTTPServiceThread(stackSize, *this, *httpListeningSocket);
@@ -415,6 +421,9 @@ void PHTTPServiceProcess::ShutdownListener()
 
   if (!httpListeningSocket->IsOpen())
     return;
+
+  PSYSTEMLOG(Debug, "HTTPSVC\tClosing listener socket on port "
+                 << httpListeningSocket->GetPort());
 
   httpListeningSocket->Close();
   httpThreadClosed.Wait();
