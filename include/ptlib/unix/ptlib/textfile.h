@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: textfile.h,v $
+ * Revision 1.4  1998/11/30 22:07:21  robertj
+ * New directory structure.
+ *
  * Revision 1.3  1998/09/24 04:12:02  robertj
  * Added open software license.
  *
@@ -48,7 +51,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-#include "../../common/ptlib/textfile.h"
+#include "../../textfile.h"
 };
 
 
