@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.44  2000/04/03 18:42:40  robertj
+ * Added function to determine if PProcess instance is initialised.
+ *
  * Revision 1.43  2000/02/29 12:26:14  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -326,6 +329,14 @@ class PProcess : public PThread
        pointer to current process instance.
      */
     static PProcess & Current();
+
+    /**Determine if the current processes object instance has been initialised.
+       If this returns TRUE it is safe to use the PProcess::Current() function.
+       
+       @return
+       TRUE if process class has been initialised.
+     */
+    static BOOL IsInitialised();
 
     /**Set the termination value for the process.
     

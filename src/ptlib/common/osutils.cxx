@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.134  2000/04/03 18:42:40  robertj
+ * Added function to determine if PProcess instance is initialised.
+ *
  * Revision 1.133  2000/03/29 20:12:00  robertj
  * Fixed GNU C++ warning
  *
@@ -1243,6 +1246,12 @@ PProcess & PProcess::Current()
     _exit(1);
   }
   return *PProcessInstance;
+}
+
+
+BOOL PProcess::IsInitialised()
+{
+  return PProcessInstance != NULL;
 }
 
 
