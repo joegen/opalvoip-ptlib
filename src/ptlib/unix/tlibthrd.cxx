@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.13  1999/03/16 10:30:37  robertj
+ * Added missing PThread::WaitForTermination function.
+ *
  * Revision 1.12  1999/01/12 12:09:51  robertj
  * Removed redundent member variable, was in common.
  * Fixed BSD threads compatibility.
@@ -469,6 +472,18 @@ void PThread::Sleep(const PTimeInterval & timeout)
   }
   while (::select(0, NULL, NULL, NULL, tptr) != 0)
     PProcess::Current().PXCheckSignals();
+}
+
+
+BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+{
+  PTimer timeout = maxWait;
+  while (!IsTerminated()) {
+    if (timeout == 0)
+      return FALSE;
+    ::sleep(1);
+  }
+  return TRUE;
 }
 
 
