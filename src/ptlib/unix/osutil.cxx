@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.49  2000/02/24 11:03:49  robertj
+ * Fixed warning on Linux systems about _REENTRANT
+ *
  * Revision 1.48  1999/08/17 07:37:36  robertj
  * Fixed inlines so are inlined for optimised version
  *
@@ -95,7 +98,9 @@
 #pragma implementation "contain.h"
 
 #if defined(P_LINUX)
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
 #elif defined(P_SOLARIS) 
 #define _POSIX_PTHREAD_SEMANTICS
 #endif
