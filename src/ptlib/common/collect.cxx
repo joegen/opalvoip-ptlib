@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.24 1996/07/15 10:32:52 robertj Exp $
+ * $Id: collect.cxx,v 1.25 1996/08/08 10:08:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.25  1996/08/08 10:08:43  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.24  1996/07/15 10:32:52  robertj
  * Fixed bug in sorted list (crash on remove).
  *
@@ -88,7 +91,7 @@
 //
  */
 
-#include <contain.h>
+#include <ptlib.h>
 
 
 
