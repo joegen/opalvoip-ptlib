@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.6 1996/04/17 12:09:02 robertj Exp $
+ * $Id: svcproc.h,v 1.7 1996/05/23 10:03:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.7  1996/05/23 10:03:00  robertj
+ * Windows 95 support.
+ *
  * Revision 1.6  1996/04/17 12:09:02  robertj
  * Added service dependencies.
  *
@@ -37,7 +40,7 @@
 
 #include "../../common/svcproc.h"
 #ifdef _WIN32
-  protected:
+  public:
     virtual const char * GetServiceDependencies() const { return NULL; }
       // Get a set of null terminated strings terminated with double null.
 
@@ -93,6 +96,7 @@
     // Process command line argument for controlling the service.
 
 
+    BOOL                  isWin95;
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
     HANDLE                terminationEvent;
