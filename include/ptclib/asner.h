@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.36  2003/02/26 01:57:44  robertj
+ * Added XML encoding rules to ASN system, thanks Federico Pinna
+ *
  * Revision 1.35  2003/02/01 13:25:52  robertj
  * Added function to add new elements directly to ASN array.
  *
@@ -151,6 +154,10 @@
 class PASN_Stream;
 class PBER_Stream;
 class PPER_Stream;
+#if P_EXPAT
+class PXER_Stream;
+class PXMLElement;
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -401,6 +408,10 @@ class PASN_Enumeration : public PASN_Object
 
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#if P_EXPAT
+    virtual BOOL DecodeXER(PXER_Stream & strm);
+    virtual void EncodeXER(PXER_Stream & strm) const;
+#endif
 
   protected:
     unsigned maxEnumValue;
@@ -818,6 +829,10 @@ class PASN_Choice : public PASN_Object
 
     virtual BOOL DecodePER(PPER_Stream &);
     virtual void EncodePER(PPER_Stream &) const;
+#if P_EXPAT
+    BOOL DecodeXER(PXER_Stream &);
+    void EncodeXER(PXER_Stream &) const;
+#endif
 
 #ifdef P_MACOSX
   #warning making PASN_Choice public
@@ -894,6 +909,15 @@ class PASN_Sequence : public PASN_Object
     void KnownExtensionEncodePER(PPER_Stream & strm, PINDEX fld, const PASN_Object & field) const;
     BOOL UnknownExtensionsDecodePER(PPER_Stream & strm);
     void UnknownExtensionsEncodePER(PPER_Stream & strm) const;
+
+#if P_EXPAT
+    virtual BOOL PreambleDecodeXER(PXER_Stream & strm);
+    virtual void PreambleEncodeXER(PXER_Stream & strm) const;
+    virtual BOOL KnownExtensionDecodeXER(PXER_Stream & strm, PINDEX fld, PASN_Object & field);
+    virtual void KnownExtensionEncodeXER(PXER_Stream & strm, PINDEX fld, const PASN_Object & field) const;
+    virtual BOOL UnknownExtensionsDecodeXER(PXER_Stream & strm);
+    virtual void UnknownExtensionsEncodeXER(PXER_Stream & strm) const;
+#endif
 
   protected:
     BOOL NoExtensionsToDecode(PPER_Stream & strm);
@@ -1165,6 +1189,60 @@ class PPER_Stream : public PASN_Stream
   protected:
     BOOL aligned;
 };
+
+
+#if P_EXPAT
+/** Class for ASN XML Encoding Rules stream.
+*/
+class PXER_Stream : public PASN_Stream
+{
+    PCLASSINFO(PXER_Stream, PASN_Stream);
+  public:
+    PXER_Stream(PXMLElement * elem);
+    PXER_Stream(PXMLElement * elem, const PBYTEArray & bytes);
+    PXER_Stream(PXMLElement * elem, const BYTE * buf, PINDEX size);
+
+    virtual BOOL Read(PChannel & chan);
+    virtual BOOL Write(PChannel & chan);
+
+    virtual BOOL NullDecode(PASN_Null &);
+    virtual void NullEncode(const PASN_Null &);
+    virtual BOOL BooleanDecode(PASN_Boolean &);
+    virtual void BooleanEncode(const PASN_Boolean &);
+    virtual BOOL IntegerDecode(PASN_Integer &);
+    virtual void IntegerEncode(const PASN_Integer &);
+    virtual BOOL EnumerationDecode(PASN_Enumeration &);
+    virtual void EnumerationEncode(const PASN_Enumeration &);
+    virtual BOOL RealDecode(PASN_Real &);
+    virtual void RealEncode(const PASN_Real &);
+    virtual BOOL ObjectIdDecode(PASN_ObjectId &);
+    virtual void ObjectIdEncode(const PASN_ObjectId &);
+    virtual BOOL BitStringDecode(PASN_BitString &);
+    virtual void BitStringEncode(const PASN_BitString &);
+    virtual BOOL OctetStringDecode(PASN_OctetString &);
+    virtual void OctetStringEncode(const PASN_OctetString &);
+    virtual BOOL ConstrainedStringDecode(PASN_ConstrainedString &);
+    virtual void ConstrainedStringEncode(const PASN_ConstrainedString &);
+    virtual BOOL BMPStringDecode(PASN_BMPString &);
+    virtual void BMPStringEncode(const PASN_BMPString &);
+    virtual BOOL ChoiceDecode(PASN_Choice &);
+    virtual void ChoiceEncode(const PASN_Choice &);
+    virtual BOOL ArrayDecode(PASN_Array &);
+    virtual void ArrayEncode(const PASN_Array &);
+    virtual BOOL SequencePreambleDecode(PASN_Sequence &);
+    virtual void SequencePreambleEncode(const PASN_Sequence &);
+    virtual BOOL SequenceKnownDecode(PASN_Sequence &, PINDEX, PASN_Object &);
+    virtual void SequenceKnownEncode(const PASN_Sequence &, PINDEX, const PASN_Object &);
+    virtual BOOL SequenceUnknownDecode(PASN_Sequence &);
+    virtual void SequenceUnknownEncode(const PASN_Sequence &);
+
+    PXMLElement * GetCurrentElement()                   { return position; }
+    PXMLElement * SetCurrentElement(PXMLElement * elem) { return position = elem; }
+
+  protected:
+    PXMLElement * position;
+};
+#endif // P_EXPAT
 
 
 #endif // _ASNER_H

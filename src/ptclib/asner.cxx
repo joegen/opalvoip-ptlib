@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.79  2003/02/26 01:57:44  robertj
+ * Added XML encoding rules to ASN system, thanks Federico Pinna
+ *
  * Revision 1.78  2003/01/24 23:43:43  robertj
  * Fixed subtle problems with the use of MAX keyword for unsigned numbers,
  *   should beUINT_MAX not INT_MAX, thanks Stevie Gray for pointing it out.
@@ -283,6 +286,10 @@
 
 #include <ptclib/asner.h>
 
+#if P_EXPAT
+#include <ptclib/pxml.h>
+#endif
+
 #define new PNEW
 
 
@@ -537,6 +544,19 @@ void PPER_Stream::NullEncode(const PASN_Null &)
 }
 
 
+#if P_EXPAT
+BOOL PXER_Stream::NullDecode(PASN_Null &)
+{
+  return TRUE;
+}
+
+
+void PXER_Stream::NullEncode(const PASN_Null &)
+{
+}
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Boolean::PASN_Boolean(BOOL val)
@@ -639,6 +659,21 @@ void PPER_Stream::BooleanEncode(const PASN_Boolean & value)
   // X.691 Section 11
   SingleBitEncode((BOOL)value);
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::BooleanDecode(PASN_Boolean & value)
+{
+  value = (position->GetElement("true") != 0);
+  return TRUE;
+}
+
+
+void PXER_Stream::BooleanEncode(const PASN_Boolean & value)
+{
+  position->AddChild(new PXMLElement(position, value.GetValue() ? "true" : "false"));
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -880,6 +915,21 @@ void PASN_Integer::EncodePER(PPER_Stream & strm) const
 }
 
 
+#if P_EXPAT
+BOOL PXER_Stream::IntegerDecode(PASN_Integer & value)
+{
+  value = position->GetData().AsInteger();
+  return TRUE;
+}
+
+
+void PXER_Stream::IntegerEncode(const PASN_Integer & value)
+{
+  position->AddChild(new PXMLData(position, value.GetValue()));
+}
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Enumeration::PASN_Enumeration(unsigned val)
@@ -1065,6 +1115,33 @@ void PASN_Enumeration::EncodePER(PPER_Stream & strm) const
 }
 
 
+#if P_EXPAT
+BOOL PASN_Enumeration::DecodeXER(PXER_Stream & strm)
+{
+  value = strm.GetCurrentElement()->GetData().AsInteger();
+  return TRUE;
+}
+
+
+void PASN_Enumeration::EncodeXER(PXER_Stream & strm) const
+{
+  PXMLElement * elem = strm.GetCurrentElement();
+  elem->AddChild(new PXMLData(elem, value));
+}
+
+
+BOOL PXER_Stream::EnumerationDecode(PASN_Enumeration & value)
+{
+  return value.DecodeXER(*this);
+}
+
+
+void PXER_Stream::EnumerationEncode(const PASN_Enumeration & value)
+{
+  value.EncodeXER(*this);
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Real::PASN_Real(double val)
@@ -1178,6 +1255,21 @@ void PPER_Stream::RealEncode(const PASN_Real &)
   PAssertAlways(PUnimplementedFunction);
   MultiBitEncode(0, 8);
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::RealDecode(PASN_Real & value)
+{
+  value = position->GetData().AsReal();
+  return TRUE;
+}
+
+
+void PXER_Stream::RealEncode(const PASN_Real & value)
+{
+  position->AddChild(new PXMLData(position, PString(PString::Decimal, value.GetValue(), 10)));
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -1464,6 +1556,21 @@ void PPER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
   LengthEncode(eObjId.GetSize(), 0, 255);
   BlockEncode(eObjId, eObjId.GetSize());
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::ObjectIdDecode(PASN_ObjectId & value)
+{
+  value.SetValue(position->GetData());
+  return TRUE;
+}
+
+
+void PXER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
+{
+  position->AddChild(new PXMLData(position, value.AsString()));
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -1820,6 +1927,40 @@ void PPER_Stream::BitStringEncode(const PASN_BitString & value)
 }
 
 
+#if P_EXPAT
+BOOL PXER_Stream::BitStringDecode(PASN_BitString & value)
+{
+  PString bits = position->GetData();
+  PINDEX len = bits.GetLength();
+
+  value.SetSize(len);
+
+  for (PINDEX i = 0 ; i < len ; i++)
+  {
+    if (bits[i] == '1')
+      value.Set(i);
+    else if (bits[i] != '0')
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+void PXER_Stream::BitStringEncode(const PASN_BitString & value)
+{
+  PString bits;
+
+  for (PINDEX i = 0 ; i < (PINDEX)value.GetSize() ; i++)
+  {
+    bits += (value[i] ? '1' : '0');
+  }
+
+  position->AddChild(new PXMLData(position, bits));
+}
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////
 
 PASN_OctetString::PASN_OctetString(const char * str, PINDEX size)
@@ -2058,6 +2199,46 @@ void PASN_OctetString::EncodePER(PPER_Stream & strm) const
       strm.BlockEncode(value, nBytes);
   }
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::OctetStringDecode(PASN_OctetString & value)
+{
+  char elem[3] = { 0, 0, 0 };
+  PString data = position->GetData();
+  PINDEX len = data.GetLength();
+
+  if (len % 2)
+    return FALSE;
+
+  BYTE * bin = value.GetPointer(len / 2);
+  unsigned octet;
+
+  for (PINDEX i = 0, j = 0 ; i < len ; i += 2, j++)
+  {
+    elem[0] = data[i];
+    elem[1] = data[i + 1];
+    sscanf(elem, "%x", &octet);
+    bin[j] = (BYTE)octet;
+  }
+
+  return TRUE;
+}
+
+
+void PXER_Stream::OctetStringEncode(const PASN_OctetString & value)
+{
+  PString bin;
+
+  for (PINDEX i = 0 ; i < value.GetSize() ; i++)
+  {
+    unsigned v = (unsigned)value[i];
+    bin.sprintf("%02x", v);
+  }
+
+  position->AddChild(new PXMLData(position, bin));
+}
+#endif
 
 
 BOOL PBER_Stream::OctetStringDecode(PASN_OctetString & value)
@@ -2333,6 +2514,21 @@ void PASN_ConstrainedString::EncodePER(PPER_Stream & strm) const
     }
   }
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
+{
+  value = position->GetData();
+  return TRUE;
+}
+
+
+void PXER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
+{
+  position->AddChild(new PXMLData(position, value.GetValue()));
+}
+#endif
 
 
 BOOL PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
@@ -2760,6 +2956,19 @@ void PPER_Stream::BMPStringEncode(const PASN_BMPString & value)
 }
 
 
+#if P_EXPAT
+BOOL PXER_Stream::BMPStringDecode(PASN_BMPString &)
+{
+  return FALSE;
+}
+
+
+void PXER_Stream::BMPStringEncode(const PASN_BMPString &)
+{
+}
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////
 
 PASN_GeneralisedTime & PASN_GeneralisedTime::operator=(const PTime & time)
@@ -2812,6 +3021,7 @@ PASN_UniversalTime & PASN_UniversalTime::operator=(const PTime & time)
 {
   value = time.AsString("yyMMddhhmmssz");
   value.Replace("GMT", "Z");
+  value.MakeMinimumSize();
   return *this;
 }
 
@@ -3148,6 +3358,46 @@ void PASN_Choice::EncodePER(PPER_Stream & strm) const
 }
 
 
+#if P_EXPAT
+BOOL PASN_Choice::DecodeXER(PXER_Stream & strm)
+{
+  PXMLElement * elem = strm.GetCurrentElement();
+  PXMLElement * choice_elem = (PXMLElement *)elem->GetElement();
+
+  if (!choice_elem || !choice_elem->IsElement())
+    return FALSE;
+
+  for (PINDEX i = 0 ; i < names.GetSize() ; i++)
+  {
+    if (choice_elem->GetName() == names.GetDataAt(i))
+    {
+      tag = i;
+      if (!CreateObject())
+        return FALSE;
+      strm.SetCurrentElement(choice_elem);
+      BOOL res = choice->Decode(strm);
+      strm.SetCurrentElement(elem);
+      return res;
+    }
+  }
+
+  return FALSE;
+}
+
+
+void PASN_Choice::EncodeXER(PXER_Stream & strm) const
+{
+  if (choice)
+  {
+    PXMLElement * elem = strm.GetCurrentElement();
+    strm.SetCurrentElement(elem->AddChild(new PXMLElement(elem, GetTagName())));
+    choice->Encode(strm);
+    strm.SetCurrentElement(elem);
+  }
+}
+#endif
+
+
 BOOL PBER_Stream::ChoiceDecode(PASN_Choice & value)
 {
   PINDEX savedPosition = GetPosition();
@@ -3186,6 +3436,20 @@ void PPER_Stream::ChoiceEncode(const PASN_Choice & value)
 {
   value.EncodePER(*this);
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::ChoiceDecode(PASN_Choice & value)
+{
+  return value.DecodeXER(*this);
+}
+
+
+void PXER_Stream::ChoiceEncode(const PASN_Choice & value)
+{
+  value.EncodeXER(*this);
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -3599,6 +3863,41 @@ void PASN_Sequence::UnknownExtensionsEncodePER(PPER_Stream & strm) const
 }
 
 
+#if P_EXPAT
+BOOL PASN_Sequence::PreambleDecodeXER(PXER_Stream &)
+{
+  return TRUE;
+}
+
+
+void PASN_Sequence::PreambleEncodeXER(PXER_Stream &) const
+{
+}
+
+
+BOOL PASN_Sequence::KnownExtensionDecodeXER(PXER_Stream &, PINDEX, PASN_Object &)
+{
+  return TRUE;
+}
+
+
+void PASN_Sequence::KnownExtensionEncodeXER(PXER_Stream &, PINDEX, const PASN_Object &) const
+{
+}
+
+
+BOOL PASN_Sequence::UnknownExtensionsDecodeXER(PXER_Stream &)
+{
+  return TRUE;
+}
+
+
+void PASN_Sequence::UnknownExtensionsEncodeXER(PXER_Stream &) const
+{
+}
+#endif
+
+
 BOOL PBER_Stream::SequencePreambleDecode(PASN_Sequence & seq)
 {
   return seq.PreambleDecodeBER(*this);
@@ -3669,6 +3968,44 @@ void PPER_Stream::SequenceUnknownEncode(const PASN_Sequence & seq)
 {
   seq.UnknownExtensionsEncodePER(*this);
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::SequencePreambleDecode(PASN_Sequence & seq)
+{
+  return seq.PreambleDecodeXER(*this);
+}
+
+
+void PXER_Stream::SequencePreambleEncode(const PASN_Sequence & seq)
+{
+  seq.PreambleEncodeXER(*this);
+}
+
+
+BOOL PXER_Stream::SequenceKnownDecode(PASN_Sequence & seq, PINDEX fld, PASN_Object & field)
+{
+  return seq.KnownExtensionDecodeXER(*this, fld, field);
+}
+
+
+void PXER_Stream::SequenceKnownEncode(const PASN_Sequence & seq, PINDEX fld, const PASN_Object & field)
+{
+  seq.KnownExtensionEncodeXER(*this, fld, field);
+}
+
+
+BOOL PXER_Stream::SequenceUnknownDecode(PASN_Sequence & seq)
+{
+  return seq.UnknownExtensionsDecodeXER(*this);
+}
+
+
+void PXER_Stream::SequenceUnknownEncode(const PASN_Sequence & seq)
+{
+  seq.UnknownExtensionsEncodeXER(*this);
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -3866,6 +4203,49 @@ void PPER_Stream::ArrayEncode(const PASN_Array & array)
   for (PINDEX i = 0; i < size; i++)
     array[i].Encode(*this);
 }
+
+
+#if P_EXPAT
+BOOL PXER_Stream::ArrayDecode(PASN_Array & array)
+{
+  array.RemoveAll();
+
+  unsigned size = position->GetSize();
+
+  if (!array.SetSize(size))
+    return FALSE;
+
+  PXMLElement * elem = position;
+  BOOL res = TRUE;
+
+  for (PINDEX i = 0; i < (PINDEX)size; i++) {
+    position = (PXMLElement *)elem->GetElement(i);
+
+    if (!position->IsElement() || !array[i].Decode(*this)) {
+      res = FALSE;
+      break;
+    }
+  }
+
+  position = elem;
+
+  return res;
+}
+
+
+void PXER_Stream::ArrayEncode(const PASN_Array & array)
+{
+  PINDEX size = array.GetSize();
+  PXMLElement * elem = position;
+
+  for (PINDEX i = 0; i < (PINDEX)size; i++) {
+    position = elem->AddChild(new PXMLElement(elem, array[i].GetTypeAsString()));
+    array[i].Encode(*this);
+  }
+
+  position = elem;
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -4650,3 +5030,41 @@ void PPER_Stream::AnyTypeEncode(const PASN_Object * value)
 
 
 // PERASN.CXX
+
+
+
+///////////////////////////////////////////////////////////////////////
+
+#if P_EXPAT
+PXER_Stream::PXER_Stream(PXMLElement * elem)
+  : position(elem)
+{
+  PAssertNULL(position);
+}
+
+
+PXER_Stream::PXER_Stream(PXMLElement * elem, const PBYTEArray & bytes)
+  : PASN_Stream(bytes), position(elem)
+{
+  PAssertNULL(position);
+}
+
+
+PXER_Stream::PXER_Stream(PXMLElement * elem, const BYTE * buf, PINDEX size)
+  : PASN_Stream(buf, size), position(elem)
+{
+  PAssertNULL(position);
+}
+
+
+BOOL PXER_Stream::Read(PChannel &)
+{
+  return FALSE;
+}
+
+
+BOOL PXER_Stream::Write(PChannel &)
+{
+  return FALSE;
+}
+#endif
