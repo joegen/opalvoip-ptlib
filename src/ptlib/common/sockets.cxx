@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.135  2002/10/31 07:55:33  robertj
+ * Put sizeof ipv6 structure back as magic number 28 is explained by
+ *   mismatched header file and running implementation.
+ *
  * Revision 1.134  2002/10/29 08:04:44  robertj
  * Changed in_addr6 to more universally used in6_addr.
  * Changed size of ipv6 address to be 28 under win32, Why? I don't know!
@@ -503,11 +507,7 @@ socklen_t Psockaddr::GetSize() const
     case AF_INET :
       return sizeof(sockaddr_in);
     case AF_INET6 :
-#ifdef _WIN32
-      return 28; // Why? I don't know!!
-#else
       return sizeof(sockaddr_in6);
-#endif
     default :
       return sizeof(storage);
   }
