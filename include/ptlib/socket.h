@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.8 1995/03/12 04:45:40 robertj Exp $
+ * $Id: socket.h,v 1.9 1995/03/14 12:42:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.8  1995/03/12 04:45:40  robertj
+ * Revision 1.9  1995/03/14 12:42:39  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.8  1995/03/12  04:45:40  robertj
  * Added more functionality.
  *
  * Revision 1.7  1995/01/03  09:36:19  robertj
@@ -47,8 +50,8 @@ PDECLARE_CLASS(PSocket, PChannel)
 /* A network communications channel. This is based on the concepts in the
    Berkley Sockets library.
    
-   A socket represents a bidirectional communications channel to a $I$port$I$
-   at a remote $I$host$I$.
+   A socket represents a bidirectional communications channel to a <I>port</I>
+   at a remote <I>host</I>.
  */
 
   public:
@@ -78,11 +81,12 @@ PDECLARE_CLASS(PSocket, PChannel)
        has a pending connection to make, this will accept a connection made
        by the "connecting" socket created to establish a link.
 
-       If the $B$port$B$ parameter is zero then the port number as defined by
-       the object instance construction or the $B$SetPort()$B$ function is
-       used.
+       If the <CODE>port</CODE> parameter is zero then the port number as
+       defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function is used.
 
-       Returns: TRUE if the channel was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
      */
 
 
