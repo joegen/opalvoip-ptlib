@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.54 1997/02/09 03:55:22 robertj Exp $
+ * $Id: osutil.inl,v 1.55 1997/08/07 11:58:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.55  1997/08/07 11:58:02  robertj
+ * Added ability to get registry data from other applications and anywhere in system registry.
+ *
  * Revision 1.54  1997/02/09 03:55:22  robertj
  * Changed PProcess::Current() from pointer to reference.
  *
@@ -528,10 +531,25 @@ PINLINE void PStructuredFile::SetStructure(Element * struc, PINDEX num)
 #ifdef _PCONFIG
 
 PINLINE PConfig::PConfig(Source src)
-  : defaultSection("Options") { Construct(src); }
+  : defaultSection("Options") { Construct(src, "", ""); }
+
+PINLINE PConfig::PConfig(Source src, const PString & appname)
+  : defaultSection("Options") { Construct(src, appname, ""); }
+
+PINLINE PConfig::PConfig(Source src, const PString & appname, const PString & manuf)
+  : defaultSection("Options") { Construct(src, appname, manuf); }
 
 PINLINE PConfig::PConfig(const PString & section, Source src)
-  : defaultSection(section) { Construct(src); }
+  : defaultSection(section) { Construct(src, "", ""); }
+
+PINLINE PConfig::PConfig(const PString & section, Source src, const PString & appname)
+  : defaultSection(section) { Construct(src, appname, ""); }
+
+PINLINE PConfig::PConfig(const PString & section,
+                         Source src,
+                         const PString & appname,
+                         const PString & manuf)
+  : defaultSection(section) { Construct(src, appname, manuf); }
 
 PINLINE PConfig::PConfig(const PFilePath & filename, const PString & section)
   : defaultSection(section) { Construct(filename); }
