@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.7 1997/04/01 06:00:05 robertj Exp $
+ * $Id: remconn.h,v 1.8 1998/01/26 00:34:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.8  1998/01/26 00:34:51  robertj
+ * Added parameter to PRemoteConnection to open only if already connected.
+ * Added function to PRemoteConnection to get at OS error code.
+ *
  * Revision 1.7  1997/04/01 06:00:05  robertj
  * Added Remove Configuration.
  *
@@ -51,14 +55,16 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     virtual Comparison Compare(const PObject & obj) const;
     virtual PINDEX HashFunction() const;
 
-    BOOL Open();
+    BOOL Open(BOOL existing = FALSE);
     BOOL Open(
-      const PString & name
+      const PString & name,
+      BOOL existing = FALSE
     );
     BOOL Open(
       const PString & name,
       const PString & username,
-      const PString & password
+      const PString & password,
+      BOOL existing = FALSE
     );
     void Close();
 
@@ -79,6 +85,8 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       NumStatuses
     };
     Status GetStatus() const;
+
+    DWORD GetErrorCode() const { return osError; }
 
 
     static PStringArray GetAvailableNames();
@@ -150,6 +158,7 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     PString remoteName;
     PString userName;
     PString password;
+    DWORD osError;
 
   private:
     PRemoteConnection(const PRemoteConnection &) { }
