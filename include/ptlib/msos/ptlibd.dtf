@@ -2543,6 +2543,7 @@ EXPORTS
     ?GetPointer@?$PBaseArray@I@@QAEPAIH@Z @3280 NONAME ;public: unsigned int * __thiscall PBaseArray<unsigned int>::GetPointer(int)
     ?GetPointer@?$PBaseArray@J@@QAEPAJH@Z @3281 NONAME ;public: long * __thiscall PBaseArray<long>::GetPointer(int)
     ?GetPointer@?$PBaseArray@K@@QAEPAKH@Z @3282 NONAME ;public: unsigned long * __thiscall PBaseArray<unsigned long>::GetPointer(int)
+    ?GetPointer@Address@PIPSocket@@QBEPBDXZ @4648 NONAME ;public: char const * __thiscall PIPSocket::Address::GetPointer(void)const 
     ?GetPointer@PAbstractArray@@QAEPAXH@Z @1569 NONAME ;public: void * __thiscall PAbstractArray::GetPointer(int)
     ?GetPointer@PBitArray@@QAEPAEH@Z @4477 NONAME ;public: unsigned char * __thiscall PBitArray::GetPointer(int)
     ?GetPointer@PWaveFormat@@QBEPAXXZ @2690 NONAME ;public: void * __thiscall PWaveFormat::GetPointer(void)const 
