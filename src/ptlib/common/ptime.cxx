@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.9 1996/05/09 12:18:16 robertj Exp $
+ * $Id: ptime.cxx,v 1.10 1996/06/17 11:34:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.10  1996/06/17 11:34:48  robertj
+ * Fixed bug in NOT localising RFC1123 time.
+ *
  * Revision 1.9  1996/05/09 12:18:16  robertj
  * Fixed syntax error found by Mac platform.
  * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
@@ -204,7 +207,7 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 PString PTime::AsString(TimeFormat format, int zone) const
 {
   if (format == RFC1123)
-    return AsString("www, dd MMM yyyy hh:mm:ss z", zone);
+    return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
 
   PString fmt, dsep;
 
@@ -358,8 +361,16 @@ PString PTime::AsString(const char * format, int zone) const
       case 'w' :
         while (*++format == 'w')
           repeatCount++;
-        str += GetDayName((Weekdays)t->tm_wday,
+        if (repeatCount != 3 || *format != 'e')
+          str += GetDayName((Weekdays)t->tm_wday,
                                     repeatCount <= 3 ? Abbreviated : FullName);
+        else {
+          static const char * const EnglishDayName[] = {
+            "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+          };
+          str += EnglishDayName[t->tm_wday];
+          format++;
+        }
         break;
 
       case 'M' :
@@ -367,9 +378,17 @@ PString PTime::AsString(const char * format, int zone) const
           repeatCount++;
         if (repeatCount < 3)
           str += psprintf("%0*u", repeatCount, t->tm_mon+1);
-        else
+        else if (repeatCount > 3 || *format != 'E')
           str += GetMonthName((Months)(t->tm_mon+1),
                                     repeatCount == 3 ? Abbreviated : FullName);
+        else {
+          static const char * const EnglishMonthName[] = {
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+          };
+          str += EnglishMonthName[t->tm_mon];
+          format++;
+        }
         break;
 
       case 'd' :
