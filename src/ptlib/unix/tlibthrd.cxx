@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.92.2.1  2002/10/21 02:41:52  robertj
+ * Fixed high load threading issues.
+ *
  * Revision 1.92  2002/10/01 06:27:48  robertj
  * Added bullet proofing against possible EINTR error returns on all pthread
  *   functions when under heavy load. Linux really should NOT do this, but ...
@@ -551,6 +554,7 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_WaitSemMutex);
 #endif
 
+  pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 }
 
@@ -899,21 +903,29 @@ void * PThread::PX_ThreadStart(void * arg)
 void PThread::PX_ThreadEnd(void * arg)
 {
   PThread * thread = (PThread *)arg;
-  PProcess & process = PProcess::Current();
-  
   pthread_t id = thread->PX_GetThreadId();
-  if (id != 0) {
-
-    // remove this thread from the active thread list
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt((unsigned)id, NULL);
-    process.threadMutex.Signal();
+  if (id == 0) {
+    PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
+    return;
   }
+
+  // remove this thread from the active thread list
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt((unsigned)id, NULL);
+  process.threadMutex.Signal();
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
+
+    // Added this to guarantee that the thread creation (PThread::Restart)
+    // has completed before we delete the thread. This can occur on very
+    // high load situations and a very short run on the thread.
+    pthread_mutex_lock(&thread->PX_suspendMutex);
+
+    // Now should be safe to delete the thread!
     delete thread;
   }
   else
