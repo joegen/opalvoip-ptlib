@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.59  2002/05/14 06:59:50  robertj
+ * Added more bullet proofing so a malformed PDU cannot cause teh decoder
+ *   to try and allocate huge arrays and consume all CPU and memory on a
+ *   system. A configurable limit of 100 is set for things like SEQUENCE OF.
+ *
  * Revision 1.58  2002/02/08 12:47:19  robertj
  * Fixed incorrect encoding of integer, did not allow for sign bit, thanks Kevin Tran.
  *
@@ -222,6 +227,10 @@
 #define new PNEW
 
 
+static PINDEX MaximumArraySize = 128;
+static PINDEX MaximumStringSize = 16*1024;
+
+
 static PINDEX CountBits(unsigned range)
 {
   if (range == 0)
@@ -286,6 +295,30 @@ void PASN_Object::SetCharacterSet(ConstraintType, const char *)
 
 void PASN_Object::SetCharacterSet(ConstraintType, unsigned, unsigned)
 {
+}
+
+
+PINDEX PASN_Object::GetMaximumArraySize()
+{
+  return MaximumArraySize;
+}
+
+
+void PASN_Object::SetMaximumArraySize(PINDEX sz)
+{
+  MaximumArraySize = sz;
+}
+
+
+PINDEX PASN_Object::GetMaximumStringSize()
+{
+  return MaximumStringSize;
+}
+
+
+void PASN_Object::SetMaximumStringSize(PINDEX sz)
+{
+  MaximumStringSize = sz;
 }
 
 
@@ -1377,6 +1410,8 @@ PASN_BitString & PASN_BitString::operator=(const PASN_BitString & other)
 
 void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 {
+  PAssert((PINDEX)nBits < MaximumStringSize, PInvalidParameter);
+
   bitData = bytes;
   SetSize(nBits);
 }
@@ -1384,6 +1419,8 @@ void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 
 void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 {
+  PAssert((PINDEX)nBits < MaximumStringSize, PInvalidParameter);
+
   if (size == 0)
     size = (nBits+7)/8;
   memcpy(bitData.GetPointer(size), buf, size);
@@ -1393,6 +1430,9 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 
 BOOL PASN_BitString::SetSize(unsigned nBits)
 {
+  if ((PINDEX)nBits > MaximumStringSize)
+    return FALSE;
+
   if (constraint == Unconstrained)
     totalBits = nBits;
   else if (totalBits < (unsigned)lowerLimit)
@@ -1526,7 +1566,8 @@ BOOL PASN_BitString::DecodePER(PPER_Stream & strm)
   if (ConstrainedLengthDecode(strm, totalBits) < 0)
     return FALSE;
 
-  SetSize(totalBits);
+  if (!SetSize(totalBits))
+    return FALSE;
 
   if (totalBits == 0)
     return TRUE;   // 15.7
@@ -1589,7 +1630,8 @@ BOOL PASN_BitString::DecodeSequenceExtensionBitmap(PPER_Stream & strm)
 
   totalBits++;
 
-  SetSize(totalBits);
+  if (!SetSize(totalBits))
+    return FALSE;
 
   if (totalBits > strm.GetBitsLeft())
     return FALSE;
@@ -1728,8 +1770,8 @@ void PASN_OctetString::SetValue(const BYTE * data, PINDEX len)
 {
   if ((unsigned)len > upperLimit)
     len = upperLimit;
-  value.SetSize((int)len < lowerLimit ? lowerLimit : len);
-  memcpy(value.GetPointer(), data, len);
+  if (SetSize((int)len < lowerLimit ? lowerLimit : len))
+    memcpy(value.GetPointer(), data, len);
 }
 
 
@@ -1790,12 +1832,7 @@ void PASN_OctetString::SetConstraintBounds(ConstraintType type, int lower, unsig
 {
   PAssert(lower >= 0, PInvalidParameter);
   PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
-  if (constraint != Unconstrained) {
-    if (value.GetSize() < (PINDEX)lowerLimit)
-      value.SetSize(lowerLimit);
-    else if ((unsigned)value.GetSize() > upperLimit)
-      value.SetSize(upperLimit);
-  }
+  SetSize(GetSize());
 }
 
 
@@ -1808,6 +1845,22 @@ PString PASN_OctetString::GetTypeAsString() const
 PINDEX PASN_OctetString::GetDataLength() const
 {
   return value.GetSize();
+}
+
+
+BOOL PASN_OctetString::SetSize(PINDEX newSize)
+{
+  if (newSize > MaximumStringSize)
+    return FALSE;
+
+  if (constraint != Unconstrained) {
+    if (newSize < (PINDEX)lowerLimit)
+      newSize = lowerLimit;
+    else if ((unsigned)newSize > upperLimit)
+      newSize = upperLimit;
+  }
+
+  return value.SetSize(newSize);
 }
 
 
@@ -1831,7 +1884,8 @@ BOOL PASN_OctetString::DecodePER(PPER_Stream & strm)
   if (ConstrainedLengthDecode(strm, nBytes) < 0)
     return FALSE;
 
-  value.SetSize(nBytes);   // 16.5
+  if (!SetSize(nBytes))   // 16.5
+    return FALSE;
 
   unsigned theBits;
   switch (nBytes) {
@@ -2102,7 +2156,11 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
       strm.ByteAlign();
   }
 
-  value.SetSize(len+1);
+  if ((PINDEX)len > MaximumStringSize)
+    return FALSE;
+
+  if (!value.SetSize(len+1))
+    return FALSE;
 
   PINDEX i;
   for (i = 0; i < (PINDEX)len; i++) {
@@ -2556,7 +2614,11 @@ BOOL PASN_BMPString::DecodePER(PPER_Stream & strm)
   if (ConstrainedLengthDecode(strm, len) < 0)
     return FALSE;
 
-  value.SetSize(len);
+  if ((PINDEX)len > MaximumStringSize)
+    return FALSE;
+
+  if (!value.SetSize(len))
+    return FALSE;
 
   PINDEX nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
 
@@ -3432,7 +3494,11 @@ BOOL PASN_Sequence::UnknownExtensionsDecodePER(PPER_Stream & strm)
   if (fields.GetSize() >= unknownCount)
     return TRUE;  // Already read them
 
-  fields.SetSize(unknownCount);
+  if (unknownCount > MaximumArraySize)
+    return FALSE;
+
+  if (!fields.SetSize(unknownCount))
+    return FALSE;
 
   PINDEX i;
   for (i = 0; i < fields.GetSize(); i++)
@@ -3584,12 +3650,24 @@ PASN_Array & PASN_Array::operator=(const PASN_Array & other)
 }
 
 
-void PASN_Array::SetSize(PINDEX newSize)
+BOOL PASN_Array::SetSize(PINDEX newSize)
 {
+  if (newSize > MaximumArraySize)
+    return FALSE;
+
   PINDEX originalSize = array.GetSize();
-  array.SetSize(newSize);
-  for (PINDEX i = originalSize; i < newSize; i++)
-    array.SetAt(i, CreateObject());
+  if (!array.SetSize(newSize))
+    return FALSE;
+
+  for (PINDEX i = originalSize; i < newSize; i++) {
+    PASN_Object * obj = CreateObject();
+    if (obj == NULL)
+      return FALSE;
+
+    array.SetAt(i, obj);
+  }
+
+  return TRUE;
 }
 
 
@@ -3668,7 +3746,8 @@ BOOL PBER_Stream::ArrayDecode(PASN_Array & array)
   PINDEX endOffset = byteOffset + len;
   PINDEX count = 0;
   while (byteOffset < endOffset) {
-    array.SetSize(count+1);
+    if (!array.SetSize(count+1))
+      return FALSE;
     if (!array[count].Decode(*this))
       return FALSE;
     count++;
@@ -3696,7 +3775,8 @@ BOOL PPER_Stream::ArrayDecode(PASN_Array & array)
   if (array.ConstrainedLengthDecode(*this, size) < 0)
     return FALSE;
 
-  array.SetSize(size);
+  if (!array.SetSize(size))
+    return FALSE;
 
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
     if (!array[i].Decode(*this))
