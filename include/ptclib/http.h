@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.58  2004/10/23 11:34:59  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.57  2002/12/03 22:37:36  robertj
  * Removed get document that just returns a content length as the chunked
  *   transfer encoding makes this very dangerous.
@@ -339,6 +342,9 @@ class PHTTPSpace : public PContainer
     BOOL SetSize(PINDEX) { return FALSE; }
 };
 
+#ifdef _WIN32_WCE
+#undef TRACE
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTP
