@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.41 1997/03/18 22:03:44 robertj Exp $
+ * $Id: http.cxx,v 1.42 1997/03/28 04:40:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.42  1997/03/28 04:40:24  robertj
+ * Added tags for cookies.
+ *
  * Revision 1.41  1997/03/18 22:03:44  robertj
  * Fixed bug that incorrectly parses URL with double slashes.
  *
@@ -608,6 +611,8 @@ const PCaselessString PHTTP::ProxyConnectionTag = "Proxy-Connection";
 const PCaselessString PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
 const PCaselessString PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
 const PCaselessString PHTTP::ForwardedTag       = "Forwarded";
+const PCaselessString PHTTP::SetCookieTag       = "Set-Cookie";
+const PCaselessString PHTTP::CookieTag          = "Cookie";
 
 
 
