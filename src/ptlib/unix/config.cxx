@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.22  2000/05/25 12:10:06  robertj
+ * Added PConfig::HasKey() function to determine if value actually set.
+ *
  * Revision 1.21  2000/05/02 08:30:26  craigs
  * Removed "memory leaks" caused by brain-dead GNU linker
  *
@@ -632,6 +635,32 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
   }
 
   config->Signal();
+}
+
+
+
+////////////////////////////////////////////////////////////
+//
+// PConfig::
+//
+// Test if there is a value for the key.
+//
+////////////////////////////////////////////////////////////
+
+BOOL PConfig::HasKey(const PString & theSection, const PString & theKey) const
+{
+  PAssert(config != NULL, "config instance not set");
+  config->Wait();
+
+  BOOL present = FALSE;
+  PINDEX index;
+  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+    PXConfigSectionList & section = (*config)[index].GetList();
+    present = section.GetValuesIndex(theKey) != P_MAX_INDEX;
+  }
+
+  config->Signal();
+  return present;
 }
 
 
