@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.3  2005/01/11 06:57:15  csoutheren
+ * Fixed namespace collisions with plugin starup factories
+ *
  * Revision 1.2  2005/01/04 08:09:42  csoutheren
  * Fixed Linux configure problems
  *
@@ -86,6 +89,15 @@
   PLOAD_FACTORY_DECLARE(PURLScheme, PString)
 #endif
 
+
+//
+//  instantiate startup factory
+//
+#if defined(P_HAS_PLUGINS)
+  PLOAD_FACTORY_DECLARE(PluginLoaderStartup, PString)
+#endif
+
+
 namespace PWLibStupidWindowsHacks 
 {
 
@@ -131,6 +143,11 @@ PInstantiateMe::PInstantiateMe()
 #if defined(P_HTTP)
   PLOAD_FACTORY(PURLScheme, PString)
 #endif
+
+#if defined(P_HAS_PLUGINS)
+  PLOAD_FACTORY(PluginLoaderStartup, PString)
+#endif
+
 }
 
 #endif // _PGLOBALSTATIC_CXX
