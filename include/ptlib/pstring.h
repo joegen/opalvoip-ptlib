@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.21 1996/03/10 13:15:50 robertj Exp $
+ * $Id: pstring.h,v 1.22 1996/03/31 08:51:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.22  1996/03/31 08:51:22  robertj
+ * Added RemoveAt() function to remove entries from dictionaries.
+ *
  * Revision 1.21  1996/03/10 13:15:50  robertj
  * Added operator() to template version.
  *
@@ -1558,6 +1561,19 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
     PString operator()(const K & key, const char * dflt = "") const
       { return Contains(key) ? (*this)[key] : dflt; }
 
+    virtual PString * RemoveAt(
+      const K & key   // Key for position in dictionary to get object.
+    ) { PObject * obj = GetAt(key);
+               PAbstractDictionary::SetAt(key,NULL); return (PString*)obj; }
+    /* Remove an object at the specified key. The returned pointer is then
+       removed using the <A>SetAt()</A> function to set that key value to
+       NULL. If the <CODE>AllowDeleteObjects</CODE> option is set then the
+       object is also deleted.
+
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
+     */
+
     virtual PString * GetAt(
       const K & key   // Key for position in dictionary to get object.
     ) const { return (PString *)PAbstractDictionary::GetAt(key); }
@@ -1703,6 +1719,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
     inline PString & operator[](const K & key) const \
       { return (PString &)GetRefAt(key); } \
+    virtual PString * RemoveAt(const K & key) \
+      { PObject * obj = GetAt(key); PAbstractDictionary::SetAt(key,NULL); return (PString*)obj;}\
     inline virtual PString * GetAt(const K & key) const \
       { return (PString *)PAbstractDictionary::GetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, const PString str) \
