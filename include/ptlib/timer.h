@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.18  2000/01/06 14:09:42  robertj
+ * Fixed problems with starting up timers,losing up to 10 seconds
+ *
  * Revision 1.17  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -279,7 +282,7 @@ class PTimer : public PTimeInterval
     BOOL oneshot;
     // Timer operates once then stops.
 
-    enum { Stopped, Running, Paused } state;
+    enum { Stopped, Starting, Running, Paused } state;
     // Timer state.
 
     PThread * timeoutThread;

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.128  2000/01/06 14:09:42  robertj
+ * Fixed problems with starting up timers,losing up to 10 seconds
+ *
  * Revision 1.127  1999/10/19 09:21:30  robertj
  * Added functions to get current trace options and level.
  *
@@ -645,7 +648,7 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 PTimer::~PTimer()
 {
   PAssert(timeoutThread == NULL || PThread::Current() != timeoutThread, "Timer destroyed in OnTimeout()");
-  if (state == Running)
+  if (IsRunning())
     PProcess::Current().GetTimerList()->RemoveTimer(this);
 }
 
@@ -659,21 +662,21 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
-  if (state == Running && timeoutThread == NULL)
+  if (IsRunning() && timeoutThread == NULL)
     PProcess::Current().GetTimerList()->RemoveTimer(this);
 
   PTimeInterval::operator=(resetTime);
   oneshot = once;
-  state = (*this) != 0 ? Running : Stopped;
+  state = (*this) != 0 ? Starting : Stopped;
 
-  if (state == Running && timeoutThread == NULL)
+  if (IsRunning() && timeoutThread == NULL)
     PProcess::Current().GetTimerList()->AppendTimer(this);
 }
 
 
 void PTimer::Stop()
 {
-  if (state == Running && timeoutThread == NULL)
+  if (IsRunning() && timeoutThread == NULL)
     PProcess::Current().GetTimerList()->RemoveTimer(this);
   state = Stopped;
   SetInterval(0);
@@ -682,7 +685,7 @@ void PTimer::Stop()
 
 void PTimer::Pause()
 {
-  if (state == Running) {
+  if (IsRunning()) {
     if (timeoutThread == NULL)
       PProcess::Current().GetTimerList()->RemoveTimer(this);
     state = Paused;
@@ -695,7 +698,7 @@ void PTimer::Resume()
   if (state == Paused) {
     if (timeoutThread == NULL)
       PProcess::Current().GetTimerList()->AppendTimer(this);
-    state = Running;
+    state = Starting;
   }
 }
 
@@ -703,12 +706,19 @@ void PTimer::Resume()
 void PTimer::OnTimeout()
 {
   if (!callback.IsNULL())
-    callback(*this, state == Running);
+    callback(*this, IsRunning());
 }
 
 
 BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
+  if (state == Starting) {
+    state = Running;
+    if (resetTime < minTimeLeft)
+      minTimeLeft = resetTime;
+    return FALSE;
+  }
+
   operator-=(delta);
 
   if (milliseconds > 0) {
