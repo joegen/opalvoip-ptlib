@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.186  2002/04/30 03:39:21  robertj
+ * Changed PTimer::Stop() so does not return until timer is REALLY stopped, in
+ *   particular when a possibly executing OnTimeout() function has completed.
+ *
  * Revision 1.185  2002/04/24 01:19:07  robertj
  * Added milliseconds to PTRACE output timestamp
  *
@@ -1006,7 +1010,15 @@ void PTimer::Stop()
   timerList->processingMutex.Wait();
   state = Stopped;
   SetInterval(0);
+  BOOL isCurrentTimer = this == timerList->currentTimer;
   timerList->processingMutex.Signal();
+
+  // Make sure that the OnTimeout for this timer has completed before
+  // retruning from Stop() function,
+  if (isCurrentTimer) {
+    timerList->inTimeoutMutex.Wait();
+    timerList->inTimeoutMutex.Signal();
+  }
 }
 
 
