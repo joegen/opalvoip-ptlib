@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.72  2004/06/22 11:07:23  rjongbloed
+ * Fixed incorrect test for error on _sopen return value, thanks Brian Coverstone
+ *
  * Revision 1.71  2004/04/03 06:54:30  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -1105,7 +1108,11 @@ BOOL PFile::Open(OpenMode mode, int opts)
   else if ((opts&(DenySharedRead|DenySharedWrite)) != 0)
     sflags = _SH_DENYWR;
 
-  return ConvertOSError(os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE));
+  os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE);
+
+  // As ConvertOSError tests for < 0 and some return values _sopen may be
+  // negative, only pass -1 through.
+  return ConvertOSError(os_handle == -1 ? -1 : 0);
 }
 
 
