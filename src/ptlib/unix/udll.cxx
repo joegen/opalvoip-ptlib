@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.10  2001/03/07 06:57:52  yurik
+ * Changed email to current one
+ *
  * Revision 1.9  2000/03/10 08:21:17  rogerh
  * Add correct OpenBSD support
  *
@@ -38,7 +41,7 @@
  * BeOS port changes.
  *
  * Revision 1.6  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
  *
  * Revision 1.5  1998/11/30 21:52:03  robertj
  * New directory structure.
