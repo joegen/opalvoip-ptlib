@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.62  2002/11/19 10:35:16  robertj
+ * Added function to extract a path as an array of directories components.
+ *
  * Revision 1.61  2002/11/08 06:02:53  robertj
  * Fixed problem wth getting file title if directory has a dot but the
  *   filename doesn't, thanks Peter 'Luna' Runestig
@@ -508,6 +511,28 @@ BOOL PDirectory::IsRoot() const
 
   PINDEX pos = FindOneOf("/\\", 2);
   return pos == GetLength();
+}
+
+
+PStringArray PDirectory::GetPath() const
+{
+  PStringArray path;
+
+  if (IsEmpty())
+    return path;
+
+  if ((*this)[1] == ':')
+    path = Tokenise("/\\", FALSE);
+  else {
+    path = Mid(2).Tokenise("/\\", FALSE);
+    path[0].Splice("\\\\", 0);
+  }
+
+  PINDEX last = path.GetSize()-1;
+  while (path[last].IsEmpty())
+    path.SetSize(last--);
+
+  return path;
 }
 
 
