@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.42 1996/01/03 23:15:39 robertj Exp $
+ * $Id: osutils.cxx,v 1.43 1996/01/23 13:16:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.43  1996/01/23 13:16:30  robertj
+ * Mac Metrowerks compiler support.
+ * Fixed timers so background thread not created if a windows app.
+ *
  * Revision 1.42  1996/01/03 23:15:39  robertj
  * Fixed some PTime bugs.
  *
@@ -732,6 +736,8 @@ void PProcess::TimerThread::Main()
 
 void PProcess::SignalTimerChange()
 {
+  if (timerThread == (PThread *)-1)
+    return;
   if (timerThread == NULL)
     timerThread = PNEW TimerThread;
   timerThread->semaphore.Signal();
@@ -826,7 +832,12 @@ int PChannelStreamBuffer::sync()
 }
 
 
-streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
+streampos PChannelStreamBuffer::seekoff(streamoff off,
+#ifdef __MWERKS__
+                                        ios::seekdir dir, ios::openmode)
+#else
+                                        ios::seek_dir dir, int)
+#endif
 {
   sync();
   if (!channel->IsDescendant(PFile::Class()))
@@ -2174,7 +2185,8 @@ PProcess::PProcess(const char * manuf, const char * name,
 PProcess::~PProcess()
 {
 #if defined(P_PLATFORM_HAS_THREADS)
-  delete timerThread;
+  if (timerThread != (PThread *)-1)
+    delete timerThread;
 #endif
 }
 
