@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.155  2001/02/19 03:44:20  robertj
+ * Changed "pl" in version number string to a simple ".", Now like 1.1.19
+ *
  * Revision 1.154  2001/01/28 00:53:00  yurik
  * WinCE port-related - streams refined
  *
@@ -1547,7 +1550,7 @@ void PProcess::SetThreadName(const PString & /*name*/)
 PString PProcess::GetVersion(BOOL full) const
 {
   const char * const statusLetter[NumCodeStatuses] =
-    { "alpha", "beta", "pl" };
+    { "alpha", "beta", "." };
   return psprintf(full && buildNumber != 0 ? "%u.%u%s%u" : "%u.%u",
                 majorVersion, minorVersion, statusLetter[status], buildNumber);
 }
