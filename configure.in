@@ -560,6 +560,17 @@ if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   echo "No Video Capture support"
 fi
 
+
+dnl ########################################################################
+dnl check for regex library
+AC_CHECK_FUNC(regcomp,HAS_REGEX=1)
+if test "x$HAS_REGEX" != "x" ; then
+  AC_CHECK_HEADERS(regex.h, HAS_REGEX=1, HAS_REGEX=)
+fi
+AC_SUBST(HAS_REGEX)
+AC_DEFINE_UNQUOTED(P_REGEX, $HAS_REGEX, "Regex library found")
+
+
 dnl ########################################################################
 dnl check for various functions
 dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
