@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.44  2002/12/17 04:41:40  robertj
+ * Added ability to escape special characters.
+ *
  * Revision 1.43  2002/12/10 05:22:16  robertj
  * Fixed GNU warning
  *
@@ -655,6 +658,10 @@ PString PTime::AsString(const char * format, int zone) const
             break;
         }
         break;
+
+      case '\\' :
+        format++;
+        // Escaped character, put straight through to output string
 
       default :
         str << *format++;
