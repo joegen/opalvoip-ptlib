@@ -1,5 +1,5 @@
 /*
- * $Id: udll.cxx,v 1.1 1997/04/22 10:58:17 craigs Exp $
+ * $Id: udll.cxx,v 1.2 1997/10/30 12:41:22 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1997 Equivalence
  *
  * $Log: udll.cxx,v $
+ * Revision 1.2  1997/10/30 12:41:22  craigs
+ * Added GetExtension command
+ *
  * Revision 1.1  1997/04/22 10:58:17  craigs
  * Initial revision
  *
@@ -39,6 +42,11 @@ PDynaLink::PDynaLink(const PString & name)
 PDynaLink::~PDynaLink()
 {
   Close();
+}
+
+PString PDynaLink::GetExtension()
+{
+  return PString(".so");
 }
 
 BOOL PDynaLink::Open(const PString & name)
