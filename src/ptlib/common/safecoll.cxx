@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.10  2004/08/12 12:37:41  rjongbloed
+ * Fixed bug recently introduced so removes deleted object from deletion list.
+ * Also changed removal list to be correct type.
+ *
  * Revision 1.9  2004/08/05 12:15:56  rjongbloed
  * Added classes for auto unlocking read only and read write mutex on
  *   PSafeObject - similar to PWaitAndSIgnal.
@@ -254,16 +258,16 @@ BOOL PSafeCollection::DeleteObjectsToBeRemoved()
 
   PINDEX i = 0;
   while (i < toBeRemoved.GetSize()) {
-    PSafeObject * obj = PDownCast(PSafeObject, toBeRemoved.GetAt(i));
-    if (obj == NULL || !obj->SafelyCanBeDeleted())
-      i++;
-    else {
+    if (toBeRemoved[i].SafelyCanBeDeleted()) {
+      PObject * obj = toBeRemoved.RemoveAt(i);
       removalMutex.Signal();
       DeleteObject(obj);
       removalMutex.Wait();
 
       i = 0; // Restart looking through list
     }
+    else
+      i++;
   }
 
   return toBeRemoved.IsEmpty() && collection->IsEmpty();
