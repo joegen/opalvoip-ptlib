@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.57  2001/02/24 13:29:34  rogerh
+ * Mac OS X change to avoid Assertion
+ *
  * Revision 1.56  2001/02/24 13:24:24  rogerh
  * Add PThread support for Mac OS X and Darwin. There is one major issue. This
  * OS does not suport pthread_kill() and sigwait() so we cannot support the
@@ -860,7 +863,7 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
+#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX) || defined (P_MACOSX)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else
