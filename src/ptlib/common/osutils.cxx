@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.197  2002/10/04 08:21:26  robertj
+ * Changed read/write mutex so can be called by same thread without deadlock.
+ *
  * Revision 1.196  2002/07/30 02:55:09  craigs
  * Added program start time to PProcess
  *
@@ -2460,8 +2463,61 @@ PReadWriteMutex::PReadWriteMutex()
 }
 
 
+PReadWriteMutex::Nest * PReadWriteMutex::GetNest() const
+{
+  PWaitAndSignal mutex(nestingMutex);
+  return nestedThreads.GetAt(POrdinalKey(PThread::GetCurrentThreadId()));
+}
+
+
+void PReadWriteMutex::EndNest()
+{
+  nestingMutex.Wait();
+  nestedThreads.RemoveAt(POrdinalKey(PThread::GetCurrentThreadId()));
+  nestingMutex.Signal();
+}
+
+
+PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
+{
+  POrdinalKey threadId = PThread::GetCurrentThreadId();
+
+  nestingMutex.Wait();
+
+  Nest * nest = nestedThreads.GetAt(threadId);
+
+  if (nest == NULL) {
+    nest = new Nest;
+    nestedThreads.SetAt(threadId, nest);
+  }
+
+  nestingMutex.Signal();
+
+  return *nest;
+}
+
+
 void PReadWriteMutex::StartRead()
 {
+  // Get the nested thread info structure, create one it it doesn't exist
+  Nest & nest = StartNest();
+
+  // One more nested call to StartRead() by this thread, note this does not
+  // need to be mutexed as it is always in the context of a single thread.
+  nest.readerCount++;
+
+  // If this is the first call to StartRead() and there has not been a
+  // previous call to StartWrite() then actually do the text book read only
+  // lock, otherwise we leave it as just having incremented the reader count.
+  if (nest.readerCount == 1 && nest.writerCount == 0)
+    InternalStartRead();
+}
+
+
+void PReadWriteMutex::InternalStartRead()
+{
+  // Text book read only lock
+
   starvationPreventer.Wait();
    readerSemaphore.Wait();
     readerMutex.Wait();
@@ -2478,6 +2534,38 @@ void PReadWriteMutex::StartRead()
 
 void PReadWriteMutex::EndRead()
 {
+  // Get the nested thread info structure for the curent thread
+  Nest * nest = GetNest();
+
+  // If don't have an active read or write lock or there is a write lock but
+  // the StartRead() was never called, then assert and ignore call.
+  if (nest == NULL || nest->readerCount == 0) {
+    PAssertAlways("Unbalanced PReadWriteMutex::EndRead()");
+    return;
+  }
+
+  // One less nested lock by this thread, note this does not
+  // need to be mutexed as it is always in the context of a single thread.
+  nest->readerCount--;
+
+  // If this is a nested read or a write lock is present then we don't do the
+  // real unlock, the decrement is enough.
+  if (nest->readerCount > 0 || nest->writerCount > 0)
+    return;
+
+  // Do text book read lock
+  InternalEndRead();
+
+  // At this point all read and write locks are gone for this thread so we can
+  // reclaim the memory.
+  EndNest();
+}
+
+
+void PReadWriteMutex::InternalEndRead()
+{
+  // Text book read only unlock
+
   readerMutex.Wait();
 
   readerCount--;
@@ -2490,8 +2578,30 @@ void PReadWriteMutex::EndRead()
 
 void PReadWriteMutex::StartWrite()
 {
+  // Get the nested thread info structure, create one it it doesn't exist
+  Nest & nest = StartNest();
+
+  // One more nested call to StartWrite() by this thread, note this does not
+  // need to be mutexed as it is always in the context of a single thread.
+  nest.writerCount++;
+
+  // If is a nested call to StartWrite() then simply return, the writer count
+  // increment is all we haev to do.
+  if (nest.writerCount > 1)
+    return;
+
+  // Make sure multiple threads wanting write access can't do the following
+  // logic about unlocking readers in the same thread and wating for readers
+  // in other threads to stop reading.
   writerMutex.Wait();
 
+  // If have a read lock already in this thread then do the "real" unlock code
+  // but do not change the lock count, calls to EndRead() will now just
+  // decrement the count instead of doing the unlock (its already done!)
+  if (nest.readerCount > 0)
+    InternalEndRead();
+
+  // Do do the rest of the text book write lock
   writerCount++;
   if (writerCount == 1)
     readerSemaphore.Wait();
@@ -2504,6 +2614,26 @@ void PReadWriteMutex::StartWrite()
 
 void PReadWriteMutex::EndWrite()
 {
+  // Get the nested thread info structure for the curent thread
+  Nest * nest = GetNest();
+
+  // If don't have an active read or write lock or there is a read lock but
+  // the StartWrite() was never called, then assert and ignore call.
+  if (nest == NULL || nest->writerCount == 0) {
+    PAssertAlways("Unbalanced PReadWriteMutex::EndWrite()");
+    return;
+  }
+
+  // One less nested lock by this thread, note this does not
+  // need to be mutexed as it is always in the context of a single thread.
+  nest->writerCount--;
+
+  // If this is a nested write lock then the decrement is enough and we
+  // don't do the actual write unlock.
+  if (nest->writerCount > 0)
+    return;
+
+  // Begin text book write unlock
   writerSemaphore.Signal();
 
   writerMutex.Wait();
@@ -2512,6 +2642,16 @@ void PReadWriteMutex::EndWrite()
   if (writerCount == 0)
     readerSemaphore.Signal();
 
+  // Before we release the writerMutex so another thread can grab the object in
+  // write only mode, check to see if there are any read lock present, if so then
+  // reacquire the read lock (not changing the count) otherwise clean up the
+  // memory for the nested thread info structure
+  if (nest->readerCount > 0)
+    InternalStartRead();
+  else
+    EndNest();
+
+  // Complete text book unlock
   writerMutex.Signal();
 }
 
