@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.14.2.1  2003/10/07 01:33:19  csoutheren
+ * Initial checkin of pwlib code to do plugins.
+ * Modified from original code and concept provided by Snark of Gnomemeeting
+ *
  * Revision 1.14  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -160,7 +164,7 @@ class PDynaLink : public PObject
        @return
        TRUE if function was found.
      */
-    BOOL GetFunction(
+    virtual BOOL GetFunction(
       PINDEX index,    /// Ordinal number of the function to get.
       Function & func  /// Refrence to point to function to get.
     );
@@ -170,7 +174,7 @@ class PDynaLink : public PObject
        @return
        TRUE if function was found.
      */
-    BOOL GetFunction(
+    virtual BOOL GetFunction(
       const PString & name,  /// Name of the function to get.
       Function & func        /// Refrence to point to function to get.
     );
