@@ -141,16 +141,20 @@ typedef LRESULT (CALLBACK* CAPVIDEOCALLBACK)  (HWND hWnd, LPVIDEOHDR lpVHdr);
 #define capPreview(hwnd, f)                        ((BOOL)AVICapSM(hwnd, WM_CAP_SET_PREVIEW, (WPARAM)(BOOL)(f), 0L))
 
 BOOL VFWAPI capGetDriverDescription(UINT wDriverIndex,
-        LPSTR lpszName, int cbName,
-        LPSTR lpszVer, int cbVer);
+	LPSTR lpszName, int cbName,
+		LPSTR lpszVer, int cbVer);
 
 HWND VFWAPI capCreateCaptureWindow(
-        LPCSTR lpszWindowName,
-        DWORD dwStyle,
-        int x, int y, int nWidth, int nHeight,
-        HWND hwndParent, int nID);
+	LPCSTR lpszWindowName,
+		DWORD dwStyle,
+			int x, int y, int nWidth, int nHeight,
+				HWND hwndParent, int nID);
 
 // Making types of these functions to define static stubs
-typedef BOOL (VFWAPI CAPGETDRIVERDESCRIPTIONPROC)(UINT,LPSTR, int, LPSTR, int);
-typedef HWND (VFWAPI CAPCREATECAPTUREWINDOWPROC)(LPCSTR,DWORD,int,int,int,int,HWND,int);
+typedef BOOL (VFWAPI *CAPGETDRIVERDESCRIPTIONPROC)(UINT,LPSTR, int, LPSTR, int);
+//	FAR * LPCAPGETDRIVERDESCRIPTIONPROC;
+
+typedef HWND (VFWAPI *CAPCREATECAPTUREWINDOWPROC)(LPCSTR,DWORD,int,int,int,int,HWND,int);
+//	FAR * LPCAPCREATECAPTUREWINDOWPROC;
+
 #endif // _CEVFW_H
