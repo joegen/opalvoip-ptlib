@@ -84,7 +84,7 @@ SOURCE="$(InputPath)"
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
-# ADD RSC /l 0xc09 /d "_DEBUG"
+# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Debug/ptlib.res" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -102,6 +102,23 @@ LINK32=link.exe
 
 SOURCE=.\dllmain.cxx
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\libver.rc
+
+!IF  "$(CFG)" == "PTLib - Win32 Release"
+
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Release/ptlib.res" /d PRODUCT=PTLib
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
+
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09 /d PRODUCT=PTLib
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -178,23 +195,6 @@ InputPath=.\ptlibd.dtf
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 	
 # End Custom Build
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\Version.rc
-
-!IF  "$(CFG)" == "PTLib - Win32 Release"
-
-# ADD BASE RSC /l 0xc09
-# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Release/PTLibVer.res"
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
-
-# ADD BASE RSC /l 0xc09
-# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Debug/PTLibVer.res"
 
 !ENDIF 
 
