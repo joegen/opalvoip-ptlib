@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.4 1996/01/23 13:08:43 robertj Exp $
+ * $Id: inetprot.h,v 1.5 1996/02/03 11:33:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.5  1996/02/03 11:33:16  robertj
+ * Changed RadCmd() so can distinguish between I/O error and unknown command.
+ *
  * Revision 1.4  1996/01/23 13:08:43  robertj
  * Major rewrite for HTTP support.
  *
@@ -186,7 +189,10 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        TRUE if the command was completely written.
      */
 
-    PINDEX ReadCommand(
+    BOOL ReadCommand(
+      PINDEX & num,
+       // Number of the command parsed from the command line, or P_MAX_INDEX
+       // if no match.
       PString & args  // String to receive the arguments to the command.
     );
     /* Read a single line of a command which ends with a CR/LF pair. The
@@ -204,8 +210,7 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        This function is typically used by server forms of the socket.
 
        <H2>Returns:</H2>
-       Number of the command parsed from the command line, or P_MAX_INDEX if
-       no match.
+       TRUE if something was read, otherwise an I/O error occurred.
      */
 
     BOOL WriteResponse(
