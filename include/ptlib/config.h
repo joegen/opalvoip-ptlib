@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.15 1997/08/07 11:58:01 robertj Exp $
+ * $Id: config.h,v 1.16 1998/01/26 00:29:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
+ * Revision 1.16  1998/01/26 00:29:26  robertj
+ * Added functions to get/set 64bit integers from a PConfig.
+ *
  * Revision 1.15  1997/08/07 11:58:01  robertj
  * Added ability to get registry data from other applications and anywhere in system registry.
  *
@@ -334,6 +337,43 @@ PDECLARE_CLASS(PConfig, PObject)
       long value                // New value to set for the variable.
     );
     /* Set an integer variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       The value is always formatted as a signed number with no leading or
+       trailing blanks.
+     */
+
+
+    PInt64 GetInt64(
+      const PString & key,      // The key name for the variable.
+      PInt64 dflt = 0           // Default value for the variable.
+    ) const;
+    PInt64 GetInt64(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      PInt64 dflt = 0           // Default value for the variable.
+    ) const;
+    /* Get a 64 bit integer variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       If the key is not present the value returned is the that provided by
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case zero is returned.
+
+       <H2>Returns:</H2>
+       integer value of the variable.
+     */
+
+    void SetInt64(
+      const PString & key,      // The key name for the variable.
+      PInt64 value              // New value to set for the variable.
+    );
+    void SetInt64(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      PInt64 value              // New value to set for the variable.
+    );
+    /* Set a 64 bit integer variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
        The value is always formatted as a signed number with no leading or
