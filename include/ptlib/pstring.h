@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.65  2004/02/08 11:13:11  rjongbloed
+ * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
+ *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
+ *
  * Revision 1.64  2004/01/18 13:43:48  rjongbloed
  * Fixed broken PString::MakeEmpty() function and moved implementations to .inl file.
  *
@@ -2321,12 +2325,11 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
   //@}
 
   protected:
-    static PINDEX InternalStringSelect(
+    PINDEX InternalStringSelect(
       const char * str,
       PINDEX len,
-      Element * thisElement,
-      Element * & lastElement
-    );
+      Element * thisElement
+    ) const;
 };
 
 
