@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.51  2001/03/22 01:14:16  robertj
+# Allowed for the version file #defines to configured by calling makefile.
+#
 # Revision 1.50  2000/11/02 04:46:42  craigs
 # Added support for buildnum.h file for version numbers
 #
@@ -293,16 +296,37 @@ ifndef VERSION_FILE
   endif
 endif
 
+ifndef MAJOR_VERSION_DEFINE
+MAJOR_VERSION_DEFINE:=MAJOR_VERSION
+endif
+
+ifndef MINOR_VERSION_DEFINE
+MINOR_VERSION_DEFINE:=MINOR_VERSION
+endif
+
+ifndef BUILD_NUMBER_DEFINE
+BUILD_NUMBER_DEFINE:=BUILD_NUMBER
+endif
+
+
 ifdef VERSION_FILE
-MAJOR_VERSION:=$(strip $(subst \#define,, $(subst MAJOR_VERSION,,\
-			$(shell grep "define *MAJOR_VERSION *" $(VERSION_FILE)))))
-MINOR_VERSION:=$(strip $(subst \#define,, $(subst MINOR_VERSION,,\
-			$(shell grep "define *MINOR_VERSION" $(VERSION_FILE)))))
+ifndef MAJOR_VERSION
+MAJOR_VERSION:=$(strip $(subst \#define,, $(subst $(MAJOR_VERSION_DEFINE),,\
+			$(shell grep "define *$(MAJOR_VERSION_DEFINE) *" $(VERSION_FILE)))))
+endif
+ifndef MINOR_VERSION
+MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
+			$(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
+endif
+ifndef BUILD_TYPE
 BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
-			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,pl,\
+			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
 			$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
-BUILD_NUMBER:=$(strip $(subst \#define,,$(subst BUILD_NUMBER,,\
-			$(shell grep "define *BUILD_NUMBER" $(VERSION_FILE)))))
+endif
+ifndef BUILD_NUMBER
+BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
+			$(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
+endif
 VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
 endif
 endif
