@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.2  1999/02/08 08:05:39  robertj
+ * Changed semantics of IP access control list for empty list.
+ *
  * Revision 1.1  1999/01/31 00:59:26  robertj
  * Added IP Access Control List class to PTLib Components
  *
@@ -262,6 +265,11 @@ class PIpAccessControlList : public PIpAccessControlList_base
     /* Test the address/connection for if it is allowed within this access
        control list. If the <CODE>socket</CODE> form is used the peer address
        of the connection is tested.
+
+       If the list is empty then TRUE is returned. If the list is not empty,
+       but the IP address does not match any entries in the list, then FALSE
+       is returned. If a match is made then the allow state of that entry is
+       returned.
 
        <H2>Returns:</H2>
        TRUE if the remote host address is allowed.
