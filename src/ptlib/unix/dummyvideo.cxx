@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.4  2001/12/05 08:34:41  rogerh
+ * Add more dummy functions
+ *
  * Revision 1.3  2001/09/24 09:11:07  rogerh
  * Add dummy methods, submitted by Andreas Wrede <awrede@mac.com>
  *
@@ -137,6 +140,13 @@ BOOL PVideoInputDevice::SetContrast(unsigned newContrast)
 }
 
 
+BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
+                                       int *colour, int *contrast, int *hue)
+{
+  return FALSE;
+}
+
+
 int PVideoInputDevice::GetNumChannels() 
 {
   return 0;
@@ -184,6 +194,12 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+{
+  return FALSE;
+}
+
+
+BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   return FALSE;
 }
