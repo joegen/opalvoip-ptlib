@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.89  2001/03/07 06:55:27  yurik
+# Changed email to current one
+#
 # Revision 1.88  2001/02/24 13:25:58  rogerh
 # Turn on pthread support for Mac OS X / Darwin and rename the object
 # directory from macos to Darwin
@@ -213,7 +216,7 @@
 # Fixed mistake in last change, library must be at end of link command.
 #
 # Revision 1.31  1999/02/06 05:49:44  robertj
-# BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+# BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
 #
 # Revision 1.30  1999/01/16 09:56:28  robertj
 # Changed some macros to more informative names.
