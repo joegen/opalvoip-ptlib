@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.3  1998/11/30 02:55:17  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/24 03:30:10  robertj
  * Added open software license.
  *
@@ -40,7 +43,7 @@
 #include <wsipx.h>
 #include <wsnwlink.h>
 
-#include "../../common/ptlib/ipxsock.h"
+#include "../../ipxsock.h"
 };
 
 
