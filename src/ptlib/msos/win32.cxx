@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.70  1998/10/28 00:59:12  robertj
+ * Fixed problem when reading standard error from pipe channel, no terminating null on string.
+ *
  * Revision 1.69  1998/10/26 09:11:31  robertj
  * Added ability to separate out stdout from stderr on pipe channels.
  *
@@ -919,7 +922,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
 
   if (available != 0)
     return ConvertOSError(ReadFile(hStandardError,
-                          errors.GetPointer(available), available,
+                          errors.GetPointer(available+1), available,
                           &bytesRead, NULL) ? 0 : -2);
 
   if (wait)
@@ -938,7 +941,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
     return TRUE;
 
   return ConvertOSError(ReadFile(hStandardError,
-                        errors.GetPointer(available+1)+1, available,
+                        errors.GetPointer(available+2)+1, available,
                         &bytesRead, NULL) ? 0 : -2);
 }
 
