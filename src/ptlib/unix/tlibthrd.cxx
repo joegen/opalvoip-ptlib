@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.65  2001/05/29 00:49:18  robertj
+ * Added ability to put in a printf %x in thread name to get thread object
+ *   address into user settable thread name.
+ *
  * Revision 1.64  2001/05/23 00:18:55  robertj
  * Added support for real time threads, thanks Erland Lewin.
  *
@@ -568,6 +572,7 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_detach(threadId);
 
   PThread * thread = (PThread *)arg;
+  thread->SetThreadName(thread->GetThreadName());
 
   PProcess & process = PProcess::Current();
 
@@ -596,7 +601,7 @@ void * PThread::PX_ThreadStart(void * arg)
   //PAssertOS(pthread_mutex_lock(&thread->PX_suspendMutex) == 0);
   //if (thread->PX_suspendCount ==  0) 
   //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
-  //else {
+  //else
   //  PAssertOS(pthread_mutex_unlock(&thread->PX_suspendMutex) == 0);
 
 

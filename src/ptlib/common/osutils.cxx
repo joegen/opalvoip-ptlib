@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.165  2001/05/29 00:49:18  robertj
+ * Added ability to put in a printf %x in thread name to get thread object
+ *   address into user settable thread name.
+ *
  * Revision 1.164  2001/05/03 06:26:22  robertj
  * Fixed strange problem that occassionally crashes on exit. Mutex cannot be
  *   destroyed before program exit.
@@ -742,18 +746,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
         *PTraceStream << setw(23) << "<<unknown>>";
       else {
         PString name = thread->GetThreadName();
-        if (!name)
-          *PTraceStream << setw(23) << name.Left(23);
-        else {
-          name = thread->GetClass();
-          if ((PTraceOptions&ThreadAddress) != 0)
-            *PTraceStream << setw(23) << name.Left(23);
-          else
-            *PTraceStream << setw(15) << name.Left(15) << ':'
-                          << hex << setfill('0')
-                          << setw(7) << (unsigned)thread
-                          << dec << setfill(' ');
-        }
+        if (name.GetLength() <= 23)
+          *PTraceStream << setw(23) << name;
+        else
+          *PTraceStream << name.Left(10) << "..." << name.Right(10);
       }
       *PTraceStream << '\t';
     }
@@ -1634,10 +1630,7 @@ void PProcess::SetConfigurationPath(const PString & path)
 
 void PThread::PrintOn(ostream & strm) const
 {
-  PString name = GetThreadName();
-  if (name.IsEmpty())
-    name.sprintf("%s<%08x>", GetClass(), (int)this);
-  strm << name;
+  strm << GetThreadName();
 }
 
 
@@ -1649,7 +1642,10 @@ PString PThread::GetThreadName() const
  
 void PThread::SetThreadName(const PString & name)
 {
-  threadName = name; 
+  if (name.IsEmpty())
+    threadName = psprintf("%s:%08x", GetClass(), (PINT)this);
+  else
+    threadName = psprintf(name, (PINT)this);
 }
 
 
