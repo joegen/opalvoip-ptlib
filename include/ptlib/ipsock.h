@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.27 1996/11/30 12:10:00 robertj Exp $
+ * $Id: ipsock.h,v 1.28 1996/12/17 11:08:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.28  1996/12/17 11:08:05  robertj
+ * Added DNS name cache clear command.
+ *
  * Revision 1.27  1996/11/30 12:10:00  robertj
  * Added Connect() variant so can set the local port number on link.
  *
@@ -299,6 +302,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
        <H2>Returns:</H2>
        Name of the host, or an empty string if an error occurs.
+     */
+
+    static void ClearNameCache();
+    /* Clear the name cache.
      */
 
 
