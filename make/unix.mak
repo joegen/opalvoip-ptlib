@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.169  2003/05/05 13:10:59  robertj
+# Solaris compatibility
+#
 # Revision 1.168  2003/04/17 07:29:27  robertj
 # Fixed solaris link problem
 #
@@ -488,7 +491,7 @@ ifeq ($(MACHTYPE),x86)
 DEBUG_FLAG	:= -gstabs+
 endif
 
-ENDLDLIBS	+="-lsocket -lnsl -ldl -lposix4"
+ENDLDLIBS	+= -lsocket -lnsl -ldl -lposix4
 
 # Sparc Solaris 2.x, using gcc 2.x
 CC		:= gcc
