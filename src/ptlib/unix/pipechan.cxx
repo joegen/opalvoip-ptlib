@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.42  2003/04/22 23:43:51  craigs
+ * MacOSX changes as per Hugo Santos
+ *
  * Revision 1.41  2003/01/09 08:21:47  robertj
  * Fixed possibly handle leak if fork() fails.
  * Also added belt and braces checks for making sure no handle can leak in
@@ -141,6 +144,10 @@
 
 #if defined(P_LINUX) || defined(P_SOLARIS)
 #include <termio.h>
+#endif
+
+#if defined(P_MACOSX)
+#include <crt_externs.h>
 #endif
 
 #include "../common/pipechan.cxx"
@@ -293,7 +300,10 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   if (environment != NULL) {
 #if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
     extern char ** environ;
-#define __environ environ
+#	if defined(P_MACOSX)
+#		define environ (*_NSGetEnviron())
+#	endif
+#	define __environ environ
 #endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
