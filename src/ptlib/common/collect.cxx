@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.52  2002/01/31 05:02:50  robertj
+ * Fixed PSortedList::Remove function for removing objects with equal keys.
+ *
  * Revision 1.51  2001/06/07 04:49:26  robertj
  * Allowed for other separators than \n when printing elements of a collection.
  *
@@ -788,13 +791,10 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 
 BOOL PAbstractSortedList::Remove(const PObject * obj)
 {
-  Element * element = info->root;
-  while (element != &nil && element->data != obj)
-    element = *obj < *element->data ? element->left : element->right;
-  if (element == &nil)
+  if (GetObjectsIndex(obj) == P_MAX_INDEX)
     return FALSE;
 
-  RemoveElement(element);
+  RemoveElement(info->lastElement);
   return TRUE;
 }
 
