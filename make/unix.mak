@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.163  2003/03/28 10:25:43  rogerh
+# Fix OpenLDAP libraries
+#
 # Revision 1.162  2003/03/28 03:03:50  craigs
 # Added LDAP sources
 #
@@ -1506,7 +1509,10 @@ endif # DEBUG
 # define OpenLDAP cariables if installed
 ifneq (,$(wildcard /usr/include/ldap.h))
 STDCCFLAGS	+= -DP_LDAP 
-ENDLDLIBS	+= -llber -lldap -illdap_r -lresolv
+ENDLDLIBS	+= -llber -lldap -lldap_r
+ifeq ($(OSTYPE),linux)
+ENDLDLIBS	+= -lresolv	# only linux has -lresolv
+endif
 HAS_OPENLDAP	= 1
 endif
 
