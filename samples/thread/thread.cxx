@@ -5,7 +5,7 @@
  *
  * Portable Windows Library
  *
- * Copyright (c) 2001 Roger Hardiman
+ * Copyright (c) 2001,2002 Roger Hardiman
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.5  2002/11/04 22:46:23  rogerh
+ * Implement a Stop() method to make the threads terminate.
+ *
  * Revision 1.4  2002/11/04 18:11:22  rogerh
  * Terminate the threads prior to deletion.
  *
@@ -42,14 +45,18 @@
 /*
  * This sample program tests threads is PWLib. It creates two threads,
  * one which display the number '1' and one which displays the number '2'.
- * It also demonstrates starting a thread with Resume() and also using
- * Suspend() and Resume() to suspend a running thread.
+ * It also demonstrates starting a thread with Resume(), using
+ * Suspend() and Resume() to suspend a running thread and two different
+ * ways to make a thread terminate.
  */
 
 #include <ptlib.h>
 
 /*
- * Thread #1 loops forever, displaying the number 1
+ * Thread #1 displays the number 1 every 10ms.
+ * When it is created, Main() starts executing immediatly.
+ * The thread is terminated by calling Stop() which uses a PSyncPoint with a
+ * 10ms timeout.
  */
 class MyThread1 : public PThread
 {
@@ -57,41 +64,69 @@ class MyThread1 : public PThread
   public:
     MyThread1() : PThread(1000,NoAutoDeleteThread)
     {
-      Resume(); // start running this thread as soon as the thread is created.
+      Resume(); // start running this thread when it is created.
     }
 
     void Main() {
-      while (1) {
-        // Display the number 1, then sleep for a short time
+      while (!shutdown.Wait(10)) { // 10ms delay
         printf("1 ");
         fflush(stdout);
-	usleep(10000);
-      };
-    };
+	Sleep(10);
+      }
+    }
+
+    void Stop() {
+      // signal the shutdown PSyncPoint. On the next iteration, the thread's
+      // Main() function will exit cleanly.
+      shutdown.Signal();
+    }
+
+    protected:
+      PSyncPoint shutdown;
 };
 
 
 /*
- * Thread #2 loops forever, displaying the number 2
+ * Thread #2 displays the number 2 every 10 ms.
+ * This thread will not start automatically. We must call
+ * Resume() after creating the thread.
+ * The thread is terminated by calling Stop() which sets a local variable.
  */
 class MyThread2 : public PThread
 {
   PCLASSINFO(MyThread2, PThread);
   public:
-    MyThread2() : PThread(1000,NoAutoDeleteThread)
-    {
-    // This thread will not start automatically. We must call
-    // Resume() after creating the thread.
+    MyThread2() : PThread(1000,NoAutoDeleteThread) {
+      exitFlag = FALSE;
     }
 
     void Main() {
       while (1) {
+        // Check if we need to exit
+        exitMutex.Wait();
+        if (exitFlag == TRUE) {
+          exitMutex.Signal();
+          break;
+        }
+        exitMutex.Signal();
+
         // Display the number 2, then sleep for a short time
-        printf("2 ");
-        fflush(stdout);
-	usleep(10000);
-      };
-    };
+        printf("2 "); fflush(stdout);
+	Sleep(10); // sleep 10ms
+      }
+    }
+
+    void Stop() {
+      // set the exit flag. On the next iteration, the thread's
+      // Main() function will exit cleanly.
+      exitMutex.Wait();
+      exitFlag = TRUE;
+      exitMutex.Signal();
+    }
+
+    protected:
+      PMutex exitMutex;
+      BOOL exitFlag;
 };
 
 
@@ -112,17 +147,17 @@ void ThreadTest::Main()
 {
   cout << "Thread Test Program" << endl;
   cout << "This program will display the following:" << endl;
-  cout << "             3 seconds of 1 1 1 1 1..." << endl;
-  cout << " followed by 3 seconds of 1 2 1 2 1 2 1 2 1 2..." << endl;
-  cout << " followed by 3 seconds of 2 2 2 2 2..." << endl;
-  cout << " followed by 3 seconds of 1 2 1 2 1 2 1 2 1 2..." << endl;
+  cout << "             1 second of 1 1 1 1 1..." << endl;
+  cout << " followed by 1 second of 1 2 1 2 1 2 1 2 1 2..." << endl;
+  cout << " followed by 1 second of 2 2 2 2 2..." << endl;
+  cout << " followed by 1 second of 1 2 1 2 1 2 1 2 1 2..." << endl;
   cout << endl;
   cout << "It tests thread creation, suspend and resume functions." << endl;
   cout << endl;
 
   // Create the threads
-  PThread * mythread1;
-  PThread * mythread2;
+  MyThread1 * mythread1;
+  MyThread2 * mythread2;
 
   mythread1 = new MyThread1();
   mythread2 = new MyThread2();
@@ -159,11 +194,11 @@ void ThreadTest::Main()
 
 
   // Clean up
-  mythread1->Terminate();
+  mythread1->Stop();
   mythread1->WaitForTermination();
   cout << "Thread 1 terminated" << endl;
 
-  mythread2->Terminate();
+  mythread2->Stop();
   mythread2->WaitForTermination();
   cout << "Thread 2 terminated" << endl;
 
