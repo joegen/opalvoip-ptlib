@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.46  2000/04/06 20:12:33  craigs
+# Added install targets
+#
 # Revision 1.45  2000/03/20 23:08:31  craigs
 # Added showgui target to allow displaying the GUI settings
 #
@@ -228,6 +231,12 @@ $(PW_LIBDIR)/$(PWLIB_FILE):
 endif
 
 CLEAN_FILES += $(TARGET)
+
+ifndef INSTALL_OVERRIDE
+
+install:	$(TARGET)
+	$(INSTALL) $(TARGET) $(INSTALLBIN_DIR)
+endif
 
 # ifdef PROG
 endif
