@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.27  2001/10/10 03:29:34  yurik
+ * Added open with format other than PCM
+ *
  * Revision 1.26  2001/09/22 03:36:56  yurik
  * Put code to prevent audio channel disconnection
  *
@@ -732,17 +735,9 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
   return str;
 }
 
-
-BOOL PSoundChannel::Open(const PString & device,
-                         Directions dir,
-                         unsigned numChannels,
-                         unsigned sampleRate,
-                         unsigned bitsPerSample)
+BOOL PSoundChannel::GetDeviceID(const PString & device, Directions dir, unsigned& id)
 {
-  Close();
-
   BOOL bad = TRUE;
-  unsigned id = 0;
 
   if (device[0] == '#') {
     id = device.Mid(1).AsUnsigned();
@@ -799,12 +794,42 @@ BOOL PSoundChannel::Open(const PString & device,
   if (bad)
     return SetErrorValues(NotFound, MMSYSERR_BADDEVICEID|PWIN32ErrorFlag);
 
+  return TRUE;
+}
+
+BOOL PSoundChannel::Open(const PString & device,
+                         Directions dir,
+                         unsigned numChannels,
+                         unsigned sampleRate,
+                         unsigned bitsPerSample)
+{
+  Close();
+  unsigned id = 0;
+	
+  if( !GetDeviceID(device, dir, id) )
+	  return FALSE;
+
   waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
 
   direction = dir;
   return OpenDevice(id);
 }
 
+BOOL PSoundChannel::Open(const PString & device,
+                         Directions dir,
+						 const PWaveFormat& format)
+{
+  Close();
+  unsigned id = 0;
+	
+  if( !GetDeviceID(device, dir, id) )
+	  return FALSE;
+
+  waveFormat = format;
+
+  direction = dir;
+  return OpenDevice(id);
+}
 
 BOOL PSoundChannel::OpenDevice(unsigned id)
 {
