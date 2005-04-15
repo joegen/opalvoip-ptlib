@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.60  2005/04/15 10:49:38  dsandras
+ * Allow reading on the transport until there is an EOF or it becomes bad. Fixes interoperability problem with QSC.DE which is sending keep-alive messages, leading to a timeout (transport.good() fails, but the stream is still usable).
+ *
  * Revision 1.59  2005/04/06 19:34:14  dsandras
  * Fixed typo in previous commit.
  *
@@ -737,7 +740,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
 
   PString line;
   PString lastLine;
-  while (strm.good()) {
+  while (!strm.bad() && !strm.eof()) {
     strm >> line;
     if (line.IsEmpty())
       break;
