@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2005/04/20 06:42:22  csoutheren
+ * Added -S option to check bug 1031626
+ *
  * Revision 1.6  2004/11/08 04:10:36  csoutheren
  * Fixed handling of sound driver and device names
  *
@@ -127,7 +130,8 @@ void PluginTest::Main()
 	     "h-help."               
 	     "l-list."               
 	     "L-List."               
-	     "s-service:"               
+	     "s-service:"   
+       "S-sounddefault:"
 	     "a-audio:"
 	     "A-Audio:"
 	     "d-directory:"          
@@ -180,6 +184,10 @@ void PluginTest::Main()
     return;
   }
 
+  if (args.HasOption('S')) {
+    cout << "Default sound device is \"" << PSoundChannel::GetDefaultDevice(PSoundChannel::Player) << "\"" << endl;
+    return;
+  }
 
   if (args.HasOption('a') || args.HasOption('A')) {
     PString driver;
