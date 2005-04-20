@@ -855,7 +855,7 @@ Optional Features:
   --disable-openssl       disable OpenSSL support in PWLIB
   --disable-expat         disable XML support in PWLIB
   --disable-ipv6          disable IPV6 support
-  --disable-qos           disable QOS support in PWLIB
+  --disable-qos           disable QOS support
   --disable-sdl           disable SDL support in PWLIB
   --disable-video         disable non-plugin video device support in PWLIB
   --enable-shm-video	  enable shared memory video devices (off by default)
@@ -6216,7 +6216,7 @@ if test "${enable_ipv6+set}" = set; then
 fi;
 
 if test "${enable_ipv6}z" = "z" ; then
-  enable_ipv6=$default_tts
+  enable_ipv6=yes
 fi
 
 HAS_IPV6=
@@ -6345,16 +6345,14 @@ fi
 # Check whether --enable-qos or --disable-qos was given.
 if test "${enable_qos+set}" = set; then
   enableval="$enable_qos"
-  qos=$enableval
+
 fi;
 
-if test "$qos" = "no" ; then
+if test "${enable_qos}z" = "z" ; then
+  enable_qos=$default_qos
+fi
 
-cat >>confdefs.h <<\_ACEOF
-#define P_HAS_QOS 0
-_ACEOF
-
-else
+if test "$enable_qos" != "no" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_HAS_QOS 1
