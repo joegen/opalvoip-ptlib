@@ -449,6 +449,8 @@ default_jabber=yes
 default_configfile=yes
 default_alsa=yes
 default_oss=yes
+default_ipv6=yes
+default_qos=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -481,6 +483,8 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_configfile=no
   default_alsa=yes
   default_oss=yes
+  default_ipv6=yes
+  default_qos=yes
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -512,6 +516,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_configfile=no
   default_alsa=yes
   default_oss=no
+  default_ipv6=no
+  default_qos=no
 fi
 
 
@@ -1207,7 +1213,7 @@ else
   dnl SOAP
 
   AC_ARG_ENABLE(soap,
-         [  --disable-soap         disable SOAP support])
+         [  --disable-soap          disable SOAP support])
 
   if test "${enable_soap}z" = "z" ; then
     enable_soap=$default_soap
@@ -1260,12 +1266,16 @@ dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
 
 AC_ARG_ENABLE(ipv6,
-       [  --disable-ipv6          disable IPV6 support],
-       ipv6=$enableval)
+       [  --disable-ipv6          disable IPV6 support])
 
-if test "$ipv6" = "no" ; then
-  AC_DEFINE(P_HAS_IPV6, 0)
-  AC_SUBST(HAS_IPV6, 0)
+if test "${enable_ipv6}z" = "z" ; then
+  enable_ipv6=$default_ipv6
+fi
+
+HAS_IPV6=
+
+if test "$enable_ipv6" = "no" ; then
+  AC_MSG_NOTICE(IPV6 disabled)
 else
   AC_MSG_CHECKING(for IPv6 support)
   AC_TRY_COMPILE([#include <sys/types.h>
@@ -1282,9 +1292,11 @@ else
     else
       AC_MSG_RESULT(yes)
       AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+      HAS_IPV6=1
     fi
   fi
 fi
+AC_SUBST(HAS_IPV6)
 
 dnl ########################################################################
 dnl look for QoS functions
@@ -1296,12 +1308,13 @@ dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 
 AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support],
-       qos=$enableval)
+       [  --disable-qos           disable QOS support])
 
-if test "$qos" = "no" ; then
-  AC_DEFINE([P_HAS_QOS], [0], [No QOS])
-else
+if test "${enable_qos}z" = "z" ; then
+  enable_qos=$default_qos
+fi
+
+if test "$enable_qos" != "no" ; then
   AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
 fi
 
