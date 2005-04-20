@@ -858,7 +858,7 @@ Optional Features:
   --disable-vxml          disable VXML support
   --disable-jabber        disable Jabber support
   --disable-xmlrpc        disable XMLRPC support
-  --disable-soap         disable SOAP support
+  --disable-soap          disable SOAP support
   --disable-tts           disable Text-ToSpeech support (default disabled)
   --disable-ipv6          disable IPV6 support
   --disable-qos           disable QOS support
@@ -2987,6 +2987,8 @@ default_jabber=yes
 default_configfile=yes
 default_alsa=yes
 default_oss=yes
+default_ipv6=yes
+default_qos=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -3019,6 +3021,8 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_configfile=no
   default_alsa=yes
   default_oss=yes
+  default_ipv6=yes
+  default_qos=yes
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -3050,6 +3054,8 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_configfile=no
   default_alsa=yes
   default_oss=no
+  default_ipv6=no
+  default_qos=no
 fi
 
 
@@ -6578,16 +6584,18 @@ fi
 # Check whether --enable-ipv6 or --disable-ipv6 was given.
 if test "${enable_ipv6+set}" = set; then
   enableval="$enable_ipv6"
-  ipv6=$enableval
+
 fi;
 
-if test "$ipv6" = "no" ; then
-  cat >>confdefs.h <<\_ACEOF
-#define P_HAS_IPV6 0
-_ACEOF
+if test "${enable_ipv6}z" = "z" ; then
+  enable_ipv6=$default_ipv6
+fi
 
-  HAS_IPV6=0
+HAS_IPV6=
 
+if test "$enable_ipv6" = "no" ; then
+  { echo "$as_me:$LINENO: IPV6 disabled" >&5
+echo "$as_me: IPV6 disabled" >&6;}
 else
   echo "$as_me:$LINENO: checking for IPv6 support" >&5
 echo $ECHO_N "checking for IPv6 support... $ECHO_C" >&6
@@ -6698,25 +6706,25 @@ cat >>confdefs.h <<\_ACEOF
 #define P_HAS_IPV6 1
 _ACEOF
 
+      HAS_IPV6=1
     fi
   fi
 fi
 
 
 
+
 # Check whether --enable-qos or --disable-qos was given.
 if test "${enable_qos+set}" = set; then
   enableval="$enable_qos"
-  qos=$enableval
+
 fi;
 
-if test "$qos" = "no" ; then
+if test "${enable_qos}z" = "z" ; then
+  enable_qos=$default_qos
+fi
 
-cat >>confdefs.h <<\_ACEOF
-#define P_HAS_QOS 0
-_ACEOF
-
-else
+if test "$enable_qos" != "no" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_HAS_QOS 1
