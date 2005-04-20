@@ -1002,7 +1002,7 @@ AC_ARG_ENABLE(ipv6,
        [  --disable-ipv6          disable IPV6 support])
 
 if test "${enable_ipv6}z" = "z" ; then
-  enable_ipv6=$default_tts
+  enable_ipv6=yes
 fi
 
 HAS_IPV6=
@@ -1041,12 +1041,13 @@ dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 
 AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support in PWLIB],
-       qos=$enableval)
+       [  --disable-qos           disable QOS support])
 
-if test "$qos" = "no" ; then
-  AC_DEFINE([P_HAS_QOS], [0], [No QOS])
-else
+if test "${enable_qos}z" = "z" ; then
+  enable_qos=$default_qos
+fi
+
+if test "$enable_qos" != "no" ; then
   AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
 fi
 
