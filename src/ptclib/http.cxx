@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.115  2005/04/20 05:19:48  csoutheren
+ * Patch 1185334. Ensure SIP URLs correctly store status of port
+ * Thanks to Ted Szoczei
+ *
  * Revision 1.114  2005/01/16 20:36:48  csoutheren
  * Changed URLS to put IP address in [] if contains a ":"
  *
@@ -500,6 +504,7 @@ PURL::PURL()
   : //scheme(SchemeTable[DEFAULT_SCHEME].name),
     scheme(DEFAULT_SCHEME),
     port(0),
+    portSupplied (FALSE),
     relativePath(FALSE)
 {
 }
@@ -521,6 +526,7 @@ PURL::PURL(const PFilePath & filePath)
   : //scheme(SchemeTable[FILE_SCHEME].name),
     scheme(FILE_SCHEME),
     port(0),
+    portSupplied (FALSE),
     relativePath(FALSE)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
@@ -665,6 +671,7 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   password.MakeEmpty();
   hostname.MakeEmpty();
   port = 0;
+  portSupplied = FALSE;
   relativePath = FALSE;
   pathStr.MakeEmpty();
   path.SetSize(0);
@@ -780,6 +787,7 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
     pos = hostname.Find(':', pos);
     if (pos != P_MAX_INDEX) {
       port = (WORD)hostname.Mid(pos+1).AsUnsigned();
+      portSupplied = TRUE;
       hostname.Delete(pos, P_MAX_INDEX);
     }
 
@@ -867,6 +875,7 @@ BOOL PURL::LegacyParse(const PString & _url, const PURLLegacyScheme * schemeInfo
       else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
+        portSupplied = TRUE;
       }
 
       if (hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
@@ -1004,7 +1013,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     }
 
     if (schemeInfo->defaultPort != 0) {
-      if (port != schemeInfo->defaultPort)
+      if (port != schemeInfo->defaultPort || portSupplied)
         str << ':' << port;
     }
 
