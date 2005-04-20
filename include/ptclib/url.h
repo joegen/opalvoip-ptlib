@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.33  2005/04/20 05:19:48  csoutheren
+ * Patch 1185334. Ensure SIP URLs correctly store status of port
+ * Thanks to Ted Szoczei
+ *
  * Revision 1.32  2005/01/04 07:44:02  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -396,6 +400,7 @@ class PURL : public PObject
     PString password;
     PCaselessString hostname;
     WORD port;
+    BOOL portSupplied;          /// port was supplied in string input
     BOOL relativePath;
     PString pathStr;
     PStringArray path;
