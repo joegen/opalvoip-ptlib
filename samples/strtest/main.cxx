@@ -1,6 +1,11 @@
 #include <ptlib.h>
 #include <string>
 
+////////////////////////////////////////////////
+//
+// test #1 - string concurrency test
+//
+
 #define SPECIALNAME     "openH323"
 #define	COUNT_MAX	2000000
 
@@ -61,16 +66,6 @@ class StringHolder
 
 };
 
-class StringTest : public PProcess
-{
-  PCLASSINFO(StringTest, PProcess)
-  public:
-    void Main();
-};
-
-
-PCREATE_PROCESS(StringTest);
-
 struct PStringConv : public StringConv<PString> {
   static const char * ToConstCharStar(const PString & s) { return (const char *)s; }
 };
@@ -79,8 +74,13 @@ struct StdStringConv : public StringConv<std::string> {
   static const char * ToConstCharStar(const std::string & s) { return s.c_str(); }
 };
 
-void StringTest::Main()
+void Test1()
 {
+  /////////////////////
+  //
+  // test #1 - string concurrency test
+  //
+
   // uncomment this to test std::string
   //StringHolder<std::string, StdStringConv> holder(SPECIALNAME);
   
@@ -95,4 +95,66 @@ void StringTest::Main()
   finishFlag = TRUE;
   thread->WaitForTermination(9000);
   cerr << "finish" << endl;
+}
+
+////////////////////////////////////////////////
+//
+// test #2 - SIP URL test
+//
+
+#include <ptclib/url.h>
+
+void Test2()
+{
+  const char * urls[] = {
+    "sip:12345678@voxgratia.org",
+    "sip:12345678:5060@voxgratia.org",
+    "sip:12345678:1234@voxgratia.org",
+    NULL
+  };
+
+  const char ** url = urls;
+  while (*url != NULL) {
+    PURL sipURL(*url);
+    cout << "SIP URL : original = " << *url << ", URL = " << sipURL << endl;
+    ++url;
+  }
+}
+
+////////////////////////////////////////////////
+//
+// main
+//
+
+class StringTest : public PProcess
+{
+  PCLASSINFO(StringTest, PProcess)
+  public:
+    void Main();
+};
+
+PCREATE_PROCESS(StringTest);
+
+void StringTest::Main()
+{
+  PArgList & args = GetArguments();
+
+  if (args.GetCount() < 1) {
+    cout << "usage: strtest num [args...]\n"
+         << "\n"
+         << "where num is one of the following tests\n"
+         << "\n"
+         << "    1     string concurrency test\n"
+         << "    2     SIP URL test\n"
+         << endl;
+    return;
+  }
+
+  switch (args[0].AsInteger()) {
+    case 1:   Test1(); return;
+    case 2:   Test2(); return;
+    default:  break;
+  }
+
+  cout << "error: unknown test number " << args[0] << endl;
 }
