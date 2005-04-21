@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.11  2005/04/21 05:27:04  csoutheren
+ * Prevent weird deadlocks when using record-only or play-only sound channels
+ *
  * Revision 1.10  2005/01/04 07:44:04  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -1449,12 +1452,14 @@ BOOL PSoundChannelWin32::Abort()
 
   PWaitAndSignal mutex(bufferMutex);
 
-  for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-    while (buffers[i].Release() == WAVERR_STILLPLAYING) {
-      if (hWaveOut != NULL)
-        waveOutReset(hWaveOut);
-      if (hWaveIn != NULL)
-        waveInReset(hWaveIn);
+  if (hWaveOut != NULL || hWaveIn != NULL) {
+    for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+      while (buffers[i].Release() == WAVERR_STILLPLAYING) {
+        if (hWaveOut != NULL)
+          waveOutReset(hWaveOut);
+        if (hWaveIn != NULL)
+          waveInReset(hWaveIn);
+      }
     }
   }
 
