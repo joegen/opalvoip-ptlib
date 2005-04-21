@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.56  2005/04/21 05:28:58  csoutheren
+ * Fixed assert if recordable does not queue properly
+ *
  * Revision 1.55  2005/03/19 02:52:54  csoutheren
  * Fix warnings from gcc 4.1-20050313 shapshot
  *
@@ -2579,16 +2582,17 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
           PVXMLPlayable * qItem = (PVXMLPlayable *)playQueue.GetAt(0);
           if (qItem == NULL)
             delay = 0;
-          else
-            delay = qItem->GetDelay();
+          else {
+              delay = qItem->GetDelay();
 
-          // if the repeat count is non-zero, then repeat entry
-          if (qItem->GetRepeat() > 1) {
-            qItem->SetRepeat(qItem->GetRepeat()-1);
-            qItem->OnRepeat(*this);
-          } else {
-            qItem->OnStop();
-            delete playQueue.Dequeue();
+            // if the repeat count is non-zero, then repeat entry
+            if (qItem->GetRepeat() > 1) {
+              qItem->SetRepeat(qItem->GetRepeat()-1);
+              qItem->OnRepeat(*this);
+            } else {
+              qItem->OnStop();
+              delete playQueue.Dequeue();
+            }
           }
         }
 
