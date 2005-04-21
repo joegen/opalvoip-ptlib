@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.38  2005/04/21 05:27:58  csoutheren
+ * Changed default value for OnFrame
+ *
  * Revision 1.37  2005/03/19 02:52:53  csoutheren
  * Fix warnings from gcc 4.1-20050313 shapshot
  *
@@ -488,7 +491,7 @@ class PVXMLRecordable : public PObject
 
     virtual void OnStart() { }
 
-    virtual BOOL OnFrame(BOOL /*isSilence*/) { return TRUE; }
+    virtual BOOL OnFrame(BOOL /*isSilence*/) { return FALSE; }
 
     virtual void OnStop() { }
 
