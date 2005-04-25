@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.16.4.1  2005/04/25 13:16:25  shorne
+ * Added ability to alter plugin suffix
+ *
  * Revision 1.16  2004/08/05 03:45:35  csoutheren
  * Fixed problems with plugin suffix not being propagated to sudirectories
  *
@@ -96,6 +99,7 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
 //
 //  Manager for plugins
 //
+#define PWPLUGIN_SUFFIX       "_pwplugin"
 
 class PPluginManager : public PObject
 {
@@ -104,7 +108,7 @@ class PPluginManager : public PObject
   public:
     // functions to load/unload a dynamic plugin 
     BOOL LoadPlugin (const PString & fileName);
-    void LoadPluginDirectory (const PDirectory & dir);
+    void LoadPluginDirectory (const PDirectory & dir, PString suffix = PWPLUGIN_SUFFIX);
   
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
