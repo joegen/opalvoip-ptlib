@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.187.2.1  2005/04/25 13:42:28  shorne
+ * Extended QoS support for per-call negotiation
+ *
  * Revision 1.187  2005/03/22 07:29:30  csoutheren
  * Fixed problem where PStrings sometimes get case into
  * PIPSocket::Address when outputting to an ostream
@@ -2829,6 +2832,15 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
+#pragma data_seg(".QoS")    // Define the Segment
+BOOL disableQoS = TRUE;
+#pragma data_seg()
+#pragma comment(linker, "/section:.QoS,rws") // link it
+
+void PUDPSocket::EnableQoS()
+{
+	disableQoS = FALSE;
+}
 
 PUDPSocket::PUDPSocket(WORD newPort)
 {
@@ -2872,6 +2884,50 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
   Connect(address);
 }
 
+BOOL PUDPSocket::SupportQoS(PIPSocket::Address address)
+{
+#ifdef _WIN32
+#if P_HAS_QOS
+
+	if (disableQoS)
+		return FALSE;
+
+	if(!address.IsValid())
+		return FALSE;
+
+  // Check to See if OS supportive
+    OSVERSIONINFO versInfo;
+    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (!(GetVersionEx(&versInfo)))
+        return FALSE;
+    else
+    {
+        if (versInfo.dwMajorVersion < 5)
+            return FALSE;		  // Not Supported in Windows
+
+        if (versInfo.dwMajorVersion == 5 &&
+            versInfo.dwMinorVersion == 0)
+            return FALSE;         //Windows 2000 does not always support QOS_DESTADDR
+    }
+
+  // Need to put in a check to see if the NIC has 802.1p packet priority support 
+  // This Requires access to the NIC driver and requires Windows DDK. To Be Done Sometime...
+  
+  // Get the name of the required NIC to check whether it supports 802.1p
+	PString NICname =  PIPSocket::GetInterface(address);
+
+  // For Now Assume it can.
+	return TRUE;
+	
+#else
+	return FALSE;
+#endif	// P_HAS_QOS
+#else
+	return FALSE;
+#endif	// _WIN32
+}
+
 BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
 {
     if (qos==NULL)
@@ -2881,6 +2937,12 @@ BOOL PUDPSocket::ModifyQoSSpec(PQoS * qos)
     return TRUE;
 }
 
+#if P_HAS_QOS
+PQoS & PUDPSocket::GetQoSSpec()
+{
+	return qosSpec;
+}
+#endif
 
 BOOL PUDPSocket::ApplyQoS()
 {
@@ -2916,6 +2978,9 @@ BOOL PUDPSocket::ApplyQoS()
 
 #ifdef _WIN32
 #if P_HAS_QOS
+
+    if (disableQoS)
+          return FALSE;
 
     BOOL usesetsockopt = FALSE;
 
