@@ -203,6 +203,10 @@ SOURCE=..\..\ptclib\pldap.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=.\PODBC.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\psasl.cxx
 # End Source File
 # Begin Source File
