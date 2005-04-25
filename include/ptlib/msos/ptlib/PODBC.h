@@ -27,6 +27,10 @@
  *
  * Contributor(s): ______________________________________.
  *
+ * $Log: PODBC.h,v $
+ * Revision 1.1.2.2  2005/04/25 13:06:34  shorne
+ * Fixed comments
+ *
  *
 */
 
