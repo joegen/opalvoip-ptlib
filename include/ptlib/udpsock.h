@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.23.10.1  2005/04/25 13:39:28  shorne
+ * Extended QoS support for per-call negotiation
+ *
  * Revision 1.23  2003/10/27 04:06:13  csoutheren
  * Added code to allow compilation of new QoS code on Unix
  *
@@ -191,6 +194,11 @@ class PUDPSocket : public PIPDatagramSocket
       PQoS * qos            /// QoS specification to use
     );
 
+#if P_HAS_QOS
+    /** Get the QOS object for the socket.
+	  */
+	virtual PQoS & GetQoSSpec();
+#endif
     /** Get the address of the sender in the last connectionless Read().
         Note that thsi only applies to the Read() and not the ReadFrom()
         function.
@@ -199,6 +207,14 @@ class PUDPSocket : public PIPDatagramSocket
       Address & address,    /// IP address to send packets.
       WORD & port           /// Port to send packets.
     );
+
+	/** Check to See if the socket will support QoS on the given local Address
+	  */
+	static BOOL SupportQoS(PIPSocket::Address address);
+	
+	/** Manually Enable QoS Support
+	  */
+	static void EnableQoS();
   //@}
 
   protected:
