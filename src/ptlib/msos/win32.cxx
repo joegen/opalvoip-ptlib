@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.146.2.1  2005/04/25 13:12:39  shorne
+ * Fixed OSConfigDir for win32/NT/XP
+ *
  * Revision 1.146  2005/02/02 23:21:16  csoutheren
  * Fixed problem with race condition in HousekeepingThread
  * Thanks to an idea from Auri Vizgaitis
@@ -1654,7 +1657,7 @@ PDirectory PProcess::GetOSConfigDir()
 
   PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
   PDirectory sysdir = dir;
-  return sysdir + "drivers\\etc";
+  return sysdir;  //+ "drivers\\etc";
 #endif
 }
 
