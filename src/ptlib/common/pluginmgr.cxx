@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.27.2.1  2005/04/25 13:14:29  shorne
+ * Added ability to alter plugin suffix
+ *
  * Revision 1.27  2005/01/11 06:57:15  csoutheren
  * Fixed namespace collisions with plugin starup factories
  *
@@ -118,13 +121,12 @@
 
 #define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
 
-#define PWPLUGIN_SUFFIX       "_pwplugin"
 
 //////////////////////////////////////////////////////
 
-void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
+void PPluginManager::LoadPluginDirectory (const PDirectory & dir, PString suffix)
 { 
-  PLoadPluginDirectory<PPluginManager>(*this, dir, PWPLUGIN_SUFFIX); 
+  PLoadPluginDirectory<PPluginManager>(*this, dir, suffix); 
 }
 
 PStringArray PPluginManager::GetPluginDirs()
