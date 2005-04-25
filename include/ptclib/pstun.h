@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.9.4.1  2005/04/25 13:21:36  shorne
+ * Add Support for other NAT methods
+ *
  * Revision 1.9  2004/11/25 07:23:46  csoutheren
  * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
  *
@@ -62,6 +65,7 @@
 #endif
 
 #include <ptlib.h>
+#include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
 
 
@@ -90,9 +94,9 @@ class PSTUNUDPSocket : public PUDPSocket
 
 /**STUN client.
   */
-class PSTUNClient : public PObject
+class PSTUNClient : public PNatMethod
 {
-  PCLASSINFO(PSTUNClient, PObject);
+  PCLASSINFO(PSTUNClient, PNatMethod);
   public:
     enum {
       DefaultPort = 3478
@@ -136,24 +140,6 @@ class PSTUNClient : public PObject
       const PIPSocket::Address & serverAddress,
       WORD serverPort = 0
     );
-
-    /**Set the port ranges to be used on local machine.
-       Note that the ports used on the NAT router may not be the same unless
-       some form of port forwarding is present.
-
-       If the port base is zero then standard operating system port allocation
-       method is used.
-
-       If the max port is zero then it will be automatically set to the port
-       base + 99.
-      */
-    void SetPortRanges(
-      WORD portBase,          /// Single socket port number base
-      WORD portMax = 0,       /// Single socket port number max
-      WORD portPairBase = 0,  /// Socket pair port number base
-      WORD portPairMax = 0    /// Socket pair port number max
-    );
-
 
     enum NatTypes {
       UnknownNat,
@@ -204,7 +190,7 @@ class PSTUNClient : public PObject
        A cached address is returned provided it is no older than the time
        specified.
       */
-    BOOL GetExternalAddress(
+    virtual BOOL GetExternalAddress(
       PIPSocket::Address & externalAddress, // External address of router
       const PTimeInterval & maxAge = 1000   // Maximum age for caching
     );
@@ -238,10 +224,20 @@ class PSTUNClient : public PObject
        The socket pointers are set to NULL if the function fails and returns
        FALSE.
       */
-    BOOL CreateSocketPair(
+    virtual BOOL CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2
     );
+
+	 /**  isAvailable.
+		Returns whether the Nat Method is ready and available in
+		assisting in NAT Traversal. The principal is this function is
+		to allow the EP to detect various methods and if a method
+		is detected then this method is available for NAT traversal.
+		The availablity of the STUN Method is dependant on the Type
+		of NAT being used.
+	 */
+    virtual BOOL isAvailable();
 
   protected:
     void Construct();
@@ -249,12 +245,6 @@ class PSTUNClient : public PObject
     PIPSocket::Address serverAddress;
     WORD               serverPort;
 
-    struct PortInfo {
-      PMutex mutex;
-      WORD   basePort;
-      WORD   maxPort;
-      WORD   currentPort;
-    } singlePortInfo, pairedPortInfo;
     bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const;
 
     int  numSocketsForPairing;
