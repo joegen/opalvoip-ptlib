@@ -24,6 +24,10 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.22  2005/04/27 12:08:11  csoutheren
+ * Added support for res_minit for thread-safe resolver access
+ * Added mutex when res_minit not available
+ *
  * Revision 1.21  2004/11/15 23:47:18  csoutheren
  * Fixed problem with empty SRV names
  *
@@ -236,6 +240,16 @@ void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
   }
 }
 
+#if ! P_HAS_RES_NINIT
+
+static PMutex & GetDNSMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
+#endif
+
 DNS_STATUS DnsQuery_A(const char * service,
 		      WORD requestType,
 		      DWORD options,
@@ -248,14 +262,24 @@ DNS_STATUS DnsQuery_A(const char * service,
 
   *results = NULL;
 
+#if P_HAS_RES_NINIT
+  res_ninit(&_res);
+#else
   res_init();
+  GetDNSMutex().Wait();
+#endif
 
   union {
     HEADER hdr;
     BYTE buf[PACKETSZ];
   } reply;
 
+#if P_HAS_RES_NINIT
+  int replyLen = res_nsearch(&_res, service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
+#else
   int replyLen = res_search(service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
+  GetDNSMutex().Signal();
+#endif
 
   if (replyLen < 1)
     return -1;
