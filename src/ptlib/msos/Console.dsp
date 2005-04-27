@@ -573,6 +573,10 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\pipechan.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\include\ptlib\msos\ptlib\PODBC.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\include\ptlib\msos\ptlib\pprocess.h
 # End Source File
 # Begin Source File
@@ -640,10 +644,6 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\udpsock.h
 SOURCE=..\..\..\include\ptlib\msos\ptlib\videoio.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=..\..\..\include\ptlib\msos\ptlib\PODBC.h
-# End Source File
 # Begin Source File
 
 SOURCE=..\..\..\include\ptbuildopts.h
