@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.40  2005/04/27 12:08:11  csoutheren
+ * Added support for res_minit for thread-safe resolver access
+ * Added mutex when res_minit not available
+ *
  * Revision 1.39  2005/01/26 05:37:39  csoutheren
  * Added ability to remove config file support
  *
@@ -344,6 +348,7 @@
 //
 
 #undef P_DNS 
+#undef P_HAS_RES_NINIT
 
 #if defined(_MSC_VER) && P_DNS
 
