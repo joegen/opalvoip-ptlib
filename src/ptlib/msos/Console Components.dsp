@@ -203,7 +203,7 @@ SOURCE=..\..\ptclib\pldap.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=.\PODBC.cxx
+SOURCE=..\..\ptclib\pnat.cxx
 # End Source File
 # Begin Source File
 
@@ -394,6 +394,10 @@ SOURCE=..\..\..\include\ptclib\pils.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\pldap.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pnat.h
 # End Source File
 # Begin Source File
 
