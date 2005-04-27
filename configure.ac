@@ -794,10 +794,39 @@ HAS_RESOLVER=
 if test "$enable_resolver" = "no" ; then
   AC_MSG_NOTICE(DNS resolver disabled)
 else
-  AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+
+  AC_CHECK_FUNC(res_ninit, HAS_RES_NINIT)
+  if test "${HAS_RES_NINIT}z" != "z" ; then
+    AC_DEFINE(P_HAS_RES_NINIT)
+    HAS_RESOLVER=1
     RESOLVER_LIBS=""
-  else
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    AC_MSG_CHECKING([for res_ninit in -lresolv])
+    LIBS="-lresolv"
+    AC_COMPILE_IFELSE([[
+#include <netinet/in.h>
+#include <resolv.h>
+int main(int argc,char **argv){
+ res_state p; res_ninit(p);
+}]],HAS_RES_NINIT=1)
+    if test "${HAS_RES_NINIT}z" != "z" ; then
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(P_HAS_RES_NINIT)
+      HAS_RESOLVER=1
+      RESOLVER_LIBS="-lresolv"
+    fi
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    AC_CHECK_FUNC(res_search, HAS_RESOLVER=1)
+    if test "${HAS_RESOLVER}z" != "z" ; then
+      RESOLVER_LIBS=""
+    fi
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
     AC_MSG_CHECKING([for res_search in -lresolv])
     LIBS="-lresolv"
     AC_COMPILE_IFELSE([[
@@ -805,16 +834,16 @@ else
 #include <resolv.h>
 int main(int argc,char **argv){
  res_search (NULL, 0, 0, NULL, 0);
-}]],HAVE_RESOLVER=1)
-    if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+}]],HAS_RESOLVER=1)
+    if test "${HAS_RESOLVER:-unset}" != "unset" ; then
       AC_MSG_RESULT(yes)
       RESOLVER_LIBS="-lresolv"
     else
-      AC_SEARCH_LIBS(__res_search, resolv, HAVE_RESOLVER=1)
+      AC_SEARCH_LIBS(__res_search, resolv, HAS_RESOLVER=1)
     fi
   fi
 
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${HAS_RESOLVER}z" != "z" ; then
     AC_DEFINE(P_DNS, 1, "resolver libraries found")
     HAS_RESOLVER=1
   fi
@@ -914,7 +943,7 @@ HAS_OPENLDAP=
 if test "$enable_openldap" = "no" ; then
   AC_MSG_NOTICE(OpenLDAP disabled)
 else 
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${HAS_RESOLVER:-unset}" != "unset" ; then
     AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
   
     dnl posix4 is required by libldap_r on Solaris
@@ -1879,7 +1908,7 @@ dnl ########################################################################
 dnl output make directives
 
 dnl resolver needs to be at the end
-if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+if test "${HAS_RESOLVER:-unset}" != "unset" ; then
   if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
     ENDLDLIBS="$ENDLDLIBS $RESOLVER_LIBS"
   fi
