@@ -4928,7 +4928,165 @@ if test "$enable_resolver" = "no" ; then
   { echo "$as_me:$LINENO: DNS resolver disabled" >&5
 echo "$as_me: DNS resolver disabled" >&6;}
 else
-  echo "$as_me:$LINENO: checking for res_search" >&5
+
+  echo "$as_me:$LINENO: checking for res_ninit" >&5
+echo $ECHO_N "checking for res_ninit... $ECHO_C" >&6
+if test "${ac_cv_func_res_ninit+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+/* Define res_ninit to an innocuous variant, in case <limits.h> declares res_ninit.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define res_ninit innocuous_res_ninit
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char res_ninit (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef res_ninit
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char res_ninit ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_res_ninit) || defined (__stub___res_ninit)
+choke me
+#else
+char (*f) () = res_ninit;
+#endif
+#ifdef __cplusplus
+}
+#endif
+
+int
+main ()
+{
+return f != res_ninit;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_func_res_ninit=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_func_res_ninit=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_func_res_ninit" >&5
+echo "${ECHO_T}$ac_cv_func_res_ninit" >&6
+if test $ac_cv_func_res_ninit = yes; then
+  HAS_RES_NINIT
+fi
+
+  if test "${HAS_RES_NINIT}z" != "z" ; then
+    cat >>confdefs.h <<\_ACEOF
+#define P_HAS_RES_NINIT 1
+_ACEOF
+
+    HAS_RESOLVER=1
+    RESOLVER_LIBS=""
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    echo "$as_me:$LINENO: checking for res_ninit in -lresolv" >&5
+echo $ECHO_N "checking for res_ninit in -lresolv... $ECHO_C" >&6
+    LIBS="-lresolv"
+    cat >conftest.$ac_ext <<_ACEOF
+
+#include <netinet/in.h>
+#include <resolv.h>
+int main(int argc,char **argv){
+ res_state p; res_ninit(p);
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  HAS_RES_NINIT=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+    if test "${HAS_RES_NINIT}z" != "z" ; then
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+      cat >>confdefs.h <<\_ACEOF
+#define P_HAS_RES_NINIT 1
+_ACEOF
+
+      HAS_RESOLVER=1
+      RESOLVER_LIBS="-lresolv"
+    fi
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    echo "$as_me:$LINENO: checking for res_search" >&5
 echo $ECHO_N "checking for res_search... $ECHO_C" >&6
 if test "${ac_cv_func_res_search+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5019,12 +5177,15 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_func_res_search" >&5
 echo "${ECHO_T}$ac_cv_func_res_search" >&6
 if test $ac_cv_func_res_search = yes; then
-  HAVE_RESOLVER=1
+  HAS_RESOLVER=1
 fi
 
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-    RESOLVER_LIBS=""
-  else
+    if test "${HAS_RESOLVER}z" != "z" ; then
+      RESOLVER_LIBS=""
+    fi
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
     echo "$as_me:$LINENO: checking for res_search in -lresolv" >&5
 echo $ECHO_N "checking for res_search in -lresolv... $ECHO_C" >&6
     LIBS="-lresolv"
@@ -5058,14 +5219,14 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  HAVE_RESOLVER=1
+  HAS_RESOLVER=1
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-    if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    if test "${HAS_RESOLVER:-unset}" != "unset" ; then
       echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
       RESOLVER_LIBS="-lresolv"
@@ -5193,13 +5354,13 @@ echo "$as_me:$LINENO: result: $ac_cv_search___res_search" >&5
 echo "${ECHO_T}$ac_cv_search___res_search" >&6
 if test "$ac_cv_search___res_search" != no; then
   test "$ac_cv_search___res_search" = "none required" || LIBS="$ac_cv_search___res_search $LIBS"
-  HAVE_RESOLVER=1
+  HAS_RESOLVER=1
 fi
 
     fi
   fi
 
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${HAS_RESOLVER}z" != "z" ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_DNS 1
@@ -5503,7 +5664,7 @@ if test "$enable_openldap" = "no" ; then
   { echo "$as_me:$LINENO: OpenLDAP disabled" >&5
 echo "$as_me: OpenLDAP disabled" >&6;}
 else
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${HAS_RESOLVER:-unset}" != "unset" ; then
 
 for ac_header in ldap.h
 do
@@ -8133,7 +8294,7 @@ fi
 
 
 
-if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+if test "${HAS_RESOLVER:-unset}" != "unset" ; then
   if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
     ENDLDLIBS="$ENDLDLIBS $RESOLVER_LIBS"
   fi
