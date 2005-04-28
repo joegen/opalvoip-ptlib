@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.168  2005/04/28 04:48:41  csoutheren
+ * Changed PContainer::SetSize to not unique a container when the size is unchanged
+ *
  * Revision 1.167  2005/01/09 06:35:05  rjongbloed
  * Fixed ability to make Clone() or MakeUnique() of a sorted list.
  *
@@ -922,6 +925,9 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   PEnterAndLeave m(reference->critSec);
 #endif
 
+  if (newsizebytes == oldsizebytes)
+    return TRUE;
+
   if (!IsUnique()) {
 
     if (newsizebytes == 0)
@@ -938,9 +944,6 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
     reference = new Reference(newSize);
 
   } else {
-
-    if (newsizebytes == oldsizebytes)
-      return TRUE;
 
     if (theArray != NULL) {
       if (newsizebytes == 0) {
