@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.169  2005/05/02 09:02:35  csoutheren
+ * Fixed previous fix to contain.cxx which broke PString::MakeUnique
+ *
  * Revision 1.168  2005/04/28 04:48:41  csoutheren
  * Changed PContainer::SetSize to not unique a container when the size is unchanged
  *
@@ -911,7 +914,7 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 }
 
 
-BOOL PAbstractArray::SetSize(PINDEX newSize)
+BOOL PAbstractArray::SetSize(PINDEX newSize, BOOL force)
 {
   if (newSize < 0)
     newSize = 0;
@@ -919,14 +922,14 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
 
+  if (!force && (newsizebytes == oldsizebytes))
+    return TRUE;
+
   char * newArray;
 
 #if PCONTAINER_USES_CRITSEC
   PEnterAndLeave m(reference->critSec);
 #endif
-
-  if (newsizebytes == oldsizebytes)
-    return TRUE;
 
   if (!IsUnique()) {
 
@@ -978,7 +981,6 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   theArray = newArray;
   return TRUE;
 }
-
 
 void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 {
@@ -1607,12 +1609,11 @@ BOOL PString::IsEmpty() const
 BOOL PString::SetSize(PINDEX newSize)
 {
   return PAbstractArray::SetSize(newSize);
+
 #if 0
   if (IsUnique())
     return PAbstractArray::SetSize(newSize);
 
-  PINDEX newsizebytes = elementSize*newSize;
-  PINDEX oldsizebytes = elementSize*GetSize();
   char * newArray;
 
   if (newsizebytes == 0)
@@ -1646,7 +1647,7 @@ BOOL PString::MakeUnique()
   if (IsUnique())
     return TRUE;
 
-  SetSize(GetSize());
+  PAbstractArray::SetSize(GetSize(), TRUE);
   return FALSE;
 }
 
