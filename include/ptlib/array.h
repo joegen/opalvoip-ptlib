@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.32  2005/05/02 09:02:35  csoutheren
+ * Fixed previous fix to contain.cxx which broke PString::MakeUnique
+ *
  * Revision 1.31  2004/05/13 02:07:14  dereksmithies
  * Fixes, so it works with doc++
  *
@@ -266,7 +269,8 @@ class PAbstractArray : public PContainer
      */
     virtual BOOL SetSize(
       PINDEX newSize  /// New size of the array in elements.
-    );
+    )
+    { return SetSize(newSize, FALSE); }
   //@}
 
   /**@name New functions for class */
@@ -319,6 +323,8 @@ class PAbstractArray : public PContainer
   //@}
 
   protected:
+    BOOL SetSize(PINDEX newSize, BOOL force);
+
     virtual void PrintElementOn(
       ostream & stream,
       PINDEX index
