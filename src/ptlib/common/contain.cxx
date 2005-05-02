@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.170  2005/05/02 13:10:24  csoutheren
+ * Fixed problem with PString::SetMinSize not always uniquing the string
+ *
  * Revision 1.169  2005/05/02 09:02:35  csoutheren
  * Fixed previous fix to contain.cxx which broke PString::MakeUnique
  *
@@ -1608,7 +1611,7 @@ BOOL PString::IsEmpty() const
 
 BOOL PString::SetSize(PINDEX newSize)
 {
-  return PAbstractArray::SetSize(newSize);
+  return PAbstractArray::SetSize(newSize, TRUE);
 
 #if 0
   if (IsUnique())
