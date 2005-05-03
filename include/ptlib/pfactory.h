@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.21  2005/05/03 11:58:45  csoutheren
+ * Fixed various problems reported by valgrind
+ * Thanks to Paul Cadach
+ *
  * Revision 1.20  2005/01/04 07:44:02  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -214,7 +218,8 @@ class PFactory : PFactoryBase
             deleteSingleton(false)
         { }
         WorkerBase(Abstract_T * instance)
-          : isSingleton(true),
+          : isDynamic(true),
+            isSingleton(true),
             singletonInstance(instance),
             deleteSingleton(true)
         { }
