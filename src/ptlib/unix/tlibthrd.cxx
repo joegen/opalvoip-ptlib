@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.138  2005/05/03 11:58:46  csoutheren
+ * Fixed various problems reported by valgrind
+ * Thanks to Paul Cadach
+ *
  * Revision 1.137  2005/01/21 21:25:19  csoutheren
  * Removed incorrect return in PThread::WaitForTermination
  *
@@ -605,7 +609,7 @@ void PProcess::SignalTimerChange()
 #endif
   }
 
-  BYTE ch;
+  static BYTE ch = 0;
   write(timerChangePipe[1], &ch, 1);
 }
 
@@ -711,6 +715,8 @@ void PThread::InitialiseProcessThread()
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
+
+  PX_firstTimeStart = FALSE;
 
   traceBlockIndentLevel = 0;
 }
@@ -1378,7 +1384,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 
 void PThread::PXAbortBlock() const
 {
-  BYTE ch;
+  static BYTE ch = 0;
   ::write(unblockPipe[1], &ch, 1);
   PTRACE(6, "PWLib\tUnblocking I/O fd=" << unblockPipe[0] << " thread=" << GetThreadName());
 }
