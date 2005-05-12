@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.58  2005/05/12 13:40:45  csoutheren
+ * Fixed locking problems with currentPLayItem optimisation
+ *
  * Revision 1.57  2005/05/12 05:28:36  csoutheren
  * Optimised read loop and fixed problems with playing repeated continuous tones
  *
@@ -2577,6 +2580,8 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
       // try and read data from the underlying channel
       if (GetBaseReadChannel() != NULL) {
 
+        PWaitAndSignal m(queueMutex);
+
         // see if the item needs to repeat
         PAssert(currentPlayItem != NULL, "current VXML play item disappeared");
 
@@ -2731,10 +2736,17 @@ void PVXMLChannel::FlushQueue()
     PDelayChannel::Close();
 
   PWaitAndSignal m(queueMutex);
+
   PVXMLPlayable * qItem;
   while ((qItem = playQueue.Dequeue()) != NULL) {
     qItem->OnStop();
     delete qItem;
+  }
+
+  if (currentPlayItem != NULL) {
+    currentPlayItem->OnStop();
+    delete currentPlayItem;
+    currentPlayItem = NULL;
   }
 }
 
