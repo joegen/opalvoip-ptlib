@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.57  2005/05/12 05:28:36  csoutheren
+ * Optimised read loop and fixed problems with playing repeated continuous tones
+ *
  * Revision 1.56  2005/04/21 05:28:58  csoutheren
  * Fixed assert if recordable does not queue properly
  *
@@ -268,6 +271,28 @@ static PString GetContentType(const PFilePath & fn)
   return PString::Empty();
 }
 
+
+///////////////////////////////////////////////////////////////
+
+BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLen)
+{
+  BYTE * buf = (BYTE *)_buf;
+  PINDEX len = origLen;
+
+  while (len > 0) {
+    BOOL stat = channel.ReadFrame(buf, len);
+    if (stat) 
+      return TRUE;
+    if ((repeat == 0) || !Rewind(channel.GetBaseReadChannel()))
+      return FALSE;
+    PINDEX readLen = channel.GetLastReadCount();
+    len -= readLen;
+    buf += readLen;
+  }
+
+  return TRUE;
+}
+
 ///////////////////////////////////////////////////////////////
 
 BOOL PVXMLPlayableFilename::Open(PVXMLChannel & chan, const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
@@ -310,6 +335,15 @@ void PVXMLPlayableFilename::OnStop()
     PTRACE(3, "PVXML\tDeleting file \"" << fn << "\"");
     PFile::Remove(fn); 
   }
+}
+
+BOOL PVXMLPlayableFilename::Rewind(PChannel * chan) 
+{ 
+  PFile * file = dynamic_cast<PFile *>(chan); 
+  if (file == NULL) 
+    return FALSE;
+
+  return file->SetPosition(0); 
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilename> vxmlPlayableFilenameFactory("File");
@@ -426,6 +460,14 @@ void PVXMLPlayableData::Play(PVXMLChannel & outgoingChannel)
   PMemoryFile * chan = new PMemoryFile(data);
   PTRACE(3, "PVXML\tPlaying " << data.GetSize() << " bytes");
   outgoingChannel.SetReadChannel(chan, TRUE);
+}
+
+BOOL PVXMLPlayableData::Rewind(PChannel * chan)
+{ 
+  PMemoryFile * memfile = dynamic_cast<PMemoryFile *>(chan); 
+  if (memfile == NULL) 
+    return FALSE; 
+  return memfile->SetPosition(0); 
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM Data");
@@ -2329,10 +2371,13 @@ PVXMLChannel::PVXMLChannel(unsigned _frameDelay, PINDEX frameSize)
   playing         = FALSE;
   silentCount     = 20;         // wait 20 frames before playing the OGM
   paused          = FALSE;
+
+  currentPlayItem = NULL;
 }
 
 BOOL PVXMLChannel::Open(PVXMLChannelInterface * _vxmlInterface)
 {
+  currentPlayItem = NULL;
   vxmlInterface = _vxmlInterface;
   return TRUE;
 }
@@ -2503,116 +2548,98 @@ BOOL PVXMLChannel::EndRecording()
 BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 {
   // assume we are returning silence
+  BOOL done         = FALSE;
   BOOL silenceStuff = FALSE;
-  BOOL delayDone = FALSE;
+  BOOL delayDone    = FALSE;
 
-  {
+  while (!done && !silenceStuff) {
+
     if (closed)
       return FALSE;
 
-    PWaitAndSignal m(channelReadMutex);
+    {
+      PWaitAndSignal m(channelReadMutex);
 
-    // if we are paused or in a delay, then do return silence
-    if (paused || delayTimer.IsRunning())
-      silenceStuff = TRUE;
-
-    // if we are returning silence frames, then decrement the frame count
-    // and contine returning silence
-    else if (silentCount > 0) {
-      silenceStuff = TRUE;
-      silentCount--;
-    }
-
-    // if underlying channel is open, then read from the channel
-    else if (GetBaseReadChannel() != NULL)
-      silenceStuff = FALSE;
-
-    // if underlying channel is not open, then see if there is anything in the queue
-    else {
-      PINDEX qSize;
-      {
-        PWaitAndSignal m(queueMutex);
-        qSize = playQueue.GetSize();
+      // if we are paused or in a delay, then do return silence
+      if (paused || delayTimer.IsRunning()) {
+        silenceStuff = TRUE;
+        break;
       }
 
-      // if nothing in queue, then return silence
-      if (qSize == 0) 
+      // if we are returning silence frames, then decrement the frame count
+      // and continue returning silence
+      if (silentCount > 0) {
+        silentCount--;
         silenceStuff = TRUE;
+        break;
+      }
 
-      // otherwise queue the next data item
-      else {
-        {
-          PWaitAndSignal m(queueMutex);
-          PVXMLPlayable * qItem = (PVXMLPlayable *)playQueue.GetAt(0);
-          qItem->OnStart();
-          qItem->Play(*this);
-          SetWriteTimeout(frameDelay);
+      // try and read data from the underlying channel
+      if (GetBaseReadChannel() != NULL) {
+
+        // see if the item needs to repeat
+        PAssert(currentPlayItem != NULL, "current VXML play item disappeared");
+
+        // if the read succeeds, we are done
+        if (currentPlayItem->ReadFrame(*this, buffer, amount)) {
+          totalData += amount;
+          delayDone = TRUE;
+          done = TRUE;
+          break;
+        } 
+
+        // if a timeout, send silence
+        if (GetErrorCode(LastReadError) == Timeout) {
+          silenceStuff = TRUE;
+          break;
         }
-        silenceStuff = FALSE;
-        totalData = 0;
-        playing = TRUE;
-      }
-    }
-
-    // if not doing silence, try and read more data
-    // from the underlying channel
-
-    if (!silenceStuff) {
-
-      if (ReadFrame(buffer, amount)) {
-        totalData += amount;
-        delayDone = TRUE;
-      } 
-
-      else if (GetErrorCode(LastReadError) == Timeout)
-        silenceStuff = TRUE;
-    
-      else {
 
         PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
         PDelayChannel::Close();
 
-        playing = FALSE;
-        silenceStuff = TRUE;
+        // repeat the item if needed
+        if (currentPlayItem->GetRepeat() > 1) {
+          currentPlayItem->SetRepeat(currentPlayItem->GetRepeat()-1);
+          currentPlayItem->OnRepeat(*this);
+          continue;
+        } 
 
-        // get the item that was just playing
-        PINDEX delay;
-        {
-          PWaitAndSignal m(queueMutex);
-          PVXMLPlayable * qItem = (PVXMLPlayable *)playQueue.GetAt(0);
-          if (qItem == NULL)
-            delay = 0;
-          else {
-              delay = qItem->GetDelay();
-
-            // if the repeat count is non-zero, then repeat entry
-            if (qItem->GetRepeat() > 1) {
-              qItem->SetRepeat(qItem->GetRepeat()-1);
-              qItem->OnRepeat(*this);
-            } else {
-              qItem->OnStop();
-              delete playQueue.Dequeue();
-            }
+        // see if end of queue delay specified
+        PINDEX delay = 0;
+        if (currentPlayItem->delayDone) {
+          delay = currentPlayItem->GetDelay();
+          if (delay != 0) {
+            PTRACE(3, "PVXML\tDelaying for " << delay);
+            delayTimer = delay;
+            currentPlayItem->delayDone = TRUE;
+            continue;
           }
         }
 
-        // if delay required, then setup the delay
-        if (delay != 0) {
-          PTRACE(3, "PVXML\tDelaying for " << delay);
-          delayTimer = delay;
+        // stop the current item
+        currentPlayItem->OnStop();
+        delete currentPlayItem;
+        currentPlayItem = NULL;
+      }
+
+      // check the queue for the next action
+      {
+        PWaitAndSignal m(queueMutex);
+
+        // if nothing in the queue (which is weird as something just stopped playing)
+        // then trigger the VXML and send silence
+        currentPlayItem = playQueue.Dequeue();
+        if (currentPlayItem == NULL) {
+          vxmlInterface->Trigger();
+          silenceStuff = TRUE;
+          break;
         }
 
-        // if no delay, then check the queue size 
-        else {
-          PINDEX qSize;
-          {
-            PWaitAndSignal m(queueMutex);
-            qSize = playQueue.GetSize();
-          }
-          // if nothing in the queue, trigger the main loop to perhaps send more data
-          if (qSize == 0)
-            vxmlInterface->Trigger();
-        }
+        // start the new item
+        currentPlayItem->OnStart();
+        currentPlayItem->Play(*this);
+        SetReadTimeout(frameDelay);
+        totalData = 0;
       }
     }
   }
@@ -2749,7 +2776,6 @@ BOOL PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
   while (len < amount)  {
     if (!PDelayChannel::Read(len + (char *)buffer, amount-len))
       return FALSE;
-
     len += GetLastReadCount();
   }
 
