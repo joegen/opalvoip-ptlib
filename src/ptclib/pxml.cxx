@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.42  2005/05/12 05:30:16  csoutheren
+ * Ensured error location is initialised
+ *
  * Revision 1.41  2004/10/23 10:58:15  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -336,6 +339,8 @@ void PXML::Construct(int _options, const char * _noIndentElements)
   options        = _options > 0 ? _options : 0;
   loadFromFile   = FALSE;
   standAlone     = -2;
+  errorCol       = 0;
+  errorLine      = 0;
 
   if (_noIndentElements != NULL)
     noIndentElements = PString(_noIndentElements).Tokenise(' ', FALSE);
