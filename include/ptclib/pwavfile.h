@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.19  2005/05/12 05:25:04  csoutheren
+ * PWAVFile format abstract factory must use a PCaseless as a key
+ *
  * Revision 1.18  2005/03/19 02:52:53  csoutheren
  * Fix warnings from gcc 4.1-20050313 shapshot
  *
@@ -231,7 +234,7 @@ class PWAVFileFormat
     virtual BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
 };
 
-typedef PFactory<PWAVFileFormat> PWAVFileFormatByFormatFactory;
+typedef PFactory<PWAVFileFormat, PCaselessString> PWAVFileFormatByFormatFactory;
 typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
 
 /**
