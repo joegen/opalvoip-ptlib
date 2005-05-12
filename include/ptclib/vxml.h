@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.40  2005/05/12 13:40:45  csoutheren
+ * Fixed locking problems with currentPLayItem optimisation
+ *
  * Revision 1.39  2005/05/12 05:28:35  csoutheren
  * Optimised read loop and fixed problems with playing repeated continuous tones
  *
@@ -341,7 +344,16 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     BOOL Execute();
 
-    PVXMLChannel * GetVXMLChannel() const { return vxmlChannel; }
+    PVXMLChannel * GetAndLockVXMLChannel() 
+    { 
+      sessionMutex.Wait(); 
+      if (vxmlChannel != NULL) 
+        return vxmlChannel; 
+      sessionMutex.Signal();
+      return NULL;
+    }
+    void UnLockVXMLChannel() { sessionMutex.Signal(); }
+    PMutex & GetSessionMutex() { return sessionMutex; }
 
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
