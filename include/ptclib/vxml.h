@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.39  2005/05/12 05:28:35  csoutheren
+ * Optimised read loop and fixed problems with playing repeated continuous tones
+ *
  * Revision 1.38  2005/04/21 05:27:58  csoutheren
  * Changed default value for OnFrame
  *
@@ -522,7 +525,7 @@ class PVXMLPlayable : public PObject
   PCLASSINFO(PVXMLPlayable, PObject);
   public:
     PVXMLPlayable()
-    { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; }
+    { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; delayDone = FALSE; }
 
     virtual BOOL Open(PVXMLChannel & /*chan*/, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
     { delay = _delay; repeat = _repeat; autoDelete = _autoDelete; return TRUE; }
@@ -554,6 +557,13 @@ class PVXMLPlayable : public PObject
     void SetSampleFrequency(unsigned _rate)
     { sampleFrequency = _rate; }
 
+    virtual BOOL ReadFrame(PVXMLChannel & channel, void * buf, PINDEX len);
+
+    virtual BOOL Rewind(PChannel *) 
+    { return FALSE; }
+
+    friend class PVXMLChannel;
+
   protected:
     PString arg;
     PINDEX repeat;
@@ -561,6 +571,7 @@ class PVXMLPlayable : public PObject
     PString format;
     unsigned sampleFrequency;
     BOOL autoDelete;
+    BOOL delayDone; // very tacky flag used to indicate when the post-play delay has been done
 };
 
 //////////////////////////////////////////////////////////////////
@@ -584,6 +595,7 @@ class PVXMLPlayableData : public PVXMLPlayable
     BOOL Open(PVXMLChannel & chan, const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v);
     void SetData(const PBYTEArray & _data);
     void Play(PVXMLChannel & outgoingChannel);
+    BOOL Rewind(PChannel * chan);
   protected:
     PBYTEArray data;
 };
@@ -611,6 +623,7 @@ class PVXMLPlayableFilename : public PVXMLPlayable
     BOOL Open(PVXMLChannel & chan, const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
     void Play(PVXMLChannel & outgoingChannel);
     void OnStop();
+    virtual BOOL Rewind(PChannel * chan);
   protected:
     PFilePath fn;
 };
@@ -731,6 +744,7 @@ class PVXMLChannel : public PDelayChannel
     BOOL playing;
     PMutex queueMutex;
     PVXMLQueue playQueue;
+    PVXMLPlayable * currentPlayItem;
 
     BOOL paused;
     int silentCount;
