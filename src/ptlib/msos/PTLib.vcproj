@@ -203,6 +203,21 @@
 			</FileConfiguration>
 		</File>
 		<File
+			RelativePath="..\..\..\include\ptlib\msos\ptlib.ignore">
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
 			RelativePath="..\..\..\include\ptlib\msos\ptlib_2003.dtf">
 			<FileConfiguration
 				Name="Release|Win32">
