@@ -17,3 +17,19 @@ EXPORTS
     _WspiapiQueryDNS@24 @3918 NONAME ;_WspiapiQueryDNS@24
     _WspiapiStrdup@4 @3919 NONAME ;_WspiapiStrdup@4
     ___dummy
+    _CLSID_Registrar @15861 NONAME
+    _CLSID_StdGlobalInterfaceTable @15862 NONAME
+    _IID_IAxWinAmbientDispatch @15863 NONAME
+    _IID_IAxWinAmbientDispatchEx @15864 NONAME
+    _IID_IAxWinHostWindow @15865 NONAME
+    _IID_IAxWinHostWindowLic @15866 NONAME
+    _IID_IDocHostUIHandlerDispatch @15867 NONAME
+    _IID_IInternalConnection @15868 NONAME
+    _IID_IRegistrar @15869 NONAME
+    _LIBID_ATLLib @15870 NONAME
+    __GUID_12e3cca9_7518_44c5_a5e7_ba5a79cb929e @15871 NONAME
+    __GUID_2d3d3845_39af_4850_bbf9_40b49780011d @15872 NONAME
+    __GUID_6c44df74_72b9_4992_a1ec_ef996e0422d4 @15873 NONAME
+    ___pobjMapEntryFirst @15874 NONAME
+    ___pobjMapEntryLast @15875 NONAME
+    
