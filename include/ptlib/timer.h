@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.28  2005/06/02 19:25:18  dsandras
+ * Applied patch from Miguel Rodríguez Pérez <miguelrp  @  gmail.com> (migras) to fix compilation with gcc 4.0.1.
+ *
  * Revision 1.27  2003/09/17 09:01:00  csoutheren
  * Moved PSmartPointer and PNotifier into seperate files
  * Added detection for system regex libraries on all platforms
@@ -360,7 +363,7 @@ class PTimer : public PTimeInterval
 
 
   friend class PTimerList;
-    PTimerList * timerList;
+    class PTimerList * timerList;
 
 
 // Include platform dependent part of class

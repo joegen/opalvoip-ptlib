@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.30  2005/06/02 19:25:18  dsandras
+ * Applied patch from Miguel Rodríguez Pérez <miguelrp  @  gmail.com> (migras) to fix compilation with gcc 4.0.1.
+ *
  * Revision 1.29  2004/05/23 21:11:39  ykiryanov
  * Made BeOS PProcess members same as on Linux and Mac
  *
@@ -172,7 +175,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PMutex     threadMutex;
     int        timerChangePipe[2];
-    PHouseKeepingThread * housekeepingThread;
+    class PHouseKeepingThread * housekeepingThread;
 
 #elif defined(VX_TASKS)
 
