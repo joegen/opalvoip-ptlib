@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.12  2005/06/06 07:49:54  shorne
+ * Added P_SSL directive to fix debug compile problem,
+ *
  * Revision 1.11  2004/04/24 03:58:15  rjongbloed
  * Allow for run time enable/disable of secure web access to HTTP process,
  *   changed from old debug only hack to "correct" usager. Thanks Ben Lear
@@ -71,6 +74,7 @@
 #include <ptclib/shttpsvc.h>
 
 
+#ifdef P_SSL
 
 class HTTP_PSSLChannel : public PSSLChannel
 {
@@ -264,6 +268,6 @@ BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
   return TRUE;
 }
 
-
+#endif //P_SSL
 
 // End Of File ///////////////////////////////////////////////////////////////
