@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.91  2005/06/07 06:25:53  csoutheren
+ * Applied patch 1199897 to increase speed of ASN parser debugging output
+ * Thanks to Dmitriy <ddv@abinet.com>
+ *
  * Revision 1.90  2004/07/12 03:42:22  csoutheren
  * Fixed problem with checking character set constraints too aggressively
  *
@@ -353,6 +357,16 @@ inline BOOL CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
   return (0 <= offset && offset <= upper);
 }
 
+static PINDEX FindNameByValue(const PASN_Names *names, unsigned namesCount, PINDEX value)
+{
+  if (names != NULL) {
+    for (unsigned int i = 0;i < namesCount;i++) {
+      if (names[i].value == value)
+        return i;
+    }
+  }
+  return P_MAX_INDEX;
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -710,7 +724,7 @@ void PASN_Integer::Encode(PASN_Stream & strm) const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Enumeration::PASN_Enumeration(unsigned val)
-  : PASN_Object(UniversalEnumeration, UniversalTagClass, FALSE)
+: PASN_Object(UniversalEnumeration, UniversalTagClass, FALSE),names(NULL),namesCount(0)
 {
   value = val;
   maxEnumValue = P_MAX_INDEX;
@@ -720,41 +734,21 @@ PASN_Enumeration::PASN_Enumeration(unsigned val)
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
                                    unsigned maxEnum, BOOL extend,
                                    unsigned val)
-  : PASN_Object(tag, tagClass, extend)
+  : PASN_Object(tag, tagClass, extend),names(NULL),namesCount(0)
 {
   value = val;
   maxEnumValue = maxEnum;
 }
 
 
-static POrdinalToString BuildNamesDict(const PString & nameSpec)
-{
-  POrdinalToString names;
-
-  PStringArray nameList = nameSpec.Tokenise(' ', FALSE);
-
-  int num = 0;
-  for (PINDEX i = 0; i < nameList.GetSize(); i++) {
-    const PString & thisName = nameList[i];
-    if (!thisName) {
-      PINDEX equalPos = thisName.Find('=');
-      if (equalPos != P_MAX_INDEX)
-        num = (int)thisName.Mid(equalPos+1).AsInteger();
-      names.SetAt(POrdinalKey(num), thisName.Left(equalPos));
-      num++;
-    }
-  }
-
-  return names;
-}
-
 
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
                                    unsigned maxEnum, BOOL extend,
-                                   const PString & nameSpec,
+                                   const PASN_Names * nameSpec,
+                                   unsigned namesCnt,
                                    unsigned val)
   : PASN_Object(tag, tagClass, extend),
-    names(BuildNamesDict(nameSpec))
+  names(nameSpec),namesCount(namesCnt)
 {
   maxEnumValue = maxEnum;
 
@@ -787,8 +781,9 @@ PObject * PASN_Enumeration::Clone() const
 
 void PASN_Enumeration::PrintOn(ostream & strm) const
 {
-  if (names.Contains(value))
-    strm << names[value];
+  PINDEX idx = FindNameByValue(names, namesCount, value);
+  if (idx != P_MAX_INDEX)
+    strm << names[idx].name;
   else
     strm << '<' << value << '>';
 }
@@ -2021,7 +2016,7 @@ PTime PASN_UniversalTime::GetValue() const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Choice::PASN_Choice(unsigned nChoices, BOOL extend)
-  : PASN_Object(0, ApplicationTagClass, extend)
+  : PASN_Object(0, ApplicationTagClass, extend),names(NULL),namesCount(0)
 {
   numChoices = nChoices;
   choice = NULL;
@@ -2030,7 +2025,7 @@ PASN_Choice::PASN_Choice(unsigned nChoices, BOOL extend)
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
                          unsigned upper, BOOL extend)
-  : PASN_Object(tag, tagClass, extend)
+  : PASN_Object(tag, tagClass, extend),names(NULL),namesCount(0)
 {
   numChoices = upper;
   choice = NULL;
@@ -2038,9 +2033,9 @@ PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
 
 
 PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
-                         unsigned upper, BOOL extend, const PString & nameSpec)
+                         unsigned upper, BOOL extend, const PASN_Names * nameSpec,unsigned namesCnt)
   : PASN_Object(tag, tagClass, extend),
-    names(BuildNamesDict(nameSpec))
+    names(nameSpec),namesCount(namesCnt)
 {
   numChoices = upper;
   choice = NULL;
@@ -2049,7 +2044,7 @@ PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
 
 PASN_Choice::PASN_Choice(const PASN_Choice & other)
   : PASN_Object(other),
-    names(other.names)
+  names(other.names),namesCount(other.namesCount)
 {
   numChoices = other.numChoices;
 
@@ -2071,6 +2066,7 @@ PASN_Choice & PASN_Choice::operator=(const PASN_Choice & other)
 
   numChoices = other.numChoices;
   names = other.names;
+  namesCount = other.namesCount;
 
   if (other.CheckCreate())
     choice = (PASN_Object *)other.choice->Clone();
@@ -2100,8 +2096,9 @@ void PASN_Choice::SetTag(unsigned newTag, TagClass tagClass)
 
 PString PASN_Choice::GetTagName() const
 {
-  if (names.Contains(tag))
-    return names[tag];
+  PINDEX idx = FindNameByValue(names, namesCount, tag);
+  if (idx != P_MAX_INDEX)
+    return names[idx].name;
 
   if (CheckCreate() &&
       PIsDescendant(choice, PASN_Choice) &&
