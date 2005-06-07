@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.54  2005/06/07 06:25:53  csoutheren
+ * Applied patch 1199897 to increase speed of ASN parser debugging output
+ * Thanks to Dmitriy <ddv@abinet.com>
+ *
  * Revision 1.53  2005/03/08 03:48:06  csoutheren
  * Fixed problem with incorrect parameter to PIsDescendant in generated code
  *
@@ -188,7 +192,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 3
+#define BUILD_NUMBER 4
 
 
 unsigned lineNumber;
@@ -1759,6 +1763,22 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   PArgList & args = PProcess::Current().GetArguments();
   BOOL xml_output = args.HasOption('x');
 
+  cxx << "#ifndef PASN_NOPRINTON\n"
+      "const static PASN_Names Names_"<< GetIdentifier() << "[]={\n";
+
+
+  for (i = 0; i < enumerations.GetSize(); i++) {
+    if (i > 0) 
+        cxx << "       ,{\"";
+    else
+        cxx << "        {\"";
+
+    int num = enumerations[i].GetNumber();
+    cxx << enumerations[i].GetName() << "\"," << num << "}\n";
+  }
+
+  cxx << "};\n#endif\n";
+
   BeginGenerateCplusplus(hdr, cxx);
 
   int maxEnumValue = 0;
@@ -1771,27 +1791,22 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // Generate enumerations and complete the constructor implementation
   hdr << "    enum Enumerations {\n";
   cxx << ", " << maxEnumValue << ", " << (extendable ? "TRUE" : "FALSE") << "\n"
-         "#ifndef PASN_NOPRINTON\n"
-         "      , \"";
+         "#ifndef PASN_NOPRINTON\n    ,(const PASN_Names *)Names_" << GetIdentifier() << "," <<enumerations.GetSize()<<"\n";
 
   int prevNum = -1;
   for (i = 0; i < enumerations.GetSize(); i++) {
     if (i > 0) {
       hdr << ",\n";
-      cxx << "        \"";
     }
 
     hdr << "      e_" << MakeIdentifierC(enumerations[i].GetName());
-    cxx << enumerations[i].GetName();
 
     int num = enumerations[i].GetNumber();
     if (num != prevNum+1) {
       hdr << " = " << num;
-      cxx << '=' << num;
     }
     prevNum = num;
 
-    cxx << " \"\n";
   }
 
   hdr << "\n"
@@ -2536,11 +2551,46 @@ ChoiceType::ChoiceType(TypesList * stnd,
 {
 }
 
-
 void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   PINDEX i;
 
+  // Generate the enum's for each choice discriminator, and include strings for
+  // PrintOn() debug output into acncestor constructor
+  unsigned namesCount=0;
+  int prevNum = -1;
+  BOOL outputEnum = FALSE;
+  for (i = 0; i < fields.GetSize(); i++) {
+    const Tag & fieldTag = fields[i].GetTag();
+    if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
+      if (outputEnum) {
+        cxx << "     ,{\"";
+      }
+      else {
+        cxx << "\n"
+               "#ifndef PASN_NOPRINTON\n"
+               "const static PASN_Names Names_" <<GetIdentifier()<<"[]={\n"
+               "      {\"";
+        outputEnum = TRUE;
+      }
+
+      cxx << fields[i].GetIdentifier() << "\",";
+
+      if (fieldTag.mode != Tag::Automatic)
+      {
+        cxx <<  fieldTag.number;
+        prevNum = fieldTag.number;
+      }
+      else
+        cxx << ++prevNum;
+      cxx << "}\n";
+      namesCount++;
+    }
+  }
+
+  if (outputEnum) {
+      cxx << "};\n#endif\n";
+  }
 
   BeginGenerateCplusplus(hdr, cxx);
 
@@ -2549,32 +2599,25 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   // Generate the enum's for each choice discriminator, and include strings for
   // PrintOn() debug output into acncestor constructor
-  BOOL outputEnum = FALSE;
-  int prevNum = -1;
+  outputEnum = FALSE;
+  prevNum = -1;
   for (i = 0; i < fields.GetSize(); i++) {
     const Tag & fieldTag = fields[i].GetTag();
     if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
       if (outputEnum) {
         hdr << ",\n";
-        cxx << "        \"";
       }
       else {
         hdr << "    enum Choices {\n";
-        cxx << "\n"
-               "#ifndef PASN_NOPRINTON\n"
-               "      , \"";
         outputEnum = TRUE;
       }
 
       hdr << "      e_" << fields[i].GetIdentifier();
-      cxx << fields[i].GetIdentifier();
 
       if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1)) {
         hdr << " = " << fieldTag.number;
-        cxx << '=' << fieldTag.number;
       }
       prevNum = fieldTag.number;
-      cxx << " \"\n";
     }
   }
 
@@ -2582,9 +2625,10 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
     hdr << "\n"
            "    };\n"
            "\n";
-    cxx << "#endif\n"
-           "    ";
   }
+  cxx << "\n"
+         "#ifndef PASN_NOPRINTON\n"
+         "    ,(const PASN_Names *)Names_" <<GetIdentifier() << "," << namesCount << "\n#endif\n";
 
   cxx << ")\n"
          "{\n";

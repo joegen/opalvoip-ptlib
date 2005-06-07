@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.45  2005/06/07 06:25:53  csoutheren
+ * Applied patch 1199897 to increase speed of ASN parser debugging output
+ * Thanks to Dmitriy <ddv@abinet.com>
+ *
  * Revision 1.44  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -407,6 +411,10 @@ class PASN_Integer : public PASN_ConstrainedObject
     unsigned value;
 };
 
+struct PASN_Names{
+    char * name;
+    PINDEX value; 
+};
 
 /** Class for ASN Enumerated type.
 */
@@ -424,7 +432,8 @@ class PASN_Enumeration : public PASN_Object
                      TagClass tagClass,
                      unsigned nEnums,
                      BOOL extendable,
-                     const PString & nameSpec,
+                     const PASN_Names * nameSpec,
+                     unsigned namesCnt,
                      unsigned val = 0);
 
     PASN_Enumeration & operator=(unsigned v) { value = v; return *this; }
@@ -456,7 +465,8 @@ class PASN_Enumeration : public PASN_Object
   protected:
     unsigned maxEnumValue;
     unsigned value;
-    POrdinalToString names;
+    const PASN_Names *names;
+    unsigned namesCount;   
 };
 
 
@@ -899,7 +909,7 @@ class PASN_Choice : public PASN_Object
   protected:
     PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
-    PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PString & nameSpec);
+    PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PASN_Names * nameSpec,unsigned namesCnt);
 
     PASN_Choice(const PASN_Choice & other);
 
@@ -907,7 +917,8 @@ class PASN_Choice : public PASN_Object
 
     unsigned numChoices;
     PASN_Object * choice;
-    POrdinalToString names;
+    const PASN_Names *names;
+    unsigned namesCount;
 };
 
 
