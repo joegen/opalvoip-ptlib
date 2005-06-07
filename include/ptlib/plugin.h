@@ -8,6 +8,12 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.11.2.1  2005/06/07 10:54:14  csoutheren
+ * Backported fix from Atlas head
+ *
+ * Revision 1.13  2005/06/07 00:42:55  csoutheren
+ * Apply patch 1214249 to fix crash with Suse 9.3. Thanks to Stefan Bruns
+ *
  * Revision 1.11  2004/08/16 11:57:47  csoutheren
  * More changes for VS.net
  *
@@ -66,6 +72,25 @@ class PDevicePluginFactory : public PFactory<_Abstract_T, _Key_T>
           PFactory<_Abstract_T, _Key_T>::Register(key, this);
         }
 
+        ~Worker()
+        {
+          typedef typename PFactory<_Abstract_T, _Key_T>::WorkerBase WorkerBase_T;
+          typedef std::map<_Key_T, WorkerBase_T *> KeyMap_T;
+          _Key_T key;
+
+          KeyMap_T km = PFactory<_Abstract_T, _Key_T>::GetKeyMap();
+
+          typename KeyMap_T::const_iterator entry;
+          for (entry = km.begin(); entry != km.end(); ++entry) {
+            if (entry->second == this) {
+              key = entry->first;
+              break;
+            }
+          }
+          if (key != NULL)
+            PFactory<_Abstract_T, _Key_T>::Unregister(key);
+        }
+
       protected:
         virtual _Abstract_T * Create(const _Key_T & key) const;
     };
@@ -88,7 +113,10 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
     typedef PDevicePluginFactory<DeviceBase> Factory_T;
     typedef typename Factory_T::Worker Worker_T;
     void CreateFactory(const PString & device)
-    { new Worker_T(device, TRUE); }
+    {
+      if (!(Factory_T::IsRegistered(device)))
+        new Worker_T(device, FALSE);
+    }
 };
 
 #define PWLIB_PLUGIN_API_VERSION 0
