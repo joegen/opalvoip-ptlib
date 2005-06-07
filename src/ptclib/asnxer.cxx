@@ -212,11 +212,11 @@ BOOL PASN_Choice::DecodeXER(PXER_Stream & strm)
   if (!choice_elem || !choice_elem->IsElement())
     return FALSE;
 
-  for (PINDEX i = 0 ; i < names.GetSize() ; i++)
+  for (unsigned int i = 0 ; i < namesCount ; i++)
   {
-    if (choice_elem->GetName() == names.GetDataAt(i))
+    if (choice_elem->GetName() == names[i].name)
     {
-      tag = i;
+      tag = names[i].value;
       if (!CreateObject())
         return FALSE;
       strm.SetCurrentElement(choice_elem);
