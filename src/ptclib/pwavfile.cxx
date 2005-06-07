@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.38  2005/06/07 09:28:46  csoutheren
+ * Fixed bug #1204964 - ensure full cleanup when WAV file is closed
+ * Thanks to Zdenek Broz
+ *
  * Revision 1.37  2005/03/22 07:32:55  csoutheren
  * Fixed problem with incorrect message being displayed when reading past end of file
  *
@@ -365,6 +369,9 @@ BOOL PWAVFile::Close()
 
   if (header_needs_updating)
     UpdateHeader();
+
+  delete formatHandler;
+  delete autoConverter;
 
   return (PFile::Close());
 }
