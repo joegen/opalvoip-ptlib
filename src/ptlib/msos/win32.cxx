@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.147  2005/06/07 07:41:42  csoutheren
+ * Applied patch 1176459 for PocketPC. Thanks to Matthias Weber
+ *
  * Revision 1.146  2005/02/02 23:21:16  csoutheren
  * Fixed problem with race condition in HousekeepingThread
  * Thanks to an idea from Auri Vizgaitis
@@ -1466,12 +1469,14 @@ void PProcess::HouseKeepingThread::Main()
         handles[numHandles] = thread.GetHandle();
 
         // make sure we don't put invalid handles into the list
-        if (::GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
+#ifndef _WIN32_WCE
+        if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
           PTRACE(2, "Refused to put invalid handle into wait list");
         }
-
+        else
+#endif
         // don't put the handle for the current process in the list
-        else if (handles[numHandles] != process.GetHandle()) {
+		if (handles[numHandles] != process.GetHandle()) {
           numHandles++;
           if (numHandles >= MAXIMUM_WAIT_OBJECTS)
             break;
