@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.39  2005/06/09 00:33:20  csoutheren
+ * Fixed crash problem caused by recent leak fix
+ * Removed bogus error when reading all of file contents in a single read
+ *
  * Revision 1.38  2005/06/07 09:28:46  csoutheren
  * Fixed bug #1204964 - ensure full cleanup when WAV file is closed
  * Thanks to Zdenek Broz
@@ -279,6 +283,14 @@ PWAVFile::PWAVFile(
   Open(name, mode, opts);
 }
 
+PWAVFile::~PWAVFile()
+{ 
+  Close(); 
+  if (formatHandler != NULL)
+    delete formatHandler;
+}
+
+
 void PWAVFile::Construct()
 {
   lenData                 = 0;
@@ -287,14 +299,17 @@ void PWAVFile::Construct()
   header_needs_updating   = FALSE;
   autoConvert             = FALSE;
   autoConverter           = NULL;
+  formatHandler           = NULL;
   wavFmtChunk.hdr.len     = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);
 }
 
 void PWAVFile::SelectFormat(unsigned fmt)
 {
-  if (fmt == fmt_NotKnown)
+  if (formatHandler != NULL) {
+    delete formatHandler;
     formatHandler = NULL;
-  else {
+  }
+  if (fmt != fmt_NotKnown) {
     formatHandler       = PWAVFileFormatByIDFactory::CreateInstance(fmt);
     wavFmtChunk.format  = (WORD)fmt;
   }
@@ -302,9 +317,11 @@ void PWAVFile::SelectFormat(unsigned fmt)
 
 void PWAVFile::SelectFormat(const PString & format)
 {
-  if (format.IsEmpty())
+  if (formatHandler != NULL) {
+    delete formatHandler;
     formatHandler = NULL;
-  else
+  }
+  if (!format.IsEmpty())
     formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
   if (formatHandler != NULL)
     wavFmtChunk.format = (WORD)formatHandler->GetFormat();
@@ -353,7 +370,7 @@ BOOL PWAVFile::Open(OpenMode mode, int opts)
 }
 
 
-BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
+BOOL PWAVFile::Open(const PFilePath & name, OpenMode mode, int opts)
 {
   if (IsOpen())
     Close();
@@ -364,16 +381,24 @@ BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 
 BOOL PWAVFile::Close()
 {
-  if (formatHandler != NULL) 
-    formatHandler->OnStop();
+  if (autoConverter != NULL) {
+    delete autoConverter;
+    autoConverter = NULL;
+  }
+
+  if (!PFile::IsOpen())
+    return TRUE;
 
   if (header_needs_updating)
     UpdateHeader();
 
-  delete formatHandler;
-  delete autoConverter;
+  if (formatHandler != NULL) 
+    formatHandler->OnStop();
 
-  return (PFile::Close());
+  delete formatHandler;
+  formatHandler = NULL;
+
+  return PFile::Close();
 }
 
 void PWAVFile::SetAutoconvert()
@@ -398,11 +423,11 @@ BOOL PWAVFile::RawRead(void * buf, PINDEX len)
   // We do not want to return this data by mistake.
   PINDEX readlen = len;
   off_t pos = PFile::GetPosition();
-  if (pos == lenData)
+  if (pos >= (lenHeader+lenData))
     return FALSE;
   
-  if ((pos + len) > lenData)
-    readlen = lenData - pos;
+  if ((pos + len) > (lenHeader+lenData))
+    readlen = (lenHeader+lenData) - pos;
 
   if (formatHandler != NULL)
     return formatHandler->Read(*this, buf, readlen);
@@ -599,7 +624,12 @@ static inline BOOL NeedsConverter(const PWAV::FMTChunk & fmtChunk)
   return (fmtChunk.format != PWAVFile::fmt_PCM) || (fmtChunk.bitsPerSample != 16);
 }
 
-BOOL PWAVFile::ProcessHeader() {
+BOOL PWAVFile::ProcessHeader() 
+{
+  if (autoConverter != NULL) {
+    delete autoConverter;
+    autoConverter = NULL;
+  }
 
   // Process the header information
   // This comes in 3 or 4 chunks, either RIFF, FORMAT and DATA
@@ -705,6 +735,11 @@ BOOL PWAVFile::ProcessHeader() {
 
 BOOL PWAVFile::GenerateHeader()
 {
+  if (autoConverter != NULL) {
+    delete autoConverter;
+    autoConverter = NULL;
+  }
+
   if (!IsOpen()) {
     PTRACE(1, "WAV\tGenerateHeader: Not Open");
     return (FALSE);
