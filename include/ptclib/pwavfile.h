@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.20  2005/06/09 00:33:12  csoutheren
+ * Fixed crash problem caused by recent leak fix
+ * Removed bogus error when reading all of file contents in a single read
+ *
  * Revision 1.19  2005/05/12 05:25:04  csoutheren
  * PWAVFile format abstract factory must use a PCaseless as a key
  *
@@ -351,7 +355,7 @@ class PWAVFile : public PFile
 
     /**Close the file before destruction.
       */
-    ~PWAVFile() { Close(); }
+    ~PWAVFile();
   //@}
 
   /**@name Overrides from class PFile */
