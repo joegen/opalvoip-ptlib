@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.29.4.1  2005/06/13 23:42:30  csoutheren
+ * Fixed problems with gcc 4.0 on 64 bit platforms, backported from head
+ * Thanks to Kilian Krause
+ *
  * Revision 1.29  2004/05/23 21:11:39  ykiryanov
  * Made BeOS PProcess members same as on Linux and Mac
  *
@@ -172,7 +176,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PMutex     threadMutex;
     int        timerChangePipe[2];
-    PHouseKeepingThread * housekeepingThread;
+    class PHouseKeepingThread * housekeepingThread;
 
 #elif defined(VX_TASKS)
 
