@@ -109,7 +109,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ptclibd.lib ptlibsd.lib wsock32.lib mpr.lib"
 				OutputFile=".\Debug/emailtest.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="TRUE"
