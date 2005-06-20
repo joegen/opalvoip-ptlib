@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.10  2005/06/20 10:55:16  rjongbloed
+ * Changed the timeout and retries so if there is a blocking firewall it does not take 15 seconds to find out!
+ * Added access functions so timeout and retries are application configurable.
+ * Added function (and << operator) to get NAT type enum as string.
+ *
  * Revision 1.9  2004/11/25 07:23:46  csoutheren
  * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
  *
@@ -176,6 +181,19 @@ class PSTUNClient : public PObject
       BOOL force = FALSE    /// Force a new check
     );
 
+    /**Determine via the STUN protocol the NAT type for the router.
+       As for GetNatType() but returns an English string for the type.
+      */
+    PString GetNatTypeName(
+      BOOL force = FALSE    /// Force a new check
+    ) { return GetNatTypeString(GetNatType(force)); }
+
+    /**Get NatTypes enumeration as an English string for the type.
+      */
+    static PString GetNatTypeString(
+      NatTypes type   /// NAT Type to get name of
+    );
+
     enum RTPSupportTypes {
       RTPOK,
       RTPUnknown,
@@ -187,13 +205,6 @@ class PSTUNClient : public PObject
       Use the force variable to guarantee an up to date test
       */
     RTPSupportTypes IsSupportingRTP(
-      BOOL force = FALSE    /// Force a new check
-    );
-
-    /**Determine via the STUN protocol the NAT type for the router.
-       As for GetNatType() but returns an English string for the type.
-      */
-    PString GetNatTypeName(
       BOOL force = FALSE    /// Force a new check
     );
 
@@ -243,11 +254,48 @@ class PSTUNClient : public PObject
       PUDPSocket * & socket2
     );
 
-  protected:
-    void Construct();
+    /**Get the timeout for responses from STUN server.
+      */
+    const PTimeInterval GetTimeout() const { return replyTimeout; }
 
+    /**Set the timeout for responses from STUN server.
+      */
+    void SetTimeout(
+      const PTimeInterval & timeout   /// New timeout in milliseconds
+    ) { replyTimeout = timeout; }
+
+    /**Get the number of retries for responses from STUN server.
+      */
+    PINDEX GetRetries() const { return pollRetries; }
+
+    /**Set the number of retries for responses from STUN server.
+      */
+    void SetRetries(
+      PINDEX retries    /// Number of retries
+    ) { pollRetries = retries; }
+
+    /**Get the number of sockets to create in attempt to get a port pair.
+       RTP requires a pair of consecutive ports. To get this several sockets
+       must be opened and fired through the NAT firewall to get a pair. The
+       busier the firewall the more sockets will be required.
+      */
+    PINDEX GetSocketsForPairing() const { return numSocketsForPairing; }
+
+    /**Set the number of sockets to create in attempt to get a port pair.
+       RTP requires a pair of consecutive ports. To get this several sockets
+       must be opened and fired through the NAT firewall to get a pair. The
+       busier the firewall the more sockets will be required.
+      */
+    void SetSocketsForPairing(
+      PINDEX numSockets   /// Number opf sockets to create
+    ) { numSocketsForPairing = numSockets; }
+
+  protected:
     PIPSocket::Address serverAddress;
     WORD               serverPort;
+    PTimeInterval      replyTimeout;
+    PINDEX             pollRetries;
+    PINDEX             numSocketsForPairing;
 
     struct PortInfo {
       PMutex mutex;
@@ -257,13 +305,13 @@ class PSTUNClient : public PObject
     } singlePortInfo, pairedPortInfo;
     bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const;
 
-    int  numSocketsForPairing;
-
-    NatTypes natType;
+    NatTypes           natType;
     PIPSocket::Address cachedExternalAddress;
     PTime              timeAddressObtained;
 };
 
+
+inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUNClient::GetNatTypeString(type); }
 
 
 #endif // _PSTUN_H
