@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.188  2005/06/21 22:28:32  rjongbloed
+ * Assured IP is set to zero, so if parse of dotted decimal fails is not random IP address.
+ *
  * Revision 1.187  2005/03/22 07:29:30  csoutheren
  * Fixed problem where PStrings sometimes get case into
  * PIPSocket::Address when outputting to an ostream
@@ -2328,6 +2331,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
   
   version = 0;
+  memset(&v, 0, sizeof(v));
   
   if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
     if (res->ai_family == PF_INET6) {
