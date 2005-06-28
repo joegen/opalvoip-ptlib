@@ -861,6 +861,7 @@ Optional Features:
   --enable-shm-video	  enable shared memory video devices (off by default)
   --enable-alsa           disable non-plugin ALSA audio support
   --enable-memcheck       enable leak testing code (off by default)
+  --enable-exceptions     enable C++ exceptions
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -7135,7 +7136,17 @@ if test "${OSTYPE}" != "Darwin" ; then
 fi
 
 
-STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+# Check whether --enable-exceptions or --disable-exceptions was given.
+if test "${enable_exceptions+set}" = set; then
+  enableval="$enable_exceptions"
+
+fi;
+
+if test "${enable_exceptions}z" = "yesz" ; then
+  { echo "$as_me:$LINENO: C++ exceptions enabled" >&5
+echo "$as_me: C++ exceptions enabled" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+fi
 
 
 
