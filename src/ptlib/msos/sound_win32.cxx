@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.12  2005/07/03 13:48:58  shorne
+ * Add the ability to play sound to specified device.
+ *
  * Revision 1.11  2005/04/21 05:27:04  csoutheren
  * Prevent weird deadlocks when using record-only or play-only sound channels
  *
@@ -628,6 +631,16 @@ BOOL PSound::Play()
   return channel.PlaySound(*this, TRUE);
 }
 
+BOOL PSound::Play(const PString & device)
+{
+
+  PSoundChannel channel(device,
+                       PSoundChannel::Player);
+  if (!channel.IsOpen())
+    return FALSE;
+
+  return channel.PlaySound(*this, TRUE);
+}
 
 BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 {
