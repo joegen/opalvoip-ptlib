@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.7  2005/07/13 12:08:09  csoutheren
+ * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
+ *
  * Revision 1.6  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -50,5 +53,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
+  protected:
+    static BOOL disableQoS;
 
 // End Of File ///////////////////////////////////////////////////////////////

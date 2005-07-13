@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.25  2005/07/13 12:08:09  csoutheren
+ * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
+ *
  * Revision 1.24  2005/07/13 11:48:53  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -252,6 +255,33 @@ class PUDPSocket : public PIPDatagramSocket
 #include "unix/ptlib/udpsock.h"
 #endif
 };
+
+#if P_HAS_QOS
+
+#ifdef _WIN32
+#include <winbase.h>
+#include <winreg.h>
+
+#ifndef _WIN32_WCE
+
+class PWinQoS : public PObject
+{
+    PCLASSINFO(PWinQoS,PObject);
+
+public:
+    PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen);
+    ~PWinQoS();
+    
+    //QOS qos;
+    //QOS_DESTADDR qosdestaddr;
+protected:
+    sockaddr * sa;
+};
+
+#endif  // _WIN32_WCE
+#endif  // _WIN32
+#endif // P_HAS_QOS
+
 
 #endif
 
