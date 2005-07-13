@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.112  2005/07/13 11:48:55  csoutheren
+ * Backported QOS changes from isvo branch
+ *
  * Revision 1.111  2005/02/07 12:12:31  csoutheren
  * Expanded interface list routines to include IPV6 addresses
  * Added IPV6 to GetLocalAddress
@@ -1956,6 +1959,17 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 
 #include "../common/pethsock.cxx"
 
+//////////////////////////////////////////////////////////////////////////////
+// PUDPSocket
+
+void PUDPSocket::EnableQoS()
+{
+}
+
+BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & )
+{
+  return FALSE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.65  2005/07/13 11:48:55  csoutheren
+ * Backported QOS changes from isvo branch
+ *
  * Revision 1.64  2004/10/23 10:45:32  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -776,6 +779,117 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   }
   return FALSE;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// PUDPSocket
+
+#ifdef _WIN32
+#pragma data_seg(".QoS")    // Define the Segment
+BOOL disableQoS = TRUE;
+#pragma data_seg()
+#pragma comment(linker, "/section:.QoS,rws") // link it
+#endif
+
+void PUDPSocket::EnableQoS()
+{
+  disableQoS = FALSE;
+}
+
+BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
+{
+#if P_HAS_QOS
+
+  if (disableQoS)
+    return FALSE;
+
+  if (!address.IsValid())
+    return FALSE;
+
+  // Check to See if OS supportive
+    OSVERSIONINFO versInfo;
+    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
+    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (!(GetVersionEx(&versInfo)))
+        return FALSE;
+    else
+    {
+        if (versInfo.dwMajorVersion < 5)
+            return FALSE;  // Not Supported in Windows
+
+        if (versInfo.dwMajorVersion == 5 &&
+            versInfo.dwMinorVersion == 0)
+            return FALSE;         //Windows 2000 does not always support QOS_DESTADDR
+    }
+
+  // Need to put in a check to see if the NIC has 802.1p packet priority support 
+  // This Requires access to the NIC driver and requires Windows DDK. To Be Done Sometime...
+  
+  // Get the name of the required NIC to check whether it supports 802.1p
+  PString NICname =  PIPSocket::GetInterface(address);
+
+  // For Now Assume it can.
+  return TRUE;
+
+#else
+  return FALSE;
+#endif  // P_HAS_QOS
+}
+
+
+#if P_HAS_QOS
+
+#ifndef _WIN32_WCE
+
+PWinQoS::~PWinQoS()
+{
+    delete sa;
+}
+
+PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen)
+{
+  QOS * qos = (QOS *)inBuf;
+    
+  if (pqos.GetTokenRate() == QOS_NOT_SPECIFIED)
+    qos->SendingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT;
+  else
+    qos->SendingFlowspec.ServiceType = pqos.GetServiceType();
+    
+  qos->SendingFlowspec.TokenRate = pqos.GetTokenRate();
+  qos->SendingFlowspec.TokenBucketSize = pqos.GetTokenBucketSize();
+  qos->SendingFlowspec.PeakBandwidth = pqos.GetPeakBandwidth();
+  qos->SendingFlowspec.Latency = QOS_NOT_SPECIFIED;
+  qos->SendingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
+  qos->SendingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
+  qos->SendingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
+
+  qos->ReceivingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT|SERVICE_NO_QOS_SIGNALING;
+  qos->ReceivingFlowspec.TokenRate = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.TokenBucketSize = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.PeakBandwidth = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.Latency = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
+  qos->ReceivingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
+
+  sa = new sockaddr;
+  *sa = *to;
+
+  QOS_DESTADDR qosdestaddr;
+  qosdestaddr.ObjectHdr.ObjectType = QOS_OBJECT_DESTADDR;
+  qosdestaddr.ObjectHdr.ObjectLength = sizeof(qosdestaddr);
+  qosdestaddr.SocketAddress = sa;
+  qosdestaddr.SocketAddressLength = sizeof(*sa);
+
+  qos->ProviderSpecific.len = sizeof(qosdestaddr);
+  qos->ProviderSpecific.buf = inBuf + sizeof(*qos);
+
+  memcpy(inBuf+sizeof(*qos),&qosdestaddr,sizeof(qosdestaddr));
+  bufLen = sizeof(*qos)+sizeof(qosdestaddr);
+}
+
+#endif // _WIN32_WCE
+
+#endif // P_HAS_QOS
 
 #ifndef _WIN32_WCE
 //////////////////////////////////////////////////////////////////////////////
