@@ -24,10 +24,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.18  2005/07/13 11:15:26  csoutheren
+ * Backported NAT abstraction files from isvo branch
+ *
  * Revision 1.17  2005/06/20 10:55:17  rjongbloed
  * Changed the timeout and retries so if there is a blocking firewall it does not take 15 seconds to find out!
  * Added access functions so timeout and retries are application configurable.
  * Added function (and << operator) to get NAT type enum as string.
+ *
+ * Revision 1.16.4.1  2005/04/25 13:19:27  shorne
+ * Add Support for other NAT methods
  *
  * Revision 1.16  2004/11/25 07:23:46  csoutheren
  * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
@@ -159,46 +165,6 @@ BOOL PSTUNClient::SetServer(const PIPSocket::Address & address, WORD port)
   serverPort = port;
   return serverAddress.IsValid() && serverPort != 0;
 }
-
-
-void PSTUNClient::SetPortRanges(WORD portBase, WORD portMax,
-                                WORD portPairBase, WORD portPairMax)
-{
-  singlePortInfo.mutex.Wait();
-
-  singlePortInfo.basePort = portBase;
-  if (portBase == 0)
-    singlePortInfo.maxPort = 0;
-  else if (portMax == 0)
-    singlePortInfo.maxPort = (WORD)(singlePortInfo.basePort+99);
-  else if (portMax < portBase)
-    singlePortInfo.maxPort = portBase;
-  else
-    singlePortInfo.maxPort = portMax;
-
-  singlePortInfo.currentPort = singlePortInfo.basePort;
-
-  singlePortInfo.mutex.Signal();
-
-  pairedPortInfo.mutex.Wait();
-
-  pairedPortInfo.basePort = (WORD)((portPairBase+1)&0xfffe);
-  if (portPairBase == 0) {
-    pairedPortInfo.basePort = 0;
-    pairedPortInfo.maxPort = 0;
-  }
-  else if (portPairMax == 0)
-    pairedPortInfo.maxPort = (WORD)(pairedPortInfo.basePort+99);
-  else if (portPairMax < portPairBase)
-    pairedPortInfo.maxPort = portPairBase;
-  else
-    pairedPortInfo.maxPort = portPairMax;
-
-  pairedPortInfo.currentPort = pairedPortInfo.basePort;
-
-  pairedPortInfo.mutex.Signal();
-}
-
 
 #pragma pack(1)
 
@@ -788,6 +754,27 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   return false;
 }
 
+BOOL PSTUNClient::IsAvailable() 
+{ 
+
+  switch (GetNatType(FALSE)) {
+    case ConeNat :
+    case RestrictedNat :
+    case PortRestrictedNat :
+      break;
+
+    case SymmetricNat :
+      if (pairedPortInfo.basePort == 0 || pairedPortInfo.basePort > pairedPortInfo.maxPort)
+         return FALSE;
+      
+      break;
+
+    default : // UnknownNet, SymmetricFirewall, BlockedNat
+      return FALSE;
+  }
+	
+  return TRUE; 
+}
 
 ////////////////////////////////////////////////////////////////
 
