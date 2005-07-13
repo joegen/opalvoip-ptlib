@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.66  2005/07/13 12:08:09  csoutheren
+ * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
+ *
  * Revision 1.65  2005/07/13 11:48:55  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -783,12 +786,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-#ifdef _WIN32
-#pragma data_seg(".QoS")    // Define the Segment
-BOOL disableQoS = TRUE;
-#pragma data_seg()
-#pragma comment(linker, "/section:.QoS,rws") // link it
-#endif
+BOOL PUDPSocket::disableQoS = TRUE;
 
 void PUDPSocket::EnableQoS()
 {
