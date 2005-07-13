@@ -18,6 +18,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.h,v $
+ * Revision 1.3  2005/07/13 11:48:53  csoutheren
+ * Backported QOS changes from isvo branch
+ *
+ * Revision 1.2.10.1  2005/04/25 13:37:10  shorne
+ * Added P_KNOCKOUT_WINSOCK32 to avoid compilation errors
+ *
  * Revision 1.2  2003/10/27 03:51:38  csoutheren
  * Added ifdef to disable QoS code on systems that do not support it
  *
@@ -37,9 +43,14 @@
 
 #if P_HAS_QOS
 #ifdef _WIN32
+#ifndef P_KNOCKOUT_WINSOCK2
 #include <winsock2.h>
 #include <Ws2tcpip.h>
+
+#ifndef P_KNOCKOUT_QOS
 #include <qossp.h>
+#endif  // KNOCKOUT_QOS
+#endif  // KNOCKOUT_WINSOCK2
 #endif  // _WIN32
 #endif  // P_HAS_QOS
 
