@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.137  2005/07/13 11:15:26  csoutheren
+# Backported NAT abstraction files from isvo branch
+#
 # Revision 1.136  2005/02/03 01:25:44  csoutheren
 # Make sure code still links when plugins not enabled
 #
@@ -615,7 +618,8 @@ SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx
 endif
 
 ifdef HAS_STUN
-SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx 
+SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx \
+           $(COMPONENT_SRC_DIR)/pnat.cxx
 endif
 
 ifdef HAS_SOCKS
