@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.34  2005/07/13 13:02:35  csoutheren
+ * Unified interface across Windows and Unix
+ *
  * Revision 1.33  2005/07/04 11:35:03  shorne
  * Added ability to play sound to specfied device (Win32).
  *
@@ -220,10 +223,9 @@ class PSound : public PBYTEArray
     /// Play the sound on the default sound device.
     BOOL Play();
 
-   // Play the sound to the specified sound device.
-#ifdef _WIN32
-       BOOL Play(const PString & device);
-#endif
+    /// Play the sound to the specified sound device.
+    BOOL Play(const PString & device);
+
     /**Set the internal sound format to linear PCM at the specification in
        the parameters.
      */
