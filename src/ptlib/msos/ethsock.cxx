@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.45  2005/07/13 11:48:54  csoutheren
+ * Backported QOS changes from isvo branch
+ *
+ * Revision 1.44.4.1  2005/04/25 13:33:56  shorne
+ * Extra support for DHCP Environment (Win32)
+ *
  * Revision 1.44  2004/10/23 10:52:59  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -304,6 +310,7 @@ public:
 
     PString GetInterfaceName(int ifNum);
     PString GetInterfaceName(PIPSocket::Address ipAddr);
+    PIPSocket::Address GetInterfaceAddress(int ifNum);
 
     static PWin32SnmpLibrary & Current();
     static PMutex & GetMutex();
@@ -776,28 +783,8 @@ BOOL PWin32SnmpLibrary::QueryOid(BYTE cmd, AsnObjectIdentifier & oid, PWin32AsnA
 PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
 {
   PIPSocket::Address gwAddr = 0;
-  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
-  PWin32AsnOid oid = baseOid;
-  PWin32AsnAny value;
-  while (GetNextOid(oid, value)) {
-    if (!(baseOid *= oid))
-      break;
-    if (value.asnType != ASN_IPADDRESS)
-      break;
 
-    oid[9] = 2;
-    AsnInteger ifIndex = -1;
-    if (!GetOid(oid, ifIndex) || ifIndex < 0)
-      break;
-
-    if (ifIndex == ifNum) {
-      value.GetIpAddress(gwAddr);
-      break;
-    }
-
-    oid[9] = 1;
-  }
-
+  gwAddr = GetInterfaceAddress(ifNum);
   if (gwAddr == 0)
     return PString::Empty();
 
@@ -836,6 +823,33 @@ PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
   return gatewayInterface;
 }
 
+PIPSocket::Address PWin32SnmpLibrary::GetInterfaceAddress(int ifNum)
+{
+  PIPSocket::Address gwAddr = 0;
+  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
+  PWin32AsnOid oid = baseOid;
+  PWin32AsnAny value;
+  while (GetNextOid(oid, value)) {
+    if (!(baseOid *= oid))
+      break;
+    if (value.asnType != ASN_IPADDRESS)
+      break;
+
+    oid[9] = 2;
+    AsnInteger ifIndex = -1;
+    if (!GetOid(oid, ifIndex) || ifIndex < 0)
+      break;
+
+    if (ifIndex == ifNum) {
+      value.GetIpAddress(gwAddr);
+      break;
+    }
+
+    oid[9] = 1;
+  }
+
+  return gwAddr;
+}
 
 /*
 PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
@@ -1938,6 +1952,19 @@ PString PIPSocket::GetGatewayInterface()
   return snmp.GetInterfaceName(ifNum);
 }
 
+PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress()
+{
+  PWaitAndSignal m(GetSNMPMutex());
+
+  PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
+
+  AsnInteger ifNum = -1;
+  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
+  if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
+    return PString::Empty();
+
+  return snmp.GetInterfaceAddress(ifNum);
+}
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
@@ -2003,6 +2030,86 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   return TRUE;
 }
 
+unsigned PIPSocket::AsNumeric(PIPSocket::Address addr)		
+{ 
+	return ((addr.Byte1() << 24) | (addr.Byte2()  << 16) |
+           (addr.Byte3()  << 8) | addr.Byte4()); 
+}
+
+PIPSocket::Address PIPSocket::GetRouteAddress(PIPSocket::Address RemoteAddress)
+{
+
+Address localaddr;
+
+	if (!RemoteAddress.IsRFC1918()) {				 // Remote Address is not Local
+		if (!GetNetworkInterface(localaddr)) {			 // User not connected directly to Internet
+			localaddr = GetGatewayInterfaceAddress(); // Get the default Gateway NIC address
+			 if ( localaddr != 0 )					  // No connection to the Internet?		
+				 return localaddr;
+		}
+	} else {
+		PIPSocket::InterfaceTable interfaceTable;
+		if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+			PINDEX i;
+			for (i = 0; i < interfaceTable.GetSize(); ++i) {
+				localaddr = interfaceTable[i].GetAddress();
+				if (!localaddr.IsLoopback() && localaddr.IsRFC1918()) {
+					if (IsAddressReachable(localaddr,
+							interfaceTable[i].GetNetMask(),RemoteAddress))
+								return localaddr;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+BOOL PIPSocket::IsAddressReachable(PIPSocket::Address LocalIP,
+								   PIPSocket::Address LocalMask, 
+								   PIPSocket::Address RemoteIP)
+{
+
+	BYTE t = 255;
+	int t1=t,t2=t,t3 =t,t4=t;
+	int b1=0,b2=0,b3=0,b4=0;
+
+	if ((int)LocalMask.Byte1() > 0)
+	{	t1 = LocalIP.Byte1() + (t-LocalMask.Byte1()); b1 = LocalIP.Byte1();}
+	
+	if ((int)LocalMask.Byte2() > 0)
+	{	t2 = LocalIP.Byte2() + (t-LocalMask.Byte2()); b2 = LocalIP.Byte2();}
+
+	if ((int)LocalMask.Byte3() > 0)
+	{	t3 = LocalIP.Byte3() + (t-LocalMask.Byte3()); b3 = LocalIP.Byte3();}
+
+	if ((int)LocalMask.Byte4() > 0)
+	{	t4 = LocalIP.Byte4() + (t-LocalMask.Byte4()); b4 = LocalIP.Byte4();}
+
+
+	Address lt = Address((BYTE)t1,(BYTE)t2,(BYTE)t3,(BYTE)t4);
+	Address lb = Address((BYTE)b1,(BYTE)b2,(BYTE)b3,(BYTE)b4);	
+
+	if (AsNumeric(RemoteIP) > AsNumeric(lb) && 
+				AsNumeric(lt) > AsNumeric(RemoteIP))
+					return TRUE;
+
+	return FALSE;
+}
+
+PString PIPSocket::GetInterface(PIPSocket::Address addr)
+{
+  PIPSocket::InterfaceTable if_table;
+
+  if (PIPSocket::GetInterfaceTable( if_table ) ) {
+	  for (PINDEX i=0; i < if_table.GetSize(); i++) {
+		PIPSocket::InterfaceEntry if_entry = if_table[i];
+		   if (if_entry.GetAddress() == addr) 
+			   return if_entry.GetName();
+	  }        
+  }
+
+  return PString();
+}
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
