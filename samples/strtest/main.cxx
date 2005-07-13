@@ -123,6 +123,124 @@ void Test2()
 
 ////////////////////////////////////////////////
 //
+// test #3 - PBYTEArray test
+//
+
+void Test3()
+{
+  {
+    PBYTEArray buffer1(1024);
+    PBYTEArray buffer2(buffer1);
+
+    cout << "base address of PBYTEArray 1 = " << (void *)(buffer1.GetPointer()) << endl;
+    cout << "base address of PBYTEArray 2 = " << (void *)(buffer1.GetPointer()) << endl;
+  }
+
+  {
+    PString str1("hello");
+    PString str2(str1);
+
+    str2 = "world";
+
+    cout << "base address of PString 1 = " << (void *)(str1.GetPointer()) << endl;
+    cout << "base address of PString 2 = " << (void *)(str2.GetPointer()) << endl;
+  }
+}
+
+////////////////////////////////////////////////
+//
+// test #4 - PString test
+//
+
+void Test4()
+{
+  {
+    PString pstring1("hello world");
+    PString pstring2(pstring1);
+
+    strcpy((char *)(const char *)pstring2, "overwrite");
+
+    cout << pstring1 << endl;
+    cout << pstring2 << endl;
+  }
+  {
+    PString pstring1("hello world");
+    PString pstring2(pstring1);
+
+    strcpy(pstring2.GetPointer(), "overwrite");
+
+    cout << pstring1 << endl;
+    cout << pstring2 << endl;
+  }
+}
+
+////////////////////////////////////////////////
+//
+// test #5 - queue channel test
+//
+
+#include <ptclib/qchannel.h>
+
+class Test5Thread : public PThread
+{
+  public:
+    Test5Thread(PQueueChannel & _qchan)
+      : PThread(100, NoAutoDeleteThread), qchan(_qchan)
+    {
+      Resume();
+    }
+
+    void Main()
+    {
+      PThread::Sleep(2000);
+
+      cout << "qchannel started" << endl;
+      PINDEX i = 0;
+      for (;;) {
+        char buffer[29];
+        if (!qchan.Read(buffer, sizeof(buffer)))
+          break;
+        cout << "qchan: buffer read" << endl;
+        PThread::Sleep(100);
+      }
+      cout << "qchannel ended" << endl;
+    }
+
+  protected:
+    PQueueChannel & qchan;
+};
+
+void Test5()
+{
+
+  PTimer timer(5000);
+
+  for (;;) {
+    cout << "timer = " << timer.GetMilliSeconds() << endl;
+    PThread::Sleep(200);
+  }
+
+  PQueueChannel qChannel(100);
+  PThread * thrd = new Test5Thread(qChannel);
+
+  char buffer[37];
+  memset(buffer, 'a', sizeof(buffer));
+
+  for (int i = 0; i < 3; ++i) {
+    cout << "writing buffer " << i << endl;
+    if (!qChannel.Write(buffer, sizeof(buffer))) {
+      cout << "write failed" << endl;
+    }
+  }
+  cout << "all buffers written" << endl;
+
+  thrd->WaitForTermination();
+
+  cout << "main done" << endl;
+}
+
+////////////////////////////////////////////////
+//
 // main
 //
 
@@ -146,6 +264,9 @@ void StringTest::Main()
          << "\n"
          << "    1     string concurrency test\n"
          << "    2     SIP URL test\n"
+         << "    3     PBYTEArray test\n"
+         << "    4     string test\n"
+         << "    5     queuechannel test\n"
          << endl;
     return;
   }
@@ -153,6 +274,9 @@ void StringTest::Main()
   switch (args[0].AsInteger()) {
     case 1:   Test1(); return;
     case 2:   Test2(); return;
+    case 3:   Test3(); return;
+    case 4:   Test4(); return;
+    case 5:   Test5(); return;
     default:  break;
   }
 
