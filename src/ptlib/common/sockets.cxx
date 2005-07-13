@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.190  2005/07/13 12:08:09  csoutheren
+ * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
+ *
  * Revision 1.189  2005/07/13 11:48:54  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -656,21 +659,6 @@ extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 #include <winreg.h>
 
 #ifndef _WIN32_WCE
-
-class PWinQoS : public PObject
-{
-    PCLASSINFO(PWinQoS,PObject);
-
-public:
-    PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen);
-    ~PWinQoS();
-    
-    //QOS qos;
-    //QOS_DESTADDR qosdestaddr;
-protected:
-    sockaddr * sa;
-};
-
 
 void CALLBACK CompletionRoutine(DWORD dwError,
                                 DWORD cbTransferred,
