@@ -22,6 +22,12 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.8  2005/07/13 12:50:07  csoutheren
+ * Backported changes from isvo branch
+ *
+ * Revision 1.7.8.1  2005/04/25 13:27:26  shorne
+ * Added support for capture SDL output to redirect to existing surface
+ *
  * Revision 1.7  2004/05/31 01:26:58  dereksmithies
  * Fix the "no newline at end of file" warning.
  *
@@ -148,10 +154,10 @@ class PSDLDisplayThread : public PThread
   
     PSDLVideoFrame *GetNextFrame(BOOL isEncoding);
   
-    BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
+    virtual BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
     void InitDisplayPosn();
     void InitDisplayPosn(unsigned w, unsigned h);
-    void CloseScreen();
+    virtual void CloseScreen();
     BOOL CreateOverlay(BOOL isEncoding);
     BOOL SetOverlaySize (BOOL isEncoding, unsigned _width, unsigned _height);
   
