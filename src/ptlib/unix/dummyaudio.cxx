@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dummyaudio.cxx,v $
+ * Revision 1.5  2005/07/13 13:02:35  csoutheren
+ * Unified interface across Windows and Unix
+ *
  * Revision 1.4  2002/02/09 00:52:01  robertj
  * Slight adjustment to API and documentation for volume functions.
  *
@@ -103,6 +106,16 @@ BOOL PSound::Save(const PFilePath & /*filename*/)
   return FALSE;
 }
 
+BOOL PSound::Play(const PString & device)
+{
+
+  PSoundChannel channel(device,
+                       PSoundChannel::Player);
+  if (!channel.IsOpen())
+    return FALSE;
+
+  return channel.PlaySound(*this, TRUE);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
