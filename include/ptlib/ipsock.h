@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.77  2005/07/13 11:48:41  csoutheren
+ * Backported QOS changes from isvo branch
+ *
+ * Revision 1.76.2.1  2005/04/25 13:30:41  shorne
+ * Extra support for DHCP Environment (Win32)
+ *
  * Revision 1.76  2005/03/22 07:29:29  csoutheren
  * Fixed problem where PStrings sometimes get case into
  * PIPSocket::Address when outputting to an ostream
@@ -279,6 +285,14 @@
 #endif
 
 #include <ptlib/socket.h>
+
+#ifdef P_HAS_QOS
+#ifdef _WIN32
+#ifdef P_KNOCKOUT_WINSOCK2 
+   #include "IPExport.h"
+#endif // KNOCKOUT_WINSOCK2
+#endif // _WIN32
+#endif // P_HAS_QOS
 
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.
@@ -720,6 +734,41 @@ class PIPSocket : public PSocket
      */
     static PString GetGatewayInterface();
 
+ #ifdef _WIN32
+  /** Get the IP address for the interface that is being used as the gateway,
+       that is, the interface that packets on the default route will be sent.
+
+	   This Function can be used to Bind the Listener to only the default Packet
+	   route in DHCP Environs.
+
+       Note that the driver does not need to be open for this function to work.
+
+       @return
+		The Local Interface IP Address for Gatway Access
+     */
+	static PIPSocket::Address GetGatewayInterfaceAddress();
+
+	/** Retrieve the Local IP Address for which packets would have be routed to the 
+		to reach the remote Address.
+		@return
+			Local Address
+	  */
+	static PIPSocket::Address GetRouteAddress(PIPSocket::Address RemoteAddress);
+
+	/**	IP Address to a Numerical Representation
+	  */
+	static unsigned AsNumeric(Address addr);
+
+	/** Check if packets on Interface Address can reach the remote IP Address.
+	  */
+	static BOOL IsAddressReachable(PIPSocket::Address LocalIP,
+					PIPSocket::Address LocalMask, 
+					PIPSocket::Address RemoteIP);
+
+	/** Get the Interface Name for a given local Interface Address
+	  */
+	static PString GetInterface(PIPSocket::Address addr);
+ #endif
     /**
        Describes a route table entry
     */
