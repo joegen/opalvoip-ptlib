@@ -27,8 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.148  2005/07/13 12:48:32  csoutheren
+ * Backported fix from isvo branch
+ *
  * Revision 1.147  2005/06/07 07:41:42  csoutheren
  * Applied patch 1176459 for PocketPC. Thanks to Matthias Weber
+ *
+ * Revision 1.146.2.1  2005/04/25 13:12:39  shorne
+ * Fixed OSConfigDir for win32/NT/XP
  *
  * Revision 1.146  2005/02/02 23:21:16  csoutheren
  * Fixed problem with race condition in HousekeepingThread
@@ -1659,7 +1665,7 @@ PDirectory PProcess::GetOSConfigDir()
 
   PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
   PDirectory sysdir = dir;
-  return sysdir + "drivers\\etc";
+  return sysdir;  //+ "drivers\\etc";
 #endif
 }
 
