@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.113  2005/07/15 12:45:13  rogerhardiman
+ * Fix bug 1237508 (M Zygmuntowicz). Make IPV6 code use #if instead of #ifdef.
+ *
  * Revision 1.112  2005/07/13 11:48:55  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -698,7 +701,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   if (!GetHostAddress(hostname, addr))
     return FALSE;
 
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   {
     FILE * file;
     int dummy;
@@ -1780,7 +1783,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 {
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   // build a table of IPV6 interface addresses
   typedef std::map<PString, PString> IP6ListType;
   IP6ListType ip6Ifaces;
@@ -1871,7 +1874,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
                   break;
               }
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
               PString ip6Addr;
               IP6ListType::const_iterator r = ip6Ifaces.find(name);
               if (r != ip6Ifaces.end())
@@ -1879,7 +1882,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
               if (i >= list.GetSize())
                 list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
                 , ip6Addr
 #endif
                 ));
