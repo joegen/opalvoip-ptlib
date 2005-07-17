@@ -634,9 +634,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\ptclib\pnat.cxx">
-			</File>
-			<File
 				RelativePath="..\..\ptclib\psasl.cxx">
 			</File>
 			<File
@@ -1087,9 +1084,6 @@
 				RelativePath="..\..\..\include\ptclib\pldap.h">
 			</File>
 			<File
-				RelativePath="..\..\..\include\ptclib\pnat.h">
-			</File>
-			<File
 				RelativePath="..\..\..\include\ptclib\psasl.h">
 			</File>
 			<File
@@ -1156,6 +1150,9 @@
 				RelativePath="..\..\..\include\ptclib\xmpp_roster.h">
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\ptclib\pnat.cxx">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
