@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.34.2.2  2005/07/17 11:47:45  rjongbloed
+ * Fixed backward compatibility
+ *
  * Revision 1.34.2.1  2005/07/17 09:27:04  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -380,6 +383,13 @@ class PSoundChannel : public PChannel
       Directions direction,               /// Direction for device (record or play)
       PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
     );
+
+    // For backward compatibility
+    static inline PStringList GetDeviceNames(
+      const PString & driverName,
+      Directions direction,
+      PPluginManager * pluginMgr = NULL
+    ) { return GetDriversDeviceNames(driverName, direction, pluginMgr); }
 
     /**Create the sound channel that corresponds to the specified driver name.
      */
