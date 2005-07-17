@@ -24,6 +24,14 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: vidinput_bsd.cxx,v $
+ * Revision 1.1.8.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.1  2003/12/12 04:38:17  rogerhardiman
  * Add plugin for the BSD Video Capture API (also called the meteor API)
  * for FreeBSD, NetBSD and OpenBSD
@@ -335,7 +343,7 @@ BOOL PVideoInputBSDDevice::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoInputBSDDevice::GetMaxFrameBytes()
 {
-  return frameBytes;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
