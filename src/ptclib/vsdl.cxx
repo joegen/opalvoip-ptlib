@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.13.12.2  2005/07/17 12:58:15  rjongbloed
+ * Sorted out the ordering or Red. Blue, Cr and Cb in RGB/BGR/YUV420 formats
+ *
  * Revision 1.13.12.1  2005/07/17 09:27:07  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -233,8 +236,8 @@ BOOL PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   }
 
   memcpy(overlay->pixels[0], dataPtr,                                  pixelsFrame);
-  memcpy(overlay->pixels[2], dataPtr + pixelsFrame,                    pixelsQuartFrame);
-  memcpy(overlay->pixels[1], dataPtr + pixelsFrame + pixelsQuartFrame, pixelsQuartFrame);
+  memcpy(overlay->pixels[1], dataPtr + pixelsFrame,                    pixelsQuartFrame);
+  memcpy(overlay->pixels[2], dataPtr + pixelsFrame + pixelsQuartFrame, pixelsQuartFrame);
 
   ::SDL_UnlockYUVOverlay(overlay);
 
