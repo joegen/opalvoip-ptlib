@@ -27,8 +27,22 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.177.2.4  2005/07/17 10:03:22  csoutheren
+ * Backported fix from Atlas
+ *
  * Revision 1.177.2.3  2005/02/13 23:44:04  csoutheren
  * Backported more IPV6 fixes from Atlas-devel
+ *
+ * Revision 1.191  2005/07/17 09:25:40  csoutheren
+ * Fixed problem in IPV6 variant of PIPSocket::Address::IsLoopback
+ * Thanks to Roger Hardiman
+ *
+ * Revision 1.188  2005/06/21 22:28:32  rjongbloed
+ * Assured IP is set to zero, so if parse of dotted decimal fails is not random IP address.
+ *
+ * Revision 1.187  2005/03/22 07:29:30  csoutheren
+ * Fixed problem where PStrings sometimes get case into
+ * PIPSocket::Address when outputting to an ostream
  *
  * Revision 1.186  2005/02/13 23:01:36  csoutheren
  * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
@@ -2333,6 +2347,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
   
   version = 0;
+  memset(&v, 0, sizeof(v));
   
   if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
     if (res->ai_family == PF_INET6) {
@@ -2444,6 +2459,10 @@ ostream & operator<<(ostream & s, const PIPSocket::Address & a)
   return s << a.AsString();
 }
 
+ostream & operator<<(ostream & s, const PString & str)
+{
+  return s << (const char *)str;
+}
 
 istream & operator>>(istream & s, PIPSocket::Address & a)
 {
@@ -2499,7 +2518,7 @@ BOOL PIPSocket::Address::IsLoopback() const
 {
 #if P_HAS_IPV6
   if (version == 6)
-    IN6_IS_ADDR_LOOPBACK(&v.six);
+    return IN6_IS_ADDR_LOOPBACK(&v.six);
 #endif
   return *this == loopback4;
 }
