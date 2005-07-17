@@ -25,6 +25,14 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.13.4.1  2005/07/17 09:27:07  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.13  2004/11/21 19:17:17  dsandras
  * Temporarily removed the double names hack.
  *
@@ -998,24 +1006,9 @@ BOOL PVideoInputV4lDevice::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoInputV4lDevice::GetMaxFrameBytes()
 {
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  return frameBytes;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
-BOOL PVideoInputV4lDevice::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
-}
 
 BOOL PVideoInputV4lDevice::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
 {

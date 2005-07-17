@@ -137,6 +137,14 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.5.6.1  2005/07/17 09:27:07  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.5  2004/06/15 23:55:50  csoutheren
  * Added check for different versions of dc1394 API
  *
@@ -637,26 +645,9 @@ BOOL PVideoInput1394DcDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-
 PINDEX PVideoInput1394DcDevice::GetMaxFrameBytes()
 {
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  return frameBytes;
-}
-
-BOOL PVideoInput1394DcDevice::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
