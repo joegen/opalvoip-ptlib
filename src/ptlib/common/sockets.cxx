@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.191  2005/07/17 09:25:40  csoutheren
+ * Fixed problem in IPV6 variant of PIPSocket::Address::IsLoopback
+ * Thanks to Roger Hardiman
+ *
  * Revision 1.190  2005/07/13 12:08:09  csoutheren
  * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
  *
@@ -2496,7 +2500,7 @@ BOOL PIPSocket::Address::IsLoopback() const
 {
 #if P_HAS_IPV6
   if (version == 6)
-    IN6_IS_ADDR_LOOPBACK(&v.six);
+    return IN6_IS_ADDR_LOOPBACK(&v.six);
 #endif
   return *this == loopback4;
 }
