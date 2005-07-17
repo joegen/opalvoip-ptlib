@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.40.6.2  2005/07/17 12:58:15  rjongbloed
+ * Sorted out the ordering or Red. Blue, Cr and Cb in RGB/BGR/YUV420 formats
+ *
  * Revision 1.40.6.1  2005/07/17 09:27:08  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -602,13 +605,13 @@ BOOL PStandardColourConverter::GreytoYUV420P(const BYTE * grey,
   return TRUE;
 }
 
-#define RGB2Y(b, g, r, y) \
-  y=(BYTE)(((int)30*r  +(int)59*g +(int)11*b)/100)
+#define RGB2Y(r, g, b, y) \
+  y=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000)
 
-#define RGB2YUV(b, g, r, y, u, v) \
-  RGB2Y(b, g, r, y); \
-  u=(BYTE)(((int)-17*r  -(int)33*g +(int)50*b+12800)/100); \
-  v=(BYTE)(((int)50*r  -(int)42*g -(int)8*b+12800)/100)
+#define RGB2YUV(r, g, b, y, cb, cr) \
+  RGB2Y(r, g, b, y); \
+  cb=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128); \
+  cr=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128)
 
 void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
                                                     BYTE * yuv,
@@ -1129,13 +1132,11 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     for (x = 0; x < srcFrameWidth; x += 2)
     {
       // The RGB value without luminance
-      long int  cr, cb, rd, gd, bd;
-
-      cb = *uplane-128;
-      cr = *vplane-128;
-      rd = 104635*cr;			// 		  106986*cr
-      gd = -25690*cb-53294*cr;		// -26261*cb  +   -54496*cr 
-      bd = 132278*cb;			// 135221*cb
+      long cb = *uplane-128;
+      long cr = *vplane-128;
+      long rd = 104635*cr;			// 		  106986*cr
+      long gd = -25690*cb-53294*cr;		// -26261*cb  +   -54496*cr 
+      long bd = 132278*cb;			// 135221*cb
 
       // Add luminance to each of the 4 pixels
 
