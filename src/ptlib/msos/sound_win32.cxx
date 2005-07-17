@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.12.2.1  2005/07/17 09:27:08  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.12  2005/07/03 13:48:58  shorne
  * Add the ability to play sound to specified device.
  *
@@ -620,27 +628,6 @@ BOOL PSound::Save(const PFilePath & filename)
   return TRUE;
 }
 
-
-BOOL PSound::Play()
-{
-  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
-                        PSoundChannel::Player);
-  if (!channel.IsOpen())
-    return FALSE;
-
-  return channel.PlaySound(*this, TRUE);
-}
-
-BOOL PSound::Play(const PString & device)
-{
-
-  PSoundChannel channel(device,
-                       PSoundChannel::Player);
-  if (!channel.IsOpen())
-    return FALSE;
-
-  return channel.PlaySound(*this, TRUE);
-}
 
 BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 {
