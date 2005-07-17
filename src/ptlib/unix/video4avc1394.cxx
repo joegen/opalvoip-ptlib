@@ -188,10 +188,11 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
   */
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   desiredFrameHeight = CIFHeight;
   desiredFrameWidth = CIFWidth;
-  desiredColourFormat = "RGB24F";
+  desiredColourFormat = "RGB24";
 
   capturing_duration = 10000; // arbitrary large value suffices
   deviceName = devName;
@@ -441,14 +442,7 @@ BOOL PVideoInput1394AvcDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 PINDEX PVideoInput1394AvcDevice::GetMaxFrameBytes()
 {
-  PTRACE(3, "GetMaxFrameBytes()");
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  return frameBytes;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 BOOL dump_ppm(PString name, int w, int h, BYTE * data)
@@ -641,7 +635,8 @@ BOOL PVideoInput1394AvcDevice::SetFrameSize(unsigned width, unsigned height)
   else if (frameWidth == 160 && frameHeight == 120)
     colourFormat = "UYV444";
 */
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   // Don't really need the next lines - AVC cameras don't support change in resolution
