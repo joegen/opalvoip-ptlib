@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.32.6.2  2005/07/17 12:59:04  rjongbloed
+ * Cleaned up pattern identifcation (enum) and max patterns (input channel).
+ *
  * Revision 1.32.6.1  2005/07/17 09:27:08  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -152,7 +155,17 @@ namespace PWLibStupidOSXHacks {
 };
 #endif
 
-#define NUM_PATTERNS 6
+enum {
+  eMovingBlocks,
+  eMovingLine,
+  eBouncingBoxes,
+  eBlankImage,
+  eOriginalMovingBlocks,
+  eText,
+  eNTSCTest,
+  eNumTestPatterns
+};
+
 #define MAX_L_HEIGHT 11
 
 typedef struct {
@@ -1543,7 +1556,7 @@ BOOL PVideoInputDevice_FakeVideo::SetVideoFormat(VideoFormat newFormat)
 
 int PVideoInputDevice_FakeVideo::GetNumChannels() 
 {
-  return NUM_PATTERNS;  
+  return eNumTestPatterns;  
 }
 
 
@@ -1637,25 +1650,25 @@ BOOL PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * 
 
   // Make sure are NUM_PATTERNS cases here.
   switch(channelNumber){       
-     case 0: 
+     case eMovingBlocks : 
        GrabMovingBlocksTestFrame(destFrame);
        break;
-     case 1: 
+     case eMovingLine : 
        GrabMovingLineTestFrame(destFrame);
        break;
-     case 2:
+     case eBouncingBoxes :
        GrabBouncingBoxes(destFrame);
        break;
-     case 3:
+     case eBlankImage :
        GrabBlankImage(destFrame);
        break;
-     case 4:
+     case eOriginalMovingBlocks :
        GrabOriginalMovingBlocksFrame(destFrame);
        break;
-     case 5:
+     case eText :
        GrabTextVideoFrame(destFrame);
        break;
-     case 6:
+     case eNTSCTest :
        GrabNTSCTestFrame(destFrame);
        break;
      default :
@@ -1703,9 +1716,9 @@ void PVideoInputDevice_FakeVideo::FillRect(BYTE * frame,
   int offset       = ( yPos * frameWidth ) + xPos;
   int colourOffset = ( (yPos * frameWidth) >> 2) + (xPos >> 1);
 
-  int Y  =  (int)( (0.257 * r) + (0.504 * g) + (0.098 * b) + 16);
-  int Cb =  (int)(-(0.148 * r) - (0.291 * g) + (0.439 * b) + 128);
-  int Cr =  (int)( (0.439 * r) - (0.368 * g) - (0.071 * b) + 128);
+  int Y  =  ( 257 * r + 504 * g +  98 * b)/1000 + 16;
+  int Cb =  (-148 * r - 291 * g + 439 * b)/1000 + 128;
+  int Cr =  ( 439 * r - 368 * g -  71 * b)/1000 + 128;
 
   unsigned char * Yptr  = frame + offset;
   unsigned char * CbPtr = frame + (frameWidth * frameHeight) + colourOffset;
@@ -1966,15 +1979,10 @@ void PVideoInputDevice_FakeVideo::GrabBlankImage(BYTE *resFrame)
   // black, red, green, yellow, blue, magenta, cyan, white
   int mask = grabCount/frameRate;
   FillRect(resFrame,
-           0, 0, frameWidth, frameHeight/2, //Fill the whole frame with the colour.
+           0, 0, frameWidth, frameHeight, //Fill the whole frame with the colour.
            (mask&1) ? 255 : 0, // red
            (mask&2) ? 255 : 0, // green
            (mask&4) ? 255 : 0);//blue
-  FillRect(resFrame,
-           0, frameHeight/2, frameWidth, frameHeight/2, //Fill the whole frame with the colour.
-           (mask&1) ? 0 : 255, // red
-           (mask&2) ? 0 : 255, // green
-           (mask&4) ? 0 : 255);//blue
 }
 
 void PVideoInputDevice_FakeVideo::GrabOriginalMovingBlocksFrame(BYTE *frame)
