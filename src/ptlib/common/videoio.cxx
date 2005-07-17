@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.53.6.2  2005/07/17 12:17:41  rjongbloed
+ * Fixed deadlock changing size
+ *
  * Revision 1.53.6.1  2005/07/17 09:27:08  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -997,7 +1000,8 @@ BOOL PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
     return FALSE;
 
   bytesPerPixel = newBytesPerPixel;
-  return SetFrameSize(frameWidth, frameHeight);
+  scanLineWidth = ((frameWidth*bytesPerPixel+3)/4)*4;
+  return frameStore.SetSize(frameHeight*scanLineWidth);
 }
 
 
