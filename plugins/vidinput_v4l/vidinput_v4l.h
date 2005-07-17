@@ -33,7 +33,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-  BOOL GetFrame(PBYTEArray & frame);
   BOOL GetFrameData(BYTE*, PINDEX*);
   BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
 
