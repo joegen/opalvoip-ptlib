@@ -119,10 +119,11 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
   
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   desiredFrameHeight = CIFHeight;
   desiredFrameWidth = CIFWidth;
-  desiredColourFormat = "RGB24F";
+  desiredColourFormat = "RGB24";
   
   deviceName = devName; // FIXME: looks useless
   
@@ -354,30 +355,12 @@ BOOL PVideoInput1394AvcDevice::GetFrameSizeLimits(unsigned & minWidth,
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
-}
-
 
 PINDEX PVideoInput1394AvcDevice::GetMaxFrameBytes()
 {
-  
-  if(converter == NULL)
-    return frameBytes;
-  
-  PINDEX bytes = converter->GetMaxDstFrameBytes();
-  if (bytes > frameBytes)
-    return bytes;
-  else
-    return frameBytes;
-  
+  return GetMaxFrameBytesConverted(frameBytes);
 }
+
 
 BOOL PVideoInput1394AvcDevice::GetFrameDataNoDelay(BYTE * buffer,
 						   PINDEX * bytesReturned)
@@ -534,7 +517,8 @@ BOOL PVideoInput1394AvcDevice::SetFrameSize(unsigned width, unsigned height)
   // FIXME: shouldn't it return FALSE when asked an unsupported frame size? 
   frameWidth = width;
   frameHeight = height;
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth,
 						 frameHeight, colourFormat);
   
