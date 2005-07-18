@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.111.2.1  2005/07/18 22:30:44  csoutheren
+ * Backported IPV6 fix for 1.9.1
+ *
  * Revision 1.111  2005/02/07 12:12:31  csoutheren
  * Expanded interface list routines to include IPV6 addresses
  * Added IPV6 to GetLocalAddress
@@ -695,7 +698,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   if (!GetHostAddress(hostname, addr))
     return FALSE;
 
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   {
     FILE * file;
     int dummy;
@@ -1777,7 +1780,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 {
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   // build a table of IPV6 interface addresses
   typedef std::map<PString, PString> IP6ListType;
   IP6ListType ip6Ifaces;
@@ -1868,7 +1871,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
                   break;
               }
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
               PString ip6Addr;
               IP6ListType::const_iterator r = ip6Ifaces.find(name);
               if (r != ip6Ifaces.end())
@@ -1876,7 +1879,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
               if (i >= list.GetSize())
                 list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
                 , ip6Addr
 #endif
                 ));
