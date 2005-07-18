@@ -630,9 +630,8 @@ if test ${HAS_PTHREADS} = yes ; then
   ENDLDLIBS="$ENDLDLIBS -lpthread"
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 else
-  dnl FreeBSD checks
-  AC_CHECK_LIB(c_r, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
-  if test ${HAS_PTHREADS} = yes ; then
+  if test ${OSTYPE} = FreeBSD ; then
+    HAS_PTHREADS=yes
     ENDLDLIBS="$ENDLDLIBS -pthread"
     STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
   fi
