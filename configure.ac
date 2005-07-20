@@ -804,7 +804,7 @@ else
   if test "${HAS_RESOLVER}z" = "z" ; then
     AC_MSG_CHECKING([for res_ninit in -lresolv])
     LIBS="-lresolv"
-    AC_COMPILE_IFELSE([[
+    AC_LINK_IFELSE([[
 #include <netinet/in.h>
 #include <resolv.h>
 int main(int argc,char **argv){
@@ -830,7 +830,7 @@ int main(int argc,char **argv){
   if test "${HAS_RESOLVER}z" = "z" ; then
     AC_MSG_CHECKING([for res_search in -lresolv])
     LIBS="-lresolv"
-    AC_COMPILE_IFELSE([[
+    AC_LINK_IFELSE([[
 #include <netinet/in.h>
 #include <resolv.h>
 int main(int argc,char **argv){
@@ -847,7 +847,7 @@ int main(int argc,char **argv){
   if test "${HAS_RESOLVER}z" = "z" ; then
     AC_MSG_CHECKING([for res_search in C library])
     LIBS=""
-    AC_COMPILE_IFELSE([[
+    AC_LINK_IFELSE([[
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <resolv.h>
