@@ -818,6 +818,7 @@ int main(int argc,char **argv){
     else
       AC_MSG_RESULT(no)
     fi
+    LIBS=""
   fi
 
   if test "${HAS_RESOLVER}z" = "z" ; then
@@ -842,26 +843,8 @@ int main(int argc,char **argv){
     else
       AC_MSG_RESULT(no)
     fi
-  fi
-
-  if test "${HAS_RESOLVER}z" = "z" ; then
-    AC_MSG_CHECKING([for res_search in C library])
     LIBS=""
-    AC_LINK_IFELSE([[
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <resolv.h>
-int main(int argc,char **argv){
- res_search (NULL, 0, 0, NULL, 0);
-}]],HAS_RESOLVER=1)
-    if test "${HAS_RESOLVER:-unset}" != "unset" ; then
-      AC_MSG_RESULT(yes)
-      RESOLVER_LIBS=""
-    else
-      AC_MSG_RESULT(no)
-    fi
   fi
-
 
   if test "${HAS_RESOLVER}z" = "z" ; then
     AC_SEARCH_LIBS(__res_search, resolv, HAS_RESOLVER=1)
