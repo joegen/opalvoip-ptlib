@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.140  2005/07/21 13:04:11  csoutheren
+ * Removed race condition where activeThreads list does not contain
+ * thread until some time after thread is started. Fixed by moving
+ * list insertion to immediately after pthread_create, and using lock
+ *
  * Revision 1.139  2005/07/21 00:09:08  csoutheren
  * Added workaround for braindead behaviour of pthread_kill
  * Thanks to "martin martin" <acevedoma@hotmail.com>
@@ -692,7 +697,7 @@ BOOL PProcess::PThreadKill(pthread_t id, unsigned sig)
 {
   PWaitAndSignal m(threadMutex);
 
-  if (!activeThreads.Contains((unsigned)id))
+  if (!activeThreads.Contains((unsigned)id)) 
     return FALSE;
 
 #if defined(P_MACOSX)
@@ -839,7 +844,25 @@ void PThread::Restart()
   pthread_attr_setschedparam(&threadAttr, &sched_param);
 #endif
 
+  PProcess & process = PProcess::Current();
+  PINDEX newHighWaterMark = 0;
+  static PINDEX highWaterMark = 0;
+
+  // lock the thread list
+  process.threadMutex.Wait();
+
+  // create the thread
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
+
+  // put the thread into the thread list
+  process.activeThreads.SetAt((unsigned)PX_threadId, this);
+  if (process.activeThreads.GetSize() > highWaterMark)
+    newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
+
+  // unlock the thread list
+  process.threadMutex.Signal();
+
+  PTRACE_IF(4, newHighWaterMark > 0, "PWLib\tThread high water mark set: " << newHighWaterMark);
 
 #ifdef P_MACOSX
   if (PX_priority == HighestPriority) {
@@ -892,7 +915,7 @@ void PThread::Suspend(BOOL susp)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
-  if (PPThreadKill(PX_threadId, 0) == 0) {
+  if (PPThreadKill(PX_threadId, 0)) {
 
     // if suspending, then see if already suspended
     if (susp) {
@@ -1213,11 +1236,10 @@ void PThread::Terminate()
 BOOL PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
-  if ((id == 0) || !PPThreadKill(id, 0))
+  if (id == 0)
     return TRUE;
 
-  PTRACE(7, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
-  return FALSE;
+  return (id == 0) || !PPThreadKill(id, 0);
 }
 
 
@@ -1275,20 +1297,6 @@ void * PThread::PX_ThreadStart(void * arg)
   thread->SetThreadName(thread->GetThreadName());
 
   pthread_mutex_unlock(&thread->PX_suspendMutex);
-
-  PProcess & process = PProcess::Current();
-
-  PINDEX newHighWaterMark = 0;
-  static PINDEX highWaterMark = 0;
-
-  // add thread to thread list
-  process.threadMutex.Wait();
-  process.activeThreads.SetAt((unsigned)threadId, thread);
-  if (process.activeThreads.GetSize() > highWaterMark)
-    newHighWaterMark = highWaterMark = process.activeThreads.GetSize();
-  process.threadMutex.Signal();
-
-  PTRACE_IF(4, newHighWaterMark > 0, "PWLib\tThread high water mark set: " << newHighWaterMark);
 
   // make sure the cleanup routine is called when the thread exits
   pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
