@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2005/07/21 13:09:43  rogerhardiman
+ * Fix typo in help
+ *
  * Revision 1.3  2004/09/10 22:33:31  dereksmithies
  * Calculate time required to do the decoding of the dtmf symbol.
  *
@@ -95,7 +98,7 @@ void DtmfTest::Main()
 	   << endl
 	   <<    "-h or --help          : print this help message.\n"
 	   <<    "-s or --samples #     : number of samples to use (ms).\n"
-	   <<    "-s or --noise   #     : Peak noise level (0..10000)\n"
+	   <<    "-n or --noise   #     : Peak noise level (0..10000)\n"
 #if PTRACING
 	   <<    "-o or --output file   : file name for output of log messages\n"       
 	   <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
