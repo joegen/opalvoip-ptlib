@@ -3466,77 +3466,8 @@ if test ${HAS_PTHREADS} = yes ; then
   ENDLDLIBS="$ENDLDLIBS -lpthread"
   STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
 else
-    echo "$as_me:$LINENO: checking for pthread_create in -lc_r" >&5
-echo $ECHO_N "checking for pthread_create in -lc_r... $ECHO_C" >&6
-if test "${ac_cv_lib_c_r_pthread_create+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lc_r  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char pthread_create ();
-int
-main ()
-{
-pthread_create ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_c_r_pthread_create=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_c_r_pthread_create=no
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_c_r_pthread_create" >&5
-echo "${ECHO_T}$ac_cv_lib_c_r_pthread_create" >&6
-if test $ac_cv_lib_c_r_pthread_create = yes; then
-  HAS_PTHREADS=yes
-else
-  HAS_PTHREADS=no
-fi
-
-  if test ${HAS_PTHREADS} = yes ; then
+  if test ${OSTYPE} = FreeBSD ; then
+    HAS_PTHREADS=yes
     ENDLDLIBS="$ENDLDLIBS -pthread"
     STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
   fi
@@ -5044,9 +4975,9 @@ int main(int argc,char **argv){
  res_state p; res_ninit(p);
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -5060,7 +4991,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5072,7 +5003,8 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
     if test "${HAS_RES_NINIT}z" != "z" ; then
       echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
@@ -5082,6 +5014,9 @@ _ACEOF
 
       HAS_RESOLVER=1
       RESOLVER_LIBS="-lresolv"
+    else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
     fi
   fi
 
@@ -5197,9 +5132,9 @@ int main(int argc,char **argv){
  res_search (NULL, 0, 0, NULL, 0);
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -5213,7 +5148,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5225,13 +5160,74 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
     if test "${HAS_RESOLVER:-unset}" != "unset" ; then
       echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
       RESOLVER_LIBS="-lresolv"
     else
-      echo "$as_me:$LINENO: checking for library containing __res_search" >&5
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    fi
+  fi
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    echo "$as_me:$LINENO: checking for res_search in C library" >&5
+echo $ECHO_N "checking for res_search in C library... $ECHO_C" >&6
+    LIBS=""
+    cat >conftest.$ac_ext <<_ACEOF
+
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <resolv.h>
+int main(int argc,char **argv){
+ res_search (NULL, 0, 0, NULL, 0);
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  HAS_RESOLVER=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "${HAS_RESOLVER:-unset}" != "unset" ; then
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+      RESOLVER_LIBS=""
+    else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    fi
+  fi
+
+
+  if test "${HAS_RESOLVER}z" = "z" ; then
+    echo "$as_me:$LINENO: checking for library containing __res_search" >&5
 echo $ECHO_N "checking for library containing __res_search... $ECHO_C" >&6
 if test "${ac_cv_search___res_search+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5357,7 +5353,6 @@ if test "$ac_cv_search___res_search" != no; then
   HAS_RESOLVER=1
 fi
 
-    fi
   fi
 
   if test "${HAS_RESOLVER}z" != "z" ; then
