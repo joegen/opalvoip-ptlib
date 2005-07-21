@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.31  2005/07/21 00:09:08  csoutheren
+ * Added workaround for braindead behaviour of pthread_kill
+ * Thanks to "martin martin" <acevedoma@hotmail.com>
+ *
  * Revision 1.30  2005/06/02 19:25:18  dsandras
  * Applied patch from Miguel Rodríguez Pérez <miguelrp  @  gmail.com> (migras) to fix compilation with gcc 4.0.1.
  *
@@ -169,6 +173,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
   public:
     void SignalTimerChange();
+    BOOL PThreadKill(pthread_t id, unsigned signal);
 
   protected:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
