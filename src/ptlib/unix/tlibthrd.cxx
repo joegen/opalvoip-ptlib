@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.139  2005/07/21 00:09:08  csoutheren
+ * Added workaround for braindead behaviour of pthread_kill
+ * Thanks to "martin martin" <acevedoma@hotmail.com>
+ *
  * Revision 1.138  2005/05/03 11:58:46  csoutheren
  * Fixed various problems reported by valgrind
  * Thanks to Paul Cadach
@@ -520,6 +524,8 @@ static pthread_t baseThread;
 
 int PX_NewHandle(const char *, int);
 
+#define PPThreadKill(id, sig)  PProcess::Current().PThreadKill(id, sig)
+
 
 #define PAssertPTHREAD(func, args) \
   { \
@@ -680,6 +686,20 @@ PProcess::~PProcess()
   CommonDestruct();
 
   PTRACE(5, "PWLib\tDestroyed process " << this);
+}
+
+BOOL PProcess::PThreadKill(pthread_t id, unsigned sig)
+{
+  PWaitAndSignal m(threadMutex);
+
+  if (!activeThreads.Contains((unsigned)id))
+    return FALSE;
+
+#if defined(P_MACOSX)
+  return TRUE;
+#else
+  return pthread_kill(id, sig) == 0;
+#endif
 }
 
 
@@ -872,7 +892,7 @@ void PThread::Suspend(BOOL susp)
   // Suspend - warn the user with an Assertion
   PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
 #else
-  if (pthread_kill(PX_threadId, 0) == 0) {
+  if (PPThreadKill(PX_threadId, 0) == 0) {
 
     // if suspending, then see if already suspended
     if (susp) {
@@ -880,7 +900,7 @@ void PThread::Suspend(BOOL susp)
       if (PX_suspendCount == 1) {
         if (PX_threadId != pthread_self()) {
           signal(SUSPEND_SIG, PX_SuspendSignalHandler);
-          pthread_kill(PX_threadId, SUSPEND_SIG);
+          PPThreadKill(PX_threadId, SUSPEND_SIG);
         }
         else {
           PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
@@ -1181,7 +1201,7 @@ void PThread::Terminate()
 #endif
 
 #if ( defined(P_NETBSD) && defined(P_NO_CANCEL) )
-  pthread_kill(PX_threadId,SIGKILL);
+  PPThreadKill(PX_threadId,SIGKILL);
 #else
   if (PX_threadId) {
     pthread_cancel(PX_threadId);
@@ -1192,16 +1212,9 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
-  if (PX_threadId == 0)
+  pthread_t id = PX_threadId;
+  if ((id == 0) || !PPThreadKill(id, 0))
     return TRUE;
-
-#if defined(P_MACOSX) && (P_MACOSX <= 55)
-  // MacOS X (darwin 5.5) does not support pthread_kill so we cannot use it
-  // to test the validity of the thread
-#else
-  if (pthread_kill(PX_threadId, 0) != 0)
-    return TRUE;
-#endif
 
   PTRACE(7, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
   return FALSE;
