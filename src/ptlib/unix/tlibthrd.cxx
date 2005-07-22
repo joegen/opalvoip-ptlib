@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.141  2005/07/22 04:19:18  csoutheren
+ * Removed redundant check of thread ID introduced in last patch
+ * Removed race condition in thread shutdown found by Derek Smithies
+ *
  * Revision 1.140  2005/07/21 13:04:11  csoutheren
  * Removed race condition where activeThreads list does not contain
  * thread until some time after thread is started. Fixed by moving
@@ -1236,9 +1240,6 @@ void PThread::Terminate()
 BOOL PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
-  if (id == 0)
-    return TRUE;
-
   return (id == 0) || !PPThreadKill(id, 0);
 }
 
@@ -1330,7 +1331,6 @@ void PThread::PX_ThreadEnd(void * arg)
   PProcess & process = PProcess::Current();
   process.threadMutex.Wait();
   process.activeThreads.SetAt((unsigned)id, NULL);
-  process.threadMutex.Signal();
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
@@ -1342,6 +1342,8 @@ void PThread::PX_ThreadEnd(void * arg)
   }
   else
     thread->PX_threadId = 0;
+
+  process.threadMutex.Signal();
 }
 
 
