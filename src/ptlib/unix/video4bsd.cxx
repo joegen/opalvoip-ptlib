@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.21.8.1  2005/07/24 09:19:59  rjongbloed
+ * Removed some (apparently) unused files. Replaced by plugins
+ *
  * Revision 1.21  2004/01/02 23:30:18  rjongbloed
  * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
  *

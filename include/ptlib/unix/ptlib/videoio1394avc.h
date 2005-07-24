@@ -24,6 +24,9 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: videoio1394avc.h,v $
+ * Revision 1.2.10.1  2005/07/24 09:19:59  rjongbloed
+ * Removed some (apparently) unused files. Replaced by plugins
+ *
  * Revision 1.2  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
