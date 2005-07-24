@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.9.10.1  2005/07/24 09:19:59  rjongbloed
+ * Removed some (apparently) unused files. Replaced by plugins
+ *
  * Revision 1.9  2003/03/17 07:53:04  robertj
  * Removed canCaptureVideo variable as this is really a virtual function to
  *   distinguish PVideoOutputDevice from PVideoInputDevice, it is not dynamic.
