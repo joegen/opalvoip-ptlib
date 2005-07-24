@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.27.6.2  2005/07/24 07:23:57  rjongbloed
+ * Fixed correct use of ShowWindow() return value in video window device Start()
+ *
  * Revision 1.27.6.1  2005/07/17 09:27:08  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -1222,10 +1225,11 @@ BOOL PVideoOutputDevice_Window::Close()
 
 BOOL PVideoOutputDevice_Window::Start()
 {
-  if (m_hWnd != NULL)
-    return ShowWindow(m_hWnd, SW_SHOW);
-
-  return FALSE;
+  if (m_hWnd == NULL)
+    return FALSE;
+  
+  ShowWindow(m_hWnd, SW_SHOW);
+  return TRUE;
 }
 
 
