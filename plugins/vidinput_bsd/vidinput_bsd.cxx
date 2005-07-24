@@ -24,6 +24,14 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: vidinput_bsd.cxx,v $
+ * Revision 1.1.8.2  2005/07/24 09:01:47  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.1.8.1  2005/07/17 09:27:04  rjongbloed
  * Major revisions of the PWLib video subsystem including:
  *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
@@ -113,23 +121,23 @@
 #include "vidinput_bsd.h"
 #include <sys/mman.h>
 
-PCREATE_VIDINPUT_PLUGIN(BSDCAP, PVideoInputBSDDevice);
+PCREATE_VIDINPUT_PLUGIN(BSDCAPTURE);
 
 ///////////////////////////////////////////////////////////////////////////////
-// PVideoInputBSDDevice
+// PVideoInputDevice_BSDCAPTURE
 
-PVideoInputBSDDevice::PVideoInputBSDDevice()
+PVideoInputDevice_BSDCAPTURE::PVideoInputDevice_BSDCAPTURE()
 {
   videoFd     = -1;
   canMap      = -1;
 }
 
-PVideoInputBSDDevice::~PVideoInputBSDDevice()
+PVideoInputDevice_BSDCAPTURE::~PVideoInputDevice_BSDCAPTURE()
 {
   Close();
 }
 
-BOOL PVideoInputBSDDevice::Open(const PString & devName, BOOL startImmediate)
+BOOL PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, BOOL startImmediate)
 {
   Close();
 
@@ -183,13 +191,13 @@ BOOL PVideoInputBSDDevice::Open(const PString & devName, BOOL startImmediate)
 }
 
 
-BOOL PVideoInputBSDDevice::IsOpen() 
+BOOL PVideoInputDevice_BSDCAPTURE::IsOpen() 
 {
     return videoFd >= 0;
 }
 
 
-BOOL PVideoInputBSDDevice::Close()
+BOOL PVideoInputDevice_BSDCAPTURE::Close()
 {
   if (!IsOpen())
     return FALSE;
@@ -202,25 +210,25 @@ BOOL PVideoInputBSDDevice::Close()
   return TRUE;
 }
 
-BOOL PVideoInputBSDDevice::Start()
+BOOL PVideoInputDevice_BSDCAPTURE::Start()
 {
   return TRUE;
 }
 
 
-BOOL PVideoInputBSDDevice::Stop()
+BOOL PVideoInputDevice_BSDCAPTURE::Stop()
 {
   return TRUE;
 }
 
 
-BOOL PVideoInputBSDDevice::IsCapturing()
+BOOL PVideoInputDevice_BSDCAPTURE::IsCapturing()
 {
   return IsOpen();
 }
 
 
-PStringList PVideoInputBSDDevice::GetInputDeviceNames()
+PStringList PVideoInputDevice_BSDCAPTURE::GetInputDeviceNames()
 {
   PStringList list;
 
@@ -233,7 +241,7 @@ PStringList PVideoInputBSDDevice::GetInputDeviceNames()
 }
 
 
-BOOL PVideoInputBSDDevice::SetVideoFormat(VideoFormat newFormat)
+BOOL PVideoInputDevice_BSDCAPTURE::SetVideoFormat(VideoFormat newFormat)
 {
   if (!PVideoDevice::SetVideoFormat(newFormat))
     return FALSE;
@@ -263,13 +271,13 @@ BOOL PVideoInputBSDDevice::SetVideoFormat(VideoFormat newFormat)
 }
 
 
-int PVideoInputBSDDevice::GetNumChannels() 
+int PVideoInputDevice_BSDCAPTURE::GetNumChannels() 
 {
   return videoCapability.channels;
 }
 
 
-BOOL PVideoInputBSDDevice::SetChannel(int newChannel)
+BOOL PVideoInputDevice_BSDCAPTURE::SetChannel(int newChannel)
 {
   if (!PVideoDevice::SetChannel(newChannel))
     return FALSE;
@@ -288,7 +296,7 @@ BOOL PVideoInputBSDDevice::SetChannel(int newChannel)
 }
 
 
-BOOL PVideoInputBSDDevice::SetColourFormat(const PString & newFormat)
+BOOL PVideoInputDevice_BSDCAPTURE::SetColourFormat(const PString & newFormat)
 {
   if (!PVideoDevice::SetColourFormat(newFormat))
     return FALSE;
@@ -302,7 +310,7 @@ BOOL PVideoInputBSDDevice::SetColourFormat(const PString & newFormat)
 }
 
 
-BOOL PVideoInputBSDDevice::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_BSDCAPTURE::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
     return FALSE;
@@ -311,7 +319,7 @@ BOOL PVideoInputBSDDevice::SetFrameRate(unsigned rate)
 }
 
 
-BOOL PVideoInputBSDDevice::GetFrameSizeLimits(unsigned & minWidth,
+BOOL PVideoInputDevice_BSDCAPTURE::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & minHeight,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
@@ -328,7 +336,7 @@ BOOL PVideoInputBSDDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-BOOL PVideoInputBSDDevice::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_BSDCAPTURE::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
@@ -341,13 +349,13 @@ BOOL PVideoInputBSDDevice::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-PINDEX PVideoInputBSDDevice::GetMaxFrameBytes()
+PINDEX PVideoInputDevice_BSDCAPTURE::GetMaxFrameBytes()
 {
   return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
-BOOL PVideoInputBSDDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_BSDCAPTURE::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   if(frameRate>0) {
     frameTimeError += msBetweenFrames;
@@ -367,7 +375,7 @@ BOOL PVideoInputBSDDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 }
 
 
-BOOL PVideoInputBSDDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_BSDCAPTURE::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
 
   // Hack time. It seems that the Start() and Stop() functions are not
@@ -428,7 +436,7 @@ BOOL PVideoInputBSDDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRetu
 }
 
 
-void PVideoInputBSDDevice::ClearMapping()
+void PVideoInputDevice_BSDCAPTURE::ClearMapping()
 {
   if (canMap == 1) {
 
@@ -447,7 +455,7 @@ void PVideoInputBSDDevice::ClearMapping()
   }
 }
 
-BOOL PVideoInputBSDDevice::VerifyHardwareFrameSize(unsigned width,
+BOOL PVideoInputDevice_BSDCAPTURE::VerifyHardwareFrameSize(unsigned width,
                                                 unsigned height)
 {
 	// Assume the size is valid
@@ -455,7 +463,7 @@ BOOL PVideoInputBSDDevice::VerifyHardwareFrameSize(unsigned width,
 }
 
 
-int PVideoInputBSDDevice::GetBrightness()
+int PVideoInputDevice_BSDCAPTURE::GetBrightness()
 {
   if (!IsOpen())
     return -1;
@@ -468,7 +476,7 @@ int PVideoInputBSDDevice::GetBrightness()
   return frameBrightness;
 }
 
-int PVideoInputBSDDevice::GetContrast()
+int PVideoInputDevice_BSDCAPTURE::GetContrast()
 {
   if (!IsOpen())
     return -1;
@@ -481,7 +489,7 @@ int PVideoInputBSDDevice::GetContrast()
  return frameContrast;
 }
 
-int PVideoInputBSDDevice::GetHue()
+int PVideoInputDevice_BSDCAPTURE::GetHue()
 {
   if (!IsOpen())
     return -1;
@@ -494,7 +502,7 @@ int PVideoInputBSDDevice::GetHue()
   return frameHue;
 }
 
-BOOL PVideoInputBSDDevice::SetBrightness(unsigned newBrightness)
+BOOL PVideoInputDevice_BSDCAPTURE::SetBrightness(unsigned newBrightness)
 {
   if (!IsOpen())
     return FALSE;
@@ -507,7 +515,7 @@ BOOL PVideoInputBSDDevice::SetBrightness(unsigned newBrightness)
   return TRUE;
 }
 
-BOOL PVideoInputBSDDevice::SetContrast(unsigned newContrast)
+BOOL PVideoInputDevice_BSDCAPTURE::SetContrast(unsigned newContrast)
 {
   if (!IsOpen())
     return FALSE;
@@ -520,7 +528,7 @@ BOOL PVideoInputBSDDevice::SetContrast(unsigned newContrast)
   return TRUE;
 }
 
-BOOL PVideoInputBSDDevice::SetHue(unsigned newHue)
+BOOL PVideoInputDevice_BSDCAPTURE::SetHue(unsigned newHue)
 {
   if (!IsOpen())
     return FALSE;
@@ -533,7 +541,7 @@ BOOL PVideoInputBSDDevice::SetHue(unsigned newHue)
   return TRUE;
 }
 
-BOOL PVideoInputBSDDevice::GetParameters (int *whiteness, int *brightness,
+BOOL PVideoInputDevice_BSDCAPTURE::GetParameters (int *whiteness, int *brightness,
                                       int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
@@ -567,7 +575,7 @@ BOOL PVideoInputBSDDevice::GetParameters (int *whiteness, int *brightness,
   return TRUE;
 }
 
-BOOL PVideoInputBSDDevice::TestAllFormats()
+BOOL PVideoInputDevice_BSDCAPTURE::TestAllFormats()
 {
   return TRUE;
 }
