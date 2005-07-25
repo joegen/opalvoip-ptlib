@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.32.6.3  2005/07/25 12:19:23  rjongbloed
+ * Fixed correct device name for fake video
+ *
  * Revision 1.32.6.2  2005/07/17 12:59:04  rjongbloed
  * Cleaned up pattern identifcation (enum) and max patterns (input channel).
  *
@@ -1504,6 +1507,7 @@ PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
 
 BOOL PVideoInputDevice_FakeVideo::Open(const PString & /*devName*/, BOOL /*startImmediate*/)
 {
+  deviceName = "fake";
   return TRUE;    
 }
 
