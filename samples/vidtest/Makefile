@@ -22,6 +22,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.1.12.1  2005/07/25 12:19:52  rjongbloed
+# Removed redundant precompile.cxx file
+#
 # Revision 1.1  2003/04/29 00:56:37  dereks
 # Initial release for video testing.
 #
@@ -31,6 +34,6 @@
 
 
 PROG = vidtest
-SOURCES := main.cxx precompile.cxx
+SOURCES := main.cxx
 
 include $(PWLIBDIR)/make/ptlib.mak
