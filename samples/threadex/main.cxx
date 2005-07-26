@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2005/07/26 02:52:39  dereksmithies
+ * Use different console handling code. Still get "console gone errors" when on
+ * remote box.
+ *
  * Revision 1.3  2005/07/26 01:43:05  dereksmithies
  * Set up so that only H or h or ? generate a help message.
  *
@@ -168,36 +172,43 @@ void UserInterfaceThread::Main()
   for (;;) {
  
     // display the prompt
-    PError << "Command ? " << flush;
+    cout << "Command ? " << flush;
  
-    // terminate the menu loop if console finished
-    char ch = (char)console.peek();
+
+   // terminate the menu loop if console finished
+    char ch = (char)tolower(console.peek());
     if (console.eof()) {
-      PError << "\nConsole gone - menu disabled" << endl;
-      launch.Terminate();
-      launch.WaitForTermination();
-      return;
+        cout << "\nConsole gone - menu disabled" << endl;
+	launch.Terminate();
+	launch.WaitForTermination();
+	return;
     }
- 
+
+    if (ch == '\n') {
+      console.ignore(INT_MAX, '\n');
+      continue;
+    }
+
     console >> ch;
+
     switch (tolower(ch)) {
     case 'r' :
-      PError << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
       break;
     case 't' :
-      PError << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
+      cout << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
       break;
 
     case 'x' :
     case 'q' :
-      PError << "Exiting." << endl;
+      cout << "Exiting." << endl;
       launch.Terminate();
       launch.WaitForTermination();
       return;
       break;
     case '?' :
     case 'h' :
-      PError << help << endl;
+      cout << help << endl;
 
     default:
       break;
