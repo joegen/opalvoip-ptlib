@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2005/07/26 00:46:22  dereksmithies
+ * Commit code to provide two examples of waiting for a thread to terminate.
+ * The busy wait method provides a method of testing PWLIB processes for closing
+ * a thread. With a delay of 20ms, SMP box, we found some pwlib methods that
+ * needed fixing. At the time of committing this change, the pwlib code was correct.
+ *
  * Revision 1.1  2004/09/13 01:13:26  dereksmithies
  * Initial release of VERY simple program to test PThread::WaitForTermination
  *
@@ -52,10 +58,16 @@ PCREATE_PROCESS(Threadex);
 
 
 Threadex::Threadex()
-  : PProcess("Equivalence", "threadex", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Derek Smithies code factory", "threadex", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
 {
 }
 
+/*Note: This program uses either a busy wait system to check for
+   thread termination, or the WaitForTermination method supplied by
+   pwlib. It was found that with sufficient number of iterations,
+   busywaiting, and a delay of 20ms on a SMP machine that segfaults
+   occurred. This program was used to verify the correct close down
+   and creation process of a thread */
 
 void Threadex::Main()
 {
@@ -63,6 +75,8 @@ void Threadex::Main()
 
   args.Parse(
              "h-help."               "-no-help."
+	     "d-delay:"              "-no-delay."
+	     "b-busywait."           "-no-busywait."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -88,32 +102,105 @@ void Threadex::Main()
 
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl         
-	   << "-h  or --help  :print this help" << endl
-	   << "-v  or --version print version info" << endl
+	   << "-h  or --help        :print this help" << endl
+	   << "-v  or --version      print version info" << endl
+	   << "-d  or --delay      X where X specifies how many milliseconds the created thread waits for" << endl
+	   << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
 #if PTRACING
-	   << "o-output   output file name for trace" << endl
-	   << "t-trace.    trace level to use." << endl
+	   << "o-output              output file name for trace" << endl
+	   << "t-trace.              trace level to use." << endl
 #endif
 	   << endl
 	   << endl << endl;
     return;
   }
+
+  PINDEX delay = 2000;;
+  if (args.HasOption('d'))
+    delay = args.GetOptionString('d').AsInteger();
+
+  delay = PMIN(1000000, PMAX(1, delay));
+  cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
  
-  ExampleThread messager("example Thread");
+  BOOL doBusyWait = args.HasOption('b');
 
-  messager.WaitForTermination();
+  UserInterfaceThread ui(delay, doBusyWait);
+  ui.WaitForTermination();
 }
 
 
-void ExampleThread::Main()
+void LauncherThread::Main()
 {
-  cout << "Start of thread.    User message is \"" << userName << "\"" <<  endl;
-
-  PThread::Sleep(20 * 1000);   //20 second sleep
-
-  cout << "End of 20 second sleep" << endl;
-
-  cout << "End of thread.    User message is \"" << userName << "\"" <<  endl;
+  if (useBusyWait) {
+    while (keepGoing) {
+      DelayThread thread(delay);
+      while (!thread.IsTerminated());
+      iteration ++;
+    }
+  } else {
+    while (keepGoing) {
+      DelayThread thread(delay);
+      thread.WaitForTermination();
+      iteration++;
+    }
+  }
 }
+
+void UserInterfaceThread::Main()
+{
+  PConsoleChannel console(PConsoleChannel::StandardInput);
+  cout << "This program will repeatedly create and destroy a thread until terminated from the console" << endl;
+
+  PStringStream help;
+  help << "Press : " << endl
+       << "         H or ? help" << endl
+       << "         R      report count of threads done" << endl
+       << "         T      time elapsed" << endl
+       << "         X or Q exit " << endl;
+ 
+  cout << endl << help;
+
+  LauncherThread launch(delay, useBusyWait);
+  
+  for (;;) {
+ 
+    // display the prompt
+    PError << "Command ? " << flush;
+ 
+    // terminate the menu loop if console finished
+    char ch = (char)console.peek();
+    if (console.eof()) {
+      PError << "\nConsole gone - menu disabled" << endl;
+      launch.Terminate();
+      launch.WaitForTermination();
+      return;
+    }
+ 
+    console >> ch;
+    switch (tolower(ch)) {
+    case 'r' :
+      PError << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      break;
+    case 't' :
+      PError << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
+      break;
+
+    case 'x' :
+    case 'q' :
+      PError << "Exiting." << endl;
+      launch.Terminate();
+      launch.WaitForTermination();
+      return;
+      break;
+    case '?' :
+    case 'h' :
+    default:
+      PError << help << endl;
+      break;
+                                                                                                                                            
+    } // end switch
+  } // end for
+}
+
 
 // End of File ///////////////////////////////////////////////////////////////
