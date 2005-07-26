@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.13.12.3  2005/07/26 17:07:03  dsandras
+ * Fix to make gcc happy.
+ *
  * Revision 1.13.12.2  2005/07/17 12:58:15  rjongbloed
  * Sorted out the ordering or Red. Blue, Cr and Cb in RGB/BGR/YUV420 formats
  *
@@ -108,7 +111,7 @@ class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServi
 {
   public:
     virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_SDL; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return "SDL"; }
+    virtual PStringList GetDeviceNames(int /*userData*/) const { return PStringList("SDL"); }
     virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return deviceName.Find("SDL") == 0; }
 } PVideoOutputDevice_SDL_descriptor;
 
@@ -136,7 +139,7 @@ PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 
 PStringList PVideoOutputDevice_SDL::GetDeviceNames() const
 {
-  return "SDL";
+  return PStringList("SDL");
 }
 
 
