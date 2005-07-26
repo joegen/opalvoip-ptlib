@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2005/07/26 01:43:05  dereksmithies
+ * Set up so that only H or h or ? generate a help message.
+ *
  * Revision 1.2  2005/07/26 00:46:22  dereksmithies
  * Commit code to provide two examples of waiting for a thread to terminate.
  * The busy wait method provides a method of testing PWLIB processes for closing
@@ -194,8 +197,9 @@ void UserInterfaceThread::Main()
       break;
     case '?' :
     case 'h' :
-    default:
       PError << help << endl;
+
+    default:
       break;
                                                                                                                                             
     } // end switch
