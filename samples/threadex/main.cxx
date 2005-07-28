@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2005/07/28 00:25:03  dereksmithies
+ * Update console reading code so it works via a ssh connection to a remote machine.
+ * Add D option to console, so report the average time taken by each iteration of the thread.
+ *
  * Revision 1.4  2005/07/26 02:52:39  dereksmithies
  * Use different console handling code. Still get "console gone errors" when on
  * remote box.
@@ -142,7 +146,7 @@ void LauncherThread::Main()
     while (keepGoing) {
       DelayThread thread(delay);
       while (!thread.IsTerminated());
-      iteration ++;
+      iteration++;
     }
   } else {
     while (keepGoing) {
@@ -160,43 +164,40 @@ void UserInterfaceThread::Main()
 
   PStringStream help;
   help << "Press : " << endl
-       << "         H or ? help" << endl
-       << "         R      report count of threads done" << endl
-       << "         T      time elapsed" << endl
-       << "         X or Q exit " << endl;
+       << "         D      average Delay time of each thread" << endl
+       << "         H or ? help"                              << endl
+       << "         R      report count of threads done"      << endl
+       << "         T      time elapsed"                      << endl
+       << "         X or Q exit "                             << endl;
  
   cout << endl << help;
 
   LauncherThread launch(delay, useBusyWait);
-  
+
+  console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {
- 
-    // display the prompt
-    cout << "Command ? " << flush;
- 
-
-   // terminate the menu loop if console finished
-    char ch = (char)tolower(console.peek());
-    if (console.eof()) {
-        cout << "\nConsole gone - menu disabled" << endl;
-	launch.Terminate();
-	launch.WaitForTermination();
-	return;
-    }
-
-    if (ch == '\n') {
-      console.ignore(INT_MAX, '\n');
-      continue;
-    }
-
-    console >> ch;
+    char ch = console.ReadChar();
 
     switch (tolower(ch)) {
+    case 'd' :
+      {
+	int i = launch.GetIteration();
+	if (i == 0) {
+	  cout << "Have not completed an iteration yet, so time per iteration is unavailable" << endl;
+	} else {
+	  cout << "Average time per iteration is " << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
+	       << " milliseconds" << endl;
+	}
+	cout << "Command ? " << flush;
+	break;
+      }
     case 'r' :
       cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      cout << "Command ? " << flush;
       break;
     case 't' :
       cout << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
+      cout << "Command ? " << flush;
       break;
 
     case 'x' :
@@ -209,7 +210,7 @@ void UserInterfaceThread::Main()
     case '?' :
     case 'h' :
       cout << help << endl;
-
+      cout << "Command ? " << flush;
     default:
       break;
                                                                                                                                             
