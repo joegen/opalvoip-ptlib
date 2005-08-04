@@ -27,9 +27,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.27.10.2  2005/08/04 19:40:04  csoutheren
+ * Backported fix for gcc 4.0.1 from CVS head
+ *
  * Revision 1.27.10.1  2005/06/13 23:42:30  csoutheren
  * Fixed problems with gcc 4.0 on 64 bit platforms, backported from head
  * Thanks to Kilian Krause
+ *
+ * Revision 1.28  2005/06/02 19:25:18  dsandras
+ * Applied patch from Miguel Rodríguez Pérez <miguelrp  @  gmail.com> (migras) to fix compilation with gcc 4.0.1.
  *
  * Revision 1.27  2003/09/17 09:01:00  csoutheren
  * Moved PSmartPointer and PNotifier into seperate files
