@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.13.12.4  2005/08/04 08:21:58  dsandras
+ * Added static plugin flag.
+ *
  * Revision 1.13.12.3  2005/07/26 17:07:03  dsandras
  * Fix to make gcc happy.
  *
@@ -83,6 +86,8 @@
 #ifdef __GNUC__
 #pragma implementation "vsdl.h"
 #endif
+
+#define P_FORCE_STATIC_PLUGIN 
 
 #include <ptlib.h>
 #include <ptlib/vconvert.h>
