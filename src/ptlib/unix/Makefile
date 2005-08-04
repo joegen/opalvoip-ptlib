@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.138  2005/08/04 03:19:08  dereksmithies
+# Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
+# Correct compile errors under unix.
+#
 # Revision 1.137  2005/07/13 11:15:26  csoutheren
 # Backported NAT abstraction files from isvo branch
 #
@@ -580,6 +584,7 @@ ifdef HAS_SASL2
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp_muc.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_roster.cxx
 endif
 
