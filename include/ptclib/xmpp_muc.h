@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_muc.h,v $
+ * Revision 1.2  2005/08/04 03:19:07  dereksmithies
+ * Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
+ * Correct compile errors under unix.
+ *
  * Revision 1.1  2004/05/09 07:23:46  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -54,6 +58,9 @@ namespace XMPP
     {
       PCLASSINFO(User, PObject);
     public:
+      User();
+      ~User();
+
       static PString Namespace;
 
       enum Role {
