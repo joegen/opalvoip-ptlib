@@ -1306,7 +1306,7 @@ BOOL PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
     */
    err = AudioUnitInitialize(mAudioUnit);
    
-   (err);
+   //(err);
   
    state = setbuffer_;
 
@@ -1336,8 +1336,8 @@ OSStatus PSoundChannelCoreAudio::SetupAdditionalRecordBuffers()
 	bufferSizeBytes += bufferSizeBytes / 10; // +10%
 
    //calculate size of ABL given the last field, assum non-interleaved 
-   UInt32 propsize = 
-      offsetof(AudioBufferList, mBuffers[hwASBD.mChannelsPerFrame]);
+	UInt32 mChannelsPerFrame = hwASBD.mChannelsPerFrame;
+	UInt32 propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
 
    //malloc buffer lists
    mInputBufferList = (AudioBufferList *)malloc(propsize);
@@ -1371,7 +1371,8 @@ OSStatus PSoundChannelCoreAudio::SetupAdditionalRecordBuffers()
 
 
    //calculate number of buffers from channels
-   propsize = offsetof(AudioBufferList, mBuffers[pwlibASBD.mChannelsPerFrame]);
+   mChannelsPerFrame = pwlibASBD.mChannelsPerFrame;
+   propsize = (UInt32) &(((AudioBufferList *)0)->mBuffers[mChannelsPerFrame]);
 
    //malloc buffer lists
    mOutputBufferList = (AudioBufferList *)malloc(propsize);
