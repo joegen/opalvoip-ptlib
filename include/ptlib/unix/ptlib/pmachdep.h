@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.69  2005/08/04 20:10:24  csoutheren
+ * Apply patch #1217596
+ * Fixed problems with MacOSX Tiger
+ * Thanks to Hannes Friederich
+ *
  * Revision 1.68  2005/08/04 19:46:51  csoutheren
  * Applied patch #1240770
  * Fixed problem with compilation under Solaris 10
@@ -496,8 +501,10 @@ void *dlsym(void *handle, const char *symbol);
 #include <net/if.h>
 #include <netinet/tcp.h>
 #include <sys/ioctl.h>
- 
+
+#if defined (P_MACOSX) && (P_MACOSX < 800)
 typedef int socklen_t;
+#endif
  
 #define HAS_IFREQ
  
