@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.74  2005/08/04 18:54:10  csoutheren
+ * Applied fix for bug Bugs item #1244310
+ * Fix problem wioth --disable-openh323 option
+ * Thanks to Michael Manousos
+ *
  * Revision 1.73  2005/02/22 03:25:43  dereksmithies
  * Add fix from huangzb@a-star.com.cn to correct a typo. Many thanks.
  *
@@ -731,7 +736,9 @@ void PProcess::CommonConstruct()
 
 void PProcess::CommonDestruct()
 {
+#ifdef P_CONFIG_FILE
   delete configFiles;
+#endif
   configFiles = NULL;
   SetSignals(NULL);
 }
