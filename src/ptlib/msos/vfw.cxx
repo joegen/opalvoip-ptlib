@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.27.6.3  2005/08/04 08:10:50  rjongbloed
+ * Fixed problem where if SetFrameSize() is called and window is already that size, the window is not brought to the front.
+ *
  * Revision 1.27.6.2  2005/07/24 07:23:57  rjongbloed
  * Fixed correct use of ShowWindow() return value in video window device Start()
  *
@@ -1275,6 +1278,9 @@ BOOL PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height)
 {
   {
     PWaitAndSignal m(mutex);
+
+    if (width == frameWidth && height == frameHeight)
+      return TRUE;
 
     if (!PVideoOutputDeviceRGB::SetFrameSize(width, height))
       return FALSE;
