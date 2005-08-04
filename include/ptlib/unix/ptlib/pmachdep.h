@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.68  2005/08/04 19:46:51  csoutheren
+ * Applied patch #1240770
+ * Fixed problem with compilation under Solaris 10
+ * Thanks to Boris Pavacic
+ *
  * Revision 1.67  2004/11/16 00:30:38  csoutheren
  * Added Cygwin support
  *
@@ -329,10 +334,12 @@ typedef int socklen_t;
 #include <net/if.h>
 #include <sys/sockio.h>
 
+#if !defined(P_HAS_UPAD128_T)
 typedef union {
   long double _q;
   uint32_t _l[4];
 } upad128_t;
+#endif
 
 #define PSETPGRP()  setpgrp()
 
