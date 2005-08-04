@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.41  2005/08/04 19:46:51  csoutheren
+ * Applied patch #1240770
+ * Fixed problem with compilation under Solaris 10
+ * Thanks to Boris Pavacic
+ *
  * Revision 1.40  2005/04/27 12:08:11  csoutheren
  * Added support for res_minit for thread-safe resolver access
  * Added mutex when res_minit not available
@@ -514,6 +519,7 @@
 #undef  P_NEEDS_GNU_CXX_NAMESPACE
 #undef  PMEMORY_CHECK
 #undef  P_HAS_RECVMSG
+#undef  P_HAS_UPAD128_T
 
 #endif // _PT_BUILDOPTS_H
 
