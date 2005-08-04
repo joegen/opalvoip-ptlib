@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.27.6.4  2005/08/04 08:39:43  rjongbloed
+ * Fixed correct flipping of camera can do native mode YUV420P
+ *
  * Revision 1.27.6.3  2005/08/04 08:10:50  rjongbloed
  * Fixed problem where if SetFrameSize() is called and window is already that size, the window is not brought to the front.
  *
@@ -559,9 +562,8 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
 
   PString oldFormat = colourFormat;
 
-  if (!PVideoDevice::SetColourFormat(colourFmt)) {
+  if (!PVideoDevice::SetColourFormat(colourFmt))
     return FALSE;
-  }
 
   PINDEX i = 0;
   while (FormatTable[i].colourFormat != NULL && !(colourFmt *= FormatTable[i].colourFormat))
@@ -594,6 +596,7 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
     }
   }
   else {
+    nativeVerticalFlip = false;
     bi->bmiHeader.biHeight = frameHeight;
     applied = bi.ApplyFormat(hCaptureWindow, colourFormat);
   }
