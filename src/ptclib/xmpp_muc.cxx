@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_muc.cxx,v $
+ * Revision 1.2  2005/08/04 03:19:08  dereksmithies
+ * Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
+ * Correct compile errors under unix.
+ *
  * Revision 1.1  2004/05/09 07:23:50  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -39,6 +43,16 @@
 #include <ptclib/xmpp_muc.h>
 
 #if P_EXPAT
+
+XMPP::MUC::User::User()
+{
+
+}
+
+XMPP::MUC::User::~User()
+{
+
+}
 
 
 PObject::Comparison XMPP::MUC::User::Compare(const PObject & obj) const
@@ -177,8 +191,8 @@ void XMPP::MUC::Room::OnPresence(XMPP::Presence& msg, INT)
   if (m_RoomJID != from) // It's not about this room
     return;
 
-  XMPP::MUC::User::Role role = XMPP::MUC::User::Role::Unknown;
-  XMPP::MUC::User::Affiliation affiliation = XMPP::MUC::User::Affiliation::Unknown_a;
+  XMPP::MUC::User::Role role = User::Unknown;
+  XMPP::MUC::User::Affiliation affiliation = User::Unknown_a;
 
   PXMLElement * x = msg.GetElement("x");
 
