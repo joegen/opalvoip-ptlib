@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.18  2005/08/04 20:10:24  csoutheren
+ * Apply patch #1217596
+ * Fixed problems with MacOSX Tiger
+ * Thanks to Hannes Friederich
+ *
  * Revision 1.17  2004/05/11 01:15:53  csoutheren
  * Included name into Unix PDynaLink implementation
  *
@@ -88,6 +93,7 @@
 #include <ptlib.h>
 
 #ifdef P_MACOSX
+#if P_MACOSX < 700
 
 /*
 Copyright (c) 2002 Peter O'Gorman <ogorman@users.sourceforge.net>
@@ -326,7 +332,14 @@ static void *dlsym(void *handle, const char *symbol)
 	return value;
 }
 
-#endif
+#else
+
+// The functionality implemented above ships directly with MacOSX 10.3 and later
+#include <dlfcn.h>
+
+#endif // P_MACOSX < 700
+
+#endif // P_MACOSX
 
 #ifndef	P_DYNALINK
 

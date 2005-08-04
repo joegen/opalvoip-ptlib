@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.25  2005/08/04 20:10:24  csoutheren
+ * Apply patch #1217596
+ * Fixed problems with MacOSX Tiger
+ * Thanks to Hannes Friederich
+ *
  * Revision 1.24  2004/10/12 23:28:07  csoutheren
  * Fixed problem with bogus DOCTYPE being output
  *
@@ -374,6 +379,8 @@ class PXMLElement : public PXMLObject {
 };
 
 ////////////////////////////////////////////////////////////
+
+class PConfig;			// stupid gcc 4 does not recognize PConfig as a class
 
 class PXMLSettings : public PXML
 {
