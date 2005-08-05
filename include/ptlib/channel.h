@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.46  2005/08/05 20:44:46  csoutheren
+ * Fixed typo
+ *
  * Revision 1.45  2005/08/05 20:41:41  csoutheren
  * Added unix support for scattered read/write
  *
@@ -741,7 +744,7 @@ class PChannel : public PObject, public iostream {
 #else
     struct Slice {
       void * iov_base;
-      size_t iov_len
+      size_t iov_len;
     };
 #endif
 
