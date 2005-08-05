@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.41  2005/08/05 20:41:42  csoutheren
+ * Added unix support for scattered read/write
+ *
  * Revision 1.40  2004/04/27 04:37:51  rjongbloed
  * Fixed ability to break of a PSocket::Select call under linux when a socket
  *   is closed by another thread.
@@ -315,6 +318,55 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
   // Reset all the errors.
   return ConvertOSError(0, LastWriteError);
 }
+
+#ifdef P_HAS_RECVMSG
+
+BOOL PChannel::Read(const VectorOfSlice & slices)
+{
+  lastReadCount = 0;
+
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
+
+  if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
+    return FALSE;
+
+  if (ConvertOSError(lastReadCount = ::readv(os_handle, &slices[0], slices.size()), LastReadError))
+    return lastReadCount > 0;
+
+  lastReadCount = 0;
+  return FALSE;
+}
+
+BOOL PChannel::Write(const VectorOfSlice & slices)
+{
+  // if the os_handle isn't open, no can do
+  if (os_handle < 0)
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+
+  // flush the buffer before doing a write
+  IOSTREAM_MUTEX_WAIT();
+  flush();
+  IOSTREAM_MUTEX_SIGNAL();
+
+  int result;
+  while ((result = ::writev(os_handle, &slices[0], slices.size())) < 0) {
+    if (errno != EWOULDBLOCK)
+      return ConvertOSError(-1, LastWriteError);
+
+    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
+      return FALSE;
+  }
+
+#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
+  PThread::Yield(); // Starvation prevention
+#endif
+
+  // Reset all the errors.
+  return ConvertOSError(0, LastWriteError);
+}
+
+#endif
 
 BOOL PChannel::Close()
 {
