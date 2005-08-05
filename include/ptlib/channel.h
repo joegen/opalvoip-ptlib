@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.45  2005/08/05 20:41:41  csoutheren
+ * Added unix support for scattered read/write
+ *
  * Revision 1.44  2005/08/05 19:42:09  csoutheren
  * Added support for scattered read/write
  *
@@ -732,38 +735,42 @@ class PChannel : public PObject, public iostream {
   /**@name Scattered read/write functions */
   //@{
     /** Structure that defines a "slice" of memory to be written to
-		*/
-		struct Slice {
-			void * data;
-			PINDEX len;
-		};
+     */
+#if P_HAS_RECVMSG
+    typedef iovec Slice;
+#else
+    struct Slice {
+      void * iov_base;
+      size_t iov_len
+    };
+#endif
 
-		typedef std::vector<Slice> VectorOfSlice;
+    typedef std::vector<Slice> VectorOfSlice;
 
     /** Low level scattered read from the channel. This is identical to Read except 
-		   that the data will be read into a series of scattered memory slices. By default,
-			 this call will default to calling Read multiple times, but this may be 
-			 implemented by operating systems to do a real scattered read
+	that the data will be read into a series of scattered memory slices. By default,
+	this call will default to calling Read multiple times, but this may be 
+	implemented by operating systems to do a real scattered read
 
        @return
        TRUE indicates that at least one character was read from the channel.
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-			const VectorOfSlice & slices    // slices to read to
+      const VectorOfSlice & slices    // slices to read to
     );
 
     /** Low level scattered write to the channel. This is identical to Write except 
-		   that the data will be written from a series of scattered memory slices. By default,
-			 this call will default to calling Write multiple times, but this can be actually
-			 implemented by operating systems to do a real scattered write
+        that the data will be written from a series of scattered memory slices. By default,
+	this call will default to calling Write multiple times, but this can be actually
+	implemented by operating systems to do a real scattered write
 
        @return
        TRUE indicates that at least one character was read from the channel.
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Write(
-			const VectorOfSlice & slices    // slices to read to
+      const VectorOfSlice & slices    // slices to read to
     );
   //@}
 
