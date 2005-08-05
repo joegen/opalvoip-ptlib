@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.75  2005/08/05 19:42:09  csoutheren
+ * Added support for scattered read/write
+ *
  * Revision 1.74  2004/12/08 00:49:37  csoutheren
  * Fixed weird problem with not returning correct filetype when filename has multiple
  *  "." and slashes
@@ -497,6 +500,37 @@ BOOL PChannel::Close()
   return FALSE;
 }
 
+BOOL PChannel::Read(const VectorOfSlice & slices)
+{
+	PINDEX length = 0;
+
+	VectorOfSlice::const_iterator r;
+	for (r = slices.begin(); r != slices.end(); ++r) {
+		BOOL stat = Read(r->data, r->len);
+		length        += lastReadCount;
+		lastReadCount = length;
+		if (!stat)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL PChannel::Write(const VectorOfSlice & slices)
+{
+	PINDEX length = 0;
+
+	VectorOfSlice::const_iterator r;
+	for (r = slices.begin(); r != slices.end(); ++r) {
+		BOOL stat = Write(r->data, r->len);
+		length        += lastWriteCount;
+		lastWriteCount = length;
+		if (!stat)
+			return FALSE;
+	}
+
+	return TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Directories
