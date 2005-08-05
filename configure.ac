@@ -382,6 +382,14 @@ AC_PATH_PROG(FLEX, flex)
 if test -z "$FLEX" ; then
         AC_MSG_ERROR(pwlib needs the GNU Project fast lexical analyzer generator flex, 1)
 fi
+
+dnl ########################################################################
+dnl most systems have "ar", but some use "gar"
+AC_PATH_PROG(AR, ar)
+if test -z "$AR" ; then
+  AC_PATH_PROG(AR, gar)
+fi
+
 dnl ########################################################################
 dnl we need bison, so we better make sure it's there
 AC_PATH_PROG(BISON, bison)
