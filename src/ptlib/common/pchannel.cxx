@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.33  2005/08/05 20:41:42  csoutheren
+ * Added unix support for scattered read/write
+ *
  * Revision 1.32  2004/07/03 03:00:46  rjongbloed
  * Fixed MSVC warning
  *
@@ -650,6 +653,41 @@ BOOL PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup group)
   return errorCode == NoError;
 }
 
+#ifndef P_HAS_RECVMSG
+
+BOOL PChannel::Read(const VectorOfSlice & slices)
+{
+  PINDEX length = 0;
+
+  VectorOfSlice::const_iterator r;
+  for (r = slices.begin(); r != slices.end(); ++r) {
+    BOOL stat = Read(r->iov_base, r->iov_len);
+    length        += lastReadCount;
+    lastReadCount = length;
+    if (!stat)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL PChannel::Write(const VectorOfSlice & slices)
+{
+  PINDEX length = 0;
+
+  VectorOfSlice::const_iterator r;
+  for (r = slices.begin(); r != slices.end(); ++r) {
+    BOOL stat = Write(r->iov_base, r->iov_len);
+    length        += lastWriteCount;
+    lastWriteCount = length;
+    if (!stat)
+      return FALSE;
+  }
+
+  return TRUE;
+}
+
+#endif // P_HAS_RECVMSG
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIndirectChannel

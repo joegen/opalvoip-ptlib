@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.76  2005/08/05 20:41:42  csoutheren
+ * Added unix support for scattered read/write
+ *
  * Revision 1.75  2005/08/05 19:42:09  csoutheren
  * Added support for scattered read/write
  *
@@ -498,38 +501,6 @@ BOOL PChannel::Write(const void *, PINDEX)
 BOOL PChannel::Close()
 {
   return FALSE;
-}
-
-BOOL PChannel::Read(const VectorOfSlice & slices)
-{
-	PINDEX length = 0;
-
-	VectorOfSlice::const_iterator r;
-	for (r = slices.begin(); r != slices.end(); ++r) {
-		BOOL stat = Read(r->data, r->len);
-		length        += lastReadCount;
-		lastReadCount = length;
-		if (!stat)
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-BOOL PChannel::Write(const VectorOfSlice & slices)
-{
-	PINDEX length = 0;
-
-	VectorOfSlice::const_iterator r;
-	for (r = slices.begin(); r != slices.end(); ++r) {
-		BOOL stat = Write(r->data, r->len);
-		length        += lastWriteCount;
-		lastWriteCount = length;
-		if (!stat)
-			return FALSE;
-	}
-
-	return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
