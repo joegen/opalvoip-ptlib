@@ -24,6 +24,8 @@
 #include "wx/wx.h"
 #endif
 
+#include "main.h"
+
 ////@begin includes
 ////@end includes
 
