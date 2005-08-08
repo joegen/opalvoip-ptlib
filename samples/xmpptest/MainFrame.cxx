@@ -27,7 +27,7 @@
 ////@begin includes
 ////@end includes
 
-#include "MainFrame.h"
+#include "main.h"
 
 ////@begin XPM images
 ////@end XPM images
