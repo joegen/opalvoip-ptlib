@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.33  2005/08/08 07:01:58  rjongbloed
+ * Minor changes to remove possible ambiguity where virtual and non-virtual
+ *   functions are overloaded.
+ * Removed commented out code.
+ *
  * Revision 1.32  2005/05/02 09:02:35  csoutheren
  * Fixed previous fix to contain.cxx which broke PString::MakeUnique
  *
@@ -269,8 +274,7 @@ class PAbstractArray : public PContainer
      */
     virtual BOOL SetSize(
       PINDEX newSize  /// New size of the array in elements.
-    )
-    { return SetSize(newSize, FALSE); }
+    );
   //@}
 
   /**@name New functions for class */
@@ -323,7 +327,7 @@ class PAbstractArray : public PContainer
   //@}
 
   protected:
-    BOOL SetSize(PINDEX newSize, BOOL force);
+    BOOL InternalSetSize(PINDEX newSize, BOOL force);
 
     virtual void PrintElementOn(
       ostream & stream,
