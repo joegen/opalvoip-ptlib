@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="ASNParser"
+	ProjectGUID="{7D4C9E74-F196-4A30-859F-62748657B86B}"
 	RootNamespace="ASNParser"
 	SccProjectName=""
 	SccLocalPath="">
