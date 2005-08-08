@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.171  2005/08/08 07:01:58  rjongbloed
+ * Minor changes to remove possible ambiguity where virtual and non-virtual
+ *   functions are overloaded.
+ * Removed commented out code.
+ *
  * Revision 1.170  2005/05/02 13:10:24  csoutheren
  * Fixed problem with PString::SetMinSize not always uniquing the string
  *
@@ -917,7 +922,13 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 }
 
 
-BOOL PAbstractArray::SetSize(PINDEX newSize, BOOL force)
+BOOL PAbstractArray::SetSize(PINDEX newSize)
+{
+  return InternalSetSize(newSize, FALSE);
+}
+
+
+BOOL PAbstractArray::InternalSetSize(PINDEX newSize, BOOL force)
 {
   if (newSize < 0)
     newSize = 0;
@@ -1611,33 +1622,7 @@ BOOL PString::IsEmpty() const
 
 BOOL PString::SetSize(PINDEX newSize)
 {
-  return PAbstractArray::SetSize(newSize, TRUE);
-
-#if 0
-  if (IsUnique())
-    return PAbstractArray::SetSize(newSize);
-
-  char * newArray;
-
-  if (newsizebytes == 0)
-    newArray = NULL;
-  else {
-    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
-      return FALSE;
-
-    if (theArray != NULL)
-      memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
-  }
-
-  reference->count--;
-  reference = new Reference(newSize);
-
-  if (newsizebytes > oldsizebytes)
-    memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
-
-  theArray = newArray;
-  return TRUE;
-#endif
+  return InternalSetSize(newSize, TRUE);
 }
 
 
@@ -1650,7 +1635,7 @@ BOOL PString::MakeUnique()
   if (IsUnique())
     return TRUE;
 
-  PAbstractArray::SetSize(GetSize(), TRUE);
+  InternalSetSize(GetSize(), TRUE);
   return FALSE;
 }
 
