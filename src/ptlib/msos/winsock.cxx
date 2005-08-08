@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.67  2005/08/08 06:59:39  rjongbloed
+ * Fixed compiler warning
+ *
  * Revision 1.66  2005/07/13 12:08:09  csoutheren
  * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
  *
@@ -793,7 +796,11 @@ void PUDPSocket::EnableQoS()
   disableQoS = FALSE;
 }
 
-BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
+BOOL PUDPSocket::SupportQoS(const PIPSocket::Address &
+#if P_HAS_QOS
+                                                       address
+#endif  // P_HAS_QOS
+                                                              )
 {
 #if P_HAS_QOS
 
