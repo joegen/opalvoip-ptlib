@@ -6,6 +6,9 @@
  * Copyright 2004 Reitek S.p.A.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2005/08/08 08:15:59  rjongbloed
+ * Fixed precompiled header usage
+ *
  * Revision 1.2  2004/05/09 07:23:49  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -17,14 +20,15 @@
 #ifndef _XMPPTest_MAIN_H
 #define _XMPPTest_MAIN_H
 
-#include <wx/wx.h>
-#include "MainFrame.h"
 #include <ptlib.h>
 #include <ptlib/notifier_ext.h>
 #include <ptclib/xmpp_c2s.h>
 #include <ptclib/xmpp_roster.h>
 #include <ptclib/xmpp_muc.h>
 
+#include <wx/wx.h>
+
+#include "MainFrame.h"
 
 class XMPPFrameBase : public PObject
 {
