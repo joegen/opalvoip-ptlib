@@ -25,6 +25,17 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: video4beos.cxx,v $
+ * Revision 1.6  2005/08/09 09:08:13  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.5.6.1  2005/07/17 09:27:08  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.5  2004/06/16 01:55:47  ykiryanov
  * Made video capture working
  *
@@ -867,28 +878,9 @@ PINDEX PVideoInputDevice_BeOSVideo::GetMaxFrameBytes()
   if (!IsOpen())
     return 0;
   
-  PINDEX frameBytes = frameWidth * frameHeight *4; // RGB32 only 
-  
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    PTRACE(TL, "PVideoInputDevice_BeOSVideo::GetMaxFrameBytes, bytes " << bytes);
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  PTRACE(TL, "PVideoInputDevice_BeOSVideo::GetMaxFrameBytes, frame bytes " << frameBytes);
-  return frameBytes;
+  return GetMaxFrameBytesConverted(frameWidth * frameHeight *4); // RGB32 only 
 }
 
-BOOL PVideoInputDevice_BeOSVideo::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
-}
 
 BOOL PVideoInputDevice_BeOSVideo::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
