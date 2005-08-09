@@ -207,6 +207,10 @@ SOURCE=..\common\pluginmgr.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=.\PODBC.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\ptime.cxx
 # End Source File
 # Begin Source File
@@ -569,6 +573,10 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\pipechan.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\include\ptlib\msos\ptlib\PODBC.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\include\ptlib\msos\ptlib\pprocess.h
 # End Source File
 # Begin Source File
@@ -647,7 +655,7 @@ SOURCE=..\..\..\include\ptbuildopts.h.in
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\pwlib\include
+InputDir=\Storage\CVS_Raw\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -662,7 +670,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\pwlib\include
+InputDir=\Storage\CVS_Raw\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
