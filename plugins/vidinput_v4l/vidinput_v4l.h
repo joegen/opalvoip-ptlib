@@ -8,12 +8,12 @@
 
 #include <linux/videodev.h>
 
-class PVideoInputV4lDevice: public PVideoInputDevice
+class PVideoInputDevice_V4L: public PVideoInputDevice
 {
 
 public:
-  PVideoInputV4lDevice();
-  ~PVideoInputV4lDevice();
+  PVideoInputDevice_V4L();
+  ~PVideoInputDevice_V4L();
 
   static PStringList GetInputDeviceNames();
 
@@ -33,7 +33,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-  BOOL GetFrame(PBYTEArray & frame);
   BOOL GetFrameData(BYTE*, PINDEX*);
   BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
 
