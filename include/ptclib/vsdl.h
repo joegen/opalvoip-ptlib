@@ -22,6 +22,17 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.9  2005/08/09 09:08:08  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.8.2.1  2005/07/17 09:26:46  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.8  2005/07/13 12:50:07  csoutheren
  * Backported changes from isvo branch
  *
@@ -92,211 +103,107 @@
 
 #undef main
 
-class PSDLVideoFrame : public PObject
-{
-    PCLASSINFO(PSDLVideoFrame, PObject);
-  public:
-    PSDLVideoFrame(
-      unsigned newWidth,
-      unsigned newHeight,
-      Uint8 *data
-    );
-    PSDLVideoFrame(
-      unsigned newWidth,
-      unsigned newHeight,
-      const void *_data
-    );
-  
-    ~PSDLVideoFrame();
-  
-    unsigned GetWidth() { return width; }
-    unsigned GetHeight() { return height; }
-  
-    Uint8 *GetDataPointer() { return data; }
-  
-    void PrintOn(ostream & str) const;
-  
-  protected:
-    void Initialise(unsigned newWidth, unsigned newHeight, Uint8 *_data);
-  
-    unsigned width;
-    unsigned height;
-  
-    Uint8 *data;
-};
-
-
-class PSDLDisplayThread : public PThread
-{
-    PCLASSINFO(PSDLDisplayThread, PThread);
-  public:
-    PSDLDisplayThread(
-      BOOL _videoPIP
-    );
-    ~PSDLDisplayThread();
-  
-    void Main();
-  
-    /** returns FALSE if the thread is closed, so cannot add frame.
-    The frame is deleted by the thread - in all cases.*/
-    BOOL AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding);
-  
-    BOOL IsOpen();
-  
-    virtual void Terminate();
-    void RequestOpenWindow(BOOL isEncoding);
-    void RequestCloseWindow(BOOL isEncoding);
-  
-  protected:
-    BOOL ScreenIsOpen();
-    BOOL DisplayIsShutDown();
-    void CloseWindow(BOOL isEncoding);
-  
-    PSDLVideoFrame *GetNextFrame(BOOL isEncoding);
-  
-    virtual BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
-    void InitDisplayPosn();
-    void InitDisplayPosn(unsigned w, unsigned h);
-    virtual void CloseScreen();
-    BOOL CreateOverlay(BOOL isEncoding);
-    BOOL SetOverlaySize (BOOL isEncoding, unsigned _width, unsigned _height);
-  
-    void WriteOutDisplay();
-  
-    unsigned GetDisplayIndex(BOOL isEncoding);
-  
-    /**Store the height,widths etc for this classes window
-    */
-    BOOL SetFrameSize(BOOL isEncoding, unsigned _width, unsigned _height);
-  
-    /**Handles all events that occur in the SDL window (resize and quit)
-    */
-    void ProcessSDLEvents(void);
-  
-    BOOL Redraw(BOOL isEncoding, PSDLVideoFrame *frame);
-  
-    enum { RemoteIndex = 0 };
-    enum { EncodeIndex = 1 };
-  
-    const char * GetDirName(BOOL isEncoding) 
-      { return (isEncoding ? "local" : "remote"); }
-  
-    PMutex     mutex;  
-    PSyncPoint commandSync;
-    BOOL       threadRunning;
-  
-    SDL_Surface  *screen;
-    SDL_Overlay  *overlay[2];
-    SDL_Rect      displayPosn[2];
-  
-    unsigned   width[2];
-    unsigned   height[2];
-    unsigned   oldScreenWidth, oldScreenHeight;
-  
-    PString  remoteName;
-    BOOL   displayIsShutDown;
-    BOOL   videoPIP;
-  
-    BOOL  closeEncWindow;
-    BOOL  closeRecWindow;
-  
-    PSDLVideoFrame *nextEncFrame;
-    PSDLVideoFrame *nextRcvFrame;
-};
-
 
 /**Display data to the SDL screen.
   */
-class PSDLVideoDevice : public PVideoOutputDevice
+class PVideoOutputDevice_SDL : public PVideoOutputDevice
 {
-    PCLASSINFO(PSDLVideoDevice, PVideoOutputDevice);
+    PCLASSINFO(PVideoOutputDevice_SDL, PVideoOutputDevice);
   
   public:
     /**Constructor. Does not make a window.
       */
-    PSDLVideoDevice(
-      const PString & _remoteName,
-      BOOL _isEncoding, 
-      PSDLDisplayThread *_sdlThread
-    );
+    PVideoOutputDevice_SDL();
   
       /**Destructor.  Closes window if necessary, (which initializes all variables)
     */
-    ~PSDLVideoDevice();
+    ~PVideoOutputDevice_SDL();
+  
+    /**Get a list of all of the devices available.
+    */
+    virtual PStringList GetDeviceNames() const;
   
     /**Open the device given the device name.
     */
     virtual BOOL Open(
       const PString & /*deviceName*/,   /// Device name to open
       BOOL /*startImmediate*/ = TRUE    /// Immediately start device
-      ) { return TRUE; }
+    );
   
     /**Synonymous with the destructor.
     */
-    BOOL Close();
+    virtual BOOL Close();
   
     /**Global test function to determine if this video rendering
     class is open.*/
-    BOOL IsOpen();
+    virtual BOOL IsOpen();
   
-    unsigned GetFrameWidth() const { return width; }
-  
-    unsigned GetFrameHeight() const { return height; }
-  
-    /**Take a YUV420P format image, render it on the existing window. 
-    If the window is not present, there is no rendering.
+    /**Set the colour format to be used.
+       Note that this function does not do any conversion. If it returns TRUE
+       then the video device does the colour format in native mode.
+
+       To utilise an internal converter use the SetColourFormatConverter()
+       function.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns TRUE.
     */
-    BOOL Redraw (const void *frame);
-  
-    /**Get a list of all of the drivers available.
+    virtual BOOL SetColourFormat(
+      const PString & colourFormat // New colour format for device.
+    );
+
+    /**Set the frame size to be used.
+
+       Note that devices may not be able to produce the requested size, and
+       this function will fail.  See SetFrameSizeConverter().
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns TRUE.
     */
-    virtual PStringList GetDeviceNames() const;
-  
+    virtual BOOL SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
+
     /**Get the maximum frame size in bytes.
-  
-      Note a particular device may be able to provide variable length
-      frames (eg motion JPEG) so will be the maximum size of all frames.
-    */
-    virtual PINDEX GetMaxFrameBytes()
-      { return 352 * 288 * 3 * 2; }
-  
-    /**Set size of the window. Closes existing window, opens new window.
-    */
-    BOOL SetFrameSize (unsigned _width ,unsigned _height);
-  
-    virtual PString GetRemoteName() const
-      { return remoteName ; }
-  
-    /**Name of remote computer, which is used for window title.
-    */
-    virtual void SetRemoteName(
-      const PString & _remoteName
-    ) { remoteName = _remoteName; }
-  
-    /**Specifies required number of bitplanes in the image. Does nothing.
-    */
-    void ForceDepth(int /*d*/) { }
-  
-  
-    BOOL SetFrameData(
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    virtual PINDEX GetMaxFrameBytes();
+
+    /**Set a section of the output frame buffer.
+      */
+    virtual BOOL SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
       unsigned height,
       const BYTE * data,
       BOOL endFrame = TRUE
-    ) ;
-  
-      /**Indicate frame may be displayed.
-    */
-    BOOL EndFrame();
-  
-  private:
-    BOOL     isEncoding;
-    PString  remoteName;
-    PSDLDisplayThread *sdlThread;
-    unsigned     width, height;
-};
+    );
+
+  protected:
+    PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_SDL, SDLThreadMain);
+    bool InitialiseSDL();
+    bool ProcessSDLEvents();
+
+    PThread     * sdlThread;
+    PSyncPoint    sdlStarted;
+    PSyncPointAck sdlStop;
+    PSyncPointAck adjustSize;
+    bool          updateOverlay;
+    PMutex        mutex;
+
+    SDL_Surface * screen;
+    SDL_Overlay * overlay;
+  };
+
+
+typedef PVideoOutputDevice_SDL PSDLVideoDevice; // Backward compatibility
+
+
+PWLIB_STATIC_LOAD_PLUGIN(SDL, PVideoOutputDevice);
 
 #endif    // P_SDL
 
