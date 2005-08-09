@@ -114,7 +114,7 @@
  * Coriander program even when ohphone or GnomeMeeting is being used.
  * Please use Coriander.
  *
- * PVideoInput1394DcDevice does not allow creation of two or more instances.
+ * PVideoInputDevice_1394DC does not allow creation of two or more instances.
  *
  * The bus speed is always set to P_DC1394_DEFAULT_SPEED (400 Mbps).
  * If transfer at P_DC1394_DEFAULT_SPEED is not supported by your
@@ -137,6 +137,25 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.6  2005/08/09 09:08:10  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.5.6.2  2005/07/24 09:01:48  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
+ * Revision 1.5.6.1  2005/07/17 09:27:07  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.5  2004/06/15 23:55:50  csoutheren
  * Added check for different versions of dc1394 API
  *
@@ -195,7 +214,7 @@
 #include "videoio1394dc.h"
 #include <sys/utsname.h>
 
-PCREATE_VIDINPUT_PLUGIN(DC, PVideoInput1394DcDevice);
+PCREATE_VIDINPUT_PLUGIN(1394DC);
 
 #ifndef P_DC1394_DEFAULT_SPEED
 #define P_DC1394_DEFAULT_SPEED  SPEED_400
@@ -213,14 +232,14 @@ static int num_captured;
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInput1394DC
 
-PVideoInput1394DcDevice::PVideoInput1394DcDevice()
+PVideoInputDevice_1394DC::PVideoInputDevice_1394DC()
 {
   handle = NULL;
   is_capturing = FALSE;
   capturing_duration = 10000; // arbitrary large value suffices
 }
 
-PVideoInput1394DcDevice::~PVideoInput1394DcDevice()
+PVideoInputDevice_1394DC::~PVideoInputDevice_1394DC()
 {
   Close();
 }
@@ -255,7 +274,7 @@ static int kernel_version_ok(void)
     return minorminor_ver >= 9;
 }
 
-BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
+BOOL PVideoInputDevice_1394DC::Open(const PString & devName, BOOL startImmediate)
 {
   if (!kernel_version_ok()) {
     PTRACE(0, "The Linux kernel version is too old.");
@@ -263,7 +282,7 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
   }
 
   if (IsOpen()) {
-    PTRACE(0, "You cannot open PVideoInput1394DcDevice twice.");
+    PTRACE(0, "You cannot open PVideoInputDevice_1394DC twice.");
     return FALSE;
   }
 
@@ -367,13 +386,13 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
 }
 
 
-BOOL PVideoInput1394DcDevice::IsOpen() 
+BOOL PVideoInputDevice_1394DC::IsOpen() 
 {
   return handle != NULL;
 }
 
 
-BOOL PVideoInput1394DcDevice::Close()
+BOOL PVideoInputDevice_1394DC::Close()
 {
   if (IsOpen()) {
     if (IsCapturing())
@@ -385,7 +404,7 @@ BOOL PVideoInput1394DcDevice::Close()
     return FALSE;
 }
 
-BOOL PVideoInput1394DcDevice::Start()
+BOOL PVideoInputDevice_1394DC::Start()
 {
   int dc1394_mode;
   if (!IsOpen()) return FALSE;
@@ -479,7 +498,7 @@ BOOL PVideoInput1394DcDevice::Start()
 }
 
 
-BOOL PVideoInput1394DcDevice::Stop()
+BOOL PVideoInputDevice_1394DC::Stop()
 {
   if (IsCapturing()) {
     dc1394_stop_iso_transmission(handle,camera.node);
@@ -495,12 +514,12 @@ BOOL PVideoInput1394DcDevice::Stop()
 }
 
 
-BOOL PVideoInput1394DcDevice::IsCapturing()
+BOOL PVideoInputDevice_1394DC::IsCapturing()
 {
   return is_capturing;
 }
 
-PStringList PVideoInput1394DcDevice::GetInputDeviceNames()
+PStringList PVideoInputDevice_1394DC::GetInputDeviceNames()
 {
   PStringList list;
 
@@ -522,7 +541,7 @@ PStringList PVideoInput1394DcDevice::GetInputDeviceNames()
 }
 
 
-BOOL PVideoInput1394DcDevice::SetVideoFormat(VideoFormat newFormat)
+BOOL PVideoInputDevice_1394DC::SetVideoFormat(VideoFormat newFormat)
 {
   if (!PVideoDevice::SetVideoFormat(newFormat)) {
     PTRACE(3,"PVideoDevice::SetVideoFormat\t failed for format "<<newFormat);
@@ -531,64 +550,64 @@ BOOL PVideoInput1394DcDevice::SetVideoFormat(VideoFormat newFormat)
   return TRUE;
 }
 
-int PVideoInput1394DcDevice::GetBrightness()
+int PVideoInputDevice_1394DC::GetBrightness()
 {
   return -1;
 }
 
 
-BOOL PVideoInput1394DcDevice::SetBrightness(unsigned newBrightness)
+BOOL PVideoInputDevice_1394DC::SetBrightness(unsigned newBrightness)
 {
   return FALSE;
 }
 
 
-int PVideoInput1394DcDevice::GetHue()
+int PVideoInputDevice_1394DC::GetHue()
 {
   return -1;
 }
 
 
-BOOL PVideoInput1394DcDevice::SetHue(unsigned newHue)
+BOOL PVideoInputDevice_1394DC::SetHue(unsigned newHue)
 {
   return FALSE;
 }
 
 
-int PVideoInput1394DcDevice::GetContrast()
+int PVideoInputDevice_1394DC::GetContrast()
 {
   return -1;
 }
 
 
-BOOL PVideoInput1394DcDevice::SetContrast(unsigned newContrast)
+BOOL PVideoInputDevice_1394DC::SetContrast(unsigned newContrast)
 {
   return FALSE;
 }
 
-BOOL PVideoInput1394DcDevice::SetColour(unsigned newColour) 
+BOOL PVideoInputDevice_1394DC::SetColour(unsigned newColour) 
 {
   return -1;
 }
 
-int PVideoInput1394DcDevice::GetColour()
+int PVideoInputDevice_1394DC::GetColour()
 {
   return -1;
 }
 
 
-BOOL PVideoInput1394DcDevice::SetWhiteness(unsigned newWhiteness) 
+BOOL PVideoInputDevice_1394DC::SetWhiteness(unsigned newWhiteness) 
 {
   return FALSE;
 }
 
-int PVideoInput1394DcDevice::GetWhiteness()
+int PVideoInputDevice_1394DC::GetWhiteness()
 {
   return -1;
 }
 
 
-BOOL PVideoInput1394DcDevice::GetParameters (int *whiteness, int *brightness,
+BOOL PVideoInputDevice_1394DC::GetParameters (int *whiteness, int *brightness,
                                        int *colour, int *contrast, int *hue)
 {
   *whiteness = -1;
@@ -599,13 +618,13 @@ BOOL PVideoInput1394DcDevice::GetParameters (int *whiteness, int *brightness,
 }
 
 
-int PVideoInput1394DcDevice::GetNumChannels() 
+int PVideoInputDevice_1394DC::GetNumChannels() 
 {
   return numCameras;
 }
 
 
-BOOL PVideoInput1394DcDevice::SetChannel(int newChannel)
+BOOL PVideoInputDevice_1394DC::SetChannel(int newChannel)
 {
   if (PVideoDevice::SetChannel(newChannel) == FALSE)
     return FALSE;
@@ -618,13 +637,13 @@ BOOL PVideoInput1394DcDevice::SetChannel(int newChannel)
 
 
 
-BOOL PVideoInput1394DcDevice::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_1394DC::SetFrameRate(unsigned rate)
 {
   return PVideoDevice::SetFrameRate(rate);
 }
 
 
-BOOL PVideoInput1394DcDevice::GetFrameSizeLimits(unsigned & minWidth,
+BOOL PVideoInputDevice_1394DC::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & minHeight,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
@@ -637,30 +656,13 @@ BOOL PVideoInput1394DcDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-
-PINDEX PVideoInput1394DcDevice::GetMaxFrameBytes()
+PINDEX PVideoInputDevice_1394DC::GetMaxFrameBytes()
 {
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  return frameBytes;
-}
-
-BOOL PVideoInput1394DcDevice::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
-BOOL PVideoInput1394DcDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   if (!IsCapturing()) return FALSE;
 
@@ -695,7 +697,7 @@ BOOL PVideoInput1394DcDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesR
   return TRUE;
 }
 
-BOOL PVideoInput1394DcDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_1394DC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   if(frameRate>0) {
     if (msBetweenFrames > capturing_duration)
@@ -711,17 +713,17 @@ BOOL PVideoInput1394DcDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned
 }
 
 
-void PVideoInput1394DcDevice::ClearMapping()
+void PVideoInputDevice_1394DC::ClearMapping()
 {
 }
 
 
-BOOL PVideoInput1394DcDevice::TestAllFormats()
+BOOL PVideoInputDevice_1394DC::TestAllFormats()
 {
   return TRUE;
 }
 
-BOOL PVideoInput1394DcDevice::SetColourFormat(const PString & newFormat)
+BOOL PVideoInputDevice_1394DC::SetColourFormat(const PString & newFormat)
 {
   if (newFormat != colourFormat) {
     return FALSE;
@@ -730,7 +732,7 @@ BOOL PVideoInput1394DcDevice::SetColourFormat(const PString & newFormat)
 }
 
 
-BOOL PVideoInput1394DcDevice::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_1394DC::SetFrameSize(unsigned width, unsigned height)
 {
   if ((!(width == 320 && height == 240)) &&
       (!(width == 160 && height == 120)))
@@ -754,7 +756,7 @@ BOOL PVideoInput1394DcDevice::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PVideoInput1394DcDevice::SetFrameSizeConverter(unsigned width, unsigned height,
+BOOL PVideoInputDevice_1394DC::SetFrameSizeConverter(unsigned width, unsigned height,
 					 BOOL bScaleNotCrop)
 {
   if (width == CIFWidth && height == CIFHeight)
@@ -784,7 +786,7 @@ BOOL PVideoInput1394DcDevice::SetFrameSizeConverter(unsigned width, unsigned hei
   return TRUE;
 }
 
-BOOL PVideoInput1394DcDevice::SetColourFormatConverter(const PString & colourFmt)
+BOOL PVideoInputDevice_1394DC::SetColourFormatConverter(const PString & colourFmt)
 {
   if (colourFmt != "YUV420P") {
     PTRACE(1, colourFmt << " is unsupported.");

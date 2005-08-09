@@ -24,6 +24,25 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.4  2005/08/09 09:08:10  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.3.4.2  2005/07/24 09:01:49  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
+ * Revision 1.3.4.1  2005/07/17 11:30:42  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.3  2004/11/07 22:48:47  dominance
  * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
  *
@@ -45,15 +64,15 @@
 #define V4L2_PIX_FMT_SBGGR8  v4l2_fourcc('B','A','8','1') /*  8  BGBG.. GRGR.. */
 #endif
 
-class PVideoInputV4l2Device: public PVideoInputDevice
+class PVideoInputDevice_V4L2: public PVideoInputDevice
 {
 
-  PCLASSINFO(PVideoInputV4l2Device, PVideoInputDevice);
+  PCLASSINFO(PVideoInputDevice_V4L2, PVideoInputDevice);
       
 
 public:
-  PVideoInputV4l2Device();
-  ~PVideoInputV4l2Device();
+  PVideoInputDevice_V4L2();
+  ~PVideoInputDevice_V4L2();
   
   void ReadDeviceDirectory (PDirectory, POrdinalToString &);
 
@@ -75,7 +94,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-  BOOL GetFrame(PBYTEArray & frame);
   BOOL GetFrameData(BYTE*, PINDEX*);
   BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
 
