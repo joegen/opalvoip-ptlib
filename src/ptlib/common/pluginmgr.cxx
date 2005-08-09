@@ -8,6 +8,17 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.28  2005/08/09 09:08:11  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.27.4.1  2005/07/17 09:27:08  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.27  2005/01/11 06:57:15  csoutheren
  * Fixed namespace collisions with plugin starup factories
  *
@@ -120,6 +131,10 @@
 
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
+
+const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
+
+
 //////////////////////////////////////////////////////
 
 void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
@@ -223,7 +238,7 @@ PStringList PPluginManager::GetPluginsProviding(const PString & serviceType) con
 }
 
 PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor (const PString & serviceName,
-					                         const PString & serviceType)
+					                         const PString & serviceType) const
 {
   PWaitAndSignal n(serviceListMutex);
 
@@ -233,6 +248,106 @@ PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor (const PString &
       return serviceList[i].descriptor;
   }
   return NULL;
+}
+
+
+PObject * PPluginManager::CreatePluginsDevice(const PString & serviceName,
+                                              const PString & serviceType,
+                                              int userData) const
+{
+  PDevicePluginServiceDescriptor * descr = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+  if (descr != NULL)
+    return descr->CreateInstance(userData);
+
+  return NULL;
+}
+
+
+PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
+                                                    const PString & serviceType,
+                                                    int userData) const
+{
+  // If have tab character, then have explicit driver name in device
+  PINDEX tab = deviceName.Find(PDevicePluginServiceDescriptor::SeparatorChar);
+  if (tab != P_MAX_INDEX)
+    return CreatePluginsDevice(deviceName.Left(tab), serviceType, userData);
+
+  // Otherwise search for the correct driver
+  PWaitAndSignal m(serviceListMutex);
+
+  for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
+    const PPluginService & service = serviceList[i];
+    if (service.serviceType *= serviceType) {
+      PDevicePluginServiceDescriptor * descriptor = (PDevicePluginServiceDescriptor *)service.descriptor;
+      if (descriptor->ValidateDeviceName(deviceName, userData))
+        return descriptor->CreateInstance(userData);
+    }
+  }
+
+  return NULL;
+}
+
+
+bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, int userData) const
+{
+  PStringList devices = GetDeviceNames(userData);
+  for (PINDEX j = 0; j < devices.GetSize(); j++) {
+    if (devices[j] *= deviceName)
+      return true;
+  }
+
+  return false;
+}
+
+
+PStringList PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
+                                                  const PString & serviceType,
+                                                  int userData) const
+{
+  PStringList allDevices;
+
+  if (serviceName.IsEmpty() || serviceName == "*") {
+    PWaitAndSignal n(serviceListMutex);
+
+    PINDEX i;
+    PStringToString deviceToPluginMap;  
+
+    // First we run through all of the drivers and their lists of devices and
+    // use the dictionary to assure all names are unique
+    for (i = 0; i < serviceList.GetSize(); i++) {
+      const PPluginService & service = serviceList[i];
+      if (service.serviceType *= serviceType) {
+        PStringList devices = ((PDevicePluginServiceDescriptor *)service.descriptor)->GetDeviceNames(userData);
+        for (PINDEX j = 0; j < devices.GetSize(); j++) {
+          PCaselessString device = devices[j];
+          if (deviceToPluginMap.Contains(device)) {
+            PString oldPlugin = deviceToPluginMap[device];
+            if (!oldPlugin.IsEmpty()) {
+              // Make name unique by prepending driver name and a tab character
+              deviceToPluginMap.SetAt(oldPlugin+PDevicePluginServiceDescriptor::SeparatorChar+device, "");
+              // Reset the original to empty string so we dont add it multiple times
+              deviceToPluginMap.SetAt(device, "");
+            }
+            // Now add the new one
+            deviceToPluginMap.SetAt(service.serviceName+PDevicePluginServiceDescriptor::SeparatorChar+device, "");
+          }
+          else
+            deviceToPluginMap.SetAt(device, service.serviceName);
+        }
+      }
+    }
+
+    for (i = 0; i < deviceToPluginMap.GetSize(); i++)
+      allDevices.AppendString(deviceToPluginMap.GetKeyAt(i));
+  }
+  else {
+    PDevicePluginServiceDescriptor * descr =
+                            (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+    if (descr != NULL)
+      allDevices = descr->GetDeviceNames(userData);
+  }
+
+  return allDevices;
 }
 
 
@@ -373,4 +488,5 @@ class PluginLoaderStartup : public PProcessStartup
 static PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
 
 PINSTANTIATE_FACTORY(PluginLoaderStartup, PString)
+
 
