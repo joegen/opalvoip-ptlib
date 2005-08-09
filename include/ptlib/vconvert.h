@@ -26,6 +26,17 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.14  2005/08/09 09:08:09  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.13.14.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.13  2003/03/17 07:44:20  robertj
  * Removed redundant toggle function.
  *
@@ -132,12 +143,12 @@ class PColourConverter : public PObject
     /**Get the video conversion vertical flip state
      */
     BOOL GetVFlipState() 
-      { return doVFlip; }
+      { return verticalFlip; }
     
     /**Set the video conversion vertical flip state
      */
     void SetVFlipState(BOOL vFlipState) 
-      { doVFlip = vFlipState; }
+      { verticalFlip = vFlipState; }
     
     /**Set the frame size to be used.
 
@@ -271,7 +282,7 @@ class PColourConverter : public PObject
     unsigned dstFrameHeight;
     BOOL     scaleNotCrop;
      
-    BOOL     doVFlip;
+    BOOL     verticalFlip;
 
     PBYTEArray intermediateFrameStore;
 
@@ -336,8 +347,9 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
     PSynonymColourRegistration(
       const char * srcFmt,
       const char * dstFmt
-    ) : PColourConverterRegistration(srcFmt,dstFmt) { }
-  virtual PColourConverter * Create(unsigned w, unsigned h) const;
+    );
+
+    virtual PColourConverter * Create(unsigned w, unsigned h) const;
 };
 
 

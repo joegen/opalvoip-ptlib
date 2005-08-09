@@ -20,12 +20,12 @@
 #endif
 #endif
 
-class PVideoInputBSDDevice: public PVideoInputDevice
+class PVideoInputDevice_BSDCAPTURE: public PVideoInputDevice
 {
 
 public:
-  PVideoInputBSDDevice();
-  ~PVideoInputBSDDevice();
+  PVideoInputDevice_BSDCAPTURE();
+  ~PVideoInputDevice_BSDCAPTURE();
 
   static PStringList GetInputDeviceNames();
 

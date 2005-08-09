@@ -8,6 +8,17 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.14  2005/08/09 09:08:09  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.13.2.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.13  2005/06/07 00:42:55  csoutheren
  * Apply patch 1214249 to fix crash with Suse 9.3. Thanks to Stefan Bruns
  *
@@ -130,11 +141,24 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
 class PPluginServiceDescriptor 
 {
   public:
-    PPluginServiceDescriptor(unsigned (*_GetPluginAPIVersion)())
-      : GetPluginAPIVersion(_GetPluginAPIVersion)
-    { }
+    PPluginServiceDescriptor() { version = PWLIB_PLUGIN_API_VERSION; }
+    virtual ~PPluginServiceDescriptor() { }
 
-    unsigned (*GetPluginAPIVersion)();
+    virtual unsigned GetPluginAPIVersion() const { return version; }
+
+  protected:
+    unsigned version;
+};
+
+
+class PDevicePluginServiceDescriptor : public PPluginServiceDescriptor
+{
+  public:
+    static const char SeparatorChar;
+
+    virtual PObject *   CreateInstance(int userData) const = 0;
+    virtual PStringList GetDeviceNames(int userData) const = 0;
+    virtual bool        ValidateDeviceName(const PString & deviceName, int userData) const;
 };
 
 
@@ -171,17 +195,6 @@ class PPluginService: public PObject
     PPluginServiceDescriptor * descriptor;
 };
 
-//////////////////////////////////////////////////////
-
-#define PCREATE_PLUGIN_VERSION_DECLARE 
-
-#define PCREATE_STATIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
-unsigned PPlugin_##serviceType##_##serviceName##_GetVersion() \
-  { return PWLIB_PLUGIN_API_VERSION; } 
-
-#define PCREATE_DYNAMIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
-extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
-{ return PWLIB_PLUGIN_API_VERSION; } 
 
 //////////////////////////////////////////////////////
 //
@@ -209,10 +222,13 @@ PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 PPlugin_##serviceType##_##serviceName##_Registration \
   PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
 
-#define PWLIB_STATIC_LOAD_PLUGIN(cls) \
-  class PPlugin_##cls##_Registration; \
-  extern PPlugin_##cls##_Registration PPlugin_##cls##_Registration_Instance; \
-  static PPlugin_##cls##_Registration * PPlugin_##cls##_Registration_Static_Library_Loader = &PPlugin_##cls##_Registration_Instance;
+#define PWLIB_STATIC_LOAD_PLUGIN(serviceName, serviceType) \
+  class PPlugin_##serviceType##_##serviceName##_Registration; \
+  extern PPlugin_##serviceType##_##serviceName##_Registration PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
+  static PPlugin_##serviceType##_##serviceName##_Registration * PPlugin_##serviceType##_##serviceName##_Registration_Static_Library_Loader = &PPlugin_##serviceType##_##serviceName##_Registration_Instance;
+
+// Win32 onl;y has static plugins at present, maybe one day ...
+#define P_FORCE_STATIC_PLUGIN
 
 #else
 
@@ -220,41 +236,29 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
 { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); } \
 
-#define PWLIB_STATIC_LOAD_PLUGIN(cls) 
+#define PWLIB_STATIC_LOAD_PLUGIN(serviceName, serviceType) 
 
 #endif
 
-#define PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor) \
-PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
-extern "C" void PWLibPlugin_TriggerRegister (PPluginManager * pluginMgr) { \
-PPlugin_##serviceType##_##serviceName##_Registration \
-     pplugin_##serviceType##_##serviceName##_Registration_Instance(pluginMgr); \
-     pplugin_##serviceType##_##serviceName##_Registration_Instance.kill_warning = 0; \
-} 
 
 //////////////////////////////////////////////////////
 
 #if defined(P_HAS_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
 
 #  define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
-    PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor)
-
-#  define PCREATE_PLUGIN_VERSION_FN(serviceName, serviceType) \
-    PCREATE_DYNAMIC_PLUGIN_VERSION_FN(serviceName, serviceType)
-
-#  define PPLUGIN_VERSION_FN(serviceName, serviceType) \
-    PWLibPlugin_GetAPIVersion
+    PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
+    extern "C" void PWLibPlugin_TriggerRegister (PPluginManager * pluginMgr) { \
+    PPlugin_##serviceType##_##serviceName##_Registration \
+        pplugin_##serviceType##_##serviceName##_Registration_Instance(pluginMgr); \
+        pplugin_##serviceType##_##serviceName##_Registration_Instance.kill_warning = 0; \
+    } \
+    extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
+    { return PWLIB_PLUGIN_API_VERSION; }
 
 #else
 
 #  define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
     PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor)
-
-#  define PCREATE_PLUGIN_VERSION_FN(serviceName, serviceType) \
-    PCREATE_STATIC_PLUGIN_VERSION_FN(serviceName, serviceType)
-
-#  define PPLUGIN_VERSION_FN(serviceName, serviceType) \
-    PPlugin_##serviceType##_##serviceName##_GetVersion
 
 #endif
 
