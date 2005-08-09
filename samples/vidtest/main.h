@@ -22,6 +22,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2005/08/09 09:08:11  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.2.12.1  2005/07/17 09:25:31  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.2  2003/04/29 00:57:21  dereks
  * Add user interface, option setting for format/input/fake. Works on Linux.
  *
@@ -43,24 +54,15 @@ class VidTest : public PProcess
   public:
     VidTest();
     virtual void Main();
-    void HandleUserInterface();
 
  protected:
-    PVideoInputDevice * grabber;
-    PVideoChannel     * channel;
-    PSyncPoint          exitFlag;
-};
+   PDECLARE_NOTIFIER(PThread, VidTest, GrabAndDisplay);
 
-class UserInterfaceThread : public PThread
-{
-    PCLASSINFO(UserInterfaceThread, PThread);
-  public:
-    UserInterfaceThread(VidTest & newVidTest)
-      : PThread(1000, NoAutoDeleteThread), vidTest(newVidTest) { Resume(); }
-    void Main()
-      { vidTest.HandleUserInterface(); }
-  protected:
-    VidTest &vidTest;
+  PVideoInputDevice  * grabber;
+  PVideoOutputDevice * display;
+  PSyncPointAck        exitGrabAndDisplay;
+  PSyncPointAck        pauseGrabAndDisplay;
+  PSyncPoint           resumeGrabAndDisplay;
 };
 
 

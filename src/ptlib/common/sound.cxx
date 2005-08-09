@@ -25,6 +25,17 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.11  2005/08/09 09:08:11  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.10.8.1  2005/07/17 09:27:08  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.10  2004/11/17 10:13:14  csoutheren
  * Fixed compilation with gcc 4.0.0
  *
@@ -85,70 +96,79 @@ namespace PWLibStupidWindowsHacks {
   int loadSoundStuff;
 };
 
-PStringList PSoundChannel::GetDriverNames(PPluginManager * _pluginMgr)
+
+PStringList PSoundChannel::GetDriverNames(PPluginManager * pluginMgr)
 {
-  PPluginManager * pluginMgr = (_pluginMgr != NULL) ? _pluginMgr : &PPluginManager::GetPluginManager();
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
   return pluginMgr->GetPluginsProviding(soundPluginBaseClass);
 }
 
-PStringList PSoundChannel::GetDeviceNames(const PString & driverName,
-                          const PSoundChannel::Directions dir,
-                                         PPluginManager * _pluginMgr)
-{
-  PPluginManager * pluginMgr = (_pluginMgr != NULL) ? _pluginMgr : &PPluginManager::GetPluginManager();
-  PSoundChannelPluginServiceDescriptor * descr =
-    (PSoundChannelPluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, soundPluginBaseClass);
 
-  if (descr != NULL)
-    return PStringList(descr->GetDeviceNames(dir));
+PStringList PSoundChannel::GetDriversDeviceNames(const PString & driverName,
+                                                 PSoundChannel::Directions dir,
+                                                 PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsDeviceNames(driverName, soundPluginBaseClass, dir);
+}
+
+
+PSoundChannel * PSoundChannel::CreateChannel(const PString & driverName, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return (PSoundChannel *)pluginMgr->CreatePluginsDevice(driverName, soundPluginBaseClass, 0);
+}
+
+
+PSoundChannel * PSoundChannel::CreateChannelByName(const PString & deviceName,
+                                                   PSoundChannel::Directions dir,
+                                                   PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return (PSoundChannel *)pluginMgr->CreatePluginsDeviceByName(deviceName, soundPluginBaseClass, dir);
+}
+
+
+PSoundChannel * PSoundChannel::CreateOpenedChannel(const PString & driverName,
+                                                   const PString & deviceName,
+                                                   PSoundChannel::Directions dir,
+                                                   unsigned numChannels,
+                                                   unsigned sampleRate,
+                                                   unsigned bitsPerSample,
+                                                   PPluginManager * pluginMgr)
+{
+  PSoundChannel * sndChan;
+  if (driverName.IsEmpty() || driverName == "*")
+    sndChan = CreateChannelByName(deviceName, dir, pluginMgr);
   else
-    return PStringList();
+    sndChan = CreateChannel(driverName, pluginMgr);
+
+  if (sndChan != NULL && sndChan->Open(deviceName, dir, numChannels, sampleRate, bitsPerSample))
+    return sndChan;
+
+  delete sndChan;
+  return NULL;
 }
 
-PSoundChannel * PSoundChannel::CreateChannel(const PString & driverName, PPluginManager * _pluginMgr)
+
+PStringList PSoundChannel::GetDeviceNames(PSoundChannel::Directions dir, PPluginManager * pluginMgr)
 {
-  PPluginManager * pluginMgr = (_pluginMgr != NULL) ? _pluginMgr : &PPluginManager::GetPluginManager();
-  PSoundChannelPluginServiceDescriptor * descr =
-    (PSoundChannelPluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, soundPluginBaseClass);
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
 
-  if (descr != NULL)
-    return (PSoundChannel *)descr->CreateInstance ();
-  else
-    return NULL;
-}
-
-PSoundChannel * PSoundChannel::CreateOpenedChannel(
-      const PString & driverName,
-      const PString & deviceName,
-      const PSoundChannel::Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample)
-{
-  PSoundChannel * sndChan = PSoundChannel::CreateChannel(driverName);
-  if (sndChan != NULL) {
-    if (!sndChan->Open(deviceName, dir, numChannels, sampleRate, bitsPerSample)) {
-      delete sndChan;
-      sndChan = NULL;
-    }
-  }
-  return sndChan;
+  return pluginMgr->GetPluginsDeviceNames("*", soundPluginBaseClass, dir);
 }
 
 
-PStringList PSoundChannel::GetDeviceNames(
-      Directions dir    // Sound I/O direction
-    )
-{
-  PStringArray names = GetDriverNames();
-  if (names.GetSize() > 0)
-    return GetDeviceNames(names[0], dir);
-  return PStringList();
-}
-
-PString PSoundChannel::GetDefaultDevice(
-      Directions dir    // Sound I/O direction
-)
+PString PSoundChannel::GetDefaultDevice(Directions dir)
 {
   PStringList devices = GetDeviceNames(dir);
   if (devices.GetSize() > 0)
@@ -168,25 +188,21 @@ PSoundChannel::~PSoundChannel()
   delete baseChannel;
 }
 
-PSoundChannel::PSoundChannel(
-      const PString & device,       /// Name of sound driver/device
-      Directions dir,               /// Sound I/O direction
-      unsigned numChannels,         /// Number of channels eg mono/stereo
-      unsigned sampleRate,          /// Samples per second
-      unsigned bitsPerSample        /// Number of bits per sample
-)
+PSoundChannel::PSoundChannel(const PString & device,
+                             Directions dir,
+                             unsigned numChannels,
+                             unsigned sampleRate,
+                             unsigned bitsPerSample)
 {
   baseChannel = NULL;
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
-BOOL PSoundChannel::Open(
-      const PString & device,   /// Name of sound driver/device
-      Directions dir,           /// Sound I/O direction
-      unsigned numChannels,     /// Number of channels eg mono/stereo
-      unsigned sampleRate,      /// Samples per second
-      unsigned bitsPerSample    /// Number of bits per sample
-    )
+BOOL PSoundChannel::Open(const PString & device,
+                         Directions dir,
+                         unsigned numChannels,
+                         unsigned sampleRate,
+                         unsigned bitsPerSample)
 {
   if (baseChannel == NULL) {
     PStringArray names = GetDriverNames();
@@ -265,8 +281,14 @@ BOOL PSound::Save(const PFilePath & /*filename*/)
 
 BOOL PSound::Play()
 {
-  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
-                        PSoundChannel::Player);
+  return Play(PSoundChannel::GetDefaultDevice(PSoundChannel::Player));
+}
+
+
+BOOL PSound::Play(const PString & device)
+{
+
+  PSoundChannel channel(device, PSoundChannel::Player);
   if (!channel.IsOpen())
     return FALSE;
 
@@ -284,5 +306,5 @@ BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
   return channel.PlayFile(file, wait);
 }
 
-#endif //_WIN32
 
+#endif //_WIN32
