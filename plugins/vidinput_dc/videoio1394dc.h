@@ -19,6 +19,25 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.2  2005/08/09 09:08:10  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.1.8.2  2005/07/24 09:01:48  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
+ * Revision 1.1.8.1  2005/07/17 09:27:07  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.1  2003/12/17 15:40:56  dominance
  * Added DC Plugin as provided by Julien Puydt <julien.puydt@laposte.net>. Needs manual patching of plugins/configure for now though. (i.e. disabled by default, run autoconf in plugins/)
  *
@@ -47,17 +66,17 @@
 /** This class defines a video input device that
     generates fictitous image data.
 */
-class PVideoInput1394DcDevice : public PVideoInputDevice
+class PVideoInputDevice_1394DC : public PVideoInputDevice
 {
-    PCLASSINFO(PVideoInput1394DcDevice, PVideoInputDevice);
+    PCLASSINFO(PVideoInputDevice_1394DC, PVideoInputDevice);
  public:
   /** Create a new video input device.
    */
-    PVideoInput1394DcDevice();
+    PVideoInputDevice_1394DC();
 
     /**Close the video input device on destruction.
       */
-    ~PVideoInput1394DcDevice();
+    ~PVideoInputDevice_1394DC();
 
     /**Open the device given the device name.
       */
@@ -99,10 +118,6 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
     PINDEX GetMaxFrameBytes();
-
-    BOOL GetFrame(
-      PBYTEArray & frame
-    );
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */
