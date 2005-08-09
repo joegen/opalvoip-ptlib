@@ -24,6 +24,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.10  2005/08/09 09:08:11  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.9.4.1  2005/07/17 09:25:30  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.9  2005/03/10 08:10:57  dereksmithies
  * Use a more descriptive name for the manufacturer.
  *
@@ -64,18 +75,35 @@ PCREATE_PROCESS(VidTest);
 #include  <ptclib/vsdl.h>
 
 
-#if P_SDL
-#else
-#error
-#error You need to have SDL video installed on your box for this 
-#error program to compile and run.  SDL is used as the display engine.
-#error 
-#error 
-#endif
-
 VidTest::VidTest()
-  : PProcess("PwLib Example Factory", "vidtest", 1, 0, ReleaseCode, 0)
+  : PProcess("PwLib Video Example", "vidtest", 1, 0, ReleaseCode, 0)
 {
+  grabber = NULL;
+  display = NULL;
+}
+
+
+bool ParseSize(const PString & sizeString, unsigned & width, unsigned & height)
+{
+  if (sizeString *= "qcif") {
+    width = PVideoDevice::QCIFWidth;
+    height = PVideoDevice::QCIFHeight;
+    return true;
+  }
+
+  if (sizeString *= "cif") {
+    width = PVideoDevice::CIFWidth;
+    height = PVideoDevice::CIFHeight;
+    return true;
+  }
+
+  if ((sizeString *= "cif4") || (sizeString *= "4cif")) {
+    width = PVideoDevice::CIF4Width;
+    height = PVideoDevice::CIF4Height;
+    return true;
+  }
+
+  return sscanf(sizeString, "%ix%i", &width, &height) == 2 && width > 0 && height > 0;
 }
 
 
@@ -83,12 +111,16 @@ void VidTest::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse(
-             "h-help."               "-no-help."
-	     "-videodevice:"         "-no-videodevice."
-             "-videoformat:"         "-no-videoformat."
-             "-videoinput:"          "-no-videoinput."
-             "-videosize:"           "-no-videosize."
+  args.Parse("h-help."
+	     "-input-driver:"
+	     "I-input-device:"
+             "-input-format:"
+             "-input-channel:"
+	     "-output-driver:"
+	     "O-output-device:"
+             "F-colour-format:"
+             "S-frame-size:"
+             "R-frame-rate:"
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -105,10 +137,15 @@ void VidTest::Main()
     PError << "Available options are: " << endl
 	 << endl
 	 <<    "--help                : print this help message.\n"
-	 <<    "--videodevice  dev    : specify video device to use.\n"
-         <<    "--videoformat  fmt    : specify video format (pal/ntsc)\n"
-         <<    "--videoinput   numb   : input channel on video grabber\n"
-         <<    "--videosize    size   : video size (large/small)\n"          
+	 <<    "--input-driver  drv   : video grabber driver.\n"
+	 <<    "--input-device  dev   : video grabber device.\n"
+         <<    "--input-format  fmt   : video grabber format (\"pal\"/\"ntsc\")\n"
+         <<    "--input-channel num   : video grabber channel.\n"
+	 <<    "--output-driver drv   : video display driver to use.\n"
+	 <<    "--output-device dev   : video display device to use.\n"
+         <<    "--colour-format fmt   : video colour size (\"rgb24\", \"yuv420\", etc)\n"
+         <<    "--frame-size size     : video frame size (\"qcif\", \"cif\", WxH)\n"
+         <<    "--frame-rate size     : video frame rate (frames/second)\n"
 #if PTRACING
          <<    "-o or --output file   : file name for output of log messages\n"       
          <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
@@ -118,165 +155,283 @@ void VidTest::Main()
     return;
   }
 
-  PError << "Available video input devices:" << endl << endl;
-  PStringList types = PVideoInputDevice::GetDriverNames();
-  for (int i = 0; i < types.GetSize(); i++) {
-    PStringList devices = PVideoInputDevice::GetDriversDeviceNames(types[i]);
-    for (int j = 0; j < devices.GetSize(); j++) {
-      PError << "   type:" << setw(10) << types[i] << "          device:" << setw(13) << devices[j] << endl;
+  PINDEX i;
+
+  PString inputDriverName = args.GetOptionString("input-driver");
+  if (!inputDriverName.IsEmpty()) {
+    grabber = PVideoInputDevice::CreateDevice(inputDriverName);
+    if (grabber == NULL) {
+      cerr << "Cannot use input driver name \"" << inputDriverName << "\", must be one of:\n";
+      PStringList drivers = PVideoInputDevice::GetDriverNames();
+      for (i = 0; i < drivers.GetSize(); i++)
+        cerr << "  " << drivers[i] << '\n';
+      cerr << endl;
+      return;
     }
   }
-  PError << endl;
 
-  PString videoDevice = args.GetOptionString("videodevice");
-  if (videoDevice.IsEmpty()) {
-    PError << " No video device specified" << endl;
+  PStringList devices = PVideoInputDevice::GetDriversDeviceNames(inputDriverName);
+  if (devices.IsEmpty()) {
+    cerr << "No video input devices present";
+    if (!inputDriverName.IsEmpty())
+      cerr << " for driver \"" << inputDriverName << '"';
+    cerr << endl;
     return;
   }
 
-  PVideoInputDevice * grabber = PVideoInputDevice::CreateDeviceByName(videoDevice);
+  PString inputDeviceName = args.GetOptionString("input-device");
+  if (inputDeviceName.IsEmpty())
+    inputDeviceName = devices[0];
     
-  if (grabber == NULL) {
-    PError << "Cannot create device by name " << videoDevice << endl;
+  if (grabber == NULL)
+    grabber = PVideoInputDevice::CreateDeviceByName(inputDeviceName);
+
+  if (grabber == NULL || !grabber->Open(inputDeviceName, false)) {
+    cerr << "Cannot use input device name \"" << inputDeviceName << "\", must be one of:\n";
+    for (i = 0; i < devices.GetSize(); i++)
+      cerr << "  " << devices[i] << '\n';
+    cerr << endl;
     return;
   }
 
-  if (!grabber->Open(videoDevice, FALSE)) {
-    PError << "Cannot open device " << videoDevice << endl;
+  cout << "Grabber ";
+  if (!inputDriverName.IsEmpty())
+    cout << "driver \"" << inputDriverName << "\" and ";
+  cout << "device \"" << grabber->GetDeviceName() << "\" opened." << endl;
+
+  if (args.HasOption("input-format")) {
+    PVideoDevice::VideoFormat format;
+    PCaselessString formatString = args.GetOptionString("input-format");
+    if (formatString == "PAL")
+      format = PVideoDevice::PAL;
+    else if (formatString == "NTSC")
+      format = PVideoDevice::NTSC;
+    else if (formatString == "SECAM")
+      format = PVideoDevice::SECAM;
+    else if (formatString == "Auto")
+      format = PVideoDevice::Auto;
+    else {
+      cerr << "Illegal video input format name \"" << formatString << '"' << endl;
     return;
   }
+    if (!grabber->SetVideoFormat(format)) {
+      cerr << "Video input device could not be set to format \"" << formatString << '"' << endl;
+      return;
+    }
+  }
+  cout << "Grabber input format set to " << grabber->GetVideoFormat() << endl;
 
-  BOOL videoIsPal = TRUE;
-  if (args.HasOption("videoformat"))
-    videoIsPal = args.GetOptionString("videoformat") *= "pal";
-
-  if (!grabber->SetVideoFormat(videoIsPal ? PVideoDevice::PAL : PVideoDevice::NTSC)) {
-    PError << "Failed to set format" << endl;
+  if (args.HasOption("input-channel")) {
+    int videoInput = args.GetOptionString("input-channel").AsInteger();
+    if (!grabber->SetChannel(videoInput)) {
+      cerr << "Video input device could not be set to channel " << videoInput << endl;
     return;
   }
+  }
+  cout << "Grabber input channel set to " << grabber->GetChannel() << endl;
 
-  PINDEX videoInput = 0;
-  if (args.HasOption("videoinput")) 
-    videoInput = args.GetOptionString("videoinput").AsInteger();
   
-  if (!grabber->SetChannel(videoInput)) {
-    PError << "Failed to set channel to " << videoInput << endl;
+  int frameRate;
+  if (args.HasOption("frame-rate"))
+    frameRate = args.GetOptionString("frame-rate").AsInteger();
+  else
+    frameRate = 15;
+
+  if (!grabber->SetFrameRate(frameRate)) {
+    cerr << "Video input device could not be set to frame rate " << frameRate << endl;
     return;
   }
+  cout << "Grabber frame rate set to " << grabber->GetFrameRate() << endl;
 
-  if (!grabber->SetColourFormatConverter("YUV420P") ) {
-    PError << "Failed to set format to yuv420p" << endl;
+
+  PString outputDriverName = args.GetOptionString("output-driver");
+  if (!outputDriverName.IsEmpty()) {
+    display = PVideoOutputDevice::CreateDevice(outputDriverName);
+    if (display == NULL) {
+      cerr << "Cannot use output driver name \"" << inputDriverName << "\", must be one of:\n";
+      PStringList drivers = PVideoOutputDevice::GetDriverNames();
+      for (i = 0; i < drivers.GetSize(); i++)
+        cerr << "  " << drivers[i] << '\n';
+      cerr << endl;
     return;
     }
+  }
 
-  PINDEX newFrameRate = videoIsPal ? 25 : 30;
-  if (!grabber->SetFrameRate(newFrameRate)) {
-    PError <<  "Failed to set framerate" << newFrameRate << endl;
+  devices = PVideoOutputDevice::GetDriversDeviceNames(outputDriverName);
+  if (devices.IsEmpty()) {
+    cerr << "No video output devices present";
+    if (!outputDriverName.IsEmpty())
+      cerr << " for driver \"" << outputDriverName << '"';
+    cerr << endl;
     return;
   }
 
-  PINDEX w,h;
-  if (args.GetOptionString("videosize") *= "large") {
-    w = 352;
-    h = 288;
-  } else {
-    w = 176;
-    h = 144;
+  PString outputDeviceName = args.GetOptionString("output-device");
+  if (outputDeviceName.IsEmpty()) {
+    outputDeviceName = devices[0];
+    if (outputDeviceName == "NULL" && devices.GetSize() > 1)
+      outputDeviceName = devices[1];
   }
-  if  (!grabber->SetFrameSizeConverter(w, h, FALSE)) {
-    PError <<  "Failed to set framesize to " << w << "x" << h << endl;
+
+  if (display == NULL)
+    display = PVideoOutputDevice::CreateDeviceByName(outputDeviceName);
+
+  if (display == NULL || !display->Open(outputDeviceName, false)) {
+    cerr << "Cannot use output device name \"" << outputDeviceName << "\", must be one of:\n";
+    for (i = 0; i < devices.GetSize(); i++)
+      cerr << "  " << devices[i] << '\n';
+    cerr << endl;
     return;
   }
 
-  channel = new PVideoChannel;
-  channel->AttachVideoReader(grabber);
+  cout << "Display ";
+  if (!outputDriverName.IsEmpty())
+    cout << "driver \"" << outputDriverName << "\" and ";
+  cout << "device \"" << display->GetDeviceName() << "\" opened." << endl;
 
-  grabber->Start();
 
-  PThread * userInterfaceThread = new UserInterfaceThread(*this);
+  unsigned width, height;
+  if (args.HasOption("frame-size")) {
+    PString sizeString = args.GetOptionString("frame-size");
+    if (!ParseSize(sizeString, width, height)) {
+      cerr << "Illegal video frame size \"" << sizeString << '"' << endl;
+      return;
+    }
+  }
+  else {
+    width = PVideoDevice::QCIFWidth;
+    height = PVideoDevice::QCIFHeight;
+  }
   
-  BOOL isEncoding = TRUE;
-  PSDLDisplayThread * sdlThread = new PSDLDisplayThread(FALSE);
-  PSDLVideoDevice * display = new PSDLVideoDevice("VideoTest", isEncoding, sdlThread);
+  if  (!grabber->SetFrameSizeConverter(width, height, FALSE)) {
+    cerr << "Video input device could not be set to size " << width << 'x' << height << endl;
+    return;
+  }
+  cout << "Grabber frame size set to " << grabber->GetFrameWidth() << 'x' << grabber->GetFrameHeight() << endl;
 
-  PINDEX width = channel->GetGrabWidth();
-  PINDEX height = channel->GetGrabHeight();
-  PINDEX bytesInFrame = (width * height * 3) >> 1;
+  if  (!display->SetFrameSizeConverter(width, height, FALSE)) {
+    cerr << "Video output device could not be set to size " << width << 'x' << height << endl;
+    return;
+  }
 
-  PBYTEArray dataBuffer(bytesInFrame);
-
-  display->SetFrameSize(width, height);
-  display->SetColourFormatConverter("YUV420P");
-
-  channel->AttachVideoPlayer(display);
+  cout << "Display frame size set to " << display->GetFrameWidth() << 'x' << display->GetFrameHeight() << endl;
 
 
-  for( ;; ) {
-    channel->Read(dataBuffer.GetPointer(), bytesInFrame);
-    channel->Write((const void *)dataBuffer, 0);
-     if (!exitFlag.WillBlock())
-      break;
+  PCaselessString colourFormat = args.GetOptionString("colour-format", "RGB24").ToUpper();
+  if (!grabber->SetColourFormatConverter(colourFormat) ) {
+    cerr << "Video input device could not be set to colour format \"" << colourFormat << '"' << endl;
+    return;
+  }
+
+  cout << "Grabber colour format set to " << grabber->GetColourFormat() << " (";
+  if (colourFormat == grabber->GetColourFormat())
+    cout << "native";
+  else
+    cout << "converted to " << colourFormat;
+  cout << ')' << endl;
+
+  if (!display->SetColourFormatConverter(colourFormat)) {
+    cerr << "Video output device could not be set to colour format \"" << colourFormat << '"' << endl;
+    return;
  }
 
-  userInterfaceThread->Terminate();
-  userInterfaceThread->WaitForTermination();
-  delete userInterfaceThread;
-
-  delete channel;
-
-  sdlThread->Terminate();
-  sdlThread->WaitForTermination();
-  delete sdlThread;
+  cout << "Diaplay colour format set to " << display->GetColourFormat() << " (";
+  if (colourFormat == display->GetColourFormat())
+    cout << "native";
+  else
+    cout << "converted from " << colourFormat;
+  cout << ')' << endl;
 
 
-  PError << "Closing down" << endl;
-}
+  PThread::Create(PCREATE_NOTIFIER(GrabAndDisplay), 0,
+                  PThread::NoAutoDeleteThread, PThread::NormalPriority,
+                  "GrabAndDisplay");
 
-void VidTest::HandleUserInterface()
-{
-  PConsoleChannel console(PConsoleChannel::StandardInput);
-
-  PTRACE(2, "VidTest\tTESTING interface thread started.");
-
-  PStringStream help;
-  help << "Select:\n"
-          "  J   : Flip video input top to bottom\n"
-          "  Q   : Exit program\n"
-          "  X   : Exit program\n";
-
+  // command line
   for (;;) {
 
     // display the prompt
-    PError << "(testing) Command ? " << flush;
+    cout << "vidtest> " << flush;
+    PCaselessString cmd;
+    cin >> cmd;
 
-    // terminate the menu loop if console finished
-    char ch = (char)console.peek();
-    if (console.eof()) {
-      PError << "\nConsole gone - menu disabled" << endl;
-      return;
+    if (cmd == "q" || cmd == "x" || cmd == "quit" || cmd == "exit")
+      break;
+
+    if (cmd == "fg") {
+      if (!grabber->SetVFlipState(!grabber->GetVFlipState()))
+	cout << "\nCould not toggle Vflip state of video input device" << endl;
+      continue;
     }
 
-    console >> ch;
-    switch (tolower(ch)) {
-    case 'j' :
-      if (!channel->ToggleVFlipInput())
-	PError << "\nCould not toggle Vflip state of video input device" << endl;
-      break;
+    if (cmd == "fd") {
+      if (!display->SetVFlipState(!display->GetVFlipState()))
+	cout << "\nCould not toggle Vflip state of video output device" << endl;
+      continue;
+    }
 
-    case 'x' :
-    case 'q' :
-      PError << "Exiting." << endl;
-      exitFlag.Signal();
-      console.ignore(INT_MAX, '\n');
-      return;
-      break;
-    case '?' :
-    default:
-      PError << help << endl;
-      break;
+    unsigned width, height;
+    if (ParseSize(cmd, width, height)) {
+      pauseGrabAndDisplay.Signal();
+      if  (!grabber->SetFrameSizeConverter(width, height, FALSE))
+        cout << "Video input device could not be set to size " << width << 'x' << height << endl;
+      if  (!display->SetFrameSizeConverter(width, height, FALSE))
+        cout << "Video output device could not be set to size " << width << 'x' << height << endl;
+      resumeGrabAndDisplay.Signal();
+      continue;
+    }
 
-    } // end switch
+    cout << "Select:\n"
+            "  fg     : Flip video input top to bottom\n"
+            "  fd     : Flip video output top to bottom\n"
+            "  qcif   : Set size of grab & display to qcif\n"
+            "  cif    : Set size of grab & display to cif\n"
+            "  WxH    : Set size of grab & display W by H\n"
+            "  Q or X : Exit program\n" << endl;
   } // end for
+
+  cout << "Exiting." << endl;
+  exitGrabAndDisplay.Signal();
+}
+
+
+void VidTest::GrabAndDisplay(PThread &, INT)
+{
+  PBYTEArray frame;
+  unsigned frameCount = 0;
+  bool oldGrabberState = true;
+  bool oldDisplayState = true;
+
+  grabber->Start();
+  display->Start();
+
+  PTimeInterval startTick = PTimer::Tick();
+  while (!exitGrabAndDisplay.Wait(0)) {
+
+    bool grabberState = grabber->GetFrame(frame);
+    if (oldGrabberState != grabberState) {
+      oldGrabberState = grabberState;
+      cerr << "Frame grab " << (grabberState ? "restored." : "failed!") << endl;
+    }
+
+    bool displayState = display->SetFrameData(0, 0, grabber->GetFrameWidth(), grabber->GetFrameHeight(), frame);
+    if (oldDisplayState != displayState)
+    {
+      oldDisplayState = displayState;
+      cerr << "Frame display " << (displayState ? "restored." : "failed!") << endl;
+    }
+
+    if (pauseGrabAndDisplay.Wait(0)) {
+      pauseGrabAndDisplay.Acknowledge();
+      resumeGrabAndDisplay.Wait();
+    }
+
+    frameCount++;
+  }
+
+  PTimeInterval duration = PTimer::Tick() - startTick;
+  cout << frameCount << " frames over " << duration << " seconds at " << (frameCount*1000.0/duration.GetMilliSeconds()) << " fps." << endl;
+  exitGrabAndDisplay.Acknowledge();
 }
 
 
