@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.192  2005/08/09 12:46:00  rjongbloed
+ * Fixed some platforms where in6addr_any does not exist.
+ *
  * Revision 1.191  2005/07/17 09:25:40  csoutheren
  * Fixed problem in IPV6 variant of PIPSocket::Address::IsLoopback
  * Thanks to Roger Hardiman
@@ -685,7 +688,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static PIPSocket::Address any6(in6addr_any); 
+static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); 
 #endif
 
 
