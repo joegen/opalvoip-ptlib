@@ -35,6 +35,25 @@
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.5  2005/08/09 09:08:10  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.4.4.2  2005/07/24 09:01:48  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
+ * Revision 1.4.4.1  2005/07/17 11:30:42  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.4  2004/11/07 22:48:47  dominance
  * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
  *
@@ -57,7 +76,7 @@
 #include "vidinput_v4l2.h"
 #include <sys/utsname.h>
 
-PCREATE_VIDINPUT_PLUGIN(V4L2, PVideoInputV4l2Device);
+PCREATE_VIDINPUT_PLUGIN(V4L2);
 
 #include "vidinput_names.h" 
 
@@ -94,9 +113,9 @@ V4L2Names & GetNames()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PVideoInputV4l2Device
+// PVideoInputDevice_V4L2
 
-PVideoInputV4l2Device::PVideoInputV4l2Device()
+PVideoInputDevice_V4L2::PVideoInputDevice_V4L2()
 {
   videoFd = -1;
   canRead = FALSE;
@@ -106,7 +125,7 @@ PVideoInputV4l2Device::PVideoInputV4l2Device()
   isMapped = FALSE;
 }
 
-PVideoInputV4l2Device::~PVideoInputV4l2Device()
+PVideoInputDevice_V4L2::~PVideoInputDevice_V4L2()
 {
   Close();
 }
@@ -138,7 +157,7 @@ static struct {
 };
 
 
-BOOL PVideoInputV4l2Device::Open(const PString & devName, BOOL startImmediate)
+BOOL PVideoInputDevice_V4L2::Open(const PString & devName, BOOL startImmediate)
 {
   struct utsname buf;
   PString version;
@@ -198,13 +217,13 @@ BOOL PVideoInputV4l2Device::Open(const PString & devName, BOOL startImmediate)
 }
 
 
-BOOL PVideoInputV4l2Device::IsOpen() 
+BOOL PVideoInputDevice_V4L2::IsOpen() 
 {
   return videoFd >= 0;
 }
 
 
-BOOL PVideoInputV4l2Device::Close()
+BOOL PVideoInputDevice_V4L2::Close()
 {
   PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started);
   if (!IsOpen())
@@ -228,7 +247,7 @@ BOOL PVideoInputV4l2Device::Close()
 }
 
 
-BOOL PVideoInputV4l2Device::Start()
+BOOL PVideoInputDevice_V4L2::Start()
 {
   // automatically set mapping
   if (!isMapped && !SetMapping()) {
@@ -270,7 +289,7 @@ BOOL PVideoInputV4l2Device::Start()
 }
 
 
-BOOL PVideoInputV4l2Device::Stop()
+BOOL PVideoInputDevice_V4L2::Stop()
 {
   if (started) {
     PTRACE(6,"PVidInDev\tstop streaming, fd=" << videoFd);
@@ -290,18 +309,18 @@ BOOL PVideoInputV4l2Device::Stop()
 }
 
 
-BOOL PVideoInputV4l2Device::IsCapturing()
+BOOL PVideoInputDevice_V4L2::IsCapturing()
 {
   return started;
 }
 
-PStringList PVideoInputV4l2Device::GetInputDeviceNames()
+PStringList PVideoInputDevice_V4L2::GetInputDeviceNames()
 {
   return GetNames().GetInputDeviceNames();  
 }
 
 
-BOOL PVideoInputV4l2Device::SetVideoFormat(VideoFormat newFormat)
+BOOL PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
 {
   if (newFormat == Auto) {
     if (SetVideoFormat(PAL) ||
@@ -349,7 +368,7 @@ BOOL PVideoInputV4l2Device::SetVideoFormat(VideoFormat newFormat)
 }
 
 
-int PVideoInputV4l2Device::GetNumChannels() 
+int PVideoInputDevice_V4L2::GetNumChannels() 
 {
   // if opened, return the capability value, else 1 as in videoio.cxx
   if (IsOpen ()) {
@@ -372,7 +391,7 @@ int PVideoInputV4l2Device::GetNumChannels()
 }
 
 
-BOOL PVideoInputV4l2Device::SetChannel(int newChannel)
+BOOL PVideoInputDevice_V4L2::SetChannel(int newChannel)
 {
   if (!PVideoDevice::SetChannel(newChannel)) {
     PTRACE(1,"PVideoDevice::SetChannel failed for channel " << newChannel);
@@ -391,7 +410,7 @@ BOOL PVideoInputV4l2Device::SetChannel(int newChannel)
 }
 
 
-BOOL PVideoInputV4l2Device::SetVideoChannelFormat (int newChannel, VideoFormat videoFormat) 
+BOOL PVideoInputDevice_V4L2::SetVideoChannelFormat (int newChannel, VideoFormat videoFormat) 
 {
   if (!SetChannel(newChannel) ||
       !SetVideoFormat(videoFormat))
@@ -401,7 +420,7 @@ BOOL PVideoInputV4l2Device::SetVideoChannelFormat (int newChannel, VideoFormat v
 }
 
 
-BOOL PVideoInputV4l2Device::SetColourFormat(const PString & newFormat)
+BOOL PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 {
   PINDEX colourFormatIndex = 0;
   while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
@@ -459,7 +478,7 @@ BOOL PVideoInputV4l2Device::SetColourFormat(const PString & newFormat)
 }
 
 
-BOOL PVideoInputV4l2Device::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate)) {
     PTRACE(3,"PVidInDev\tSetFrameRate failed for rate " << rate);
@@ -483,7 +502,7 @@ BOOL PVideoInputV4l2Device::SetFrameRate(unsigned rate)
 }
 
 
-BOOL PVideoInputV4l2Device::GetFrameSizeLimits(unsigned & minWidth,
+BOOL PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
 					       unsigned & minHeight,
 					       unsigned & maxWidth,
 					       unsigned & maxHeight) 
@@ -498,7 +517,7 @@ BOOL PVideoInputV4l2Device::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-BOOL PVideoInputV4l2Device::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height)) {
     PTRACE(3,"PVidInDev\tSetFrameSize failed for size " << width << "x" << height);
@@ -523,19 +542,13 @@ BOOL PVideoInputV4l2Device::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-PINDEX PVideoInputV4l2Device::GetMaxFrameBytes()
+PINDEX PVideoInputDevice_V4L2::GetMaxFrameBytes()
 {
-  if (converter != NULL) {
-    PINDEX bytes = converter->GetMaxDstFrameBytes();
-    if (bytes > frameBytes)
-      return bytes;
-  }
-
-  return frameBytes;
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
-BOOL PVideoInputV4l2Device::SetMapping()
+BOOL PVideoInputDevice_V4L2::SetMapping()
 {
   if (!canStream)
     return FALSE;
@@ -578,7 +591,7 @@ BOOL PVideoInputV4l2Device::SetMapping()
 }
 
 
-void PVideoInputV4l2Device::ClearMapping()
+void PVideoInputDevice_V4L2::ClearMapping()
 {
   if (!canStream) // 'isMapped' wouldn't handle partial mappings
     return;
@@ -599,18 +612,7 @@ void PVideoInputV4l2Device::ClearMapping()
 }
 
 
-BOOL PVideoInputV4l2Device::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
-
-  frame.SetSize(returned);
-  return TRUE;
-}
-
-
-BOOL PVideoInputV4l2Device::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   PTRACE(1,"PVidInDev\tGetFrameData()");
 
@@ -633,7 +635,7 @@ BOOL PVideoInputV4l2Device::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 }
 
 
-BOOL PVideoInputV4l2Device::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   PTRACE(1,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
 
@@ -672,7 +674,7 @@ BOOL PVideoInputV4l2Device::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRet
 
 // This video device does not support memory mapping - so use
 // normal read process to extract a frame of video data.
-BOOL PVideoInputV4l2Device::NormalReadProcess(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytesReturned)
 { 
   if (!canRead)
     return FALSE;
@@ -703,7 +705,7 @@ BOOL PVideoInputV4l2Device::NormalReadProcess(BYTE * buffer, PINDEX * bytesRetur
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::VerifyHardwareFrameSize(unsigned width,
+BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width,
 						    unsigned height)
 {
   struct v4l2_format videoFormat;
@@ -742,7 +744,7 @@ BOOL PVideoInputV4l2Device::VerifyHardwareFrameSize(unsigned width,
   return TRUE;
 }
 
-int PVideoInputV4l2Device::GetBrightness() 
+int PVideoInputDevice_V4L2::GetBrightness() 
 { 
   if (!IsOpen())
     return -1;
@@ -757,7 +759,7 @@ int PVideoInputV4l2Device::GetBrightness()
   return frameBrightness; 
 }
 
-int PVideoInputV4l2Device::GetWhiteness() 
+int PVideoInputDevice_V4L2::GetWhiteness() 
 { 
   if (!IsOpen())
     return -1;
@@ -772,7 +774,7 @@ int PVideoInputV4l2Device::GetWhiteness()
   return frameWhiteness;
 }
 
-int PVideoInputV4l2Device::GetColour() 
+int PVideoInputDevice_V4L2::GetColour() 
 { 
   if (!IsOpen())
     return -1;
@@ -787,7 +789,7 @@ int PVideoInputV4l2Device::GetColour()
   return frameColour; 
 }
 
-int PVideoInputV4l2Device::GetContrast() 
+int PVideoInputDevice_V4L2::GetContrast() 
 {
   if (!IsOpen())
     return -1;
@@ -802,7 +804,7 @@ int PVideoInputV4l2Device::GetContrast()
   return frameContrast; 
 }
 
-int PVideoInputV4l2Device::GetHue() 
+int PVideoInputDevice_V4L2::GetHue() 
 {
   if (!IsOpen())
     return -1;
@@ -817,7 +819,7 @@ int PVideoInputV4l2Device::GetHue()
   return frameHue; 
 }
 
-BOOL PVideoInputV4l2Device::SetBrightness(unsigned newBrightness) 
+BOOL PVideoInputDevice_V4L2::SetBrightness(unsigned newBrightness) 
 { 
   if (!IsOpen())
     return FALSE;
@@ -839,7 +841,7 @@ BOOL PVideoInputV4l2Device::SetBrightness(unsigned newBrightness)
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::SetWhiteness(unsigned newWhiteness) 
+BOOL PVideoInputDevice_V4L2::SetWhiteness(unsigned newWhiteness) 
 { 
   if (!IsOpen())
     return FALSE;
@@ -861,7 +863,7 @@ BOOL PVideoInputV4l2Device::SetWhiteness(unsigned newWhiteness)
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::SetColour(unsigned newColour) 
+BOOL PVideoInputDevice_V4L2::SetColour(unsigned newColour) 
 { 
   if (!IsOpen())
     return FALSE;
@@ -883,7 +885,7 @@ BOOL PVideoInputV4l2Device::SetColour(unsigned newColour)
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::SetContrast(unsigned newContrast) 
+BOOL PVideoInputDevice_V4L2::SetContrast(unsigned newContrast) 
 { 
   if (!IsOpen())
     return FALSE;
@@ -905,7 +907,7 @@ BOOL PVideoInputV4l2Device::SetContrast(unsigned newContrast)
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::SetHue(unsigned newHue) 
+BOOL PVideoInputDevice_V4L2::SetHue(unsigned newHue) 
 {
   if (!IsOpen())
     return FALSE;
@@ -927,7 +929,7 @@ BOOL PVideoInputV4l2Device::SetHue(unsigned newHue)
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::GetParameters (int *whiteness, int *brightness, 
+BOOL PVideoInputDevice_V4L2::GetParameters (int *whiteness, int *brightness, 
 					   int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
@@ -970,7 +972,7 @@ BOOL PVideoInputV4l2Device::GetParameters (int *whiteness, int *brightness,
   return TRUE;
 }
 
-BOOL PVideoInputV4l2Device::TestAllFormats()
+BOOL PVideoInputDevice_V4L2::TestAllFormats()
 {
   return TRUE;
 }
