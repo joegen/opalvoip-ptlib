@@ -68,7 +68,7 @@
 #define RAW_BUFFER_SIZE 512
 #endif 
 
-PCREATE_VIDINPUT_PLUGIN(AVC, PVideoInput1394AvcDevice);
+PCREATE_VIDINPUT_PLUGIN(1394AVC);
 
 static PMutex mutex;
 static PDictionary<PString, PString> *dico;
@@ -77,19 +77,19 @@ static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInput1394AVC
 
-PVideoInput1394AvcDevice::PVideoInput1394AvcDevice()
+PVideoInputDevice_1394AVC::PVideoInputDevice_1394AVC()
 {
   handle = NULL;
   is_capturing = FALSE;
   dv_decoder = NULL;
 }
 
-PVideoInput1394AvcDevice::~PVideoInput1394AvcDevice()
+PVideoInputDevice_1394AVC::~PVideoInputDevice_1394AVC()
 {
   Close();
 }
 
-BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate)
+BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediate)
 {
   PTRACE(3, "trying to open " << devName);
 
@@ -119,10 +119,11 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
   
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   desiredFrameHeight = CIFHeight;
   desiredFrameWidth = CIFWidth;
-  desiredColourFormat = "RGB24F";
+  desiredColourFormat = "RGB24";
   
   deviceName = devName; // FIXME: looks useless
   
@@ -142,12 +143,12 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::IsOpen() 
+BOOL PVideoInputDevice_1394AVC::IsOpen() 
 {
   return handle != NULL;
 }
 
-BOOL PVideoInput1394AvcDevice::Close()
+BOOL PVideoInputDevice_1394AVC::Close()
 {
   PTRACE(3, "Close()");
   if (IsOpen()) {
@@ -161,7 +162,7 @@ BOOL PVideoInput1394AvcDevice::Close()
     return FALSE;
 }
 
-BOOL PVideoInput1394AvcDevice::Start()
+BOOL PVideoInputDevice_1394AVC::Start()
 {
   if (!IsOpen()) return FALSE;
   if (IsCapturing()) return TRUE;
@@ -175,7 +176,7 @@ BOOL PVideoInput1394AvcDevice::Start()
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::Stop()
+BOOL PVideoInputDevice_1394AVC::Stop()
 {
   if (IsCapturing()) {
     is_capturing = FALSE;
@@ -185,12 +186,12 @@ BOOL PVideoInput1394AvcDevice::Stop()
     return FALSE;
 }
 
-BOOL PVideoInput1394AvcDevice::IsCapturing()
+BOOL PVideoInputDevice_1394AVC::IsCapturing()
 {
   return is_capturing;
 }
 
-PStringList PVideoInput1394AvcDevice::GetInputDeviceNames()
+PStringList PVideoInputDevice_1394AVC::GetInputDeviceNames()
 {
   PStringList Result;
   raw1394handle_t hdl = NULL;
@@ -240,7 +241,7 @@ PStringList PVideoInput1394AvcDevice::GetInputDeviceNames()
   return Result;
 }
 
-BOOL PVideoInput1394AvcDevice::SetVideoFormat(VideoFormat newFormat)
+BOOL PVideoInputDevice_1394AVC::SetVideoFormat(VideoFormat newFormat)
 {
   // FIXME: isn't it inherited from PVideoDevice anyway?
   if (!PVideoDevice::SetVideoFormat(newFormat)) {
@@ -251,57 +252,57 @@ BOOL PVideoInput1394AvcDevice::SetVideoFormat(VideoFormat newFormat)
     return TRUE;
 }
 
-int PVideoInput1394AvcDevice::GetBrightness()
+int PVideoInputDevice_1394AVC::GetBrightness()
 {
   return -1;
 }
 
-BOOL PVideoInput1394AvcDevice::SetBrightness(unsigned newBrightness)
+BOOL PVideoInputDevice_1394AVC::SetBrightness(unsigned newBrightness)
 {
   return FALSE;
 }
 
-int PVideoInput1394AvcDevice::GetHue()
+int PVideoInputDevice_1394AVC::GetHue()
 {
   return -1;
 }
 
-BOOL PVideoInput1394AvcDevice::SetHue(unsigned newHue)
+BOOL PVideoInputDevice_1394AVC::SetHue(unsigned newHue)
 {
   return FALSE;
 }
 
-int PVideoInput1394AvcDevice::GetContrast()
+int PVideoInputDevice_1394AVC::GetContrast()
 {
   return -1;
 }
 
-BOOL PVideoInput1394AvcDevice::SetContrast(unsigned newContrast)
+BOOL PVideoInputDevice_1394AVC::SetContrast(unsigned newContrast)
 {
   return FALSE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetColour(unsigned newColour) 
+BOOL PVideoInputDevice_1394AVC::SetColour(unsigned newColour) 
 {
   return -1;
 }
 
-int PVideoInput1394AvcDevice::GetColour()
+int PVideoInputDevice_1394AVC::GetColour()
 {
   return -1;
 }
 
-BOOL PVideoInput1394AvcDevice::SetWhiteness(unsigned newWhiteness) 
+BOOL PVideoInputDevice_1394AVC::SetWhiteness(unsigned newWhiteness) 
 {
   return FALSE;
 }
 
-int PVideoInput1394AvcDevice::GetWhiteness()
+int PVideoInputDevice_1394AVC::GetWhiteness()
 {
   return -1;
 }
 
-BOOL PVideoInput1394AvcDevice::GetParameters (int *whiteness, int *brightness,
+BOOL PVideoInputDevice_1394AVC::GetParameters (int *whiteness, int *brightness,
                                        int *colour, int *contrast, int *hue)
 {
   *whiteness = -1;
@@ -311,7 +312,7 @@ BOOL PVideoInput1394AvcDevice::GetParameters (int *whiteness, int *brightness,
   return FALSE;
 }
 
-int PVideoInput1394AvcDevice::GetNumChannels() 
+int PVideoInputDevice_1394AVC::GetNumChannels() 
 {
   int Result;
   mutex.Wait();
@@ -324,7 +325,7 @@ int PVideoInput1394AvcDevice::GetNumChannels()
   return Result;
 }
 
-BOOL PVideoInput1394AvcDevice::SetChannel(int newChannel)
+BOOL PVideoInputDevice_1394AVC::SetChannel(int newChannel)
 {
   if (PVideoDevice::SetChannel(newChannel) == FALSE)
     return FALSE;
@@ -337,12 +338,12 @@ BOOL PVideoInput1394AvcDevice::SetChannel(int newChannel)
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_1394AVC::SetFrameRate(unsigned rate)
 {
   return PVideoDevice::SetFrameRate(rate);
 }
 
-BOOL PVideoInput1394AvcDevice::GetFrameSizeLimits(unsigned & minWidth,
+BOOL PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
 						  unsigned & minHeight,
 						  unsigned & maxWidth,
 						  unsigned & maxHeight) 
@@ -354,32 +355,14 @@ BOOL PVideoInput1394AvcDevice::GetFrameSizeLimits(unsigned & minWidth,
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::GetFrame(PBYTEArray & frame)
-{
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
 
-  frame.SetSize(returned);
-  return TRUE;
+PINDEX PVideoInputDevice_1394AVC::GetMaxFrameBytes()
+{
+  return GetMaxFrameBytesConverted(frameBytes);
 }
 
 
-PINDEX PVideoInput1394AvcDevice::GetMaxFrameBytes()
-{
-  
-  if(converter == NULL)
-    return frameBytes;
-  
-  PINDEX bytes = converter->GetMaxDstFrameBytes();
-  if (bytes > frameBytes)
-    return bytes;
-  else
-    return frameBytes;
-  
-}
-
-BOOL PVideoInput1394AvcDevice::GetFrameDataNoDelay(BYTE * buffer,
+BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
 						   PINDEX * bytesReturned)
 {
   if (!IsCapturing()) return FALSE;
@@ -492,7 +475,7 @@ BOOL PVideoInput1394AvcDevice::GetFrameDataNoDelay(BYTE * buffer,
   
 }
 
-BOOL PVideoInput1394AvcDevice::GetFrameData(BYTE * buffer,
+BOOL PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer,
 					    PINDEX * bytesReturned)
 {
   int capturing_duration = 10000; // FIXME: what is it for?
@@ -511,17 +494,17 @@ BOOL PVideoInput1394AvcDevice::GetFrameData(BYTE * buffer,
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
-void PVideoInput1394AvcDevice::ClearMapping()
+void PVideoInputDevice_1394AVC::ClearMapping()
 {
   // do nothing...
 }
 
-BOOL PVideoInput1394AvcDevice::TestAllFormats()
+BOOL PVideoInputDevice_1394AVC::TestAllFormats()
 {
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetColourFormat(const PString & newFormat)
+BOOL PVideoInputDevice_1394AVC::SetColourFormat(const PString & newFormat)
 {
   if (newFormat != colourFormat)
     return FALSE;
@@ -529,19 +512,20 @@ BOOL PVideoInput1394AvcDevice::SetColourFormat(const PString & newFormat)
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
 {
   // FIXME: shouldn't it return FALSE when asked an unsupported frame size? 
   frameWidth = width;
   frameHeight = height;
-  colourFormat = "RGB24F";
+  colourFormat = "RGB24";
+  nativeVerticalFlip = true;
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth,
 						 frameHeight, colourFormat);
   
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetFrameSizeConverter(unsigned width,
+BOOL PVideoInputDevice_1394AVC::SetFrameSizeConverter(unsigned width,
 						     unsigned height,
 						     BOOL bScaleNotCrop)
 {
@@ -575,7 +559,7 @@ BOOL PVideoInput1394AvcDevice::SetFrameSizeConverter(unsigned width,
   return TRUE;
 }
 
-BOOL PVideoInput1394AvcDevice::SetColourFormatConverter(const PString &colourFmt)
+BOOL PVideoInputDevice_1394AVC::SetColourFormatConverter(const PString &colourFmt)
 {
   desiredColourFormat = colourFmt;
   return SetFrameSizeConverter(desiredFrameWidth, desiredFrameHeight, FALSE);
