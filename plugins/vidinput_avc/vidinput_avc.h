@@ -24,6 +24,25 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.6  2005/08/09 09:08:09  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.5.8.2  2005/07/24 09:01:47  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
+ * Revision 1.5.8.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.5  2003/12/14 13:30:10  csoutheren
  * Added new function required for recent video changes
  *
@@ -73,17 +92,17 @@
     generates fictitous image data.
 */
 
-class PVideoInput1394AvcDevice : public PVideoInputDevice
+class PVideoInputDevice_1394AVC : public PVideoInputDevice
 {
-    PCLASSINFO(PVideoInput1394AvcDevice, PVideoInputDevice);
+    PCLASSINFO(PVideoInputDevice_1394AVC, PVideoInputDevice);
  public:
   /** Create a new video input device.
    */
-    PVideoInput1394AvcDevice();
+    PVideoInputDevice_1394AVC();
 
     /**Close the video input device on destruction.
       */
-    ~PVideoInput1394AvcDevice();
+    ~PVideoInputDevice_1394AVC();
 
     /**Open the device given the device name.
       */
@@ -125,10 +144,6 @@ class PVideoInput1394AvcDevice : public PVideoInputDevice
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
     PINDEX GetMaxFrameBytes();
-
-    BOOL GetFrame(
-      PBYTEArray & frame
-    );
 
     /**Grab a frame, after a delay as specified by the frame rate.
       */

@@ -27,6 +27,20 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.35  2005/08/09 09:08:09  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.34.2.2  2005/07/17 11:47:45  rjongbloed
+ * Fixed backward compatibility
+ *
+ * Revision 1.34.2.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.34  2005/07/13 13:02:35  csoutheren
  * Unified interface across Windows and Unix
  *
@@ -357,44 +371,72 @@ class PSoundChannel : public PChannel
 
   /**@name Open functions */
   //@{
-    /**
-      Return names of all plugins that correspond to sound devices
+    /**Get the list of available sound drivers (plug-ins)
      */
-    static PStringList GetDriverNames(PPluginManager * pluginMgr = NULL);
-
-    /**
-      Return sound devices that correspond to the specified name
-     */
-    static PStringList GetDeviceNames(
-         const PString &driverName,
-         const PSoundChannel::Directions,
-         PPluginManager * pluginMgr = NULL
+    static PStringList GetDriverNames(
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
     );
 
-    /**
-      Return sound channel object that correspond to the specified name
+    /**Get sound devices that correspond to the specified driver name.
+       If driverName is an empty string or the value "*" then GetAllDeviceNames()
+       is used.
      */
-    static PSoundChannel *CreateChannel (
-      const PString &driverName,
+    static PStringList GetDriversDeviceNames(
+      const PString & driverName,         /// Name of driver
+      Directions direction,               /// Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+    );
+
+    // For backward compatibility
+    static inline PStringList GetDeviceNames(
+      const PString & driverName,
+      Directions direction,
       PPluginManager * pluginMgr = NULL
+    ) { return GetDriversDeviceNames(driverName, direction, pluginMgr); }
+
+    /**Create the sound channel that corresponds to the specified driver name.
+     */
+    static PSoundChannel * CreateChannel (
+      const PString & driverName,         /// Name of driver
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
     );
 
-    /**
-      Return opened sound channel object that correspond to the specified name
+    /* Create the matching sound channel that corresponds to the device name.
+       So, for "fake" return a device that will generate fake video.
+       For "Phillips 680 webcam" (eg) will return appropriate grabber.
+       Note that Phillips will return the appropriate grabber also.
+
+       This is typically used with the return values from GetDeviceNames().
+     */
+    static PSoundChannel * CreateChannelByName(
+      const PString & deviceName,         /// Name of device
+      Directions direction,               /// Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+    );
+
+    /**Create an opened sound channel that corresponds to the specified names.
+       If the driverName parameter is an empty string or "*" then CreateChannelByName
+       is used with the deviceName parameter which is assumed to be a value returned
+       from GetAllDeviceNames().
      */
     static PSoundChannel * CreateOpenedChannel(
-      const PString & driverName,
-      const PString & deviceName,
-      const PSoundChannel::Directions,
-      unsigned numChannels = 1,
-      unsigned sampleRate = 8000,
-      unsigned bitsPerSample = 16
+      const PString & driverName,         /// Name of driver
+      const PString & deviceName,         /// Name of device
+      Directions direction,               /// Direction for device (record or play)
+      unsigned numChannels = 1,           /// Number of channels 1=mon, 2=stereo
+      unsigned sampleRate = 8000,         /// Sample rate
+      unsigned bitsPerSample = 16,        /// Bits per sample
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
     );
 
     /**Get the name for the default sound devices/driver that is on this
        platform. Note that a named device may not necessarily do both
        playing and recording so the arrays returned with the #dir#
        parameter in each value is not necessarily the same.
+
+       This will return a list of uniqie device names across all of the available
+       drivers. If two drivers have identical names for devices, then the string
+       returned will be of the form driver+'\t'+device.
 
        @return
        A platform dependent string for the sound player/recorder.
@@ -409,10 +451,11 @@ class PSoundChannel : public PChannel
        parameter in each value is not necessarily the same.
 
        @return
-       A platform dependent string for the sound player/recorder.
+       Platform dependent strings for the sound player/recorder.
      */
     static PStringList GetDeviceNames(
-      Directions dir    // Sound I/O direction
+      Directions direction,               /// Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
     );
 
     /**Open the specified device for playing or recording. The device name is
@@ -741,45 +784,16 @@ class PSoundChannel : public PChannel
 
 // define the sound plugin service descriptor
 
-class PSoundChannelPluginServiceDescriptor : public PPluginServiceDescriptor 
+template <class className> class PSoundChannelPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    PSoundChannelPluginServiceDescriptor(
-                     unsigned (*_GetVersion)(),
-               PSoundChannel *(*_CreateInstance)(),
-                 PStringArray (*_GetDeviceNames)(PSoundChannel::Directions)
-     )
-    : PPluginServiceDescriptor(_GetVersion),
-      CreateInstance(_CreateInstance),
-      GetDeviceNames(_GetDeviceNames)
-    { }
-
-    PSoundChannel *(*CreateInstance)();
-    PStringArray (*GetDeviceNames) (PSoundChannel::Directions);
+    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringList GetDeviceNames(int userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
 };
 
-
-#define PCREATE_SOUND_SERVICE_DESCRIPTOR(className, versionFn) \
-PSoundChannel * className##_CreateInstance () \
-{ \
-  return new className; \
-} \
-\
-PStringArray className##_GetDeviceNames (PSoundChannel::Directions dir) \
-{ \
-  return className::GetDeviceNames(dir); \
-} \
-\
-PSoundChannelPluginServiceDescriptor className##_descriptor(\
-   versionFn, \
-   className##_CreateInstance, \
-   className##_GetDeviceNames \
-); \
-
 #define PCREATE_SOUND_PLUGIN(name, className) \
-PCREATE_PLUGIN_VERSION_FN(name, PSoundChannel) \
-PCREATE_SOUND_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PSoundChannel)) \
-PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
+  static PSoundChannelPluginServiceDescriptor<className> className##_descriptor; \
+  PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
 #endif
 

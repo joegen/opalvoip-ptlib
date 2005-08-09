@@ -8,6 +8,17 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.17  2005/08/09 09:08:09  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.16.6.1  2005/07/17 09:27:04  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.16  2004/08/05 03:45:35  csoutheren
  * Fixed problems with plugin suffix not being propagated to sudirectories
  *
@@ -108,8 +119,11 @@ class PPluginManager : public PObject
   
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
-    PStringList GetPluginsProviding (const PString & serviceType) const;
-    PPluginServiceDescriptor * GetServiceDescriptor (const PString & serviceName, const PString & serviceType);
+    PStringList GetPluginsProviding(const PString & serviceType) const;
+    PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
+    PObject * CreatePluginsDevice(const PString & serviceName, const PString & serviceType, int userData = 0) const;
+    PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0) const;
+    PStringList GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
 
     // function to register a service (used by the plugins themselves)
     BOOL RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
