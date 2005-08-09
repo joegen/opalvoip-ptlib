@@ -24,6 +24,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.5  2005/08/09 09:08:11  rjongbloed
+ * Merged new video code from branch back to the trunk.
+ *
+ * Revision 1.4.6.1  2005/07/17 09:27:08  rjongbloed
+ * Major revisions of the PWLib video subsystem including:
+ *   removal of F suffix on colour formats for vertical flipping, all done with existing bool
+ *   working through use of RGB and BGR formats so now consistent
+ *   cleaning up the plug in system to use virtuals instead of pointers to functions.
+ *   rewrite of SDL to be a plug in compatible video output device.
+ *   extensive enhancement of video test program
+ *
  * Revision 1.4  2005/01/31 08:05:41  csoutheren
  * More patches for MacOSX, thanks to Hannes Friederich
  *
@@ -53,12 +64,13 @@
 
   #include <ptlib/videoio.h>
 
-  PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_FakeVideo);
-  PWLIB_STATIC_LOAD_PLUGIN(PVideoOutputDevice_NULLOutput);
-  PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_WindowsMultimedia);
+  PWLIB_STATIC_LOAD_PLUGIN(FakeVideo, PVideoInputDevice);
+  PWLIB_STATIC_LOAD_PLUGIN(NULLOutput, PVideoOutputDevice);
+  PWLIB_STATIC_LOAD_PLUGIN(WindowsMultimedia, PSoundChannel);
 
   #if defined(_WIN32) 
-    PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_VideoForWindows)
+    PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+    PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
   #endif
 
 #endif
@@ -67,7 +79,7 @@
 // Load static audio modules as required for Windows
 //
 #if defined(__BEOS__) && defined(P_AUDIO)
-  PWLIB_STATIC_LOAD_PLUGIN(PSoundChannelBeOS);
+  PWLIB_STATIC_LOAD_PLUGIN(BeOS, PSoundChannel);
 #endif
 
 //
@@ -155,4 +167,3 @@ PInstantiateMe::PInstantiateMe()
 }
 
 #endif // _PGLOBALSTATIC_CXX
-
