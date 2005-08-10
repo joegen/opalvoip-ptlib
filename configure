@@ -3142,7 +3142,7 @@ fi
 
 
 
-P_HAS_RECVMSG=0
+P_HAS_RECVMSG=
 echo "$as_me:$LINENO: checking for recvmsg" >&5
 echo $ECHO_N "checking for recvmsg... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
@@ -3194,14 +3194,14 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 if test "${P_HAS_RECVMSG}" = "1" ; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
+  cat >>confdefs.h <<\_ACEOF
+#define P_HAS_RECVMSG 1
+_ACEOF
+
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
-cat >>confdefs.h <<_ACEOF
-#define P_HAS_RECVMSG ${P_HAS_RECVMSG}
-_ACEOF
-
 
 
 P_HAS_STL_STREAMS=0
