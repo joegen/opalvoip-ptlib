@@ -25,6 +25,10 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.29  2005/08/10 23:52:56  rjongbloed
+ * Changed so does not try many formats on opening camera, now uses the OS default.
+ * Changed some of the logging messages.
+ *
  * Revision 1.28  2005/08/09 09:08:12  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -406,22 +410,25 @@ BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const char * colourFormat)
   // assume bmiHeader.biBitCount has already been set appropriatly for format
   BITMAPINFO & bmi = *(BITMAPINFO*)theArray;
   bmi.bmiHeader.biPlanes = 1;
-  bmi.bmiHeader.biSizeImage = 
-    (bmi.bmiHeader.biHeight<0 ? -bmi.bmiHeader.biHeight : bmi.bmiHeader.biHeight)
-                  *4*((bmi.bmiHeader.biBitCount * bmi.bmiHeader.biWidth + 31)/32);
+  bmi.bmiHeader.biSizeImage = (bmi.bmiHeader.biHeight<0 ? -bmi.bmiHeader.biHeight : bmi.bmiHeader.biHeight)*
+                                                 4*((bmi.bmiHeader.biBitCount * bmi.bmiHeader.biWidth + 31)/32);
+
+#if PTRACING
+  PTimeInterval startTime = PTimer::Tick();
+#endif
 
   if (capSetVideoFormat(hWnd, theArray, GetSize())) {
     PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
             << colourFormat << ' '
             << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
-            << " sz=" << bmi.bmiHeader.biSizeImage);
+            << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
     return TRUE;
   }
 
   PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
           << colourFormat << ' '
           << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
-          << " sz=" << bmi.bmiHeader.biSizeImage
+          << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime)
           << " - lastError=" << ::GetLastError());
   return FALSE;
 }
@@ -610,11 +617,6 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
     return FALSE;
   }
 
-  PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-         << colourFormat << ' '
-         << bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight
-         << " sz=" << bi->bmiHeader.biSizeImage);
-
   if (running)
     return Start();
 
@@ -670,21 +672,17 @@ BOOL PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned he
     Stop();
 
   PVideoDeviceBitmap bi(hCaptureWindow); 
-  PTRACE(5, "PVidInp\tRead current biHeight from driver as " << bi->bmiHeader.biHeight);
+  PTRACE(5, "PVidInp\tChanging frame size from "
+         << bi->bmiHeader.biWidth << 'x' << bi->bmiHeader.biHeight << " to " << width << 'x' << height);
 
-  bi->bmiHeader.biWidth = nativeVerticalFlip ? width : -(int)width;
-  bi->bmiHeader.biHeight = height;
+  bi->bmiHeader.biWidth = width;
+  bi->bmiHeader.biHeight = nativeVerticalFlip ? -(int)height : height;
 
   if (!bi.ApplyFormat(hCaptureWindow, colourFormat)) {
     lastError = ::GetLastError();
     return FALSE;
   }
 
-  PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-         << colourFormat << ' '
-         << bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight
-         << " sz=" << bi->bmiHeader.biSizeImage);
-  
   // verify that the driver really took the frame size
   if (!VerifyHardwareFrameSize(width, height)) 
     return FALSE; 
@@ -956,10 +954,27 @@ BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
   if (!SetFrameRate(frameRate))
     return FALSE;
 
-  if (preferredColourFormat.IsEmpty())
+  if (!preferredColourFormat.IsEmpty())
+    return SetColourFormat(preferredColourFormat);
+
+  if (!colourFormat.IsEmpty())
     return SetColourFormat(colourFormat);
 
-  return SetColourFormat(preferredColourFormat);
+  PVideoDeviceBitmap bi(hCaptureWindow);
+
+  PINDEX i = 0;
+  while (FormatTable[i].colourFormat != NULL) {
+    if (bi->bmiHeader.biCompression == FormatTable[i].compression) {
+      colourFormat = FormatTable[i].colourFormat;
+      frameWidth = bi->bmiHeader.biWidth;
+      frameHeight = bi->bmiHeader.biHeight < 0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight;
+      return TRUE;
+    }
+    i++;
+  }
+
+  // Don't know what is going on here, so set it to something known ...
+  return SetColourFormat("");
 }
 
 
