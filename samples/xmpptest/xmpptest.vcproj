@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="xmpptest"
 	ProjectGUID="{D2A0F886-B231-4CD6-A959-3FB1626C1662}"
+	RootNamespace="xmpptest"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -23,6 +24,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\msw&quot;;&quot;$(WXDIR)\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -40,10 +42,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlib.lib wxmsw.lib tiff.lib jpeg.lib png.lib regex.lib zlib.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
+				AdditionalDependencies="ptclib.lib ptlib.lib wxmsw26_core.lib wxbase26.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
 				OutputFile=".\Release/xmpptest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
 				ProgramDatabaseFile=".\Release/xmpptest.pdb"
 				SubSystem="2"
 				TargetMachine="1"/>
@@ -58,7 +61,12 @@
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				Description="Checking for wxWidgets"
+				CommandLine="if exist &quot;%WXDIR%&quot; exit 0
+echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!
+exit 1
+"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -87,6 +95,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\mswd&quot;;&quot;$(WXDIR)\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -105,10 +114,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib ptlibsd.lib wxmswd.lib tiffd.lib jpegd.lib pngd.lib regexd.lib zlibd.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
+				AdditionalDependencies="ptclibd.lib ptlibsd.lib wxmsw26d_core.lib wxbase26d.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
 				OutputFile=".\Debug/xmpptest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/xmpptest.pdb"
 				SubSystem="2"
@@ -124,7 +134,12 @@
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				Description="Checking for wxWidgets"
+				CommandLine="if exist &quot;%WXDIR%&quot; exit 0
+echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!
+exit 1
+"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
