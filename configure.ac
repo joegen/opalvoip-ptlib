@@ -532,7 +532,7 @@ fi
 dnl ########################################################################
 dnl check for recvmsg
 
-P_HAS_RECVMSG=0
+P_HAS_RECVMSG=
 AC_MSG_CHECKING(for recvmsg)
 AC_TRY_COMPILE([#include <sys/types.h>
                 #include <sys/socket.h>
@@ -540,10 +540,10 @@ AC_TRY_COMPILE([#include <sys/types.h>
                [int t = SOL_IP; t = IP_PKTINFO; struct msghdr *msg; recvmsg(0, msg, 0);], P_HAS_RECVMSG=1)
 if test "${P_HAS_RECVMSG}" = "1" ; then
   AC_MSG_RESULT(yes)
+  AC_DEFINE(P_HAS_RECVMSG, 1)
 else
   AC_MSG_RESULT(no)
 fi
-AC_DEFINE_UNQUOTED(P_HAS_RECVMSG, ${P_HAS_RECVMSG})
 
 dnl ########################################################################
 dnl check for streams types
