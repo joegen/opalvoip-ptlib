@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.59  2005/08/11 08:48:10  shorne
+ * Removed Close from PVXMLSession::Open method. Thanks Nickolay V. Shmyrev
+ *
  * Revision 1.58  2005/05/12 13:40:45  csoutheren
  * Fixed locking problems with currentPLayItem optimisation
  *
@@ -953,8 +956,6 @@ BOOL PVXMLSession::Open(const PString & _mediaFormat)
     PTRACE(1, "VXML\tCannot create VXML channel with format " << mediaFormat);
     return FALSE;
   }
-
-  Close();
 
   // set the underlying channel
   if (!PIndirectChannel::Open(chan, chan))
