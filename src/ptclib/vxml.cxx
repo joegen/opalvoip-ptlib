@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.60  2005/08/12 16:41:51  shorne
+ * A couple more small fixes thx. Nickolay V. Shmyrev
+ *
  * Revision 1.59  2005/08/11 08:48:10  shorne
  * Removed Close from PVXMLSession::Open method. Thanks Nickolay V. Shmyrev
  *
@@ -1554,6 +1557,7 @@ BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeec
 {
   PString prefix = psprintf("tts%i", type);
 
+  _text = _text.Trim();  
   PStringArray lines = _text.Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++) {
 
@@ -2710,7 +2714,7 @@ BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX dela
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   PVXMLPlayableData * item = dynamic_cast<PVXMLPlayableData *>(PFactory<PVXMLPlayable>::CreateInstance("PCM Data"));
-  if (item != NULL) {
+  if (item == NULL) {
     PTRACE(1, "VXML\tCannot find playable of type 'PCM Data'");
     delete item;
     return FALSE;
