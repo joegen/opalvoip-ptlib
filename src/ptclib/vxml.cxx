@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.61  2005/08/13 06:38:22  rjongbloed
+ * Fixed illegal code line, assigning to const object!
+ *
  * Revision 1.60  2005/08/12 16:41:51  shorne
  * A couple more small fixes thx. Nickolay V. Shmyrev
  *
@@ -1557,8 +1560,7 @@ BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeec
 {
   PString prefix = psprintf("tts%i", type);
 
-  _text = _text.Trim();  
-  PStringArray lines = _text.Lines();
+  PStringArray lines = _text.Trim().Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++) {
 
     PString text = lines[i].Trim();
