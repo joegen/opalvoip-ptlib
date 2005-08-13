@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.24  2005/08/13 19:13:49  shorne
+ * Fix so when feature not found it is marked as disabled.
+ *
  * Revision 1.23  2004/12/09 02:05:52  csoutheren
  * Added IF_FEATURE option to allow features dependent on existence/non-existence of
  *  other features
@@ -221,7 +224,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     checkDirectories.push_back(optionValue);
 
   else if (optionName == "IF_FEATURE") {
-    const char * delimiters = " ,";
+    const char * delimiters = ",";
     string::size_type lastPos = optionValue.find_first_not_of(delimiters, 0);
     string::size_type pos = optionValue.find_first_of(delimiters, lastPos);
     while (string::npos != pos || string::npos != lastPos) {
@@ -290,9 +293,9 @@ bool Feature::Locate(const char * testDir)
     testDirectory += '\\';
 
   list<CheckFileInfo>::iterator file = checkFiles.begin();
-  if (!file->Locate(testDirectory))
+  if (!file->Locate(testDirectory)) 
     return false;
-
+  
   while (++file != checkFiles.end())
     file->Locate(testDirectory);
 
@@ -631,14 +634,16 @@ int main(int argc, char* argv[])
           break;
         }
       }
+     if (!feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
+	feature->enabled = FALSE;
     }
     if (output)
       ;
     else if (feature->checkFiles.empty() && !feature->simpleDefineValue.empty())
       cout << "set to " << feature->simpleDefineValue;
-    else if (feature->enabled && (feature->checkFiles.empty() || feature->checkFiles.begin()->found))
+    else if (feature->enabled) 
       cout << "enabled";
-    else
+    else 
       cout << "disabled";
     cout << '\n';
   }
