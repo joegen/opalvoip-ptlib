@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.8  2005/08/14 12:58:58  csoutheren
+ * Fixed build problem on 64bit Linux
+ *
  * Revision 1.7  2004/11/15 13:26:43  csoutheren
  * Removed debugging (oops!)
  *
@@ -763,7 +766,7 @@ BOOL PSoundChannelOSS::Read(void * buf, PINDEX len)
     PINDEX total = 0;
     while (total < len) {
       PINDEX bytes = 0;
-      while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
+      while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned char *)buf) + total), len-total))) {
         if (GetErrorCode() != Interrupted) {
           PTRACE(6, "OSS\tRead failed");
           return FALSE;
