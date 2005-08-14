@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: ptlib.mak,v $
+# Revision 1.5  2005/08/14 13:12:42  csoutheren
+# Fixed misleading error message from make when PWLIBDIR not defined
+#
 # Revision 1.4  2005/02/23 21:29:52  dominance
 # have configure check for bison as we know we'll need it and stop implicit definition of PWLIBDIR. *geesh* that was about time, eh? ;)
 #
@@ -38,11 +41,12 @@
 #
 
 ifndef PWLIBDIR
-	echo "No PWLIBDIR environment variable defined!"
-	echo "You need to define PWLIBDIR!"
-	echo "Try something like:"
-	echo "PWLIBDIR = $(HOME)/pwlib"
-	exit 1
+
+$(error No PWLIBDIR environment variable defined! \
+You need to define PWLIBDIR! \
+Try something like: \
+PWLIBDIR = $(HOME)/pwlib)
+
 endif
 
 include $(PWLIBDIR)/make/unix.mak
