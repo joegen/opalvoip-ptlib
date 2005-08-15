@@ -67,6 +67,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vidtest", "samples\vidtest\
 		{85F4F26A-1A5D-4685-A48A-448102C5C5BC} = {85F4F26A-1A5D-4685-A48A-448102C5C5BC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "configure", "tools\configure\configure.vcproj", "{9C8D0100-6709-4628-9993-69F443AF69E8}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -150,6 +154,12 @@ Global
 		{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}.Pseudo-Debug.Build.0 = Debug|Win32
 		{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}.Release.ActiveCfg = Release|Win32
 		{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}.Release.Build.0 = Release|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Debug.ActiveCfg = Debug|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Debug.Build.0 = Debug|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Pseudo-Debug.ActiveCfg = Debug|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Pseudo-Debug.Build.0 = Debug|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Release.ActiveCfg = Release|Win32
+		{9C8D0100-6709-4628-9993-69F443AF69E8}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
