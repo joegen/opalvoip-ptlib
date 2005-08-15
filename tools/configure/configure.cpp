@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.25  2005/08/15 09:40:58  rjongbloed
+ * Captalised the word "disabled" so more obvious.
+ *
  * Revision 1.24  2005/08/13 19:13:49  shorne
  * Fix so when feature not found it is marked as disabled.
  *
@@ -619,7 +622,7 @@ int main(int argc, char* argv[])
       for (r = feature->ifFeature.begin(); r != feature->ifFeature.end(); ++r) {
         if (!FeatureEnabled(*r)) {
           feature->enabled = FALSE;
-          cout << " disabled due to absence of feature " << *r;
+          cout << " DISABLED due to absence of feature " << *r;
           output = TRUE;
           break;
         }
@@ -629,7 +632,7 @@ int main(int argc, char* argv[])
       for (r = feature->ifNotFeature.begin(); r != feature->ifNotFeature.end(); ++r) {
         if (FeatureEnabled(*r)) {
           feature->enabled = FALSE;
-          cout << " disabled due to presence of feature " << *r;
+          cout << " DISABLED due to presence of feature " << *r;
           output = TRUE;
           break;
         }
@@ -644,7 +647,7 @@ int main(int argc, char* argv[])
     else if (feature->enabled) 
       cout << "enabled";
     else 
-      cout << "disabled";
+      cout << "DISABLED";
     cout << '\n';
   }
   cout << endl;
