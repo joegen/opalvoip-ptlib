@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.193  2005/08/18 03:42:53  shorne
+ * Chaeck for RSVP QoS Thx Zdenek
+ *
  * Revision 1.192  2005/08/09 12:46:00  rjongbloed
  * Fixed some platforms where in6addr_any does not exist.
  *
@@ -3033,6 +3036,7 @@ BOOL PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
   for (i=0; i<numProtocols; qosProtocol++, i++) {
     if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
         (qosProtocol->iSocketType == type) &&
+		(PString(qosProtocol->szProtocol).Find("RSVP") == P_MAX_INDEX) &&
         (qosProtocol->iAddressFamily == af)) {
       haveQoSproto = TRUE;
       break;
