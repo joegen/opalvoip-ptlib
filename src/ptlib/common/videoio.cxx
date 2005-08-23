@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.55  2005/08/23 12:42:23  rjongbloed
+ * Fixed problems with negative hight native flipping not working with all sizes.
+ *
  * Revision 1.54  2005/08/09 09:08:12  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -679,14 +682,22 @@ static struct {
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
 					 BOOL bScaleNotCrop)
 {
-  if (SetFrameSize(width, height))
+  if (SetFrameSize(width, height)) {
+    if (nativeVerticalFlip) {
+      converter = PColourConverter::Create(colourFormat, colourFormat, frameWidth, frameHeight);
+      if (PAssertNULL(converter) == NULL)
+        return FALSE;
+      converter->SetVFlipState(nativeVerticalFlip);
+    }
     return TRUE;
+  }
   
-  if (!converter)
+  if (converter == NULL) {
     converter = PColourConverter::Create(colourFormat, colourFormat, width, height);
-  if (!converter) {
-    PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
-    return FALSE;
+    if (converter == NULL) {
+      PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
+      return FALSE;
+    }
   }
   
   PTRACE(3,"PVidDev\tColour converter created for " << width << 'x' << height);

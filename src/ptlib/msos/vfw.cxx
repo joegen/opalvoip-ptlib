@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.30  2005/08/23 12:42:23  rjongbloed
+ * Fixed problems with negative hight native flipping not working with all sizes.
+ *
  * Revision 1.29  2005/08/10 23:52:56  rjongbloed
  * Changed so does not try many formats on opening camera, now uses the OS default.
  * Changed some of the logging messages.
@@ -313,25 +316,7 @@ class PCapStatus : public CAPSTATUS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class PVideoDeviceBitmap : PBYTEArray
-{
-  public:
-    // the following method is replaced by PVideoDeviceBitmap(HWND hWnd, WORD bpp)
-    // PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
-    //returns object with gray color pallet if needed for 8 bpp formats
-    PVideoDeviceBitmap(HWND hWnd, WORD bpp);
-    // does not build color pallet
-    PVideoDeviceBitmap(HWND hWnd); 
-    // apply video format to capture device
-    BOOL ApplyFormat(HWND hWnd, const char * coloutFormat);
-
-    BITMAPINFO * operator->() const 
-    { return (BITMAPINFO *)theArray; }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-static struct { 
+static struct FormatTableEntry { 
   const char * colourFormat; 
   WORD  bitCount;
   BOOL  negHeight; // MS documentation suggests that negative height will request
@@ -374,6 +359,24 @@ static struct {
     {1024, 768 },
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+class PVideoDeviceBitmap : PBYTEArray
+{
+  public:
+    // the following method is replaced by PVideoDeviceBitmap(HWND hWnd, WORD bpp)
+    // PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
+    //returns object with gray color pallet if needed for 8 bpp formats
+    PVideoDeviceBitmap(HWND hWnd, WORD bpp);
+    // does not build color pallet
+    PVideoDeviceBitmap(HWND hWnd); 
+    // apply video format to capture device
+    BOOL ApplyFormat(HWND hWnd, const FormatTableEntry & formatTableEntry);
+
+    BITMAPINFO * operator->() const 
+    { return (BITMAPINFO *)theArray; }
+};
+
 PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow)
 {
   PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
@@ -404,14 +407,19 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow, WORD bpp)
   ((BITMAPINFO*)theArray)->bmiHeader.biBitCount = bpp;
 }
 
-BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const char * colourFormat)
+BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & formatTableEntry)
 {
   // NB it is necessary to set the biSizeImage value appropriate to frame size
   // assume bmiHeader.biBitCount has already been set appropriatly for format
   BITMAPINFO & bmi = *(BITMAPINFO*)theArray;
   bmi.bmiHeader.biPlanes = 1;
-  bmi.bmiHeader.biSizeImage = (bmi.bmiHeader.biHeight<0 ? -bmi.bmiHeader.biHeight : bmi.bmiHeader.biHeight)*
-                                                 4*((bmi.bmiHeader.biBitCount * bmi.bmiHeader.biWidth + 31)/32);
+
+  int height = bmi.bmiHeader.biHeight<0 ? -bmi.bmiHeader.biHeight : bmi.bmiHeader.biHeight;
+  bmi.bmiHeader.biSizeImage = height*4*((bmi.bmiHeader.biBitCount * bmi.bmiHeader.biWidth + 31)/32);
+
+  // set .biHeight according to .negHeight value
+  if (formatTableEntry.negHeight)
+    bmi.bmiHeader.biHeight = -height; 
 
 #if PTRACING
   PTimeInterval startTime = PTimer::Tick();
@@ -419,14 +427,25 @@ BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const char * colourFormat)
 
   if (capSetVideoFormat(hWnd, theArray, GetSize())) {
     PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
-            << colourFormat << ' '
+            << formatTableEntry.colourFormat << ' '
             << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
             << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
     return TRUE;
   }
 
+  if (formatTableEntry.negHeight) {
+    bmi.bmiHeader.biHeight = height; 
+    if (capSetVideoFormat(hWnd, theArray, GetSize())) {
+      PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
+              << formatTableEntry.colourFormat << ' '
+              << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
+              << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
+      return TRUE;
+    }
+  }
+
   PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
-          << colourFormat << ' '
+          << formatTableEntry.colourFormat << ' '
           << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
           << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime)
           << " - lastError=" << ::GetLastError());
@@ -581,8 +600,6 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
 
   PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[i].bitCount);
 
-  bool applied = false;
-
   if (FormatTable[i].colourFormat != NULL)
     bi->bmiHeader.biCompression = FormatTable[i].compression;
   else if (colourFmt.GetLength() == 4)
@@ -594,28 +611,15 @@ BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFm
 
   // set frame width and height
   bi->bmiHeader.biWidth = frameWidth;
-  if (FormatTable[i].negHeight) {
-    // See if driver will do top down format native
-    bi->bmiHeader.biHeight = -(int)frameHeight;
-    applied = bi.ApplyFormat(hCaptureWindow, colourFormat);
-    if (!applied) {
-      // Wont do top down, try bottom up, telling everuthing we are up side down
-      nativeVerticalFlip = true;
-      bi->bmiHeader.biHeight = frameHeight;
-      applied = bi.ApplyFormat(hCaptureWindow, colourFormat);
-    }
-  }
-  else {
-    nativeVerticalFlip = false;
-    bi->bmiHeader.biHeight = frameHeight;
-    applied = bi.ApplyFormat(hCaptureWindow, colourFormat);
-  }
-
-  if (!applied) {
+  bi->bmiHeader.biHeight = frameHeight;
+  if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
     lastError = ::GetLastError();
     PVideoDevice::SetColourFormat(oldFormat);
     return FALSE;
   }
+
+  // Didn't do top down, tell everything we are up side down
+  nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
 
   if (running)
     return Start();
@@ -675,13 +679,19 @@ BOOL PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned he
   PTRACE(5, "PVidInp\tChanging frame size from "
          << bi->bmiHeader.biWidth << 'x' << bi->bmiHeader.biHeight << " to " << width << 'x' << height);
 
-  bi->bmiHeader.biWidth = width;
-  bi->bmiHeader.biHeight = nativeVerticalFlip ? -(int)height : height;
+  PINDEX i = 0;
+  while (FormatTable[i].colourFormat != NULL && !(colourFormat *= FormatTable[i].colourFormat))
+    i++;
 
-  if (!bi.ApplyFormat(hCaptureWindow, colourFormat)) {
+  bi->bmiHeader.biWidth = width;
+  bi->bmiHeader.biHeight = height;
+  if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
     lastError = ::GetLastError();
     return FALSE;
   }
+
+  // Didn't do top down, tell everything we are up side down
+  nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
 
   // verify that the driver really took the frame size
   if (!VerifyHardwareFrameSize(width, height)) 
@@ -712,15 +722,8 @@ BOOL PVideoInputDevice_VideoForWindows::TestAllFormats()
     bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].compression;
     for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
       bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
-
-      // set .biHeight according to .negHeight value
-      if (FormatTable[prefFormatIdx].negHeight) {
-        bi->bmiHeader.biHeight = -(int)winTestResTable[prefResizeIdx].device_height; 
-        bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx].colourFormat);
-      }
-
       bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
-      bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx].colourFormat);
+      bi.ApplyFormat(hCaptureWindow, FormatTable[prefFormatIdx]);
     } // for prefResizeIdx
   } // for prefFormatIdx
 
