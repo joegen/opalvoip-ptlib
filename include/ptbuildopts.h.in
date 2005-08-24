@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.42  2005/08/24 12:48:39  rjongbloed
+ * Added configuration define for AEC encryption
+ *
  * Revision 1.41  2005/08/04 19:46:51  csoutheren
  * Applied patch #1240770
  * Fixed problem with compilation under Solaris 10
@@ -235,6 +238,7 @@
 //
 
 #undef P_SSL 
+#undef P_SSL_AES
 
 #if defined(_MSC_VER) && P_SSL
 
@@ -288,6 +292,10 @@
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
 #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
+
+#if P_SSL_AES
+#pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
+#endif
 
 #ifdef _DEBUG
 #define P_SSL_LIBDIR "out32.dbg"
