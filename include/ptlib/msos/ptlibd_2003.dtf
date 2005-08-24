@@ -3314,7 +3314,7 @@ EXPORTS
     ?AppendString@PSortedStringList@@QAEHABVPString@@@Z @1431 NONAME
     ?AppendString@PStringArray@@QAEHABVPString@@@Z @1432 NONAME
     ?AppendString@PStringList@@QAEHABVPString@@@Z @1433 NONAME
-    ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@PBD@Z @16461 NONAME
+    ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@ABUFormatTableEntry@@@Z @16568 NONAME
     ?ApplyQoS@PUDPSocket@@MAEHXZ @3545 NONAME
     ?AreAllRecordBuffersFull@PSoundChannel@@UAEHXZ @3636 NONAME
     ?AreAllRecordBuffersFull@PSoundChannelWin32@@UAEHXZ @3637 NONAME
