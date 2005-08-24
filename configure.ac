@@ -888,9 +888,13 @@ dnl Look for SASL
 dnl MSWIN_DISPLAY    sasl,Cyrus SASL
 dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL=1
 dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
+dnl MSWIN_CHECK_DIR  sasl,..\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,..\external\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\external\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,\sasl\
 dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
   
 AC_ARG_ENABLE(sasl,
@@ -1030,6 +1034,13 @@ dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
+
+dnl MSWIN_DISPLAY    AES,Open SSL AES
+dnl MSWIN_CHECK_FILE AES,inc32\openssl\aes.h,P_SSL_AES=1
+dnl MSWIN_CHECK_DIR  AES,..\openssl\
+dnl MSWIN_CHECK_DIR  AES,..\external\openssl\
+dnl MSWIN_CHECK_DIR  AES,\openssl\
+dnl MSWIN_CHECK_DIR  AES,c:\openssl\
 
 AC_ARG_ENABLE(openssl,
        [  --disable-openssl       disable OpenSSL support])
