@@ -1142,6 +1142,10 @@ int main(int argc,char **argv){}]])
   if test ${SSLHDR:-unset} != "unset" ; then
     AC_DEFINE(P_SSL, 1, "OpenSSL found")
     HAS_OPENSSL=1
+    AC_CHECK_HEADERS(openssl/aes.h, HAS_SSL_AES=yes, HAS_SSL_AES=no)
+    if test "$HAS_SSL_AES" = yes ; then
+      AC_DEFINE(P_SSL_AES, 1, "openssl with AES yes")
+    fi
     if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
     fi
