@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.43  2005/08/25 00:35:04  dereksmithies
+ * Add linux test to check for the presence of openssl/aes.h which sets P_SSL_AES
+ *
  * Revision 1.42  2005/08/24 12:48:39  rjongbloed
  * Added configuration define for AEC encryption
  *
@@ -293,7 +296,7 @@
 #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
 
-#if P_SSL_AES
+#if defined(_MSC_VER) && P_SSL_AES
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
 #endif
 
