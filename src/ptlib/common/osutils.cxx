@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.233  2005/08/30 06:36:39  csoutheren
+ * Added ability to rotate output logs on a daily basis
+ *
  * Revision 1.232  2005/03/19 02:52:55  csoutheren
  * Fix warnings from gcc 4.1-20050313 shapshot
  *
@@ -846,6 +849,8 @@ static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
 unsigned PTraceCurrentLevel;
+static const char * PTrace_Filename = NULL;
+static int PTrace_lastDayOfYear = 0;
 
 void PTrace::SetStream(ostream * s)
 {
@@ -857,12 +862,32 @@ void PTrace::SetStream(ostream * s)
   if (PTraceMutex == NULL)
     PTraceStream = s;
   else {
-    PTraceMutex->Wait();
+    PWaitAndSignal m(*PTraceMutex);
     PTraceStream = s;
-    PTraceMutex->Signal();
   }
 }
 
+static void OpenTraceFile()
+{
+  PFilePath fn(PTrace_Filename);
+
+  if ((PTraceOptions & PTrace::RotateDaily) != 0)
+    fn = PFilePath(fn.GetDirectory() + (fn.GetTitle() + PTime((PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local).AsString("yyyy_MM_dd") + fn.GetType()));
+
+  PTextFile * traceOutput;
+  if (PTraceOptions & PTrace::AppendToFile) {
+    traceOutput = new PTextFile(fn, PFile::ReadWrite);
+    traceOutput->SetPosition(0, PFile::End);
+  } else 
+    traceOutput = new PTextFile(fn, PFile::WriteOnly);
+
+  if (traceOutput->IsOpen())
+    PTrace::SetStream(traceOutput);
+  else {
+    PTRACE(0, PProcess::Current().GetName() << "Could not open trace output file \"" << fn << '"');
+    delete traceOutput;
+  }
+}
 
 void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
@@ -875,26 +900,21 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   int ignoreAllocations = -1;
 #endif
 
+  PTrace_Filename = filename;
+  PTraceOptions = options;
+
+  if (options & RotateDaily)
+    PTrace_lastDayOfYear = PTime((PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local).GetDayOfYear();
+  else
+    PTrace_lastDayOfYear = 0;
+
   if (filename != NULL) {
 #if PMEMORY_CHECK
     ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
 #endif
-    PTextFile * traceOutput;
-    if (options & AppendToFile) {
-      traceOutput = new PTextFile(filename, PFile::ReadWrite);
-      traceOutput->SetPosition(0, PFile::End);
-    } else 
-      traceOutput = new PTextFile(filename, PFile::WriteOnly);
-
-    if (traceOutput->IsOpen())
-      PTrace::SetStream(traceOutput);
-    else {
-      PTRACE(0, process.GetName() << "Could not open trace output file \"" << filename << '"');
-      delete traceOutput;
-    }
+    OpenTraceFile();
   }
 
-  PTraceOptions = options;
   PTraceLevelThreshold = level;
 
   PTRACE(1, process.GetName()
@@ -954,7 +974,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     return *PTraceStream;
   }
 
-  PTraceMutex->Wait();
+  PWaitAndSignal m(*PTraceMutex);
 
   if (level == UINT_MAX)
     return *PTraceStream;
@@ -962,6 +982,17 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex
   PTraceCurrentLevel = level;
+
+  if ((PTrace_Filename != NULL) && (PTraceOptions&RotateDaily) != 0) {
+    int day = PTime((PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local).GetDayOfYear();
+    if (day != PTrace_lastDayOfYear) {
+      delete PTraceStream;
+      PTraceStream = NULL;
+      OpenTraceFile();
+      if (PTraceStream == NULL)
+        return *PTraceStream;
+    }
+  }
 
   if ((PTraceOptions&SystemLogStream) == 0) {
     if ((PTraceOptions&DateAndTime) != 0) {
@@ -1048,8 +1079,6 @@ ostream & PTrace::End(ostream & s)
     else
       s << endl;
   }
-
-  PTraceMutex->Signal();
 
   return s;
 }

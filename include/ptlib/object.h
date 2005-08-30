@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.112  2005/08/30 06:36:39  csoutheren
+ * Added ability to rotate output logs on a daily basis
+ *
  * Revision 1.111  2005/03/10 06:37:20  csoutheren
  * Removed use of typeid on WIndows to get class name because it is not threadsafe
  * In fact, lets just use #classname everywhere because that will always work
@@ -658,11 +661,14 @@ public:
     ThreadAddress = 64,
     /// Append to log file rather than resetting every time
     AppendToFile = 128,
-    /** SystemLog flag for tracing within a PServiceProcess application. Must
-        be set in conjection with SetStream(new PSystemLog).
+    /** Output timestamps in GMT time rather than local time
       */
     GMTTime = 256,
-    /** Output timestamps in GMT time rather than local time
+    /** If set, log file will be rotated daily
+      */
+    RotateDaily = 512,
+    /** SystemLog flag for tracing within a PServiceProcess application. Must
+        be set in conjection with SetStream(new PSystemLog).
       */
     SystemLogStream = 32768
   };
