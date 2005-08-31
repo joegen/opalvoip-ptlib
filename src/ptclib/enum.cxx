@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.8  2005/08/31 05:55:03  shorne
+ * Reworked ENUM to craigs' exacting requirements
+ *
  * Revision 1.7  2005/08/31 04:07:53  shorne
  * added ability to set ENUM Servers at runtime
  *
@@ -270,24 +273,39 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   return value;
 }
 
-
-BOOL PDNS::ENUMLookup(
-   const PString & e164,
-   const PString & service,
-         PString & dn
-)
+static PStringArray & GetENUMServers()
 {
-  static const char * defaultDomains[] = { "e164.voxgratia.net", "e164.org", "e164.arpa" };
+  static const char * defaultDomains[] = { "e164.voxgratia.net","e164.org","e164.arpa"};
+  static PStringArray servers(
+          sizeof(defaultDomains)/sizeof(defaultDomains[0]),
+          defaultDomains
+  );
+  return servers;
+}
 
+static PMutex & GetENUMServerMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
+void PDNS::SetENUMServers(const PStringArray & servers)
+{
+     PWaitAndSignal m(GetENUMServerMutex());
+     GetENUMServers() = servers;
+}
+
+BOOL PDNS::ENUMLookup(const PString & e164,
+   	  const PString & service,PString & dn)
+{
+  PWaitAndSignal m(GetENUMServerMutex());
   PStringArray domains;
   char * env = ::getenv(PWLIB_ENUM_PATH);
-  if (ENUMServers.GetSize() > 0)
-      domains = ENUMServers;
-  else if (env != NULL)
-      domains += PString(env).Tokenise(PATH_SEP);
+  if (env == NULL)
+	domains += GetENUMServers();
   else
-      domains += PStringArray(sizeof(domains)/sizeof(defaultDomains[0]), defaultDomains);
- 
+	domains += PString(env).Tokenise(PATH_SEP);
+
   return PDNS::ENUMLookup(e164, service, domains, dn);
 }
 
