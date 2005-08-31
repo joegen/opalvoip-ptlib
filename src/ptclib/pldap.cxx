@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.18  2005/08/31 15:21:34  dominance
+ * fix building with recent OpenLDAP
+ *
  * Revision 1.17  2004/05/24 12:02:49  csoutheren
  * Add function to permit setting a limit on the number of results returned
  * from an LDAP query. Change the default number of results to unlimited,
@@ -89,6 +92,7 @@
 
 #if P_LDAP
 
+#define LDAP_DEPRECATED 1
 #include <ldap.h>
 
 
