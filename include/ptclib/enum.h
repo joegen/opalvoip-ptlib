@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.h,v $
+ * Revision 1.2  2005/08/31 04:07:52  shorne
+ * added ability to set ENUM Servers at runtime
+ *
  * Revision 1.1  2004/05/31 13:56:37  csoutheren
  * Added implementation of ENUM resolution of E.164 numbers by DNS
  *
@@ -83,6 +86,8 @@ PDECLARE_SORTED_LIST(NAPTRRecordList, PDNS::NAPTRRecord)
 
 inline BOOL GetRecords(const PString & domain, NAPTRRecordList & recordList)
 { return Lookup<NAPTR_SRV, NAPTRRecordList, NAPTRRecord>(domain, recordList); }
+
+static PStringArray ENUMServers;
 
 BOOL ENUMLookup(const PString & dn, const PString & service, const PStringArray & domains, PString & URL);
 BOOL ENUMLookup(const PString & dn, const PString & service, PString & URL);
