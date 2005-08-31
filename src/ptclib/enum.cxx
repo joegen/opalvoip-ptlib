@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.7  2005/08/31 04:07:53  shorne
+ * added ability to set ENUM Servers at runtime
+ *
  * Revision 1.6  2004/08/04 10:26:39  csoutheren
  * Changed service to be case insignificant
  *
@@ -278,11 +281,13 @@ BOOL PDNS::ENUMLookup(
 
   PStringArray domains;
   char * env = ::getenv(PWLIB_ENUM_PATH);
-  if (env == NULL)
-    domains += PStringArray(sizeof(domains)/sizeof(defaultDomains[0]), defaultDomains);
+  if (ENUMServers.GetSize() > 0)
+      domains = ENUMServers;
+  else if (env != NULL)
+      domains += PString(env).Tokenise(PATH_SEP);
   else
-    domains += PString(env).Tokenise(PATH_SEP);
-
+      domains += PStringArray(sizeof(domains)/sizeof(defaultDomains[0]), defaultDomains);
+ 
   return PDNS::ENUMLookup(e164, service, domains, dn);
 }
 
