@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.h,v $
+ * Revision 1.4  2005/08/31 23:55:48  csoutheren
+ * Fixed typo
+ *
  * Revision 1.3  2005/08/31 05:55:03  shorne
  * Reworked ENUM to craigs' exacting requirements
  *
@@ -90,7 +93,7 @@ PDECLARE_SORTED_LIST(NAPTRRecordList, PDNS::NAPTRRecord)
 inline BOOL GetRecords(const PString & domain, NAPTRRecordList & recordList)
 { return Lookup<NAPTR_SRV, NAPTRRecordList, NAPTRRecord>(domain, recordList); }
 
-void SetENUMServers(PStringArray serverlist);
+void SetENUMServers(const PStringArray & serverlist);
 BOOL ENUMLookup(const PString & dn, const PString & service, const PStringArray & domains, PString & URL);
 BOOL ENUMLookup(const PString & dn, const PString & service, PString & URL);
 
