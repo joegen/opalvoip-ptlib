@@ -955,6 +955,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\mutex.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptlib\notifier.h">
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptlib\notifier_ext.h">
 				</File>
 				<File
