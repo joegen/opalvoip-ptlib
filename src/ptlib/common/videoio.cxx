@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.56  2005/09/06 12:41:22  rjongbloed
+ * Fixed correct creation (or non creation) of converter when using SetFrameSizeConverter()
+ *
  * Revision 1.55  2005/08/23 12:42:23  rjongbloed
  * Fixed problems with negative hight native flipping not working with all sizes.
  *
@@ -683,15 +686,18 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
 					 BOOL bScaleNotCrop)
 {
   if (SetFrameSize(width, height)) {
-    if (nativeVerticalFlip) {
+    if (nativeVerticalFlip && converter == NULL) {
       converter = PColourConverter::Create(colourFormat, colourFormat, frameWidth, frameHeight);
       if (PAssertNULL(converter) == NULL)
         return FALSE;
+    }
+    if (converter != NULL) {
+      converter->SetFrameSize(frameWidth, frameHeight);
       converter->SetVFlipState(nativeVerticalFlip);
     }
     return TRUE;
   }
-  
+
   if (converter == NULL) {
     converter = PColourConverter::Create(colourFormat, colourFormat, width, height);
     if (converter == NULL) {
@@ -700,7 +706,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
     }
   }
   
-  PTRACE(3,"PVidDev\tColour converter created for " << width << 'x' << height);
+  PTRACE(3,"PVidDev\tColour converter used for " << width << 'x' << height);
 
   unsigned minWidth, minHeight, maxWidth, maxHeight;
   BOOL limits = GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
