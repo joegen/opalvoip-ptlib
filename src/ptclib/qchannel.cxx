@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.cxx,v $
+ * Revision 1.3  2005/09/16 08:25:07  csoutheren
+ * Changed Read to return partial data rather than loop
+ *
  * Revision 1.2  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -113,7 +116,8 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
 
   BYTE * buffer = (BYTE *)buf;
 
-  while (count > 0) {
+  //while (count > 0) {
+  {
 
     mutex.Wait();
 
@@ -188,7 +192,8 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
 
   const BYTE * buffer = (BYTE *)buf;
 
-  while (count > 0) {
+  //while (count > 0) {
+  {
 
     mutex.Wait();
 
