@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.68  2005/09/18 13:01:44  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.67  2005/08/08 06:59:39  rjongbloed
  * Fixed compiler warning
  *
@@ -260,10 +263,14 @@
 
 
 #if defined(P_WINSOCK2_LIBRARY)
+#ifdef _MSC_VER
 #pragma comment(lib, P_WINSOCK2_LIBRARY)
+#endif
 #else
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
 #pragma comment(lib, "wsock32.lib")
+#endif
 #endif // !_WIN32_WCE
 #endif
 
