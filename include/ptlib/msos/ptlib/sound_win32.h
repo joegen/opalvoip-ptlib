@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.h,v $
+ * Revision 1.4  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.3  2004/10/23 11:32:27  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -47,7 +50,9 @@
 
 #include <mmsystem.h>
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
+#endif
 #endif
 
 class PWaveFormat : public PObject

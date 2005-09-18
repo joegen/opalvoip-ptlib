@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.19  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.18  2005/08/31 15:21:34  dominance
  * fix building with recent OpenLDAP
  *
@@ -96,7 +99,7 @@
 #include <ldap.h>
 
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #pragma comment(lib, P_LDAP_LIBRARY)
 #endif
 
