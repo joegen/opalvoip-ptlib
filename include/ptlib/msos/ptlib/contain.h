@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.52  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.51  2005/03/10 06:37:19  csoutheren
  * Removed use of typeid on WIndows to get class name because it is not threadsafe
  * In fact, lets just use #classname everywhere because that will always work
@@ -410,8 +413,10 @@ class RegistryKey
 // used by various modules to disable the winsock2 include to avoid header file problems
 #ifndef P_KNOCKOUT_WINSOCK2
 
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable:4127 4706)
+#endif
 
 #if defined(P_WINSOCKv1)
 
@@ -430,8 +435,9 @@ class RegistryKey
 
 #endif // P_WINSOCKv1
 
+#if defined(_MSC_VER)
 #pragma warning(pop)
-
+#endif
 
 #define PIPX
 
@@ -457,7 +463,9 @@ extern "C" char ** __argv;
 #include <errno.h>
 #include <io.h>
 
+#if defined(_MSC_VER)
 #pragma warning(disable:4201)
+#endif
 #include <mmsystem.h>
 
 
@@ -472,6 +480,7 @@ extern "C" char ** __argv;
 //#define   PCONTAINER_USES_CRITSEC   1
 
 // preload <string> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4100)
@@ -480,57 +489,82 @@ extern "C" char ** __argv;
 #pragma warning(disable:4146)
 #pragma warning(disable:4244)
 #pragma warning(disable:4786)
+#endif
 #include <string>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // preload <vector> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4018)
 #pragma warning(disable:4663)
 #pragma warning(disable:4786)
+#endif
 #include <vector>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // preload <map> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4018)
 #pragma warning(disable:4663)
 #pragma warning(disable:4786)
+#endif
 #include <map>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // preload <utility> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4786)
+#endif
 #include <utility>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // preload <iterator> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4786)
+#endif
 #include <iterator>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // preload <algorithm> and kill warnings
 #include <algorithm>
 
 // preload <queue> and kill warnings
+#if defined(_MSC_VER)
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4284)
+#endif
 #include <queue>
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 // VS.net won't work without this :(
 #if _MSC_VER>=1300
 using namespace std;
 #endif
 
+#if defined(_MSC_VER)
 #pragma warning(disable:4786)
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations

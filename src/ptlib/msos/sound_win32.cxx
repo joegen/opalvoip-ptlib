@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.13  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.12  2005/07/03 13:48:58  shorne
  * Add the ability to play sound to specified device.
  *
@@ -195,7 +198,9 @@
 #include <ptlib/msos/ptlib/sound_win32.h>
 
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
+#endif
 #endif
 
 class PSound;

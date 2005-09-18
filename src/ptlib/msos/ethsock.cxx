@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.46  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.45  2005/07/13 11:48:54  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -182,7 +185,9 @@
 #include <snmp.h>
 
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
 #pragma comment(lib, "snmpapi.lib")
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
