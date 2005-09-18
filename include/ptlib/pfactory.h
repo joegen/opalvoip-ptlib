@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.22  2005/09/18 13:01:40  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.21  2005/05/03 11:58:45  csoutheren
  * Fixed various problems reported by valgrind
  * Thanks to Paul Cadach
@@ -110,7 +113,7 @@
 #include <map>
 #include <vector>
 
-#ifdef _WIN32
+#if defined(_MSC_VER)
 #pragma warning(disable:4786)
 #endif
 
