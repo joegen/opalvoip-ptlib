@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.31  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.30  2005/08/23 12:42:23  rjongbloed
  * Fixed problems with negative hight native flipping not working with all sizes.
  *
@@ -157,8 +160,10 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#ifdef _MSC_VER
 #ifndef _WIN32_WCE
 #pragma comment(lib, "vfw32.lib")
+#endif
 #endif
 
 #define STEP_GRAB_CAPTURE 1

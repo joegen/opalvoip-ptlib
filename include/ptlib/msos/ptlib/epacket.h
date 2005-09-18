@@ -8,6 +8,9 @@
  * Original code by William Ingle (address unknown)
  *
  * $Log: epacket.h,v $
+ * Revision 1.7  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -34,9 +37,13 @@
 #define __EPACKET_H
 
 #ifndef CTL_CODE
+#ifdef _MSC_VER
 #pragma warning(disable:4201)
+#endif
 #include <winioctl.h>
+#ifdef _MSC_VER
 #pragma warning(default:4201)
+#endif
 #endif
 
 #ifdef USE_VPACKET

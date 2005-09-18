@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.149  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.148  2005/07/13 12:48:32  csoutheren
  * Backported fix from isvo branch
  *
@@ -541,14 +544,18 @@
 #include <ws2tcpip.h>
 
 #ifndef _WIN32_WCE
+#ifdef _MSC_VER
 #pragma comment(lib, "mpr.lib")
+#endif
 #endif
 
 #define new PNEW
 
 #if defined(_WIN32_DCOM) 
   #include <objbase.h>
+#ifdef _MSC_VER
   #pragma comment(lib, _OLE_LIB)
+#endif
 #endif
 
 #include "../common/pglobalstatic.cxx"

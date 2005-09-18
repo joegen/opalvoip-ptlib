@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dllmain.cxx,v $
+ * Revision 1.3  2005/09/18 13:01:43  dominance
+ * fixed pragma warnings when building with gcc.
+ *
  * Revision 1.2  2004/10/23 10:53:19  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -35,7 +38,9 @@
  *
  */
 
+#ifdef _MSC_VER
 #pragma warning(disable:4201 4514)
+#endif
 
 #include <windows.h>
 
