@@ -27,6 +27,19 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.172  2005/09/18 11:05:36  dominance
+ * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
+ * src/ptlib/common/pchannel.cxx:
+ * 	correct the STL defined checking to use proper syntax.
+ *
+ * include/ptlib/object.h:
+ * 	re-add typedef to compile on mingw
+ *
+ * make/ptlib-config.in:
+ * 	import a long-standing fix from the Debian packs which allows usage of
+ * 	ptlib-config without manually adding -lpt for each of the subsequent
+ * 	projects
+ *
  * Revision 1.171  2005/08/08 07:01:58  rjongbloed
  * Minor changes to remove possible ambiguity where virtual and non-virtual
  *   functions are overloaded.
@@ -2569,7 +2582,7 @@ int PStringStream::Buffer::sync()
   return 0;
 }
 
-#if __USE_STL__
+#ifdef __USE_STL__
 streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode mode)
 #else
 streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
@@ -2630,7 +2643,7 @@ streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int m
 }
 
 
-#if __USE_STL__
+#ifdef __USE_STL__
 streampos PStringStream::Buffer::seekpos(pos_type pos, ios_base::openmode mode)
 {
   return seekoff(pos, ios_base::beg, mode);

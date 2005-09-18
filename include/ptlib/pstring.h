@@ -27,6 +27,19 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.82  2005/09/18 11:05:36  dominance
+ * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
+ * src/ptlib/common/pchannel.cxx:
+ * 	correct the STL defined checking to use proper syntax.
+ *
+ * include/ptlib/object.h:
+ * 	re-add typedef to compile on mingw
+ *
+ * make/ptlib-config.in:
+ * 	import a long-standing fix from the Debian packs which allows usage of
+ * 	ptlib-config without manually adding -lpt for each of the subsequent
+ * 	projects
+ *
  * Revision 1.81  2004/12/22 04:04:36  dereksmithies
  * Modify description of parameters for PString::Replace()
  *
@@ -2077,7 +2090,7 @@ class PStringStream : public PString, public iostream
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-#if __USE_STL__
+#ifdef __USE_STL__
         virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
         virtual pos_type seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out);
 #else

@@ -27,6 +27,19 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.34  2005/09/18 11:05:36  dominance
+ * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
+ * src/ptlib/common/pchannel.cxx:
+ * 	correct the STL defined checking to use proper syntax.
+ *
+ * include/ptlib/object.h:
+ * 	re-add typedef to compile on mingw
+ *
+ * make/ptlib-config.in:
+ * 	import a long-standing fix from the Debian packs which allows usage of
+ * 	ptlib-config without manually adding -lpt for each of the subsequent
+ * 	projects
+ *
  * Revision 1.33  2005/08/05 20:41:42  csoutheren
  * Added unix support for scattered read/write
  *
@@ -216,7 +229,7 @@ int PChannelStreamBuffer::sync()
 }
 
 
-#if __USE_STL__
+#ifdef __USE_STL__
 streampos PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode)
 #else
 streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
@@ -246,7 +259,7 @@ streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
 }
 
 
-#if __USE_STL__
+#ifdef __USE_STL__
 streampos PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
 {
   return seekoff(pos, ios_base::beg, mode);
