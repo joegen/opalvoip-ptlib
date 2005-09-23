@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.77  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.76  2005/08/05 20:41:42  csoutheren
  * Added unix support for scattered read/write
  *
@@ -283,7 +286,9 @@
 #include <fcntl.h>
 #include <share.h>
 #include <sys\stat.h>
+#ifdef _MSC_VER
 #include <crtdbg.h>
+#endif
 
 #if !P_USE_INLINES
 #include <ptlib/osutil.inl>

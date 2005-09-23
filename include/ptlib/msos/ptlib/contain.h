@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.53  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.52  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -350,7 +353,10 @@ istream & operator>>(istream & s, PUInt64 & v);
 #else
 
 # define PINDEX unsigned
-# if sizeof(int) == 4
+# ifndef SIZEOF_INT
+#  define SIZEOF_INT sizeof(int)
+# endif
+# if SIZEOF_INT == 4
     const PINDEX P_MAX_INDEX = 0xffffffff;
 # else
     const PINDEX P_MAX_INDEX = 0xffff;

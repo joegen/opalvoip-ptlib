@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.44  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.43  2005/08/25 00:35:04  dereksmithies
  * Add linux test to check for the presence of openssl/aes.h which sets P_SSL_AES
  *
@@ -188,6 +191,14 @@
 #undef	P_MACOSX
 #undef	P_CYGWIN
 #undef	P_UNKNOWN_OS 
+
+
+/////////////////////////////////////////////////
+//
+// sizeof(int)
+//
+
+#undef SIZEOF_INT
 
 /////////////////////////////////////////////////
 //
