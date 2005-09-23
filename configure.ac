@@ -59,6 +59,7 @@ AC_CANONICAL_TARGET()
 
 TARGETDIR=unix
 OSTYPE=
+NEEDS_PTHREADS=yes
 
 case "$target_os" in
   linux*)          OSTYPE=linux ;  
@@ -365,6 +366,10 @@ fi
 AC_LANG_POP(C++)
 
 dnl ########################################################################
+dnl check for the size of int
+AC_CHECK_SIZEOF(int)
+
+dnl ########################################################################
 dnl check for long double
 
 AC_C_LONG_DOUBLE
@@ -663,7 +668,7 @@ else
 fi
 
 
-if test ${HAS_PTHREADS} != yes ; then
+if test ${HAS_PTHREADS} != yes -a ${NEEDS_PTHREADS} = yes; then
   AC_MSG_ERROR(must have pthreads!)
 fi
 
