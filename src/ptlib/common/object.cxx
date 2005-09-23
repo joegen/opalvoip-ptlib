@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.82  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.81  2004/10/24 03:43:55  rjongbloed
  * Used correct test for inclusion of pragma implementation
  *
@@ -295,7 +298,9 @@
 #include <ctype.h>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
+#ifdef _MSC_VER
 #include <crtdbg.h>
+#endif
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
