@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.150  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.149  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -697,7 +700,7 @@ PString PTime::GetTimeZoneString(TimeZoneType type)
 {
   TIME_ZONE_INFORMATION tz;
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
-  return type == StandardTime ? tz.StandardName : tz.DaylightName;
+  return (const WORD *)(type == StandardTime ? tz.StandardName : tz.DaylightName);
 }
 
 

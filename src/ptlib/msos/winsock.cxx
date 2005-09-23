@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.69  2005/09/23 15:30:46  dominance
+ * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
+ *
  * Revision 1.68  2005/09/18 13:01:44  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -259,8 +262,14 @@
 #include <svcguid.h>
 
 #include <wsipx.h>
+#ifdef _MSC_VER
 #include <wsnwlink.h>
-
+#else
+#define IPX_PTYPE 0x4000
+#define NS_DEFAULT 0
+#define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
+#define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
+#endif
 
 #if defined(P_WINSOCK2_LIBRARY)
 #ifdef _MSC_VER
