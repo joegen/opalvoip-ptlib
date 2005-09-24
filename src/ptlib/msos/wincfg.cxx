@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.15  2005/09/24 09:11:42  dominance
+ * use unix-style slashes to not confuse mingw on win32
+ *
  * Revision 1.14  2003/03/19 01:35:42  robertj
  * Fixed bug getting large private .ini file data, thanks Michal Zygmuntowicz
  *
@@ -80,7 +83,7 @@
 #include <process.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 
 #define new PNEW
 
