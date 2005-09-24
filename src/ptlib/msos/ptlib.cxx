@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.78  2005/09/24 09:11:42  dominance
+ * use unix-style slashes to not confuse mingw on win32
+ *
  * Revision 1.77  2005/09/23 15:30:46  dominance
  * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
  *
@@ -285,7 +288,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <share.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 #ifdef _MSC_VER
 #include <crtdbg.h>
 #endif

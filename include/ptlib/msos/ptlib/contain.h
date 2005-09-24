@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.54  2005/09/24 09:11:42  dominance
+ * use unix-style slashes to not confuse mingw on win32
+ *
  * Revision 1.53  2005/09/23 15:30:46  dominance
  * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
  *
@@ -465,7 +468,7 @@ extern "C" char ** __argv;
 
 #define P_THREADIDENTIFIER DWORD
 
-#include <sys\types.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <io.h>
 
