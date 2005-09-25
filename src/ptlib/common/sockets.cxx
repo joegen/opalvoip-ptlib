@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.195  2005/09/25 10:51:23  dominance
+ * almost complete the mingw support. We'll be there soon. ;)
+ *
  * Revision 1.194  2005/08/18 06:24:30  shorne
  * Reversed Last Patch
  *
@@ -1133,7 +1136,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       localErrNo = h_errno;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif defined(P_RTEMS) || defined(P_CYGWIN)
+#elif defined(P_RTEMS) || defined(P_CYGWIN) || defined(P_MINGW)
 
     host_info = ::gethostbyname(name);
     localErrNo = h_errno;
@@ -1266,7 +1269,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       localErrNo = h_errno;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif defined P_RTEMS || defined P_CYGWIN
+#elif defined P_RTEMS || defined P_CYGWIN || defined P_MINGW
 
     host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
