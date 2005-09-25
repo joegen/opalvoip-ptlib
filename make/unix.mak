@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.196  2005/09/25 10:51:23  dominance
+# almost complete the mingw support. We'll be there soon. ;)
+#
 # Revision 1.195  2005/02/23 21:29:52  dominance
 # have configure check for bison as we know we'll need it and stop implicit definition of PWLIBDIR. *geesh* that was about time, eh? ;)
 #
@@ -319,7 +322,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin mingw))
 
 default_target :
 	@echo
@@ -334,7 +337,7 @@ default_target :
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
 	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
-	@echo "              VxWorks rtems"
+	@echo "              VxWorks rtems mingw"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -779,6 +782,12 @@ UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/Nucleus++
 MEMORY_CHECK	=	0
 endif # Nucleus
 
+####################################################
+
+ifeq ($(OSTYPE),mingw)
+LDFLAGS += -enable-auto-import -enable-runtime-pseudo-reloc
+LDFLAGS += -enable-stdcall-fixup -fatal-warning
+endif # mingw
 
 ###############################################################################
 #

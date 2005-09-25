@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.40  2005/09/25 10:51:23  dominance
+# almost complete the mingw support. We'll be there soon. ;)
+#
 # Revision 1.39  2004/06/17 06:33:07  csoutheren
 # Changed Solaris linker to g++. It should never have been using ld
 #
@@ -194,8 +197,12 @@ ifeq ($(P_SHAREDLIB),1)
      LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
      LD = $(CPLUS)
   else
+    ifeq ($(OSTYPE),mingw)
+      LDSOOPTS += -Wl,--kill-at
+    else
     ifneq ($(OSTYPE),Darwin)
       LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
+    endif
     endif
     LD = $(CPLUS)
   endif

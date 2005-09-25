@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.55  2005/09/25 10:51:23  dominance
+ * almost complete the mingw support. We'll be there soon. ;)
+ *
  * Revision 1.54  2005/09/24 09:11:42  dominance
  * use unix-style slashes to not confuse mingw on win32
  *
@@ -315,6 +318,13 @@ typedef short PInt16;
 // Declaration for signed integer that is 32 bits
 typedef long PInt32;
 
+#ifdef __MINGW32__
+#define __USE_STL__
+using namespace std;
+#define P_HAS_INT64
+typedef signed __int64 PInt64;
+typedef unsigned __int64 PUInt64;
+#endif
 
 // Declaration for 64 bit unsigned integer quantity
 #if defined(_MSC_VER) && defined(_WIN32)
@@ -342,7 +352,7 @@ istream & operator>>(istream & s, PUInt64 & v);
 
 // Standard array index type (depends on compiler)
 // Type used in array indexes especially that required by operator[] functions.
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 # define PINDEX int
 # if defined(_WIN32)

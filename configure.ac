@@ -113,6 +113,16 @@ case "$target_os" in
                    OSRELEASE="`uname -r`";
 		   ;;
 
+  mingw*)	   OSTYPE=mingw ;
+		   OS_TAG="P_MINGW" ;
+		   OSRELEASE=`uname -r` ;
+		   TARGETDIR=msos ;
+		   SHAREDLIBEXT="dll" ;
+		   STDCCFLAGS="$STDCCFLAGS -mms-bitfields" ;
+		   ENDLDLIBS="-lwinmm -lwsock32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32" ;
+		   NEEDS_PTHREADS=no ;
+		   ;;
+
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
   		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
@@ -733,6 +743,9 @@ else
     if test "$HAS_REGEX" = "yes" ; then
       AC_SUBST(HAS_REGEX, 1)
       AC_DEFINE(P_REGEX, 1, "Regex library found")
+      if test ${OSTYPE} = mingw ; then
+        ENDLDLIBS="$ENDLDLIBS -lregex"
+      fi
     fi
   fi
 fi
@@ -984,7 +997,7 @@ HAS_OPENLDAP=
 if test "$enable_openldap" = "no" ; then
   AC_MSG_NOTICE(OpenLDAP disabled)
 else 
-  if test "${HAS_RESOLVER:-unset}" != "unset" ; then
+  if test "${HAS_RESOLVER:-unset}" != "unset" -o "${OSTYPE}" = "mingw" ; then
     AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
   
     dnl posix4 is required by libldap_r on Solaris
