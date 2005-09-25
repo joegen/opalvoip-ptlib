@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.32  2005/09/25 11:58:50  dominance
+ * support video in mingw through VfW
+ *
  * Revision 1.31  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -165,6 +168,130 @@
 #pragma comment(lib, "vfw32.lib")
 #endif
 #endif
+
+#ifdef __MINGW32__
+
+#define VHDR_DONE       0x00000001
+#define VHDR_KEYFRAME   0x00000008
+
+typedef struct videohdr_tag {
+    LPBYTE      lpData;
+    DWORD       dwBufferLength;
+    DWORD       dwBytesUsed;
+    DWORD       dwTimeCaptured;
+    DWORD       dwUser;
+    DWORD       dwFlags;
+    DWORD       dwReserved[4];
+} *LPVIDEOHDR;
+
+typedef struct tagCapDriverCaps {
+    UINT        wDeviceIndex;
+    BOOL        fHasOverlay;
+    BOOL        fHasDlgVideoSource;
+    BOOL        fHasDlgVideoFormat;
+    BOOL        fHasDlgVideoDisplay;
+    BOOL        fCaptureInitialized;
+    BOOL        fDriverSuppliesPalettes;
+    HANDLE      hVideoIn;
+    HANDLE      hVideoOut;
+    HANDLE      hVideoExtIn;
+    HANDLE      hVideoExtOut;
+} CAPDRIVERCAPS, *LPCAPDRIVERCAPS;
+
+typedef struct tagCaptureParms {
+    DWORD       dwRequestMicroSecPerFrame;  // Requested capture rate
+    BOOL        fMakeUserHitOKToCapture;    // Show "Hit OK to cap" dlg?
+    WORD        wPercentDropForError;       // Give error msg if > (10%)
+    BOOL        fYield;                     // Capture via background task?
+    DWORD       dwIndexSize;                // Max index size in frames (32K)
+    WORD        wChunkGranularity;          // Junk chunk granularity (2K)
+    BOOL        fUsingDOSMemory;            // Use DOS buffers?
+    WORD        wNumVideoRequested;         // # video buffers, If 0, autocalc
+    BOOL        fCaptureAudio;              // Capture audio?
+    WORD        wNumAudioRequested;         // # audio buffers, If 0, autocalc
+    WORD        vKeyAbort;                  // Virtual key causing abort
+    BOOL        fAbortLeftMouse;            // Abort on left mouse?
+    BOOL        fAbortRightMouse;           // Abort on right mouse?
+    BOOL        fLimitEnabled;              // Use wTimeLimit?
+    WORD        wTimeLimit;                 // Seconds to capture
+    BOOL        fMCIControl;                // Use MCI video source?
+    BOOL        fStepMCIDevice;             // Step MCI device?
+    DWORD       dwMCIStartTime;             // Time to start in MS
+    DWORD       dwMCIStopTime;              // Time to stop in MS
+    BOOL        fStepCaptureAt2x;           // Perform spatial averaging 2x
+    WORD        wStepCaptureAverageFrames;  // Temporal average n Frames
+    DWORD       dwAudioBufferSize;          // Size of audio bufs (0 = default)
+    BOOL        fDisableWriteCache;         // Attempt to disable write cache
+} CAPTUREPARMS, FAR *LPCAPTUREPARMS;
+
+typedef struct tagCapStatus {
+    UINT        uiImageWidth;               // Width of the image
+    UINT        uiImageHeight;              // Height of the image
+    BOOL        fLiveWindow;                // Now Previewing video?
+    BOOL        fOverlayWindow;             // Now Overlaying video?
+    BOOL        fScale;                     // Scale image to client?
+    POINT       ptScroll;                   // Scroll position
+    BOOL        fUsingDefaultPalette;       // Using default driver palette?
+    BOOL        fAudioHardware;             // Audio hardware present?
+    BOOL        fCapFileExists;             // Does capture file exist?
+    DWORD       dwCurrentVideoFrame;        // # of video frames cap'td
+    DWORD       dwCurrentVideoFramesDropped;// # of video frames dropped
+    DWORD       dwCurrentWaveSamples;       // # of wave samples cap'td
+    DWORD       dwCurrentTimeElapsedMS;     // Elapsed capture duration
+    HPALETTE    hPalCurrent;                // Current palette in use
+    BOOL        fCapturingNow;              // Capture in progress?
+    DWORD       dwReturn;                   // Error value after any operation
+    WORD        wNumVideoAllocated;         // Actual number of video buffers
+    WORD        wNumAudioAllocated;         // Actual number of audio buffers
+} CAPSTATUS, FAR *LPCAPSTATUS;
+
+#define WM_CAP_START                    WM_USER
+#define WM_CAP_SET_CALLBACK_ERROR       (WM_CAP_START+  2)
+#define WM_CAP_SET_CALLBACK_FRAME       (WM_CAP_START+  5)
+#define WM_CAP_SET_CALLBACK_VIDEOSTREAM (WM_CAP_START+  6)
+#define WM_CAP_GET_USER_DATA            (WM_CAP_START+  8)
+#define WM_CAP_SET_USER_DATA            (WM_CAP_START+  9)
+#define WM_CAP_DRIVER_CONNECT           (WM_CAP_START+  10)
+#define WM_CAP_DRIVER_DISCONNECT        (WM_CAP_START+  11)
+#define WM_CAP_DRIVER_GET_CAPS          (WM_CAP_START+  14)
+#define WM_CAP_GET_VIDEOFORMAT          (WM_CAP_START+  44)
+#define WM_CAP_SET_VIDEOFORMAT          (WM_CAP_START+  45)
+#define WM_CAP_SET_PREVIEW              (WM_CAP_START+  50)
+#define WM_CAP_GET_STATUS               (WM_CAP_START+  54)
+#define WM_CAP_GRAB_FRAME_NOSTOP        (WM_CAP_START+  61)
+#define WM_CAP_SET_SEQUENCE_SETUP       (WM_CAP_START+  64)
+#define WM_CAP_GET_SEQUENCE_SETUP       (WM_CAP_START+  65)
+
+#define capSetCallbackOnError(hwnd, fpProc)        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_ERROR, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnFrame(hwnd, fpProc)        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_FRAME, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnVideoStream(hwnd, fpProc)  ((BOOL)::SendMessage(hwnd, WM_CAP_SET_CALLBACK_VIDEOSTREAM, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capGetUserData(hwnd)                       (::SendMessage(hwnd, WM_CAP_GET_USER_DATA, 0, 0))
+#define capSetUserData(hwnd, lUser)                ((BOOL)::SendMessage(hwnd, WM_CAP_SET_USER_DATA, 0, (LPARAM)lUser))
+#define capDriverConnect(hwnd, i)                  ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_CONNECT, (WPARAM)(i), 0L))
+#define capDriverDisconnect(hwnd)                  ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_DISCONNECT, (WPARAM)0, 0L))
+#define capDriverGetCaps(hwnd, s, wSize)           ((BOOL)::SendMessage(hwnd, WM_CAP_DRIVER_GET_CAPS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPDRIVERCAPS)(s)))
+#define capGetVideoFormat(hwnd, s, wSize)          ((DWORD)::SendMessage(hwnd, WM_CAP_GET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
+#define capGetVideoFormatSize(hwnd)                ((DWORD)::SendMessage(hwnd, WM_CAP_GET_VIDEOFORMAT, 0, NULL))
+#define capSetVideoFormat(hwnd, s, wSize)          ((BOOL)::SendMessage(hwnd, WM_CAP_SET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
+#define capPreview(hwnd, f)                        ((BOOL)::SendMessage(hwnd, WM_CAP_SET_PREVIEW, (WPARAM)(BOOL)(f), 0L))
+#define capGetStatus(hwnd, s, wSize)               ((BOOL)::SendMessage(hwnd, WM_CAP_GET_STATUS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPSTATUS)(s)))
+#define capGrabFrameNoStop(hwnd)                   ((BOOL)::SendMessage(hwnd, WM_CAP_GRAB_FRAME_NOSTOP, (WPARAM)0, (LPARAM)0L))
+#define capCaptureSetSetup(hwnd, s, wSize)         ((BOOL)::SendMessage(hwnd, WM_CAP_SET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
+#define capCaptureGetSetup(hwnd, s, wSize)         ((BOOL)::SendMessage(hwnd, WM_CAP_GET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
+
+extern "C" {
+HWND VFWAPI capCreateCaptureWindowA (LPCSTR lpszWindowName, DWORD dwStyle,
+				     int x, int y, int nWidth, int nHeight,
+				     HWND hwndParent, int nID);
+
+BOOL VFWAPI capGetDriverDescriptionW (WORD wDriverIndex, LPSTR lpszName,
+				      int cbName, LPSTR lpszVer, int cbVer);
+}
+
+#define capGetDriverDescription capGetDriverDescriptionW
+#define capCreateCaptureWindow capCreateCaptureWindowA
+
+#endif // __MINGW32
 
 #define STEP_GRAB_CAPTURE 1
 
