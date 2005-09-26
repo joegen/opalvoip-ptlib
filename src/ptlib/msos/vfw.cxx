@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.33  2005/09/26 20:19:34  dominance
+ * enhance the devicename presentation in mingw video
+ *
  * Revision 1.32  2005/09/25 11:58:50  dominance
  * support video in mingw through VfW
  *
@@ -284,11 +287,11 @@ HWND VFWAPI capCreateCaptureWindowA (LPCSTR lpszWindowName, DWORD dwStyle,
 				     int x, int y, int nWidth, int nHeight,
 				     HWND hwndParent, int nID);
 
-BOOL VFWAPI capGetDriverDescriptionW (WORD wDriverIndex, LPSTR lpszName,
+BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
 				      int cbName, LPSTR lpszVer, int cbVer);
 }
 
-#define capGetDriverDescription capGetDriverDescriptionW
+#define capGetDriverDescription capGetDriverDescriptionA
 #define capCreateCaptureWindow capCreateCaptureWindowA
 
 #endif // __MINGW32
