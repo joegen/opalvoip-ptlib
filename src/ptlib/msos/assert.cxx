@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.40  2005/09/29 15:58:20  dominance
+ * one more step towards having mingw build pwlib cleanly
+ *
  * Revision 1.39  2004/07/06 10:12:55  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -384,9 +387,15 @@ void PAssertFunc(const char * msg)
 #endif
 
   str << ends;
+#ifdef _MSC_VER
   const char * pstr = str.str();
   // Unfreeze str so frees memory
   str.rdbuf()->freeze(0);
+#else
+  // Copy to local variable so char ptr does not become invalidated
+  std::string sstr = str.str();
+  const char * pstr = sstr.c_str ();
+#endif
   // Must do nothing to str after this or it invalidates pstr
 
   if (PProcess::Current().IsServiceProcess()) {
