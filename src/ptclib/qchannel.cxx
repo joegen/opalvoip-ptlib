@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.cxx,v $
+ * Revision 1.4  2005/10/06 08:17:04  csoutheren
+ * Removed potential deadlock when using bidrectional PQueueChannel
+ *
  * Revision 1.3  2005/09/16 08:25:07  csoutheren
  * Changed Read to return partial data rather than loop
  *
@@ -116,30 +119,34 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
 
   BYTE * buffer = (BYTE *)buf;
 
-  //while (count > 0) {
   {
-
     mutex.Wait();
 
     /* If queue is empty then we should block for the time specifed in the
        read timeout.
      */
     while (queueLength == 0) {
+
+      // unlock the data
       mutex.Signal();
 
+      // block until data has arrived
       PTRACE_IF(6, readTimeout > 0, "QChan\tBlocking on empty queue");
       if (!unempty.Wait(readTimeout)) {
         PTRACE(6, "QChan\tRead timeout on empty queue");
-        if (lastReadCount == 0)
-          return SetErrorValues(Timeout, EAGAIN, LastReadError);
-        return TRUE;
+        return SetErrorValues(Timeout, EAGAIN, LastReadError);
       }
 
+      // check if the channel is still open
       if (!IsOpen())
         return SetErrorValues(Interrupted, EINTR, LastReadError);
 
+      // relock the data
       mutex.Wait();
     }
+
+    // should always have data now
+    PAssert(queueLength > 0, "read queue signalled without data");
 
     // To make things simpler, limit to amount to copy out of queue to till
     // the end of the linear part of memory. Another loop around will get
@@ -153,6 +160,8 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
     // Or more than has been requested
     if (copyLen > count)
       copyLen = count;
+
+    PAssert(copyLen > 0, "zero copy length");
 
     // Copy data out and increment pointer, decrement bytes yet to dequeue
     memcpy(buffer, queueBuffer+dequeuePos, copyLen);
@@ -175,8 +184,8 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
     // Now decrement queue length by the amount we copied
     queueLength -= copyLen;
 
+    // unlock the buffer
     mutex.Signal();
-
   }
 
   return TRUE;
@@ -192,9 +201,8 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
 
   const BYTE * buffer = (BYTE *)buf;
 
-  //while (count > 0) {
+  //while (count > 0) 
   {
-
     mutex.Wait();
 
     /* If queue is full then we should block for the time specifed in the
@@ -229,6 +237,8 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
     if (copyLen > bytesLeftInUnwrapped)
       copyLen = bytesLeftInUnwrapped;
 
+    PAssert(copyLen > 0, "attempt to write zero bytes");
+
     // Move the data in and increment pointer, decrement bytes yet to queue
     memcpy(queueBuffer + enqueuePos, buffer, copyLen);
     lastWriteCount += copyLen;
@@ -240,15 +250,17 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
     if (enqueuePos >= queueSize)
       enqueuePos = 0;
 
-    // If buffer was empty, signal possibly blocked reader of data from queue
-    // that it can read from queue now.
-    if (queueLength == 0) {
+    // see if we need to signal reader that queue was empty
+    BOOL queueWasEmpty = queueLength == 0;
+
+    // increment queue length by the amount we copied
+    queueLength += copyLen;
+
+    // signal reader if necessary
+    if (queueWasEmpty) {
       PTRACE(6, "QChan\tSignalling queue no longer empty");
       unempty.Signal();
     }
-
-    // Now increment queue length by the amount we copied
-    queueLength += copyLen;
 
     mutex.Signal();
   }
