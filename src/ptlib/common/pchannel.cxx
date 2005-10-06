@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.35  2005/10/06 08:20:14  csoutheren
+ * Changed WriteString to ensure it always writes all data even with partial writes
+ *
  * Revision 1.34  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
@@ -396,7 +399,17 @@ PString PChannel::ReadString(PINDEX len)
 
 BOOL PChannel::WriteString(const PString & str)
 {
-  return Write((const char *)str, str.GetLength()); 
+  PINDEX len = str.GetLength();
+  PINDEX written = 0;
+  while (written < len) {
+    if (!Write((const char *)str + written, len - written)) {
+      lastWriteCount += written;
+      return FALSE;
+    }
+    written += lastWriteCount;
+  }
+  lastWriteCount = written;
+  return TRUE;
 }
 
 
