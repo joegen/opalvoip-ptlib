@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.14  2005/10/06 08:14:55  csoutheren
+ * Fixed race condition in sound driver when shutting down with driver that is not open
+ *
  * Revision 1.13  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -1468,25 +1471,27 @@ BOOL PSoundChannelWin32::Abort()
   if (hWaveIn != NULL)
     osError = waveInReset(hWaveIn);
 
-  PWaitAndSignal mutex(bufferMutex);
+  {
+    PWaitAndSignal mutex(bufferMutex);
 
-  if (hWaveOut != NULL || hWaveIn != NULL) {
-    for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-      while (buffers[i].Release() == WAVERR_STILLPLAYING) {
-        if (hWaveOut != NULL)
-          waveOutReset(hWaveOut);
-        if (hWaveIn != NULL)
-          waveInReset(hWaveIn);
+    if (hWaveOut != NULL || hWaveIn != NULL) {
+      for (PINDEX i = 0; i < buffers.GetSize(); i++) {
+        while (buffers[i].Release() == WAVERR_STILLPLAYING) {
+          if (hWaveOut != NULL)
+            waveOutReset(hWaveOut);
+          if (hWaveIn != NULL)
+            waveInReset(hWaveIn);
+        }
       }
     }
+
+    bufferByteOffset = P_MAX_INDEX;
+    bufferIndex = 0;
+
+    // Signal any threads waiting on this event, they should then check
+    // the bufferByteOffset variable for an abort.
+    SetEvent(hEventDone);
   }
-
-  bufferByteOffset = P_MAX_INDEX;
-  bufferIndex = 0;
-
-  // Signal any threads waiting on this event, they should then check
-  // the bufferByteOffset variable for an abort.
-  SetEvent(hEventDone);
 
   if (osError != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
