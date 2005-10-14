@@ -26,8 +26,10 @@
 #endif
 
 
+#ifdef _WIN32
 #ifdef _MSC_VER
 #pragma warning(disable:4131 4701)
+#endif
 #define STDAPICALLTYPE __stdcall
 #define MSDOS
 #else
