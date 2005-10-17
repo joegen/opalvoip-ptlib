@@ -28,6 +28,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.16.2.1  2005/10/17 01:02:55  csoutheren
+ * Backported changed from CVS head
+ *
+ * Revision 1.18  2005/03/19 02:52:53  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
+ *
  * Revision 1.16  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -167,6 +173,8 @@ struct FMTChunk
 class PWAVFileFormat
 {
   public:
+    virtual ~PWAVFileFormat() { }
+
     /**
       * return a PWAVFile format code
       */
@@ -231,6 +239,7 @@ typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
 class PWAVFileConverter 
 {
   public:
+    virtual ~PWAVFileConverter() { }
     virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
     virtual off_t GetPosition     (const PWAVFile & file) const = 0;
     virtual BOOL SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;

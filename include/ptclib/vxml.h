@@ -22,11 +22,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.35.2.2  2005/10/17 01:02:55  csoutheren
+ * Backported changed from CVS head
+ *
  * Revision 1.35.2.1  2005/02/04 05:19:08  csoutheren
  * Backported patches from Atlas-devel
  *
- * Revision 1.36  2004/12/08 00:52:06  csoutheren
- * Added GetSampleFrequency function
+ * Revision 1.37  2005/03/19 02:52:53  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
  *
  * Revision 1.35  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
@@ -299,6 +302,7 @@ class PVXMLChannel;
 
 class PVXMLChannelInterface {
   public:
+    virtual ~PVXMLChannelInterface() { }
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt) = 0;
     virtual void RecordEnd() = 0;
     virtual void OnEndRecording(const PString & channelName) = 0;
