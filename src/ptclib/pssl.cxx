@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.39 2004/04/09 06:52:17 rjongbloed Exp $
+ * $Id: pssl.cxx,v 1.40 2005/10/17 01:25:05 csoutheren Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.40  2005/10/17 01:25:05  csoutheren
+ * Added check for ssl with const argumetns
+ *
  * Revision 1.39  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -297,14 +300,22 @@ PSSLPrivateKey::PSSLPrivateKey(const PFilePath & keyFile, PSSLFileTypes fileType
 
 PSSLPrivateKey::PSSLPrivateKey(const BYTE * keyData, PINDEX keySize)
 {
+#if P_SSL_USE_CONST
+  key = d2i_AutoPrivateKey(NULL, &keyData, keySize);
+#else
   key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyData, keySize);
+#endif
 }
 
 
 PSSLPrivateKey::PSSLPrivateKey(const PBYTEArray & keyData)
 {
   const BYTE * keyPtr = keyData;
+#if P_SSL_USE_CONST
+  key = d2i_AutoPrivateKey(NULL, &keyPtr, keyData.GetSize());
+#else
   key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyPtr, keyData.GetSize());
+#endif
 }
 
 
@@ -472,14 +483,22 @@ PSSLCertificate::PSSLCertificate(const PFilePath & certFile, PSSLFileTypes fileT
 
 PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize)
 {
+#if P_SSL_USE_CONST
+  certificate = d2i_X509(NULL, &certData, certSize);
+#else
   certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
+#endif
 }
 
 
 PSSLCertificate::PSSLCertificate(const PBYTEArray & certData)
 {
   const BYTE * certPtr = certData;
+#if P_SSL_USE_CONST
+  certificate = d2i_X509(NULL, &certPtr, certData.GetSize());
+#else
   certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
+#endif
 }
 
 
@@ -489,7 +508,11 @@ PSSLCertificate::PSSLCertificate(const PString & certStr)
   PBase64::Decode(certStr, certData);
   if (certData.GetSize() > 0) {
     const BYTE * certPtr = certData;
+#if P_SSL_USE_CONST
+    certificate = d2i_X509(NULL, &certPtr, certData.GetSize());
+#else
     certificate = d2i_X509(NULL, (unsigned char **)&certPtr, certData.GetSize());
+#endif
   }
   else
     certificate = NULL;
