@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.46  2005/10/17 01:25:05  csoutheren
+ * Added check for ssl with const argumetns
+ *
  * Revision 1.45  2005/09/25 10:51:23  dominance
  * almost complete the mingw support. We'll be there soon. ;)
  *
@@ -257,6 +260,7 @@
 
 #undef P_SSL 
 #undef P_SSL_AES
+#undef P_SSL_USE_CONST
 
 #if defined(_MSC_VER) && P_SSL
 
