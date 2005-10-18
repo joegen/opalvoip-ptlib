@@ -1183,6 +1183,7 @@ int main(int argc,char **argv){}]])
       AC_MSG_RESULT(no)
     else
       AC_MSG_RESULT(yes)
+      AC_DEFINE(P_SSL_USE_CONST, 1, "SSL with const")
     fi
   fi
 fi
