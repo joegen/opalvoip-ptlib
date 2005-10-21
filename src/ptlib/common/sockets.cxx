@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.196  2005/10/21 06:01:30  csoutheren
+ * Fixed warning on VS.NET 2005
+ *
  * Revision 1.195  2005/09/25 10:51:23  dominance
  * almost complete the mingw support. We'll be there soon. ;)
  *
@@ -1310,7 +1313,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     localErrNo = h_errno;
 
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    extern P_IsOldWin95();
+    extern int P_IsOldWin95();
     if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
 #endif
