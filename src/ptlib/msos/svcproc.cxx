@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.79  2005/10/21 06:03:51  csoutheren
+ * Fixed warning on VS.NET 2005
+ *
  * Revision 1.78  2004/06/01 05:22:44  csoutheren
  * Restored memory check functionality
  *
@@ -1230,7 +1233,7 @@ void PServiceProcess::DebugOutput(const char * out)
 
   SendMessage(debugWindow, EM_SETSEL, max, max);
   char * lf;
-  const char * prev = out;
+  char * prev = (char *)out;
   while ((lf = strchr(prev, '\n')) != NULL) {
     if (*(lf-1) == '\r')
       prev = lf+1;
@@ -1238,7 +1241,8 @@ void PServiceProcess::DebugOutput(const char * out)
       *lf++ = '\0';
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
-      prev = out = lf;
+	  out = (const char *)lf;
+      prev = lf;
     }
   }
   if (*out != '\0')
