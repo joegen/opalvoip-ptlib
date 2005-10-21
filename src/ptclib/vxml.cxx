@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.62  2005/10/21 08:18:21  csoutheren
+ * Fixed Close operator
+ *
  * Revision 1.61  2005/08/13 06:38:22  rjongbloed
  * Fixed illegal code line, assigning to const object!
  *
@@ -2394,7 +2397,7 @@ BOOL PVXMLChannel::Open(PVXMLChannelInterface * _vxmlInterface)
 
 PVXMLChannel::~PVXMLChannel()
 {
-  EndRecording();
+  Close();
 }
 
 BOOL PVXMLChannel::IsOpen() const
@@ -2404,9 +2407,15 @@ BOOL PVXMLChannel::IsOpen() const
 
 BOOL PVXMLChannel::Close()
 { 
-  closed = TRUE; 
+  if (!closed) {
+    EndRecording();
+    FlushQueue();
 
-  PDelayChannel::Close(); 
+    closed = TRUE; 
+
+    PDelayChannel::Close(); 
+  }
+
   return TRUE; 
 }
 
