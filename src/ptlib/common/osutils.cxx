@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.234  2005/10/22 04:50:23  csoutheren
+ * Fixed hole in mutex locking of PTrace
+ *
  * Revision 1.233  2005/08/30 06:36:39  csoutheren
  * Added ability to rotate output logs on a daily basis
  *
@@ -974,10 +977,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     return *PTraceStream;
   }
 
-  PWaitAndSignal m(*PTraceMutex);
-
   if (level == UINT_MAX)
     return *PTraceStream;
+
+  PTraceMutex->Wait();
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex
@@ -989,8 +992,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       delete PTraceStream;
       PTraceStream = NULL;
       OpenTraceFile();
-      if (PTraceStream == NULL)
+      if (PTraceStream == NULL) {
+        PTraceMutex->Signal();
         return *PTraceStream;
+      }
     }
   }
 
@@ -1079,6 +1084,8 @@ ostream & PTrace::End(ostream & s)
     else
       s << endl;
   }
+
+  PTraceMutex->Signal();
 
   return s;
 }
