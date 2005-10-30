@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.40  2005/10/30 19:41:53  dominance
+ * fixed most of the warnings occuring during compilation
+ *
  * Revision 1.39  2005/06/09 00:33:20  csoutheren
  * Fixed crash problem caused by recent leak fix
  * Removed bogus error when reading all of file contents in a single read
@@ -874,6 +877,7 @@ BOOL PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
 
 class PWAVFileFormatPCM : public PWAVFileFormat
 {
+     public: virtual ~PWAVFileFormatPCM() throw () {}
   public:
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
     PString GetDescription() const;
@@ -975,6 +979,7 @@ struct G7231FACTChunk {
 
 class PWAVFileFormatG7231 : public PWAVFileFormat
 {
+     public: virtual ~PWAVFileFormatG7231() throw () {}
   public:
     PWAVFileFormatG7231(unsigned short _g7231)
       : g7231(_g7231) { }
@@ -1113,6 +1118,7 @@ BOOL PWAVFileFormatG7231::Write(PWAVFile & file, const void * origData, PINDEX &
 
 class PWAVFileFormatG7231_vivo : public PWAVFileFormatG7231
 {
+     public: virtual ~PWAVFileFormatG7231_vivo() throw () {}
   public:
     PWAVFileFormatG7231_vivo()
       : PWAVFileFormatG7231(PWAVFile::fmt_VivoG7231) { }
@@ -1127,6 +1133,7 @@ PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatG7231_vivo> g7231FormatWAVFo
 
 class PWAVFileFormatG7231_ms : public PWAVFileFormatG7231
 {
+     public: virtual ~PWAVFileFormatG7231_ms() throw () {}
   public:
     PWAVFileFormatG7231_ms()
       : PWAVFileFormatG7231(PWAVFile::fmt_MSG7231) { }
@@ -1142,6 +1149,7 @@ PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_ms> g7231MSWAVFormat(PWAVF
 
 class PWAVFileConverterPCM : public PWAVFileConverter
 {
+     public: virtual ~PWAVFileConverterPCM() throw () {}
   public:
     unsigned GetFormat    (const PWAVFile & file) const;
     off_t GetPosition     (const PWAVFile & file) const;

@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.21  2005/10/30 19:41:53  dominance
+ * fixed most of the warnings occuring during compilation
+ *
  * Revision 1.20  2005/06/09 00:33:12  csoutheren
  * Fixed crash problem caused by recent leak fix
  * Removed bogus error when reading all of file contents in a single read
@@ -180,6 +183,7 @@ struct FMTChunk
   */
 class PWAVFileFormat
 {
+     public: virtual ~PWAVFileFormat() throw () {}
   public:
     virtual ~PWAVFileFormat() { }
 
@@ -246,6 +250,7 @@ typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
   */
 class PWAVFileConverter 
 {
+     public: virtual ~PWAVFileConverter() throw () {}
   public:
     virtual ~PWAVFileConverter() { }
     virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
