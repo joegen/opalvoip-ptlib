@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.22  2005/10/30 23:25:51  csoutheren
+ * Fixed formatting
+ * Removed throw() declarations (PWLib does not do exceptions)
+ * Removed duplicate destructor declarations and definitions
+ *
  * Revision 1.21  2005/10/30 19:41:53  dominance
  * fixed most of the warnings occuring during compilation
  *
@@ -183,7 +188,6 @@ struct FMTChunk
   */
 class PWAVFileFormat
 {
-     public: virtual ~PWAVFileFormat() throw () {}
   public:
     virtual ~PWAVFileFormat() { }
 
@@ -250,7 +254,6 @@ typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
   */
 class PWAVFileConverter 
 {
-     public: virtual ~PWAVFileConverter() throw () {}
   public:
     virtual ~PWAVFileConverter() { }
     virtual unsigned GetFormat    (const PWAVFile & file) const = 0;

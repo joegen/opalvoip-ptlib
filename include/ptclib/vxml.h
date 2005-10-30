@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.42  2005/10/30 23:25:51  csoutheren
+ * Fixed formatting
+ * Removed throw() declarations (PWLib does not do exceptions)
+ * Removed duplicate destructor declarations and definitions
+ *
  * Revision 1.41  2005/10/30 19:41:53  dominance
  * fixed most of the warnings occuring during compilation
  *
@@ -310,7 +315,6 @@ class PVXMLCache : public PMutex
 class PVXMLChannel;
 
 class PVXMLChannelInterface {
-  public: virtual ~PVXMLChannelInterface() throw () {}
   public:
     virtual ~PVXMLChannelInterface() { }
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt) = 0;
@@ -323,10 +327,10 @@ class PVXMLChannelInterface {
 
 class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 {
-  public: virtual ~PVXMLSession() throw ();
   PCLASSINFO(PVXMLSession, PIndirectChannel);
   public:
     PVXMLSession(PTextToSpeech * tts = NULL, BOOL autoDelete = FALSE);
+    virtual ~PVXMLSession();
 
     void SetFinishWhenEmpty(BOOL v)
     { finishWhenEmpty = v; }
