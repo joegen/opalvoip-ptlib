@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.63  2005/10/30 19:41:53  dominance
+ * fixed most of the warnings occuring during compilation
+ *
  * Revision 1.62  2005/10/21 08:18:21  csoutheren
  * Fixed Close operator
  *
@@ -698,7 +701,7 @@ void PVXMLSession::Initialise()
   currentNode      = NULL;
 }
 
-PVXMLSession::~PVXMLSession()
+PVXMLSession::~PVXMLSession() throw ()
 {
   Close();
 
