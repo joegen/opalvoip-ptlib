@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.41  2005/10/30 23:25:52  csoutheren
+ * Fixed formatting
+ * Removed throw() declarations (PWLib does not do exceptions)
+ * Removed duplicate destructor declarations and definitions
+ *
  * Revision 1.40  2005/10/30 19:41:53  dominance
  * fixed most of the warnings occuring during compilation
  *
@@ -877,8 +882,8 @@ BOOL PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
 
 class PWAVFileFormatPCM : public PWAVFileFormat
 {
-     public: virtual ~PWAVFileFormatPCM() throw () {}
   public:
+    virtual ~PWAVFileFormatPCM() {}
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
     PString GetDescription() const;
     unsigned GetFormat() const;
@@ -979,10 +984,11 @@ struct G7231FACTChunk {
 
 class PWAVFileFormatG7231 : public PWAVFileFormat
 {
-     public: virtual ~PWAVFileFormatG7231() throw () {}
   public:
     PWAVFileFormatG7231(unsigned short _g7231)
       : g7231(_g7231) { }
+
+    virtual ~PWAVFileFormatG7231() {}
 
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
     BOOL WriteExtraChunks(PWAVFile & file);
@@ -1118,10 +1124,10 @@ BOOL PWAVFileFormatG7231::Write(PWAVFile & file, const void * origData, PINDEX &
 
 class PWAVFileFormatG7231_vivo : public PWAVFileFormatG7231
 {
-     public: virtual ~PWAVFileFormatG7231_vivo() throw () {}
   public:
     PWAVFileFormatG7231_vivo()
       : PWAVFileFormatG7231(PWAVFile::fmt_VivoG7231) { }
+    virtual ~PWAVFileFormatG7231_vivo() {}
     unsigned GetFormat() const
     { return PWAVFile::fmt_VivoG7231; }
     PString GetDescription() const
@@ -1133,10 +1139,10 @@ PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatG7231_vivo> g7231FormatWAVFo
 
 class PWAVFileFormatG7231_ms : public PWAVFileFormatG7231
 {
-     public: virtual ~PWAVFileFormatG7231_ms() throw () {}
   public:
     PWAVFileFormatG7231_ms()
       : PWAVFileFormatG7231(PWAVFile::fmt_MSG7231) { }
+    virtual ~PWAVFileFormatG7231_ms() {}
     unsigned GetFormat() const
     { return PWAVFile::fmt_MSG7231; }
     PString GetDescription() const
@@ -1149,8 +1155,8 @@ PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_ms> g7231MSWAVFormat(PWAVF
 
 class PWAVFileConverterPCM : public PWAVFileConverter
 {
-     public: virtual ~PWAVFileConverterPCM() throw () {}
   public:
+    virtual ~PWAVFileConverterPCM() {}
     unsigned GetFormat    (const PWAVFile & file) const;
     off_t GetPosition     (const PWAVFile & file) const;
     BOOL SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin);

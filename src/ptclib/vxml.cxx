@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.64  2005/10/30 23:25:52  csoutheren
+ * Fixed formatting
+ * Removed throw() declarations (PWLib does not do exceptions)
+ * Removed duplicate destructor declarations and definitions
+ *
  * Revision 1.63  2005/10/30 19:41:53  dominance
  * fixed most of the warnings occuring during compilation
  *
@@ -701,7 +706,7 @@ void PVXMLSession::Initialise()
   currentNode      = NULL;
 }
 
-PVXMLSession::~PVXMLSession() throw ()
+PVXMLSession::~PVXMLSession()
 {
   Close();
 
