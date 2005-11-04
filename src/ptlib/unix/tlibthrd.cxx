@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.143  2005/11/04 09:44:30  csoutheren
+ * Applied patch #1324589
+ * Removed race conditions in PSemaphore and thread handling
+ * Thanks to Frederic Heem
+ *
  * Revision 1.142  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -808,10 +813,8 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_WaitSemMutex);
 #endif
 
-#ifdef P_NETBSD
   // If the mutex was not locked, the unlock will fail */
   pthread_mutex_trylock(&PX_suspendMutex);
-#endif
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
@@ -1291,13 +1294,8 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
 void * PThread::PX_ThreadStart(void * arg)
 { 
-  pthread_t threadId = pthread_self();
-
-  // self-detach
-  pthread_detach(threadId);
-
   PThread * thread = (PThread *)arg;
-
+  //don't need to detach the the thread, it was created in the PTHREAD_CREATE_DETACHED state
   // Added this to guarantee that the thread creation (PThread::Restart)
   // has completed before we start the thread. Then the PX_threadId has
   // been set.
@@ -1339,6 +1337,7 @@ void PThread::PX_ThreadEnd(void * arg)
   PProcess & process = PProcess::Current();
   process.threadMutex.Wait();
   process.activeThreads.SetAt((unsigned)id, NULL);
+  process.threadMutex.Signal();
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
@@ -1350,8 +1349,6 @@ void PThread::PX_ThreadEnd(void * arg)
   }
   else
     thread->PX_threadId = 0;
-
-  process.threadMutex.Signal();
 }
 
 
@@ -1432,7 +1429,13 @@ PSemaphore::PSemaphore(PXClass pxc)
   // these should never be used, as this constructor is
   // only used for PMutex and PSyncPoint and they have their
   // own copy constructors
+  
   initialVar = maxCountVar = 0;
+  
+  /* call sem_init, otherwise sem_destroy fails*/
+#ifdef P_HAS_SEMAPHORES
+  PAssertPTHREAD(sem_init, (&semId, 0, 0));
+#endif  
 }
 
 
@@ -1482,20 +1485,14 @@ PSemaphore::PSemaphore(const PSemaphore & sem)
 
 PSemaphore::~PSemaphore()
 {
-  pthread_cond_destroy(&condVar);
-
-#ifdef P_NETBSD
-  // If the mutex was not locked, the unlock will fail */
-  pthread_mutex_trylock(&mutex);
-#endif
-
-  pthread_mutex_unlock(&mutex);
-  pthread_mutex_destroy(&mutex);
-
-  if (pxClass == PXSemaphore) {
+  PAssertPTHREAD(pthread_mutex_destroy,(&mutex));
+  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+  
 #ifdef P_HAS_SEMAPHORES
-    PAssertPTHREAD(sem_destroy, (&semId));
-#else
+  PAssertPTHREAD(sem_destroy, (&semId));
+#endif  
+  if (pxClass == PXSemaphore) {
+#ifndef P_HAS_SEMAPHORES
     PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
 #endif
   }
