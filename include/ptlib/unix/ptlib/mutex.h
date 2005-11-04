@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.25  2005/11/04 06:56:10  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.24  2004/04/30 16:15:13  ykiryanov
  * BeOS modifications derived from BLocker use
  *
@@ -118,21 +126,21 @@
 // PMutex
 
 #ifdef VX_TASKS
-    virtual ~PMutex();
+    virtual ~PTimedMutex();
 #endif
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
-    virtual void Wait();
-    virtual BOOL Wait(const PTimeInterval & timeout);
-    virtual void Signal();
+    virtual void Wait() const;
+    virtual BOOL Wait(const PTimeInterval & timeout) const;
+    virtual void Signal() const;
     virtual BOOL WillBlock() const;
 
   protected:
 
 #  if defined(P_PTHREADS) && !defined(VX_TASKS)
 #    if P_HAS_RECURSIVE_MUTEX == 0
-       pthread_t ownerThreadId;
-       PAtomicInteger lockCount;
+       mutable pthread_t ownerThreadId;
+       mutable PAtomicInteger lockCount;
 #    endif
 #  endif
 
