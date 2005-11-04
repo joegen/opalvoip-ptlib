@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.35  2005/11/04 06:56:10  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.34  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -189,25 +197,11 @@ PINLINE PCriticalSection::PCriticalSection()
 PINLINE PCriticalSection::~PCriticalSection()
 { ::sem_destroy(&sem); }
 
-PINLINE void PCriticalSection::Enter()
+PINLINE void PCriticalSection::Wait() const
 { ::sem_wait(&sem); }
 
-PINLINE void PCriticalSection::Leave()
+PINLINE void PCriticalSection::Signal() const
 { ::sem_post(&sem); }
-
-#else
-
-PINLINE PCriticalSection::PCriticalSection()
-{ }
-
-PINLINE PCriticalSection::~PCriticalSection()
-{ }
-
-PINLINE void PCriticalSection::Enter()
-{ }
-
-PINLINE void PCriticalSection::Leave()
-{ }
 
 #endif
 
