@@ -24,6 +24,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.10  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.9  2004/05/16 23:31:07  csoutheren
  * Updated API documentation
  *
@@ -59,6 +67,8 @@
 #ifndef _PCRITICALSECTION
 #define _PCRITICALSECTION
 
+#include <ptlib/psync.h>
+
 #if P_HAS_ATOMIC_INT
 #if P_NEEDS_GNU_CXX_NAMESPACE
 #define	EXCHANGE_AND_ADD(v,i)	__gnu_cxx::__exchange_and_add(v,i)
@@ -73,31 +83,31 @@
   * On other platforms, the sem_wait call is used.
   */
 
-class PCriticalSection : public PObject
+class PCriticalSection : public PSync
 {
-  PCLASSINFO(PCriticalSection, PObject);
+  PCLASSINFO(PCriticalSection, PSync);
 
   public:
   /**@name Construction */
   //@{
     /**Create a new critical section object .
      */
-    PINLINE PCriticalSection();
+    PCriticalSection();
 
     /**Destroy the critical section object
      */
-    PINLINE ~PCriticalSection();
+    ~PCriticalSection();
   //@}
 
   /**@name Operations */
   //@{
     /** Enter the critical section by waiting for exclusive access.
      */
-    PINLINE void Enter();
+    void Wait() const;
 
     /** Leave the critical section by unlocking the mutex
      */
-    PINLINE void Leave();
+    void Signal() const;
 
   //@}
 
@@ -111,32 +121,6 @@ class PCriticalSection : public PObject
 #include "unix/ptlib/critsec.h"
 #endif
 };
-
-
-class PEnterAndLeave {
-  public:
-    /**Create the critical section enter and leave instance.
-       This will enter the critical section using the #Enter()# function
-       before returning.
-      */
-    inline PEnterAndLeave(
-      PCriticalSection & _critSec,   /// CriticalSection descendent to enter/leave.
-      BOOL enter = TRUE                   /// Enter before returning.
-    )
-    : critSec(_critSec)
-    { if (enter) critSec.Enter(); }
-
-    /** Leave the critical section.
-        This will execute the Leave() function on the critical section that was used
-        in the construction of this instance.
-     */
-    inline ~PEnterAndLeave()
-    { critSec.Leave(); }
-
-  protected:
-    PCriticalSection & critSec;
-};
-
 
 /** This class implements an integer that can be atomically 
   * incremented and decremented in a thread-safe manner.
@@ -207,8 +191,8 @@ class PAtomicInteger
       inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline int operator++()            { PEnterAndLeave m(critSec); value++; return value;}
-      inline int operator--()            { PEnterAndLeave m(critSec); value--; return value;}
+      inline int operator++()            { PWaitAndSignal m(critSec); value++; return value;}
+      inline int operator--()            { PWaitAndSignal m(critSec); value--; return value;}
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
    private:

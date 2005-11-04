@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.11  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.10  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -71,8 +79,10 @@
 #pragma interface
 #endif
 
+#include <ptlib/critsec.h>
 #include <ptlib/semaphor.h>
 
+typedef PCriticalSection PMutex;
 
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
@@ -94,17 +104,17 @@
     thread will block on that function until the first calls the
     #Signal()# function, releasing the second thread.
  */
-class PMutex : public PSemaphore
+class PTimedMutex : public PSemaphore
 {
-  PCLASSINFO(PMutex, PSemaphore);
+  PCLASSINFO(PTimedMutex, PSemaphore);
 
   public:
     /* Create a new mutex.
        Initially the mutex will not be "set", so the first call to Wait() will
        never wait.
      */
-    PMutex();
-    PMutex(const PMutex & mutex);
+    PTimedMutex();
+    PTimedMutex(const PTimedMutex & mutex);
 
 // Include platform dependent part of class
 #ifdef _WIN32
