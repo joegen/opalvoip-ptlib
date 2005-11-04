@@ -1,0 +1,108 @@
+/*
+ * psync.h
+ *
+ * Abstract synchronisation semaphore class.
+ *
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ * Copyright (c) 2005 Post Increment
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Log: psync.h,v $
+ * Revision 1.1  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
+ */
+
+#ifndef _PSYNC
+#define _PSYNC
+
+#ifdef P_USE_PRAGMA
+#pragma interface
+#endif
+
+#include <ptlib/contain.h>
+
+class PSync : public PObject
+{
+  public:
+  /**@name Operations */
+  //@{
+    /**Block until the synchronisation object is available
+     */
+    virtual void Wait() const = 0;
+
+    /**Signal that the synchronisation object is available
+     */
+    virtual void Signal() const = 0;
+  //@}
+ 
+};
+
+/**This class waits for the semaphore on construction and automatically
+   signals the semaphore on destruction. Any descendent of PSemaphore
+   may be used.
+
+  This is very usefull for constructs such as:
+\begin{verbatim}
+    void func()
+    {
+      PWaitAndSignal mutexWait(myMutex);
+      if (condition)
+        return;
+      do_something();
+      if (other_condition)
+        return;
+      do_something_else();
+    }
+\end{verbatim}
+ */
+
+class PWaitAndSignal {
+  public:
+    /**Create the semaphore wait instance.
+       This will wait on the specified semaphore using the #Wait()# function
+       before returning.
+      */
+    inline PWaitAndSignal(
+      const PSync & sem,   /// Semaphore descendent to wait/signal.
+      BOOL wait = TRUE    /// Wait for semaphore before returning.
+    ) : sync(sem)
+    { if (wait) sync.Wait(); }
+
+    /** Signal the semaphore.
+        This will execute the Signal() function on the semaphore that was used
+        in the construction of this instance.
+     */
+    inline ~PWaitAndSignal()
+    { sync.Signal(); }
+
+  protected:
+    const PSync & sync;
+};
+
+#endif // PSYNC
