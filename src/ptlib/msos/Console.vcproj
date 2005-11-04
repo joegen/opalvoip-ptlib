@@ -916,6 +916,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\Contain.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptlib\critsec.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Dict.h">
 				</File>
 				<File
@@ -983,6 +986,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Pstring.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\psync.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Ptime.h">
@@ -1059,6 +1065,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\contain.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\critsec.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\debstrm.h">

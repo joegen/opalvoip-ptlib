@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.19  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.18  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -96,47 +104,8 @@
 #pragma interface
 #endif
 
+#include <ptlib/psync.h>
 #include <limits.h>
-
-
-/**This class waits for the semaphore on construction and automatically
-   signals the semaphore on destruction. Any descendent of PSemaphore
-   may be used.
-
-  This is very usefull for constructs such as:
-\begin{verbatim}
-    void func()
-    {
-      PWaitAndSignal mutexWait(myMutex);
-      if (condition)
-        return;
-      do_something();
-      if (other_condition)
-        return;
-      do_something_else();
-    }
-\end{verbatim}
- */
-class PWaitAndSignal {
-  public:
-    /**Create the semaphore wait instance.
-       This will wait on the specified semaphore using the #Wait()# function
-       before returning.
-      */
-    PWaitAndSignal(
-      const PSemaphore & sem,   /// Semaphore descendent to wait/signal.
-      BOOL wait = TRUE    /// Wait for semaphore before returning.
-    );
-    /** Signal the semaphore.
-        This will execute the Signal() function on the semaphore that was used
-        in the construction of this instance.
-     */
-    ~PWaitAndSignal();
-
-  protected:
-    PSemaphore & semaphore;
-};
-
 
 /**This class defines a thread synchonisation object. This is in the form of a
    integer semaphore. The semaphore has a count and a maximum value. The
@@ -171,9 +140,9 @@ class PWaitAndSignal {
     thread will block on that function until the first calls the
     #Signal()# function, releasing the second thread.
  */
-class PSemaphore : public PObject
+class PSemaphore : public PSync
 {
-  PCLASSINFO(PSemaphore, PObject);
+  PCLASSINFO(PSemaphore, PSync);
 
   public:
   /**@name Construction */
@@ -202,7 +171,7 @@ class PSemaphore : public PObject
     /**If the semaphore count is > 0, decrement the semaphore and return. If
        if is = 0 then wait (block).
      */
-    virtual void Wait();
+    virtual void Wait() const;
 
     /**If the semaphore count is > 0, decrement the semaphore and return. If
        if is = 0 then wait (block) for the specified amount of time.
@@ -212,13 +181,13 @@ class PSemaphore : public PObject
      */
     virtual BOOL Wait(
       const PTimeInterval & timeout // Amount of time to wait for semaphore.
-    );
+    ) const;
 
     /**If there are waiting (blocked) threads then unblock the first one that
        was blocked. If no waiting threads and the count is less than the
        maximum then increment the semaphore.
      */
-    virtual void Signal();
+    virtual void Signal() const;
 
     /**Determine if the semaphore would block if the #Wait()# function
        were called.
