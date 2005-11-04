@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.142  2005/11/04 06:56:10  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.141  2005/07/22 04:19:18  csoutheren
  * Removed redundant check of thread ID introduced in last patch
  * Removed race condition in thread shutdown found by Derek Smithies
@@ -1450,7 +1458,7 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 #endif
 }
 
-PSemaphore::PSemaphore(const PSemaphore & sem)
+PSemaphore::PSemaphore(const PSemaphore & sem) 
 {
   pxClass = sem.GetSemClass();
   mutex   = MutexInitialiser;
@@ -1494,7 +1502,7 @@ PSemaphore::~PSemaphore()
 }
 
 
-void PSemaphore::Wait()
+void PSemaphore::Wait() const
 {
 #ifdef P_HAS_SEMAPHORES
   PAssertPTHREAD(sem_wait, (&semId));
@@ -1519,7 +1527,7 @@ void PSemaphore::Wait()
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
+BOOL PSemaphore::Wait(const PTimeInterval & waitTime) const
 {
   if (waitTime == PMaxTimeInterval) {
     Wait();
@@ -1602,7 +1610,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
 }
 
 
-void PSemaphore::Signal()
+void PSemaphore::Signal() const
 {
 #ifdef P_HAS_SEMAPHORES
   PAssertPTHREAD(sem_post, (&semId));
@@ -1638,7 +1646,7 @@ BOOL PSemaphore::WillBlock() const
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
 
-PMutex::PMutex()
+PTimedMutex::PTimedMutex()
   : PSemaphore(PXMutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
@@ -1651,7 +1659,7 @@ PMutex::PMutex()
 #endif
 }
 
-PMutex::PMutex(const PMutex & /*mut*/)
+PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
   : PSemaphore(PXMutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
@@ -1664,7 +1672,7 @@ PMutex::PMutex(const PMutex & /*mut*/)
 #endif
 }
 
-void PMutex::Wait()
+void PTimedMutex::Wait() const
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();
@@ -1692,7 +1700,7 @@ void PMutex::Wait()
 }
 
 
-BOOL PMutex::Wait(const PTimeInterval & waitTime)
+BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) const
 {
   // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
@@ -1764,7 +1772,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 }
 
 
-void PMutex::Signal()
+void PTimedMutex::Signal() const
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   if (!pthread_equal(ownerThreadId, pthread_self())) {
@@ -1788,7 +1796,7 @@ void PMutex::Signal()
 }
 
 
-BOOL PMutex::WillBlock() const
+BOOL PTimedMutex::WillBlock() const
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();

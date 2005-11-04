@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.23  2005/11/04 06:56:10  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.22  2004/04/30 16:16:21  ykiryanov
  * BeOS modifications derived from BLocker use
  *
@@ -111,7 +119,7 @@
 
 #if defined(P_MAC_MPTHREADS)
   protected:
-    MPSemaphoreID semId;
+    mutable MPSemaphoreID semId;
 #elif defined(P_PTHREADS)
 
     enum PXClass { PXSemaphore, PXMutex, PXSyncPoint } pxClass;
@@ -119,15 +127,15 @@
 
   protected:
     PSemaphore(PXClass);
-    pthread_mutex_t mutex;
-    pthread_cond_t  condVar;
+    mutable pthread_mutex_t mutex;
+    mutable pthread_cond_t  condVar;
     
 #ifdef P_HAS_SEMAPHORES
-    sem_t semId;
+    mutable sem_t semId;
 #else
-    unsigned currentCount;
-    unsigned maximumCount;
-    unsigned queuedLocks;
+    mutable unsigned currentCount;
+    mutable unsigned maximumCount;
+    mutable unsigned queuedLocks;
   friend void PThread::Terminate();
 #endif
 
@@ -148,7 +156,7 @@
   public:
     PSemaphore( SEM_ID anId );
   protected:
-    SEM_ID semId;
+    mutable SEM_ID semId;
 
 #else
 
