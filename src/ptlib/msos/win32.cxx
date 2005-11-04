@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.151  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.150  2005/09/23 15:30:46  dominance
  * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
  *
@@ -1794,13 +1802,13 @@ PSemaphore::~PSemaphore()
 }
 
 
-void PSemaphore::Wait()
+void PSemaphore::Wait() const
 {
   PAssertOS(WaitForSingleObject(handle, INFINITE) != WAIT_FAILED);
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & timeout)
+BOOL PSemaphore::Wait(const PTimeInterval & timeout) const
 {
   DWORD result = WaitForSingleObject(handle, timeout.GetInterval());
   PAssertOS(result != WAIT_FAILED);
@@ -1808,7 +1816,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 }
 
 
-void PSemaphore::Signal()
+void PSemaphore::Signal() const
 {
   if (!ReleaseSemaphore(handle, 1, NULL))
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
@@ -1829,23 +1837,22 @@ BOOL PSemaphore::WillBlock() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PMutex
+// PTimedMutex
 
-PMutex::PMutex()
+PTimedMutex::PTimedMutex()
   : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
 {
 }
 
-PMutex::PMutex(const PMutex &)
+PTimedMutex::PTimedMutex(const PTimedMutex &)
   : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
 {
 }
 
-void PMutex::Signal()
+void PTimedMutex::Signal()
 {
   PAssertOS(::ReleaseMutex(handle));
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint

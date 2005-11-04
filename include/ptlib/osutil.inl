@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.91  2005/11/04 06:34:20  csoutheren
+ * Added new class PSync as abstract base class for all mutex/sempahore classes
+ * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
+ * Changed Wait/Signal to be const member functions
+ * Renamed PMutex to PTimedMutex and made PMutex synonym for PCriticalSection.
+ * This allows use of very efficient mutex primitives in 99% of cases where timed waits
+ * are not needed
+ *
  * Revision 1.90  2005/01/26 05:37:45  csoutheren
  * Added ability to remove config file support
  *
@@ -776,21 +784,6 @@ PINLINE PArgList & PArgList::operator<<(int sh)
 
 PINLINE PArgList & PArgList::operator>>(int sh)
   { Shift(-sh); return *this; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PSemaphore
-
-PINLINE PWaitAndSignal::PWaitAndSignal(const PSemaphore & sem, BOOL wait)
-  : semaphore((PSemaphore &)sem) // Break const (naughty but necessary)
-  {
-    if (wait)
-      semaphore.Wait();
-  }
-
-PINLINE PWaitAndSignal::~PWaitAndSignal()
-  { semaphore.Signal(); }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
