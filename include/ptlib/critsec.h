@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.11  2005/11/04 07:20:30  csoutheren
+ * Provide backwards compatibility functions and typedefs
+ *
  * Revision 1.10  2005/11/04 06:34:20  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -104,10 +107,14 @@ class PCriticalSection : public PSync
     /** Enter the critical section by waiting for exclusive access.
      */
     void Wait() const;
+    inline void Enter() const
+    { Wait(); }
 
     /** Leave the critical section by unlocking the mutex
      */
     void Signal() const;
+    inline void Leave() const
+    { Wait(); }
 
   //@}
 
@@ -121,6 +128,8 @@ class PCriticalSection : public PSync
 #include "unix/ptlib/critsec.h"
 #endif
 };
+
+typedef PWaitAndSignal PEnterAndLeave;
 
 /** This class implements an integer that can be atomically 
   * incremented and decremented in a thread-safe manner.
