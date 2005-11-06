@@ -94,7 +94,10 @@ class PNotifier : public PSmartPointer
     virtual void operator()(
       PObject & notifier,  /// Object that is making the notification.
       INT extra            /// Extra information that may be passed to function.
-    ) const {((PNotifierFunction*)PAssertNULL(object))->Call(notifier,extra);}
+    ) const {
+      if (PAssertNULL(object) != NULL)
+        ((PNotifierFunction*)object)->Call(notifier,extra);
+    }
 };
 
 
