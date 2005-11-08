@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.75  2005/11/08 10:35:53  csoutheren
+ * Added missing pragma
+ *
  * Revision 1.74  2005/08/04 18:54:10  csoutheren
  * Applied fix for bug Bugs item #1244310
  * Fix problem wioth --disable-openh323 option
@@ -252,6 +255,7 @@
 #pragma implementation "thread.h"
 #pragma implementation "semaphor.h"
 #pragma implementation "mutex.h"
+#pragma implementation "psync.h"
 #pragma implementation "syncpoint.h"
 #pragma implementation "syncthrd.h"
 
