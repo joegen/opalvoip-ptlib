@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.13  2005/11/08 22:31:00  csoutheren
+ * Moved declaration of PMutex
+ *
  * Revision 1.12  2005/11/08 22:18:31  csoutheren
  * Changed PMutex to use PTimedMutex on non-Windows platforms because
  * sem_wait is not recursive. Very sad.
@@ -87,14 +90,6 @@
 #include <ptlib/critsec.h>
 #include <ptlib/semaphor.h>
 
-// On Windows, critical sections are recursive and so we can use them for mutexes
-// The only Posix mutex that is recursive is pthread_mutex, so we have to use that
-#ifdef _WIN32
-typedef PCriticalSection PMutex;
-#else
-typedef PTimedMutex PMutex;
-#endif
-
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
@@ -134,6 +129,14 @@ class PTimedMutex : public PSemaphore
 #include "unix/ptlib/mutex.h"
 #endif
 };
+
+// On Windows, critical sections are recursive and so we can use them for mutexes
+// The only Posix mutex that is recursive is pthread_mutex, so we have to use that
+#ifdef _WIN32
+typedef PCriticalSection PMutex;
+#else
+typedef PTimedMutex PMutex;
+#endif
 
 #endif
 
