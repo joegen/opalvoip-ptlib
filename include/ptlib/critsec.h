@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.12  2005/11/08 10:44:37  dsandras
+ * Fixed deadlock with code using the old API.
+ *
  * Revision 1.11  2005/11/04 07:20:30  csoutheren
  * Provide backwards compatibility functions and typedefs
  *
@@ -114,7 +117,7 @@ class PCriticalSection : public PSync
      */
     void Signal() const;
     inline void Leave() const
-    { Wait(); }
+    { Signal(); }
 
   //@}
 
