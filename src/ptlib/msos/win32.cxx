@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.153  2005/11/09 09:19:10  csoutheren
+ * Now actually remove the call :)
+ *
  * Revision 1.152  2005/11/09 09:11:39  csoutheren
  * Moved Windows-specific AttachThreadInput callsto seperate member function
  * on PThread. This removes a linearly increasing delay in creating new threads
@@ -1204,9 +1207,8 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
 #endif
 */
-	thread->Win32AttachThreadInput();
 
-  process.activeThreadMutex.Wait();
+	process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->threadId, thread);
   process.activeThreadMutex.Signal();
 
