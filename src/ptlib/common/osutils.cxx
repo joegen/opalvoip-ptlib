@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.235  2005/11/09 09:11:39  csoutheren
+ * Moved Windows-specific AttachThreadInput callsto seperate member function
+ * on PThread. This removes a linearly increasing delay in creating new threads
+ *
  * Revision 1.234  2005/10/22 04:50:23  csoutheren
  * Fixed hole in mutex locking of PTrace
  *
@@ -2108,7 +2112,7 @@ PString PThread::GetThreadName() const
   return threadName; 
 }
 
-#if defined(_MSC_VER)
+#if defined(_DEBUG) && defined(_MSC_VER)
 
 typedef struct tagTHREADNAME_INFO
 {
@@ -2129,7 +2133,7 @@ void SetWinDebugThreadName (THREADNAME_INFO * info)
   {                              // just keep on truckin'
   }
 }
-#endif
+#endif // defined(_DEBUG) && defined(_MSC_VER)
 
 
 void PThread::SetThreadName(const PString & name)
@@ -2139,12 +2143,12 @@ void PThread::SetThreadName(const PString & name)
   else
     threadName = psprintf(name, (INT)this);
 
-#if defined(_MSC_VER)
+#if defined(_DEBUG) && defined(_MSC_VER)
   if (threadId) {       // make thread name known to debugger
     THREADNAME_INFO Info = { 0x1000, (const char *) threadName, threadId, 0 } ;
     SetWinDebugThreadName (&Info) ;
   }
-#endif
+#endif // defined(_DEBUG) && defined(_MSC_VER)
 }
  
 PThread * PThread::Create(const PNotifier & notifier,
