@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.23  2005/11/09 09:11:39  csoutheren
+ * Moved Windows-specific AttachThreadInput callsto seperate member function
+ * on PThread. This removes a linearly increasing delay in creating new threads
+ *
  * Revision 1.22  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -104,6 +108,7 @@
 
   public:
     HANDLE GetHandle() const { return threadHandle; }
+		void Win32AttachThreadInput();
 
   protected:
     HANDLE threadHandle;
