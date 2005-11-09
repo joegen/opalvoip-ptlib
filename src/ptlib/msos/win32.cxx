@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.152  2005/11/09 09:11:39  csoutheren
+ * Moved Windows-specific AttachThreadInput callsto seperate member function
+ * on PThread. This removes a linearly increasing delay in creating new threads
+ *
  * Revision 1.151  2005/11/04 06:34:20  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -1189,10 +1193,18 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   PProcess & process = PProcess::Current();
 
+/*
+ * Removed this code because it causes a linear increase
+ * in thread startup time when there are many (< 500) threads.
+ * If this functionality is needed, call Win32AttachThreadInput
+ * after the thread has been started
+ *
 #ifndef _WIN32_WCE
   AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
 #endif
+*/
+	thread->Win32AttachThreadInput();
 
   process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->threadId, thread);
@@ -1211,6 +1223,16 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #endif
 
   return 0;
+}
+
+
+void PThread::Win32AttachThreadInput()
+{
+#ifndef _WIN32_WCE
+  PProcess & process = PProcess::Current();
+	::AttachThreadInput(threadId, ((PThread&)process).threadId, TRUE);
+	::AttachThreadInput(((PThread&)process).threadId, threadId, TRUE);
+#endif
 }
 
 
