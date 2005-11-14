@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.154  2005/11/14 22:29:13  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original  API
+ *
  * Revision 1.153  2005/11/09 09:19:10  csoutheren
  * Now actually remove the call :)
  *
@@ -1826,13 +1831,13 @@ PSemaphore::~PSemaphore()
 }
 
 
-void PSemaphore::Wait() const
+void PSemaphore::Wait()
 {
   PAssertOS(WaitForSingleObject(handle, INFINITE) != WAIT_FAILED);
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & timeout) const
+BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
   DWORD result = WaitForSingleObject(handle, timeout.GetInterval());
   PAssertOS(result != WAIT_FAILED);
@@ -1840,7 +1845,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout) const
 }
 
 
-void PSemaphore::Signal() const
+void PSemaphore::Signal()
 {
   if (!ReleaseSemaphore(handle, 1, NULL))
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
@@ -1873,7 +1878,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 {
 }
 
-void PTimedMutex::Signal()
+void PTimedMutex::Signal() const
 {
   PAssertOS(::ReleaseMutex(handle));
 }

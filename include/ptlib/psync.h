@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psync.h,v $
+ * Revision 1.3  2005/11/14 22:29:13  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original  API
+ *
  * Revision 1.2  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -62,11 +67,11 @@ class PSync : public PObject
   //@{
     /**Block until the synchronisation object is available
      */
-    virtual void Wait() const = 0;
+    virtual void Wait() = 0;
 
     /**Signal that the synchronisation object is available
      */
-    virtual void Signal() const = 0;
+    virtual void Signal() = 0;
   //@}
  
 };
@@ -99,18 +104,18 @@ class PWaitAndSignal {
     inline PWaitAndSignal(
       const PSync & sem,   /// Semaphore descendent to wait/signal.
       BOOL wait = TRUE    /// Wait for semaphore before returning.
-    ) : sync(sem)
+    ) : sync((PSync &)sem)
     { if (wait) sync.Wait(); }
 
     /** Signal the semaphore.
         This will execute the Signal() function on the semaphore that was used
         in the construction of this instance.
      */
-    inline ~PWaitAndSignal()
+    ~PWaitAndSignal()
     { sync.Signal(); }
 
   protected:
-    const PSync & sync;
+    PSync & sync;
 };
 
 #endif // PSYNC
