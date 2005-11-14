@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.144  2005/11/14 22:41:53  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original API
+ *
  * Revision 1.143  2005/11/04 09:44:30  csoutheren
  * Applied patch #1324589
  * Removed race conditions in PSemaphore and thread handling
@@ -1499,7 +1504,7 @@ PSemaphore::~PSemaphore()
 }
 
 
-void PSemaphore::Wait() const
+void PSemaphore::Wait() 
 {
 #ifdef P_HAS_SEMAPHORES
   PAssertPTHREAD(sem_wait, (&semId));
@@ -1524,7 +1529,7 @@ void PSemaphore::Wait() const
 }
 
 
-BOOL PSemaphore::Wait(const PTimeInterval & waitTime) const
+BOOL PSemaphore::Wait(const PTimeInterval & waitTime) 
 {
   if (waitTime == PMaxTimeInterval) {
     Wait();
@@ -1607,7 +1612,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime) const
 }
 
 
-void PSemaphore::Signal() const
+void PSemaphore::Signal()
 {
 #ifdef P_HAS_SEMAPHORES
   PAssertPTHREAD(sem_post, (&semId));
