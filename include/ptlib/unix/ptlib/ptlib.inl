@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.36  2005/11/14 22:41:53  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original API
+ *
  * Revision 1.35  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -197,10 +202,10 @@ PINLINE PCriticalSection::PCriticalSection()
 PINLINE PCriticalSection::~PCriticalSection()
 { ::sem_destroy(&sem); }
 
-PINLINE void PCriticalSection::Wait() const
+PINLINE void PCriticalSection::Wait() 
 { ::sem_wait(&sem); }
 
-PINLINE void PCriticalSection::Signal() const
+PINLINE void PCriticalSection::Signal()
 { ::sem_post(&sem); }
 
 #endif
