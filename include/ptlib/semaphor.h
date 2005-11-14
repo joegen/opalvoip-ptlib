@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.20  2005/11/14 22:29:13  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original  API
+ *
  * Revision 1.19  2005/11/04 06:34:20  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -171,7 +176,7 @@ class PSemaphore : public PSync
     /**If the semaphore count is > 0, decrement the semaphore and return. If
        if is = 0 then wait (block).
      */
-    virtual void Wait() const;
+    virtual void Wait();
 
     /**If the semaphore count is > 0, decrement the semaphore and return. If
        if is = 0 then wait (block) for the specified amount of time.
@@ -181,13 +186,13 @@ class PSemaphore : public PSync
      */
     virtual BOOL Wait(
       const PTimeInterval & timeout // Amount of time to wait for semaphore.
-    ) const;
+    );
 
     /**If there are waiting (blocked) threads then unblock the first one that
        was blocked. If no waiting threads and the count is less than the
        maximum then increment the semaphore.
      */
-    virtual void Signal() const;
+    virtual void Signal();
 
     /**Determine if the semaphore would block if the #Wait()# function
        were called.
