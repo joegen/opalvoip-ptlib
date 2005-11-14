@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.15  2005/11/14 23:16:26  csoutheren
+ * Removed obsolete constructs that cause compiler warnings in new compilers
+ *
  * Revision 1.14  1999/02/10 13:20:53  robertj
  * Added ability to have attachments in mail messages.
  *
@@ -367,7 +370,8 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
                    NULL, flags, NULL, &count, hUserInterface, &messages, NULL);
     if (lastError == CMC_SUCCESS) {
       msgIDs.SetSize((PINDEX)count);
-      for (PINDEX m = 0; m < (PINDEX)count; m++) {
+      PINDEX m;
+      for (m = 0; m < (PINDEX)count; m++) {
         for (CMC_uint32 c = 0; c < messages[m].message_reference->length; c++)
           if (!isprint(messages[m].message_reference->string[c]))
             break;
@@ -434,9 +438,11 @@ CMC_message_reference_ptr::CMC_message_reference_ptr(const PString & id)
   if (id[0] == 'H') {
     ref = (CMC_message_reference *)malloc(sizeof(ref)+(len-1)/2);
     ref->length = (len-1)/2;
-    for (PINDEX i = 0; i < (PINDEX)ref->length; i++) {
+    PINDEX i;
+    for (i = 0; i < (PINDEX)ref->length; i++) {
       int val = 0;
-      for (PINDEX j = 1; j <= 2; j++) {
+      PINDEX j;
+      for (j = 1; j <= 2; j++) {
         char c = id[i*2+j];
         if (isdigit(c))
           val += c - '0';
@@ -634,7 +640,8 @@ BOOL PMail::GetMessageAttachments(const PString & id,
       return FALSE;
 
     filenames.SetSize(message->nFileCount);
-    for (PINDEX i = 0; i < filenames.GetSize(); i++)
+    PINDEX i;
+    for (i = 0; i < filenames.GetSize(); i++)
       filenames[i] = message->lpFiles[i].lpszPathName;
 
     mapi.FreeBuffer(message);
