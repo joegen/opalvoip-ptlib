@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.6  2005/11/14 22:29:13  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original  API
+ *
  * Revision 1.5  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -49,6 +54,6 @@
 // PMutex
 
   public:
-    virtual void Signal();
+    virtual void Signal() const;
 
 // End Of File ///////////////////////////////////////////////////////////////

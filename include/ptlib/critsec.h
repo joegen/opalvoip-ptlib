@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.13  2005/11/14 22:29:13  csoutheren
+ * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
+ * descendant classes everywhere will be changed over, so we have to keep the
+ * original  API
+ *
  * Revision 1.12  2005/11/08 10:44:37  dsandras
  * Fixed deadlock with code using the old API.
  *
@@ -109,14 +114,14 @@ class PCriticalSection : public PSync
   //@{
     /** Enter the critical section by waiting for exclusive access.
      */
-    void Wait() const;
-    inline void Enter() const
+    void Wait();
+    inline void Enter()
     { Wait(); }
 
     /** Leave the critical section by unlocking the mutex
      */
-    void Signal() const;
-    inline void Leave() const
+    void Signal();
+    inline void Leave()
     { Signal(); }
 
   //@}
