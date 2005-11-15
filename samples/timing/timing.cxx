@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: timing.cxx,v $
+ * Revision 1.4  2005/11/15 22:27:29  dereksmithies
+ * Modify output format so it better shows the delay characteristics of PAdaptiveDelay
+ *
  * Revision 1.3  2004/05/18 12:47:38  rjongbloed
  * Added time, time interval and timer test/demonstration code
  *
@@ -136,8 +139,8 @@ void TimingTest::Main()
   cout << "\nTesting sleep function" << endl;
   PTime start_time1;
   PINDEX loop;
-  for(loop = 0; loop<10; loop++) {
-    Sleep(10000);
+  for(loop = 0; loop < 10; loop++) {
+    Sleep(10 * 1000);     //10 seconds, or 10 * 1000ms
     PTime now1;
     cout << now1-start_time1 << endl;
   }
@@ -150,10 +153,14 @@ void TimingTest::Main()
   PAdaptiveDelay delay;
 
   PTime start_time2;
-  for(loop = 0; loop<10; loop++) {
-    delay.Delay(10);
+  cout << "Start at " << start_time2.AsString("hh.mm:ss.uuu") << endl;
+  for(loop = 0; loop < 10; loop++) {
+    delay.Delay(150);
     PTime now2;
-    cout << now2-start_time2 << endl;
+    cout << "#" << setw(2) << (loop + 1) <<" ";
+    cout << "After " << setw(4) << ((loop + 1)* 150) << "ms, time is " << now2.AsString("hh.mm:ss.uuu");
+    PTimeInterval gap = now2-start_time2;
+    cout << "  Elapsed time since start is " << setfill('0') << setw(2) << gap.GetSeconds() << ":" << setw(3) << (gap.GetMilliSeconds() % 1000) << endl;
   }
   PTime end_time2;
 
