@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.7  2005/11/17 22:54:25  csoutheren
+ * Fixed missed functions in de-consting PMutex functions
+ *
  * Revision 1.6  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -54,6 +57,6 @@
 // PMutex
 
   public:
-    virtual void Signal() const;
+    virtual void Signal();
 
 // End Of File ///////////////////////////////////////////////////////////////
