@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.155  2005/11/17 22:54:26  csoutheren
+ * Fixed missed functions in de-consting PMutex functions
+ *
  * Revision 1.154  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -1878,7 +1881,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 {
 }
 
-void PTimedMutex::Signal() const
+void PTimedMutex::Signal()
 {
   PAssertOS(::ReleaseMutex(handle));
 }
