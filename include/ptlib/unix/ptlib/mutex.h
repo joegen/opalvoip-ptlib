@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.26  2005/11/18 22:26:07  dsandras
+ * Removed a few more CONST's to match with previous commit and fix permanent
+ * deadlock.
+ *
  * Revision 1.25  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -130,9 +134,9 @@
 #endif
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
-    virtual void Wait() const;
-    virtual BOOL Wait(const PTimeInterval & timeout) const;
-    virtual void Signal() const;
+    virtual void Wait();
+    virtual BOOL Wait(const PTimeInterval & timeout);
+    virtual void Signal();
     virtual BOOL WillBlock() const;
 
   protected:
