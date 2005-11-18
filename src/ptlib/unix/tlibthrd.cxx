@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.145  2005/11/18 22:26:07  dsandras
+ * Removed a few more CONST's to match with previous commit and fix permanent
+ * deadlock.
+ *
  * Revision 1.144  2005/11/14 22:41:53  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -1674,7 +1678,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
 #endif
 }
 
-void PTimedMutex::Wait() const
+void PTimedMutex::Wait() 
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   pthread_t currentThreadId = pthread_self();
@@ -1702,7 +1706,7 @@ void PTimedMutex::Wait() const
 }
 
 
-BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) const
+BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) 
 {
   // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
@@ -1774,7 +1778,7 @@ BOOL PTimedMutex::Wait(const PTimeInterval & waitTime) const
 }
 
 
-void PTimedMutex::Signal() const
+void PTimedMutex::Signal()
 {
 #if P_HAS_RECURSIVE_MUTEX == 0
   if (!pthread_equal(ownerThreadId, pthread_self())) {
