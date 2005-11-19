@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.16  2005/11/19 01:17:37  csoutheren
+ * Removed obsolete C++ construct
+ *
  * Revision 1.15  2005/11/14 23:16:26  csoutheren
  * Removed obsolete constructs that cause compiler warnings in new compilers
  *
@@ -370,9 +373,9 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
                    NULL, flags, NULL, &count, hUserInterface, &messages, NULL);
     if (lastError == CMC_SUCCESS) {
       msgIDs.SetSize((PINDEX)count);
-      PINDEX m;
-      for (m = 0; m < (PINDEX)count; m++) {
-        for (CMC_uint32 c = 0; c < messages[m].message_reference->length; c++)
+      for (PINDEX m = 0; m < (PINDEX)count; m++) {
+		CMC_uint32 c;
+        for (c = 0; c < messages[m].message_reference->length; c++)
           if (!isprint(messages[m].message_reference->string[c]))
             break;
         if (c >= messages[m].message_reference->length)
@@ -606,7 +609,8 @@ BOOL PMail::GetMessageAttachments(const PString & id,
 
     if (message->attachments != NULL) {
       PINDEX total = 1;
-      for (CMC_attachment * attachment = message->attachments;
+	  CMC_attachment * attachment;
+      for (attachment = message->attachments;
             (attachment->attach_flags&CMC_ATT_LAST_ELEMENT) != 0; attachment++)
         total++;
       filenames.SetSize(total);
