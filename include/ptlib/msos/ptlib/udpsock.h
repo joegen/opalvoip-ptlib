@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.8  2005/11/21 11:49:35  shorne
+ * Changed disableQos to disableGQoS to better reflect what it does
+ *
  * Revision 1.7  2005/07/13 12:08:09  csoutheren
  * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
  *
@@ -54,6 +57,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
   protected:
-    static BOOL disableQoS;
+    static BOOL disableGQoS;
 
 // End Of File ///////////////////////////////////////////////////////////////
