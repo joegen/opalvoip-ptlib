@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.70  2005/11/21 11:49:36  shorne
+ * Changed disableQos to disableGQoS to better reflect what it does
+ *
  * Revision 1.69  2005/09/23 15:30:46  dominance
  * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
  *
@@ -805,22 +808,18 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-BOOL PUDPSocket::disableQoS = TRUE;
+BOOL PUDPSocket::disableGQoS = TRUE;
 
-void PUDPSocket::EnableQoS()
+void PUDPSocket::EnableGQoS()
 {
-  disableQoS = FALSE;
+	disableGQoS = FALSE;
 }
 
-BOOL PUDPSocket::SupportQoS(const PIPSocket::Address &
-#if P_HAS_QOS
-                                                       address
-#endif  // P_HAS_QOS
-                                                              )
+BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
 {
 #if P_HAS_QOS
 
-  if (disableQoS)
+  if (disableGQoS)
     return FALSE;
 
   if (!address.IsValid())
