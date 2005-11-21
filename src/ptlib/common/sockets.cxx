@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.197  2005/11/21 11:49:36  shorne
+ * Changed disableQos to disableGQoS to better reflect what it does
+ *
  * Revision 1.196  2005/10/21 06:01:30  csoutheren
  * Fixed warning on VS.NET 2005
  *
@@ -2937,7 +2940,7 @@ BOOL PUDPSocket::ApplyQoS()
 
 #ifdef _WIN32
 #if P_HAS_QOS
-  if (disableQoS)
+  if (disableGQoS)
     return FALSE;
 
   BOOL usesetsockopt = FALSE;
@@ -2950,6 +2953,11 @@ BOOL PUDPSocket::ApplyQoS()
   else {
     if (versInfo.dwMajorVersion < 5)
       usesetsockopt = TRUE;
+
+    if (disableGQoS)
+          return FALSE;
+
+    BOOL usesetsockopt = FALSE;
 
     if (versInfo.dwMajorVersion == 5 &&
         versInfo.dwMinorVersion == 0)

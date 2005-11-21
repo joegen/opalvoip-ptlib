@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.26  2005/11/21 11:49:36  shorne
+ * Changed disableQos to disableGQoS to better reflect what it does
+ *
  * Revision 1.25  2005/07/13 12:08:09  csoutheren
  * Fixed QoS patches to be more consistent with PWLib style and to allow Unix compatibility
  *
@@ -181,7 +184,7 @@ class PUDPSocket : public PIPDatagramSocket
   //@{
     /** Set the address to use for connectionless Write() or Windows QoS
      */
-    void SetSendAddress(
+    virtual void SetSendAddress(
       const Address & address,    /// IP address to send packets.
       WORD port                   /// Port to send packets.
     );
@@ -218,9 +221,9 @@ class PUDPSocket : public PIPDatagramSocket
      */
     static BOOL SupportQoS(const PIPSocket::Address & address);
 	
-    /** Manually Enable QoS Support
+    /** Manually Enable GQoS Support
      */
-    static void EnableQoS();
+    static void EnableGQoS();
   //@}
 
   protected:
