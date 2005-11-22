@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.146  2005/11/22 22:38:36  dsandras
+ * Removed Assert that was causing problem if the mutex is locked when being
+ * destroyed.
+ *
  * Revision 1.145  2005/11/18 22:26:07  dsandras
  * Removed a few more CONST's to match with previous commit and fix permanent
  * deadlock.
@@ -1494,8 +1498,8 @@ PSemaphore::PSemaphore(const PSemaphore & sem)
 
 PSemaphore::~PSemaphore()
 {
-  PAssertPTHREAD(pthread_mutex_destroy,(&mutex));
-  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+  pthread_mutex_destroy (&mutex);
+  pthread_cond_destroy (&condVar);
   
 #ifdef P_HAS_SEMAPHORES
   PAssertPTHREAD(sem_destroy, (&semId));
