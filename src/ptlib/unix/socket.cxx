@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.114  2005/11/23 11:47:03  shorne
+ * Changed EnableQoS to EnableGQoS
+ *
  * Revision 1.113  2005/07/15 12:45:13  rogerhardiman
  * Fix bug 1237508 (M Zygmuntowicz). Make IPV6 code use #if instead of #ifdef.
  *
@@ -1965,7 +1968,7 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-void PUDPSocket::EnableQoS()
+void PUDPSocket::EnableGQoS()
 {
 }
 
