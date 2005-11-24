@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.cxx,v $
+ * Revision 1.6  2005/11/24 04:44:16  dereksmithies
+ * Fix memory leak.
+ *
  * Revision 1.5  2005/10/21 08:19:22  csoutheren
  * Removed race conditions when channels closed in seperate thread from Read/Write
  *
@@ -72,7 +75,8 @@ PQueueChannel::PQueueChannel(PINDEX size)
 
 PQueueChannel::~PQueueChannel()
 {
-  delete queueBuffer;
+  if (queueBuffer != NULL)
+    delete [] queueBuffer;
 }
 
 
@@ -82,7 +86,8 @@ BOOL PQueueChannel::Open(PINDEX size)
     Close();
   else {
     mutex.Wait();
-    delete queueBuffer;
+    if (queueBuffer != NULL)
+      delete [] queueBuffer;
     queueBuffer = new BYTE[size];
     queueSize = size;
     queueLength = enqueuePos = dequeuePos = 0;
@@ -103,7 +108,8 @@ BOOL PQueueChannel::Close()
     return FALSE;
 
   mutex.Wait();
-  delete queueBuffer;
+  if (queueBuffer != NULL)
+    delete [] queueBuffer;
   queueBuffer = NULL;
   os_handle = -1;
   mutex.Signal();
