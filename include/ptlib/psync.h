@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psync.h,v $
+ * Revision 1.4  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.3  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -102,8 +105,8 @@ class PWaitAndSignal {
        before returning.
       */
     inline PWaitAndSignal(
-      const PSync & sem,   /// Semaphore descendent to wait/signal.
-      BOOL wait = TRUE    /// Wait for semaphore before returning.
+      const PSync & sem,   ///< Semaphore descendent to wait/signal.
+      BOOL wait = TRUE    ///< Wait for semaphore before returning.
     ) : sync((PSync &)sem)
     { if (wait) sync.Wait(); }
 

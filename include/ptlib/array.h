@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.34  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.33  2005/08/08 07:01:58  rjongbloed
  * Minor changes to remove possible ambiguity where virtual and non-virtual
  *   functions are overloaded.
@@ -180,11 +183,9 @@ class PAbstractArray : public PContainer
        obtained via an operator created in the #PBASEARRAY# macro.
      */
     PAbstractArray(
-      PINDEX elementSizeInBytes,
-      /**Size of each element in the array. This must be > 0 or the
-         constructor will assert.
-       */
-      PINDEX initialSize = 0      /// Number of elements to allocate initially.
+      PINDEX elementSizeInBytes,  ///< Size of each element in the array. This must be > 0 or the
+                                  ///< constructor will assert.
+      PINDEX initialSize = 0      ///< Number of elements to allocate initially.
     );
 
     /**Create a new dynamic array of #bufferSizeInElements#
@@ -205,13 +206,11 @@ class PAbstractArray : public PContainer
        allocated buffer.
      */
     PAbstractArray(
-      PINDEX elementSizeInBytes,
-      /**Size of each element in the array. This must be > 0 or the
-         constructor will assert.
-       */
-      const void *buffer,          /// Pointer to an array of elements.
-      PINDEX bufferSizeInElements, /// Number of elements pointed to by buffer.
-      BOOL dynamicAllocation       /// Buffer is copied and dynamically allocated.
+      PINDEX elementSizeInBytes,   ///< Size of each element in the array. This must be > 0 or the
+                                   ///< constructor will assert.
+      const void *buffer,          ///< Pointer to an array of elements.
+      PINDEX bufferSizeInElements, ///< Number of elements pointed to by buffer.
+      BOOL dynamicAllocation       ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -258,7 +257,7 @@ class PAbstractArray : public PContainer
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other PAbstractArray to compare against.
+      const PObject & obj   ///< Other PAbstractArray to compare against.
     ) const;
   //@}
 
@@ -273,7 +272,7 @@ class PAbstractArray : public PContainer
        TRUE if the memory for the array was allocated successfully.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size of the array in elements.
+      PINDEX newSize  ///< New size of the array in elements.
     );
   //@}
 
@@ -288,8 +287,8 @@ class PAbstractArray : public PContainer
        Any dynamically allocated buffer will be freed.
      */
     void Attach(
-      const void *buffer, /// Pointer to an array of elements.
-      PINDEX bufferSize   /// Number of elements pointed to by buffer.
+      const void *buffer, ///< Pointer to an array of elements.
+      PINDEX bufferSize   ///< Number of elements pointed to by buffer.
     );
 
     /**Get a pointer to the internal array and assure that it is of at least
@@ -306,7 +305,7 @@ class PAbstractArray : public PContainer
        pointer to the array memory.
      */
     void * GetPointer(
-      PINDEX minSize = 1  /// Minimum size the array must be.
+      PINDEX minSize = 1  ///< Minimum size the array must be.
     );
 
     /**Concatenate one array to the end of this array.
@@ -322,7 +321,7 @@ class PAbstractArray : public PContainer
        TRUE if the memory allocation succeeded.
      */
     BOOL Concatenate(
-      const PAbstractArray & array  /// Array to concatenate.
+      const PAbstractArray & array  ///< Array to concatenate.
     );
   //@}
 
@@ -388,15 +387,15 @@ template <class T> class PBaseArray : public PAbstractArray
        be very rare.
      */
     PBaseArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     ) : PAbstractArray(sizeof(T), initialSize) { }
     
     /**Construct a new dynamic array of elements of the specified type.
      */
     PBaseArray(
-      T const * buffer,   /// Pointer to an array of the elements of type {\bf T}.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      T const * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     ) : PAbstractArray(sizeof(T), buffer, length, dynamic) { }
   //@}
 
@@ -419,8 +418,8 @@ template <class T> class PBaseArray : public PAbstractArray
        TRUE if new memory for the array was successfully allocated.
      */
     BOOL SetAt(
-      PINDEX index,   /// Position in the array to set the new value.
-      T val           /// Value to set in the array.
+      PINDEX index,   ///< Position in the array to set the new value.
+      T val           ///< Value to set in the array.
     ) {
       return SetMinSize(index+1) && val==(((T *)theArray)[index] = val);
     }
@@ -432,7 +431,7 @@ template <class T> class PBaseArray : public PAbstractArray
        value at the array position.
      */
     T GetAt(
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) const {
       PASSERTINDEX(index);
       return index < GetSize() ? ((T *)theArray)[index] : (T)0;
@@ -447,8 +446,8 @@ template <class T> class PBaseArray : public PAbstractArray
        Any dynamically allocated buffer will be freed.
      */
     void Attach(
-      const T * buffer,   /// Pointer to an array of elements.
-      PINDEX bufferSize   /// Number of elements pointed to by buffer.
+      const T * buffer,   ///< Pointer to an array of elements.
+      PINDEX bufferSize   ///< Number of elements pointed to by buffer.
     ) {
       PAbstractArray::Attach(buffer, bufferSize);
     }
@@ -467,7 +466,7 @@ template <class T> class PBaseArray : public PAbstractArray
        pointer to the array memory.
      */
     T * GetPointer(
-      PINDEX minSize = 0    /// Minimum size for returned buffer pointer.
+      PINDEX minSize = 0    ///< Minimum size for returned buffer pointer.
     ) {
       return (T *)PAbstractArray::GetPointer(minSize);
     }
@@ -485,7 +484,7 @@ template <class T> class PBaseArray : public PAbstractArray
        value at the array position.
      */
     T operator[](
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) const {
       return GetAt(index);
     }
@@ -501,7 +500,7 @@ template <class T> class PBaseArray : public PAbstractArray
        reference to value at the array position.
      */
     T & operator[](
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) {
       PASSERTINDEX(index);
       PAssert(SetMinSize(index+1), POutOfMemory);
@@ -537,7 +536,7 @@ template <class T> class PBaseArray : public PAbstractArray
        TRUE if the memory allocation succeeded.
      */
     BOOL Concatenate(
-      const PBaseArray & array  /// Other array to concatenate
+      const PBaseArray & array  ///< Other array to concatenate
     ) {
       return PAbstractArray::Concatenate(array);
     }
@@ -613,15 +612,15 @@ template <class T> class PScalarArray : public PBaseArray<T>
        be very rare.
      */
     PScalarArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     ) : PBaseArray<T>(initialSize) { }
     
     /**Construct a new dynamic array of elements of the specified type.
      */
     PScalarArray(
-      T const * buffer,   /// Pointer to an array of the elements of type {\bf T}.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      T const * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     ) : PBaseArray<T>(buffer, length, dynamic) { }
   //@}
 
@@ -707,15 +706,15 @@ class PCharArray : public PBaseArray {
        The array is initialised to all zero bytes.
      */
     PCharArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of char.
      */
     PCharArray(
-      char const * buffer,   /// Pointer to an array of chars.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      char const * buffer,   ///< Pointer to an array of chars.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
@@ -725,7 +724,7 @@ PDECLARE_BASEARRAY(PCharArray, char);
   //@{
     /// Print the array
     virtual void PrintOn(
-      ostream & strm /// Stream to output to.
+      ostream & strm ///< Stream to output to.
     ) const;
     /// Read the array
     virtual void ReadFrom(
@@ -744,15 +743,15 @@ class PShortArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PShortArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of shorts.
      */
     PShortArray(
-      short const * buffer,   /// Pointer to an array of shorts.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      short const * buffer,   ///< Pointer to an array of shorts.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -770,15 +769,15 @@ class PIntArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PIntArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of ints.
      */
     PIntArray(
-      int const * buffer,   /// Pointer to an array of ints.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      int const * buffer,   ///< Pointer to an array of ints.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -796,15 +795,15 @@ class PLongArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PLongArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of longs.
      */
     PLongArray(
-      long const * buffer,   /// Pointer to an array of longs.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      long const * buffer,   ///< Pointer to an array of longs.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -822,15 +821,15 @@ class PBYTEArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PBYTEArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned chars.
      */
     PBYTEArray(
-      BYTE const * buffer,   /// Pointer to an array of BYTEs.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      BYTE const * buffer,   ///< Pointer to an array of BYTEs.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -841,11 +840,11 @@ PDECLARE_BASEARRAY(PBYTEArray, BYTE);
   //@{
     /// Print the array
     virtual void PrintOn(
-      ostream & strm /// Stream to output to.
+      ostream & strm ///< Stream to output to.
     ) const;
     /// Read the array
     virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
   //@}
 };
@@ -861,15 +860,15 @@ class PWORDArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PWORDArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned shorts.
      */
     PWORDArray(
-      WORD const * buffer,   /// Pointer to an array of WORDs.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      WORD const * buffer,   ///< Pointer to an array of WORDs.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -887,15 +886,15 @@ class PUnsignedArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PUnsignedArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned ints.
      */
     PUnsignedArray(
-      unsigned const * buffer,   /// Pointer to an array of unsigned ints.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      unsigned const * buffer,   ///< Pointer to an array of unsigned ints.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 };
@@ -913,15 +912,15 @@ class PDWORDArray : public PBaseArray {
        The array is initialised to all zeros.
      */
     PDWORDArray(
-      PINDEX initialSize = 0  /// Initial number of elements in the array.
+      PINDEX initialSize = 0  ///< Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of DWORDs.
      */
     PDWORDArray(
-      DWORD const * buffer,   /// Pointer to an array of DWORDs.
-      PINDEX length,      /// Number of elements pointed to by #buffer#.
-      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+      DWORD const * buffer,   ///< Pointer to an array of DWORDs.
+      PINDEX length,      ///< Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE ///< Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
@@ -966,7 +965,7 @@ class PArrayObjects : public PCollection
        removed or when all references to the list are destroyed.
      */
     PINLINE PArrayObjects(
-      PINDEX initialSize = 0  /// Initial number of objects in the array.
+      PINDEX initialSize = 0  ///< Initial number of objects in the array.
     );
   //@}
 
@@ -1003,7 +1002,7 @@ class PArrayObjects : public PCollection
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other #PAbstractArray# to compare against.
+      const PObject & obj   ///< Other #PAbstractArray# to compare against.
     ) const;
   //@}
 
@@ -1021,7 +1020,7 @@ class PArrayObjects : public PCollection
        TRUE if the memory for the array was allocated successfully.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size of the array in objects.
+      PINDEX newSize  ///< New size of the array in objects.
     );
   //@}
 
@@ -1034,7 +1033,7 @@ class PArrayObjects : public PCollection
        index of the newly added object.
      */
     virtual PINDEX Append(
-      PObject * obj   /// New object to place into the collection.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Insert a new object immediately before the specified object. If the
@@ -1053,8 +1052,8 @@ class PArrayObjects : public PCollection
        index of the newly inserted object.
      */
     virtual PINDEX Insert(
-      const PObject & before,   /// Object value to insert before.
-      PObject * obj             /// New object to place into the collection.
+      const PObject & before,   ///< Object value to insert before.
+      PObject * obj             ///< New object to place into the collection.
     );
 
     /** Insert a new object at the specified ordinal index. If the index is
@@ -1068,8 +1067,8 @@ class PArrayObjects : public PCollection
        index of the newly inserted object.
      */
     virtual PINDEX InsertAt(
-      PINDEX index,   /// Index position in collection to place the object.
-      PObject * obj   /// New object to place into the collection.
+      PINDEX index,   ///< Index position in collection to place the object.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Remove the object from the collection. If the AllowDeleteObjects option
@@ -1081,7 +1080,7 @@ class PArrayObjects : public PCollection
        TRUE if the object was in the collection.
      */
     virtual BOOL Remove(
-      const PObject * obj   /// Existing object to remove from the collection.
+      const PObject * obj   ///< Existing object to remove from the collection.
     );
 
     /**Remove the object at the specified ordinal index from the collection.
@@ -1096,7 +1095,7 @@ class PArrayObjects : public PCollection
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   /// Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection to place the object.
     );
 
     /**Set the object at the specified ordinal position to the new value. This
@@ -1107,8 +1106,8 @@ class PArrayObjects : public PCollection
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     );
 
     /**Get the object at the specified ordinal position. If the index was
@@ -1118,7 +1117,7 @@ class PArrayObjects : public PCollection
        pointer to object at the specified index.
      */
     virtual PObject * GetAt(
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
     /**Search the collection for the specific instance of the object. The
@@ -1129,7 +1128,7 @@ class PArrayObjects : public PCollection
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
-      const PObject * obj  /// Object to find.
+      const PObject * obj  ///< Object to find.
     ) const;
 
     /**Search the collection for the specified value of the object. The object
@@ -1182,7 +1181,7 @@ template <class T> class PArray : public PArrayObjects
        removed or when all references to the list are destroyed.
      */
     PArray( 
-      PINDEX initialSize = 0  /// Initial number of objects in the array.
+      PINDEX initialSize = 0  ///< Initial number of objects in the array.
     ) : PArrayObjects(initialSize) { }
   //@}
 
@@ -1205,7 +1204,7 @@ template <class T> class PArray : public PArrayObjects
        reference to the object at #index# position.
      */
     T & operator[](
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const {
       PObject * obj = GetAt(index);
       PAssert(obj != NULL, PInvalidArrayElement);
@@ -1304,15 +1303,15 @@ class PBitArray : public PBYTEArray
     /**Construct a new dynamic array of bits.
      */
     PBitArray(
-      PINDEX initialSize = 0  /// Initial number of bits in the array.
+      PINDEX initialSize = 0  ///< Initial number of bits in the array.
     );
     
     /**Construct a new dynamic array of elements of the specified type.
      */
     PBitArray(
-      const void * buffer,   /// Pointer to an array of the elements of type {\bf T}.
-      PINDEX length,         /// Number of bits (not bytes!) pointed to by #buffer#.
-      BOOL dynamic = TRUE    /// Buffer is copied and dynamically allocated.
+      const void * buffer,   ///< Pointer to an array of the elements of type {\bf T}.
+      PINDEX length,         ///< Number of bits (not bytes!) pointed to by #buffer#.
+      BOOL dynamic = TRUE    ///< Buffer is copied and dynamically allocated.
     );
   //@}
 
@@ -1342,7 +1341,7 @@ class PBitArray : public PBYTEArray
        TRUE if the memory for the array was allocated successfully.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size of the array in bits, not bytes.
+      PINDEX newSize  ///< New size of the array in bits, not bytes.
     );
 
     /**Set the specific bit in the array. The array will automatically
@@ -1352,8 +1351,8 @@ class PBitArray : public PBYTEArray
        TRUE if new memory for the array was successfully allocated.
      */
     BOOL SetAt(
-      PINDEX index,   /// Position in the array to set the new value.
-      BOOL val           /// Value to set in the array.
+      PINDEX index,   ///< Position in the array to set the new value.
+      BOOL val           ///< Value to set in the array.
     );
 
     /**Get a bit from the array. If the #index# is beyond the end
@@ -1363,7 +1362,7 @@ class PBitArray : public PBYTEArray
        value at the array position.
      */
     BOOL GetAt(
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) const;
 
     /**Attach a pointer to a static block to the bit array type. The pointer
@@ -1375,8 +1374,8 @@ class PBitArray : public PBYTEArray
        Any dynamically allocated buffer will be freed.
      */
     void Attach(
-      const void * buffer,   /// Pointer to an array of elements.
-      PINDEX bufferSize      /// Number of bits (not bytes!) pointed to by buffer.
+      const void * buffer,   ///< Pointer to an array of elements.
+      PINDEX bufferSize      ///< Number of bits (not bytes!) pointed to by buffer.
     );
 
     /**Get a pointer to the internal array and assure that it is of at least
@@ -1393,7 +1392,7 @@ class PBitArray : public PBYTEArray
        pointer to the array memory.
      */
     BYTE * GetPointer(
-      PINDEX minSize = 0    /// Minimum size in bits (not bytes!) for returned buffer pointer.
+      PINDEX minSize = 0    ///< Minimum size in bits (not bytes!) for returned buffer pointer.
     );
   //@}
 
@@ -1409,7 +1408,7 @@ class PBitArray : public PBYTEArray
        value at the array position.
      */
     BOOL operator[](
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) const { return GetAt(index); }
 
     /**Set a bit to the array.
@@ -1418,7 +1417,7 @@ class PBitArray : public PBYTEArray
        function.
      */
     PBitArray & operator+=(
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) { SetAt(index, TRUE); return *this; }
 
     /**Set a bit to the array.
@@ -1427,7 +1426,7 @@ class PBitArray : public PBYTEArray
        function.
      */
     PBitArray & operator-=(
-      PINDEX index  /// Position on the array to get value from.
+      PINDEX index  ///< Position on the array to get value from.
     ) { SetAt(index, FALSE); return *this; }
 
     /**Concatenate one array to the end of this array.
@@ -1442,7 +1441,7 @@ class PBitArray : public PBYTEArray
        TRUE if the memory allocation succeeded.
      */
     BOOL Concatenate(
-      const PBitArray & array  /// Other array to concatenate
+      const PBitArray & array  ///< Other array to concatenate
     );
   //@}
 };

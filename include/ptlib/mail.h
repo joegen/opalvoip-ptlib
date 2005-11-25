@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.14  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.13  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -118,16 +121,16 @@ class PMail : public PObject
        Attempt to log in using the parameters provided.
      */
     PMail(
-      const PString & username,  /// User withing mail system to use.
-      const PString & password   /// Password for user in mail system.
+      const PString & username,  ///< User withing mail system to use.
+      const PString & password   ///< Password for user in mail system.
     );
 
     /**Create a mail session.
        Attempt to log in using the parameters provided.
      */
     PMail(
-      const PString & username,  /// User withing mail system to use.
-      const PString & password,  /// Password for user in mail system.
+      const PString & username,  ///< User withing mail system to use.
+      const PString & password,  ///< Password for user in mail system.
       const PString & service
       /**A platform dependent string indicating the location of the underlying
          messaging service, eg the path to a message store or node name of the
@@ -149,8 +152,8 @@ class PMail : public PObject
        TRUE if successfully logged on.
      */
     BOOL LogOn(
-      const PString & username,  /// User withing mail system to use.
-      const PString & password   /// Password for user in mail system.
+      const PString & username,  ///< User withing mail system to use.
+      const PString & password   ///< Password for user in mail system.
     );
 
     /**Attempt to log on to the mail system using the parameters provided.
@@ -159,8 +162,8 @@ class PMail : public PObject
        TRUE if successfully logged on.
      */
     BOOL LogOn(
-      const PString & username,  /// User withing mail system to use.
-      const PString & password,  /// Password for user in mail system.
+      const PString & username,  ///< User withing mail system to use.
+      const PString & password,  ///< Password for user in mail system.
       const PString & service
       /**A platform dependent string indicating the location of the underlying
          messaging service, eg the path to a message store or node name of the
@@ -192,9 +195,9 @@ class PMail : public PObject
        {\bf not} mean that it has been delivered.
      */
     BOOL SendNote(
-      const PString & recipient,  /// Name of recipient of the mail message.
-      const PString & subject,    /// Subject name for the mail message.
-      const char * body           /// Text body of the mail message.
+      const PString & recipient,  ///< Name of recipient of the mail message.
+      const PString & subject,    ///< Subject name for the mail message.
+      const char * body           ///< Text body of the mail message.
     );
 
     /**Send a new simple mail message.
@@ -204,11 +207,11 @@ class PMail : public PObject
        {\bf not} mean that it has been delivered.
      */
     BOOL SendNote(
-      const PString & recipient,  /// Name of recipient of the mail message.
-      const PString & subject,    /// Subject name for the mail message.
-      const char * body,          /// Text body of the mail message.
+      const PString & recipient,  ///< Name of recipient of the mail message.
+      const PString & subject,    ///< Subject name for the mail message.
+      const char * body,          ///< Text body of the mail message.
       const PStringList & attachments
-                        /// List of files to attach to the mail message.
+                        ///< List of files to attach to the mail message.
     );
 
     /**Send a new simple mail message.
@@ -218,13 +221,13 @@ class PMail : public PObject
        {\bf not} mean that it has been delivered.
      */
     BOOL SendNote(
-      const PString & recipient,  /// Name of recipient of the mail message.
-      const PStringList & carbonCopies, /// Name of CC recipients.
-      const PStringList & blindCarbons, /// Name of BCC recipients.
-      const PString & subject,        /// Subject name for the mail message.
-      const char * body,              /// Text body of the mail message.
+      const PString & recipient,  ///< Name of recipient of the mail message.
+      const PStringList & carbonCopies, ///< Name of CC recipients.
+      const PStringList & blindCarbons, ///< Name of BCC recipients.
+      const PString & subject,        ///< Subject name for the mail message.
+      const char * body,              ///< Text body of the mail message.
       const PStringList & attachments
-                        /// List of files to attach to the mail message.
+                        ///< List of files to attach to the mail message.
     );
   //@}
 
@@ -236,7 +239,7 @@ class PMail : public PObject
        An array of ID strings.
      */
     PStringArray GetMessageIDs(
-      BOOL unreadOnly = TRUE    /// Only get the IDs for unread messages.
+      BOOL unreadOnly = TRUE    ///< Only get the IDs for unread messages.
     );
 
     /// Message header for each mail item.
@@ -257,8 +260,8 @@ class PMail : public PObject
        TRUE if header information was successfully obtained.
      */
     BOOL GetMessageHeader(
-      const PString & id,      /// Identifier of message to get header.
-      Header & hdrInfo         /// Header info for the message.
+      const PString & id,      ///< Identifier of message to get header.
+      Header & hdrInfo         ///< Header info for the message.
     );
 
     /**Get the body text for a message into the #body# string
@@ -278,9 +281,9 @@ class PMail : public PObject
        some other error occurred.
      */
     BOOL GetMessageBody(
-      const PString & id,      /// Identifier of message to get body.
-      PString & body,          /// Body text of mail message.
-      BOOL markAsRead = FALSE  /// Mark the message as read.
+      const PString & id,      ///< Identifier of message to get body.
+      PString & body,          ///< Body text of mail message.
+      BOOL markAsRead = FALSE  ///< Mark the message as read.
     );
 
     /**Get all of the attachments for a message as disk files.
@@ -289,10 +292,10 @@ class PMail : public PObject
        TRUE if attachments were successfully obtained.
      */
     BOOL GetMessageAttachments(
-      const PString & id,       /// Identifier of message to get attachments.
-      PStringArray & filenames, /// File names for each attachment.
-      BOOL includeBody = FALSE, /// Include the message body as first attachment
-      BOOL markAsRead = FALSE   /// Mark the message as read
+      const PString & id,       ///< Identifier of message to get attachments.
+      PStringArray & filenames, ///< File names for each attachment.
+      BOOL includeBody = FALSE, ///< Include the message body as first attachment
+      BOOL markAsRead = FALSE   ///< Mark the message as read
     );
 
     /**Mark the message as read.
@@ -301,7 +304,7 @@ class PMail : public PObject
        TRUE if message was successfully marked as read.
      */
     BOOL MarkMessageRead(
-      const PString & id      /// Identifier of message to get header.
+      const PString & id      ///< Identifier of message to get header.
     );
 
     /**Delete the message from the system.
@@ -310,7 +313,7 @@ class PMail : public PObject
        TRUE if message was successfully deleted.
      */
     BOOL DeleteMessage(
-      const PString & id      /// Identifier of message to get header.
+      const PString & id      ///< Identifier of message to get header.
     );
   //@}
 
@@ -335,7 +338,7 @@ class PMail : public PObject
        result of the name lookup.
      */
     LookUpResult LookUp(
-      const PString & name,  /// Name to look up.
+      const PString & name,  ///< Name to look up.
       PString * fullName = NULL
       /**String to receive full name of user passed in #name#. If
          NULL then the full name is {\bf not} returned.

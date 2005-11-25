@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.15  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.14  2004/11/08 02:34:18  csoutheren
  * Refactored code to (hopefully) compile on Linux
  *
@@ -344,7 +347,7 @@ class PSafeCollection : public PObject
        Note the collection is automatically deleted on destruction.
      */
     PSafeCollection(
-      PCollection * collection    /// Actual collection of objects
+      PCollection * collection    ///< Actual collection of objects
      );
 
     /**Destroy the thread safe collection.
@@ -365,7 +368,7 @@ class PSafeCollection : public PObject
        is maintained.
       */
     virtual BOOL SafeRemove(
-      PSafeObject * obj   /// Object to remove from collection
+      PSafeObject * obj   ///< Object to remove from collection
     );
 
     /**Remove an object to the collection.
@@ -377,14 +380,14 @@ class PSafeCollection : public PObject
        is maintained.
       */
     virtual BOOL SafeRemoveAt(
-      PINDEX idx    /// Object index to remove
+      PINDEX idx    ///< Object index to remove
     );
 
   public:
     /**Remove all objects in collection.
       */
     virtual void RemoveAll(
-      BOOL synchronous = FALSE  /// Wait till objects are deleted before returning
+      BOOL synchronous = FALSE  ///< Wait till objects are deleted before returning
     );
 
     /**Disallow the automatic delete any objects that have been removed.
@@ -392,7 +395,7 @@ class PSafeCollection : public PObject
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
     void AllowDeleteObjects(
-      BOOL yes = TRUE   /// New value for flag for deleting objects
+      BOOL yes = TRUE   ///< New value for flag for deleting objects
     ) { deleteObjects = yes; }
 
     /**Disallow the automatic delete any objects that have been removed.
@@ -483,8 +486,8 @@ class PSafePtrBase : public PObject
        and -- operators will not work.
      */
     PSafePtrBase(
-      PSafeObject * obj = NULL,         /// Physical object to point to.
-      PSafetyMode mode = PSafeReference /// Locking mode for the object
+      PSafeObject * obj = NULL,         ///< Physical object to point to.
+      PSafetyMode mode = PSafeReference ///< Locking mode for the object
     );
 
     /**Create a new pointer to a PSafeObject.
@@ -495,9 +498,9 @@ class PSafePtrBase : public PObject
        idx is beyond the size of the collection, the pointer is NULL.
      */
     PSafePtrBase(
-      const PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                       /// Locking mode for the object
-      PINDEX idx                              /// Index into collection to point to
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode,                       ///< Locking mode for the object
+      PINDEX idx                              ///< Index into collection to point to
     );
 
     /**Create a new pointer to a PSafeObject.
@@ -508,9 +511,9 @@ class PSafePtrBase : public PObject
        otherwise the pointer is NULL.
      */
     PSafePtrBase(
-      const PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                       /// Locking mode for the object
-      PSafeObject * obj                       /// Inital object in collection to point to
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode,                       ///< Locking mode for the object
+      PSafeObject * obj                       ///< Inital object in collection to point to
     );
 
     /**Copy the pointer to the PSafeObject.
@@ -519,7 +522,7 @@ class PSafePtrBase : public PObject
        the PSafeObject as well.
       */
     PSafePtrBase(
-      const PSafePtrBase & enumerator   /// Pointer to copy
+      const PSafePtrBase & enumerator   ///< Pointer to copy
     );
 
   public:
@@ -535,7 +538,7 @@ class PSafePtrBase : public PObject
        two PSafePtrBase instances are pointing to the same instance.
       */
     Comparison Compare(
-      const PObject & obj   /// Other instance to compare against
+      const PObject & obj   ///< Other instance to compare against
     ) const;
   //@}
 
@@ -552,7 +555,7 @@ class PSafePtrBase : public PObject
     /**Change the locking mode used by this pointer.
       */
     BOOL SetSafetyMode(
-      PSafetyMode mode  /// New locking mode
+      PSafetyMode mode  ///< New locking mode
     );
 
     /**Get the associated collection this pointer may be contained in.
@@ -623,8 +626,8 @@ template <class T> class PSafePtr : public PSafePtrBase
        and -- operators will not work.
      */
     PSafePtr(
-      T * obj = NULL,                   /// Physical object to point to.
-      PSafetyMode mode = PSafeReference /// Locking mode for the object
+      T * obj = NULL,                   ///< Physical object to point to.
+      PSafetyMode mode = PSafeReference ///< Locking mode for the object
     ) : PSafePtrBase(obj, mode) { }
 
     /**Create a new pointer to a PSafeObject.
@@ -635,9 +638,9 @@ template <class T> class PSafePtr : public PSafePtrBase
        idx is beyond the size of the collection, the pointer is NULL.
      */
     PSafePtr(
-      const PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode = PSafeReadWrite,      /// Locking mode for the object
-      PINDEX idx = 0                          /// Index into collection to point to
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode = PSafeReadWrite,      ///< Locking mode for the object
+      PINDEX idx = 0                          ///< Index into collection to point to
     ) : PSafePtrBase(safeCollection, mode, idx) { }
 
     /**Create a new pointer to a PSafeObject.
@@ -648,9 +651,9 @@ template <class T> class PSafePtr : public PSafePtrBase
        otherwise the pointer is NULL.
      */
     PSafePtr(
-      const PSafeCollection & safeCollection, /// Collection pointer will enumerate
-      PSafetyMode mode,                       /// Locking mode for the object
-      PSafeObject * obj                       /// Inital object in collection to point to
+      const PSafeCollection & safeCollection, ///< Collection pointer will enumerate
+      PSafetyMode mode,                       ///< Locking mode for the object
+      PSafeObject * obj                       ///< Inital object in collection to point to
     ) : PSafePtrBase(safeCollection, mode, obj) { }
 
     /**Copy the pointer to the PSafeObject.
@@ -659,7 +662,7 @@ template <class T> class PSafePtr : public PSafePtrBase
        the PSafeObject as well.
       */
     PSafePtr(
-      const PSafePtr & ptr   /// Pointer to copy
+      const PSafePtr & ptr   ///< Pointer to copy
     ) : PSafePtrBase(ptr) { }
 
     /**Copy the pointer to the PSafeObject.
@@ -839,7 +842,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
        collection, with full mutual exclusion locking on the collection.
       */
     virtual PSafePtr<Base> Append(
-      Base * obj,       /// Object to add to safe collection.
+      Base * obj,       ///< Object to add to safe collection.
       PSafetyMode mode = PSafeReference
     ) {
         PWaitAndSignal mutex(collectionMutex);
@@ -857,7 +860,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
        is maintained.
       */
     virtual BOOL Remove(
-      Base * obj          /// Object to remove from safe collection
+      Base * obj          ///< Object to remove from safe collection
     ) {
         return SafeRemove(obj);
       }
@@ -871,7 +874,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
        is maintained.
       */
     virtual BOOL RemoveAt(
-      PINDEX idx     /// Index to remove
+      PINDEX idx     ///< Index to remove
     ) {
         return SafeRemoveAt(idx);
       }
@@ -980,7 +983,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
        is maintained.
       */
     virtual BOOL RemoveAt(
-      const Key & key   /// Key to fund object to delete
+      const Key & key   ///< Key to fund object to delete
     ) {
         PWaitAndSignal mutex(collectionMutex);
         return SafeRemove(((Coll *)collection)->GetAt(key));

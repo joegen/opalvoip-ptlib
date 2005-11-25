@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.70  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.69  2005/01/26 05:37:54  csoutheren
  * Added ability to remove config file support
  *
@@ -378,12 +381,12 @@ class PProcess : public PThread
     /** Create a new process instance.
      */
     PProcess(
-      const char * manuf = "",         /// Name of manufacturer
-      const char * name = "",          /// Name of product
-      WORD majorVersion = 1,           /// Major version number of the product
-      WORD minorVersion = 0,           /// Minor version number of the product
-      CodeStatus status = ReleaseCode, /// Development status of the product
-      WORD buildNumber = 1             /// Build number of the product
+      const char * manuf = "",         ///< Name of manufacturer
+      const char * name = "",          ///< Name of product
+      WORD majorVersion = 1,           ///< Major version number of the product
+      WORD minorVersion = 0,           ///< Minor version number of the product
+      CodeStatus status = ReleaseCode, ///< Development status of the product
+      WORD buildNumber = 1             ///< Build number of the product
     );
   //@}
 
@@ -396,7 +399,7 @@ class PProcess : public PThread
        #EqualTo# if the two process object have the same name.
      */
     Comparison Compare(
-      const PObject & obj   /// Other process to compare against.
+      const PObject & obj   ///< Other process to compare against.
     ) const;
   //@}
 
@@ -419,7 +422,7 @@ class PProcess : public PThread
        current thread name.
      */
     virtual void SetThreadName(
-      const PString & name        /// New name for the thread.
+      const PString & name        ///< New name for the thread.
     );
   //@}
 
@@ -448,7 +451,7 @@ class PProcess : public PThread
        "return value" for an entire programme.
      */
     void SetTerminationValue(
-      int value  /// Value to return a process termination status.
+      int value  ///< Value to return a process termination status.
     );
 
     /**Get the termination value for the process.
@@ -507,7 +510,7 @@ class PProcess : public PThread
        string for the version eg "1.0b3".
      */
     virtual PString GetVersion(
-      BOOL full = TRUE /// TRUE for full version, FALSE for short version.
+      BOOL full = TRUE ///< TRUE for full version, FALSE for short version.
     ) const;
 
     /**Get the processes executable image file path.
@@ -559,8 +562,8 @@ class PProcess : public PThread
        that the process does not have the privilege to change the effective user.
       */
     BOOL SetUserName(
-      const PString & username, /// New user name or uid
-      BOOL permanent = FALSE    /// Flag for if effective or real user
+      const PString & username, ///< New user name or uid
+      BOOL permanent = FALSE    ///< Flag for if effective or real user
     );
 
     /**Get the effective group name of the owner of the process, eg "root" etc.
@@ -598,8 +601,8 @@ class PProcess : public PThread
        group.
       */
     BOOL SetGroupName(
-      const PString & groupname, /// New group name or gid
-      BOOL permanent = FALSE     /// Flag for if effective or real group
+      const PString & groupname, ///< New group name or gid
+      BOOL permanent = FALSE     ///< Flag for if effective or real group
     );
 
     /**Get the maximum file handle value for the process.
@@ -620,7 +623,7 @@ class PProcess : public PThread
        TRUE if successfully set the maximum file hadles.
       */
     BOOL SetMaxHandles(
-      int newLimit  /// New limit on file handles
+      int newLimit  ///< New limit on file handles
     );
 
 #ifdef P_CONFIG_FILE
@@ -643,7 +646,7 @@ class PProcess : public PThread
        application base name only (no ".ini") in that folder of the registry.
       */
     void SetConfigurationPath(
-      const PString & path   /// Explicit file or set of directories
+      const PString & path   ///< Explicit file or set of directories
     );
   //@}
 

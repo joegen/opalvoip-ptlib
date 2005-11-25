@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.22  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.21  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -152,7 +155,7 @@ class PFilePath : public PFilePathString
        which always absolutely references the file.
      */
     PFilePath(
-      const char * cstr   /// Partial C string for file name.
+      const char * cstr   ///< Partial C string for file name.
     );
 
     /**Create a file specification object with the specified file name.
@@ -166,13 +169,13 @@ class PFilePath : public PFilePathString
        which always absolutely references the file.
      */
     PFilePath(
-      const PString & str /// Partial PString for file name.
+      const PString & str ///< Partial PString for file name.
     );
 
     /**Create a file specification object with the specified file name.
      */
     PFilePath(
-      const PFilePath & path /// Previous path for file name.
+      const PFilePath & path ///< Previous path for file name.
     );
 
     /**Create a file spec object with a generated temporary name. The first
@@ -181,27 +184,14 @@ class PFilePath : public PFilePathString
        be placed. If this is NULL a system standard directory is used.
      */
     PFilePath(
-      const char * prefix,  /// Prefix string for file title.
-      const char * dir      /// Directory in which to place the file.
+      const char * prefix,  ///< Prefix string for file title.
+      const char * dir      ///< Directory in which to place the file.
     );
 
     /**Change the file specification object to the specified file name.
      */
     PFilePath & operator=(
-      const PFilePath & path /// Previous path for file name.
-    );
-    /**Change the file specification object to the specified file name.
-
-       The string passed in may be a full or partial specifiaction for a file
-       as determined by the platform. It is unusual for this to be a literal
-       string, unless only the file title is specified, as that would be
-       platform specific.
-
-       The partial file specification is translated into a canonical form
-       which always absolutely references the file.
-     */
-    PFilePath & operator=(
-      const PString & str /// Partial PString for file name.
+      const PFilePath & path ///< Previous path for file name.
     );
     /**Change the file specification object to the specified file name.
 
@@ -214,7 +204,20 @@ class PFilePath : public PFilePathString
        which always absolutely references the file.
      */
     PFilePath & operator=(
-      const char * cstr /// Partial "C" string for file name.
+      const PString & str ///< Partial PString for file name.
+    );
+    /**Change the file specification object to the specified file name.
+
+       The string passed in may be a full or partial specifiaction for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
+
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
+     */
+    PFilePath & operator=(
+      const char * cstr ///< Partial "C" string for file name.
     );
   //@}
 
@@ -226,7 +229,7 @@ class PFilePath : public PFilePathString
        reference to string that was concatenated to.
      */
     PFilePath & operator+=(
-      const PString & str   /// String to concatenate.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a C string to a path, modifiying that path. The
@@ -239,7 +242,7 @@ class PFilePath : public PFilePathString
        reference to string that was concatenated to.
      */
     PFilePath & operator+=(
-      const char * cstr  /// C string to concatenate.
+      const char * cstr  ///< C string to concatenate.
     );
 
     /**Concatenate a single character to a path. The #ch#
@@ -328,7 +331,7 @@ class PFilePath : public PFilePathString
        file "C:\SRC\PWLIB\FRED.DAT" would become "C:\SRC\PWLIB\FRED.TXT".
      */
     void SetType(
-      const PFilePathString & type  /// New type of the file.
+      const PFilePathString & type  ///< New type of the file.
     );
   //@}
 
@@ -340,7 +343,7 @@ class PFilePath : public PFilePathString
        TRUE if the character is valid for a filename.
      */
     static BOOL IsValid(
-      char c    /// Character to test for validity.
+      char c    ///< Character to test for validity.
     );
 
     /**Test if all the characters are valid in a filename.
@@ -349,7 +352,7 @@ class PFilePath : public PFilePathString
        TRUE if the character is valid for a filename.
      */
     static BOOL IsValid(
-      const PString & str   /// String to test for validity.
+      const PString & str   ///< String to test for validity.
     );
   //@}
 

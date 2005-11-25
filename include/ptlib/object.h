@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.114  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.113  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
@@ -764,9 +767,9 @@ public:
   \end{verbatim}
   */
   static ostream & Begin(
-    unsigned level,         /// Log level for output
-    const char * fileName,  /// Filename of source file being traced
-    int lineNum             /// Line number of source file being traced.
+    unsigned level,         ///< Log level for output
+    const char * fileName,  ///< Filename of source file being traced
+    int lineNum             ///< Line number of source file being traced.
   );
 
   /** End a trace output.
@@ -797,10 +800,10 @@ public:
     public:
       /** Output entry trace message. */
       Block(
-        const char * fileName, /// Filename of source file being traced
-        int lineNum,           /// Line number of source file being traced.
+        const char * fileName, ///< Filename of source file being traced
+        int lineNum,           ///< Line number of source file being traced.
         const char * traceName
-          /// String to be output with trace, typically it is the function name.
+          ///< String to be output with trace, typically it is the function name.
        );
       /// Output exit trace message.
       ~Block();
@@ -886,10 +889,10 @@ class PMemoryHeap {
        @return pointer to newly allocated memory block.
      */
     static void * Allocate(
-      size_t nSize,           /// Number of bytes to allocate.
-      const char * file,      /// Source file name for allocating function.
-      int line,               /// Source file line for allocating function.
-      const char * className  /// Class name for allocating function.
+      size_t nSize,           ///< Number of bytes to allocate.
+      const char * file,      ///< Source file name for allocating function.
+      int line,               ///< Source file line for allocating function.
+      const char * className  ///< Class name for allocating function.
     );
     /** Allocate a memory block.
        This allocates a new memory block and keeps track of it. The memory
@@ -898,10 +901,10 @@ class PMemoryHeap {
        @return pointer to newly allocated memory block.
      */
     static void * Allocate(
-      size_t count,       /// Number of items to allocate.
-      size_t iSize,       /// Size in bytes of each item.
-      const char * file,  /// Source file name for allocating function.
-      int line            /// Source file line for allocating function.
+      size_t count,       ///< Number of items to allocate.
+      size_t iSize,       ///< Size in bytes of each item.
+      const char * file,  ///< Source file name for allocating function.
+      int line            ///< Source file line for allocating function.
     );
 
     /** Change the size of an allocated memory block.
@@ -912,10 +915,10 @@ class PMemoryHeap {
       {\em not} be the same as the pointer passed into the function.
      */
     static void * Reallocate(
-      void * ptr,         /// Pointer to memory block to reallocate.
-      size_t nSize,       /// New number of bytes to allocate.
-      const char * file,  /// Source file name for allocating function.
-      int line            /// Source file line for allocating function.
+      void * ptr,         ///< Pointer to memory block to reallocate.
+      size_t nSize,       ///< New number of bytes to allocate.
+      const char * file,  ///< Source file name for allocating function.
+      int line            ///< Source file line for allocating function.
     );
 
     /** Free a memory block.
@@ -924,8 +927,8 @@ class PMemoryHeap {
       #freeFillChar# member variable.
      */
     static void Deallocate(
-      void * ptr,             /// Pointer to memory block to deallocate.
-      const char * className  /// Class name for deallocating function.
+      void * ptr,             ///< Pointer to memory block to deallocate.
+      const char * className  ///< Class name for deallocating function.
     );
 
     /** Validation result.
@@ -941,9 +944,9 @@ class PMemoryHeap {
         bytes before or after the actual data part of the memory block.
      */
     static Validation Validate(
-      void * ptr,             /// Pointer to memory block to check
-      const char * className, /// Class name it should be.
-      ostream * error         /// Stream to receive error message (may be NULL)
+      void * ptr,             ///< Pointer to memory block to check
+      const char * className, ///< Class name it should be.
+      ostream * error         ///< Stream to receive error message (may be NULL)
     );
 
     /** Validate all objects in memory.
@@ -951,7 +954,7 @@ class PMemoryHeap {
         @return TRUE if every object in heap is Ok.
      */
     static BOOL ValidateHeap(
-      ostream * error = NULL  // Stream to output, use default if NULL
+      ostream * error = NULL  ///< Stream to output, use default if NULL
     );
 
     /** Ignore/Monitor allocations.
@@ -960,7 +963,7 @@ class PMemoryHeap {
        Returns the previous state.
      */
     static BOOL SetIgnoreAllocations(
-      BOOL ignore  /// New flag for allocation ignoring.
+      BOOL ignore  ///< New flag for allocation ignoring.
     );
 
     /** Get memory check system statistics.
@@ -987,7 +990,7 @@ class PMemoryHeap {
        Output is to the default stream.
      */
     static void DumpObjectsSince(
-      DWORD objectNumber    /// Memory object to begin dump from.
+      DWORD objectNumber    ///< Memory object to begin dump from.
     );
 
     /** Dump allocated objects.
@@ -996,8 +999,8 @@ class PMemoryHeap {
        function.
      */
     static void DumpObjectsSince(
-      DWORD objectNumber,   /// Memory object to begin dump from.
-      ostream & strm        /// Stream to output dump
+      DWORD objectNumber,   ///< Memory object to begin dump from.
+      ostream & strm        ///< Stream to output dump
     );
 
     /** Set break point allocation number.
@@ -1006,7 +1009,7 @@ class PMemoryHeap {
       them to determine memory leaks allocation point.
      */
     static void SetAllocationBreakpoint(
-      DWORD point   /// Allocation number to stop at.
+      DWORD point   ///< Allocation number to stop at.
     );
 
   protected:

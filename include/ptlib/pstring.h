@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.83  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.82  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
@@ -381,7 +384,7 @@ class PString : public PCharArray {
        copied, only the pointer to the data.
      */
     PINLINE PString(
-      const PString & str  /// String to create new reference to.
+      const PString & str  ///< String to create new reference to.
     );
 
     /**Create a new string from the specified std::string
@@ -399,7 +402,7 @@ class PString : public PCharArray {
        single UCS-2 character.
      */
     PString(
-      const char * cstr /// Standard '\0' terminated C string.
+      const char * cstr ///< Standard '\0' terminated C string.
     );
 
     /**Create a string from the UCS-2 string array.
@@ -407,7 +410,7 @@ class PString : public PCharArray {
        of the string and its terminating '\0' character.
      */
     PString(
-      const WORD * ustr /// UCS-2 null terminated string.
+      const WORD * ustr ///< UCS-2 null terminated string.
     );
 
     /**Create a string from the array. A new memory block is allocated of
@@ -424,8 +427,8 @@ class PString : public PCharArray {
        #'\0'# character will be lost.
      */
     PString(
-      const char * cstr,  /// Pointer to a string of characters.
-      PINDEX len          /// Length of the string in bytes.
+      const char * cstr,  ///< Pointer to a string of characters.
+      PINDEX len          ///< Length of the string in bytes.
     );
 
     /**Create a string from the UCS-2 array. A new memory block is allocated
@@ -439,8 +442,8 @@ class PString : public PCharArray {
        #'\0'# character will be lost.
      */
     PString(
-      const WORD * ustr,  /// Pointer to a string of UCS-2 characters.
-      PINDEX len          /// Length of the string in bytes.
+      const WORD * ustr,  ///< Pointer to a string of UCS-2 characters.
+      PINDEX len          ///< Length of the string in bytes.
     );
 
     /**Create a string from the UCS-2 array. A new memory block is allocated
@@ -454,7 +457,7 @@ class PString : public PCharArray {
        #'\0'# character will be lost.
      */
     PString(
-      const PWORDArray & ustr /// UCS-2 null terminated string.
+      const PWORDArray & ustr ///< UCS-2 null terminated string.
     );
 
     /**Create a string from the single character. This is most commonly used
@@ -466,7 +469,7 @@ class PString : public PCharArray {
        character.
      */
     PString(
-      char ch    /// Single character to initialise string.
+      char ch    ///< Single character to initialise string.
     );
 
     /**Create a string from the integer type.
@@ -474,7 +477,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      short n   /// Integer to convert
+      short n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -482,7 +485,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      unsigned short n   /// Integer to convert
+      unsigned short n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -490,7 +493,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      int n   /// Integer to convert
+      int n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -498,7 +501,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      unsigned int n   /// Integer to convert
+      unsigned int n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -506,7 +509,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      long n   /// Integer to convert
+      long n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -514,7 +517,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      unsigned long n   /// Integer to convert
+      unsigned long n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -522,7 +525,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      PInt64 n   /// Integer to convert
+      PInt64 n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -530,7 +533,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      PUInt64 n   /// Integer to convert
+      PUInt64 n   ///< Integer to convert
     );
 
  
@@ -552,19 +555,19 @@ class PString : public PCharArray {
        a string array.
      */
     PString(
-      ConversionType type,  // Type of data source for conversion.
-      const char * str,    // String to convert.
-      ...                 // Extra parameters for #sprintf()# call.
+      ConversionType type,  ///< Type of data source for conversion.
+      const char * str,    ///< String to convert.
+      ...                 ///< Extra parameters for #sprintf()# call.
     );
     PString(
-      ConversionType type,  // Type of data source for conversion.
-      long value,           // Integer value to convert.
-      unsigned base = 10    // Number base to use for the integer conversion.
+      ConversionType type,  ///< Type of data source for conversion.
+      long value,           ///< Integer value to convert.
+      unsigned base = 10    ///< Number base to use for the integer conversion.
     );
     PString(
-      ConversionType type,  // Type of data source for conversion.
-      double value,         // Floating point value to convert.
-      unsigned places       // Number of decimals in real number output.
+      ConversionType type,  ///< Type of data source for conversion.
+      double value,         ///< Floating point value to convert.
+      unsigned places       ///< Number of decimals in real number output.
     );
 
     /**Assign the string to the current object. The current instance then
@@ -575,7 +578,7 @@ class PString : public PCharArray {
        reference to the current PString object.
      */
     PString & operator=(
-      const PString & str  /// New string to assign.
+      const PString & str  ///< New string to assign.
     );
 
     /**Assign the C string to the current object. The current instance then
@@ -588,7 +591,7 @@ class PString : public PCharArray {
        reference to the current PString object.
      */
     PString & operator=(
-      const char * cstr  /// C string to assign.
+      const char * cstr  ///< C string to assign.
     );
 
     /**Assign the character to the current object. The current instance then
@@ -600,7 +603,7 @@ class PString : public PCharArray {
        reference to the current PString object.
      */
     PString & operator=(
-      char ch            /// Character to assign.
+      char ch            ///< Character to assign.
     );
 
     /**Assign a string from the integer type.
@@ -608,7 +611,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      short n   /// Integer to convert
+      short n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -616,7 +619,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      unsigned short n   /// Integer to convert
+      unsigned short n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -624,7 +627,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      int n   /// Integer to convert
+      int n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -632,7 +635,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      unsigned int n   /// Integer to convert
+      unsigned int n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -640,7 +643,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      long n   /// Integer to convert
+      long n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -648,7 +651,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      unsigned long n   /// Integer to convert
+      unsigned long n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -656,7 +659,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      PInt64 n   /// Integer to convert
+      PInt64 n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -664,7 +667,7 @@ class PString : public PCharArray {
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      PUInt64 n   /// Integer to convert
+      PUInt64 n   ///< Integer to convert
     );
 
     /**Make the current string empty
@@ -694,13 +697,13 @@ class PString : public PCharArray {
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other PString to compare against.
+      const PObject & obj   ///< Other PString to compare against.
     ) const;
 
     /**Output the string to the specified stream.
      */
     virtual void PrintOn(
-      ostream & strm  /// I/O stream to output to.
+      ostream & strm  ///< I/O stream to output to.
     ) const;
 
     /**Input the string from the specified stream. This will read all
@@ -709,7 +712,7 @@ class PString : public PCharArray {
        the stream.
      */
     virtual void ReadFrom(
-      istream & strm  /// I/O stream to input from.
+      istream & strm  ///< I/O stream to input from.
     );
 
     /**Calculate a hash value for use in sets and dictionaries.
@@ -743,7 +746,7 @@ class PString : public PCharArray {
        TRUE if the memory for the array was allocated successfully.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size of the array in elements.
+      PINDEX newSize  ///< New size of the array in elements.
     );
 
     /**Determine if the string is empty. This is semantically slightly
@@ -810,7 +813,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator+(
-      const PString & str   /// String to concatenate.
+      const PString & str   ///< String to concatenate.
     ) const;
 
     /**Concatenate a C string to a PString to produce a third. The original
@@ -825,7 +828,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator+(
-      const char * cstr  /// C string to concatenate.
+      const char * cstr  ///< C string to concatenate.
     ) const;
 
     /**Concatenate a single character to a PString to produce a third. The
@@ -840,7 +843,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator+(
-      char ch   /// Character to concatenate.
+      char ch   ///< Character to concatenate.
     ) const;
 
     /**Concatenate a PString to a C string to produce a third. The original
@@ -855,8 +858,8 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     friend PString operator+(
-      const char * cstr,    /// C string to be concatenated to.
-      const PString & str   /// String to concatenate.
+      const char * cstr,    ///< C string to be concatenated to.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a PString to a single character to produce a third. The
@@ -871,8 +874,8 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     friend PString operator+(
-      char  c,              /// Character to be concatenated to.
-      const PString & str   /// String to concatenate.
+      char  c,              ///< Character to be concatenated to.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a string to another string, modifiying that string.
@@ -881,7 +884,7 @@ class PString : public PCharArray {
        reference to string that was concatenated to.
      */
     PString & operator+=(
-      const PString & str   /// String to concatenate.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a C string to a PString, modifiying that string. The
@@ -894,7 +897,7 @@ class PString : public PCharArray {
        reference to string that was concatenated to.
      */
     PString & operator+=(
-      const char * cstr  /// C string to concatenate.
+      const char * cstr  ///< C string to concatenate.
     );
 
     /**Concatenate a single character to a PString. The #ch#
@@ -907,7 +910,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString & operator+=(
-      char ch   /// Character to concatenate.
+      char ch   ///< Character to concatenate.
     );
 
 
@@ -918,7 +921,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator&(
-      const PString & str   /// String to concatenate.
+      const PString & str   ///< String to concatenate.
     ) const;
 
     /**Concatenate a C string to a PString to produce a third. The original
@@ -938,7 +941,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator&(
-      const char * cstr  /// C string to concatenate.
+      const char * cstr  ///< C string to concatenate.
     ) const;
 
     /**Concatenate a single character to a PString to produce a third. The
@@ -958,7 +961,7 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     PString operator&(
-      char ch   /// Character to concatenate.
+      char ch   ///< Character to concatenate.
     ) const;
 
     /**Concatenate a PString to a C string to produce a third. The original
@@ -978,8 +981,8 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     friend PString operator&(
-      const char * cstr,    /// C string to be concatenated to.
-      const PString & str   /// String to concatenate.
+      const char * cstr,    ///< C string to be concatenated to.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a PString to a single character to produce a third. The
@@ -999,8 +1002,8 @@ class PString : public PCharArray {
        new string with concatenation of the object and parameter.
      */
     friend PString operator&(
-      char  ch,              /// Character to be concatenated to.
-      const PString & str   /// String to concatenate.
+      char  ch,              ///< Character to be concatenated to.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a string to another string, modifiying that string.
@@ -1009,7 +1012,7 @@ class PString : public PCharArray {
        reference to string that was concatenated to.
      */
     PString & operator&=(
-      const PString & str   /// String to concatenate.
+      const PString & str   ///< String to concatenate.
     );
 
     /**Concatenate a C string to a PString, modifiying that string. The
@@ -1027,7 +1030,7 @@ class PString : public PCharArray {
        reference to string that was concatenated to.
      */
     PString & operator&=(
-      const char * cstr  /// C string to concatenate.
+      const char * cstr  ///< C string to concatenate.
     );
 
 
@@ -1046,7 +1049,7 @@ class PString : public PCharArray {
        reference to string that was concatenated to.
      */
     PString & operator&=(
-      char ch  /// Character to concatenate.
+      char ch  ///< Character to concatenate.
     );
   //@}
 
@@ -1059,7 +1062,7 @@ class PString : public PCharArray {
        TRUE if equal.
      */
     bool operator*=(
-      const PString & str  /// PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1070,7 +1073,7 @@ class PString : public PCharArray {
        TRUE if equal.
      */
     bool operator==(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1081,7 +1084,7 @@ class PString : public PCharArray {
        TRUE if not equal.
      */
     bool operator!=(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1092,7 +1095,7 @@ class PString : public PCharArray {
        TRUE if less than.
      */
     bool operator<(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1103,7 +1106,7 @@ class PString : public PCharArray {
        TRUE if greater than.
      */
     bool operator>(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1114,7 +1117,7 @@ class PString : public PCharArray {
        TRUE if less than or equal.
      */
     bool operator<=(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the #PObject::Compare()# function. This
@@ -1125,7 +1128,7 @@ class PString : public PCharArray {
        TRUE if greater than or equal.
      */
     bool operator>=(
-      const PObject & str  /// PString object to compare against.
+      const PObject & str  ///< PString object to compare against.
     ) const;
 
 
@@ -1140,7 +1143,7 @@ class PString : public PCharArray {
        TRUE if equal.
      */
     bool operator*=(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the ##Compare()##
@@ -1154,7 +1157,7 @@ class PString : public PCharArray {
        TRUE if equal.
      */
     bool operator==(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the #PObject::Compare()#
@@ -1168,7 +1171,7 @@ class PString : public PCharArray {
        TRUE if not equal.
      */
     bool operator!=(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the #PObject::Compare()#
@@ -1182,7 +1185,7 @@ class PString : public PCharArray {
        TRUE if less than.
      */
     bool operator<(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the #PObject::Compare()#
@@ -1196,7 +1199,7 @@ class PString : public PCharArray {
        TRUE if greater than.
      */
     bool operator>(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the #PObject::Compare()#
@@ -1210,7 +1213,7 @@ class PString : public PCharArray {
        TRUE if less than or equal.
      */
     bool operator<=(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a PString to a C string using the #PObject::Compare()#
@@ -1224,7 +1227,7 @@ class PString : public PCharArray {
        TRUE if greater than or equal.
      */
     bool operator>=(
-      const char * cstr  /// C string to compare against.
+      const char * cstr  ///< C string to compare against.
     ) const;
 
     /**Compare a string against a substring of the object.
@@ -1239,9 +1242,9 @@ class PString : public PCharArray {
        TRUE if str is a substring of .
      */
     Comparison NumCompare(
-      const PString & str,        /// PString object to compare against.
-      PINDEX count = P_MAX_INDEX, /// Number of chacracters in str to compare
-      PINDEX offset = 0           /// Offset into string to compare
+      const PString & str,        ///< PString object to compare against.
+      PINDEX count = P_MAX_INDEX, ///< Number of chacracters in str to compare
+      PINDEX offset = 0           ///< Offset into string to compare
     ) const;
 
     /**Compare a string against a substring of the object.
@@ -1256,9 +1259,9 @@ class PString : public PCharArray {
        TRUE if str is a substring of .
      */
     Comparison NumCompare(
-      const char * cstr,          /// C string object to compare against.
-      PINDEX count = P_MAX_INDEX, /// Number of chacracters in str to compare
-      PINDEX offset = 0           /// Offset into string to compare
+      const char * cstr,          ///< C string object to compare against.
+      PINDEX count = P_MAX_INDEX, ///< Number of chacracters in str to compare
+      PINDEX offset = 0           ///< Offset into string to compare
     ) const;
   //@}
 
@@ -1267,14 +1270,14 @@ class PString : public PCharArray {
   //@{
     /** Locate the position within the string of the character. */
     PINDEX Find(
-      char ch,              /// Character to search for in string.
-      PINDEX offset = 0     /// Offset into string to begin search.
+      char ch,              ///< Character to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
     /** Locate the position within the string of the substring. */
     PINDEX Find(
-      const PString & str,  /// String to search for in string.
-      PINDEX offset = 0     /// Offset into string to begin search.
+      const PString & str,  ///< String to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
     /* Locate the position within the string of the character or substring. The
@@ -1292,20 +1295,20 @@ class PString : public PCharArray {
        character or substring is not in the string.
      */
     PINDEX Find(
-      const char * cstr,    /// C string to search for in string.
-      PINDEX offset = 0     /// Offset into string to begin search.
+      const char * cstr,    ///< C string to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
     /** Locate the position of the last matching character. */
     PINDEX FindLast(
-      char ch,                     /// Character to search for in string.
-      PINDEX offset = P_MAX_INDEX  /// Offset into string to begin search.
+      char ch,                     ///< Character to search for in string.
+      PINDEX offset = P_MAX_INDEX  ///< Offset into string to begin search.
     ) const;
 
     /** Locate the position of the last matching substring. */
     PINDEX FindLast(
-      const PString & str,         /// String to search for in string.
-      PINDEX offset = P_MAX_INDEX  /// Offset into string to begin search.
+      const PString & str,         ///< String to search for in string.
+      PINDEX offset = P_MAX_INDEX  ///< Offset into string to begin search.
     ) const;
 
     /**Locate the position of the last matching substring.
@@ -1326,14 +1329,14 @@ class PString : public PCharArray {
        character or substring is not in the string.
      */
     PINDEX FindLast(
-      const char * cstr,           /// C string to search for in string.
-      PINDEX offset = P_MAX_INDEX  /// Offset into string to begin search.
+      const char * cstr,           ///< C string to search for in string.
+      PINDEX offset = P_MAX_INDEX  ///< Offset into string to begin search.
     ) const;
 
     /** Locate the position of one of the characters in the set. */
     PINDEX FindOneOf(
-      const PString & set,  /// String of characters to search for in string.
-      PINDEX offset = 0     /// Offset into string to begin search.
+      const PString & set,  ///< String of characters to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
     /**Locate the position of one of the characters in the set.
@@ -1351,8 +1354,8 @@ class PString : public PCharArray {
        from the set are in the string.
      */
     PINDEX FindOneOf(
-      const char * cset,    /// C string of characters to search for in string.
-      PINDEX offset = 0     /// Offset into string to begin search.
+      const char * cset,    ///< C string of characters to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;
 
     /**Locate the position within the string of one of the regular expression.
@@ -1366,8 +1369,8 @@ class PString : public PCharArray {
        characters from the set are in the string.
      */
     PINDEX FindRegEx(
-      const PRegularExpression & regex, /// regular expression to find
-      PINDEX offset = 0                 /// Offset into string to begin search.
+      const PRegularExpression & regex, ///< regular expression to find
+      PINDEX offset = 0                 ///< Offset into string to begin search.
     ) const;
 
     /**Locate the position within the string of one of the regular expression.
@@ -1381,11 +1384,11 @@ class PString : public PCharArray {
        characters from the set are in the string.
      */
     BOOL FindRegEx(
-      const PRegularExpression & regex, /// regular expression to find
-      PINDEX & pos,                     /// Position of matched expression
-      PINDEX & len,                     /// Length of matched expression
-      PINDEX offset = 0,                /// Offset into string to begin search.
-      PINDEX maxPos = P_MAX_INDEX       /// Maximum offset into string
+      const PRegularExpression & regex, ///< regular expression to find
+      PINDEX & pos,                     ///< Position of matched expression
+      PINDEX & len,                     ///< Length of matched expression
+      PINDEX offset = 0,                ///< Offset into string to begin search.
+      PINDEX maxPos = P_MAX_INDEX       ///< Maximum offset into string
     ) const;
 
 
@@ -1400,10 +1403,10 @@ class PString : public PCharArray {
        #PCaselessString# before the search is made.
      */
     void Replace(
-      const PString & target,   /// Text to be removed.
-      const PString & subs,     /// String to be inserted into the gaps created
-      BOOL all = FALSE,         /// Replace all occurrences of target text.
-      PINDEX offset = 0         /// Offset into string to begin search.
+      const PString & target,   ///< Text to be removed.
+      const PString & subs,     ///< String to be inserted into the gaps created
+      BOOL all = FALSE,         ///< Replace all occurrences of target text.
+      PINDEX offset = 0         ///< Offset into string to begin search.
     );
 
     /**Splice the string into the current string at the specified position. The
@@ -1414,9 +1417,9 @@ class PString : public PCharArray {
        from the old string buffer copied to it.
      */
     void Splice(
-      const PString & str,  /// Substring to insert.
-      PINDEX pos,           /// Position in string to insert the substring.
-      PINDEX len = 0        /// Length of section to remove.
+      const PString & str,  ///< Substring to insert.
+      PINDEX pos,           ///< Position in string to insert the substring.
+      PINDEX len = 0        ///< Length of section to remove.
     );
 
     /**Splice the string into the current string at the specified position. The
@@ -1427,9 +1430,9 @@ class PString : public PCharArray {
        from the old string buffer copied to it.
      */
     void Splice(
-      const char * cstr,    /// Substring to insert.
-      PINDEX pos,           /// Position in string to insert the substring.
-      PINDEX len = 0        /// Length of section to remove.
+      const char * cstr,    ///< Substring to insert.
+      PINDEX pos,           ///< Position in string to insert the substring.
+      PINDEX len = 0        ///< Length of section to remove.
     );
 
     /**Remove the substring from the string.
@@ -1439,8 +1442,8 @@ class PString : public PCharArray {
        from the old string buffer copied to it.
      */
     void Delete(
-      PINDEX start,   /// Position in string to remove.
-      PINDEX len      /// Number of characters to delete.
+      PINDEX start,   ///< Position in string to remove.
+      PINDEX len      ///< Number of characters to delete.
     );
   //@}
 
@@ -1465,8 +1468,8 @@ class PString : public PCharArray {
        substring of the source string.
      */
     PString operator()(
-      PINDEX start,  /// Starting position of the substring.
-      PINDEX end     /// Ending position of the substring.
+      PINDEX start,  ///< Starting position of the substring.
+      PINDEX end     ///< Ending position of the substring.
     ) const;
 
     /**Extract a portion of the string into a new string. The original string
@@ -1484,7 +1487,7 @@ class PString : public PCharArray {
        substring of the source string.
      */
     PString Left(
-      PINDEX len   /// Number of characters to extract.
+      PINDEX len   ///< Number of characters to extract.
     ) const;
 
     /**Extract a portion of the string into a new string. The original string
@@ -1502,7 +1505,7 @@ class PString : public PCharArray {
        substring of the source string.
      */
     PString Right(
-      PINDEX len   /// Number of characters to extract.
+      PINDEX len   ///< Number of characters to extract.
     ) const;
 
     /**Extract a portion of the string into a new string. The original string
@@ -1522,8 +1525,8 @@ class PString : public PCharArray {
        substring of the source string.
      */
     PString Mid(
-      PINDEX start,             /// Starting position of the substring.
-      PINDEX len = P_MAX_INDEX  /// Number of characters to extract.
+      PINDEX start,             ///< Starting position of the substring.
+      PINDEX len = P_MAX_INDEX  ///< Number of characters to extract.
     ) const;
 
 
@@ -1580,9 +1583,9 @@ class PString : public PCharArray {
     /** Split the string into an array of substrings. */
     PStringArray Tokenise(
       const PString & separators,
-        /// A string for the set of separator characters that delimit tokens.
+        ///< A string for the set of separator characters that delimit tokens.
       BOOL onePerSeparator = TRUE
-        /// Flag for if there are empty tokens between consecutive separators.
+        ///< Flag for if there are empty tokens between consecutive separators.
     ) const;
     /**Split the string into an array of substrings.
        Divide the string into an array of substrings delimited by characters
@@ -1608,9 +1611,9 @@ class PString : public PCharArray {
      */
     PStringArray Tokenise(
       const char * cseparators,
-        /// A C string for the set of separator characters that delimit tokens.
+        ///< A C string for the set of separator characters that delimit tokens.
       BOOL onePerSeparator = TRUE
-        /// Flag for if there are empty tokens between consecutive separators.
+        ///< Flag for if there are empty tokens between consecutive separators.
     ) const;
 
     /**Split the string into individual lines. The line delimiters may be a
@@ -1646,8 +1649,8 @@ class PString : public PCharArray {
        reference to the current string object.
      */
     PString & sprintf(
-      const char * cfmt,   /// C string for output format.
-      ...                  /// Extra parameters for #sprintf()# call.
+      const char * cfmt,   ///< C string for output format.
+      ...                  ///< Extra parameters for #sprintf()# call.
     );
 
     /**Produce formatted output as a string. This is identical to the standard
@@ -1665,14 +1668,14 @@ class PString : public PCharArray {
        reference to the current string object.
      */
     friend PString psprintf(
-      const char * cfmt,   /// C string for output format.
-      ...                  /// Extra parameters for #sprintf()# call.
+      const char * cfmt,   ///< C string for output format.
+      ...                  ///< Extra parameters for #sprintf()# call.
     );
 
     /** Concatenate a formatted output to the string. */
     PString & vsprintf(
-      const PString & fmt, /// String for output format.
-      va_list args         /// Extra parameters for #sprintf()# call.
+      const PString & fmt, ///< String for output format.
+      va_list args         ///< Extra parameters for #sprintf()# call.
     );
     /**Concatenate a formatted output to the string. This is identical to the
        standard C library #vsprintf()# function, but appends its
@@ -1689,14 +1692,14 @@ class PString : public PCharArray {
        reference to the current string object.
      */
     PString & vsprintf(
-      const char * cfmt,   /// C string for output format.
-      va_list args         /// Extra parameters for #sprintf()# call.
+      const char * cfmt,   ///< C string for output format.
+      va_list args         ///< Extra parameters for #sprintf()# call.
     );
 
     /** Produce formatted output as a string. */
     friend PString pvsprintf(
-      const char * cfmt,   /// C string for output format.
-      va_list args         /// Extra parameters for #sprintf()# call.
+      const char * cfmt,   ///< C string for output format.
+      va_list args         ///< Extra parameters for #sprintf()# call.
     );
     /**Produce formatted output as a string. This is identical to the standard
        C library #vsprintf()# function, but sends its output to a
@@ -1713,8 +1716,8 @@ class PString : public PCharArray {
        reference to the current string object.
      */
     friend PString pvsprintf(
-      const PString & fmt, /// String for output format.
-      va_list args         /// Extra parameters for #sprintf()# call.
+      const PString & fmt, ///< String for output format.
+      va_list args         ///< Extra parameters for #sprintf()# call.
     );
 
 
@@ -1731,7 +1734,7 @@ class PString : public PCharArray {
        integer value for the string.
      */
     long AsInteger(
-      unsigned base = 10    /// Number base to convert the string in.
+      unsigned base = 10    ///< Number base to convert the string in.
     ) const;
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
@@ -1746,7 +1749,7 @@ class PString : public PCharArray {
        integer value for the string.
      */
     DWORD AsUnsigned(
-      unsigned base = 10    /// Number base to convert the string in.
+      unsigned base = 10    ///< Number base to convert the string in.
     ) const;
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
@@ -1762,7 +1765,7 @@ class PString : public PCharArray {
        integer value for the string.
      */
     PInt64 AsInt64(
-      unsigned base = 10    /// Number base to convert the string in.
+      unsigned base = 10    ///< Number base to convert the string in.
     ) const;
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
@@ -1778,7 +1781,7 @@ class PString : public PCharArray {
        integer value for the string.
      */
     PUInt64 AsUnsigned64(
-      unsigned base = 10    /// Number base to convert the string in.
+      unsigned base = 10    ///< Number base to convert the string in.
     ) const;
 
     /**Convert the string to a floating point number. This number may be in
@@ -1881,7 +1884,7 @@ class PCaselessString : public PString
        C string provided.
      */
     PCaselessString(
-      const char * cstr   /// C string to initialise the caseless string from.
+      const char * cstr   ///< C string to initialise the caseless string from.
     );
 
     /**Create a caseless string, with a reference to the characters in the
@@ -1889,7 +1892,7 @@ class PCaselessString : public PString
        to this constructor.
      */
     PCaselessString(
-      const PString & str  /// String to initialise the caseless string from.
+      const PString & str  ///< String to initialise the caseless string from.
     );
 
 
@@ -1901,7 +1904,7 @@ class PCaselessString : public PString
        reference to the current PString object.
      */
     PCaselessString & operator=(
-      const PString & str  /// New string to assign.
+      const PString & str  ///< New string to assign.
     );
 
     /**Assign the C string to the current object. The current instance then
@@ -1914,7 +1917,7 @@ class PCaselessString : public PString
        reference to the current PString object.
      */
     PCaselessString & operator=(
-      const char * cstr  /// C string to assign.
+      const char * cstr  ///< C string to assign.
     );
 
     /**Assign the character to the current object. The current instance then
@@ -1926,7 +1929,7 @@ class PCaselessString : public PString
        reference to the current PString object.
      */
     PCaselessString & operator=(
-      char ch            /// Character to assign.
+      char ch            ///< Character to assign.
     );
 
 
@@ -1995,7 +1998,7 @@ class PStringStream : public PString, public iostream
        a unique reference to a string buffer.
      */
     PStringStream(
-      const PString & str   /// Initial value for string stream.
+      const PString & str   ///< Initial value for string stream.
     );
 
     /**Create a new string stream and initialise it with the provided value.
@@ -2003,7 +2006,7 @@ class PStringStream : public PString, public iostream
        the string.
      */
     PStringStream(
-      const char * cstr   /// Initial value for the string stream.
+      const char * cstr   ///< Initial value for the string stream.
     );
 
     /**Make the current string empty
@@ -2037,7 +2040,7 @@ class PStringStream : public PString, public iostream
        reference to the current PStringStream object.
      */
     PStringStream & operator=(
-      const PString & str  /// New string to assign.
+      const PString & str  ///< New string to assign.
     );
 
     /**Assign the C string to the string stream. The current instance then
@@ -2056,7 +2059,7 @@ class PStringStream : public PString, public iostream
        reference to the current PStringStream object.
      */
     PStringStream & operator=(
-      const char * cstr  /// C string to assign.
+      const char * cstr  ///< C string to assign.
     );
 
     /**Assign the character to the current object. The current instance then
@@ -2068,7 +2071,7 @@ class PStringStream : public PString, public iostream
        reference to the current PString object.
      */
     PStringStream & operator=(
-      char ch            /// Character to assign.
+      char ch            ///< Character to assign.
     );
 
 
@@ -2129,24 +2132,24 @@ class PStringArray : public PArray {
        where the last pointer is NULL.
      */
     PStringArray(
-      PINDEX count,                 /// Count of strings in array
-      char const * const * strarr,  /// Array of C strings
-      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+      PINDEX count,                 ///< Count of strings in array
+      char const * const * strarr,  ///< Array of C strings
+      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringArray of length one from the single string.
      */
     PStringArray(
-      const PString & str  /// Single string to convert to an array of one.
+      const PString & str  ///< Single string to convert to an array of one.
     );
     /**Create a PStringArray from the list of strings.
      */
     PStringArray(
-      const PStringList & list  /// List of strings to convert to array.
+      const PStringList & list  ///< List of strings to convert to array.
     );
     /**Create a PStringArray from the sorted list strings.
      */
     PStringArray(
-      const PSortedStringList & list  /// List of strings to convert to array.
+      const PSortedStringList & list  ///< List of strings to convert to array.
     );
 
     /**
@@ -2208,11 +2211,11 @@ class PStringArray : public PArray {
        Index of string in array or P_MAX_INDEX if not found.
      */
     PINDEX GetStringsIndex(
-      const PString & str /// String to search for index of
+      const PString & str ///< String to search for index of
     ) const;
 
     PString operator[](
-      PINDEX index  // Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
     /**Retrieve a reference  to the object in the array. If there was not an
@@ -2223,13 +2226,13 @@ class PStringArray : public PArray {
        reference to the object at #index# position.
      */
     PString & operator[](
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     );
 
     /** Append a string to the array
      */
     PINDEX AppendString(
-      const PString & str /// String to append.
+      const PString & str ///< String to append.
     );
 
     /**Concatenate a PString or PStringArray to the array
@@ -2286,24 +2289,24 @@ PDECLARE_LIST(PStringList, PString);
     /**Create a PStringList from the array of C strings.
      */
     PStringList(
-      PINDEX count,                 /// Count of strings in array
-      char const * const * strarr,  /// Array of C strings
-      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+      PINDEX count,                 ///< Count of strings in array
+      char const * const * strarr,  ///< Array of C strings
+      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringList of length one from the single string.
      */
     PStringList(
-      const PString & str  /// Single string to convert to a list of one.
+      const PString & str  ///< Single string to convert to a list of one.
     );
     /**Create a PStringList from the array of strings.
      */
     PStringList(
-      const PStringArray & array  /// Array of strings to convert to list
+      const PStringArray & array  ///< Array of strings to convert to list
     );
     /**Create a PStringList from the sorted list of strings.
      */
     PStringList(
-      const PSortedStringList & list  /// List of strings to convert to list.
+      const PSortedStringList & list  ///< List of strings to convert to list.
     );
   //@}
 
@@ -2324,21 +2327,21 @@ PDECLARE_LIST(PStringList, PString);
     /** Append a string to the list.
      */
     PINDEX AppendString(
-      const PString & str /// String to append.
+      const PString & str ///< String to append.
     );
 
     /** Insert a string into the list.
      */
     PINDEX InsertString(
-      const PString & before,   /// String to insert before.
-      const PString & str       /// String to insert.
+      const PString & before,   ///< String to insert before.
+      const PString & str       ///< String to insert.
     );
 
     /** Get the index of the string with the specified value.
       A linear search of list is performed to find the string value.
      */
     PINDEX GetStringsIndex(
-      const PString & str   /// String value to search for.
+      const PString & str   ///< String value to search for.
     ) const;
 
     /**Concatenate a PString or PStringArray to the list
@@ -2398,24 +2401,24 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     /**Create a PStringArray from the array of C strings.
      */
     PSortedStringList(
-      PINDEX count,                 /// Count of strings in array
-      char const * const * strarr,  /// Array of C strings
-      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+      PINDEX count,                 ///< Count of strings in array
+      char const * const * strarr,  ///< Array of C strings
+      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
     );
     /**Create a PSortedStringList of length one from the single string.
      */
     PSortedStringList(
-      const PString & str  /// Single string to convert to a list of one.
+      const PString & str  ///< Single string to convert to a list of one.
     );
     /**Create a PSortedStringList from the array of strings.
      */
     PSortedStringList(
-      const PStringArray & array  /// Array of strings to convert to list
+      const PStringArray & array  ///< Array of strings to convert to list
     );
     /**Create a PSortedStringList from the list of strings.
      */
     PSortedStringList(
-      const PStringList & list  /// List of strings to convert to list.
+      const PStringList & list  ///< List of strings to convert to list.
     );
   //@}
 
@@ -2437,14 +2440,14 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
         This will place the string in the correct position in the sorted list.
      */
     PINDEX AppendString(
-      const PString & str /// String to append.
+      const PString & str ///< String to append.
     );
 
     /** Get the index of the string with the specified value.
       A binary search of tree is performed to find the string value.
      */
     PINDEX GetStringsIndex(
-      const PString & str   /// String value to search for.
+      const PString & str   ///< String value to search for.
     ) const;
 
     /** Get the index of the next string after specified value.
@@ -2452,7 +2455,7 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
       or equal to the specified string value.
      */
     PINDEX GetNextStringsIndex(
-      const PString & str   /// String value to search for.
+      const PString & str   ///< String value to search for.
     ) const;
   //@}
 
@@ -2491,14 +2494,14 @@ PDECLARE_SET(PStringSet, PString, TRUE);
     /**Create a PStringArray from the array of C strings.
      */
     PStringSet(
-      PINDEX count,                 /// Count of strings in array
-      char const * const * strarr,  /// Array of C strings
-      BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+      PINDEX count,                 ///< Count of strings in array
+      char const * const * strarr,  ///< Array of C strings
+      BOOL caseless = FALSE         ///< New strings are to be PCaselessStrings
     );
     /**Create a PStringSet containing the single string.
      */
     PStringSet(
-      const PString & str  /// Single string to convert to a list of one.
+      const PString & str  ///< Single string to convert to a list of one.
     );
   //@}
 
@@ -2510,7 +2513,7 @@ PDECLARE_SET(PStringSet, PString, TRUE);
        The default behaviour reads '\n' separated strings until !strm.good().
      */
     virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
   //@}
 
@@ -2518,19 +2521,19 @@ PDECLARE_SET(PStringSet, PString, TRUE);
   //@{
     /** Include the spcified string value into the set. */
     void Include(
-      const PString & key /// String value to add to set.
+      const PString & key ///< String value to add to set.
     );
     /** Include the spcified string value into the set. */
     PStringSet & operator+=(
-      const PString & key /// String value to add to set.
+      const PString & key ///< String value to add to set.
     );
     /** Exclude the spcified string value from the set. */
     void Exclude(
-      const PString & key /// String value to remove from set.
+      const PString & key ///< String value to remove from set.
     );
     /** Exclude the spcified string value from the set. */
     PStringSet & operator-=(
-      const PString & key /// String value to remove from set.
+      const PString & key ///< String value to remove from set.
     );
   //@}
 };
@@ -2831,8 +2834,8 @@ PDECLARE_STRING_DICTIONARY(POrdinalToString, POrdinalKey);
     /** Initialise the ordinal dictionary of strings from the static array.
      */
     POrdinalToString(
-      PINDEX count,                /// Count of strings in initialiser array
-      const Initialiser * init     /// Array of Initialiser structures
+      PINDEX count,                ///< Count of strings in initialiser array
+      const Initialiser * init     ///< Array of Initialiser structures
     );
   //@}
 
@@ -2878,9 +2881,9 @@ PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
     /** Initialise the string dictionary of ordinals from the static array.
      */
     PStringToOrdinal(
-      PINDEX count,                /// Count of strings in initialiser array
-      const Initialiser * init,    /// Array of Initialiser structures
-      BOOL caseless = FALSE        /// New keys are to be PCaselessStrings
+      PINDEX count,                ///< Count of strings in initialiser array
+      const Initialiser * init,    ///< Array of Initialiser structures
+      BOOL caseless = FALSE        ///< New keys are to be PCaselessStrings
     );
   //@}
 
@@ -2928,10 +2931,10 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     /** Initialise the string dictionary of strings from the static array.
      */
     PStringToString(
-      PINDEX count,                /// Count of strings in initialiser array
-      const Initialiser * init,    /// Array of Initialiser structures
-      BOOL caselessKeys = FALSE,   /// New keys are to be PCaselessStrings
-      BOOL caselessValues = FALSE  /// New values are to be PCaselessStrings
+      PINDEX count,                ///< Count of strings in initialiser array
+      const Initialiser * init,    ///< Array of Initialiser structures
+      BOOL caselessKeys = FALSE,   ///< New keys are to be PCaselessStrings
+      BOOL caselessValues = FALSE  ///< New values are to be PCaselessStrings
     );
   //@}
 
@@ -2992,15 +2995,15 @@ class PRegularExpression : public PObject
     /** Create and compile a new regular expression pattern.
      */
     PRegularExpression(
-      const PString & pattern,    /// Pattern to compile
-      int flags = IgnoreCase      /// Pattern match options
+      const PString & pattern,    ///< Pattern to compile
+      int flags = IgnoreCase      ///< Pattern match options
     );
 
     /** Create and compile a new regular expression pattern.
      */
     PRegularExpression(
-      const char * cpattern,      /// Pattern to compile
-      int flags = IgnoreCase      /// Pattern match options
+      const char * cpattern,      ///< Pattern to compile
+      int flags = IgnoreCase      ///< Pattern match options
     );
 
     /**
@@ -3087,8 +3090,8 @@ class PRegularExpression : public PObject
   //@{
     /** Compiler pattern. */
     BOOL Compile(
-      const PString & pattern,    /// Pattern to compile
-      int flags = IgnoreCase      /// Pattern match options
+      const PString & pattern,    ///< Pattern to compile
+      int flags = IgnoreCase      ///< Pattern match options
     );
     /**Compiler pattern.
        The pattern is compiled into an internal format to speed subsequent
@@ -3098,55 +3101,55 @@ class PRegularExpression : public PObject
        TRUE if successfully compiled.
      */
     BOOL Compile(
-      const char * cpattern,      /// Pattern to compile
-      int flags = IgnoreCase      /// Pattern match options
+      const char * cpattern,      ///< Pattern to compile
+      int flags = IgnoreCase      ///< Pattern match options
     );
 
 
     /** Execute regular expression */
     BOOL Execute(
-      const PString & str,    /// Source string to search
-      PINDEX & start,         /// First match locations
-      int flags = 0           /// Pattern match options
+      const PString & str,    ///< Source string to search
+      PINDEX & start,         ///< First match locations
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const PString & str,    /// Source string to search
-      PINDEX & start,         /// First match locations
-      PINDEX & len,           /// Length of match
-      int flags = 0           /// Pattern match options
+      const PString & str,    ///< Source string to search
+      PINDEX & start,         ///< First match locations
+      PINDEX & len,           ///< Length of match
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const char * cstr,      /// Source string to search
-      PINDEX & start,         /// First match locations
-      int flags = 0           /// Pattern match options
+      const char * cstr,      ///< Source string to search
+      PINDEX & start,         ///< First match locations
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const char * cstr,      /// Source string to search
-      PINDEX & start,         /// First match locations
-      PINDEX & len,           /// Length of match
-      int flags = 0           /// Pattern match options
+      const char * cstr,      ///< Source string to search
+      PINDEX & start,         ///< First match locations
+      PINDEX & len,           ///< Length of match
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const PString & str,    /// Source string to search
-      PIntArray & starts,     /// List of match locations
-      int flags = 0           /// Pattern match options
+      const PString & str,    ///< Source string to search
+      PIntArray & starts,     ///< List of match locations
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const PString & str,    /// Source string to search
-      PIntArray & starts,     /// List of match locations
-      PIntArray & ends,       /// List of match ends
-      int flags = 0           /// Pattern match options
+      const PString & str,    ///< Source string to search
+      PIntArray & starts,     ///< List of match locations
+      PIntArray & ends,       ///< List of match ends
+      int flags = 0           ///< Pattern match options
     ) const;
     /** Execute regular expression */
     BOOL Execute(
-      const char * cstr,      /// Source string to search
-      PIntArray & starts,     /// List of match locations
-      int flags = 0           /// Pattern match options
+      const char * cstr,      ///< Source string to search
+      PIntArray & starts,     ///< List of match locations
+      int flags = 0           ///< Pattern match options
     ) const;
     /**Execute regular expression.
        Execute the pattern match algorithm using the previously compiled
@@ -3164,10 +3167,10 @@ class PRegularExpression : public PObject
        TRUE if successfully compiled.
      */
     BOOL Execute(
-      const char * cstr,      /// Source string to search
-      PIntArray & starts,     /// List of match locations
-      PIntArray & ends,       /// List of match ends
-      int flags = 0           /// Pattern match options
+      const char * cstr,      ///< Source string to search
+      PIntArray & starts,     ///< List of match locations
+      PIntArray & ends,       ///< List of match ends
+      int flags = 0           ///< Pattern match options
     ) const;
   //@}
 
@@ -3180,7 +3183,7 @@ class PRegularExpression : public PObject
        String with additional escape ('\') characters.
      */
     static PString EscapeString(
-      const PString & str     /// String to add esacpes to.
+      const PString & str     ///< String to add esacpes to.
     );
   //@}
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.12  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.11  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -83,7 +86,7 @@ class PIPXSocket : public PSocket
     /**Create a new IPX datagram socket.
      */
     PIPXSocket(
-      WORD port = 0       /// Port number to use for the connection.
+      WORD port = 0       ///< Port number to use for the connection.
     );
 
 
@@ -111,8 +114,8 @@ class PIPXSocket : public PSocket
         Address(const PString & str /** String representation of address */);
         /** Create address from node and net numbers. */
         Address(
-          DWORD netNum, /// IPX network number.
-          const char * nodeNum  /// IPX node number (MAC address)
+          DWORD netNum, ///< IPX network number.
+          const char * nodeNum  ///< IPX node number (MAC address)
         );
         /** Create copy of existing address */
         Address & operator=(const Address & addr /** Address to copy */);
@@ -125,8 +128,8 @@ class PIPXSocket : public PSocket
         BOOL IsValid() const;
       /** Output string representation of IPX address to stream. */
       friend ostream & operator<<(
-        ostream & strm, /// Stream to output to
-        Address & addr  /// Address to output
+        ostream & strm, ///< Stream to output to
+        Address & addr  ///< Address to output
       ) { return strm << (PString)addr; }
     };
 
@@ -159,7 +162,7 @@ class PIPXSocket : public PSocket
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address   /// Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
     /**Connect a socket to a remote host on the port number of the socket.
        This is
@@ -174,7 +177,7 @@ class PIPXSocket : public PSocket
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const Address & address   /// Address of remote machine to connect to.
+      const Address & address   ///< Address of remote machine to connect to.
     );
 
     /**Listen on a socket for a remote host on the specified port number. This
@@ -193,9 +196,9 @@ class PIPXSocket : public PSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
   //@}
 
@@ -207,7 +210,7 @@ class PIPXSocket : public PSocket
        Name of the host or IPX number of host.
      */
     static PString GetHostName(
-      const Address & addr    /// Hosts IP address to get name for
+      const Address & addr    ///< Hosts IP address to get name for
     );
 
     /**Get the IPX address for the specified host.
@@ -216,7 +219,7 @@ class PIPXSocket : public PSocket
        TRUE if the IPX number was returned.
      */
     static BOOL GetHostAddress(
-      Address & addr    /// Variable to receive this hosts IP address
+      Address & addr    ///< Variable to receive this hosts IP address
     );
 
     /**Get the IPX address for the specified host.
@@ -229,7 +232,7 @@ class PIPXSocket : public PSocket
       /** Name of host to get address for. This may be either a server name or
          an IPX number in "colon" format.
        */
-      Address & addr    /// Variable to receive hosts IPX address
+      Address & addr    ///< Variable to receive hosts IPX address
     );
 
     /**Get the IPX/SPX address for the local host.
@@ -238,7 +241,7 @@ class PIPXSocket : public PSocket
        TRUE if the IPX number was returned.
      */
     BOOL GetLocalAddress(
-      Address & addr    /// Variable to receive hosts IPX address
+      Address & addr    ///< Variable to receive hosts IPX address
     );
 
     /**Get the IPX/SPX address for the local host.
@@ -247,8 +250,8 @@ class PIPXSocket : public PSocket
        TRUE if the IPX number was returned.
      */
     BOOL GetLocalAddress(
-      Address & addr,    /// Variable to receive peer hosts IPX address
-      WORD & port        /// Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IPX address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
     /**Get the IPX/SPX address for the peer host the socket is
@@ -258,7 +261,7 @@ class PIPXSocket : public PSocket
        TRUE if the IPX number was returned.
      */
     BOOL GetPeerAddress(
-      Address & addr    /// Variable to receive hosts IPX address
+      Address & addr    ///< Variable to receive hosts IPX address
     );
 
     /**Get the IPX/SPX address for the peer host the socket is
@@ -268,8 +271,8 @@ class PIPXSocket : public PSocket
        TRUE if the IPX number was returned.
      */
     BOOL GetPeerAddress(
-      Address & addr,    /// Variable to receive peer hosts IPX address
-      WORD & port        /// Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IPX address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
   //@}
 
@@ -281,7 +284,7 @@ class PIPXSocket : public PSocket
        TRUE if the type was successfully set.
      */
     BOOL SetPacketType(
-      int type    /// IPX packet type for this socket.
+      int type    ///< IPX packet type for this socket.
     );
 
     /**Gets the packet type for datagrams sent by this socket.
@@ -298,10 +301,10 @@ class PIPXSocket : public PSocket
        TRUE if all the bytes were sucessfully written.
      */
     virtual BOOL ReadFrom(
-      void * buf,     /// Data to be written as URGENT TCP data.
-      PINDEX len,     /// Number of bytes pointed to by #buf#.
-      Address & addr, /// Address from which the datagram was received.
-      WORD & port     /// Port from which the datagram was received.
+      void * buf,     ///< Data to be written as URGENT TCP data.
+      PINDEX len,     ///< Number of bytes pointed to by #buf#.
+      Address & addr, ///< Address from which the datagram was received.
+      WORD & port     ///< Port from which the datagram was received.
     );
 
     /**Write a datagram to a remote computer.
@@ -310,10 +313,10 @@ class PIPXSocket : public PSocket
        TRUE if all the bytes were sucessfully written.
      */
     virtual BOOL WriteTo(
-      const void * buf,   /// Data to be written as URGENT TCP data.
-      PINDEX len,         /// Number of bytes pointed to by #buf#.
-      const Address & addr, /// Address to which the datagram is sent.
-      WORD port           /// Port to which the datagram is sent.
+      const void * buf,   ///< Data to be written as URGENT TCP data.
+      PINDEX len,         ///< Number of bytes pointed to by #buf#.
+      const Address & addr, ///< Address to which the datagram is sent.
+      WORD port           ///< Port to which the datagram is sent.
     );
   //@}
 

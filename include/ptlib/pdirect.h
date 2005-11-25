@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.43  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.42  2004/09/17 03:51:15  csoutheren
  * More fixes for PDirectory problem
  *
@@ -324,7 +327,7 @@ class PDirectory : public PFilePathString
        made absolute by the creation of the #PDirectory# object.
      */
     PDirectory(
-      const char * cpathname      /// Directory path name for new object.
+      const char * cpathname      ///< Directory path name for new object.
     );
 
     /**Create a directory object of the specified directory. The
@@ -332,19 +335,19 @@ class PDirectory : public PFilePathString
        made absolute by the creation of the #PDirectory# object.
      */
     PDirectory(
-      const PString & pathname    /// Directory path name for new object.
+      const PString & pathname    ///< Directory path name for new object.
     );
 
     /**Set the directory to the specified path.
      */
     PDirectory & operator=(
-      const PString & pathname    /// Directory path name for new object.
+      const PString & pathname    ///< Directory path name for new object.
     );
 
     /**Set the directory to the specified path.
      */
     PDirectory & operator=(
-      const char * cpathname      /// Directory path name for new object.
+      const char * cpathname      ///< Directory path name for new object.
     );
   //@}
 
@@ -398,7 +401,7 @@ class PDirectory : public PFilePathString
        TRUE if may be used to separate directories in a path.
      */
     PINLINE static BOOL IsSeparator(
-      char ch    /// Character to check as being a separator.
+      char ch    ///< Character to check as being a separator.
     );
 
     /**Determine the total number of bytes and number of bytes free on the
@@ -412,9 +415,9 @@ class PDirectory : public PFilePathString
        TRUE if the information could be determined.
      */
     BOOL GetVolumeSpace(
-      PInt64 & total,     /// Total number of bytes available on volume
-      PInt64 & free,      /// Number of bytes unused on the volume
-      DWORD & clusterSize /// "Quantisation factor" in bytes for files on volume
+      PInt64 & total,     ///< Total number of bytes available on volume
+      PInt64 & free,      ///< Number of bytes unused on the volume
+      DWORD & clusterSize ///< "Quantisation factor" in bytes for files on volume
     ) const;
   //@}
 
@@ -433,7 +436,7 @@ class PDirectory : public PFilePathString
        TRUE if directory exists.
      */
     static BOOL Exists(
-      const PString & path   /// Directory file path.
+      const PString & path   ///< Directory file path.
     );
       
     /**Change the current working directory to the objects location.
@@ -449,7 +452,7 @@ class PDirectory : public PFilePathString
        TRUE if current working directory was changed.
      */
     static BOOL Change(
-      const PString & path   /// Directory file path.
+      const PString & path   ///< Directory file path.
     );
       
     /**Create a new directory with the specified permissions.
@@ -466,8 +469,8 @@ class PDirectory : public PFilePathString
        TRUE if directory created.
      */
     static BOOL Create(
-      const PString & p,   /// Directory file path.
-      int perm = PFileInfo::DefaultDirPerms    /// Permission on new directory.
+      const PString & p,   ///< Directory file path.
+      int perm = PFileInfo::DefaultDirPerms    ///< Permission on new directory.
     );
 
     /**Delete the directory.
@@ -483,7 +486,7 @@ class PDirectory : public PFilePathString
        TRUE if directory was deleted.
      */
     static BOOL Remove(
-      const PString & path   /// Directory file path.
+      const PString & path   ///< Directory file path.
     );
   //@}
 
@@ -505,7 +508,7 @@ class PDirectory : public PFilePathString
        file in it of the specified types.
      */
     virtual BOOL Open(
-      int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
+      int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
     );
       
     /**Restart file list scan from the beginning of directory. This is similar
@@ -523,7 +526,7 @@ class PDirectory : public PFilePathString
        file in it of the specified types.
      */
     virtual BOOL Restart(
-      int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
+      int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
     );
       
     /**Move to the next file in the directory scan.
@@ -575,7 +578,7 @@ class PDirectory : public PFilePathString
        TRUE if file information was successfully retrieved.
      */
     virtual BOOL GetInfo(
-      PFileInfo & info    /// Object to receive the file information.
+      PFileInfo & info    ///< Object to receive the file information.
     ) const;
   //@}
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.14  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.13  2004/03/22 10:15:27  rjongbloed
  * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
  *   when goes out of scope.
@@ -200,9 +203,9 @@ class PIntCondMutex : public PCondMutex
       Create a cond mutex using an integer
     */
     PIntCondMutex(
-      int value = 0,            /// initial value if the integer
-      int target = 0,           /// target vaue which causes the mutex to unlock
-      Operation operation = LE  /// comparison operator
+      int value = 0,            ///< initial value if the integer
+      int target = 0,           ///< target vaue which causes the mutex to unlock
+      Operation operation = LE  ///< comparison operator
     );
   //@}
 
@@ -392,8 +395,8 @@ class PReadWaitAndSignal {
        function before returning.
       */
     PReadWaitAndSignal(
-      const PReadWriteMutex & rw,   /// PReadWriteMutex descendent to wait/signal.
-      BOOL start = TRUE    /// Start read operation on PReadWriteMutex before returning.
+      const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
+      BOOL start = TRUE    ///< Start read operation on PReadWriteMutex before returning.
     );
     /** End read operation on the PReadWriteMutex.
         This will execute the EndRead() function on the PReadWriteMutex that
@@ -430,8 +433,8 @@ class PWriteWaitAndSignal {
        function before returning.
       */
     PWriteWaitAndSignal(
-      const PReadWriteMutex & rw,   /// PReadWriteMutex descendent to wait/signal.
-      BOOL start = TRUE    /// Start write operation on PReadWriteMutex before returning.
+      const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
+      BOOL start = TRUE    ///< Start write operation on PReadWriteMutex before returning.
     );
     /** End write operation on the PReadWriteMutex.
         This will execute the EndWrite() function on the PReadWriteMutex that

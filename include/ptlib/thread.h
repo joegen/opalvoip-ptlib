@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.36  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.35  2003/10/08 21:39:34  dereksmithies
  * Add a #define to cope with backward compatability issues for PThreadIdentifier
  * Thanks to Andrey S Pankov and Craig Southeren for their input.
@@ -229,11 +232,11 @@ class PThread : public PObject
        may be removed in subsequent versions.
      */
     PThread(
-      PINDEX ,                 /// Not used - previously stack size
+      PINDEX ,                 ///< Not used - previously stack size
       AutoDeleteFlag deletion = AutoDeleteThread,
-        /// Automatically delete PThread instance on termination of thread.
-      Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
-      const PString & threadName = PString::Empty() /// The name of the thread (for Debug/Trace)
+        ///< Automatically delete PThread instance on termination of thread.
+      Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
+      const PString & threadName = PString::Empty() ///< The name of the thread (for Debug/Trace)
     );
 
     /** Destroy the thread, this simply calls the #Terminate()# function
@@ -253,7 +256,7 @@ class PThread : public PObject
        polymorphically.
       */
     void PrintOn(
-      ostream & strm    /// Stream to output text representation
+      ostream & strm    ///< Stream to output text representation
     ) const;
   //@}
 
@@ -293,7 +296,7 @@ class PThread : public PObject
      */
     void WaitForTermination() const;
     BOOL WaitForTermination(
-      const PTimeInterval & maxWait  /// Maximum time to wait for termination.
+      const PTimeInterval & maxWait  ///< Maximum time to wait for termination.
     ) const;
 
     /** Suspend or resume the thread.
@@ -309,7 +312,7 @@ class PThread : public PObject
        #Suspend(TRUE)# calls are made.
      */
     virtual void Suspend(
-      BOOL susp = TRUE    /// Flag to suspend or resume a thread.
+      BOOL susp = TRUE    ///< Flag to suspend or resume a thread.
     );
 
     /** Resume thread execution, this is identical to
@@ -328,14 +331,14 @@ class PThread : public PObject
 
     /// Suspend the current thread for the specified amount of time.
     static void Sleep(
-      const PTimeInterval & delay   /// Time interval to sleep for.
+      const PTimeInterval & delay   ///< Time interval to sleep for.
     );
 
     /** Set the priority of the thread relative to other threads in the current
        process.
      */
     virtual void SetPriority(
-      Priority priorityLevel    /// New priority for thread.
+      Priority priorityLevel    ///< New priority for thread.
     );
 
     /** Get the current priority of the thread in the current process.
@@ -349,7 +352,7 @@ class PThread : public PObject
         when the thread ends.
      */
     virtual void SetAutoDelete(
-      AutoDeleteFlag deletion = AutoDeleteThread  /// New auto delete setting.
+      AutoDeleteFlag deletion = AutoDeleteThread  ///< New auto delete setting.
     );
 
     /** Reet the flag indicating thread object is to be automatically deleted
@@ -370,7 +373,7 @@ class PThread : public PObject
        current thread name.
      */
     virtual void SetThreadName(
-      const PString & name        /// New name for the thread.
+      const PString & name        ///< New name for the thread.
     );
   //@}
 
@@ -417,13 +420,13 @@ class PThread : public PObject
        function defined by the PNotifier in the context of a new thread.
       */
     static PThread * Create(
-      const PNotifier & notifier,     /// Function to execute in thread.
-      INT parameter = 0,              /// Parameter value to pass to notifier.
+      const PNotifier & notifier,     ///< Function to execute in thread.
+      INT parameter = 0,              ///< Parameter value to pass to notifier.
       AutoDeleteFlag deletion = AutoDeleteThread,
-        /// Automatically delete PThread instance on termination of thread.
-      Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
-      const PString & threadName = PString::Empty(), /// The name of the thread (for Debug/Trace)
-      PINDEX stackSize = 10000         /// Stack size on some platforms
+        ///< Automatically delete PThread instance on termination of thread.
+      Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
+      const PString & threadName = PString::Empty(), ///< The name of the thread (for Debug/Trace)
+      PINDEX stackSize = 10000         ///< Stack size on some platforms
     );
   //@}
 

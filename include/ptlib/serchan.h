@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.18  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.17  2005/02/20 21:18:30  dereksmithies
  * Fix documentation typos.
  *
@@ -178,7 +181,7 @@ class PSerialChannel : public PChannel
        configuration file section is already set.
      */
     PSerialChannel(
-      PConfig & cfg  /// Configuration file to read serial port attributes from.
+      PConfig & cfg  ///< Configuration file to read serial port attributes from.
     );
 
     /// Close the serial channel on destruction.
@@ -228,7 +231,7 @@ class PSerialChannel : public PChannel
        configuration file section is already set.
      */
     virtual BOOL Open(
-      PConfig & cfg  /// Configuration file to read serial port attributes from.
+      PConfig & cfg  ///< Configuration file to read serial port attributes from.
     );
 
     /**Get a list of the available serial ports. This returns a set of
@@ -251,7 +254,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetSpeed(
-      DWORD speed   /// New speed for serial channel.
+      DWORD speed   ///< New speed for serial channel.
     );
 
     /**Get the speed (baud rate) of the serial channel.
@@ -267,7 +270,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetDataBits(
-      BYTE data   /// New number of data bits for serial channel.
+      BYTE data   ///< New number of data bits for serial channel.
     );
 
     /**Get the data bits (5, 6, 7 or 8) of the serial port.
@@ -283,7 +286,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetParity(
-      Parity parity   /// New parity option for serial channel.
+      Parity parity   ///< New parity option for serial channel.
     );
 
     /**Get the parity of the serial port.
@@ -299,7 +302,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetStopBits(
-      BYTE stop   /// New number of stop bits for serial channel.
+      BYTE stop   ///< New number of stop bits for serial channel.
     );
 
     /**Get the stop bits (1 or 2) of the serial port.
@@ -316,7 +319,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetInputFlowControl(
-      FlowControl flowControl   /// New flow control for serial channel input.
+      FlowControl flowControl   ///< New flow control for serial channel input.
     );
 
     /**Get the flow control (handshaking) protocol of the input to the serial
@@ -334,7 +337,7 @@ class PSerialChannel : public PChannel
        TRUE if the change was successfully made.
      */
     BOOL SetOutputFlowControl(
-      FlowControl flowControl   /// New flow control for serial channel output.
+      FlowControl flowControl   ///< New flow control for serial channel output.
     );
 
     /**Get the flow control (handshaking) protocol of the output from the
@@ -349,7 +352,7 @@ class PSerialChannel : public PChannel
        it assumed that the correct configuration file section is already set.
      */
     virtual void SaveSettings(
-      PConfig & cfg   /// Configuration file to save setting into.
+      PConfig & cfg   ///< Configuration file to save setting into.
     );
   //@}
 
@@ -358,7 +361,7 @@ class PSerialChannel : public PChannel
   //@{
     /** Set the Data Terminal Ready signal of the serial port. */
     void SetDTR(
-      BOOL state = TRUE   /// New state of the DTR signal.
+      BOOL state = TRUE   ///< New state of the DTR signal.
     );
 
     /**Clear the Data Terminal Ready signal of the serial port. This is
@@ -368,7 +371,7 @@ class PSerialChannel : public PChannel
 
     /**Set the Request To Send signal of the serial port. */
     void SetRTS(
-      BOOL state = TRUE   /// New state of the RTS signal.
+      BOOL state = TRUE   ///< New state of the RTS signal.
     );
 
     /**Clear the Request To Send signal of the serial port. This is equivalent
@@ -378,7 +381,7 @@ class PSerialChannel : public PChannel
 
     /** Set the break condition of the serial port. */
     void SetBreak(
-      BOOL state = TRUE   /// New state of the serial port break condition.
+      BOOL state = TRUE   ///< New state of the serial port break condition.
     );
 
     /**Clear the break condition of the serial port. This is equivalent to
