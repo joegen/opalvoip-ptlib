@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.24  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.23  2005/11/04 06:56:10  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -130,8 +135,11 @@
     mutable pthread_mutex_t mutex;
     mutable pthread_cond_t  condVar;
     
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
     mutable sem_t semId;
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+    mutable sem_t *semId;
+    sem_t *CreateSem(unsigned initialValue);
 #else
     mutable unsigned currentCount;
     mutable unsigned maximumCount;

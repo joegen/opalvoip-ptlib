@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.27  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.26  2005/11/18 22:26:07  dsandras
  * Removed a few more CONST's to match with previous commit and fix permanent
  * deadlock.
@@ -129,8 +134,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex
 
-#ifdef VX_TASKS
+#if defined(P_PTHREADS) || defined(VX_TASKS)
     virtual ~PTimedMutex();
+    mutable pthread_mutex_t mutex;
 #endif
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)

@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.70  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.69  2005/08/04 20:10:24  csoutheren
  * Apply patch #1217596
  * Fixed problems with MacOSX Tiger
@@ -708,7 +713,7 @@ typedef	int SOCKET;
 #include <pthread.h>
 #define P_THREADIDENTIFIER pthread_t
 
-#if defined(P_HAS_SEMAPHORES)
+#if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
 #include <semaphore.h>
 #endif  // P_HAS_SEMPAHORES
 

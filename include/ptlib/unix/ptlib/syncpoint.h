@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.8  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.7  2004/04/30 16:18:41  ykiryanov
  * BeOS modifications derived from BLocker use
  *
@@ -58,6 +63,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
+
+#if defined(P_PTHREADS)
+  public:
+    virtual ~PSyncPoint();
+#endif
 
 #if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS)
   public:

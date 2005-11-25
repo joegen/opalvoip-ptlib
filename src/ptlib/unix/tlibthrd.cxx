@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.147  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.146  2005/11/22 22:38:36  dsandras
  * Removed Assert that was causing problem if the mutex is locked when being
  * destroyed.
@@ -533,15 +538,15 @@
  */
 
 #include <ptlib/socket.h>
-#include <sched.h>	// for sched_yield
+#include <sched.h>  // for sched_yield
 #include <pthread.h>
 #include <sys/resource.h>
 
 #ifdef P_RTEMS
-#define	SUSPEND_SIG SIGALRM
+#define SUSPEND_SIG SIGALRM
 #include <sched.h>
 #else
-#define	SUSPEND_SIG SIGVTALRM
+#define SUSPEND_SIG SIGVTALRM
 #endif
 
 #ifdef P_MACOSX
@@ -611,7 +616,6 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 
 
 static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t  CondInitialiser  = PTHREAD_COND_INITIALIZER;
 
 
 #define new PNEW
@@ -730,11 +734,7 @@ BOOL PProcess::PThreadKill(pthread_t id, unsigned sig)
   if (!activeThreads.Contains((unsigned)id)) 
     return FALSE;
 
-#if defined(P_MACOSX)
-  return TRUE;
-#else
   return pthread_kill(id, sig) == 0;
-#endif
 }
 
 
@@ -1017,40 +1017,33 @@ GetThreadBasePriority ()
     // get basic info
     count = THREAD_BASIC_INFO_COUNT;
     thread_info (pthread_mach_thread_np (baseThread), THREAD_BASIC_INFO,
-		 (integer_t*)&threadInfo, &count);
+                 (integer_t*)&threadInfo, &count);
 
     switch (threadInfo.policy) {
     case POLICY_TIMESHARE:
-        count = POLICY_TIMESHARE_INFO_COUNT;
-	thread_info(pthread_mach_thread_np (baseThread),
-		    THREAD_SCHED_TIMESHARE_INFO,
-		    (integer_t*)&(thePolicyInfo.ts), &count);
-	return thePolicyInfo.ts.base_priority;
-	break;
+      count = POLICY_TIMESHARE_INFO_COUNT;
+      thread_info(pthread_mach_thread_np (baseThread),
+                  THREAD_SCHED_TIMESHARE_INFO,
+                  (integer_t*)&(thePolicyInfo.ts), &count);
+      return thePolicyInfo.ts.base_priority;
 
     case POLICY_FIFO:
-        count = POLICY_FIFO_INFO_COUNT;
-	thread_info(pthread_mach_thread_np (baseThread),
-		    THREAD_SCHED_FIFO_INFO,
-		    (integer_t*)&(thePolicyInfo.fifo), &count);
-	if (thePolicyInfo.fifo.depressed) {
-	    return thePolicyInfo.fifo.depress_priority;
-	} else {
-	    return thePolicyInfo.fifo.base_priority;
-	}
-	break;
+      count = POLICY_FIFO_INFO_COUNT;
+      thread_info(pthread_mach_thread_np (baseThread),
+                  THREAD_SCHED_FIFO_INFO,
+                  (integer_t*)&(thePolicyInfo.fifo), &count);
+      if (thePolicyInfo.fifo.depressed) 
+        return thePolicyInfo.fifo.depress_priority;
+      return thePolicyInfo.fifo.base_priority;
 
     case POLICY_RR:
       count = POLICY_RR_INFO_COUNT;
       thread_info(pthread_mach_thread_np (baseThread),
-		  THREAD_SCHED_RR_INFO,
-		  (integer_t*)&(thePolicyInfo.rr), &count);
-      if (thePolicyInfo.rr.depressed) {
-	  return thePolicyInfo.rr.depress_priority;
-      } else {
-	  return thePolicyInfo.rr.base_priority;
-      }
-      break;
+                  THREAD_SCHED_RR_INFO,
+                  (integer_t*)&(thePolicyInfo.rr), &count);
+      if (thePolicyInfo.rr.depressed) 
+        return thePolicyInfo.rr.depress_priority;
+      return thePolicyInfo.rr.base_priority;
     }
 
     return 0;
@@ -1095,11 +1088,11 @@ void PThread::SetPriority(Priority priorityLevel)
 
       theFixedPolicy.timeshare = false; // set to true for a non-fixed thread
       result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
-				  THREAD_EXTENDED_POLICY,
-				  (thread_policy_t)&theFixedPolicy,
-				  THREAD_EXTENDED_POLICY_COUNT);
+                                  THREAD_EXTENDED_POLICY,
+                                  (thread_policy_t)&theFixedPolicy,
+                                  THREAD_EXTENDED_POLICY_COUNT);
       if (result != KERN_SUCCESS) {
-	PTRACE(1, "thread_policy - Couldn't set thread as fixed priority.");
+        PTRACE(1, "thread_policy - Couldn't set thread as fixed priority.");
       }
 
       // set priority
@@ -1108,16 +1101,15 @@ void PThread::SetPriority(Priority priorityLevel)
       // spawning thread's priority
       
       relativePriority = 62 - GetThreadBasePriority();
-      PTRACE(1,  "relativePriority is " << relativePriority <<
-	     " base priority is " << GetThreadBasePriority());
+      PTRACE(1,  "relativePriority is " << relativePriority << " base priority is " << GetThreadBasePriority());
       
       thePrecedencePolicy.importance = relativePriority;
       result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
-				  THREAD_PRECEDENCE_POLICY,
-				  (thread_policy_t)&thePrecedencePolicy, 
-				  THREAD_PRECEDENCE_POLICY_COUNT);
+                                  THREAD_PRECEDENCE_POLICY,
+                                  (thread_policy_t)&thePrecedencePolicy, 
+                                  THREAD_PRECEDENCE_POLICY_COUNT);
       if (result != KERN_SUCCESS) {
-	PTRACE(1, "thread_policy - Couldn't set thread priority.");
+        PTRACE(1, "thread_policy - Couldn't set thread priority.");
       }
     }
   }
@@ -1240,7 +1232,7 @@ void PThread::Terminate()
   PXAbortBlock();
   WaitForTermination(20);
 
-#ifndef P_HAS_SEMAPHORES
+#if !defined(P_HAS_SEMAPHORES) && !defined(P_HAS_NAMED_SEMAPHORES)
   PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
   if (PX_waitingSemaphore != NULL) {
     PAssertPTHREAD(pthread_mutex_lock, (&PX_waitingSemaphore->mutex));
@@ -1436,8 +1428,6 @@ void PThread::PXAbortBlock() const
 PSemaphore::PSemaphore(PXClass pxc)
 {
   pxClass = pxc;
-  mutex   = MutexInitialiser;
-  condVar = CondInitialiser;
 
   // these should never be used, as this constructor is
   // only used for PMutex and PSyncPoint and they have their
@@ -1445,25 +1435,37 @@ PSemaphore::PSemaphore(PXClass pxc)
   
   initialVar = maxCountVar = 0;
   
-  /* call sem_init, otherwise sem_destroy fails*/
-#ifdef P_HAS_SEMAPHORES
-  PAssertPTHREAD(sem_init, (&semId, 0, 0));
-#endif  
+  if(pxClass == PXSemaphore) {
+#if defined(P_HAS_SEMAPHORES)
+    /* call sem_init, otherwise sem_destroy fails*/
+    PAssertPTHREAD(sem_init, (&semId, 0, 0));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+    semId = CreateSem(0);
+#else
+    currentCount = maximumCount = 0;
+    queuedLocks = 0;
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&condVar, NULL);
+#endif
+  }
 }
 
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
   pxClass = PXSemaphore;
-  mutex   = MutexInitialiser;
-  condVar = CondInitialiser;
 
   initialVar  = initial;
   maxCountVar = maxCount;
 
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
   PAssertPTHREAD(sem_init, (&semId, 0, initial));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+  semId = CreateSem(initialVar);
 #else
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+  
   PAssert(maxCount > 0, "Invalid semaphore maximum.");
   if (initial > maxCount)
     initial = maxCount;
@@ -1474,48 +1476,77 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 #endif
 }
 
+
 PSemaphore::PSemaphore(const PSemaphore & sem) 
 {
   pxClass = sem.GetSemClass();
-  mutex   = MutexInitialiser;
-  condVar = CondInitialiser;
 
   initialVar  = sem.GetInitial();
   maxCountVar = sem.GetMaxCount();
 
-#ifdef P_HAS_SEMAPHORES
-  PAssertPTHREAD(sem_init, (&semId, 0, initialVar));
+  if(pxClass == PXSemaphore) {
+#if defined(P_HAS_SEMAPHORES)
+    PAssertPTHREAD(sem_init, (&semId, 0, initialVar));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+    semId = CreateSem(initialVar);
 #else
-  PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
-  if (initialVar > maxCountVar)
-    initialVar = maxCountVar;
-
-  currentCount = initialVar;
-  maximumCount = maxCountVar;
-  queuedLocks  = 0;
-#endif
-}
-
-PSemaphore::~PSemaphore()
-{
-  pthread_mutex_destroy (&mutex);
-  pthread_cond_destroy (&condVar);
+    PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+    PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   
-#ifdef P_HAS_SEMAPHORES
-  PAssertPTHREAD(sem_destroy, (&semId));
-#endif  
-  if (pxClass == PXSemaphore) {
-#ifndef P_HAS_SEMAPHORES
-    PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
+    PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
+    if (initialVar > maxCountVar)
+      initialVar = maxCountVar;
+
+    currentCount = initialVar;
+    maximumCount = maxCountVar;
+    queuedLocks  = 0;
 #endif
   }
 }
 
+PSemaphore::~PSemaphore()
+{
+  if(pxClass == PXSemaphore) {
+#if defined(P_HAS_SEMAPHORES)
+    PAssertPTHREAD(sem_destroy, (&semId));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+    PAssertPTHREAD(sem_close, (semId));
+#else
+    PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
+    PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
+    PAssertPTHREAD(pthread_cond_destroy, (&condVar));
+#endif
+  }
+}
+
+#if defined(P_HAS_NAMED_SEMAPHORES)
+sem_t * PSemaphore::CreateSem(unsigned initialValue)
+{
+  sem_t *sem;
+
+  // Since sem_open and sem_unlink are two operations, there is a small
+  // window of opportunity that two simultaneous accesses may return
+  // the same semaphore. Therefore, the static mutex is used to
+  // prevent this, even if the chances are small
+  static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
+  PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
+  
+  sem_unlink("/pwlib_sem");
+  sem = sem_open("/pwlib_sem", (O_CREAT | O_EXCL), 700, initialValue);
+  
+  PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
+  
+  PAssert(((int)sem != SEM_FAILED), "Couldn't create named semaphore");
+  return sem;
+}
+#endif
 
 void PSemaphore::Wait() 
 {
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
   PAssertPTHREAD(sem_wait, (&semId));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+  PAssertPTHREAD(sem_wait, (semId));
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
@@ -1548,7 +1579,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   PTime finishTime;
   finishTime += waitTime;
 
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
 #ifdef P_HAS_SEMAPHORES_XPG6
   // use proper timed spinlocks if supported.
   // http://www.opengroup.org/onlinepubs/007904975/functions/sem_timedwait.html
@@ -1584,6 +1615,14 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   return FALSE;
 
 #endif
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+  do {
+    if(sem_trywait(semId) == 0)
+      return TRUE;
+    PThread::Current()->Sleep(10);
+  } while (PTime() < finishTime);
+  
+  return FALSE;
 #else
 
   struct timespec absTime;
@@ -1622,8 +1661,10 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
 
 void PSemaphore::Signal()
 {
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
   PAssertPTHREAD(sem_post, (&semId));
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+  PAssertPTHREAD(sem_post, (semId));
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
@@ -1640,12 +1681,19 @@ void PSemaphore::Signal()
 
 BOOL PSemaphore::WillBlock() const
 {
-#ifdef P_HAS_SEMAPHORES
+#if defined(P_HAS_SEMAPHORES)
   if (sem_trywait((sem_t *)&semId) != 0) {
     PAssertOS(errno == EAGAIN || errno == EINTR);
     return TRUE;
   }
   PAssertPTHREAD(sem_post, ((sem_t *)&semId));
+  return FALSE;
+#elif defined(P_HAS_NAMED_SEMAPHORES)
+  if (sem_trywait(semId) != 0) {
+    PAssertOS(errno == EAGAIN || errno == EINTR);
+    return TRUE;
+  }
+  PAssertPTHREAD(sem_post, (semId));
   return FALSE;
 #else
   return currentCount == 0;
@@ -1655,31 +1703,48 @@ BOOL PSemaphore::WillBlock() const
 #if defined(P_QNX) && (P_HAS_RECURSIVE_MUTEX == 1)
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
+#if defined(P_MACOSX) && (P_HAS_RECURSIVE_MUTEX == 1)
+#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
+#endif
 
 PTimedMutex::PTimedMutex()
-  : PSemaphore(PXMutex)
+//  : PSemaphore(PXMutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr);
-  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-  pthread_mutex_init(&mutex, &attr);
+  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   ownerThreadId = (pthread_t)-1;
 #endif
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
-  : PSemaphore(PXMutex)
+//  : PSemaphore(PXMutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr);
-  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-  pthread_mutex_init(&mutex, &attr);
+  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
+  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
+  pthread_mutex_init(&mutex, NULL);
   ownerThreadId = (pthread_t)-1;
 #endif
+}
+
+PTimedMutex::~PTimedMutex()
+{
+  int result = pthread_mutex_destroy(&mutex);
+  while (result == EBUSY) {
+    pthread_mutex_unlock(&mutex);
+    result = pthread_mutex_destroy(&mutex);
+  }
+  PAssert((result == 0), "Error destroying mutex");
 }
 
 void PTimedMutex::Wait() 
@@ -1826,13 +1891,23 @@ BOOL PTimedMutex::WillBlock() const
 PSyncPoint::PSyncPoint()
   : PSemaphore(PXSyncPoint)
 {
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   signalCount = 0;
 }
 
 PSyncPoint::PSyncPoint(const PSyncPoint &)
   : PSemaphore(PXSyncPoint)
 {
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
   signalCount = 0;
+}
+
+PSyncPoint::~PSyncPoint()
+{
+  PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
+  PAssertPTHREAD(pthread_cond_destroy, (&condVar));
 }
 
 void PSyncPoint::Wait()
