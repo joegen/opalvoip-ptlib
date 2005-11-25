@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.87  2005/11/25 00:22:02  csoutheren
+ * Applied patch #1266244 from Nick Shmyrev
+ * Cleanup PSystemLog from PTrace in PService exit
+ *
  * Revision 1.86  2004/06/01 07:42:19  csoutheren
  * Restored memory allocation checking
  * Added configure flag to enable, thanks to Derek Smithies
@@ -457,6 +461,10 @@ PServiceProcess::PServiceProcess(const char * manuf,
 
 PServiceProcess::~PServiceProcess()
 {
+  PSetErrorStream(NULL);
+  PTrace::SetStream(NULL);
+  PTrace::ClearOptions(PTrace::SystemLogStream);
+
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
 
