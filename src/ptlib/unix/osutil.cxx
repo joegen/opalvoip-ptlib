@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.84  2005/11/25 02:29:54  csoutheren
+ * Applied patch #1353487 by Hannes Friederich
+ * Mac OS X update
+ *
  * Revision 1.83  2004/09/23 05:00:10  csoutheren
  * Extra proofing against possible NULL pointers
  *
@@ -1637,12 +1641,7 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 #ifdef P_PTHREADS
 struct tm * PTime::os_localtime(const time_t * clock, struct tm * ts)
 {
-#ifdef P_MACOSX 
-#warning LOCALTIME_R NOT DEFINED
-  return ::localtime(clock);
-#else
   return ::localtime_r(clock, ts);
-#endif
 }
 #else
 struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
@@ -1654,12 +1653,7 @@ struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
 #ifdef P_PTHREADS
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm * ts)
 {
-#ifdef P_MACOSX
-#warning GMTIME_R NOT DEFINED
-  return ::gmtime(clock);
-#else
   return ::gmtime_r(clock, ts);
-#endif
 }
 #else
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
