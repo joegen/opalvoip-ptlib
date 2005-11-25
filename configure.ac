@@ -639,13 +639,27 @@ fi
 dnl ########################################################################
 dnl check for Unix semaphores
 
-dnl posix semaphore support in darwin/macosx is broken
+dnl posix unnamed semaphore support in darwin/macosx is broken
 if test ${OSTYPE} != Darwin ; then
   AC_TRY_COMPILE([#include <semaphore.h>],
                  [sem_t *s; sem_init(s, 0, 0);], P_HAS_SEMAPHORES=1)
   AC_MSG_CHECKING(if Unix semaphores are available)
   if test "${P_HAS_SEMAPHORES}x" != "x" ; then
     AC_DEFINE(P_HAS_SEMAPHORES)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+if test "${P_HAS_SEMAPHORES}x" == "x" ; then
+  
+  AC_TRY_COMPILE([#include <semaphore.h>],
+                 [sem_t *s = sem_open("test", O_CREAT)],
+                 P_HAS_NAMED_SEMAPHORES=1 )
+  AC_MSG_CHECKING(if named semaphores are available)
+  if test "${P_HAS_NAMED_SEMAPHORES}x" != "x"; then
+    AC_DEFINE(P_HAS_NAMED_SEMAPHORES)
     AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
@@ -719,7 +733,17 @@ AC_TRY_COMPILE([#include <pthread.h>],
 if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
   AC_MSG_RESULT(yes)
 else
-  AC_MSG_RESULT(no)
+  if test ${OSTYPE} == Darwin ; then
+    AC_TRY_COMPILE([#include <pthread.h>],
+    			   [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);], P_HAS_RECURSIVE_MUTEX=1)
+    if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  else
+    AC_MSG_RESULT(no)
+  fi
 fi
 AC_DEFINE_UNQUOTED(P_HAS_RECURSIVE_MUTEX, ${P_HAS_RECURSIVE_MUTEX})
 
