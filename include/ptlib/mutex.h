@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.14  2005/11/25 00:06:12  csoutheren
+ * Applied patch #1364593 from Hannes Friederich
+ * Also changed so PTimesMutex is no longer descended from PSemaphore on
+ * non-Windows platforms
+ *
  * Revision 1.13  2005/11/08 22:31:00  csoutheren
  * Moved declaration of PMutex
  *
@@ -110,9 +115,23 @@
     thread will block on that function until the first calls the
     #Signal()# function, releasing the second thread.
  */
+
+/*
+ * On Windows, It is convenient for PTimedMutex to be an ancestor of PSemaphore
+ * But that is the only platform where it is - every other platform (i.e. Unix)
+ * uses different constructs for these objects, so there is no need for a PTimedMute
+ * to carry around all of the PSemaphore members
+ */
+
+#ifdef _WIN32
 class PTimedMutex : public PSemaphore
 {
   PCLASSINFO(PTimedMutex, PSemaphore);
+#else
+class PTimedMutex : public PSync
+{
+  PCLASSINFO(PTimedMutex, PSync)
+#endif
 
   public:
     /* Create a new mutex.
