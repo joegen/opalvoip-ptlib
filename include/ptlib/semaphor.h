@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.21  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.20  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -157,8 +160,8 @@ class PSemaphore : public PSync
        the maximum value.
      */
     PSemaphore(
-      unsigned initial, /// Initial value for semaphore count.
-      unsigned maximum  /// Maximum value for semaphore count.
+      unsigned initial, ///< Initial value for semaphore count.
+      unsigned maximum  ///< Maximum value for semaphore count.
     );
 
     /** Create a new Semaphore with the same initial and maximum values as the original

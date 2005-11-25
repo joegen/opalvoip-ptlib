@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.35  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.34  2004/11/23 11:33:08  csoutheren
  * Fixed problem with RemoveAt returning invalid pointer in some cases,
  * and added extra documentation on this case.
@@ -165,7 +168,7 @@ class POrdinalKey : public PObject
     /** Create a new key for ordinal index values.
      */
     PINLINE POrdinalKey(
-      PINDEX newKey = 0   /// Ordinal index value to use as a key.
+      PINDEX newKey = 0   ///< Ordinal index value to use as a key.
     );
 
     /**Operator to assign the ordinal.
@@ -277,7 +280,7 @@ class PHashTable : public PCollection
        reference and #GreaterThan# if not.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other PHashTable to compare against.
+      const PObject & obj   ///< Other PHashTable to compare against.
     ) const;
   //@}
 
@@ -293,7 +296,7 @@ class PHashTable : public PCollection
        Always TRUE.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size for the hash table, this is ignored.
+      PINDEX newSize  ///< New size for the hash table, this is ignored.
     );
   //@}
 
@@ -309,7 +312,7 @@ class PHashTable : public PCollection
        TRUE if the object value is in the set.
      */
     PINLINE BOOL AbstractContains(
-      const PObject & key   /// Key to look for in the set.
+      const PObject & key   ///< Key to look for in the set.
     ) const;
 
     /**Get the key in the hash table at the ordinal index position.
@@ -327,7 +330,7 @@ class PHashTable : public PCollection
        reference to key at the index position.
      */
     virtual const PObject & AbstractGetKeyAt(
-      PINDEX index  /// Ordinal position in the hash table.
+      PINDEX index  ///< Ordinal position in the hash table.
     ) const;
 
     /**Get the data in the hash table at the ordinal index position.
@@ -345,7 +348,7 @@ class PHashTable : public PCollection
        reference to key at the index position.
      */
     virtual PObject & AbstractGetDataAt(
-      PINDEX index  /// Ordinal position in the hash table.
+      PINDEX index  ///< Ordinal position in the hash table.
     ) const;
   //@}
 
@@ -419,7 +422,7 @@ class PAbstractSet : public PHashTable
        hash function value of the newly added object.
      */
     virtual PINDEX Append(
-      PObject * obj   /// New object to place into the collection.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Add a new object to the collection. If the objects value is already in
@@ -435,8 +438,8 @@ class PAbstractSet : public PHashTable
        hash function value of the newly added object.
      */
     virtual PINDEX Insert(
-      const PObject & before,   /// Object value to insert before.
-      PObject * obj             /// New object to place into the collection.
+      const PObject & before,   ///< Object value to insert before.
+      PObject * obj             ///< New object to place into the collection.
     );
 
     /**Add a new object to the collection. If the objects value is already in
@@ -452,8 +455,8 @@ class PAbstractSet : public PHashTable
        hash function value of the newly added object.
      */
     virtual PINDEX InsertAt(
-      PINDEX index,   /// Index position in collection to place the object.
-      PObject * obj   /// New object to place into the collection.
+      PINDEX index,   ///< Index position in collection to place the object.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Remove the object from the collection. If the AllowDeleteObjects option
@@ -467,7 +470,7 @@ class PAbstractSet : public PHashTable
        TRUE if the object was in the collection.
      */
     virtual BOOL Remove(
-      const PObject * obj   /// Existing object to remove from the collection.
+      const PObject * obj   ///< Existing object to remove from the collection.
     );
 
     /**Remove an object at the specified index. If the #AllowDeleteObjects#
@@ -477,7 +480,7 @@ class PAbstractSet : public PHashTable
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   /// Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection to place the object.
     );
 
     /**This function is the same as PHashTable::AbstractGetKeyAt().
@@ -486,7 +489,7 @@ class PAbstractSet : public PHashTable
        Always NULL.
      */
     virtual PObject * GetAt(
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
     /**Add a new object to the collection. If the objects value is already in
@@ -502,8 +505,8 @@ class PAbstractSet : public PHashTable
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     );
 
     /**Search the collection for the specific instance of the object. The
@@ -518,7 +521,7 @@ class PAbstractSet : public PHashTable
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
-      const PObject * obj   /// Object to find.
+      const PObject * obj   ///< Object to find.
     ) const;
 
     /**Search the collection for the specified value of the object. The object
@@ -530,7 +533,7 @@ class PAbstractSet : public PHashTable
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
-      const PObject & obj   /// Object to find equal value.
+      const PObject & obj   ///< Object to find equal value.
     ) const;
   //@}
 };
@@ -632,7 +635,7 @@ template <class T> class PSet : public PAbstractSet
        TRUE if the object value is in the set.
      */
     BOOL Contains(
-      const T & key  /// Key to look for in the set.
+      const T & key  ///< Key to look for in the set.
     ) const { return AbstractContains(key); }
 
     /**Determine if the value of the object is contained in the set. The
@@ -644,7 +647,7 @@ template <class T> class PSet : public PAbstractSet
        TRUE if the object value is in the set.
      */
     BOOL operator[](
-      const T & key  /// Key to look for in the set.
+      const T & key  ///< Key to look for in the set.
     ) const { return AbstractContains(key); }
 
     /**Get the key in the set at the ordinal index position.
@@ -659,7 +662,7 @@ template <class T> class PSet : public PAbstractSet
        reference to key at the index position.
      */
     virtual const T & GetKeyAt(
-      PINDEX index    /// Index of value to get.
+      PINDEX index    ///< Index of value to get.
     ) const
       { return (const T &)AbstractGetKeyAt(index); }
   //@}
@@ -783,7 +786,7 @@ class PAbstractDictionary : public PHashTable
        The default behaviour is to print the class name.
      */
     virtual void PrintOn(
-      ostream &strm   /// Stream to print the object into.
+      ostream &strm   ///< Stream to print the object into.
     ) const;
   //@}
 
@@ -798,8 +801,8 @@ class PAbstractDictionary : public PHashTable
        Always zero.
      */
     virtual PINDEX Insert(
-      const PObject & key,   /// Object value to use as the key.
-      PObject * obj          /// New object to place into the collection.
+      const PObject & key,   ///< Object value to use as the key.
+      PObject * obj          ///< New object to place into the collection.
     );
 
     /**Insert a new object at the specified index. The index is as is used in
@@ -809,8 +812,8 @@ class PAbstractDictionary : public PHashTable
        #index# parameter.
      */
     virtual PINDEX InsertAt(
-      PINDEX index,   /// Index position in collection to place the object.
-      PObject * obj   /// New object to place into the collection.
+      PINDEX index,   ///< Index position in collection to place the object.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Remove an object at the specified index. The index is as is used in
@@ -823,7 +826,7 @@ class PAbstractDictionary : public PHashTable
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   /// Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection to place the object.
     );
 
     /**Set the object at the specified index to the new value. The index is
@@ -835,8 +838,8 @@ class PAbstractDictionary : public PHashTable
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     );
 
     /**Get the object at the specified index position. The index is as is
@@ -847,7 +850,7 @@ class PAbstractDictionary : public PHashTable
        pointer to object at the specified index.
      */
     virtual PObject * GetAt(
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
     /**Search the collection for the specific instance of the object. The
@@ -862,7 +865,7 @@ class PAbstractDictionary : public PHashTable
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
-      const PObject * obj  /// Object to find.
+      const PObject * obj  ///< Object to find.
     ) const;
 
     /**Search the collection for the specified value of the object. The object
@@ -874,7 +877,7 @@ class PAbstractDictionary : public PHashTable
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
-      const PObject & obj  /// Object to find value of.
+      const PObject & obj  ///< Object to find value of.
     ) const;
   //@}
 
@@ -890,8 +893,8 @@ class PAbstractDictionary : public PHashTable
        TRUE if the new object could be placed into the dictionary.
      */
     virtual BOOL SetDataAt(
-      PINDEX index,   /// Ordinal index in the dictionary.
-      PObject * obj   /// New object to put into the dictionary.
+      PINDEX index,   ///< Ordinal index in the dictionary.
+      PObject * obj   ///< New object to put into the dictionary.
     );
 
     /**Add a new object to the collection. If the objects value is already in
@@ -906,8 +909,8 @@ class PAbstractDictionary : public PHashTable
        TRUE if the object was successfully added.
      */
     virtual BOOL AbstractSetAt(
-      const PObject & key,  /// Key for position in dictionary to add object.
-      PObject * obj         /// New object to put into the dictionary.
+      const PObject & key,  ///< Key for position in dictionary to add object.
+      PObject * obj         ///< New object to put into the dictionary.
     );
 
     /**Get the object at the specified key position. If the key was not in the
@@ -920,7 +923,7 @@ class PAbstractDictionary : public PHashTable
        reference to object at the specified key.
      */
     virtual PObject & GetRefAt(
-      const PObject & key   /// Key for position in dictionary to get object.
+      const PObject & key   ///< Key for position in dictionary to get object.
     ) const;
 
     /**Get the object at the specified key position. If the key was not in the
@@ -930,7 +933,7 @@ class PAbstractDictionary : public PHashTable
        pointer to object at the specified key.
      */
     virtual PObject * AbstractGetAt(
-      const PObject & key   /// Key for position in dictionary to get object.
+      const PObject & key   ///< Key for position in dictionary to get object.
     ) const;
   //@}
 
@@ -1013,7 +1016,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        reference to the object indexed by the key.
      */
     D & operator[](
-      const K & key   /// Key to look for in the dictionary.
+      const K & key   ///< Key to look for in the dictionary.
     ) const
       { return (D &)GetRefAt(key); }
 
@@ -1026,7 +1029,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        TRUE if the object value is in the dictionary.
      */
     BOOL Contains(
-      const K & key   /// Key to look for in the dictionary.
+      const K & key   ///< Key to look for in the dictionary.
     ) const { return AbstractContains(key); }
 
     /**Remove an object at the specified key. The returned pointer is then
@@ -1041,7 +1044,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        rather than returning an illegal pointer
      */
     virtual D * RemoveAt(
-      const K & key   /// Key for position in dictionary to get object.
+      const K & key   ///< Key for position in dictionary to get object.
     ) {
         D * obj = GetAt(key); AbstractSetAt(key, NULL); 
         return reference->deleteObjects ? (obj ? (D *)-1 : NULL) : obj;
@@ -1085,7 +1088,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        reference to key at the index position.
      */
     const K & GetKeyAt(
-      PINDEX index  /// Ordinal position in dictionary for key.
+      PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)AbstractGetKeyAt(index); }
 
@@ -1101,7 +1104,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        reference to data at the index position.
      */
     D & GetDataAt(
-      PINDEX index  /// Ordinal position in dictionary for data.
+      PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (D &)AbstractGetDataAt(index); }
   //@}
@@ -1212,11 +1215,11 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        TRUE if the object value is in the dictionary.
      */
     BOOL Contains(
-      const K & key   /// Key to look for in the dictionary.
+      const K & key   ///< Key to look for in the dictionary.
     ) const { return AbstractContains(key); }
 
     virtual POrdinalKey * GetAt(
-      const K & key   /// Key for position in dictionary to get object.
+      const K & key   ///< Key for position in dictionary to get object.
     ) const { return (POrdinalKey *)AbstractGetAt(key); }
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
@@ -1234,8 +1237,8 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        TRUE if the new object could be placed into the dictionary.
      */
     virtual BOOL SetDataAt(
-      PINDEX index,   /// Ordinal index in the dictionary.
-      PINDEX ordinal  /// New ordinal value to put into the dictionary.
+      PINDEX index,   ///< Ordinal index in the dictionary.
+      PINDEX ordinal  ///< New ordinal value to put into the dictionary.
       ) { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); }
 
     /**Add a new object to the collection. If the objects value is already in
@@ -1250,8 +1253,8 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      const K & key,  /// Key for position in dictionary to add object.
-      PINDEX ordinal  /// New ordinal value to put into the dictionary.
+      const K & key,  ///< Key for position in dictionary to add object.
+      PINDEX ordinal  ///< New ordinal value to put into the dictionary.
     ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
 
     /**Remove an object at the specified key. The returned pointer is then
@@ -1263,7 +1266,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PINDEX RemoveAt(
-      const K & key   /// Key for position in dictionary to get object.
+      const K & key   ///< Key for position in dictionary to get object.
     ) { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; }
 
     /**Get the key in the dictionary at the ordinal index position.
@@ -1278,7 +1281,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        reference to key at the index position.
      */
     const K & GetKeyAt(
-      PINDEX index  /// Ordinal position in dictionary for key.
+      PINDEX index  ///< Ordinal position in dictionary for key.
     ) const
       { return (const K &)AbstractGetKeyAt(index); }
 
@@ -1294,7 +1297,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
        reference to data at the index position.
      */
     PINDEX GetDataAt(
-      PINDEX index  /// Ordinal position in dictionary for data.
+      PINDEX index  ///< Ordinal position in dictionary for data.
     ) const
       { return (POrdinalKey &)AbstractGetDataAt(index); }
   //@}

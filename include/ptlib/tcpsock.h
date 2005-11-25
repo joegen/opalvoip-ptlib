@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.31  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.30  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -148,24 +151,24 @@ class PTCPSocket : public PIPSocket
        version constructor.
      */
     PTCPSocket(
-      WORD port = 0             /// Port number to use for the connection.
+      WORD port = 0             ///< Port number to use for the connection.
     );
     PTCPSocket(
-      const PString & service   /// Service name to use for the connection.
+      const PString & service   ///< Service name to use for the connection.
     );
     PTCPSocket(
-      const PString & address,  /// Address of remote machine to connect to.
-      WORD port                 /// Port number to use for the connection.
+      const PString & address,  ///< Address of remote machine to connect to.
+      WORD port                 ///< Port number to use for the connection.
     );
     PTCPSocket(
-      const PString & address,  /// Address of remote machine to connect to.
-      const PString & service   /// Service name to use for the connection.
+      const PString & address,  ///< Address of remote machine to connect to.
+      const PString & service   ///< Service name to use for the connection.
     );
     PTCPSocket(
-      PSocket & socket          /// Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
     PTCPSocket(
-      PTCPSocket & tcpSocket    /// Listening socket making the connection.
+      PTCPSocket & tcpSocket    ///< Listening socket making the connection.
     );
   //@}
 
@@ -203,8 +206,8 @@ class PTCPSocket : public PIPSocket
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
   //@}
 
@@ -224,15 +227,15 @@ class PTCPSocket : public PIPSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
     );
     virtual BOOL Listen(
-      const Address & bind,     /// Local interface address to bind to.
-      unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
-      WORD port = 0,            /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
+      const Address & bind,     ///< Local interface address to bind to.
+      unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
+      WORD port = 0,            ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
     );
 
     /** Open a socket to a remote host on the specified port number. This is an
@@ -250,7 +253,7 @@ class PTCPSocket : public PIPSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Accept(
-      PSocket & socket          /// Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
   //@}
 
@@ -268,8 +271,8 @@ class PTCPSocket : public PIPSocket
        TRUE if all the bytes were sucessfully written.
      */
     virtual BOOL WriteOutOfBand(
-      const void * buf,   /// Data to be written as URGENT TCP data.
-      PINDEX len          /// Number of bytes pointed to by #buf#.
+      const void * buf,   ///< Data to be written as URGENT TCP data.
+      PINDEX len          ///< Number of bytes pointed to by #buf#.
     );
 
     /** This is callback function called by the system whenever out of band data
@@ -279,8 +282,8 @@ class PTCPSocket : public PIPSocket
        The default behaviour is for the out of band data to be ignored.
      */
     virtual void OnOutOfBand(
-      const void * buf,   /// Data to be received as URGENT TCP data.
-      PINDEX len          /// Number of bytes pointed to by #buf#.
+      const void * buf,   ///< Data to be received as URGENT TCP data.
+      PINDEX len          ///< Number of bytes pointed to by #buf#.
     );
   //@}
 

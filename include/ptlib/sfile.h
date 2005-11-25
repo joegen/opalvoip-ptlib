@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.20  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.19  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -130,8 +133,8 @@ class PStructuredFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PStructuredFile(
-      OpenMode mode,          /// Mode in which to open the file.
-      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
+      OpenMode mode,          ///< Mode in which to open the file.
+      int opts = ModeDefault  ///< #OpenOptions enum# for open operation.
     );
       
     /**Create a structured file object with the specified name and open it in
@@ -141,9 +144,9 @@ class PStructuredFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PStructuredFile(
-      const PFilePath & name,    /// Name of file to open.
-      OpenMode mode = ReadWrite, /// Mode in which to open the file.
-      int opts = ModeDefault     /// #OpenOptions enum# for open operation.
+      const PFilePath & name,    ///< Name of file to open.
+      OpenMode mode = ReadWrite, ///< Mode in which to open the file.
+      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
     );
   //@}
 
@@ -157,7 +160,7 @@ class PStructuredFile : public PFile
        TRUE if the structure was successfully read.
      */
     BOOL Read(
-      void * buffer   /// Pointer to structure to receive data.
+      void * buffer   ///< Pointer to structure to receive data.
     );
       
     /**Write a sequence of bytes into the specified buffer, translating the
@@ -168,7 +171,7 @@ class PStructuredFile : public PFile
        TRUE if the structure was successfully written.
      */
     BOOL Write(
-      const void * buffer   /// Pointer to structure to write data from.
+      const void * buffer   ///< Pointer to structure to write data from.
     );
   //@}
 
@@ -210,8 +213,8 @@ class PStructuredFile : public PFile
 
     /** Set the structure of each record in the file. */
     void SetStructure(
-      Element * structure,  /// Array of structure elements
-      PINDEX numElements    /// Number of structure elements in structure.
+      Element * structure,  ///< Array of structure elements
+      PINDEX numElements    ///< Number of structure elements in structure.
     );
   //@}
 

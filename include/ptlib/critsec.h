@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.14  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.13  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -153,7 +156,9 @@ class PAtomicInteger
     public:
       /** Create a PAtomicInteger with the specified initial value
         */
-      inline PAtomicInteger(long v = 0)
+      inline PAtomicInteger(
+        long v = 0                     ///< initial value
+      )
         : value(v) { }
 
       /**
@@ -187,7 +192,10 @@ class PAtomicInteger
       /**
         * Set the value of the integer
         */
-      inline void SetValue(long v)        { value = v; }
+      inline void SetValue(
+        long v                          ///< value to set
+      )
+      { value = v; }
     protected:
       long value;
 #elif P_HAS_ATOMIC_INT

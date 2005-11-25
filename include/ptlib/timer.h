@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.29  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.28  2005/06/02 19:25:18  dsandras
  * Applied patch from Miguel Rodríguez Pérez <miguelrp  @  gmail.com> (migras) to fix compilation with gcc 4.0.1.
  *
@@ -170,14 +173,14 @@ class PTimer : public PTimeInterval
        immediately.
       */
     PTimer(
-      long milliseconds = 0,  /// Number of milliseconds for timer.
-      int seconds = 0,        /// Number of seconds for timer.
-      int minutes = 0,        /// Number of minutes for timer.
-      int hours = 0,          /// Number of hours for timer.
-      int days = 0            /// Number of days for timer.
+      long milliseconds = 0,  ///< Number of milliseconds for timer.
+      int seconds = 0,        ///< Number of seconds for timer.
+      int minutes = 0,        ///< Number of minutes for timer.
+      int hours = 0,          ///< Number of hours for timer.
+      int days = 0            ///< Number of days for timer.
     );
     PTimer(
-      const PTimeInterval & time    /// New time interval for timer.
+      const PTimeInterval & time    ///< New time interval for timer.
     );
 
     /** Restart the timer in one shot mode using the specified time value. If
@@ -187,10 +190,10 @@ class PTimer : public PTimeInterval
        reference to the timer.
      */
     PTimer & operator=(
-      DWORD milliseconds            /// New time interval for timer.
+      DWORD milliseconds            ///< New time interval for timer.
     );
     PTimer & operator=(
-      const PTimeInterval & time    /// New time interval for timer.
+      const PTimeInterval & time    ///< New time interval for timer.
     );
 
     /** Destroy the timer object, removing it from the applications timer list
@@ -213,11 +216,11 @@ class PTimer : public PTimeInterval
 \end{verbatim}
      */
     virtual void SetInterval(
-      PInt64 milliseconds = 0,  /// Number of milliseconds for interval.
-      long seconds = 0,         /// Number of seconds for interval.
-      long minutes = 0,         /// Number of minutes for interval.
-      long hours = 0,           /// Number of hours for interval.
-      int days = 0              /// Number of days for interval.
+      PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
+      long seconds = 0,         ///< Number of seconds for interval.
+      long minutes = 0,         ///< Number of minutes for interval.
+      long hours = 0,           ///< Number of hours for interval.
+      int days = 0              ///< Number of days for interval.
     );
 
     /** Start a timer in continous cycle mode. Whenever the timer runs out it

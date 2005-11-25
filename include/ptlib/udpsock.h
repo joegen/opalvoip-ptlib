@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.27  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.26  2005/11/21 11:49:36  shorne
  * Changed disableQos to disableGQoS to better reflect what it does
  *
@@ -137,23 +140,23 @@ class PUDPSocket : public PIPDatagramSocket
        a "listening" socket is specified then the channel is also opened.
      */
     PUDPSocket(
-      WORD port = 0             /// Port number to use for the connection.
+      WORD port = 0             ///< Port number to use for the connection.
     );
     PUDPSocket(
-       PQoS * qos,              /// Pointer to a QOS structure for the connection
-      WORD port = 0             /// Port number to use for the connection.
+       PQoS * qos,              ///< Pointer to a QOS structure for the connection
+      WORD port = 0             ///< Port number to use for the connection.
     );
     PUDPSocket(
-      const PString & service,   /// Service name to use for the connection.
-      PQoS * qos = NULL          /// Pointer to a QOS structure for the connection
+      const PString & service,   ///< Service name to use for the connection.
+      PQoS * qos = NULL          ///< Pointer to a QOS structure for the connection
     );
     PUDPSocket(
-      const PString & address,  /// Address of remote machine to connect to.
-      WORD port                 /// Port number to use for the connection.
+      const PString & address,  ///< Address of remote machine to connect to.
+      WORD port                 ///< Port number to use for the connection.
     );
     PUDPSocket(
-      const PString & address,  /// Address of remote machine to connect to.
-      const PString & service   /// Service name to use for the connection.
+      const PString & address,  ///< Address of remote machine to connect to.
+      const PString & service   ///< Service name to use for the connection.
     );
   //@}
 
@@ -162,21 +165,21 @@ class PUDPSocket : public PIPDatagramSocket
     /** Override of PChannel functions to allow connectionless reads
      */
     BOOL Read(
-      void * buf,   /// Pointer to a block of memory to read.
-      PINDEX len    /// Number of bytes to read.
+      void * buf,   ///< Pointer to a block of memory to read.
+      PINDEX len    ///< Number of bytes to read.
     );
 
     /** Override of PChannel functions to allow connectionless writes
      */
     BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /** Override of PSocket functions to allow connectionless writes
      */
     BOOL Connect(
-      const PString & address   /// Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
   //@}
 
@@ -184,23 +187,23 @@ class PUDPSocket : public PIPDatagramSocket
   //@{
     /** Set the address to use for connectionless Write() or Windows QoS
      */
-    virtual void SetSendAddress(
-      const Address & address,    /// IP address to send packets.
-      WORD port                   /// Port to send packets.
+    void SetSendAddress(
+      const Address & address,    ///< IP address to send packets.
+      WORD port                   ///< Port to send packets.
     );
 
     /** Get the address to use for connectionless Write().
      */
     void GetSendAddress(
-      Address & address,    /// IP address to send packets.
-      WORD & port           /// Port to send packets.
+      Address & address,    ///< IP address to send packets.
+      WORD & port           ///< Port to send packets.
     );
 
 
     /** Change the QOS spec for the socket and try to apply the changes
      */
     virtual BOOL ModifyQoSSpec(
-      PQoS * qos            /// QoS specification to use
+      PQoS * qos            ///< QoS specification to use
     );
 
 #if P_HAS_QOS
@@ -213,8 +216,8 @@ class PUDPSocket : public PIPDatagramSocket
         function.
      */
     void GetLastReceiveAddress(
-      Address & address,    /// IP address to send packets.
-      WORD & port           /// Port to send packets.
+      Address & address,    ///< IP address to send packets.
+      WORD & port           ///< Port to send packets.
     );
 
     /** Check to See if the socket will support QoS on the given local Address

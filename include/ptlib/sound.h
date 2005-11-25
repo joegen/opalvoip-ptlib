@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.36  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.35  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -186,23 +189,23 @@ class PSound : public PBYTEArray
        All other values for the encoding are platform dependent.
      */
     PSound(
-      unsigned numChannels = 1,    /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,  /// Samples per second
-      unsigned bitsPerSample = 16, /// Number of bits per sample
-      PINDEX   bufferSize = 0,     /// Size of data
-      const BYTE * data = NULL     /// Pointer to initial data
+      unsigned numChannels = 1,    ///< Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,  ///< Samples per second
+      unsigned bitsPerSample = 16, ///< Number of bits per sample
+      PINDEX   bufferSize = 0,     ///< Size of data
+      const BYTE * data = NULL     ///< Pointer to initial data
     );
 
     /**Create a new sound, reading from a platform dependent file.
      */
     PSound(
-      const PFilePath & filename   /// Sound file to load.
+      const PFilePath & filename   ///< Sound file to load.
     );
 
     /**Set new data bytes for the sound.
      */
     PSound & operator=(
-      const PBYTEArray & data  // New data for sound
+      const PBYTEArray & data  ///< New data for sound
     );
   //@}
 
@@ -218,7 +221,7 @@ class PSound : public PBYTEArray
        TRUE if the sound is loaded successfully.
      */
     BOOL Load(
-      const PFilePath & filename   /// Sound file to load.
+      const PFilePath & filename   ///< Sound file to load.
     );
 
     /**Save a platform dependent sound file (eg .WAV file for Win32) from the
@@ -228,7 +231,7 @@ class PSound : public PBYTEArray
        TRUE if the sound is saved successfully.
      */
     BOOL Save(
-      const PFilePath & filename   // Sound file to load.
+      const PFilePath & filename   ///< Sound file to load.
     );
   //@}
 
@@ -244,9 +247,9 @@ class PSound : public PBYTEArray
        the parameters.
      */
     void SetFormat(
-      unsigned numChannels,   // Number of channels eg mono/stereo
-      unsigned sampleRate,    /// Samples per second
-      unsigned bitsPerSample  /// Number of bits per sample
+      unsigned numChannels,   ///< Number of channels eg mono/stereo
+      unsigned sampleRate,    ///< Samples per second
+      unsigned bitsPerSample  ///< Number of bits per sample
     );
 
     /**Get the current encoding. A value of 0 indicates linear PCM, any other
@@ -284,8 +287,8 @@ class PSound : public PBYTEArray
        TRUE if the sound is playing or has played.
      */
     static BOOL PlayFile(
-      const PFilePath & file, /// Sound file to play.
-      BOOL wait = TRUE        /// Flag to play sound synchronously.
+      const PFilePath & file, ///< Sound file to play.
+      BOOL wait = TRUE        ///< Flag to play sound synchronously.
     );
 
     /// Play the "standard" warning beep for the platform.
@@ -357,11 +360,11 @@ class PSoundChannel : public PChannel
         Create a reference to the sound drivers for the platform.
       */
     PSoundChannel(
-      const PString & device,       /// Name of sound driver/device
-      Directions dir,               /// Sound I/O direction
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
+      const PString & device,       ///< Name of sound driver/device
+      Directions dir,               ///< Sound I/O direction
+      unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   ///< Samples per second
+      unsigned bitsPerSample = 16   ///< Number of bits per sample
     );
     // 
 
@@ -374,7 +377,7 @@ class PSoundChannel : public PChannel
     /**Get the list of available sound drivers (plug-ins)
      */
     static PStringList GetDriverNames(
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Get sound devices that correspond to the specified driver name.
@@ -382,9 +385,9 @@ class PSoundChannel : public PChannel
        is used.
      */
     static PStringList GetDriversDeviceNames(
-      const PString & driverName,         /// Name of driver
-      Directions direction,               /// Direction for device (record or play)
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      Directions direction,               ///< Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     // For backward compatibility
@@ -397,8 +400,8 @@ class PSoundChannel : public PChannel
     /**Create the sound channel that corresponds to the specified driver name.
      */
     static PSoundChannel * CreateChannel (
-      const PString & driverName,         /// Name of driver
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /* Create the matching sound channel that corresponds to the device name.
@@ -409,9 +412,9 @@ class PSoundChannel : public PChannel
        This is typically used with the return values from GetDeviceNames().
      */
     static PSoundChannel * CreateChannelByName(
-      const PString & deviceName,         /// Name of device
-      Directions direction,               /// Direction for device (record or play)
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & deviceName,         ///< Name of device
+      Directions direction,               ///< Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Create an opened sound channel that corresponds to the specified names.
@@ -420,13 +423,13 @@ class PSoundChannel : public PChannel
        from GetAllDeviceNames().
      */
     static PSoundChannel * CreateOpenedChannel(
-      const PString & driverName,         /// Name of driver
-      const PString & deviceName,         /// Name of device
-      Directions direction,               /// Direction for device (record or play)
-      unsigned numChannels = 1,           /// Number of channels 1=mon, 2=stereo
-      unsigned sampleRate = 8000,         /// Sample rate
-      unsigned bitsPerSample = 16,        /// Bits per sample
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      const PString & deviceName,         ///< Name of device
+      Directions direction,               ///< Direction for device (record or play)
+      unsigned numChannels = 1,           ///< Number of channels 1=mon, 2=stereo
+      unsigned sampleRate = 8000,         ///< Sample rate
+      unsigned bitsPerSample = 16,        ///< Bits per sample
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Get the name for the default sound devices/driver that is on this
@@ -454,8 +457,8 @@ class PSoundChannel : public PChannel
        Platform dependent strings for the sound player/recorder.
      */
     static PStringList GetDeviceNames(
-      Directions direction,               /// Direction for device (record or play)
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      Directions direction,               ///< Direction for device (record or play)
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Open the specified device for playing or recording. The device name is
@@ -465,11 +468,11 @@ class PSoundChannel : public PChannel
        TRUE if the sound device is valid for playing/recording.
      */
     virtual BOOL Open(
-      const PString & device,       /// Name of sound driver/device
-      Directions dir,               /// Sound I/O direction
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
+      const PString & device,       ///< Name of sound driver/device
+      Directions dir,               ///< Sound I/O direction
+      unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   ///< Samples per second
+      unsigned bitsPerSample = 16   ///< Number of bits per sample
     );
 
     /**Test if this instance of PSoundChannel is open.
@@ -509,9 +512,9 @@ class PSoundChannel : public PChannel
        TRUE if the format is valid.
      */
     virtual BOOL SetFormat(
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
+      unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   ///< Samples per second
+      unsigned bitsPerSample = 16   ///< Number of bits per sample
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample); }
 
@@ -536,8 +539,8 @@ class PSoundChannel : public PChannel
        TRUE if the sound device is valid for playing/recording.
      */
     virtual BOOL SetBuffers(
-      PINDEX size,      /// Size of each buffer
-      PINDEX count = 2  /// Number of buffers
+      PINDEX size,      ///< Size of each buffer
+      PINDEX count = 2  ///< Number of buffers
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->SetBuffers(size, count); }
 
@@ -563,7 +566,7 @@ class PSoundChannel : public PChannel
        TRUE if there were no errors.
     */
     virtual BOOL SetVolume(
-      unsigned volume   /// New volume level
+      unsigned volume   ///< New volume level
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->SetVolume(volume); }
 
@@ -574,7 +577,7 @@ class PSoundChannel : public PChannel
        TRUE if there were no errors.
     */
     virtual BOOL GetVolume(
-      unsigned & volume   /// Variable to receive volume level.
+      unsigned & volume   ///< Variable to receive volume level.
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->GetVolume(volume); }
   //@}
@@ -616,8 +619,8 @@ class PSoundChannel : public PChannel
      */
 
     virtual BOOL PlaySound(
-      const PSound & sound,   /// Sound to play.
-      BOOL wait = TRUE        /// Flag to play sound synchronously.
+      const PSound & sound,   ///< Sound to play.
+      BOOL wait = TRUE        ///< Flag to play sound synchronously.
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->PlaySound(sound, wait); }
     /**Play a sound file to the open device. If the #wait#
@@ -636,8 +639,8 @@ class PSoundChannel : public PChannel
        TRUE if the sound is playing or has played.
      */
     virtual BOOL PlayFile(
-      const PFilePath & file, /// Sound file to play.
-      BOOL wait = TRUE        /// Flag to play sound synchronously.
+      const PFilePath & file, ///< Sound file to play.
+      BOOL wait = TRUE        ///< Flag to play sound synchronously.
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->PlayFile(file, wait); }
 
@@ -676,8 +679,8 @@ class PSoundChannel : public PChannel
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->Read(buf, len); }
 
@@ -702,7 +705,7 @@ class PSoundChannel : public PChannel
        TRUE if the sound has been recorded.
      */
     virtual BOOL RecordSound(
-      PSound & sound /// Sound recorded
+      PSound & sound ///< Sound recorded
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->RecordSound(sound); }
 
@@ -719,7 +722,7 @@ class PSoundChannel : public PChannel
        TRUE if the sound has been recorded.
      */
     virtual BOOL RecordFile(
-      const PFilePath & file /// Sound file recorded
+      const PFilePath & file ///< Sound file recorded
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->RecordFile(file); }
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.16  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.15  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -165,7 +168,7 @@ class PICMPSocket : public PIPDatagramSocket
        FALSE if host not found or no response.
      */
     BOOL Ping(
-      const PString & host   /// Host to send ping.
+      const PString & host   ///< Host to send ping.
     );
     /**Send an ECHO_REPLY message to the specified host and wait for a reply
        to be sent back.
@@ -174,8 +177,8 @@ class PICMPSocket : public PIPDatagramSocket
        FALSE if host not found or no response.
      */
     BOOL Ping(
-      const PString & host,   /// Host to send ping.
-      PingInfo & info         /// Information on the ping and reply.
+      const PString & host,   ///< Host to send ping.
+      PingInfo & info         ///< Information on the ping and reply.
     );
   //@}
 

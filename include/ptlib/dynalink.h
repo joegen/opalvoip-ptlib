@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.17  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.16  2004/07/11 07:56:35  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -107,7 +110,7 @@ class PDynaLink : public PObject
        parameterless, form does load a library.
      */
     PDynaLink(
-      const PString & name    /// Name of the dynamically loadable module.
+      const PString & name    ///< Name of the dynamically loadable module.
     );
 
     /**Destroy the dyna-link, freeing the module.
@@ -123,7 +126,7 @@ class PDynaLink : public PObject
        TRUE if the library was loaded.
      */
     virtual BOOL Open(
-      const PString & name    /// Name of the dynamically loadable module.
+      const PString & name    ///< Name of the dynamically loadable module.
     );
 
     /**Close the dyna-link library.
@@ -144,7 +147,7 @@ class PDynaLink : public PObject
        String for the library name.
      */
     virtual PString GetName(
-      BOOL full = FALSE  /// Flag for full or short path name
+      BOOL full = FALSE  ///< Flag for full or short path name
     ) const;
 
     /**Get the extension used by this platform for dynamic link libraries.
@@ -167,8 +170,8 @@ class PDynaLink : public PObject
        TRUE if function was found.
      */
     BOOL GetFunction(
-      PINDEX index,    /// Ordinal number of the function to get.
-      Function & func  /// Refrence to point to function to get.
+      PINDEX index,    ///< Ordinal number of the function to get.
+      Function & func  ///< Refrence to point to function to get.
     );
 
     /**Get a pointer to the function in the dynamically loadable module.
@@ -177,8 +180,8 @@ class PDynaLink : public PObject
        TRUE if function was found.
      */
     BOOL GetFunction(
-      const PString & name,  /// Name of the function to get.
-      Function & func        /// Refrence to point to function to get.
+      const PString & name,  ///< Name of the function to get.
+      Function & func        ///< Refrence to point to function to get.
     );
   //@}
 
