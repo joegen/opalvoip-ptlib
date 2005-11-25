@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.35  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.34  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -183,7 +186,7 @@ class PTime : public PObject
        This initialises the time to the specified time.
      */
     PTime(
-      time_t tsecs,          /// Time in seconds since 00:00:00 1/1/70 UTC
+      time_t tsecs,          ///< Time in seconds since 00:00:00 1/1/70 UTC
       long usecs = 0
     ) { theTime = tsecs; microseconds = usecs; }
 
@@ -204,20 +207,20 @@ class PTime : public PObject
           "2 weeks"
      */
     PTime(
-      const PString & str   /// Time and data as a string
+      const PString & str   ///< Time and data as a string
     );
 
     /**Create a time object instance.
        This initialises the time to the specified time.
      */
     PTime(
-      int second,           /// Second from 0 to 59.
-      int minute,           /// Minute from 0 to 59.
-      int hour,             /// Hour from 0 to 23.
-      int day,              /// Day of month from 1 to 31.
-      int month,            /// Month from 1 to 12.
-      int year,             /// Year from 1970 to 2038
-      int tz = Local        /// local time or UTC
+      int second,           ///< Second from 0 to 59.
+      int minute,           ///< Minute from 0 to 59.
+      int hour,             ///< Hour from 0 to 23.
+      int day,              ///< Day of month from 1 to 31.
+      int month,            ///< Month from 1 to 12.
+      int year,             ///< Year from 1970 to 2038
+      int tz = Local        ///< local time or UTC
     );
   //@}
 
@@ -238,14 +241,14 @@ class PTime : public PObject
        rank of the two times.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other time to compare against.
+      const PObject & obj   ///< Other time to compare against.
     ) const;
 
     /**Output the time to the stream. This uses the #AsString()# function
        with the #ShortDateTime# parameter.
      */
     virtual void PrintOn(
-      ostream & strm    /// Stream to output the time to.
+      ostream & strm    ///< Stream to output the time to.
     ) const;
 
     /**Input the time from the specified stream. If a parse error occurs the
@@ -265,7 +268,7 @@ class PTime : public PObject
           "2 weeks"
      */
     virtual void ReadFrom(
-      istream & strm    /// Stream to input the time from.
+      istream & strm    ///< Stream to input the time from.
     );
   //@}
 
@@ -426,7 +429,7 @@ class PTime : public PObject
        Number of minutes.
      */
     static int GetTimeZone(
-       TimeZoneType type  /// Daylight saving or standard time.
+       TimeZoneType type  ///< Daylight saving or standard time.
     );
 
     /**Get the text identifier for the local time zone .
@@ -435,7 +438,7 @@ class PTime : public PObject
        Time zone identifier string.
      */
     static PString GetTimeZoneString(
-       TimeZoneType type = StandardTime /// Daylight saving or standard time.
+       TimeZoneType type = StandardTime ///< Daylight saving or standard time.
     );
   //@}
 
@@ -447,7 +450,7 @@ class PTime : public PObject
        Time altered by the interval.
      */
     PTime operator+(
-      const PTimeInterval & time   /// Time interval to add to the time.
+      const PTimeInterval & time   ///< Time interval to add to the time.
     ) const;
 
     /**Add the interval to the time changing the instance.
@@ -456,7 +459,7 @@ class PTime : public PObject
        reference to the current time instance.
      */
     PTime & operator+=(
-      const PTimeInterval & time   /// Time interval to add to the time.
+      const PTimeInterval & time   ///< Time interval to add to the time.
     );
 
     /**Calculate the difference between two times to get a time interval.
@@ -465,7 +468,7 @@ class PTime : public PObject
        Time intervale difference between the times.
      */
     PTimeInterval operator-(
-      const PTime & time   /// Time to subtract from the time.
+      const PTime & time   ///< Time to subtract from the time.
     ) const;
 
     /**Subtract the interval from the time to yield a new time.
@@ -474,7 +477,7 @@ class PTime : public PObject
        Time altered by the interval.
      */
     PTime operator-(
-      const PTimeInterval & time   /// Time interval to subtract from the time.
+      const PTimeInterval & time   ///< Time interval to subtract from the time.
     ) const;
 
     /**Subtract the interval from the time changing the instance.
@@ -483,7 +486,7 @@ class PTime : public PObject
        reference to the current time instance.
      */
     PTime & operator-=(
-      const PTimeInterval & time   /// Time interval to subtract from the time.
+      const PTimeInterval & time   ///< Time interval to subtract from the time.
     );
   //@}
 
@@ -518,14 +521,14 @@ class PTime : public PObject
 
     /** Convert the time to a string representation. */
     PString AsString(
-      TimeFormat formatCode = RFC1123,  /// Standard format for time.
-      int zone = Local                  /// Time zone for the time.
+      TimeFormat formatCode = RFC1123,  ///< Standard format for time.
+      int zone = Local                  ///< Time zone for the time.
     ) const;
 
     /** Convert the time to a string representation. */
     PString AsString(
-      const PString & formatStr, /// Arbitrary format string for time.
-      int zone = Local           /// Time zone for the time.
+      const PString & formatStr, ///< Arbitrary format string for time.
+      int zone = Local           ///< Time zone for the time.
     ) const;
     /* Convert the time to a string using the format code or string as a
        formatting template. The special characters in the formatting string
@@ -561,8 +564,8 @@ class PTime : public PObject
        hour format, otherwise in 24 hour format.
      */
     PString AsString(
-      const char * formatPtr,    /// Arbitrary format C string pointer for time.
-      int zone = Local           /// Time zone for the time.
+      const char * formatPtr,    ///< Arbitrary format C string pointer for time.
+      int zone = Local           ///< Time zone for the time.
     ) const;
   //@}
 
@@ -608,8 +611,8 @@ class PTime : public PObject
        string for week day.
      */
     static PString GetDayName(
-      Weekdays dayOfWeek,       /// Code for day of week.
-      NameType type = FullName  /// Flag for abbreviated or full name.
+      Weekdays dayOfWeek,       ///< Code for day of week.
+      NameType type = FullName  ///< Flag for abbreviated or full name.
     );
 
     /**Get the internationalised date separator.
@@ -625,15 +628,15 @@ class PTime : public PObject
        string for month.
      */
     static PString GetMonthName(
-      Months month,             /// Code for month in year.
-      NameType type = FullName  /// Flag for abbreviated or full name.
+      Months month,             ///< Code for month in year.
+      NameType type = FullName  ///< Flag for abbreviated or full name.
     );
 
     /// Possible orders for date components.
     enum DateOrder {
-      MonthDayYear,   // Date is ordered month then day then year.
-      DayMonthYear,   // Date is ordered day then month then year.
-      YearMonthDay    // Date is ordered year then day month then day.
+      MonthDayYear,   ///< Date is ordered month then day then year.
+      DayMonthYear,   ///< Date is ordered day then month then year.
+      YearMonthDay    ///< Date is ordered year then day month then day.
     };
 
     /**Return the internationalised date order.

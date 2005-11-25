@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: spxsock.h,v $
+ * Revision 1.10  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.9  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -86,7 +89,7 @@ class PSPXSocket : public PIPXSocket
        the same as the PSocket & parameter version.
      */
     PSPXSocket(
-      WORD port = 0             /// Port number to use for the connection.
+      WORD port = 0             ///< Port number to use for the connection.
     );
   //@}
 
@@ -106,9 +109,9 @@ class PSPXSocket : public PIPXSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
 
     /** Open a socket to a remote host on the specified port number. This is an
@@ -126,7 +129,7 @@ class PSPXSocket : public PIPXSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Accept(
-      PSocket & socket          /// Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
   //@}
 

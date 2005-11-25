@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.48  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.47  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
@@ -293,7 +296,7 @@ class PChannel : public PObject, public iostream {
        greater than the object.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Other PString to compare against.
+      const PObject & obj   ///< Other PString to compare against.
     ) const;
 
     /**Calculate a hash value for use in sets and dictionaries.
@@ -370,7 +373,7 @@ class PChannel : public PObject, public iostream {
        channels. In that case it is set but ignored.
      */
     void SetReadTimeout(
-      const PTimeInterval & time  /// The new time interval for read operations.
+      const PTimeInterval & time  ///< The new time interval for read operations.
     );
 
     /** Get the timeout for read operations. Note that this function may not be
@@ -394,8 +397,8 @@ class PChannel : public PObject, public iostream {
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Get the number of bytes read by the last Read() call. This will be from
@@ -432,8 +435,8 @@ class PChannel : public PObject, public iostream {
        TRUE if the read of #len# bytes was sucessfull.
      */
     BOOL ReadBlock(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /** Read #len# character into a string from the channel. This
@@ -457,8 +460,8 @@ class PChannel : public PObject, public iostream {
        TRUE if the read was sucessfully queued.
      */
     virtual BOOL ReadAsync(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /** User callback function for when a #ReadAsync()# call has completed or
@@ -466,8 +469,8 @@ class PChannel : public PObject, public iostream {
        passed to the function.
      */
     virtual void OnReadComplete(
-      void * buf, /// Pointer to a block of memory that received the read bytes.
-      PINDEX len  /// Actual number of bytes to read into the buffer.
+      void * buf, ///< Pointer to a block of memory that received the read bytes.
+      PINDEX len  ///< Actual number of bytes to read into the buffer.
     );
   //@}
 
@@ -481,7 +484,7 @@ class PChannel : public PObject, public iostream {
        channels. In this case the parameter is et but ignored.
      */
     void SetWriteTimeout(
-      const PTimeInterval & time /// The new time interval for write operations.
+      const PTimeInterval & time ///< The new time interval for write operations.
     );
 
     /** Get the timeout for write operations to complete. Note that this
@@ -505,8 +508,8 @@ class PChannel : public PObject, public iostream {
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /** Get the number of bytes written by the last Write() call.
@@ -551,8 +554,8 @@ class PChannel : public PObject, public iostream {
        TRUE of the write operation was succesfully queued.
      */
     virtual BOOL WriteAsync(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /** User callback function for when a WriteAsync() call has completed or
@@ -561,8 +564,8 @@ class PChannel : public PObject, public iostream {
        written.
      */
     virtual void OnWriteComplete(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
   //@}
 
@@ -597,7 +600,7 @@ class PChannel : public PObject, public iostream {
        TRUE if the new buffer size was set.
       */
     BOOL SetBufferSize(
-      PINDEX newSize    /// New buffer size
+      PINDEX newSize    ///< New buffer size
     );
 
     /** Send a command meta-string. A meta-string is a string of characters
@@ -640,7 +643,7 @@ class PChannel : public PObject, public iostream {
        TRUE if the command string was completely processed.
      */
     BOOL SendCommandString(
-      const PString & command  /// Command to send to the channel
+      const PString & command  ///< Command to send to the channel
     );
 
     /** Abort a command string that is in progress. Note that as the
@@ -692,9 +695,9 @@ class PChannel : public PObject, public iostream {
        other errors.
       */
     enum ErrorGroup {
-      LastReadError,      /// Error during Read() operation
-      LastWriteError,     /// Error during Write() operation
-      LastGeneralError,   /// Error during other operation, eg Open()
+      LastReadError,      ///< Error during Read() operation
+      LastWriteError,     ///< Error during Write() operation
+      LastGeneralError,   ///< Error during other operation, eg Open()
       NumErrorGroups
     };
 
@@ -703,7 +706,7 @@ class PChannel : public PObject, public iostream {
       @return Normalised error code.
       */
     Errors GetErrorCode(
-      ErrorGroup group = NumErrorGroups   /// Error group to get
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
 
     /** Get OS errro code.
@@ -712,7 +715,7 @@ class PChannel : public PObject, public iostream {
       @return Operating System error code.
       */
     int GetErrorNumber(
-      ErrorGroup group = NumErrorGroups   /// Error group to get
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
 
       /** Get error message description.
@@ -721,7 +724,7 @@ class PChannel : public PObject, public iostream {
       @return Operating System error description string.
        */
     virtual PString GetErrorText(
-      ErrorGroup group = NumErrorGroups   /// Error group to get
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
 
       /** Get error message description.
@@ -731,8 +734,8 @@ class PChannel : public PObject, public iostream {
       @return Operating System error description string.
        */
     static PString GetErrorText(
-      Errors lastError,   /// Error code to translate.
-      int osError = 0     /// OS error number to translate.
+      Errors lastError,   ///< Error code to translate.
+      int osError = 0     ///< OS error number to translate.
     );
   //@}
 
@@ -804,16 +807,16 @@ class PChannel : public PObject, public iostream {
      */
     virtual BOOL ConvertOSError(
       int libcReturnValue,
-      ErrorGroup group = LastGeneralError /// Error group to set
+      ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
     /**Set error values to those specified.
        Return TRUE if errorCode is NoError, FALSE otherwise
       */
     BOOL SetErrorValues(
-      Errors errorCode,   /// Error code to translate.
-      int osError,        /// OS error number to translate.
-      ErrorGroup group = LastGeneralError /// Error group to set
+      Errors errorCode,   ///< Error code to translate.
+      int osError,        ///< OS error number to translate.
+      ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
     /** Read a character with specified timeout.

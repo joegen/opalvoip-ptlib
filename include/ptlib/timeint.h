@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.31  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.30  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -163,17 +166,17 @@ class PTimeInterval : public PObject
 \end{verbatim}
      */
     PTimeInterval(
-      PInt64 millisecs = 0   /// Number of milliseconds for interval.
+      PInt64 millisecs = 0   ///< Number of milliseconds for interval.
     );
     PTimeInterval(
-      long millisecs,       /// Number of milliseconds for interval.
-      long seconds,         /// Number of seconds for interval.
-      long minutes = 0,     /// Number of minutes for interval.
-      long hours = 0,       /// Number of hours for interval.
-      int days = 0          /// Number of days for interval.
+      long millisecs,       ///< Number of milliseconds for interval.
+      long seconds,         ///< Number of seconds for interval.
+      long minutes = 0,     ///< Number of minutes for interval.
+      long hours = 0,       ///< Number of hours for interval.
+      int days = 0          ///< Number of days for interval.
     );
     PTimeInterval(
-      const PString & str   /// String representation of time interval.
+      const PString & str   ///< String representation of time interval.
     );
   //@}
 
@@ -195,21 +198,21 @@ class PTimeInterval : public PObject
        depending on their relative rank.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Time interval to compare against.
+      const PObject & obj   ///< Time interval to compare against.
     ) const;
 
     /** Output the time interval to the I/O stream. This outputs the number of
        milliseconds as a signed decimal integer number.
      */
     virtual void PrintOn(
-      ostream & strm    /// I/O stream to output the time interval.
+      ostream & strm    ///< I/O stream to output the time interval.
     ) const;
 
     /** Input the time interval from the I/O stream. This expects the input
        to be a signed decimal integer number.
      */
     virtual void ReadFrom(
-      istream & strm    /// I/O stream to input the time interval from.
+      istream & strm    ///< I/O stream to input the time interval from.
     );
   //@}
 
@@ -284,11 +287,11 @@ class PTimeInterval : public PObject
 \end{verbatim}
      */
     virtual void SetInterval(
-      PInt64 milliseconds = 0,  /// Number of milliseconds for interval.
-      long seconds = 0,         /// Number of seconds for interval.
-      long minutes = 0,         /// Number of minutes for interval.
-      long hours = 0,           /// Number of hours for interval.
-      int days = 0              /// Number of days for interval.
+      PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
+      long seconds = 0,         ///< Number of seconds for interval.
+      long minutes = 0,         ///< Number of minutes for interval.
+      long hours = 0,           ///< Number of hours for interval.
+      int days = 0              ///< Number of days for interval.
     );
   //@}
 
@@ -307,7 +310,7 @@ class PTimeInterval : public PObject
        sum of the time intervals.
      */
     PTimeInterval operator+(
-      const PTimeInterval & interval   /// Time interval to add.
+      const PTimeInterval & interval   ///< Time interval to add.
     ) const;
 
     /** Add the second time interval to the first time interval.
@@ -316,7 +319,7 @@ class PTimeInterval : public PObject
        reference to first time interval.
      */
     PTimeInterval & operator+=(
-      const PTimeInterval & interval   /// Time interval to add.
+      const PTimeInterval & interval   ///< Time interval to add.
     );
 
     /** Subtract the two time intervals yielding a third time interval.
@@ -325,7 +328,7 @@ class PTimeInterval : public PObject
        difference of the time intervals.
      */
     PTimeInterval operator-(
-      const PTimeInterval & interval   /// Time interval to subtract.
+      const PTimeInterval & interval   ///< Time interval to subtract.
     ) const;
 
     /** Subtract the second time interval from the first time interval.
@@ -334,7 +337,7 @@ class PTimeInterval : public PObject
        reference to first time interval.
      */
     PTimeInterval & operator-=(
-      const PTimeInterval & interval   /// Time interval to subtract.
+      const PTimeInterval & interval   ///< Time interval to subtract.
     );
 
     /** Multiply the time interval by a factor yielding a third time interval.
@@ -343,7 +346,7 @@ class PTimeInterval : public PObject
        the time intervals times the factor.
      */
     PTimeInterval operator*(
-      int factor   /// factor to multiply.
+      int factor   ///< factor to multiply.
     ) const;
 
     /** Multiply the time interval by a factor.
@@ -352,7 +355,7 @@ class PTimeInterval : public PObject
        reference to time interval.
      */
     PTimeInterval & operator*=(
-      int factor   /// factor to multiply.
+      int factor   ///< factor to multiply.
     );
 
     /** Divide the time interval by a factor yielding a third time interval.
@@ -361,7 +364,7 @@ class PTimeInterval : public PObject
        the time intervals divided by the factor.
      */
     PTimeInterval operator/(
-      int factor   /// factor to divide.
+      int factor   ///< factor to divide.
     ) const;
 
     /** Divide the time interval by a factor.
@@ -370,7 +373,7 @@ class PTimeInterval : public PObject
        reference to time interval.
      */
     PTimeInterval & operator/=(
-      int factor   /// factor to divide.
+      int factor   ///< factor to divide.
     );
   //@}
 
@@ -384,10 +387,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are equal.
      */
     bool operator==(
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator==(
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
 
     /** Compare to the two time intervals. This is provided as an override to
@@ -398,10 +401,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are not equal.
      */
     bool operator!=(
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator!=(
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
 
     /** Compare to the two time intervals. This is provided as an override to
@@ -412,10 +415,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are greater than.
      */
     bool operator> (
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator> (
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
 
     /** Compare to the two time intervals. This is provided as an override to
@@ -426,10 +429,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are greater than or equal.
      */
     bool operator>=(
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator>=(
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
 
     /** Compare to the two time intervals. This is provided as an override to
@@ -440,10 +443,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are less than.
      */
     bool operator< (
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator< (
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
 
     /** Compare to the two time intervals. This is provided as an override to
@@ -454,10 +457,10 @@ class PTimeInterval : public PObject
        TRUE if intervals are less than or equal.
      */
     bool operator<=(
-      const PTimeInterval & interval   /// Time interval to compare.
+      const PTimeInterval & interval   ///< Time interval to compare.
     ) const;
     bool operator<=(
-      long msecs    /// Time interval as integer milliseconds to compare.
+      long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
   //@}
 

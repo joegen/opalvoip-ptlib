@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.18  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.17  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -114,7 +117,7 @@ class PRemoteConnection : public PObject
        This will initiate the connection using the specified settings.
      */
     PRemoteConnection(
-      const PString & name  /// Name of RAS configuration.
+      const PString & name  ///< Name of RAS configuration.
     );
 
     /// Disconnect remote connection.
@@ -127,7 +130,7 @@ class PRemoteConnection : public PObject
       @return EqualTo of same RAS connectionconfiguration.
      */
     virtual Comparison Compare(
-      const PObject & obj     /// Another connection instance.
+      const PObject & obj     ///< Another connection instance.
     ) const;
 
     /** Get has value for the connection
@@ -141,23 +144,23 @@ class PRemoteConnection : public PObject
     /** Open the remote connection.
      */
     BOOL Open(
-      BOOL existing = FALSE  /// Flag for open only if already connected.
+      BOOL existing = FALSE  ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
      */
     BOOL Open(
-      const PString & name,   /// RAS name of of connection to open.
-      BOOL existing = FALSE   /// Flag for open only if already connected.
+      const PString & name,   ///< RAS name of of connection to open.
+      BOOL existing = FALSE   ///< Flag for open only if already connected.
     );
 
     /** Open the remote connection.
      */
     BOOL Open(
-      const PString & name,     /// RAS name of of connection to open.
-      const PString & username, /// Username for remote log in.
-      const PString & password, /// password for remote log in.
-      BOOL existing = FALSE     /// Flag for open only if already connected.
+      const PString & name,     ///< RAS name of of connection to open.
+      const PString & username, ///< Username for remote log in.
+      const PString & password, ///< password for remote log in.
+      BOOL existing = FALSE     ///< Flag for open only if already connected.
     );
 
     /** Close the remote connection.
@@ -269,7 +272,7 @@ class PRemoteConnection : public PObject
        #GeneralFailure# on any other error.
      */
     Status GetConfiguration(
-      Configuration & config  /// Configuration of remote connection
+      Configuration & config  ///< Configuration of remote connection
     );
 
     /**Get the configuration of the specified remote access connection.
@@ -281,8 +284,8 @@ class PRemoteConnection : public PObject
        #GeneralFailure# on any other error.
      */
     static Status GetConfiguration(
-      const PString & name,   /// Remote connection name to get configuration
-      Configuration & config  // Configuration of remote connection
+      const PString & name,   ///< Remote connection name to get configuration
+      Configuration & config  ///< Configuration of remote connection
     );
 
     /**Set the configuration of the specified remote access connection.
@@ -294,8 +297,8 @@ class PRemoteConnection : public PObject
        #GeneralFailure# on any other error.
      */
     Status SetConfiguration(
-      const Configuration & config,  /// Configuration of remote connection
-      BOOL create = FALSE            /// Flag to create connection if not present
+      const Configuration & config,  ///< Configuration of remote connection
+      BOOL create = FALSE            ///< Flag to create connection if not present
     );
 
     /**Set the configuration of the specified remote access connection.
@@ -307,9 +310,9 @@ class PRemoteConnection : public PObject
        #GeneralFailure# on any other error.
      */
     static Status SetConfiguration(
-      const PString & name,          /// Remote connection name to configure
-      const Configuration & config,  /// Configuration of remote connection
-      BOOL create = FALSE            /// Flag to create connection if not present
+      const PString & name,          ///< Remote connection name to configure
+      const Configuration & config,  ///< Configuration of remote connection
+      BOOL create = FALSE            ///< Flag to create connection if not present
     );
 
     /**Remove the specified remote access connection.
@@ -321,7 +324,7 @@ class PRemoteConnection : public PObject
        #GeneralFailure# on any other error.
      */
     static Status RemoveConfiguration(
-      const PString & name          /// Remote connection name to configure
+      const PString & name          ///< Remote connection name to configure
     );
   //@}
     

@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.43  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.42  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -310,15 +313,15 @@ class PVideoDevice : public PObject
     /**Open the device given the device name.
       */
     virtual BOOL OpenFull(
-      const OpenArgs & args,      /// Parameters to set on opened device
-      BOOL startImmediate = TRUE  /// Immediately start device
+      const OpenArgs & args,      ///< Parameters to set on opened device
+      BOOL startImmediate = TRUE  ///< Immediately start device
     );
 
     /**Open the device given the device name.
       */
     virtual BOOL Open(
-      const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      const PString & deviceName,   ///< Device name to open
+      BOOL startImmediate = TRUE    ///< Immediately start device
     ) = 0;
 
     /**Determine if the device is currently open.
@@ -348,7 +351,7 @@ class PVideoDevice : public PObject
        returns TRUE.
     */
     virtual BOOL SetVideoFormat(
-      VideoFormat videoFormat   /// New video format
+      VideoFormat videoFormat   ///< New video format
     );
 
     /**Get the video format being used.
@@ -371,7 +374,7 @@ class PVideoDevice : public PObject
        returns TRUE.
     */
     virtual BOOL SetChannel(
-      int channelNumber  /// New channel number for device.
+      int channelNumber  ///< New channel number for device.
     );
 
     /**Get the video channel to be used on the device.
@@ -419,7 +422,7 @@ class PVideoDevice : public PObject
        Default action is to return FALSE.
      */
     virtual BOOL SetVFlipState(
-      BOOL newVFlipState    /// New vertical flip state
+      BOOL newVFlipState    ///< New vertical flip state
     );
 
     /**Set the video frame rate to be used on the device.
@@ -428,7 +431,7 @@ class PVideoDevice : public PObject
        returns TRUE.
     */
     virtual BOOL SetFrameRate(
-      unsigned rate  /// Frames  per second
+      unsigned rate  ///< Frames  per second
     );
 
     /**Get the video frame rate used on the device.
@@ -443,10 +446,10 @@ class PVideoDevice : public PObject
        FALSE.
     */
     virtual BOOL GetFrameSizeLimits(
-      unsigned & minWidth,   /// Variable to receive minimum width
-      unsigned & minHeight,  /// Variable to receive minimum height
-      unsigned & maxWidth,   /// Variable to receive maximum width
-      unsigned & maxHeight   /// Variable to receive maximum height
+      unsigned & minWidth,   ///< Variable to receive minimum width
+      unsigned & minHeight,  ///< Variable to receive minimum height
+      unsigned & maxWidth,   ///< Variable to receive maximum width
+      unsigned & maxHeight   ///< Variable to receive maximum height
     ) ;
 
 
@@ -456,9 +459,9 @@ class PVideoDevice : public PObject
        are attempted.  A converter is setup if possible.
     */
     virtual BOOL SetFrameSizeConverter(
-      unsigned width,        /// New width of frame
-      unsigned height,       /// New height of frame
-      BOOL     bScaleNotCrop /// Scale or crop/pad preference
+      unsigned width,        ///< New width of frame
+      unsigned height,       ///< New height of frame
+      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
     );
 
     /**Set the frame size to be used.
@@ -470,8 +473,8 @@ class PVideoDevice : public PObject
        returns TRUE.
     */
     virtual BOOL SetFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
     );
 
     /**Get the frame size being used.
@@ -642,7 +645,7 @@ class PVideoOutputDevice : public PVideoDevice
     /**Get the list of available video output drivers (plug-ins)
     */
     static PStringList GetDriverNames(
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Get video output devices that correspond to the specified driver name.
@@ -652,15 +655,15 @@ class PVideoOutputDevice : public PVideoDevice
        will be of the form driver+'\t'+device.
     */
     static PStringList GetDriversDeviceNames(
-      const PString & driverName,         /// Name of driver
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Create the video output device that corresponds to the specified driver name.
     */
     static PVideoOutputDevice * CreateDevice(
-      const PString & driverName,         /// Name of driver
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /* Create the matching video output device that corresponds to the device name.
@@ -668,8 +671,8 @@ class PVideoOutputDevice : public PVideoDevice
        This is typically used with the return values from GetDriversDeviceNames().
      */
     static PVideoOutputDevice *CreateDeviceByName(
-      const PString & deviceName,         /// Name of device
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & deviceName,         ///< Name of device
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Create an opened video output device that corresponds to the specified names.
@@ -678,10 +681,10 @@ class PVideoOutputDevice : public PVideoDevice
        from GetDriversDeviceNames().
     */
     static PVideoOutputDevice *CreateOpenedDevice(
-      const PString & driverName,         /// Name of driver
-      const PString & deviceName,         /// Name of device
-      BOOL startImmediate = TRUE,         /// Immediately start display
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      const PString & deviceName,         ///< Name of device
+      BOOL startImmediate = TRUE,         ///< Immediately start display
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Close the device.
@@ -747,8 +750,8 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
        returns TRUE.
     */
     virtual BOOL SetFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
     );
 
     /**Get the maximum frame size in bytes.
@@ -798,8 +801,8 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
     /**Open the device given the device name.
       */
     virtual BOOL Open(
-      const PString & deviceName,   /// Device name (filename base) to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      const PString & deviceName,   ///< Device name (filename base) to open
+      BOOL startImmediate = TRUE    ///< Immediately start device
     );
 
     /**Determine if the device is currently open.
@@ -843,7 +846,7 @@ class PVideoInputDevice : public PVideoDevice
     /**Get the list of available video input drivers (plug-ins)
     */
     static PStringList GetDriverNames(
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Get video input devices that correspond to the specified driver name.
@@ -853,15 +856,15 @@ class PVideoInputDevice : public PVideoDevice
        will be of the form driver+'\t'+device.
     */
     static PStringList GetDriversDeviceNames(
-      const PString & driverName,         /// Name of driver
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Create the video input device that corresponds to the specified driver name.
     */
     static PVideoInputDevice *CreateDevice(
-      const PString & driverName,         /// Name of driver
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /* Create the matching video input device that corresponds to the device name.
@@ -872,8 +875,8 @@ class PVideoInputDevice : public PVideoDevice
        This is typically used with the return values from GetDriversDeviceNames().
      */
     static PVideoInputDevice *CreateDeviceByName(
-      const PString & deviceName,         /// Name of device
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & deviceName,         ///< Name of device
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Create an opened video input device that corresponds to the specified names.
@@ -882,17 +885,17 @@ class PVideoInputDevice : public PVideoDevice
        from GetDriversDeviceNames().
     */
     static PVideoInputDevice *CreateOpenedDevice(
-      const PString & driverName,         /// Name of driver
-      const PString & deviceName,         /// Name of device
-      BOOL startImmediate = TRUE,         /// Immediately start grabbing
-      PPluginManager * pluginMgr = NULL   /// Plug in manager, use default if NULL
+      const PString & driverName,         ///< Name of driver
+      const PString & deviceName,         ///< Name of device
+      BOOL startImmediate = TRUE,         ///< Immediately start grabbing
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /**Open the device given the device name.
       */
     virtual BOOL Open(
-      const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
+      const PString & deviceName,   ///< Device name to open
+      BOOL startImmediate = TRUE    ///< Immediately start device
     ) = 0;
 
     virtual BOOL Close(
@@ -915,15 +918,15 @@ class PVideoInputDevice : public PVideoDevice
     /**Grab a frame, after a delay as specified by the frame rate.
       */
     virtual BOOL GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+      BYTE * buffer,                 ///< Buffer to receive frame
+      PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
     ) = 0;
 
     /**Grab a frame. Do not delay according to the current frame rate parameter.
       */
     virtual BOOL GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+      BYTE * buffer,                 ///< Buffer to receive frame
+      PINDEX * bytesReturned = NULL  ///< OPtional bytes returned.
     ) = 0;
 
     /**Try all known video formats & see which ones are accepted by the video driver

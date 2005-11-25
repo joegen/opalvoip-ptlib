@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.28  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.27  2005/01/26 05:37:44  csoutheren
  * Added ability to remove config file support
  *
@@ -183,41 +186,41 @@ class PConfig : public PObject
        active PConfig object.
      */
     PConfig(
-      Source src = Application  /// Standard source for the configuration.
+      Source src = Application  ///< Standard source for the configuration.
     );
     /** Create a new configuration object. */
     PConfig(
-      Source src,               /// Standard source for the configuration.
-      const PString & appname   /// Name of application
+      Source src,               ///< Standard source for the configuration.
+      const PString & appname   ///< Name of application
     );
     /** Create a new configuration object. */
     PConfig(
-      Source src,               /// Standard source for the configuration.
-      const PString & appname,  /// Name of application
-      const PString & manuf     /// Manufacturer
+      Source src,               ///< Standard source for the configuration.
+      const PString & appname,  ///< Name of application
+      const PString & manuf     ///< Manufacturer
     );
     /** Create a new configuration object. */
     PConfig(
-      const PString & section,  /// Default section to search for variables.
-      Source src = Application  /// Standard source for the configuration.
+      const PString & section,  ///< Default section to search for variables.
+      Source src = Application  ///< Standard source for the configuration.
     );
     /** Create a new configuration object. */
     PConfig(
-      const PString & section,  /// Default section to search for variables.
-      Source src,               /// Standard source for the configuration.
-      const PString & appname   /// Name of application
+      const PString & section,  ///< Default section to search for variables.
+      Source src,               ///< Standard source for the configuration.
+      const PString & appname   ///< Name of application
     );
     /** Create a new configuration object. */
     PConfig(
-      const PString & section,  /// Default section to search for variables.
-      Source src,               /// Standard source for the configuration.
-      const PString & appname,  /// Name of application
-      const PString & manuf     /// Manufacturer
+      const PString & section,  ///< Default section to search for variables.
+      Source src,               ///< Standard source for the configuration.
+      const PString & appname,  ///< Name of application
+      const PString & manuf     ///< Manufacturer
     );
     /** Create a new configuration object. */
     PConfig(
-      const PFilePath & filename, /// Explicit name of the configuration file.
-      const PString & section     /// Default section to search for variables.
+      const PFilePath & filename, ///< Explicit name of the configuration file.
+      const PString & section     ///< Default section to search for variables.
     );
   //@}
 
@@ -231,7 +234,7 @@ class PConfig : public PObject
        section may be set but it is ignored.
      */
     virtual void SetDefaultSection(
-      const PString & section  /// New default section name.
+      const PString & section  ///< New default section name.
     );
 
     /** Get the default section for variable operations. All functions that deal
@@ -263,7 +266,7 @@ class PConfig : public PObject
     virtual PStringList GetKeys() const;
     /** Get a list of all the keys in the section. */
     virtual PStringList GetKeys(
-      const PString & section   /// Section to use instead of the default.
+      const PString & section   ///< Section to use instead of the default.
     ) const;
 
     /** Get all of the keys in the section and their values. If the section
@@ -274,7 +277,7 @@ class PConfig : public PObject
     virtual PStringToString GetAllKeyValues() const;
     /** Get all of the keys in the section and their values. */
     virtual PStringToString GetAllKeyValues(
-      const PString & section   /// Section to use instead of the default.
+      const PString & section   ///< Section to use instead of the default.
     ) const;
 
 
@@ -287,7 +290,7 @@ class PConfig : public PObject
     virtual void DeleteSection();
     /** Delete all variables in the specified section. */
     virtual void DeleteSection(
-      const PString & section   /// Name of section to delete.
+      const PString & section   ///< Name of section to delete.
     );
 
     /** Delete the particular variable in the specified section. If the section
@@ -299,12 +302,12 @@ class PConfig : public PObject
        string.
      */
     virtual void DeleteKey(
-      const PString & key       /// Key of the variable to delete.
+      const PString & key       ///< Key of the variable to delete.
     );
     /** Delete the particular variable in the specified section. */
     virtual void DeleteKey(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key       /// Key of the variable to delete.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key       ///< Key of the variable to delete.
     );
 
     /**Determine if the particular variable in the section is actually present.
@@ -316,12 +319,12 @@ class PConfig : public PObject
        value "DefVal" into the PConfig.
      */
     virtual BOOL HasKey(
-      const PString & key       /// Key of the variable.
+      const PString & key       ///< Key of the variable.
     ) const;
     /**Determine if the particular variable in the section is actually present. */
     virtual BOOL HasKey(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key       /// Key of the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key       ///< Key of the variable.
     ) const;
   //@}
 
@@ -338,32 +341,32 @@ class PConfig : public PObject
        @return string value of the variable.
      */
     virtual PString GetString(
-      const PString & key       /// The key name for the variable.
+      const PString & key       ///< The key name for the variable.
     ) const;
     /** Get a string variable determined by the key in the section. */
     virtual PString GetString(
-      const PString & key,      /// The key name for the variable.
-      const PString & dflt      /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      const PString & dflt      ///< Default value for the variable.
     ) const;
     /** Get a string variable determined by the key in the section. */
     virtual PString GetString(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      const PString & dflt      /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      const PString & dflt      ///< Default value for the variable.
     ) const;
 
     /** Set a string variable determined by the key in the section. If the
        section name is not specified then the default section is used.
      */
     virtual void SetString(
-      const PString & key,      /// The key name for the variable.
-      const PString & value     /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      const PString & value     ///< New value to set for the variable.
     );
     /** Set a string variable determined by the key in the section. */
     virtual void SetString(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      const PString & value     /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      const PString & value     ///< New value to set for the variable.
     );
 
 
@@ -384,14 +387,14 @@ class PConfig : public PObject
        @return boolean value of the variable.
      */
     virtual BOOL GetBoolean(
-      const PString & key,      /// The key name for the variable.
-      BOOL dflt = FALSE         /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      BOOL dflt = FALSE         ///< Default value for the variable.
     ) const;
     /** Get a boolean variable determined by the key in the section. */
     virtual BOOL GetBoolean(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      BOOL dflt = FALSE         /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      BOOL dflt = FALSE         ///< Default value for the variable.
     ) const;
 
     /** Set a boolean variable determined by the key in the section. If the
@@ -401,14 +404,14 @@ class PConfig : public PObject
        otherwise the string "False" is set.
      */
     virtual void SetBoolean(
-      const PString & key,      /// The key name for the variable.
-      BOOL value                /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      BOOL value                ///< New value to set for the variable.
     );
     /** Set a boolean variable determined by the key in the section. */
     virtual void SetBoolean(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      BOOL value                /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      BOOL value                ///< New value to set for the variable.
     );
 
 
@@ -422,14 +425,14 @@ class PConfig : public PObject
        @return integer value of the variable.
      */
     virtual long GetInteger(
-      const PString & key,      /// The key name for the variable.
-      long dflt = 0             /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      long dflt = 0             ///< Default value for the variable.
     ) const;
     /* Get an integer variable determined by the key in the section. */
     virtual long GetInteger(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      long dflt = 0             /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      long dflt = 0             ///< Default value for the variable.
     ) const;
 
     /** Set an integer variable determined by the key in the section. If the
@@ -439,14 +442,14 @@ class PConfig : public PObject
        trailing blanks.
      */
     virtual void SetInteger(
-      const PString & key,      /// The key name for the variable.
-      long value                /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      long value                ///< New value to set for the variable.
     );
     /** Set an integer variable determined by the key in the section. */
     virtual void SetInteger(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      long value                /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      long value                ///< New value to set for the variable.
     );
 
 
@@ -460,14 +463,14 @@ class PConfig : public PObject
        @return integer value of the variable.
      */
     virtual PInt64 GetInt64(
-      const PString & key,      /// The key name for the variable.
-      PInt64 dflt = 0           /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      PInt64 dflt = 0           ///< Default value for the variable.
     ) const;
     /** Get a 64 bit integer variable determined by the key in the section. */
     virtual PInt64 GetInt64(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      PInt64 dflt = 0           /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      PInt64 dflt = 0           ///< Default value for the variable.
     ) const;
 
     /** Set a 64 bit integer variable determined by the key in the section. If the
@@ -477,14 +480,14 @@ class PConfig : public PObject
        trailing blanks.
      */
     virtual void SetInt64(
-      const PString & key,      /// The key name for the variable.
-      PInt64 value              /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      PInt64 value              ///< New value to set for the variable.
     );
     /** Set a 64 bit integer variable determined by the key in the section. */
     virtual void SetInt64(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      PInt64 value              /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      PInt64 value              ///< New value to set for the variable.
     );
 
 
@@ -498,14 +501,14 @@ class PConfig : public PObject
        @return floating point value of the variable.
      */
     virtual double GetReal(
-      const PString & key,      /// The key name for the variable.
-      double dflt = 0           /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      double dflt = 0           ///< Default value for the variable.
     ) const;
     /** Get a floating point variable determined by the key in the section. */
     virtual double GetReal(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      double dflt = 0           /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      double dflt = 0           ///< Default value for the variable.
     ) const;
 
     /** Set a floating point variable determined by the key in the section. If
@@ -516,14 +519,14 @@ class PConfig : public PObject
        from the printf() function.
      */
     virtual void SetReal(
-      const PString & key,      /// The key name for the variable.
-      double value              /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      double value              ///< New value to set for the variable.
     );
     /** Set a floating point variable determined by the key in the section. */
     virtual void SetReal(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      double value              /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      double value              ///< New value to set for the variable.
     );
 
     /** Get a #PTime# variable determined by the key in the section. If
@@ -536,37 +539,37 @@ class PConfig : public PObject
        @return time/date value of the variable.
      */
     virtual PTime GetTime(
-      const PString & key       /// The key name for the variable.
+      const PString & key       ///< The key name for the variable.
     ) const;
     /** Get a #PTime# variable determined by the key in the section. */
     virtual PTime GetTime(
-      const PString & key,      /// The key name for the variable.
-      const PTime & dflt        /// Default value for the variable.
+      const PString & key,      ///< The key name for the variable.
+      const PTime & dflt        ///< Default value for the variable.
     ) const;
     /** Get a #PTime# variable determined by the key in the section. */
     virtual PTime GetTime(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key       /// The key name for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key       ///< The key name for the variable.
     ) const;
     /** Get a #PTime# variable determined by the key in the section. */
     virtual PTime GetTime(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      const PTime & dflt        /// Default value for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      const PTime & dflt        ///< Default value for the variable.
     ) const;
 
     /** Set a #PTime# variable determined by the key in the section. If
        the section name is not specified then the default section is used.
      */
     virtual void SetTime(
-      const PString & key,      /// The key name for the variable.
-      const PTime & value       /// New value to set for the variable.
+      const PString & key,      ///< The key name for the variable.
+      const PTime & value       ///< New value to set for the variable.
     );
     /** Set a #PTime# variable determined by the key in the section. */
     virtual void SetTime(
-      const PString & section,  /// Section to use instead of the default.
-      const PString & key,      /// The key name for the variable.
-      const PTime & value       /// New value to set for the variable.
+      const PString & section,  ///< Section to use instead of the default.
+      const PString & key,      ///< The key name for the variable.
+      const PTime & value       ///< New value to set for the variable.
     );
   //@}
 
@@ -580,12 +583,12 @@ class PConfig : public PObject
   private:
     // Do common construction code.
     void Construct(
-      Source src,               /// Standard source for the configuration.
-      const PString & appname,  /// Name of application
-      const PString & manuf     /// Manufacturer
+      Source src,               ///< Standard source for the configuration.
+      const PString & appname,  ///< Name of application
+      const PString & manuf     ///< Manufacturer
     );
     void Construct(
-      const PFilePath & filename  /// Explicit name of the configuration file.
+      const PFilePath & filename  ///< Explicit name of the configuration file.
     );
 
 
