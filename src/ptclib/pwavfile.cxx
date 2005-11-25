@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.42  2005/11/25 01:01:15  csoutheren
+ * Applied patch #1351168
+ * PWlib various fixes
+ *
  * Revision 1.41  2005/10/30 23:25:52  csoutheren
  * Fixed formatting
  * Removed throw() declarations (PWLib does not do exceptions)
@@ -784,6 +788,10 @@ BOOL PWAVFile::GenerateHeader()
   wavFmtChunk.hdr.len = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);  // set default length assuming no extra bytes
 
   // allow the format handler to modify the header and extra bytes
+  if(formatHandler == NULL){
+    PTRACE(1,"WAV\tGenerateHeader: format handler is null!");
+    return FALSE;
+  }
   formatHandler->CreateHeader(wavFmtChunk, extendedHeader);
 
   // write the basic WAV header

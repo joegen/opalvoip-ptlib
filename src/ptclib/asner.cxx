@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.92  2005/11/25 01:01:15  csoutheren
+ * Applied patch #1351168
+ * PWlib various fixes
+ *
  * Revision 1.91  2005/06/07 06:25:53  csoutheren
  * Applied patch 1199897 to increase speed of ASN parser debugging output
  * Thanks to Dmitriy <ddv@abinet.com>
@@ -812,6 +816,15 @@ void PASN_Enumeration::Encode(PASN_Stream & strm) const
   strm.EnumerationEncode(*this);
 }
 
+PINDEX PASN_Enumeration::GetValueByName(PString name) const
+{
+  for(unsigned uiIndex = 0; uiIndex < namesCount; uiIndex++){
+    if(strcmp(names[uiIndex].name, name) == 0){
+      return (maxEnumValue - namesCount + uiIndex + 1);
+    }
+  }
+  return UINT_MAX;
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -2245,6 +2258,15 @@ void PASN_Choice::Encode(PASN_Stream & strm) const
 }
 
 
+PINDEX PASN_Choice::GetValueByName(PString name) const
+{
+  for(unsigned uiIndex = 0; uiIndex < numChoices; uiIndex++){
+    if(strcmp(names[uiIndex].name, name) == 0){
+      return names[uiIndex].value;
+    }
+  }
+  return UINT_MAX;
+}
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Sequence::PASN_Sequence(unsigned tag, TagClass tagClass,
