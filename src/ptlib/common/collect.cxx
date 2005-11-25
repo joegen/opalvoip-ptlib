@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.71  2005/11/25 01:01:15  csoutheren
+ * Applied patch #1351168
+ * PWlib various fixes
+ *
  * Revision 1.70  2005/01/09 06:35:05  rjongbloed
  * Fixed ability to make Clone() or MakeUnique() of a sorted list.
  *
@@ -604,8 +608,18 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
     return NULL;
   }
 
+  if(info == NULL){
+    PAssertAlways("info is null");
+    return NULL;
+  }
+    
   Element * elmt = info->lastElement;
 
+  if(elmt == NULL){
+    PAssertAlways("elmt is null");
+    return NULL;
+  }
+  
   if (elmt->prev != NULL)
     elmt->prev->next = elmt->next;
   else {
@@ -627,6 +641,11 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
   else {
     info->lastElement = elmt->prev;
     info->lastIndex--;
+  }
+  
+  if((reference == NULL) || (reference->size == 0)){
+    PAssertAlways("reference is null or reference->size == 0");
+    return NULL;
   }
   reference->size--;
 
