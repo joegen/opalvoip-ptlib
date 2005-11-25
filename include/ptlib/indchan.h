@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.10  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.9  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -99,7 +102,7 @@ class PIndirectChannel : public PChannel
        EqualTo if channel pointer identical.
      */
     Comparison Compare(
-      const PObject & obj   /// Another indirect channel to compare against.
+      const PObject & obj   ///< Another indirect channel to compare against.
     ) const;
   //@}
 
@@ -148,8 +151,8 @@ class PIndirectChannel : public PChannel
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the channel. This function will block until the
@@ -167,8 +170,8 @@ class PIndirectChannel : public PChannel
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /**Close one or both of the data streams associated with a channel.
@@ -180,7 +183,7 @@ class PIndirectChannel : public PChannel
        TRUE if the shutdown was successfully performed.
      */
     virtual BOOL Shutdown(
-      ShutdownValue option   /// Flag for shut down of read, write or both.
+      ShutdownValue option   ///< Flag for shut down of read, write or both.
     );
 
 
@@ -210,7 +213,7 @@ class PIndirectChannel : public PChannel
       @return Operating System error description string.
      */
     virtual PString GetErrorText(
-      ErrorGroup group = NumErrorGroups   /// Error group to get
+      ErrorGroup group = NumErrorGroups   ///< Error group to get
     ) const;
   //@}
 
@@ -224,8 +227,7 @@ class PIndirectChannel : public PChannel
        TRUE if both channels are set, open and OnOpen() returns TRUE.
      */
     BOOL Open(
-      PChannel & channel
-        /// Channel to be used for both read and write operations.
+      PChannel & channel   ///< Channel to be used for both read and write operations.
     );
 
     /**Set the channel for both read and write operations. This then checks
@@ -239,9 +241,8 @@ class PIndirectChannel : public PChannel
        TRUE if both channels are set, open and OnOpen() returns TRUE.
      */
     BOOL Open(
-      PChannel * channel,
-        /// Channel to be used for both read and write operations.
-      BOOL autoDelete = TRUE   /// Automatically delete the channel
+      PChannel * channel,      ///< Channel to be used for both read and write operations.
+      BOOL autoDelete = TRUE   ///< Automatically delete the channel
     );
 
     /**Set the channel for both read and write operations. This then checks
@@ -256,12 +257,10 @@ class PIndirectChannel : public PChannel
        TRUE if both channels are set, open and OnOpen() returns TRUE.
      */
     BOOL Open(
-      PChannel * readChannel,
-        // Channel to be used for both read operations.
-      PChannel * writeChannel,
-        // Channel to be used for both write operations.
-      BOOL autoDeleteRead = TRUE,  // Automatically delete the read channel
-      BOOL autoDeleteWrite = TRUE  // Automatically delete the write channel
+      PChannel * readChannel,      ///< Channel to be used for both read operations.
+      PChannel * writeChannel,     ///< Channel to be used for both write operations.
+      BOOL autoDeleteRead = TRUE,  ///< Automatically delete the read channel
+      BOOL autoDeleteWrite = TRUE  ///< Automatically delete the write channel
     );
 
     /**Get the channel used for read operations.
@@ -277,9 +276,8 @@ class PIndirectChannel : public PChannel
        Returns TRUE if both channels are set and are both open.
      */
     BOOL SetReadChannel(
-      PChannel * channel,
-        /// Channel to be used for both read operations.
-      BOOL autoDelete = TRUE   /// Automatically delete the channel
+      PChannel * channel,      ///< Channel to be used for both read operations.
+      BOOL autoDelete = TRUE   ///< Automatically delete the channel
     );
 
     /**Get the channel used for write operations.
@@ -295,9 +293,8 @@ class PIndirectChannel : public PChannel
        Returns TRUE if both channels are set and are both open.
     */
     BOOL SetWriteChannel(
-      PChannel * channel,
-        /// Channel to be used for both write operations.
-      BOOL autoDelete = TRUE   /// Automatically delete the channel
+      PChannel * channel,      ///< Channel to be used for both write operations.
+      BOOL autoDelete = TRUE   ///< Automatically delete the channel
     );
   //@}
 

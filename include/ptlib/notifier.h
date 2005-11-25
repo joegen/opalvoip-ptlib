@@ -38,15 +38,15 @@ class PNotifierFunction : public PSmartObject
   public:
     /// Create a notification function instance.
     PNotifierFunction(
-      void * obj    /// Object instance that the function will be called on.
+      void * obj    ///< Object instance that the function will be called on.
     ) { object = PAssertNULL(obj); }
 
     /** Execute the call to the actual notification function on the object
        instance contained in this object.
      */
     virtual void Call(
-      PObject & notifier,  /// Object that is making the notification.
-      INT extra            /// Extra information that may be passed to function.
+      PObject & notifier,  ///< Object that is making the notification.
+      INT extra            ///< Extra information that may be passed to function.
     ) const = 0;
 
   protected:
@@ -83,7 +83,7 @@ class PNotifier : public PSmartPointer
   public:
     /** Create a new notification function smart pointer. */
     PNotifier(
-      PNotifierFunction * func = NULL   /// Notifier function to call.
+      PNotifierFunction * func = NULL   ///< Notifier function to call.
     ) : PSmartPointer(func) { }
 
     /**Execute the call to the actual notification function on the object
@@ -92,8 +92,8 @@ class PNotifier : public PSmartPointer
        turn calls the required function in the destination object.
      */
     virtual void operator()(
-      PObject & notifier,  /// Object that is making the notification.
-      INT extra            /// Extra information that may be passed to function.
+      PObject & notifier,  ///< Object that is making the notification.
+      INT extra            ///< Extra information that may be passed to function.
     ) const {
       if (PAssertNULL(object) != NULL)
         ((PNotifierFunction*)object)->Call(notifier,extra);

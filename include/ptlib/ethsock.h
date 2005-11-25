@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.18  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.17  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -115,9 +118,9 @@ class PEthSocket : public PSocket
        buffers to be allocated to avoid losing frequent packets.
      */
     PEthSocket(
-      PINDEX nReadBuffers = 8,  /// Number of buffers used for reading.
-      PINDEX nWriteBuffers = 1, /// Number of buffers used for writing.
-      PINDEX size = 1514        /// Size of each buffer.
+      PINDEX nReadBuffers = 8,  ///< Number of buffers used for reading.
+      PINDEX nWriteBuffers = 1, ///< Number of buffers used for writing.
+      PINDEX size = 1514        ///< Size of each buffer.
     );
 
       /// Close the socket
@@ -210,8 +213,8 @@ class PEthSocket : public PSocket
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the channel. This function will block until the
@@ -226,8 +229,8 @@ class PEthSocket : public PSocket
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
   //@}
 
@@ -241,7 +244,7 @@ class PEthSocket : public PSocket
        TRUE if the channel was successfully connected to the interface.
      */
     virtual BOOL Connect(
-      const PString & address   /// Name of interface to connect to.
+      const PString & address   ///< Name of interface to connect to.
     );
 
     /**This function is illegal and will assert if attempted. You must be
@@ -251,9 +254,9 @@ class PEthSocket : public PSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
   //@}
 
@@ -271,8 +274,8 @@ class PEthSocket : public PSocket
        TRUE if an interface has the index supplied.
      */
     BOOL EnumInterfaces(
-      PINDEX idx,      /// Index of interface
-      PString & name   /// Interface name
+      PINDEX idx,      ///< Index of interface
+      PString & name   ///< Interface name
     );
 
 
@@ -282,7 +285,7 @@ class PEthSocket : public PSocket
        TRUE if the address is returned, FALSE on error.
      */
     BOOL GetAddress(
-      Address & addr   /// Variable to receive the MAC address.
+      Address & addr   ///< Variable to receive the MAC address.
     );
 
     /**Get the prime IP number bound to the open interface.
@@ -291,7 +294,7 @@ class PEthSocket : public PSocket
        TRUE if the address is returned, FALSE on error.
      */
     BOOL GetIpAddress(
-      PIPSocket::Address & addr     /// Variable to receive the IP address.
+      PIPSocket::Address & addr     ///< Variable to receive the IP address.
     );
 
     /**Get the prime IP number bound to the open interface.
@@ -301,8 +304,8 @@ class PEthSocket : public PSocket
        TRUE if the address is returned, FALSE on error.
      */
     BOOL GetIpAddress(
-      PIPSocket::Address & addr,    /// Variable to receive the IP address.
-      PIPSocket::Address & netMask  /// Variable to receive the net mask.
+      PIPSocket::Address & addr,    ///< Variable to receive the IP address.
+      PIPSocket::Address & netMask  ///< Variable to receive the net mask.
     );
 
     /**Enumerate all of the IP addresses and net masks bound to the open
@@ -315,9 +318,9 @@ class PEthSocket : public PSocket
        addresses bound to the interface.
      */
     BOOL EnumIpAddress(
-      PINDEX idx,                   /// Index 
-      PIPSocket::Address & addr,    /// Variable to receive the IP address.
-      PIPSocket::Address & netMask  /// Variable to receive the net mask.
+      PINDEX idx,                   ///< Index 
+      PIPSocket::Address & addr,    ///< Variable to receive the IP address.
+      PIPSocket::Address & netMask  ///< Variable to receive the net mask.
     );
 
 
@@ -390,8 +393,8 @@ class PEthSocket : public PSocket
        A bit mask is returned, a value of 0 indicates an error.
      */
     BOOL GetFilter(
-      unsigned & mask,  /// Bits for filtering on address
-      WORD & type       /// Code for filtering on type.
+      unsigned & mask,  ///< Bits for filtering on address
+      WORD & type       ///< Code for filtering on type.
     );
 
     /**Set the current filtering criteria for receiving packets. A bit-wise OR
@@ -407,8 +410,8 @@ class PEthSocket : public PSocket
        TRUE if the address is returned, FALSE on error.
      */
     BOOL SetFilter(
-      unsigned mask,       /// Bits for filtering on address
-      WORD type = TypeAll  /// Code for filtering on type.
+      unsigned mask,       ///< Bits for filtering on address
+      WORD type = TypeAll  ///< Code for filtering on type.
     );
   //@}
 
@@ -427,12 +430,12 @@ class PEthSocket : public PSocket
        TRUE if the packet read, FALSE on error.
      */
     BOOL ReadPacket(
-      PBYTEArray & buffer,  /// Buffer to receive the raw packet
-      Address & dest,       /// Destination address of packet
-      Address & src,        /// Source address of packet
-      WORD & type,          /// Packet frame type ID
-      PINDEX & len,         /// Length of payload
-      BYTE * & payload      /// Pointer into #buffer# of payload.
+      PBYTEArray & buffer,  ///< Buffer to receive the raw packet
+      Address & dest,       ///< Destination address of packet
+      Address & src,        ///< Source address of packet
+      WORD & type,          ///< Packet frame type ID
+      PINDEX & len,         ///< Length of payload
+      BYTE * & payload      ///< Pointer into #buffer# of payload.
     );
   //@}
 

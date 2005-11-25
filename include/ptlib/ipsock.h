@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.78  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.77  2005/07/13 11:48:41  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -546,23 +549,23 @@ class PIPSocket : public PSocket
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address   /// Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
     virtual BOOL Connect(
-      const Address & addr      /// Address of remote machine to connect to.
+      const Address & addr      ///< Address of remote machine to connect to.
     );
     virtual BOOL Connect(
-      WORD localPort,           /// Local port number for connection
-      const Address & addr      /// Address of remote machine to connect to.
+      WORD localPort,           ///< Local port number for connection
+      const Address & addr      ///< Address of remote machine to connect to.
     );
     virtual BOOL Connect(
-      const Address & iface,    /// Address of local interface to us.
-      const Address & addr      /// Address of remote machine to connect to.
+      const Address & iface,    ///< Address of local interface to us.
+      const Address & addr      ///< Address of remote machine to connect to.
     );
     virtual BOOL Connect(
-      const Address & iface,    /// Address of local interface to us.
-      WORD localPort,           /// Local port number for connection
-      const Address & addr      /// Address of remote machine to connect to.
+      const Address & iface,    ///< Address of local interface to us.
+      WORD localPort,           ///< Local port number for connection
+      const Address & addr      ///< Address of remote machine to connect to.
     );
 
     /** Listen on a socket for a remote host on the specified port number. This
@@ -581,15 +584,15 @@ class PIPSocket : public PSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
     virtual BOOL Listen(
-      const Address & bind,     /// Local interface address to bind to.
-      unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
-      WORD port = 0,            /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
+      const Address & bind,     ///< Local interface address to bind to.
+      unsigned queueSize = 5,   ///< Number of pending accepts that may be queued.
+      WORD port = 0,            ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Can't listen more than once.
     );
 
 
@@ -603,10 +606,10 @@ class PIPSocket : public PSocket
      */
     static PString GetHostName();
     static PString GetHostName(
-      const PString & hostname  /// Hosts IP address to get name for
+      const PString & hostname  ///< Hosts IP address to get name for
     );
     static PString GetHostName(
-      const Address & addr    /// Hosts IP address to get name for
+      const Address & addr    ///< Hosts IP address to get name for
     );
 
     /** Get the Internet Protocol address for the specified host, or if none
@@ -616,14 +619,14 @@ class PIPSocket : public PSocket
        TRUE if the IP number was returned.
      */
     static BOOL GetHostAddress(
-      Address & addr    /// Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     static BOOL GetHostAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
-      Address & addr    /// Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
 
     /** Get the alias host names for the specified host. This includes all DNS
@@ -640,7 +643,7 @@ class PIPSocket : public PSocket
        */
     );
     static PStringArray GetHostAliases(
-      const Address & addr    /// Hosts IP address
+      const Address & addr    ///< Hosts IP address
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
@@ -666,11 +669,11 @@ class PIPSocket : public PSocket
        TRUE if the IP number was returned.
      */
     virtual BOOL GetLocalAddress(
-      Address & addr    /// Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     virtual BOOL GetLocalAddress(
-      Address & addr,    /// Variable to receive peer hosts IP address
-      WORD & port        /// Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IP address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
     /** Get the Internet Protocol address for the peer host the socket is
@@ -680,11 +683,11 @@ class PIPSocket : public PSocket
        TRUE if the IP number was returned.
      */
     virtual BOOL GetPeerAddress(
-      Address & addr    /// Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     virtual BOOL GetPeerAddress(
-      Address & addr,    /// Variable to receive peer hosts IP address
-      WORD & port        /// Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IP address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
     /** Get the host name for the local host.
@@ -717,7 +720,7 @@ class PIPSocket : public PSocket
        TRUE if there was a gateway.
      */
     static BOOL GetGatewayAddress(
-      Address & addr     /// Variable to receive the IP address.
+      Address & addr     ///< Variable to receive the IP address.
     );
 
     /** Get the name for the interface that is being used as the gateway,
@@ -812,7 +815,7 @@ class PIPSocket : public PSocket
        TRUE if the route table is returned, FALSE if an error occurs.
      */
     static BOOL GetRouteTable(
-      RouteTable & table      /// Route table
+      RouteTable & table      ///< Route table
     );
 
 
@@ -879,7 +882,7 @@ class PIPSocket : public PSocket
        TRUE if the interface table is returned, FALSE if an error occurs.
      */
     static BOOL GetInterfaceTable(
-      InterfaceTable & table      /// interface table
+      InterfaceTable & table      ///< interface table
     );
 
     /** Get the address of an interface that corresponds to a real network

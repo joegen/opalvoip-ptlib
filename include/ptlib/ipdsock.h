@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.11  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.10  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -91,10 +94,10 @@ class PIPDatagramSocket : public PIPSocket
        @return TRUE if any bytes were sucessfully read.
      */
     virtual BOOL ReadFrom(
-      void * buf,     /// Data to be written as URGENT TCP data.
-      PINDEX len,     /// Number of bytes pointed to by #buf#.
-      Address & addr, /// Address from which the datagram was received.
-      WORD & port     /// Port from which the datagram was received.
+      void * buf,     ///< Data to be written as URGENT TCP data.
+      PINDEX len,     ///< Number of bytes pointed to by #buf#.
+      Address & addr, ///< Address from which the datagram was received.
+      WORD & port     ///< Port from which the datagram was received.
     );
 
     /**Write a datagram to a remote computer.
@@ -102,10 +105,10 @@ class PIPDatagramSocket : public PIPSocket
        @return TRUE if all the bytes were sucessfully written.
      */
     virtual BOOL WriteTo(
-      const void * buf,   /// Data to be written as URGENT TCP data.
-      PINDEX len,         /// Number of bytes pointed to by #buf#.
-      const Address & addr, /// Address to which the datagram is sent.
-      WORD port           /// Port to which the datagram is sent.
+      const void * buf,   ///< Data to be written as URGENT TCP data.
+      PINDEX len,         ///< Number of bytes pointed to by #buf#.
+      const Address & addr, ///< Address to which the datagram is sent.
+      WORD port           ///< Port to which the datagram is sent.
     );
 
 

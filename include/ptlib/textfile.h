@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: textfile.h,v $
+ * Revision 1.20  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.19  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -123,8 +126,8 @@ class PTextFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PTextFile(
-      OpenMode mode,          /// Mode in which to open the file.
-      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
+      OpenMode mode,          ///< Mode in which to open the file.
+      int opts = ModeDefault  ///< #OpenOptions enum# for open operation.
     );
       
     /** Create a text file object with the specified name and open it in the
@@ -134,9 +137,9 @@ class PTextFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PTextFile(
-      const PFilePath & name,    /// Name of file to open.
-      OpenMode mode = ReadWrite, /// Mode in which to open the file.
-      int opts = ModeDefault     /// #OpenOptions enum# for open operation.
+      const PFilePath & name,    ///< Name of file to open.
+      OpenMode mode = ReadWrite, ///< Mode in which to open the file.
+      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
     );
   //@}
 
@@ -152,7 +155,7 @@ class PTextFile : public PFile
        TRUE if successful, FALSE if at end of file or a read error.
      */
     BOOL ReadLine(
-      PString & str  /// String into which line of text is read.
+      PString & str  ///< String into which line of text is read.
     );
 
     /** Read a line from the text file. What constitutes an end of line in the
@@ -165,7 +168,7 @@ class PTextFile : public PFile
        TRUE if successful, FALSE if an error occurred.
      */
     BOOL WriteLine(
-      const PString & str  /// String to write with end of line terminator.
+      const PString & str  ///< String to write with end of line terminator.
     );
   //@}
 

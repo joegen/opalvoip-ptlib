@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.32  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.31  2005/01/25 06:35:27  csoutheren
  * Removed warnings under MSVC
  *
@@ -213,7 +216,7 @@ class PAbstractList : public PCollection
        Always TRUE.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size for the list, this is ignored.
+      PINDEX newSize  ///< New size for the list, this is ignored.
     );
   //@}
 
@@ -226,7 +229,7 @@ class PAbstractList : public PCollection
        index of the newly added object.
      */
     virtual PINDEX Append(
-      PObject * obj   /// New object to place into the collection.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Insert a new object immediately before the specified object. If the
@@ -242,8 +245,8 @@ class PAbstractList : public PCollection
        index of the newly inserted object.
      */
     virtual PINDEX Insert(
-      const PObject & before,   /// Object value to insert before.
-      PObject * obj             /// New object to place into the collection.
+      const PObject & before,   ///< Object value to insert before.
+      PObject * obj             ///< New object to place into the collection.
     );
 
     /**Insert a new object at the specified ordinal index. If the index is
@@ -254,8 +257,8 @@ class PAbstractList : public PCollection
        index of the newly inserted object.
      */
     virtual PINDEX InsertAt(
-      PINDEX index,   /// Index position in collection to place the object.
-      PObject * obj   /// New object to place into the collection.
+      PINDEX index,   ///< Index position in collection to place the object.
+      PObject * obj   ///< New object to place into the collection.
     );
 
     /**Remove the object from the collection. If the AllowDeleteObjects option
@@ -265,7 +268,7 @@ class PAbstractList : public PCollection
        TRUE if the object was in the collection.
      */
     virtual BOOL Remove(
-      const PObject * obj   /// Existing object to remove from the collection.
+      const PObject * obj   ///< Existing object to remove from the collection.
     );
 
     /**Remove the object at the specified ordinal index from the collection.
@@ -278,7 +281,7 @@ class PAbstractList : public PCollection
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   /// Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection to place the object.
     );
 
     /**Set the object at the specified ordinal position to the new value. This
@@ -293,8 +296,8 @@ class PAbstractList : public PCollection
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     );
     
     /**Set the object at the specified ordinal position to the new value. This
@@ -308,8 +311,8 @@ class PAbstractList : public PCollection
        TRUE if the object was successfully replaced.
      */   
     virtual BOOL ReplaceAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     );
 
     /**Get the object at the specified ordinal position. If the index was
@@ -323,7 +326,7 @@ class PAbstractList : public PCollection
        pointer to object at the specified index.
      */
     virtual PObject * GetAt(
-      PINDEX index  // Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const;
 
     /**Search the collection for the specific instance of the object. The
@@ -334,7 +337,7 @@ class PAbstractList : public PCollection
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
-      const PObject * obj  /// Object to find.
+      const PObject * obj  ///< Object to find.
     ) const;
 
     /**Search the collection for the specified value of the object. The object
@@ -346,7 +349,7 @@ class PAbstractList : public PCollection
        ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
-      const PObject & obj  /// Object to find value of.
+      const PObject & obj  ///< Object to find value of.
     ) const;
   //@}
 
@@ -363,7 +366,7 @@ class PAbstractList : public PCollection
        reference to object at the specified index.
      */
     PINLINE PObject & GetReferenceAt(
-      PINDEX index  /// Ordinal index of the list element to set as current.
+      PINDEX index  ///< Ordinal index of the list element to set as current.
     ) const;
 
     /**Move the internal "cursor" to the index position specified. This
@@ -376,7 +379,7 @@ class PAbstractList : public PCollection
        TRUE if the index could be set as the current element.
      */
     BOOL SetCurrent(
-      PINDEX index  /// Ordinal index of the list element to set as current.
+      PINDEX index  ///< Ordinal index of the list element to set as current.
     ) const;
 
     class Element {
@@ -536,7 +539,7 @@ template <class T> class PQueue : public PAbstractList
        the list, which is the "in" side of the queue.
      */
     virtual void Enqueue(
-      T * obj   /// Object to add to the queue.
+      T * obj   ///< Object to add to the queue.
     ) { PAbstractList::Append(obj); }
     /**Remove an object that was added to the queue.
 
@@ -639,7 +642,7 @@ template <class T> class PStack : public PAbstractList
        function.
      */
     virtual void Push(
-      T * obj    /// Object to add to the stack.
+      T * obj    ///< Object to add to the stack.
     ) { PAbstractList::InsertAt(0, obj); }
 
     /**Remove the last object pushed onto the stack.

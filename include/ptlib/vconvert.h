@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.15  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.14  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -108,13 +111,13 @@ class PColourConverterRegistration : public PCaselessString
     PCLASSINFO(PColourConverterRegistration, PCaselessString);
   public:
     PColourConverterRegistration(
-      const PString & srcColourFormat,  /// Name of source colour format
-      const PString & destColourFormat  /// Name of destination colour format
+      const PString & srcColourFormat,  ///< Name of source colour format
+      const PString & destColourFormat  ///< Name of destination colour format
     );
 
     virtual PColourConverter * Create(
-      unsigned width,   /// Width of frame
-      unsigned height   /// Height of frame
+      unsigned width,   ///< Width of frame
+      unsigned height   ///< Height of frame
     ) const = 0;
 
   protected:
@@ -134,10 +137,10 @@ class PColourConverter : public PObject
     /**Create a new converter.
       */
     PColourConverter(
-      const PString & srcColourFormat,  /// Name of source colour format
-      const PString & dstColourFormat,  /// Name of destination colour format
-      unsigned width,   /// Width of frame
-      unsigned height   /// Height of frame
+      const PString & srcColourFormat,  ///< Name of source colour format
+      const PString & dstColourFormat,  ///< Name of destination colour format
+      unsigned width,   ///< Width of frame
+      unsigned height   ///< Height of frame
     );
 
     /**Get the video conversion vertical flip state
@@ -155,8 +158,8 @@ class PColourConverter : public PObject
        Default behaviour calls SetSrcFrameSize() and SetDstFrameSize().
     */
     virtual BOOL SetFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
     );
 
     /**Set the source frame size to be used.
@@ -166,8 +169,8 @@ class PColourConverter : public PObject
        was calculated correctly.
     */
     virtual BOOL SetSrcFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
     );
 
     /**Set the destination frame size to be used.
@@ -177,9 +180,9 @@ class PColourConverter : public PObject
        size in bytes then returns TRUE if the size was calculated correctly.
     */
     virtual BOOL SetDstFrameSize(
-      unsigned width,   /// New width of target frame
-      unsigned height,  /// New height of target frame
-      BOOL     bScale   /// TRUE if scaling is preferred over crop
+      unsigned width,   ///< New width of target frame
+      unsigned height,  ///< New height of target frame
+      BOOL     bScale   ///< TRUE if scaling is preferred over crop
     );
 
     /**Get the source colour format.
@@ -215,9 +218,9 @@ class PColourConverter : public PObject
        are the same and that form pf conversion is not allowed
     */
     virtual BOOL Convert(
-      const BYTE * srcFrameBuffer,  /// Frame store for source pixels
-      BYTE * dstFrameBuffer,        /// Frame store for destination pixels
-      PINDEX * bytesReturned = NULL /// Bytes written to dstFrameBuffer
+      const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
+      BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
+      PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
     ) = 0;
 
     /**Convert from one colour format to another.
@@ -237,9 +240,9 @@ class PColourConverter : public PObject
        back to the original frame store.
     */
     virtual BOOL ConvertInPlace(
-      BYTE * frameBuffer,               /// Frame buffer to translate data
-      PINDEX * bytesReturned = NULL,    /// Bytes written to frameBuffer
-      BOOL noIntermediateFrame = FALSE  /// Flag to use intermediate store
+      BYTE * frameBuffer,               ///< Frame buffer to translate data
+      PINDEX * bytesReturned = NULL,    ///< Bytes written to frameBuffer
+      BOOL noIntermediateFrame = FALSE  ///< Flag to use intermediate store
     );
 
 
@@ -248,24 +251,24 @@ class PColourConverter : public PObject
        named formats.
       */
     static PColourConverter * Create(
-      const PString & srcColourFormat,  /// Name of source colour format
-      const PString & dstColourFormat,  /// Name of destination colour format
-      unsigned width,   /// Width of frame (used for both src and dst)
-      unsigned height   /// Height of frame (used for both src and dst)
+      const PString & srcColourFormat,  ///< Name of source colour format
+      const PString & dstColourFormat,  ///< Name of destination colour format
+      unsigned width,   ///< Width of frame (used for both src and dst)
+      unsigned height   ///< Height of frame (used for both src and dst)
     );
 
     /**Get the output frame size.
       */
     BOOL GetDstFrameSize(
-      unsigned & width, /// Width of destination frame
-      unsigned & height /// Height of destination frame
+      unsigned & width, ///< Width of destination frame
+      unsigned & height ///< Height of destination frame
     ) const;
 
     /**Get the input frame size.
       */
     BOOL GetSrcFrameSize(
-      unsigned & width, /// Width of source frame
-      unsigned & height /// Height of source frame
+      unsigned & width, ///< Width of source frame
+      unsigned & height ///< Height of source frame
     ) const;
 
 

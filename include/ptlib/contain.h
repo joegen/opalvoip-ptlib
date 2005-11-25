@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.65  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.64  2004/04/15 22:44:52  csoutheren
  * Re-applied gcc 2.95 patch as CVS screwed up
  *
@@ -283,7 +286,7 @@ class PContainer : public PObject
     /**Create a new unique container.
      */
     PContainer(
-      PINDEX initialSize = 0  /// Initial number of things in the container.
+      PINDEX initialSize = 0  ///< Initial number of things in the container.
     );
 
     /**Create a new refernce to container.
@@ -291,7 +294,7 @@ class PContainer : public PObject
        specified in the parameter.
      */
     PContainer(
-      const PContainer & cont  /// Container to create a new reference from.
+      const PContainer & cont  ///< Container to create a new reference from.
     );
 
     /**Assign one container reference to another.
@@ -302,7 +305,7 @@ class PContainer : public PObject
        it was unique, destroyed using the DestroyContents() function.
      */
     PContainer & operator=(
-      const PContainer & cont  /// Container to create a new reference from.
+      const PContainer & cont  ///< Container to create a new reference from.
     );
 
     /**Destroy the container class.
@@ -338,7 +341,7 @@ class PContainer : public PObject
        indicates failure due to insufficient memory.
      */
     virtual BOOL SetSize(
-      PINDEX newSize  /// New size for the container.
+      PINDEX newSize  ///< New size for the container.
     ) = 0;
 
     /**Set the minimum size of container.
@@ -347,7 +350,7 @@ class PContainer : public PObject
        new value or the previous size, whichever is the larger.
      */
     BOOL SetMinSize(
-      PINDEX minSize  /// Possible, new size for the container.
+      PINDEX minSize  ///< Possible, new size for the container.
     );
 
     /**Determine if the container is empty.
@@ -389,8 +392,8 @@ class PContainer : public PObject
        leading to unpredictable results.
      */
     PContainer(
-      int dummy,        /// Dummy to prevent accidental use of the constructor.
-      const PContainer * cont  /// Container class to clone.
+      int dummy,        ///< Dummy to prevent accidental use of the constructor.
+      const PContainer * cont  ///< Container class to clone.
     );
 
     /**Destroy the container contents. This function must be defined by the
@@ -591,7 +594,7 @@ class PCollection : public PContainer
     /**Create a new collection
      */
     PCollection(
-      PINDEX initialSize = 0  /// Initial number of things in the collection.
+      PINDEX initialSize = 0  ///< Initial number of things in the collection.
     );
   //@}
 
@@ -611,7 +614,7 @@ class PCollection : public PContainer
        @return the stream printed to.
      */
     virtual void PrintOn(
-      ostream &strm   /// Output stream to print the collection.
+      ostream &strm   ///< Output stream to print the collection.
     ) const;
   //@}
 
@@ -627,7 +630,7 @@ class PCollection : public PContainer
        @return index of the newly added object.
      */
     virtual PINDEX Append(
-      PObject * obj   /// New object to place into the collection.
+      PObject * obj   ///< New object to place into the collection.
     ) = 0;
 
     /**Insert a new object immediately before the specified object. If the
@@ -647,8 +650,8 @@ class PCollection : public PContainer
        @return index of the newly inserted object.
      */
     virtual PINDEX Insert(
-      const PObject & before,   /// Object value to insert before.
-      PObject * obj             /// New object to place into the collection.
+      const PObject & before,   ///< Object value to insert before.
+      PObject * obj             ///< New object to place into the collection.
     ) = 0;
 
     /**Insert a new object at the specified ordinal index. If the index is
@@ -663,8 +666,8 @@ class PCollection : public PContainer
        @return index of the newly inserted object.
      */
     virtual PINDEX InsertAt(
-      PINDEX index,   /// Index position in collection to place the object.
-      PObject * obj   /// New object to place into the collection.
+      PINDEX index,   ///< Index position in collection to place the object.
+      PObject * obj   ///< New object to place into the collection.
     ) = 0;
 
     /**Remove the object from the collection. If the AllowDeleteObjects option
@@ -677,7 +680,7 @@ class PCollection : public PContainer
        @return TRUE if the object was in the collection.
      */
     virtual BOOL Remove(
-      const PObject * obj   /// Existing object to remove from the collection.
+      const PObject * obj   ///< Existing object to remove from the collection.
     ) = 0;
 
     /**Remove the object at the specified ordinal index from the collection.
@@ -689,7 +692,7 @@ class PCollection : public PContainer
        @return pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveAt(
-      PINDEX index   /// Index position in collection to place the object.
+      PINDEX index   ///< Index position in collection to place the object.
     ) = 0;
 
     /**Remove all of the elements in the collection. This operates by
@@ -714,8 +717,8 @@ class PCollection : public PContainer
        @return TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
-      PINDEX index,   /// Index position in collection to set.
-      PObject * val   /// New value to place into the collection.
+      PINDEX index,   ///< Index position in collection to set.
+      PObject * val   ///< New value to place into the collection.
     ) = 0;
 
     /**Get the object at the specified ordinal position. If the index was
@@ -724,7 +727,7 @@ class PCollection : public PContainer
        @return pointer to object at the specified index.
      */
     virtual PObject * GetAt(
-      PINDEX index  /// Index position in the collection of the object.
+      PINDEX index  ///< Index position in the collection of the object.
     ) const = 0;
 
     /**Search the collection for the specific instance of the object. The
@@ -734,7 +737,7 @@ class PCollection : public PContainer
        @return ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetObjectsIndex(
-      const PObject * obj  /// Object to search for.
+      const PObject * obj  ///< Object to search for.
     ) const = 0;
 
     /**Search the collection for the specified value of the object. The object
@@ -746,7 +749,7 @@ class PCollection : public PContainer
        @return ordinal index position of the object, or P_MAX_INDEX.
      */
     virtual PINDEX GetValuesIndex(
-      const PObject & obj  /// Object to search for.
+      const PObject & obj  ///< Object to search for.
     ) const = 0;
 
     /**Allow or disallow the deletion of the objects contained in the
@@ -763,7 +766,7 @@ class PCollection : public PContainer
        call to SetAt().
      */
     PINLINE void AllowDeleteObjects(
-      BOOL yes = TRUE   /// New value for flag for deleting objects
+      BOOL yes = TRUE   ///< New value for flag for deleting objects
     );
 
     /**Disallow the deletion of the objects contained in the collection. See
@@ -784,8 +787,8 @@ class PCollection : public PContainer
        leading to unpredictable results.
      */
     PINLINE PCollection(
-      int dummy,        /// Dummy to prevent accidental use of the constructor.
-      const PCollection * coll  /// Collection class to clone.
+      int dummy,        ///< Dummy to prevent accidental use of the constructor.
+      const PCollection * coll  ///< Collection class to clone.
     );
 };
 

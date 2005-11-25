@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.43  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.42  2003/09/26 09:58:50  rogerhardiman
  * Move #include <sys/stat.h> from the unix file.h to the main file.h
  * FreeBSD's sys/stat.h includes extern "C" for some prototypes and you
@@ -258,8 +261,8 @@ class PFile : public PChannel
        construction to determine if the file was successfully opened.
      */
     PFile(
-      OpenMode mode,          /// Mode in which to open the file.
-      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
+      OpenMode mode,          ///< Mode in which to open the file.
+      int opts = ModeDefault  ///< #OpenOptions enum# for open operation.
     );
 
     /**Create a file object with the specified name and open it in the
@@ -269,9 +272,9 @@ class PFile : public PChannel
        construction to determine if the file was successfully opened.
      */
     PFile(
-      const PFilePath & name,    /// Name of file to open.
-      OpenMode mode = ReadWrite, /// Mode in which to open the file.
-      int opts = ModeDefault     /// #OpenOptions enum# for open operation.
+      const PFilePath & name,    ///< Name of file to open.
+      OpenMode mode = ReadWrite, ///< Mode in which to open the file.
+      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
     );
 
     /// Close the file on destruction.
@@ -288,7 +291,7 @@ class PFile : public PChannel
        relative rank of the file paths.
      */
     Comparison Compare(
-      const PObject & obj   /// Other file to compare against.
+      const PObject & obj   ///< Other file to compare against.
     ) const;
   //@}
 
@@ -315,8 +318,8 @@ class PFile : public PChannel
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the file channel. The write timeout is ignored for
@@ -329,8 +332,8 @@ class PFile : public PChannel
        @return TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /** Close the file channel.
@@ -350,7 +353,7 @@ class PFile : public PChannel
        TRUE if the file exists.
      */
     static BOOL Exists(
-      const PFilePath & name  /// Name of file to see if exists.
+      const PFilePath & name  ///< Name of file to see if exists.
     );
 
     /**Check for file existance.
@@ -372,8 +375,8 @@ class PFile : public PChannel
        TRUE if a file open would succeed.
      */
     static BOOL Access(
-      const PFilePath & name, /// Name of file to have its access checked.
-      OpenMode mode         /// Mode in which the file open would be done.
+      const PFilePath & name, ///< Name of file to have its access checked.
+      OpenMode mode         ///< Mode in which the file open would be done.
     );
 
     /**Check for file access modes.
@@ -387,7 +390,7 @@ class PFile : public PChannel
        TRUE if a file open would succeed.
      */
     BOOL Access(
-      OpenMode mode         /// Mode in which the file open would be done.
+      OpenMode mode         ///< Mode in which the file open would be done.
     );
 
     /**Delete the specified file. If #force# is FALSE and the file
@@ -439,10 +442,10 @@ class PFile : public PChannel
        TRUE if the file was renamed.
      */
     static BOOL Rename(
-      const PFilePath & oldname,  /// Old name of the file.
-      const PString & newname,    /// New name for the file.
+      const PFilePath & oldname,  ///< Old name of the file.
+      const PString & newname,    ///< New name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
 
     /**Change the current files name.
@@ -462,9 +465,9 @@ class PFile : public PChannel
        TRUE if the file was renamed.
      */
     BOOL Rename(
-      const PString & newname,  /// New name for the file.
+      const PString & newname,  ///< New name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
 
     /**Make a copy of the specified file.
@@ -473,10 +476,10 @@ class PFile : public PChannel
        TRUE if the file was renamed.
      */
     static BOOL Copy(
-      const PFilePath & oldname,  /// Old name of the file.
-      const PFilePath & newname,  /// New name for the file.
+      const PFilePath & oldname,  ///< Old name of the file.
+      const PFilePath & newname,  ///< New name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
 
     /**Make a copy of the current file.
@@ -485,9 +488,9 @@ class PFile : public PChannel
        TRUE if the file was renamed.
      */
     BOOL Copy(
-      const PFilePath & newname,  /// New name for the file.
+      const PFilePath & newname,  ///< New name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
 
     /**Move the specified file. This will move the file from one position in
@@ -500,10 +503,10 @@ class PFile : public PChannel
        TRUE if the file was moved.
      */
     static BOOL Move(
-      const PFilePath & oldname,  /// Old path and name of the file.
-      const PFilePath & newname,  /// New path and name for the file.
+      const PFilePath & oldname,  ///< Old path and name of the file.
+      const PFilePath & newname,  ///< New path and name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
 
     /**Move the current file. This will move the file from one position in
@@ -516,9 +519,9 @@ class PFile : public PChannel
        TRUE if the file was moved.
      */
     BOOL Move(
-      const PFilePath & newname,  /// New path and name for the file.
+      const PFilePath & newname,  ///< New path and name for the file.
       BOOL force = FALSE
-        /// Delete file if a destination exists with the same name.
+        ///< Delete file if a destination exists with the same name.
     );
   //@}
 
@@ -536,7 +539,7 @@ class PFile : public PChannel
        describes the full file name specification for the particular platform.
      */
     void SetFilePath(
-      const PString & path    /// New file path.
+      const PString & path    ///< New file path.
     );
 
 
@@ -610,8 +613,8 @@ class PFile : public PChannel
        TRUE if the new file position was set.
      */
     virtual BOOL SetPosition(
-      off_t pos,                         /// New position to set.
-      FilePositionOrigin origin = Start  /// Origin for position change.
+      off_t pos,                         ///< New position to set.
+      FilePositionOrigin origin = Start  ///< Origin for position change.
     );
 
     /**Get the current active position in the file for the next read or write

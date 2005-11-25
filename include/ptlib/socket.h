@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.49  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.48  2004/08/24 07:08:13  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -227,7 +230,7 @@ class PSocket : public PChannel
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address   /// Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
 
 
@@ -251,9 +254,9 @@ class PSocket : public PChannel
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
-      WORD port = 0,           /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
 
 
@@ -279,7 +282,7 @@ class PSocket : public PChannel
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Accept(
-      PSocket & socket          /// Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
 
     /**Close one or both of the data streams associated with a socket 
@@ -288,7 +291,7 @@ class PSocket : public PChannel
        TRUE if the shutdown was performed
      */
     virtual BOOL Shutdown(
-      ShutdownValue option   /// Flag for shutdown of read, write or both.
+      ShutdownValue option   ///< Flag for shutdown of read, write or both.
     );
   //@}
 
@@ -301,9 +304,9 @@ class PSocket : public PChannel
        TRUE if the option was successfully set.
      */
     BOOL SetOption(
-      int option,             /// Option to set.
-      int value,              /// New value for option.
-      int level = SOL_SOCKET  /// Level for option
+      int option,             ///< Option to set.
+      int value,              ///< New value for option.
+      int level = SOL_SOCKET  ///< Level for option
     );
 
     /**Set options on the socket. These options are defined as Berkeley socket
@@ -313,10 +316,10 @@ class PSocket : public PChannel
        TRUE if the option was successfully set.
      */
     BOOL SetOption(
-      int option,             /// Option to set.
-      const void * valuePtr,  /// Pointer to new value for option.
-      PINDEX valueSize,       /// Size of new value.
-      int level = SOL_SOCKET  /// Level for option
+      int option,             ///< Option to set.
+      const void * valuePtr,  ///< Pointer to new value for option.
+      PINDEX valueSize,       ///< Size of new value.
+      int level = SOL_SOCKET  ///< Level for option
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
@@ -326,9 +329,9 @@ class PSocket : public PChannel
        TRUE if the option was successfully retreived.
      */
     BOOL GetOption(
-      int option,             /// Option to get.
-      int & value,            /// Integer to receive value.
-      int level = SOL_SOCKET  /// Level for option
+      int option,             ///< Option to get.
+      int & value,            ///< Integer to receive value.
+      int level = SOL_SOCKET  ///< Level for option
     );
 
     /**Get options on the socket. These options are defined as Berkeley socket
@@ -338,10 +341,10 @@ class PSocket : public PChannel
        TRUE if the option was successfully retreived.
      */
     BOOL GetOption(
-      int option,             /// Option to get.
-      void * valuePtr,        /// Pointer to buffer for value.
-      PINDEX valueSize,       /// Size of buffer to receive value.
-      int level = SOL_SOCKET  /// Level for option
+      int option,             ///< Option to get.
+      void * valuePtr,        ///< Pointer to buffer for value.
+      PINDEX valueSize,       ///< Size of buffer to receive value.
+      int level = SOL_SOCKET  ///< Level for option
     );
   //@}
 
@@ -353,7 +356,7 @@ class PSocket : public PChannel
        Number of protocol or 0 if the protocol was not found.
      */
     static WORD GetProtocolByName(
-      const PString & name      /// Name of protocol
+      const PString & name      ///< Name of protocol
     );
 
     /**Get the name of the protocol number specified.
@@ -362,13 +365,13 @@ class PSocket : public PChannel
        Name of protocol or the number if the protocol was not found.
      */
     static PString GetNameByProtocol(
-      WORD proto                /// Number of protocol
+      WORD proto                ///< Number of protocol
     );
 
 
     /**Get the port number for the specified service name. */
     virtual WORD GetPortByService(
-      const PString & service   /// Name of service to get port number for.
+      const PString & service   ///< Name of service to get port number for.
     ) const;
     /**Get the port number for the specified service name.
     
@@ -388,13 +391,13 @@ class PSocket : public PChannel
        Port number for service name, or 0 if service cannot be found.
      */
     static WORD GetPortByService(
-      const char * protocol,     /// Protocol type for port lookup
-      const PString & service    /// Name of service to get port number for.
+      const char * protocol,     ///< Protocol type for port lookup
+      const PString & service    ///< Name of service to get port number for.
     );
 
     /**Get the service name from the port number. */
     virtual PString GetServiceByPort(
-      WORD port   /// Number for service to find name of.
+      WORD port   ///< Number for service to find name of.
     ) const;
     /**Get the service name from the port number.
     
@@ -414,14 +417,14 @@ class PSocket : public PChannel
        Service name for port number.
      */
     static PString GetServiceByPort(
-      const char * protocol,  /// Protocol type for port lookup
-      WORD port   /// Number for service to find name of.
+      const char * protocol,  ///< Protocol type for port lookup
+      WORD port   ///< Number for service to find name of.
     );
 
 
     /**Set the port number for the channel. */
     void SetPort(
-      WORD port   /// New port number for the channel.
+      WORD port   ///< New port number for the channel.
     );
     /**Set the port number for the channel. This a 16 bit number representing
        an agreed high level protocol type. The string version looks up a
@@ -436,7 +439,7 @@ class PSocket : public PChannel
        function will assert if an attempt is made to do so.
      */
     void SetPort(
-      const PString & service   /// Service name to describe the port number.
+      const PString & service   ///< Service name to describe the port number.
     );
 
     /**Get the port the TCP socket channel object instance is using.
@@ -475,40 +478,40 @@ class PSocket : public PChannel
 
     /**Select a socket with available data. */
     static int Select(
-      PSocket & sock1,        /// First socket to check for readability.
-      PSocket & sock2         /// Second socket to check for readability.
+      PSocket & sock1,        ///< First socket to check for readability.
+      PSocket & sock2         ///< Second socket to check for readability.
     );
     /**Select a socket with available data. */
     static int Select(
-      PSocket & sock1,        /// First socket to check for readability.
-      PSocket & sock2,        /// Second socket to check for readability.
-      const PTimeInterval & timeout /// Timeout for wait on read/write data.
+      PSocket & sock1,        ///< First socket to check for readability.
+      PSocket & sock2,        ///< Second socket to check for readability.
+      const PTimeInterval & timeout ///< Timeout for wait on read/write data.
     );
     /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read       /// List of sockets to check for readability.
+      SelectList & read       ///< List of sockets to check for readability.
     );
     /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      /// List of sockets to check for readability.
-      const PTimeInterval & timeout /// Timeout for wait on read/write data.
+      SelectList & read,      ///< List of sockets to check for readability.
+      const PTimeInterval & timeout ///< Timeout for wait on read/write data.
     );
     /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      /// List of sockets to check for readability.
-      SelectList & write      /// List of sockets to check for writability.
+      SelectList & read,      ///< List of sockets to check for readability.
+      SelectList & write      ///< List of sockets to check for writability.
     );
     /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      /// List of sockets to check for readability.
-      SelectList & write,     /// List of sockets to check for writability.
-      const PTimeInterval & timeout /// Timeout for wait on read/write data.
+      SelectList & read,      ///< List of sockets to check for readability.
+      SelectList & write,     ///< List of sockets to check for writability.
+      const PTimeInterval & timeout ///< Timeout for wait on read/write data.
     );
     /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      /// List of sockets to check for readability.
-      SelectList & write,     /// List of sockets to check for writability.
-      SelectList & except     /// List of sockets to check for exceptions.
+      SelectList & read,      ///< List of sockets to check for readability.
+      SelectList & write,     ///< List of sockets to check for writability.
+      SelectList & except     ///< List of sockets to check for exceptions.
     );
     /**Select a socket with available data. This function will block until the
        timeout or data is available to be read or written to the specified
@@ -532,10 +535,10 @@ class PSocket : public PChannel
        -2 for the second socket and -3 for both.
      */
     static Errors Select(
-      SelectList & read,      /// List of sockets to check for readability.
-      SelectList & write,     /// List of sockets to check for writability.
-      SelectList & except,    /// List of sockets to check for exceptions.
-      const PTimeInterval & timeout /// Timeout for wait on read/write data.
+      SelectList & read,      ///< List of sockets to check for readability.
+      SelectList & write,     ///< List of sockets to check for writability.
+      SelectList & except,    ///< List of sockets to check for exceptions.
+      const PTimeInterval & timeout ///< Timeout for wait on read/write data.
     );
   //@}
 

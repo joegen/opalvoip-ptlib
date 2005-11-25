@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.25  2005/11/25 03:43:47  csoutheren
+ * Fixed function argument comments to be compatible with Doxygen
+ *
  * Revision 1.24  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -163,7 +166,7 @@ class PSystemLog : public PObject, public iostream {
 
     /// Create a system log stream
     PSystemLog(
-     Level level   /// only messages at this level or higher will be logged
+     Level level   ///< only messages at this level or higher will be logged
     ) : iostream(cout.rdbuf()) { logLevel = level; buffer.log = this; init(&buffer); }
 
     /// Destroy the string stream, deleting the stream buffer
@@ -175,8 +178,8 @@ class PSystemLog : public PObject, public iostream {
     /** Log an error into the system log.
      */
     static void Output(
-      Level level,      /// Log level for this log message.
-      const char * msg  /// Message to be logged
+      Level level,      ///< Log level for this log message.
+      const char * msg  ///< Message to be logged
     );
   //@}
 
@@ -186,7 +189,7 @@ class PSystemLog : public PObject, public iostream {
        equal to the specified level will be logged.
       */
     void SetLevel(
-      Level level  /// New log level
+      Level level  ///< New log level
     ) { logLevel = level; }
 
     /** Get the current level for logging.
@@ -240,12 +243,12 @@ class PServiceProcess : public PProcess
     /** Create a new service process.
      */
     PServiceProcess(
-      const char * manuf,   /// Name of manufacturer
-      const char * name,    /// Name of product
-      WORD majorVersion,    /// Major version number of the product
-      WORD minorVersion,    /// Minor version number of the product
-      CodeStatus status,    /// Development status of the product
-      WORD buildNumber      /// Build number of the product
+      const char * manuf,   ///< Name of manufacturer
+      const char * name,    ///< Name of product
+      WORD majorVersion,    ///< Major version number of the product
+      WORD minorVersion,    ///< Minor version number of the product
+      CodeStatus status,    ///< Development status of the product
+      WORD buildNumber      ///< Build number of the product
     );
   //@}
 
@@ -305,7 +308,7 @@ class PServiceProcess : public PProcess
        messages to be displayed.
      */
     void SetLogLevel(
-      PSystemLog::Level level  /// New log level
+      PSystemLog::Level level  ///< New log level
     ) { currentLogLevel = level; }
 
     /** Get the current level for logging.
