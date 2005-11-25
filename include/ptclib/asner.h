@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.46  2005/11/25 01:01:13  csoutheren
+ * Applied patch #1351168
+ * PWlib various fixes
+ *
  * Revision 1.45  2005/06/07 06:25:53  csoutheren
  * Applied patch 1199897 to increase speed of ASN parser debugging output
  * Thanks to Dmitriy <ddv@abinet.com>
@@ -462,6 +466,7 @@ class PASN_Enumeration : public PASN_Object
     virtual void EncodeXER(PXER_Stream & strm) const;
 #endif
 
+    PINDEX GetValueByName(PString name) const;
   protected:
     unsigned maxEnumValue;
     unsigned value;
@@ -906,6 +911,7 @@ class PASN_Choice : public PASN_Object
 
     PASN_Choice & operator=(const PASN_Choice & other);
 
+    PINDEX GetValueByName(PString name) const;
   protected:
     PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
