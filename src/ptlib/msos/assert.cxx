@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.41  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.40  2005/09/29 15:58:20  dominance
  * one more step towards having mingw build pwlib cleanly
  *
@@ -462,8 +465,8 @@ void PAssertFunc(const char * msg)
 #ifdef _DEBUG
     do
     { 
-		if ( AfxAssertFailedLine(file, line) )
-			AfxDebugBreak(); 
+      if ( AfxAssertFailedLine(file, line) )
+        AfxDebugBreak(); 
     } while (0);
 #endif // _DEBUG
 

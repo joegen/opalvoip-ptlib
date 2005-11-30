@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.7  2005/04/20 06:42:22  csoutheren
  * Added -S option to check bug 1031626
  *
@@ -78,10 +81,10 @@ PluginTest::PluginTest()
 void Usage()
 {
   PError << "usage: plugintest [options]\n \n"
-	    "  -d dir      : Set the directory from which plugins are loaded\n"
-	    "  -s          : show the list of available PSoundChannel drivers\n"
-	    "  -l          : list all plugin drivers\n"
-	    "  -L          : list all plugin drivers using abstract factory interface\n"
+            "  -d dir      : Set the directory from which plugins are loaded\n"
+            "  -s          : show the list of available PSoundChannel drivers\n"
+            "  -l          : list all plugin drivers\n"
+            "  -L          : list all plugin drivers using abstract factory interface\n"
             "  -a driver   : play test sound using specified driver and default device\n"
             "                Use \"default\" as driver to use default (first) driver\n"
             "                Can also specify device as first arg, or use \"list\" to list all devices\n"
@@ -125,21 +128,21 @@ void PluginTest::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-	     "t-trace."              
-	     "o-output:"             
-	     "h-help."               
-	     "l-list."               
-	     "L-List."               
-	     "s-service:"   
+       "t-trace."              
+       "o-output:"             
+       "h-help."               
+       "l-list."               
+       "L-List."               
+       "s-service:"   
        "S-sounddefault:"
-	     "a-audio:"
-	     "A-Audio:"
-	     "d-directory:"          
-	     );
+       "a-audio:"
+       "A-Audio:"
+       "d-directory:"          
+       );
 
   PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-		     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 
   if (args.HasOption('d')) {
     PPluginManager & pluginMgr = PPluginManager::GetPluginManager();
@@ -276,7 +279,7 @@ void PluginTest::Main()
       else
         audio[i] = 0;
     }
-	
+
     if (!snd->Write((unsigned char *)audio.GetPointer(), SAMPLES * 2)) {
       cout << "Failed to write  " << SAMPLES/8000  << " seconds of beep beep. End program now." << endl;
       return;

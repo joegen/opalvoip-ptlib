@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.156  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.155  2005/11/17 22:54:26  csoutheren
  * Fixed missed functions in de-consting PMutex functions
  *
@@ -603,7 +606,7 @@ PTime::PTime()
   SYSTEMTIME SystemTime;
   GetSystemTime(&SystemTime);
   SystemTimeToFileTime(&SystemTime, (LPFILETIME)&timestamp);
-#endif	
+#endif
 
   theTime = (time_t)(timestamp/scale - delta);
   microseconds = (long)(timestamp%scale/10);
@@ -612,10 +615,10 @@ PTime::PTime()
 #ifdef UNICODE
 static void PWIN32GetLocaleInfo(LCID Locale,LCTYPE LCType,LPSTR lpLCData,int cchData)
 {
-	TCHAR* pw = new TCHAR[cchData+1];
-	GetLocaleInfo(Locale,LCType,pw,cchData);	
-	lpLCData[0]=0;
-	WideCharToMultiByte(GetACP(), 0, pw, -1, lpLCData, cchData, NULL, NULL);
+  TCHAR* pw = new TCHAR[cchData+1];
+  GetLocaleInfo(Locale,LCType,pw,cchData);
+  lpLCData[0]=0;
+  WideCharToMultiByte(GetACP(), 0, pw, -1, lpLCData, cchData, NULL, NULL);
 }
 #else
 
@@ -985,7 +988,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
 
   return TRUE;
 #elif _WIN32_WCE < 300
-	USES_CONVERSION;
+  USES_CONVERSION;
     ULARGE_INTEGER freeBytesAvailableToCaller;
     ULARGE_INTEGER totalNumberOfBytes; 
     ULARGE_INTEGER totalNumberOfFreeBytes;
@@ -993,15 +996,15 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
                            &freeBytesAvailableToCaller,
                            &totalNumberOfBytes,
                            &totalNumberOfFreeBytes)) 
-	{
-      total = totalNumberOfBytes.QuadPart;
-      free = totalNumberOfFreeBytes.QuadPart;
-	  clusterSize = 512; //X3
-	  return TRUE;
-	}
-	return FALSE;
+  {
+    total = totalNumberOfBytes.QuadPart;
+    free = totalNumberOfFreeBytes.QuadPart;
+    clusterSize = 512; //X3
+    return TRUE;
+  }
+  return FALSE;
 #else
-	return FALSE;
+  return FALSE;
 #endif
 }
 
@@ -1216,7 +1219,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 #endif
 */
 
-	process.activeThreadMutex.Wait();
+  process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->threadId, thread);
   process.activeThreadMutex.Signal();
 
@@ -1240,8 +1243,8 @@ void PThread::Win32AttachThreadInput()
 {
 #ifndef _WIN32_WCE
   PProcess & process = PProcess::Current();
-	::AttachThreadInput(threadId, ((PThread&)process).threadId, TRUE);
-	::AttachThreadInput(((PThread&)process).threadId, threadId, TRUE);
+  ::AttachThreadInput(threadId, ((PThread&)process).threadId, TRUE);
+  ::AttachThreadInput(((PThread&)process).threadId, threadId, TRUE);
 #endif
 }
 
@@ -1308,8 +1311,8 @@ void PThread::Restart()
                          originalStackSize, MainFunction, this, 0, &threadId);
 #else
    threadHandle = CreateThread(NULL, originalStackSize, 
-								(LPTHREAD_START_ROUTINE) MainFunction,
-							    this, 0, (LPDWORD) &threadId);
+                (LPTHREAD_START_ROUTINE) MainFunction,
+                  this, 0, (LPDWORD) &threadId);
 #endif
   PAssertOS(threadHandle != NULL);
 }
@@ -1532,7 +1535,7 @@ void PProcess::HouseKeepingThread::Main()
         else
 #endif
         // don't put the handle for the current process in the list
-		if (handles[numHandles] != process.GetHandle()) {
+    if (handles[numHandles] != process.GetHandle()) {
           numHandles++;
           if (numHandles >= MAXIMUM_WAIT_OBJECTS)
             break;
@@ -1646,12 +1649,12 @@ PString PProcess::GetOSName()
     case VER_PLATFORM_WIN32_NT :
       if (info.dwMajorVersion < 5)
         return "NT";
-	  else if (info.dwMinorVersion == 0) 
-		return "2000";
-	  else if (info.dwMinorVersion == 1)
-		return "XP";
-	  else
-        return "Server 2003";
+    else if (info.dwMinorVersion == 0) 
+      return "2000";
+    else if (info.dwMinorVersion == 1)
+      return "XP";
+    else
+      return "Server 2003";
   }
   return "?";
 }
@@ -1700,8 +1703,8 @@ PString PProcess::GetOSVersion()
 PDirectory PProcess::GetOSConfigDir()
 {
 #ifdef _WIN32_WCE
-	return PString("\\Windows");
-#else	
+  return PString("\\Windows");
+#else
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
@@ -1733,14 +1736,14 @@ PString PProcess::GetUserName() const
 
   DWORD dwType = REG_SZ; DWORD dw = 50;
   if( ERROR_SUCCESS != RegQueryValueEx(
-	  hKeyIdent, _T("Username"), NULL, &dwType, (LPBYTE) wcsuser, &dw) 
-	  || !*wcsuser )
+    hKeyIdent, _T("Username"), NULL, &dwType, (LPBYTE) wcsuser, &dw) 
+    || !*wcsuser )
   {
-	RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Ident"), 0, 0, &hKeyIdent);
-	dw = 50L;
-	if( ERROR_SUCCESS == RegQueryValueEx( 
-		hKeyIdent, _T("Name"), NULL, &dwType, (LPBYTE) wcsuser, &dw))
-			wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
+  RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Ident"), 0, 0, &hKeyIdent);
+  dw = 50L;
+  if( ERROR_SUCCESS == RegQueryValueEx( 
+    hKeyIdent, _T("Name"), NULL, &dwType, (LPBYTE) wcsuser, &dw))
+      wcscat( wcsuser, _T(" user") ); // like "Pocket_PC User"
   }
   
   USES_CONVERSION;
@@ -1966,7 +1969,7 @@ PString PDynaLink::GetName(BOOL full) const
 {
 
 #ifdef UNICODE
-	TCHAR path[_MAX_PATH];
+  TCHAR path[_MAX_PATH];
     GetModuleFileName(_hDLL, path, _MAX_PATH-1);
     str=PString(path);
 #else
