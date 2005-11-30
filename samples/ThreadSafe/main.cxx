@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2004/10/14 12:31:46  rjongbloed
  * Added synchronous mode for safe collection RemoveAll() to wait until all objects
  *   have actually been deleted before returning.
@@ -124,8 +127,8 @@ void ThreadSafe::Main()
 
   args.Parse(
              "t-trace."       "-no-trace."
-	     "o-output:"      "-no-output."
-	     "1-test1."       "-no-test1."
+             "o-output:"      "-no-output."
+             "1-test1."       "-no-test1."
              "2-test2."       "-no-test2."
              "3-test3."       "-no-test3.");
 
@@ -233,7 +236,7 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
   while (timeout.IsRunning()) {
     switch (random%17) {
       case 0 :
-        if (random%(unsorted.GetSize()+1) == 0) 	
+        if (random%(unsorted.GetSize()+1) == 0)
           unsorted.Append(new TestObject(*this, random));
         break;
 
@@ -312,21 +315,19 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
 
       case 15 :
         if ( unsorted.GetSize() > 0 ) {
-	  PSafePtr<TestObject> ptr2 = unsorted.GetAt(unsorted.GetSize() - 1, PSafeReadOnly);
-	  if ( ptr2 != NULL )
+          PSafePtr<TestObject> ptr2 = unsorted.GetAt(unsorted.GetSize() - 1, PSafeReadOnly);
+          if ( ptr2 != NULL )
             ptr2 = unsorted.FindWithLock(*ptr2, PSafeReadOnly);
-	}
-		
+        }
         break;
 
       case 16 :
         if ( sorted.GetSize() > 0 ) {
-	  PSafePtr<TestObject> ptr2 = unsorted.GetAt(sorted.GetSize() - 1, PSafeReference);
-	  if ( ptr2 != NULL )
+          PSafePtr<TestObject> ptr2 = unsorted.GetAt(sorted.GetSize() - 1, PSafeReference);
+          if ( ptr2 != NULL )
             ptr2 = sorted.FindWithLock(*ptr2, PSafeReference);
-	}
+        }
         break;
-
     }
     Sleep(random%500);
   }
