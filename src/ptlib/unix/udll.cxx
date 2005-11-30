@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.19  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.18  2005/08/04 20:10:24  csoutheren
  * Apply patch #1217596
  * Fixed problems with MacOSX Tiger
@@ -153,183 +156,183 @@ static const char *error(int setget, const char *str, ...);
 /* Set and get the error string for use by dlerror */
 static const char *error(int setget, const char *str, ...)
 {
-	static char errstr[ERR_STR_LEN];
-	static int err_filled = 0;
-	const char *retval;
-	va_list arg;
-	if (setget == 0)
-	{
-		va_start(arg, str);
-		strncpy(errstr, "dlsimple: ", ERR_STR_LEN);
-		vsnprintf(errstr + 10, ERR_STR_LEN - 10, str, arg);
-		va_end(arg);
-		err_filled = 1;
-		retval = NULL;
-	}
-	else
-	{
-		if (!err_filled)
-			retval = NULL;
-		else
-			retval = errstr;
-		err_filled = 0;
-	}
-	return retval;
+  static char errstr[ERR_STR_LEN];
+  static int err_filled = 0;
+  const char *retval;
+  va_list arg;
+  if (setget == 0)
+  {
+    va_start(arg, str);
+    strncpy(errstr, "dlsimple: ", ERR_STR_LEN);
+    vsnprintf(errstr + 10, ERR_STR_LEN - 10, str, arg);
+    va_end(arg);
+    err_filled = 1;
+    retval = NULL;
+  }
+  else
+  {
+    if (!err_filled)
+      retval = NULL;
+    else
+      retval = errstr;
+    err_filled = 0;
+  }
+  return retval;
 }
 
 /* dlopen */
 static void *dlopen(const char *path, int mode)
 {
-	void *module = 0;
-	NSObjectFileImage ofi = 0;
-	NSObjectFileImageReturnCode ofirc;
-	static int (*make_private_module_public) (NSModule module) = 0;
-	unsigned int flags =  NSLINKMODULE_OPTION_RETURN_ON_ERROR | NSLINKMODULE_OPTION_PRIVATE;
+  void *module = 0;
+  NSObjectFileImage ofi = 0;
+  NSObjectFileImageReturnCode ofirc;
+  static int (*make_private_module_public) (NSModule module) = 0;
+  unsigned int flags =  NSLINKMODULE_OPTION_RETURN_ON_ERROR | NSLINKMODULE_OPTION_PRIVATE;
 
-	/* If we got no path, the app wants the global namespace, use -1 as the marker
-	   in this case */
-	if (!path)
-		return (void *)-1;
+  /* If we got no path, the app wants the global namespace, use -1 as the marker
+     in this case */
+  if (!path)
+    return (void *)-1;
 
-	/* Create the object file image, works for things linked with the -bundle arg to ld */
-	ofirc = NSCreateObjectFileImageFromFile(path, &ofi);
-	switch (ofirc)
-	{
-		case NSObjectFileImageSuccess:
-			/* It was okay, so use NSLinkModule to link in the image */
-			if (!(mode & RTLD_LAZY)) flags += NSLINKMODULE_OPTION_BINDNOW;
-			module = NSLinkModule(ofi, path,flags);
-			/* Don't forget to destroy the object file image, unless you like leaks */
-			NSDestroyObjectFileImage(ofi);
-			/* If the mode was global, then change the module, this avoids
-			   multiply defined symbol errors to first load private then make
-			   global. Silly, isn't it. */
-			if ((mode & RTLD_GLOBAL))
-			{
-			  if (!make_private_module_public)
-			  {
-			    _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
-				(unsigned long *)&make_private_module_public);
-			  }
-			  make_private_module_public(module);
-			}
-			break;
-		case NSObjectFileImageInappropriateFile:
-			/* It may have been a dynamic library rather than a bundle, try to load it */
-			module = (void *)NSAddImage(path, NSADDIMAGE_OPTION_RETURN_ON_ERROR);
-			break;
-		case NSObjectFileImageFailure:
-			error(0,"Object file setup failure :  \"%s\"", path);
-			return 0;
-		case NSObjectFileImageArch:
-			error(0,"No object for this architecture :  \"%s\"", path);
-			return 0;
-		case NSObjectFileImageFormat:
-			error(0,"Bad object file format :  \"%s\"", path);
-			return 0;
-		case NSObjectFileImageAccess:
-			error(0,"Can't read object file :  \"%s\"", path);
-			return 0;		
-	}
-	if (!module)
-		error(0, "Can not open \"%s\"", path);
-	return module;
+  /* Create the object file image, works for things linked with the -bundle arg to ld */
+  ofirc = NSCreateObjectFileImageFromFile(path, &ofi);
+  switch (ofirc)
+  {
+    case NSObjectFileImageSuccess:
+      /* It was okay, so use NSLinkModule to link in the image */
+      if (!(mode & RTLD_LAZY)) flags += NSLINKMODULE_OPTION_BINDNOW;
+      module = NSLinkModule(ofi, path,flags);
+      /* Don't forget to destroy the object file image, unless you like leaks */
+      NSDestroyObjectFileImage(ofi);
+      /* If the mode was global, then change the module, this avoids
+         multiply defined symbol errors to first load private then make
+         global. Silly, isn't it. */
+      if ((mode & RTLD_GLOBAL))
+      {
+        if (!make_private_module_public)
+        {
+          _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
+        (unsigned long *)&make_private_module_public);
+        }
+        make_private_module_public(module);
+      }
+      break;
+    case NSObjectFileImageInappropriateFile:
+      /* It may have been a dynamic library rather than a bundle, try to load it */
+      module = (void *)NSAddImage(path, NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+      break;
+    case NSObjectFileImageFailure:
+      error(0,"Object file setup failure :  \"%s\"", path);
+      return 0;
+    case NSObjectFileImageArch:
+      error(0,"No object for this architecture :  \"%s\"", path);
+      return 0;
+    case NSObjectFileImageFormat:
+      error(0,"Bad object file format :  \"%s\"", path);
+      return 0;
+    case NSObjectFileImageAccess:
+      error(0,"Can't read object file :  \"%s\"", path);
+      return 0;    
+  }
+  if (!module)
+    error(0, "Can not open \"%s\"", path);
+  return module;
 }
 
 /* dlsymIntern is used by dlsym to find the symbol */
 static void *dlsymIntern(void *handle, const char *symbol)
 {
-	NSSymbol *nssym = 0;
-	/* If the handle is -1, if is the app global context */
-	if (handle == (void *)-1)
-	{
-		/* Global context, use NSLookupAndBindSymbol */
-		if (NSIsSymbolNameDefined(symbol))
-		{
-			nssym = NSLookupAndBindSymbol(symbol);
-		}
+  NSSymbol *nssym = 0;
+  /* If the handle is -1, if is the app global context */
+  if (handle == (void *)-1)
+  {
+    /* Global context, use NSLookupAndBindSymbol */
+    if (NSIsSymbolNameDefined(symbol))
+    {
+      nssym = NSLookupAndBindSymbol(symbol);
+    }
 
-	}
-	/* Now see if the handle is a struch mach_header* or not, use NSLookupSymbol in image
-	   for libraries, and NSLookupSymbolInModule for bundles */
-	else
-	{
-		/* Check for both possible magic numbers depending on x86/ppc byte order */
-		if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
-			(((struct mach_header *)handle)->magic == MH_CIGAM))
-		{
-			if (NSIsSymbolNameDefinedInImage((struct mach_header *)handle, symbol))
-			{
-				nssym = NSLookupSymbolInImage((struct mach_header *)handle,
-											  symbol,
-											  NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
-											  | NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
-			}
+  }
+  /* Now see if the handle is a struch mach_header* or not, use NSLookupSymbol in image
+     for libraries, and NSLookupSymbolInModule for bundles */
+  else
+  {
+    /* Check for both possible magic numbers depending on x86/ppc byte order */
+    if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+      (((struct mach_header *)handle)->magic == MH_CIGAM))
+    {
+      if (NSIsSymbolNameDefinedInImage((struct mach_header *)handle, symbol))
+      {
+        nssym = NSLookupSymbolInImage((struct mach_header *)handle,
+                        symbol,
+                        NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
+                        | NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+      }
 
-		}
-		else
-		{
-			nssym = NSLookupSymbolInModule(handle, symbol);
-		}
-	}
-	if (!nssym)
-	{
-		error(0, "Symbol \"%s\" Not found", symbol);
-		return NULL;
-	}
-	return NSAddressOfSymbol(nssym);
+    }
+    else
+    {
+      nssym = NSLookupSymbolInModule(handle, symbol);
+    }
+  }
+  if (!nssym)
+  {
+    error(0, "Symbol \"%s\" Not found", symbol);
+    return NULL;
+  }
+  return NSAddressOfSymbol(nssym);
 }
 
 static const char *dlerror(void)
 {
-	return error(1, (char *)NULL);
+  return error(1, (char *)NULL);
 }
 
 static int dlclose(void *handle)
 {
-	if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
-		(((struct mach_header *)handle)->magic == MH_CIGAM))
-	{
-		error(0, "Can't remove dynamic libraries on darwin");
-		return 0;
-	}
-	if (!NSUnLinkModule(handle, 0))
-	{
-		error(0, "unable to unlink module %s", NSNameOfModule(handle));
-		return 1;
-	}
-	return 0;
+  if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
+    (((struct mach_header *)handle)->magic == MH_CIGAM))
+  {
+    error(0, "Can't remove dynamic libraries on darwin");
+    return 0;
+  }
+  if (!NSUnLinkModule(handle, 0))
+  {
+    error(0, "unable to unlink module %s", NSNameOfModule(handle));
+    return 1;
+  }
+  return 0;
 }
 
 
 /* dlsym, prepend the underscore and call dlsymIntern */
 static void *dlsym(void *handle, const char *symbol)
 {
-	static char undersym[257];	/* Saves calls to malloc(3) */
-	int sym_len = strlen(symbol);
-	void *value = NULL;
-	char *malloc_sym = NULL;
+  static char undersym[257];  /* Saves calls to malloc(3) */
+  int sym_len = strlen(symbol);
+  void *value = NULL;
+  char *malloc_sym = NULL;
 
-	if (sym_len < 256)
-	{
-		snprintf(undersym, 256, "_%s", symbol);
-		value = dlsymIntern(handle, undersym);
-	}
-	else
-	{
-		malloc_sym = malloc(sym_len + 2);
-		if (malloc_sym)
-		{
-			sprintf(malloc_sym, "_%s", symbol);
-			value = dlsymIntern(handle, malloc_sym);
-			free(malloc_sym);
-		}
-		else
-		{
-			error(0, "Unable to allocate memory");
-		}
-	}
-	return value;
+  if (sym_len < 256)
+  {
+    snprintf(undersym, 256, "_%s", symbol);
+    value = dlsymIntern(handle, undersym);
+  }
+  else
+  {
+    malloc_sym = malloc(sym_len + 2);
+    if (malloc_sym)
+    {
+      sprintf(malloc_sym, "_%s", symbol);
+      value = dlsymIntern(handle, malloc_sym);
+      free(malloc_sym);
+    }
+    else
+    {
+      error(0, "Unable to allocate memory");
+    }
+  }
+  return value;
 }
 
 #else
@@ -341,7 +344,7 @@ static void *dlsym(void *handle, const char *symbol)
 
 #endif // P_MACOSX
 
-#ifndef	P_DYNALINK
+#ifndef  P_DYNALINK
 
 #warning "No implementation for dynamic library functions"
 

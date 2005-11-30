@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.85  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.84  2005/11/25 02:29:54  csoutheren
  * Applied patch #1353487 by Hannes Friederich
  * Mac OS X update
@@ -299,9 +302,9 @@
 #include <langinfo.h>
 #endif
 
-#define	LINE_SIZE_STEP	100
+#define  LINE_SIZE_STEP  100
 
-#define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
+#define  DEFAULT_FILE_MODE  (S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #if !P_USE_INLINES
 #include "ptlib/osutil.inl"
@@ -629,7 +632,7 @@ BOOL PDirectory::Create(const PString & p, int perm)
     str = p.Left(last);
 #ifdef P_VXWORKS
   return mkdir(str) == 0;
-#else		
+#else    
   return mkdir(str, perm) == 0;
 #endif
 }
@@ -650,10 +653,10 @@ PString PDirectory::GetVolume() const
   char mounton[257];
 
   if ((fd = open(operator+("."), O_RDONLY)) != -1) {
-	mounton[256] = 0;
-	devctl(fd, DCMD_FSYS_MOUNTED_ON, mounton, 256, 0);
-	close(fd);
-	volume = strdup(mounton);
+  mounton[256] = 0;
+  devctl(fd, DCMD_FSYS_MOUNTED_ON, mounton, 256, 0);
+  close(fd);
+  volume = strdup(mounton);
   } 
 
 #else
@@ -955,7 +958,7 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
   if (force && errno == EEXIST)
     if (Remove(to, TRUE))
       if (rename(from, to) == 0)
-	return TRUE;
+  return TRUE;
 
   return FALSE;
 }
@@ -989,7 +992,7 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
   if(access == TRUE)
     file.Close();
   return access;
-#else	
+#else  
   int accmode;
 
   switch (mode) {
@@ -1017,7 +1020,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   struct stat s;
 #ifdef P_VXWORKS
   if (stat(name, &s) != OK)
-#else	
+#else  
   if (lstat(name, &s) != 0)
 #endif // P_VXWORKS
     return FALSE;
@@ -1096,7 +1099,7 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
     return (::ioctl(file.GetHandle(), FIOATTRIBSET, mode) >= 0);
 
   return FALSE;
-#else	
+#else  
   return chmod ((const char *)name, mode) == 0;
 #endif // P_VXWORKS
 }

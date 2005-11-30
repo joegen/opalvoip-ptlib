@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.79  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.78  2005/09/24 09:11:42  dominance
  * use unix-style slashes to not confuse mingw on win32
  *
@@ -859,7 +862,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
     info.created = FileTimeToTime(FInfo.ftCreationTime);
     info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
     info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
-    info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);		
+    info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);
     
     info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
     

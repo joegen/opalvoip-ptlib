@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.47  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.46  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -510,9 +513,9 @@ class PWin32PacketCe : public PWin32PacketDriver
       { return IOCTL_EPACKET_QUERY_OID; }
 #endif
   protected:
-	PStringArray ipAddresses;
-	PStringArray netMasks;
-	PStringArray interfaces;
+    PStringArray ipAddresses;
+    PStringArray netMasks;
+    PStringArray interfaces;
 };
 
 #endif // _WIN32_WCE
@@ -918,7 +921,7 @@ PWin32PacketDriver::~PWin32PacketDriver()
 void PWin32PacketDriver::Close()
 {
   if (hDriver != INVALID_HANDLE_VALUE) {
-	CloseHandle(hDriver);
+    CloseHandle(hDriver);
     hDriver = INVALID_HANDLE_VALUE;
   }
 }
@@ -1414,105 +1417,103 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 #ifdef _WIN32_WCE
 PWin32PacketCe::PWin32PacketCe()
 {
-	PString str, driver, nameStr, keyStr, driverStr, 
-		miniportStr, linkageStr, routeStr, tcpipStr;
+  PString str, driver, nameStr, keyStr, driverStr, miniportStr, linkageStr, routeStr, tcpipStr;
 
-	static const PString ActiveDrivers = "HKEY_LOCAL_MACHINE\\Drivers\\Active";
-	static const PString CommBase = "HKEY_LOCAL_MACHINE\\Comm";
+  static const PString ActiveDrivers = "HKEY_LOCAL_MACHINE\\Drivers\\Active";
+  static const PString CommBase = "HKEY_LOCAL_MACHINE\\Comm";
 
-	// Collecting active drivers
-	RegistryKey registry(ActiveDrivers, RegistryKey::ReadOnly);
-	for (PINDEX idx = 0; registry.EnumKey(idx, str); idx++) 
-	{
-		driver = ActiveDrivers + "\\" + str;
-		RegistryKey driverKey( driver, RegistryKey::ReadOnly );
+  // Collecting active drivers
+  RegistryKey registry(ActiveDrivers, RegistryKey::ReadOnly);
+  for (PINDEX idx = 0; registry.EnumKey(idx, str); idx++) 
+  {
+    driver = ActiveDrivers + "\\" + str;
+    RegistryKey driverKey( driver, RegistryKey::ReadOnly );
 
-		// Filter out non - NDS drivers
-		if( !driverKey.QueryValue( "Name", nameStr ) || 
-			nameStr.Find("NDS") == P_MAX_INDEX )
-				continue;
+    // Filter out non - NDS drivers
+    if (!driverKey.QueryValue( "Name", nameStr ) || nameStr.Find("NDS") == P_MAX_INDEX )
+      continue;
 
-		// Active network driver found
-		// 
-		// e.g. built-in driver has "Key" = Drivers\BuiltIn\NDIS
-		if( driverKey.QueryValue( "Key", keyStr ) )
-		{
-			if( P_MAX_INDEX != keyStr.Find("BuiltIn") )
-			{
-				// Built-in driver case
-				continue;
-			}
-			else
-			{
-				driverStr = "HKEY_LOCAL_MACHINE\\"+ keyStr;
-				RegistryKey ActiveDriverKey( driverStr, RegistryKey::ReadOnly );
-				
-				// Get miniport value
-				if( ActiveDriverKey.QueryValue( "Miniport", miniportStr ) )
-				{
-					// Get miniport linkage
-					//
-					// e.g. [HKEY_LOCAL_MACHINE\Comm\SOCKETLPE\Linkage]
-					linkageStr = CommBase + "\\" + miniportStr + "\\Linkage";
-				
-					RegistryKey LinkageKey( linkageStr, RegistryKey::ReadOnly );
+    // Active network driver found
+    // 
+    // e.g. built-in driver has "Key" = Drivers\BuiltIn\NDIS
+    if( driverKey.QueryValue( "Key", keyStr ) )
+    {
+      if( P_MAX_INDEX != keyStr.Find("BuiltIn") )
+      {
+        // Built-in driver case
+        continue;
+      }
+      else
+      {
+        driverStr = "HKEY_LOCAL_MACHINE\\"+ keyStr;
+        RegistryKey ActiveDriverKey( driverStr, RegistryKey::ReadOnly );
 
-					// Get route to real driver
-					if( LinkageKey.QueryValue( "Route", routeStr ) )
-					{
-						tcpipStr = CommBase + "\\" + routeStr + "\\Parms\\TcpIp";
+        // Get miniport value
+        if( ActiveDriverKey.QueryValue( "Miniport", miniportStr ) )
+        {
+          // Get miniport linkage
+          //
+          // e.g. [HKEY_LOCAL_MACHINE\Comm\SOCKETLPE\Linkage]
+          linkageStr = CommBase + "\\" + miniportStr + "\\Linkage";
 
-						RegistryKey TcpIpKey( tcpipStr, RegistryKey::ReadOnly );
+          RegistryKey LinkageKey( linkageStr, RegistryKey::ReadOnly );
 
-						DWORD dwDHCPEnabled = FALSE;
-						TcpIpKey.QueryValue( "EnableDHCP", dwDHCPEnabled, TRUE );
+          // Get route to real driver
+          if( LinkageKey.QueryValue( "Route", routeStr ) )
+          {
+            tcpipStr = CommBase + "\\" + routeStr + "\\Parms\\TcpIp";
 
-						/// Collect IP addresses and net masks
-						PString ipAddress, netMask;
-						if( !dwDHCPEnabled )
-						{
-							if(TcpIpKey.QueryValue( "IpAddress", ipAddress ) 
-								&& (ipAddress != "0.0.0.0") )
-							{
-								interfaces[interfaces.GetSize()] = tcpipStr; // Registry key for the driver
-								ipAddresses[ipAddresses.GetSize()] = ipAddress; // It's IP
-								if( driverKey.QueryValue( "Subnetmask", netMask ) )
-									netMasks[netMasks.GetSize()] = netMask; // It's mask
-								else
-									netMasks[netMasks.GetSize()] = "255.255.255.0";
-							}
-						}
-						else // DHCP enabled
-						if( TcpIpKey.QueryValue( "DhcpIpAddress", ipAddress ) 
-							&& (ipAddress != "0.0.0.0") )
-						{
-							interfaces[interfaces.GetSize()] = str;
-							ipAddresses[ipAddresses.GetSize()] = ipAddress;
-							if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
-								netMasks[netMasks.GetSize()] = netMask;
-							else
-								netMasks[netMasks.GetSize()] = "255.255.255.0";
-						}
-					}
-				}
-			}			
-		}
-	}
+            RegistryKey TcpIpKey( tcpipStr, RegistryKey::ReadOnly );
+
+            DWORD dwDHCPEnabled = FALSE;
+            TcpIpKey.QueryValue( "EnableDHCP", dwDHCPEnabled, TRUE );
+
+            /// Collect IP addresses and net masks
+            PString ipAddress, netMask;
+            if ( !dwDHCPEnabled )
+            {
+              if  (TcpIpKey.QueryValue( "IpAddress", ipAddress ) 
+                  && (ipAddress != "0.0.0.0") )
+              {
+                interfaces[interfaces.GetSize()] = tcpipStr; // Registry key for the driver
+                ipAddresses[ipAddresses.GetSize()] = ipAddress; // It's IP
+                if( driverKey.QueryValue( "Subnetmask", netMask ) )
+                  netMasks[netMasks.GetSize()] = netMask; // It's mask
+                else
+                  netMasks[netMasks.GetSize()] = "255.255.255.0";
+              }
+            }
+            else // DHCP enabled
+            if( TcpIpKey.QueryValue( "DhcpIpAddress", ipAddress ) 
+              && (ipAddress != "0.0.0.0") )
+            {
+              interfaces[interfaces.GetSize()] = str;
+              ipAddresses[ipAddresses.GetSize()] = ipAddress;
+              if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
+                netMasks[netMasks.GetSize()] = netMask;
+              else
+                netMasks[netMasks.GetSize()] = "255.255.255.0";
+            }
+          }
+        }
+      }      
+    }
+  }
 }
 
 BOOL PWin32PacketCe::EnumInterfaces(PINDEX idx, PString & name)
 {
-	if( idx >= interfaces.GetSize() )
-		return FALSE;
-	
-	name = interfaces[idx];
-	return TRUE;
+  if( idx >= interfaces.GetSize() )
+    return FALSE;
+  
+  name = interfaces[idx];
+  return TRUE;
 }
 
 
 BOOL PWin32PacketCe::BindInterface(const PString &)
 {
-	return TRUE;
+  return TRUE;
 }
 
 
@@ -1520,12 +1521,12 @@ BOOL PWin32PacketCe::EnumIpAddress(PINDEX idx,
                                     PIPSocket::Address & addr,
                                     PIPSocket::Address & net_mask)
 {
-	if( idx >= interfaces.GetSize() )
-		return FALSE;
+  if( idx >= interfaces.GetSize() )
+    return FALSE;
 
-	addr = ipAddresses[idx];
-	net_mask = netMasks[idx];
-	return TRUE;
+  addr = ipAddresses[idx];
+  net_mask = netMasks[idx];
+  return TRUE;
 }
 
 
@@ -2035,9 +2036,9 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   return TRUE;
 }
 
-unsigned PIPSocket::AsNumeric(PIPSocket::Address addr)		
+unsigned PIPSocket::AsNumeric(PIPSocket::Address addr)    
 { 
-	return ((addr.Byte1() << 24) | (addr.Byte2()  << 16) |
+  return ((addr.Byte1() << 24) | (addr.Byte2()  << 16) |
            (addr.Byte3()  << 8) | addr.Byte4()); 
 }
 
@@ -2046,59 +2047,59 @@ PIPSocket::Address PIPSocket::GetRouteAddress(PIPSocket::Address RemoteAddress)
 
 Address localaddr;
 
-	if (!RemoteAddress.IsRFC1918()) {				 // Remote Address is not Local
-		if (!GetNetworkInterface(localaddr)) {			 // User not connected directly to Internet
-			localaddr = GetGatewayInterfaceAddress(); // Get the default Gateway NIC address
-			 if ( localaddr != 0 )					  // No connection to the Internet?		
-				 return localaddr;
-		}
-	} else {
-		PIPSocket::InterfaceTable interfaceTable;
-		if (PIPSocket::GetInterfaceTable(interfaceTable)) {
-			PINDEX i;
-			for (i = 0; i < interfaceTable.GetSize(); ++i) {
-				localaddr = interfaceTable[i].GetAddress();
-				if (!localaddr.IsLoopback() && localaddr.IsRFC1918()) {
-					if (IsAddressReachable(localaddr,
-							interfaceTable[i].GetNetMask(),RemoteAddress))
-								return localaddr;
-				}
-			}
-		}
-	}
-	return 0;
+  if (!RemoteAddress.IsRFC1918()) {         // Remote Address is not Local
+    if (!GetNetworkInterface(localaddr)) {       // User not connected directly to Internet
+      localaddr = GetGatewayInterfaceAddress(); // Get the default Gateway NIC address
+       if ( localaddr != 0 )            // No connection to the Internet?    
+         return localaddr;
+    }
+  } else {
+    PIPSocket::InterfaceTable interfaceTable;
+    if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+      PINDEX i;
+      for (i = 0; i < interfaceTable.GetSize(); ++i) {
+        localaddr = interfaceTable[i].GetAddress();
+        if (!localaddr.IsLoopback() && localaddr.IsRFC1918()) {
+          if (IsAddressReachable(localaddr,
+              interfaceTable[i].GetNetMask(),RemoteAddress))
+                return localaddr;
+        }
+      }
+    }
+  }
+  return 0;
 }
 
 BOOL PIPSocket::IsAddressReachable(PIPSocket::Address LocalIP,
-								   PIPSocket::Address LocalMask, 
-								   PIPSocket::Address RemoteIP)
+                   PIPSocket::Address LocalMask, 
+                   PIPSocket::Address RemoteIP)
 {
 
-	BYTE t = 255;
-	int t1=t,t2=t,t3 =t,t4=t;
-	int b1=0,b2=0,b3=0,b4=0;
+  BYTE t = 255;
+  int t1=t,t2=t,t3 =t,t4=t;
+  int b1=0,b2=0,b3=0,b4=0;
 
-	if ((int)LocalMask.Byte1() > 0)
-	{	t1 = LocalIP.Byte1() + (t-LocalMask.Byte1()); b1 = LocalIP.Byte1();}
-	
-	if ((int)LocalMask.Byte2() > 0)
-	{	t2 = LocalIP.Byte2() + (t-LocalMask.Byte2()); b2 = LocalIP.Byte2();}
+  if ((int)LocalMask.Byte1() > 0)
+  {  t1 = LocalIP.Byte1() + (t-LocalMask.Byte1()); b1 = LocalIP.Byte1();}
+  
+  if ((int)LocalMask.Byte2() > 0)
+  {  t2 = LocalIP.Byte2() + (t-LocalMask.Byte2()); b2 = LocalIP.Byte2();}
 
-	if ((int)LocalMask.Byte3() > 0)
-	{	t3 = LocalIP.Byte3() + (t-LocalMask.Byte3()); b3 = LocalIP.Byte3();}
+  if ((int)LocalMask.Byte3() > 0)
+  {  t3 = LocalIP.Byte3() + (t-LocalMask.Byte3()); b3 = LocalIP.Byte3();}
 
-	if ((int)LocalMask.Byte4() > 0)
-	{	t4 = LocalIP.Byte4() + (t-LocalMask.Byte4()); b4 = LocalIP.Byte4();}
+  if ((int)LocalMask.Byte4() > 0)
+  {  t4 = LocalIP.Byte4() + (t-LocalMask.Byte4()); b4 = LocalIP.Byte4();}
 
 
-	Address lt = Address((BYTE)t1,(BYTE)t2,(BYTE)t3,(BYTE)t4);
-	Address lb = Address((BYTE)b1,(BYTE)b2,(BYTE)b3,(BYTE)b4);	
+  Address lt = Address((BYTE)t1,(BYTE)t2,(BYTE)t3,(BYTE)t4);
+  Address lb = Address((BYTE)b1,(BYTE)b2,(BYTE)b3,(BYTE)b4);  
 
-	if (AsNumeric(RemoteIP) > AsNumeric(lb) && 
-				AsNumeric(lt) > AsNumeric(RemoteIP))
-					return TRUE;
+  if (AsNumeric(RemoteIP) > AsNumeric(lb) && 
+        AsNumeric(lt) > AsNumeric(RemoteIP))
+          return TRUE;
 
-	return FALSE;
+  return FALSE;
 }
 
 PString PIPSocket::GetInterface(PIPSocket::Address addr)
@@ -2106,11 +2107,11 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
   PIPSocket::InterfaceTable if_table;
 
   if (PIPSocket::GetInterfaceTable( if_table ) ) {
-	  for (PINDEX i=0; i < if_table.GetSize(); i++) {
-		PIPSocket::InterfaceEntry if_entry = if_table[i];
-		   if (if_entry.GetAddress() == addr) 
-			   return if_entry.GetName();
-	  }        
+    for (PINDEX i=0; i < if_table.GetSize(); i++) {
+    PIPSocket::InterfaceEntry if_entry = if_table[i];
+       if (if_entry.GetAddress() == addr) 
+         return if_entry.GetName();
+    }        
   }
 
   return PString();

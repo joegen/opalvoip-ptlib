@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.76  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.75  2005/11/08 10:35:53  csoutheren
  * Added missing pragma
  *
@@ -296,18 +299,18 @@ extern "C" {
 #include "uerror.h"
 
 #if defined(P_HPUX9)
-#define	SELECT(p1,p2,p3,p4,p5)		select(p1,(int *)(p2),(int *)(p3),(int *)(p4),p5)
+#define  SELECT(p1,p2,p3,p4,p5)    select(p1,(int *)(p2),(int *)(p3),(int *)(p4),p5)
 #else
-#define	SELECT(p1,p2,p3,p4,p5)		select(p1,p2,p3,p4,p5)
+#define  SELECT(p1,p2,p3,p4,p5)    select(p1,p2,p3,p4,p5)
 #endif
 
 #if defined(P_SUN4)
 extern "C" void bzero(void *, int);
 extern "C" int select(int width,
-			fd_set *readfds,
-			fd_set *writefds,
-			fd_set *exceptfds,
-			struct timeval *timeout);
+      fd_set *readfds,
+      fd_set *writefds,
+      fd_set *exceptfds,
+      struct timeval *timeout);
 #endif
 
 #ifdef __BEOS__
@@ -439,7 +442,7 @@ PString PProcess::GetUserName() const
   char pnamebuf[1024];
   int len = 1024;
   STATUS gethostresult;
-  gethostresult =::gethostname(pnamebuf,len);	
+  gethostresult =::gethostname(pnamebuf,len);  
   if (gethostresult == OK)
     return PString(pnamebuf,len);
   else
@@ -753,7 +756,7 @@ void PProcess::CommonDestruct()
 extern "C" {
 #include <netinet/in.h>
 #include <rtems/rtems_bsdnet.h>
-	
+  
 
 int socketpair(int d, int type, int protocol, int sv[2])
 {
@@ -768,13 +771,13 @@ int socketpair(int d, int type, int protocol, int sv[2])
     {
         printf("\"Network\" initializing!\n");
         network_status = rtems_bsdnet_initialize_network();
-	if (network_status == 0)
-	    printf("\"Network\" initialized!\n");
-	else
-	{
-	    printf("Error: %s\n", strerror(errno));
-	    return -1;
-	}
+  if (network_status == 0)
+      printf("\"Network\" initialized!\n");
+  else
+  {
+      printf("Error: %s\n", strerror(errno));
+      return -1;
+  }
     }
 
     /* prepare sv */
@@ -792,19 +795,19 @@ int socketpair(int d, int type, int protocol, int sv[2])
 
     if (bind(s, (struct sockaddr *)&addr1, sizeof addr1) < 0) 
     {
-	close(s);
+  close(s);
         return -1;
     }
     if (listen(s, 2) < 0 ) 
     {
-	close(s);
+  close(s);
         return -1;
     }
     
     sv[0] = socket(d, type, protocol);
     if (sv[0] < 0) 
     {
-	close(s);
+  close(s);
         return -1;
     }
     
@@ -815,25 +818,25 @@ int socketpair(int d, int type, int protocol, int sv[2])
 
     if (bind(sv[0], (struct sockaddr *)&addr2, sizeof addr2) < 0)
     {
-	close(s);
-	close(sv[0]);
-	sv[0]=-1;
+  close(s);
+  close(sv[0]);
+  sv[0]=-1;
         return -1;
     }
     if (connect(sv[0], (struct sockaddr *)&addr1, sizeof addr1) < 0)
     {
-	close(s);
-	close(sv[0]);
-	sv[0]=-1;
+  close(s);
+  close(sv[0]);
+  sv[0]=-1;
         return -1;
     }
     
     sv[1] = accept(s, (struct sockaddr *)&addr2, &addrlen);
     if (sv[1] < 0)
     {
-	close(s);
-	close(sv[0]);
-	sv[0]=-1;
+  close(s);
+  close(sv[0]);
+  sv[0]=-1;
         return -1;
     }
 

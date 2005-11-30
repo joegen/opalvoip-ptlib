@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.88  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.87  2005/11/25 00:22:02  csoutheren
  * Applied patch #1266244 from Nick Shmyrev
  * Cleanup PSystemLog from PTrace in PService exit
@@ -255,14 +258,14 @@
 
 #ifdef P_VXWORKS
 #include <logLib.h>
-#define LOG_EMERG			0
-#define LOG_ALERT			1
-#define LOG_CRIT			2
-#define LOG_ERR				3
-#define LOG_WARNING			4
-#define	LOG_NOTICE			5
-#define LOG_INFO			6
-#define LOG_DEBUG			7
+#define LOG_EMERG      0
+#define LOG_ALERT      1
+#define LOG_CRIT      2
+#define LOG_ERR        3
+#define LOG_WARNING      4
+#define  LOG_NOTICE      5
+#define LOG_INFO      6
+#define LOG_DEBUG      7
 #else
 #include <syslog.h>
 #include <pwd.h>
@@ -286,7 +289,7 @@
 #define new PNEW
 
 
-#define	MAX_LOG_LINE_LEN	1024
+#define  MAX_LOG_LINE_LEN  1024
 
 #ifndef P_VXWORKS
 static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
@@ -543,7 +546,7 @@ int PServiceProcess::InitialiseService()
              "h-help."
              "x-execute."
              "p-pid-file:"
-	     "H-handlemax:"
+       "H-handlemax:"
              "i-ini-file:"
              "k-kill."
              "t-terminate."
@@ -695,7 +698,7 @@ int PServiceProcess::InitialiseService()
             "  -x --execute        execute as a normal program\n"
             "  -i --ini-file       set the ini file to use, may be explicit file or\n"
             "                      a ':' separated set of directories to search.\n"
-	    "  -H --handlemax n    set maximum number of file handles (set before uid/gid)\n"
+            "  -H --handlemax n    set maximum number of file handles (set before uid/gid)\n"
 #ifdef P_LINUX
             "  -C --core-size      set the maximum core file size\n"
 #endif

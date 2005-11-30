@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.34  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.33  2005/09/26 20:19:34  dominance
  * enhance the devicename presentation in mingw video
  *
@@ -284,11 +287,11 @@ typedef struct tagCapStatus {
 
 extern "C" {
 HWND VFWAPI capCreateCaptureWindowA (LPCSTR lpszWindowName, DWORD dwStyle,
-				     int x, int y, int nWidth, int nHeight,
-				     HWND hwndParent, int nID);
+             int x, int y, int nWidth, int nHeight,
+             HWND hwndParent, int nID);
 
 BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
-				      int cbName, LPSTR lpszVer, int cbVer);
+              int cbName, LPSTR lpszVer, int cbVer);
 }
 
 #define capGetDriverDescription capGetDriverDescriptionA

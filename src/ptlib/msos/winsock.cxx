@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.71  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.70  2005/11/21 11:49:36  shorne
  * Changed disableQos to disableGQoS to better reflect what it does
  *
@@ -795,7 +798,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 #if P_HAS_IPV6
     if (host_info->h_length == 16) {
       if (addr == *(struct in6_addr *)host_info->h_addr_list[i])
-	return TRUE;
+        return TRUE;
     }
     else
 #endif
@@ -812,7 +815,7 @@ BOOL PUDPSocket::disableGQoS = TRUE;
 
 void PUDPSocket::EnableGQoS()
 {
-	disableGQoS = FALSE;
+  disableGQoS = FALSE;
 }
 
 BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
@@ -1079,7 +1082,7 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 #ifdef P_HAS_QOS
 BOOL PIPXSocket::GetHostAddress(const PString & /*hostname*/, Address & /*addr*/)
 {
-	return FALSE;
+  return FALSE;
 }
 #else
 BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
@@ -1091,7 +1094,7 @@ BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
   static GUID netware_file_server = SVCID_FILE_SERVER;
   CSADDR_INFO addr_info[10];
   DWORD buffer_length = sizeof(addr_info);
-	int num = GetAddressByName(NS_DEFAULT,
+  int num = GetAddressByName(NS_DEFAULT,
                              &netware_file_server,
                              (LPTSTR)(const char *)hostname,
                              NULL,

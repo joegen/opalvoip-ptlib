@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.16  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.15  2005/09/24 09:11:42  dominance
  * use unix-style slashes to not confuse mingw on win32
  *
@@ -98,49 +101,49 @@ const char CurrentUserStr[] = "HKEY_CURRENT_USER\\";
 class SecurityID
 {
   public:
-    SecurityID(PSID_IDENTIFIER_AUTHORITY  pIdentifierAuthority,	// pointer to identifier authority
-               BYTE nSubAuthorityCount,	// count of subauthorities
-               DWORD dwSubAuthority0,	// subauthority 0
-               DWORD dwSubAuthority1,	// subauthority 1
-               DWORD dwSubAuthority2,	// subauthority 2
-               DWORD dwSubAuthority3,	// subauthority 3
-               DWORD dwSubAuthority4,	// subauthority 4
-               DWORD dwSubAuthority5,	// subauthority 5
-               DWORD dwSubAuthority6,	// subauthority 6
-               DWORD dwSubAuthority7	// subauthority 7
+    SecurityID(PSID_IDENTIFIER_AUTHORITY  pIdentifierAuthority,  // pointer to identifier authority
+               BYTE nSubAuthorityCount,  // count of subauthorities
+               DWORD dwSubAuthority0,  // subauthority 0
+               DWORD dwSubAuthority1,  // subauthority 1
+               DWORD dwSubAuthority2,  // subauthority 2
+               DWORD dwSubAuthority3,  // subauthority 3
+               DWORD dwSubAuthority4,  // subauthority 4
+               DWORD dwSubAuthority5,  // subauthority 5
+               DWORD dwSubAuthority6,  // subauthority 6
+               DWORD dwSubAuthority7  // subauthority 7
               )
     {
-      if (!AllocateAndInitializeSid(pIdentifierAuthority,	// pointer to identifier authority
-                                    nSubAuthorityCount,	// count of subauthorities
-                                    dwSubAuthority0,	// subauthority 0
-                                    dwSubAuthority1,	// subauthority 1
-                                    dwSubAuthority2,	// subauthority 2
-                                    dwSubAuthority3,	// subauthority 3
-                                    dwSubAuthority4,	// subauthority 4
-                                    dwSubAuthority5,	// subauthority 5
-                                    dwSubAuthority6,	// subauthority 6
-                                    dwSubAuthority7,	// subauthority 7
+      if (!AllocateAndInitializeSid(pIdentifierAuthority,  // pointer to identifier authority
+                                    nSubAuthorityCount,  // count of subauthorities
+                                    dwSubAuthority0,  // subauthority 0
+                                    dwSubAuthority1,  // subauthority 1
+                                    dwSubAuthority2,  // subauthority 2
+                                    dwSubAuthority3,  // subauthority 3
+                                    dwSubAuthority4,  // subauthority 4
+                                    dwSubAuthority5,  // subauthority 5
+                                    dwSubAuthority6,  // subauthority 6
+                                    dwSubAuthority7,  // subauthority 7
                                     &sidptr))
         sidptr = NULL;
     }
 
-    SecurityID(LPCTSTR lpSystemName,	// address of string for system name
-               LPCTSTR lpAccountName,	// address of string for account name
-               LPTSTR ReferencedDomainName,	// address of string for referenced domain 
-               LPDWORD cbReferencedDomainName,	// address of size of domain string
-               PSID_NAME_USE peUse 	// address of SID-type indicator
+    SecurityID(LPCTSTR lpSystemName,  // address of string for system name
+               LPCTSTR lpAccountName,  // address of string for account name
+               LPTSTR ReferencedDomainName,  // address of string for referenced domain 
+               LPDWORD cbReferencedDomainName,  // address of size of domain string
+               PSID_NAME_USE peUse   // address of SID-type indicator
               )
     {
       DWORD len = 1024;
       sidptr = (PSID)LocalAlloc(LPTR, len);
       if (sidptr != NULL) {
-        if (!LookupAccountName(lpSystemName,	// address of string for system name
-                               lpAccountName,	// address of string for account name
-                               sidptr,	// address of security identifier
-                               &len,	// address of size of security identifier
-                               ReferencedDomainName,	// address of string for referenced domain 
-                               cbReferencedDomainName,	// address of size of domain string
-                               peUse 	// address of SID-type indicator
+        if (!LookupAccountName(lpSystemName,  // address of string for system name
+                               lpAccountName,  // address of string for account name
+                               sidptr,  // address of security identifier
+                               &len,  // address of size of security identifier
+                               ReferencedDomainName,  // address of string for referenced domain 
+                               cbReferencedDomainName,  // address of size of domain string
+                               peUse   // address of SID-type indicator
                               )) {
           LocalFree(sidptr);
           sidptr = NULL;
@@ -433,14 +436,14 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
 #else  // CE has only Unicode based API
-	  {   USES_CONVERSION; TCHAR tstr[MAX_PATH];
-		  if( RegQueryValueEx(key, (char *)(const char *)value, NULL,
-					  &type, (LPBYTE) tstr, &size) == ERROR_SUCCESS )
-		  {
-			  str = T2A(tstr);
-			  return TRUE; 
-		  } 
-		}
+    {   USES_CONVERSION; TCHAR tstr[MAX_PATH];
+      if( RegQueryValueEx(key, (char *)(const char *)value, NULL,
+            &type, (LPBYTE) tstr, &size) == ERROR_SUCCESS )
+      {
+        str = T2A(tstr);
+        return TRUE; 
+      } 
+    }
 #endif
     case REG_DWORD : {
       DWORD num;
@@ -513,8 +516,8 @@ BOOL RegistryKey::SetValue(const PString & value, const PString & str)
   USES_CONVERSION; 
   return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
                 (LPBYTE) A2T((const char *)str), 
-					( (str.GetLength()+1) * sizeof(TCHAR)/sizeof(char) )
-						) == ERROR_SUCCESS;
+          ( (str.GetLength()+1) * sizeof(TCHAR)/sizeof(char) )
+            ) == ERROR_SUCCESS;
 #endif
 }
 

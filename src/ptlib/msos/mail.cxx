@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.17  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.16  2005/11/19 01:17:37  csoutheren
  * Removed obsolete C++ construct
  *
@@ -374,7 +377,7 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
     if (lastError == CMC_SUCCESS) {
       msgIDs.SetSize((PINDEX)count);
       for (PINDEX m = 0; m < (PINDEX)count; m++) {
-		CMC_uint32 c;
+        CMC_uint32 c;
         for (c = 0; c < messages[m].message_reference->length; c++)
           if (!isprint(messages[m].message_reference->string[c]))
             break;
@@ -609,7 +612,7 @@ BOOL PMail::GetMessageAttachments(const PString & id,
 
     if (message->attachments != NULL) {
       PINDEX total = 1;
-	  CMC_attachment * attachment;
+      CMC_attachment * attachment;
       for (attachment = message->attachments;
             (attachment->attach_flags&CMC_ATT_LAST_ELEMENT) != 0; attachment++)
         total++;

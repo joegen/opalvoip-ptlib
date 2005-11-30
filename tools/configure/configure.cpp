@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.26  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.25  2005/08/15 09:40:58  rjongbloed
  * Captalised the word "disabled" so more obvious.
  *
@@ -495,13 +498,13 @@ int main(int argc, char* argv[])
     if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
     else if (strnicmp(argv[i], EXCLUDE_ENV, sizeof(EXCLUDE_ENV) - 1) == 0){
-        externEnv = argv[i] + sizeof(EXCLUDE_ENV) - 1; 	
+        externEnv = argv[i] + sizeof(EXCLUDE_ENV) - 1;
     }
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
-        externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
+        externDir = argv[i] + sizeof(EXTERN_DIR) - 1;
     }
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
-      string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1); 	
+      string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1);
       excludeDirList.push_back(dir);
       cout << "Excluding " << dir << " from feature search" << endl;
     }
@@ -538,10 +541,10 @@ int main(int argc, char* argv[])
           feature->enabled = true;
           break;
         }
-	    else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
-	             !feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
-	      cerr << feature->displayName << " not found in "
-		       << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
+        else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
+               !feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
+          cerr << feature->displayName << " not found in "
+               << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
       }
     }
   }
@@ -600,7 +603,7 @@ int main(int argc, char* argv[])
         strcpy(drives, "C:\\");
     }
     else {
-      strcpy(drives, externDir);	
+      strcpy(drives, externDir);
     }
 
     const char * drive = drives;
@@ -638,7 +641,7 @@ int main(int argc, char* argv[])
         }
       }
      if (!feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
-	feature->enabled = FALSE;
+       feature->enabled = FALSE;
     }
     if (output)
       ;

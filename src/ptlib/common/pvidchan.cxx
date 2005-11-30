@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.16  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.15  2003/05/27 04:22:54  dereksmithies
  * Test grabber size before issuing a grabber resize command.
  *
@@ -141,7 +144,7 @@ BOOL PVideoChannel::Open(const PString & dev,
   PWaitAndSignal m(accessMutex);
 
   Close();
-	
+
   deviceName = dev;
   direction = dir;
   
@@ -177,19 +180,17 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
 
   if (mpInput == NULL) {
     PTRACE(6,"PVC\t::Write, frame size is "
-	 << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
-	 " VideoGrabber is unavailabile");
-    return mpOutput->SetFrameData(0, 0,
-				  mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(),
-				  (const BYTE *)buf, TRUE);
+              << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
+              " VideoGrabber is unavailabile");
+    return mpOutput->SetFrameData(0, 0, mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(), (const BYTE *)buf, TRUE);
   }
 
-  PTRACE(6,"PVC\t::Write, frame size is "
-	 << mpInput->GetFrameWidth() << "x" << mpInput->GetFrameHeight() << 
-	 " VideoGrabber is source of size");
+  PTRACE(6,"PVC\t::Write, frame size is " 
+               << mpInput->GetFrameWidth() << "x" << mpInput->GetFrameHeight() << 
+               " VideoGrabber is source of size");
   return mpOutput->SetFrameData(0, 0,
-				mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-			     (const BYTE *)buf, TRUE);  
+        mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
+           (const BYTE *)buf, TRUE);  
 }
 
 BOOL PVideoChannel::Close()
@@ -311,8 +312,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 
   int frameWidth  = GetGrabWidth();
   int frameHeight = GetGrabHeight();
-  PTRACE(6,"Video\t data direct:: camera-->render, size "
-	 << frameWidth << "x" << frameHeight );
+  PTRACE(6,"Video\t data direct:: camera-->render, size " << frameWidth << "x" << frameHeight );
   
   SetRenderFrameSize(frameWidth, frameHeight);
   Read(videoBuffer, length);
