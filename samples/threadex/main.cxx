@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2005/07/28 00:25:03  dereksmithies
  * Update console reading code so it works via a ssh connection to a remote machine.
  * Add D option to console, so report the average time taken by each iteration of the thread.
@@ -86,14 +89,14 @@ void Threadex::Main()
 
   args.Parse(
              "h-help."               "-no-help."
-	     "d-delay:"              "-no-delay."
-	     "b-busywait."           "-no-busywait."
+             "d-delay:"              "-no-delay."
+             "b-busywait."           "-no-busywait."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-	     "v-version."
-	     );
+             "v-version."
+  );
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -103,26 +106,26 @@ void Threadex::Main()
 
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
-	 << "Manufacturer: " << GetManufacturer() << endl
-	 << "Version     : " << GetVersion(TRUE) << endl
-	 << "System      : " << GetOSName() << '-'
-	 << GetOSHardware() << ' '
-	 << GetOSVersion() << endl;
+         << "Manufacturer: " << GetManufacturer() << endl
+         << "Version     : " << GetVersion(TRUE) << endl
+         << "System      : " << GetOSName() << '-'
+         << GetOSHardware() << ' '
+         << GetOSVersion() << endl;
     return;
   }
 
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl         
-	   << "-h  or --help        :print this help" << endl
-	   << "-v  or --version      print version info" << endl
-	   << "-d  or --delay      X where X specifies how many milliseconds the created thread waits for" << endl
-	   << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
+           << "-h  or --help        :print this help" << endl
+           << "-v  or --version      print version info" << endl
+           << "-d  or --delay      X where X specifies how many milliseconds the created thread waits for" << endl
+           << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
 #if PTRACING
-	   << "o-output              output file name for trace" << endl
-	   << "t-trace.              trace level to use." << endl
+           << "o-output              output file name for trace" << endl
+           << "t-trace.              trace level to use." << endl
 #endif
-	   << endl
-	   << endl << endl;
+           << endl
+           << endl << endl;
     return;
   }
 
@@ -181,15 +184,15 @@ void UserInterfaceThread::Main()
     switch (tolower(ch)) {
     case 'd' :
       {
-	int i = launch.GetIteration();
-	if (i == 0) {
-	  cout << "Have not completed an iteration yet, so time per iteration is unavailable" << endl;
-	} else {
-	  cout << "Average time per iteration is " << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
-	       << " milliseconds" << endl;
-	}
-	cout << "Command ? " << flush;
-	break;
+        int i = launch.GetIteration();
+        if (i == 0) {
+          cout << "Have not completed an iteration yet, so time per iteration is unavailable" << endl;
+        } else {
+          cout << "Average time per iteration is " << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
+               << " milliseconds" << endl;
+        }
+        cout << "Command ? " << flush;
+        break;
       }
     case 'r' :
       cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;

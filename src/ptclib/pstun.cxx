@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.19  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.18  2005/07/13 11:15:26  csoutheren
  * Backported NAT abstraction files from isvo branch
  *
@@ -206,8 +209,8 @@ protected:
   {
     type = (WORD)newType;
     length = SizeofAddressAttribute;
-	pad = 0;
-	family = 1;
+    pad = 0;
+    family = 1;
   }
   bool IsValidAddrAttr(Types checkType) const
   {
@@ -245,9 +248,9 @@ public:
 
   void Initialise()
   {
-	type = CHANGE_REQUEST;
-	length = sizeof(flags);
-	memset(flags, 0, sizeof(flags));
+    type = CHANGE_REQUEST;
+    length = sizeof(flags);
+    memset(flags, 0, sizeof(flags));
   }
   bool IsValid() const { return type == CHANGE_REQUEST && length == sizeof(flags); }
   
@@ -733,19 +736,18 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   {
     for (PINDEX j = 0; j < numSocketsForPairing; j++)
     {
-      if ((stunSocket[i].port&1) == 0 && (stunSocket[i].port+1) == stunSocket[j].port)
-      {
-	stunSocket[i].SetSendAddress(0, 0);
-	stunSocket[i].SetReadTimeout(PMaxTimeInterval);
-	stunSocket[j].SetSendAddress(0, 0);
-	stunSocket[j].SetReadTimeout(PMaxTimeInterval);
-	socket1 = &stunSocket[i];
-	socket2 = &stunSocket[j];
-	stunSocket.DisallowDeleteObjects();
-	stunSocket.Remove(socket1);
-	stunSocket.Remove(socket2);
-	stunSocket.AllowDeleteObjects();
-	return true;
+      if ((stunSocket[i].port&1) == 0 && (stunSocket[i].port+1) == stunSocket[j].port) {
+        stunSocket[i].SetSendAddress(0, 0);
+        stunSocket[i].SetReadTimeout(PMaxTimeInterval);
+        stunSocket[j].SetSendAddress(0, 0);
+        stunSocket[j].SetReadTimeout(PMaxTimeInterval);
+        socket1 = &stunSocket[i];
+        socket2 = &stunSocket[j];
+        stunSocket.DisallowDeleteObjects();
+        stunSocket.Remove(socket1);
+        stunSocket.Remove(socket2);
+        stunSocket.AllowDeleteObjects();
+        return true;
       }
     }
   }
@@ -772,7 +774,7 @@ BOOL PSTUNClient::IsAvailable()
     default : // UnknownNet, SymmetricFirewall, BlockedNat
       return FALSE;
   }
-	
+
   return TRUE; 
 }
 

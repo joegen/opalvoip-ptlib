@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.9  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2005/08/31 05:55:03  shorne
  * Reworked ENUM to craigs' exacting requirements
  *
@@ -296,15 +299,15 @@ void PDNS::SetENUMServers(const PStringArray & servers)
 }
 
 BOOL PDNS::ENUMLookup(const PString & e164,
-   	  const PString & service,PString & dn)
+      const PString & service,PString & dn)
 {
   PWaitAndSignal m(GetENUMServerMutex());
   PStringArray domains;
   char * env = ::getenv(PWLIB_ENUM_PATH);
   if (env == NULL)
-	domains += GetENUMServers();
+    domains += GetENUMServers();
   else
-	domains += PString(env).Tokenise(PATH_SEP);
+    domains += PString(env).Tokenise(PATH_SEP);
 
   return PDNS::ENUMLookup(e164, service, domains, dn);
 }

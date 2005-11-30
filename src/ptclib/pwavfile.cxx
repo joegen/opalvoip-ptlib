@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.43  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.42  2005/11/25 01:01:15  csoutheren
  * Applied patch #1351168
  * PWlib various fixes
@@ -220,7 +223,7 @@ inline BOOL WriteAndCheck(PWAVFile & file, void * buf, PINDEX len)
 
 #if PBYTE_ORDER==PBIG_ENDIAN
 #  if defined(USE_SYSTEM_SWAB)
-#    define	SWAB(a,b,c)	::swab(a,b,c)
+#    define SWAB(a,b,c) ::swab(a,b,c)
 #  else
 static void SWAB(const void * void_from, void * void_to, register size_t len)
 {
@@ -236,7 +239,7 @@ static void SWAB(const void * void_from, void * void_to, register size_t len)
 }
 #  endif
 #else
-#  define	SWAB(a,b,c)	{}
+#  define SWAB(a,b,c) {}
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

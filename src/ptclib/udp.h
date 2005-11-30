@@ -116,13 +116,12 @@ openPort( unsigned short port=0, unsigned int interfaceIp=0 );
 
 /// recive a UDP message 
 bool 
-getMessage( Socket fd, char* buf, int* len,
-	    unsigned int* srcIp, unsigned short* srcPort );
+getMessage( Socket fd, char* buf, int* len, unsigned int* srcIp, unsigned short* srcPort );
 
 /// send a UDP message 
 bool 
 sendMessage( Socket fd, char* msg, int len, 
-	     unsigned int dstIp=0, unsigned short dstPort=0 );
+             unsigned int dstIp=0, unsigned short dstPort=0 );
 
 /// set up network - does nothing in unix but needed for windows
 void
