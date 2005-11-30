@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2005/11/30 12:47:40  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2005/07/21 13:09:43  rogerhardiman
  * Fix typo in help
  *
@@ -64,13 +67,13 @@ void DtmfTest::Main()
   args.Parse(
              "h-help."               "-no-help."
              "s-samples:"            "-no-numsamples."
-	     "n-noise:"              "-no-noise."
+             "n-noise:"              "-no-noise."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-	     "v-version."
-	     );
+             "v-version."
+  );
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -80,34 +83,34 @@ void DtmfTest::Main()
 
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
-	 << "Manufacturer: " << GetManufacturer() << endl
-	 << "Version     : " << GetVersion(TRUE) << endl
-	 << "System      : " << GetOSName() << '-'
-	 << GetOSHardware() << ' '
-	 << GetOSVersion() << endl;
+         << "Manufacturer: " << GetManufacturer() << endl
+         << "Version     : " << GetVersion(TRUE) << endl
+         << "System      : " << GetOSName() << '-'
+         << GetOSHardware() << ' '
+         << GetOSVersion() << endl;
     return;
   }
 
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl         
-	   << endl
-	   <<    "Generates 16 dtmf symbols, of length sample size with noise level\n"
-	   <<    " and then decodes them. \n"
-	   <<    " Simulation is done at 8000Hz, or 8khz, 16 bit integers.\n"
-	   <<    "A report on the success (or not) is reported\n"
-	   << endl
-	   <<    "-h or --help          : print this help message.\n"
-	   <<    "-s or --samples #     : number of samples to use (ms).\n"
-	   <<    "-n or --noise   #     : Peak noise level (0..10000)\n"
+           << endl
+           <<    "Generates 16 dtmf symbols, of length sample size with noise level\n"
+           <<    " and then decodes them. \n"
+           <<    " Simulation is done at 8000Hz, or 8khz, 16 bit integers.\n"
+           <<    "A report on the success (or not) is reported\n"
+           << endl
+           <<    "-h or --help          : print this help message.\n"
+           <<    "-s or --samples #     : number of samples to use (ms).\n"
+           <<    "-n or --noise   #     : Peak noise level (0..10000)\n"
 #if PTRACING
-	   <<    "-o or --output file   : file name for output of log messages\n"       
-	   <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
+           <<    "-o or --output file   : file name for output of log messages\n"       
+           <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
 #endif
-	   <<    "-v or --version       : report version information\n"
-	   << endl
-	   << " e.g. ./dtmftest -s 60 -n 100    \n"
-	   << "                to generate 60ms long samples, with a signal noise ratio of 100\n"
-	   << endl << endl;
+           <<    "-v or --version       : report version information\n"
+           << endl
+           << " e.g. ./dtmftest -s 60 -n 100    \n"
+           << "                to generate 60ms long samples, with a signal noise ratio of 100\n"
+           << endl << endl;
     return;
   }
   
