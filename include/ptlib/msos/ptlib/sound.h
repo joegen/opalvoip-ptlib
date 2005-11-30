@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.15  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.14  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -101,8 +104,8 @@
     BOOL SetFormat(const PWaveFormat & format);
 
     BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
-	// Open with format other than PCM
-	
+    // Open with format other than PCM
+
   protected:
     PString     deviceName;
     Directions  direction;
@@ -118,8 +121,6 @@
 
   private:
     BOOL OpenDevice(unsigned id);
-
-	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
-
+    BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
 
 // End Of File ///////////////////////////////////////////////////////////////

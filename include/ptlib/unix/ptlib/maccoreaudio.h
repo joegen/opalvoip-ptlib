@@ -57,7 +57,7 @@ class PSoundChannelCoreAudio : public PSoundChannel
       setformat_,
       setbuffer_,
       running_,
-		mute_,
+      mute_,
       destroy_
    };
 
@@ -161,7 +161,8 @@ class PSoundChannelCoreAudio : public PSoundChannel
    /**
     * Callback for the AudioUnit to pull/notify more data 
     */
-   static OSStatus PlayRenderProc(void *inRefCon,
+   static OSStatus PlayRenderProc(
+       void *inRefCon,
        AudioUnitRenderActionFlags *ioActionFlags,
        const struct AudioTimeStamp *TimeStamp,
        UInt32 inBusNumber,
@@ -169,16 +170,21 @@ class PSoundChannelCoreAudio : public PSoundChannel
        struct AudioBufferList * ioData);
 
 
-   static OSStatus RecordProc(void *inRefCon, 
+   static OSStatus RecordProc(
+         void *inRefCon, 
          AudioUnitRenderActionFlags *ioActionFlags,
          const AudioTimeStamp *inTimeStamp,
          UInt32 inBusNumber,
          UInt32 inNumberFrames,
          AudioBufferList * ioData);
 
-	static OSStatus VolumeChangePropertyListener(AudioDeviceID id, 
-			UInt32 chan, Boolean isInput, AudioDevicePropertyID propID, 
-			void* inUserData);
+   static OSStatus VolumeChangePropertyListener(
+         AudioDeviceID id, 
+         UInt32 chan,
+         Boolean isInput,
+         AudioDevicePropertyID propID, 
+         void* inUserData
+   );
 
 
    /**
@@ -193,14 +199,16 @@ class PSoundChannelCoreAudio : public PSoundChannel
    Directions direction;
    State state;
 
-	static pthread_mutex_t& GetReadMuteMutex();
-	static pthread_mutex_t& GetWriteMuteMutex();
-	static BOOL& GetReadMute();
-	static BOOL& GetWriteMute();
-	/* These functions just return the right mutex/variable depending whehter
-	 * the channel is recorder/player */
-	pthread_mutex_t& GetIsMuteMutex();
-	BOOL& isMute();
+   static pthread_mutex_t& GetReadMuteMutex();
+   static pthread_mutex_t& GetWriteMuteMutex();
+   static BOOL& GetReadMute();
+   static BOOL& GetWriteMute();
+
+   /* These functions just return the right mutex/variable depending whehter
+    * the channel is recorder/player
+    */
+   pthread_mutex_t& GetIsMuteMutex();
+   BOOL & isMute();
 
    /** 
     * Devices

@@ -19,6 +19,9 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.3  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.2  2002/05/30 22:49:35  dereks
  * correct implementation of GetInputDeviceNames().
  *
@@ -157,7 +160,7 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
     /**Return whiteness, brightness, colour, contrast and hue in one call.
      */
     BOOL GetParameters (int *whiteness, int *brightness, 
-				int *colour, int *contrast, int *hue);
+                        int *colour, int *contrast, int *hue);
 
     /**Get the minimum & maximum size of a frame on the device.
     */

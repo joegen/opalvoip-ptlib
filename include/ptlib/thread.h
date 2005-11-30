@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.37  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.36  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -468,6 +471,6 @@ class PThread : public PObject
 #endif
 };
 
-#endif	// _PTHREAD
+#endif // _PTHREAD
 
 // End Of File ///////////////////////////////////////////////////////////////

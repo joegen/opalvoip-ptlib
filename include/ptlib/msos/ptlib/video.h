@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.6  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -56,7 +59,7 @@
       // Close the channel.
 
     virtual PString GetName() const;
-	  // Return the name of the channel
+    // Return the name of the channel
     
   protected:
 

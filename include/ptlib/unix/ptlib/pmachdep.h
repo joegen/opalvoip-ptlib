@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.71  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.70  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -223,7 +226,7 @@
 #define PSETPGRP()  setpgrp()
 
 #if __GNU_LIBRARY__ < 6
-#define	P_LINUX_LIB_OLD
+#define P_LINUX_LIB_OLD
 typedef int socklen_t;
 #endif
 
@@ -353,7 +356,7 @@ typedef union {
 
 #define PSETPGRP()  setpgrp()
 
-#define	INADDR_NONE	-1
+#define INADDR_NONE     -1
 #if P_SOLARIS < 7
 typedef int socklen_t;
 #endif
@@ -599,14 +602,14 @@ typedef int socklen_t;
 
 #define HAS_IFREQ
 
-#define _exit(i)	exit(i)
+#define _exit(i)   exit(i)
 
 typedef int socklen_t;
 
 extern int h_errno;
 
-#define SUCCESS 	0
-#define NOTFOUND 	1
+#define SUCCESS    0
+#define NOTFOUND   1
 
 struct hostent * Vx_gethostbyname(char *name, struct hostent *hp);
 struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
@@ -616,7 +619,7 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 #define P_HAS_SEMAPHORES
 #define _THREAD_SAFE
 #define P_THREAD_SAFE_CLIB
-#define	P_THREADIDENTIFIER long
+#define P_THREADIDENTIFIER long
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -706,7 +709,7 @@ extern "C" {
 #include <netinet/in.h>
 #endif
 
-typedef	int SOCKET;
+typedef int SOCKET;
 
 #ifdef P_PTHREADS
 
