@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.71  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.70  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -800,7 +803,7 @@ class PProcessStartup : public PObject
 typedef PFactory<PProcessStartup> PProcessStartupFactory;
 
 // using an inline definition rather than a #define crashes gcc 2.95. Go figure
-#define P_DEFAULT_TRACE_OPTIONS	( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
+#define P_DEFAULT_TRACE_OPTIONS ( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
 
 template <unsigned _level, unsigned _options = P_DEFAULT_TRACE_OPTIONS >
 class PTraceLevelSetStartup : public PProcessStartup

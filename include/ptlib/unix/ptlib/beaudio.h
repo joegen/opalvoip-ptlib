@@ -29,6 +29,9 @@
  * Bits by Jac Goudsmit
  *
  * $Log: beaudio.h,v $
+ * Revision 1.5  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2004/10/26 18:07:36  ykiryanov
  * Added ifdef for Zeta build
  *
@@ -136,40 +139,40 @@ class PSoundChannelBeOS: public PSoundChannel
   public:
     // Overrides from class PChannel
     virtual PString GetName() const { return deviceName; }
-      // Return the name of the channel.
+    // Return the name of the channel.
   protected:
     PString     deviceName;
     Directions  direction;   
 
   private:
-  	// Only one of the following pointers can be non-NULL at a time.
-	BMediaRecorder		   *mRecorder;
-	BSoundPlayer		   *mPlayer;
+    // Only one of the following pointers can be non-NULL at a time.
+    BMediaRecorder *mRecorder;
+    BSoundPlayer   *mPlayer;
 
-	// Raw media format specifier used for sound player.
-	// It also stores the parameters (number of channels, sample rate etc) so
-	// no need to store them separately here.
-	// For the recorder, a media_format struct is created temporarily with
-	// the data from this raw format spec.
-	media_raw_audio_format	mFormat;
+    // Raw media format specifier used for sound player.
+    // It also stores the parameters (number of channels, sample rate etc) so
+    // no need to store them separately here.
+    // For the recorder, a media_format struct is created temporarily with
+    // the data from this raw format spec.
+    media_raw_audio_format    mFormat;
 
-	// The class holds a circular buffer whose size is set with SetBuffers.
-	// We only need one buffer for BeOS. The number of buffers that was set
-	// is only kept for reference.
-	friend class CircularBuffer;
-	CircularBuffer *mBuffer;			// The internal buffer
-	PINDEX mNumBuffers;		// for reference only!
-	
-	// Just some helpers so that the Open function doesn't get too big
-	BOOL OpenPlayer(void);
-	BOOL OpenRecorder(const PString &dev);
+    // The class holds a circular buffer whose size is set with SetBuffers.
+    // We only need one buffer for BeOS. The number of buffers that was set
+    // is only kept for reference.
+    friend class CircularBuffer;
+    CircularBuffer *mBuffer;    // The internal buffer
+    PINDEX mNumBuffers;       // for reference only!
 
-	// internal buffer setting function so we can disable the SetBuffers
-	// function for debug purposes
-	// size is the total size, threshold is the fill/drain threshold on
-	// the buffer
-	BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
+    // Just some helpers so that the Open function doesn't get too big
+    BOOL OpenPlayer(void);
+    BOOL OpenRecorder(const PString &dev);
 
-	// Input resampler
-	Resampler			   *mResampler;
+    // internal buffer setting function so we can disable the SetBuffers
+    // function for debug purposes
+    // size is the total size, threshold is the fill/drain threshold on
+    // the buffer
+    BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
+
+    // Input resampler
+    Resampler *mResampler;
 };

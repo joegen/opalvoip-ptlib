@@ -198,43 +198,41 @@ PStringList PVideoInputDevice_1394AVC::GetInputDeviceNames()
   
   hdl = raw1394_new_handle();
   
-  if(hdl == NULL)
+  if (hdl == NULL)
     return Result;
   
   // scan all nodes of all ports, check the real name of the device
   int nb_ports = raw1394_get_port_info(hdl, NULL, 0);
   for(int pt = 0; pt < nb_ports; pt++) {
-    if(raw1394_set_port(hdl, pt) >= 0) {
+    if (raw1394_set_port(hdl, pt) >= 0) {
       int nb_nodes = raw1394_get_nodecount(hdl);
-      for(int nd = 0; nd < nb_nodes; nd++) {
-	rom1394_directory dir;
-	rom1394_get_directory(hdl, nd, &dir);
-	if(rom1394_get_node_type(&dir) == ROM1394_NODE_TYPE_AVC) {
-	  PString ufname = (PString)dir.label;
-	  PString *devname = new PString(pt);
-	  mutex.Wait();
-	  if(dico == NULL)
-	    dico = new PDictionary<PString, PString>;
-	  if(dico->Contains(ufname)
-	     && *dico->GetAt(ufname) != *devname) {
-		      PString altname = ufname+ " (2)";
-		      int i = 2;
-		      while(dico->Contains(altname) && *dico->GetAt(altname) != *devname) {
-			i++;
-			altname = ufname+ " ("+(PString)i+")";
-		      }
-		      dico->SetAt(altname, devname);
-		      Result.AppendString(altname);
-	  }
-	  else {
-	    dico->SetAt(ufname, devname);
-	    Result.AppendString(ufname);
-	  }
-	  mutex.Signal();
-	}
+      for (int nd = 0; nd < nb_nodes; nd++) {
+        rom1394_directory dir;
+        rom1394_get_directory(hdl, nd, &dir);
+        if (rom1394_get_node_type(&dir) == ROM1394_NODE_TYPE_AVC) {
+          PString ufname = (PString)dir.label;
+          PString *devname = new PString(pt);
+          mutex.Wait();
+          if (dico == NULL)
+            dico = new PDictionary<PString, PString>;
+          if (dico->Contains(ufname) && *dico->GetAt(ufname) != *devname) {
+            PString altname = ufname+ " (2)";
+            int i = 2;
+            while(dico->Contains(altname) && *dico->GetAt(altname) != *devname) {
+              i++;
+              altname = ufname+ " ("+(PString)i+")";
+            }
+            dico->SetAt(altname, devname);
+            Result.AppendString(altname);
+          }
+          else {
+            dico->SetAt(ufname, devname);
+            Result.AppendString(ufname);
+          }
+          mutex.Signal();
+        }
       }
     }
-    
   }
   
   raw1394_destroy_handle(hdl);
@@ -344,9 +342,9 @@ BOOL PVideoInputDevice_1394AVC::SetFrameRate(unsigned rate)
 }
 
 BOOL PVideoInputDevice_1394AVC::GetFrameSizeLimits(unsigned & minWidth,
-						  unsigned & minHeight,
-						  unsigned & maxWidth,
-						  unsigned & maxHeight) 
+                                                   unsigned & minHeight,
+                                                   unsigned & maxWidth,
+                                                   unsigned & maxHeight) 
 {
   minWidth = 160;
   maxWidth = 320;
@@ -363,7 +361,7 @@ PINDEX PVideoInputDevice_1394AVC::GetMaxFrameBytes()
 
 
 BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
-						   PINDEX * bytesReturned)
+                                                  PINDEX * bytesReturned)
 {
   if (!IsCapturing()) return FALSE;
 
@@ -384,37 +382,37 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
     raw1394_loop_iterate(handle);
     if (*(uint32_t *)raw_buffer >= 492) {
       if (!found_first_frame) {
-	if (raw_buffer[16] == 0x1f && raw_buffer[17] == 0x07)
-	  found_first_frame = TRUE;
-	else
-	  skipped ++;
+        if (raw_buffer[16] == 0x1f && raw_buffer[17] == 0x07)
+          found_first_frame = TRUE;
+        else
+          skipped ++;
       }
       if (skipped > 500) {
-	PTRACE (3, "Skipped much too many frames");
-	return FALSE;
+        PTRACE (3, "Skipped much too many frames");
+        return FALSE;
       }
       if (found_first_frame) {
-	if (raw_buffer[16] == 0x1f
-	    && raw_buffer[17] == 0x07
-	    && (capture_buffer_end - capture_buffer > 480)) {
-	  // check for a short read. check if we read less
-	  // than a NTSC frame because it is the smaller one.
-	  // still not sure how to handle NTSC vs. PAL
-	  if (capture_buffer_end - capture_buffer < 120000) {
-	    broken_frames++;
-	    capture_buffer_end = capture_buffer;
-	  }
-	  else
-	    frame_complete = TRUE;
-	}
-	if (!frame_complete) {
-	  memcpy (capture_buffer_end, raw_buffer+16, 480);
-	  capture_buffer_end += 480;
-	}
+        if (raw_buffer[16] == 0x1f
+            && raw_buffer[17] == 0x07
+            && (capture_buffer_end - capture_buffer > 480)) {
+          // check for a short read. check if we read less
+          // than a NTSC frame because it is the smaller one.
+          // still not sure how to handle NTSC vs. PAL
+          if (capture_buffer_end - capture_buffer < 120000) {
+            broken_frames++;
+            capture_buffer_end = capture_buffer;
+          }
+          else
+            frame_complete = TRUE;
+        }
+        if (!frame_complete) {
+          memcpy (capture_buffer_end, raw_buffer+16, 480);
+          capture_buffer_end += 480;
+        }
       } // found_first_frame
       if (broken_frames > 30) {
-	PTRACE(3, "Too many broken frames!");
-	return FALSE;
+        PTRACE(3, "Too many broken frames!");
+        return FALSE;
       }
     }
   }
@@ -451,8 +449,8 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
       uint16_t sourceX = (uint16_t) (x * xRatio);
       uint16_t sourceY = (uint16_t) (y * yRatio);
       memcpy (pixels[0]+3*(y*frameWidth+x),
-	      pixels[0]+3*(sourceY*dv->width+sourceX),
-	      3);
+              pixels[0]+3*(sourceY*dv->width+sourceX),
+              3);
       
       // FIXME: BGR <-> RGB done by hand
       BYTE temp;
@@ -475,8 +473,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   
 }
 
-BOOL PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer,
-					    PINDEX * bytesReturned)
+BOOL PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   int capturing_duration = 10000; // FIXME: what is it for?
   // notice: funny things happen when it is set too low!
@@ -520,14 +517,14 @@ BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
   colourFormat = "RGB24";
   nativeVerticalFlip = true;
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth,
-						 frameHeight, colourFormat);
+  frameHeight, colourFormat);
   
   return TRUE;
 }
 
 BOOL PVideoInputDevice_1394AVC::SetFrameSizeConverter(unsigned width,
-						     unsigned height,
-						     BOOL bScaleNotCrop)
+                                                      unsigned height,
+                                                          BOOL bScaleNotCrop)
 {
 
   SetFrameSize(width, height);
@@ -538,8 +535,7 @@ BOOL PVideoInputDevice_1394AVC::SetFrameSizeConverter(unsigned width,
   desiredFrameWidth = width;
   desiredFrameHeight = height;
 
-  converter = PColourConverter::Create(colourFormat,
-				       desiredColourFormat, width, height);
+  converter = PColourConverter::Create(colourFormat, desiredColourFormat, width, height);
   if (converter == NULL) {
     PTRACE(3, "Failed to make a converter.");
     return FALSE;
@@ -550,8 +546,7 @@ BOOL PVideoInputDevice_1394AVC::SetFrameSizeConverter(unsigned width,
     return FALSE;
   }
   
-  if (converter->SetDstFrameSize(desiredFrameWidth,
-				 desiredFrameHeight, FALSE) == FALSE) {
+  if (converter->SetDstFrameSize(desiredFrameWidth, desiredFrameHeight, FALSE) == FALSE) {
     PTRACE(3, "Failed to set destination frame size (+scaling) of a converter.");
     return FALSE;
   }
@@ -567,10 +562,10 @@ BOOL PVideoInputDevice_1394AVC::SetColourFormatConverter(const PString &colourFm
 
 int RawISOHandler (raw1394handle_t handle, int channel, size_t length, u_int32_t * data)
 {
-	if (length < RAW_BUFFER_SIZE) {
-	  *(u_int32_t *) raw_buffer = length;
-	  memcpy (raw_buffer + 4, data, length);
-	}
-	return 0;
+  if (length < RAW_BUFFER_SIZE) {
+    *(u_int32_t *) raw_buffer = length;
+    memcpy (raw_buffer + 4, data, length);
+  }
+  return 0;
 }
 // End Of File ///////////////////////////////////////////////////////////////
