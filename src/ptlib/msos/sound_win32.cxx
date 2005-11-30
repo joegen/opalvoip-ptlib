@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.15  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.14  2005/10/06 08:14:55  csoutheren
  * Fixed race condition in sound driver when shutting down with driver that is not open
  *
@@ -915,9 +918,9 @@ BOOL PSoundChannelWin32::Open(const PString & device,
 {
   Close();
   unsigned id = 0;
-	
+
   if( !GetDeviceID(device, dir, id) )
-	  return FALSE;
+    return FALSE;
 
   waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
 
@@ -927,13 +930,13 @@ BOOL PSoundChannelWin32::Open(const PString & device,
 
 BOOL PSoundChannelWin32::Open(const PString & device,
                          Directions dir,
-						 const PWaveFormat& format)
+             const PWaveFormat& format)
 {
   Close();
   unsigned id = 0;
-	
+
   if( !GetDeviceID(device, dir, id) )
-	  return FALSE;
+    return FALSE;
 
   waveFormat = format;
 
