@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.9  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2003/09/26 09:58:50  rogerhardiman
  * Move #include <sys/stat.h> from the unix file.h to the main file.h
  * FreeBSD's sys/stat.h includes extern "C" for some prototypes and you
@@ -61,11 +64,11 @@
  *
  */
 
-#define	_read(fd,vp,st)		::read(fd, vp, (size_t)st)
-#define	_write(fd,vp,st)	::write(fd, vp, (size_t)st)
-#define	_fdopen			::fdopen
-#define	_lseek(fd,off,w)	::lseek(fd, (off_t)off, w)
-#define _close(fd)		::close(fd)
+#define _read(fd,vp,st)         ::read(fd, vp, (size_t)st)
+#define _write(fd,vp,st)        ::write(fd, vp, (size_t)st)
+#define _fdopen                 ::fdopen
+#define _lseek(fd,off,w)        ::lseek(fd, (off_t)off, w)
+#define _close(fd)              ::close(fd)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFile

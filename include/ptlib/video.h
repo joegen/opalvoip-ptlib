@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.18  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.17  2003/11/19 04:28:21  csoutheren
  * Changed to support video output plugins
  *
@@ -196,7 +199,7 @@ class PVideoChannel : public PChannel
        */
     BOOL Write(const void * buf,  //Pointer to the image data to be rendered
                PINDEX      len);
-	       
+    
     /**Cause the referenced data to be drawn to the 
        previously defined media 
      */

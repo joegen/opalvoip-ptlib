@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.27  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.26  2005/03/10 06:37:21  csoutheren
  * Removed use of typeid on WIndows to get class name because it is not threadsafe
  * In fact, lets just use #classname everywhere because that will always work
@@ -102,9 +105,9 @@
 //  define TRUE and FALSE for environments that don't have them
 //
 
-#ifndef	TRUE
-#define	TRUE		1
-#define	FALSE		0
+#ifndef TRUE
+#define TRUE    1
+#define FALSE   0
 #endif
 
 ///////////////////////////////////////////
@@ -113,8 +116,8 @@
 //  extra things to class declarations
 //
 
-#define	PEXPORT
-#define	PSTATIC
+#define PEXPORT
+#define PSTATIC
 
 
 ///////////////////////////////////////////
@@ -122,18 +125,17 @@
 // define some basic types and their limits
 //
 
-typedef int	           BOOL;
-typedef unsigned char	   BYTE;	// 1 byte
+typedef int                BOOL;
+typedef unsigned char      BYTE;    // 1 byte
+typedef signed short       PInt16;  // 16 bit
+typedef unsigned short     WORD;
 
-typedef	signed short	   PInt16;	// 16 bit
-typedef unsigned short	   WORD;
-
-typedef	signed int         PInt32;	// 32 bit
-typedef unsigned int 	   DWORD;
+typedef signed int         PInt32;  // 32 bit
+typedef unsigned int       DWORD;
 
 #ifndef P_NEEDS_INT64
 typedef   signed long long int PInt64;
-typedef unsigned long long int PUInt64;	// 64 bit
+typedef unsigned long long int PUInt64; // 64 bit
 #endif
 
 // Integer type that is same size as a pointer type.
@@ -146,7 +148,7 @@ typedef unsigned int  UINT;
 #endif
 
 typedef int PINDEX;
-#define P_MAX_INDEX 		INT_MAX
+#define P_MAX_INDEX INT_MAX
 
 inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
 #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
@@ -156,10 +158,10 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 // needed for STL
 //
 #if P_HAS_STL_STREAMS
-#define	__USE_STL__	1
+#define __USE_STL__     1
 #endif
 
-#define	P_HAS_TYPEINFO	1
+#define P_HAS_TYPEINFO  1
 
 using namespace std;
 

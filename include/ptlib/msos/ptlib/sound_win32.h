@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.h,v $
+ * Revision 1.5  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -164,8 +167,8 @@ class PSoundChannelWin32: public PSoundChannel
     BOOL SetFormat(const PWaveFormat & format);
 
     BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
-	// Open with format other than PCM
-	
+    // Open with format other than PCM
+
   protected:
     PString     deviceName;
     Directions  direction;
@@ -181,8 +184,7 @@ class PSoundChannelWin32: public PSoundChannel
 
   private:
     BOOL OpenDevice(unsigned id);
-
-	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
+    BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
 };
 
 

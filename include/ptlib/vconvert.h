@@ -22,10 +22,13 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
- *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
+ *                 Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.16  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.15  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *

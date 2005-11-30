@@ -18,6 +18,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.h,v $
+ * Revision 1.4  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.3  2005/07/13 11:48:53  csoutheren
  * Backported QOS changes from isvo branch
  *
@@ -34,7 +37,7 @@
  *
  */
 
-#ifndef	_PQOS
+#ifndef _PQOS
 #define _PQOS
 
 #ifdef P_USE_PRAGMA

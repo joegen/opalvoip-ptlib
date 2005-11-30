@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.28  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.27  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -208,8 +211,8 @@ class PUDPSocket : public PIPDatagramSocket
 
 #if P_HAS_QOS
     /** Get the QOS object for the socket.
-	  */
-	virtual PQoS & GetQoSSpec();
+    */
+    virtual PQoS & GetQoSSpec();
 #endif
     /** Get the address of the sender in the last connectionless Read().
         Note that thsi only applies to the Read() and not the ReadFrom()
@@ -223,7 +226,7 @@ class PUDPSocket : public PIPDatagramSocket
     /** Check to See if the socket will support QoS on the given local Address
      */
     static BOOL SupportQoS(const PIPSocket::Address & address);
-	
+
     /** Manually Enable GQoS Support
      */
     static void EnableGQoS();

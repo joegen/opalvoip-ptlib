@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.24  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.23  2005/11/09 09:11:39  csoutheren
  * Moved Windows-specific AttachThreadInput callsto seperate member function
  * on PThread. This removes a linearly increasing delay in creating new threads
@@ -108,7 +111,7 @@
 
   public:
     HANDLE GetHandle() const { return threadHandle; }
-		void Win32AttachThreadInput();
+    void Win32AttachThreadInput();
 
   protected:
     HANDLE threadHandle;

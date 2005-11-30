@@ -27,21 +27,24 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.84  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.83  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
  * Revision 1.82  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
- * 	correct the STL defined checking to use proper syntax.
+ *   correct the STL defined checking to use proper syntax.
  *
  * include/ptlib/object.h:
- * 	re-add typedef to compile on mingw
+ *   re-add typedef to compile on mingw
  *
  * make/ptlib-config.in:
- * 	import a long-standing fix from the Debian packs which allows usage of
- * 	ptlib-config without manually adding -lpt for each of the subsequent
- * 	projects
+ *   import a long-standing fix from the Debian packs which allows usage of
+ *   ptlib-config without manually adding -lpt for each of the subsequent
+ *   projects
  *
  * Revision 1.81  2004/12/22 04:04:36  dereksmithies
  * Modify description of parameters for PString::Replace()
@@ -3029,43 +3032,43 @@ class PRegularExpression : public PObject
     /// Error codes.
     enum ErrorCodes {
       /// Success.
-      NoError = 0,	    
+      NoError = 0,    
       /// Didn't find a match (for regexec).
-      NoMatch,		      
+      NoMatch,      
 
       // POSIX regcomp return error codes.  (In the order listed in the standard.)
       /// Invalid pattern.
-      BadPattern,		  
+      BadPattern,  
       /// Not implemented.
-      CollateError,		  
+      CollateError,  
       /// Invalid character class name.
-      BadClassType,		  
+      BadClassType,  
       /// Trailing backslash.
-      BadEscape,		    
+      BadEscape,    
       /// Invalid back reference.
-      BadSubReg,	
+      BadSubReg,
       /// Unmatched left bracket.
       UnmatchedBracket, 
       /// Parenthesis imbalance.
-      UnmatchedParen,		
+      UnmatchedParen,
       /// Unmatched #\{\}#.
-      UnmatchedBrace,		
+      UnmatchedBrace,
       /// Invalid contents of #\{\}#.
-      BadBR,		        
+      BadBR,        
       /// Invalid range end.
-      RangeError,		  
+      RangeError,  
       /// Ran out of memory.
-      OutOfMemory,		
+      OutOfMemory,
       /// No preceding re for repetition op.
-      BadRepitition,		
+      BadRepitition,
 
       /* Error codes we've added.  */
       /// Premature end.
-      PrematureEnd,		
+      PrematureEnd,
       /// Compiled pattern bigger than 2^16 bytes.
-      TooBig,		
+      TooBig,
       /// Unmatched ) or \); not returned from regcomp.
-      UnmatchedRParen,	
+      UnmatchedRParen,
       /// Miscellaneous error
       NotCompiled
     };
