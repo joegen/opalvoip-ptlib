@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.12  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.11  2005/07/13 11:15:15  csoutheren
  * Backported NAT abstraction files from isvo branch
  *
@@ -86,11 +89,11 @@ class PSTUNUDPSocket : public PUDPSocket
     PSTUNUDPSocket();
 
     virtual BOOL GetLocalAddress(
-      Address & addr    /// Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     virtual BOOL GetLocalAddress(
-      Address & addr,    /// Variable to receive peer hosts IP address
-      WORD & port        /// Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IP address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
   protected:
@@ -167,20 +170,20 @@ class PSTUNClient : public PNatMethod
        guarantee an up to date value.
       */
     NatTypes GetNatType(
-      BOOL force = FALSE    /// Force a new check
+      BOOL force = FALSE    ///< Force a new check
     );
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
       */
     PString GetNatTypeName(
-      BOOL force = FALSE    /// Force a new check
+      BOOL force = FALSE    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
 
     /**Get NatTypes enumeration as an English string for the type.
       */
     static PString GetNatTypeString(
-      NatTypes type   /// NAT Type to get name of
+      NatTypes type   ///< NAT Type to get name of
     );
 
     enum RTPSupportTypes {
@@ -194,7 +197,7 @@ class PSTUNClient : public PNatMethod
       Use the force variable to guarantee an up to date test
       */
     RTPSupportTypes IsSupportingRTP(
-      BOOL force = FALSE    /// Force a new check
+      BOOL force = FALSE    ///< Force a new check
     );
 
     /**Determine the external router address.
@@ -205,8 +208,8 @@ class PSTUNClient : public PNatMethod
        specified.
       */
     virtual BOOL GetExternalAddress(
-      PIPSocket::Address & externalAddress, // External address of router
-      const PTimeInterval & maxAge = 1000   // Maximum age for caching
+      PIPSocket::Address & externalAddress, ///< External address of router
+      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
     );
 
     /**Create a single socket.
@@ -250,7 +253,7 @@ class PSTUNClient : public PNatMethod
     /**Set the timeout for responses from STUN server.
       */
     void SetTimeout(
-      const PTimeInterval & timeout   /// New timeout in milliseconds
+      const PTimeInterval & timeout   ///< New timeout in milliseconds
     ) { replyTimeout = timeout; }
 
     /**Get the number of retries for responses from STUN server.
@@ -260,7 +263,7 @@ class PSTUNClient : public PNatMethod
     /**Set the number of retries for responses from STUN server.
       */
     void SetRetries(
-      PINDEX retries    /// Number of retries
+      PINDEX retries    ///< Number of retries
     ) { pollRetries = retries; }
 
     /**Get the number of sockets to create in attempt to get a port pair.
@@ -276,7 +279,7 @@ class PSTUNClient : public PNatMethod
        busier the firewall the more sockets will be required.
       */
     void SetSocketsForPairing(
-      PINDEX numSockets   /// Number opf sockets to create
+      PINDEX numSockets   ///< Number opf sockets to create
     ) { numSocketsForPairing = numSockets; }
 
     /**Returns whether the Nat Method is ready and available in

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.79  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.78  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -348,7 +351,7 @@ class PIPSocket : public PSocket
 
         /// Create an IP (v4 or v6) address from a sockaddr (sockaddr_in,
         /// sockaddr_in6 or sockaddr_in6_old) structure
-	Address(const int ai_family, const int ai_addrlen,struct sockaddr *ai_addr);
+        Address(const int ai_family, const int ai_addrlen,struct sockaddr *ai_addr);
 #endif
 
 #ifdef __NUCLEUS_NET__
@@ -402,7 +405,7 @@ class PIPSocket : public PSocket
         bool operator==(int i) const      { return  operator==((DWORD)i); }
         bool operator!=(int i) const      { return !operator==((DWORD)i); }
 
-	/// Compare two addresses for equivalence. This will return TRUE
+        /// Compare two addresses for equivalence. This will return TRUE
         /// if the two addresses are equivalent even if they are IPV6 and IPV4
 #if P_HAS_IPV6
         bool operator*=(const Address & addr) const;
@@ -738,39 +741,37 @@ class PIPSocket : public PSocket
     static PString GetGatewayInterface();
 
  #ifdef _WIN32
-  /** Get the IP address for the interface that is being used as the gateway,
+    /** Get the IP address for the interface that is being used as the gateway,
        that is, the interface that packets on the default route will be sent.
 
-	   This Function can be used to Bind the Listener to only the default Packet
-	   route in DHCP Environs.
+       This Function can be used to Bind the Listener to only the default Packet
+       route in DHCP Environs.
 
        Note that the driver does not need to be open for this function to work.
 
        @return
-		The Local Interface IP Address for Gatway Access
+       The Local Interface IP Address for Gatway Access
      */
-	static PIPSocket::Address GetGatewayInterfaceAddress();
+    static PIPSocket::Address GetGatewayInterfaceAddress();
 
-	/** Retrieve the Local IP Address for which packets would have be routed to the 
-		to reach the remote Address.
-		@return
-			Local Address
-	  */
-	static PIPSocket::Address GetRouteAddress(PIPSocket::Address RemoteAddress);
+    /** Retrieve the Local IP Address for which packets would have be routed to the to reach the remote Address.
+       @return Local Address
+    */
+    static PIPSocket::Address GetRouteAddress(PIPSocket::Address RemoteAddress);
 
-	/**	IP Address to a Numerical Representation
-	  */
-	static unsigned AsNumeric(Address addr);
+    /** IP Address to a Numerical Representation
+    */
+    static unsigned AsNumeric(Address addr);
 
-	/** Check if packets on Interface Address can reach the remote IP Address.
-	  */
-	static BOOL IsAddressReachable(PIPSocket::Address LocalIP,
-					PIPSocket::Address LocalMask, 
-					PIPSocket::Address RemoteIP);
+    /** Check if packets on Interface Address can reach the remote IP Address.
+     */
+    static BOOL IsAddressReachable(PIPSocket::Address LocalIP,
+                                   PIPSocket::Address LocalMask, 
+                                   PIPSocket::Address RemoteIP);
 
-	/** Get the Interface Name for a given local Interface Address
-	  */
-	static PString GetInterface(PIPSocket::Address addr);
+    /** Get the Interface Name for a given local Interface Address
+     */
+    static PString GetInterface(PIPSocket::Address addr);
  #endif
     /**
        Describes a route table entry

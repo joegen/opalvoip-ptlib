@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.43  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.42  2005/10/30 23:25:51  csoutheren
  * Fixed formatting
  * Removed throw() declarations (PWLib does not do exceptions)
@@ -236,10 +239,10 @@ class PVXMLGrammar : public PObject
     PXMLElement * GetField() { return field; }
 
     enum GrammarState { 
-      FILLED,       // got something that matched the grammar
-      NOINPUT,      // timeout or still waiting to match
-      NOMATCH,      // recognized something but didn't match the grammar
-      HELP };       // help keyword
+      FILLED,       ///< got something that matched the grammar
+      NOINPUT,      ///< timeout or still waiting to match
+      NOMATCH,      ///< recognized something but didn't match the grammar
+      HELP };       ///< help keyword
 
     GrammarState GetState() const { return state; }
 

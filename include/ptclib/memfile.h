@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.h,v $
+ * Revision 1.6  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -69,7 +72,7 @@ class PMemoryFile : public PFile
     /**Create a new memory file initialising to the specified content.
       */
     PMemoryFile(
-      const PBYTEArray & data  /// New content filr memory file.
+      const PBYTEArray & data  ///< New content filr memory file.
     );
   //@}
 
@@ -83,7 +86,7 @@ class PMemoryFile : public PFile
        relative rank of the file paths.
      */
     Comparison Compare(
-      const PObject & obj   /// Other file to compare against.
+      const PObject & obj   ///< Other file to compare against.
     ) const;
   //@}
 
@@ -102,8 +105,8 @@ class PMemoryFile : public PFile
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the memory file channel. The write timeout is
@@ -116,8 +119,8 @@ class PMemoryFile : public PFile
        @return TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
   //@}
 
@@ -139,7 +142,7 @@ class PMemoryFile : public PFile
        TRUE if the file size was changed to the length specified.
      */
     BOOL SetLength(
-      off_t len   // New length of file.
+      off_t len   ///< New length of file.
     );
 
     /**Set the current active position in the file for the next read or write
@@ -153,8 +156,8 @@ class PMemoryFile : public PFile
        TRUE if the new file position was set.
      */
     BOOL SetPosition(
-      off_t pos,                         /// New position to set.
-      FilePositionOrigin origin = Start  /// Origin for position change.
+      off_t pos,                         ///< New position to set.
+      FilePositionOrigin origin = Start  ///< Origin for position change.
     );
 
     /**Get the current active position in the file for the next read or write

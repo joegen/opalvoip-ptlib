@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.23  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.22  2005/10/30 23:25:51  csoutheren
  * Fixed formatting
  * Removed throw() declarations (PWLib does not do exceptions)
@@ -166,13 +169,13 @@ struct RIFFChunkHeader
 
 struct FMTChunk
 {
-  ChunkHeader hdr          P_PACKED;  // chunk header
-  PUInt16l format          P_PACKED;  // Format 
-  PUInt16l numChannels     P_PACKED;  // Channels 0x01 = mono, 0x02 = stereo
-  PUInt32l sampleRate      P_PACKED;  // Sample Rate in Hz
-  PUInt32l bytesPerSec     P_PACKED;  // Average bytes Per Second
-  PUInt16l bytesPerSample  P_PACKED;  // Bytes Per Sample, eg 2
-  PUInt16l bitsPerSample   P_PACKED;  // Bits Per Sample, eg 16
+  ChunkHeader hdr          P_PACKED;  ///< chunk header
+  PUInt16l format          P_PACKED;  ///< Format 
+  PUInt16l numChannels     P_PACKED;  ///< Channels 0x01 = mono, 0x02 = stereo
+  PUInt32l sampleRate      P_PACKED;  ///< Sample Rate in Hz
+  PUInt32l bytesPerSec     P_PACKED;  ///< Average bytes Per Second
+  PUInt16l bytesPerSample  P_PACKED;  ///< Bytes Per Sample, eg 2
+  PUInt16l bitsPerSample   P_PACKED;  ///< Bits Per Sample, eg 16
 };
 
 }; // namespace PWAV
@@ -280,17 +283,17 @@ class PWAVFile : public PFile
        wav file or a G.723.1 wav file.
      */
     enum {
-      fmt_PCM         = 1,      /// PCM, 8kHz, 16 bit, mono
-      fmt_ALaw        = 6,      /// A-Law 8kHz
-      fmt_uLaw        = 7,      /// u-Law 8kHz
-      fmt_GSM         = 0x31,   /// GSM
-      fmt_G728        = 0x41,   /// RFC2361
-      fmt_G723        = 0x42,   /// RFC2361
-      fmt_MSG7231     = 0x42,   /// Microsoft G.723.1
-      fmt_G726        = 0x64,   /// RFC2361
-      fmt_G722        = 0x65,   /// RFC2361
-      fmt_G729        = 0x84,   /// RFC2361
-      fmt_VivoG7231   = 0x111,  /// VivoActive G.723.1
+      fmt_PCM         = 1,      ///< PCM, 8kHz, 16 bit, mono
+      fmt_ALaw        = 6,      ///< A-Law 8kHz
+      fmt_uLaw        = 7,      ///< u-Law 8kHz
+      fmt_GSM         = 0x31,   ///< GSM
+      fmt_G728        = 0x41,   ///< RFC2361
+      fmt_G723        = 0x42,   ///< RFC2361
+      fmt_MSG7231     = 0x42,   ///< Microsoft G.723.1
+      fmt_G726        = 0x64,   ///< RFC2361
+      fmt_G722        = 0x65,   ///< RFC2361
+      fmt_G729        = 0x84,   ///< RFC2361
+      fmt_VivoG7231   = 0x111,  ///< VivoActive G.723.1
 
       // For backward compatibility
       PCM_WavFile     = fmt_PCM,
@@ -310,10 +313,10 @@ class PWAVFile : public PFile
        #WaveType enum#
      */
     PWAVFile(
-      unsigned format = fmt_PCM /// Type of WAV File to create
+      unsigned format = fmt_PCM ///< Type of WAV File to create
     );
     static PWAVFile * format(
-      const PString & format    /// Type of WAV File to create
+      const PString & format    ///< Type of WAV File to create
     );
 
     /**Create a unique temporary file name, and open the file in the specified
@@ -329,14 +332,14 @@ class PWAVFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PWAVFile(
-      OpenMode mode,          /// Mode in which to open the file.
-      int opts = ModeDefault, /// #OpenOptions enum# for open operation.
-      unsigned format = fmt_PCM /// Type of WAV File to create
+      OpenMode mode,          ///< Mode in which to open the file.
+      int opts = ModeDefault, ///< #OpenOptions enum# for open operation.
+      unsigned format = fmt_PCM ///< Type of WAV File to create
     );
     static PWAVFile * format(
-      const PString & format,  /// Type of WAV File to create
-      PFile::OpenMode mode,          /// Mode in which to open the file.
-      int opts = PFile::ModeDefault /// #OpenOptions enum# for open operation.
+      const PString & format,  ///< Type of WAV File to create
+      PFile::OpenMode mode,          ///< Mode in which to open the file.
+      int opts = PFile::ModeDefault ///< #OpenOptions enum# for open operation.
     );
 
     /**Create a WAV file object with the specified name and open it in
@@ -349,16 +352,16 @@ class PWAVFile : public PFile
        construction to determine if the file was successfully opened.
      */
     PWAVFile(
-      const PFilePath & name,     /// Name of file to open.
-      OpenMode mode = ReadWrite,  /// Mode in which to open the file.
-      int opts = ModeDefault,     /// #OpenOptions enum# for open operation.
-      unsigned format = fmt_PCM /// Type of WAV File to create
+      const PFilePath & name,     ///< Name of file to open.
+      OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
+      int opts = ModeDefault,     ///< #OpenOptions enum# for open operation.
+      unsigned format = fmt_PCM ///< Type of WAV File to create
     );
     PWAVFile(
-      const PString & format,  /// Type of WAV File to create
-      const PFilePath & name,     /// Name of file to open.
-      OpenMode mode = PFile::ReadWrite,  /// Mode in which to open the file.
-      int opts = PFile::ModeDefault     /// #OpenOptions enum# for open operation.
+      const PString & format,  ///< Type of WAV File to create
+      const PFilePath & name,     ///< Name of file to open.
+      OpenMode mode = PFile::ReadWrite,  ///< Mode in which to open the file.
+      int opts = PFile::ModeDefault     ///< #OpenOptions enum# for open operation.
     );
 
     /**Close the file before destruction.
@@ -376,8 +379,8 @@ class PWAVFile : public PFile
        FALSE means no bytes were read due to timeout or some other I/O error.
     */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Call PFile::Write() to write out audio data and perform necessary
@@ -388,8 +391,8 @@ class PWAVFile : public PFile
        FALSE means no bytes were written due to timeout or some other I/O error.
     */
     virtual BOOL Write(
-      const void * buf,   /// Pointer to a block of memory to receive the write bytes.
-      PINDEX len    /// Maximum number of bytes to write to the channel.
+      const void * buf,   ///< Pointer to a block of memory to receive the write bytes.
+      PINDEX len    ///< Maximum number of bytes to write to the channel.
     );
 
     /**Open the current file in the specified mode and with
@@ -404,8 +407,8 @@ class PWAVFile : public PFile
        TRUE if the file was successfully opened.
      */
     virtual BOOL Open(
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // Options for open operation.
+      OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
+      int opts = ModeDefault      ///< Options for open operation.
     );
 
     /**Open the specified WAV file name in the specified mode and with
@@ -422,14 +425,14 @@ class PWAVFile : public PFile
        TRUE if the file was successfully opened.
      */
     virtual BOOL Open(
-      const PFilePath & name,    // Name of file to open.
-      OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault     // #OpenOptions enum# for open operation.
+      const PFilePath & name,    ///< Name of file to open.
+      OpenMode mode = ReadWrite, ///< Mode in which to open the file.
+      int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
     );
 
     /** Close the file channel.
-	If a WAV file has been written to, this will update the header
-	to contain the correct size information.
+        If a WAV file has been written to, this will update the header
+        to contain the correct size information.
         @return TRUE if close was OK.
       */
     virtual BOOL Close();
@@ -449,8 +452,8 @@ class PWAVFile : public PFile
        TRUE if the new file position was set.
      */
     virtual BOOL SetPosition(
-      off_t pos,                         /// New position to set.
-      FilePositionOrigin origin = Start  /// Origin for position change.
+      off_t pos,                         ///< New position to set.
+      FilePositionOrigin origin = Start  ///< Origin for position change.
     );
 
     /**Get the current active position in the file for the next read

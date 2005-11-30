@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.3  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.2  2005/07/13 11:15:14  csoutheren
  * Backported NAT abstraction files from isvo branch
  *
@@ -40,47 +43,47 @@
 #include <ptlib/sockets.h>
 
 /** PNatMethod
-	Base Network Address Traversal Method class
-	All NAT Traversal Methods are derived off this class. 
-	There are quite a few methods of NAT Traversal. The 
-	only purpose of this class is to provide a common 
-	interface. It is intentionally minimalistic.
+    Base Network Address Traversal Method class
+    All NAT Traversal Methods are derived off this class. 
+    There are quite a few methods of NAT Traversal. The 
+    only purpose of this class is to provide a common 
+    interface. It is intentionally minimalistic.
 */
 class PNatMethod  : public PObject
 {
-	PCLASSINFO(PNatMethod,PObject);
+  PCLASSINFO(PNatMethod,PObject);
 
 public:
 
   /**@name Construction */
   //@{
-	/** Default Contructor
-	*/
-	PNatMethod();
+  /** Default Contructor
+  */
+  PNatMethod();
 
-	/** Deconstructor
-	*/
-	~PNatMethod();
+  /** Deconstructor
+  */
+  ~PNatMethod();
   //@}
 
   /**@name General Functions */
   //@{
 
   /**  GetExternalAddress
-		Get the acquired External IP Address.
+    Get the acquired External IP Address.
   */
    virtual BOOL GetExternalAddress(
       PIPSocket::Address & externalAddress, /// External address of router
       const PTimeInterval & maxAge = 1000   /// Maximum age for caching
-	  ) =0;
+   ) =0;
 
   /**  CreateSocketPair
-		Create the UDP Socket pair
+    Create the UDP Socket pair
   */
    virtual BOOL CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2
-	  ) =0;
+   ) =0;
 
   /**Returns whether the Nat Method is ready and available in
      assisting in NAT Traversal. The principal is function is
@@ -106,12 +109,11 @@ public:
       WORD portMax = 0,       /// Single socket port number max
       WORD portPairBase = 0,  /// Socket pair port number base
       WORD portPairMax = 0    /// Socket pair port number max
-	  );
+   );
   //@}
 
 protected:
-
-	struct PortInfo {
+  struct PortInfo {
       PMutex mutex;
       WORD   basePort;
       WORD   maxPort;
@@ -127,42 +129,42 @@ PLIST(PNatList, PNatMethod);
 /////////////////////////////////////////////////////////////
 
 /** PNatStrategy
-	The main container for all
-	NAT traversal Strategies. 
+  The main container for all
+  NAT traversal Strategies. 
 */
 
 class PNatStrategy : public PObject
 {
-	PCLASSINFO(PNatStrategy,PObject);
+  PCLASSINFO(PNatStrategy,PObject);
 
 public :
 
   /**@name Construction */
   //@{
-	/** Default Contructor
-	*/
-	PNatStrategy();
+  /** Default Contructor
+  */
+  PNatStrategy();
 
-	/** Deconstructor
-	*/
-	~PNatStrategy();
+  /** Deconstructor
+  */
+  ~PNatStrategy();
   //@}
 
   /**@name Method Handling */
   //@{
-	/** AddMethod
-		This function is used to add the required NAT
-		Traversal Method. The Order of Loading is important
-		The first added has the highest priority.
-	*/
-	void AddMethod(PNatMethod * method);
+  /** AddMethod
+    This function is used to add the required NAT
+    Traversal Method. The Order of Loading is important
+    The first added has the highest priority.
+  */
+  void AddMethod(PNatMethod * method);
 
-	/** GetMethod
-		This function retrieves the first available NAT
-		Traversal Method. If no available NAT Method is found
-		then NULL is returned. 
-	*/
-	PNatMethod * GetMethod();
+  /** GetMethod
+    This function retrieves the first available NAT
+    Traversal Method. If no available NAT Method is found
+    then NULL is returned. 
+  */
+  PNatMethod * GetMethod();
 
     /**Set the port ranges to be used on local machine.
        Note that the ports used on the NAT router may not be the same unless
@@ -183,6 +185,5 @@ public :
   //@}
 
 private:
-	PNatList natlist;
-
+  PNatList natlist;
 };

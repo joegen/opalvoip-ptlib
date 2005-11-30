@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.h,v $
+ * Revision 1.24  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.23  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -115,7 +118,7 @@ class PTelnetSocket : public PTCPSocket
     // Create an unopened TELNET socket.
 
     PTelnetSocket(
-      const PString & address  // Address of remote machine to connect to.
+      const PString & address  ///< Address of remote machine to connect to.
     );
     // Create an opened TELNET socket.
 
@@ -137,8 +140,8 @@ class PTelnetSocket : public PTCPSocket
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /** Low level write to the channel. This function will block until the
@@ -155,8 +158,8 @@ class PTelnetSocket : public PTCPSocket
        Returns TRUE if at least len bytes were written to the channel.
      */
     BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
 
@@ -172,7 +175,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
 
 
@@ -191,7 +194,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
 
 
@@ -202,33 +205,33 @@ class PTelnetSocket : public PTCPSocket
        The TELNET socket uses this for sychronisation.
      */
     virtual void OnOutOfBand(
-      const void * buf,   // Data to be received as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
+      const void * buf,   ///< Data to be received as URGENT TCP data.
+      PINDEX len          ///< Number of bytes pointed to by <CODE>buf</CODE>.
     );
 
 
   // New functions
     enum Command {
-      IAC           = 255,    // Interpret As Command - escape character.
-      DONT          = 254,    // You are not to use option.
-      DO            = 253,    // Request to use option.
-      WONT          = 252,    // Refuse use of option.
-      WILL          = 251,    // Accept the use of option.
-      SB            = 250,    // Subnegotiation begin.
-      GoAhead       = 249,    // Function GA, you may reverse the line.
-      EraseLine     = 248,    // Function EL, erase the current line.
-      EraseChar     = 247,    // Function EC, erase the current character.
-      AreYouThere   = 246,    // Function AYT, are you there?
-      AbortOutput   = 245,    // Function AO, abort output stream.
-      InterruptProcess = 244, // Function IP, interrupt process, permanently.
-      Break         = 243,    // NVT character break.
-      DataMark      = 242,    // Marker for connection cleaning.
-      NOP           = 241,    // No operation.
-      SE            = 240,    // Subnegotiation end.
-      EndOfReccord  = 239,    // End of record for transparent mode.
-      AbortProcess  = 238,    // Abort the entire process
-      SuspendProcess= 237,    // Suspend the process.
-      EndOfFile     = 236     // End of file marker.
+      IAC           = 255,    ///< Interpret As Command - escape character.
+      DONT          = 254,    ///< You are not to use option.
+      DO            = 253,    ///< Request to use option.
+      WONT          = 252,    ///< Refuse use of option.
+      WILL          = 251,    ///< Accept the use of option.
+      SB            = 250,    ///< Subnegotiation begin.
+      GoAhead       = 249,    ///< Function GA, you may reverse the line.
+      EraseLine     = 248,    ///< Function EL, erase the current line.
+      EraseChar     = 247,    ///< Function EC, erase the current character.
+      AreYouThere   = 246,    ///< Function AYT, are you there?
+      AbortOutput   = 245,    ///< Function AO, abort output stream.
+      InterruptProcess = 244, ///< Function IP, interrupt process, permanently.
+      Break         = 243,    ///< NVT character break.
+      DataMark      = 242,    ///< Marker for connection cleaning.
+      NOP           = 241,    ///< No operation.
+      SE            = 240,    ///< Subnegotiation end.
+      EndOfReccord  = 239,    ///< End of record for transparent mode.
+      AbortProcess  = 238,    ///< Abort the entire process
+      SuspendProcess= 237,    ///< Suspend the process.
+      EndOfFile     = 236     ///< End of file marker.
     };
     // Defined telnet commands codes
 
@@ -253,52 +256,53 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     BOOL SendCommand(
-      Command cmd,  // Command code to send
-      int opt = 0  // Option for command code.
+      Command cmd,  ///< Command code to send
+      int opt = 0  ///< Option for command code.
     );
 
 
     enum Options {
-      TransmitBinary      = 0,    // Assume binary 8 bit data is transferred.
-      EchoOption          = 1,    // Automatically echo characters sent.
-      ReconnectOption     = 2,    // Prepare to reconnect
-      SuppressGoAhead     = 3,    // Do not use the GA protocol.
-      MessageSizeOption   = 4,    // Negatiate approximate message size
-      StatusOption        = 5,    // Status packets are understood.
-      TimingMark          = 6,    // Marker for synchronisation.
-      RCTEOption          = 7,    // Remote controlled transmission and echo.
-      OutputLineWidth     = 8,    // Negotiate about output line width.
-      OutputPageSize      = 9,    // Negotiate about output page size.
-      CRDisposition       = 10,   // Negotiate about CR disposition.
-      HorizontalTabsStops = 11,   // Negotiate about horizontal tabstops.
-      HorizTabDisposition = 12,   // Negotiate about horizontal tab disposition
-      FormFeedDisposition = 13,   // Negotiate about formfeed disposition.
-      VerticalTabStops    = 14,   // Negotiate about vertical tab stops.
-      VertTabDisposition  = 15,   // Negotiate about vertical tab disposition.
-      LineFeedDisposition = 16,   // Negotiate about output LF disposition.
-      ExtendedASCII       = 17,   // Extended ascic character set.
-      ForceLogout         = 18,   // Force logout.
-      ByteMacroOption     = 19,   // Byte macro.
-      DataEntryTerminal   = 20,   // data entry terminal.
-      SupDupProtocol      = 21,   // supdup protocol.
-      SupDupOutput        = 22,   // supdup output.
-      SendLocation        = 23,   // Send location.
-      TerminalType        = 24,   // Provide terminal type information.
-      EndOfRecordOption   = 25,   // Record boundary marker.
-      TACACSUID           = 26,   // TACACS user identification.
-      OutputMark          = 27,   // Output marker or banner text.
-      TerminalLocation    = 28,   // Terminals physical location infromation.
-      Use3270RegimeOption = 29,   // 3270 regime.
-      UseX3PADOption      = 30,   // X.3 PAD
-      WindowSize          = 31,   // NAWS - Negotiate About Window Size.
-      TerminalSpeed       = 32,   // Provide terminal speed information.
-      FlowControl         = 33,   // Remote flow control.
-      LineModeOption      = 34,   // Terminal in line mode option.
-      XDisplayLocation    = 35,   // X Display location.
-      EnvironmentOption   = 36,   // Provide environment information.
-      AuthenticateOption  = 37,   // Authenticate option.
-      EncriptionOption    = 38,	  // Encryption option.
-      ExtendedOptionsList = 255,  // Code for extended options.
+      TransmitBinary      = 0,    ///< Assume binary 8 bit data is transferred.
+      EchoOption          = 1,    ///< Automatically echo characters sent.
+      ReconnectOption     = 2,    ///< Prepare to reconnect
+      SuppressGoAhead     = 3,    ///< Do not use the GA protocol.
+      MessageSizeOption   = 4,    ///< Negatiate approximate message size
+      StatusOption        = 5,    ///< Status packets are understood.
+      TimingMark          = 6,    ///< Marker for synchronisation.
+      RCTEOption          = 7,    ///< Remote controlled transmission and echo.
+      OutputLineWidth     = 8,    ///< Negotiate about output line width.
+      OutputPageSize      = 9,    ///< Negotiate about output page size.
+      CRDisposition       = 10,   ///< Negotiate about CR disposition.
+      HorizontalTabsStops = 11,   ///< Negotiate about horizontal tabstops.
+      HorizTabDisposition = 12,   ///< Negotiate about horizontal tab disposition
+      FormFeedDisposition = 13,   ///< Negotiate about formfeed disposition.
+      VerticalTabStops    = 14,   ///< Negotiate about vertical tab stops.
+      VertTabDisposition  = 15,   ///< Negotiate about vertical tab disposition.
+      LineFeedDisposition = 16,   ///< Negotiate about output LF disposition.
+      ExtendedASCII       = 17,   ///< Extended ascic character set.
+      ForceLogout         = 18,   ///< Force logout.
+      ByteMacroOption     = 19,   ///< Byte macro.
+      DataEntryTerminal   = 20,   ///< data entry terminal.
+      SupDupProtocol      = 21,   ///< supdup protocol.
+      SupDupOutput        = 22,   ///< supdup output.
+      SendLocation        = 23,   ///< Send location.
+      TerminalType        = 24,   ///< Provide terminal type information.
+      EndOfRecordOption   = 25,   ///< Record boundary marker.
+      TACACSUID           = 26,   ///< TACACS user identification.
+      OutputMark          = 27,   ///< Output marker or banner text.
+      TerminalLocation    = 28,   ///< Terminals physical location infromation.
+      Use3270RegimeOption = 29,   ///< 3270 regime.
+      UseX3PADOption      = 30,   ///< X.3 PAD
+      WindowSize          = 31,   ///< NAWS - Negotiate About Window Size.
+      TerminalSpeed       = 32,   ///< Provide terminal speed information.
+      FlowControl         = 33,   ///< Remote flow control.
+      LineModeOption      = 34,   ///< Terminal in line mode option.
+      XDisplayLocation    = 35,   ///< X Display location.
+      EnvironmentOption   = 36,   ///< Provide environment information.
+      AuthenticateOption  = 37,   ///< Authenticate option.
+      EncriptionOption    = 38,   ///< Encryption option.
+      EncryptionOption    = 38,   ///< Duplicate to fix spelling mistake and remain backwards compatible.
+      ExtendedOptionsList = 255,  ///< Code for extended options.
       MaxOptions
     };
     // Defined TELNET options.
@@ -310,7 +314,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     virtual BOOL SendDo(
-      BYTE option    // Option to DO
+      BYTE option    ///< Option to DO
     );
 
     /** Send DONT command.
@@ -319,7 +323,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     virtual BOOL SendDont(
-      BYTE option    // Option to DONT
+      BYTE option    ///< Option to DONT
     );
 
     /** Send WILL request.
@@ -328,7 +332,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     virtual BOOL SendWill(
-      BYTE option    // Option to WILL
+      BYTE option    ///< Option to WILL
     );
 
     /** Send WONT command.
@@ -337,12 +341,12 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     virtual BOOL SendWont(
-      BYTE option    // Option to WONT
+      BYTE option    ///< Option to WONT
     );
 
     enum SubOptionCodes {
-      SubOptionIs       = 0,  // Sub-option is...
-      SubOptionSend     = 1,  // Request to send option.
+      SubOptionIs       = 0,  ///< Sub-option is...
+      SubOptionSend     = 1,  ///< Request to send option.
     };
     // Codes for sub option negotiation.
 
@@ -352,26 +356,26 @@ class PTelnetSocket : public PTCPSocket
        TRUE if the command was successfully sent.
      */
     BOOL SendSubOption(
-      BYTE code,          // Suboptions option code.
-      const BYTE * info,  // Information to send.
-      PINDEX len,         // Length of information.
-      int subCode = -1    // Suboptions sub-code, -1 indicates no sub-code.
+      BYTE code,          ///< Suboptions option code.
+      const BYTE * info,  ///< Information to send.
+      PINDEX len,         ///< Length of information.
+      int subCode = -1    ///< Suboptions sub-code, -1 indicates no sub-code.
     );
 
     /** Set if the option on our side is possible, this does not mean it is set
        it only means that in response to a DO we WILL rather than WONT.
      */
     void SetOurOption(
-      BYTE code,          // Option to check.
-      BOOL state = TRUE   // New state for for option.
+      BYTE code,          ///< Option to check.
+      BOOL state = TRUE   ///< New state for for option.
     ) { option[code].weCan = state; }
 
     /** Set if the option on their side is desired, this does not mean it is set
        it only means that in response to a WILL we DO rather than DONT.
      */
     void SetTheirOption(
-      BYTE code,          // Option to check.
-      BOOL state = TRUE  // New state for for option.
+      BYTE code,          ///< Option to check.
+      BOOL state = TRUE  ///< New state for for option.
     ) { option[code].theyShould = state; }
 
     /** Determine if the option on our side is enabled.
@@ -380,7 +384,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if option is enabled.
      */
     BOOL IsOurOption(
-      BYTE code    // Option to check.
+      BYTE code    ///< Option to check.
     ) const { return option[code].ourState == OptionInfo::IsYes; }
 
     /** Determine if the option on their side is enabled.
@@ -389,11 +393,11 @@ class PTelnetSocket : public PTCPSocket
        TRUE if option is enabled.
      */
     BOOL IsTheirOption(
-      BYTE code    // Option to check.
+      BYTE code    ///< Option to check.
     ) const { return option[code].theirState == OptionInfo::IsYes; }
 
     void SetTerminalType(
-      const PString & newType   // New terminal type description string.
+      const PString & newType   ///< New terminal type description string.
     );
     // Set the terminal type description string for TELNET protocol.
 
@@ -401,14 +405,14 @@ class PTelnetSocket : public PTCPSocket
     // Get the terminal type description string for TELNET protocol.
 
     void SetWindowSize(
-      WORD width,   // New window width.
-      WORD height   // New window height.
+      WORD width,   ///< New window width.
+      WORD height   ///< New window height.
     );
     // Set the width and height of the Network Virtual Terminal window.
 
     void GetWindowSize(
-      WORD & width,   // Old window width.
-      WORD & height   // Old window height.
+      WORD & width,   ///< Old window width.
+      WORD & height   ///< Old window height.
     ) const;
     // Get the width and height of the Network Virtual Terminal window.
 
@@ -427,7 +431,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if option is accepted.
      */
     virtual void OnDo(
-      BYTE option   // Option to DO
+      BYTE option   ///< Option to DO
     );
 
     /** This callback function is called by the system when it receives a DONT
@@ -437,7 +441,7 @@ class PTelnetSocket : public PTCPSocket
        standard TELNET class. All others are ignored.
      */
     virtual void OnDont(
-      BYTE option   // Option to DONT
+      BYTE option   ///< Option to DONT
     );
 
     /** This callback function is called by the system when it receives a WILL
@@ -447,7 +451,7 @@ class PTelnetSocket : public PTCPSocket
        the standard TELNET class and a DONT for all others.
      */
     virtual void OnWill(
-      BYTE option   // Option to WILL
+      BYTE option   ///< Option to WILL
     );
 
     /** This callback function is called by the system when it receives a WONT
@@ -457,16 +461,16 @@ class PTelnetSocket : public PTCPSocket
        standard TELNET class. All others are ignored.
      */
     virtual void OnWont(
-      BYTE option   // Option to WONT
+      BYTE option   ///< Option to WONT
     );
 
     /** This callback function is called by the system when it receives a
        sub-option command from the remote system.
      */
     virtual void OnSubOption(
-      BYTE code,          // Option code for sub-option data.
-      const BYTE * info,  // Extra information being sent in the sub-option.
-      PINDEX len          // Number of extra bytes.
+      BYTE code,          ///< Option code for sub-option data.
+      const BYTE * info,  ///< Extra information being sent in the sub-option.
+      PINDEX len          ///< Number of extra bytes.
     );
 
 
@@ -480,7 +484,7 @@ class PTelnetSocket : public PTCPSocket
        TRUE if next byte is not part of the command.
      */
     virtual BOOL OnCommand(
-      BYTE code  // Code received that could not be precessed.
+      BYTE code  ///< Code received that could not be precessed.
     );
 
 

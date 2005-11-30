@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.20  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.19  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -121,9 +124,9 @@ class PSSLPrivateKey : public PObject
     /**Create a new RSA private key.
       */
     PSSLPrivateKey(
-      unsigned modulus,   /// Number of bits
-      void (*callback)(int,int,void *) = NULL,  /// Progress callback function
-      void *cb_arg = NULL                       /// Argument passed to callback
+      unsigned modulus,   ///< Number of bits
+      void (*callback)(int,int,void *) = NULL,  ///< Progress callback function
+      void *cb_arg = NULL                       ///< Argument passed to callback
     );
 
     /**Create a new private key given the file.
@@ -132,21 +135,21 @@ class PSSLPrivateKey : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     PSSLPrivateKey(
-      const PFilePath & keyFile,  /// Private key file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & keyFile,  ///< Private key file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
     /**Create private key from the binary ASN1 DER encoded data specified.
       */
     PSSLPrivateKey(
-      const BYTE * keyData,   /// Private key data
-      PINDEX keySize          /// Size of private key data
+      const BYTE * keyData,   ///< Private key data
+      PINDEX keySize          ///< Size of private key data
     );
 
     /**Create private key from the binary ASN1 DER encoded data specified.
       */
     PSSLPrivateKey(
-      const PBYTEArray & keyData  /// Private key data
+      const PBYTEArray & keyData  ///< Private key data
     );
 
     /**Create a copy of the private key.
@@ -172,9 +175,9 @@ class PSSLPrivateKey : public PObject
     /**Create a new private key.
      */
     BOOL Create(
-      unsigned modulus,   /// Number of bits
-      void (*callback)(int,int,void *) = NULL,  /// Progress callback function
-      void *cb_arg = NULL                       /// Argument passed to callback
+      unsigned modulus,   ///< Number of bits
+      void (*callback)(int,int,void *) = NULL,  ///< Progress callback function
+      void *cb_arg = NULL                       ///< Argument passed to callback
     );
 
     /**Get the certificate as binary ASN1 DER encoded data.
@@ -191,8 +194,8 @@ class PSSLPrivateKey : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     BOOL Load(
-      const PFilePath & keyFile,  /// Private key file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & keyFile,  ///< Private key file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
     /**Save private key to file.
@@ -201,9 +204,9 @@ class PSSLPrivateKey : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     BOOL Save(
-      const PFilePath & keyFile,  /// Private key file
-      BOOL append = FALSE,        /// Append to file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to write
+      const PFilePath & keyFile,  ///< Private key file
+      BOOL append = FALSE,        ///< Append to file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to write
     );
 
 
@@ -230,27 +233,27 @@ class PSSLCertificate : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     PSSLCertificate(
-      const PFilePath & certFile, /// Certificate file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & certFile, ///< Certificate file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
     /**Create certificate from the binary ASN1 DER encoded data specified.
       */
     PSSLCertificate(
-      const BYTE * certData,  /// Certificate data
-      PINDEX certSize        /// Size of certificate data
+      const BYTE * certData,  ///< Certificate data
+      PINDEX certSize        ///< Size of certificate data
     );
 
     /**Create certificate from the binary ASN1 DER encoded data specified.
       */
     PSSLCertificate(
-      const PBYTEArray & certData  /// Certificate data
+      const PBYTEArray & certData  ///< Certificate data
     );
 
     /**Create certificate from the ASN1 DER base64 encoded data specified.
       */
     PSSLCertificate(
-      const PString & certString  /// Certificate data as string
+      const PString & certString  ///< Certificate data as string
     );
 
     /**Create a copy of the certificate.
@@ -278,12 +281,12 @@ class PSSLCertificate : public PObject
        name is a short name for the field and value is a string value for the
        field for example:
           "/C=ZA/SP=Western Cape/L=Cape Town/O=Thawte Consulting cc"
-	  "/OU=Certification Services Division/CN=Thawte Server CA"
-	  "/Email=server-certs@thawte.com"
+          "/OU=Certification Services Division/CN=Thawte Server CA"
+          "/Email=server-certs@thawte.com"
      */
     BOOL CreateRoot(
-      const PString & subject,    /// Subject name for certificate
-      const PSSLPrivateKey & key  /// Key to sign certificate with
+      const PString & subject,    ///< Subject name for certificate
+      const PSSLPrivateKey & key  ///< Key to sign certificate with
     );
 
     /**Get the certificate as binary ASN1 DER encoded data.
@@ -300,8 +303,8 @@ class PSSLCertificate : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     BOOL Load(
-      const PFilePath & certFile, /// Certificate file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & certFile, ///< Certificate file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
     /**Save certificate to file.
@@ -310,9 +313,9 @@ class PSSLCertificate : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     BOOL Save(
-      const PFilePath & keyFile,  /// Certificate key file
-      BOOL append = FALSE,        /// Append to file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to write
+      const PFilePath & keyFile,  ///< Certificate key file
+      BOOL append = FALSE,        ///< Append to file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to write
     );
 
 
@@ -339,17 +342,17 @@ class PSSLDiffieHellman : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     PSSLDiffieHellman(
-      const PFilePath & dhFile, /// Diffie-Hellman parameters file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & dhFile, ///< Diffie-Hellman parameters file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
     /**Create a set of Diffie-Hellman parameters.
       */
     PSSLDiffieHellman(
-      const BYTE * pData, /// P data
-      PINDEX pSize,       /// Size of P data
-      const BYTE * gData, /// G data
-      PINDEX gSize        /// Size of G data
+      const BYTE * pData, ///< P data
+      PINDEX pSize,       ///< Size of P data
+      const BYTE * gData, ///< G data
+      PINDEX gSize        ///< Size of G data
     );
 
     /**Create a copy of the Diffie-Hellman parameters.
@@ -378,8 +381,8 @@ class PSSLDiffieHellman : public PObject
        ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     BOOL Load(
-      const PFilePath & dhFile, /// Diffie-Hellman parameters file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+      const PFilePath & dhFile, ///< Diffie-Hellman parameters file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
   protected:
@@ -402,8 +405,8 @@ class PSSLContext {
        to a C string.
       */
     PSSLContext(
-      const void * sessionId = NULL,  /// Pointer to session ID
-      PINDEX idSize = 0               /// Size of session ID
+      const void * sessionId = NULL,  ///< Pointer to session ID
+      PINDEX idSize = 0               ///< Size of session ID
     );
 
     /**Clean up the SSL context.
@@ -417,13 +420,13 @@ class PSSLContext {
     /**Set the path to locate CA certificates.
       */
     BOOL SetCAPath(
-      const PDirectory & caPath   /// Directory for CA certificates
+      const PDirectory & caPath   ///< Directory for CA certificates
     );
 
     /**Set the CA certificate file.
       */
     BOOL SetCAFile(
-      const PFilePath & caFile    /// CA certificate file
+      const PFilePath & caFile    ///< CA certificate file
     );
 
     /**Use the certificate specified.
@@ -447,7 +450,7 @@ class PSSLContext {
     /**Set the available ciphers to those listed.
       */
     BOOL SetCipherList(
-      const PString & ciphers   /// List of cipher names.
+      const PString & ciphers   ///< List of cipher names.
     );
 
   protected:
@@ -465,11 +468,11 @@ class PSSLChannel : public PIndirectChannel
        If no context is given a default one is created.
       */
     PSSLChannel(
-      PSSLContext * context = NULL,   /// Context for SSL channel
-      BOOL autoDeleteContext = FALSE  /// Flag for context to be automatically deleted.
+      PSSLContext * context = NULL,   ///< Context for SSL channel
+      BOOL autoDeleteContext = FALSE  ///< Flag for context to be automatically deleted.
     );
     PSSLChannel(
-      PSSLContext & context           /// Context for SSL channel
+      PSSLContext & context           ///< Context for SSL channel
     );
 
     /**Close and clear the SSL channel.
@@ -494,14 +497,14 @@ class PSSLChannel : public PIndirectChannel
     /**Accept a new inbound connection (server).
       */
     BOOL Accept(
-      PChannel & channel  /// Channel to attach to.
+      PChannel & channel  ///< Channel to attach to.
     );
 
     /**Accept a new inbound connection (server).
       */
     BOOL Accept(
-      PChannel * channel,     /// Channel to attach to.
-      BOOL autoDelete = TRUE  /// Flag for if channel should be automatically deleted.
+      PChannel * channel,     ///< Channel to attach to.
+      BOOL autoDelete = TRUE  ///< Flag for if channel should be automatically deleted.
     );
 
 
@@ -514,14 +517,14 @@ class PSSLChannel : public PIndirectChannel
     /**Connect to remote server.
       */
     BOOL Connect(
-      PChannel & channel  /// Channel to attach to.
+      PChannel & channel  ///< Channel to attach to.
     );
 
     /**Connect to remote server.
       */
     BOOL Connect(
-      PChannel * channel,     /// Channel to attach to.
-      BOOL autoDelete = TRUE  /// Flag for if channel should be automatically deleted.
+      PChannel * channel,     ///< Channel to attach to.
+      BOOL autoDelete = TRUE  ///< Flag for if channel should be automatically deleted.
     );
 
     /**Use the certificate specified.

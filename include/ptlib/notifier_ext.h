@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: notifier_ext.h,v $
+ * Revision 1.5  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2004/05/17 11:02:39  csoutheren
  * Added extra documentation
  *
@@ -61,8 +64,8 @@ class PSmartNotifieeRegistrar
     PSmartNotifieeRegistrar() : m_ID(P_MAX_INDEX) {}
     ~PSmartNotifieeRegistrar() { UnregisterNotifiee(m_ID); }
 
-    void        Init(void * obj)	{ if (m_ID == P_MAX_INDEX) m_ID = RegisterNotifiee(obj); }
-    unsigned    GetID() const		{ return m_ID; }
+    void        Init(void * obj)        { if (m_ID == P_MAX_INDEX) m_ID = RegisterNotifiee(obj); }
+    unsigned    GetID() const           { return m_ID; }
 
     static unsigned    RegisterNotifiee(void * obj);
     static BOOL        UnregisterNotifiee(unsigned id);
@@ -78,7 +81,7 @@ class PSmartNotifierFunction : public PNotifierFunction
     PCLASSINFO(PSmartNotifierFunction, PNotifierFunction);
 
   protected:
-    unsigned	m_NotifieeID;
+    unsigned m_NotifieeID;
 
   public:
     PSmartNotifierFunction(unsigned id) : PNotifierFunction(&id), m_NotifieeID(id) { }
@@ -102,7 +105,7 @@ class PSmartNotifierFunction : public PNotifierFunction
           if (obj) \
             ((notifiee*)obj)->func((notifier &)note, extra); \
           else \
-	          PTRACE(2, "Invalid notifiee"); \
+            PTRACE(2, "Invalid notifiee"); \
       } \
   }; \
   friend class func##_PSmartNotifier; \
@@ -117,7 +120,7 @@ class PNotifierList : public PObject
   private:
     PLIST(_PNotifierList, PNotifier);
 
-    _PNotifierList	m_TheList;
+    _PNotifierList m_TheList;
 
     // Removes smart pointers to deleted objects
     void   Cleanup();
@@ -125,10 +128,10 @@ class PNotifierList : public PObject
   public:
     PINDEX GetSize() const { return m_TheList.GetSize(); }
 
-    void	Add(PNotifier * handler)	{ m_TheList.Append(handler); }
-    void	Remove(PNotifier * handler)	{ m_TheList.Remove(handler); }
-    BOOL	RemoveTarget(PObject * obj);
-    BOOL	Fire(PObject& obj, INT val = 0);
+    void Add(PNotifier * handler)       { m_TheList.Append(handler); }
+    void Remove(PNotifier * handler)    { m_TheList.Remove(handler); }
+    BOOL RemoveTarget(PObject * obj);
+    BOOL Fire(PObject& obj, INT val = 0);
 
     // Moves all the notifiers in "that" to "this"
     void  Move(PNotifierList& that);

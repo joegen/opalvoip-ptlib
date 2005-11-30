@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.15  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.14  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -85,9 +88,9 @@
 
 #if P_HAS_ATOMIC_INT
 #if P_NEEDS_GNU_CXX_NAMESPACE
-#define	EXCHANGE_AND_ADD(v,i)	__gnu_cxx::__exchange_and_add(v,i)
+#define EXCHANGE_AND_ADD(v,i)   __gnu_cxx::__exchange_and_add(v,i)
 #else
-#define	EXCHANGE_AND_ADD(v,i)	__exchange_and_add(v,i)
+#define EXCHANGE_AND_ADD(v,i)   __exchange_and_add(v,i)
 #endif
 #endif
 

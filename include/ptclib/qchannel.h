@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.h,v $
+ * Revision 1.4  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.3  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -68,7 +71,7 @@ class PQueueChannel : public PChannel
     /** Create a new queue channel with the specified maximum size.
       */
     PQueueChannel(
-      PINDEX queueSize = 0   /// Queue size
+      PINDEX queueSize = 0   ///< Queue size
     );
 
     /**Delete queue and release memory used.
@@ -91,8 +94,8 @@ class PQueueChannel : public PChannel
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the file channel. The write timeout is ignored for
@@ -105,8 +108,8 @@ class PQueueChannel : public PChannel
        @return TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
     /** Close the file channel.
@@ -121,7 +124,7 @@ class PQueueChannel : public PChannel
     /**Open a queue, allocating the queueSize bytes.
       */
     virtual BOOL Open(
-      PINDEX queueSize   /// Queue size
+      PINDEX queueSize   ///< Queue size
     );
 
     /// Get the queue size.

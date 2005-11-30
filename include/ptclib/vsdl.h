@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.10  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.9  2005/08/09 09:08:08  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -126,8 +129,8 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     /**Open the device given the device name.
     */
     virtual BOOL Open(
-      const PString & /*deviceName*/,   /// Device name to open
-      BOOL /*startImmediate*/ = TRUE    /// Immediately start device
+      const PString & /*deviceName*/,   ///< Device name to open
+      BOOL /*startImmediate*/ = TRUE    ///< Immediately start device
     );
   
     /**Synonymous with the destructor.
@@ -149,7 +152,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
        returns TRUE.
     */
     virtual BOOL SetColourFormat(
-      const PString & colourFormat // New colour format for device.
+      const PString & colourFormat ///< New colour format for device.
     );
 
     /**Set the frame size to be used.
@@ -161,8 +164,8 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
        returns TRUE.
     */
     virtual BOOL SetFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
     );
 
     /**Get the maximum frame size in bytes.

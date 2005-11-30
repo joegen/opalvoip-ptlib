@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.h,v $
+ * Revision 1.5  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2003/03/31 06:21:19  craigs
  * Split the expat wrapper from the XML file handling to allow reuse of the parser
  *
@@ -168,14 +171,14 @@ class PSOAPServerResource : public PHTTPResource
   public:
     PSOAPServerResource();
     PSOAPServerResource(
-      const PHTTPAuthority & auth    // Authorisation for the resource.
+      const PHTTPAuthority & auth    ///< Authorisation for the resource.
     );
     PSOAPServerResource(
-      const PURL & url               // Name of the resource in URL space.
+      const PURL & url               ///< Name of the resource in URL space.
     );
     PSOAPServerResource(
-      const PURL & url,              // Name of the resource in URL space.
-      const PHTTPAuthority & auth    // Authorisation for the resource.
+      const PURL & url,              ///< Name of the resource in URL space.
+      const PHTTPAuthority & auth    ///< Authorisation for the resource.
     );
 
     // overrides from PHTTPResource

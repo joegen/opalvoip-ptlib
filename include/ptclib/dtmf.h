@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.7  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.6  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -79,25 +82,38 @@ class PDTMFEncoder : public PBYTEArray
     /**
       * Create PCM data for the specified DTMF sequence 
       */
-    inline PDTMFEncoder(const char * dtmf = NULL, unsigned len = DefaultToneLen)
+    inline PDTMFEncoder(
+        const char * dtmf = NULL,      ///< character string to encode
+        unsigned len = DefaultToneLen  ///< length of each DTMF tone in milliseconds
+    )
     { if (dtmf != NULL) AddTone(dtmf, len); }
 
 
     /**
       * Add the PCM data for the specified tone to the buffer
       */
-    void AddTone(char ch, unsigned len = DefaultToneLen);
+    void AddTone(
+        char ch,                       ///< character to encode
+        unsigned len = DefaultToneLen  ///< length of DTMF tone in milliseconds
+    );
 
     /**
       * Add the PCM data for the specified tone sequence to the buffer
       */
-    void AddTone(const PString & str, unsigned len = DefaultToneLen);
+    void AddTone(
+        const PString & str,           ///< string to encode
+        unsigned len = DefaultToneLen  ///< length of DTMF tone in milliseconds
+    );
 
     /**
       * Add the PCM data for the specified dual-frequency tone to the buffer
       * freq2 can be zero, which will generate a single frequency tone
       */
-    void AddTone(double freq1, double freq2 = 0, unsigned len = DefaultToneLen);
+    void AddTone(
+        double freq1,                  // primary frequency
+        double freq2 = 0,              // secondary frequency, or 0 if no secondary frequency
+        unsigned len = DefaultToneLen  // length of DTMF tone in milliseconds
+    );
 
     /**
       * Generate PCM data for a single cadence of the US standard ring tone
@@ -129,11 +145,15 @@ class PDTMFEncoder : public PBYTEArray
     }
 
     /**
-     * Convenience function to get the dtmf symbol for index i, where i is
-     * in the range of 0 to 15
+     * Convenience function to get the ASCII character for a DTMF index, 
+     * where the index varies from 0 to 15
+     *
+     * @returns ASCII value
      */
 
-    char DtmfChar(PINDEX i);
+    char DtmfChar(
+        PINDEX i    ///< index of tone
+    );
 
   protected:
     static PMutex & GetMutex();
