@@ -5,6 +5,9 @@
  *
  *
  * $Log: audio.h,v $
+ * Revision 1.2  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.1  2005/08/18 22:29:15  dereksmithies
  * Add a full duplex sound card test (which was excised from ohphone).
  * Add copyright header and cvs log statements.
@@ -67,23 +70,23 @@ PDECLARE_LIST(TestAudioDevice, PBYTEArray *)
 
 class TestAudio : public PThread  
 {
-	PCLASSINFO(TestAudio, PThread)
-public:
-	TestAudio(TestAudioDevice &master);
-	virtual ~TestAudio();
+  PCLASSINFO(TestAudio, PThread)
+  public:
+    TestAudio(TestAudioDevice &master);
+    virtual ~TestAudio();
 
-	virtual void Terminate() { keepGoing = FALSE; }
-	void LowerVolume();
-	void RaiseVolume();
+    virtual void Terminate() { keepGoing = FALSE; }
+    void LowerVolume();
+    void RaiseVolume();
 
-protected:
-	PString name;
-	BOOL OpenAudio(enum PSoundChannel::Directions dir);
-	
-	PINDEX             currentVolume;
-	TestAudioDevice    &controller;
-	PSoundChannel      sound;
-	BOOL               keepGoing;
+  protected:
+    PString name;
+    BOOL OpenAudio(enum PSoundChannel::Directions dir);
+
+    PINDEX             currentVolume;
+    TestAudioDevice    &controller;
+    PSoundChannel      sound;
+    BOOL               keepGoing;
 };
 
 class TestAudioRead : public TestAudio

@@ -93,8 +93,8 @@
  *
  * 1394 Digital Cameras has many resolutions and color formats. Among
  * them, this module uses:
- *	160x120 YUV(4:4:4)  for  176x144 PTlib resolution, and
- *	320x240 YUV(4:2:2)  for  352x288 PTlib resolution.
+ *  160x120 YUV(4:4:4)  for  176x144 PTlib resolution, and
+ *  320x240 YUV(4:2:2)  for  352x288 PTlib resolution.
  * The bus speed is always set to P_DC1394_DEFAULT_SPEED (400 Mbps).
  * If transfer at P_DC1394_DEFAULT_SPEED is not supported by your
  * camera, this module does not capture images from yours. In such
@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.7  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.6  2005/08/09 09:08:10  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -308,8 +311,7 @@ BOOL PVideoInputDevice_1394DC::Open(const PString & devName, BOOL startImmediate
   handle = dc1394_create_handle(0);
   if (handle==NULL)
   {
-    PTRACE(0, "Unable to aquire a raw1394 handle\n"
-	   "did you insmod the drivers?\n");
+    PTRACE(0, "Unable to aquire a raw1394 handle\ndid you insmod the drivers?\n");
     return FALSE;
   }
 
@@ -414,16 +416,15 @@ BOOL PVideoInputDevice_1394DC::Start()
   else if (frameWidth == 160 && frameHeight == 120)
     dc1394_mode = MODE_160x120_YUV444;
   else {
-    PTRACE(1, "Frame size is neither 320x240 or 160x120" << frameWidth <<
-	   "x" << frameHeight);
+    PTRACE(1, "Frame size is neither 320x240 or 160x120" << frameWidth << "x" << frameHeight);
     return FALSE;
   }
   PTRACE(1, deviceName << " " << channelNumber);
 
   quadlet_t supported_framerates;
   if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
-					FORMAT_VGA_NONCOMPRESSED, dc1394_mode,
-					&supported_framerates) != DC1394_SUCCESS) {
+          FORMAT_VGA_NONCOMPRESSED, dc1394_mode,
+          &supported_framerates) != DC1394_SUCCESS) {
     PTRACE(1, "dc1394_query_supported_framerates() failed.");
     return FALSE;
   }
@@ -459,14 +460,14 @@ BOOL PVideoInputDevice_1394DC::Start()
                            1,
 #endif
                            deviceName,
-			 &camera)!=DC1394_SUCCESS) ||
+      &camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
                            FORMAT_VGA_NONCOMPRESSED,
                            dc1394_mode,
                            P_DC1394_DEFAULT_SPEED,
                            framerate,
-		       &camera)!=DC1394_SUCCESS))
+       &camera)!=DC1394_SUCCESS))
   {
     PTRACE(0,"unable to setup camera-\n"
              "check " __FILE__ " to make sure\n"
@@ -525,18 +526,22 @@ PStringList PVideoInputDevice_1394DC::GetInputDeviceNames()
 
   if (PFile::Exists("/dev/raw1394"))
     list.AppendString("/dev/raw1394");
-  if (PFile::Exists("/dev/video1394/0"))
+ 
+  if (PFile::Exists("/dev/video1394/0")) {
+
     // DEVFS naming scheme
     for (int i=0; ; i++) {
       PString devname = PString("/dev/video1394/") + PString(i);
       if (PFile::Exists(devname))
-	list.AppendString(devname);
+        list.AppendString(devname);
       else
-	break;
+        break;
     }
-  else if (PFile::Exists("/dev/video1394"))
-    /* traditional naming */
-    list.AppendString("/dev/video1394");
+    else if (PFile::Exists("/dev/video1394"))
+      /* traditional naming */
+      list.AppendString("/dev/video1394");
+  }
+
   return list;
 }
 
@@ -688,8 +693,7 @@ BOOL PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytes
   ++num_captured;
   PTime now;
   double capturing_time = (double)((now.GetTimestamp()-start_time))/1000000;
-  ::fprintf(stderr, "time %f, num_captured=%d, fps=%f\n",
-	    capturing_time, num_captured, num_captured/capturing_time);
+  ::fprintf(stderr, "time %f, num_captured=%d, fps=%f\n", capturing_time, num_captured, num_captured/capturing_time);
 #endif
 
   if (UseDMA)
@@ -756,8 +760,7 @@ BOOL PVideoInputDevice_1394DC::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PVideoInputDevice_1394DC::SetFrameSizeConverter(unsigned width, unsigned height,
-					 BOOL bScaleNotCrop)
+BOOL PVideoInputDevice_1394DC::SetFrameSizeConverter(unsigned width, unsigned height, BOOL bScaleNotCrop)
 {
   if (width == CIFWidth && height == CIFHeight)
     SetFrameSize(320, 240);
