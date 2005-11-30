@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.16  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.15  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -95,15 +98,15 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
-#define	MAX_IP_LEN	60
-#define	MAX_ICMP_LEN	76
-#define	ICMP_DATA_LEN	(64-8)
-#define	RX_BUFFER_SIZE	(MAX_IP_LEN+MAX_ICMP_LEN+ICMP_DATA_LEN)
+#define  MAX_IP_LEN  60
+#define  MAX_ICMP_LEN  76
+#define  ICMP_DATA_LEN  (64-8)
+#define  RX_BUFFER_SIZE  (MAX_IP_LEN+MAX_ICMP_LEN+ICMP_DATA_LEN)
 
-#define	ICMP_ECHO_REPLY	0
-#define	ICMP_ECHO	8
+#define  ICMP_ECHO_REPLY  0
+#define  ICMP_ECHO  8
 
-#define	ICMP_TIMXCEED	11
+#define  ICMP_TIMXCEED  11
 
 
 typedef struct {

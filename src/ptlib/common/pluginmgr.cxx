@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.29  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.28  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -113,11 +116,11 @@
 #include <algorithm>
 #endif
 
-#ifndef	P_DEFAULT_PLUGIN_DIR
+#ifndef P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
-#    define	P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
 #  else
-#    define	P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
+#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
 #  endif
 #endif
 
@@ -238,7 +241,7 @@ PStringList PPluginManager::GetPluginsProviding(const PString & serviceType) con
 }
 
 PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor (const PString & serviceName,
-					                         const PString & serviceType) const
+                                   const PString & serviceType) const
 {
   PWaitAndSignal n(serviceListMutex);
 
@@ -352,8 +355,8 @@ PStringList PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
 
 
 BOOL PPluginManager::RegisterService(const PString & serviceName,
-				     const PString & serviceType,
-				     PPluginServiceDescriptor * descriptor)
+             const PString & serviceType,
+             PPluginServiceDescriptor * descriptor)
 {
   PWaitAndSignal m(serviceListMutex);
 

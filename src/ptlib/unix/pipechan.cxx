@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.44  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.43  2004/12/15 00:39:01  csoutheren
  * Fixed problem with passing arguments to PPipeChannel, thanks to Derek Smithies
  *
@@ -303,10 +306,10 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   if (environment != NULL) {
 #if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
     extern char ** environ;
-#	if defined(P_MACOSX)
-#		define environ (*_NSGetEnviron())
-#	endif
-#	define __environ environ
+#  if defined(P_MACOSX)
+#    define environ (*_NSGetEnviron())
+#  endif
+#  define __environ environ
 #endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {

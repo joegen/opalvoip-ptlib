@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.80  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.79  2005/10/21 06:03:51  csoutheren
  * Fixed warning on VS.NET 2005
  *
@@ -1241,7 +1244,7 @@ void PServiceProcess::DebugOutput(const char * out)
       *lf++ = '\0';
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
-	  out = (const char *)lf;
+      out = (const char *)lf;
       prev = lf;
     }
   }

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.32  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.31  2005/03/10 03:27:30  dereksmithies
  * Fix an address typo.
  *
@@ -116,8 +119,8 @@
 #include <sys/ioctl.h>
 
 #if defined(P_LINUX)
-#define	TCSETATTR(f,t)	tcsetattr(f,TCSANOW,t)
-#define	TCGETATTR(f,t)	tcgetattr(f,t)
+#define  TCSETATTR(f,t)  tcsetattr(f,TCSANOW,t)
+#define  TCGETATTR(f,t)  tcgetattr(f,t)
 
 #elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_RTEMS)
 #include <sys/ttycom.h>
@@ -133,21 +136,21 @@ extern "C" int ioctl(int, int, void *);
 #endif
 
 
-#ifndef	TCSETATTR
-#define	TCSETATTR(f,t)	::ioctl(f,TCSETAW,t)
+#ifndef  TCSETATTR
+#define  TCSETATTR(f,t)  ::ioctl(f,TCSETAW,t)
 #endif
 
-#ifndef	TCGETATTR
-#define	TCGETATTR(f,t)	::ioctl(f,TCGETA,t)
+#ifndef  TCGETATTR
+#define  TCGETATTR(f,t)  ::ioctl(f,TCGETA,t)
 #endif
 
-//#define BINARY_LOCK	1
-//#define	LOCK_PREFIX	"/var/spool/uucp/LCK.."
-#define	LOCK_PREFIX	"/var/lock/LCK.."
-#define	DEV_PREFIX	"/dev/"
+//#define BINARY_LOCK  1
+//#define  LOCK_PREFIX  "/var/spool/uucp/LCK.."
+#define  LOCK_PREFIX  "/var/lock/LCK.."
+#define  DEV_PREFIX  "/dev/"
 
-#define	PORTLISTENV	"PWLIB_SERIALPORTS"
-#define	DEV_PREFIX	"/dev/"
+#define  PORTLISTENV  "PWLIB_SERIALPORTS"
+#define  DEV_PREFIX  "/dev/"
 
 #include "../common/serial.cxx"
 
@@ -396,12 +399,12 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 #endif
 #ifdef B19200
     case 19200:
-      baud = B19200;	
+      baud = B19200;  
       break;
 #endif
 #ifdef B38400
     case 38400:
-      baud = B38400;	
+      baud = B38400;  
       break;
 #endif
 #ifdef B57600
@@ -650,17 +653,17 @@ void PSerialChannel::SetDTR(BOOL mode)
 #else
 
   int flags = 0;
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   flags &= ~TIOCM_DTR;
   if ( mode == TRUE )
-  	flags |= TIOCM_DTR;
-  ioctl(os_handle,TIOCMSET,&flags);	// set back
+    flags |= TIOCM_DTR;
+  ioctl(os_handle,TIOCMSET,&flags);  // set back
 
   /* 
   ALTERNATE IMPLEMENTATION?
   Uses "Local Mode" bits?
   if ( mode TRUE )
-  	ioctl(os_handle, TIOCSDTR, 0);
+    ioctl(os_handle, TIOCSDTR, 0);
   else 
     ioctl(os_handle, TIOCCDTR, 0);
   */
@@ -676,11 +679,11 @@ void PSerialChannel::SetRTS(BOOL mode)
 #else
 
   int flags = 0;
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   flags &= ~TIOCM_RTS;
   if ( mode == TRUE )
-  	flags |= TIOCM_RTS;
-  ioctl(os_handle,TIOCMSET,&flags);	// set back
+    flags |= TIOCM_RTS;
+  ioctl(os_handle,TIOCMSET,&flags);  // set back
 
 #endif // P_VXWORKS
 }
@@ -709,7 +712,7 @@ BOOL PSerialChannel::GetCTS()
 #else
 
   int flags = 0;
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   return (flags&TIOCM_CTS)?TRUE:FALSE;
 
 #endif // P_VXWORKS
@@ -725,7 +728,7 @@ BOOL PSerialChannel::GetDSR()
 
   int flags = 0;
 
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   return (flags&TIOCM_DSR)?TRUE:FALSE;
 
 #endif // P_VXWORKS
@@ -741,7 +744,7 @@ BOOL PSerialChannel::GetDCD()
 
   int flags = 0;
 
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   return (flags&TIOCM_CD)?TRUE:FALSE;
 
 #endif // P_VXWORKS
@@ -757,7 +760,7 @@ BOOL PSerialChannel::GetRing()
 
   int flags = 0;
   
-  ioctl(os_handle,TIOCMGET,&flags);	// get the bits
+  ioctl(os_handle,TIOCMGET,&flags);  // get the bits
   return (flags&TIOCM_RNG)?TRUE:FALSE;
 
 #endif // P_VXWORKS

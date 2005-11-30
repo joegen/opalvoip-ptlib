@@ -27,21 +27,24 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.36  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.35  2005/10/06 08:20:14  csoutheren
  * Changed WriteString to ensure it always writes all data even with partial writes
  *
  * Revision 1.34  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
- * 	correct the STL defined checking to use proper syntax.
+ * correct the STL defined checking to use proper syntax.
  *
  * include/ptlib/object.h:
- * 	re-add typedef to compile on mingw
+ * re-add typedef to compile on mingw
  *
  * make/ptlib-config.in:
- * 	import a long-standing fix from the Debian packs which allows usage of
- * 	ptlib-config without manually adding -lpt for each of the subsequent
- * 	projects
+ * import a long-standing fix from the Debian packs which allows usage of
+ * ptlib-config without manually adding -lpt for each of the subsequent
+ * projects
  *
  * Revision 1.33  2005/08/05 20:41:42  csoutheren
  * Added unix support for scattered read/write

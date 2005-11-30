@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.115  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.114  2005/11/23 11:47:03  shorne
  * Changed EnableQoS to EnableGQoS
  *
@@ -338,10 +341,10 @@
 
 #if defined(SIOCGENADDR)
 #define SIO_Get_MAC_Address SIOCGENADDR
-#define	ifr_macaddr         ifr_ifru.ifru_enaddr
+#define  ifr_macaddr         ifr_ifru.ifru_enaddr
 #elif defined(SIOCGIFHWADDR)
 #define SIO_Get_MAC_Address SIOCGIFHWADDR
-#define	ifr_macaddr         ifr_hwaddr.sa_data
+#define  ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
@@ -1537,11 +1540,11 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
     char buf[task_pagesize];  /* = task_block_malloc(task_pagesize);*/
     int flags;
     int j = 0;
-    int	sd, i, rc;
+    int  sd, i, rc;
     struct strbuf strbuf;
     struct T_optmgmt_req *tor = (struct T_optmgmt_req *) buf;
     struct T_optmgmt_ack *toa = (struct T_optmgmt_ack *) buf;
-    struct T_error_ack	*tea = (struct T_error_ack *) buf;
+    struct T_error_ack  *tea = (struct T_error_ack *) buf;
     struct opthdr *req;
 
     sd = open("/dev/ip", O_RDWR);
@@ -1559,7 +1562,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
     tor->OPT_length = sizeof(struct opthdr);
     tor->MGMT_flags = T_CURRENT;
     req = (struct opthdr *) (tor + 1);
-    req->level = MIB2_IP;		/* any MIB2_xxx value ok here */
+    req->level = MIB2_IP;    /* any MIB2_xxx value ok here */
     req->name = 0;
     req->len = 0;
 
@@ -1581,119 +1584,119 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
     req = (struct opthdr *) (toa + 1);
     strbuf.maxlen = task_pagesize;
     while (++j) {
-	flags = 0;
-	rc = getmsg(sd, &strbuf, (struct strbuf *) 0, &flags);
-	if (rc == -1) {
+  flags = 0;
+  rc = getmsg(sd, &strbuf, (struct strbuf *) 0, &flags);
+  if (rc == -1) {
 #ifdef SOL_COMPLAIN
-	  perror("getmsg(ctl)");
+    perror("getmsg(ctl)");
 #endif
-	  goto Return;
-	}
-	if (rc == 0
-	    && strbuf.len >= (int)sizeof(struct T_optmgmt_ack)
-	    && toa->PRIM_type == T_OPTMGMT_ACK
-	    && toa->MGMT_flags == T_SUCCESS
-	    && req->len == 0) {
-	  errno = 0;		/* just to be darned sure it's 0 */
-	  goto Return;		/* this is EOD msg */
-	}
+    goto Return;
+  }
+  if (rc == 0
+      && strbuf.len >= (int)sizeof(struct T_optmgmt_ack)
+      && toa->PRIM_type == T_OPTMGMT_ACK
+      && toa->MGMT_flags == T_SUCCESS
+      && req->len == 0) {
+    errno = 0;    /* just to be darned sure it's 0 */
+    goto Return;    /* this is EOD msg */
+  }
 
-	if (strbuf.len >= (int)sizeof(struct T_error_ack)
-	    && tea->PRIM_type == T_ERROR_ACK) {
-	    errno = (tea->TLI_error == TSYSERR) ? tea->UNIX_error : EPROTO;
+  if (strbuf.len >= (int)sizeof(struct T_error_ack)
+      && tea->PRIM_type == T_ERROR_ACK) {
+      errno = (tea->TLI_error == TSYSERR) ? tea->UNIX_error : EPROTO;
 #ifdef SOL_COMPLAIN
-	    perror("T_ERROR_ACK in mibget");
+      perror("T_ERROR_ACK in mibget");
 #endif
-	    goto Return;
-	}
-			
-	if (rc != MOREDATA
-	    || strbuf.len < (int)sizeof(struct T_optmgmt_ack)
-	    || toa->PRIM_type != T_OPTMGMT_ACK
-	    || toa->MGMT_flags != T_SUCCESS) {
-	    errno = ENOMSG;
-	    goto Return;
-	}
+      goto Return;
+  }
+      
+  if (rc != MOREDATA
+      || strbuf.len < (int)sizeof(struct T_optmgmt_ack)
+      || toa->PRIM_type != T_OPTMGMT_ACK
+      || toa->MGMT_flags != T_SUCCESS) {
+      errno = ENOMSG;
+      goto Return;
+  }
 
-	if (req->level != MIB2_IP
+  if (req->level != MIB2_IP
 #if P_SOLARIS > 7
-	    || req->name != MIB2_IP_ROUTE
+      || req->name != MIB2_IP_ROUTE
 #endif
            ) {  /* == 21 */
-	    /* If this is not the routing table, skip it */
-	  /* Note we don't bother with IPv6 (MIB2_IP6_ROUTE) ... */
-	    strbuf.maxlen = task_pagesize;
-	    do {
-		rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
-	    } while (rc == MOREDATA) ;
-	    continue;
-	}
+      /* If this is not the routing table, skip it */
+    /* Note we don't bother with IPv6 (MIB2_IP6_ROUTE) ... */
+      strbuf.maxlen = task_pagesize;
+      do {
+    rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
+      } while (rc == MOREDATA) ;
+      continue;
+  }
 
-	strbuf.maxlen = (task_pagesize / sizeof (mib2_ipRouteEntry_t)) * sizeof (mib2_ipRouteEntry_t);
-	strbuf.len = 0;
-	flags = 0;
-	do {
-	    rc = getmsg(sd, (struct strbuf * ) 0, &strbuf, &flags);
-	    
-	    switch (rc) {
-	    case -1:
+  strbuf.maxlen = (task_pagesize / sizeof (mib2_ipRouteEntry_t)) * sizeof (mib2_ipRouteEntry_t);
+  strbuf.len = 0;
+  flags = 0;
+  do {
+      rc = getmsg(sd, (struct strbuf * ) 0, &strbuf, &flags);
+      
+      switch (rc) {
+      case -1:
 #ifdef SOL_COMPLAIN
-	      perror("mibget getmsg(data) failed.");
+        perror("mibget getmsg(data) failed.");
 #endif
-	      goto Return;
+        goto Return;
 
-	    default:
+      default:
 #ifdef SOL_COMPLAIN
-	      fprintf(stderr,"mibget getmsg(data) returned %d, strbuf.maxlen = %d, strbuf.len = %d",
-			      rc,
-			      strbuf.maxlen,
-			      strbuf.len);
+        fprintf(stderr,"mibget getmsg(data) returned %d, strbuf.maxlen = %d, strbuf.len = %d",
+            rc,
+            strbuf.maxlen,
+            strbuf.len);
 #endif
-	      goto Return;
+        goto Return;
 
-	    case MOREDATA:
-	    case 0:
-	      {
-		mib2_ipRouteEntry_t *rp = (mib2_ipRouteEntry_t *) strbuf.buf;
-		mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
+      case MOREDATA:
+      case 0:
+        {
+    mib2_ipRouteEntry_t *rp = (mib2_ipRouteEntry_t *) strbuf.buf;
+    mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
 
-		do {
-		  char name[256];
+    do {
+      char name[256];
 #ifdef SOL_DEBUG_RT
-		  printf("%s -> %s mask %s metric %d %d %d %d %d ifc %.*s type %d/%x/%x\n",
-			       inet_ntoa(rp->ipRouteDest),
-			       inet_ntoa(rp->ipRouteNextHop),
-			       inet_ntoa(rp->ipRouteMask),
-			       rp->ipRouteMetric1,
-			       rp->ipRouteMetric2,
-			       rp->ipRouteMetric3,
-			       rp->ipRouteMetric4,
-			       rp->ipRouteMetric5,
-			       rp->ipRouteIfIndex.o_length,
-			       rp->ipRouteIfIndex.o_bytes,
-			       rp->ipRouteType,
-			       rp->ipRouteInfo.re_ire_type,
-			       rp->ipRouteInfo.re_flags
-				);
+      printf("%s -> %s mask %s metric %d %d %d %d %d ifc %.*s type %d/%x/%x\n",
+             inet_ntoa(rp->ipRouteDest),
+             inet_ntoa(rp->ipRouteNextHop),
+             inet_ntoa(rp->ipRouteMask),
+             rp->ipRouteMetric1,
+             rp->ipRouteMetric2,
+             rp->ipRouteMetric3,
+             rp->ipRouteMetric4,
+             rp->ipRouteMetric5,
+             rp->ipRouteIfIndex.o_length,
+             rp->ipRouteIfIndex.o_bytes,
+             rp->ipRouteType,
+             rp->ipRouteInfo.re_ire_type,
+             rp->ipRouteInfo.re_flags
+        );
 #endif
-		  if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL))
+      if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL))
                     continue;
-		  RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
-		  entry->net_mask = rp->ipRouteMask;
-		  entry->destination = rp->ipRouteNextHop;
+      RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
+      entry->net_mask = rp->ipRouteMask;
+      entry->destination = rp->ipRouteNextHop;
                   unsigned len = rp->ipRouteIfIndex.o_length;
                   if (len >= sizeof(name))
                     len = sizeof(name)-1;
-		  strncpy(name, rp->ipRouteIfIndex.o_bytes, len);
-		  name[len] = '\0';
-		  entry->interfaceName = name;
-		  entry->metric =  rp->ipRouteMetric1;
-		  table.Append(entry);
-		} while (++rp < lp) ;
-	      }
-	      break;
-	    }
-	} while (rc == MOREDATA) ;
+      strncpy(name, rp->ipRouteIfIndex.o_bytes, len);
+      name[len] = '\0';
+      entry->interfaceName = name;
+      entry->metric =  rp->ipRouteMetric1;
+      table.Append(entry);
+    } while (++rp < lp) ;
+        }
+        break;
+      }
+  } while (rc == MOREDATA) ;
     }
 
  Return:
@@ -1860,9 +1863,9 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
             if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) {
               PIPSocket::Address mask = 
 #ifndef __BEOS__
-		((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
+    ((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
 #else
-		((sockaddr_in *)&ifReq.ifr_mask)->sin_addr;
+    ((sockaddr_in *)&ifReq.ifr_mask)->sin_addr;
 #endif // !__BEOS__
               PINDEX i;
               for (i = 0; i < list.GetSize(); i++) {

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.236  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.235  2005/11/09 09:11:39  csoutheren
  * Moved Windows-specific AttachThreadInput callsto seperate member function
  * on PThread. This removes a linearly increasing delay in creating new threads
@@ -793,9 +796,9 @@
 
 #ifdef __MACOSX__
 namespace PWLibStupidOSXHacks {
-	extern int loadShmVideoStuff;
-	extern int loadCoreAudioStuff;
-	extern int loadFakeVideoStuff;
+  extern int loadShmVideoStuff;
+  extern int loadCoreAudioStuff;
+  extern int loadFakeVideoStuff;
 };
 #endif
 

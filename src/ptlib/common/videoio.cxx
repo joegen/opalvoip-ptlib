@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.57  2005/11/30 12:47:42  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.56  2005/09/06 12:41:22  rjongbloed
  * Fixed correct creation (or non creation) of converter when using SetFrameSizeConverter()
  *
@@ -295,7 +298,7 @@ PVideoDevice::PVideoDevice()
   lastError = 0;
 
   videoFormat = Auto;
-  channelNumber = -1;	// -1 will find the first working channel number.
+  channelNumber = -1;  // -1 will find the first working channel number.
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
   nativeVerticalFlip = FALSE;
@@ -683,7 +686,7 @@ static struct {
 };
 
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
-					 BOOL bScaleNotCrop)
+           BOOL bScaleNotCrop)
 {
   if (SetFrameSize(width, height)) {
     if (nativeVerticalFlip && converter == NULL) {
@@ -719,21 +722,21 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
           framesizeTab[i].device_width <= maxWidth &&
           framesizeTab[i].device_height >= minHeight &&
           framesizeTab[i].device_height <= maxHeight)) &&
-	SetFrameSize(framesizeTab[i].device_width,
-		     framesizeTab[i].device_height)) {
+          SetFrameSize(framesizeTab[i].device_width,
+          framesizeTab[i].device_height)) {
       if (CanCaptureVideo() ?
-	  converter->SetDstFrameSize(width, height, bScaleNotCrop)
-			    :
-	  converter->SetSrcFrameSize(width, height) &&
-	  converter->SetDstFrameSize(framesizeTab[i].device_width,
-				     framesizeTab[i].device_height,
-				     bScaleNotCrop)) {
-	PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
-	       << framesizeTab[i].device_width << 'x' << framesizeTab[i].device_height
-	       << " to " << width << 'x' << height);
+          converter->SetDstFrameSize(width, height, bScaleNotCrop)
+          :
+          converter->SetSrcFrameSize(width, height) &&
+          converter->SetDstFrameSize(framesizeTab[i].device_width,
+          framesizeTab[i].device_height,
+          bScaleNotCrop)) {
+        PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
+            << framesizeTab[i].device_width << 'x' << framesizeTab[i].device_height
+         << " to " << width << 'x' << height);
 
-	converter->SetVFlipState(converter->GetVFlipState() ^ nativeVerticalFlip);
-	return TRUE;
+        converter->SetVFlipState(converter->GetVFlipState() ^ nativeVerticalFlip);
+        return TRUE;
       }
     }
   }
@@ -742,14 +745,14 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
     // Failed to find a resolution the device can do so far, so try
     // using the maximum width and height it claims it can do.
     if (limits &&
-	SetFrameSize(maxWidth, maxHeight)) {
+      SetFrameSize(maxWidth, maxHeight)) {
       if (converter->SetDstFrameSize(width, height, bScaleNotCrop)) {
-	  PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
-		 << maxWidth << 'x' << maxHeight
-		 << " to " << width << 'x' << height);
+        PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
+          << maxWidth << 'x' << maxHeight
+          << " to " << width << 'x' << height);
 
-	  converter->SetVFlipState(converter->GetVFlipState() ^ nativeVerticalFlip);
-	  return TRUE;
+        converter->SetVFlipState(converter->GetVFlipState() ^ nativeVerticalFlip);
+        return TRUE;
       }
     }
   }
@@ -801,9 +804,9 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) 
 {
 #if 1
-    // Channels get very upset at this not returning the output size.
-    if (converter)
-	return converter->GetDstFrameSize(width, height);
+  // Channels get very upset at this not returning the output size.
+  if (converter)
+    return converter->GetDstFrameSize(width, height);
 #endif
   width = frameWidth;
   height = frameHeight;
@@ -818,8 +821,8 @@ unsigned PVideoDevice::GetFrameWidth() const
 
     // Channels get very upset at this not returning the output size.
     if (converter) {
-	converter->GetDstFrameSize(w, h);
-	return w;
+      converter->GetDstFrameSize(w, h);
+      return w;
     }
 #endif
   return frameWidth;
@@ -833,8 +836,8 @@ unsigned PVideoDevice::GetFrameHeight() const
 
     // Channels get very upset at this not returning the output size.
     if (converter) {
-	converter->GetDstFrameSize(w, h);
-	return h;
+      converter->GetDstFrameSize(w, h);
+      return h;
     }
 #endif
   return frameHeight;
