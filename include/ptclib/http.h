@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.60  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.59  2005/01/03 12:48:41  csoutheren
  * Added new configure options and ability to disable/enable modules
  *
@@ -281,9 +284,9 @@ class PHTTPSpace : public PContainer
        TRUE if resource added, FALSE if failed.
      */
     BOOL AddResource(
-      PHTTPResource * resource, /// Resource to add to the name space.
+      PHTTPResource * resource, ///< Resource to add to the name space.
       AddOptions overwrite = ErrorOnExist
-        /// Flag to overwrite an existing resource if it already exists.
+        ///< Flag to overwrite an existing resource if it already exists.
     );
 
     /** Delete an existing resource to the URL space. If there is not a resource
@@ -294,7 +297,7 @@ class PHTTPSpace : public PContainer
        TRUE if resource deleted, FALSE if failed.
      */
     BOOL DelResource(
-      const PURL & url          /// URL to search for in the name space.
+      const PURL & url          ///< URL to search for in the name space.
     );
 
     /** Locate the resource specified by the URL in the URL name space.
@@ -303,7 +306,7 @@ class PHTTPSpace : public PContainer
        The resource found or NULL if no resource at that position in hiearchy.
      */
     PHTTPResource * FindResource(
-      const PURL & url   /// URL to search for in the name space.
+      const PURL & url   ///< URL to search for in the name space.
     );
 
     /** This function attempts to acquire the mutex for reading.
@@ -377,39 +380,39 @@ class PHTTP : public PInternetProtocol
     };
 
     enum StatusCode {
-      Continue = 100,              // 100 - Continue
-      SwitchingProtocols,          // 101 - upgrade allowed
-      RequestOK = 200,             // 200 - request has succeeded
-      Created,                     // 201 - new resource created: entity body contains URL
-      Accepted,                    // 202 - request accepted, but not yet completed
-      NonAuthoritativeInformation, // 203 - not definitive entity header
-      NoContent,                   // 204 - no new information
-      ResetContent,                // 205 - contents have been reset
-      PartialContent,              // 206 - partial GET succeeded
-      MultipleChoices = 300,       // 300 - requested resource available elsewehere 
-      MovedPermanently,            // 301 - resource moved permanently: location field has new URL
-      MovedTemporarily,            // 302 - resource moved temporarily: location field has new URL
-      SeeOther,                    // 303 - see other URL
-      NotModified,                 // 304 - document has not been modified
-      UseProxy,                    // 305 - proxy redirect
-      BadRequest = 400,            // 400 - request malformed or not understood
-      UnAuthorised,                // 401 - request requires authentication
-      PaymentRequired,             // 402 - reserved 
-      Forbidden,                   // 403 - request is refused due to unsufficient authorisation
-      NotFound,                    // 404 - resource cannot be found
-      MethodNotAllowed,            // 405 - not allowed on this resource
-      NoneAcceptable,              // 406 - encoding not acceptable
-      ProxyAuthenticationRequired, // 407 - must authenticate with proxy first
-      RequestTimeout,              // 408 - server timeout on request
-      Conflict,                    // 409 - resource conflict on action
-      Gone,                        // 410 - resource gone away
-      LengthRequired,              // 411 - no Content-Length
-      UnlessTrue,                  // 412 - no Range header for TRUE Unless
-      InternalServerError = 500,   // 500 - server has encountered an unexpected error
-      NotImplemented,              // 501 - server does not implement request
-      BadGateway,                  // 502 - error whilst acting as gateway
-      ServiceUnavailable,          // 503 - server temporarily unable to service request
-      GatewayTimeout               // 504 - timeout whilst talking to gateway
+      Continue = 100,              ///< 100 - Continue
+      SwitchingProtocols,          ///< 101 - upgrade allowed
+      RequestOK = 200,             ///< 200 - request has succeeded
+      Created,                     ///< 201 - new resource created: entity body contains URL
+      Accepted,                    ///< 202 - request accepted, but not yet completed
+      NonAuthoritativeInformation, ///< 203 - not definitive entity header
+      NoContent,                   ///< 204 - no new information
+      ResetContent,                ///< 205 - contents have been reset
+      PartialContent,              ///< 206 - partial GET succeeded
+      MultipleChoices = 300,       ///< 300 - requested resource available elsewehere 
+      MovedPermanently,            ///< 301 - resource moved permanently: location field has new URL
+      MovedTemporarily,            ///< 302 - resource moved temporarily: location field has new URL
+      SeeOther,                    ///< 303 - see other URL
+      NotModified,                 ///< 304 - document has not been modified
+      UseProxy,                    ///< 305 - proxy redirect
+      BadRequest = 400,            ///< 400 - request malformed or not understood
+      UnAuthorised,                ///< 401 - request requires authentication
+      PaymentRequired,             ///< 402 - reserved 
+      Forbidden,                   ///< 403 - request is refused due to unsufficient authorisation
+      NotFound,                    ///< 404 - resource cannot be found
+      MethodNotAllowed,            ///< 405 - not allowed on this resource
+      NoneAcceptable,              ///< 406 - encoding not acceptable
+      ProxyAuthenticationRequired, ///< 407 - must authenticate with proxy first
+      RequestTimeout,              ///< 408 - server timeout on request
+      Conflict,                    ///< 409 - resource conflict on action
+      Gone,                        ///< 410 - resource gone away
+      LengthRequired,              ///< 411 - no Content-Length
+      UnlessTrue,                  ///< 412 - no Range header for TRUE Unless
+      InternalServerError = 500,   ///< 500 - server has encountered an unexpected error
+      NotImplemented,              ///< 501 - server does not implement request
+      BadGateway,                  ///< 502 - error whilst acting as gateway
+      ServiceUnavailable,          ///< 503 - server temporarily unable to service request
+      GatewayTimeout               ///< 504 - timeout whilst talking to gateway
     };
 
     // Common MIME header tags
@@ -459,7 +462,7 @@ class PHTTP : public PInternetProtocol
        lines are possible.
      */
     virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
+      const PString & line    ///< Input response line to be parsed
     );
 };
 
@@ -560,9 +563,9 @@ class PHTTPClient : public PHTTP
        TRUE if document is being transferred.
      */
     BOOL GetTextDocument(
-      const PURL & url,         // Universal Resource Locator for document.
-      PString & document,       // Body read
-      BOOL persist = TRUE
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PString & document,       ///< Body read
+      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
     );
 
     /** Get the document specified by the URL.
@@ -571,10 +574,10 @@ class PHTTPClient : public PHTTP
        TRUE if document is being transferred.
      */
     BOOL GetDocument(
-      const PURL & url,         // Universal Resource Locator for document.
-      PMIMEInfo & outMIME,      // MIME info in request
-      PMIMEInfo & replyMIME,    // MIME info in response
-      BOOL persist = TRUE
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      ///< MIME info in request
+      PMIMEInfo & replyMIME,    ///< MIME info in response
+      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
     );
 
     /** Get the header for the document specified by the URL.
@@ -583,10 +586,10 @@ class PHTTPClient : public PHTTP
        TRUE if document header is being transferred.
      */
     BOOL GetHeader(
-      const PURL & url,         // Universal Resource Locator for document.
-      PMIMEInfo & outMIME,      // MIME info in request
-      PMIMEInfo & replyMIME,    // MIME info in response
-      BOOL persist = TRUE
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      ///< MIME info in request
+      PMIMEInfo & replyMIME,    ///< MIME info in response
+      BOOL persist = TRUE       ///< if TRUE, enable HTTP persistence
     );
 
 
@@ -596,11 +599,11 @@ class PHTTPClient : public PHTTP
        TRUE if document is being transferred.
      */
     BOOL PostData(
-      const PURL & url,       // Universal Resource Locator for document.
-      PMIMEInfo & outMIME,    // MIME info in request
-      const PString & data,   // Information posted to the HTTP server.
-      PMIMEInfo & replyMIME,  // MIME info in response
-      BOOL persist = TRUE
+      const PURL & url,       ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,    ///< MIME info in request
+      const PString & data,   ///< Information posted to the HTTP server.
+      PMIMEInfo & replyMIME,  ///< MIME info in response
+      BOOL persist = TRUE     ///< if TRUE, enable HTTP persistence
     );
 
     /** Post the data specified to the URL.
@@ -609,12 +612,12 @@ class PHTTPClient : public PHTTP
        TRUE if document is being transferred.
      */
     BOOL PostData(
-      const PURL & url,       // Universal Resource Locator for document.
-      PMIMEInfo & outMIME,    // MIME info in request
-      const PString & data,   // Information posted to the HTTP server.
-      PMIMEInfo & replyMIME,  // MIME info in response
-      PString & replyBody,    // Body of response
-      BOOL persist = TRUE
+      const PURL & url,       ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,    ///< MIME info in request
+      const PString & data,   ///< Information posted to the HTTP server.
+      PMIMEInfo & replyMIME,  ///< MIME info in response
+      PString & replyBody,    ///< Body of response
+      BOOL persist = TRUE     ///< if TRUE, enable HTTP persistence
     );
 
   protected:
@@ -757,7 +760,7 @@ class PHTTPServer : public PHTTP
      */
     PHTTPServer();
     PHTTPServer(
-     const PHTTPSpace & urlSpace  // Name space to use for URLs received.
+     const PHTTPSpace & urlSpace  ///< Name space to use for URLs received.
     );
 
 
@@ -778,7 +781,7 @@ class PHTTPServer : public PHTTP
 
     /// Use a new URL name space for this HTTP socket.
     void SetURLSpace(
-      const PHTTPSpace & space   // New URL name space to use.
+      const PHTTPSpace & space   ///< New URL name space to use.
     );
 
 
@@ -805,9 +808,9 @@ class PHTTPServer : public PHTTP
        be FALSE for correct operation.
      */
     virtual BOOL OnGET(
-      const PURL & url,                    // Universal Resource Locator for document.
-      const PMIMEInfo & info,              // Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo
+      const PURL & url,                    ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,              ///< Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
 
 
@@ -824,9 +827,9 @@ class PHTTPServer : public PHTTP
        be FALSE for correct operation.
      */
     virtual BOOL OnHEAD(
-      const PURL & url,                   // Universal Resource Locator for document.
-      const PMIMEInfo & info,             // Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo
+      const PURL & url,                   ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,             ///< Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
 
     /** Handle a POST command from a client.
@@ -841,10 +844,10 @@ class PHTTPServer : public PHTTP
        be FALSE for correct operation.
      */
     virtual BOOL OnPOST(
-      const PURL & url,                   // Universal Resource Locator for document.
-      const PMIMEInfo & info,             // Extra MIME information in command.
-      const PStringToString & data,       // Variables provided in the POST data.
-      const PHTTPConnectionInfo & conInfo
+      const PURL & url,                   ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,             ///< Extra MIME information in command.
+      const PStringToString & data,       ///< Variables provided in the POST data.
+      const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
 
     /** Handle a proxy command request from a client. This will only get called
@@ -860,7 +863,7 @@ class PHTTPServer : public PHTTP
        be FALSE for correct operation.
      */
     virtual BOOL OnProxy(
-      const PHTTPConnectionInfo & conInfo
+      const PHTTPConnectionInfo & conInfo   ///<  HTTP connection information
     );
 
 
@@ -878,8 +881,8 @@ class PHTTPServer : public PHTTP
        TRUE if the connection may persist, FALSE if the connection must close
      */
     virtual BOOL OnUnknown(
-      const PCaselessString & command, // Complete command line received.
-      const PHTTPConnectionInfo & connectInfo
+      const PCaselessString & command,         ///< Complete command line received.
+      const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
 
     /** Write a command reply back to the client, and construct some of the
@@ -901,9 +904,9 @@ class PHTTPServer : public PHTTP
        TRUE if requires v1.1 chunked transfer encoding.
      */
     BOOL StartResponse(
-      StatusCode code,      // Status code for the response.
-      PMIMEInfo & headers,  // MIME variables included in response.
-      long bodySize         // Size of the rest of the response.
+      StatusCode code,      ///< Status code for the response.
+      PMIMEInfo & headers,  ///< MIME variables included in response.
+      long bodySize         ///< Size of the rest of the response.
     );
 
     /** Write an error response for the specified code.
@@ -916,15 +919,15 @@ class PHTTPServer : public PHTTP
        TRUE if the connection may persist, FALSE if the connection must close
      */
     virtual BOOL OnError(
-      StatusCode code,                         // Status code for the error response.
-      const PCaselessString & extra,           // Extra information included in the response.
-      const PHTTPConnectionInfo & connectInfo
+      StatusCode code,                         ///< Status code for the error response.
+      const PCaselessString & extra,           ///< Extra information included in the response.
+      const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
 
     /** Set the default mime info
      */
     void SetDefaultMIMEInfo(
-      PMIMEInfo & info,      // Extra MIME information in command.
+      PMIMEInfo & info,      ///< Extra MIME information in command.
       const PHTTPConnectionInfo & connectInfo
     );
 
@@ -955,23 +958,23 @@ class PHTTPRequest : public PObject
 
   public:
     PHTTPRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,     // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo, // multipart form information (if any)
-      PHTTPServer & server          // Server channel that request initiated on
+      const PURL & url,             ///< Universal Resource Locator for document.
+      const PMIMEInfo & inMIME,     ///< Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo, ///< multipart form information (if any)
+      PHTTPServer & server          ///< Server channel that request initiated on
     );
 
-    PHTTPServer & server;           // Server channel that request initiated on
-    const PURL & url;               // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME;       // Extra MIME information in command.
-    const PMultipartFormInfoArray & multipartFormInfo; // multipart form information, if any
-    PHTTP::StatusCode code;         // Status code for OnError() reply.
-    PMIMEInfo outMIME;              // MIME information used in reply.
-    PString entityBody;             // original entity body (POST only)
-    PINDEX contentSize;             // Size of the body of the resource data.
-    PIPSocket::Address origin;      // IP address of origin host for request
-    PIPSocket::Address localAddr;   // IP address of local interface for request
-    WORD               localPort;   // Port number of local server for request
+    PHTTPServer & server;           ///< Server channel that request initiated on
+    const PURL & url;               ///< Universal Resource Locator for document.
+    const PMIMEInfo & inMIME;       ///< Extra MIME information in command.
+    const PMultipartFormInfoArray & multipartFormInfo; ///< multipart form information, if any
+    PHTTP::StatusCode code;         ///< Status code for OnError() reply.
+    PMIMEInfo outMIME;              ///< MIME information used in reply.
+    PString entityBody;             ///< original entity body (POST only)
+    PINDEX contentSize;             ///< Size of the body of the resource data.
+    PIPSocket::Address origin;      ///< IP address of origin host for request
+    PIPSocket::Address localAddr;   ///< IP address of local interface for request
+    WORD               localPort;   ///< Port number of local server for request
 };
 
 
@@ -994,7 +997,7 @@ class PHTTPAuthority : public PObject
        String for the authorisation realm name.
      */
     virtual PString GetRealm(
-      const PHTTPRequest & request   // Request information.
+      const PHTTPRequest & request   ///< Request information.
     ) const = 0;
 
     /** Validate the user and password provided by the remote HTTP client for
@@ -1004,11 +1007,11 @@ class PHTTPAuthority : public PObject
        TRUE if the user and password are authorised in the realm.
      */
     virtual BOOL Validate(
-      const PHTTPRequest & request,  // Request information.
-      const PString & authInfo       // Authority information string.
+      const PHTTPRequest & request,  ///< Request information.
+      const PString & authInfo       ///< Authority information string.
     ) const = 0;
 
-    /** Determine if the authirisation is to be applied. This could be used to
+    /** Determine if the authorisation is to be applied. This could be used to
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
@@ -1021,9 +1024,9 @@ class PHTTPAuthority : public PObject
 
   protected:
     static void DecodeBasicAuthority(
-      const PString & authInfo,   // Authority information string.
-      PString & username,         // User name decoded from authInfo
-      PString & password          // Password decoded from authInfo
+      const PString & authInfo,   ///< Authority information string.
+      PString & username,         ///< User name decoded from authInfo
+      PString & password          ///< Password decoded from authInfo
     );
 };
 
@@ -1040,9 +1043,9 @@ class PHTTPSimpleAuth : public PHTTPAuthority
 
   public:
     PHTTPSimpleAuth(
-      const PString & realm,      // Name space for the username and password.
-      const PString & username,   // Username that this object wiull authorise.
-      const PString & password    // Password for the above username.
+      const PString & realm,      ///< Name space for the username and password.
+      const PString & username,   ///< Username that this object wiull authorise.
+      const PString & password    ///< Password for the above username.
     );
     // Construct the simple authorisation structure.
 
@@ -1066,7 +1069,7 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        String for the authorisation realm name.
      */
     virtual PString GetRealm(
-      const PHTTPRequest & request   // Request information.
+      const PHTTPRequest & request   ///< Request information.
     ) const;
 
     /** Validate the user and password provided by the remote HTTP client for
@@ -1076,11 +1079,11 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        TRUE if the user and password are authorised in the realm.
      */
     virtual BOOL Validate(
-      const PHTTPRequest & request,  // Request information.
-      const PString & authInfo       // Authority information string.
+      const PHTTPRequest & request,  ///< Request information.
+      const PString & authInfo       ///< Authority information string.
     ) const;
 
-    /** Determine if the authirisation is to be applied. This could be used to
+    /** Determine if the authorisation is to be applied. This could be used to
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
 
@@ -1125,11 +1128,11 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
 
   public:
     PHTTPMultiSimpAuth(
-      const PString & realm      // Name space for the username and password.
+      const PString & realm      ///< Name space for the username and password.
     );
     PHTTPMultiSimpAuth(
-      const PString & realm,             // Name space for the usernames.
-      const PStringToString & userList // List of usernames and passwords.
+      const PString & realm,           ///< Name space for the usernames.
+      const PStringToString & userList ///< List of usernames and passwords.
     );
     // Construct the simple authorisation structure.
 
@@ -1153,7 +1156,7 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        String for the authorisation realm name.
      */
     virtual PString GetRealm(
-      const PHTTPRequest & request   // Request information.
+      const PHTTPRequest & request   ///< Request information.
     ) const;
 
     /** Validate the user and password provided by the remote HTTP client for
@@ -1163,8 +1166,8 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        TRUE if the user and password are authorised in the realm.
      */
     virtual BOOL Validate(
-      const PHTTPRequest & request,  // Request information.
-      const PString & authInfo       // Authority information string.
+      const PHTTPRequest & request,  ///< Request information.
+      const PString & authInfo       ///< Authority information string.
     ) const;
 
     /** Determine if the authirisation is to be applied. This could be used to
@@ -1184,8 +1187,8 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
        String for the authorisation user name.
      */
     void AddUser(
-      const PString & username,   // Username that this object wiull authorise.
-      const PString & password    // Password for the above username.
+      const PString & username,   ///< Username that this object wiull authorise.
+      const PString & password    ///< Password for the above username.
     );
 
 
@@ -1207,20 +1210,20 @@ class PHTTPResource : public PObject
 
   protected:
     PHTTPResource(
-      const PURL & url               // Name of the resource in URL space.
+      const PURL & url               ///< Name of the resource in URL space.
     );
     PHTTPResource(
-      const PURL & url,              // Name of the resource in URL space.
-      const PHTTPAuthority & auth    // Authorisation for the resource.
+      const PURL & url,              ///< Name of the resource in URL space.
+      const PHTTPAuthority & auth    ///< Authorisation for the resource.
     );
     PHTTPResource(
-      const PURL & url,              // Name of the resource in URL space.
-      const PString & contentType    // MIME content type for the resource.
+      const PURL & url,              ///< Name of the resource in URL space.
+      const PString & contentType    ///< MIME content type for the resource.
     );
     PHTTPResource(
-      const PURL & url,              // Name of the resource in URL space.
-      const PString & contentType,   // MIME content type for the resource.
-      const PHTTPAuthority & auth    // Authorisation for the resource.
+      const PURL & url,              ///< Name of the resource in URL space.
+      const PString & contentType,   ///< MIME content type for the resource.
+      const PHTTPAuthority & auth    ///< Authorisation for the resource.
     );
     // Create a new HTTP Resource.
 
@@ -1256,7 +1259,7 @@ class PHTTPResource : public PObject
     /** Set the current authority for the resource.
      */
     void SetAuthority(
-      const PHTTPAuthority & auth
+      const PHTTPAuthority & auth      ///< authority to set
     );
 
     /** Set the current authority for the resource to unrestricted.
@@ -1287,10 +1290,10 @@ class PHTTPResource : public PObject
        be FALSE for correct operation.
      */
     virtual BOOL OnGET(
-      PHTTPServer & server,       // HTTP server that received the request
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info,     // Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo
+      PHTTPServer & server,       ///< HTTP server that received the request
+      const PURL & url,           ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,     ///< Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo   ///< HTTP connection information
     );
 
     /**Send the data associated with a GET command.
@@ -1303,10 +1306,10 @@ class PHTTPResource : public PObject
        be FALSE for correct operation.
     */
     virtual BOOL OnGETData(
-      PHTTPServer & server,
-      const PURL & url,
-      const PHTTPConnectionInfo & connectInfo,
-      PHTTPRequest & request
+      PHTTPServer & server,                       ///< HTTP server that received the request
+      const PURL & url,                           ///< Universal Resource Locator for document
+      const PHTTPConnectionInfo & connectInfo,    ///< HTTP connection information
+      PHTTPRequest & request                      ///< request state information
     );
 
     /** Handle the HEAD command passed from the HTTP socket.
@@ -1321,10 +1324,10 @@ class PHTTPResource : public PObject
        be FALSE for correct operation.
      */
     virtual BOOL OnHEAD(
-      PHTTPServer & server,       // HTTP server that received the request
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info,     // Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo
+      PHTTPServer & server,       ///< HTTP server that received the request
+      const PURL & url,           ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,     ///< Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
 
     /** Handle the POST command passed from the HTTP socket.
@@ -1339,11 +1342,11 @@ class PHTTPResource : public PObject
        be FALSE for correct operation.
      */
     virtual BOOL OnPOST(
-      PHTTPServer & server,         // HTTP server that received the request
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
-      const PStringToString & data, // Variables in the POST data.
-      const PHTTPConnectionInfo & conInfo
+      PHTTPServer & server,         ///< HTTP server that received the request
+      const PURL & url,             ///< Universal Resource Locator for document.
+      const PMIMEInfo & info,       ///< Extra MIME information in command.
+      const PStringToString & data, ///< Variables in the POST data.
+      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
 
     /**Send the data associated with a POST command.
@@ -1356,8 +1359,8 @@ class PHTTPResource : public PObject
        be FALSE for correct operation.
     */
     virtual BOOL OnPOSTData(
-      PHTTPRequest & request,
-      const PStringToString & data // Variables in the POST data.
+      PHTTPRequest & request,        ///< request information
+      const PStringToString & data   ///< Variables in the POST data.
     );
 
     /** Check to see if the resource has been modified since the date
@@ -1367,7 +1370,7 @@ class PHTTPResource : public PObject
        TRUE if has been modified since.
      */
     virtual BOOL IsModifiedSince(
-      const PTime & when    // Time to see if modified later than
+      const PTime & when    ///< Time to see if modified later than
     );
 
     /** Get a block of data (eg HTML) that the resource contains.
@@ -1376,7 +1379,7 @@ class PHTTPResource : public PObject
        Status of load operation.
      */
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 
     /** Create a new request block for this type of resource.
@@ -1387,10 +1390,10 @@ class PHTTPResource : public PObject
        Pointer to instance of PHTTPRequest descendant class.
      */
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,                   // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,           // Extra MIME information in command.
-      const PMultipartFormInfoArray & multipartFormInfo,
-      PHTTPServer & socket
+      const PURL & url,                   ///< Universal Resource Locator for document.
+      const PMIMEInfo & inMIME,           ///< Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo,  ///< additional information for multi-part posts
+      PHTTPServer & socket                                ///< socket used for request
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -1401,7 +1404,7 @@ class PHTTPResource : public PObject
        TRUE if all OK, FALSE if an error occurred.
      */
     virtual BOOL LoadHeaders(
-      PHTTPRequest & request    // Information on this request.
+      PHTTPRequest & request    ///<  Information on this request.
     ) = 0;
 
     /**Send the data associated with a command.
@@ -1410,7 +1413,7 @@ class PHTTPResource : public PObject
        resource to be sent to the socket.
     */
     virtual void SendData(
-      PHTTPRequest & request
+      PHTTPRequest & request    ///< information for this request
     );
 
     /** Get a block of data that the resource contains.
@@ -1422,8 +1425,8 @@ class PHTTPResource : public PObject
        TRUE if there is still more to load.
      */
     virtual BOOL LoadData(
-      PHTTPRequest & request,    // Information on this request.
-      PCharArray & data          // Data used in reply.
+      PHTTPRequest & request,    ///<  Information on this request.
+      PCharArray & data          ///<  Data used in reply.
     );
 
     /** Get a block of text data (eg HTML) that the resource contains.
@@ -1435,7 +1438,7 @@ class PHTTPResource : public PObject
        String for loaded text.
      */
     virtual PString LoadText(
-      PHTTPRequest & request    // Information on this request.
+      PHTTPRequest & request    ///< Information on this request.
     );
 
     /** This is called after the text has been loaded and may be used to
@@ -1445,8 +1448,8 @@ class PHTTPResource : public PObject
        The default action for this function is to do nothing.
      */
     virtual void OnLoadedText(
-      PHTTPRequest & request,    // Information on this request.
-      PString & text             // Data used in reply.
+      PHTTPRequest & request,    ///<  Information on this request.
+      PString & text             ///<  Data used in reply.
     );
 
     /** Get a block of data (eg HTML) that the resource contains.
@@ -1458,9 +1461,9 @@ class PHTTPResource : public PObject
        TRUE if the connection may persist, FALSE if the connection must close
      */
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///<  Information on this request.
+      const PStringToString & data, ///<  Variables in the POST data.
+      PHTML & replyMessage          ///<  Reply message for post.
     );
 
 
@@ -1468,9 +1471,9 @@ class PHTTPResource : public PObject
     /** See if the resource is authorised given the mime info
      */
     virtual BOOL CheckAuthority(
-      PHTTPServer & server,               // Server to send response to.
-      const PHTTPRequest & request,       // Information on this request.
-      const PHTTPConnectionInfo & conInfo // Information on the connection
+      PHTTPServer & server,               ///<  Server to send response to.
+      const PHTTPRequest & request,       ///<  Information on this request.
+      const PHTTPConnectionInfo & conInfo ///<  Information on the connection
     );
     static BOOL CheckAuthority(
                    PHTTPAuthority & authority,
@@ -1482,9 +1485,9 @@ class PHTTPResource : public PObject
 
     /** common code for GET and HEAD commands */
     virtual BOOL OnGETOrHEAD(
-      PHTTPServer & server,       // HTTP server that received the request
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info,     // Extra MIME information in command.
+      PHTTPServer & server,       ///<  HTTP server that received the request
+      const PURL & url,           ///<  Universal Resource Locator for document.
+      const PMIMEInfo & info,     ///<  Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo,
       BOOL  IsGet
     );
@@ -1646,7 +1649,7 @@ class PHTTPFile : public PHTTPResource
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo,
-  	  PHTTPServer & socket
+      PHTTPServer & socket
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -1827,7 +1830,7 @@ class PHTTPDirectory : public PHTTPFile
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo,
-  	  PHTTPServer & socket
+      PHTTPServer & socket
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.

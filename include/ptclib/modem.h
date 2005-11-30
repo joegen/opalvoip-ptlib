@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.h,v $
+ * Revision 1.16  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.15  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -117,13 +120,13 @@ class PModem : public PSerialChannel
      */
     PModem();
     PModem(
-      const PString & port,   // Serial port name to open.
-      DWORD speed = 0,        // Speed of serial port.
-      BYTE data = 0,          // Number of data bits for serial port.
-      Parity parity = DefaultParity,  // Parity for serial port.
-      BYTE stop = 0,          // Number of stop bits for serial port.
-      FlowControl inputFlow = DefaultFlowControl,   // Input flow control.
-      FlowControl outputFlow = DefaultFlowControl   // Output flow control.
+      const PString & port,   ///< Serial port name to open.
+      DWORD speed = 0,        ///< Speed of serial port.
+      BYTE data = 0,          ///< Number of data bits for serial port.
+      Parity parity = DefaultParity,  ///< Parity for serial port.
+      BYTE stop = 0,          ///< Number of stop bits for serial port.
+      FlowControl inputFlow = DefaultFlowControl,   ///< Input flow control.
+      FlowControl outputFlow = DefaultFlowControl   ///< Output flow control.
     );
 
     /** Open the modem serial channel obtaining the parameters from standard
@@ -131,7 +134,7 @@ class PModem : public PSerialChannel
        correct configuration file section is already set.
      */
     PModem(
-      PConfig & cfg   // Configuration file to read parameters from.
+      PConfig & cfg   ///< Configuration file to read parameters from.
     );
 
 
@@ -150,13 +153,13 @@ class PModem : public PSerialChannel
        TRUE if the modem serial port was successfully opened.
      */
     virtual BOOL Open(
-      const PString & port,   // Serial port name to open.
-      DWORD speed = 0,        // Speed of serial port.
-      BYTE data = 0,          // Number of data bits for serial port.
-      Parity parity = DefaultParity,  // Parity for serial port.
-      BYTE stop = 0,          // Number of stop bits for serial port.
-      FlowControl inputFlow = DefaultFlowControl,   // Input flow control.
-      FlowControl outputFlow = DefaultFlowControl   // Output flow control.
+      const PString & port,   ///< Serial port name to open.
+      DWORD speed = 0,        ///< Speed of serial port.
+      BYTE data = 0,          ///< Number of data bits for serial port.
+      Parity parity = DefaultParity,  ///< Parity for serial port.
+      BYTE stop = 0,          ///< Number of stop bits for serial port.
+      FlowControl inputFlow = DefaultFlowControl,   ///< Input flow control.
+      FlowControl outputFlow = DefaultFlowControl   ///< Output flow control.
     );
 
     /** Open the modem serial port obtaining the parameters from standard
@@ -167,11 +170,11 @@ class PModem : public PSerialChannel
        TRUE if the modem serial port was successfully opened.
      */
     virtual BOOL Open(
-      PConfig & cfg   // Configuration file to read parameters from.
+      PConfig & cfg   ///< Configuration file to read parameters from.
     );
 
     virtual void SaveSettings(
-      PConfig & cfg   // Configuration file to write parameters to.
+      PConfig & cfg   ///< Configuration file to write parameters to.
     );
     // Save the current modem serial port settings into the configuration file.
 
@@ -185,7 +188,7 @@ class PModem : public PSerialChannel
        Note there is an implied <CODE>\s</CODE> before the string.
      */
     void SetInitString(
-      const PString & str   // New initialisation command string.
+      const PString & str   ///< New initialisation command string.
     );
 
     /** Get the modem initialisation meta-command string.
@@ -224,7 +227,7 @@ class PModem : public PSerialChannel
        Note there is an implied <CODE>\s</CODE> before the string.
      */
     void SetDeinitString(
-      const PString & str   // New de-initialisation command string.
+      const PString & str   ///< New de-initialisation command string.
     );
 
     /** Get the modem de-initialisation meta-command string.
@@ -263,7 +266,7 @@ class PModem : public PSerialChannel
        Note there is an implied <CODE>\s</CODE> before the string.
      */
     void SetPreDialString(
-      const PString & str   // New pre-dial command string.
+      const PString & str   ///< New pre-dial command string.
     );
 
     /** Get the modem pre-dial meta-command string.
@@ -285,7 +288,7 @@ class PModem : public PSerialChannel
        string, unlike the pre-dial string.
      */
     void SetPostDialString(
-      const PString & str   // New post-dial command string.
+      const PString & str   ///< New post-dial command string.
     );
 
     /** Get the modem post-dial meta-command string.
@@ -308,7 +311,7 @@ class PModem : public PSerialChannel
        will simply terminate the string match.
      */
     void SetBusyString(
-      const PString & str   // New busy response command string.
+      const PString & str   ///< New busy response command string.
     );
 
     /** Get the modem busy response meta-command string.
@@ -331,7 +334,7 @@ class PModem : public PSerialChannel
        will simply terminate the string match.
      */
     void SetNoCarrierString(
-      const PString & str   // New no carrier response command string.
+      const PString & str   ///< New no carrier response command string.
     );
 
     /** Get the modem no carrier response meta-command string.
@@ -354,7 +357,7 @@ class PModem : public PSerialChannel
        will simply terminate the string match.
      */
     void SetConnectString(
-      const PString & str   // New connect response command string.
+      const PString & str   ///< New connect response command string.
     );
 
     /** Get the modem connect response meta-command string.
@@ -397,7 +400,7 @@ class PModem : public PSerialChannel
        Note there is an implied <CODE>\s</CODE> before the string.
      */
     void SetHangUpString(
-      const PString & str   // New hang up command string.
+      const PString & str   ///< New hang up command string.
     );
 
     /** Get the modem hang up meta-command string.
@@ -444,7 +447,7 @@ class PModem : public PSerialChannel
        TRUE if command string sent successfully.
      */
     BOOL SendUser(
-      const PString & str   // User command string to send.
+      const PString & str   ///< User command string to send.
     );
 
     void Abort();
@@ -461,22 +464,22 @@ class PModem : public PSerialChannel
     BOOL CanRead() const;
 
     enum Status {
-      Unopened,           // Has not been opened yet
-      Uninitialised,      // Is open but has not yet been initialised
-      Initialising,       // Is currently initialising the modem
-      Initialised,        // Has been initialised but is not connected
-      InitialiseFailed,   // Initialisation sequence failed
-      Dialling,           // Is currently dialling
-      DialFailed,         // Dial failed
-      AwaitingResponse,   // Dialling in progress, awaiting connection
-      LineBusy,           // Dial failed due to line busy
-      NoCarrier,          // Dial failed due to no carrier
-      Connected,          // Dial was successful and modem has connected
-      HangingUp,          // Is currently hanging up the modem
-      HangUpFailed,       // The hang up failed
-      Deinitialising,     // is currently de-initialising the modem
-      DeinitialiseFailed, // The de-initialisation failed
-      SendingUserCommand, // Is currently sending a user command
+      Unopened,           ///< Has not been opened yet
+      Uninitialised,      ///< Is open but has not yet been initialised
+      Initialising,       ///< Is currently initialising the modem
+      Initialised,        ///< Has been initialised but is not connected
+      InitialiseFailed,   ///< Initialisation sequence failed
+      Dialling,           ///< Is currently dialling
+      DialFailed,         ///< Dial failed
+      AwaitingResponse,   ///< Dialling in progress, awaiting connection
+      LineBusy,           ///< Dial failed due to line busy
+      NoCarrier,          ///< Dial failed due to no carrier
+      Connected,          ///< Dial was successful and modem has connected
+      HangingUp,          ///< Is currently hanging up the modem
+      HangUpFailed,       ///< The hang up failed
+      Deinitialising,     ///< is currently de-initialising the modem
+      DeinitialiseFailed, ///< The de-initialisation failed
+      SendingUserCommand, ///< Is currently sending a user command
       NumStatuses
     };
     // Modem object states.

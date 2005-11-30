@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.28  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.27  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -144,35 +147,35 @@ class PArgList : public PObject
        next argument.
      */
     PArgList(
-	     const char * theArgPtr = NULL,        ///< A string constituting the arguments 
-	     const char * argumentSpecPtr = NULL,  ///< The specification C string for argument options. See description for details.
-	     BOOL optionsBeforeParams = TRUE       ///< Parse options only before parameters 
+      const char * theArgPtr = NULL,        ///< A string constituting the arguments 
+      const char * argumentSpecPtr = NULL,  ///< The specification C string for argument options. See description for details.
+      BOOL optionsBeforeParams = TRUE       ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
-	     const PString & theArgStr,             ///< A string constituting the arguments 
-	     const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-	     BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      const PString & theArgStr,             ///< A string constituting the arguments 
+      const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
+      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
-	     const PString & theArgStr,             ///< A string constituting the arguments 
-	     const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-	     BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      const PString & theArgStr,             ///< A string constituting the arguments 
+      const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
+      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
-	     int theArgc,                           ///< Count of argument strings in theArgv 
-	     char ** theArgv,                       ///< An array of strings constituting the arguments 
-	     const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
-	     BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      int theArgc,                           ///< Count of argument strings in theArgv 
+      char ** theArgv,                       ///< An array of strings constituting the arguments 
+      const char * argumentSpecPtr = NULL,   ///< The specification C string for argument options. See description for details.
+      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
     );
     /** Create an argument list. */
     PArgList(
-	     int theArgc,                           ///< Count of argument strings in theArgv 
-	     char ** theArgv,                       ///< An array of strings constituting the arguments 
-	     const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
-	     BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
+      int theArgc,                           ///< Count of argument strings in theArgv 
+      char ** theArgv,                       ///< An array of strings constituting the arguments 
+      const PString & argumentSpecStr,       ///< The specification string for argument options. See description for details.
+      BOOL optionsBeforeParams = TRUE        ///< Parse options only before parameters 
     );
   //@}
 
@@ -181,14 +184,14 @@ class PArgList : public PObject
     /**Output the string to the specified stream.
      */
     virtual void PrintOn(
-			 ostream & strm  ///< I/O stream to output to.
+      ostream & strm  ///< I/O stream to output to.
     ) const;
 
     /**Input the string from the specified stream. This will read all
        characters until a end of line is reached, then parsing the arguments.
      */
     virtual void ReadFrom(
-			  istream & strm  ///< I/O stream to input from. 
+      istream & strm  ///< I/O stream to input from. 
     );
   //@}
 
@@ -197,16 +200,16 @@ class PArgList : public PObject
     /** Set the internal copy of the program arguments.
     */
     void SetArgs(
-		 const PString & theArgStr ///< A string constituting the arguments 
+      const PString & theArgStr ///< A string constituting the arguments 
     );
     /** Set the internal copy of the program arguments. */
     void SetArgs(
-		 int theArgc,     ///< Count of argument strings in theArgv 
-		 char ** theArgv  ///< An array of strings constituting the arguments 
+      int theArgc,     ///< Count of argument strings in theArgv 
+      char ** theArgv  ///< An array of strings constituting the arguments 
     );
     /** Set the internal copy of the program arguments. */
     void SetArgs(
-		 const PStringArray & theArgs ///< A string array constituting the arguments
+      const PStringArray & theArgs ///< A string array constituting the arguments
     );
 
     /** Parse the arguments.
@@ -237,8 +240,8 @@ class PArgList : public PObject
     );
     /** Parse the arguments. */
     virtual BOOL Parse(
-		       const PString & theArgumentStr,	///< The specification string for argument options. See description for details.	       
-		       BOOL optionsBeforeParams = TRUE  ///< Parse options only before parameters */
+      const PString & theArgumentStr,  ///< The specification string for argument options. See description for details.       
+      BOOL optionsBeforeParams = TRUE  ///< Parse options only before parameters
     );
   //@}
 
@@ -250,15 +253,15 @@ class PArgList : public PObject
        @return option repeat count.
      */
     virtual PINDEX GetOptionCount(
-				  char optionChar        ///< Character letter code for the option 
+      char optionChar        ///< Character letter code for the option 
     ) const;
     /** Get the count of option */
     virtual PINDEX GetOptionCount(
-				  const char * optionStr ///< String code for the option 
+      const char * optionStr ///< String code for the option 
     ) const;
     /** Get the count of option */
     virtual PINDEX GetOptionCount(
-				  const PString & optionName ///< String code for the option 
+      const PString & optionName ///< String code for the option 
     ) const;
 
     /** Get if option present.
@@ -267,15 +270,15 @@ class PArgList : public PObject
        @return TRUE if the option was present.
      */
     BOOL HasOption(
-		   char optionChar             ///< Character letter code for the option 
+      char optionChar             ///< Character letter code for the option 
     ) const;
     /** Get if option present. */
     BOOL HasOption(
-		   const char * optionStr     ///< String letter code for the option 
+      const char * optionStr     ///< String letter code for the option 
     ) const;
     /** Get if option present. */
     BOOL HasOption(
-		   const PString & optionName ///<  String code for the option 
+      const PString & optionName ///<  String code for the option 
     ) const;
 
     /** Get option string.
@@ -287,18 +290,18 @@ class PArgList : public PObject
        @return the options associated string.
      */
     virtual PString GetOptionString(
-				    char optionChar,          ///< Character letter code for the option 
-				    const char * dflt = NULL  ///< Default value of the option string 
+      char optionChar,          ///< Character letter code for the option 
+      const char * dflt = NULL  ///< Default value of the option string 
     ) const;
     /** Get option string. */
     virtual PString GetOptionString(
-				    const char * optionStr,   ///< String letter code for the option 
-				    const char * dflt = NULL  ///<Default value of the option string 
+      const char * optionStr,   ///< String letter code for the option 
+      const char * dflt = NULL  ///<Default value of the option string 
     ) const;
     /** Get option string. */
     virtual PString GetOptionString(
-				    const PString & optionName, ///< String code for the option 
-				    const char * dflt = NULL    ///< Default value of the option string 
+      const PString & optionName, ///< String code for the option 
+      const char * dflt = NULL    ///< Default value of the option string 
     ) const;
 
     /** Get the argument count.
@@ -324,7 +327,7 @@ class PArgList : public PObject
        @return parameter string at the specified index.
      */
     PString GetParameter(
-			 PINDEX num   ///< Number of the parameter to retrieve. 
+      PINDEX num   ///< Number of the parameter to retrieve. 
     ) const;
 
     /** Get the parameter that was parsed in the argument list. The argument
@@ -333,28 +336,28 @@ class PArgList : public PObject
        @return parameter string at the specified index.
      */
     PString operator[](
-		       PINDEX num   ///< Number of the parameter to retrieve. 
+      PINDEX num   ///< Number of the parameter to retrieve. 
     ) const;
 
     /** Shift the parameters by the specified amount. This allows the parameters
        to be parsed at the same position in the argument list "array".
      */
     void Shift(
-	       int sh ///< Number of parameters to shift forward through list 
+      int sh ///< Number of parameters to shift forward through list 
     );
 
     /** Shift the parameters by the specified amount. This allows the parameters
        to be parsed at the same position in the argument list "array".
      */
     PArgList & operator<<(
-			  int sh ///< Number of parameters to shift forward through list 
+      int sh ///< Number of parameters to shift forward through list 
     );
 
     /** Shift the parameters by the specified amount. This allows the parameters
        to be parsed at the same position in the argument list "array".
      */
     PArgList & operator>>(
-			  int sh ///< Number of parameters to shift backward through list 
+      int sh ///< Number of parameters to shift backward through list 
     );
   //@}
 
@@ -365,7 +368,7 @@ class PArgList : public PObject
        message to the standard #PError# stream.
      */
     virtual void IllegalArgumentIndex(
-				      PINDEX idx ///< Number of the parameter that was accessed. 
+      PINDEX idx ///< Number of the parameter that was accessed. 
     ) const;
 
     /** This function is called when an unknown option was specified on the
@@ -373,7 +376,7 @@ class PArgList : public PObject
        standard #PError# stream.
      */
     virtual void UnknownOption(
-			       const PString & option   ///< Option that was illegally placed on command line. 
+      const PString & option   ///< Option that was illegally placed on command line. 
     ) const;
 
     /** This function is called when an option that requires an associated
@@ -382,7 +385,7 @@ class PArgList : public PObject
        #PError# stream.
      */
     virtual void MissingArgument(
-				 const PString & option  ///< Option for which the associated string was missing. 
+      const PString & option  ///< Option for which the associated string was missing. 
     ) const;
   //@}
 
@@ -453,18 +456,20 @@ class PConfigArgs : public PArgList
        @return the options associated string.
      */
     virtual PString GetOptionString(
-				    char optionChar,          ///< Character letter code for the option */
-				    const char * dflt = NULL  ///< Default value of the option string */
+      char optionChar,          ///< Character letter code for the option 
+      const char * dflt = NULL  ///< Default value of the option string 
     ) const;
+
     /** Get option string. */
     virtual PString GetOptionString(
-				    const char * optionStr,   ///< String letter code for the option */
-				    const char * dflt = NULL  ///< Default value of the option string */
+      const char * optionStr,   ///< String letter code for the option 
+      const char * dflt = NULL  ///< Default value of the option string 
     ) const;
+
     /** Get option string. */
     virtual PString GetOptionString(
-				    const PString & optionName, ///< String code for the option */
-				    const char * dflt = NULL    ///< Default value of the option string */
+      const PString & optionName, ///< String code for the option 
+      const char * dflt = NULL    ///< Default value of the option string 
     ) const;
   //@}
 
@@ -477,14 +482,14 @@ class PConfigArgs : public PArgList
        PConfig itself as this would cause the data to be saved always!
       */
     void Save(
-	      const PString & optionName   ///< Option name for saving. */
-	      );
+      const PString & optionName   ///< Option name for saving.
+    );
 
     /**Set the PConfig section name for options.
       */
     void SetSectionName(
-			const PString & section ///< New section name */
-			) { sectionName = section; }
+      const PString & section ///< New section name 
+    ) { sectionName = section; }
 
     /**Get the PConfig section name for options.
       */
@@ -494,8 +499,8 @@ class PConfigArgs : public PArgList
        The default is "no-".
       */
     void SetNegationPrefix(
-			   const PString & prefix ///< New prefix string */
-			   ) { negationPrefix = prefix; }
+      const PString & prefix ///< New prefix string 
+    ) { negationPrefix = prefix; }
 
     /**Get the prefix for option negation.
        The default is "no-".

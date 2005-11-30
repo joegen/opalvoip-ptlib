@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.19  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.18  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -124,9 +127,9 @@ class PInternetProtocol : public PIndirectChannel
 
   protected:
     PInternetProtocol(
-      const char * defaultServiceName, // Service name for the protocol.
-      PINDEX cmdCount,                 // Number of command strings.
-      char const * const * cmdNames    // Strings for each command.
+      const char * defaultServiceName, ///< Service name for the protocol.
+      PINDEX cmdCount,                 ///< Number of command strings.
+      char const * const * cmdNames    ///< Strings for each command.
     );
     // Create an unopened TCP/IP protocol socket channel.
 
@@ -145,8 +148,8 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /** Low level write to the channel.
@@ -165,8 +168,8 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
      /** Set the maximum timeout between characters within a line. Default
@@ -183,12 +186,12 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address,    // Address of remote machine to connect to.
-      WORD port = 0               // Port number to use for the connection.
+      const PString & address,    ///< Address of remote machine to connect to.
+      WORD port = 0               ///< Port number to use for the connection.
     );
     virtual BOOL Connect(
-      const PString & address,    // Address of remote machine to connect to.
-      const PString & service     // Service name to use for the connection.
+      const PString & address,    ///< Address of remote machine to connect to.
+      const PString & service     ///< Service name to use for the connection.
     );
 
     /** Accept a server socket to a remote host for the internet protocol.
@@ -197,7 +200,7 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Accept(
-      PSocket & listener    // Address of remote machine to connect to.
+      PSocket & listener    ///< Address of remote machine to connect to.
     );
 
     /** Get the default service name or port number to use in socket
@@ -226,7 +229,7 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if the string and CR/LF were completely written.
      */
     virtual BOOL WriteLine(
-      const PString & line // String to write as a command line.
+      const PString & line ///< String to write as a command line.
     );
 
     /** Read a string from the socket channel up to a CR/LF pair.
@@ -246,22 +249,22 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if a CR/LF pair was received, FALSE if a timeout or error occurred.
      */
     virtual BOOL ReadLine(
-      PString & line,             // String to receive a CR/LF terminated line.
-      BOOL allowContinuation = FALSE  // Flag to handle continued lines.
+      PString & line,             ///< String to receive a CR/LF terminated line.
+      BOOL allowContinuation = FALSE  ///< Flag to handle continued lines.
     );
 
     /** Put back the characters into the data stream so that the next
        <A>Read()</A> function call will return them first.
      */
     virtual void UnRead(
-      int ch                // Individual character to be returned.
+      int ch                ///< Individual character to be returned.
     );
     virtual void UnRead(
-      const PString & str   // String to be put back into data stream.
+      const PString & str   ///< String to be put back into data stream.
     );
     virtual void UnRead(
-      const void * buffer,  // Characters to be put back into data stream.
-      PINDEX len            // Number of characters to be returned.
+      const void * buffer,  ///< Characters to be put back into data stream.
+      PINDEX len            ///< Number of characters to be returned.
     );
 
     /** Write a single line for a command. The command name for the command
@@ -278,11 +281,11 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if the command was completely written.
      */
     virtual BOOL WriteCommand(
-      PINDEX cmdNumber       // Number of command to write.
+      PINDEX cmdNumber       ///< Number of command to write.
     );
     virtual BOOL WriteCommand(
-      PINDEX cmdNumber,      // Number of command to write.
-      const PString & param  // Extra parameters required by the command.
+      PINDEX cmdNumber,      ///< Number of command to write.
+      const PString & param  ///< Extra parameters required by the command.
     );
 
     /** Read a single line of a command which ends with a CR/LF pair. The
@@ -304,9 +307,9 @@ class PInternetProtocol : public PIndirectChannel
      */
     virtual BOOL ReadCommand(
       PINDEX & num,
-       // Number of the command parsed from the command line, or P_MAX_INDEX
-       // if no match.
-      PString & args  // String to receive the arguments to the command.
+       ///< Number of the command parsed from the command line, or P_MAX_INDEX
+       ///< if no match.
+      PString & args  ///< String to receive the arguments to the command.
     );
 
     /** Write a response code followed by a text string describing the response
@@ -326,12 +329,12 @@ class PInternetProtocol : public PIndirectChannel
        TRUE if the response was completely written.
      */
     virtual BOOL WriteResponse(
-      unsigned numericCode, // Response code for command response.
-      const PString & info  // Extra information available after response code.
+      unsigned numericCode, ///< Response code for command response.
+      const PString & info  ///< Extra information available after response code.
     );
     virtual BOOL WriteResponse(
-      const PString & code, // Response code for command response.
-      const PString & info  // Extra information available after response code.
+      const PString & code, ///< Response code for command response.
+      const PString & info  ///< Extra information available after response code.
     );
 
     /** Read a response code followed by a text string describing the response
@@ -354,8 +357,8 @@ class PInternetProtocol : public PIndirectChannel
      */
     virtual BOOL ReadResponse();
     virtual BOOL ReadResponse(
-      int & code,      // Response code for command response.
-      PString & info   // Extra information available after response code.
+      int & code,      ///< Response code for command response.
+      PString & info   ///< Extra information available after response code.
     );
 
     /** Write a command to the socket, using <CODE>WriteCommand()</CODE> and
@@ -370,11 +373,11 @@ class PInternetProtocol : public PIndirectChannel
        First character of response string or '\0' if a socket error occurred.
      */
     virtual int ExecuteCommand(
-      PINDEX cmdNumber       // Number of command to write.
+      PINDEX cmdNumber       ///< Number of command to write.
     );
     virtual int ExecuteCommand(
-      PINDEX cmdNumber,      // Number of command to write.
-      const PString & param  // Extra parameters required by the command.
+      PINDEX cmdNumber,      ///< Number of command to write.
+      const PString & param  ///< Extra parameters required by the command.
     );
 
     /** Return the code associated with the last response received by the
@@ -406,7 +409,7 @@ class PInternetProtocol : public PIndirectChannel
        lines are possible.
      */
     virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
+      const PString & line ///< Input response line to be parsed
     );
 
 

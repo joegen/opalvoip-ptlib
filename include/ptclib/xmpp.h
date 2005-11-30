@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.h,v $
+ * Revision 1.5  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -78,11 +81,11 @@ namespace XMPP
     JID(const PString& user, const PString& server, const PString& resource = PString::Empty());
 
     virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
+      const PObject & obj   ///< Object to compare against.
       ) const;
 
     JID& operator=(
-      const PString & jid  /// New JID to assign.
+      const PString & jid  ///< New JID to assign.
       );
 
     operator const PString&() const;
@@ -125,11 +128,11 @@ namespace XMPP
       : JID(user, server, resource) { }
 
     virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
+      const PObject & obj   ///< Object to compare against.
       ) const;
 
     BareJID& operator=(
-      const PString & jid  /// New JID to assign.
+      const PString & jid  ///< New JID to assign.
       );
 
     virtual PObject * Clone() const { return new BareJID(m_JID); }

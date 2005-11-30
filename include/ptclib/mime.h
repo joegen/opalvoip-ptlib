@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.21  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.20  2004/03/23 06:38:51  csoutheren
  * Update for change in location of Base64 routines
  *
@@ -117,10 +120,10 @@ class PMIMEInfo : public PStringToString {
 PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
   public:
     PMIMEInfo(
-      istream &strm   // Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
     PMIMEInfo(
-      PInternetProtocol & socket   // Application socket to read MIME info.
+      PInternetProtocol & socket   ///< Application socket to read MIME info.
     );
     // Construct a MIME infromation dictionary from the specified source.
 
@@ -130,14 +133,14 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        primarily used by the standard ##operator<<## function.
      */
     virtual void PrintOn(
-      ostream &strm   // Stream to print the object into.
+      ostream &strm   ///< Stream to print the object into.
     ) const;
 
     /** Input the contents of the MIME dictionary from the stream. This is
        primarily used by the standard ##operator>>## function.
      */
     virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
 
 
@@ -182,7 +185,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        TRUE if the MIME variable is present.
      */
     BOOL Contains(
-      const char * key       // Key into MIME dictionary to get info.
+      const char * key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(PCaselessString(key)) != NULL; }
 
     /** Determine if the specified key is present in the MIME information
@@ -192,7 +195,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        TRUE if the MIME variable is present.
      */
     BOOL Contains(
-      const PString & key       // Key into MIME dictionary to get info.
+      const PString & key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(PCaselessString(key)) != NULL; }
 
     /** Determine if the specified key is present in the MIME information
@@ -202,7 +205,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        TRUE if the MIME variable is present.
      */
     BOOL Contains(
-      const PCaselessString & key       // Key into MIME dictionary to get info.
+      const PCaselessString & key       ///< Key into MIME dictionary to get info.
     ) const { return GetAt(key) != NULL; }
 
   // New functions for class.
@@ -212,7 +215,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        TRUE if the MIME information was successfully read.
      */
     BOOL Read(
-      PInternetProtocol & socket   // Application socket to read MIME info.
+      PInternetProtocol & socket   ///< Application socket to read MIME info.
     );
 
     /** Write MIME information to the socket.
@@ -221,7 +224,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        TRUE if the MIME information was successfully read.
      */
     BOOL Write(
-      PInternetProtocol & socket   // Application socket to write MIME info.
+      PInternetProtocol & socket   ///< Application socket to write MIME info.
     ) const;
 
     /**Add a MIME field given a "name: value" format string.
@@ -244,8 +247,8 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        String for the value of the MIME variable.
      */
     PString GetString(
-      const PString & key,       // Key into MIME dictionary to get info.
-      const PString & dflt       // Default value of field if not in MIME info.
+      const PString & key,       ///< Key into MIME dictionary to get info.
+      const PString & dflt       ///< Default value of field if not in MIME info.
     ) const;
 
     /** Get an integer value for the particular MIME info field with checking
@@ -256,15 +259,15 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        Integer value for the MIME variable.
      */
     long GetInteger(
-      const PString & key,    // Key into MIME dictionary to get info.
-      long dflt = 0           // Default value of field if not in MIME info.
+      const PString & key,    ///< Key into MIME dictionary to get info.
+      long dflt = 0           ///< Default value of field if not in MIME info.
     ) const;
 
     /** Set an integer value for the particular MIME info field.
      */
     void SetInteger(
-      const PCaselessString & key,  // Key into MIME dictionary to get info.
-      long value                    // New value of field.
+      const PCaselessString & key,  ///< Key into MIME dictionary to get info.
+      long value                    ///< New value of field.
     );
 
 
@@ -306,12 +309,12 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        The default content type will be "application/octet-stream".
      */
     static void SetAssociation(
-      const PStringToString & allTypes,  // MIME content type associations.
-      BOOL merge = TRUE                  // Flag for merging associations.
+      const PStringToString & allTypes,  ///< MIME content type associations.
+      BOOL merge = TRUE                  ///< Flag for merging associations.
     );
     static void SetAssociation(
-      const PString & fileType,         // File type (extension) to match.
-      const PString & contentType       // MIME content type string.
+      const PString & fileType,         ///< File type (extension) to match.
+      const PString & contentType       ///< MIME content type string.
     ) { GetContentTypes().SetAt(fileType, contentType); }
 
     /** Look up the file type to MIME content type association dictionary and
@@ -322,7 +325,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
        MIME content type for file type.
      */
     static PString GetContentType(
-      const PString & fileType   // File type (extension) to look up.
+      const PString & fileType   ///< File type (extension) to look up.
     );
 
   private:

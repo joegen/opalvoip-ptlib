@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.34  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.33  2005/04/20 05:19:48  csoutheren
  * Patch 1185334. Ensure SIP URLs correctly store status of port
  * Thanks to Ted Szoczei
@@ -158,17 +161,17 @@ class PURL : public PObject
     PURL();
     /**Construct a new URL object from the URL string. */
     PURL(
-      const char * cstr,    /// C string representation of the URL.
-      const char * defaultScheme = NULL /// Default scheme for URL
+      const char * cstr,    ///< C string representation of the URL.
+      const char * defaultScheme = NULL ///< Default scheme for URL
     );
     /**Construct a new URL object from the URL string. */
     PURL(
-      const PString & str,  /// String representation of the URL.
-      const char * defaultScheme = NULL /// Default scheme for URL
+      const PString & str,  ///< String representation of the URL.
+      const char * defaultScheme = NULL ///< Default scheme for URL
     );
     /**Construct a new URL object from the file path. */
     PURL(
-      const PFilePath & path   /// File path to turn into a "file:" URL.
+      const PFilePath & path   ///< File path to turn into a "file:" URL.
     );
 
   /**@name Overrides from class PObject */
@@ -180,7 +183,7 @@ class PURL : public PObject
        according to the relative rank of the objects.
      */
     virtual Comparison Compare(
-      const PObject & obj   /// Object to compare against.
+      const PObject & obj   ///< Object to compare against.
     ) const;
 
     /**This function yields a hash value required by the #PDictionary#
@@ -199,14 +202,14 @@ class PURL : public PObject
     /**Output the contents of the URL to the stream as a string.
      */
     virtual void PrintOn(
-      ostream &strm   /// Stream to print the object into.
+      ostream &strm   ///< Stream to print the object into.
     ) const;
 
     /**Input the contents of the URL from the stream. The input is a URL in
        string form.
      */
     virtual void ReadFrom(
-      istream &strm   /// Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
   //@}
  
@@ -214,13 +217,13 @@ class PURL : public PObject
   //@{
     /**Parse the URL string into the fields in the object instance. */
     inline BOOL Parse(
-      const char * cstr,   /// URL as a string to parse.
-      const char * defaultScheme = NULL /// Default scheme for URL
+      const char * cstr,   ///< URL as a string to parse.
+      const char * defaultScheme = NULL ///< Default scheme for URL
     ) { return InternalParse(cstr, defaultScheme); }
     /**Parse the URL string into the fields in the object instance. */
     inline BOOL Parse(
-      const PString & str, /// URL as a string to parse.
-      const char * defaultScheme = NULL /// Default scheme for URL
+      const PString & str, ///< URL as a string to parse.
+      const char * defaultScheme = NULL ///< Default scheme for URL
     ) { return InternalParse((const char *)str, defaultScheme); }
 
     /**Print/String output representation formats. */
@@ -242,7 +245,7 @@ class PURL : public PObject
        String representation of the URL.
      */
     PString AsString(
-      UrlFormat fmt = FullURL   /// The type of string to be returned.
+      UrlFormat fmt = FullURL   ///< The type of string to be returned.
     ) const;
 
     /**Get the "file:" URL as a file path.
@@ -268,8 +271,8 @@ class PURL : public PObject
        String for the URL ready translation.
      */
     static PString TranslateString(
-      const PString & str,    /// String to be translated.
-      TranslationType type    /// Type of translation.
+      const PString & str,    ///< String to be translated.
+      TranslationType type    ///< Type of translation.
     );
 
     /**Untranslate a string from a form that was included into a URL into a
@@ -280,14 +283,14 @@ class PURL : public PObject
        String from the URL untranslated.
      */
     static PString UntranslateString(
-      const PString & str,    /// String to be translated.
-      TranslationType type    /// Type of translation.
+      const PString & str,    ///< String to be translated.
+      TranslationType type    ///< Type of translation.
     );
 
     /** Split a string in &= form to a dictionary of names and values. */
     static void SplitQueryVars(
-      const PString & queryStr,   /// String to split into variables.
-      PStringToString & queryVars /// Dictionary of variable names and values.
+      const PString & queryStr,   ///< String to split into variables.
+      PStringToString & queryVars ///< Dictionary of variable names and values.
     );
 
 
@@ -380,7 +383,7 @@ class PURL : public PObject
        displayed.
      */
     static BOOL OpenBrowser(
-      const PString & url   /// URL to open
+      const PString & url   ///< URL to open
     );
   //@}
 
@@ -389,8 +392,8 @@ class PURL : public PObject
 
   protected:
     virtual BOOL InternalParse(
-      const char * cstr,         /// URL as a string to parse.
-      const char * defaultScheme /// Default scheme for URL
+      const char * cstr,         ///< URL as a string to parse.
+      const char * defaultScheme ///< Default scheme for URL
     );
     void Recalculate();
     PString urlString;

@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.18  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.17  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -131,10 +134,8 @@ class PFTP : public PInternetProtocol
      @return Boolean indicated PORT command was successful
     */
     BOOL SendPORT(
-      const PIPSocket::Address & addr,
-     	/** Address for PORT connection.
-            IP address to connect back to */
-      WORD port /// Port number for PORT connection.
+      const PIPSocket::Address & addr, ///< Address for PORT connection. IP address to connect back to
+      WORD port                        ///< Port number for PORT connection.
     );
 
 
@@ -177,8 +178,8 @@ class PFTPClient : public PFTP
        TRUE if the log in was successfull.
      */
     BOOL LogIn(
-      const PString & username,   /// User name for FTP log in.
-      const PString & password    /// Password for the specified user name.
+      const PString & username,   ///< User name for FTP log in.
+      const PString & password    ///< Password for the specified user name.
     );
 
     /** Get the type of the remote FTP server system, eg Unix, WindowsNT etc.
@@ -194,7 +195,7 @@ class PFTPClient : public PFTP
        TRUE if transfer type set.
      */
     BOOL SetType(
-      RepresentationType type   /// RepresentationTypeof file to transfer
+      RepresentationType type   ///< RepresentationTypeof file to transfer
     );
 
     /** Change the current directory on the remote FTP host.
@@ -203,7 +204,7 @@ class PFTPClient : public PFTP
        TRUE if the log in was successfull.
      */
     BOOL ChangeDirectory(
-      const PString & dirPath     /// New directory
+      const PString & dirPath     ///< New directory
     );
 
     /** Get the current working directory on the remote FTP host.
@@ -220,8 +221,8 @@ class PFTPClient : public PFTP
        String array for the files in the directory.
      */
     PStringArray GetDirectoryNames(
-      NameTypes type = ShortNames,        /// Detail level on a directory entry.
-      DataChannelType channel = Passive   /// Data channel type.
+      NameTypes type = ShortNames,        ///< Detail level on a directory entry.
+      DataChannelType channel = Passive   ///< Data channel type.
     );
     /** Get a list of files from the current working directory on the remote
        FTP host.
@@ -230,9 +231,9 @@ class PFTPClient : public PFTP
        String array for the files in the directory.
      */
     PStringArray GetDirectoryNames(
-      const PString & path,               /// Name to get details for.
-      NameTypes type = ShortNames,        /// Detail level on a directory entry.
-      DataChannelType channel = Passive   /// Data channel type.
+      const PString & path,               ///< Name to get details for.
+      NameTypes type = ShortNames,        ///< Detail level on a directory entry.
+      DataChannelType channel = Passive   ///< Data channel type.
     );
 
     /** Get status information for the file path specified.
@@ -241,8 +242,8 @@ class PFTPClient : public PFTP
        String giving file status.
      */
     PString GetFileStatus(
-      const PString & path,                /// Path to get status for.
-      DataChannelType channel = Passive    /// Data channel type.
+      const PString & path,                ///< Path to get status for.
+      DataChannelType channel = Passive    ///< Data channel type.
     );
 
     /**Begin retreiving a file from the remote FTP server. The second
@@ -254,8 +255,8 @@ class PFTPClient : public PFTP
        Socket to read data from, or NULL if an error occurred.
      */
     PTCPSocket * GetFile(
-      const PString & filename,            /// Name of file to get
-      DataChannelType channel = NormalPort /// Data channel type.
+      const PString & filename,            ///< Name of file to get
+      DataChannelType channel = NormalPort ///< Data channel type.
     );
 
     /**Begin storing a file to the remote FTP server. The second parameter
@@ -267,8 +268,8 @@ class PFTPClient : public PFTP
        Socket to write data to, or NULL if an error occurred.
      */
     PTCPSocket * PutFile(
-      const PString & filename,   /// Name of file to get
-      DataChannelType channel = NormalPort /// Data channel type.
+      const PString & filename,   ///< Name of file to get
+      DataChannelType channel = NormalPort ///< Data channel type.
     );
 
   //@}
@@ -303,7 +304,7 @@ class PFTPServer : public PFTP
     /// declare a server socket
     PFTPServer();
     PFTPServer(
-      const PString & readyString   /// Sign on string on connection ready.
+      const PString & readyString   ///< Sign on string on connection ready.
     );
 
     /// Delete the server, cleaning up passive sockets.
@@ -346,8 +347,8 @@ class PFTPServer : public PFTP
        received or the #OnUnknown()# function returns FALSE.
      */
     virtual BOOL DispatchCommand(
-      PINDEX code,          /// Parsed command code.
-      const PString & args  /// Arguments to command.
+      PINDEX code,          ///< Parsed command code.
+      const PString & args  ///< Arguments to command.
     );
 
 
@@ -358,7 +359,7 @@ class PFTPServer : public PFTP
        TRUE if the command required the user to be logged in.
      */
     virtual BOOL CheckLoginRequired(
-      PINDEX cmd    /// Command to check if log in required.
+      PINDEX cmd    ///< Command to check if log in required.
     );
 
     /** Validate the user name and password for access. After three invalid
@@ -370,9 +371,9 @@ class PFTPServer : public PFTP
        TRUE if user can access, otherwise FALSE
      */
     virtual BOOL AuthoriseUser(
-      const PString & user,     /// User name to authorise.
-      const PString & password, /// Password supplied for the user.
-      BOOL & replied            /// Indication that a reply was sent to client.
+      const PString & user,     ///< User name to authorise.
+      const PString & password, ///< Password supplied for the user.
+      BOOL & replied            ///< Indication that a reply was sent to client.
     );
 
     /** Handle an unknown command.
@@ -382,7 +383,7 @@ class PFTPServer : public PFTP
        #ProcessCommand()# function is to return FALSE.
      */
     virtual BOOL OnUnknown(
-      const PCaselessString & command  /// Complete command line received.
+      const PCaselessString & command  ///< Complete command line received.
     );
 
     /** Handle an error in command.
@@ -392,24 +393,24 @@ class PFTPServer : public PFTP
        #ProcessCommand()# function is to return FALSE.
      */
     virtual void OnError(
-      PINDEX errorCode, /// Error code to use
-      PINDEX cmdNum,    /// Command that had the error.
-      const char * msg  /// Error message.
+      PINDEX errorCode, ///< Error code to use
+      PINDEX cmdNum,    ///< Command that had the error.
+      const char * msg  ///< Error message.
     );
 
     /// Called for syntax errors in commands.
     virtual void OnSyntaxError(
-      PINDEX cmdNum   /// Command that had the syntax error.
+      PINDEX cmdNum   ///< Command that had the syntax error.
     );
 
     /// Called for unimplemented commands.
     virtual void OnNotImplemented(
-      PINDEX cmdNum   /// Command that was not implemented.
+      PINDEX cmdNum   ///< Command that was not implemented.
     );
 
     /// Called for successful commands.
     virtual void OnCommandSuccessful(
-      PINDEX cmdNum   /// Command that had was successful.
+      PINDEX cmdNum   ///< Command that had was successful.
     );
 
 
@@ -461,7 +462,7 @@ class PFTPServer : public PFTP
 
     /// Send the specified file to the client.
     void SendToClient(
-      const PFilePath & filename    /// File name to send.
+      const PFilePath & filename    ///< File name to send.
     );
 
 
