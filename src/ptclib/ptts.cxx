@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.18  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.17  2005/01/04 08:09:42  csoutheren
  * Fixed Linux configure problems
  *
@@ -246,7 +249,7 @@ BOOL PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
     return FALSE;
   }
 
-	hr = m_cpVoice->SetOutput(cpWavStream, TRUE);
+  hr = m_cpVoice->SetOutput(cpWavStream, TRUE);
 
   return (opened = SUCCEEDED(hr));
 }

@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.23  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.22  2005/04/27 12:08:11  csoutheren
  * Added support for res_minit for thread-safe resolver access
  * Added mutex when res_minit not available
@@ -119,13 +122,13 @@ static BOOL GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char *
 }
 
 static BOOL ProcessDNSRecords(
-		const BYTE * reply,
-	        const BYTE * replyEnd,
-		      BYTE * cp,
-		    PINDEX anCount,
-		    PINDEX nsCount,
-		    PINDEX arCount,
-	       PDNS_RECORD * results)
+        const BYTE * reply,
+        const BYTE * replyEnd,
+              BYTE * cp,
+            PINDEX anCount,
+            PINDEX nsCount,
+            PINDEX arCount,
+     PDNS_RECORD * results)
 {
   PDNS_RECORD lastRecord = NULL;
 
@@ -251,11 +254,11 @@ static PMutex & GetDNSMutex()
 #endif
 
 DNS_STATUS DnsQuery_A(const char * service,
-		      WORD requestType,
-		      DWORD options,
-		      void *,
-		      PDNS_RECORD * results,
-		      void *)
+                              WORD requestType,
+                             DWORD options,
+                            void *,
+                     PDNS_RECORD * results,
+                            void *)
 {
   if (results == NULL)
     return -1;
@@ -297,13 +300,14 @@ DNS_STATUS DnsQuery_A(const char * service,
     cp += QFIXEDSZ;
   }
 
-  if (!ProcessDNSRecords(replyStart,
-		         replyEnd,
-			 cp,
-		 	 ntohs(reply.hdr.ancount),
-			 ntohs(reply.hdr.nscount),
-			 ntohs(reply.hdr.arcount),
-	 		 results)) {
+  if (!ProcessDNSRecords(
+       replyStart,
+       replyEnd,
+       cp,
+       ntohs(reply.hdr.ancount),
+       ntohs(reply.hdr.nscount),
+       ntohs(reply.hdr.arcount),
+       results)) {
     DnsRecordListFree(*results, 0);
     return -1;
   }
@@ -456,7 +460,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
           if (totalWeight >= targetWeight) {
             (*this)[i].used = TRUE;
             return &(*this)[i];
-  	  }
+          }
         }
       }
     }
@@ -469,7 +473,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
         if (count == j) {
           (*this)[i].used = TRUE;
           return &(*this)[i];
-	      }
+        }
         count++;
       }
     }

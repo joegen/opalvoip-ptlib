@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.65  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.64  2005/10/30 23:25:52  csoutheren
  * Fixed formatting
  * Removed throw() declarations (PWLib does not do exceptions)
@@ -1249,7 +1252,7 @@ void PVXMLSession::ProcessNode()
 
     else if (nodeType *= "record") {
       if (!forceEnd)
-  		  TraverseRecord();		
+        TraverseRecord();
     }
 
     else if (nodeType *= "prompt") {
@@ -1663,7 +1666,7 @@ void PVXMLSession::RecordEnd()
 BOOL PVXMLSession::EndRecording()
 {
   if (recording) {
-	  recording = FALSE;
+    recording = FALSE;
     if (vxmlChannel != NULL)
       return vxmlChannel->EndRecording();
   }
@@ -1779,7 +1782,7 @@ BOOL PVXMLSession::TraverseAudio()
         if (loaded) {
           // skip to the next node
           if (element->HasSubObjects())
-					  currentNode = element->GetElement(element->GetSize() - 1);
+            currentNode = element->GetElement(element->GetSize() - 1);
         }
       }
     }
@@ -1792,7 +1795,7 @@ BOOL PVXMLSession::TraverseAudio()
 }
 
 
-BOOL PVXMLSession::TraverseGoto()		// <goto>
+BOOL PVXMLSession::TraverseGoto()   // <goto>
 {
   PAssert(currentNode != NULL, "ProcessGotoElement(): Expected valid node");
   if (currentNode == NULL)
@@ -1834,7 +1837,7 @@ BOOL PVXMLSession::TraverseGoto()		// <goto>
   return FALSE;
 }
 
-BOOL PVXMLSession::TraverseGrammar()		// <grammar>
+BOOL PVXMLSession::TraverseGrammar()   // <grammar>
 {
   // LATER: A bunch of work to do here!
 

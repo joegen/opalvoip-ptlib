@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.40 2005/10/17 01:25:05 csoutheren Exp $
+ * $Id: pssl.cxx,v 1.41 2005/11/30 12:47:41 csoutheren Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.41  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.40  2005/10/17 01:25:05  csoutheren
  * Added check for ssl with const argumetns
  *
@@ -1186,7 +1189,7 @@ BOOL PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 //
 
 
-#define	PSSLCHANNEL(bio)			((PSSLChannel *)(bio->ptr))
+#define PSSLCHANNEL(bio)      ((PSSLChannel *)(bio->ptr))
 
 extern "C" {
 
@@ -1386,7 +1389,7 @@ int verify_callback(int ok, X509 * xs, X509 * xi, int depth, int error)
 
   if (!ok) {
     PError << "verify error:num=" << error << " " <<
-			X509_cert_verify_error_string(error) << endl;
+    X509_cert_verify_error_string(error) << endl;
     if (verify_depth <= depth) {
       ok=1;
       verify_error=VERIFY_OK;

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.11  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.10  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -112,12 +115,12 @@ void VidTest::Main()
   PArgList & args = GetArguments();
 
   args.Parse("h-help."
-	     "-input-driver:"
-	     "I-input-device:"
+             "-input-driver:"
+             "I-input-device:"
              "-input-format:"
              "-input-channel:"
-	     "-output-driver:"
-	     "O-output-device:"
+             "-output-driver:"
+             "O-output-device:"
              "F-colour-format:"
              "S-frame-size:"
              "R-frame-rate:"
@@ -125,7 +128,7 @@ void VidTest::Main()
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-	     );
+       );
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -135,23 +138,23 @@ void VidTest::Main()
 
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl
-	 << endl
-	 <<    "--help                : print this help message.\n"
-	 <<    "--input-driver  drv   : video grabber driver.\n"
-	 <<    "--input-device  dev   : video grabber device.\n"
-         <<    "--input-format  fmt   : video grabber format (\"pal\"/\"ntsc\")\n"
-         <<    "--input-channel num   : video grabber channel.\n"
-	 <<    "--output-driver drv   : video display driver to use.\n"
-	 <<    "--output-device dev   : video display device to use.\n"
-         <<    "--colour-format fmt   : video colour size (\"rgb24\", \"yuv420\", etc)\n"
-         <<    "--frame-size size     : video frame size (\"qcif\", \"cif\", WxH)\n"
-         <<    "--frame-rate size     : video frame rate (frames/second)\n"
+           << endl
+           <<    "--help                : print this help message.\n"
+           <<    "--input-driver  drv   : video grabber driver.\n"
+           <<    "--input-device  dev   : video grabber device.\n"
+           <<    "--input-format  fmt   : video grabber format (\"pal\"/\"ntsc\")\n"
+           <<    "--input-channel num   : video grabber channel.\n"
+           <<    "--output-driver drv   : video display driver to use.\n"
+           <<    "--output-device dev   : video display device to use.\n"
+           <<    "--colour-format fmt   : video colour size (\"rgb24\", \"yuv420\", etc)\n"
+           <<    "--frame-size size     : video frame size (\"qcif\", \"cif\", WxH)\n"
+           <<    "--frame-rate size     : video frame rate (frames/second)\n"
 #if PTRACING
-         <<    "-o or --output file   : file name for output of log messages\n"       
-         <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
+           <<    "-o or --output file   : file name for output of log messages\n"       
+           <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
 #endif
-	 << endl
-         << " e.g. ./vidtest --videodevice Philips\\ 680\\ webcam --videosize small " << endl << endl;
+           << endl
+           << " e.g. ./vidtest --videodevice Philips\\ 680\\ webcam --videosize small " << endl << endl;
     return;
   }
 
@@ -360,13 +363,13 @@ void VidTest::Main()
 
     if (cmd == "fg") {
       if (!grabber->SetVFlipState(!grabber->GetVFlipState()))
-	cout << "\nCould not toggle Vflip state of video input device" << endl;
+        cout << "\nCould not toggle Vflip state of video input device" << endl;
       continue;
     }
 
     if (cmd == "fd") {
       if (!display->SetVFlipState(!display->GetVFlipState()))
-	cout << "\nCould not toggle Vflip state of video output device" << endl;
+        cout << "\nCould not toggle Vflip state of video output device" << endl;
       continue;
     }
 

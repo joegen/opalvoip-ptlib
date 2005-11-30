@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.17  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.16  2004/04/03 06:54:25  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -112,7 +115,7 @@
 #define ASN_EXTENSION_ID    (0x1F)
 #define ASN_BIT8            (0x80)
 
-#define	MAX_OID_LEN	    64
+#define MAX_OID_LEN   64
 
 
 static char cannotPerformOnBaseTypeMsg[] =
@@ -123,8 +126,8 @@ BYTE PASNObject::ASNTypeToType[] = {
   ASN_INTEGER   | ASN_UNIVERSAL | ASN_PRIMITIVE,    // Integer
   ASN_OCTET_STR | ASN_UNIVERSAL | ASN_PRIMITIVE,    // String
   ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE,    // ObjectID
-  ASN_CONSTRUCTOR | ASN_SEQUENCE,		                // Sequence
-  ASN_CONSTRUCTOR | ASN_CONTEXT,		                // Choice
+  ASN_CONSTRUCTOR | ASN_SEQUENCE,                   // Sequence
+  ASN_CONSTRUCTOR | ASN_CONTEXT,                    // Choice
   ASN_APPLICATION | 0,                              // IPAddress
   ASN_APPLICATION | 1,                              // Counter32
   ASN_APPLICATION | 2,                              // Gauge32
@@ -139,7 +142,7 @@ BYTE PASNObject::ASNTypeToType[] = {
 // Oops - missed the Null type  
   ASN_NULL | ASN_UNIVERSAL | ASN_PRIMITIVE,         // Null
 
-  0,						    // Unknown
+  0,                // Unknown
 };
 
 
@@ -298,7 +301,7 @@ void PASNObject::EncodeASNInteger (PBYTEArray & buffer, PASNInt data, PASNObject
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || ((data & mask) == mask))
-	  && intsize > 1) {
+    && intsize > 1) {
     intsize--;
     data <<= 8;
   }
@@ -336,7 +339,7 @@ void PASNObject::EncodeASNUnsigned (PBYTEArray & buffer, PASNUnsigned data, PASN
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || (((long)data & mask) == mask))
-	  && intsize > 1) {
+    && intsize > 1) {
     intsize--;
     data <<= 8;
   }
@@ -413,7 +416,7 @@ WORD PASNObject::GetASNIntegerLength(PASNInt data)
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || ((data & mask) == mask))
-	  && intsize > 1) {
+    && intsize > 1) {
     intsize--;
     data <<= 8;
   }
@@ -443,7 +446,7 @@ WORD PASNObject::GetASNUnsignedLength (PASNUnsigned data)
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || (((long)data & mask) == mask))
-	  && intsize > 1) {
+    && intsize > 1) {
     intsize--;
     data <<= 8;
   }
@@ -794,15 +797,15 @@ void PASNObjectID::Encode(PBYTEArray & buffer)
            testmask <<= 7, testbits += 7) {
         if (subId & testmask) {  /* if any bits set */
           mask = testmask;
-	  bits = testbits;
-	}
+          bits = testbits;
+        }
       }
 
       /* mask can't be zero here */
       for(;mask != 0x7F; mask >>= 7, bits -= 7) {
         /* fix a mask that got truncated above */
-	if (mask == 0x1E00000)
-	  mask = 0xFE00000;
+        if (mask == 0x1E00000)
+          mask = 0xFE00000;
         eObjId [offs++] = (u_char)(((subId & mask) >> bits) | ASN_BIT8);
       }
       eObjId [offs++] = (u_char)(subId & mask);
@@ -848,15 +851,15 @@ WORD PASNObjectID::GetEncodedLength()
            testmask <<= 7, testbits += 7) {
         if (subId & testmask) {  /* if any bits set */
           mask = testmask;
-	  bits = testbits;
-	}
+          bits = testbits;
+        }
       }
 
       /* mask can't be zero here */
       for(;mask != 0x7F; mask >>= 7, bits -= 7) {
         /* fix a mask that got truncated above */
-	if (mask == 0x1E00000)
-	  mask = 0xFE00000;
+        if (mask == 0x1E00000)
+          mask = 0xFE00000;
         theLen++;
       }
       theLen++;
@@ -920,7 +923,7 @@ BOOL PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
         if (dataLen == 0 || offs >= s)
           return FALSE;
         subId = (subId << 7) + (buffer[offs] & ~ASN_BIT8);
-      	dataLen--;
+        dataLen--;
       } while (buffer[offs++] & ASN_BIT8);
       value.SetAt(i++, subId);
     }

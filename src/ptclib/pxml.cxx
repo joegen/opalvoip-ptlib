@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.43  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.42  2005/05/12 05:30:16  csoutheren
  * Ensured error location is initialised
  *
@@ -113,7 +116,7 @@
 
 
 #define CACHE_BUFFER_SIZE   1024
-#define	XMLSETTINGS_OPTIONS	(NewLineAfterElement)
+#define XMLSETTINGS_OPTIONS (NewLineAfterElement)
 
 
 #ifdef _MSC_VER
@@ -146,10 +149,10 @@ static void PXML_XmlDeclHandler(void * userData, const char * version, const cha
 }
 
 static void PXML_StartDocTypeDecl(void * userData,
-		            const char * docTypeName,
-		            const char * sysid,
-		            const char * pubid,
-			             int hasInternalSubSet)
+                const char * docTypeName,
+                const char * sysid,
+                const char * pubid,
+                    int hasInternalSubSet)
 {
   ((PXMLParser *)userData)->StartDocTypeDecl(docTypeName, sysid, pubid, hasInternalSubSet);
 }
@@ -273,9 +276,9 @@ void PXMLParser::XmlDecl(const char * _version, const char * _encoding, int _sta
 }
 
 void PXMLParser::StartDocTypeDecl(const char * /*docTypeName*/,
-		                              const char * /*sysid*/,
-				                          const char * /*pubid*/,
-				                          int /*hasInternalSubSet*/)
+                                  const char * /*sysid*/,
+                                  const char * /*pubid*/,
+                                  int /*hasInternalSubSet*/)
 {
 }
 
@@ -667,9 +670,9 @@ BOOL PXML::RemoveElement(PINDEX idx)
 
 PINDEX PXML::GetNumElements() const
 {
-	if (rootElement == NULL) 
+  if (rootElement == NULL) 
     return 0;
-	else 
+  else 
     return rootElement->GetSize();
 }
 
@@ -756,8 +759,8 @@ void PXMLObject::SetDirty()
 
 PXMLObject * PXMLObject::GetNextObject()
 {
-	if (parent == NULL)
-		return NULL;
+  if (parent == NULL)
+    return NULL;
 
   // find our index in our parent's list
   PINDEX idx = parent->FindObject(this);
@@ -893,8 +896,8 @@ PString PXMLElement::GetDataAttribute(PINDEX idx) const
 }
 
 void PXMLElement::SetAttribute(const PCaselessString & key,
-		                       const PString & value,
-				                  BOOL setDirty)
+                           const PString & value,
+                          BOOL setDirty)
 {
   attributes.SetAt(key, value);
   if (setDirty)
@@ -1028,7 +1031,7 @@ PXMLSettings::PXMLSettings(const PConfig & data, int options)
     PStringToString keyvals = data.GetAllKeyValues(sects[i]);
     for (PINDEX j = 0; j < (PINDEX)keyvals.GetSize(); ++j) {
       SetAttribute(sects[i],keyvals.GetKeyAt(j),keyvals.GetDataAt(j));
-	 }
+    }
   }
 }
 
@@ -1105,7 +1108,7 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
       if (!key && !dat)
         cfg.SetString(sectionName, key, dat);
     }
-  }	
+  }
 }
 
 ///////////////////////////////////////////////////////

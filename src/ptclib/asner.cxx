@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.93  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.92  2005/11/25 01:01:15  csoutheren
  * Applied patch #1351168
  * PWlib various fixes
@@ -1091,8 +1094,8 @@ void PASN_ObjectId::CommonEncode(PBYTEArray & encodecObjectId) const
       while (testmask != 0) {
         if (subId & testmask) {  /* if any bits set */
           mask = testmask;
-	        bits = testbits;
-	      }
+          bits = testbits;
+        }
         testmask <<= 7;
         testbits += 7;
       }
@@ -1100,8 +1103,8 @@ void PASN_ObjectId::CommonEncode(PBYTEArray & encodecObjectId) const
       /* mask can't be zero here */
       while (mask != 0x7F) {
         /* fix a mask that got truncated above */
-      	if (mask == 0x1E00000)
-	        mask = 0xFE00000;
+        if (mask == 0x1E00000)
+          mask = 0xFE00000;
 
         encodecObjectId[outputPosition++] = (BYTE)(((subId & mask) >> bits) | 0x80);
 
