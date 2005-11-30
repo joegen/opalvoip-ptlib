@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socks.h,v $
+ * Revision 1.8  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.7  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -141,10 +144,10 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        TRUE if the channel was successfully connected to the remote host.
      */
     virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
+      const PString & address   ///< Address of remote machine to connect to.
     );
     virtual BOOL Connect(
-      const Address & addr      // Address of remote machine to connect to.
+      const Address & addr      ///< Address of remote machine to connect to.
     );
 
     /** Listen on a socket for a remote host on the specified port number. This
@@ -163,9 +166,9 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        TRUE if the channel was successfully opened.
      */
     virtual BOOL Listen(
-      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0,           // Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+      unsigned queueSize = 5,  ///< Number of pending accepts that may be queued.
+      WORD port = 0,           ///< Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive ///< Can/Cant listen more than once.
     );
 
     /** Open a socket to a remote host on the specified port number. This is an
@@ -189,7 +192,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
      */
     BOOL Accept();
     virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
+      PSocket & socket          ///< Listening socket making the connection.
     );
 
 
@@ -200,11 +203,11 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        TRUE if the IP number was returned.
      */
     virtual BOOL GetLocalAddress(
-      Address & addr    // Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     virtual BOOL GetLocalAddress(
-      Address & addr,    // Variable to receive peer hosts IP address
-      WORD & port        // Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IP address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
     /** Get the Internet Protocol address for the peer host the socket is
@@ -214,11 +217,11 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
        TRUE if the IP number was returned.
      */
     virtual BOOL GetPeerAddress(
-      Address & addr    // Variable to receive hosts IP address
+      Address & addr    ///< Variable to receive hosts IP address
     );
     virtual BOOL GetPeerAddress(
-      Address & addr,    // Variable to receive peer hosts IP address
-      WORD & port        // Variable to receive peer hosts port number
+      Address & addr,    ///< Variable to receive peer hosts IP address
+      WORD & port        ///< Variable to receive peer hosts port number
     );
 
 

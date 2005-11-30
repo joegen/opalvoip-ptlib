@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.h,v $
+ * Revision 1.5  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2005/08/31 23:55:48  csoutheren
  * Fixed typo
  *
@@ -51,8 +54,8 @@
 
 namespace PDNS {
 
-#ifndef	NAPTR_SRV
-#define	NAPTR_SRV	35
+#ifndef NAPTR_SRV
+#define NAPTR_SRV 35
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
@@ -93,9 +96,36 @@ PDECLARE_SORTED_LIST(NAPTRRecordList, PDNS::NAPTRRecord)
 inline BOOL GetRecords(const PString & domain, NAPTRRecordList & recordList)
 { return Lookup<NAPTR_SRV, NAPTRRecordList, NAPTRRecord>(domain, recordList); }
 
+/**
+  * Set the default ENUM domain search list 
+  */
 void SetENUMServers(const PStringArray & serverlist);
-BOOL ENUMLookup(const PString & dn, const PString & service, const PStringArray & domains, PString & URL);
-BOOL ENUMLookup(const PString & dn, const PString & service, PString & URL);
+
+/**
+  * Perform a lookup of the specified DN using the specified service
+  * and domain list. Returns the resultant URL
+  *
+  * @return TRUE if the DN could be resolved, else FALSE
+  */
+BOOL ENUMLookup(
+                const PString & dn,             ///< DN to lookup
+                const PString & service,        ///< ENUM service to use
+                const PStringArray & domains,   ///< list of ENUM domains to search
+                PString & URL                   ///< resolved URL, if return value is TRUE
+);
+
+/**
+  * Perform a lookup of the specified DN using the specified service
+  * using the default domain list. Returns the resultant URL.
+  *
+  * This function uses the default domain list, which can be set by the SetENUMServers function
+  *
+  * @return TRUE if the DN could be resolved, else FALSE
+  */
+BOOL ENUMLookup(const PString & dn,             ///< DN to lookup
+                const PString & service,        ///< ENUM service to use
+                PString & URL                   ///< resolved URL, if return value is TRUE
+);                                              
 
 }; // namespace PDNS
 

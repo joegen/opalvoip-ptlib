@@ -27,21 +27,24 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.49  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.48  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
  * Revision 1.47  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
- * 	correct the STL defined checking to use proper syntax.
+ *      correct the STL defined checking to use proper syntax.
  *
  * include/ptlib/object.h:
- * 	re-add typedef to compile on mingw
+ *      re-add typedef to compile on mingw
  *
  * make/ptlib-config.in:
- * 	import a long-standing fix from the Debian packs which allows usage of
- * 	ptlib-config without manually adding -lpt for each of the subsequent
- * 	projects
+ *      import a long-standing fix from the Debian packs which allows usage of
+ *      ptlib-config without manually adding -lpt for each of the subsequent
+ *      projects
  *
  * Revision 1.46  2005/08/05 20:44:46  csoutheren
  * Fixed typo
@@ -767,9 +770,9 @@ class PChannel : public PObject, public iostream {
     typedef std::vector<Slice> VectorOfSlice;
 
     /** Low level scattered read from the channel. This is identical to Read except 
-	that the data will be read into a series of scattered memory slices. By default,
-	this call will default to calling Read multiple times, but this may be 
-	implemented by operating systems to do a real scattered read
+        that the data will be read into a series of scattered memory slices. By default,
+        this call will default to calling Read multiple times, but this may be 
+        implemented by operating systems to do a real scattered read
 
        @return
        TRUE indicates that at least one character was read from the channel.
@@ -781,8 +784,8 @@ class PChannel : public PObject, public iostream {
 
     /** Low level scattered write to the channel. This is identical to Write except 
         that the data will be written from a series of scattered memory slices. By default,
-	this call will default to calling Write multiple times, but this can be actually
-	implemented by operating systems to do a real scattered write
+        this call will default to calling Write multiple times, but this can be actually
+        implemented by operating systems to do a real scattered write
 
        @return
        TRUE indicates that at least one character was read from the channel.

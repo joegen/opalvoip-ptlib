@@ -27,21 +27,24 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.115  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.114  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
  * Revision 1.113  2005/09/18 11:05:36  dominance
  * include/ptlib/channel.h, include/ptlib/pstring.h, src/ptlib/common/contain.cxx,
  * src/ptlib/common/pchannel.cxx:
- * 	correct the STL defined checking to use proper syntax.
+ *   correct the STL defined checking to use proper syntax.
  *
  * include/ptlib/object.h:
- * 	re-add typedef to compile on mingw
+ *   re-add typedef to compile on mingw
  *
  * make/ptlib-config.in:
- * 	import a long-standing fix from the Debian packs which allows usage of
- * 	ptlib-config without manually adding -lpt for each of the subsequent
- * 	projects
+ *   import a long-standing fix from the Debian packs which allows usage of
+ *   ptlib-config without manually adding -lpt for each of the subsequent
+ *   projects
  *
  * Revision 1.112  2005/08/30 06:36:39  csoutheren
  * Added ability to rotate output logs on a daily basis

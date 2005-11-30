@@ -25,6 +25,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.20  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.19  2004/04/21 00:29:55  csoutheren
  * Added SASL authentication to PPOP3Client and PSMTPClient
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -209,8 +212,8 @@ class PSMTPClient : public PSMTP
        TRUE if logged in.
      */
     BOOL LogIn(
-      const PString & username,   // User name on remote system.
-      const PString & password    // Password for user name.
+      const PString & username,   ///< User name on remote system.
+      const PString & password    ///< Password for user name.
     );
 
     /** Begin transmission of a message using the SMTP socket as a client. This
@@ -222,14 +225,14 @@ class PSMTPClient : public PSMTP
        TRUE if message was handled, FALSE if an error occurs.
      */
     BOOL BeginMessage(
-      const PString & from,        // User name of sender.
-      const PString & to,          // User name of recipient.
-      BOOL eightBitMIME = FALSE    // Mesage will be 8 bit MIME.
+      const PString & from,        ///< User name of sender.
+      const PString & to,          ///< User name of recipient.
+      BOOL eightBitMIME = FALSE    ///< Mesage will be 8 bit MIME.
     );
     BOOL BeginMessage(
-      const PString & from,        // User name of sender.
-      const PStringList & toList,  // List of user names of recipients.
-      BOOL eightBitMIME = FALSE    // Mesage will be 8 bit MIME.
+      const PString & from,        ///< User name of sender.
+      const PStringList & toList,  ///< List of user names of recipients.
+      BOOL eightBitMIME = FALSE    ///< Mesage will be 8 bit MIME.
     );
 
     /** End transmission of a message using the SMTP socket as a client.
@@ -308,9 +311,9 @@ class PSMTPServer : public PSMTP
     // Reset the state of the SMTP server socket.
 
     enum ForwardResult {
-      LocalDomain,    // User may be on local machine, do LookUpName().
-      WillForward,    // User may be forwarded to another SMTP host.
-      CannotForward   // User cannot be forwarded.
+      LocalDomain,    ///< User may be on local machine, do LookUpName().
+      WillForward,    ///< User may be forwarded to another SMTP host.
+      CannotForward   ///< User cannot be forwarded.
     };
     // Result of forward check
 
@@ -321,15 +324,15 @@ class PSMTPServer : public PSMTP
        Result of forward check operation.
      */
     virtual ForwardResult ForwardDomain(
-      PCaselessString & userDomain,       // Domain for user
-      PCaselessString & forwardDomainList // Domains forwarding to
+      PCaselessString & userDomain,       ///< Domain for user
+      PCaselessString & forwardDomainList ///< Domains forwarding to
     );
 
     enum LookUpResult {
-      ValidUser,      // User name was valid and unique.
-      AmbiguousUser,  // User name was valid but ambiguous.
-      UnknownUser,    // User name was invalid.
-      LookUpError     // Some other error occurred in look up.
+      ValidUser,      ///< User name was valid and unique.
+      AmbiguousUser,  ///< User name was valid but ambiguous.
+      UnknownUser,    ///< User name was invalid.
+      LookUpError     ///< Some other error occurred in look up.
     };
     // Result of user name look up
 
@@ -341,8 +344,8 @@ class PSMTPServer : public PSMTP
        Result of name look up operation.
      */
     virtual LookUpResult LookUpName(
-      const PCaselessString & name,    // Name to look up.
-      PString & expandedName           // Expanded form of name (if found).
+      const PCaselessString & name,    ///< Name to look up.
+      PString & expandedName           ///< Expanded form of name (if found).
     );
 
     /** Handle a received message. The <CODE>buffer</CODE> parameter contains
@@ -355,10 +358,10 @@ class PSMTPServer : public PSMTP
        TRUE if message was handled, FALSE if an error occurs.
      */
     virtual BOOL HandleMessage(
-      PCharArray & buffer,  // Buffer containing message data received.
-      BOOL starting,        // This is the first call for the message.
-      BOOL completed        // This is the last call for the message.
-      // Indication that the entire message has been received.
+      PCharArray & buffer,  ///< Buffer containing message data received.
+      BOOL starting,        ///< This is the first call for the message.
+      BOOL completed        ///< This is the last call for the message.
+      ///< Indication that the entire message has been received.
     );
 
 
@@ -366,12 +369,12 @@ class PSMTPServer : public PSMTP
     BOOL OnOpen();
 
     virtual void OnHELO(
-      const PCaselessString & remoteHost  // Name of remote host.
+      const PCaselessString & remoteHost  ///< Name of remote host.
     );
     // Start connection.
 
     virtual void OnEHLO(
-      const PCaselessString & remoteHost  // Name of remote host.
+      const PCaselessString & remoteHost  ///< Name of remote host.
     );
     // Start extended SMTP connection.
 
@@ -391,37 +394,37 @@ class PSMTPServer : public PSMTP
     // Reset state.
 
     virtual void OnVRFY(
-      const PCaselessString & name    // Name to verify.
+      const PCaselessString & name    ///< Name to verify.
     );
     // Verify address.
 
     virtual void OnEXPN(
-      const PCaselessString & name    // Name to expand.
+      const PCaselessString & name    ///< Name to expand.
     );
     // Expand alias.
 
     virtual void OnRCPT(
-      const PCaselessString & recipient   // Name of recipient.
+      const PCaselessString & recipient   ///< Name of recipient.
     );
     // Designate recipient
 
     virtual void OnMAIL(
-      const PCaselessString & sender  // Name of sender.
+      const PCaselessString & sender  ///< Name of sender.
     );
     // Designate sender
     
     virtual void OnSEND(
-      const PCaselessString & sender  // Name of sender.
+      const PCaselessString & sender  ///< Name of sender.
     );
     // send message to screen
 
     virtual void OnSAML(
-      const PCaselessString & sender  // Name of sender.
+      const PCaselessString & sender  ///< Name of sender.
     );
     // send AND mail
     
     virtual void OnSOML(
-      const PCaselessString & sender  // Name of sender.
+      const PCaselessString & sender  ///< Name of sender.
     );
     // send OR mail
 
@@ -435,11 +438,11 @@ class PSMTPServer : public PSMTP
        <A>ProcessCommand()</A> function is to return FALSE.
      */
     virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
+      const PCaselessString & command  ///< Complete command line received.
     );
 
     virtual void OnSendMail(
-      const PCaselessString & sender  // Name of sender.
+      const PCaselessString & sender  ///< Name of sender.
     );
     // Common code for OnMAIL(), OnSEND(), OnSOML() and OnSAML() funtions.
 
@@ -550,7 +553,7 @@ class PPOP3 : public PInternetProtocol
        lines are possible.
      */
     virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
+      const PString & line ///< Input response line to be parsed
     );
 
   // Member variables
@@ -617,11 +620,11 @@ class PPOP3Client : public PPOP3
   // New functions for class.
     enum LoginOptions
     {
-      AllowUserPass = 1,      // Allow the use of the plain old USER/PASS if APOP
-                              // or SASL are not available
-      UseSASL = 2,            // Use SASL if the AUTH command is supported by
-                              // the server
-      AllowClearTextSASL = 4  // Allow LOGIN and PLAIN mechanisms to be used
+      AllowUserPass = 1,      ///< Allow the use of the plain old USER/PASS if APOP
+                              ///< or SASL are not available
+      UseSASL = 2,            ///< Use SASL if the AUTH command is supported by
+                              ///< the server
+      AllowClearTextSASL = 4  ///< Allow LOGIN and PLAIN mechanisms to be used
     };
 
     /** Log into the POP server using the mailbox and access codes specified.
@@ -630,9 +633,9 @@ class PPOP3Client : public PPOP3
        TRUE if logged in.
      */
     BOOL LogIn(
-      const PString & username,       // User name on remote system.
-      const PString & password,       // Password for user name.
-      int options = AllowUserPass     // See LoginOptions above
+      const PString & username,       ///< User name on remote system.
+      const PString & password,       ///< Password for user name.
+      int options = AllowUserPass     ///< See LoginOptions above
     );
 
     /** Get a count of the number of messages in the mail box.
@@ -745,8 +748,8 @@ class PPOP3Server : public PPOP3
        TRUE if user and password were valid.
      */
     virtual BOOL HandleOpenMailbox(
-      const PString & username,  // User name for mail box
-      const PString & password   // Password for user name
+      const PString & username,  ///< User name for mail box
+      const PString & password   ///< Password for user name
     );
 
     /** Handle the sending of the specified message to the remote client. The
@@ -757,9 +760,9 @@ class PPOP3Server : public PPOP3
        TRUE if successfully sent message.
      */
     virtual void HandleSendMessage(
-      PINDEX messageNumber, // Number of message to send.
-      const PString & id,   // Unique id of message to send.
-      PINDEX lines          // Nuumber of lines in body of message to send.
+      PINDEX messageNumber, ///< Number of message to send.
+      const PString & id,   ///< Unique id of message to send.
+      PINDEX lines          ///< Nuumber of lines in body of message to send.
     );
     
     /** Handle the deleting of the specified message from the mail box. This is
@@ -770,8 +773,8 @@ class PPOP3Server : public PPOP3
        TRUE if successfully sent message.
      */
     virtual void HandleDeleteMessage(
-      PINDEX messageNumber, // Number of message to send.
-      const PString & id    // Unique id of message to send.
+      PINDEX messageNumber, ///< Number of message to send.
+      const PString & id    ///< Unique id of message to send.
     );
     
 
@@ -779,12 +782,12 @@ class PPOP3Server : public PPOP3
     BOOL OnOpen();
 
     virtual void OnUSER(
-      const PString & name  // Name of user.
+      const PString & name  ///< Name of user.
     );
     // Specify user name (mailbox).
 
     virtual void OnPASS(
-      const PString & passwd  // Password for account.
+      const PString & passwd  ///< Password for account.
     );
     // Specify password and log user in.
 
@@ -804,22 +807,22 @@ class PPOP3Server : public PPOP3
        sizes of all messages in mailbox.
      */
     virtual void OnLIST(
-      PINDEX msg  // Number of message.
+      PINDEX msg  ///< Number of message.
     );
 
     virtual void OnRETR(
-      PINDEX msg  // Number of message.
+      PINDEX msg  ///< Number of message.
     );
     // Retrieve a message from mailbox.
 
     virtual void OnDELE(
-      PINDEX msg  // Number of message.
+      PINDEX msg  ///< Number of message.
     );
     // Delete a message from mailbox.
 
     virtual void OnTOP(
-      PINDEX msg,  // Number of message.
-      PINDEX count // Count of messages
+      PINDEX msg,  ///< Number of message.
+      PINDEX count ///< Count of messages
     );
     // Get the message header and top <CODE>count</CODE> lines of message.
 
@@ -827,7 +830,7 @@ class PPOP3Server : public PPOP3
        all IDs for all messages in mailbox.
      */
     virtual void OnUIDL(
-      PINDEX msg  // Number of message.
+      PINDEX msg  ///< Number of message.
     );
 
     /** Handle an unknown command.
@@ -837,7 +840,7 @@ class PPOP3Server : public PPOP3
        <A>ProcessCommand()</A> function is to return FALSE.
      */
     virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
+      const PCaselessString & command  ///< Complete command line received.
     );
 
 
@@ -885,7 +888,7 @@ class PRFC822Channel : public PIndirectChannel
     /**Construct a RFC822 aware channel.
       */
     PRFC822Channel(
-      Direction direction /// Indicates are sending or receiving a message
+      Direction direction ////< Indicates are sending or receiving a message
     );
 
     /**Close the channel before destruction.
@@ -909,8 +912,8 @@ class PRFC822Channel : public PIndirectChannel
        TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
 
 
@@ -919,7 +922,7 @@ class PRFC822Channel : public PIndirectChannel
        sequentially. It resets the internal state of the object.
       */
     void NewMessage(
-      Direction direction  /// Indicates are sending or receiving a message
+      Direction direction  ///< Indicates are sending or receiving a message
     );
 
     /**Enter multipart MIME message mode.
@@ -965,35 +968,35 @@ class PRFC822Channel : public PIndirectChannel
        This must be called before any writes are done to the channel.
       */
     void SetFromAddress(
-      const PString & fromAddress  /// Senders e-mail address
+      const PString & fromAddress  ///< Senders e-mail address
     );
 
     /**Set the recipient address(es).
        This must be called before any writes are done to the channel.
       */
     void SetToAddress(
-      const PString & toAddress /// Recipients e-mail address (comma separated)
+      const PString & toAddress ///< Recipients e-mail address (comma separated)
     );
 
     /**Set the Carbon Copy address(es).
        This must be called before any writes are done to the channel.
       */
     void SetCC(
-      const PString & ccAddress /// Recipients e-mail address (comma separated)
+      const PString & ccAddress ///< Recipients e-mail address (comma separated)
     );
 
     /**Set the Blind Carbon Copy address(es).
        This must be called before any writes are done to the channel.
       */
     void SetBCC(
-      const PString & bccAddress /// Recipients e-mail address (comma separated)
+      const PString & bccAddress ///< Recipients e-mail address (comma separated)
     );
 
     /**Set the message subject.
        This must be called before any writes are done to the channel.
       */
     void SetSubject(
-      const PString & subject  /// Subject string
+      const PString & subject  ///< Subject string
     );
 
     /**Set the content type.
@@ -1004,7 +1007,7 @@ class PRFC822Channel : public PIndirectChannel
        The default Content-Type is "text/plain".
       */
     void SetContentType(
-      const PString & contentType   /// Content type in form major/minor
+      const PString & contentType   ///< Content type in form major/minor
     );
 
     /**Set the content disposition for attachments.
@@ -1015,7 +1018,7 @@ class PRFC822Channel : public PIndirectChannel
        Note that this will alter the Content-Type field to 
       */
     void SetContentAttachment(
-      const PFilePath & filename   /// Attachment filename
+      const PFilePath & filename   ///< Attachment filename
     );
 
     /**Set the content transfer encoding.
@@ -1028,8 +1031,8 @@ class PRFC822Channel : public PIndirectChannel
        the underlying channel.
       */
     void SetTransferEncoding(
-      const PString & encoding,   /// Encoding type
-      BOOL autoTranslate = TRUE   /// Automatically convert to encoding type
+      const PString & encoding,   ///< Encoding type
+      BOOL autoTranslate = TRUE   ///< Automatically convert to encoding type
     );
 
 
@@ -1037,8 +1040,8 @@ class PRFC822Channel : public PIndirectChannel
        This must be called before any writes are done to the channel.
       */
     void SetHeaderField(
-      const PString & name,   /// MIME fields tag
-      const PString & value   /// MIME fields contents
+      const PString & name,   ///< MIME fields tag
+      const PString & value   ///< MIME fields contents
     );
 
     // Common MIME header tags

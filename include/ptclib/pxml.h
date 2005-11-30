@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.26  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.25  2005/08/04 20:10:24  csoutheren
  * Apply patch #1217596
  * Fixed problems with MacOSX Tiger
@@ -89,8 +92,8 @@ class PXMLParser : public PObject
     enum Options {
       Indent              = 1,
       NewLineAfterElement = 2,
-      NoIgnoreWhiteSpace  = 4,   // ignored
-      CloseExtended       = 8,   // ignored
+      NoIgnoreWhiteSpace  = 4,   ///< ignored
+      CloseExtended       = 8,   ///< ignored
       WithNS              = 16,
     };
 
@@ -104,9 +107,9 @@ class PXMLParser : public PObject
     virtual void AddCharacterData(const char * data, int len);
     virtual void XmlDecl(const char * version, const char * encoding, int standAlone);
     virtual void StartDocTypeDecl(const char * docTypeName,
-		                              const char * sysid,
-				                          const char * pubid,
-				                          int hasInternalSubSet);
+                                  const char * sysid,
+                                  const char * pubid,
+                                  int hasInternalSubSet);
     virtual void EndDocTypeDecl();
     virtual void StartNamespaceDeclHandler(const char * prefix, const char * uri);
     virtual void EndNamespaceDeclHandler(const char * prefix);
@@ -345,7 +348,7 @@ class PXMLElement : public PXMLObject {
     PXMLData    * AddChild    (PXMLData    * elem, BOOL dirty = TRUE);
 
     void SetAttribute(const PCaselessString & key,
-		                  const PString & value,
+                      const PString & value,
                       BOOL setDirty = TRUE);
 
     PString GetAttribute(const PCaselessString & key) const;
@@ -380,7 +383,7 @@ class PXMLElement : public PXMLObject {
 
 ////////////////////////////////////////////////////////////
 
-class PConfig;			// stupid gcc 4 does not recognize PConfig as a class
+class PConfig;      // stupid gcc 4 does not recognize PConfig as a class
 
 class PXMLSettings : public PXML
 {
