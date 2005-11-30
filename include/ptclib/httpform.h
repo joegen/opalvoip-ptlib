@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.18  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.17  2003/03/24 04:30:41  robertj
  * Added function to set and get strings from PConfig in correct format for
  *   use with HTTP form array contsructs.
@@ -419,12 +422,12 @@ class PHTTPFieldArray : public PHTTPCompositeField
     void SetSize(PINDEX newSize);
 
     PStringArray GetStrings(
-      PConfig & cfg   /// Config file to get strings from
+      PConfig & cfg   ///< Config file to get strings from
     );
 
     void SetStrings(
-      PConfig & cfg,   /// Config file to Set strings to
-      const PStringArray & values /// Strings to set
+      PConfig & cfg,   ///< Config file to Set strings to
+      const PStringArray & values ///< Strings to set
     );
 
   protected:
@@ -459,7 +462,7 @@ class PHTTPStringField : public PHTTPField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetValue(BOOL dflt = FALSE) const;
@@ -497,7 +500,7 @@ class PHTTPPasswordField : public PHTTPStringField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetValue(BOOL dflt = FALSE) const;
@@ -533,7 +536,7 @@ class PHTTPIntegerField : public PHTTPField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetValue(BOOL dflt = FALSE) const;
@@ -543,10 +546,10 @@ class PHTTPIntegerField : public PHTTPField
     );
 
     virtual void LoadFromConfig(
-      PConfig & cfg   // Configuration for value transfer.
+      PConfig & cfg   ///< Configuration for value transfer.
     );
     virtual void SaveToConfig(
-      PConfig & cfg   // Configuration for value transfer.
+      PConfig & cfg   ///< Configuration for value transfer.
     ) const;
 
     virtual BOOL Validated(
@@ -581,7 +584,7 @@ class PHTTPBooleanField : public PHTTPField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetHTMLInput(
@@ -595,10 +598,10 @@ class PHTTPBooleanField : public PHTTPField
     );
 
     virtual void LoadFromConfig(
-      PConfig & cfg   // Configuration for value transfer.
+      PConfig & cfg   ///< Configuration for value transfer.
     );
     virtual void SaveToConfig(
-      PConfig & cfg   // Configuration for value transfer.
+      PConfig & cfg   ///< Configuration for value transfer.
     ) const;
 
 
@@ -675,7 +678,7 @@ class PHTTPRadioField : public PHTTPField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetHTMLInput(
@@ -733,7 +736,7 @@ class PHTTPSelectField : public PHTTPField
     virtual PHTTPField * NewField() const;
 
     virtual void GetHTMLTag(
-      PHTML & html    // HTML to receive the field info.
+      PHTML & html    ///< HTML to receive the field info.
     ) const;
 
     virtual PString GetValue(BOOL dflt = FALSE) const;
@@ -778,13 +781,13 @@ class PHTTPForm : public PHTTPString
 
 
     virtual void OnLoadedText(
-      PHTTPRequest & request,    // Information on this request.
-      PString & text             // Data used in reply.
+      PHTTPRequest & request,    ///< Information on this request.
+      PString & text             ///< Data used in reply.
     );
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
 
@@ -847,13 +850,13 @@ class PHTTPConfig : public PHTTPForm
     );
 
     virtual void OnLoadedText(
-      PHTTPRequest & request,    // Information on this request.
-      PString & text             // Data used in reply.
+      PHTTPRequest & request,    ///< Information on this request.
+      PString & text             ///< Data used in reply.
     );
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
 
@@ -869,7 +872,7 @@ class PHTTPConfig : public PHTTPForm
     const PString & GetConfigSection() const { return section; }
 
     void SetConfigSection(
-      const PString & sect   // New section for the config page.
+      const PString & sect   ///< New section for the config page.
     ) { section = sect; }
     // Set the configuration file section.
 
@@ -878,17 +881,17 @@ class PHTTPConfig : public PHTTPForm
        and error generated if the section already exists.
      */
     PHTTPField * AddSectionField(
-      PHTTPField * sectionFld,     // Field to set as the section name
-      const char * prefix = NULL,  // String to attach before the field value
-      const char * suffix = NULL   // String to attach after the field value
+      PHTTPField * sectionFld,     ///< Field to set as the section name
+      const char * prefix = NULL,  ///< String to attach before the field value
+      const char * suffix = NULL   ///< String to attach after the field value
     );
 
     /** Add fields to the HTTP form for adding a new key to the config file
        section.
      */
     void AddNewKeyFields(
-      PHTTPField * keyFld,  // Field for the key to be added.
-      PHTTPField * valFld   // Field for the value of the key yto be added.
+      PHTTPField * keyFld,  ///< Field for the key to be added.
+      PHTTPField * valFld   ///< Field for the value of the key yto be added.
     );
 
 
@@ -924,13 +927,13 @@ class PHTTPConfigSectionList : public PHTTPString
     );
 
     virtual void OnLoadedText(
-      PHTTPRequest & request,    // Information on this request.
-      PString & text             // Data used in reply.
+      PHTTPRequest & request,    ///< Information on this request.
+      PString & text             ///< Data used in reply.
     );
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
   protected:

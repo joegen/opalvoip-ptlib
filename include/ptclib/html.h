@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.h,v $
+ * Revision 1.27  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.26  2005/10/30 23:25:51  csoutheren
  * Fixed formatting
  * Removed throw() declarations (PWLib does not do exceptions)
@@ -188,10 +191,10 @@ class PHTML : public PStringStream
       ElementInSet initialState = NumElementsInSet
     );
     PHTML(
-      const char * cstr     // C string representation of the title string.
+      const char * cstr     ///< C string representation of the title string.
     );
     PHTML(
-      const PString & str   // String representation of the title string.
+      const PString & str   ///< String representation of the title string.
     );
 
     ~PHTML();
@@ -201,16 +204,16 @@ class PHTML : public PStringStream
        elements are placed into the HTML.
      */
     PHTML & operator=(
-      const PHTML & html     // HTML stream to make a copy of.
+      const PHTML & html     ///< HTML stream to make a copy of.
     ) { AssignContents(html); return *this; }
     PHTML & operator=(
-      const PString & str    // String for title in restating HTML.
+      const PString & str    ///< String for title in restating HTML.
     ) { AssignContents(str); return *this; }
     PHTML & operator=(
-      const char * cstr    // String for title in restating HTML.
+      const char * cstr    ///< String for title in restating HTML.
     ) { AssignContents(PString(cstr)); return *this; }
     PHTML & operator=(
-      char ch    // String for title in restating HTML.
+      char ch    ///< String for title in restating HTML.
     ) { AssignContents(PString(ch)); return *this; }
 
 

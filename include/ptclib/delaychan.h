@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.6  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -111,11 +114,11 @@ class PDelayChannel : public PIndirectChannel
         Write() not being called for a time by external factors.
       */
     PDelayChannel(
-      Mode mode,                  /// Mode for delay channel
-      unsigned frameDelay,        /// Delay time in milliseconds
-      PINDEX frameSize = 0,       /// Bytes to apply to the delay time.
-      unsigned maximumSlip = 250, /// Maximum slip time in milliseconds
-      unsigned minimumDelay = 10  /// Minimim delay (usually OS time slice)
+      Mode mode,                  ///< Mode for delay channel
+      unsigned frameDelay,        ///< Delay time in milliseconds
+      PINDEX frameSize = 0,       ///< Bytes to apply to the delay time.
+      unsigned maximumSlip = 250, ///< Maximum slip time in milliseconds
+      unsigned minimumDelay = 10  ///< Minimim delay (usually OS time slice)
     );
   //@}
 
@@ -134,8 +137,8 @@ class PDelayChannel : public PIndirectChannel
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
     virtual BOOL Read(
-      void * buf,   /// Pointer to a block of memory to receive the read bytes.
-      PINDEX len    /// Maximum number of bytes to read into the buffer.
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
     /**Low level write to the file channel. The write timeout is ignored for
@@ -148,8 +151,8 @@ class PDelayChannel : public PIndirectChannel
        @return TRUE if at least len bytes were written to the channel.
      */
     virtual BOOL Write(
-      const void * buf, /// Pointer to a block of memory to write.
-      PINDEX len        /// Number of bytes to write.
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
     );
   //@}
 

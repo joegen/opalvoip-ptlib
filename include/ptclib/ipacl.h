@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.11  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.10  2005/01/26 05:37:42  csoutheren
  * Added ability to remove config file support
  *
@@ -103,14 +106,14 @@ class PIpAccessControlEntry : public PObject
        according to the relative rank of the objects.
      */
     virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
+      const PObject & obj   ///< Object to compare against.
     ) const;
 
     /** Output the contents of the object to the stream. This outputs the same
        format as the AsString() function.
      */
     virtual void PrintOn(
-      ostream &strm   // Stream to print the object into.
+      ostream &strm   ///< Stream to print the object into.
     ) const;
 
     /** Input the contents of the object from the stream. This expects the
@@ -118,7 +121,7 @@ class PIpAccessControlEntry : public PObject
        Parse() function.
      */
     virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
+      istream &strm   ///< Stream to read the objects contents from.
     );
 
     /** Convert the specification to a string, that can be processed by the
@@ -156,7 +159,7 @@ class PIpAccessControlEntry : public PObject
        TRUE if entry is valid.
      */
     BOOL Parse(
-      const PString & description   // Description of the specification
+      const PString & description   ///< Description of the specification
     );
 
 
@@ -167,7 +170,7 @@ class PIpAccessControlEntry : public PObject
        TRUE if entry can match the address.
      */
     BOOL Match(
-      PIPSocket::Address & address    // Address to search for
+      PIPSocket::Address & address    ///< Address to search for
     );
 
     /**Get the domain part of entry.
@@ -241,7 +244,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
        FALSE is returned.
      */
     BOOL LoadHostsAccess(
-      const char * daemonName = NULL    // Name of "daemon" application
+      const char * daemonName = NULL    ///< Name of "daemon" application
     );
 
 #ifdef P_CONFIG_FILE
@@ -254,7 +257,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
        FALSE is returned.
      */
     BOOL Load(
-      PConfig & cfg   // Configuration file to load entries from.
+      PConfig & cfg   ///< Configuration file to load entries from.
     );
 
     /** Load entries in the list from the configuration file specified, using
@@ -267,15 +270,15 @@ class PIpAccessControlList : public PIpAccessControlList_base
        FALSE is returned.
      */
     BOOL Load(
-      PConfig & cfg,            // Configuration file to load entries from.
-      const PString & baseName  // Base name string for each entry in file.
+      PConfig & cfg,            ///< Configuration file to load entries from.
+      const PString & baseName  ///< Base name string for each entry in file.
     );
 
     /** Save entries in the list to the configuration file specified. This is
        equivalent to Save(cfg, "IP Access Control List").
      */
     void Save(
-      PConfig & cfg   // Configuration file to save entries to.
+      PConfig & cfg   ///< Configuration file to save entries to.
     );
 
     /** Save entries in the list to the configuration file specified, using
@@ -284,8 +287,8 @@ class PIpAccessControlList : public PIpAccessControlList_base
        PHTTPConfig classes.
      */
     void Save(
-      PConfig & cfg,            // Configuration file to save entries to.
-      const PString & baseName  // Base name string for each entry in file.
+      PConfig & cfg,            ///< Configuration file to save entries to.
+      const PString & baseName  ///< Base name string for each entry in file.
     );
 
 #endif // P_CONFIG_FILE
@@ -298,15 +301,15 @@ class PIpAccessControlList : public PIpAccessControlList_base
        TRUE if the entries was successfully added.
      */
     BOOL Add(
-      PIpAccessControlEntry * entry // Entry for IP match parameters
+      PIpAccessControlEntry * entry ///< Entry for IP match parameters
     );
     BOOL Add(
-      const PString & description   // Description of the IP match parameters
+      const PString & description   ///< Description of the IP match parameters
     );
     BOOL Add(
-      PIPSocket::Address address,   // IP network address
-      PIPSocket::Address mask,      // Mask for IP network
-      BOOL allow                    // Flag for if network is allowed or not
+      PIPSocket::Address address,   ///< IP network address
+      PIPSocket::Address mask,      ///< Mask for IP network
+      BOOL allow                    ///< Flag for if network is allowed or not
     );
 
     /** Remove the specified entry into the list. See the PIpAccessControlEntry
@@ -317,11 +320,11 @@ class PIpAccessControlList : public PIpAccessControlList_base
        TRUE if the entries was successfully removed.
      */
     BOOL Remove(
-      const PString & description   // Description of the IP match parameters
+      const PString & description   ///< Description of the IP match parameters
     );
     BOOL Remove(
-      PIPSocket::Address address,   // IP network address
-      PIPSocket::Address mask       // Mask for IP network
+      PIPSocket::Address address,   ///< IP network address
+      PIPSocket::Address mask       ///< Mask for IP network
     );
 
 
@@ -338,7 +341,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
     /**Find the PIpAccessControl specification for the address.
       */
     PIpAccessControlEntry * Find(
-      PIPSocket::Address address    // IP Address to find
+      PIPSocket::Address address    ///< IP Address to find
     ) const;
 
     /** Test the address/connection for if it is allowed within this access
@@ -354,10 +357,10 @@ class PIpAccessControlList : public PIpAccessControlList_base
        TRUE if the remote host address is allowed.
      */
     BOOL IsAllowed(
-      PTCPSocket & socket           // Socket to test
+      PTCPSocket & socket           ///< Socket to test
     ) const;
     BOOL IsAllowed(
-      PIPSocket::Address address    // IP Address to test
+      PIPSocket::Address address    ///< IP Address to test
     ) const;
 
 

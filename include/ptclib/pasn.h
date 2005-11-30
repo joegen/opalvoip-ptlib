@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.14  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.13  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -78,9 +81,9 @@
 //
 // define some types used by the ASN classes
 //
-typedef	PInt32		PASNInt;
-typedef DWORD		PASNUnsigned;
-typedef	DWORD           PASNOid;
+typedef PInt32  PASNInt;
+typedef DWORD   PASNUnsigned;
+typedef DWORD           PASNOid;
 
 class PASNObject;
 class PASNSequence;
@@ -108,22 +111,22 @@ class PASNObject : public PObject
        an ASN object
      */
     enum ASNType {
-      Integer,		// ASN Integer object
-      String,       // ASN Octet String object
-      ObjectID,		// ASN Object ID object
-      Sequence,		// ASN Sequence object
-      Choice,		// ASN Sequence with discriminator
-      IPAddress,    // ASN IPAddress object
-      Counter,      // ASN Counter object
-      Gauge,        // ASN Gauge object
-      TimeTicks,    // ASN TimeTicks object
-      Opaque,       // ASN Opaque object
-      NsapAddress,  // ASN NsapAddress
-      Counter64,    // ASN Counter64
-      UInteger32,   // ASN Unsigned integer 32
-	  Null,         // ASN Null
-      Unknown,		// unknown ASN object type
-      ASNTypeMax	// maximum of number of ASN object types
+      Integer,      ///< ASN Integer object
+      String,       ///< ASN Octet String object
+      ObjectID,     ///< ASN Object ID object
+      Sequence,     ///< ASN Sequence object
+      Choice,       ///< ASN Sequence with discriminator
+      IPAddress,    ///< ASN IPAddress object
+      Counter,      ///< ASN Counter object
+      Gauge,        ///< ASN Gauge object
+      TimeTicks,    ///< ASN TimeTicks object
+      Opaque,       ///< ASN Opaque object
+      NsapAddress,  ///< ASN NsapAddress
+      Counter64,    ///< ASN Counter64
+      UInteger32,   ///< ASN Unsigned integer 32
+      Null,         ///< ASN Null
+      Unknown,      ///< unknown ASN object type
+      ASNTypeMax    ///< maximum of number of ASN object types
     };
 
     /** Return a value of type <A>enum ASNType</A> which indicates the type
@@ -176,12 +179,12 @@ class PASNObject : public PObject
        print the value of the object.
     */
     virtual void PrintOn(
-      ostream & strm		// stream to print on
+      ostream & strm    ///< stream to print on
     ) const;
 
     /** Virtual function used to encode the object into ASN format */
     virtual void Encode(
-      PBYTEArray & buffer	// buffer to encode into
+      PBYTEArray & buffer  ///< buffer to encode into
     );
 
     /** Virtual function used to get the length of object when encoded into
@@ -194,85 +197,85 @@ class PASNObject : public PObject
 
     /** Encode an ASN length value */
     static void EncodeASNLength (
-      PBYTEArray & buffer,		// buffer to encode into
-      WORD length			// ASN length to encode
+      PBYTEArray & buffer,    ///< buffer to encode into
+      WORD length             ///< ASN length to encode
     );
 
     /** Return the length of an encoded ASN length value */
     static WORD GetASNLengthLength (
-      WORD length			// length to find length of
+      WORD length             ///< length to find length of
     );
 
     /** Decode an ASN length in the buffer at the given ptr. The ptr is moved
        to the byte after the end of the encoded length.
      */
     static BOOL DecodeASNLength (
-      const PBYTEArray & buffer,		// buffer to decode data from
-      PINDEX & ptr,			// ptr to decode from
-      WORD & len			// returned length
+      const PBYTEArray & buffer,  ///< buffer to decode data from
+      PINDEX & ptr,               ///< ptr to decode from
+      WORD & len                  ///< returned length
     );
 
     /** Encode a sequence header into the buffer at the specified offset. */
     static void EncodeASNSequenceStart (
-      PBYTEArray & buffer,		// buffer to encode data into
-      BYTE type,			// sequence type
-      WORD length			// length of sequence data
+      PBYTEArray & buffer,       ///< buffer to encode data into
+      BYTE type,                 ///< sequence type
+      WORD length                ///< length of sequence data
     );
 
     /** Return the encoded length of a sequence if it has the specified length */
     static WORD GetASNSequenceStartLength (
-      WORD length			// length of sequence data
+      WORD length               ///< length of sequence data
     );
 
     /** Encode an ASN object header into the buffer */
     static void EncodeASNHeader(
-      PBYTEArray & buffer,		// buffer to encode into
-      PASNObject::ASNType type,		// ASN type of the object
-      WORD length			// length of the object
+      PBYTEArray & buffer,        ///< buffer to encode into
+      PASNObject::ASNType type,   ///< ASN type of the object
+      WORD length                 ///< length of the object
     );
 
     /** Return the length of an ASN object header if the object is the specified length */
     static WORD GetASNHeaderLength (
-      WORD length			// length of object
+      WORD length              ///< length of object
     );
 
     static void EncodeASNInteger    (
-      PBYTEArray & buffer,		// buffer to encode into
-      PASNInt data,			// value to encode
-      PASNObject::ASNType type		// actual integer type
+      PBYTEArray & buffer,     ///< buffer to encode into
+      PASNInt data,            ///< value to encode
+      PASNObject::ASNType type  ///< actual integer type
     );
     // Encode an ASN integer value into the specified buffer */
 
     static void EncodeASNUnsigned (
-      PBYTEArray & buffer,		// buffer to encode into
-      PASNUnsigned data,		// value to encode
-      PASNObject::ASNType type		// actual integer type
+      PBYTEArray & buffer,     ///< buffer to encode into
+      PASNUnsigned data,       ///< value to encode
+      PASNObject::ASNType type ///< actual integer type
     );
     // Encode an ASN integer value into the specified buffer */
 
     static WORD GetASNIntegerLength (
-      PASNInt data			// value to get length of
+      PASNInt data      ///< value to get length of
     );
     // Return the length of an encoded ASN integer with the specified value 
 
     static WORD GetASNUnsignedLength (
-      PASNUnsigned data			// value to get length of
+      PASNUnsigned data   ///< value to get length of
     );
     // Return the length of an encoded ASN integer with the specified value 
 
     static BOOL DecodeASNInteger (
-      const PBYTEArray & buffer,		// buffer to decode from
-      PINDEX & ptr,			// ptr to data in buffer
-      PASNInt & value,			// returned value
-      ASNType type = Integer	        // actual integer type
+      const PBYTEArray & buffer,  ///< buffer to decode from
+      PINDEX & ptr,               ///< ptr to data in buffer
+      PASNInt & value,            ///< returned value
+      ASNType type = Integer         ///< actual integer type
     );
     // Decode an ASN integer value in the specified buffer 
 
     static BOOL DecodeASNUnsigned (
-      const PBYTEArray & buffer,		// buffer to decode from
-      PINDEX & ptr,			// ptr to data in buffer
-      PASNUnsigned & value,		// returned value
-      ASNType type = TimeTicks	        // actual integer type
+      const PBYTEArray & buffer,  ///< buffer to decode from
+      PINDEX & ptr,               ///< ptr to data in buffer
+      PASNUnsigned & value,       ///< returned value
+      ASNType type = TimeTicks         ///< actual integer type
     );
     // Decode an ASN integer value in the specified buffer 
 

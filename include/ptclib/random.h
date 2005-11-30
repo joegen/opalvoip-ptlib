@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.6  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -82,13 +85,13 @@ class PRandom
        get the same sequence of values on each run. Useful for debugging.
       */
     PRandom(
-      DWORD seed    /// New seed value, must not be zero
+      DWORD seed    ///< New seed value, must not be zero
     );
 
     /**Set the seed for the random number generator.
       */
     void SetSeed(
-      DWORD seed    /// New seed value, must not be zero
+      DWORD seed    ///< New seed value, must not be zero
     );
 
     /**Get the next psuedo-random number in sequence.
@@ -111,7 +114,7 @@ class PRandom
 
   protected:
     enum {
-      RandBits = 8, // I recommend 8 for crypto, 4 for simulations
+      RandBits = 8, ///< I recommend 8 for crypto, 4 for simulations
       RandSize = 1<<RandBits
     };
 

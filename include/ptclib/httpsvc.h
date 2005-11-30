@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.45  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.44  2003/07/15 11:17:45  csoutheren
  * Added additional constructor for PServiceHTTPString,
  *   Thanks to Federico Pinna
@@ -213,29 +216,29 @@ class PHTTPServiceProcess : public PServiceProcess
 
       WORD majorVersion;
       WORD minorVersion;
-      CodeStatus buildStatus;    // AlphaCode, BetaCode or ReleaseCode
+      CodeStatus buildStatus;    ///< AlphaCode, BetaCode or ReleaseCode
       WORD buildNumber;
       const char * compilationDate;
 
-      PTEACypher::Key productKey;  // Poduct key for registration
-      const char * securedKeys[MaxSecuredKeys]; // Product secured keys for registration
+      PTEACypher::Key productKey;  ///< Poduct key for registration
+      const char * securedKeys[MaxSecuredKeys]; ///< Product secured keys for registration
       PINDEX securedKeyCount;
 
-      PTEACypher::Key signatureKey;   // Signature key for encryption of HTML files
+      PTEACypher::Key signatureKey;   ///< Signature key for encryption of HTML files
 
-      const char * manufHomePage; // WWW address of manufacturers home page
-      const char * email;         // contact email for manufacturer
-      const char * productHTML;   // HTML for the product name, if NULL defaults to
-                                  //   the productName variable.
-      const char * gifHTML;       // HTML to show GIF image in page headers, if NULL
-                                  //   then the following are used to build one
-      const char * gifFilename;   // File name for the products GIF file
-      int gifWidth;               // Size of GIF image, if zero then none is used
-      int gifHeight;              //   in the generated HTML.
+      const char * manufHomePage; ///< WWW address of manufacturers home page
+      const char * email;         ///< contact email for manufacturer
+      const char * productHTML;   ///< HTML for the product name, if NULL defaults to
+                                  ///<   the productName variable.
+      const char * gifHTML;       ///< HTML to show GIF image in page headers, if NULL
+                                  ///<   then the following are used to build one
+      const char * gifFilename;   ///< File name for the products GIF file
+      int gifWidth;               ///< Size of GIF image, if zero then none is used
+      int gifHeight;              ///<   in the generated HTML.
 
-      const char * copyrightHolder;   // Name of copyright holder
-      const char * copyrightHomePage; // Home page for copyright holder
-      const char * copyrightEmail;    // E-Mail address for copyright holder
+      const char * copyrightHolder;   ///< Name of copyright holder
+      const char * copyrightHomePage; ///< Home page for copyright holder
+      const char * copyrightEmail;    ///< E-Mail address for copyright holder
     };
 
     PHTTPServiceProcess(const Info & inf);
@@ -352,14 +355,14 @@ class PConfigPage : public PHTTPConfig
     );
 
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
   protected:
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 
     PHTTPServiceProcess & process;
@@ -395,14 +398,14 @@ class PConfigSectionsPage : public PHTTPConfigSectionList
     );
 
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
   protected:
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 
     PHTTPServiceProcess & process;
@@ -421,18 +424,18 @@ class PRegisterPage : public PConfigPage
     );
 
     PString LoadText(
-      PHTTPRequest & request        // Information on this request.
+      PHTTPRequest & request        ///< Information on this request.
     );
     void OnLoadedText(PHTTPRequest & request, PString & text);
 
     virtual BOOL Post(
-      PHTTPRequest & request,       // Information on this request.
-      const PStringToString & data, // Variables in the POST data.
-      PHTML & replyMessage          // Reply message for post.
+      PHTTPRequest & request,       ///< Information on this request.
+      const PStringToString & data, ///< Variables in the POST data.
+      PHTML & replyMessage          ///< Reply message for post.
     );
 
     virtual void AddFields(
-      const PString & prefix        // Prefix on field names
+      const PString & prefix        ///< Prefix on field names
     ) = 0;
 
   protected:
@@ -547,7 +550,7 @@ class PServiceHTTPString : public PHTTPString
 
   protected:
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 };
 
@@ -569,7 +572,7 @@ class PServiceHTTPFile : public PHTTPFile
 
   protected:
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 
     BOOL needSignature;
@@ -589,7 +592,7 @@ class PServiceHTTPDirectory : public PHTTPDirectory
 
   protected:
     virtual BOOL GetExpirationDate(
-      PTime & when          // Time that the resource expires
+      PTime & when          ///< Time that the resource expires
     );
 
     BOOL needSignature;

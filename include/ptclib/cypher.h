@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.23  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.22  2005/01/26 05:37:40  csoutheren
  * Added ability to remove config file support
  *
@@ -300,21 +303,21 @@ class PMessageDigest : public PObject
     virtual void Start() = 0;
 
     virtual void Process(
-      const void * dataBlock,  /// Pointer to data to be part of the MD5
-      PINDEX length            /// Length of the data block.
+      const void * dataBlock,  ///< Pointer to data to be part of the MD5
+      PINDEX length            ///< Length of the data block.
     );
 
     /** Incorporate the specified data into the message digest. */
     virtual void Process(
-      const PString & str      /// String to be part of the MD5
+      const PString & str      ///< String to be part of the MD5
     );
     /** Incorporate the specified data into the message digest. */
     virtual void Process(
-      const char * cstr        /// C String to be part of the MD5
+      const char * cstr        ///< C String to be part of the MD5
     );
     /** Incorporate the specified data into the message digest. */
     virtual void Process(
-      const PBYTEArray & data  /// Data block to be part of the MD5
+      const PBYTEArray & data  ///< Data block to be part of the MD5
     );
 
     /**
@@ -326,17 +329,17 @@ class PMessageDigest : public PObject
     */
     virtual PString CompleteDigest();
     virtual void CompleteDigest(
-      Result & result   /// The resultant 128 bit MD5 code
+      Result & result   ///< The resultant 128 bit MD5 code
     );
 
   protected:
     virtual void InternalProcess(
-       const void * dataBlock,  /// Pointer to data to be part of the MD5
-      PINDEX length            /// Length of the data block.
+       const void * dataBlock,  ///< Pointer to data to be part of the MD5
+      PINDEX length            ///< Length of the data block.
     ) = 0;
 
     virtual void InternalCompleteDigest(
-      Result & result   /// The resultant 128 bit MD5 code
+      Result & result   ///< The resultant 128 bit MD5 code
     ) = 0;
 };
 
@@ -359,35 +362,35 @@ class PMessageDigest5 : public PMessageDigest
 
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const PString & str      /// String to be encoded to MD5
+      const PString & str      ///< String to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PString & str,     /// String to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const PString & str,     ///< String to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const char * cstr        /// C String to be encoded to MD5
+      const char * cstr        ///< C String to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const char * cstr,       /// C String to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const char * cstr,       ///< C String to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const PBYTEArray & data  /// Data block to be encoded to MD5
+      const PBYTEArray & data  ///< Data block to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PBYTEArray & data, /// Data block to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const PBYTEArray & data, ///< Data block to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const void * dataBlock,  /// Pointer to data to be encoded to MD5
-      PINDEX length            /// Length of the data block.
+      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
+      PINDEX length            ///< Length of the data block.
     );
     /** Encode the data in memory to and MD5 hash value.
     
@@ -395,9 +398,9 @@ class PMessageDigest5 : public PMessageDigest
        Base64 encoded MD5 code for the processed data.
     */
     static void Encode(
-      const void * dataBlock,  /// Pointer to data to be encoded to MD5
-      PINDEX length,           /// Length of the data block.
-      Result & result            /// The resultant 128 bit MD5 code
+      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
+      PINDEX length,           ///< Length of the data block.
+      Result & result            ///< The resultant 128 bit MD5 code
     );
 
     // backwards compatibility functions
@@ -409,18 +412,18 @@ class PMessageDigest5 : public PMessageDigest
 
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PString & str,     /// String to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      const PString & str,     ///< String to be encoded to MD5
+      Code & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const char * cstr,       /// C String to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      const char * cstr,       ///< C String to be encoded to MD5
+      Code & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PBYTEArray & data, /// Data block to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      const PBYTEArray & data, ///< Data block to be encoded to MD5
+      Code & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value.
    
@@ -428,23 +431,23 @@ class PMessageDigest5 : public PMessageDigest
        Base64 encoded MD5 code for the processed data.
     */
     static void Encode(
-      const void * dataBlock,  /// Pointer to data to be encoded to MD5
-      PINDEX length,           /// Length of the data block.
-      Code & result            /// The resultant 128 bit MD5 code
+      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
+      PINDEX length,           ///< Length of the data block.
+      Code & result            ///< The resultant 128 bit MD5 code
     );
     virtual void Complete(
-      Code & result   /// The resultant 128 bit MD5 code
+      Code & result   ///< The resultant 128 bit MD5 code
     );
     virtual PString Complete();
 
   protected:
     virtual void InternalProcess(
-       const void * dataBlock,  /// Pointer to data to be part of the MD5
-      PINDEX length            /// Length of the data block.
+       const void * dataBlock,  ///< Pointer to data to be part of the MD5
+      PINDEX length            ///< Length of the data block.
     );
 
     virtual void InternalCompleteDigest(
-      Result & result   /// The resultant 128 bit MD5 code
+      Result & result   ///< The resultant 128 bit MD5 code
     );
 
   private:
@@ -478,35 +481,35 @@ class PMessageDigestSHA1 : public PMessageDigest
 
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const PString & str      /// String to be encoded to MD5
+      const PString & str      ///< String to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PString & str,     /// String to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const PString & str,     ///< String to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const char * cstr        /// C String to be encoded to MD5
+      const char * cstr        ///< C String to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const char * cstr,       /// C String to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const char * cstr,       ///< C String to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const PBYTEArray & data  /// Data block to be encoded to MD5
+      const PBYTEArray & data  ///< Data block to be encoded to MD5
     );
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
-      const PBYTEArray & data, /// Data block to be encoded to MD5
-      Result & result            /// The resultant 128 bit MD5 code
+      const PBYTEArray & data, ///< Data block to be encoded to MD5
+      Result & result            ///< The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
-      const void * dataBlock,  /// Pointer to data to be encoded to MD5
-      PINDEX length            /// Length of the data block.
+      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
+      PINDEX length            ///< Length of the data block.
     );
     /** Encode the data in memory to and MD5 hash value.
     
@@ -514,19 +517,19 @@ class PMessageDigestSHA1 : public PMessageDigest
        Base64 encoded MD5 code for the processed data.
     */
     static void Encode(
-      const void * dataBlock,  /// Pointer to data to be encoded to MD5
-      PINDEX length,           /// Length of the data block.
-      Result & result            /// The resultant 128 bit MD5 code
+      const void * dataBlock,  ///< Pointer to data to be encoded to MD5
+      PINDEX length,           ///< Length of the data block.
+      Result & result            ///< The resultant 128 bit MD5 code
     );
 
   protected:
     virtual void InternalProcess(
-       const void * dataBlock,  /// Pointer to data to be part of the MD5
-      PINDEX length            /// Length of the data block.
+       const void * dataBlock,  ///< Pointer to data to be part of the MD5
+      PINDEX length            ///< Length of the data block.
     );
 
     void InternalCompleteDigest(
-      Result & result   /// The resultant 128 bit MD5 code
+      Result & result   ///< The resultant 128 bit MD5 code
     );
 
   private:
@@ -559,21 +562,21 @@ class PCypher : public PObject
   // New functions for class
     /**Encode the data. */
     PString Encode(
-      const PString & str       /// Clear text string to be encoded.
+      const PString & str       ///< Clear text string to be encoded.
     );
     /**Encode the data. */
     PString Encode(
-      const PBYTEArray & clear  /// Clear text binary data to be encoded.
+      const PBYTEArray & clear  ///< Clear text binary data to be encoded.
     );
     /**Encode the data. */
     PString Encode(
-      const void * data,        /// Clear text binary data to be encoded.
-      PINDEX length             /// Number of bytes of data to be encoded.
+      const void * data,        ///< Clear text binary data to be encoded.
+      PINDEX length             ///< Number of bytes of data to be encoded.
     );
     /**Encode the data. */
     void Encode(
-      const PBYTEArray & clear, /// Clear text binary data to be encoded.
-      PBYTEArray & coded        /// Encoded data.
+      const PBYTEArray & clear, ///< Clear text binary data to be encoded.
+      PBYTEArray & coded        ///< Encoded data.
     );
     /**Encode the data.
     The data is encoded using the algorithm embodied by the descendent class
@@ -598,29 +601,29 @@ class PCypher : public PObject
 
     /**Decode the data. */
     PString Decode(
-      const PString & cypher   /// Base64 Cypher text string to be decoded.
+      const PString & cypher   ///< Base64 Cypher text string to be decoded.
     );
     /**Decode the data. */
     BOOL Decode(
-      const PString & cypher,  /// Base64 Cypher text string to be decoded.
-      PString & clear          /// Clear text string decoded.
+      const PString & cypher,  ///< Base64 Cypher text string to be decoded.
+      PString & clear          ///< Clear text string decoded.
     );
     /**Decode the data. */
     BOOL Decode(
-      const PString & cypher,  /// Base64 Cypher text string to be decoded.
-      PBYTEArray & clear       /// Clear text binary data decoded.
+      const PString & cypher,  ///< Base64 Cypher text string to be decoded.
+      PBYTEArray & clear       ///< Clear text binary data decoded.
     );
     /**Decode the data. */
     PINDEX Decode(
-      const PString & cypher,  /// Base64 Cypher text string to be decoded.
-      void * data,             /// Clear text binary data decoded.
-      PINDEX length            /// Maximum number of bytes of data decoded.
+      const PString & cypher,  ///< Base64 Cypher text string to be decoded.
+      void * data,             ///< Clear text binary data decoded.
+      PINDEX length            ///< Maximum number of bytes of data decoded.
     );
     /**Decode the data. */
     PINDEX Decode(
-      const PBYTEArray & coded, /// Encoded data (cyphertext).
-      void * data,              /// Clear text binary data decoded.
-      PINDEX length             /// Maximum number of bytes of data decoded.
+      const PBYTEArray & coded, ///< Encoded data (cyphertext).
+      void * data,              ///< Clear text binary data decoded.
+      PINDEX length             ///< Maximum number of bytes of data decoded.
     );
     /**Decode the data.
     Decode the data using the algorithm embodied by the descendent class
@@ -638,8 +641,8 @@ class PCypher : public PObject
       decoded string.
     */
     BOOL Decode(
-      const PBYTEArray & coded, /// Encoded data (cyphertext).
-      PBYTEArray & clear       /// Clear text binary data decoded.
+      const PBYTEArray & coded, ///< Encoded data (cyphertext).
+      PBYTEArray & clear       ///< Clear text binary data decoded.
     );
 
 
@@ -648,33 +651,33 @@ class PCypher : public PObject
     Create a new encryption object instance.
     */
     PCypher(
-      PINDEX blockSize,          /// Size of encryption blocks (in bits)
-      BlockChainMode chainMode   /// Block chain mode
+      PINDEX blockSize,          ///< Size of encryption blocks (in bits)
+      BlockChainMode chainMode   ///< Block chain mode
     );
     PCypher(
-      const void * keyData,    /// Key for the encryption/decryption algorithm.
-      PINDEX keyLength,        /// Length of the key.
-      PINDEX blockSize,        /// Size of encryption blocks (in bits)
-      BlockChainMode chainMode /// Block chain mode
+      const void * keyData,    ///< Key for the encryption/decryption algorithm.
+      PINDEX keyLength,        ///< Length of the key.
+      PINDEX blockSize,        ///< Size of encryption blocks (in bits)
+      BlockChainMode chainMode ///< Block chain mode
     );
 
 
     /** Initialise the encoding/decoding sequence. */
     virtual void Initialise(
-      BOOL encoding   /// Flag for encoding/decoding sequence about to start.
+      BOOL encoding   ///< Flag for encoding/decoding sequence about to start.
     ) = 0;
 
     /** Encode an n bit block of memory according to the encryption algorithm. */
     virtual void EncodeBlock(
-      const void * in,    /// Pointer to clear n bit block.
-      void * out          /// Pointer to coded n bit block.
+      const void * in,    ///< Pointer to clear n bit block.
+      void * out          ///< Pointer to coded n bit block.
     ) = 0;
 
 
     /** Dencode an n bit block of memory according to the encryption algorithm. */
     virtual void DecodeBlock(
-      const void * in,  /// Pointer to coded n bit block.
-      void * out        /// Pointer to clear n bit block.
+      const void * in,  ///< Pointer to coded n bit block.
+      void * out        ///< Pointer to clear n bit block.
     ) = 0;
 
 
@@ -708,47 +711,47 @@ class PTEACypher : public PCypher
     automatically generates a new, random, key.
     */
     PTEACypher(
-      BlockChainMode chainMode = ElectronicCodebook   /// Block chain mode
+      BlockChainMode chainMode = ElectronicCodebook   ///< Block chain mode
     );
     PTEACypher(
-      const Key & keyData,     /// Key for the encryption/decryption algorithm.
-      BlockChainMode chainMode = ElectronicCodebook   /// Block chain mode
+      const Key & keyData,     ///< Key for the encryption/decryption algorithm.
+      BlockChainMode chainMode = ElectronicCodebook   ///< Block chain mode
     );
 
 
     /** Set the key used by this encryption method. */
     void SetKey(
-      const Key & newKey    /// Variable to take the key used by cypher.
+      const Key & newKey    ///< Variable to take the key used by cypher.
     );
 
     /** Get the key used by this encryption method. */
     void GetKey(
-      Key & newKey    /// Variable to take the key used by cypher.
+      Key & newKey    ///< Variable to take the key used by cypher.
     ) const;
 
 
     /** Generate a new key suitable for use for encryption using random data. */
     static void GenerateKey(
-      Key & newKey    /// Variable to take the newly generated key.
+      Key & newKey    ///< Variable to take the newly generated key.
     );
 
 
   protected:
     /** Initialise the encoding/decoding sequence. */
     virtual void Initialise(
-      BOOL encoding   /// Flag for encoding/decoding sequence about to start.
+      BOOL encoding   ///< Flag for encoding/decoding sequence about to start.
     );
 
     /** Encode an n bit block of memory according to the encryption algorithm. */
     virtual void EncodeBlock(
-      const void * in,  /// Pointer to clear n bit block.
-      void * out        /// Pointer to coded n bit block.
+      const void * in,  ///< Pointer to clear n bit block.
+      void * out        ///< Pointer to coded n bit block.
     );
 
     /** Decode an n bit block of memory according to the encryption algorithm. */
     virtual void DecodeBlock(
-      const void * in,  /// Pointer to coded n bit block.
-      void * out        /// Pointer to clear n bit block.
+      const void * in,  ///< Pointer to coded n bit block.
+      void * out        ///< Pointer to clear n bit block.
     );
 
   private:

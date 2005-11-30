@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.9  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2004/06/24 07:36:24  csoutheren
  * Added definitions of T_SRV and T_NAPTR for hosts that do not have these
  *
@@ -95,14 +98,14 @@
 #endif
 
 
-#define	DNS_STATUS		int
-#define	DNS_TYPE_SRV		T_SRV
-#define	DNS_TYPE_MX		T_MX
-#define	DNS_TYPE_A		T_A
-#define	DNS_TYPE_NAPTR		T_NAPTR
-#define	DnsFreeRecordList	0
-#define	DNS_QUERY_STANDARD	0
-#define	DNS_QUERY_BYPASS_CACHE	0
+#define DNS_STATUS  int
+#define DNS_TYPE_SRV  T_SRV
+#define DNS_TYPE_MX  T_MX
+#define DNS_TYPE_A  T_A
+#define DNS_TYPE_NAPTR  T_NAPTR
+#define DnsFreeRecordList 0
+#define DNS_QUERY_STANDARD 0
+#define DNS_QUERY_BYPASS_CACHE 0
 
 typedef struct _DnsAData {
   DWORD IpAddress;
@@ -155,8 +158,8 @@ class DnsRecord {
     WORD        wDataLength;
 
     union {
-      DWORD               DW;     // flags as DWORD
-      DNS_RECORD_FLAGS    S;      // flags as structure
+      DWORD               DW;     ///< flags as DWORD
+      DNS_RECORD_FLAGS    S;      ///< flags as structure
     } Flags;
 
     union {
@@ -173,11 +176,11 @@ typedef DnsRecord * PDNS_RECORD;
 extern void DnsRecordListFree(PDNS_RECORD rec, int FreeType);
 
 extern DNS_STATUS DnsQuery_A(const char * service,
-		      WORD requestType,
-		      DWORD options,
-		      void *,
-		      PDNS_RECORD * results,
-		      void *);
+          WORD requestType,
+          DWORD options,
+          void *,
+          PDNS_RECORD * results,
+          void *);
 
 
 #endif // P_HAS_RESOLVER

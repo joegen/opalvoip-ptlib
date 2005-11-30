@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.7  2005/11/30 12:47:37  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.6  2004/05/09 07:23:46  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -158,14 +161,14 @@ namespace XMPP
           pointer to a XMPP::IQ)
        */
       virtual BOOL DiscoverItems(
-                    const PString& jid,           // JID to which a query will be send
+                    const PString& jid,           ///< JID to which a query will be send
                     PNotifier * responseHandler,
-                    const PString& node = PString::Empty()); // Optional node
+                    const PString& node = PString::Empty()); ///< Optional node
 
       virtual BOOL DiscoverInfo(
-                    const PString& jid,           // JID to which a query will be send
+                    const PString& jid,           ///< JID to which a query will be send
                     PNotifier * responseHandler,
-                    const PString& node = PString::Empty()); // Optional node
+                    const PString& node = PString::Empty()); ///< Optional node
 
     protected:
       virtual void    OnOpen(Stream& stream, INT);
@@ -231,7 +234,7 @@ namespace XMPP
         RegStarted,
         TLSStarted,
         SASLStarted,
-        NonSASLStarted, // non SASL authentication (JEP-0078)
+        NonSASLStarted, ///< non SASL authentication (JEP-0078)
         StreamSent,
         BindSent,
         SessionSent,
