@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2005/11/30 12:47:40  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2005/02/13 23:04:18  csoutheren
  * Put isrfc1918 option handling before first test (doh!)
  *
@@ -81,8 +84,8 @@ void IPV6Test::Main()
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-	         "v-version."
-	     );
+             "v-version."
+       );
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -92,11 +95,11 @@ void IPV6Test::Main()
 
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
-	 << "Manufacturer: " << GetManufacturer() << endl
-	 << "Version     : " << GetVersion(TRUE) << endl
-	 << "System      : " << GetOSName() << '-'
-	 << GetOSHardware() << ' '
-	 << GetOSVersion() << endl;
+         << "Manufacturer: " << GetManufacturer() << endl
+         << "Version     : " << GetVersion(TRUE) << endl
+         << "System      : " << GetOSName() << '-'
+         << GetOSHardware() << ' '
+         << GetOSVersion() << endl;
     return;
   }
 
@@ -215,8 +218,9 @@ void IPV6Test::Main()
     // test #8 - check if interface table contains IPV6 addresses
     cout << "test #8: check if interface table contains IPV6 addresses";
 
-  	PIPSocket::InterfaceTable if_table;
-	PIPSocket::GetInterfaceTable( if_table );
+    PIPSocket::InterfaceTable if_table;
+    PIPSocket::GetInterfaceTable( if_table );
+
     // Display the interface table
     cout << endl;
     cout << "The interface table has " << if_table.GetSize()
@@ -226,7 +230,7 @@ void IPV6Test::Main()
       PIPSocket::InterfaceEntry if_entry = if_table[i];
       cout << i << " " << if_entry << endl;
     }
-	cout << "manual check";
+    cout << "manual check";
     cout << endl;
   }
   {

@@ -11,6 +11,9 @@
  *
  *
  * $Log: serial.cxx,v $
+ * Revision 1.5  2005/11/30 12:47:40  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2005/03/18 21:06:09  dereksmithies
  * Add help messages. Enable different flow control options.
  *
@@ -126,7 +129,7 @@ void Serial::Main()
              "-flowcontrol:"
              "-hardwareport:"
              "v-version."
-	     "h-help."
+             "h-help."
           , FALSE);
 
 #if PMEMORY_CHECK
@@ -157,20 +160,20 @@ void Serial::Main()
       cout << endl
 #if PTRACING
            <<  "-t   --trace                     Debugging. Using more times for more detail" << endl
-	   <<  "-o   --output                    name of trace output file. If not specified, goes to stdout" << endl
+           <<  "-o   --output                    name of trace output file. If not specified, goes to stdout" << endl
 #endif
 #ifdef PMEMORY_CHECK
            <<  "     --setallocationbreakpoint   stop program on allocation of memory block number" << endl
 #endif
            <<  "     --baud                      Set the data rate for serial comms" << endl
-	   <<  "     --databits                  Set the number of data bits (5, 6, 7, 8)" << endl
-	   <<  "     --parity                    Set parity, even, odd or none " << endl
-	   <<  "     --stopbits                  Set the number of stop bits (0, 1, 2) " << endl
+           <<  "     --databits                  Set the number of data bits (5, 6, 7, 8)" << endl
+           <<  "     --parity                    Set parity, even, odd or none " << endl
+           <<  "     --stopbits                  Set the number of stop bits (0, 1, 2) " << endl
            <<  "     --flowcontrol               Specifiy flow control, (none rtscts, xonxoff)" << endl
            <<  "     --hardwareport              Which serial port to use, 0, 1, 2..." << endl
            <<  "-v   --version                   Print version information and exit" << endl
-	   <<  "-h   --help                      Write this help out.                   " << endl
-	   << endl;
+           <<  "-h   --help                      Write this help out.                   " << endl
+           << endl;
       return;
   }
 
@@ -199,147 +202,146 @@ void Serial::Main()
 void Serial::HandleSerialInput()
 {
 #define MAXM 1000
-    char buffer[MAXM];
-    PString str;
-    BOOL found = FALSE;
+  char buffer[MAXM];
+  PString str;
+  BOOL found = FALSE;
 
-    while(serial.IsOpen()) {
-	memset(buffer, 0, MAXM);
-        serial.Read(buffer, MAXM);
+  while(serial.IsOpen()) {
+    memset(buffer, 0, MAXM);
+    serial.Read(buffer, MAXM);
 
-	if (endNow) {
+    if (endNow) {
 	    PTRACE(3, "End of thread to handle serial input");
 	    return;
-	}
+	  }
 
-        PINDEX len = serial.GetLastReadCount();
-        if (len != 0) {
+    PINDEX len = serial.GetLastReadCount();
+    if (len != 0) {
 	    buffer[len] = 0;
 	    PTRACE(1, "Read the string \"" << buffer << "\" from the serial port");
-            str += PString(buffer);
+      str += PString(buffer);
 	    if (str.Find("\n") != P_MAX_INDEX)
-		found = TRUE;
-        }
-
-        PINDEX err = serial.GetErrorCode();
-        if ((err != PChannel::NoError) && (err != PChannel::Timeout)) {
-            PTRACE(1, "get data from serial port, failed, error is " << serial.GetErrorText());
-            cout << "get data from serial port, failed, error is " << serial.GetErrorText() << endl;
-        }
-
-        if (found) {
-	    str.Replace("\n", "");	    
-            PTRACE(1, "Read the message \"" << str << "\"");
-	    cout << "have read the message \"" << str << "\" from the serial port" << endl;
-	    str = "";
-	    found = FALSE;
-        }
+		    found = TRUE;
     }
+
+    PINDEX err = serial.GetErrorCode();
+    if ((err != PChannel::NoError) && (err != PChannel::Timeout)) {
+      PTRACE(1, "get data from serial port, failed, error is " << serial.GetErrorText());
+      cout << "get data from serial port, failed, error is " << serial.GetErrorText() << endl;
+    }
+
+    if (found) {
+	    str.Replace("\n", "");	    
+      PTRACE(1, "Read the message \"" << str << "\"");
+      cout << "have read the message \"" << str << "\" from the serial port" << endl;
+      str = "";
+      found = FALSE;
+    }
+  }
 }
 
 BOOL Serial::Initialise(PConfigArgs & args)
 {
-    if (!args.HasOption("baud")) {
-	baud = 4800;
-	cout << "Baud not specifed.          Using 4800" << endl;
-    } else {
-	baud = args.GetOptionString("baud").AsInteger();
-	cout << "Baud specified.             Using " << baud << endl;
-    }
+  if (!args.HasOption("baud")) {
+    baud = 4800;
+	  cout << "Baud not specifed.          Using 4800" << endl;
+  } else {
+	  baud = args.GetOptionString("baud").AsInteger();
+	  cout << "Baud specified.             Using " << baud << endl;
+  }
 
-    if (!args.HasOption("databits")) {
-	cout << "databits not specified.     Using 8" << endl;
-	dataBits = 1;
-    } else {
-	dataBits = args.GetOptionString("databits").AsInteger();
-	cout << "databits specified.         Using " << dataBits << endl;
-    }
+  if (!args.HasOption("databits")) {
+  	cout << "databits not specified.     Using 8" << endl;
+	  dataBits = 1;
+  } else {
+	  dataBits = args.GetOptionString("databits").AsInteger();
+	  cout << "databits specified.         Using " << dataBits << endl;
+  }
 
-    if (!args.HasOption("parity")) {
-	cout << "parity not specified.       Using \"odd\"" << endl;
-	parity = "odd";
-    } else {
-	parity = args.GetOptionString("parity");
-	cout << "parity specified            Using \"" << parity << "\"" << endl;
-    }
+  if (!args.HasOption("parity")) {
+    cout << "parity not specified.       Using \"odd\"" << endl;
+    parity = "odd";
+  } else {
+	  parity = args.GetOptionString("parity");
+	  cout << "parity specified            Using \"" << parity << "\"" << endl;
+  }
 
-    if (!args.HasOption("stopbits")) {
-	cout << "stopbits not specified.     Using 1" << endl;
-	stopBits = 1;
-    } else {
-	stopBits = args.GetOptionString("stopbits").AsInteger();
-	cout << "stopbits specified.         Using " << stopBits << endl;
-    }
+  if (!args.HasOption("stopbits")) {
+	  cout << "stopbits not specified.     Using 1" << endl;
+	  stopBits = 1;
+  } else {
+	  stopBits = args.GetOptionString("stopbits").AsInteger();
+	  cout << "stopbits specified.         Using " << stopBits << endl;
+  }
 
-    PString flow;
-    if (!args.HasOption("flowcontrol")) {
-	cout << "Flow control not specified. Flow control set to XonXoff" << endl;
-	flow = "XonXoff";
-    } else {
-	flow = args.GetOptionString("flowcontrol");
-	cout << "Flow control is specified.  Flow control is set to " << flow << endl;
-    }
+  PString flow;
+  if (!args.HasOption("flowcontrol")) {
+	  cout << "Flow control not specified. Flow control set to XonXoff" << endl;
+	  flow = "XonXoff";
+  } else {
+	  flow = args.GetOptionString("flowcontrol");
+	  cout << "Flow control is specified.  Flow control is set to " << flow << endl;
+  }
 
-    if ((flow *= "xonxoff") || (flow *= "rtscts") || (flow *= "none"))
-	flowControlString = flow;
-    else {
-	cout << "Valid args to flowcontrol are \"XonXoff\" or \"RtsCts\" or \"none\"" << endl;
-	return FALSE;
-    }
+  if ((flow *= "xonxoff") || (flow *= "rtscts") || (flow *= "none"))
+	  flowControlString = flow;
+  else {
+	  cout << "Valid args to flowcontrol are \"XonXoff\" or \"RtsCts\" or \"none\"" << endl;
+	  return FALSE;
+  }
     
-    if (!args.HasOption("hardwareport")) {
-	cout << "Hardware port is not set.   Using 0 - the first hardware port" << endl;
-	hardwarePort = 0;
-    } else
-	hardwarePort = args.GetOptionString("hardwareport").AsInteger();
-    
+  if (!args.HasOption("hardwareport")) {
+	  cout << "Hardware port is not set.   Using 0 - the first hardware port" << endl;
+	  hardwarePort = 0;
+  } else
+	  hardwarePort = args.GetOptionString("hardwareport").AsInteger();
     
     PStringList names = serial.GetPortNames();
     PStringStream allNames;
     for(PINDEX i = 0; i < names.GetSize(); i++)
-	allNames << names[i] << " ";
+      allNames << names[i] << " ";
     PTRACE(1, "available serial ports are " << allNames);
     
     PString portName;
     if (hardwarePort >= names.GetSize()) {
-	cout << "hardware port is too large, list is only " << names.GetSize() << " long" << endl;
-	return FALSE;
+      cout << "hardware port is too large, list is only " << names.GetSize() << " long" << endl;
+	    return FALSE;
     }
     portName = names[hardwarePort];
     
     PSerialChannel::Parity pValue = PSerialChannel::DefaultParity;
     if (parity *= "none")
-	pValue = PSerialChannel::NoParity;
+      pValue = PSerialChannel::NoParity;
     if (parity *= "even")
-	pValue = PSerialChannel::EvenParity;
+      pValue = PSerialChannel::EvenParity;
     if (parity *= "odd")
-	pValue = PSerialChannel::OddParity;
+      pValue = PSerialChannel::OddParity;
     if (pValue == PSerialChannel::DefaultParity) {
-	cout << "Parity value of " << parity << " could not be interpreted" << endl;
-	return FALSE;
+      cout << "Parity value of " << parity << " could not be interpreted" << endl;
+      return FALSE;
     }
     
     PSerialChannel::FlowControl flowControl = PSerialChannel::DefaultFlowControl;
     if (flowControlString *= "xonxoff"){
-	flowControl = PSerialChannel::XonXoff;
-	PTRACE(3, "Using xonxoff flow control");
+      flowControl = PSerialChannel::XonXoff;
+      PTRACE(3, "Using xonxoff flow control");
     }
 
     if (flowControlString *= "rtscts") {
-	flowControl = PSerialChannel::RtsCts;
-	PTRACE(3, "Using rts cts flow conrol ");
+      flowControl = PSerialChannel::RtsCts;
+      PTRACE(3, "Using rts cts flow conrol ");
     }
 
     if (flowControlString *= "none") {
-	flowControl = PSerialChannel::NoFlowControl;
-	PTRACE(3, "Not using any flow control of any sort");
+      flowControl = PSerialChannel::NoFlowControl;
+      PTRACE(3, "Not using any flow control of any sort");
     }
     
     if (!serial.Open(portName, baud, dataBits, pValue, stopBits, flowControl, flowControl)) {
-	cout << "Failed to open serial port " << endl;
-	cout << "Error code is " << serial.GetErrorText() << endl;
-	cout << "Failed in attempt to open port  /dev/" << portName << endl;
-	return FALSE;
+      cout << "Failed to open serial port " << endl;
+      cout << "Error code is " << serial.GetErrorText() << endl;
+      cout << "Failed in attempt to open port  /dev/" << portName << endl;
+      return FALSE;
     }
     
     
@@ -348,7 +350,6 @@ BOOL Serial::Initialise(PConfigArgs & args)
 
 void Serial::HandleConsoleInput()
 {
-
   PTRACE(2, "Serial\tUser interface thread started.");
 
   PStringStream help;
@@ -370,31 +371,29 @@ void Serial::HandleConsoleInput()
     
     PString str(oneLine);    
     if (str.GetLength() < 1)
-	continue;
+      continue;
 
     BOOL helped = FALSE;
     if (str.GetLength() == 2) {
-	char ch = str.ToLower()[0];
-	
-	if ((ch == '?') || (ch == 'h')) {
-	    helped = TRUE;
-	    PError << help << endl;
-	}
+      char ch = str.ToLower()[0];
 
-	if ((ch == 'x') || (ch == 'q')) {
-	    PTRACE(3, "\nEnd of thread to read from keyboard ");
-	    endNow = TRUE;
-	    return;
-	}
+      if ((ch == '?') || (ch == 'h')) {
+        helped = TRUE;
+        PError << help << endl;
+	    }
 
+      if ((ch == 'x') || (ch == 'q')) {
+	      PTRACE(3, "\nEnd of thread to read from keyboard ");
+        endNow = TRUE;
+        return;
+      }
     }
 
     if (!helped) {
-	    PTRACE(1, "Serial\t Write the message\"" << str << "\" to the serial port");
-	    serial.Write(str.GetPointer(), str.GetLength());
-	    continue;
+      PTRACE(1, "Serial\t Write the message\"" << str << "\" to the serial port");
+      serial.Write(str.GetPointer(), str.GetLength());
+      continue;
     }
-
   }
 }
  

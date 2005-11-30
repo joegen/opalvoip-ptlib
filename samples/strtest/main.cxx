@@ -7,7 +7,7 @@
 //
 
 #define SPECIALNAME     "openH323"
-#define	COUNT_MAX	2000000
+#define COUNT_MAX       2000000
 
 BOOL finishFlag;
 
@@ -56,7 +56,7 @@ class StringHolder
         void Main() 
         { int count = 0; while (!finishFlag && count < COUNT_MAX) holder.TestString(count++, "sub"); }
 
-	StringHolder & holder;
+        StringHolder & holder;
     };
 
     PThread * StartThread()

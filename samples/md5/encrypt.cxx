@@ -6,6 +6,9 @@
  * Author: Derek J Smithies, <derek@indranet.co.nz>
  *
  * $Log: encrypt.cxx,v $
+ * Revision 1.2  2005/11/30 12:47:40  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.1  2005/03/02 21:50:03  dereksmithies
  * Initial release of example code to calculate MD5 sums of a supplied string.
  *
@@ -39,14 +42,14 @@ void Md5::Main()
 
   PConfigArgs args(GetArguments());
   args.Parse(
-	     "a-first: "
-	     "b-second: "
-	     "h-help. "
+       "a-first: "
+       "b-second: "
+       "h-help. "
 #if PTRACING
-             "o-output:"             "-no-output."
-	     "t-trace: "             "-no-trace."
+       "o-output:"             "-no-output."
+       "t-trace: "             "-no-trace."
 #endif
-	     , FALSE);
+       , FALSE);
 
   cout << "Product Name: " << GetName() << endl
        << "Manufacturer: " << GetManufacturer() << endl
@@ -59,23 +62,23 @@ void Md5::Main()
 
   if (args.HasOption('h')) {
     cout << "Usage :  md5 [options] " << endl 
-	 << endl
-	 << " -a  --first  ## : specify first string to add to md5" << endl
-	 << " -b  --second ## : specify second string to add to md5" << endl
-	 << " -h  --help      : print this help out." << endl
+         << endl
+         << " -a  --first  ## : specify first string to add to md5" << endl
+         << " -b  --second ## : specify second string to add to md5" << endl
+         << " -h  --help      : print this help out." << endl
 
 #if PTRACING
-	 << " -t --trace     : Enable trace, use multiple times for more detail"  << endl 
+         << " -t --trace     : Enable trace, use multiple times for more detail"  << endl 
          << " -o --output    : File for trace output, default is stderr"  << endl
 #endif
-	 << endl;
+         << endl;
     return;
   }
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-		     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+                     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
 
