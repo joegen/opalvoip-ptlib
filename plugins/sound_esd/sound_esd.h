@@ -32,7 +32,7 @@ class PSoundChannelESD: public PSoundChannel
                      PSoundChannel::Directions dir,
                      unsigned numChannels,
                      unsigned sampleRate,
-		     unsigned bitsPerSample);
+                     unsigned bitsPerSample);
     ~PSoundChannelESD();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);

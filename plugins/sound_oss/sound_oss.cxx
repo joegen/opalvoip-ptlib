@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.9  2005/11/30 12:47:38  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2005/08/14 12:58:58  csoutheren
  * Fixed build problem on 64bit Linux
  *
@@ -296,10 +299,10 @@ PSoundChannelOSS::PSoundChannelOSS()
 
 
 PSoundChannelOSS::PSoundChannelOSS(const PString & device,
-				   Directions dir,
-				   unsigned numChannels,
-				   unsigned sampleRate,
-				   unsigned bitsPerSample)
+                                        Directions dir,
+                                          unsigned numChannels,
+                                          unsigned sampleRate,
+                                          unsigned bitsPerSample)
 {
   Construct();
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
@@ -360,18 +363,19 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
                   mixer.SetAt(cardnum, devname);
               }
             }
-	  }
+          }
         }
-      } else {
+      } 
+      else {
         // On Linux devfs systems, the major numbers can change dynamically.
-	// On FreeBSD and other OSs, the major numbes are different to Linux.
-	// So collect devices by looking for dsp(N) and mixer(N).
+        // On FreeBSD and other OSs, the major numbes are different to Linux.
+        // So collect devices by looking for dsp(N) and mixer(N).
         // (or /dev/audio(N) and mixer(N) on NetBSD
-	// Notes. FreeBSD supports audio stream mixing. A single sound card
-	// may have multiple /dev entries in the form /dev/dspN.M
-	// eg /dev/dsp0.0 /dev/dsp0.1 /dev/dsp0.2 and /dev/dsp0.3
-	// When adding these to the 'dsp' string array, only the first one
-	// found is used.
+        // Notes. FreeBSD supports audio stream mixing. A single sound card
+        // may have multiple /dev entries in the form /dev/dspN.M
+        // eg /dev/dsp0.0 /dev/dsp0.1 /dev/dsp0.2 and /dev/dsp0.3
+        // When adding these to the 'dsp' string array, only the first one
+        // found is used.
 
 #ifndef P_NETBSD
         // Look for dsp
@@ -383,15 +387,14 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         // and look for dspN.M entries. Insert at position N + 1 (ignoring M)
 
         if ((filename.GetLength() > 3) && (filename.Left(3) == "dsp")) {
-
-	  PString numbers = filename.Mid(3); // get everything after 'dsp'
-	  if (IsNumericString(numbers)) {
+          PString numbers = filename.Mid(3); // get everything after 'dsp'
+          if (IsNumericString(numbers)) {
             PINDEX cardnum = numbers.AsInteger(); //dspN.M is truncated to dspN.
-	    // If we have not yet inserted something for this cardnum, insert it
-	    if (dsp.GetAt(cardnum+1) == NULL) {
+            // If we have not yet inserted something for this cardnum, insert it
+            if (dsp.GetAt(cardnum+1) == NULL) {
               dsp.SetAt(cardnum+1, devname);
-	    }
-	  }
+            }
+          }
         }
 #else
         // Look for audio on NetBSD 
@@ -400,11 +403,11 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         }
         // Look for audioN. Insert at position cardnum + 1
         if ((filename.GetLength() > 5) && (filename.Left(5) == "audio")) {
-	  PString numbers = filename.Mid(5); // get everything after 'audio'
-	  if (IsNumericString(numbers)) {
+          PString numbers = filename.Mid(5); // get everything after 'audio'
+          if (IsNumericString(numbers)) {
             PINDEX cardnum = numbers.AsInteger();
             dsp.SetAt(cardnum+1, devname);
-	  }
+          }
         }
 #endif
         // Look for mixer
@@ -413,11 +416,11 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
         }
         // Look for mixerN. Insert at position cardnum + 1
         if ((filename.GetLength() > 5) && (filename.Left(5) == "mixer")) {
-	  PString numbers = filename.Mid(5); // get everything after 'mixer'
-	  if (IsNumericString(numbers)) {
+          PString numbers = filename.Mid(5); // get everything after 'mixer'
+          if (IsNumericString(numbers)) {
             PINDEX cardnum = numbers.AsInteger();
             mixer.SetAt(cardnum+1, devname);
-	  }
+          }
         }
       }
     }
@@ -522,10 +525,9 @@ BOOL PSoundChannelOSS::Open(const PString & _device,
     SoundHandleEntry & entry = handleDict()[_device];
 
     // see if the sound channel is already open in this direction
-    if ((entry.direction & dir) != 0) 
-      {
-	return FALSE;
-      }
+    if ((entry.direction & dir) != 0) {
+      return FALSE;
+    }
 
     // flag this entry as open in this direction
     entry.direction |= dir;
