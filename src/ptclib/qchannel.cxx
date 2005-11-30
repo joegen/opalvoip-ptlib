@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.cxx,v $
+ * Revision 1.7  2005/11/30 23:24:51  dereksmithies
+ * Ensure the PQueueChannel is closed on destruction, so that an os_handle
+ * value of 1 is never passed to PChannel::Close()
+ *
  * Revision 1.6  2005/11/24 04:44:16  dereksmithies
  * Fix memory leak.
  *
@@ -75,8 +79,7 @@ PQueueChannel::PQueueChannel(PINDEX size)
 
 PQueueChannel::~PQueueChannel()
 {
-  if (queueBuffer != NULL)
-    delete [] queueBuffer;
+  Close();
 }
 
 
