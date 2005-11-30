@@ -28,13 +28,16 @@
  * This code is based on the Video4Linux 1 code.
  *
  * Contributor(s): Guilhem Tardy (gtardy@salyens.com)
- * 		   Nicola Orru' <nigu@itadinanta.it>
+ *  Nicola Orru' <nigu@itadinanta.it>
  *
  * TODO:
  *  - fix the devices detection code using the new code from the V4L1 plugin
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.6  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.5  2005/08/09 09:08:10  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -280,8 +283,8 @@ BOOL PVideoInputDevice_V4L2::Start()
     for (buf.index = 0; buf.index < videoBufferCount; buf.index++) {
       PTRACE(3,"PVidInDev\tQBUF for index:" << buf.index);
       if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
-	PTRACE(3,"PVidInDev\tQBUF failed : " << ::strerror(errno));
-	return FALSE;
+        PTRACE(3,"PVidInDev\tQBUF failed : " << ::strerror(errno));
+        return FALSE;
       }
     }
   }
@@ -324,8 +327,8 @@ BOOL PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
 {
   if (newFormat == Auto) {
     if (SetVideoFormat(PAL) ||
-	SetVideoFormat(NTSC) ||
-	SetVideoFormat(SECAM))
+      SetVideoFormat(NTSC) ||
+      SetVideoFormat(SECAM))
       return TRUE;
     else
       return FALSE;
@@ -377,11 +380,11 @@ int PVideoInputDevice_V4L2::GetNumChannels()
     videoEnumInput.index = 0;
     while (1) {
       if (::ioctl(videoFd, VIDIOC_ENUMINPUT, &videoEnumInput) < 0) {
-	PTRACE(1,"VideoInputDevice\tEnumInput failed : " << ::strerror(errno));    
-	break;
+        PTRACE(1,"VideoInputDevice\tEnumInput failed : " << ::strerror(errno));    
+        break;
       }
       else
-	videoEnumInput.index++;
+        videoEnumInput.index++;
     }
 
     return videoEnumInput.index;
@@ -503,9 +506,9 @@ BOOL PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
 
 
 BOOL PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
-					       unsigned & minHeight,
-					       unsigned & maxWidth,
-					       unsigned & maxHeight) 
+                                                unsigned & minHeight,
+                                                unsigned & maxWidth,
+                                                unsigned & maxHeight) 
 {
   /* Not used in V4L2 */
   minWidth=0;
@@ -621,7 +624,7 @@ BOOL PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 
     do {
       if (!GetFrameDataNoDelay(buffer, bytesReturned))
-	return FALSE;
+        return FALSE;
 
       delay = PTime() - previousFrameTime;
     } while (delay.GetMilliSeconds() < msBetweenFrames);
@@ -705,8 +708,7 @@ BOOL PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytesRetu
   return TRUE;
 }
 
-BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width,
-						    unsigned height)
+BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width, unsigned height)
 {
   struct v4l2_format videoFormat;
   videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -929,8 +931,7 @@ BOOL PVideoInputDevice_V4L2::SetHue(unsigned newHue)
   return TRUE;
 }
 
-BOOL PVideoInputDevice_V4L2::GetParameters (int *whiteness, int *brightness, 
-					   int *colour, int *contrast, int *hue)
+BOOL PVideoInputDevice_V4L2::GetParameters (int *whiteness, int *brightness, int *colour, int *contrast, int *hue)
 {
   if (!IsOpen())
     return FALSE;
@@ -1008,34 +1009,34 @@ V4L2Names::Update()
   if (procvideo) {
     PTRACE(2,"PV4L2Plugin\tdetected device metadata at "<<*procvideo);
     if ((kernelVersion==K2_6 && procvideo->Open(PFileInfo::SubDirectory) || 
-	 (procvideo->Open(PFileInfo::RegularFile)))) {
+        (procvideo->Open(PFileInfo::RegularFile)))) {
       do {
         entry = procvideo->GetEntryName();
-	if ((entry.Left(5) == "video")) {
-	  PString thisDevice = "/dev/" + entry;
-	  int videoFd=::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
-	  if ((videoFd > 0) || (errno == EBUSY)) {
-	    BOOL valid = FALSE;
-	    struct v4l2_capability videoCaps;
-	    memset(&videoCaps,0,sizeof(videoCaps));
-	    if ((errno == EBUSY) ||
-		(::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 &&
-		 (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE))) {
-	      PTRACE(1,"PV4L2Plugin\tdetected capture device " << videoCaps.card);
-	      valid = TRUE;
-	    }
-	    else {
-	      PTRACE(1,"PV4L2Plugin\t" << thisDevice << "is not deemed valid");
-	    }
-	    if (videoFd>0)
-	      ::close(videoFd);
-	    if(valid)
-	      inputDeviceNames += thisDevice;
-	  }
-	  else {
-	    PTRACE(1,"PV4L2Plugin\tcould not open " << thisDevice);
-	  }
-	}
+        if ((entry.Left(5) == "video")) {
+          PString thisDevice = "/dev/" + entry;
+          int videoFd=::open((const char *)thisDevice, O_RDONLY | O_NONBLOCK);
+          if ((videoFd > 0) || (errno == EBUSY)) {
+            BOOL valid = FALSE;
+            struct v4l2_capability videoCaps;
+            memset(&videoCaps,0,sizeof(videoCaps));
+            if ((errno == EBUSY) ||
+                (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCaps) >= 0 &&
+                (videoCaps.capabilities & V4L2_CAP_VIDEO_CAPTURE))) {
+              PTRACE(1,"PV4L2Plugin\tdetected capture device " << videoCaps.card);
+              valid = TRUE;
+            }
+            else {
+              PTRACE(1,"PV4L2Plugin\t" << thisDevice << "is not deemed valid");
+            }
+            if (videoFd>0)
+              ::close(videoFd);
+            if(valid)
+              inputDeviceNames += thisDevice;
+          }
+          else {
+            PTRACE(1,"PV4L2Plugin\tcould not open " << thisDevice);
+          }
+        }
       } while (procvideo->Next());
     }
   }
@@ -1050,9 +1051,9 @@ V4L2Names::Update()
       PINDEX cardnum = vid.GetKeyAt(i);
       int fd = ::open(vid[cardnum], O_RDONLY | O_NONBLOCK);
       if ((fd >= 0) || (errno == EBUSY)) {
-	if (fd >= 0)
-	  ::close(fd);
-	inputDeviceNames += vid[cardnum];
+        if (fd >= 0)
+          ::close(fd);
+        inputDeviceNames += vid[cardnum];
       }
     }
   }

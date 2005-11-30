@@ -8,6 +8,9 @@
  *                          the address of one network interface
  *
  * $Log: local.cxx,v $
+ * Revision 1.3  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.2  2005/03/10 09:27:42  dereksmithies
  * Improve text output.
  *
@@ -35,17 +38,16 @@ LocalAddress::LocalAddress()
     : PProcess("PwLib Example Factory", "local", 1, 0, ReleaseCode, 0)
 {
 }
-	
 
 void LocalAddress::Main()
 {
     PStringStream progName;
     progName << "Product Name: " << GetName() << endl
-	     << "Manufacturer: " << GetManufacturer() << endl
-	     << "Version     : " << GetVersion(TRUE) << endl
-	     << "System      : " << GetOSName() << '-'
-	     << GetOSHardware() << ' '
-	     << GetOSVersion();
+             << "Manufacturer: " << GetManufacturer() << endl
+             << "Version     : " << GetVersion(TRUE) << endl
+             << "System      : " << GetOSName() << '-'
+             << GetOSHardware() << ' '
+             << GetOSVersion();
     cout << endl <<  progName << endl << endl;
     
 
@@ -56,7 +58,7 @@ void LocalAddress::Main()
         if (addr == 0)
             cout << "sorry, that is a 0.0.0.0 address" << endl;
     } else
-	cout << "Sorry, failed to get local address" << endl;
+      cout << "Sorry, failed to get local address" << endl;
     
     cout << "local host name is  " << localSocket.GetHostName() << endl;
 }
