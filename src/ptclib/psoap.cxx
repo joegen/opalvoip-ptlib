@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.9  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.8  2004/04/24 01:06:32  rjongbloed
  * Apploed  patch that impliments a number of checks to avoid segfaults when dealing with
  *   various clients. Thanks Ben Lear
@@ -202,10 +205,10 @@ void PSOAPMessage::PrintOn(ostream & strm) const
 
 PString PSOAPMessage::AsString( void )
 {
-	PStringStream stringStream;
-	PrintOn( stringStream );
+  PStringStream stringStream;
+  PrintOn( stringStream );
 
-	PString SOAPString = stringStream;
+  PString SOAPString = stringStream;
 
   return SOAPString;
 }

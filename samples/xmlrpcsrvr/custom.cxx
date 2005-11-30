@@ -34,37 +34,37 @@
 ////////////////////////////////////////////////////
 
 #ifndef PRODUCT_NAME_TEXT
-#define	PRODUCT_NAME_TEXT	"PWLib XML/RPC Server"
+#define PRODUCT_NAME_TEXT "PWLib XML/RPC Server"
 #endif
 
 #ifndef EXE_NAME_TEXT
-#define	EXE_NAME_TEXT	        "xmlrpcsrvr"
+#define EXE_NAME_TEXT         "xmlrpcsrvr"
 #endif
 
 #ifndef MANUFACTURER_TEXT
-#define	MANUFACTURER_TEXT	"Equivalence Pty. Ltd."
+#define MANUFACTURER_TEXT "Equivalence Pty. Ltd."
 #endif
 
 #ifndef COPYRIGHT_HOLDER
-#define	COPYRIGHT_HOLDER	MANUFACTURER_TEXT
+#define COPYRIGHT_HOLDER MANUFACTURER_TEXT
 #endif
 
 #ifndef GIF_NAME
-#define GIF_NAME  		EXE_NAME_TEXT ".gif"
-#define	GIF_WIDTH  380
+#define GIF_NAME    EXE_NAME_TEXT ".gif"
+#define GIF_WIDTH  380
 #define GIF_HEIGHT 101
 #endif
 
 #ifndef EMAIL
-#define	EMAIL NULL
+#define EMAIL NULL
 #endif
 
 #ifndef HOME_PAGE
-#define	HOME_PAGE NULL
+#define HOME_PAGE NULL
 #endif
 
 #ifndef PRODUCT_NAME_HTML
-#define	PRODUCT_NAME_HTML PRODUCT_NAME_TEXT
+#define PRODUCT_NAME_HTML PRODUCT_NAME_TEXT
 #endif
 
 

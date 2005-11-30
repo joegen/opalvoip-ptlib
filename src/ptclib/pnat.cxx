@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.cxx,v $
+ * Revision 1.3  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.2  2005/07/13 11:15:26  csoutheren
  * Backported NAT abstraction files from isvo branch
  *
@@ -52,33 +55,29 @@ PNatStrategy::~PNatStrategy()
 
 void PNatStrategy::AddMethod(PNatMethod * method)
 {
-	natlist.Append(method);
-
+  natlist.Append(method);
 }
 
 PNatMethod * PNatStrategy::GetMethod()
 {
-
-	for (PINDEX i=0; i < natlist.GetSize(); i++) {
+  for (PINDEX i=0; i < natlist.GetSize(); i++) {
        PNatMethod * meth = (PNatMethod *)natlist.GetAt(i);
 
-	   if (meth->IsAvailable())
-		   return meth;
-	}
+     if (meth->IsAvailable())
+       return meth;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 void PNatStrategy::SetPortRanges(
       WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
 {
-	
-	for (PINDEX i=0; i < natlist.GetSize(); i++) {
+  for (PINDEX i=0; i < natlist.GetSize(); i++) {
        PNatMethod * meth = (PNatMethod *)natlist.GetAt(i);
 
-	   meth->SetPortRanges(portBase,portMax,portPairBase,portPairMax);
-	   }
-
+     meth->SetPortRanges(portBase,portMax,portPairBase,portPairMax);
+  }
 }
 
 
@@ -94,8 +93,7 @@ PNatMethod::~PNatMethod()
 
 }
 
-void PNatMethod::SetPortRanges(
-	   WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
+void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
 {
   singlePortInfo.mutex.Wait();
 
