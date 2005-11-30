@@ -17,6 +17,9 @@
  *                           2)Add headers.
  *
  * $Log: audio.cxx,v $
+ * Revision 1.5  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.4  2005/08/18 22:29:15  dereksmithies
  * Add a full duplex sound card test (which was excised from ohphone).
  * Add copyright header and cvs log statements.
@@ -45,28 +48,28 @@ void Audio::Main()
 {
   PArgList & args = GetArguments();
   args.Parse("r.    "
-	     "f.    "
-	     "h.    "
+       "f.    "
+       "h.    "
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-	     "v.    "
-	     "s:    ");
+       "v.    "
+       "s:    ");
  
   if (args.HasOption('h')) {
     cout << "usage: audio " 
-	 << endl
-	 << "     -r        : report available sound devices" << endl
-	 << "     -f.       : do a full duplex sound test on a sound device" << endl
-	 << "     -s  dev   : use this device in full duplex test " << endl
-	 << "     -h        : get help on usage " << endl
-	 << "     -v        : report program version " << endl
+         << endl
+         << "     -r        : report available sound devices" << endl
+         << "     -f.       : do a full duplex sound test on a sound device" << endl
+         << "     -s  dev   : use this device in full duplex test " << endl
+         << "     -h        : get help on usage " << endl
+         << "     -v        : report program version " << endl
 #if PTRACING
          << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
          << "  -o --output  : File for trace output, default is stderr" << endl
 #endif
-	 << endl;
+         << endl;
     return;
   }
 
@@ -76,15 +79,15 @@ void Audio::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 
   if (args.HasOption('v')) {
-      cout   << endl
-	     << "Product Name: " <<  (const char *)GetName() << endl
-	     << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-	     << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
-	     << "System      : " <<  (const char *)GetOSName() << '-'
-	     <<  (const char *)GetOSHardware() << ' '
-	     <<  (const char *)GetOSVersion() << endl
-	     << endl;
-	return;
+    cout << endl
+         << "Product Name: " <<  (const char *)GetName() << endl
+         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
+         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
+         << "System      : " <<  (const char *)GetOSName() << '-'
+         <<  (const char *)GetOSHardware() << ' '
+         <<  (const char *)GetOSVersion() << endl
+         << endl;
+    return;
   }
   
 
@@ -199,10 +202,10 @@ void TestAudioDevice::Test()
    PStringStream help;
    help << "Select:\n";
    help << "  X   : Exit program\n"
-	<< "  Q   : Exit program\n"
-	<< "  {}  : Increase/reduce record volume\n"
-	<< "  []  : Increase/reduce playback volume\n"
-	<< "  H   : Write this help out\n";
+        << "  Q   : Exit program\n"
+        << "  {}  : Increase/reduce record volume\n"
+        << "  []  : Increase/reduce playback volume\n"
+        << "  H   : Write this help out\n";
    
    PThread::Sleep(100);
    if (reader.IsTerminated() || writer.IsTerminated()) {
@@ -224,30 +227,29 @@ void TestAudioDevice::Test()
     }
 
     console >> ch;
-	PTRACE(3, "console in audio test is " << ch);
+    PTRACE(3, "console in audio test is " << ch);
     switch (tolower(ch)) {
-    case '{' : 
-      reader.LowerVolume();
+      case '{' : 
+        reader.LowerVolume();
+        break;
+      case '}' :
+        reader.RaiseVolume();
+        break;
+      case '[' :
+        writer.LowerVolume();
+        break;
+      case ']' : 
+        writer.RaiseVolume();
+        break;
+      case 'q' :
+      case 'x' :
+        goto endAudioTest;
+      case 'h' :
+        cout << help ;
       break;
-    case '}' :
-      reader.RaiseVolume();
-      break;
-    case '[' :
-      writer.LowerVolume();
-      break;
-    case ']' : 
-      writer.RaiseVolume();
-      break;
-    case 'q' :
-    case 'x' :
-      goto endAudioTest;
-    case 'h' :
-      
-      cout << help ;
-      break;
-    default:;
+        default:
+          ;
     }
-    
   }
 
 endAudioTest:
@@ -261,40 +263,40 @@ endAudioTest:
 
 PBYTEArray *TestAudioDevice::GetNextAudioFrame()
 {
-	PBYTEArray *data = NULL;
+  PBYTEArray *data = NULL;
 
-	while (data == NULL) {
-	  {
-	    PWaitAndSignal m(access);
-	    if (GetSize() > 30)
-	      data = (PBYTEArray *)RemoveAt(0);  
-	    if (endNow)
-	      return NULL;
-	  }
+  while (data == NULL) {
+    {
+      PWaitAndSignal m(access);
+      if (GetSize() > 30)
+        data = (PBYTEArray *)RemoveAt(0);  
+      if (endNow)
+        return NULL;
+    }
 
-	  if (data == NULL) {
-	    PThread::Sleep(30);
-	  }
-	}
-	
-	return data;
+    if (data == NULL) {
+      PThread::Sleep(30);
+    }
+  }
+  
+  return data;
 }
 
 void TestAudioDevice::WriteAudioFrame(PBYTEArray *data)
 {
-	PWaitAndSignal mutex(access);
-	if (endNow) {
-	  delete data;
-	  return;
-	}
-	  
-	PTRACE(5, "Buffer\tNow put one frame on the que");
-	Append(data);
-	if (GetSize() > 50) {
-	  cout << "The audio reader thread is not working - exit now before memory is exhausted" << endl;
-	  endNow = TRUE;
-	}
-	return;
+  PWaitAndSignal mutex(access);
+  if (endNow) {
+    delete data;
+    return;
+  }
+  
+  PTRACE(5, "Buffer\tNow put one frame on the que");
+  Append(data);
+  if (GetSize() > 50) {
+    cout << "The audio reader thread is not working - exit now before memory is exhausted" << endl;
+    endNow = TRUE;
+  }
+  return;
 }
 
 BOOL TestAudioDevice::DoEndNow()
@@ -332,7 +334,7 @@ void TestAudioRead::Main()
 //////////////////////////////////////////////////////////////////////
 
 TestAudioWrite::TestAudioWrite(TestAudioDevice &master)
-	 : TestAudio(master)
+   : TestAudio(master)
 {
   PTRACE(3, "Reader\tInitiate thread for writing " );
 }
@@ -388,8 +390,8 @@ BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
 
   PTRACE(3, "Open audio device for " << name << " and device name of " << devName);
   if (!sound.Open(devName,
-		  dir,
-		  1, 8000, 16)) {
+      dir,
+      1, 8000, 16)) {
     cerr <<  "TestAudioRead:: Failed to open sound Playing device. Exit" << endl;
     PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
 
@@ -407,7 +409,7 @@ BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
 void TestAudio::RaiseVolume()
 {
    if ((currentVolume + 5) < 101)
-	   currentVolume += 5;
+     currentVolume += 5;
    sound.SetVolume(currentVolume);
    cout << name << " volume is " << currentVolume << endl;
    PTRACE(3, "TestAudio\tRaise volume for " << name << " to " << currentVolume);
@@ -416,7 +418,7 @@ void TestAudio::RaiseVolume()
 void TestAudio::LowerVolume()
 {
    if ((currentVolume - 5) >= 0)
-	   currentVolume -= 5;
+     currentVolume -= 5;
    sound.SetVolume(currentVolume);
    cout << name << " volume is " << currentVolume << endl;
    PTRACE(3, "TestAudio\tLower volume for " << name << " to " << currentVolume);

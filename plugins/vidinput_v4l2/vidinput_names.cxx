@@ -26,6 +26,9 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_names.cxx,v $
+ * Revision 1.3  2005/11/30 12:47:39  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.2  2004/11/07 22:48:47  dominance
  * fixed copyright of v4l2 plugin. Last commit's credits go to Nicola Orru' <nigu@itadinanta.it> ...
  *
@@ -46,20 +49,19 @@ void  V4LXNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
 
       PFileInfo info;
       if (devdir.GetInfo(info) && info.type == PFileInfo::CharDevice) {
-	struct stat s;
-	if (lstat(devname, &s) == 0) {
-	 
-	  static const int deviceNumbers[] = { 81 };
-	  for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
-	    if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
-
-	      PINDEX num = MINOR(s.st_rdev);
-	      if (num <= 63 && num >= 0) {
-		vid.SetAt(num, devname);
-	      }
-	    }
-	  }
-	}
+        struct stat s;
+        if (lstat(devname, &s) == 0) {
+ 
+          static const int deviceNumbers[] = { 81 };
+          for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
+            if (MAJOR(s.st_rdev) == deviceNumbers[i]) {
+              PINDEX num = MINOR(s.st_rdev);
+              if (num <= 63 && num >= 0) {
+                vid.SetAt(num, devname);
+              }
+            }
+          }
+        }
       }
     }
   } while (devdir.Next());
@@ -84,7 +86,7 @@ void V4LXNames::PopulateDictionary()
     PINDEX matches = 1;    
     for (j = i + 1; j < tempList.GetSize(); j++) {
       if (tempList.GetDataAt(j) == userName) {
-	matches++;
+        matches++;
         PStringStream revisedUserName;
         revisedUserName << userName << " (" << matches << ")";
         tempList.SetDataAt(j, revisedUserName);
