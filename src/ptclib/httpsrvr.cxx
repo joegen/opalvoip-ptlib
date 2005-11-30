@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.49  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.48  2005/01/15 07:53:55  csoutheren
  * Fixed problem when disabling http
  *
@@ -191,10 +194,10 @@
 
 // define to enable work-around for Netscape persistant connection bug
 // set to lifetime of suspect sockets (in seconds)
-#define STRANGE_NETSCAPE_BUG	3
+#define STRANGE_NETSCAPE_BUG  3
 
 // maximum delay between characters whilst reading a line of text
-#define	READLINE_TIMEOUT	30
+#define READLINE_TIMEOUT  30
 
 #define DEFAULT_PERSIST_TIMEOUT 30
 #define DEFAULT_PERSIST_TRANSATIONS 10
@@ -1491,7 +1494,7 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
                                             const PMIMEInfo & inMIME,
                                             const PMultipartFormInfoArray & multipartFormInfo,
-				            PHTTPServer & socket)
+                                            PHTTPServer & socket)
 {
   return new PHTTPRequest(url, inMIME, multipartFormInfo, socket);
 }
@@ -1701,7 +1704,7 @@ PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
                           const PMultipartFormInfoArray & multipartFormInfo,
-				        PHTTPServer & server)
+                PHTTPServer & server)
 {
   return new PHTTPFileRequest(url, inMIME, multipartFormInfo, server);
 }
@@ -1858,7 +1861,7 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
                                  const PMIMEInfo & inMIME,
                                  const PMultipartFormInfoArray & multipartFormInfo,
-			         PHTTPServer & server)
+                                 PHTTPServer & server)
   : PHTTPFileRequest(url, inMIME, multipartFormInfo, server)
 {
 }
@@ -1867,7 +1870,7 @@ PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
 PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
                                         const PMIMEInfo & inMIME,
                           const PMultipartFormInfoArray & multipartFormInfo,
-			                    PHTTPServer & socket)
+                          PHTTPServer & socket)
 {
   PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, socket);
 

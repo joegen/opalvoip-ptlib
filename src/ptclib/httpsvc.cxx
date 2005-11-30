@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.96  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.95  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -351,9 +354,9 @@ class PServiceMacros_list : public PServiceMacros_base
 #define new PNEW
 
 
-#define HOME_PAGE 	"http://www.equival.com"
-#define EMAIL     	"equival@equival.com.au"
-#define	EQUIVALENCE	"Equivalence Pty. Ltd."
+#define HOME_PAGE   "http://www.equival.com"
+#define EMAIL       "equival@equival.com.au"
+#define EQUIVALENCE "Equivalence Pty. Ltd."
 
 
 static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);

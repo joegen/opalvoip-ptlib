@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.116  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.115  2005/04/20 05:19:48  csoutheren
  * Patch 1185334. Ensure SIP URLs correctly store status of port
  * Thanks to Ted Szoczei
@@ -435,19 +438,19 @@
 // mailto:user@hostname
 // news:string
 
-#define DEFAULT_FTP_PORT	21
-#define DEFAULT_TELNET_PORT	23
-#define DEFAULT_GOPHER_PORT	70
-#define DEFAULT_HTTP_PORT	80
-#define DEFAULT_NNTP_PORT	119
-#define DEFAULT_WAIS_PORT	210
-#define DEFAULT_HTTPS_PORT	443
-#define DEFAULT_RTSP_PORT	554
-#define DEFAULT_RTSPU_PORT	554
-#define DEFAULT_PROSPERO_PORT	1525
-#define	DEFAULT_H323_PORT       1720
-#define	DEFAULT_H323RAS_PORT    1719
-#define	DEFAULT_SIP_PORT        5060
+#define DEFAULT_FTP_PORT      21
+#define DEFAULT_TELNET_PORT   23
+#define DEFAULT_GOPHER_PORT   70
+#define DEFAULT_HTTP_PORT     80
+#define DEFAULT_NNTP_PORT     119
+#define DEFAULT_WAIS_PORT     210
+#define DEFAULT_HTTPS_PORT    443
+#define DEFAULT_RTSP_PORT     554
+#define DEFAULT_RTSPU_PORT    554
+#define DEFAULT_PROSPERO_PORT 1525
+#define DEFAULT_H323_PORT     1720
+#define DEFAULT_H323RAS_PORT    1719
+#define DEFAULT_SIP_PORT        5060
 
 
 

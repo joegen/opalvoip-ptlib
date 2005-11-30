@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.10  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.9  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -59,8 +62,8 @@
 #define new PNEW
 
 
-#define	SNMP_VERSION		0
-#define	SNMP_PORT		"snmp 161"
+#define SNMP_VERSION 0
+#define SNMP_PORT    "snmp 161"
 
 static const char defaultCommunity[] = "public";
 

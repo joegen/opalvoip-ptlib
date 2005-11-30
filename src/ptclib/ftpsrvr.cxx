@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.10  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.9  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -60,8 +63,8 @@
 #define new PNEW
 
 
-#define	READY_STRING  "PWLib FTP Server v1.0 ready"
-#define	GOOBYE_STRING "Goodbye"
+#define READY_STRING  "PWLib FTP Server v1.0 ready"
+#define GOOBYE_STRING "Goodbye"
 
 
 /////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.72  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.71  2005/11/25 01:01:15  csoutheren
  * Applied patch #1351168
  * PWlib various fixes
@@ -1755,7 +1758,7 @@ BOOL PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
     }
     else {
       if ((reference->deleteObjects) && (hashTable->lastElement->data != obj)) 
-	delete hashTable->lastElement->data;
+        delete hashTable->lastElement->data;
       hashTable->lastElement->data = obj;
     }
   }

@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.14  2005/11/30 12:47:41  csoutheren
+ * Removed tabs, reformatted some code, and changed tags for Doxygen
+ *
  * Revision 1.13  2005/01/25 06:35:27  csoutheren
  * Removed warnings under MSVC
  *
@@ -60,7 +63,7 @@
 #include <math.h>
 
 /* Integer math scaling factor */
-#define FSC	(1<<12)
+#define FSC (1<<12)
 
 /* This is the Q of the filter (pole radius) */
 #define POLRAD .99
@@ -71,91 +74,91 @@
 
 PDTMFDecoder::PDTMFDecoder()
 {
-	// Initialise the class
-	int i,kk;
-	for (kk = 0; kk < 8; kk++) {
-		y[kk] = h[kk] = k[kk] = 0;
-	}
+  // Initialise the class
+  int i,kk;
+  for (kk = 0; kk < 8; kk++) {
+    y[kk] = h[kk] = k[kk] = 0;
+  }
 
-	nn = 0;
-	ia = 0;
-	so = 0;
+  nn = 0;
+  ia = 0;
+  so = 0;
 
-	for (i = 0; i < 256; i++) {
-		key[i] = '?';
-	}
+  for (i = 0; i < 256; i++) {
+    key[i] = '?';
+  }
 
-	/* We encode the tones in 8 bits, translate those to symbol */
-	key[0x11] = '1'; key[0x12] = '4'; key[0x14] = '7'; key[0x18] = '*';
-	key[0x21] = '2'; key[0x22] = '5'; key[0x24] = '8'; key[0x28] = '0';
-	key[0x41] = '3'; key[0x42] = '6'; key[0x44] = '9'; key[0x48] = '#';
-	key[0x81] = 'A'; key[0x82] = 'B'; key[0x84] = 'C'; key[0x88] = 'D';
+  /* We encode the tones in 8 bits, translate those to symbol */
+  key[0x11] = '1'; key[0x12] = '4'; key[0x14] = '7'; key[0x18] = '*';
+  key[0x21] = '2'; key[0x22] = '5'; key[0x24] = '8'; key[0x28] = '0';
+  key[0x41] = '3'; key[0x42] = '6'; key[0x44] = '9'; key[0x48] = '#';
+  key[0x81] = 'A'; key[0x82] = 'B'; key[0x84] = 'C'; key[0x88] = 'D';
 
-	/* The frequencies we're trying to detect */
-	/* These are precalculated to save processing power */
-	/* static int dtmf[8] = {697, 770, 852, 941, 1209, 1336, 1477, 1633}; */
-	/* p1[kk] = (-cos(2 * 3.141592 * dtmf[kk] / 8000.0) * FSC) */
-	p1[0] = -3497; p1[1] = -3369; p1[2] = -3212; p1[3] = -3027;
-	p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
+  /* The frequencies we're trying to detect */
+  /* These are precalculated to save processing power */
+  /* static int dtmf[8] = {697, 770, 852, 941, 1209, 1336, 1477, 1633}; */
+  /* p1[kk] = (-cos(2 * 3.141592 * dtmf[kk] / 8000.0) * FSC) */
+  p1[0] = -3497; p1[1] = -3369; p1[2] = -3212; p1[3] = -3027;
+  p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
 }
 
 
 PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes)
 {
-	int x;
-	int s, kk;
-	int c, d, f, n;
-	short *buffer = (short *)buf;
+  int x;
+  int s, kk;
+  int c, d, f, n;
+  short *buffer = (short *)buf;
 
-	PINDEX numSamples = bytes >> 1;
+  PINDEX numSamples = bytes >> 1;
 
-	PString keyString;
+  PString keyString;
 
-	PINDEX pos;
-	for (pos = 0; pos < numSamples; pos++) {
+  PINDEX pos;
+  for (pos = 0; pos < numSamples; pos++) {
 
-		/* Read (and scale) the next 16 bit sample */
-		x = ((int)(*buffer++)) / (32768/FSC);
+    /* Read (and scale) the next 16 bit sample */
+    x = ((int)(*buffer++)) / (32768/FSC);
 
-		/* Input amplitude */
-		if (x > 0)
-			ia += (x - ia) / 128;
-		else
-			ia += (-x - ia) / 128;
+    /* Input amplitude */
+    if (x > 0)
+      ia += (x - ia) / 128;
+    else
+      ia += (-x - ia) / 128;
 
-		/* For each tone */
-		s = 0;
-		for(kk = 0; kk < 8; kk++) {
+    /* For each tone */
+    s = 0;
+    for(kk = 0; kk < 8; kk++) {
 
-			/* Turn the crank */
-			c = (P2 * (x - k[kk])) / FSC;
-			d = x + c;
-			f = (p1[kk] * (d - h[kk])) / FSC;
-			n = x - k[kk] - c;
-			k[kk] = h[kk] + f;
-			h[kk] = f + d;
+      /* Turn the crank */
+      c = (P2 * (x - k[kk])) / FSC;
+      d = x + c;
+      f = (p1[kk] * (d - h[kk])) / FSC;
+      n = x - k[kk] - c;
+      k[kk] = h[kk] + f;
+      h[kk] = f + d;
 
-			/* Detect and Average */
-			if (n > 0)
-				y[kk] += (n - y[kk]) / 64;
-			else
-				y[kk] += (-n - y[kk]) / 64;
+      /* Detect and Average */
+      if (n > 0)
+        y[kk] += (n - y[kk]) / 64;
+      else
+        y[kk] += (-n - y[kk]) / 64;
 
-			/* Threshold */
-			if (y[kk] > FSC/10 && y[kk] > ia)
-				s |= 1 << kk;
-		}
+      /* Threshold */
+      if (y[kk] > FSC/10 && y[kk] > ia)
+        s |= 1 << kk;
+    }
 
-		/* Hysteresis and noise supressor */
-		if (s != so) {
-			nn = 0;
-			so = s;
-		} else if (nn++ == 520 && s < 256 && key[s] != '?') {
-			PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
-			keyString += key[s];
-		}
-	}
-	return keyString;
+    /* Hysteresis and noise supressor */
+    if (s != so) {
+      nn = 0;
+      so = s;
+    } else if (nn++ == 520 && s < 256 && key[s] != '?') {
+      PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
+      keyString += key[s];
+    }
+  }
+  return keyString;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,12 +182,12 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes)
 #define M_PI        3.1415926
 #endif
 
-#define TWOPI	      (2.0 * M_PI)
-#define MAXSTR	     512
+#define TWOPI        (2.0 * M_PI)
+#define MAXSTR       512
 #define SAMPLERATE   8000
 #define SINEBITS     11
-#define SINELEN	     (1 << SINEBITS)
-#define TWO32	      4294967296.0	/* 2^32 */
+#define SINELEN       (1 << SINEBITS)
+#define TWO32        4294967296.0  /* 2^32 */
 
 
 static double amptab[2] = { 8191.75, 16383.5 };
