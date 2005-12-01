@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.8  2005/12/01 00:43:45  csoutheren
+ * Fixed typo
+ *
  * Revision 1.7  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -537,10 +540,10 @@ PStringList PVideoInputDevice_1394DC::GetInputDeviceNames()
       else
         break;
     }
-    else if (PFile::Exists("/dev/video1394"))
-      /* traditional naming */
-      list.AppendString("/dev/video1394");
   }
+  else if (PFile::Exists("/dev/video1394"))
+    /* traditional naming */
+    list.AppendString("/dev/video1394");
 
   return list;
 }
