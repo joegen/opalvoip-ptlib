@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.66  2005/12/01 01:05:59  csoutheren
+ * Fixed uninitialised variable
+ *
  * Revision 1.65  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -707,6 +710,7 @@ void PVXMLSession::Initialise()
   forceEnd         = FALSE;
   currentForm      = NULL;
   currentNode      = NULL;
+  autoDeleteTextToSpeech = FALSE;
 }
 
 PVXMLSession::~PVXMLSession()
