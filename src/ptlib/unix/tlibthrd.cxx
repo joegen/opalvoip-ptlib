@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.148  2005/12/01 00:55:19  csoutheren
+ * Removed chance of endless loop in PTimedMutex destructor
+ *
  * Revision 1.147  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -1740,7 +1743,8 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
 PTimedMutex::~PTimedMutex()
 {
   int result = pthread_mutex_destroy(&mutex);
-  while (result == EBUSY) {
+  PINDEX i;
+  while ((result == EBUSY) && (i++ < 20)) {
     pthread_mutex_unlock(&mutex);
     result = pthread_mutex_destroy(&mutex);
   }
