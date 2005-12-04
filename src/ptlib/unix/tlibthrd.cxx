@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.149  2005/12/04 22:07:26  csoutheren
+ * Fixed uninitialised variable
+ *
  * Revision 1.148  2005/12/01 00:55:19  csoutheren
  * Removed chance of endless loop in PTimedMutex destructor
  *
@@ -1743,7 +1746,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
 PTimedMutex::~PTimedMutex()
 {
   int result = pthread_mutex_destroy(&mutex);
-  PINDEX i;
+  PINDEX i = 0;
   while ((result == EBUSY) && (i++ < 20)) {
     pthread_mutex_unlock(&mutex);
     result = pthread_mutex_destroy(&mutex);
