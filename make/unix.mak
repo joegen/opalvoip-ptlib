@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.197  2005/12/04 22:38:38  csoutheren
+# Added patch for hppa64. Thanks to Kilian Krause
+#
 # Revision 1.196  2005/09/25 10:51:23  dominance
 # almost complete the mingw support. We'll be there soon. ;)
 #
@@ -292,6 +295,10 @@ ifneq (,$(findstring ia64, $(MACHTYPE)))
 MACHTYPE := ia64
 endif
 
+ifneq (,$(findsting hppa64, $(MACHTYPE)))
+MACHTYPE := hppa64
+endif
+
 ifneq (,$(findstring s390, $(MACHTYPE)))
 ifneq (,$(findstring s390x, $(MACHTYPE)))
 MACHTYPE := s390x
@@ -396,6 +403,10 @@ endif
 endif
 
 ifeq ($(MACHTYPE),ia64)
+STDCCFLAGS     += -DP_64BIT
+endif
+
+ifeq ($(MACHTYPE),hppa64)
 STDCCFLAGS     += -DP_64BIT
 endif
 
