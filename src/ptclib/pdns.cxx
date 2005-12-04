@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.24  2005/12/04 22:43:30  csoutheren
+ * Cleanup patches from Kilian Krause
+ *
  * Revision 1.23  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -292,7 +295,7 @@ DNS_STATUS DnsQuery_A(const char * service,
   BYTE * cp         = reply.buf + sizeof(HEADER);
 
   // ignore questions in response
-  unsigned i;
+  uint16_t i;
   for (i = 0; i < ntohs(reply.hdr.qdcount); i++) {
     char qName[MAXDNAME];
     if (!GetDN(replyStart, replyEnd, cp, qName))
