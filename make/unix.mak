@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.198  2005/12/04 22:50:50  csoutheren
+# Applied patch for Alpha thanks to Kilian Krause
+#
 # Revision 1.197  2005/12/04 22:38:38  csoutheren
 # Added patch for hppa64. Thanks to Kilian Krause
 #
@@ -425,7 +428,7 @@ endif
 
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
-STDCCFLAGS	+= -fPIC
+STDCCFLAGS	+= -fPIC -DPIC
 endif # PROG
 endif # P_SHAREDLIB
 
@@ -573,7 +576,7 @@ ifndef DEBUG
 ifndef P_SHAREDLIB
 P_SHAREDLIB=1
 ifndef PROG
-STDCCFLAGS	+= -fPIC
+STDCCFLAGS	+= -fPIC -DPIC
 endif # PROG
 endif
 endif
