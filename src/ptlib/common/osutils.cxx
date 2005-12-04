@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.237  2005/12/04 22:43:30  csoutheren
+ * Cleanup patches from Kilian Krause
+ *
  * Revision 1.236  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -1067,9 +1070,9 @@ ostream & PTrace::End(ostream & s)
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
      must suffer with blank lines in that case.
    */
-  // ::streambuf & rb = *s.rdbuf();
 #if 0
 #ifndef P_LINUX
+  ::streambuf & rb = *s.rdbuf();
   if (((s.flags()&ios::unitbuf) != 0) ||
 #ifdef __USE_STL__
           rb.pubseekoff(0, ios::cur, ios::out) > 0
