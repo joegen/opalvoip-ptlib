@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.20  2005/12/05 21:58:36  dsandras
+ * Fixed bug when looking if the cache is still valid.
+ *
  * Revision 1.19  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -325,7 +328,7 @@ public:
   {
     int length = ((PSTUNMessageHeader *)theArray)->msgLength;
     PSTUNAttribute * attrib = GetFirstAttribute();
-    while (length > 0) {
+    while (attrib && length > 0) {
       length -= attrib->length + 4;
       attrib = attrib->GetNext();
     }
@@ -576,7 +579,7 @@ PSTUNClient::RTPSupportTypes PSTUNClient::IsSupportingRTP(BOOL force)
 BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
                                      const PTimeInterval & maxAge)
 {
-  if (cachedExternalAddress.IsValid() && (PTime() - timeAddressObtained > maxAge)) {
+  if (cachedExternalAddress.IsValid() && (PTime() - timeAddressObtained < maxAge)) {
     externalAddress = cachedExternalAddress;
     return TRUE;
   }
