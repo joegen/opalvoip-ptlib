@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.150  2005/12/05 22:35:24  csoutheren
+ * Only assert in PTimedMutex destructor if _DEBUG is enabled
+ *
  * Revision 1.149  2005/12/04 22:07:26  csoutheren
  * Fixed uninitialised variable
  *
@@ -1751,7 +1754,9 @@ PTimedMutex::~PTimedMutex()
     pthread_mutex_unlock(&mutex);
     result = pthread_mutex_destroy(&mutex);
   }
+#ifdef _DEBUG
   PAssert((result == 0), "Error destroying mutex");
+#endif
 }
 
 void PTimedMutex::Wait() 
