@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.83  2005/12/12 00:24:26  dereksmithies
+ * Add recursive mutex to Wrapper object, so one can successfully Dump Memory
+ * usage Statistics & objects during program operation.
+ *
  * Revision 1.82  2005/09/23 15:30:46  dominance
  * more progress to make mingw compile nicely. Thanks goes to Julien Puydt for pointing out to me how to do it properly. ;)
  *
@@ -613,7 +617,12 @@ PMemoryHeap::PMemoryHeap()
   leakDumpStream = &debug;
 #else
 #if defined(P_PTHREADS)
-  pthread_mutex_init(&mutex, NULL);
+#ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+  pthread_mutex_t recursiveMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+  mutex = recursiveMutex;
+#else
+ pthread_mutex_init(&mutex, NULL);
+#endif
 #elif defined(P_VXWORKS)
   mutex = semMCreate(SEM_Q_FIFO);
 #endif
