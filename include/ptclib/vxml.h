@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.44  2005/12/15 21:14:33  dsandras
+ * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
+ *
  * Revision 1.43  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -396,7 +399,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
-    virtual PString PVXMLSession::EvaluateExpr(const PString & oexpr);
+    virtual PString EvaluateExpr(const PString & oexpr);
 
     virtual BOOL RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn, BOOL useCache = TRUE);
 
