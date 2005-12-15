@@ -440,6 +440,8 @@ AC_ARG_ENABLE(minsize,
        [  --enable-minsize        minimise the size of the lib by disabling least used options])
 AC_ARG_ENABLE(openh323,
        [  --enable-openh323       include only options needed with openh323])
+AC_ARG_ENABLE(opal,
+       [  --enable-opal           include only options needed with opal])
 
 dnl these are the default configure settings
 default_resolver=yes
@@ -475,7 +477,7 @@ default_oss=yes
 default_ipv6=yes
 default_qos=yes
 
-if test "${enable_openh323}x" = "yesx" ; then
+if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
   default_openldap=yes
   default_openssl=yes
