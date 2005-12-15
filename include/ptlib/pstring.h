@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.85  2005/12/15 21:14:34  dsandras
+ * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
+ *
  * Revision 1.84  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -3198,5 +3201,6 @@ class PRegularExpression : public PObject
     int lastError;
 };
 
+PString psprintf(const char * cfmt, ...);
 
 // End Of File ///////////////////////////////////////////////////////////////
