@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.89  2005/12/15 21:14:34  dsandras
+ * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
+ *
  * Revision 1.88  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -288,6 +291,7 @@
 
 #define new PNEW
 
+extern void PXSignalHandler(int);
 
 #define  MAX_LOG_LINE_LEN  1024
 
