@@ -35,6 +35,9 @@
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.7  2005/12/21 21:31:39  dsandras
+ * Fixed build with gcc 4.1.
+ *
  * Revision 1.6  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -96,7 +99,7 @@ public:
   
 protected:
   
-  virtual PString V4L2Names::BuildUserFriendly(PString devname);
+  virtual PString BuildUserFriendly(PString devname);
 
   enum KernelVersionEnum {
     K2_4, 
