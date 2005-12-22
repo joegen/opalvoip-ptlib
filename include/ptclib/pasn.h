@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.15  2005/12/22 02:29:22  csoutheren
+ * Fixed PASNIPAddress constructor that accepts PIPSocket::Address
+ *
  * Revision 1.14  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -358,7 +361,7 @@ class PASNIPAddress : public PASNString
   PCLASSINFO(PASNIPAddress, PASNString)
   public:
     PASNIPAddress(const PIPSocket::Address & addr)
-      : PASNString(PString((const char *)&addr, 4)) { }
+      : PASNString((const BYTE *)addr.GetPointer(), addr.GetSize()) { }
 
     PASNIPAddress(const PString & str);
 
