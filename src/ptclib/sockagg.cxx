@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.2  2005/12/22 07:27:36  csoutheren
+ * More implementation
+ *
  * Revision 1.1  2005/12/22 03:55:52  csoutheren
  * Added initial version of socket aggregation classes
  *
@@ -38,21 +41,21 @@
 
 #include <fcntl.h>
 
-
 ////////////////////////////////////////////////////////////////
 
 #if _WIN32
-class LocalPipe : public PHandleAggregator::LocalPipeBase
+
+class LocalEvent : public PHandleAggregator::EventBase
 {
   public:
-    LocalPipe()
+    LocalEvent()
     { event = CreateEvent(NULL, TRUE, FALSE,NULL); }
 
-    ~LocalPipe()
+    ~LocalEvent()
     { CloseHandle(event); }
 
-    PAggregatorFDType GetHandle()
-    {  return event; }
+    PAggregatorFD::Handle GetHandle()
+    { return event; }
 
     void Set()
     { SetEvent(event);  }
@@ -64,46 +67,107 @@ class LocalPipe : public PHandleAggregator::LocalPipeBase
     HANDLE event;
 };
 
+void PAggregatorFD::FdSet::Clear()
+{
+  erase(begin(), end());
+  reserve(MAXIMUM_WAIT_OBJECTS); 
+}
+
+
+void PAggregatorFD::FdSet::AddFD(HANDLE handle, int &)
+{ 
+  push_back(handle); 
+}
+
+BOOL PAggregatorFD::FdSet::IsFDSet(HANDLE)
+{ 
+  return FALSE;  
+}
+
+PAggregatorFD::PAggregatorFD(SOCKET v)
+  : socket(v) 
+{ 
+  fd = WSACreateEvent(); 
+  WSAEventSelect(socket, fd, FD_READ | FD_CLOSE); 
+}
+
+PAggregatorFD::~PAggregatorFD()
+{ 
+  WSACloseEvent(fd); 
+}
+
+bool PAggregatorFD::IsValid()
+{ 
+  return socket != INVALID_SOCKET; 
+}
+
 #else
 
-class LocalPipe : public PHandleAggregator::LocalPipeBase
+class LocalEvent : public PHandleAggregator::EventBase
 {
   public:
-    LocalPipe()
-    { pipe(fds); }
+    LocalEvent()
+    { ::pipe(fds); }
 
-    ~LocalPipe()
+    ~LocalEvent()
     {
       close(fds[0]);
       close(fds[1]);
     }
 
-    PAggregatorFDType GetHandle()
+    PAggregatorFD::Handle GetHandle()
     { return fds[0]; }
 
     void Set())
     { char ch; write(fds[1], &ch, 1); }
 
-    int Read(void * buffer, int len)
+    int Reset()
     { char ch; read(fds[0], &ch, 1); }
 
   protected:
     int fds[2];
 };
 
+void PAggregatorFD::FdSet::Clear()
+{
+  FD_ZERO(this); 
+}
+
+void PAggregatorFD::FdSet::AddFD(PAggregatorFD::Handle handle, int & maxFd)
+{
+  FD_SET(handle, this);
+  maxFd = PMAX(maxFd, handle);
+}
+
+BOOL PAggregatorFD::FdSet::IsFDSet(PAggregatorFD::Handle handle)
+{ 
+  return (handle >= 0) && FD_ISSET(handle, this);  
+}
+
+PAggregatorFD::PAggregatorFD(int v)
+  : fd(v) 
+{ 
+}
+
+bool PAggregatorFD::IsValid()
+{ 
+  return fd >= 0; 
+}
 #endif
+
+////////////////////////////////////////////////////////////////
 
 class WorkerThread : public PHandleAggregator::WorkerThreadBase
 {
   public:
     WorkerThread()
-      : WorkerThreadBase(localPipe)
+      : WorkerThreadBase(localEvent)
     { }
 
     void Trigger()
-    { pipe.Set(); }
+    { localEvent.Set(); }
 
-    LocalPipe localPipe;
+    LocalEvent localEvent;
 };
 
 
@@ -131,6 +195,7 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
     PWaitAndSignal m2(worker.mutex);
     if (worker.handleList.size() < maxWorkerSize) {
       worker.handleList.push_back(handle);
+      worker.listChanged = TRUE;
       worker.Trigger();
       return TRUE;
     }
@@ -174,6 +239,7 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 
     // if the worker thread has enough handles to keep running, trigger it to update
     if (worker->handleList.size() >= minWorkerSize) {
+      worker->listChanged = TRUE;
       worker->Trigger();
       worker->mutex.Signal();
       return TRUE;
@@ -209,14 +275,15 @@ void PHandleAggregator::WorkerThreadBase::Main()
 {
   PTRACE(4, "Socket aggregator thread started");
 
+  PAggregatorFD::FdSet rfds;
+
   for (;;) {
 
     // create the list of fds to wait on and minimum timeout
     PTimeInterval timeout(PMaxTimeInterval);
     PAggregatedHandle * timeoutHandle = NULL;
 
-    PAggregatorFDType maxFd;
-    PAggregatorFDType::FdSet rfds;
+    int maxFd;
     {
       PWaitAndSignal m(mutex);
 
@@ -224,31 +291,48 @@ void PHandleAggregator::WorkerThreadBase::Main()
       if (handleList.size() == 0)
         break;
 
-      // create the list of fds
-      HandleContextList_t::iterator r;
-      for (r = handleList.begin(); r != handleList.end(); ++r) {
-        PAggregatedHandle * handle = *r;
-        if (!handle->preReadDone) {
-          handle->PreRead();
-          handle->preReadDone = TRUE;
-        }
-        handle->AddFD(rfds, maxFd);
-        PTimeInterval t = handle->GetTimeout();
-        if (t < timeout) {
-          timeout = t;
-          timeoutHandle = handle;
+      // if the list of handles has not changed, quickly find the shortest timeout
+      if (!listChanged) {
+        HandleContextList_t::iterator r;
+        for (r = handleList.begin(); r != handleList.end(); ++r) {
+          PAggregatedHandle * handle = *r;
+          PTimeInterval t = handle->GetTimeout();
+          if (t < timeout) {
+            timeout = t;
+            timeoutHandle = handle;
+          }
         }
       }
 
-      // add in the pipe fd
-      rfds.AddFD(pipe.GetHandle(), maxFd);
+      // otherwise, create the list of handles
+      else
+      {
+        rfds.Clear();
+        HandleContextList_t::iterator r;
+        for (r = handleList.begin(); r != handleList.end(); ++r) {
+          PAggregatedHandle * handle = *r;
+          if (!handle->IsPreReadDone()) {
+            handle->PreRead();
+            handle->SetPreReadDone();
+          }
+          handle->AddFD(rfds, maxFd);
+          PTimeInterval t = handle->GetTimeout();
+          if (t < timeout) {
+            timeout = t;
+            timeoutHandle = handle;
+          }
+        }
+
+        // add in the event fd
+        rfds.AddFD(event.GetHandle(), maxFd);
+      }
     }
 
     HandleContextList_t handlesToRemove;
 
 #ifdef _WIN32
     DWORD nCount = rfds.size();
-    DWORD ret = WaitForMultipleObjects(nCount, &rfds[0], false, timeout.GetMilliSeconds());
+    DWORD ret = WSAWaitForMultipleEvents(nCount, &rfds[0], false, timeout.GetMilliSeconds(), FALSE);
 
     if (ret == WAIT_FAILED) {
       DWORD err = GetLastError();
@@ -264,9 +348,9 @@ void PHandleAggregator::WorkerThreadBase::Main()
     else if (WAIT_OBJECT_0 <= ret && ret <= (WAIT_OBJECT_0 + nCount - 1)) {
       DWORD index = ret - WAIT_OBJECT_0;
 
-      // check the pipe first
+      // if the event was triggered, redo the select
       if (index == nCount-1) {
-        pipe.Reset();
+        event.Reset();
         continue;
       }
 
@@ -275,7 +359,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
     if (handle != NULL) {
       if (handle->OnRead()) 
-        handle->preReadDone = FALSE;
+        handle->SetPreReadDone(FALSE);
       else {
         handlesToRemove.push_back(handle);
         handle->DeInit();
@@ -296,10 +380,9 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
     PWaitAndSignal m(mutex);
 
-    // check the pipe first
-    if (rfds.IsFDSet(pipe.GetHandle())) {
-      char ch;
-      pipe.Read(&ch, 1);
+    // check the event first
+    if (rfds.IsFDSet(event.GetHandle())) {
+      event.Reset();
       continue;
     }
 
