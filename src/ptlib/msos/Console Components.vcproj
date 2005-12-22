@@ -634,6 +634,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pnat.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\psasl.cxx">
 			</File>
 			<File
@@ -919,6 +922,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\sockagg.cxx">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\Ptclib\socks.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1123,6 +1134,9 @@
 				RelativePath="..\..\..\include\ptclib\shttpsvc.h">
 			</File>
 			<File
+				RelativePath="..\..\..\include\ptclib\sockagg.h">
+			</File>
+			<File
 				RelativePath="..\..\..\Include\PtCLib\socks.h">
 			</File>
 			<File
@@ -1150,9 +1164,6 @@
 				RelativePath="..\..\..\include\ptclib\xmpp_roster.h">
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\..\ptclib\pnat.cxx">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
