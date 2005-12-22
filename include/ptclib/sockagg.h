@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.2  2005/12/22 07:27:36  csoutheren
+ * More implementation
+ *
  * Revision 1.1  2005/12/22 03:55:52  csoutheren
  * Added initial version of socket aggregation classes
  *
@@ -78,71 +81,52 @@ The basic aggregator mechanism
 #include <functional>
 #include <vector>
 
-class PAggregatorFDType 
+class PAggregatorFD 
 {
   public:
+
 #ifdef _WIN32
-    class FdSet : public std::vector<HANDLE> 
-    {
-      public:
-        FdSet()
-        { reserve(MAXIMUM_WAIT_OBJECTS); }
+    typedef HANDLE Handle;
+    typedef SOCKET FD;
 
-        void AddFD(PAggregatorFDType fd, PAggregatorFDType &)
-        { push_back((HANDLE)fd); }
-
-        BOOL IsFDSet(PAggregatorFDType)
-        { return FALSE;  }
-    };
-
-    PAggregatorFDType()
-      : handle(0) { }
-
-    PAggregatorFDType(SOCKET v)
-      : handle((HANDLE)v) { }
-
-    PAggregatorFDType(HANDLE v)
-      : handle(v) { }
-
-    //operator SOCKET () const
-    //{ return handle; }
-
-    operator HANDLE () const
-    { return handle; }
-
-    bool IsValid()
-    { return (int)handle != -1; }
-
-    HANDLE handle;
+    SOCKET socket;
+    WSAEVENT fd;
 
 #else
+
+    typedef int Handle;
+    typedef int FD;
+
+    int fd;
+#endif
+
+  public:
+    PAggregatorFD(FD fd);
+
+#ifdef _WIN32
+    class FdSet : public std::vector<WSAEVENT> 
+#else
     class FdSet : public FD_SET
+#endif
     {
       public:
         FdSet()
-        { FD_ZERO(this); }
+        { Clear(); }
 
-        void AddFD(PAggregatorFDType fd, PAggregatorFDType & maxFd);
-        {
-          FD_SET(fd, this);
-          maxFd = PMAX(maxFd, fd);
-        }
+        void Clear();
 
-        BOOL IsFDSet(PAggregatorFDType fd)
-        { return fd.IsValid() && FD_ISSET(fd, this);  }
+        void AddFD(PAggregatorFD & fd, int & maxFd)
+        { AddFD(fd.fd, maxFd); }
+
+        BOOL IsFDSet(const PAggregatorFD & fd)
+        { return IsFDSet(fd.fd); }
+
+        void AddFD(HANDLE handle, int &);
+        BOOL IsFDSet(HANDLE);
     };
 
-    PAggregatorFDType(int v = 0)
-      : handle(v) { }
-
-    operator int () const
-    { return handle; }
-
-    bool IsValid()
-    { return ((int)*this) >= 0; }
-
-    int handle;
-#endif
+    ~PAggregatorFD();
+    bool IsValid();
 };
 
 #ifdef _MSC_VER
@@ -150,8 +134,9 @@ class PAggregatorFDType
 #pragma warning(disable:4127)
 #endif
 
-class PAggregatedHandle
+class PAggregatedHandle : public PObject
 {
+  PCLASSINFO(PAggregatedHandle, PObject);
   public:
     PAggregatedHandle(BOOL _autoDelete = FALSE)
       : autoDelete(_autoDelete), preReadDone(FALSE)
@@ -160,22 +145,25 @@ class PAggregatedHandle
     virtual PTimeInterval GetTimeout()
     { return PMaxTimeInterval; }
 
-    virtual void AddFD(PAggregatorFDType::FdSet & fds, PAggregatorFDType & maxFd)
-    { fds.AddFD(GetHandle(), maxFd); }
+    virtual void AddFD(PAggregatorFD::FdSet & fds, int & maxFd) = 0;
 
-    virtual BOOL IsFDSet(PAggregatorFDType::FdSet & fds)
-    { return fds.IsFDSet(GetHandle()); }
+    virtual BOOL IsFDSet(PAggregatorFD::FdSet & fds) = 0;
 
     virtual BOOL Init()      { return TRUE; }
     virtual BOOL PreRead()   { return TRUE; }
     virtual BOOL OnRead() = 0;
     virtual void DeInit()    { }
 
-    BOOL autoDelete;
-    BOOL preReadDone;
+    virtual BOOL IsPreReadDone() const
+    { return preReadDone; }
 
-  private:
-    virtual PAggregatorFDType GetHandle() const = 0;
+    virtual void SetPreReadDone(BOOL v = TRUE)
+    { preReadDone = v; }
+
+    BOOL autoDelete;
+
+  protected:
+    BOOL preReadDone;
 };
 
 #ifdef _MSC_VER
@@ -187,10 +175,10 @@ class PHandleAggregator : public PObject
 {
   PCLASSINFO(PHandleAggregator, PObject)
   public:
-    class LocalPipeBase
+    class EventBase
     {
       public:
-        virtual PAggregatorFDType GetHandle() = 0;
+        virtual PAggregatorFD::Handle GetHandle() = 0;
         virtual void Set() = 0;
         virtual void Reset() = 0;
     };
@@ -200,15 +188,16 @@ class PHandleAggregator : public PObject
     class WorkerThreadBase : public PThread
     {
       public:
-        WorkerThreadBase(LocalPipeBase & _pipe)
-          : PThread(100, NoAutoDeleteThread), pipe(_pipe)
+        WorkerThreadBase(EventBase & _event)
+          : PThread(100, NoAutoDeleteThread), event(_event), listChanged(FALSE)
         { }
 
         virtual void Trigger() = 0;
         void Main();
 
-        LocalPipeBase & pipe;
+        EventBase & event;
         PMutex mutex;
+        BOOL listChanged;
 
         HandleContextList_t handleList;
     };
@@ -239,15 +228,18 @@ class PSocketAggregator : public PHandleAggregator
         AggregatedPSocket(PSocketType * _s)
           : psocket(_s), fd(_s->GetHandle()) { }
 
-        PAggregatorFDType GetHandle() const
-        { return fd; }
-
         BOOL OnRead()
         { return psocket->OnRead(); }
 
+        void AddFD(PAggregatorFD::FdSet & fds, int & maxFd)
+        { fds.AddFD(fd, maxFd); }
+
+        BOOL IsFDSet(PAggregatorFD::FdSet & fds)
+        { return fds.IsFDSet(fd); }
+
       protected:
         PSocketType * psocket;
-        PAggregatorFDType fd;
+        PAggregatorFD fd;
     };
 
     typedef std::map<PSocketType *, AggregatedPSocket *> SocketList_t;
