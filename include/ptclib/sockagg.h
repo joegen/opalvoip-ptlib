@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.3  2005/12/23 06:44:30  csoutheren
+ * Working implementation
+ *
  * Revision 1.2  2005/12/22 07:27:36  csoutheren
  * More implementation
  *
@@ -81,53 +84,48 @@ The basic aggregator mechanism
 #include <functional>
 #include <vector>
 
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// this class encapsulates the system specific handle needed to specifiy a socket.
+// On Unix systems, this is a simple file handle. This file handle is used to uniquely
+// identify the socket and used in the "select" system call
+// On Windows systems the SOCKET handle is used to identify the socket, but a seperate WSAEVENT
+// handle is needed for the WSWaitForMultpleEvents call.
+// This is further complicated by the fact that we need to treat some pairs of sockets as a single
+// entity (i.e. RTP sockets) to avoid rewriting the RTP handler code.
+//
+
+class PAggregatedHandle;
+
 class PAggregatorFD 
 {
   public:
-
 #ifdef _WIN32
-    typedef HANDLE Handle;
-    typedef SOCKET FD;
-
+    typedef WSAEVENT FD;
+    typedef SOCKET FDType;
     SOCKET socket;
-    WSAEVENT fd;
-
 #else
-
-    typedef int Handle;
     typedef int FD;
-
-    int fd;
+    typedef int FDType;
 #endif
 
-  public:
-    PAggregatorFD(FD fd);
+    PAggregatorFD(FDType fd);
 
-#ifdef _WIN32
-    class FdSet : public std::vector<WSAEVENT> 
-#else
-    class FdSet : public FD_SET
-#endif
-    {
-      public:
-        FdSet()
-        { Clear(); }
-
-        void Clear();
-
-        void AddFD(PAggregatorFD & fd, int & maxFd)
-        { AddFD(fd.fd, maxFd); }
-
-        BOOL IsFDSet(const PAggregatorFD & fd)
-        { return IsFDSet(fd.fd); }
-
-        void AddFD(HANDLE handle, int &);
-        BOOL IsFDSet(HANDLE);
-    };
+    FD fd;
 
     ~PAggregatorFD();
     bool IsValid();
 };
+
+typedef std::vector<PAggregatorFD *> PAggregatorFDList_t;
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// This class defines an abstract class used to define a handle that can be aggregated
+//
+// Normally this will correspond directly to a socket, but for RTP this actually corresponds to two sockets
+// which greatly complicates things
+//
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -142,12 +140,10 @@ class PAggregatedHandle : public PObject
       : autoDelete(_autoDelete), preReadDone(FALSE)
     { }
 
+    virtual PAggregatorFDList_t GetFDs() = 0;
+
     virtual PTimeInterval GetTimeout()
     { return PMaxTimeInterval; }
-
-    virtual void AddFD(PAggregatorFD::FdSet & fds, int & maxFd) = 0;
-
-    virtual BOOL IsFDSet(PAggregatorFD::FdSet & fds) = 0;
 
     virtual BOOL Init()      { return TRUE; }
     virtual BOOL PreRead()   { return TRUE; }
@@ -171,6 +167,11 @@ class PAggregatedHandle : public PObject
 #endif
 
 
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// This class is the actual socket aggregator
+//
+
 class PHandleAggregator : public PObject
 {
   PCLASSINFO(PHandleAggregator, PObject)
@@ -178,7 +179,7 @@ class PHandleAggregator : public PObject
     class EventBase
     {
       public:
-        virtual PAggregatorFD::Handle GetHandle() = 0;
+        virtual PAggregatorFD::FD GetHandle() = 0;
         virtual void Set() = 0;
         virtual void Reset() = 0;
     };
@@ -189,7 +190,7 @@ class PHandleAggregator : public PObject
     {
       public:
         WorkerThreadBase(EventBase & _event)
-          : PThread(100, NoAutoDeleteThread), event(_event), listChanged(FALSE)
+          : PThread(100, NoAutoDeleteThread), event(_event), listChanged(TRUE)
         { }
 
         virtual void Trigger() = 0;
@@ -217,6 +218,12 @@ class PHandleAggregator : public PObject
 };
 
 
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// This template class allows the creation of aggregators for sockets that are
+// descendants of PIPSocket
+//
+
 template <class PSocketType>
 class PSocketAggregator : public PHandleAggregator
 {
@@ -231,11 +238,8 @@ class PSocketAggregator : public PHandleAggregator
         BOOL OnRead()
         { return psocket->OnRead(); }
 
-        void AddFD(PAggregatorFD::FdSet & fds, int & maxFd)
-        { fds.AddFD(fd, maxFd); }
-
-        BOOL IsFDSet(PAggregatorFD::FdSet & fds)
-        { return fds.IsFDSet(fd); }
+        PAggregatorFDList_t GetFDs()
+        { PAggregatorFDList_t list; list.push_back(&fd); return list; }
 
       protected:
         PSocketType * psocket;
@@ -274,8 +278,5 @@ class PSocketAggregator : public PHandleAggregator
       return TRUE;
     }
 };
-
-typedef PSocketAggregator<PUDPSocket> PUDPSocketAggregator;
-
 
 #endif
