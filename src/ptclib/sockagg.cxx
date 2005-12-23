@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.3  2005/12/23 06:44:31  csoutheren
+ * Working implementation
+ *
  * Revision 1.2  2005/12/22 07:27:36  csoutheren
  * More implementation
  *
@@ -41,6 +44,98 @@
 
 #include <fcntl.h>
 
+/*
+  public:
+    class FdSet 
+    {
+      public:
+#ifdef _WIN32
+      enum { InitialSize = WSA_MAXIMUM_WAIT_EVENTS };
+      WSAEVENT * GetHandleArray(DWORD & size);
+#else
+      enum { InitialSize = 64 };
+      void CreateFDSet(fd_set & fdset);
+#endif
+
+      typedef std::map<FD, PAggregatedHandle *> fdToHandle_t;
+      typedef std::vector<FD> fds_t; 
+      public:
+        FdSet()
+        { Clear(); }
+
+        void AddFD(PAggregatedHandle * handle, PAggregatorFD *, int & maxFd);
+
+        void AddFD(FD fd, int & maxFd);
+
+        void Clear()
+        {
+          fds.erase(fds.begin(), fds.end());
+          fds.reserve(InitialSize);
+          fdToHandle.erase(fdToHandle.begin(), fdToHandle.end());
+        }
+
+        PAggregatedHandle * GetHandle(FD fd)
+        {
+          fdToHandle_t::iterator r = fdToHandle.find(fd);
+          if (r == fdToHandle.end())
+            return NULL;
+          return r->second;
+        }
+
+      protected:
+        void AddFD(PAggregatedHandle * handle, FD fd)
+        { 
+          AddFD(fd); 
+          fdToHandle.insert(fdToHandle_t::value_type(fd, handle)); 
+          fdToHandle.insert(fdToHandle_t::value_type(fd, handle)); 
+        }
+
+        void AddFD(FD fd)
+        { fds.push_back(fd); }
+
+        fds_t fds; 
+        fdToHandle_t fdToHandle;
+    };
+void PAggregatorFD::FdSet::AddFD(PAggregatedHandle * handle, FD fd, int &)
+{
+  AddFD(handle, fd);
+}
+
+void PAggregatorFD::FdSet::AddFD(FD fd, int &)
+{
+  AddFD(fd);
+}
+
+WSAEVENT * PAggregatorFD::FdSet::GetHandleArray(DWORD & size)
+{
+  size = fds.size();
+  return &fds[0];
+}
+
+
+void PAggregatorFD::FdSet::AddFD(PAggregatedHandle * handle, FD fd, int & maxFd)
+{
+  AddFD(handle, fd);
+  maxFd = PMAX(maxFd, fd);
+}
+
+void PAggregatorFD::FdSet::AddFD(FD fd, int & maxFd)
+{
+  AddFD(fd);
+  maxFd = PMAX(maxFd, fd);
+}
+
+void PAggregatorFD::FdSet::CreateFDSet(fd_set & fds)
+{
+  FD_ZERO(&fds);
+
+  fds_t::iterator r;
+  for (r = fds.begin(); r != fds.end(); ++r)
+    FD_SET(*r, &fds)
+}
+
+*/
+
 ////////////////////////////////////////////////////////////////
 
 #if _WIN32
@@ -49,12 +144,15 @@ class LocalEvent : public PHandleAggregator::EventBase
 {
   public:
     LocalEvent()
-    { event = CreateEvent(NULL, TRUE, FALSE,NULL); }
+    { 
+      event = CreateEvent(NULL, TRUE, FALSE,NULL); 
+      PAssert(event != NULL, "CreateEvent failed");
+    }
 
     ~LocalEvent()
     { CloseHandle(event); }
 
-    PAggregatorFD::Handle GetHandle()
+    PAggregatorFD::FD GetHandle()
     { return event; }
 
     void Set()
@@ -67,28 +165,11 @@ class LocalEvent : public PHandleAggregator::EventBase
     HANDLE event;
 };
 
-void PAggregatorFD::FdSet::Clear()
-{
-  erase(begin(), end());
-  reserve(MAXIMUM_WAIT_OBJECTS); 
-}
-
-
-void PAggregatorFD::FdSet::AddFD(HANDLE handle, int &)
-{ 
-  push_back(handle); 
-}
-
-BOOL PAggregatorFD::FdSet::IsFDSet(HANDLE)
-{ 
-  return FALSE;  
-}
-
 PAggregatorFD::PAggregatorFD(SOCKET v)
   : socket(v) 
 { 
   fd = WSACreateEvent(); 
-  WSAEventSelect(socket, fd, FD_READ | FD_CLOSE); 
+  PAssert(WSAEventSelect(socket, fd, FD_READ | FD_CLOSE) == 0, "WSAEventSelect failed"); 
 }
 
 PAggregatorFD::~PAggregatorFD()
@@ -128,22 +209,6 @@ class LocalEvent : public PHandleAggregator::EventBase
     int fds[2];
 };
 
-void PAggregatorFD::FdSet::Clear()
-{
-  FD_ZERO(this); 
-}
-
-void PAggregatorFD::FdSet::AddFD(PAggregatorFD::Handle handle, int & maxFd)
-{
-  FD_SET(handle, this);
-  maxFd = PMAX(maxFd, handle);
-}
-
-BOOL PAggregatorFD::FdSet::IsFDSet(PAggregatorFD::Handle handle)
-{ 
-  return (handle >= 0) && FD_ISSET(handle, this);  
-}
-
 PAggregatorFD::PAggregatorFD(int v)
   : fd(v) 
 { 
@@ -153,7 +218,9 @@ bool PAggregatorFD::IsValid()
 { 
   return fd >= 0; 
 }
+
 #endif
+  
 
 ////////////////////////////////////////////////////////////////
 
@@ -271,18 +338,144 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 
 ////////////////////////////////////////////////////////////////
 
+typedef std::vector<PAggregatorFD::FD> fdList_t;
+typedef std::vector<PAggregatorFD * > aggregatorFdList_t;
+typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> aggregatorFdToHandleMap_t;
+
 void PHandleAggregator::WorkerThreadBase::Main()
 {
   PTRACE(4, "Socket aggregator thread started");
 
-  PAggregatorFD::FdSet rfds;
+  fdList_t                  fdList;
+  aggregatorFdList_t        aggregatorFdList;
+  aggregatorFdToHandleMap_t aggregatorFdToHandleMap;
 
   for (;;) {
 
-    // create the list of fds to wait on and minimum timeout
+    // create the list of fds to wait on and find minimum timeout
     PTimeInterval timeout(PMaxTimeInterval);
     PAggregatedHandle * timeoutHandle = NULL;
+    HandleContextList_t handlesToRemove;
 
+#ifdef _WIN32
+    {
+      PWaitAndSignal m(mutex);
+
+      // if no handles, then thread is no longer needed
+      if (handleList.size() == 0)
+        break;
+
+      // if the list of handles has changed, clear the list of handles
+      if (listChanged) {
+        aggregatorFdList.erase       (aggregatorFdList.begin(),      aggregatorFdList.end());
+        aggregatorFdList.reserve     (WSA_MAXIMUM_WAIT_EVENTS);
+        fdList.erase                 (fdList.begin(),                fdList.end());
+        fdList.reserve               (WSA_MAXIMUM_WAIT_EVENTS);
+        aggregatorFdToHandleMap.erase(aggregatorFdToHandleMap.begin(),         aggregatorFdToHandleMap.end());
+      }
+
+      HandleContextList_t::iterator r;
+      for (r = handleList.begin(); r != handleList.end(); ++r) {
+        PAggregatedHandle * handle = *r;
+
+        if (listChanged) {
+          PAggregatorFDList_t fds = handle->GetFDs();
+          PAggregatorFDList_t::iterator s;
+          for (s = fds.begin(); s != fds.end(); ++s) {
+            fdList.push_back          ((*s)->fd);
+            aggregatorFdList.push_back((*s));
+            aggregatorFdToHandleMap.insert(aggregatorFdToHandleMap_t::value_type((*s)->fd, handle));
+          }
+        }
+
+        if (!handle->IsPreReadDone()) {
+          handle->PreRead();
+          handle->SetPreReadDone();
+        }
+
+        PTimeInterval t = handle->GetTimeout();
+        if (t < timeout) {
+          timeout = t;
+          timeoutHandle = handle;
+        }
+      }
+
+      // add in the event fd
+      if (listChanged) {
+        fdList.push_back(event.GetHandle());
+        listChanged = FALSE;
+      }
+    }
+
+    PTime wstart;
+    DWORD nCount = fdList.size();
+    DWORD ret = WSAWaitForMultipleEvents(nCount, &fdList[0], false, timeout.GetMilliSeconds(), FALSE);
+
+    if (ret == WAIT_FAILED) {
+      DWORD err = GetLastError();
+      PTRACE(1, "WaitForMultipleObjects error " << err);
+    }
+
+    {
+      PWaitAndSignal m(mutex);
+
+      if (ret == WAIT_TIMEOUT) {
+        PTime start;
+        BOOL closed = !timeoutHandle->OnRead();
+        unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
+        if (duration > 50) {
+          PTRACE(4, "Warning: aggregator read routine was of extended duration = " << duration << " msecs");
+        }
+        if (!closed)
+          timeoutHandle->SetPreReadDone(FALSE);
+        else {
+          handlesToRemove.push_back(timeoutHandle);
+          timeoutHandle->DeInit();
+        }
+      }
+
+      else if (WAIT_OBJECT_0 <= ret && ret <= (WAIT_OBJECT_0 + nCount - 1)) {
+        DWORD index = ret - WAIT_OBJECT_0;
+
+        // if the event was triggered, redo the select
+        if (index == nCount-1) {
+          event.Reset();
+          continue;
+        }
+
+        PAggregatorFD * fd = aggregatorFdList[index];
+        PAssert(fdList[index] == fd->fd, "Mismatch in fd lists");
+        aggregatorFdToHandleMap_t::iterator r = aggregatorFdToHandleMap.find(fd->fd);
+        if (r != aggregatorFdToHandleMap.end()) {
+          PAggregatedHandle * handle = r->second;
+          WSANETWORKEVENTS events;
+          WSAEnumNetworkEvents(fd->socket, fd->fd, &events);
+          if (events.lNetworkEvents != 0) {
+            BOOL closed = FALSE;
+            if ((events.lNetworkEvents & FD_CLOSE) != 0)
+              closed = TRUE;
+            else if ((events.lNetworkEvents & FD_READ) != 0) {
+              PTime start;
+              closed = !handle->OnRead();
+              unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
+              if (duration > 50) {
+                PTRACE(4, "Warning: aggregator read routine was of extended duration = " << duration << " msecs");
+              }
+            }
+            if (!closed)
+              handle->SetPreReadDone(FALSE);
+            else {
+              handle->DeInit();
+              handlesToRemove.push_back(handle);
+              listChanged = TRUE;
+            }
+          }
+        }
+      }
+
+#else
+
+#if 0
     int maxFd;
     {
       PWaitAndSignal m(mutex);
@@ -291,82 +484,35 @@ void PHandleAggregator::WorkerThreadBase::Main()
       if (handleList.size() == 0)
         break;
 
-      // if the list of handles has not changed, quickly find the shortest timeout
-      if (!listChanged) {
-        HandleContextList_t::iterator r;
-        for (r = handleList.begin(); r != handleList.end(); ++r) {
-          PAggregatedHandle * handle = *r;
-          PTimeInterval t = handle->GetTimeout();
-          if (t < timeout) {
-            timeout = t;
-            timeoutHandle = handle;
-          }
-        }
-      }
-
-      // otherwise, create the list of handles
-      else
-      {
+      // if the list of handles has changed, clear the list of handles
+      if (listChanged)
         rfds.Clear();
-        HandleContextList_t::iterator r;
-        for (r = handleList.begin(); r != handleList.end(); ++r) {
-          PAggregatedHandle * handle = *r;
-          if (!handle->IsPreReadDone()) {
-            handle->PreRead();
-            handle->SetPreReadDone();
-          }
-          handle->AddFD(rfds, maxFd);
-          PTimeInterval t = handle->GetTimeout();
-          if (t < timeout) {
-            timeout = t;
-            timeoutHandle = handle;
-          }
+
+      HandleContextList_t::iterator r;
+      for (r = handleList.begin(); r != handleList.end(); ++r) {
+        PAggregatedHandle * handle = *r;
+
+        if (listChanged)
+          handle->AddFDs(rfds, maxFd);
+
+        if (!handle->IsPreReadDone()) {
+          handle->PreRead();
+          handle->SetPreReadDone();
         }
 
-        // add in the event fd
+        PTimeInterval t = handle->GetTimeout();
+        if (t < timeout) {
+          timeout = t;
+          timeoutHandle = handle;
+        }
+      }
+
+      // add in the event fd
+      if (listChanged) {
         rfds.AddFD(event.GetHandle(), maxFd);
+        listChanged = FALSE;
       }
     }
-
-    HandleContextList_t handlesToRemove;
-
-#ifdef _WIN32
-    DWORD nCount = rfds.size();
-    DWORD ret = WSAWaitForMultipleEvents(nCount, &rfds[0], false, timeout.GetMilliSeconds(), FALSE);
-
-    if (ret == WAIT_FAILED) {
-      DWORD err = GetLastError();
-      PTRACE(1, "WaitForMultipleObjects error " << err);
-    }
-
-    PWaitAndSignal m(mutex);
-    PAggregatedHandle * handle = NULL;
-
-    if (ret == WAIT_TIMEOUT)
-      handle = timeoutHandle;
-
-    else if (WAIT_OBJECT_0 <= ret && ret <= (WAIT_OBJECT_0 + nCount - 1)) {
-      DWORD index = ret - WAIT_OBJECT_0;
-
-      // if the event was triggered, redo the select
-      if (index == nCount-1) {
-        event.Reset();
-        continue;
-      }
-
-      handle = handleList[index];
-    }
-
-    if (handle != NULL) {
-      if (handle->OnRead()) 
-        handle->SetPreReadDone(FALSE);
-      else {
-        handlesToRemove.push_back(handle);
-        handle->DeInit();
-      }
-    }
-
-#else
     P_timeval pv = timeout;
     int ret = ::select(maxFd+1, &rfds, NULL, NULL, NULL /* pv */);
     if (ret < 0) {
@@ -378,40 +524,50 @@ void PHandleAggregator::WorkerThreadBase::Main()
     if (ret <= 0)
       continue;
 
-    PWaitAndSignal m(mutex);
-
-    // check the event first
-    if (rfds.IsFDSet(event.GetHandle())) {
-      event.Reset();
-      continue;
-    }
-
-    // check all handles and collect a list of ones that closed
     {
-      HandleContextList_t::iterator r;
-      for (r = handleList.begin(); r != handleList.end(); ++r) {
-        PAggregatedHandle * handle = *r;
-        if (handle->IsFDSet(rfds)) {
-          if (handle->OnRead()) 
-            handle->preReadDone = FALSE;
-          else {
-            handlesToRemove.push_back(handle);
-            handle->DeInit();
+      PWaitAndSignal m(mutex);
+
+      // check the event first
+      if (rfds.IsFDSet(event.GetHandle())) {
+        event.Reset();
+        continue;
+      }
+
+      // check all handles and collect a list of ones that closed
+      {
+        HandleContextList_t::iterator r;
+        for (r = handleList.begin(); r != handleList.end(); ++r) {
+          PAggregatedHandle * handle = *r;
+          if (handle->IsFDSet(rfds)) {
+            PTime start;
+            BOOL readStat = handle->OnRead();
+            unsigned duration = (PTime() - start).GetMilliSeconds();
+            if (duration > 50) {
+              PTRACE(4, "Warning: aggregator read routine was of extended duration = " << duration << " msecs");
+            }
+
+            if (readStat) 
+              handle->preReadDone = FALSE;
+            else {
+              handlesToRemove.push_back(handle);
+              handle->DeInit();
+            }
           }
         }
       }
-    }
+#endif
 #endif
 
-    // remove handles that are now closed
-    while (handlesToRemove.begin() != handlesToRemove.end()) {
-      PAggregatedHandle * handle = *handlesToRemove.begin();
-      handlesToRemove.erase(handlesToRemove.begin());
-      HandleContextList_t::iterator r = find(handleList.begin(), handleList.end(), handle);
-      if (r != handleList.end())
-        handleList.erase(r);
-      if (handle->autoDelete) 
-        delete handle;
+      // remove handles that are now closed
+      while (handlesToRemove.begin() != handlesToRemove.end()) {
+        PAggregatedHandle * handle = *handlesToRemove.begin();
+        handlesToRemove.erase(handlesToRemove.begin());
+        HandleContextList_t::iterator r = find(handleList.begin(), handleList.end(), handle);
+        if (r != handleList.end())
+          handleList.erase(r);
+        if (handle->autoDelete) 
+          delete handle;
+      }
     }
   }
 
