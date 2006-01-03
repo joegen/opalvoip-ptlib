@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.5  2006/01/03 04:23:32  csoutheren
+ * Fixed Unix implementation
+ *
  * Revision 1.4  2005/12/23 07:49:27  csoutheren
  * Fixed Unix implementation
  *
@@ -41,104 +44,15 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "sockagg.h"
+#endif
+
 
 #include <ptlib.h>
 #include <ptclib/sockagg.h>
 
 #include <fcntl.h>
-
-/*
-  public:
-    class FdSet 
-    {
-      public:
-#ifdef _WIN32
-      enum { InitialSize = WSA_MAXIMUM_WAIT_EVENTS };
-      WSAEVENT * GetHandleArray(DWORD & size);
-#else
-      enum { InitialSize = 64 };
-      void CreateFDSet(fd_set & fdset);
-#endif
-
-      typedef std::map<FD, PAggregatedHandle *> fdToHandle_t;
-      typedef std::vector<FD> fds_t; 
-      public:
-        FdSet()
-        { Clear(); }
-
-        void AddFD(PAggregatedHandle * handle, PAggregatorFD *, int & maxFd);
-
-        void AddFD(FD fd, int & maxFd);
-
-        void Clear()
-        {
-          fds.erase(fds.begin(), fds.end());
-          fds.reserve(InitialSize);
-          fdToHandle.erase(fdToHandle.begin(), fdToHandle.end());
-        }
-
-        PAggregatedHandle * GetHandle(FD fd)
-        {
-          fdToHandle_t::iterator r = fdToHandle.find(fd);
-          if (r == fdToHandle.end())
-            return NULL;
-          return r->second;
-        }
-
-      protected:
-        void AddFD(PAggregatedHandle * handle, FD fd)
-        { 
-          AddFD(fd); 
-          fdToHandle.insert(fdToHandle_t::value_type(fd, handle)); 
-          fdToHandle.insert(fdToHandle_t::value_type(fd, handle)); 
-        }
-
-        void AddFD(FD fd)
-        { fds.push_back(fd); }
-
-        fds_t fds; 
-        fdToHandle_t fdToHandle;
-    };
-
-void PAggregatorFD::FdSet::AddFD(PAggregatedHandle * handle, FD fd, int &)
-{
-  AddFD(handle, fd);
-}
-
-void PAggregatorFD::FdSet::AddFD(FD fd, int &)
-{
-  AddFD(fd);
-}
-
-WSAEVENT * PAggregatorFD::FdSet::GetHandleArray(DWORD & size)
-{
-  size = fds.size();
-  return &fds[0];
-}
-
-
-void PAggregatorFD::FdSet::AddFD(PAggregatedHandle * handle, FD fd, int & maxFd)
-{
-  AddFD(handle, fd);
-  maxFd = PMAX(maxFd, fd);
-}
-
-void PAggregatorFD::FdSet::AddFD(FD fd, int & maxFd)
-{
-  AddFD(fd);
-  maxFd = PMAX(maxFd, fd);
-}
-
-void PAggregatorFD::FdSet::CreateFDSet(fd_set & fds)
-{
-  FD_ZERO(&fds);
-
-  fds_t::iterator r;
-  for (r = fds.begin(); r != fds.end(); ++r)
-    FD_SET(*r, &fds)
-}
-
-*/
 
 ////////////////////////////////////////////////////////////////
 
@@ -186,7 +100,7 @@ bool PAggregatorFD::IsValid()
   return socket != INVALID_SOCKET; 
 }
 
-#else
+#else // #if _WIN32
 
 class LocalEvent : public PHandleAggregator::EventBase
 {
@@ -218,12 +132,16 @@ PAggregatorFD::PAggregatorFD(int v)
 { 
 }
 
+PAggregatorFD::~PAggregatorFD()
+{
+}
+
 bool PAggregatorFD::IsValid()
 { 
   return fd >= 0; 
 }
 
-#endif
+#endif // #endif _WIN32
   
 
 ////////////////////////////////////////////////////////////////
@@ -573,3 +491,4 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
   PTRACE(4, "Socket aggregator thread finished");
 }
+

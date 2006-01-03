@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.4  2006/01/03 04:23:32  csoutheren
+ * Fixed Unix implementation
+ *
  * Revision 1.3  2005/12/23 06:44:30  csoutheren
  * Working implementation
  *
@@ -75,8 +78,6 @@ received data into a buffer until the handling routine decides that a full PDU h
 At the heart of each socket aggregator is a select statement that contains all of the file descriptors that are managed
 by the thread. One extra handle for a pipe (or on Windows, a local socket) is added to each handle list so that the thread can
 be woken up in order to allow the addition or removal of sockets to the list
-
-The basic aggregator mechanism 
 
 */
 
@@ -267,7 +268,7 @@ class PSocketAggregator : public PHandleAggregator
     { 
       PWaitAndSignal m(mutex);
 
-      SocketList_t::iterator r = socketList.find(sock);
+      typename SocketList_t::iterator r = socketList.find(sock);
       if (r == socketList.end()) 
         return FALSE;
 
