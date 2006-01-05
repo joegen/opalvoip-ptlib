@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.6  2006/01/05 11:39:32  rjongbloed
+ * Fixed DevStudio warning
+ *
  * Revision 1.5  2006/01/03 04:23:32  csoutheren
  * Fixed Unix implementation
  *
@@ -351,7 +354,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
 #ifdef _WIN32
     PTime wstart;
     DWORD nCount = fdList.size();
-    DWORD ret = WSAWaitForMultipleEvents(nCount, &fdList[0], false, timeout.GetMilliSeconds(), FALSE);
+    DWORD ret = WSAWaitForMultipleEvents(nCount, &fdList[0], false, timeout.GetInterval(), FALSE);
 
     if (ret == WAIT_FAILED) {
       DWORD err = GetLastError();
