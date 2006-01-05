@@ -518,8 +518,6 @@ EXPORTS
     ??0PMail@@QAE@ABVPString@@0@Z @103 NONAME
     ??0PMail@@QAE@XZ @104 NONAME
     ??0PMultiMediaFile@@QAE@XZ @105 NONAME
-    ??0PMutex@@QAE@ABV0@@Z @106 NONAME
-    ??0PMutex@@QAE@XZ @107 NONAME
     ??0PNotifier@@QAE@ABV0@@Z @4632 NONAME
     ??0PNotifier@@QAE@PAVPNotifierFunction@@@Z @4633 NONAME
     ??0PNotifierFunction@@QAE@PAX@Z @4634 NONAME
@@ -648,6 +646,7 @@ EXPORTS
     ??0PStructuredFile@@QAE@ABVPFilePath@@W4OpenMode@PFile@@H@Z @188 NONAME
     ??0PStructuredFile@@QAE@W4OpenMode@PFile@@H@Z @189 NONAME
     ??0PStructuredFile@@QAE@XZ @190 NONAME
+    ??0PSync@@QAE@XZ @16253 NONAME
     ??0PSyncPoint@@QAE@ABV0@@Z @191 NONAME
     ??0PSyncPoint@@QAE@XZ @192 NONAME
     ??0PSynonymColour@@QAE@ABVPString@@0II@Z @4657 NONAME
@@ -669,6 +668,8 @@ EXPORTS
     ??0PTime@@QAE@HHHHHHH@Z @202 NONAME
     ??0PTime@@QAE@JJ@Z @4662 NONAME
     ??0PTime@@QAE@XZ @203 NONAME
+    ??0PTimedMutex@@QAE@ABV0@@Z @16254 NONAME
+    ??0PTimedMutex@@QAE@XZ @16255 NONAME
     ??0PTimeInterval@@QAE@ABV0@@Z @4663 NONAME
     ??0PTimeInterval@@QAE@ABVPString@@@Z @204 NONAME
     ??0PTimeInterval@@QAE@JJJJH@Z @205 NONAME
@@ -694,7 +695,7 @@ EXPORTS
     ??0PVideoOutputDevice_NULLOutput@@QAE@XZ @2828 NONAME
     ??0PVideoOutputDevice_Window@@QAE@XZ @15931 NONAME
     ??0PVideoOutputDevice_Window_PluginServiceDescriptor@@QAE@XZ @15932 NONAME
-    ??0PWaitAndSignal@@QAE@ABVPSemaphore@@H@Z @4669 NONAME
+    ??0PWaitAndSignal@@QAE@ABVPSync@@H@Z @16256 NONAME
     ??0PWaveBuffer@@AAE@H@Z @223 NONAME
     ??0PWaveFormat@@QAE@ABV0@@Z @224 NONAME
     ??0PWaveFormat@@QAE@XZ @225 NONAME
@@ -958,7 +959,6 @@ EXPORTS
     ??1PluginLoaderStartup@@UAE@XZ @5986 NONAME
     ??1PMail@@UAE@XZ @350 NONAME
     ??1PMultiMediaFile@@QAE@XZ @351 NONAME
-    ??1PMutex@@UAE@XZ @352 NONAME
     ??1PNotifier@@UAE@XZ @353 NONAME
     ??1PNotifierFunction@@UAE@XZ @354 NONAME
     ??1PObject@@UAE@XZ @355 NONAME
@@ -1005,6 +1005,7 @@ EXPORTS
     ??1PStringToOrdinal@@UAE@XZ @383 NONAME
     ??1PStringToString@@UAE@XZ @384 NONAME
     ??1PStructuredFile@@UAE@XZ @385 NONAME
+    ??1PSync@@UAE@XZ @16257 NONAME
     ??1PSyncPoint@@UAE@XZ @386 NONAME
     ??1PSynonymColour@@UAE@XZ @387 NONAME
     ??1PSynonymColourRegistration@@UAE@XZ @388 NONAME
@@ -1013,6 +1014,7 @@ EXPORTS
     ??1PTextFile@@UAE@XZ @391 NONAME
     ??1PThread@@UAE@XZ @392 NONAME
     ??1PTime@@UAE@XZ @393 NONAME
+    ??1PTimedMutex@@UAE@XZ @16258 NONAME
     ??1PTimeInterval@@UAE@XZ @394 NONAME
     ??1PTimer@@UAE@XZ @395 NONAME
     ??1PTimerList@@UAE@XZ @396 NONAME
@@ -1633,7 +1635,6 @@ EXPORTS
     ??_7PIPXSocket@@6BPObject@@@ @698 NONAME
     ??_7PluginLoaderStartup@@6B@ @6033 NONAME
     ??_7PMail@@6B@ @699 NONAME
-    ??_7PMutex@@6B@ @700 NONAME
     ??_7PNotifier@@6B@ @701 NONAME
     ??_7PNotifierFunction@@6B@ @702 NONAME
     ??_7PObject@@6B@ @703 NONAME
@@ -1685,6 +1686,7 @@ EXPORTS
     ??_7PStringToString@@6B@ @737 NONAME
     ??_7PStructuredFile@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @4861 NONAME
     ??_7PStructuredFile@@6BPObject@@@ @739 NONAME
+    ??_7PSync@@6B@ @16259 NONAME
     ??_7PSyncPoint@@6B@ @740 NONAME
     ??_7PSynonymColour@@6B@ @741 NONAME
     ??_7PSynonymColourRegistration@@6B@ @742 NONAME
@@ -1696,6 +1698,7 @@ EXPORTS
     ??_7PTextFile@@6BPObject@@@ @748 NONAME
     ??_7PThread@@6B@ @749 NONAME
     ??_7PTime@@6B@ @750 NONAME
+    ??_7PTimedMutex@@6B@ @16260 NONAME
     ??_7PTimeInterval@@6B@ @751 NONAME
     ??_7PTimer@@6B@ @752 NONAME
     ??_7PTimerList@@6B@ @753 NONAME
@@ -2001,7 +2004,6 @@ EXPORTS
     ??_R0?AVPIPXSocket@@@8 @3141 NONAME
     ??_R0?AVPluginLoaderStartup@@@8 @6035 NONAME
     ??_R0?AVPMail@@@8 @3142 NONAME
-    ??_R0?AVPMutex@@@8 @3143 NONAME
     ??_R0?AVPNotifier@@@8 @3144 NONAME
     ??_R0?AVPNotifierFunction@@@8 @3145 NONAME
     ??_R0?AVPObject@@@8 @3146 NONAME
@@ -2046,6 +2048,7 @@ EXPORTS
     ??_R0?AVPStringToOrdinal@@@8 @3179 NONAME
     ??_R0?AVPStringToString@@@8 @3180 NONAME
     ??_R0?AVPStructuredFile@@@8 @3181 NONAME
+    ??_R0?AVPSync@@@8 @16261 NONAME
     ??_R0?AVPSyncPoint@@@8 @3182 NONAME
     ??_R0?AVPSynonymColour@@@8 @3183 NONAME
     ??_R0?AVPSynonymColourRegistration@@@8 @3184 NONAME
@@ -2054,6 +2057,7 @@ EXPORTS
     ??_R0?AVPTextFile@@@8 @3187 NONAME
     ??_R0?AVPThread@@@8 @3188 NONAME
     ??_R0?AVPTime@@@8 @3189 NONAME
+    ??_R0?AVPTimedMutex@@@8 @16262 NONAME
     ??_R0?AVPTimeInterval@@@8 @3190 NONAME
     ??_R0?AVPTimer@@@8 @3191 NONAME
     ??_R0?AVPTimerList@@@8 @3192 NONAME
@@ -2294,7 +2298,6 @@ EXPORTS
     ??_R1A@?0A@A@PIPXSocket@@8 @3367 NONAME
     ??_R1A@?0A@A@PluginLoaderStartup@@8 @6037 NONAME
     ??_R1A@?0A@A@PMail@@8 @3368 NONAME
-    ??_R1A@?0A@A@PMutex@@8 @3369 NONAME
     ??_R1A@?0A@A@PNotifier@@8 @3370 NONAME
     ??_R1A@?0A@A@PNotifierFunction@@8 @3371 NONAME
     ??_R1A@?0A@A@PObject@@8 @3372 NONAME
@@ -2338,6 +2341,7 @@ EXPORTS
     ??_R1A@?0A@A@PStringToOrdinal@@8 @3405 NONAME
     ??_R1A@?0A@A@PStringToString@@8 @3406 NONAME
     ??_R1A@?0A@A@PStructuredFile@@8 @3407 NONAME
+    ??_R1A@?0A@A@PSync@@8 @16263 NONAME
     ??_R1A@?0A@A@PSyncPoint@@8 @3408 NONAME
     ??_R1A@?0A@A@PSynonymColour@@8 @3409 NONAME
     ??_R1A@?0A@A@PSynonymColourRegistration@@8 @3410 NONAME
@@ -2346,6 +2350,7 @@ EXPORTS
     ??_R1A@?0A@A@PTextFile@@8 @3413 NONAME
     ??_R1A@?0A@A@PThread@@8 @3414 NONAME
     ??_R1A@?0A@A@PTime@@8 @3415 NONAME
+    ??_R1A@?0A@A@PTimedMutex@@8 @16264 NONAME
     ??_R1A@?0A@A@PTimeInterval@@8 @3416 NONAME
     ??_R1A@?0A@A@PTimer@@8 @3417 NONAME
     ??_R1A@?0A@A@PTimerList@@8 @3418 NONAME
@@ -2569,7 +2574,6 @@ EXPORTS
     ??_R2PIPXSocket@@8 @3578 NONAME
     ??_R2PluginLoaderStartup@@8 @6039 NONAME
     ??_R2PMail@@8 @3579 NONAME
-    ??_R2PMutex@@8 @3580 NONAME
     ??_R2PNotifier@@8 @3581 NONAME
     ??_R2PNotifierFunction@@8 @3582 NONAME
     ??_R2PObject@@8 @3583 NONAME
@@ -2613,6 +2617,7 @@ EXPORTS
     ??_R2PStringToOrdinal@@8 @3614 NONAME
     ??_R2PStringToString@@8 @3615 NONAME
     ??_R2PStructuredFile@@8 @3616 NONAME
+    ??_R2PSync@@8 @16265 NONAME
     ??_R2PSyncPoint@@8 @3617 NONAME
     ??_R2PSynonymColour@@8 @3618 NONAME
     ??_R2PSynonymColourRegistration@@8 @3619 NONAME
@@ -2621,6 +2626,7 @@ EXPORTS
     ??_R2PTextFile@@8 @3622 NONAME
     ??_R2PThread@@8 @3623 NONAME
     ??_R2PTime@@8 @3624 NONAME
+    ??_R2PTimedMutex@@8 @16266 NONAME
     ??_R2PTimeInterval@@8 @3625 NONAME
     ??_R2PTimer@@8 @3626 NONAME
     ??_R2PTimerList@@8 @3627 NONAME
@@ -2836,7 +2842,6 @@ EXPORTS
     ??_R3PIPXSocket@@8 @3779 NONAME
     ??_R3PluginLoaderStartup@@8 @6041 NONAME
     ??_R3PMail@@8 @3780 NONAME
-    ??_R3PMutex@@8 @3781 NONAME
     ??_R3PNotifier@@8 @3782 NONAME
     ??_R3PNotifierFunction@@8 @3783 NONAME
     ??_R3PObject@@8 @3784 NONAME
@@ -2880,6 +2885,7 @@ EXPORTS
     ??_R3PStringToOrdinal@@8 @3815 NONAME
     ??_R3PStringToString@@8 @3816 NONAME
     ??_R3PStructuredFile@@8 @3817 NONAME
+    ??_R3PSync@@8 @16267 NONAME
     ??_R3PSyncPoint@@8 @3818 NONAME
     ??_R3PSynonymColour@@8 @3819 NONAME
     ??_R3PSynonymColourRegistration@@8 @3820 NONAME
@@ -2888,6 +2894,7 @@ EXPORTS
     ??_R3PTextFile@@8 @3823 NONAME
     ??_R3PThread@@8 @3824 NONAME
     ??_R3PTime@@8 @3825 NONAME
+    ??_R3PTimedMutex@@8 @16268 NONAME
     ??_R3PTimeInterval@@8 @3826 NONAME
     ??_R3PTimer@@8 @3827 NONAME
     ??_R3PTimerList@@8 @3828 NONAME
@@ -3112,7 +3119,6 @@ EXPORTS
     ??_R4PIPXSocket@@6BPObject@@@ @3989 NONAME
     ??_R4PluginLoaderStartup@@6B@ @6043 NONAME
     ??_R4PMail@@6B@ @3990 NONAME
-    ??_R4PMutex@@6B@ @3991 NONAME
     ??_R4PNotifier@@6B@ @3992 NONAME
     ??_R4PNotifierFunction@@6B@ @3993 NONAME
     ??_R4PObject@@6B@ @3994 NONAME
@@ -3164,6 +3170,7 @@ EXPORTS
     ??_R4PStringToString@@6B@ @4033 NONAME
     ??_R4PStructuredFile@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5018 NONAME
     ??_R4PStructuredFile@@6BPObject@@@ @4035 NONAME
+    ??_R4PSync@@6B@ @16269 NONAME
     ??_R4PSyncPoint@@6B@ @4036 NONAME
     ??_R4PSynonymColour@@6B@ @4037 NONAME
     ??_R4PSynonymColourRegistration@@6B@ @4038 NONAME
@@ -3175,6 +3182,7 @@ EXPORTS
     ??_R4PTextFile@@6BPObject@@@ @4044 NONAME
     ??_R4PThread@@6B@ @4045 NONAME
     ??_R4PTime@@6B@ @4046 NONAME
+    ??_R4PTimedMutex@@6B@ @16270 NONAME
     ??_R4PTimeInterval@@6B@ @4047 NONAME
     ??_R4PTimer@@6B@ @4048 NONAME
     ??_R4PTimerList@@6B@ @4049 NONAME
@@ -3480,7 +3488,6 @@ EXPORTS
     ?Class@PIPXSocket@@SAPBDXZ @5122 NONAME
     ?Class@PluginLoaderStartup@@SAPBDXZ @6058 NONAME
     ?Class@PMail@@SAPBDXZ @5123 NONAME
-    ?Class@PMutex@@SAPBDXZ @5124 NONAME
     ?Class@PNotifier@@SAPBDXZ @5125 NONAME
     ?Class@PNotifierFunction@@SAPBDXZ @5126 NONAME
     ?Class@PObject@@SAPBDXZ @5127 NONAME
@@ -3526,6 +3533,7 @@ EXPORTS
     ?Class@PTextFile@@SAPBDXZ @5164 NONAME
     ?Class@PThread@@SAPBDXZ @5165 NONAME
     ?Class@PTime@@SAPBDXZ @5166 NONAME
+    ?Class@PTimedMutex@@SAPBDXZ @16271 NONAME
     ?Class@PTimeInterval@@SAPBDXZ @5167 NONAME
     ?Class@PTimer@@SAPBDXZ @5168 NONAME
     ?Class@PTimerList@@SAPBDXZ @5169 NONAME
@@ -3746,7 +3754,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@PIPXSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1092 NONAME
     ?CompareObjectMemoryDirect@PluginLoaderStartup@@UBE?AW4Comparison@PObject@@ABV3@@Z @6063 NONAME
     ?CompareObjectMemoryDirect@PMail@@UBE?AW4Comparison@PObject@@ABV3@@Z @1093 NONAME
-    ?CompareObjectMemoryDirect@PMutex@@UBE?AW4Comparison@PObject@@ABV3@@Z @1094 NONAME
     ?CompareObjectMemoryDirect@PNotifier@@UBE?AW4Comparison@PObject@@ABV3@@Z @1095 NONAME
     ?CompareObjectMemoryDirect@PNotifierFunction@@UBE?AW4Comparison@PObject@@ABV3@@Z @1096 NONAME
     ?CompareObjectMemoryDirect@PObject@@UBE?AW4Comparison@1@ABV1@@Z @1097 NONAME
@@ -3792,6 +3799,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PTextFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @1131 NONAME
     ?CompareObjectMemoryDirect@PThread@@UBE?AW4Comparison@PObject@@ABV3@@Z @1132 NONAME
     ?CompareObjectMemoryDirect@PTime@@UBE?AW4Comparison@PObject@@ABV3@@Z @1133 NONAME
+    ?CompareObjectMemoryDirect@PTimedMutex@@UBE?AW4Comparison@PObject@@ABV3@@Z @16272 NONAME
     ?CompareObjectMemoryDirect@PTimeInterval@@UBE?AW4Comparison@PObject@@ABV3@@Z @1134 NONAME
     ?CompareObjectMemoryDirect@PTimer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1135 NONAME
     ?CompareObjectMemoryDirect@PTimerList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1136 NONAME
@@ -4042,13 +4050,13 @@ EXPORTS
     ?DestroyContents@Table@PHashTable@@UAEXXZ @1271 NONAME
     ?Destruct@PContainer@@IAEXXZ @1272 NONAME
     ?Destruct@PDirectory@@IAEXXZ @7281 NONAME
-    ?disableQoS@PUDPSocket@@1HA @16182 NONAME
+    ?disableGQoS@PUDPSocket@@1HA @16273 NONAME
     ?DisallowDeleteObjects@PCollection@@QAEXXZ @5204 NONAME
     ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @1273 NONAME
     ?Draw@PVideoOutputDevice_Window@@IAEXPAUHDC__@@@Z @16183 NONAME
     ?Empty@PString@@SA?AV1@XZ @3014 NONAME
     ?EnableAccess@PVideoChannel@@QAEXXZ @1275 NONAME
-    ?EnableQoS@PUDPSocket@@SAXXZ @16184 NONAME
+    ?EnableGQoS@PUDPSocket@@SAXXZ @16274 NONAME
     ?end@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE?AViterator@12@XZ @6084 NONAME
     ?end@?$vector@USlice@PChannel@@V?$allocator@USlice@PChannel@@@std@@@std@@QBE?AVconst_iterator@12@XZ @16185 NONAME
     ?end@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAE?AViterator@12@XZ @6085 NONAME
@@ -4067,7 +4075,6 @@ EXPORTS
     ?EndNest@PReadWriteMutex@@IAEXXZ @1279 NONAME
     ?EndRead@PReadWriteMutex@@QAEXXZ @1280 NONAME
     ?EndWrite@PReadWriteMutex@@QAEXXZ @1281 NONAME
-    ?Enter@PCriticalSection@@QAEXXZ @5551 NONAME
     ?EnterSafetyMode@PSafePtrBase@@IAEHW4EnterSafetyModeOption@1@@Z @1282 NONAME
     ?EnumInterfaces@PEthSocket@@QAEHHAAVPString@@@Z @1283 NONAME
     ?EnumInterfaces@PWin32PacketSYS@@UAEHHAAVPString@@@Z @1284 NONAME
@@ -4279,7 +4286,6 @@ EXPORTS
     ?GetClass@PIPXSocket@@UBEPBDI@Z @4447 NONAME
     ?GetClass@PluginLoaderStartup@@UBEPBDI@Z @6098 NONAME
     ?GetClass@PMail@@UBEPBDI@Z @4448 NONAME
-    ?GetClass@PMutex@@UBEPBDI@Z @4449 NONAME
     ?GetClass@PNotifier@@UBEPBDI@Z @4450 NONAME
     ?GetClass@PNotifierFunction@@UBEPBDI@Z @4451 NONAME
     ?GetClass@PObject@@UBEPBDI@Z @4452 NONAME
@@ -4325,6 +4331,7 @@ EXPORTS
     ?GetClass@PTextFile@@UBEPBDI@Z @4488 NONAME
     ?GetClass@PThread@@UBEPBDI@Z @4489 NONAME
     ?GetClass@PTime@@UBEPBDI@Z @4490 NONAME
+    ?GetClass@PTimedMutex@@UBEPBDI@Z @16275 NONAME
     ?GetClass@PTimeInterval@@UBEPBDI@Z @4491 NONAME
     ?GetClass@PTimer@@UBEPBDI@Z @4492 NONAME
     ?GetClass@PTimerList@@UBEPBDI@Z @4493 NONAME
@@ -4418,7 +4425,7 @@ EXPORTS
     ?GetEvent@PWin32PacketBuffer@@QBEPAXXZ @5240 NONAME
     ?GetExtension@PDynaLink@@SA?AVPString@@XZ @1506 NONAME
     ?GetFactories@PFactoryBase@@SAAAVFactoryMap@1@XZ @6736 NONAME
-    ?GetFactoriesMutex@PFactoryBase@@SAAAVPMutex@@XZ @6737 NONAME
+    ?GetFactoriesMutex@PFactoryBase@@SAAAVPCriticalSection@@XZ @16276 NONAME
     ?GetFile@PProcess@@QBEABVPFilePath@@XZ @5241 NONAME
     ?GetFileName@PFilePath@@QBE?AVPCaselessString@@XZ @1507 NONAME
     ?GetFilePath@PFile@@QBEABVPFilePath@@XZ @5498 NONAME
@@ -4551,7 +4558,7 @@ EXPORTS
     ?GetMinutes@PTimeInterval@@QBEJXZ @5505 NONAME
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @5506 NONAME
     ?GetMonthName@PTime@@SA?AVPString@@W4Months@1@W4NameType@1@@Z @1583 NONAME
-    ?GetMutex@PWin32SnmpLibrary@@SAAAVPMutex@@XZ @6426 NONAME
+    ?GetMutex@PWin32SnmpLibrary@@SAAAVPCriticalSection@@XZ @16277 NONAME
     ?GetName@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @16207 NONAME
     ?GetName@PChannel@@UBE?AVPString@@XZ @1584 NONAME
     ?GetName@PConsoleChannel@@UBE?AVPString@@XZ @1585 NONAME
@@ -4924,7 +4931,6 @@ EXPORTS
     ?InternalIsDescendant@PIPXSocket@@UBEHPBD@Z @4317 NONAME
     ?InternalIsDescendant@PluginLoaderStartup@@UBEHPBD@Z @6114 NONAME
     ?InternalIsDescendant@PMail@@UBEHPBD@Z @4318 NONAME
-    ?InternalIsDescendant@PMutex@@UBEHPBD@Z @4319 NONAME
     ?InternalIsDescendant@PNotifier@@UBEHPBD@Z @4320 NONAME
     ?InternalIsDescendant@PNotifierFunction@@UBEHPBD@Z @4321 NONAME
     ?InternalIsDescendant@PObject@@UBEHPBD@Z @4322 NONAME
@@ -4970,6 +4976,7 @@ EXPORTS
     ?InternalIsDescendant@PTextFile@@UBEHPBD@Z @4358 NONAME
     ?InternalIsDescendant@PThread@@UBEHPBD@Z @4359 NONAME
     ?InternalIsDescendant@PTime@@UBEHPBD@Z @4360 NONAME
+    ?InternalIsDescendant@PTimedMutex@@UBEHPBD@Z @16278 NONAME
     ?InternalIsDescendant@PTimeInterval@@UBEHPBD@Z @4361 NONAME
     ?InternalIsDescendant@PTimer@@UBEHPBD@Z @4362 NONAME
     ?InternalIsDescendant@PTimerList@@UBEHPBD@Z @4363 NONAME
@@ -5070,7 +5077,6 @@ EXPORTS
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @15898 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @15899 NONAME
     ?Kill@PPipeChannel@@QAEHH@Z @2060 NONAME
-    ?Leave@PCriticalSection@@QAEXXZ @5554 NONAME
     ?left@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5310 NONAME
     ?Left@PString@@QBE?AV1@H@Z @2061 NONAME
     ?LeftRotate@PAbstractSortedList@@IAEXPAUElement@1@@Z @3020 NONAME
@@ -5644,7 +5650,6 @@ EXPORTS
     ?SetVolume@PSoundChannel@@UAEHI@Z @2808 NONAME
     ?SetVolume@PSoundChannelWin32@@UAEHI@Z @2809 NONAME
     ?SetWhiteness@PVideoDevice@@UAEHI@Z @2498 NONAME
-    ?SetWinDebugThreadName@@YAXPAUtagTHREADNAME_INFO@@@Z @2810 NONAME
     ?SetWinServiceType@PQoS@@QAEXK@Z @2674 NONAME
     ?SetWriteChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @2499 NONAME
     ?SetWriteTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @5390 NONAME
@@ -5656,11 +5661,12 @@ EXPORTS
     ?Shutdown@PIndirectChannel@@UAEHW4ShutdownValue@PChannel@@@Z @2502 NONAME
     ?Shutdown@PSocket@@UAEHW4ShutdownValue@PChannel@@@Z @2503 NONAME
     ?Signal@PCondMutex@@UAEXXZ @2504 NONAME
-    ?Signal@PMutex@@UAEXXZ @2505 NONAME
+    ?Signal@PCriticalSection@@UAEXXZ @16279 NONAME
     ?Signal@PSemaphore@@UAEXXZ @2506 NONAME
     ?Signal@PSyncPoint@@UAEXXZ @2507 NONAME
     ?Signal@PSyncPointAck@@QAEXABVPTimeInterval@@@Z @2508 NONAME
     ?Signal@PSyncPointAck@@UAEXXZ @2509 NONAME
+    ?Signal@PTimedMutex@@UAEXXZ @16280 NONAME
     ?SignalTimerChange@PProcess@@QAEXXZ @2510 NONAME
     ?size@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QBEIXZ @6142 NONAME
     ?size@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QBEIXZ @6143 NONAME
@@ -5763,6 +5769,7 @@ EXPORTS
     ?vidoutChannelFactoryAdapter@PWLib@@3V?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@A @7175 NONAME
     ?vsprintf@PString@@QAEAAV1@ABV1@PAD@Z @5531 NONAME
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @2564 NONAME
+    ?Wait@PCriticalSection@@UAEXXZ @16281 NONAME
     ?Wait@PSemaphore@@UAEHABVPTimeInterval@@@Z @2565 NONAME
     ?Wait@PSemaphore@@UAEXXZ @2566 NONAME
     ?WaitCondition@PCondMutex@@UAEXXZ @2567 NONAME
@@ -5778,6 +5785,7 @@ EXPORTS
     ?WaitForTermination@PThread@@QBEXXZ @2575 NONAME
     ?what@logic_error@std@@UBEPBDXZ @5821 NONAME
     ?WillBlock@PSemaphore@@UBEHXZ @2576 NONAME
+    ?Win32AttachThreadInput@PThread@@QAEXXZ @16282 NONAME
     ?WndProc@PServiceProcess@@AAEJPAUHWND__@@IIJ@Z @2577 NONAME
     ?WndProc@PVideoOutputDevice_Window@@QAEJIIJ@Z @16249 NONAME
     ?Write@PChannel@@UAEHABV?$vector@USlice@PChannel@@V?$allocator@USlice@PChannel@@@std@@@std@@@Z @16250 NONAME
