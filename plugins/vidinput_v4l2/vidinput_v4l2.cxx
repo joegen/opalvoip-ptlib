@@ -35,6 +35,9 @@
  *  - make that code work
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.8  2006/01/05 19:21:37  dsandras
+ * Applied patch from Luc Saillard <luc _____AT_ saillard.org>. Many thanks!
+ *
  * Revision 1.7  2005/12/21 21:31:39  dsandras
  * Fixed build with gcc 4.1.
  *
@@ -268,6 +271,7 @@ BOOL PVideoInputDevice_V4L2::Start()
     struct v4l2_buffer buf;
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.index = 0;
+    buf.memory = V4L2_MEMORY_MMAP;
 
     if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
       PTRACE(3,"PVidInDev\tVIDIOC_QBUF failed : " << ::strerror(errno));
@@ -574,6 +578,7 @@ BOOL PVideoInputDevice_V4L2::SetMapping()
   struct v4l2_buffer buf;
   memset(&buf, 0, sizeof(buf));
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  buf.memory = V4L2_MEMORY_MMAP;
   
   videoBufferCount = reqbuf.count;
   for (buf.index = 0; buf.index < videoBufferCount; buf.index++) {
@@ -652,6 +657,7 @@ BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRe
 
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   buf.index = 0;
+  buf.memory = V4L2_MEMORY_MMAP;
   if (::ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
     PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
     return FALSE;
