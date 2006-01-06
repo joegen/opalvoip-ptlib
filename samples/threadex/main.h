@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2006/01/06 23:08:24  dereksmithies
+ * Add some code, now it crashes on unix with the command args -d 1 -b
+ *
  * Revision 1.2  2005/07/26 00:46:22  dereksmithies
  * Commit code to provide two examples of waiting for a thread to terminate.
  * The busy wait method provides a method of testing PWLIB processes for closing
@@ -53,13 +56,16 @@ class DelayThread : public PThread
   
 public:
   DelayThread(PINDEX _delay)
-    : PThread(1000, NoAutoDeleteThread), delay(_delay)
+    : PThread(10000, NoAutoDeleteThread), delay(_delay)
     { Resume(); }
   
-  void Main() { PThread::Sleep(delay); }
+  void Main();
+
+  void WaitUntilDone(); 
     
  protected:
   PINDEX delay;
+  PSyncPoint finished;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
