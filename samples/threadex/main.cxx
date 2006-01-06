@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2006/01/06 23:08:24  dereksmithies
+ * Add some code, now it crashes on unix with the command args -d 1 -b
+ *
  * Revision 1.6  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -118,7 +121,7 @@ void Threadex::Main()
     PError << "Available options are: " << endl         
            << "-h  or --help        :print this help" << endl
            << "-v  or --version      print version info" << endl
-           << "-d  or --delay      X where X specifies how many milliseconds the created thread waits for" << endl
+           << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
            << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
 #if PTRACING
            << "o-output              output file name for trace" << endl
@@ -133,7 +136,7 @@ void Threadex::Main()
   if (args.HasOption('d'))
     delay = args.GetOptionString('d').AsInteger();
 
-  delay = PMIN(1000000, PMAX(1, delay));
+  delay = PMIN(1000000, PMAX(0, delay));
   cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
  
   BOOL doBusyWait = args.HasOption('b');
@@ -142,19 +145,35 @@ void Threadex::Main()
   ui.WaitForTermination();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+void DelayThread::Main()
+{
+  PThread::Sleep(delay);
+  finished.Signal();
+}
+
+void DelayThread::WaitUntilDone()
+{ 
+  finished.Wait(); 
+} 
+///////////////////////////////////////////////////////////////////////////
 
 void LauncherThread::Main()
 {
   if (useBusyWait) {
     while (keepGoing) {
-      DelayThread thread(delay);
-      while (!thread.IsTerminated());
+      DelayThread *thread = new DelayThread(delay);
+      thread->WaitUntilDone();
+      while (!thread->IsTerminated());
+      delete thread;
       iteration++;
     }
   } else {
     while (keepGoing) {
-      DelayThread thread(delay);
-      thread.WaitForTermination();
+      DelayThread *thread = new DelayThread(delay);
+      thread->WaitUntilDone();
+      thread->WaitForTermination();
+      delete thread;
       iteration++;
     }
   }
