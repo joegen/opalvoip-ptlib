@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.43  2006/01/07 13:33:02  dsandras
+ * Added code allowing real resizing on YUV420P streams thanks to Luc Sailard <luc ___AT_-_ saillard.org>. Thank you very much for that nice patch Luc!
+ *
  * Revision 1.42  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -199,7 +202,6 @@ PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
 PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
 PSYNONYM_COLOUR_CONVERTER(BGR32,  BGR32);
 PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
-PSYNONYM_COLOUR_CONVERTER(YUV420P,YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
 PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,I420);
@@ -277,6 +279,10 @@ class PStandardColourConverter : public PColourConverter
       unsigned dstIncrement
     ) const;
     void ResizeYUV422(
+      const BYTE * src,
+      BYTE * dest
+    ) const;
+    void ResizeYUV420P(
       const BYTE * src,
       BYTE * dest
     ) const;
@@ -854,6 +860,134 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV422)
 
   return TRUE;
 }
+
+// Consider a YUV420P image of 4x4 pixels.
+//
+// A plane of Y values    A B C D
+//                        E F G H
+//                        I J K L 
+//                        M N O P
+//
+// A plane of U values    1 . 2 . 
+// 			  . . . .
+// 			  3 . 4 .
+//                        . . . .
+//
+// A plane of V values    1 . 2 .
+// 			  . . . .
+//                        3 . 4 .
+//                        . . . .
+// 
+// YUV420P is stored as all Y (w*h), then U (w*h/4), then V
+//   thus, a 4x4 image requires 24 bytes of storage.
+//
+// Image has two possible transformations.
+//        padded                 (src smaller than dst)      
+//        subsampled and padded  (src bigger than dst)  
+
+void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) const
+{
+  unsigned int i, y, x, npixels;
+  BYTE *d;
+  const BYTE *s;
+
+  npixels = dstFrameWidth * dstFrameHeight;
+  d = dest;
+  for (i=0; i < npixels; i++) 
+    *d++ = 127;
+  for (i=0; i < npixels/4; i++)
+    *d++ = BLACK_U;
+  for (i=0; i < npixels/4; i++)
+    *d++ = BLACK_V;
+
+  if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
+    // dest is bigger than the source. No subsampling.
+    // Place the src in the middle of the destination.
+    unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+    unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+
+    // Copy plane Y
+    d = dest + yOffset * dstFrameWidth + xOffset;
+    s = src;
+    for (y = 0; y < srcFrameHeight; y++) {
+      memcpy(d, s, srcFrameWidth);
+      s += srcFrameWidth;
+      d += dstFrameWidth;
+    }
+
+    // Copy plane U
+    d = dest + npixels + (yOffset*dstFrameWidth/4) + xOffset/2;
+    for (y = 0; y < srcFrameHeight/2; y++) {
+      memcpy(d, s, srcFrameWidth/2);
+      s += srcFrameWidth/2;
+      d += dstFrameWidth/2;
+    }
+
+    // Copy plane V
+    d = dest + npixels + npixels/4 + (yOffset*dstFrameWidth/4) + xOffset/2;
+    for (y = 0; y < srcFrameHeight/2; y++) {
+      memcpy(d, s, srcFrameWidth/2);
+      s += srcFrameWidth/2;
+      d += dstFrameWidth/2;
+    }
+
+
+  } else {  
+    // source is bigger than the destination.
+    //
+#define FIX_FLOAT	16
+    unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
+    unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
+    unsigned int fy, fx;
+
+    s = src;
+    d = dest;
+    /* Copy Plane Y */
+    for (fy=0, y=0; y<dstFrameHeight; y++, fy+=dy) {
+       s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
+       for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx) {
+	  *d++ = s[fx>>FIX_FLOAT];
+       }
+    }
+    /* Copy Plane U */
+    dy /= 2;
+    dx /= 2;
+    src += srcFrameWidth*srcFrameHeight;
+    for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
+       s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
+       for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
+	  *d++ = s[fx>>FIX_FLOAT];
+       }
+    }
+    /* Copy Plane V */
+    src += srcFrameWidth*srcFrameHeight/4;
+    for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
+       s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
+       for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
+	  *d++ = s[fx>>FIX_FLOAT];
+       }
+    }
+
+  }
+
+}
+
+PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
+{
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  
+  if (srcFrameBuffer == dstFrameBuffer)
+    return TRUE;
+
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+    memcpy(dstFrameBuffer,srcFrameBuffer,srcFrameWidth*srcFrameHeight*3/2);
+  else
+    ResizeYUV420P(srcFrameBuffer, dstFrameBuffer);
+
+  return TRUE;
+}
+
 
 
 
