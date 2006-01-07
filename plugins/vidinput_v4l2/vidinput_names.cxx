@@ -26,6 +26,9 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_names.cxx,v $
+ * Revision 1.4  2006/01/07 16:09:58  dsandras
+ * Removed name duplication for now.
+ *
  * Revision 1.3  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -136,17 +139,12 @@ void V4LXNames::AddUserDeviceName(PString userName, PString devName)
 }
 
 
-/*
-  There is a duplication in the list of names.
-  Consequently, opening the device as "ov511++" or "/dev/video0" will work.
-*/
 PStringList V4LXNames::GetInputDeviceNames()
 {
   PWaitAndSignal m(mutex);
   PStringList result;
   for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++) {
     result += GetUserFriendly (inputDeviceNames[i]);
-    result += inputDeviceNames[i];
   }
   return result;
 }
