@@ -30,11 +30,10 @@
  * Contributor(s): Guilhem Tardy (gtardy@salyens.com)
  *  Nicola Orru' <nigu@itadinanta.it>
  *
- * TODO:
- *  - fix the devices detection code using the new code from the V4L1 plugin
- *  - make that code work
- *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.9  2006/01/07 16:10:21  dsandras
+ * More changes from Luc Saillard. Thanks!
+ *
  * Revision 1.8  2006/01/05 19:21:37  dsandras
  * Applied patch from Luc Saillard <luc _____AT_ saillard.org>. Many thanks!
  *
@@ -843,7 +842,7 @@ BOOL PVideoInputDevice_V4L2::SetBrightness(unsigned newBrightness)
 
   struct v4l2_control c;
   c.id = V4L2_CID_BRIGHTNESS;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newBrightness) >> 16;
+  c.value = q.minimum + ((q.maximum-q.minimum) * newBrightness) / 65536;
 
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
@@ -865,7 +864,7 @@ BOOL PVideoInputDevice_V4L2::SetWhiteness(unsigned newWhiteness)
 
   struct v4l2_control c;
   c.id = V4L2_CID_WHITENESS;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newWhiteness) >> 16;
+  c.value = q.minimum + ((q.maximum-q.minimum) * newWhiteness) / 65536;
 
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
@@ -887,8 +886,9 @@ BOOL PVideoInputDevice_V4L2::SetColour(unsigned newColour)
 
   struct v4l2_control c;
   c.id = V4L2_CID_SATURATION;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newColour) >> 16;
+  c.value = q.minimum + ((q.maximum-q.minimum) * newColour) / 65535;
 
+  printf ("%d\n", c.value);
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
 
@@ -909,7 +909,7 @@ BOOL PVideoInputDevice_V4L2::SetContrast(unsigned newContrast)
 
   struct v4l2_control c;
   c.id = V4L2_CID_CONTRAST;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newContrast) >> 16;
+  c.value = q.minimum + ((q.maximum-q.minimum) * newContrast) / 65536;
 
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
@@ -931,7 +931,7 @@ BOOL PVideoInputDevice_V4L2::SetHue(unsigned newHue)
 
   struct v4l2_control c;
   c.id = V4L2_CID_HUE;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newHue) >> 16;
+  c.value = q.minimum + ((q.maximum-q.minimum) * newHue) / 65536;
 
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
