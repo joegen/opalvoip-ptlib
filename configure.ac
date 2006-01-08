@@ -206,6 +206,7 @@ dnl ########################################################################
 dnl get the gcc version
 
 if test x$GXX = xyes ; then
+  USE_GCC=yes
   gcc_version=`$CXX -dumpversion`
   AC_MSG_NOTICE(gcc version is $gcc_version);
   GXX_MAJOR=`echo $gcc_version | sed 's/\..*$//'`
@@ -224,7 +225,10 @@ if test x$GXX = xyes ; then
   else
     AC_MSG_RESULT(no)
   fi
+else
+  USE_GCC=no
 fi
+AC_SUBST(USE_GCC, $USE_GCC)
 
 
 dnl ########################################################################
