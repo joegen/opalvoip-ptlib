@@ -6,13 +6,12 @@ OBJDIR = ../pwlib/$(PLUGIN_FAMILY)
 
 TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 
-ifeq ($(USE_GCC),yes)
-  LDSOPTS += -shared
-else
- ifeq ($(OSTYPE),solaris)
+ifeq ($(OSTYPE),solaris)
   LDSOPTS += -G
- endif
-endif 
+else
+  LDSOPTS += -shared
+endif
+
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) \
