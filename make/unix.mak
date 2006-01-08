@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.199  2006/01/08 14:49:08  dsandras
+# Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
+#
 # Revision 1.198  2005/12/04 22:50:50  csoutheren
 # Applied patch for Alpha thanks to Kilian Krause
 #
@@ -378,7 +381,9 @@ endif
 
 # -Wall must be at the start of the options otherwise
 # any -W overrides won't have any effect
+ifeq ($(USE_GCC),yes)
 STDCCFLAGS += -Wall 
+endif
 
 ifdef RPM_OPT_FLAGS
 STDCCFLAGS	+= $(RPM_OPT_FLAGS)
@@ -556,13 +561,17 @@ ifeq ($(OSTYPE),solaris)
 #  Solaris (Sunos 5.x)
 
 ifeq ($(MACHTYPE),x86)
+ifeq ($(USE_GCC),yes)
 DEBUG_FLAG	:= -gstabs+
+CFLAGS           += -DUSE_GCC
+CXXFLAGS         += -DUSE_GCC
+endif
 endif
 
 ENDLDLIBS	+= -lsocket -lnsl -ldl -lposix4
 
 # Sparc Solaris 2.x, using gcc 2.x
-CC		:= gcc
+#Brian CC		:= gcc
 
 #P_USE_RANLIB		:= 1
 
@@ -757,7 +766,14 @@ P_USE_RANLIB	:= 1
 STDCCFLAGS      += -DP_USE_PRAGMA
 
 ifeq ($(P_SHAREDLIB),1)
+ifeq ($(USE_GCC),yes)
 STDCCFLAGS      += -shared
+else
+ifeq ($(OSTYPE),solaris)
+STDCCFLAGS      += -G
+endif
+endif
+
 endif
 
 endif # QNX6
@@ -944,7 +960,11 @@ LDFLAGS		+= $(DEBLDFLAGS)
 else
 
 ifneq ($(OSTYPE),Darwin)
-  OPTCCFLAGS	+= -Os 
+  ifeq ($(OSTYPE),solaris)
+    OPTCCFLAGS	+= -xO3 
+  else
+    OPTCCFLAGS	+= -Os 
+  endif
 else
   OPTCCFLAGS	+= -O2
 endif

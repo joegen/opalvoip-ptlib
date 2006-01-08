@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.15  2006/01/08 14:49:08  dsandras
+ * Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
+ *
  * Revision 1.14  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -232,10 +235,18 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 
 #else
 
+#ifdef USE_GCC
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
 { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); } \
 
+#else
+#define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
+extern int PWLIB_gStaticLoader__##serviceName##_##serviceType; \
+static int PWLIB_StaticLoader_##serviceName##_##serviceType() \
+{ PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); return 1; } \
+int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##serviceName##_##serviceType(); 
+#endif
 #define PWLIB_STATIC_LOAD_PLUGIN(serviceName, serviceType) 
 
 #endif
