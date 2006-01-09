@@ -24,6 +24,13 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.58  2006/01/09 18:19:13  dsandras
+ * Add YUY2 (or YUV420) format. Resizing to YUV420P is done, but it's not very
+ * efficient.
+ * Fix the gray border when doing padding for YUV420P (change it to black).
+ * Logitech webcam fusion export only big format in yuy2.
+ * Patches provided by Luc Saillard <luc _AT____ saillard.org>. Many thanks!
+ *
  * Revision 1.57  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -466,6 +473,7 @@ static struct {
   { "BGR32",   32 },
   { "RGB24",   24 },
   { "BGR24",   24 },
+  { "YUY2",    16 },
   { "YUV422",  16 },
   { "YUV422P", 16 },
   { "YUV411",  12 },
@@ -666,6 +674,8 @@ static struct {
     { 352, 288,    176, 144 },
     { 352, 240,    352, 288 },
     { 352, 240,    320, 240 },
+    { 352, 288,   1024, 576 }, /* High resolution need to be set at the end */
+    { 352, 288,   1280, 960 },
     { 320, 240,    352, 288 },
     { 320, 240,    352, 240 },
     { 176, 144,    352, 288 },
@@ -678,6 +688,8 @@ static struct {
     { 176, 120,    320, 240 },
     { 176, 120,    176, 144 },
     { 176, 120,    160, 120 },
+    { 176, 144,   1024, 576 }, 
+    { 176, 144,   1280, 960 }, /* High resolution need to be set at the end */
     { 160, 120,    352, 288 },
     { 160, 120,    352, 240 },
     { 160, 120,    320, 240 },
