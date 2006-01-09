@@ -31,6 +31,14 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.10  2006/01/09 18:22:42  dsandras
+ * Use memset before some ioctl() to make valgrind happy.
+ * Create a common function to set and get control information.
+ * Fix range values return by the driver.
+ * Fix setting value to be in the range (>>16 is unsigned).
+ * Add support for YUY2.
+ * Patch from Luc Saillard <luc _AT___ saillard.org>. Many thanks!
+ *
  * Revision 1.9  2006/01/07 16:10:21  dsandras
  * More changes from Luc Saillard. Thanks!
  *
@@ -159,6 +167,7 @@ static struct {
     { "YUV420P", V4L2_PIX_FMT_YUV420 },
     { "YUV422", V4L2_PIX_FMT_YYUV },
     { "YUV422P", V4L2_PIX_FMT_YUV422P },
+    { "YUY2", V4L2_PIX_FMT_YUYV },
     { "JPEG", V4L2_PIX_FMT_JPEG },
     { "H263", V4L2_PIX_FMT_H263 },
     { "SBGGR8", V4L2_PIX_FMT_SBGGR8 }
@@ -265,34 +274,34 @@ BOOL PVideoInputDevice_V4L2::Start()
   }
 
   if (!started) {
+    PTRACE(6,"PVidInDev\tstart queuing all buffers, fd=" << videoFd);
+
+    /* Queue all buffers */
+    for (int i=0; i<videoBufferCount; i++) {
+
+       struct v4l2_buffer buf;
+       buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+       buf.memory = V4L2_MEMORY_MMAP;
+       buf.index = i;
+
+       if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
+	  PTRACE(3,"PVidInDev\tVIDIOC_QBUF failed for buffer " << i << ": " << ::strerror(errno));
+	  return FALSE;
+       }
+    }
+
+    /* Start streaming */
     PTRACE(6,"PVidInDev\tstart streaming, fd=" << videoFd);
+    enum v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-    struct v4l2_buffer buf;
-    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    buf.index = 0;
-    buf.memory = V4L2_MEMORY_MMAP;
-
-    if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
-      PTRACE(3,"PVidInDev\tVIDIOC_QBUF failed : " << ::strerror(errno));
-      return FALSE;
+    if (::ioctl(videoFd, VIDIOC_STREAMON, &type) < 0) {
+       PTRACE(3,"PVidInDev\tSTREAMON failed : " << ::strerror(errno));
+       return FALSE;
     }
-    buf.index = 0;
-    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-    if (::ioctl(videoFd, VIDIOC_STREAMON, &buf.type) < 0) {
-      PTRACE(3,"PVidInDev\tSTREAMON failed : " << ::strerror(errno));
-      return FALSE;
-    }
     started = TRUE;
 
-    // requeue all buffers
-    for (buf.index = 0; buf.index < videoBufferCount; buf.index++) {
-      PTRACE(3,"PVidInDev\tQBUF for index:" << buf.index);
-      if (::ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
-        PTRACE(3,"PVidInDev\tQBUF failed : " << ::strerror(errno));
-        return FALSE;
-      }
-    }
   }
   return TRUE;
 }
@@ -353,6 +362,7 @@ BOOL PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
       {V4L2_STD_SECAM, "SECAM"} };
 
   struct v4l2_standard videoEnumStd;
+  memset(&videoEnumStd, 0, sizeof(struct v4l2_standard));
   videoEnumStd.index = 0;
   while (1) {
     if (::ioctl(videoFd, VIDIOC_ENUMSTD, &videoEnumStd) < 0) {
@@ -448,6 +458,7 @@ BOOL PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   ClearMapping();
 
   struct v4l2_format videoFormat;
+  memset(&videoFormat, 0, sizeof(struct v4l2_format));
   videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   // get the colour format
@@ -653,10 +664,11 @@ BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRe
     return NormalReadProcess(buffer, bytesReturned);
 
   struct v4l2_buffer buf;
-
+  memset(&buf, 0, sizeof(struct v4l2_buffer));
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  buf.index = 0;
   buf.memory = V4L2_MEMORY_MMAP;
+  buf.index = 0;
+
   if (::ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
     PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
     return FALSE;
@@ -754,119 +766,103 @@ BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width, unsigned he
   return TRUE;
 }
 
-int PVideoInputDevice_V4L2::GetBrightness() 
-{ 
+/**
+ * Query the current control setting
+ * @param control is v4l2 control id (V4L2_CID_BRIGHTNESS, V4L2_CID_WHITENESS, ...)
+ * @return  -1 control is unknown, or an error occured
+ *         >=0 current value in a range [0-65535]
+ */
+int PVideoInputDevice_V4L2::GetControlCommon(unsigned int control, int *value) 
+{
   if (!IsOpen())
     return -1;
 
-  struct v4l2_control c;
-  c.id = V4L2_CID_BRIGHTNESS;
+  struct v4l2_queryctrl q;
+  memset(&q, 0, sizeof(struct v4l2_queryctrl));
+  q.id = control;
+  if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
+    return -1;
 
+  struct v4l2_control c;
+  memset(&c, 0, sizeof(struct v4l2_control));
+  c.id = control;
   if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
     return -1;
 
-  frameBrightness = c.value;
-  return frameBrightness; 
+  *value = ((c.value - q.minimum) * 65536) / ((q.maximum-q.minimum));
+  return *value;
+}
+
+int PVideoInputDevice_V4L2::GetBrightness() 
+{ 
+  return GetControlCommon(V4L2_CID_BRIGHTNESS, &frameBrightness);
 }
 
 int PVideoInputDevice_V4L2::GetWhiteness() 
-{ 
-  if (!IsOpen())
-    return -1;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_WHITENESS;
-
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    return -1;
-
-  frameWhiteness = c.value;
-  return frameWhiteness;
+{
+  return GetControlCommon(V4L2_CID_WHITENESS, &frameWhiteness);
 }
 
 int PVideoInputDevice_V4L2::GetColour() 
 { 
-  if (!IsOpen())
-    return -1;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_SATURATION;
-
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    return -1;
-
-  frameColour = c.value;
-  return frameColour; 
+  return GetControlCommon(V4L2_CID_SATURATION, &frameColour);
 }
 
 int PVideoInputDevice_V4L2::GetContrast() 
 {
-  if (!IsOpen())
-    return -1;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_CONTRAST;
-
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    return -1;
-
-  frameContrast = c.value;
-  return frameContrast; 
+  return GetControlCommon(V4L2_CID_CONTRAST, &frameContrast);
 }
 
 int PVideoInputDevice_V4L2::GetHue() 
 {
-  if (!IsOpen())
-    return -1;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_HUE;
-
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    return -1;
-
-  frameHue = c.value;
-  return frameHue; 
+  return GetControlCommon(V4L2_CID_HUE, &frameHue);
 }
 
-BOOL PVideoInputDevice_V4L2::SetBrightness(unsigned newBrightness) 
-{ 
+/**
+ * Set a control to a new value
+ *
+ * @param control: V4L2_CID_BRIGHTNESS, V4L2_CID_WHITENESS, ...
+ * @param newValue: 0-65535 Set this control to this range
+ *                  -1 Set the default value
+ * @return FALSE, if an error occur or the control is not supported
+ */
+BOOL PVideoInputDevice_V4L2::SetControlCommon(unsigned int control, int newValue)
+{
+  PTRACE(1,"PVidInDev\t" << __FUNCTION__  << "() videoFd=" << videoFd);
   if (!IsOpen())
     return FALSE;
 
   struct v4l2_queryctrl q;
-  q.id = V4L2_CID_BRIGHTNESS;
-
+  memset(&q, 0, sizeof(struct v4l2_queryctrl));
+  q.id = control;
   if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
     return FALSE;
 
   struct v4l2_control c;
-  c.id = V4L2_CID_BRIGHTNESS;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newBrightness) / 65536;
+  memset(&c, 0, sizeof(struct v4l2_control));
+  c.id = control;
+  if (newValue < 0)
+    c.value = q.default_value;
+  else
+    c.value = q.minimum + ((q.maximum-q.minimum) * newValue)/65535;
 
   if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
     return FALSE;
 
+  return TRUE;
+}
+
+BOOL PVideoInputDevice_V4L2::SetBrightness(unsigned newBrightness) 
+{ 
+  if (!SetControlCommon(V4L2_CID_BRIGHTNESS, newBrightness))
+    return FALSE;
   frameBrightness = newBrightness;
   return TRUE;
 }
 
 BOOL PVideoInputDevice_V4L2::SetWhiteness(unsigned newWhiteness) 
 { 
-  if (!IsOpen())
-    return FALSE;
-
-  struct v4l2_queryctrl q;
-  q.id = V4L2_CID_WHITENESS;
-
-  if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
-    return FALSE;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_WHITENESS;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newWhiteness) / 65536;
-
-  if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
+  if (!SetControlCommon(V4L2_CID_WHITENESS, newWhiteness))
     return FALSE;
 
   frameWhiteness = newWhiteness;
@@ -875,67 +871,24 @@ BOOL PVideoInputDevice_V4L2::SetWhiteness(unsigned newWhiteness)
 
 BOOL PVideoInputDevice_V4L2::SetColour(unsigned newColour) 
 { 
-  if (!IsOpen())
+  if (!SetControlCommon(V4L2_CID_SATURATION, newColour))
     return FALSE;
-
-  struct v4l2_queryctrl q;
-  q.id = V4L2_CID_SATURATION;
-
-  if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
-    return FALSE;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_SATURATION;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newColour) / 65535;
-
-  printf ("%d\n", c.value);
-  if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
-    return FALSE;
-
   frameColour = newColour;
   return TRUE;
 }
 
 BOOL PVideoInputDevice_V4L2::SetContrast(unsigned newContrast) 
 { 
-  if (!IsOpen())
+  if (!SetControlCommon(V4L2_CID_CONTRAST, newContrast))
     return FALSE;
-
-  struct v4l2_queryctrl q;
-  q.id = V4L2_CID_CONTRAST;
-
-  if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
-    return FALSE;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_CONTRAST;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newContrast) / 65536;
-
-  if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
-    return FALSE;
-
   frameContrast = newContrast;
   return TRUE;
 }
 
 BOOL PVideoInputDevice_V4L2::SetHue(unsigned newHue) 
 {
-  if (!IsOpen())
+  if (!SetControlCommon(V4L2_CID_HUE, newHue))
     return FALSE;
-
-  struct v4l2_queryctrl q;
-  q.id = V4L2_CID_HUE;
-
-  if (::ioctl(videoFd, VIDIOC_QUERYCTRL, &q) < 0)
-    return FALSE;
-
-  struct v4l2_control c;
-  c.id = V4L2_CID_HUE;
-  c.value = q.minimum + ((q.maximum-q.minimum) * newHue) / 65536;
-
-  if (::ioctl(videoFd, VIDIOC_S_CTRL, &c) < 0)
-    return FALSE;
-
   frameHue=newHue;
   return TRUE;
 }
@@ -945,33 +898,16 @@ BOOL PVideoInputDevice_V4L2::GetParameters (int *whiteness, int *brightness, int
   if (!IsOpen())
     return FALSE;
 
-  struct v4l2_control c;
-
-  c.id = V4L2_CID_WHITENESS;
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    frameWhiteness = -1;
-  else
-    frameWhiteness = c.value;
-  c.id = V4L2_CID_BRIGHTNESS;
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    frameBrightness = -1;
-  else
-    frameBrightness = c.value;
-  c.id = V4L2_CID_SATURATION;
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    frameColour = -1;
-  else
-    frameColour = c.value;
-  c.id = V4L2_CID_CONTRAST;
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    frameContrast = -1;
-  else
-    frameContrast = c.value;
-  c.id = V4L2_CID_HUE;
-  if (::ioctl(videoFd, VIDIOC_G_CTRL, &c) < 0)
-    frameHue = -1;
-  else
-    frameHue = c.value;
+  frameWhiteness = -1;
+  frameBrightness = -1;
+  frameColour = -1;
+  frameContrast = -1;
+  frameHue = -1;
+  GetWhiteness();
+  GetBrightness();
+  GetColour();
+  GetContrast();
+  GetHue();
 
   *whiteness  = frameWhiteness;
   *brightness = frameBrightness;
