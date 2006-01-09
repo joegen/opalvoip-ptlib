@@ -68,9 +68,15 @@ endif
 endif
 
 
+ifdef   DEBUG
+TARGET := debug
+else
+TARGET := opt
+endif
+
 
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
-	set -e; $(foreach dir,$(SUBDIRS),$(MAKE)  -C $(dir) opt;)
+	set -e; $(foreach dir,$(SUBDIRS),$(MAKE)  -C $(dir) $(TARGET);)
 
 default_sound:
 	@echo $(DEFAULT_SOUND)
