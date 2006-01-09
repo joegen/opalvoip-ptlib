@@ -26,6 +26,13 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.44  2006/01/09 18:19:12  dsandras
+ * Add YUY2 (or YUV420) format. Resizing to YUV420P is done, but it's not very
+ * efficient.
+ * Fix the gray border when doing padding for YUV420P (change it to black).
+ * Logitech webcam fusion export only big format in yuy2.
+ * Patches provided by Luc Saillard <luc _AT____ saillard.org>. Many thanks!
+ *
  * Revision 1.43  2006/01/07 13:33:02  dsandras
  * Added code allowing real resizing on YUV420P streams thanks to Luc Sailard <luc ___AT_-_ saillard.org>. Thank you very much for that nice patch Luc!
  *
@@ -285,6 +292,10 @@ class PStandardColourConverter : public PColourConverter
     void ResizeYUV420P(
       const BYTE * src,
       BYTE * dest
+    ) const;
+    void  YUY2toYUV420PSameSize(
+      const BYTE *yuy2,
+      BYTE *yuv420p
     ) const;
 };
 
@@ -777,6 +788,88 @@ PSTANDARD_COLOUR_CONVERTER(BGR32,YUV420P)
   return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, 2, 0);
 }
 
+/*
+ * Format YUY2 or YUV422(non planar):
+ *
+ * off: 0  Y00 U00 Y01 V00 Y02 U01 Y03 V01
+ * off: 8  Y10 U10 Y11 V10 Y12 U11 Y13 V11
+ * off:16  Y20 U20 Y21 V20 Y22 U21 Y23 V21
+ * off:24  Y30 U30 Y31 V30 Y32 U31 Y33 V31
+ * length:32 bytes
+ *
+ * Format YUV420:
+ * off: 00  Y00 Y01 Y02 Y03
+ * off: 04  Y10 Y11 Y12 Y13
+ * off: 08  Y20 Y21 Y22 Y23
+ * off: 12  Y30 Y31 Y32 Y33
+ * off: 16  U00 U02 U20 U22
+ * off: 20  V00 V02 V20 V22
+ * 
+ * So, we loose some bit of information when converting YUY2 to YUV420 
+ *
+ * NOTE: This algorithm works only if the width and the height is pair.
+ */
+void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yuv420p) const
+{
+  const BYTE *s;
+  BYTE *y, *u, *v;
+  unsigned int x, h;  
+  int npixels = srcFrameWidth * srcFrameHeight;
+
+  s = yuy2;
+  y = yuv420p;
+  u = yuv420p + npixels;
+  v = u + npixels/4;
+
+  for (h=0; h<srcFrameHeight; h+=2) {
+
+     /* Copy the first line keeping all information */
+     for (x=0; x<srcFrameWidth; x+=2) {
+	*y++ = *s++;
+	*u++ = *s++;
+	*y++ = *s++;
+	*v++ = *s++;
+     }
+     /* Copy the second line discarding u and v information */
+     for (x=0; x<srcFrameWidth; x+=2) {
+	*y++ = *s++;
+	s++;
+	*y++ = *s++;
+	s++;
+     }
+  }
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
+{
+  const BYTE *yuy2 = srcFrameBuffer;
+  BYTE *yuv420p = dstFrameBuffer;
+
+  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
+    PTRACE(2,"PColCnv\tError in YUY2 to YUV420P converter, All size need to be pair.");
+    return FALSE;
+  }
+
+  if ((srcFrameWidth == dstFrameWidth) || (srcFrameHeight == dstFrameHeight)) {
+
+     YUY2toYUV420PSameSize(yuy2, yuv420p);
+
+  } else {
+     /* Very Very not efficient */
+     BYTE *tempDest=(BYTE *)malloc(srcFrameWidth*srcFrameHeight*3/2);
+     if (tempDest == NULL)
+       return FALSE;
+     YUY2toYUV420PSameSize(yuy2, tempDest);
+     ResizeYUV420P(tempDest, yuv420p);
+     free(tempDest);
+  }
+
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+
+  return TRUE;
+}
 
 // Consider a YUV422P image of 8x2 pixels.
 //
@@ -894,7 +987,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
   npixels = dstFrameWidth * dstFrameHeight;
   d = dest;
   for (i=0; i < npixels; i++) 
-    *d++ = 127;
+    *d++ = BLACK_Y;
   for (i=0; i < npixels/4; i++)
     *d++ = BLACK_U;
   for (i=0; i < npixels/4; i++)
