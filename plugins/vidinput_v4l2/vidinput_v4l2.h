@@ -24,6 +24,14 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.5  2006/01/09 18:22:42  dsandras
+ * Use memset before some ioctl() to make valgrind happy.
+ * Create a common function to set and get control information.
+ * Fix range values return by the driver.
+ * Fix setting value to be in the range (>>16 is unsigned).
+ * Add support for YUY2.
+ * Patch from Luc Saillard <luc _AT___ saillard.org>. Many thanks!
+ *
  * Revision 1.4  2005/08/09 09:08:10  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -109,6 +117,9 @@ public:
   BOOL GetParameters(int*, int*, int*, int*, int*);
 
   BOOL SetColourFormat(const PString&);
+
+  int GetControlCommon(unsigned int control, int *value);
+  BOOL SetControlCommon(unsigned int control, int newValue);
 
   int GetContrast();
   BOOL SetContrast(unsigned int);
