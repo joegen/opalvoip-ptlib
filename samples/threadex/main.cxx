@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2006/01/11 22:14:48  dereksmithies
+ * Add autodelete test option to code.
+ * Move Resume() operators out of the constructor for threads.
+ * The Resume() operator is "ok" in the constructor, if Resume() is at the end of the constructor,
+ * and the thread class does not have a descendant.
+ *
  * Revision 1.7  2006/01/06 23:08:24  dereksmithies
  * Add some code, now it crashes on unix with the command args -d 1 -b
  *
@@ -91,6 +97,7 @@ void Threadex::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
+	     "a-autodelete."         "-no-autodelete."
              "h-help."               "-no-help."
              "d-delay:"              "-no-delay."
              "b-busywait."           "-no-busywait."
@@ -123,6 +130,7 @@ void Threadex::Main()
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
            << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
+	   << "-a  or --autodelete   where the pwlib methods for auto deleting a thread are used" << endl
 #if PTRACING
            << "o-output              output file name for trace" << endl
            << "t-trace.              trace level to use." << endl
@@ -132,16 +140,19 @@ void Threadex::Main()
     return;
   }
 
-  PINDEX delay = 2000;;
+  delay = 2000;
   if (args.HasOption('d'))
     delay = args.GetOptionString('d').AsInteger();
 
   delay = PMIN(1000000, PMAX(0, delay));
   cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
  
-  BOOL doBusyWait = args.HasOption('b');
+  doBusyWait = args.HasOption('b');
 
-  UserInterfaceThread ui(delay, doBusyWait);
+  doAutoDelete = args.HasOption('a');
+
+  UserInterfaceThread ui;
+  ui.Resume();
   ui.WaitForTermination();
 }
 
@@ -149,33 +160,46 @@ void Threadex::Main()
 void DelayThread::Main()
 {
   PThread::Sleep(delay);
-  finished.Signal();
 }
 
-void DelayThread::WaitUntilDone()
-{ 
-  finished.Wait(); 
-} 
 ///////////////////////////////////////////////////////////////////////////
 
 void LauncherThread::Main()
 {
-  if (useBusyWait) {
+  PINDEX delay = Threadex::Current().Delay();
+  if (Threadex::Current().AutoDelete()) {
+    while (keepGoing) {
+      DelayThread *thread = new DelayThread(delay, TRUE);
+      if (thread == NULL)
+	PAssertAlways("null thread returned");
+      thread->Resume();
+      //     PThread::Sleep(1);
+      iteration++;
+    }
+    return;
+  }
+
+  if (Threadex::Current().BusyWait()) {
     while (keepGoing) {
       DelayThread *thread = new DelayThread(delay);
-      thread->WaitUntilDone();
+      if (thread == NULL)
+	PAssertAlways("null thread returned");
+      thread->Resume();
       while (!thread->IsTerminated());
       delete thread;
       iteration++;
     }
-  } else {
-    while (keepGoing) {
-      DelayThread *thread = new DelayThread(delay);
-      thread->WaitUntilDone();
-      thread->WaitForTermination();
-      delete thread;
-      iteration++;
-    }
+    return;
+  } 
+
+  while (keepGoing) {
+    DelayThread *thread = new DelayThread(delay);
+    if (thread == NULL)
+      PAssertAlways("null thread returned");
+    thread->Resume();
+    thread->WaitForTermination();
+    delete thread;
+    iteration++;
   }
 }
 
@@ -194,7 +218,8 @@ void UserInterfaceThread::Main()
  
   cout << endl << help;
 
-  LauncherThread launch(delay, useBusyWait);
+  LauncherThread launch;
+  launch.Resume();
 
   console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {

@@ -22,6 +22,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.4  2006/01/11 22:14:48  dereksmithies
+ * Add autodelete test option to code.
+ * Move Resume() operators out of the constructor for threads.
+ * The Resume() operator is "ok" in the constructor, if Resume() is at the end of the constructor,
+ * and the thread class does not have a descendant.
+ *
  * Revision 1.3  2006/01/06 23:08:24  dereksmithies
  * Add some code, now it crashes on unix with the command args -d 1 -b
  *
@@ -57,15 +63,16 @@ class DelayThread : public PThread
 public:
   DelayThread(PINDEX _delay)
     : PThread(10000, NoAutoDeleteThread), delay(_delay)
-    { Resume(); }
+    { }
+
+  DelayThread(PINDEX _delay, BOOL)
+    : PThread(10000, AutoDeleteThread), delay(_delay)
+    { }
   
   void Main();
-
-  void WaitUntilDone(); 
     
  protected:
   PINDEX delay;
-  PSyncPoint finished;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,15 +84,13 @@ class UserInterfaceThread : public PThread
   PCLASSINFO(UserInterfaceThread, PThread);
   
 public:
-  UserInterfaceThread(PINDEX _delay, BOOL _useBusyWait)
-    : PThread(1000, NoAutoDeleteThread), delay(_delay), useBusyWait(_useBusyWait)
-    { Resume(); }
-  
+  UserInterfaceThread()
+    : PThread(10000, NoAutoDeleteThread)
+    { }
+
   void Main();
     
  protected:
-  PINDEX delay;
-  BOOL useBusyWait;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,9 +103,9 @@ class LauncherThread : public PThread
   PCLASSINFO(LauncherThread, PThread);
   
 public:
-  LauncherThread(PINDEX _delay, BOOL  _useBusyWait)
-    : PThread(1000, NoAutoDeleteThread), delay(_delay), useBusyWait(_useBusyWait)
-    { Resume(); iteration = 0; keepGoing = TRUE; }
+  LauncherThread()
+    : PThread(10000, NoAutoDeleteThread)
+    { iteration = 0; keepGoing = TRUE; }
   
   void Main();
     
@@ -111,11 +116,9 @@ public:
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
   
  protected:
-  PINDEX delay;
   PINDEX iteration;
   PTime startTime;
   BOOL  keepGoing;
-  BOOL useBusyWait;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,8 +132,22 @@ class Threadex : public PProcess
     Threadex();
     virtual void Main();
 
+    PINDEX Delay() { return delay; }
+
+    BOOL AutoDelete() { return doAutoDelete; }
+
+    BOOL BusyWait() { return doBusyWait; }
+
+   static Threadex & Current()
+      { return (Threadex &)PProcess::Current(); }
+
  protected:
 
+    PINDEX delay;
+
+    BOOL doAutoDelete;
+
+    BOOL doBusyWait;
 };
 
 
