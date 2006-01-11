@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.38  2006/01/11 22:27:44  dereksmithies
+ * Add extra comments describing the usage of Resume() in the constructor of a
+ * class descended of PThread
+ *
  * Revision 1.37  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -320,6 +324,22 @@ class PThread : public PObject
 
     /** Resume thread execution, this is identical to
        #Suspend(FALSE)#.
+
+      The Resume() method may be called from within the constructor of a
+      PThread descendant.  However, the Resume() should be in the
+      constructor of the most descendant class. So, if you have a
+      class B (which is descended of PThread), and a class C (which is
+      descended of B), placing the call to Resume in the constructor of B is
+      unwise.
+
+      If you do place a call to Resume in the constructor, it
+      should be at the end of the constructor, after all the other
+      initialisation in the constructor.
+
+      The reason the call to Resume() should be at the end of the
+      construction process is simple - you want the thread to start
+      when all the variables in the class have been correctly
+      initialised.
      */
     virtual void Resume();
 
