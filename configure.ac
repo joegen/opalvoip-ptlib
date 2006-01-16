@@ -202,6 +202,11 @@ if test ${OSTYPE} != beos ; then
   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 fi
 
+dnl solaris has it's own ldap library
+if test ${OSTYPE} != solaris ; then
+   LDAP_LIBRARIES = "-llber -lldap_r"
+fi
+
 dnl ########################################################################
 dnl get the gcc version
 
@@ -960,10 +965,10 @@ if test "$enable_sasl" = "no" ; then
 else 
 
 dnl Not all Unices have SASL installed as a separate library (Solaris)
-AC_CHECK_LIB(sasl2, sasl_version, HAS_SASL2=1, HAS_SASL2=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
+AC_CHECK_LIB(sasl2, sasl_version, HAS_SASL2=1, HAS_SASL2=,$LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
 if test "${HAS_SASL2}x" = "x" ; then
   dnl Some older Linux boxes have libsasl instead of libsasl2
-  AC_CHECK_LIB(sasl, sasl_client_auth, HAS_SASL=1, HAS_SASL=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
+  AC_CHECK_LIB(sasl, sasl_client_auth, HAS_SASL=1, HAS_SASL=,$LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
 fi
 
 dnl we need to track down the correct sasl.h
@@ -1037,13 +1042,13 @@ else
 
     dnl check also for lldap_r presence (required for thread safe OpenLDAP?)
     if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,$LDAP_LIBRARIES  $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
     else
       AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
       if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
         OPENLDAPINCLUDEDIR=/usr/local/include
         OPENLDAPLIBDIR=/usr/local/lib
-        AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-L/usr/local/lib -llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+        AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-L/usr/local/lib $LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
       fi
     fi
   fi
@@ -1051,7 +1056,7 @@ else
   if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
     HAS_OPENLDAP=1
     AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
-    ENDLDLIBS="-lldap -lldap_r -llber $ENDLDLIBS"
+    ENDLDLIBS="-lldap $LDAP_LIBRARIES $ENDLDLIBS"
     if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
     fi

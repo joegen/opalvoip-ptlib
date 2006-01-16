@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.20  2006/01/16 19:52:05  dsandras
+ * Applied patch from Brian Lu <brian lu sun com> to allow compilation on
+ * Solaris using SUN's LDAP. Thanks!!
+ *
  * Revision 1.19  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -185,8 +189,13 @@ BOOL PLDAPSession::Bind(const PString & who,
   else
     whoPtr = who;
 
+#ifdef SOLARIS
+  static const int AuthMethodCode[NumAuthenticationMethod2] = {
+    LDAP_AUTH_SIMPLE, LDAP_AUTH_SASL, LDAP_AUTH_KRBV41_30, LDAP_AUTH_KRBV42_30
+#else
   static const int AuthMethodCode[NumAuthenticationMethod] = {
     LDAP_AUTH_SIMPLE, LDAP_AUTH_SASL, LDAP_AUTH_KRBV4
+#endif
   };
   errorNumber = ldap_bind_s(ldapContext, whoPtr, passwd, AuthMethodCode[authMethod]);
   return errorNumber == LDAP_SUCCESS;
