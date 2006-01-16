@@ -28,6 +28,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.44  2006/01/16 07:31:57  csoutheren
+ * Removed deletion of PWAVFIle format converters.
+ *  These look like memory leaks, but are not - the converters are static objects that
+ *  cannot be deleted
+ *
  * Revision 1.43  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -397,7 +402,6 @@ BOOL PWAVFile::Open(const PFilePath & name, OpenMode mode, int opts)
 BOOL PWAVFile::Close()
 {
   if (autoConverter != NULL) {
-    delete autoConverter;
     autoConverter = NULL;
   }
 
@@ -751,7 +755,6 @@ BOOL PWAVFile::ProcessHeader()
 BOOL PWAVFile::GenerateHeader()
 {
   if (autoConverter != NULL) {
-    delete autoConverter;
     autoConverter = NULL;
   }
 
