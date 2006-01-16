@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.10  2006/01/16 19:52:05  dsandras
+ * Applied patch from Brian Lu <brian lu sun com> to allow compilation on
+ * Solaris using SUN's LDAP. Thanks!!
+ *
  * Revision 1.9  2004/05/24 12:02:49  csoutheren
  * Add function to permit setting a limit on the number of results returned
  * from an LDAP query. Change the default number of results to unlimited,
@@ -130,7 +134,12 @@ class PLDAPSession : public PObject
       AuthSimple,
       AuthSASL,
       AuthKerberos,
+#ifdef SOLARIS
+      NumAuthenticationMethod1,
+      NumAuthenticationMethod2
+#else
       NumAuthenticationMethod
+#endif
     };
 
     /**Bind to the remote LDAP server.
