@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45  2006/01/16 20:18:01  dsandras
+ * Applied patch from Luc Saillard <luc saillard org> to improve conversion
+ * routines. Thanks!!
+ *
  * Revision 1.44  2006/01/09 18:19:12  dsandras
  * Add YUY2 (or YUV420) format. Resizing to YUV420P is done, but it's not very
  * efficient.
@@ -856,13 +860,10 @@ PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
      YUY2toYUV420PSameSize(yuy2, yuv420p);
 
   } else {
-     /* Very Very not efficient */
-     BYTE *tempDest=(BYTE *)malloc(srcFrameWidth*srcFrameHeight*3/2);
-     if (tempDest == NULL)
-       return FALSE;
-     YUY2toYUV420PSameSize(yuy2, tempDest);
-     ResizeYUV420P(tempDest, yuv420p);
-     free(tempDest);
+     /* not efficient (convert then resize) */
+     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameWidth*srcFrameHeight*3/2);
+     YUY2toYUV420PSameSize(yuy2, intermed);
+     ResizeYUV420P(intermed, yuv420p);
   }
 
   if (bytesReturned != NULL)
@@ -985,19 +986,19 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
   const BYTE *s;
 
   npixels = dstFrameWidth * dstFrameHeight;
-  d = dest;
-  for (i=0; i < npixels; i++) 
-    *d++ = BLACK_Y;
-  for (i=0; i < npixels/4; i++)
-    *d++ = BLACK_U;
-  for (i=0; i < npixels/4; i++)
-    *d++ = BLACK_V;
-
   if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
     // dest is bigger than the source. No subsampling.
     // Place the src in the middle of the destination.
     unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
     unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+
+    d = dest;
+    for (i=0; i < npixels; i++) 
+      *d++ = BLACK_Y;
+    for (i=0; i < npixels/4; i++)
+      *d++ = BLACK_U;
+    for (i=0; i < npixels/4; i++)
+      *d++ = BLACK_V;
 
     // Copy plane Y
     d = dest + yOffset * dstFrameWidth + xOffset;
@@ -1035,6 +1036,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
 
     s = src;
     d = dest;
+
     /* Copy Plane Y */
     for (fy=0, y=0; y<dstFrameHeight; y++, fy+=dy) {
        s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
@@ -1042,20 +1044,20 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
 	  *d++ = s[fx>>FIX_FLOAT];
        }
     }
+
     /* Copy Plane U */
-    dy /= 2;
-    dx /= 2;
     src += srcFrameWidth*srcFrameHeight;
     for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
-       s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
+       s = src + (fy>>FIX_FLOAT) * srcFrameWidth/2;
        for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
 	  *d++ = s[fx>>FIX_FLOAT];
        }
     }
+
     /* Copy Plane V */
     src += srcFrameWidth*srcFrameHeight/4;
     for (fy=0, y=0; y<dstFrameHeight/2; y++, fy+=dy) {
-       s = src + (fy>>FIX_FLOAT) * srcFrameWidth;
+       s = src + (fy>>FIX_FLOAT) * srcFrameWidth/2;
        for (fx=0, x=0; x<dstFrameWidth/2; x++, fx+=dx) {
 	  *d++ = s[fx>>FIX_FLOAT];
        }
@@ -1135,7 +1137,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 }
 
 
-#define LIMIT(x) (unsigned char) (((x > 0xffffff) ? 0xff0000 : ((x <= 0xffff) ? 0 : x & 0xff0000)) >> 16)
+#define LIMIT(x) (unsigned char) ((x > 255) ? 255 : ((x < 0) ? 0 : x ))
 static inline int clip(int a, int limit) {
   return a<limit?a:limit;
 }
@@ -1321,6 +1323,28 @@ BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
   return TRUE;
 }
 
+#define SCALEBITS 12
+#define ONE_HALF  (1UL << (SCALEBITS - 1))
+#define FIX(x)    ((int) ((x) * (1UL<<SCALEBITS) + 0.5))
+
+/* 
+ * Please note when converting colorspace from YUV to RGB.
+ * Not all YUV have the same colorspace. 
+ *
+ * For instance Jpeg use this formula
+ * YCbCr is defined per CCIR 601-1, except that Cb and Cr are
+ * normalized to the range 0..MAXJSAMPLE rather than -0.5 .. 0.5.
+ * The conversion equations to be implemented are therefore
+ *      Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
+ *      Cb = -0.16874 * R - 0.33126 * G + 0.50000 * B  + CENTERJSAMPLE
+ *      Cr =  0.50000 * R - 0.41869 * G - 0.08131 * B  + CENTERJSAMPLE
+ * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
+ * So
+ * R = Y + 1.402 (Cr-128)
+ * G = Y - 0.34414 (Cb-128) - 0.71414 (Cr-128)
+ * B = Y + 1.772 (Cb-128)
+ * 
+ */
 BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned,
@@ -1362,9 +1386,9 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
       // The RGB value without luminance
       long cb = *uplane-128;
       long cr = *vplane-128;
-      long rd = 104635*cr;      //       106986*cr
-      long gd = -25690*cb-53294*cr;    // -26261*cb  +   -54496*cr 
-      long bd = 132278*cb;      // 135221*cb
+      long rd = FIX(1.40200) * cr + ONE_HALF;
+      long gd = -FIX(0.34414) * cb -FIX(0.71414) * cr + ONE_HALF;
+      long bd = FIX(1.77200) * cb + ONE_HALF;
 
       // Add luminance to each of the 4 pixels
 
@@ -1372,13 +1396,11 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
       {
         yvalue = *(yplane + originalPixpos[p])-16;
 
-        if (yvalue < 0) yvalue = 0;
+        l = yvalue << SCALEBITS;
 
-        l = 76310*yvalue;
-
-        r = l+rd;
-        g = l+gd;
-        b = l+bd;
+        r = (l+rd)>>SCALEBITS;
+        g = (l+gd)>>SCALEBITS;
+        b = (l+bd)>>SCALEBITS;
 
         BYTE * rgpPtr = dstImageFrame + rgbIncrement*pixpos[p];
         rgpPtr[redOffset ] = LIMIT(r);
