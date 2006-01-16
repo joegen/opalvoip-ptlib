@@ -2239,6 +2239,10 @@ _ACEOF
 
 fi
 
+if test ${OSTYPE} != solaris ; then
+   LDAP_LIBRARIES = "-llber -lldap_r"
+fi
+
 
 if test x$GXX = xyes ; then
   USE_GCC=yes
@@ -5995,7 +5999,7 @@ if test "${ac_cv_lib_sasl2_sasl_version+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsasl2 $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
+LIBS="-lsasl2 $LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -6065,7 +6069,7 @@ if test "${ac_cv_lib_sasl_sasl_client_auth+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsasl $LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
+LIBS="-lsasl $LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -6420,7 +6424,7 @@ if test "${ac_cv_lib_ldap_ldap_open+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lldap -llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
+LIBS="-lldap $LDAP_LIBRARIES  $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -6514,7 +6518,7 @@ if test "${ac_cv_lib_ldap_ldap_open+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lldap -L/usr/local/lib -llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
+LIBS="-lldap -L/usr/local/lib $LDAP_LIBRARIES $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -6588,7 +6592,7 @@ cat >>confdefs.h <<\_ACEOF
 #define P_LDAP 1
 _ACEOF
 
-    ENDLDLIBS="-lldap -lldap_r -llber $ENDLDLIBS"
+    ENDLDLIBS="-lldap $LDAP_LIBRARIES $ENDLDLIBS"
     if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
     fi
