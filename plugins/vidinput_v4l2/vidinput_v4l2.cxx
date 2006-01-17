@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11  2006/01/17 22:28:26  dsandras
+ * Another patch from Luc Saillard <luc saillard org> to fix V4L2 support when
+ * opening/closing the device several times in a row. Thanks a lot!!!!!
+ *
  * Revision 1.10  2006/01/09 18:22:42  dsandras
  * Use memset before some ioctl() to make valgrind happy.
  * Create a common function to set and get control information.
@@ -619,6 +623,7 @@ void PVideoInputDevice_V4L2::ClearMapping()
 
   struct v4l2_buffer buf;
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  buf.memory = V4L2_MEMORY_MMAP;
 
   for (buf.index = 0; ; buf.index++) {
     if (::ioctl(videoFd, VIDIOC_QUERYBUF, &buf) < 0)
