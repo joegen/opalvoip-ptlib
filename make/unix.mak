@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.200  2006/01/17 18:57:17  dsandras
+# Applied patch from Brian Lu <brian lu sun com> to fix compilation with SUN
+# studio. Thanks.
+#
 # Revision 1.199  2006/01/08 14:49:08  dsandras
 # Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
 #
@@ -559,6 +563,9 @@ endif # sunos
 ifeq ($(OSTYPE),solaris)
 
 #  Solaris (Sunos 5.x)
+
+CFLAGS +=-DSOLARIS
+CXXFLAGS +=-DSOLARIS
 
 ifeq ($(MACHTYPE),x86)
 ifeq ($(USE_GCC),yes)
