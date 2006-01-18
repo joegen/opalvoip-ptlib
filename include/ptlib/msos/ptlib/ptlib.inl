@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.25  2006/01/18 07:18:00  csoutheren
+ * Added explicit copy constructor for PCriticalSection on Windows
+ *
  * Revision 1.24  2005/11/14 22:29:13  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -188,6 +191,11 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 // PCriticalSection
 
 PINLINE PCriticalSection::PCriticalSection()
+{
+  ::InitializeCriticalSection(&criticalSection);
+}
+
+PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
 {
   ::InitializeCriticalSection(&criticalSection);
 }
