@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.5  2006/01/18 07:16:56  csoutheren
+ * Latest version of socket aggregation code
+ *
  * Revision 1.4  2006/01/03 04:23:32  csoutheren
  * Fixed Unix implementation
  *
@@ -138,7 +141,7 @@ class PAggregatedHandle : public PObject
   PCLASSINFO(PAggregatedHandle, PObject);
   public:
     PAggregatedHandle(BOOL _autoDelete = FALSE)
-      : autoDelete(_autoDelete), preReadDone(FALSE)
+      : autoDelete(_autoDelete), closed(FALSE), preReadDone(FALSE)
     { }
 
     virtual PAggregatorFDList_t GetFDs() = 0;
@@ -158,6 +161,7 @@ class PAggregatedHandle : public PObject
     { preReadDone = v; }
 
     BOOL autoDelete;
+    BOOL closed;
 
   protected:
     BOOL preReadDone;
@@ -190,18 +194,16 @@ class PHandleAggregator : public PObject
     class WorkerThreadBase : public PThread
     {
       public:
-        WorkerThreadBase(EventBase & _event)
-          : PThread(100, NoAutoDeleteThread), event(_event), listChanged(TRUE)
-        { }
+        WorkerThreadBase(EventBase & _event);
 
         virtual void Trigger() = 0;
         void Main();
 
         EventBase & event;
-        PMutex mutex;
-        BOOL listChanged;
-
+        PMutex workerMutex;
         HandleContextList_t handleList;
+        BOOL listChanged;
+        BOOL shutdown;
     };
 
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
@@ -212,7 +214,7 @@ class PHandleAggregator : public PObject
 
     BOOL RemoveHandle(PAggregatedHandle * handle);
 
-    PMutex mutex;
+    PMutex listMutex;
     WorkerList_t workers;
     unsigned maxWorkerSize;
     unsigned minWorkerSize;
@@ -252,7 +254,7 @@ class PSocketAggregator : public PHandleAggregator
 
     BOOL AddSocket(PSocketType * sock)
     { 
-      PWaitAndSignal m(mutex);
+      PWaitAndSignal m(listMutex);
 
       AggregatedPSocket * handle = new AggregatedPSocket(sock);
       if (AddHandle(handle)) {
@@ -266,7 +268,7 @@ class PSocketAggregator : public PHandleAggregator
 
     BOOL RemoveSocket(PSocketType * sock)
     { 
-      PWaitAndSignal m(mutex);
+      PWaitAndSignal m(listMutex);
 
       typename SocketList_t::iterator r = socketList.find(sock);
       if (r == socketList.end()) 
