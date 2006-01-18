@@ -2240,7 +2240,7 @@ _ACEOF
 fi
 
 if test ${OSTYPE} != solaris ; then
-   LDAP_LIBRARIES = "-llber -lldap_r"
+   LDAP_LIBRARIES="-llber -lldap_r"
 fi
 
 
