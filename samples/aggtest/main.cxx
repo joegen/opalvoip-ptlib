@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2006/01/18 07:16:56  csoutheren
+ * Latest version of socket aggregation code
+ *
  * Revision 1.1  2005/12/22 03:55:52  csoutheren
  * Added initial version of socket aggregation classes
  *
@@ -80,21 +83,22 @@ void AggTest::Main()
   PSocketAggregator<MyUDPSocket> socketHandler;
 
   MyUDPSocket * sockets[100];
+  memset(sockets, 0, sizeof(sockets));
   const unsigned count = sizeof(sockets) / sizeof(sockets[0]);
 
-  for (PINDEX i = 0; i < count; ++i) {
-    //cout << "Adding socket " << i << endl;
-    sockets[i] = new MyUDPSocket();
-    sockets[i]->Listen();
-    socketHandler.AddSocket(sockets[i]);
-  }
-
-  cout << "handler paused with " << socketHandler.workers.size() << " threads" << endl;
-
-  Sleep(1000);
-
-  for (PINDEX i = 0; i < count; ++i) {
-    socketHandler.RemoveSocket(sockets[i]);
+  for (PINDEX i = 0; i < 1000000; ++i) {
+    int num = rand() % count;
+    if (sockets[num] == NULL) {
+      sockets[num] = new MyUDPSocket();
+      sockets[num]->Listen();
+      socketHandler.AddSocket(sockets[num]);
+    }
+    else
+    {
+      socketHandler.RemoveSocket(sockets[num]);
+      delete sockets[num];
+      sockets[num] = NULL;
+    }
   }
 
   cout << "handler finished with " << socketHandler.workers.size() << " threads" << endl;
