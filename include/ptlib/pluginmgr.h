@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.18  2006/01/21 13:43:05  dsandras
+ * Allow the plugin manager to look for plugins in symlinked directories.
+ *
  * Revision 1.17  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -88,7 +91,8 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
   PTRACE(4, "Enumerating plugin directory " << dir);
   do {
     PString entry = dir + dir.GetEntryName();
-    if (dir.IsSubDir())
+    PDirectory subdir = entry;
+    if (subdir.Open())
       PLoadPluginDirectory<C>(obj, entry, suffix);
     else {
       PFilePath fn(entry);
