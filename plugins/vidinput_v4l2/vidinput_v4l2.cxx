@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.12  2006/01/21 13:59:50  dsandras
+ * Added BGR colour format thanks to Luc Saillard <luc saillard org>. Thanks!
+ *
  * Revision 1.11  2006/01/17 22:28:26  dsandras
  * Another patch from Luc Saillard <luc saillard org> to fix V4L2 support when
  * opening/closing the device several times in a row. Thanks a lot!!!!!
@@ -160,9 +163,11 @@ static struct {
   const char * colourFormat;
   __u32 code;
 } colourFormatTab[] = {
-    { "Grey", V4L2_PIX_FMT_GREY },  //Entries in this table correspond
+    { "Grey", V4L2_PIX_FMT_GREY },   //Entries in this table correspond
     { "RGB32", V4L2_PIX_FMT_RGB32 }, //(line by line) to those in the 
-    { "RGB24", V4L2_PIX_FMT_RGB24 }, // PVideoDevice ColourFormat table.
+    { "BGR32", V4L2_PIX_FMT_BGR32 }, //PVideoDevice ColourFormat table.
+    { "RGB24", V4L2_PIX_FMT_RGB24 }, 
+    { "BGR24", V4L2_PIX_FMT_BGR24 },
     { "RGB565", V4L2_PIX_FMT_RGB565 },
     { "RGB555", V4L2_PIX_FMT_RGB555 },
     { "YUV411", V4L2_PIX_FMT_Y41P },
