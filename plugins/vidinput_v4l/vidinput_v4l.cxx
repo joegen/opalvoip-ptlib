@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.16  2006/01/21 13:57:35  dsandras
+ * V4L1 drivers are actually reporting RGB even though they are sending BGR.
+ * Thanks to Luc Saillard <luc saillard org>.
+ *
  * Revision 1.15  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -596,8 +600,8 @@ static struct {
   int code;
 } colourFormatTab[] = {
   { "Grey", VIDEO_PALETTE_GREY },  //Entries in this table correspond
-  { "RGB32", VIDEO_PALETTE_RGB32 }, //(line by line) to those in the 
-  { "RGB24", VIDEO_PALETTE_RGB24 }, // PVideoDevice ColourFormat table.
+  { "BGR32", VIDEO_PALETTE_RGB32 }, //(line by line) to those in the 
+  { "BGR24", VIDEO_PALETTE_RGB24 }, // PVideoDevice ColourFormat table.
   { "RGB565", VIDEO_PALETTE_RGB565 },
   { "RGB555", VIDEO_PALETTE_RGB555 },
   { "YUV422", VIDEO_PALETTE_YUV422 },
