@@ -3449,7 +3449,7 @@ if test "${enable_sunaudio+set}" = set; then
   enableval="$enable_sunaudio"
 
 else
-  enable_sunaudio=yes
+  enable_sunaudio=no
 fi;
 
 if test "${enable_sunaudio}z" = "yesz" ; then

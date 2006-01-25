@@ -81,7 +81,7 @@ dnl #########################################################################
 dnl check for sunaudio sound support
 dnl ########################################################################
 
-AC_ARG_ENABLE(sunaudio, [  --enable-sunaudio            enable  Sun audio support],,enable_sunaudio=yes)
+AC_ARG_ENABLE(sunaudio, [  --enable-sunaudio            enable  Sun audio support],,enable_sunaudio=no)
 
 if test "${enable_sunaudio}z" = "yesz" ; then
   AC_CHECK_HEADER(sys/audio.h, SNDCARDHDR=1)
