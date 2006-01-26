@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.4  2006/01/26 03:23:41  shorne
+ * Fix compile error when merging code
+ *
  * Revision 1.3  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -41,6 +44,9 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
+
+#ifndef P_NATMETHOD
+#define P_NATMETHOD
 
 /** PNatMethod
     Base Network Address Traversal Method class
@@ -187,3 +193,5 @@ public :
 private:
   PNatList natlist;
 };
+
+#endif
