@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.50  2006/01/27 07:54:32  csoutheren
+ * Exposed PChannel::SetError function
+ *
  * Revision 1.49  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -813,6 +816,7 @@ class PChannel : public PObject, public iostream {
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
+  public:
     /**Set error values to those specified.
        Return TRUE if errorCode is NoError, FALSE otherwise
       */
@@ -822,6 +826,7 @@ class PChannel : public PObject, public iostream {
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
+  protected:
     /** Read a character with specified timeout.
       This reads a single character from the channel waiting at most the
       amount of time specified for it to arrive. The #timeout# parameter
