@@ -22,6 +22,15 @@ DEFAULT_SOUND	= sound_oss
 endif
 endif
 
+HAS_SUNAUDIO = @HAS_SUNAUDIO@
+
+ifeq (1,$(HAS_SUNAUDIO))
+SUBDIRS += sound_sunaudio
+ifeq (,$(DEFAULT_SOUND))
+DEFAULT_SOUND   = sound_sunaudio
+endif
+endif
+
 HAS_V4L		= @HAS_V4L@
 
 ifeq (1,$(HAS_V4L))
