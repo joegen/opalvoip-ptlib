@@ -33,9 +33,9 @@
  */
 
 #define MAJOR_VERSION 1
-#define MINOR_VERSION 9
+#define MINOR_VERSION 11
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 3
+#define BUILD_NUMBER 0
 
 
 #endif  // _PWLib_VERSION_H
