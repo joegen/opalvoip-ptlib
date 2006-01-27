@@ -207,8 +207,7 @@ SOURCE=..\common\pluginmgr.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=.\PODBC.cxx
-# PROP Exclude_From_Build 1
+SOURCE=.\podbc.cxx
 # End Source File
 # Begin Source File
 
@@ -656,7 +655,7 @@ SOURCE=..\..\..\include\ptbuildopts.h.in
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\Work\pwlib\include
+InputDir=\Storage\CVS_Head\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -671,7 +670,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 # Begin Custom Build - Configuring Build Options
-InputDir=\Work\pwlib\include
+InputDir=\Storage\CVS_Head\pwlib\include
 InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
