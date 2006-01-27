@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.15.2.1  2006/01/27 03:43:24  csoutheren
+ * Backported changes to CVS head into Phobos
+ *
+ * Revision 1.16  2006/01/18 07:17:59  csoutheren
+ * Added explicit copy constructor for PCriticalSection on Windows
+ *
  * Revision 1.15  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -110,6 +116,7 @@ class PCriticalSection : public PSync
     /**Create a new critical section object .
      */
     PCriticalSection();
+    PCriticalSection(const PCriticalSection &);
 
     /**Destroy the critical section object
      */
