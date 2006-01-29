@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.39  2006/01/29 22:35:46  csoutheren
+ * Added fix for thread termination problems on SMP machines
+ * Thanks to Derek Smithies
+ *
  * Revision 1.38  2006/01/11 22:27:44  dereksmithies
  * Add extra comments describing the usage of Resume() in the constructor of a
  * class descended of PThread
@@ -402,12 +406,12 @@ class PThread : public PObject
 
   /**@name Miscellaneous */
   //@{
-    /**Get operating system specific thread identifier for this thread.
+    /** Get operating system specific thread identifier for this thread.
+      * Note that the return value from these functions is only valid
+      * if called by the owning thread. Calling this function for another
+      * thread that may be terminating is a very bad idea.
       */
     virtual PThreadIdentifier GetThreadId() const;
-
-    /**Get operating system specific thread identifier for current thread.
-      */
     static PThreadIdentifier GetCurrentThreadId();
 
     /** User override function for the main execution routine of the thread. A
