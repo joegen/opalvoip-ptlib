@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.59  2006/01/29 22:46:39  csoutheren
+ * Added support for cameras that return MJPEG streams
+ * Thanks to Luc Saillard and Damien Sandras
+ *
  * Revision 1.58  2006/01/09 18:19:13  dsandras
  * Add YUY2 (or YUV420) format. Resizing to YUV420P is done, but it's not very
  * efficient.
@@ -473,6 +477,7 @@ static struct {
   { "BGR32",   32 },
   { "RGB24",   24 },
   { "BGR24",   24 },
+  { "MJPEG",   16 },
   { "YUY2",    16 },
   { "YUV422",  16 },
   { "YUV422P", 16 },
