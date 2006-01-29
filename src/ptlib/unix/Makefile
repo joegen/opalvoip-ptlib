@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.139  2006/01/29 22:46:41  csoutheren
+# Added support for cameras that return MJPEG streams
+# Thanks to Luc Saillard and Damien Sandras
+#
 # Revision 1.138  2005/08/04 03:19:08  dereksmithies
 # Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
 # Correct compile errors under unix.
@@ -504,7 +508,9 @@ ifdef HAS_VIDEO
 SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
             $(COMMON_SRC_DIR)/videoio.cxx \
 	    $(COMMON_SRC_DIR)/vconvert.cxx \
-	    $(COMMON_SRC_DIR)/pvidchan.cxx 
+	    $(COMMON_SRC_DIR)/pvidchan.cxx \
+	    $(COMMON_SRC_DIR)/tinyjpeg.c \
+	    $(COMMON_SRC_DIR)/jidctflt.c
 	        
 ifdef USE_SHM_VIDEO_DEVICES
 SOURCES	+= shmvideo.cxx

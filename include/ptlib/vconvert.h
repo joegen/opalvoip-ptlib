@@ -26,6 +26,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.17  2006/01/29 22:46:41  csoutheren
+ * Added support for cameras that return MJPEG streams
+ * Thanks to Luc Saillard and Damien Sandras
+ *
  * Revision 1.16  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -100,7 +104,7 @@
 #pragma interface
 #endif
 
-
+struct jdec_private;
 
 class PColourConverter;
 
@@ -274,7 +278,6 @@ class PColourConverter : public PObject
       unsigned & height ///< Height of source frame
     ) const;
 
-
   protected:
     PString  srcColourFormat;
     PString  dstColourFormat;
@@ -292,6 +295,9 @@ class PColourConverter : public PObject
 
     PBYTEArray intermediateFrameStore;
 
+    /* Use by the jpeg decompressor */
+    struct jdec_private *jdec;
+ 
   friend class PColourConverterRegistration;
 };
 
