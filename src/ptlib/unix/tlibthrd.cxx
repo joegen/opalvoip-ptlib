@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.151  2006/01/29 22:35:47  csoutheren
+ * Added fix for thread termination problems on SMP machines
+ * Thanks to Derek Smithies
+ *
  * Revision 1.150  2005/12/05 22:35:24  csoutheren
  * Only assert in PTimedMutex destructor if _DEBUG is enabled
  *
@@ -1314,9 +1318,7 @@ void * PThread::PX_ThreadStart(void * arg)
   // has completed before we start the thread. Then the PX_threadId has
   // been set.
   pthread_mutex_lock(&thread->PX_suspendMutex);
-
   thread->SetThreadName(thread->GetThreadName());
-
   pthread_mutex_unlock(&thread->PX_suspendMutex);
 
   // make sure the cleanup routine is called when the thread exits
@@ -1336,35 +1338,40 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PThread::PX_ThreadEnd(void * arg)
 {
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+
   PThread * thread = (PThread *)arg;
   pthread_t id = thread->GetThreadId();
   if (id == 0) {
     // Don't know why, but pthreads under Linux at least can call this function
     // multiple times! Probably a bug, but we have to allow for it.
+    process.threadMutex.Signal();
     PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
     return;
   }
 
-  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
+  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);  
 
-  // remove this thread from the active thread list
-  PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
+ // remove this thread from the active thread list
   process.activeThreads.SetAt((unsigned)id, NULL);
-  process.threadMutex.Signal();
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
+    process.threadMutex.Signal();
 
-    // Now should be safe to delete the thread!
+    /* It is now safe to delete this thread. Note that this thread
+       is deleted after the process.threadMutex.Signal(), which means
+       PWaitAndSignal(process.threadMutex) could not be used */
     delete thread;
   }
-  else
+  else {
     thread->PX_threadId = 0;
+    process.threadMutex.Signal();
+  }
 }
-
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
