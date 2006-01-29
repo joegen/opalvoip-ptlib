@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.13  2006/01/29 22:46:41  csoutheren
+ * Added support for cameras that return MJPEG streams
+ * Thanks to Luc Saillard and Damien Sandras
+ *
  * Revision 1.12  2006/01/21 13:59:50  dsandras
  * Added BGR colour format thanks to Luc Saillard <luc saillard org>. Thanks!
  *
@@ -146,6 +150,7 @@ PVideoInputDevice_V4L2::PVideoInputDevice_V4L2()
   canSelect = FALSE;
   canSetFrameRate = FALSE;
   isMapped = FALSE;
+  started = FALSE;
 }
 
 PVideoInputDevice_V4L2::~PVideoInputDevice_V4L2()
@@ -179,7 +184,8 @@ static struct {
     { "YUY2", V4L2_PIX_FMT_YUYV },
     { "JPEG", V4L2_PIX_FMT_JPEG },
     { "H263", V4L2_PIX_FMT_H263 },
-    { "SBGGR8", V4L2_PIX_FMT_SBGGR8 }
+    { "SBGGR8", V4L2_PIX_FMT_SBGGR8 },
+    { "MJPEG", V4L2_PIX_FMT_MJPEG}
 };
 
 
