@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.2  2006/01/30 21:55:57  dominance
+# fix win32 build with new MJPEG code.
+#
 # Revision 1.1  2005/09/29 21:06:15  dominance
 # one more bit towards mingw support.
 #
@@ -504,6 +507,8 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
             $(COMMON_SRC_DIR)/videoio.cxx \
 	    $(COMMON_SRC_DIR)/vconvert.cxx \
 	    $(COMMON_SRC_DIR)/pvidchan.cxx \
+	    $(COMMON_SRC_DIR)/tinyjpeg.c \
+	    $(COMMON_SRC_DIR)/jidctflt.c \
 	    vfw.cxx
 	        
 endif # HAS_VIDEO
