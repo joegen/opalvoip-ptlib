@@ -2240,7 +2240,7 @@ _ACEOF
 fi
 
 if test ${OSTYPE} != solaris ; then
-   LDAP_LIBRARIES="-llber -lldap_r"
+   LDAP_LIBRARIES = "-llber -lldap_r"
 fi
 
 
@@ -7887,7 +7887,7 @@ if test "${ac_cv_lib_SDL_SDL_CreateYUVOverlay+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lSDL -L${X11LIBDIR} -lpthread -lX11 -lXext -laa $LIBS"
+LIBS="-lSDL -L${X11LIBDIR} -lpthread -lX11 -lXext $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF

@@ -1496,7 +1496,7 @@ else
     if test "${X11LIBDIR:-unset}" == "unset" ; then
 	X11LIBDIR=/usr/X11R6/lib
     fi
-    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext -laa)
+    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext)
   fi
 
   dnl freeBSD SDL check
