@@ -204,7 +204,7 @@ fi
 
 dnl solaris has it's own ldap library
 if test ${OSTYPE} != solaris ; then
-   LDAP_LIBRARIES = "-llber -lldap_r"
+   LDAP_LIBRARIES="-llber -lldap_r"
 fi
 
 dnl ########################################################################
