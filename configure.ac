@@ -233,7 +233,7 @@ if test x$GXX = xyes ; then
 else
   USE_GCC=no
 fi
-AC_SUBST(USE_GCC, $USE_GCC)
+AC_SUBST(USE_GCC)
 
 
 dnl ########################################################################
