@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.72  2006/01/31 03:23:17  csoutheren
+ * Fixed compile warning on MSVC 6
+ *
  * Revision 1.71  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -818,7 +821,7 @@ void PUDPSocket::EnableGQoS()
   disableGQoS = FALSE;
 }
 
-BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & address)
+BOOL PUDPSocket::SupportQoS(const PIPSocket::Address & /*address*/)
 {
 #if P_HAS_QOS
 
