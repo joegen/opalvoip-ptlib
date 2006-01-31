@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.47  2006/01/31 03:24:43  csoutheren
+ * Removed MJPEG capabilities when compiling with Microsoft compilers
+ *
  * Revision 1.46  2006/01/29 22:46:38  csoutheren
  * Added support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
@@ -206,8 +209,10 @@
 #endif
 
 #include <ptlib/vconvert.h>
-#include "tinyjpeg.h"
 
+#ifdef __GNUC__
+#include "tinyjpeg.h"
+#endif
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
@@ -235,7 +240,7 @@ class PStandardColourConverter : public PColourConverter
       unsigned w, unsigned h
     ) : PColourConverter(srcFmt, dstFmt, w, h) { }
 
-  BOOL SBGGR8toYUV420P(
+    BOOL SBGGR8toYUV420P(
      const BYTE * srgb,
       BYTE * rgb,
       PINDEX * bytesReturned
@@ -311,16 +316,19 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     );
-    bool MJPEGtoXXX(const BYTE *mjpeg,
-	BYTE *output_data,
-	PINDEX *bytesReturned,
-	int format
+#ifdef __GNUC__
+    bool MJPEGtoXXX(
+      const BYTE *mjpeg,
+	    BYTE *output_data,
+	    PINDEX *bytesReturned,
+	    int format
     );
     bool MJPEGtoXXXSameSize(
       const BYTE *yuy2,
       BYTE *rgb,
       int format
     );
+#endif
 };
 
 
@@ -1956,6 +1964,7 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
   return TRUE;
 }
 
+#ifdef __GNUC__
 
 /*
  * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
@@ -1963,22 +1972,17 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
  */
 bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, int format)
 {
-  const BYTE *s;
-  BYTE *d, *y, *u, *v;
-  unsigned int i;
   BYTE *components[1];
-
-  int npixels = srcFrameWidth * srcFrameHeight;
 
   components[0] = rgb;
 
   if (jdec == NULL) {
-     jdec = tinyjpeg_init();
-     if (jdec == NULL) {
-	PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-	return FALSE;
-     }
-     tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
+    jdec = tinyjpeg_init();
+    if (jdec == NULL) {
+      PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
+	    return FALSE;
+    }
+    tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   }
   tinyjpeg_set_components(jdec, components, 1);
   if (tinyjpeg_parse_header(jdec, mjpeg, 0) < 0) {
@@ -2035,17 +2039,13 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,Grey)
   return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
 }
 
-
 /*
  * Convert a MJPEG Buffer to YUV420P
  * image need to be same size.
  */
 bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *yuv420p)
 {
-  const BYTE *s;
-  unsigned int i;
   BYTE *components[4];
-  unsigned int w, h;
 
   int npixels = srcFrameWidth * srcFrameHeight;
 
@@ -2054,13 +2054,13 @@ bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *y
   components[2] = yuv420p + npixels + npixels/4;
 
   if (jdec == NULL) {
-     PTRACE(2, "PColCnv\tJpeg: Allocating Jpeg decoder private structure");
-     jdec = tinyjpeg_init();
-     if (jdec == NULL) {
-	PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-	return FALSE;
-     }
-     tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
+    PTRACE(2, "PColCnv\tJpeg: Allocating Jpeg decoder private structure");
+    jdec = tinyjpeg_init();
+    if (jdec == NULL) {
+      PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
+      return FALSE;
+    }
+    tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   }
   tinyjpeg_set_components(jdec, components, 4);
   if (tinyjpeg_parse_header(jdec, mjpeg, 0) < 0) {
@@ -2107,5 +2107,8 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
   
   return TRUE;
 }
+
+#endif // __GNUC__
+
 
 // End Of File ///////////////////////////////////////////////////////////////
