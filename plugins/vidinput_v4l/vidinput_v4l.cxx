@@ -25,6 +25,12 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.15.2.2  2006/02/06 22:25:05  dsandras
+ * Backported changes from HEAD.
+ *
+ * Revision 1.17  2006/02/06 22:22:16  dsandras
+ * Added UYVY palette thanks to Luc Saillad <luc saillard org>. Thanks!
+ *
  * Revision 1.15.2.1  2006/01/27 03:43:25  csoutheren
  * Backported changes to CVS head into Phobos
  *
@@ -613,7 +619,8 @@ static struct {
   { "YUV411P", VIDEO_PALETTE_YUV411P },
   { "YUV420", VIDEO_PALETTE_YUV420 },
   { "YUV420P", VIDEO_PALETTE_YUV420P },
-  { "YUV410P", VIDEO_PALETTE_YUV410P }
+  { "YUV410P", VIDEO_PALETTE_YUV410P },
+  { "UYVY422", VIDEO_PALETTE_UYVY }
 };
 
 
