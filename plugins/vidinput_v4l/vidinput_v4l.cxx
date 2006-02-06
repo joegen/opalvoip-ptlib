@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.17  2006/02/06 22:22:16  dsandras
+ * Added UYVY palette thanks to Luc Saillad <luc saillard org>. Thanks!
+ *
  * Revision 1.16  2006/01/21 13:57:35  dsandras
  * V4L1 drivers are actually reporting RGB even though they are sending BGR.
  * Thanks to Luc Saillard <luc saillard org>.
@@ -610,7 +613,8 @@ static struct {
   { "YUV411P", VIDEO_PALETTE_YUV411P },
   { "YUV420", VIDEO_PALETTE_YUV420 },
   { "YUV420P", VIDEO_PALETTE_YUV420P },
-  { "YUV410P", VIDEO_PALETTE_YUV410P }
+  { "YUV410P", VIDEO_PALETTE_YUV410P },
+  { "UYVY422", VIDEO_PALETTE_UYVY }
 };
 
 
