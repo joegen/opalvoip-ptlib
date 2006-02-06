@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.28  2006/02/06 22:16:38  dsandras
+ * Fixed leak.
+ *
  * Revision 1.27  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -460,6 +463,8 @@ BOOL PSoundChannelALSA::Close()
 
   snd_pcm_close (os_handle);
   os_handle = NULL;
+
+  snd_config_update_free_global ();
 
   return TRUE;
 }
