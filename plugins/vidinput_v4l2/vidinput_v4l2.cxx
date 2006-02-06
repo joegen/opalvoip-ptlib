@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.14  2006/02/06 22:23:08  dsandras
+ * Added UYVY palette thanks to Luc Saillard <luc saillard org>. Thanks!
+ *
  * Revision 1.13  2006/01/29 22:46:41  csoutheren
  * Added support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
@@ -185,7 +188,8 @@ static struct {
     { "JPEG", V4L2_PIX_FMT_JPEG },
     { "H263", V4L2_PIX_FMT_H263 },
     { "SBGGR8", V4L2_PIX_FMT_SBGGR8 },
-    { "MJPEG", V4L2_PIX_FMT_MJPEG}
+    { "MJPEG", V4L2_PIX_FMT_MJPEG},
+    { "UYVY422", V4L2_PIX_FMT_UYVY}
 };
 
 
