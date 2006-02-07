@@ -22,6 +22,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.2  2006/02/07 02:13:16  dereksmithies
+# change prgram name from safe_test to safetest
+#
 # Revision 1.1  2006/02/07 01:02:56  dereksmithies
 # Initial release of code to test the PSafeDictionary structure in pwlib.
 # Thanks to Indranet Technologies for supporting this work.
@@ -32,7 +35,7 @@
 #
 
 
-PROG = safe_test
+PROG = safetest
 SOURCES := main.cxx precompile.cxx
 
 include $(PWLIBDIR)/make/ptlib.mak
