@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/02/07 02:02:00  dereksmithies
+ * use a more sane method to keep track of the number of running DelayThread instances.
+ *
  * Revision 1.1  2006/02/07 01:02:56  dereksmithies
  * Initial release of code to test the PSafeDictionary structure in pwlib.
  * Thanks to Indranet Technologies for supporting this work.
@@ -151,7 +154,7 @@ class SafeTest : public PProcess
     void AppendRunning(PSafePtr<DelayThread> delayThread, PString id);
 
     /**Number of active DelayThread s*/
-    PINDEX CurrentSize() { return delayThreadsActive.GetSize(); }
+    PINDEX CurrentSize() { return currentSize; }
 
  protected:
 
@@ -187,6 +190,9 @@ class SafeTest : public PProcess
 
     /**The number of threads that can be active */
     PINDEX activeCount;
+
+    /**The number of entries in the dictionary */
+    PAtomicInteger currentSize;
 };
 
 
