@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2006/02/07 02:02:00  dereksmithies
+ * use a more sane method to keep track of the number of running DelayThread instances.
+ *
  * Revision 1.1  2006/02/07 01:02:56  dereksmithies
  * Initial release of code to test the PSafeDictionary structure in pwlib.
  * Thanks to Indranet Technologies for supporting this work.
@@ -130,10 +133,12 @@ void SafeTest::OnReleased(DelayThread & delayThread)
   PTRACE(3, "DelayThread " << id << " OnRelease");
   delayThreadsActive.RemoveAt(delayThread.GetId());
   PTRACE(3, "DelayThread " << id << " OnRelease all done");
+  --currentSize;
 }
     
 void SafeTest::AppendRunning(PSafePtr<DelayThread> delayThread, PString id)
 {
+  ++currentSize;
   PTRACE(3, "Add a delay thread of " << id);
   delayThreadsActive.SetAt(id, delayThread);
 }
