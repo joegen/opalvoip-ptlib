@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -886,6 +886,7 @@ Optional Features:
   --disable-http          disable HTTP support
   --disable-httpsvc       disable HTTP service support
   --disable-configfile    disable config file support
+  --enable-sockagg       enable socket aggregation (experimental)
   --disable-audio         disable audio support
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
@@ -3995,6 +3996,7 @@ default_alsa=yes
 default_oss=yes
 default_ipv6=yes
 default_qos=yes
+default_sockagg=no
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -4029,6 +4031,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_oss=yes
   default_ipv6=yes
   default_qos=yes
+  default_sockagg=no
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -4062,6 +4065,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_oss=no
   default_ipv6=no
   default_qos=no
+  default_sockagg=no
 fi
 
 
@@ -8669,6 +8673,33 @@ fi
 
 
 
+# Check whether --enable-sockagg or --disable-sockagg was given.
+if test "${enable_sockagg+set}" = set; then
+  enableval="$enable_sockagg"
+
+fi;
+
+if test "${enable_sockagg}z" = "z" ; then
+  enable_sockagg=$default_sockagg
+fi
+
+HAS_SOCKAGG=
+if test "$enable_sockagg" = "no" ; then
+  { echo "$as_me:$LINENO: Socket aggregation support disabled" >&5
+echo "$as_me: Socket aggregation support disabled" >&6;}
+else
+  { echo "$as_me:$LINENO: Socket aggregation support enabled (experimental)" >&5
+echo "$as_me: Socket aggregation support enabled (experimental)" >&6;}
+  HAS_SOCKAGG=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_SOCKAGG 1
+_ACEOF
+
+fi
+
+
+
+
 # Check whether --enable-audio or --disable-audio was given.
 if test "${enable_audio+set}" = set; then
   enableval="$enable_audio"
@@ -9971,6 +10002,7 @@ s,@HAS_POP3SMTP@,$HAS_POP3SMTP,;t t
 s,@HAS_HTTP@,$HAS_HTTP,;t t
 s,@HAS_HTTPSVC@,$HAS_HTTPSVC,;t t
 s,@HAS_CONFIG_FILE@,$HAS_CONFIG_FILE,;t t
+s,@HAS_SOCKAGG@,$HAS_SOCKAGG,;t t
 s,@HAS_AUDIO@,$HAS_AUDIO,;t t
 s,@HAS_OSS@,$HAS_OSS,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
