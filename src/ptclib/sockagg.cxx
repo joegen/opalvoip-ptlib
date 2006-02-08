@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.9  2006/02/08 04:02:25  csoutheren
+ * Added ability to enable and disable socket aggregation
+ *
  * Revision 1.8  2006/01/23 05:57:39  csoutheren
  * More aggegator implementation
  *
@@ -463,7 +466,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
       continue;
 
     {
-      PWaitAndSignal m(mutex);
+      PWaitAndSignal m(workerMutex);
 
       if (ret == 0) {
         PTime start;
@@ -474,10 +477,6 @@ void PHandleAggregator::WorkerThreadBase::Main()
         }
         if (!closed)
           timeoutHandle->SetPreReadDone(FALSE);
-        else {
-          handlesToRemove.push_back(timeoutHandle);
-          //timeoutHandle->DeInit();
-        }
       }
 
       // check the event first
@@ -500,16 +499,10 @@ void PHandleAggregator::WorkerThreadBase::Main()
           }
           if (!closed)
             handle->SetPreReadDone(FALSE);
-          else {
-            //handle->DeInit();
-            handlesToRemove.push_back(handle);
-            listChanged = TRUE;
-          }
         }
       }
 
 #endif
-
     } // workerMutex goes out of scope
   }
 
