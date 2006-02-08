@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.48  2006/02/08 04:02:24  csoutheren
+ * Added ability to enable and disable socket aggregation
+ *
  * Revision 1.47  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -512,6 +515,7 @@
 #undef P_HTTPSVC
 #undef P_HTTP
 #undef P_CONFIG_FILE
+#undef P_SOCKAGG
 
 /////////////////////////////////////////////////
 //
