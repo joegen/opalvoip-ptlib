@@ -485,6 +485,7 @@ default_alsa=yes
 default_oss=yes
 default_ipv6=yes
 default_qos=yes
+default_sockagg=no
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -519,6 +520,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_oss=yes
   default_ipv6=yes
   default_qos=yes
+  default_sockagg=no
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -552,6 +554,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_oss=no
   default_ipv6=no
   default_qos=no
+  default_sockagg=no
 fi
 
 
@@ -1916,6 +1919,29 @@ else
   AC_DEFINE(P_CONFIG_FILE, 1)
 fi
 AC_SUBST(HAS_CONFIG_FILE)
+
+dnl ########################################################################
+dnl check for enabling socket aggregation
+
+dnl MSWIN_DISPLAY    sockagg,Socket aggregation support
+dnl MSWIN_DEFINE     sockagg,P_SOCKAGG
+
+AC_ARG_ENABLE(sockagg,
+       [  --enable-sockagg       enable socket aggregation (experimental)])
+
+if test "${enable_sockagg}z" = "z" ; then
+  enable_sockagg=$default_sockagg
+fi
+
+HAS_SOCKAGG=
+if test "$enable_sockagg" = "no" ; then
+  AC_MSG_NOTICE(Socket aggregation support disabled)
+else
+  AC_MSG_NOTICE(Socket aggregation support enabled (experimental))
+  HAS_SOCKAGG=1
+  AC_DEFINE(P_SOCKAGG, 1)
+fi
+AC_SUBST(HAS_SOCKAGG)
 
 dnl ########################################################################
 dnl check for sound support
