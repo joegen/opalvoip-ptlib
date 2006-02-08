@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.140  2006/02/08 04:02:25  csoutheren
+# Added ability to enable and disable socket aggregation
+#
 # Revision 1.139  2006/01/29 22:46:41  csoutheren
 # Added support for cameras that return MJPEG streams
 # Thanks to Luc Saillard and Damien Sandras
@@ -685,6 +688,10 @@ endif #HAS_HTTPSVC
 
 ifdef HAS_CONFIG_FILE
 SOURCES += config.cxx 
+endif
+
+ifdef HAS_SOCKAGG
+SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
