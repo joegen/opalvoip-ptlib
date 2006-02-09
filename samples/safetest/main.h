@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2006/02/09 21:07:23  dereksmithies
+ * Add new (and temporary) thread to close down each DelayThread instance.
+ * Now, it is less cpu intensive. No need for garbage thread to run.
+ *
  * Revision 1.2  2006/02/07 02:02:00  dereksmithies
  * use a more sane method to keep track of the number of running DelayThread instances.
  *
@@ -49,7 +53,7 @@ class DelayThread : public PSafeObject
   PCLASSINFO(DelayThread, PSafeObject);
   
 public:
-  DelayThread(SafeTest & _safeTest, PINDEX _delay);
+  DelayThread(SafeTest & _safeTest, PINDEX _delay, PInt64);
     
   ~DelayThread();
 
@@ -93,6 +97,7 @@ class UserInterfaceThread : public PThread
   PCLASSINFO(UserInterfaceThread, PThread);
   
 public:
+  /**Constructor */
   UserInterfaceThread(SafeTest &_safeTest)
     : PThread(10000, NoAutoDeleteThread), safeTest(_safeTest)
     { }
@@ -100,7 +105,33 @@ public:
   void Main();
     
  protected:
+  /**Reference to the class that holds the key data on everything */
   SafeTest & safeTest;
+};
+////////////////////////////////////////////////////////////////////////////////
+/**This thread is launched at the end of each DelayThread
+   instance. This thread will cause the specified DelayThread instance
+   to be removed from the dictionary in SafeTest */
+class CleanerThread : public PThread
+{
+  PCLASSINFO(CleanerThread, PThread);
+  
+public:
+  /**Constructor */
+  CleanerThread(SafeTest &_safeTest, const PString &_id);
+    
+  /**This does the work of removing DelayThread instances, as required */
+  void Main();
+
+ protected:
+  /**Reference to the class that holds the key data on everything */
+  SafeTest & safeTest;
+
+  /**The DelayThread instance we have to delete */
+  const PString id;
+
+  /**We must wait for this thread to end, before acting */
+  PThreadIdentifier waitOnThread;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,7 +148,7 @@ public:
   
   void Main();
     
-  PINDEX GetIteration() { return iteration; }
+  PInt64 GetIteration() { return iteration; }
 
   virtual void Terminate() { keepGoing = FALSE; }
 
@@ -126,9 +157,9 @@ public:
  protected:
   SafeTest & safeTest;
 
-  PINDEX iteration;
-  PTime startTime;
-  BOOL  keepGoing;
+  PInt64          iteration;
+  PTime           startTime;
+  BOOL            keepGoing;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,6 +187,24 @@ class SafeTest : public PProcess
     /**Number of active DelayThread s*/
     PINDEX CurrentSize() { return currentSize; }
 
+    /**Report on if we exit DelayThread instances by the cleaner thread */
+    BOOL ExitByCleanerThread() { return exitByCleanerThread; }
+
+    /**Find a DelayThread instance witth the specified token.
+ 
+       Note the caller of this function MUST call the DelayThread::Unlock()
+       function if this function returns a non-NULL pointer. If it does not
+       then a deadlock can occur.
+      */
+    PSafePtr<DelayThread> FindDelayThreadWithLock(
+      const PString & token,  ///<  Token to identify connection
+      PSafetyMode mode = PSafeReadWrite
+    ) { return delayThreadsActive.FindWithLock(token, mode); }
+
+    /**The method which does the garbage collection (i.e. removes old
+       dead DelayThread instances)*/
+    void CollectGarbage();
+
  protected:
 
     /**The thread safe list of DelayThread s that we manage */
@@ -168,15 +217,15 @@ class SafeTest : public PProcess
         virtual void DeleteObject(PObject * object) const;
     } delayThreadsActive;
 
+    /**Create the Garbage collector thread */
+    void MakeGarbageCollector();
+
  /**The thread which runs to look for DelayThread s to delete */
     PThread    *garbageCollector;
  
     /**The flag to say when we exit */
     BOOL exitNow;
      
-    /**The method which does the garbage collection */
-    void CollectGarbage();
- 
 #ifdef DOC_PLUS_PLUS
     /**This contains the 1 second delay loop, and calls to
        CollectGarbage */
@@ -187,6 +236,10 @@ class SafeTest : public PProcess
 
     /**The delay each thread has to wait for */
     PINDEX delay;
+
+    /**Flag to indicate if we end each DelayThread by adding the
+       DelayThread id to the the cleaner thread */
+    BOOL exitByCleanerThread;
 
     /**The number of threads that can be active */
     PINDEX activeCount;
