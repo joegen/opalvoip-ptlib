@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2006/02/09 21:43:15  dereksmithies
+ * Remove the notion of CleanerThread. This just confuses things.
+ *
  * Revision 1.3  2006/02/09 21:07:23  dereksmithies
  * Add new (and temporary) thread to close down each DelayThread instance.
  * Now, it is less cpu intensive. No need for garbage thread to run.
@@ -62,7 +65,6 @@ void SafeTest::Main()
 
   args.Parse(
              "h-help."               "-no-help."
-	     "e-exit."               "-no-exit."
              "d-delay:"              "-no-delay."
 	     "c-count:"              "-no-count."
 #if PTRACING
@@ -92,7 +94,6 @@ void SafeTest::Main()
     PError << "Available options are: " << endl         
            << "-h  or --help         print this help" << endl
            << "-v  or --version      print version info" << endl
-	   << "-e  or --exit         exit DelayThread instances with the cleaner thread" << endl
            << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
 	   << "-c  or --count ##     where ## specifies the number of active threads allowed " << endl
 #if PTRACING
@@ -110,8 +111,6 @@ void SafeTest::Main()
 
   delay = PMIN(1000000, PMAX(1, delay));
   cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
- 
-  exitByCleanerThread = args.HasOption('e');
 
   activeCount = 10;
   if (args.HasOption('c'))
@@ -119,21 +118,13 @@ void SafeTest::Main()
   activeCount = PMIN(100, PMAX(1, activeCount));
   cout << "There will be " << activeCount << " threads in operation" << endl;
 
-  if (ExitByCleanerThread()) {
-    garbageCollector = NULL;
-  } else {
-    MakeGarbageCollector();
-  }
+  MakeGarbageCollector();
 
   UserInterfaceThread ui(*this);
   ui.Resume();
   ui.WaitForTermination();
 
   exitNow = TRUE;
-  if (ExitByCleanerThread()) {
-    MakeGarbageCollector();
-  }
-
   garbageCollector->WaitForTermination();
   delete garbageCollector;
   garbageCollector = NULL;
@@ -152,7 +143,7 @@ void SafeTest::OnReleased(DelayThread & delayThread)
 {
   PString id = delayThread.GetId();
   PTRACE(3, "DelayThread " << id << " OnRelease");
-  delayThreadsActive.RemoveAt(delayThread.GetId());
+  delayThreadsActive.RemoveAt(id);
   PTRACE(3, "DelayThread " << id << " OnRelease all done");
   --currentSize;
 }
@@ -187,25 +178,7 @@ void SafeTest::CollectGarbage()
 {
   delayThreadsActive.DeleteObjectsToBeRemoved();
 }
-////////////////////////////////////////////////////////////////////////////
-CleanerThread::CleanerThread(SafeTest &_safeTest, const PString &_id)
-  : PThread(10000, AutoDeleteThread), 
-    safeTest(_safeTest), 
-    id(_id)
-{ 
-}
 
-
-void CleanerThread::Main()
-{
-  DelayThread *dt = safeTest.FindDelayThreadWithLock(id);
-  if (dt != NULL) {
-    safeTest.OnReleased(*dt);
-    dt->SafeDereference();
-    safeTest.CollectGarbage();
-    //    dt->UnlockReadOnly();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
@@ -243,15 +216,10 @@ void DelayThread::Release()
 {
  // Add a reference for the thread we are about to start
 
-  if (safeTest.ExitByCleanerThread()) {
-    PThread *thread = new CleanerThread(safeTest, id);
-    thread->Resume();
-  } else {
-    PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
-		    PThread::AutoDeleteThread,
-		    PThread::NormalPriority,
-		    "Release %X");
-  }
+  PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
+		  PThread::AutoDeleteThread,
+		  PThread::NormalPriority,
+		  "Release %X");
 }
 
 void DelayThread::OnReleaseThreadMain(PThread &, INT)

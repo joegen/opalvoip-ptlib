@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.4  2006/02/09 21:43:15  dereksmithies
+ * Remove the notion of CleanerThread. This just confuses things.
+ *
  * Revision 1.3  2006/02/09 21:07:23  dereksmithies
  * Add new (and temporary) thread to close down each DelayThread instance.
  * Now, it is less cpu intensive. No need for garbage thread to run.
@@ -108,31 +111,6 @@ public:
   /**Reference to the class that holds the key data on everything */
   SafeTest & safeTest;
 };
-////////////////////////////////////////////////////////////////////////////////
-/**This thread is launched at the end of each DelayThread
-   instance. This thread will cause the specified DelayThread instance
-   to be removed from the dictionary in SafeTest */
-class CleanerThread : public PThread
-{
-  PCLASSINFO(CleanerThread, PThread);
-  
-public:
-  /**Constructor */
-  CleanerThread(SafeTest &_safeTest, const PString &_id);
-    
-  /**This does the work of removing DelayThread instances, as required */
-  void Main();
-
- protected:
-  /**Reference to the class that holds the key data on everything */
-  SafeTest & safeTest;
-
-  /**The DelayThread instance we have to delete */
-  const PString id;
-
-  /**We must wait for this thread to end, before acting */
-  PThreadIdentifier waitOnThread;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 /**This thread launches multiple instances of the BusyWaitThread. Each
@@ -187,9 +165,6 @@ class SafeTest : public PProcess
     /**Number of active DelayThread s*/
     PINDEX CurrentSize() { return currentSize; }
 
-    /**Report on if we exit DelayThread instances by the cleaner thread */
-    BOOL ExitByCleanerThread() { return exitByCleanerThread; }
-
     /**Find a DelayThread instance witth the specified token.
  
        Note the caller of this function MUST call the DelayThread::Unlock()
@@ -236,10 +211,6 @@ class SafeTest : public PProcess
 
     /**The delay each thread has to wait for */
     PINDEX delay;
-
-    /**Flag to indicate if we end each DelayThread by adding the
-       DelayThread id to the the cleaner thread */
-    BOOL exitByCleanerThread;
 
     /**The number of threads that can be active */
     PINDEX activeCount;
