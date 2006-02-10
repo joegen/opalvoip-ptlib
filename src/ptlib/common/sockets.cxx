@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.199  2006/02/10 22:50:11  csoutheren
+ * Fixed error in last commit
+ *
  * Revision 1.198  2006/02/10 22:47:01  csoutheren
  * Ensure IPV6 addresses are not returned by IPSocket::GetHostAddress when
  * IPV4 has been forced using PIPSocket::SetDefaultIpAddressFamilyV4
@@ -759,7 +762,7 @@ BOOL PIPSocket::IsIpAddressFamilyV6Supported()
 PIPSocket::Address PIPSocket::GetDefaultIpAny()
 {
 #if P_HAS_IPV6
-  if (defaultIpAddressFamily != PF_INET6)
+  if (defaultIpAddressFamily != PF_INET4)
     return any6;
 #endif
 
