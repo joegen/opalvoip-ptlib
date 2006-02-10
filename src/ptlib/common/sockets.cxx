@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.200  2006/02/10 23:56:58  csoutheren
+ * Fixed compile problems on Debian and Windows
+ *
  * Revision 1.199  2006/02/10 22:50:11  csoutheren
  * Fixed error in last commit
  *
@@ -707,7 +710,7 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 #if P_HAS_IPV6
 static int defaultIpAddressFamily = PF_UNSPEC;   // use both
 #else
-static int defaultIpAddressFamily = PF_IPV4;
+static int defaultIpAddressFamily = PF_INET;
 #endif
 
 static PIPSocket::Address loopback4(127,0,0,1);
@@ -762,7 +765,7 @@ BOOL PIPSocket::IsIpAddressFamilyV6Supported()
 PIPSocket::Address PIPSocket::GetDefaultIpAny()
 {
 #if P_HAS_IPV6
-  if (defaultIpAddressFamily != PF_INET4)
+  if (defaultIpAddressFamily != PF_INET)
     return any6;
 #endif
 
