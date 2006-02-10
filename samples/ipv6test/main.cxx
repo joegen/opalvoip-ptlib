@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.10  2006/02/10 22:38:03  csoutheren
+ * Added ability to do DNS lookups and force IPV4 mode
+ *
  * Revision 1.9  2005/11/30 12:47:40  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -80,11 +83,15 @@ void IPV6Test::Main()
 
   args.Parse(
              "-isrfc1918."
+             "4-ipv4." 
+             "d-dns:"                
+             "h-help."
+             "v-version."
+
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
 #endif
-             "v-version."
        );
 
 #if PTRACING
@@ -92,6 +99,14 @@ void IPV6Test::Main()
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
+
+  if (args.HasOption('h')) {
+    cout << "usage: ipv6test -v                display version information\n"
+            "       ipv6test --isrfc1918 addr  check if specified address is RFC1918\n"
+            "       ipv6test [-4] -d name      perform DNS lookup of hostname (with optional IPV4 force)\n"
+            "       ipv6test                   perform a variety of IPV6 tests\n";
+    return;
+  }
 
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
@@ -106,6 +121,21 @@ void IPV6Test::Main()
 #if ! P_HAS_IPV6
   cout << "error: IPV6 not included in PWLib" << endl;
 #else
+
+  if (args.HasOption('4')) {
+    cout << "forcing IPV4 mode" << endl;
+    PIPSocket::SetDefaultIpAddressFamilyV4();
+  }
+
+  if (args.HasOption('d')) {
+    PString name = args.GetOptionString('d');
+    PIPSocket::Address addr;
+    if (!PIPSocket::GetHostAddress(name, addr)) 
+      PError << "error: hostname \"" << name << "\" not found" << endl;
+    else
+      cout << addr << endl;
+    return;
+  }
 
   if (args.HasOption("isrfc1918")) {
     if (args.GetCount() == 0) 
