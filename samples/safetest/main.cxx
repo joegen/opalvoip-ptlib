@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2006/02/10 03:51:12  dereksmithies
+ * rename threads: place identifying digits at the start of the string.
+ * This lead to an increase in reliability on a quad cpu machine.
+ *
  * Revision 1.4  2006/02/09 21:43:15  dereksmithies
  * Remove the notion of CleanerThread. This just confuses things.
  *
@@ -186,7 +190,7 @@ DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
     delay(_delay)
 {
   PStringStream name;
-  name << "Delay Thread " << iteration;
+  name << iteration << " Delay Thread";
   PTRACE(5, "Constructor for a non auto deleted delay thread");
   PThread::Create(PCREATE_NOTIFIER(DelayThreadMain), 30000,
 		  PThread::AutoDeleteThread,
@@ -202,12 +206,13 @@ DelayThread::~DelayThread()
 
 void DelayThread::DelayThreadMain(PThread &thisThread, INT)  
 {
-  SafeReference();
   id = thisThread.GetThreadName();
-  PTRACE(3, "DelayThread starting " << *this);
+  PTRACE(3, "DelayThread starting " << id);
   safeTest.AppendRunning(this, id);
   PThread::Sleep(delay);
-  PTRACE(3, "DelayThread finished " << *this);
+  PTRACE(3, "DelayThread finished " << id);
+
+  SafeReference();
   
   Release();
 }
@@ -219,7 +224,7 @@ void DelayThread::Release()
   PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
 		  PThread::AutoDeleteThread,
 		  PThread::NormalPriority,
-		  "Release %X");
+		  "%X: Release");
 }
 
 void DelayThread::OnReleaseThreadMain(PThread &, INT)
