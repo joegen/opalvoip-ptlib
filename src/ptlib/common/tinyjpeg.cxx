@@ -38,6 +38,7 @@
 
 #include "tinyjpeg.h"
 #include "tinyjpeg-internal.h"
+#include "ptbuildopts.h"
 
 enum std_markers {
    DQT  = 0xDB, /* Define Quantization Table */
@@ -94,8 +95,13 @@ enum std_markers {
 } while(0)
 #endif
 #else
+#ifdef P_SOLARIS 
+#define error(fmt, args,...) do { return -1; } while(0)
+#define trace(fmt, args,...) do { } while (0)
+#else
 #define error(fmt, args...) do { return -1; } while(0)
 #define trace(fmt, args...) do { } while (0)
+#endif
 #endif
 
 #if 0
