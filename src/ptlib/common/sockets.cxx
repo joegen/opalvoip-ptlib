@@ -27,6 +27,21 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.197.2.1  2006/02/11 12:09:33  csoutheren
+ * Backport from CVS head
+ *
+ * Revision 1.200  2006/02/10 23:56:58  csoutheren
+ * Fixed compile problems on Debian and Windows
+ *
+ * Revision 1.199  2006/02/10 22:50:11  csoutheren
+ * Fixed error in last commit
+ *
+ * Revision 1.198  2006/02/10 22:47:01  csoutheren
+ * Ensure IPV6 addresses are not returned by IPSocket::GetHostAddress when
+ * IPV4 has been forced using PIPSocket::SetDefaultIpAddressFamilyV4
+ * This is intended to address the following Ekiga bug:
+ * Bug 330388 . Cannot make calls to host with IPv6 address
+ *
  * Revision 1.197  2005/11/21 11:49:36  shorne
  * Changed disableQos to disableGQoS to better reflect what it does
  *
@@ -695,7 +710,11 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
 
-static int defaultIpAddressFamily=PF_INET; //PF_INET for IPv4 (default) or PF_INET6 for IPv6
+#if P_HAS_IPV6
+static int defaultIpAddressFamily = PF_UNSPEC;   // use both
+#else
+static int defaultIpAddressFamily = PF_INET;
+#endif
 
 static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
@@ -749,7 +768,7 @@ BOOL PIPSocket::IsIpAddressFamilyV6Supported()
 PIPSocket::Address PIPSocket::GetDefaultIpAny()
 {
 #if P_HAS_IPV6
-  if (defaultIpAddressFamily == PF_INET6)
+  if (defaultIpAddressFamily != PF_INET)
     return any6;
 #endif
 
@@ -1117,6 +1136,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #if P_HAS_IPV6
     struct addrinfo *res;
     struct addrinfo hints = { AI_CANONNAME, PF_UNSPEC };
+    hints.ai_family = defaultIpAddressFamily;
+
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     mutex.Wait();
 
