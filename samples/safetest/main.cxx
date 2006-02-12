@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2006/02/12 21:42:07  dereksmithies
+ * Add lots of doxygen style comments, and an introductory page.
+ *
  * Revision 1.5  2006/02/10 03:51:12  dereksmithies
  * rename threads: place identifying digits at the start of the string.
  * This lead to an increase in reliability on a quad cpu machine.
@@ -156,6 +159,10 @@ void SafeTest::AppendRunning(PSafePtr<DelayThread> delayThread, PString id)
 {
   ++currentSize;
   PTRACE(3, "Add a delay thread of " << id);
+  if (delayThreadsActive.FindWithLock(id) != NULL) {
+    PAssertAlways("Appending multiple instances at the same id");
+  }
+
   delayThreadsActive.SetAt(id, delayThread);
 }
 
@@ -190,6 +197,7 @@ DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
     delay(_delay)
 {
   PStringStream name;
+  threadRunning = TRUE;
   name << iteration << " Delay Thread";
   PTRACE(5, "Constructor for a non auto deleted delay thread");
   PThread::Create(PCREATE_NOTIFIER(DelayThreadMain), 30000,
@@ -201,6 +209,10 @@ DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
 
 DelayThread::~DelayThread()
 {
+  if (threadRunning) {
+    PAssertAlways("Destroy this thread while it is still running. Bad karma");
+  }
+    
   PTRACE(5, "Destructor for a delay thread");
 }
 
@@ -220,7 +232,6 @@ void DelayThread::DelayThreadMain(PThread &thisThread, INT)
 void DelayThread::Release()
 {
  // Add a reference for the thread we are about to start
-
   PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
 		  PThread::AutoDeleteThread,
 		  PThread::NormalPriority,
@@ -230,6 +241,7 @@ void DelayThread::Release()
 void DelayThread::OnReleaseThreadMain(PThread &, INT)
 {
   safeTest.OnReleased(*this);
+  threadRunning = FALSE;
   SafeDereference();
 }
 
