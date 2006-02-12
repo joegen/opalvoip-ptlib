@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.5  2006/02/12 21:42:07  dereksmithies
+ * Add lots of doxygen style comments, and an introductory page.
+ *
  * Revision 1.4  2006/02/09 21:43:15  dereksmithies
  * Remove the notion of CleanerThread. This just confuses things.
  *
@@ -56,15 +59,23 @@ class DelayThread : public PSafeObject
   PCLASSINFO(DelayThread, PSafeObject);
   
 public:
-  DelayThread(SafeTest & _safeTest, PINDEX _delay, PInt64);
+  /**Create this class, so it runs for the specified delay period, The
+     class is assigned a unique ID tag, based on the parameter
+     idNumber */
+  DelayThread(SafeTest & _safeTest, PINDEX _delay, PInt64 idNumber);
     
+  /**Destroy this class. Includes a check to see if this class is
+     still running*/
   ~DelayThread();
 
-  /**Last thing the thread which runs in this class does, and initiates the close down */
+  /**Last thing the thread which runs in this class does, and
+     initiates the close down */
   void Release();
 
+  /**Report the id used by this class */
   PString GetId() { return id; }
 
+  /**Pretty print the id of this class */
   virtual void PrintOn(ostream & strm) const;
  protected:
 
@@ -77,18 +88,24 @@ public:
 
 #ifdef DOC_PLUS_PLUS
   /**This contains the 1 notifier that is used when closing down this
-     instance of DelayThread class. It is called by a custom
-     thread, which deletes this class  */
+     instance of DelayThread class. It is called by a custom thread,
+     which initiates the deletion of this Delaythread instance */
     virtual void OnReleaseThreadMain(PThread &, INT);
 #else
     PDECLARE_NOTIFIER(PThread, DelayThread, OnReleaseThreadMain);
 #endif
-    
+    /**Reference back to the class that knows everything, and holds the list
+       of instances of this DelayThread class */
     SafeTest & safeTest;
 
+    /**The time period (ms) we have to wait for in this thread */
     PINDEX delay;
 
+    /**the label assigned to this instance of this DelayThread class */
     PString id;
+
+    /**Flag to indicate we are still going */
+    BOOL threadRunning;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +122,7 @@ public:
     : PThread(10000, NoAutoDeleteThread), safeTest(_safeTest)
     { }
 
+  /**Do the work of listening for user commands from the command line */
   void Main();
     
  protected:
@@ -122,38 +140,67 @@ class LauncherThread : public PThread
   PCLASSINFO(LauncherThread, PThread);
   
 public:
+  /**Create this thread. Note that the program only contains one
+     instance of this thread */
   LauncherThread(SafeTest &_safe_test);
   
+  /**Where all the work is done */
   void Main();
     
+  /**Access function, which is callled by the UserInterfaceThread.  It
+   reports the number of DelayThread instances that have been
+   created.*/
   PInt64 GetIteration() { return iteration; }
 
+  /**Cause this thread to stop work and end */
   virtual void Terminate() { keepGoing = FALSE; }
 
+  /**Access function, which is callled by the UserInterfaceThread.
+   It reports the time since this program stared.*/
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 
  protected:
+  /**Reference back to the master class */
   SafeTest & safeTest;
 
+  /**Count on the number of DelayThread instances that have been
+     created */
   PInt64          iteration;
+  
+  /**The time at which this program was started */
   PTime           startTime;
+
+  /**A flag to indicate that we have to keep on doing our job, of
+     launching DelayThread instances */
   BOOL            keepGoing;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
+/**
+   The core class that a)processes command line and b)launches
+   relevant classes. This class contains a wrapper for the 
+   \code int main(int argc, char **argv); \endcode function */
 class SafeTest : public PProcess
 {
   PCLASSINFO(SafeTest, PProcess)
 
   public:
+  /**Constructor */
     SafeTest();
+
+  /**Where execution first starts in this program, and it does all the
+     command line processing */
     virtual void Main();
 
+    /**Report the user specified delay, which is used in DelayThread
+       instances. Units are in milliseconds */
     PINDEX Delay()    { return delay; }
 
+    /**Report the user specified number of DelayThreads that can be in
+       action. */
     PINDEX ActiveCount() { return activeCount; }
+
     /**Callback for removing a DelayThread from the list of active
        delaythreads */
     void OnReleased(DelayThread & delayThread);

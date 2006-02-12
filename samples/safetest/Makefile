@@ -22,6 +22,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.3  2006/02/12 21:42:07  dereksmithies
+# Add lots of doxygen style comments, and an introductory page.
+#
 # Revision 1.2  2006/02/07 02:13:16  dereksmithies
 # change prgram name from safe_test to safetest
 #
@@ -51,6 +54,10 @@ distclean:
 	@echo " "
 	@echo "removing all editor backup files, core files, obj files, and doc files"
 	@echo " "
+
+docs:
+	doxygen docs.cfg
+
 
 
 ##################################################
