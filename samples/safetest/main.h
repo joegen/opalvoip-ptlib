@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.6  2006/02/13 04:17:23  dereksmithies
+ * Formatting fixes.
+ *
  * Revision 1.5  2006/02/12 21:42:07  dereksmithies
  * Add lots of doxygen style comments, and an introductory page.
  *
@@ -204,7 +207,7 @@ class SafeTest : public PProcess
     /**Callback for removing a DelayThread from the list of active
        delaythreads */
     void OnReleased(DelayThread & delayThread);
-                                                                                
+
     /**Append this DelayThread to delayThreadsActive, cause it is a valid
        and running DelayThread */
     void AppendRunning(PSafePtr<DelayThread> delayThread, PString id);
