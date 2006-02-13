@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2006/02/13 04:17:22  dereksmithies
+ * Formatting fixes.
+ *
  * Revision 1.6  2006/02/12 21:42:07  dereksmithies
  * Add lots of doxygen style comments, and an introductory page.
  *
@@ -276,7 +279,8 @@ void LauncherThread::Main()
 void UserInterfaceThread::Main()
 {
   PConsoleChannel console(PConsoleChannel::StandardInput);
-  cout << "This program will repeatedly create and destroy a thread until terminated from the console" << endl;
+  cout << "This program will repeatedly create and destroy a thread until "
+       << "terminated from the console" << endl;
 
   PStringStream help;
   help << "Press : " << endl
@@ -300,20 +304,25 @@ void UserInterfaceThread::Main()
       {
         PInt64 i = launch.GetIteration();
         if (i == 0) {
-          cout << "Have not completed an iteration yet, so time per iteration is unavailable" << endl;
+          cout << "Have not completed an iteration yet, so time per "
+	       << "iteration is unavailable" << endl;
         } else {
-          cout << "Average time per iteration is " << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
+          cout << "Average time per iteration is " 
+	       << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
                << " milliseconds" << endl;
         }
         cout << "Command ? " << flush;
         break;
       }
     case 'r' :
-      cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      cout << "\nHave completed " 
+	   << launch.GetIteration() << " iterations" << endl;
       cout << "Command ? " << flush;
       break;
     case 't' :
-      cout << "\nElapsed time is " << launch.GetElapsedTime() << " (Hours:mins:seconds.millseconds)" << endl;
+      cout << "\nElapsed time is " 
+	   << launch.GetElapsedTime() 
+	   << " (Hours:mins:seconds.millseconds)" << endl;
       cout << "Command ? " << flush;
       break;
 
@@ -330,9 +339,10 @@ void UserInterfaceThread::Main()
       cout << "Command ? " << flush;
     default:
       break;
-                                                                                                                                            
     } // end switch
+
   } // end for
+
 }
 
 
