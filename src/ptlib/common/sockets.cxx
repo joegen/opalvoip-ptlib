@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.201  2006/02/13 06:56:26  csoutheren
+ * Fixed problem on Windows
+ *
  * Revision 1.200  2006/02/10 23:56:58  csoutheren
  * Fixed compile problems on Debian and Windows
  *
@@ -707,11 +710,7 @@ void CALLBACK CompletionRoutine(DWORD dwError,
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket::Address
 
-#if P_HAS_IPV6
-static int defaultIpAddressFamily = PF_UNSPEC;   // use both
-#else
-static int defaultIpAddressFamily = PF_INET;
-#endif
+static int defaultIpAddressFamily = PF_INET;  // PF_UNSPEC;   // default to IPV4
 
 static PIPSocket::Address loopback4(127,0,0,1);
 static PIPSocket::Address broadcast4(INADDR_BROADCAST);
