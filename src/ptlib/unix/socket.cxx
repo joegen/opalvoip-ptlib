@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.116  2006/02/18 15:57:45  dsandras
+ * Applied patch from Richard van der Hoff and Stephane Epardaud <stef lunatech
+ * com> to fix infinite loop with IPv6 interfaces. Thanks!
+ *
  * Revision 1.115  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -712,10 +716,10 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
     FILE * file;
     int dummy;
     int addr6[16];
-    char ifaceName[9];
+    char ifaceName[255];
     BOOL found = FALSE;
     if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
-      while (!found && (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %02x %02x %02x %02x %8s\n",
+      while (!found && (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
               &addr6[0],  &addr6[1],  &addr6[2],  &addr6[3], 
               &addr6[4],  &addr6[5],  &addr6[6],  &addr6[7], 
               &addr6[8],  &addr6[9],  &addr6[10], &addr6[11], 
@@ -1797,9 +1801,9 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
     FILE * file;
     int dummy;
     int addr[16];
-    char ifaceName[9];
+    char ifaceName[255];
     if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
-      while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %02x %02x %02x %02x %8s\n",
+      while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
               &addr[0],  &addr[1],  &addr[2],  &addr[3], 
               &addr[4],  &addr[5],  &addr[6],  &addr[7], 
               &addr[8],  &addr[9],  &addr[10], &addr[11], 
