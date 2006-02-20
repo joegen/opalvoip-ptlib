@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.49  2006/02/20 06:49:45  csoutheren
+ * Added video file and video file input device code
+ *
  * Revision 1.48  2006/02/08 04:02:24  csoutheren
  * Added ability to enable and disable socket aggregation
  *
@@ -516,6 +519,7 @@
 #undef P_HTTP
 #undef P_CONFIG_FILE
 #undef P_SOCKAGG
+#undef P_VIDFILE
 
 /////////////////////////////////////////////////
 //
