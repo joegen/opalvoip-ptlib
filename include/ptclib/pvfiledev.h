@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.2  2006/02/20 06:49:45  csoutheren
+ * Added video file and video file input device code
+ *
  * Revision 1.1  2006/02/20 06:17:28  csoutheren
  * Added ability to read video from a file
  *
@@ -38,6 +41,11 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
+
+#if P_VIDFILE
+
 
 #include <ptlib.h>
 
@@ -212,3 +220,5 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 PLOAD_FACTORY_DECLARE(PVideoInputDevice,YUVFile)
 
 #endif
+
+#endif // P_VIDFILE
