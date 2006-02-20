@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.18  2006/02/20 06:12:10  csoutheren
+ * Added guard defines
+ *
  * Revision 1.17  2006/01/29 22:46:41  csoutheren
  * Added support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
@@ -97,8 +100,8 @@
  *
  */
 
+#ifndef _PCONVERT
 #define _PCONVERT
-
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -372,5 +375,6 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
   static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
+#endif
 
 // End of file ///////////////////////////////////////////////////////////////
