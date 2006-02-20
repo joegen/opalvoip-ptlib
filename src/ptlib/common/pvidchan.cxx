@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.17  2006/02/20 06:14:41  csoutheren
+ * Return FALSE if video channel read fails
+ *
  * Revision 1.16  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -164,9 +167,9 @@ BOOL PVideoChannel::Read(void * buf, PINDEX  len)
   PINDEX dataLen;
   dataBuf = (BYTE *)buf;
   dataLen = len;
-  mpInput->GetFrameData(dataBuf, &dataLen);
+  return mpInput->GetFrameData(dataBuf, &dataLen);
 
-  return TRUE;
+  // CHANGED  return TRUE;
 }
 
 BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
