@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.3  2006/02/20 09:31:58  csoutheren
+ * Fixed link problem on Linux
+ *
  * Revision 1.2  2006/02/20 06:49:45  csoutheren
  * Added video file and video file input device code
  *
@@ -39,6 +42,8 @@
 #pragma implementation "pvfiledev.h"
 #endif
 
+#define P_FORCE_STATIC_PLUGIN
+
 #include <ptlib.h>
 
 #if P_VIDFILE
@@ -50,6 +55,7 @@ PINSTANTIATE_FACTORY(PVideoInputDevice, YUVFile)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile
+
 
 PCREATE_VIDINPUT_PLUGIN(YUVFile);
 
