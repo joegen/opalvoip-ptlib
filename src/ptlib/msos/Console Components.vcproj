@@ -745,6 +745,12 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pvfiledev.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pvidfile.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\pwavfile.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1112,6 +1118,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\ptts.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\pvfiledev.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\pvidfile.h">
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\pwavfile.h">
