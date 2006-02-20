@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.23  2006/02/20 06:16:38  csoutheren
+ * Extended factory macros
+ *
  * Revision 1.22  2005/09/18 13:01:40  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -415,17 +418,26 @@ class PFactory : PFactoryBase
 //
 //  this macro is used to initialise the static member variable used to force factories to instantiate
 //
-#define PLOAD_FACTORY_DECLARE(AbstractType, KeyType) \
-namespace PWLibFactoryLoader { extern int AbstractType##_##KeyType; }
-
 #define PLOAD_FACTORY(AbstractType, KeyType) \
-PWLibFactoryLoader::AbstractType##_##KeyType = 1;
+  PWLibFactoryLoader::AbstractType##_##KeyType##_loader = 1; \
+
+#define PLOAD_FACTORY_DECLARE(AbstractType, KeyType) \
+namespace PWLibFactoryLoader { \
+extern int AbstractType##_##KeyType##_loader; \
+static class AbstractType##_##KeyType##_loader_Instantiate { \
+public: AbstractType##_##KeyType##_loader_Instantiate() { \
+PLOAD_FACTORY(AbstractType, KeyType); \
+} \
+} AbstractType##_##KeyType##_loader_instance; \
+}; \
+
 
 //
 //  this macro is used to instantiate a static variable that accesses the static member variable 
 //  in a factory forcing it to load
 //
 #define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
-namespace PWLibFactoryLoader { int AbstractType##_##KeyType; }; 
+namespace PWLibFactoryLoader { int AbstractType##_##KeyType##_loader; }
+
 
 #endif // _PFACTORY_H
