@@ -27,12 +27,22 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.2  2006/02/20 06:49:45  csoutheren
+ * Added video file and video file input device code
+ *
  * Revision 1.1  2006/02/20 06:17:28  csoutheren
  * Added ability to read video from a file
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "pvfiledev.h"
+#endif
+
 #include <ptlib.h>
+
+#if P_VIDFILE
+
 #include <ptlib/vconvert.h>
 #include <ptclib/pvfiledev.h>
 
@@ -288,3 +298,5 @@ void PVideoInputDevice_YUVFile::FillRect(BYTE * frame,
     CrPtr += halfWidth;
   }
 }
+
+#endif // P_VIDFILE

@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.141  2006/02/20 06:49:45  csoutheren
+# Added video file and video file input device code
+#
 # Revision 1.140  2006/02/08 04:02:25  csoutheren
 # Added ability to enable and disable socket aggregation
 #
@@ -692,6 +695,11 @@ endif
 
 ifdef HAS_SOCKAGG
 SOURCES += $(COMPONENT_SRC_DIR)/sockagg.cxx
+endif
+
+ifdef HAS_VIDFILE
+SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
+	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c

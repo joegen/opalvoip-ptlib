@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.2  2006/02/20 06:49:45  csoutheren
+ * Added video file and video file input device code
+ *
  * Revision 1.1  2006/02/20 06:17:28  csoutheren
  * Added ability to read video from a file
  *
@@ -37,6 +40,9 @@
 #endif
 
 #include <ptlib.h>
+
+#if P_VIDFILE
+
 #include <ptclib/pvidfile.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,3 +124,6 @@ BOOL PYUVFile::ReadFrame(void * frame)
 
   return TRUE;
 }
+
+#endif  // P_VIDFILE
+
