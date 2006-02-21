@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.117  2006/02/21 13:57:31  csoutheren
+ * Second attempt at fixing problem with interfaces having multiple addresses
+ *
  * Revision 1.116  2006/02/18 15:57:45  dsandras
  * Applied patch from Richard van der Hoff and Stephane Epardaud <stef lunatech
  * com> to fix infinite loop with IPv6 interfaces. Thanks!
@@ -1830,7 +1833,9 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
   PBYTEArray buffer;
   struct ifconf ifConf;
   
-#ifdef SIOCGIFNUM
+
+  // HERE
+#if defined(SIOCGIFNUM)
   int ifNum;
   PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
   ifConf.ifc_len = ifNum * sizeof(ifreq);
@@ -1846,7 +1851,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
     while (ifName < ifEndList) {
 
       struct ifreq ifReq;
-      strcpy(ifReq.ifr_name, ifName->ifr_name);
+      memcpy(&ifReq, ifName, sizeof(ifreq));
 
       if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
@@ -1855,15 +1860,20 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 
           PString macAddr;
 #if defined(SIO_Get_MAC_Address)
+          memcpy(&ifReq, ifName, sizeof(ifreq));
           if (ioctl(sock.GetHandle(), SIO_Get_MAC_Address, &ifReq) >= 0) {
             PEthSocket::Address a((BYTE *)ifReq.ifr_macaddr);
             macAddr = (PString)a;
           }
 #endif
 
+          memcpy(&ifReq, ifName, sizeof(ifreq));
           if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
-            PIPSocket::Address addr = ((sockaddr_in *)&ifReq.ifr_addr)->sin_addr;
 
+            sockaddr_in * sin = (sockaddr_in *)&ifReq.ifr_addr;
+            PIPSocket::Address addr = sin->sin_addr;
+
+            memcpy(&ifReq, ifName, sizeof(ifreq));
             if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) {
               PIPSocket::Address mask = 
 #ifndef __BEOS__
