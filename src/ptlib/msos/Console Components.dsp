@@ -236,6 +236,14 @@ SOURCE=..\..\ptclib\ptts.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pvfiledev.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\pvidfile.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\pwavfile.cxx
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -430,6 +438,14 @@ SOURCE=..\..\..\include\ptclib\pstun.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\ptts.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pvfiledev.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pvidfile.h
 # End Source File
 # Begin Source File
 
