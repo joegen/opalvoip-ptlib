@@ -251,14 +251,16 @@ dnl check the endianness
 dnl MSWIN_DISPLAY byteorder,Byte Order
 dnl MSWIN_DEFINE  byteorder,PBYTE_ORDER=PLITTLE_ENDIAN
 
-AC_C_BIGENDIAN()
-if test ${ac_cv_c_bigendian} = yes ; then
-  PBYTE_ORDER=PBIG_ENDIAN
-else
-  PBYTE_ORDER=PLITTLE_ENDIAN
-fi
+if test ${OSTYPE} != "Darwin" ; then  
+  AC_C_BIGENDIAN()
+  if test ${ac_cv_c_bigendian} = yes ; then
+    PBYTE_ORDER=PBIG_ENDIAN
+  else
+    PBYTE_ORDER=PLITTLE_ENDIAN
+  fi
 
-AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
+  AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER, "byte order")
+fi
 
 dnl ########################################################################
 dnl look for compile flags
