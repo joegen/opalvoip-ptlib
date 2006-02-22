@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.47.2.1  2006/02/22 11:53:29  csoutheren
+ * Backports from HEAD
+ *
+ * Revision 1.50  2006/02/22 11:22:34  csoutheren
+ * Applied patch #1408645
+ * Endianess patch for MacOSX
+ *
  * Revision 1.47  2005/11/25 00:06:12  csoutheren
  * Applied patch #1364593 from Hannes Friederich
  * Also changed so PTimesMutex is no longer descended from PSemaphore on
@@ -217,9 +224,23 @@
 // Processor endianess
 //
 
+#if !defined(P_MACOSX)
+#if !defined(P_MACOSX)
 #undef PBYTE_ORDER
-
-
+#else
+#if defined(__BIG_ENDIAN__)
+#define PBYTE_ORDER PBIG_ENDIAN
+#else
+#define PBYTE_ORDER PLITTLE_ENDIAN
+#endif
+#endif
+#else
+#if defined(__BIG_ENDIAN__)
+#define PBYTE_ORDER PBIG_ENDIAN
+#else
+#define PBYTE_ORDER PLITTLE_ENDIAN
+#endif
+#endif
 /////////////////////////////////////////////////
 //
 // IP v6 Support
