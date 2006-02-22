@@ -26,9 +26,19 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.16.2.2  2006/02/22 11:53:29  csoutheren
+ * Backports from HEAD
+ *
  * Revision 1.16.2.1  2006/01/30 00:03:11  csoutheren
  * Backported support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
+ *
+ * Revision 1.19  2006/02/22 11:17:53  csoutheren
+ * Applied patch #1425825
+ * MaxOSX compatibility
+ *
+ * Revision 1.18  2006/02/20 06:12:10  csoutheren
+ * Added guard defines
  *
  * Revision 1.17  2006/01/29 22:46:41  csoutheren
  * Added support for cameras that return MJPEG streams
@@ -101,11 +111,13 @@
  *
  */
 
+#ifndef _PCONVERT
 #define _PCONVERT
 
-
 #ifdef P_USE_PRAGMA
+#ifndef P_MACOSX
 #pragma interface
+#endif
 #endif
 
 struct jdec_private;
@@ -299,9 +311,11 @@ class PColourConverter : public PObject
 
     PBYTEArray intermediateFrameStore;
 
-    /* Use by the jpeg decompressor */
+#ifndef P_MACOSX
+      /* Use by the jpeg decompressor */
     struct jdec_private *jdec;
- 
+#endif
+
   friend class PColourConverterRegistration;
 };
 
@@ -376,5 +390,6 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
   static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
+#endif
 
 // End of file ///////////////////////////////////////////////////////////////

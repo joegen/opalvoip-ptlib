@@ -26,12 +26,19 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45.2.3  2006/02/22 11:53:29  csoutheren
+ * Backports from HEAD
+ *
  * Revision 1.45.2.2  2006/01/31 09:19:04  csoutheren
  * Backport from CVS head
  *
  * Revision 1.45.2.1  2006/01/30 00:03:12  csoutheren
  * Backported support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
+ *
+ * Revision 1.48  2006/02/22 11:17:53  csoutheren
+ * Applied patch #1425825
+ * MaxOSX compatibility
  *
  * Revision 1.47  2006/01/31 03:24:43  csoutheren
  * Removed MJPEG capabilities when compiling with Microsoft compilers
@@ -390,7 +397,9 @@ PColourConverter::PColourConverter(const PString & src,
     dstColourFormat(dst)
 {
   PTRACE(6,"PColCnv\tPColourConverter constructed: " << src << "->" << dst << ' ' << width << 'x'<< height);
+#ifndef P_MACOSX
   jdec = NULL;
+#endif
 
   verticalFlip = FALSE;
   SetFrameSize(width,height);
@@ -1972,7 +1981,7 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
 }
 
 #ifdef __GNUC__
-
+#ifndef P_MACOSX
 /*
  * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
  * image need to be same size.
@@ -2114,7 +2123,7 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
   
   return TRUE;
 }
-
+#endif // P_MACOSX
 #endif // __GNUC__
 
 
