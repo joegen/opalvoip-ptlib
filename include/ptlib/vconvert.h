@@ -26,6 +26,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.19  2006/02/22 11:17:53  csoutheren
+ * Applied patch #1425825
+ * MaxOSX compatibility
+ *
  * Revision 1.18  2006/02/20 06:12:10  csoutheren
  * Added guard defines
  *
@@ -104,7 +108,9 @@
 #define _PCONVERT
 
 #ifdef P_USE_PRAGMA
+#ifndef P_MACOSX
 #pragma interface
+#endif
 #endif
 
 struct jdec_private;
@@ -298,9 +304,11 @@ class PColourConverter : public PObject
 
     PBYTEArray intermediateFrameStore;
 
-    /* Use by the jpeg decompressor */
+#ifndef P_MACOSX
+      /* Use by the jpeg decompressor */
     struct jdec_private *jdec;
- 
+#endif
+
   friend class PColourConverterRegistration;
 };
 
