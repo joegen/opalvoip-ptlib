@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.51  2006/02/23 00:27:19  csoutheren
+ * Fixed incorrectly applied patch
+ *
  * Revision 1.50  2006/02/22 11:22:34  csoutheren
  * Applied patch #1408645
  * Endianess patch for MacOSX
@@ -228,7 +231,6 @@
 //
 
 #if !defined(P_MACOSX)
-#if !defined(P_MACOSX)
 #undef PBYTE_ORDER
 #else
 #if defined(__BIG_ENDIAN__)
@@ -237,13 +239,7 @@
 #define PBYTE_ORDER PLITTLE_ENDIAN
 #endif
 #endif
-#else
-#if defined(__BIG_ENDIAN__)
-#define PBYTE_ORDER PBIG_ENDIAN
-#else
-#define PBYTE_ORDER PLITTLE_ENDIAN
-#endif
-#endif
+
 /////////////////////////////////////////////////
 //
 // IP v6 Support
@@ -587,3 +583,4 @@
 
 
 // End Of File ///////////////////////////////////////////////////////////////
+
