@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.h,v $
+ * Revision 1.3  2006/02/24 04:51:26  csoutheren
+ * Fixed problem with using CIF from video files
+ * Added support for video files in y4m format
+ *
  * Revision 1.2  2006/02/20 06:49:45  csoutheren
  * Added video file and video file input device code
  *
@@ -121,8 +125,36 @@ class PYUVFile : public PVideoFile
       int opts = ModeDefault     ///< #OpenOptions enum# for open operation.
     );
 
+    virtual BOOL Open(
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // Options for open operation.
+    );
+    virtual BOOL Open(
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault     // #OpenOptions enum# for open operation.
+    );
+
+    virtual off_t GetLength() const;
+      
+    virtual BOOL SetLength(
+      off_t len   // New length of file.
+    );
+
+    virtual BOOL SetPosition(
+      off_t pos,                         ///< New position to set.
+      FilePositionOrigin origin = Start  ///< Origin for position change.
+    );
+
+    virtual off_t GetPosition() const;
+
     virtual BOOL WriteFrame(const void * frame);
     virtual BOOL ReadFrame(void * frame);
+
+  protected:
+    void Construct();
+    PINDEX offset;
+    BOOL y4mMode;
 };
 
 #endif
