@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.3  2006/02/24 04:51:26  csoutheren
+ * Fixed problem with using CIF from video files
+ * Added support for video files in y4m format
+ *
  * Revision 1.2  2006/02/20 06:49:45  csoutheren
  * Added video file and video file input device code
  *
@@ -88,6 +92,7 @@ void PVideoFile::SetHeight(PINDEX v)
 PYUVFile::PYUVFile()
   : PVideoFile()
 {
+  Construct();
 }
 
 PYUVFile::PYUVFile(PINDEX width,
@@ -96,6 +101,7 @@ PYUVFile::PYUVFile(PINDEX width,
                       int opts)
   : PVideoFile(width, height, mode, opts)
 {
+  Construct();
 }
 
 PYUVFile::PYUVFile(PINDEX width, 
@@ -105,6 +111,45 @@ PYUVFile::PYUVFile(PINDEX width,
                       int opts)
   : PVideoFile(width, height, name, mode, opts)
 {
+  Construct();
+}
+
+void PYUVFile::Construct()
+{
+  offset = 0;
+  y4mMode = FALSE;
+}
+
+
+BOOL PYUVFile::Open(OpenMode mode, int opts)
+{
+  if (!(PFile::Open(mode, opts)))
+    return FALSE;
+
+  y4mMode = GetFilePath().GetType() *= ".y4m";
+
+  if (offset != 0)
+    PFile::SetPosition(offset);
+
+  if (y4mMode) {
+    int ch;
+    do {
+      if ((ch = PFile::ReadChar()) < 0)
+        return FALSE;
+    }
+    while (ch != 0x0a);
+  }
+
+  return TRUE;
+}
+
+
+BOOL PYUVFile::Open(const PFilePath & name, OpenMode mode, int opts)
+{
+  if (IsOpen())
+    Close();
+  SetFilePath(name);
+  return Open(mode, opts);
 }
 
 BOOL PYUVFile::WriteFrame(const void * frame)
@@ -114,6 +159,15 @@ BOOL PYUVFile::WriteFrame(const void * frame)
 
 BOOL PYUVFile::ReadFrame(void * frame)
 {
+  if (y4mMode) {
+    int ch;
+    do {
+      if ((ch = PFile::ReadChar()) < 0)
+        return FALSE;
+    }
+    while (ch != 0x0a);
+  }
+
   if (!PFile::Read(frame, yuvSize)) {
     PTRACE(4, "YUVFILE\tError reading file " << GetErrorText(GetErrorCode(LastReadError)));
     return FALSE;
@@ -123,6 +177,37 @@ BOOL PYUVFile::ReadFrame(void * frame)
     return FALSE;
 
   return TRUE;
+}
+
+off_t PYUVFile::GetLength() const
+{
+  return PFile::GetLength() - offset;
+}
+  
+BOOL PYUVFile::SetLength(off_t len)
+{
+  return PFile::SetLength(len + offset);
+}
+
+BOOL PYUVFile::SetPosition(off_t pos, FilePositionOrigin origin)
+{
+  switch (origin) {
+    case PFile::Start:
+      return PFile::SetPosition(pos + offset, origin);
+
+    case PFile::Current:
+      return PFile::SetPosition(pos, origin);
+
+    case PFile::End:
+      return PFile::SetPosition(offset, origin);
+  }
+
+  return FALSE;
+}
+
+off_t PYUVFile::GetPosition() const
+{
+  return PFile::GetPosition() - offset;
 }
 
 #endif  // P_VIDFILE
