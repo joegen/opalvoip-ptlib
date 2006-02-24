@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.4  2006/02/24 04:51:26  csoutheren
+ * Fixed problem with using CIF from video files
+ * Added support for video files in y4m format
+ *
  * Revision 1.3  2006/02/20 09:31:58  csoutheren
  * Fixed link problem on Linux
  *
@@ -75,8 +79,8 @@ BOOL PVideoInputDevice_YUVFile::Open(const PString & devName, BOOL /*startImmedi
   if (!file.Open(fn, PFile::ReadOnly, PFile::MustExist))
     return FALSE;
 
-  file.SetWidth(176);
-  file.SetHeight(144);
+  file.SetWidth(frameWidth);
+  file.SetHeight(frameHeight);
 
   deviceName = fn.GetTitle();
 
@@ -180,6 +184,9 @@ BOOL PVideoInputDevice_YUVFile::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
+
+  //file.SetWidth(width);
+  //file.SetHeight(height);
 
   videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   scanLineWidth = videoFrameSize/frameHeight;
