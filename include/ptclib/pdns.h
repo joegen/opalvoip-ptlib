@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.11  2006/02/26 11:51:20  csoutheren
+ * Extended DNS test program to include URL based SRV lookups
+ * Re-arranged SRV lookup code to allow access to internal routine
+ * Reformatted code
+ *
  * Revision 1.10  2006/02/26 09:26:17  shorne
  * Added DNS SRV record lookups
  *
@@ -67,6 +72,7 @@
 #include <ptlib/sockets.h>
 
 #include <ptclib/random.h>
+#include <ptclib/url.h>
 
 #if defined(_WIN32)
 
@@ -295,10 +301,17 @@ BOOL GetSRVRecords(
   * @return TRUE if the service could be resolved, else FALSE
   */
 
-BOOL SRVLookup( 
-         const PString & _url,          ///< URL to lookup
-         const PString & service,       ///< service to use
-         PStringList & returnStr        ///< resolved addresses, if return value is TRUE
+BOOL LookupSRV( 
+         const PString & domain,                  ///< domain to lookup
+         const PString & service,                 ///< service to use
+                    WORD defaultPort,             ///< default por to use
+         PIPSocketAddressAndPortVector & addrList ///< returned list of sockets and ports
+);  
+
+BOOL LookupSRV( 
+         const PURL & url,          ///< URL to lookup
+         const PString & service,   ///< service to use
+         PStringList & returnStr    ///< resolved addresses, if return value is TRUE
 );  
 
 ////////////////////////////////////////////////////////////////
