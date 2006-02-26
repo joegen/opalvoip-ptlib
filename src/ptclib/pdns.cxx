@@ -24,6 +24,11 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.26  2006/02/26 11:51:20  csoutheren
+ * Extended DNS test program to include URL based SRV lookups
+ * Re-arranged SRV lookup code to allow access to internal routine
+ * Reformatted code
+ *
  * Revision 1.25  2006/02/26 09:26:17  shorne
  * Added DNS SRV record lookups
  *
@@ -111,6 +116,7 @@
 #include <ptlib.h>
 #include <ptclib/pdns.h>
 #include <ptclib/url.h>
+#include <ptlib/ipsock.h>
 
 #if P_DNS
 
@@ -511,50 +517,71 @@ BOOL PDNS::GetSRVRecords(
   return GetSRVRecords(service, recordList);
 }
 
-BOOL PDNS::SRVLookup(
-        const PString & _url,
+BOOL PDNS::LookupSRV(
+           const PURL & url,
         const PString & service,
-              PStringList & returnStr
-			  )
+          PStringList & returnList)
 {
+  WORD defaultPort = url.GetPort();
+  PIPSocketAddressAndPortVector info;
 
-  PURL url = _url;
-
-  PString domain = url.GetHostName();
-  if (domain.GetLength() == 0) {
-	 PTRACE(6,"DNS\tSRV Lookup Fail no domain " << _url );
-	 return FALSE;
+  if (!LookupSRV(url.GetHostName(), service, defaultPort, info)) {
+    PTRACE(6,"DNS\tSRV Lookup Fail no domain " << url );
+    return FALSE;
   }
 
-  PString user   = url.GetUserName();
+  PString user = url.GetUserName();
   if (user.GetLength() > 0)
-		user = user + "@";
+    user = user + "@";
+
+  PIPSocketAddressAndPortVector::const_iterator r;
+  for (r = info.begin(); r != info.end(); ++r) 
+    returnList.AppendString(user + r->address.AsString() + ":" + PString(PString::Unsigned, r->port));
+
+  return returnList.GetSize() != 0;;
+}
+
+BOOL PDNS::LookupSRV(
+         const PString & domain,            ///< domain to lookup
+         const PString & service,           ///< service to use
+                    WORD defaultPort,       ///< default port to use
+         PIPSocketAddressAndPortVector & addrList  ///< list of sockets and ports
+)
+{
+  if (domain.GetLength() == 0) {
+    PTRACE(6,"DNS\tSRV lookup failed - cannot resolve hostname " << domain);
+    return FALSE;
+  }
 
   PTRACE(6,"DNS\tSRV Lookup " << domain << " service " << service);
 
   PDNS::SRVRecordList srvRecords;
-  PString srvLookupStr = service + domain;
+  PString srvLookupStr = service;
+  if (srvLookupStr.Right(1) != ".")
+    srvLookupStr += ".";
+  srvLookupStr += domain;
   BOOL found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
     PTRACE(6,"DNS\tSRV Record found " << domain << " service " << service);
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
+      PIPSocketAddressAndPort addrAndPort;
 
-       PString port = "";
-	   if (recPtr->port > 0)
-		   port = ":" + PString(recPtr->port);
-	   else
-		   port = ":" + PString(url.GetPort());
+      addrAndPort.address = recPtr->hostAddress;
 
-       PString rec = user + recPtr->hostAddress + port;
-	   returnStr.AppendString(rec.Trim());
-	   recPtr = srvRecords.GetNext();
+      if (recPtr->port > 0)
+        addrAndPort.port = recPtr->port;
+      else
+        addrAndPort.port = defaultPort;
+
+      addrList.push_back(addrAndPort);
+
+      recPtr = srvRecords.GetNext();
     }
   } 
 
   return found;
 }
-
 
 ///////////////////////////////////////////////////////
 
