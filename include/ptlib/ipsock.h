@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.80  2006/02/26 11:51:20  csoutheren
+ * Extended DNS test program to include URL based SRV lookups
+ * Re-arranged SRV lookup code to allow access to internal routine
+ * Reformatted code
+ *
  * Revision 1.79  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -939,6 +944,19 @@ class PIPSocket : public PSocket
 #include "unix/ptlib/ipsock.h"
 #endif
 };
+
+class PIPSocketAddressAndPort
+{
+  public:
+    PIPSocketAddressAndPort()
+      : port(0)
+    { }
+
+    PIPSocket::Address address;
+    WORD port;
+};
+
+typedef std::vector<PIPSocketAddressAndPort> PIPSocketAddressAndPortVector;
 
 #endif
 
