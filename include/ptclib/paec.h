@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez
  *
  * $Log: paec.h,v $
+ * Revision 1.2  2006/02/26 09:27:49  shorne
+ * Renamed AEC class name, moved to seperate library
+ *
  * Revision 1.1  2006/01/26 08:05:03  shorne
  * Added AEC support
  *
@@ -49,17 +52,17 @@
 
 struct SpeexEchoState;
 struct SpeexPreprocessState;
-class PAEC : public PObject
+class PAec : public PObject
 {
-  PCLASSINFO(PAEC, PObject);
+  PCLASSINFO(PAec, PObject);
 public:
 
   /**@name Construction */
   //@{
   /**Create a new canceler.
    */
-     PAEC();
-     ~PAEC();
+     PAec();
+     ~PAec();
   //@}
 
   /**@@name Basic operations */
