@@ -18,6 +18,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.h,v $
+ * Revision 1.5  2006/02/26 09:30:26  shorne
+ * renamed include file to lowercase
+ *
  * Revision 1.4  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -48,7 +51,7 @@
 #ifdef _WIN32
 #ifndef P_KNOCKOUT_WINSOCK2
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 
 #ifndef P_KNOCKOUT_QOS
 #include <qossp.h>
