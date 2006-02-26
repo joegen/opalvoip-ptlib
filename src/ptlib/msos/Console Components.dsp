@@ -187,10 +187,6 @@ SOURCE=..\..\Ptclib\modem.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\ptclib\paec.cxx
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Ptclib\Pasn.cxx
 # End Source File
 # Begin Source File
@@ -390,10 +386,6 @@ SOURCE=..\..\..\Include\PtCLib\mime.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\modem.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\include\ptclib\paec.h
 # End Source File
 # Begin Source File
 
