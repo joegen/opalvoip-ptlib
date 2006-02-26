@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.5  2006/02/26 09:29:10  shorne
+ * Added GetMethodName and GetList functions
+ *
  * Revision 1.4  2006/01/26 03:23:41  shorne
  * Fix compile error when merging code
  *
@@ -116,6 +119,11 @@ public:
       WORD portPairBase = 0,  /// Socket pair port number base
       WORD portPairMax = 0    /// Socket pair port number max
    );
+
+   /** Get the Method String Name
+   */
+   virtual PString GetNatMethodName() { return PString(); };
+
   //@}
 
 protected:
@@ -188,6 +196,11 @@ public :
       WORD portPairBase = 0,  /// Socket pair port number base
       WORD portPairMax = 0    /// Socket pair port number max
     );
+
+    /** Get NAT Method List
+     */
+    PNatList GetNATList() {  return natlist; };
+
   //@}
 
 private:
