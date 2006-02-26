@@ -554,9 +554,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\ptclib\paec.cxx">
-			</File>
-			<File
 				RelativePath="..\..\Ptclib\Pasn.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1085,9 +1082,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\modem.h">
-			</File>
-			<File
-				RelativePath="..\..\..\include\ptclib\paec.h">
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\pasn.h">
