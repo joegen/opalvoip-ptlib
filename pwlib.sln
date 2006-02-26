@@ -71,6 +71,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "configure", "tools\configur
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paec", "src\ptclib\speex_echo\PAEC.vcproj", "{6316EB4E-0F57-4491-9383-22072AF3D996}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -160,6 +164,12 @@ Global
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Pseudo-Debug.Build.0 = Debug|Win32
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Release.ActiveCfg = Release|Win32
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Release.Build.0 = Release|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Debug.ActiveCfg = Debug|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Debug.Build.0 = Debug|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Pseudo-Debug.ActiveCfg = Debug|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Pseudo-Debug.Build.0 = Debug|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Release.ActiveCfg = Release|Win32
+		{6316EB4E-0F57-4491-9383-22072AF3D996}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

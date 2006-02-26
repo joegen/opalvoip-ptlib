@@ -198,6 +198,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "paec"=.\src\ptclib\speex_echo\PAEC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "stunclient"=.\SAMPLES\stunclient\stunclient.dsp - Package Owner=<4>
 
 Package=<5>
