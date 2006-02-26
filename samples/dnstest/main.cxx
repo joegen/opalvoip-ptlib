@@ -8,6 +8,11 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2006/02/26 11:51:20  csoutheren
+ * Extended DNS test program to include URL based SRV lookups
+ * Re-arranged SRV lookup code to allow access to internal routine
+ * Reformatted code
+ *
  * Revision 1.6  2004/12/08 00:54:29  csoutheren
  * Added URL lookups
  *
@@ -51,6 +56,7 @@ void Usage()
 {
   PError << "usage: dnstest -t MX hostname\n"
             "       dnstest -t SRV service            (i.e. _ras._udp._example.com)\n"
+            "       dnstest -t SRV service url        (i.e. _sip._udp sip:fred@example.com)\n"
             "       dnstest -t NAPTR resource         (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org)\n"
             "       dnstest -t NAPTR resource service (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org E2U+SIP)\n"
             "       dnstest -t ENUM service           (i.e. +18005551212 E2U+SIP)\n"
@@ -102,6 +108,16 @@ BOOL FindSRVRecords(std::vector<LookupRecord> & recs,
     }
   } 
   return found;
+}
+
+void LookupSRVURL(const PString & url, const PString & service)
+{
+  PStringList addrs;
+  if (!PDNS::LookupSRV(url, service, addrs)) {
+    cout << "no records returned by SRV lookup of " << url << " with service " << service << endl;
+  } else {
+    cout << setfill('\n') << addrs << setfill(' ');
+  }
 }
 
 void DNSTest::Main()
@@ -182,8 +198,11 @@ void DNSTest::Main()
 
   else if (args.HasOption('t')) {
     PString type = args.GetOptionString('t');
-    if (type *= "SRV") 
+    if ((type *= "SRV") && (args.GetCount() == 1)) 
       GetAndDisplayRecords<PDNS::SRVRecordList>(args[0]);
+
+    else if ((type *= "SRV") && (args.GetCount() == 2)) 
+      LookupSRVURL(args[1], args[0]);
 
     else if (type *= "MX")
       GetAndDisplayRecords<PDNS::MXRecordList>(args[0]);
