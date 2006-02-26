@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.25  2006/02/26 09:26:17  shorne
+ * Added DNS SRV record lookups
+ *
  * Revision 1.24  2005/12/04 22:43:30  csoutheren
  * Cleanup patches from Kilian Krause
  *
@@ -107,6 +110,7 @@
 
 #include <ptlib.h>
 #include <ptclib/pdns.h>
+#include <ptclib/url.h>
 
 #if P_DNS
 
@@ -505,6 +509,50 @@ BOOL PDNS::GetSRVRecords(
   service << _service << "._" << type << '.' << domain;
 
   return GetSRVRecords(service, recordList);
+}
+
+BOOL PDNS::SRVLookup(
+        const PString & _url,
+        const PString & service,
+              PStringList & returnStr
+			  )
+{
+
+  PURL url = _url;
+
+  PString domain = url.GetHostName();
+  if (domain.GetLength() == 0) {
+	 PTRACE(6,"DNS\tSRV Lookup Fail no domain " << _url );
+	 return FALSE;
+  }
+
+  PString user   = url.GetUserName();
+  if (user.GetLength() > 0)
+		user = user + "@";
+
+  PTRACE(6,"DNS\tSRV Lookup " << domain << " service " << service);
+
+  PDNS::SRVRecordList srvRecords;
+  PString srvLookupStr = service + domain;
+  BOOL found = PDNS::GetRecords(srvLookupStr, srvRecords);
+  if (found) {
+    PTRACE(6,"DNS\tSRV Record found " << domain << " service " << service);
+    PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
+    while (recPtr != NULL) {
+
+       PString port = "";
+	   if (recPtr->port > 0)
+		   port = ":" + PString(recPtr->port);
+	   else
+		   port = ":" + PString(url.GetPort());
+
+       PString rec = user + recPtr->hostAddress + port;
+	   returnStr.AppendString(rec.Trim());
+	   recPtr = srvRecords.GetNext();
+    }
+  } 
+
+  return found;
 }
 
 
