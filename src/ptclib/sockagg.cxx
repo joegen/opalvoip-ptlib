@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.10  2006/02/28 02:08:02  csoutheren
+ * Modified aggregation to load balance better
+ *
  * Revision 1.9  2006/02/08 04:02:25  csoutheren
  * Added ability to enable and disable socket aggregation
  *
@@ -192,18 +195,31 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
 
   PWaitAndSignal m(listMutex);
 
-  // look for a worker thread to use that has less than the maximum number of handles
-  WorkerList_t::iterator r;
-  for (r = workers.begin(); r != workers.end(); ++r) {
-    WorkerThreadBase & worker = **r;
-    PWaitAndSignal m2(worker.workerMutex);
-    if ((worker.handleList.size() < maxWorkerSize) && !worker.shutdown) {
-      worker.handleList.push_back(handle);
-      PTRACE(4, "SockAgg: Adding handle " << (void *)handle << " to aggregator - " << worker.handleList.size() << " handles");
-      worker.listChanged = TRUE;
-      worker.Trigger();
-      return TRUE;
+  // if the maximum number of worker threads has been reached, then
+  // use the worker thread with the minimum number of handles
+  if (workers.size() >= maxWorkerSize) {
+    WorkerList_t::iterator minWorker = workers.end();
+    size_t minWorkerSize = 0x7ffff;
+    WorkerList_t::iterator r;
+    for (r = workers.begin(); r != workers.end(); ++r) {
+      WorkerThreadBase & worker = **r;
+      PWaitAndSignal m2(worker.workerMutex);
+      if (!worker.shutdown && (worker.handleList.size() <= minWorkerSize)) {
+        minWorkerSize = worker.handleList.size();
+        minWorker     = r;
+      }
     }
+
+    // add the worker to the thread
+    PAssert(minWorker != workers.end(), "could not find minimum worker");
+
+    WorkerThreadBase & worker = **minWorker;
+    PWaitAndSignal m2(worker.workerMutex);
+    worker.handleList.push_back(handle);
+    PTRACE(4, "SockAgg: Adding handle " << (void *)handle << " to aggregator - " << worker.handleList.size() << " handles");
+    worker.listChanged = TRUE;
+    worker.Trigger();
+    return TRUE;
   }
 
   PTRACE(4, "SockAgg: Creating new aggregator for " << (void *)handle);
@@ -248,7 +264,7 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
     if (handle->autoDelete)
       delete handle;
 
-    // if the worker thread has enough handles to keep running, trigger it to update
+    // if the worker thread has enough handles to keep running, triger it to update
     if (worker->handleList.size() >= minWorkerSize) {
       PTRACE(4, "SockAgg: Removed handle " << (void *)handle << " from aggregator - " << worker->handleList.size() << " handles remaining");
       worker->listChanged = TRUE;
