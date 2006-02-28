@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.11  2006/02/28 02:26:00  csoutheren
+ * Renamed variable to be not same as member
+ *
  * Revision 1.10  2006/02/28 02:08:02  csoutheren
  * Modified aggregation to load balance better
  *
@@ -199,13 +202,13 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
   // use the worker thread with the minimum number of handles
   if (workers.size() >= maxWorkerSize) {
     WorkerList_t::iterator minWorker = workers.end();
-    size_t minWorkerSize = 0x7ffff;
+    size_t minSizeFound = 0x7ffff;
     WorkerList_t::iterator r;
     for (r = workers.begin(); r != workers.end(); ++r) {
       WorkerThreadBase & worker = **r;
       PWaitAndSignal m2(worker.workerMutex);
-      if (!worker.shutdown && (worker.handleList.size() <= minWorkerSize)) {
-        minWorkerSize = worker.handleList.size();
+      if (!worker.shutdown && (worker.handleList.size() <= minSizeFound)) {
+        minSizeFound = worker.handleList.size();
         minWorker     = r;
       }
     }
