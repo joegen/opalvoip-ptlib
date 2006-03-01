@@ -27,8 +27,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.150.2.2  2006/03/01 08:34:33  csoutheren
+ * Backported patch #1439578 from CVS head
+ *
  * Revision 1.150.2.1  2006/01/29 23:34:52  csoutheren
  * Backported thread destruction patch from Derek Smithies
+ *
+ * Revision 1.152  2006/03/01 08:29:33  csoutheren
+ * Applied patch #1439578 PTrace / PThread::PX_ThreadEnd deadlock fix
+ * Thanks to Hannes Friederich
  *
  * Revision 1.151  2006/01/29 22:35:47  csoutheren
  * Added fix for thread termination problems on SMP machines
@@ -1352,9 +1359,7 @@ void PThread::PX_ThreadEnd(void * arg)
     process.threadMutex.Signal();
     PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
     return;
-  }
-
-  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);  
+  }  
 
  // remove this thread from the active thread list
   process.activeThreads.SetAt((unsigned)id, NULL);
@@ -1364,6 +1369,7 @@ void PThread::PX_ThreadEnd(void * arg)
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
     process.threadMutex.Signal();
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
 
     /* It is now safe to delete this thread. Note that this thread
        is deleted after the process.threadMutex.Signal(), which means
@@ -1373,6 +1379,7 @@ void PThread::PX_ThreadEnd(void * arg)
   else {
     thread->PX_threadId = 0;
     process.threadMutex.Signal();
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
   }
 }
 
