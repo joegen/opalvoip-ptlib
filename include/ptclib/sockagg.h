@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.6  2006/03/02 07:50:37  csoutheren
+ * Cleanup unused code
+ * Add OnClose function
+ *
  * Revision 1.5  2006/01/18 07:16:56  csoutheren
  * Latest version of socket aggregation code
  *
@@ -153,6 +157,7 @@ class PAggregatedHandle : public PObject
     virtual BOOL PreRead()   { return TRUE; }
     virtual BOOL OnRead() = 0;
     virtual void DeInit()    { }
+    virtual void OnClose()   { }
 
     virtual BOOL IsPreReadDone() const
     { return preReadDone; }
