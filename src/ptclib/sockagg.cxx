@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.12  2006/03/02 07:50:38  csoutheren
+ * Cleanup unused code
+ * Add OnClose function
+ *
  * Revision 1.11  2006/02/28 02:26:00  csoutheren
  * Renamed variable to be not same as member
  *
@@ -176,6 +180,10 @@ class WorkerThread : public PHandleAggregator::WorkerThreadBase
       : WorkerThreadBase(localEvent)
     { }
 
+    ~WorkerThread()
+    {
+    }
+
     void Trigger()
     { localEvent.Set(); }
 
@@ -296,7 +304,7 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
     workers.erase(r);
 
     // add it's handles to other threads
-    {
+    if (handlesToCopy.size() > 0) {
       HandleContextList_t::iterator t;
       for (t = handlesToCopy.begin(); t != handlesToCopy.end(); ++t)
         AddHandle(*t);
@@ -313,7 +321,6 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 ////////////////////////////////////////////////////////////////
 
 typedef std::vector<PAggregatorFD::FD> fdList_t;
-typedef std::vector<PAggregatorFD * > aggregatorFdList_t;
 typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> aggregatorFdToHandleMap_t;
 
 #ifdef _WIN32
@@ -327,10 +334,10 @@ void PHandleAggregator::WorkerThreadBase::Main()
   PTRACE(4, "SockAgg: aggregator started");
 
   fdList_t                  fdList;
-  aggregatorFdList_t        aggregatorFdList;
+  PAggregatorFDList_t       aggregatorFdList;
   aggregatorFdToHandleMap_t aggregatorFdToHandleMap;
 
-  while (!shutdown) {
+  for (;;) {
 
     // create the list of fds to wait on and find minimum timeout
     PTimeInterval timeout(PMaxTimeInterval);
@@ -344,6 +351,10 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
     {
       PWaitAndSignal m(workerMutex);
+
+      // check for shutdown
+      if (shutdown)
+        break;
 
       // if the list of handles has changed, clear the list of handles
       if (listChanged) {
@@ -415,6 +426,10 @@ void PHandleAggregator::WorkerThreadBase::Main()
     {
       PWaitAndSignal m(workerMutex);
 
+      // check for shutdown
+      if (shutdown)
+        break;
+
       if (ret == WAIT_TIMEOUT) {
         PTime start;
         timeoutHandle->closed = !timeoutHandle->OnRead();
@@ -450,9 +465,9 @@ void PHandleAggregator::WorkerThreadBase::Main()
           WSANETWORKEVENTS events;
           WSAEnumNetworkEvents(fd->socket, fd->fd, &events);
           if (events.lNetworkEvents != 0) {
-            if ((events.lNetworkEvents & FD_CLOSE) != 0)
-              handle->closed = TRUE;
-            else if ((events.lNetworkEvents & FD_READ) != 0) {
+
+            // check for read events first so we process any data that arrives before closing
+            if ((events.lNetworkEvents & FD_READ) != 0) {
               PTime start;
               handle->closed = !handle->OnRead();
               unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
@@ -460,11 +475,17 @@ void PHandleAggregator::WorkerThreadBase::Main()
                 PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
               }
             }
-            if (!handle->closed)
+
+            // check for socket close
+            if ((events.lNetworkEvents & FD_CLOSE) != 0)
+              handle->closed = TRUE;
+
+            if (!handle->closed) {
+              // prepare for next read
               handle->SetPreReadDone(FALSE);
-            else {
-              //handle->DeInit();
-              //handlesToRemove.push_back(handle);
+            } else {
+              handle->OnClose();
+              // make sure the list is refreshed without the closed socket
               listChanged = TRUE;
             }
           }
@@ -486,6 +507,10 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
     {
       PWaitAndSignal m(workerMutex);
+
+      // check for shutdown
+      if (shutdown)
+        break;
 
       if (ret == 0) {
         PTime start;
