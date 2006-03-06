@@ -31,6 +31,13 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.3  2006/03/06 19:11:01  dsandras
+ * Backports from HEAD.
+ *
+ * Revision 1.15  2006/03/06 19:09:31  dsandras
+ * Applied patch from Luc Saillard <luc saillard org> to fix YUV422, which
+ * is in fact YUYV.
+ *
  * Revision 1.11.4.2  2006/02/06 22:28:11  dsandras
  * Backported changes from CVS HEAD.
  *
@@ -189,7 +196,7 @@ static struct {
     { "YUV411P", V4L2_PIX_FMT_YUV411P },
     { "YUV420", V4L2_PIX_FMT_NV21 },
     { "YUV420P", V4L2_PIX_FMT_YUV420 },
-    { "YUV422", V4L2_PIX_FMT_YYUV },
+    { "YUV422", V4L2_PIX_FMT_YUYV },   /* Note: YUV422 is for compatibility */
     { "YUV422P", V4L2_PIX_FMT_YUV422P },
     { "YUY2", V4L2_PIX_FMT_YUYV },
     { "JPEG", V4L2_PIX_FMT_JPEG },
