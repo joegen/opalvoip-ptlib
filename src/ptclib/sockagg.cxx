@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.13  2006/03/06 02:37:26  csoutheren
+ * Change handle locking to help prevent aggregation threads from hogging list
+ *  access
+ *
  * Revision 1.12  2006/03/02 07:50:38  csoutheren
  * Cleanup unused code
  * Add OnClose function
@@ -248,6 +252,8 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 {
   PWaitAndSignal m(listMutex);
 
+  PAssert(!handle->beingProcessed, "trying close handle that is in use");
+
   // look for the thread containing the handle we need to delete
   WorkerList_t::iterator r;
   for (r = workers.begin(); r != workers.end(); ++r) {
@@ -432,7 +438,13 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
       if (ret == WAIT_TIMEOUT) {
         PTime start;
+
+        timeoutHandle->beingProcessed = TRUE;
+        workerMutex.Signal();
         timeoutHandle->closed = !timeoutHandle->OnRead();
+        workerMutex.Wait();
+        timeoutHandle->beingProcessed = FALSE;
+
         unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
         if (duration > 50) {
           PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
@@ -469,7 +481,13 @@ void PHandleAggregator::WorkerThreadBase::Main()
             // check for read events first so we process any data that arrives before closing
             if ((events.lNetworkEvents & FD_READ) != 0) {
               PTime start;
+
+              handle->beingProcessed = TRUE;
+              workerMutex.Signal();
               handle->closed = !handle->OnRead();
+              workerMutex.Wait();
+              handle->beingProcessed = FALSE;
+
               unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
               if (duration > 50) {
                 PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
