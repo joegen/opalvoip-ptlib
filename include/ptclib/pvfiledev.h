@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.3  2006/03/06 06:04:13  csoutheren
+ * Added YUVFile video output device
+ *
  * Revision 1.2  2006/02/20 06:49:45  csoutheren
  * Added video file and video file input device code
  *
@@ -51,6 +54,11 @@
 
 #include <ptlib/vconvert.h>
 #include <ptclib/pvidfile.h>
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+// This class defines a video capture (input) device that reads video from a raw YUV file
+//
 
 class PVideoInputDevice_YUVFile : public PVideoInputDevice
 {
@@ -200,6 +208,12 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
       unsigned width,   /// New width of frame
       unsigned height   /// New height of frame
     );
+
+    BOOL SetFrameSizeConverter(
+      unsigned width,        ///< New width of frame
+      unsigned height,       ///< New height of frame
+      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
+    );
          
     void ClearMapping() { return ; }
 
@@ -219,6 +233,79 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 
 PLOAD_FACTORY_DECLARE(PVideoInputDevice,YUVFile)
 
-#endif
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+// This class defines a video display (output) device that writes video to a raw YUV file
+//
+
+class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
+{
+  PCLASSINFO(PVideoOutputDevice_YUVFile, PVideoOutputDevice);
+
+  public:
+    /** Create a new video output device.
+     */
+    PVideoOutputDevice_YUVFile();
+
+    /**Get a list of all of the drivers available.
+      */
+    static PStringList GetOutputDeviceNames();
+
+    virtual PStringList GetDeviceNames() const
+      { return GetOutputDeviceNames(); }
+
+    /**Open the device given the device name.
+      */
+    virtual BOOL Open(
+      const PString & deviceName,   /// Device name to open
+      BOOL startImmediate = TRUE    /// Immediately start device
+    );
+
+    /**Start the video device I/O.
+      */
+    BOOL Start();
+
+    /**Stop the video device I/O capture.
+      */
+    BOOL Stop();
+
+    /**Close the device.
+      */
+    virtual BOOL Close();
+
+    /**Determine if the device is currently open.
+      */
+    virtual BOOL IsOpen();
+
+    /**Get the maximum frame size in bytes.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    virtual PINDEX GetMaxFrameBytes();
+
+    /**Set a section of the output frame buffer.
+      */
+    virtual BOOL SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      const BYTE * data,
+      BOOL endFrame = TRUE
+    );
+
+    /**Indicate frame may be displayed.
+      */
+    virtual BOOL EndFrame();
+
+  protected:  
+    PYUVFile file;
+    PBYTEArray frameStore;
+};
+
+PLOAD_FACTORY_DECLARE(PVideoOutputDevice,YUVFile)
 
 #endif // P_VIDFILE
+
+#endif // _PVFILEDEV

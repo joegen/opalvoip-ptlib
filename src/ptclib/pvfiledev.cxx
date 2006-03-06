@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.5  2006/03/06 06:04:13  csoutheren
+ * Added YUVFile video output device
+ *
  * Revision 1.4  2006/02/24 04:51:26  csoutheren
  * Fixed problem with using CIF from video files
  * Added support for video files in y4m format
@@ -55,12 +58,11 @@
 #include <ptlib/vconvert.h>
 #include <ptclib/pvfiledev.h>
 
-PINSTANTIATE_FACTORY(PVideoInputDevice, YUVFile)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile
 
-
+PINSTANTIATE_FACTORY(PVideoInputDevice, YUVFile)
 PCREATE_VIDINPUT_PLUGIN(YUVFile);
 
 PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
@@ -78,9 +80,6 @@ BOOL PVideoInputDevice_YUVFile::Open(const PString & devName, BOOL /*startImmedi
 
   if (!file.Open(fn, PFile::ReadOnly, PFile::MustExist))
     return FALSE;
-
-  file.SetWidth(frameWidth);
-  file.SetHeight(frameHeight);
 
   deviceName = fn.GetTitle();
 
@@ -148,10 +147,7 @@ BOOL PVideoInputDevice_YUVFile::SetColourFormat(const PString & newFormat)
   if (!(newFormat *= "YUV420P"))
     return FALSE;
 
-  if (!PVideoDevice::SetColourFormat(newFormat))
-    return FALSE;
-
-  return SetFrameSize(frameWidth, frameHeight);
+  return PVideoDevice::SetColourFormat(newFormat);
 }
 
 
@@ -179,14 +175,34 @@ BOOL PVideoInputDevice_YUVFile::GetFrameSizeLimits(unsigned & minWidth,
   return TRUE;
 }
 
+BOOL PVideoInputDevice_YUVFile::SetFrameSizeConverter(
+      unsigned width,        ///< New width of frame
+      unsigned height,       ///< New height of frame
+      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
+)
+{
+  // if the file does not know what size it is, then set it
+  if (file.GetWidth() == 0 && file.GetHeight() == 0) {
+    file.SetWidth(width);
+    file.SetHeight(height);
+  }
+
+  return PVideoInputDevice::SetFrameSizeConverter(width, height, bScaleNotCrop);
+}
 
 BOOL PVideoInputDevice_YUVFile::SetFrameSize(unsigned width, unsigned height)
 {
-  if (!PVideoDevice::SetFrameSize(width, height))
+  // if the file does not know what size it is, then set it
+  if (file.GetWidth() == 0 && file.GetHeight() == 0) {
+    file.SetWidth(width);
+    file.SetHeight(height);
+  }
+
+  if (width != (unsigned)file.GetWidth() || height != (unsigned)file.GetHeight())
     return FALSE;
 
-  //file.SetWidth(width);
-  //file.SetHeight(height);
+  frameWidth = width;
+  frameHeight = height;
 
   videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   scanLineWidth = videoFrameSize/frameHeight;
@@ -311,5 +327,92 @@ void PVideoInputDevice_YUVFile::FillRect(BYTE * frame,
     CrPtr += halfWidth;
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoOutputDevice_YUVFile
+
+PINSTANTIATE_FACTORY(PVideoOutputDevice, YUVFile)
+PCREATE_VIDOUTPUT_PLUGIN(YUVFile);
+
+PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
+{
+}
+
+
+BOOL PVideoOutputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startImmediate*/)
+{
+  deviceName = _deviceName;
+  if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create)) {
+    PTRACE(1, "Cannot create file " << deviceName << " as video output device");
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_YUVFile::Close()
+{
+  return file.Close();
+}
+
+BOOL PVideoOutputDevice_YUVFile::Start()
+{
+  file.SetHeight(frameHeight);
+  file.SetHeight(frameWidth);
+  frameStore.SetSize(frameWidth * frameHeight * 3 / 2);
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_YUVFile::Stop()
+{
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_YUVFile::IsOpen()
+{
+  return file.IsOpen();
+}
+
+
+PStringList PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
+{
+  PStringList list;
+  return list;
+}
+
+
+PINDEX PVideoOutputDevice_YUVFile::GetMaxFrameBytes()
+{
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
+}
+
+
+BOOL PVideoOutputDevice_YUVFile::SetFrameData(unsigned x, unsigned y,
+                                              unsigned width, unsigned height,
+                                              const BYTE * data,
+                                              BOOL /*endFrame*/)
+{
+  if (x != 0 || y != 0 || width != frameWidth || height != frameHeight) {
+    PTRACE(1, "YUVFile output device only supports full frame writes");
+    return FALSE;
+  }
+
+  if ((file.GetWidth() == 0) && (file.GetHeight() == 0)) {
+    file.SetWidth(width);
+    file.SetHeight(height);
+  }
+  else if (((unsigned)file.GetWidth() != width) || ((unsigned)file.GetHeight() != height))
+    return FALSE;
+
+  return file.WriteFrame(data);
+}
+
+
+BOOL PVideoOutputDevice_YUVFile::EndFrame()
+{
+  return TRUE;
+}
+
+
 
 #endif // P_VIDFILE
