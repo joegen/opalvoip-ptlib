@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.7  2006/03/06 02:37:25  csoutheren
+ * Change handle locking to help prevent aggregation threads from hogging list
+ *  access
+ *
  * Revision 1.6  2006/03/02 07:50:37  csoutheren
  * Cleanup unused code
  * Add OnClose function
@@ -145,7 +149,7 @@ class PAggregatedHandle : public PObject
   PCLASSINFO(PAggregatedHandle, PObject);
   public:
     PAggregatedHandle(BOOL _autoDelete = FALSE)
-      : autoDelete(_autoDelete), closed(FALSE), preReadDone(FALSE)
+      : autoDelete(_autoDelete), closed(FALSE), beingProcessed(FALSE), preReadDone(FALSE)
     { }
 
     virtual PAggregatorFDList_t GetFDs() = 0;
@@ -167,6 +171,7 @@ class PAggregatedHandle : public PObject
 
     BOOL autoDelete;
     BOOL closed;
+    BOOL beingProcessed;
 
   protected:
     BOOL preReadDone;
