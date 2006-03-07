@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.8  2006/03/07 07:38:02  csoutheren
+ * Refine timing windows on socket handling and cleanup unused code
+ *
  * Revision 1.7  2006/03/06 02:37:25  csoutheren
  * Change handle locking to help prevent aggregation threads from hogging list
  *  access
@@ -172,6 +175,7 @@ class PAggregatedHandle : public PObject
     BOOL autoDelete;
     BOOL closed;
     BOOL beingProcessed;
+    PMutex closeMutex;
 
   protected:
     BOOL preReadDone;
@@ -199,7 +203,7 @@ class PHandleAggregator : public PObject
         virtual void Reset() = 0;
     };
 
-    typedef std::vector<PAggregatedHandle *> HandleContextList_t;
+    typedef std::vector<PAggregatedHandle *> PAggregatedHandleList_t;
 
     class WorkerThreadBase : public PThread
     {
@@ -208,10 +212,15 @@ class PHandleAggregator : public PObject
 
         virtual void Trigger() = 0;
         void Main();
+        void RemoveHandle(PAggregatedHandle * handle);
+
+        PMutex workerMutex;
+
+        typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> PAggregatorFdToHandleMap_t;
+        PAggregatorFdToHandleMap_t aggregatorFdToHandleMap;
 
         EventBase & event;
-        PMutex workerMutex;
-        HandleContextList_t handleList;
+        PAggregatedHandleList_t handleList;
         BOOL listChanged;
         BOOL shutdown;
     };
@@ -227,7 +236,6 @@ class PHandleAggregator : public PObject
     PMutex listMutex;
     WorkerList_t workers;
     unsigned maxWorkerSize;
-    unsigned minWorkerSize;
 };
 
 
