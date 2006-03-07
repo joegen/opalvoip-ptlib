@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <errno.h>
 
 #include "tinyjpeg.h"
 #include "tinyjpeg-internal.h"
@@ -260,7 +261,10 @@ static const unsigned char val_ac_chrominance[] =
 #define fill_nbits(reservoir,nbits_in_reservoir,stream,nbits_wanted) do { \
    while (nbits_in_reservoir<nbits_wanted) \
     { \
-      unsigned char c = *stream++; \
+      unsigned char c; \
+      if (stream >= priv->stream_end) \
+        longjmp(priv->jump_state, -EIO); \
+      c = *stream++; \
       reservoir <<= 8; \
       if (c == 0xff && *stream == 0x00) \
         stream++; \
@@ -275,7 +279,7 @@ static const unsigned char val_ac_chrominance[] =
    result = ((reservoir)>>(nbits_in_reservoir-(nbits_wanted))); \
    nbits_in_reservoir -= (nbits_wanted);  \
    reservoir &= ((1U<<nbits_in_reservoir)-1); \
-   if (result < (1UL<<((nbits_wanted)-1))) \
+   if ((unsigned int)result < (1UL<<((nbits_wanted)-1))) \
        result += (0xFFFFFFFFUL<<(nbits_wanted))+1; \
 }  while(0);
 
@@ -313,9 +317,9 @@ static int get_next_huffman_code(struct jdec_private *priv, struct huffman_table
 
   look_nbits(priv->reservoir, priv->nbits_in_reservoir, priv->stream, HUFFMAN_HASH_NBITS, hcode);
   value = huffman_table->lookup[hcode];
-  if (value>=0)
+  if (value >= 0)
   { 
-     int code_size = huffman_table->code_size[value];
+     unsigned int code_size = huffman_table->code_size[value];
      skip_nbits(priv->reservoir, priv->nbits_in_reservoir, priv->stream, code_size);
      return value;
   }
@@ -351,7 +355,7 @@ static int get_next_huffman_code(struct jdec_private *priv, struct huffman_table
 static void process_Huffman_data_unit(struct jdec_private *priv, int component)
 {
   unsigned char j;
-  int huff_code;
+  unsigned int huff_code;
   unsigned char size_val, count_0;
 
   struct component *c = &priv->component_infos[component];
@@ -669,7 +673,7 @@ static void YCrCB_to_YUV420P_2x2(struct jdec_private *priv)
 {
   unsigned char *p;
   const unsigned char *s, *y1;
-  int i;
+  unsigned int i;
 
   p = priv->plane[0];
   y1 = priv->Y;
@@ -1872,6 +1876,7 @@ int tinyjpeg_parse_header(struct jdec_private *priv, const unsigned char *buf, u
 
   priv->stream_begin = buf+2;
   priv->stream_length = size-2;
+  priv->stream_end = priv->stream_begin + priv->stream_length;
 
   ret = parse_JFIF(priv, priv->stream_begin);
 
@@ -1933,6 +1938,9 @@ int tinyjpeg_decode(struct jdec_private *priv, int pixfmt)
   const decode_MCU_fct *decode_mcu_table;
   const convert_colorspace_fct *colorspace_array_conv;
   convert_colorspace_fct convert_to_pixfmt;
+
+  if (setjmp(priv->jump_state))
+    return -1;
 
   /* To keep gcc happy initialize some array */
   bytes_per_mcu[1] = 0;
@@ -2036,7 +2044,6 @@ int tinyjpeg_decode(struct jdec_private *priv, int pixfmt)
 	priv->plane[0] += bytes_per_mcu[0];
 	priv->plane[1] += bytes_per_mcu[1];
 	priv->plane[2] += bytes_per_mcu[2];
-
       }
    }
 
@@ -2064,7 +2071,7 @@ int tinyjpeg_get_components(struct jdec_private *priv, unsigned char **component
 
 int tinyjpeg_set_components(struct jdec_private *priv, unsigned char **components, unsigned int ncomponents)
 {
-  int i;
+  unsigned int i;
   if (ncomponents > COMPONENTS)
     ncomponents = COMPONENTS;
   for (i=0; i<ncomponents; i++)
