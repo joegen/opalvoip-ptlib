@@ -79,20 +79,41 @@
 #define DCTSIZE2   (DCTSIZE*DCTSIZE)
 
 #define DEQUANTIZE(coef,quantval)  (((FAST_FLOAT) (coef)) * (quantval))
-#define ONE     ((int32_t) 1)
-#define DESCALE(x,n)  RIGHT_SHIFT((x) + (ONE << ((n)-1)), n)
 
-#if 1
-#define SHIFT_TEMPS     int32_t shift_temp;
-#define RIGHT_SHIFT(x,shft)  \
-          ((shift_temp = (x)) < 0 ? \
-	            (shift_temp >> (shft)) | ((~(0UL)) << (32-(shft))) : \
-	            (shift_temp >> (shft)))
+#if defined(__GNUC__) && (defined(__i686__) || defined(__x86_64__))
+
+static inline unsigned char descale_and_clamp(int x, int shift)
+{
+  __asm__ (
+      "add %3,%1\n"
+      "\tsar %2,%1\n"
+      "\tsub $-128,%1\n"
+      "\tcmovl %5,%1\n"	/* Use the sub to compare to 0 */
+      "\tcmpl %4,%1\n" 
+      "\tcmovg %4,%1\n"
+      : "=r"(x) 
+      : "0"(x), "Ir"(shift), "ir"(1UL<<(shift-1)), "r" (0xff), "r" (0)
+      );
+  return x;
+}
+
 #else
-#define SHIFT_TEMPS
-#define RIGHT_SHIFT(x,shft)     ((x) >> (shft))
+static inline unsigned char descale_and_clamp(int x, int shift)
+{
+  x += (1UL<<(shift-1));
+  if (x<0)
+    x = (x >> shift) | ((~(0UL)) << (32-(shift)));
+  else
+    x >>= shift;
+  x += 128;
+  if (x>255)
+    return 255;
+  else if (x<0)
+    return 0;
+  else 
+    return x;
+}
 #endif
-
 
 /*
  * Perform dequantization and inverse DCT on one block of coefficients.
@@ -110,7 +131,6 @@ jpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
   uint8_t *outptr;
   int ctr;
   FAST_FLOAT workspace[DCTSIZE2]; /* buffers data between passes */
-  SHIFT_TEMPS
 
   /* Pass 1: process columns from input, store into work array. */
 
@@ -249,16 +269,16 @@ jpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
 
     /* Final output stage: scale down by a factor of 8 and range-limit */
 
-#define range_limit(x) ((x+128)>255?255:(((x+128)<0)?0:(x+128)))
-    outptr[0] = range_limit((int) DESCALE((int32_t) (tmp0 + tmp7), 3));
-    outptr[7] = range_limit((int) DESCALE((int32_t) (tmp0 - tmp7), 3));
-    outptr[1] = range_limit((int) DESCALE((int32_t) (tmp1 + tmp6), 3));
-    outptr[6] = range_limit((int) DESCALE((int32_t) (tmp1 - tmp6), 3));
-    outptr[2] = range_limit((int) DESCALE((int32_t) (tmp2 + tmp5), 3));
-    outptr[5] = range_limit((int) DESCALE((int32_t) (tmp2 - tmp5), 3));
-    outptr[4] = range_limit((int) DESCALE((int32_t) (tmp3 + tmp4), 3));
-    outptr[3] = range_limit((int) DESCALE((int32_t) (tmp3 - tmp4), 3));
+    outptr[0] = descale_and_clamp((int)(tmp0 + tmp7), 3);
+    outptr[7] = descale_and_clamp((int)(tmp0 - tmp7), 3);
+    outptr[1] = descale_and_clamp((int)(tmp1 + tmp6), 3);
+    outptr[6] = descale_and_clamp((int)(tmp1 - tmp6), 3);
+    outptr[2] = descale_and_clamp((int)(tmp2 + tmp5), 3);
+    outptr[5] = descale_and_clamp((int)(tmp2 - tmp5), 3);
+    outptr[4] = descale_and_clamp((int)(tmp3 + tmp4), 3);
+    outptr[3] = descale_and_clamp((int)(tmp3 - tmp4), 3);
 
+    
     wsptr += DCTSIZE;		/* advance pointer to next row */
     outptr += stride;
   }
