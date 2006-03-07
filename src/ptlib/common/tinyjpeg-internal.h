@@ -35,6 +35,8 @@
 #ifndef __TINYJPEG_INTERNAL_H_
 #define __TINYJPEG_INTERNAL_H_
 
+#include <setjmp.h>
+
 struct jdec_private;
 
 #define HUFFMAN_HASH_NBITS 9
@@ -80,7 +82,7 @@ struct jdec_private
   unsigned int flags;
 
   /* Private variables */
-  const unsigned char *stream_begin;
+  const unsigned char *stream_begin, *stream_end;
   unsigned int stream_length;
 
   const unsigned char *stream;	/* Pointer to the current stream */
@@ -95,6 +97,7 @@ struct jdec_private
   /* Temp space used after the IDCT to store each components */
   uint8_t Y[64*4], Cr[64], Cb[64];
 
+  jmp_buf jump_state;
   /* Internal Pointer use for colorspace conversion, do not modify it !!! */
   uint8_t *plane[COMPONENTS];
 
