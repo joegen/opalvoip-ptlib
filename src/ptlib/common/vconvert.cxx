@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.49  2006/03/07 20:53:51  dsandras
+ * Added support for JPEG based webcams, thanks to Luc Saillard <luc saillard org>.
+ *
  * Revision 1.48  2006/02/22 11:17:53  csoutheren
  * Applied patch #1425825
  * MaxOSX compatibility
@@ -2045,6 +2048,21 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,Grey)
   return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
 }
 
+PSTANDARD_COLOUR_CONVERTER(JPEG,RGB24)
+{
+  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_RGB24);
+}
+
+PSTANDARD_COLOUR_CONVERTER(JPEG,BGR24)
+{
+  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_BGR24);
+}
+
+PSTANDARD_COLOUR_CONVERTER(JPEG,Grey)
+{
+  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
+}
+
 /*
  * Convert a MJPEG Buffer to YUV420P
  * image need to be same size.
@@ -2092,6 +2110,38 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
 
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
     PTRACE(2,"PColCnv\tError in MJPEG to YUV420P converter, All size need to be a multiple of 16.");
+    return FALSE;
+  }
+
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) {
+
+     PTRACE(2,"PColCnv\tMJPEG to YUV420P\n");
+     if (MJPEGtoYUV420PSameSize(mjpeg, yuv420p) == FALSE)
+       return FALSE;
+
+  } else {
+     /* Very not efficient */
+     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameBytes);
+     MJPEGtoYUV420PSameSize(mjpeg, intermed);
+     ResizeYUV420P(intermed, yuv420p);
+  }
+
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  
+  return TRUE;
+}
+
+/*
+ * JPEG to YUV420P
+ */
+PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
+{
+  const BYTE *mjpeg = srcFrameBuffer;
+  BYTE *yuv420p = dstFrameBuffer;
+
+  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
+    PTRACE(2,"PColCnv\tError in JPEG to YUV420P converter, All size need to be a multiple of 16.");
     return FALSE;
   }
 
