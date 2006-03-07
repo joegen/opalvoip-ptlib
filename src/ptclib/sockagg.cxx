@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.14  2006/03/07 07:38:02  csoutheren
+ * Refine timing windows on socket handling and cleanup unused code
+ *
  * Revision 1.13  2006/03/06 02:37:26  csoutheren
  * Change handle locking to help prevent aggregation threads from hogging list
  *  access
@@ -198,7 +201,7 @@ class WorkerThread : public PHandleAggregator::WorkerThreadBase
 ////////////////////////////////////////////////////////////////
 
 PHandleAggregator::PHandleAggregator(unsigned _max)
-  : maxWorkerSize(_max), minWorkerSize(1)
+  : maxWorkerSize(_max)
 { 
 }
 
@@ -231,13 +234,13 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
     WorkerThreadBase & worker = **minWorker;
     PWaitAndSignal m2(worker.workerMutex);
     worker.handleList.push_back(handle);
-    PTRACE(4, "SockAgg: Adding handle " << (void *)handle << " to aggregator - " << worker.handleList.size() << " handles");
+    PTRACE(4, "SockAgg\tAdding handle " << (void *)handle << " to aggregator - " << worker.handleList.size() << " handles");
     worker.listChanged = TRUE;
     worker.Trigger();
     return TRUE;
   }
 
-  PTRACE(4, "SockAgg: Creating new aggregator for " << (void *)handle);
+  PTRACE(4, "SockAgg\tCreating new aggregator for " << (void *)handle);
 
   // no worker threads usable, create a new one
   WorkerThread * worker = new WorkerThread;
@@ -250,9 +253,7 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
 
 BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 {
-  PWaitAndSignal m(listMutex);
-
-  PAssert(!handle->beingProcessed, "trying close handle that is in use");
+  listMutex.Wait();
 
   // look for the thread containing the handle we need to delete
   WorkerList_t::iterator r;
@@ -262,17 +263,28 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
     // lock the worker
     worker->workerMutex.Wait();
 
-    HandleContextList_t & hList = worker->handleList;
+    PAggregatedHandleList_t & hList = worker->handleList;
 
     // if handle is not in this thread, then continue searching
-    HandleContextList_t::iterator s = find(hList.begin(), hList.end(), handle);
+    PAggregatedHandleList_t::iterator s = find(hList.begin(), hList.end(), handle);
     if (s == hList.end()) {
       worker->workerMutex.Signal();
       continue;
     }
 
-    // remove the handle from the worker's list of handles
-    worker->handleList.erase(s);
+    PAssert(*s == handle, "Found handle is not correct!");
+
+    {
+      PWaitAndSignal m2(handle->closeMutex);
+
+      PAssert(!handle->beingProcessed, "trying to close handle that is in use");
+
+      // remove the handle from the worker's list of handles
+      worker->handleList.erase(s);
+
+      // remove the handle from the fd map
+      worker->RemoveHandle(*s);
+    }
 
     // do the de-init action
     handle->DeInit();
@@ -281,21 +293,24 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
     if (handle->autoDelete)
       delete handle;
 
-    // if the worker thread has enough handles to keep running, triger it to update
-    if (worker->handleList.size() >= minWorkerSize) {
-      PTRACE(4, "SockAgg: Removed handle " << (void *)handle << " from aggregator - " << worker->handleList.size() << " handles remaining");
+    // if the worker thread has enough handles to keep running, trigger it to update
+    if (worker->handleList.size() > 0) {
+      PTRACE(4, "SockAgg\tRemoved handle " << (void *)handle << " from aggregator - " << worker->handleList.size() << " handles remaining");
       worker->listChanged = TRUE;
       worker->Trigger();
       worker->workerMutex.Signal();
+      listMutex.Signal();
+
       return TRUE;
     }
 
-    PTRACE(4, "SockAgg: Removed handle " << (void *)handle << " from aggregator - merging remaining " << worker->handleList.size() << " handles to other aggregators");
+    PTRACE(4, "SockAgg\tworker thread empty - closing down");
 
-    // make a copy of the list of handles controlled by this worker thread
-    HandleContextList_t handlesToCopy = worker->handleList;
-    while (worker->handleList.size() > 0)
-      worker->handleList.erase(worker->handleList.begin());
+    // remove the worker thread from the list of workers
+    workers.erase(r);
+
+    // unlock the list
+    listMutex.Signal();
 
     // shutdown the thread
     worker->shutdown = TRUE;
@@ -306,18 +321,10 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
     worker->WaitForTermination();
     delete worker;
 
-    // remove the worker thread from the list of workers
-    workers.erase(r);
-
-    // add it's handles to other threads
-    if (handlesToCopy.size() > 0) {
-      HandleContextList_t::iterator t;
-      for (t = handlesToCopy.begin(); t != handlesToCopy.end(); ++t)
-        AddHandle(*t);
-    }
-
     return TRUE;
   }
+
+  listMutex.Signal();
 
   PAssertAlways("Cannot find aggregator handle");
 
@@ -327,7 +334,6 @@ BOOL PHandleAggregator::RemoveHandle(PAggregatedHandle * handle)
 ////////////////////////////////////////////////////////////////
 
 typedef std::vector<PAggregatorFD::FD> fdList_t;
-typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> aggregatorFdToHandleMap_t;
 
 #ifdef _WIN32
 #define	FDLIST_SIZE	WSA_MAXIMUM_WAIT_EVENTS
@@ -337,11 +343,10 @@ typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> aggregatorFdToHandleMap
 
 void PHandleAggregator::WorkerThreadBase::Main()
 {
-  PTRACE(4, "SockAgg: aggregator started");
+  PTRACE(4, "SockAgg\taggregator started");
 
   fdList_t                  fdList;
   PAggregatorFDList_t       aggregatorFdList;
-  aggregatorFdToHandleMap_t aggregatorFdToHandleMap;
 
   for (;;) {
 
@@ -371,7 +376,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
         aggregatorFdToHandleMap.erase(aggregatorFdToHandleMap.begin(),         aggregatorFdToHandleMap.end());
       }
 
-      HandleContextList_t::iterator r;
+      PAggregatedHandleList_t::iterator r;
       for (r = handleList.begin(); r != handleList.end(); ++r) {
         PAggregatedHandle * handle = *r;
 
@@ -384,7 +389,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
           for (s = fds.begin(); s != fds.end(); ++s) {
             fdList.push_back          ((*s)->fd);
             aggregatorFdList.push_back((*s));
-            aggregatorFdToHandleMap.insert(aggregatorFdToHandleMap_t::value_type((*s)->fd, handle));
+            aggregatorFdToHandleMap.insert(PAggregatorFdToHandleMap_t::value_type((*s)->fd, handle));
           }
         }
 
@@ -426,7 +431,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
     if (ret == WAIT_FAILED) {
       DWORD err = WSAGetLastError();
-      PTRACE(1, "SockAgg: WSAWaitForMultipleEvents error " << err);
+      PTRACE(1, "SockAgg\tWSAWaitForMultipleEvents error " << err);
     }
 
     {
@@ -439,15 +444,22 @@ void PHandleAggregator::WorkerThreadBase::Main()
       if (ret == WAIT_TIMEOUT) {
         PTime start;
 
-        timeoutHandle->beingProcessed = TRUE;
-        workerMutex.Signal();
-        timeoutHandle->closed = !timeoutHandle->OnRead();
-        workerMutex.Wait();
-        timeoutHandle->beingProcessed = FALSE;
+        // make sure the handle did not disappear while we were waiting
+        PAggregatedHandleList_t::iterator s = find(handleList.begin(), handleList.end(), timeoutHandle);
+        if (s != handleList.end()) {
 
+          PWaitAndSignal m3(timeoutHandle->closeMutex);
+
+          timeoutHandle->beingProcessed = TRUE;
+          workerMutex.Signal();
+          timeoutHandle->closed = !timeoutHandle->OnRead();
+          workerMutex.Wait();
+          timeoutHandle->beingProcessed = FALSE;
+        }
+  
         unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
         if (duration > 50) {
-          PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
+          PTRACE(4, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
         }
         if (!timeoutHandle->closed)
           timeoutHandle->SetPreReadDone(FALSE);
@@ -464,13 +476,13 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
         PAggregatorFD * fd = aggregatorFdList[index];
         PAssert(fdList[index] == fd->fd, "Mismatch in fd lists");
-        aggregatorFdToHandleMap_t::iterator r = aggregatorFdToHandleMap.find(fd->fd);
+        PAggregatorFdToHandleMap_t::iterator r = aggregatorFdToHandleMap.find(fd->fd);
         if (r != aggregatorFdToHandleMap.end()) {
           PAggregatedHandle * handle = r->second;
 
 #ifdef _DEBUG
           {
-            HandleContextList_t::iterator t = find(handleList.begin(), handleList.end(), handle);
+            PAggregatedHandleList_t::iterator t = find(handleList.begin(), handleList.end(), handle);
             PAssert(t != handleList.end(), "reverse FD map failed");
           }
 #endif
@@ -480,17 +492,20 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
             // check for read events first so we process any data that arrives before closing
             if ((events.lNetworkEvents & FD_READ) != 0) {
+
               PTime start;
+
+              PWaitAndSignal m3(handle->closeMutex);
 
               handle->beingProcessed = TRUE;
               workerMutex.Signal();
               handle->closed = !handle->OnRead();
               workerMutex.Wait();
               handle->beingProcessed = FALSE;
-
+  
               unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
               if (duration > 50) {
-                PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
+                PTRACE(4, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
               }
             }
 
@@ -502,7 +517,15 @@ void PHandleAggregator::WorkerThreadBase::Main()
               // prepare for next read
               handle->SetPreReadDone(FALSE);
             } else {
-              handle->OnClose();
+              {
+                PWaitAndSignal m3(handle->closeMutex);
+
+                handle->beingProcessed = TRUE;
+                workerMutex.Signal();
+                handle->OnClose();
+                workerMutex.Wait();
+                handle->beingProcessed = FALSE;
+              }
               // make sure the list is refreshed without the closed socket
               listChanged = TRUE;
             }
@@ -512,11 +535,15 @@ void PHandleAggregator::WorkerThreadBase::Main()
 
 #else
 
+#warning "aggregation not yet implemented on Unix"
+
+#if 0
+
     P_timeval pv = timeout;
     int ret = ::select(maxFd+1, &rfds, NULL, NULL, pv);
 
     if (ret < 0) {
-      PTRACE(1, "SockAgg - Select failed with error " << errno);
+      PTRACE(1, "SockAgg\tSelect failed with error " << errno);
     }
 
     // loop again if nothing was ready
@@ -535,7 +562,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
         BOOL closed = !timeoutHandle->OnRead();
         unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
         if (duration > 50) {
-          PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
+          PTRACE(4, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
         }
         if (!closed)
           timeoutHandle->SetPreReadDone(FALSE);
@@ -550,24 +577,38 @@ void PHandleAggregator::WorkerThreadBase::Main()
       else {
         PAggregatorFD * fd = aggregatorFdList[ret];
         PAssert(fdList[ret] == fd->fd, "Mismatch in fd lists");
-        aggregatorFdToHandleMap_t::iterator r = aggregatorFdToHandleMap.find(fd->fd);
+        PAggregatorFdToHandleMap_t::iterator r = aggregatorFdToHandleMap.find(fd->fd);
         if (r != aggregatorFdToHandleMap.end()) {
           PAggregatedHandle * handle = r->second;
           PTime start;
           BOOL closed = !handle->OnRead();
           unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
           if (duration > 50) {
-            PTRACE(4, "SockAgg: Warning - aggregator read routine was of extended duration = " << duration << " msecs");
+            PTRACE(4, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
           }
           if (!closed)
             handle->SetPreReadDone(FALSE);
         }
       }
-
+#endif // #if 0
 #endif
     } // workerMutex goes out of scope
   }
 
-  PTRACE(4, "SockAgg: aggregator finished");
+  PTRACE(4, "SockAgg\taggregator finished");
 }
+
+void PHandleAggregator::WorkerThreadBase::RemoveHandle(PAggregatedHandle * handle)
+{
+  PAggregatorFdToHandleMap_t::iterator r;
+  for (r = aggregatorFdToHandleMap.begin(); r != aggregatorFdToHandleMap.end(); ++r) {
+    if (r->second == handle) {
+      aggregatorFdToHandleMap.erase(r);
+      return;
+    }
+  }
+
+  PTRACE(4, "SockAgg\tCould not find handle to remove in worker list");
+}
+
 
