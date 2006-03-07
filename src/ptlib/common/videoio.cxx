@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.60  2006/03/07 20:53:51  dsandras
+ * Added support for JPEG based webcams, thanks to Luc Saillard <luc saillard org>.
+ *
  * Revision 1.59  2006/01/29 22:46:39  csoutheren
  * Added support for cameras that return MJPEG streams
  * Thanks to Luc Saillard and Damien Sandras
@@ -478,6 +481,7 @@ static struct {
   { "RGB24",   24 },
   { "BGR24",   24 },
   { "MJPEG",   16 },
+  { "JPEG",    16 },
   { "YUY2",    16 },
   { "YUV422",  16 },
   { "YUV422P", 16 },
