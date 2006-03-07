@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.15  2006/03/07 11:04:56  csoutheren
+ * Ensure socket aggregation not used on Linux
+ *
  * Revision 1.14  2006/03/07 07:38:02  csoutheren
  * Refine timing windows on socket handling and cleanup unused code
  *
@@ -532,10 +535,11 @@ void PHandleAggregator::WorkerThreadBase::Main()
           }
         }
       }
+    } // workerMutex goes out of scope
 
 #else
 
-#warning "aggregation not yet implemented on Unix"
+#error "aggregation not yet implemented on Unix"
 
 #if 0
 
@@ -590,9 +594,9 @@ void PHandleAggregator::WorkerThreadBase::Main()
             handle->SetPreReadDone(FALSE);
         }
       }
+    } // workerMutex goes out of scope
 #endif // #if 0
 #endif
-    } // workerMutex goes out of scope
   }
 
   PTRACE(4, "SockAgg\taggregator finished");
