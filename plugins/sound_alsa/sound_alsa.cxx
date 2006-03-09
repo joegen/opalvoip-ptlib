@@ -28,6 +28,12 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.27.2.2  2006/03/09 20:30:06  dsandras
+ * Backports from HEAD.
+ *
+ * Revision 1.29  2006/03/09 20:28:35  dsandras
+ * Added fallback mechanism to find an existing mixer for playing/recording.
+ *
  * Revision 1.27.2.1  2006/02/06 22:17:59  dsandras
  * Backports from CVS HEAD.
  *
@@ -788,11 +794,13 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
   snd_mixer_elem_t *elem;
   snd_mixer_selem_id_t *sid;
 
-  const char *play_mix_name = (direction == Player) ? "PCM": "Capture";
+  const char *play_mix_name [] = { "PCM", "Master", "Speaker", NULL };
+  const char *rec_mix_name [] = { "Capture", "Mic", NULL };
   PString card_name;
 
   long pmin = 0, pmax = 0;
   long int vol = 0;
+  int i = 0;
 
   if (!os_handle)
     return FALSE;
@@ -807,7 +815,6 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
 
   //sets simple-mixer index and name
   snd_mixer_selem_id_set_index (sid, 0);
-  snd_mixer_selem_id_set_name (sid, play_mix_name);
 
   if ((err = snd_mixer_open (&handle, 0)) < 0) {
     PTRACE (1, "alsa-control: mixer open error: " << snd_strerror (err));
@@ -833,12 +840,14 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
     return FALSE;
   }
 
-  elem = snd_mixer_find_selem (handle, sid);
+  do {
+    snd_mixer_selem_id_set_name (sid, (direction == Player)?play_mix_name[i]:rec_mix_name[i]);
+    elem = snd_mixer_find_selem (handle, sid);
+    i++;
+  } while (!elem && ((direction == Player && play_mix_name[i] != NULL) || (direction == Recorder && rec_mix_name[i] != NULL)));
 
   if (!elem) {
-    PTRACE (1, "alsa-control: unable to find simple control "
-      << snd_mixer_selem_id_get_name(sid) << "," 
-      << snd_mixer_selem_id_get_index(sid));
+    PTRACE (1, "alsa-control: unable to find simple control.");
     snd_mixer_close(handle);
     return FALSE;
   }
