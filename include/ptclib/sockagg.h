@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.h,v $
+ * Revision 1.9  2006/03/09 05:32:59  csoutheren
+ * Reverted to conservative locking strategy, with OnClose
+ *
  * Revision 1.8  2006/03/07 07:38:02  csoutheren
  * Refine timing windows on socket handling and cleanup unused code
  *
@@ -175,7 +178,6 @@ class PAggregatedHandle : public PObject
     BOOL autoDelete;
     BOOL closed;
     BOOL beingProcessed;
-    PMutex closeMutex;
 
   protected:
     BOOL preReadDone;
@@ -212,12 +214,8 @@ class PHandleAggregator : public PObject
 
         virtual void Trigger() = 0;
         void Main();
-        void RemoveHandle(PAggregatedHandle * handle);
 
         PMutex workerMutex;
-
-        typedef std::map<PAggregatorFD::FD, PAggregatedHandle *> PAggregatorFdToHandleMap_t;
-        PAggregatorFdToHandleMap_t aggregatorFdToHandleMap;
 
         EventBase & event;
         PAggregatedHandleList_t handleList;
