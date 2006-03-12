@@ -24,6 +24,10 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.5.4.1  2006/03/12 11:16:58  dsandras
+ * Added multi-buffering support to V4L2 thanks to Luc Saillard. Thanks!
+ * Backport from HEAD.
+ *
  * Revision 1.5  2006/01/09 18:22:42  dsandras
  * Use memset before some ioctl() to make valgrind happy.
  * Create a common function to set and get control information.
@@ -152,7 +156,8 @@ public:
   BOOL   isMapped;
 #define NUM_VIDBUF 4
   BYTE * videoBuffer[NUM_VIDBUF];
-  uint    videoBufferCount;
+  uint   videoBufferCount;
+  uint   currentvideoBuffer;
 
   int    videoFd;
   int    frameBytes;
