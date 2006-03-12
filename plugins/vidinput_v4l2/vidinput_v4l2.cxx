@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.4  2006/03/12 11:15:13  dsandras
+ * Fix for MJPEG thanks to Luc Saillard. (Backport from HEAD).
+ *
  * Revision 1.11.4.3  2006/03/06 19:11:01  dsandras
  * Backports from HEAD.
  *
@@ -310,7 +313,7 @@ BOOL PVideoInputDevice_V4L2::Start()
     PTRACE(6,"PVidInDev\tstart queuing all buffers, fd=" << videoFd);
 
     /* Queue all buffers */
-    for (int i=0; i<videoBufferCount; i++) {
+    for (unsigned int i=0; i<videoBufferCount; i++) {
 
        struct v4l2_buffer buf;
        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -711,7 +714,7 @@ BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRe
   // If converting on the fly do it from frame store to output buffer,
   // otherwise do straight copy.
   if (converter != NULL)
-    converter->Convert(videoBuffer[buf.index], buffer, bytesReturned);
+    converter->Convert(videoBuffer[buf.index], buffer, buf.bytesused, bytesReturned);
   else {
     memcpy(buffer, videoBuffer[buf.index], buf.bytesused);
     if (bytesReturned != NULL)

@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.16.2.3  2006/03/12 11:15:13  dsandras
+ * Fix for MJPEG thanks to Luc Saillard. (Backport from HEAD).
+ *
  * Revision 1.16.2.2  2006/02/22 11:53:29  csoutheren
  * Backports from HEAD
  *
@@ -246,6 +249,13 @@ class PColourConverter : public PObject
       PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
     ) = 0;
 
+    virtual BOOL Convert(
+      const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
+      BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
+      unsigned int srcFrameBytes,
+      PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
+    ) = 0;
+
     /**Convert from one colour format to another.
        This version will copy the data from one frame buffer to the same frame
        buffer. Not all conversions can do this so an intermediate store and
@@ -331,6 +341,7 @@ class cls : public ancestor { \
   cls(const PString & srcFmt, const PString & dstFmt, unsigned w, unsigned h) \
     : ancestor(srcFmt, dstFmt, w, h) { } \
   virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
+  virtual BOOL Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL); \
 }; \
 static class cls##_Registration : public PColourConverterRegistration { \
   public: \
@@ -340,6 +351,8 @@ static class cls##_Registration : public PColourConverterRegistration { \
 } p_##cls##_registration_instance; \
 PColourConverter * cls##_Registration::Create(unsigned w, unsigned h) const \
   { PINDEX tab = Find('\t'); return new cls(Left(tab), Mid(tab+1), w, h); } \
+BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int __srcFrameBytes, PINDEX * bytesReturned) \
+  { srcFrameBytes = __srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
 BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
 
 
@@ -365,6 +378,7 @@ class PSynonymColour : public PColourConverter {
       unsigned w, unsigned h
     ) : PColourConverter(srcFmt, dstFmt, w, h) { }
     virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL);
+    virtual BOOL Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL);
 };
 
 
