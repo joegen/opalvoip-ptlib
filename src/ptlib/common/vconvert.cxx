@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.50  2006/03/12 11:09:53  dsandras
+ * Applied patch from Luc Saillard to fix problems with MJPEG. Thanks!
+ *
  * Revision 1.49  2006/03/07 20:53:51  dsandras
  * Added support for JPEG based webcams, thanks to Luc Saillard <luc saillard org>.
  *
@@ -330,6 +333,11 @@ class PStandardColourConverter : public PColourConverter
 	    PINDEX *bytesReturned,
 	    int format
     );
+    bool MJPEGtoYUV420P(
+      const BYTE *mjpeg,
+      BYTE *yuv420p,
+      PINDEX *bytesReturned
+    );
     bool MJPEGtoXXXSameSize(
       const BYTE *yuy2,
       BYTE *rgb,
@@ -495,6 +503,14 @@ PColourConverter * PSynonymColourRegistration::Create(unsigned w, unsigned h) co
   return new PSynonymColour(Left(tab), Mid(tab+1), w, h);
 }
 
+BOOL PSynonymColour::Convert(const BYTE *srcFrameBuffer,
+                             BYTE *dstFrameBuffer,
+			     unsigned int __srcFrameBytes,
+                             PINDEX * bytesReturned)
+{
+  srcFrameBytes = __srcFrameBytes;
+  return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
+}
 
 BOOL PSynonymColour::Convert(const BYTE *srcFrameBuffer,
                              BYTE *dstFrameBuffer,
@@ -1994,7 +2010,7 @@ bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, 
     tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   }
   tinyjpeg_set_components(jdec, components, 1);
-  if (tinyjpeg_parse_header(jdec, mjpeg, 0) < 0) {
+  if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
      return FALSE;
   }
@@ -2087,7 +2103,7 @@ bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *y
     tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   }
   tinyjpeg_set_components(jdec, components, 4);
-  if (tinyjpeg_parse_header(jdec, mjpeg, 0) < 0) {
+  if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
      return FALSE;
   }
@@ -2099,15 +2115,14 @@ bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *y
   return TRUE;
 }
 
-
 /*
- * MJPEG to YUV420P
+ * Convert a MJPEG or JPEG buffer to YUV420P
+ *
  */
-PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
+bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
+                                              BYTE *yuv420p,
+					      PINDEX *bytesReturned)
 {
-  const BYTE *mjpeg = srcFrameBuffer;
-  BYTE *yuv420p = dstFrameBuffer;
-
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
     PTRACE(2,"PColCnv\tError in MJPEG to YUV420P converter, All size need to be a multiple of 16.");
     return FALSE;
@@ -2133,36 +2148,22 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
 }
 
 /*
+ * MJPEG to YUV420P
+ */
+PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
+{
+  return MJPEGtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned);
+}
+
+/*
  * JPEG to YUV420P
  */
 PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
 {
-  const BYTE *mjpeg = srcFrameBuffer;
-  BYTE *yuv420p = dstFrameBuffer;
-
-  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 0xf) {
-    PTRACE(2,"PColCnv\tError in JPEG to YUV420P converter, All size need to be a multiple of 16.");
-    return FALSE;
-  }
-
-  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) {
-
-     PTRACE(2,"PColCnv\tMJPEG to YUV420P\n");
-     if (MJPEGtoYUV420PSameSize(mjpeg, yuv420p) == FALSE)
-       return FALSE;
-
-  } else {
-     /* Very not efficient */
-     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameBytes);
-     MJPEGtoYUV420PSameSize(mjpeg, intermed);
-     ResizeYUV420P(intermed, yuv420p);
-  }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = dstFrameBytes;
-  
-  return TRUE;
+  return MJPEGtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned);
 }
+
+
 #endif // P_MACOSX
 #endif // __GNUC__
 
