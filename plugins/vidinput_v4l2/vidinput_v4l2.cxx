@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.17  2006/03/12 11:16:19  dsandras
+ * Added multi-buffering support to V4L2 thanks to Luc Saillard. Thanks!
+ *
  * Revision 1.16  2006/03/12 11:09:51  dsandras
  * Applied patch from Luc Saillard to fix problems with MJPEG. Thanks!
  *
@@ -303,6 +306,7 @@ BOOL PVideoInputDevice_V4L2::Start()
     PTRACE(6,"PVidInDev\tstart queuing all buffers, fd=" << videoFd);
 
     /* Queue all buffers */
+    currentvideoBuffer = 0;
     for (unsigned int i=0; i<videoBufferCount; i++) {
 
        struct v4l2_buffer buf;
@@ -600,14 +604,20 @@ BOOL PVideoInputDevice_V4L2::SetMapping()
     return FALSE;
 
   struct v4l2_requestbuffers reqbuf;
-  reqbuf.count = 1; // we shouldn't need more
+  reqbuf.count = NUM_VIDBUF;
   reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   reqbuf.memory = V4L2_MEMORY_MMAP;
 
-  if (::ioctl(videoFd, VIDIOC_REQBUFS, &reqbuf) < 0 ||
-      reqbuf.count < 1 ||
-      reqbuf.count > NUM_VIDBUF) {
+  if (::ioctl(videoFd, VIDIOC_REQBUFS, &reqbuf) < 0) {
     PTRACE(3,"PVidInDev\tREQBUFS failed : " << ::strerror(errno));
+    return FALSE;
+  }
+  if (reqbuf.count < 1) {
+    PTRACE(3,"PVidInDev\tNot enough video buffer available. (got " << reqbuf.count << ")");
+    return FALSE;
+  }
+  if (reqbuf.count > NUM_VIDBUF) {
+    PTRACE(3,"PVidInDev\tToo much video buffer allocated. (got " << reqbuf.count << ")");
     return FALSE;
   }
 
@@ -694,12 +704,14 @@ BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRe
   memset(&buf, 0, sizeof(struct v4l2_buffer));
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   buf.memory = V4L2_MEMORY_MMAP;
-  buf.index = 0;
+  buf.index = currentvideoBuffer;
 
   if (::ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
     PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
     return FALSE;
   }
+
+  currentvideoBuffer = (currentvideoBuffer+1) % NUM_VIDBUF;
 
   // If converting on the fly do it from frame store to output buffer,
   // otherwise do straight copy.
