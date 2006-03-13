@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.17  2006/03/13 23:34:21  csoutheren
+ * Added log message when handle creates aggregator
+ *
  * Revision 1.16  2006/03/09 05:32:59  csoutheren
  * Reverted to conservative locking strategy, with OnClose
  *
@@ -253,6 +256,8 @@ BOOL PHandleAggregator::AddHandle(PAggregatedHandle * handle)
   worker->handleList.push_back(handle);
   worker->Resume();
   workers.push_back(worker);
+
+  PTRACE(4, "SockAgg\tAdding handle " << (void *)handle << " to new aggregator");
 
   return TRUE;
 }
