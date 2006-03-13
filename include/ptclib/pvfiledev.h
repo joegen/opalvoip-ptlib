@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.4  2006/03/13 07:49:09  csoutheren
+ * Added newline at end of file
+ *
  * Revision 1.3  2006/03/06 06:04:13  csoutheren
  * Added YUVFile video output device
  *
@@ -309,3 +312,4 @@ PLOAD_FACTORY_DECLARE(PVideoOutputDevice,YUVFile)
 #endif // P_VIDFILE
 
 #endif // _PVFILEDEV
+
