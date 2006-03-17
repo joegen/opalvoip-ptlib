@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.35  2006/03/17 06:56:22  csoutheren
+ * Exposed video fonts to external access
+ *
  * Revision 1.34  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -175,19 +178,11 @@ enum {
   eNumTestPatterns
 };
 
-#define MAX_L_HEIGHT 11
-
-typedef struct {
-    char ascii;
-    char *line[MAX_L_HEIGHT];
-} OneVFakeLetterData;
-
-
 /****
  * The fonts for these letters were written by  Sverre H. Huseby, and have been included
  * in vfakeio by Derek Smithies.
  */
-static OneVFakeLetterData vFakeLetterData[] = {
+static PVideoFont::LetterData vFakeLetterData[] = {
     { ' ', 
      { "    ",
        "    ",
@@ -1403,6 +1398,18 @@ static OneVFakeLetterData vFakeLetterData[] = {
 };
 
 
+PVideoFont::LetterData * PVideoFont::GetLetterData(char ascii)
+{
+  int q;
+  int fontNumLetters = sizeof(vFakeLetterData) / sizeof(vFakeLetterData[0]);
+  if (ascii == '\t')
+    ascii = ' ';
+  for (q = 0; q < fontNumLetters; q++)
+    if (vFakeLetterData[q].ascii == ascii)
+      return vFakeLetterData + q;
+
+  return NULL;
+}
 
 /** This class defines a video input device that
     generates fictitous image data.
@@ -1504,10 +1511,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
      */
     void GrabTextVideoFrame(BYTE *resFrame);
     
-    /**Get the stucture holding required letter for GetTextVideoFrame()
-     */
-    OneVFakeLetterData *FindLetter(char ascii);
-
     /** Fills a region of the image with a constant colour.
      */
     void FillRect(BYTE * frame,
@@ -1592,7 +1595,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
    PINDEX   scanLineWidth;
    PINDEX   bytesPerPixel; // 2==YUV420P, 3=RGB24, 4=RGB32
 
-   PString textLine[MAX_L_HEIGHT];
+   PString textLine[PVideoFont::MAX_L_HEIGHT];
 };
 
 PCREATE_VIDINPUT_PLUGIN(FakeVideo);
@@ -2146,29 +2149,29 @@ void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
                PProcess::Current().GetOSName() << ":" <<
                PProcess::Current().GetOSHardware();
     PINDEX nChars = message.GetLength();
-    OneVFakeLetterData *ld;
+    PVideoFont::LetterData *ld;
 
-    for (j = 0; j < MAX_L_HEIGHT; j++)
+    for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++)
       textLine[j] = "";
 
     for (i = 0; i < (nChars + 2); i++){
       if (i >= nChars)
-        ld = FindLetter(' ');
+        ld = PVideoFont::GetLetterData(' ');
       else
-        ld = FindLetter(message[i]);
+        ld = PVideoFont::GetLetterData(message[i]);
       if (ld == NULL)
         continue;
-      for (j = 0; j < MAX_L_HEIGHT; j++)
+      for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++)
         textLine[j] += ld->line[j] + PString(" ");
     }
   }
 
-  PINDEX boxSize = (frameHeight / (MAX_L_HEIGHT * 2) ) & 0xffe;
+  PINDEX boxSize = (frameHeight / (PVideoFont::MAX_L_HEIGHT * 2) ) & 0xffe;
   int index = (int)((PTime() - startTime).GetMilliSeconds() / 300);
 
   PINDEX maxI = (frameWidth / boxSize) - 2;
   for (i = 0; i < maxI; i++)
-    for (j = 0; j < MAX_L_HEIGHT; j++) {
+    for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++) {
       PINDEX ii = (index + i) % textLine[0].GetLength();
       if (textLine[j][ii] != ' ')
         FillRect(resFrame,
@@ -2177,20 +2180,6 @@ void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
                  250, 00, 00); //red box.
     }
 }
-
-OneVFakeLetterData *PVideoInputDevice_FakeVideo::FindLetter(char ascii)
-{
-  int q;
-  int fontNumLetters = sizeof(vFakeLetterData) / sizeof(OneVFakeLetterData);
-  if (ascii == '\t')
-    ascii = ' ';
-  for (q = 0; q < fontNumLetters; q++)
-    if (vFakeLetterData[q].ascii == ascii)
-      return vFakeLetterData + q;
-
-  return NULL;
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
