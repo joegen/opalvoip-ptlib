@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.6  2006/03/17 06:55:33  csoutheren
+ * Removed unused member variable
+ *
  * Revision 1.5  2006/03/06 06:04:13  csoutheren
  * Added YUVFile video output device
  *
@@ -359,7 +362,6 @@ BOOL PVideoOutputDevice_YUVFile::Start()
 {
   file.SetHeight(frameHeight);
   file.SetHeight(frameWidth);
-  frameStore.SetSize(frameWidth * frameHeight * 3 / 2);
   return TRUE;
 }
 
