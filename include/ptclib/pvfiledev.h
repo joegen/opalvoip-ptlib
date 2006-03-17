@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.5  2006/03/17 06:54:49  csoutheren
+ * Removed unused member variable
+ *
  * Revision 1.4  2006/03/13 07:49:09  csoutheren
  * Added newline at end of file
  *
@@ -304,7 +307,6 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 
   protected:  
     PYUVFile file;
-    PBYTEArray frameStore;
 };
 
 PLOAD_FACTORY_DECLARE(PVideoOutputDevice,YUVFile)
