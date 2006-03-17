@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.44  2006/03/17 06:56:22  csoutheren
+ * Exposed video fonts to external access
+ *
  * Revision 1.43  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -966,6 +969,27 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
 #define PCREATE_VIDOUTPUT_PLUGIN(name) \
   static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
+
+////////////////////////////////////////////////////////
+//
+// declare classes needed for access to simple video font
+//
+
+class PVideoFont : public PObject
+{
+  PCLASSINFO(PVideoFont, PObject);
+  public:
+    enum {
+      MAX_L_HEIGHT = 11
+    };
+    struct LetterData {
+      char ascii;
+      char *line[MAX_L_HEIGHT];
+    };
+
+    static LetterData * GetLetterData(char ascii);
+};
+
 
 #endif   // _PVIDEOIO
 
