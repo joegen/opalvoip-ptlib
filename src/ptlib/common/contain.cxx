@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.174  2006/03/19 23:30:09  csoutheren
+ * Added patch#1451378
+ * Thanks to Borko Jandras
+ *
  * Revision 1.173  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -718,9 +722,7 @@ void PContainer::AssignContents(const PContainer & cont)
     return;
   }
 
-  if (!IsUnique()) {
-    --reference->count;
-
+  if (--reference->count > 0) {
 #if PCONTAINER_USES_CRITSEC
     reference->critSec.Leave();
 #endif
@@ -751,9 +753,7 @@ void PContainer::Destruct()
     ref->critSec.Enter();
 #endif
 
-    --reference->count;
-
-    if (reference->count > 0) {
+    if (--reference->count > 0) {
       reference = NULL;
 #if PCONTAINER_USES_CRITSEC
       ref->critSec.Leave();
