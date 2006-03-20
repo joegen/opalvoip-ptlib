@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.116  2006/03/20 00:24:56  csoutheren
+ * Applied patch #1446482
+ * Thanks to Adam Butcher
+ *
  * Revision 1.115  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -450,6 +454,9 @@
     #include <strstream>
   #endif
   //using namespace std;
+  #ifdef _STLP_IOS_BASE_H
+  typedef std::ios_base::fmtflags _Ios_Fmtflags;
+  #endif
 #else
   #if (__GNUC__ >= 3)
     #include <iostream>

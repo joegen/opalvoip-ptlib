@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.17  2006/03/20 00:24:56  csoutheren
+ * Applied patch #1446482
+ * Thanks to Adam Butcher
+ *
  * Revision 1.16  2006/01/18 07:17:59  csoutheren
  * Added explicit copy constructor for PCriticalSection on Windows
  *
@@ -205,7 +209,18 @@ class PAtomicInteger
       { value = v; }
     protected:
       long value;
-#elif P_HAS_ATOMIC_INT
+#elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_EXCHANGE)
+    public:
+      inline PAtomicInteger(__stl_atomic_t v = 0)
+        : value(v) { }
+      BOOL IsZero() const                { return value == 0; }
+      inline int operator++()            { return _STLP_ATOMIC_INCREMENT(&value); }
+      inline int unsigned operator--()   { return _STLP_ATOMIC_DECREMENT(&value); }
+      inline operator int () const       { return value; }
+      inline void SetValue(int v)        { value = v; }
+    protected:
+      __stl_atomic_t value;
+#elif !defined(_STLP_INTERNAL_THREADS_H) && P_HAS_ATOMIC_INT
     public:
       inline PAtomicInteger(int v = 0)
         : value(v) { }
