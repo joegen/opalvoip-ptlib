@@ -1,0 +1,7 @@
+lib html
+Lib Debug Release
+*.suo *.ncb *.opt *.plg *.Tags.WW
+config.log config.status
+Makefile
+core.*
+obj_*
