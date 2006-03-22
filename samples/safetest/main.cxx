@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2006/03/22 04:24:51  dereksmithies
+ * Tidyups. Add Pragmas. make it slightly more friendly for 1 cpu boxes.
+ *
  * Revision 1.7  2006/02/13 04:17:22  dereksmithies
  * Formatting fixes.
  *
@@ -51,6 +54,12 @@
  *
  *
  */
+
+
+#ifdef P_USE_PRAGMA
+#pragma implementation "main.h"
+#endif
+
 
 #include "precompile.h"
 #include "main.h"
@@ -181,11 +190,14 @@ void SafeTest::DelayThreadsDict::DeleteObject(PObject * object) const
 void SafeTest::GarbageMain(PThread &, INT)
 {
   while(!exitNow) {
+    PThread::Sleep(40);
     CollectGarbage();
   }
 
-  while(delayThreadsActive.GetSize() > 0)
+  while(delayThreadsActive.GetSize() > 0) {
+    PThread::Sleep(40);
     CollectGarbage();
+  }
 }
 
 void SafeTest::CollectGarbage()
@@ -264,13 +276,15 @@ LauncherThread::LauncherThread(SafeTest &_safeTest)
 
 void LauncherThread::Main()
 {
-  PINDEX delay = safeTest.Delay();
+
   PINDEX count = safeTest.ActiveCount();
   while(keepGoing) {
+    PINDEX delay = safeTest.Delay() + safeTest.GetRandom();
     while(safeTest.CurrentSize() < count) {
       iteration++;
       new DelayThread(safeTest, delay, iteration);
     }    
+    PThread::Yield();
   }
 }
 

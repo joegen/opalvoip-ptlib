@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.7  2006/03/22 04:24:51  dereksmithies
+ * Tidyups. Add Pragmas. make it slightly more friendly for 1 cpu boxes.
+ *
  * Revision 1.6  2006/02/13 04:17:23  dereksmithies
  * Formatting fixes.
  *
@@ -48,6 +51,14 @@
 
 #ifndef _SafeTest_MAIN_H
 #define _SafeTest_MAIN_H
+
+
+#ifdef P_USE_PRAGMA
+#pragma interface
+#endif
+
+#include  <ptclib/random.h>
+
 #include <ptlib/safecoll.h>
 
 class SafeTest;
@@ -230,6 +241,9 @@ class SafeTest : public PProcess
        dead DelayThread instances)*/
     void CollectGarbage();
 
+    /**Return a random number, of size 0 .. (delay/4), for use in
+       making the delay threads random in duration. */
+    PINDEX GetRandom() { return random.Generate() % (delay >> 2); }
  protected:
 
     /**The thread safe list of DelayThread s that we manage */
@@ -267,6 +281,10 @@ class SafeTest : public PProcess
 
     /**The number of entries in the dictionary */
     PAtomicInteger currentSize;
+
+    /**Random number generator, which is used to keep track of the
+       variability in the delay period */
+    PRandom random;
 };
 
 
