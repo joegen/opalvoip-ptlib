@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.8  2006/03/23 05:07:28  dereksmithies
+ * Fix threading issues - I think.
+ *
  * Revision 1.7  2006/03/22 04:24:51  dereksmithies
  * Tidyups. Add Pragmas. make it slightly more friendly for 1 cpu boxes.
  *
@@ -63,6 +66,31 @@
 
 class SafeTest;
 
+/**This class has the job of closing a DelayThread instance. It
+   advises the master SafeTest of the end of the DelayThread, and then
+   exits.  This class is instantiated by the DelayThread class, waits
+   for 1 second, and then kills the DelayThread instance */
+class OnDelayThreadEnd : public PThread
+{
+  PCLASSINFO(OnDelayThreadEnd, PThread);
+ public:
+  OnDelayThreadEnd(SafeTest &_safeTest, const PString & _delayThreadId);
+
+  /**Do the work of advising the SafeTest about this */
+  void Main();
+
+ protected:
+  
+  /**Master reference to the master id */
+  SafeTest &safeTest;
+
+  /**Id of the DelayThread instance we end */
+  PString delayThreadId;
+};
+
+
+ 
+  
 /**This class is a simple simple thread that just creates, waits a
    period of time, and exits.It is designed to test the PwLib methods
    for reporting the status of a thread. This class will be created
@@ -120,6 +148,9 @@ public:
 
     /**Flag to indicate we are still going */
     BOOL threadRunning;
+
+    /**The name of this thread */
+    PStringStream name;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,6 +250,10 @@ class SafeTest : public PProcess
        delaythreads */
     void OnReleased(DelayThread & delayThread);
 
+    /**Callback for removing a DelayThread from the list of active
+       delaythreads */
+    void OnReleased(const PString & delayThreadId);
+
     /**Append this DelayThread to delayThreadsActive, cause it is a valid
        and running DelayThread */
     void AppendRunning(PSafePtr<DelayThread> delayThread, PString id);
@@ -244,6 +279,10 @@ class SafeTest : public PProcess
     /**Return a random number, of size 0 .. (delay/4), for use in
        making the delay threads random in duration. */
     PINDEX GetRandom() { return random.Generate() % (delay >> 2); }
+
+
+    /**Report the status of the useOnThreadEnd flag */
+    BOOL UseOnThreadEnd();
  protected:
 
     /**The thread safe list of DelayThread s that we manage */
@@ -285,6 +324,10 @@ class SafeTest : public PProcess
     /**Random number generator, which is used to keep track of the
        variability in the delay period */
     PRandom random;
+
+    /**Flag to indicate that we use the OnDelayThreadEnd mechanism for
+       signifing the end of a DelayThread */
+    BOOL useOnThreadEnd;
 };
 
 

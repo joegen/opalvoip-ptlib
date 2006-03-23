@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2006/03/23 05:07:28  dereksmithies
+ * Fix threading issues - I think.
+ *
  * Revision 1.8  2006/03/22 04:24:51  dereksmithies
  * Tidyups. Add Pragmas. make it slightly more friendly for 1 cpu boxes.
  *
@@ -64,7 +67,7 @@
 #include "precompile.h"
 #include "main.h"
 #include "version.h"
-
+#include <mcheck.h>
 
 PCREATE_PROCESS(SafeTest);
 
@@ -80,12 +83,14 @@ SafeTest::SafeTest()
 
 void SafeTest::Main()
 {
+  mtrace();
   PArgList & args = GetArguments();
 
   args.Parse(
              "h-help."               "-no-help."
              "d-delay:"              "-no-delay."
 	     "c-count:"              "-no-count."
+	     "a-alternate."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -131,6 +136,8 @@ void SafeTest::Main()
   delay = PMIN(1000000, PMAX(1, delay));
   cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
 
+  useOnThreadEnd = args.HasOption('a');
+
   activeCount = 10;
   if (args.HasOption('c'))
     activeCount = args.GetOptionString('c').AsInteger();
@@ -164,6 +171,14 @@ void SafeTest::OnReleased(DelayThread & delayThread)
   PTRACE(3, "DelayThread " << id << " OnRelease");
   delayThreadsActive.RemoveAt(id);
   PTRACE(3, "DelayThread " << id << " OnRelease all done");
+  --currentSize;
+}
+
+void SafeTest::OnReleased(const PString & delayThreadId)
+{
+  PTRACE(3, "DelayThread " << delayThreadId << " OnRelease");
+  delayThreadsActive.RemoveAt(delayThreadId);
+  PTRACE(3, "DelayThread " << delayThreadId << " OnRelease all done");
   --currentSize;
 }
     
@@ -205,13 +220,36 @@ void SafeTest::CollectGarbage()
   delayThreadsActive.DeleteObjectsToBeRemoved();
 }
 
+BOOL SafeTest::UseOnThreadEnd()
+{
+  return useOnThreadEnd;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
+
+OnDelayThreadEnd::OnDelayThreadEnd(SafeTest &_safeTest, const PString & _delayThreadId)
+  : PThread(10000, AutoDeleteThread), 
+    safeTest(_safeTest), 
+    delayThreadId(_delayThreadId)
+{
+  Resume();
+}
+
+void OnDelayThreadEnd::Main()
+{
+  PThread::Sleep(1000);  //Let the DelayThread end good and proper
+
+  safeTest.OnReleased(delayThreadId);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+
 DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
   : safeTest(_safeTest),
     delay(_delay)
 {
-  PStringStream name;
   threadRunning = TRUE;
   name << iteration << " Delay Thread";
   PTRACE(5, "Constructor for a non auto deleted delay thread");
@@ -239,9 +277,14 @@ void DelayThread::DelayThreadMain(PThread &thisThread, INT)
   PThread::Sleep(delay);
   PTRACE(3, "DelayThread finished " << id);
 
-  SafeReference();
-  
-  Release();
+
+  if (safeTest.UseOnThreadEnd()) {
+    threadRunning = FALSE;
+    new OnDelayThreadEnd(safeTest, id);
+  } else {
+    SafeReference();    
+    Release();
+  }
 }
 
 void DelayThread::Release()
@@ -282,7 +325,13 @@ void LauncherThread::Main()
     PINDEX delay = safeTest.Delay() + safeTest.GetRandom();
     while(safeTest.CurrentSize() < count) {
       iteration++;
-      new DelayThread(safeTest, delay, iteration);
+      void * location = new DelayThread(safeTest, delay, iteration);
+      if (((unsigned int)location) < 0xffff) {
+	int a, b;
+	a = 1;
+	b = 0;
+	a = a/b;   //Your handy dandy divide by zero error. Immediate end.
+      }
     }    
     PThread::Yield();
   }
