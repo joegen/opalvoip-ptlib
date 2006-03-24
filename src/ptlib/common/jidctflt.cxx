@@ -69,8 +69,14 @@
  * implementation, accuracy is lost due to imprecise representation of the
  * scaled quantization values.  However, that problem does not arise if
  * we use floating point arithmetic.
- */
-
+ *
+ *$Log: jidctflt.cxx,v $
+ *Revision 1.4  2006/03/24 23:39:25  dereksmithies
+ *Put cvs commit messages into this file.
+ *
+ *
+ *
+ */   
 #include <stdint.h>
 #include "tinyjpeg-internal.h"
 
