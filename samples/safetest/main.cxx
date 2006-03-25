@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.10  2006/03/25 09:01:44  dereksmithies
+ * Add reporting options, and different methods for spawning threads. All stable and reliable.
+ *
  * Revision 1.9  2006/03/23 05:07:28  dereksmithies
  * Fix threading issues - I think.
  *
@@ -90,6 +93,8 @@ void SafeTest::Main()
              "h-help."               "-no-help."
              "d-delay:"              "-no-delay."
 	     "c-count:"              "-no-count."
+	     "r-reporting."
+	     "b-banpthreadcreate."
 	     "a-alternate."
 #if PTRACING
              "o-output:"             "-no-output."
@@ -116,7 +121,10 @@ void SafeTest::Main()
 
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl         
+	   << "-a                    Use a non opal end DelayThread mechanism" << endl
+	   << "-b                    Avoid the usage of PThread::Create" << endl
            << "-h  or --help         print this help" << endl
+	   << "-r                    print reporting (every minute) on current statistics" << endl
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
 	   << "-c  or --count ##     where ## specifies the number of active threads allowed " << endl
@@ -137,6 +145,22 @@ void SafeTest::Main()
   cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
 
   useOnThreadEnd = args.HasOption('a');
+  if (useOnThreadEnd)
+    cout << "Will use classes from the author to handle the end of a DelayThread instance" << endl;
+  else
+    cout << "Use methods similar to those in opal to handle the end of a DelayThread instance" << endl;
+
+  avoidPThreadCreate = args.HasOption('b');
+  if (avoidPThreadCreate)
+    cout << "Will never ever call PThread::Create" << endl;
+  else
+    cout << "Will use PThread::Create in preference is classes written by the author"  << endl;
+
+  regularReporting = args.HasOption('r');
+  if (regularReporting)
+    cout << "Will generate reports every minute on current status " << endl;
+  else
+    cout << "will keep silent about progress" << endl;
 
   activeCount = 10;
   if (args.HasOption('c'))
@@ -244,21 +268,57 @@ void OnDelayThreadEnd::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
+DelayWorkerThread::DelayWorkerThread(DelayThread & _delayThread, PInt64 _iteration)
+  : PThread(10000, AutoDeleteThread), 
+    delayThread(_delayThread),
+    iteration(_iteration)
+{
+  thisThreadName << iteration << " Delay Thread";
+  SetThreadName(thisThreadName);
+  Resume();
+}
 
+void DelayWorkerThread::Main()
+{
+  delayThread.DelayThreadMain(*this, 0000);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+DelayThreadTermination::DelayThreadTermination(DelayThread & _delayThread)
+  : PThread(10000, AutoDeleteThread), 
+    delayThread(_delayThread)
+{
+  thisThreadName <<"%X DT term";
+  SetThreadName(thisThreadName);
+  Resume();
+}
+
+void DelayThreadTermination::Main()
+{
+  delayThread.OnReleaseThreadMain(*this, 0000);
+}
+
+/////////////////////////////////////////////////////////////////////////////
 
 DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
   : safeTest(_safeTest),
     delay(_delay)
 {
   threadRunning = TRUE;
-  name << iteration << " Delay Thread";
-  PTRACE(5, "Constructor for a non auto deleted delay thread");
-  PThread::Create(PCREATE_NOTIFIER(DelayThreadMain), 30000,
-		  PThread::AutoDeleteThread,
-		  PThread::NormalPriority,
-		  name);
-}    
 
+  PTRACE(5, "Constructor for a non auto deleted delay thread");
+
+  if (safeTest.AvoidPThreadCreate()) {
+    new DelayWorkerThread(*this, iteration);
+  } else {
+    name << PString(iteration) << " Delay Thread";
+    PThread::Create(PCREATE_NOTIFIER(DelayThreadMain), 30000,
+		    PThread::AutoDeleteThread,
+		    PThread::NormalPriority,
+		    name);
+  }    
+}
 
 DelayThread::~DelayThread()
 {
@@ -289,11 +349,15 @@ void DelayThread::DelayThreadMain(PThread &thisThread, INT)
 
 void DelayThread::Release()
 {
- // Add a reference for the thread we are about to start
-  PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
-		  PThread::AutoDeleteThread,
-		  PThread::NormalPriority,
-		  "%X: Release");
+    if (safeTest.AvoidPThreadCreate()) {
+      new DelayThreadTermination(*this);
+    } else {
+      // Add a reference for the thread we are about to start
+      PThread::Create(PCREATE_NOTIFIER(OnReleaseThreadMain), 10000,
+		      PThread::AutoDeleteThread,
+		      PThread::NormalPriority,
+		      "%X: Release");
+    }
 }
 
 void DelayThread::OnReleaseThreadMain(PThread &, INT)
@@ -308,14 +372,57 @@ void DelayThread::PrintOn(ostream & strm) const
   strm << id << " ";
 }
 ///////////////////////////////////////////////////////////////////////////
+
   
+ReporterThread::ReporterThread(LauncherThread & _launcher)
+  : PThread(10000, NoAutoDeleteThread),
+    launcher(_launcher)
+{
+  terminateNow = FALSE;
+  Resume();
+}
+
+void ReporterThread::Terminate()
+{
+  terminateNow = TRUE;
+  exitFlag.Signal();
+}
+
+void ReporterThread::Main()
+{
+  while (!terminateNow) {
+    exitFlag.Wait(1000 * 60);
+  
+    launcher.ReportAverageTime();
+    launcher.ReportIterations();
+    launcher.ReportElapsedTime();
+    cout << " " << endl << flush;
+  }
+}
+
 LauncherThread::LauncherThread(SafeTest &_safeTest)
   : PThread(10000, NoAutoDeleteThread),
     safeTest(_safeTest)
 { 
   iteration = 0; 
   keepGoing = TRUE; 
+
+  if (safeTest.RegularReporting())
+    reporter = new ReporterThread(*this);
+  else
+    reporter = NULL;
 }
+
+LauncherThread::~LauncherThread()
+{
+  if (reporter != NULL) {
+    reporter->Terminate();
+    reporter->WaitForTermination();
+    delete reporter;
+    reporter = NULL;
+  }
+}
+    
 
 void LauncherThread::Main()
 {
@@ -337,6 +444,31 @@ void LauncherThread::Main()
   }
 }
 
+void LauncherThread::ReportAverageTime()
+{
+  PInt64 i = GetIteration();
+  if (i == 0) {
+    cout << "Have not completed an iteration yet, so time per "
+	 << "iteration is unavailable" << endl;
+  } else {
+    cout << "Average time per iteration is " 
+	 << (GetElapsedTime().GetMilliSeconds()/((double) i)) 
+	 << " milliseconds" << endl;
+  }
+}
+
+void LauncherThread::ReportIterations()
+{
+  cout << "\nHave completed " 
+       << GetIteration() << " iterations" << endl;
+}
+
+void LauncherThread::ReportElapsedTime()
+{
+  cout << "\nElapsed time is " 
+       << GetElapsedTime() 
+       << " (Hours:mins:seconds.millseconds)" << endl;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 void UserInterfaceThread::Main()
@@ -365,27 +497,16 @@ void UserInterfaceThread::Main()
     switch (tolower(ch)) {
     case 'd' :
       {
-        PInt64 i = launch.GetIteration();
-        if (i == 0) {
-          cout << "Have not completed an iteration yet, so time per "
-	       << "iteration is unavailable" << endl;
-        } else {
-          cout << "Average time per iteration is " 
-	       << (launch.GetElapsedTime().GetMilliSeconds()/((double) i)) 
-               << " milliseconds" << endl;
-        }
+        launch.ReportAverageTime();
         cout << "Command ? " << flush;
         break;
       }
     case 'r' :
-      cout << "\nHave completed " 
-	   << launch.GetIteration() << " iterations" << endl;
+      launch.ReportIterations();
       cout << "Command ? " << flush;
       break;
     case 't' :
-      cout << "\nElapsed time is " 
-	   << launch.GetElapsedTime() 
-	   << " (Hours:mins:seconds.millseconds)" << endl;
+      launch.ReportElapsedTime();
       cout << "Command ? " << flush;
       break;
 
