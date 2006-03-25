@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.9  2006/03/25 09:01:44  dereksmithies
+ * Add reporting options, and different methods for spawning threads. All stable and reliable.
+ *
  * Revision 1.8  2006/03/23 05:07:28  dereksmithies
  * Fix threading issues - I think.
  *
@@ -65,6 +68,88 @@
 #include <ptlib/safecoll.h>
 
 class SafeTest;
+class DelayThread;
+class LauncherThread;
+
+/////////////////////////////////////////////////////////////////////////////
+/**This class writes regular reports to the console on progress */
+class ReporterThread : public PThread
+{
+  PCLASSINFO(ReporterThread, PThread);
+
+ public:
+  /**Constructor, to link back to the LaucherThread*/
+  ReporterThread(LauncherThread & _launcher);
+
+  /**Shut down this thread */
+  void Terminate();
+  
+  /**Do the work of reporting */
+  void Main();
+
+ protected:
+  /**Link to the LauncherThread, which we use for reporting with */
+  LauncherThread & launcher;
+
+  /**Flag used for timing the 1 minute between reports, and wake up on
+     termination */
+  PSyncPoint exitFlag;
+  
+  /**Flag to indicate end this thread */
+  BOOL terminateNow;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+/**This class is written to avoid the usage of the PThread::Create mechanism. 
+   It is used in terminating a DelayThread class. */
+class DelayThreadTermination : public PThread
+{
+  PCLASSINFO(DelayThreadTermination, PThread);
+ public:
+  DelayThreadTermination(DelayThread &_delayThread);
+
+  /**Do the work of terminating the DelayThread instance */
+  void Main();
+
+ protected:
+  
+  /**Master reference to the thread we do delay for */
+  DelayThread & delayThread;
+
+  /**The name we assign to this thread */
+  PStringStream thisThreadName;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+/**This class is written to avoid the usage of the PThread::Create
+   mechanism. It calls the delay method in the DelayThread instance,
+   and exits.
+*/
+class DelayWorkerThread : public PThread
+{
+  PCLASSINFO(DelayWorkerThread, PThread);
+ public:
+  DelayWorkerThread(DelayThread &_delayThread, PInt64 _iteration);
+
+  /**Do the work of advising the SafeTest about this */
+  void Main();
+
+ protected:
+  
+  /**Master reference to the thread we do delay for */
+  DelayThread & delayThread;
+
+  /** Iteration we are representing */
+  PInt64 iteration;
+
+  /**The name we make up for this DelayWorkerThread instance */
+  PStringStream thisThreadName;
+};
+
+
 
 /**This class has the job of closing a DelayThread instance. It
    advises the master SafeTest of the end of the DelayThread, and then
@@ -87,8 +172,6 @@ class OnDelayThreadEnd : public PThread
   /**Id of the DelayThread instance we end */
   PString delayThreadId;
 };
-
-
  
   
 /**This class is a simple simple thread that just creates, waits a
@@ -119,7 +202,6 @@ public:
 
   /**Pretty print the id of this class */
   virtual void PrintOn(ostream & strm) const;
- protected:
 
 #ifdef DOC_PLUS_PLUS
   /**This method is where the delay is done */
@@ -136,6 +218,9 @@ public:
 #else
     PDECLARE_NOTIFIER(PThread, DelayThread, OnReleaseThreadMain);
 #endif
+
+ protected:
+
     /**Reference back to the class that knows everything, and holds the list
        of instances of this DelayThread class */
     SafeTest & safeTest;
@@ -189,6 +274,9 @@ public:
      instance of this thread */
   LauncherThread(SafeTest &_safe_test);
   
+  /**Destructor. The only done is to remove the ReporterThread */
+  ~LauncherThread();
+
   /**Where all the work is done */
   void Main();
     
@@ -204,9 +292,22 @@ public:
    It reports the time since this program stared.*/
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 
+  /**Report the time to launch each DelayThread instance */
+  void ReportAverageTime();
+
+  /**Report the number of DelayThread instances we have launched */
+  void ReportIterations();
+
+  /**Report the time elapsed since this began launching DelayThread
+     instances */
+  void ReportElapsedTime();
+
  protected:
   /**Reference back to the master class */
   SafeTest & safeTest;
+
+  /**Pointer to the reporting thread that may be running */
+  PThread *reporter;
 
   /**Count on the number of DelayThread instances that have been
      created */
@@ -280,9 +381,16 @@ class SafeTest : public PProcess
        making the delay threads random in duration. */
     PINDEX GetRandom() { return random.Generate() % (delay >> 2); }
 
-
     /**Report the status of the useOnThreadEnd flag */
     BOOL UseOnThreadEnd();
+
+    /**Return TRUE or FALSE, to decide if we use PThread::Create */
+    BOOL AvoidPThreadCreate() { return avoidPThreadCreate; }
+
+
+    /**Return TRUE or FALSE to determine if a thread should be
+       launched to regularly report on status */
+    BOOL RegularReporting() { return regularReporting; }
  protected:
 
     /**The thread safe list of DelayThread s that we manage */
@@ -328,6 +436,14 @@ class SafeTest : public PProcess
     /**Flag to indicate that we use the OnDelayThreadEnd mechanism for
        signifing the end of a DelayThread */
     BOOL useOnThreadEnd;
+
+    /**Flag to indicate if we can use PThread::Create to generate
+       temporary thread, or if we use the supplied thread class */
+    BOOL avoidPThreadCreate;
+    
+
+    /**Flag to determine if a thread is used to regularly report on status */
+    BOOL regularReporting;
 };
 
 
