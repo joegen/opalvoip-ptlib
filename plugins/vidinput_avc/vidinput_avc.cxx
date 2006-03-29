@@ -451,13 +451,6 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
       memcpy (pixels[0]+3*(y*frameWidth+x),
               pixels[0]+3*(sourceY*dv->width+sourceX),
               3);
-      
-      // FIXME: BGR <-> RGB done by hand
-      BYTE temp;
-      int offset= (y*frameWidth+x)*3;
-      temp = pixels[0][offset+0];
-      pixels[0][offset+0] = pixels[0][offset+2];
-      pixels[0][offset+2] = temp;
     }
   if (converter != NULL) {
     converter->Convert((const BYTE *)pixels[0], buffer, bytesReturned);
