@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.12  2006/03/29 23:28:52  dereksmithies
+ * Fix use of null pointer.
+ *
  * Revision 1.11  2006/03/29 23:18:18  dereksmithies
  * Remove compiler warning about unused variable.
  *
@@ -235,7 +238,7 @@ void LauncherThread::Main()
 				 PThread::NormalPriority,
 				 "auto BusyWaited %X");
       } else {
-	DelayThread *thread = new DelayThread(delay);
+	thread = new DelayThread(delay);
 	thread->Resume();
       }
       
@@ -248,12 +251,12 @@ void LauncherThread::Main()
 
   while (keepGoing) {
     if (doCreate) {
-	thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
-                                     PThread::NoAutoDeleteThread,
-                                     PThread::NormalPriority,
-                                     "auto WaitForTermination %X");
+      thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
+			       PThread::NoAutoDeleteThread,
+			       PThread::NormalPriority,
+			       "auto WaitForTermination %X");
     } else {
-      DelayThread *thread = new DelayThread(delay);
+      thread = new DelayThread(delay);
       thread->Resume();
     }
     thread->WaitForTermination();
