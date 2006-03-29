@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.11  2006/03/29 23:18:18  dereksmithies
+ * Remove compiler warning about unused variable.
+ *
  * Revision 1.10  2006/01/20 00:34:09  dereksmithies
  * Add PTRACE statements to the DelayThread Constructors and Destructor.
  *
@@ -206,7 +209,7 @@ void LauncherThread::Main()
   PINDEX delay = Threadex::Current().Delay();
   BOOL   doCreate = Threadex::Current().Create();
 
-  PThread *thread;
+  PThread *thread = NULL;
   if (Threadex::Current().AutoDelete()) {
     while (keepGoing) {
       if (doCreate) {
