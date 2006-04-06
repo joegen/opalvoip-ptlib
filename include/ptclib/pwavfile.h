@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.24  2006/04/06 00:39:37  csoutheren
+ * Ensure autoconvert format is preserved across file close
+ *
  * Revision 1.23  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -553,6 +556,7 @@ class PWAVFile : public PFile
 
     BOOL     isValidWAV;
 
+    int origFmt;
     PWAVFileFormat * formatHandler;
 
     BOOL     autoConvert;

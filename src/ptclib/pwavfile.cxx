@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.45  2006/04/06 00:39:37  csoutheren
+ * Ensure autoconvert format is preserved across file close
+ *
  * Revision 1.44  2006/01/16 07:31:57  csoutheren
  * Removed deletion of PWAVFIle format converters.
  *  These look like memory leaks, but are not - the converters are static objects that
@@ -251,7 +254,7 @@ static void SWAB(const void * void_from, void * void_to, register size_t len)
 // PWAVFile
 
 PWAVFile::PWAVFile(unsigned fmt)
-  : PFile()
+  : PFile(), origFmt(fmt)
 {
   Construct();
   SelectFormat(fmt);
@@ -260,13 +263,14 @@ PWAVFile::PWAVFile(unsigned fmt)
 PWAVFile * PWAVFile::format(const PString & format)
 {
   PWAVFile * file = new PWAVFile;
+  file->origFmt = 0xffffffff;
   file->Construct();
   file->SelectFormat(format);
   return file;
 }
 
 PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
-  : PFile(mode, opts)
+  : PFile(mode, opts), origFmt(fmt)
 {
   Construct();
   SelectFormat(fmt);
@@ -279,12 +283,14 @@ PWAVFile * PWAVFile::format(
 )
 {
   PWAVFile * file = new PWAVFile(mode, opts);
+  file->origFmt = 0xffffffff;
   file->Construct();
   file->SelectFormat(format);
   return file;
 }
 
 PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
+  : origFmt(fmt)
 {
   Construct();
   SelectFormat(fmt);
@@ -298,6 +304,7 @@ PWAVFile::PWAVFile(
   int opts 
 )
 {
+  origFmt = 0xffffffff;
   Construct();
   SelectFormat(format);
   Open(name, mode, opts);
@@ -319,6 +326,7 @@ void PWAVFile::Construct()
   header_needs_updating   = FALSE;
   autoConvert             = FALSE;
   autoConverter           = NULL;
+
   formatHandler           = NULL;
   wavFmtChunk.hdr.len     = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);
 }
@@ -343,8 +351,11 @@ void PWAVFile::SelectFormat(const PString & format)
   }
   if (!format.IsEmpty())
     formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
-  if (formatHandler != NULL)
+  if (formatHandler != NULL) {
     wavFmtChunk.format = (WORD)formatHandler->GetFormat();
+    if (origFmt == 0xffffffff)
+      origFmt = wavFmtChunk.format;
+  }
 }
 
 BOOL PWAVFile::Open(OpenMode mode, int opts)
@@ -416,6 +427,8 @@ BOOL PWAVFile::Close()
 
   delete formatHandler;
   formatHandler = NULL;
+  if (origFmt != 0xffffffff)
+    SelectFormat(origFmt);
 
   return PFile::Close();
 }
