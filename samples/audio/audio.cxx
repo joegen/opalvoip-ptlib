@@ -17,6 +17,10 @@
  *                           2)Add headers.
  *
  * $Log: audio.cxx,v $
+ * Revision 1.6  2006/04/09 05:13:06  dereksmithies
+ * add a means to write the collected audio to disk (as a wav file),
+ *    or to the trace log (as text data)
+ *
  * Revision 1.5  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -34,6 +38,7 @@
 #include <ptlib.h>
 #include "version.h"
 #include "audio.h"
+#include <ptclib/pwavfile.h>
 
 Audio::Audio()
   : PProcess("Roger Hardiman & Derek Smithies code factory", "audio",
@@ -55,6 +60,7 @@ void Audio::Main()
              "t-trace."              "-no-trace."
 #endif
        "v.    "
+       "w:    "
        "s:    ");
  
   if (args.HasOption('h')) {
@@ -65,6 +71,7 @@ void Audio::Main()
          << "     -s  dev   : use this device in full duplex test " << endl
          << "     -h        : get help on usage " << endl
          << "     -v        : report program version " << endl
+	 << "     -w file   : write the captured audio to this file" << endl
 #if PTRACING
          << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
          << "  -o --output  : File for trace output, default is stderr" << endl
@@ -149,6 +156,8 @@ void Audio::Main()
     if (devName.IsEmpty())
       devName = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
 
+    PString capturedAudio = args.GetOptionString('w');
+
     if (namesPlay.GetStringsIndex(devName) == P_MAX_INDEX) {
       cout << "could not find " << devName << " in list of available play devices - abort test" << endl;
       return;
@@ -162,7 +171,7 @@ void Audio::Main()
     PTRACE(3, "Audio\tTest device " << devName);
     
     TestAudioDevice device;
-    device.Test();
+    device.Test(capturedAudio);
       return;
   }
 
@@ -187,7 +196,7 @@ TestAudioDevice::~TestAudioDevice()
   PThread::Sleep(100);
 }
 
-void TestAudioDevice::Test()
+void TestAudioDevice::Test(const PString & captureFileName)
 {
    endNow = FALSE;
    PConsoleChannel console(PConsoleChannel::StandardInput);
@@ -195,7 +204,7 @@ void TestAudioDevice::Test()
    AllowDeleteObjects(FALSE);
    PTRACE(3, "Start operation of TestAudioDevice");
 
-   TestAudioRead reader(*this);
+   TestAudioRead reader(*this, captureFileName);
    TestAudioWrite writer(*this);   
 
 
@@ -306,8 +315,9 @@ BOOL TestAudioDevice::DoEndNow()
 
 //////////////////////////////////////////////////////////////////////
 
-TestAudioRead::TestAudioRead(TestAudioDevice &master)
-       :TestAudio(master)
+TestAudioRead::TestAudioRead(TestAudioDevice &master, const PString & _captureFileName)
+    :TestAudio(master),
+     captureFileName(_captureFileName)
 {    
   PTRACE(3, "Reader\tInitiate thread for reading " );
 }
@@ -318,6 +328,9 @@ void TestAudioRead::Main()
     PTRACE(1, "TestAudioWrite\tFAILED to open read device");
     return;
   }
+  PWAVFile audioFile;
+  if (!audioFile.Open(captureFileName, PFile::WriteOnly, PFile::Create | PFile::Truncate))
+      cerr << "Cannot create the file " << captureFileName << " to write audio to" << endl;
 
   PTRACE(3, "TestAduioRead\tSound device is now open, start running");
 
@@ -325,9 +338,15 @@ void TestAudioRead::Main()
     PBYTEArray *data = new PBYTEArray(480);
     sound.Read(data->GetPointer(), data->GetSize());
     PTRACE(3, "TestAudioRead\t send one frame to the queue" << data->GetSize());
+    PTRACE(5, "Written the frame " << endl << (*data));
+
+    if (audioFile.IsOpen())
+	audioFile.Write(data->GetPointer(), data->GetSize());
+
     controller.WriteAudioFrame(data);
   }
   
+  audioFile.Close();
   PTRACE(3, "End audio read thread");
 }
 
