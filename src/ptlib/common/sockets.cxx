@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.202  2006/04/09 07:05:40  rjongbloed
+ * Moved output stream operator for PString from sockets code to string code and fixed
+ *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
+ *   a compiler issue, but it should not be in a random source file!
+ *
  * Revision 1.201  2006/02/13 06:56:26  csoutheren
  * Fixed problem on Windows
  *
@@ -2474,11 +2479,6 @@ BYTE PIPSocket::Address::operator[](PINDEX idx) const
 ostream & operator<<(ostream & s, const PIPSocket::Address & a)
 {
   return s << a.AsString();
-}
-
-ostream & operator<<(ostream & s, const PString & str)
-{
-  return s << (const char *)str;
 }
 
 istream & operator>>(istream & s, PIPSocket::Address & a)
