@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.203  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.202  2006/04/09 07:05:40  rjongbloed
  * Moved output stream operator for PString from sockets code to string code and fixed
  *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
@@ -759,7 +762,7 @@ BOOL PIPSocket::IsIpAddressFamilyV6Supported()
   if (s < 0)
     return FALSE;
 
-  ::close(s);
+  _close(s);
   return TRUE;
 }
 

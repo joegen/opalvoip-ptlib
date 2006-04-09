@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.81  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.80  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -671,7 +674,7 @@ int PServiceProcess::_main(void * arg)
       return 1;
   }
 
-  debugMode = arguments.GetCount() > 0 && stricmp(arguments[0], "Debug") == 0;
+  debugMode = arguments.GetCount() > 0 && strcasecmp(arguments[0], "Debug") == 0;
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!debugMode && arguments.GetCount() > 0) {
@@ -1725,7 +1728,7 @@ BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
 BOOL PServiceProcess::ProcessCommand(const char * cmd)
 {
   PINDEX cmdNum = 0;
-  while (stricmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
+  while (strcasecmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
     if (++cmdNum >= NumSvcCmds) {
       if (!CreateControlWindow(TRUE))
         return FALSE;
