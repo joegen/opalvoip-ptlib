@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.81  2006/04/09 07:05:40  rjongbloed
+ * Moved output stream operator for PString from sockets code to string code and fixed
+ *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
+ *   a compiler issue, but it should not be in a random source file!
+ *
  * Revision 1.80  2006/02/26 11:51:20  csoutheren
  * Extended DNS test program to include URL based SRV lookups
  * Re-arranged SRV lookup code to allow access to internal routine
@@ -503,9 +508,6 @@ class PIPSocket : public PSocket
 #endif
         } v;
         unsigned version;
-
-      /// need this to avoid intepreting string as addresses
-      friend ostream & operator<<(ostream & s, const PString & str);
 
       /// output IPv6 & IPv4 address as a string to the specified string
       friend ostream & operator<<(ostream & s, const Address & a);
