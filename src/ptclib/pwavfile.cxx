@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.46  2006/04/09 22:22:35  dereksmithies
+ * Fix a warning about comparison of signed and unsigned numbers.
+ *
  * Revision 1.45  2006/04/06 00:39:37  csoutheren
  * Ensure autoconvert format is preserved across file close
  *
@@ -353,7 +356,7 @@ void PWAVFile::SelectFormat(const PString & format)
     formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
   if (formatHandler != NULL) {
     wavFmtChunk.format = (WORD)formatHandler->GetFormat();
-    if (origFmt == 0xffffffff)
+    if (origFmt == ((int)0xffffffff))
       origFmt = wavFmtChunk.format;
   }
 }
@@ -427,7 +430,7 @@ BOOL PWAVFile::Close()
 
   delete formatHandler;
   formatHandler = NULL;
-  if (origFmt != 0xffffffff)
+  if (origFmt != ((int)0xffffffff))
     SelectFormat(origFmt);
 
   return PFile::Close();
