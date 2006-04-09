@@ -17,6 +17,10 @@
  *                           2)Add headers.
  *
  * $Log: audio.cxx,v $
+ * Revision 1.7  2006/04/09 07:08:13  dereksmithies
+ * Add reporting functions.
+ * Use the selected device to open the sound card for volume levels.
+ *
  * Revision 1.6  2006/04/09 05:13:06  dereksmithies
  * add a means to write the collected audio to disk (as a wav file),
  *    or to the trace log (as text data)
@@ -127,26 +131,32 @@ void Audio::Main()
   cout << "\n";
 
 
-  // Display the mixer settings for the default devices
+  // Display the mixer settings for the default devices (or device if specified)
   PSoundChannel sound;
   dir = PSoundChannel::Player;
-  sound.Open(PSoundChannel::GetDefaultDevice(dir),dir);
+  devName = args.GetOptionString('s');
+  if (devName.IsEmpty())
+      devName = PSoundChannel::GetDefaultDevice(dir);
+  sound.Open(devName, dir);
 
   unsigned int vol;
   if (sound.GetVolume(vol))
-    cout << "Play volume is (for the default play device)" << vol << endl;
+    cout << "Play volume is (for " << devName << ")" << vol << endl;
   else
-    cout << "Play volume cannot be obtained" << endl;
+    cout << "Play volume cannot be obtained (for " << devName << ")" << endl;
 
   sound.Close();
 
   dir = PSoundChannel::Recorder;
-  sound.Open(PSoundChannel::GetDefaultDevice(dir),dir);
+  devName = args.GetOptionString('s');
+  if (devName.IsEmpty())
+      devName = PSoundChannel::GetDefaultDevice(dir);
+  sound.Open(devName, dir);
   
   if (sound.GetVolume(vol))
-    cout << "Record volume is (for the default record device)" << vol << endl;
+      cout << "Record volume is (for " << devName << ")" << vol << endl;
   else
-    cout << "Record volume cannot be obtained" << endl;
+    cout << "Record volume cannot be obtained (for " << devName << ")" << endl;
 
   sound.Close();
 
@@ -172,7 +182,7 @@ void Audio::Main()
     
     TestAudioDevice device;
     device.Test(capturedAudio);
-      return;
+    return;
   }
 
 #if PTRACING
@@ -214,7 +224,8 @@ void TestAudioDevice::Test(const PString & captureFileName)
         << "  Q   : Exit program\n"
         << "  {}  : Increase/reduce record volume\n"
         << "  []  : Increase/reduce playback volume\n"
-        << "  H   : Write this help out\n";
+        << "  H   : Write this help out\n"
+	<< "  R   : Report the number of 30 ms long sound samples processed\n";
    
    PThread::Sleep(100);
    if (reader.IsTerminated() || writer.IsTerminated()) {
@@ -238,26 +249,30 @@ void TestAudioDevice::Test(const PString & captureFileName)
     console >> ch;
     PTRACE(3, "console in audio test is " << ch);
     switch (tolower(ch)) {
-      case '{' : 
-        reader.LowerVolume();
-        break;
-      case '}' :
-        reader.RaiseVolume();
-        break;
-      case '[' :
-        writer.LowerVolume();
-        break;
-      case ']' : 
-        writer.RaiseVolume();
-        break;
-      case 'q' :
-      case 'x' :
-        goto endAudioTest;
-      case 'h' :
-        cout << help ;
-      break;
+	case '{' : 
+	    reader.LowerVolume();
+	    break;
+	case '}' :
+	    reader.RaiseVolume();
+	    break;
+	case '[' :
+	    writer.LowerVolume();
+	    break;
+	case ']' : 
+	    writer.RaiseVolume();
+	    break;
+	case 'r' :
+	    reader.ReportIterations();
+	    writer.ReportIterations();
+	    break;
+	case 'q' :
+	case 'x' :
+	    goto endAudioTest;
+	case 'h' :
+	    cout << help ;
+	    break;
         default:
-          ;
+	    ;
     }
   }
 
@@ -322,6 +337,13 @@ TestAudioRead::TestAudioRead(TestAudioDevice &master, const PString & _captureFi
   PTRACE(3, "Reader\tInitiate thread for reading " );
 }
 
+void TestAudioRead::ReportIterations()
+{
+    cout << "Captured " << iterations << " frames of 480 bytes to the sound card" << endl;
+}
+
+
+
 void TestAudioRead::Main()
 {
   if (!OpenAudio(PSoundChannel::Recorder)) {
@@ -337,6 +359,7 @@ void TestAudioRead::Main()
   while ((!controller.DoEndNow()) && keepGoing) {
     PBYTEArray *data = new PBYTEArray(480);
     sound.Read(data->GetPointer(), data->GetSize());
+    iterations++;
     PTRACE(3, "TestAudioRead\t send one frame to the queue" << data->GetSize());
     PTRACE(5, "Written the frame " << endl << (*data));
 
@@ -358,6 +381,11 @@ TestAudioWrite::TestAudioWrite(TestAudioDevice &master)
   PTRACE(3, "Reader\tInitiate thread for writing " );
 }
 
+void TestAudioWrite::ReportIterations()
+{
+    cout << "Written " << iterations << " frames of 480 bytes to the sound card" << endl;
+}
+
 void TestAudioWrite::Main()
 {
   if (!OpenAudio(PSoundChannel::Player)) {
@@ -371,6 +399,7 @@ void TestAudioWrite::Main()
     PTRACE(3, "TestAudioWrite\tHave read one audio frame ");
     if (data != NULL) {
       sound.Write(data->GetPointer(), data->GetSize());
+      iterations++;
       delete data;
     } else
       PTRACE(1, "testAudioWrite\t next audio frame is NULL");    
@@ -386,8 +415,9 @@ TestAudio::TestAudio(TestAudioDevice &master)
     :PThread(1000, NoAutoDeleteThread),
      controller(master)
 {
-  keepGoing = TRUE;
-  Resume();
+    iterations = 0;
+    keepGoing = TRUE;
+    Resume();
 }
 
 TestAudio::~TestAudio()
@@ -411,8 +441,9 @@ BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
   if (!sound.Open(devName,
       dir,
       1, 8000, 16)) {
-    cerr <<  "TestAudioRead:: Failed to open sound Playing device. Exit" << endl;
-    PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
+      cerr <<  "Test:: Failed to open sound device  for " << name << endl;
+      cerr <<  "Please check that \"" << devName << "\" is a valid device name" << endl;
+      PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
 
     return FALSE;
   }
@@ -420,7 +451,7 @@ BOOL TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
   currentVolume = 90;
   sound.SetVolume(currentVolume);
   
-  sound.SetBuffers(480, 3);
+  sound.SetBuffers(480, 2);
   return TRUE;
 }
 

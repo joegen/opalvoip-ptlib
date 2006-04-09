@@ -5,6 +5,10 @@
  *
  *
  * $Log: audio.h,v $
+ * Revision 1.4  2006/04/09 07:08:13  dereksmithies
+ * Add reporting functions.
+ * Use the selected device to open the sound card for volume levels.
+ *
  * Revision 1.3  2006/04/09 05:13:06  dereksmithies
  * add a means to write the collected audio to disk (as a wav file),
  *    or to the trace log (as text data)
@@ -83,6 +87,8 @@ class TestAudio : public PThread
     virtual void Terminate() { keepGoing = FALSE; }
     void LowerVolume();
     void RaiseVolume();
+    
+    void ReportIterations();
 
   protected:
     PString name;
@@ -92,6 +98,7 @@ class TestAudio : public PThread
     TestAudioDevice    &controller;
     PSoundChannel      sound;
     BOOL               keepGoing;
+    PINDEX             iterations;
 };
 
 class TestAudioRead : public TestAudio
@@ -100,6 +107,8 @@ class TestAudioRead : public TestAudio
   public:
     TestAudioRead(TestAudioDevice &master, const PString & _captureFileName);
     
+    void ReportIterations();
+
     void Main();
  protected:
     PString captureFileName;
@@ -111,6 +120,8 @@ class TestAudioWrite : public TestAudio
     PCLASSINFO(TestAudioWrite, TestAudio);
   public:
     TestAudioWrite(TestAudioDevice &master);
+
+    void ReportIterations();
     
     void Main();
 };
