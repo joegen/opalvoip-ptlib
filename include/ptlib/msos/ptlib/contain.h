@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.56  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.55  2005/09/25 10:51:23  dominance
  * almost complete the mingw support. We'll be there soon. ;)
  *
@@ -238,6 +241,10 @@ and from the pre-processor options for this project"
 #define __USE_STL__ 1
 #endif
 
+#if _MSC_VER>=1400
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -379,9 +386,18 @@ istream & operator>>(istream & s, PUInt64 & v);
 
 #endif
 
-#ifndef _WIN32_WCE
+#ifndef _WIN32_WCE 
+
+#if _MSC_VER>=1400
+#define strcasecmp(s1,s2) _stricmp(s1,s2)
+#define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
+#else
 #define strcasecmp(s1,s2) stricmp(s1,s2)
 #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+#define _putenv ::putenv
+#define _close ::close
+#define _access ::access
+#endif
 #endif
 
 class PWin32Overlapped : public OVERLAPPED
