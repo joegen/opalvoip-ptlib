@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.11  2006/04/09 04:28:13  dereksmithies
+ * Make it 64 bit safe.
+ *
  * Revision 1.10  2006/03/25 09:01:44  dereksmithies
  * Add reporting options, and different methods for spawning threads. All stable and reliable.
  *
@@ -433,7 +436,7 @@ void LauncherThread::Main()
     while(safeTest.CurrentSize() < count) {
       iteration++;
       void * location = new DelayThread(safeTest, delay, iteration);
-      if (((unsigned int)location) < 0xffff) {
+      if (((PUInt64)location) < 0xffff) {
 	int a, b;
 	a = 1;
 	b = 0;
