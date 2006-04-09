@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.57  2006/04/09 11:44:21  csoutheren
+ * And then refix VS.net 2003
+ *
  * Revision 1.56  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -394,9 +397,9 @@ istream & operator>>(istream & s, PUInt64 & v);
 #else
 #define strcasecmp(s1,s2) stricmp(s1,s2)
 #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
-#define _putenv ::putenv
-#define _close ::close
-#define _access ::access
+//#define _putenv ::putenv
+//#define _close ::close
+//#define _access ::access
 #endif
 #endif
 
