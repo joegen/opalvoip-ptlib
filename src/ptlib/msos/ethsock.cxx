@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.48  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.47  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -1321,7 +1324,7 @@ BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
     return FALSE;
   }
 
-  if (strnicmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
+  if (strncasecmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
     name.Delete(0, sizeof(PacketDeviceStr)-1);
 
 #endif // !_WIN32_WCE

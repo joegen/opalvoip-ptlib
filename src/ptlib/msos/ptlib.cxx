@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.80  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.79  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -786,7 +789,7 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
       accmode = R_OK|W_OK;
   }
 
-  return access(name, accmode) == 0;
+  return _access(name, accmode) == 0;
 }
 
 
