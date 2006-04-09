@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.86  2006/04/09 07:05:40  rjongbloed
+ * Moved output stream operator for PString from sockets code to string code and fixed
+ *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
+ *   a compiler issue, but it should not be in a random source file!
+ *
  * Revision 1.85  2005/12/15 21:14:34  dsandras
  * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
  *
@@ -1864,6 +1869,13 @@ class PString : public PCharArray {
 
     PString(int dummy, const PString * str);
 };
+
+
+inline ostream & operator<<(ostream & stream, const PString & string)
+{
+  string.PrintOn(stream);
+  return stream;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
