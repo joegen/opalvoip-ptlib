@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.157  2006/04/09 11:04:00  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.156  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -941,7 +944,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   clusterSize = 0;
   char fsName[100];
   if (GetVolumeInformation(root, NULL, 0, NULL, NULL, NULL, fsName, sizeof(fsName))) {
-    if (stricmp(fsName, "FAT32") == 0) {
+    if (strcasecmp(fsName, "FAT32") == 0) {
       clusterSize = 4096; // Cannot use GetDiskFreeSpace() results for FAT32
       if (!needTotalAndFree)
         return TRUE;
