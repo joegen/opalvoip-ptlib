@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.16  2006/04/09 11:03:59  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.15  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -882,7 +885,7 @@ BOOL PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, uns
         for (id = 0; id < waveOutGetNumDevs(); id++) {
           WAVEOUTCAPS caps;
           if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
-              stricmp(caps.szPname, device) == 0) {
+              strcasecmp(caps.szPname, device) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
             break;
@@ -894,7 +897,7 @@ BOOL PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, uns
         for (id = 0; id < waveInGetNumDevs(); id++) {
           WAVEINCAPS caps;
           if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
-              stricmp(caps.szPname, device) == 0) {
+              strcasecmp(caps.szPname, device) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
             break;
