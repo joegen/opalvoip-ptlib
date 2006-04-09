@@ -5,6 +5,10 @@
  *
  *
  * $Log: audio.h,v $
+ * Revision 1.3  2006/04/09 05:13:06  dereksmithies
+ * add a means to write the collected audio to disk (as a wav file),
+ *    or to the trace log (as text data)
+ *
  * Revision 1.2  2005/11/30 12:47:39  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -55,7 +59,7 @@ PDECLARE_LIST(TestAudioDevice, PBYTEArray *)
  public:
   virtual ~TestAudioDevice();
   
-  void Test();
+  void Test(const PString & captureFileName);
   BOOL DoEndNow();
   
   void WriteAudioFrame(PBYTEArray *data);
@@ -64,6 +68,7 @@ PDECLARE_LIST(TestAudioDevice, PBYTEArray *)
  protected:
   PMutex access;
   BOOL endNow;
+
 };
 
 
@@ -93,9 +98,11 @@ class TestAudioRead : public TestAudio
 {
     PCLASSINFO(TestAudioRead, TestAudio);
   public:
-    TestAudioRead(TestAudioDevice &master);
+    TestAudioRead(TestAudioDevice &master, const PString & _captureFileName);
     
     void Main();
+ protected:
+    PString captureFileName;
 };
 
 
