@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.17  2006/04/09 11:04:00  csoutheren
+ * Remove warnings on VS.net 2005
+ *
  * Revision 1.16  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -742,7 +745,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
   switch (source) {
     case Environment :
       PAssert(!key.IsEmpty() && key.Find('=') == P_MAX_INDEX, PInvalidParameter);
-      putenv(key + "=");
+      _putenv(key + "=");
       break;
 
     case Application : {
@@ -824,7 +827,7 @@ void PConfig::SetString(const PString & section,
   switch (source) {
     case Environment :
       PAssert(!key.IsEmpty() && key.Find('=') == P_MAX_INDEX, PInvalidParameter);
-      putenv(key + "=" + value);
+      _putenv(key + "=" + value);
       break;
 
     case Application : {
