@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.47  2006/04/10 23:57:27  csoutheren
+ * Checked in changes to remove some warnings with gcc effc++ flag
+ *
  * Revision 1.46  2006/04/09 22:22:35  dereksmithies
  * Fix a warning about comparison of signed and unsigned numbers.
  *
@@ -356,7 +359,7 @@ void PWAVFile::SelectFormat(const PString & format)
     formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
   if (formatHandler != NULL) {
     wavFmtChunk.format = (WORD)formatHandler->GetFormat();
-    if (origFmt == ((int)0xffffffff))
+    if (origFmt == 0xffffffff)
       origFmt = wavFmtChunk.format;
   }
 }
@@ -430,7 +433,7 @@ BOOL PWAVFile::Close()
 
   delete formatHandler;
   formatHandler = NULL;
-  if (origFmt != ((int)0xffffffff))
+  if (origFmt != 0xffffffff)
     SelectFormat(origFmt);
 
   return PFile::Close();

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.66  2006/04/10 23:57:27  csoutheren
+ * Checked in changes to remove some warnings with gcc effc++ flag
+ *
  * Revision 1.65  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -462,21 +465,14 @@ class PContainer : public PObject
           : size(initialSize), count(1), deleteObjects(TRUE) { }
 
         Reference(const Reference & ref)
-          : count(1)
+          : size(ref.size), count(1), deleteObjects(ref.deleteObjects)
         {  
-#if PCONTAINER_USES_CRITSEC
-          PEnterAndLeave m(((Reference &)ref).critSec);
-#endif
-          size          = ref.size; 
-          deleteObjects = ref.deleteObjects; 
         }
 
         PINDEX   size;         // Size of what the container contains
         PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
         BOOL deleteObjects;    // Used by PCollection but put here for efficiency
-#if PCONTAINER_USES_CRITSEC
-        PCriticalSection critSec;
-#endif
+
       private:
         Reference & operator=(const Reference &) 
         { return *this; }

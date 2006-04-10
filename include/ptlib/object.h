@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.117  2006/04/10 23:57:27  csoutheren
+ * Checked in changes to remove some warnings with gcc effc++ flag
+ *
  * Revision 1.116  2006/03/20 00:24:56  csoutheren
  * Applied patch #1446482
  * Thanks to Adam Butcher
@@ -815,9 +818,13 @@ public:
         const char * traceName
           ///< String to be output with trace, typically it is the function name.
        );
+      Block(const Block & obj)
+        : file(obj.file), line(obj.line), name(obj.name) { }
       /// Output exit trace message.
       ~Block();
     private:
+      Block & operator=(const Block &)
+      { return *this; }
       const char * file;
       int          line;
       const char * name;
@@ -1666,9 +1673,9 @@ class PStandardType
 
 #define PI_SAME(name, type) \
   struct name { \
-    name() { } \
-    name(type value) { data = value; } \
-    name(const name & value) { data = value.data; } \
+    name() : data(0) { } \
+    name(type value) : data(value) { } \
+    name(const name & value) : data(value.data) { } \
     name & operator =(type value) { data = value; return *this; } \
     name & operator =(const name & value) { data = value.data; return *this; } \
     operator type() const { return data; } \
@@ -1683,9 +1690,9 @@ class PStandardType
 
 #define PI_DIFF(name, type) \
   struct name { \
-    name() { } \
-    name(type value) { operator=(value); } \
-    name(const name & value) { data = value.data; } \
+    name() : data(0) { } \
+    name(type value) : data(0) { operator=(value); } \
+    name(const name & value) : data(value.data) { } \
     name & operator =(type value) { PI_LOOP(value, data); return *this; } \
     name & operator =(const name & value) { data = value.data; return *this; } \
     operator type() const { type value; PI_LOOP(data, value); return value; } \
