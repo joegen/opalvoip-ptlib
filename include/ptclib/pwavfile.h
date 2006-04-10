@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.25  2006/04/10 23:57:25  csoutheren
+ * Checked in changes to remove some warnings with gcc effc++ flag
+ *
  * Revision 1.24  2006/04/06 00:39:37  csoutheren
  * Ensure autoconvert format is preserved across file close
  *
@@ -556,7 +559,7 @@ class PWAVFile : public PFile
 
     BOOL     isValidWAV;
 
-    int origFmt;
+    unsigned int origFmt;
     PWAVFileFormat * formatHandler;
 
     BOOL     autoConvert;
