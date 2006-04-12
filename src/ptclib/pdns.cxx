@@ -24,9 +24,15 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.24.2.2  2006/04/12 10:43:37  dsandras
+ * More backports from HEAD.
+ *
+ * Revision 1.27  2006/04/12 10:38:10  csoutheren
+ * Fixed problem with looping in SRV records thanks to Damien Sandras
+ *
  * Revision 1.24.2.1  2006/03/12 21:14:48  dsandras
  * Backports from HEAD.
- *
+ *   
  * Revision 1.26  2006/02/26 11:51:20  csoutheren
  * Extended DNS test program to include URL based SRV lookups
  * Re-arranged SRV lookup code to allow access to internal routine
@@ -458,6 +464,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
         totalWeight += (*this)[i].weight;
         count ++;
       }
+      ++i;
     }
 
     // if no matches found, go to the next priority level
