@@ -17,6 +17,10 @@
  *                           2)Add headers.
  *
  * $Log: audio.cxx,v $
+ * Revision 1.8  2006/04/14 08:01:36  dereksmithies
+ * Minor tidyup, totally close the sound device, so that there is only 2
+ * (and no more than two) available PSoundChannel devices.
+ *
  * Revision 1.7  2006/04/09 07:08:13  dereksmithies
  * Add reporting functions.
  * Use the selected device to open the sound card for volume levels.
@@ -132,34 +136,35 @@ void Audio::Main()
 
 
   // Display the mixer settings for the default devices (or device if specified)
-  PSoundChannel sound;
-  dir = PSoundChannel::Player;
-  devName = args.GetOptionString('s');
-  if (devName.IsEmpty())
-      devName = PSoundChannel::GetDefaultDevice(dir);
-  sound.Open(devName, dir);
-
-  unsigned int vol;
-  if (sound.GetVolume(vol))
-    cout << "Play volume is (for " << devName << ")" << vol << endl;
-  else
-    cout << "Play volume cannot be obtained (for " << devName << ")" << endl;
-
-  sound.Close();
-
-  dir = PSoundChannel::Recorder;
-  devName = args.GetOptionString('s');
-  if (devName.IsEmpty())
-      devName = PSoundChannel::GetDefaultDevice(dir);
-  sound.Open(devName, dir);
-  
-  if (sound.GetVolume(vol))
-      cout << "Record volume is (for " << devName << ")" << vol << endl;
-  else
-    cout << "Record volume cannot be obtained (for " << devName << ")" << endl;
-
-  sound.Close();
-
+  {
+      PSoundChannel sound;
+      dir = PSoundChannel::Player;
+      devName = args.GetOptionString('s');
+      if (devName.IsEmpty())
+	  devName = PSoundChannel::GetDefaultDevice(dir);
+      sound.Open(devName, dir);
+      
+      unsigned int vol;
+      if (sound.GetVolume(vol))
+	  cout << "Play volume is (for " << devName << ")" << vol << endl;
+      else
+	  cout << "Play volume cannot be obtained (for " << devName << ")" << endl;
+      
+      sound.Close();
+      
+      dir = PSoundChannel::Recorder;
+      devName = args.GetOptionString('s');
+      if (devName.IsEmpty())
+	  devName = PSoundChannel::GetDefaultDevice(dir);
+      sound.Open(devName, dir);
+      
+      if (sound.GetVolume(vol))
+	  cout << "Record volume is (for " << devName << ")" << vol << endl;
+      else
+	  cout << "Record volume cannot be obtained (for " << devName << ")" << endl;
+      
+      sound.Close();
+  }
 
   if (args.HasOption('f')) {
     devName = args.GetOptionString('s');
