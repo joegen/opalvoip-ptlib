@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.51  2006/04/19 04:09:37  csoutheren
+ * Add special case conversion from QCIF to CIF
+ *
  * Revision 1.50  2006/03/12 11:09:53  dsandras
  * Applied patch from Luc Saillard to fix problems with MJPEG. Thanks!
  *
@@ -223,6 +226,12 @@
 #ifdef __GNUC__
 #include "tinyjpeg.h"
 #endif
+
+#define CIF_WIDTH     352
+#define CIF_HEIGHT    288
+
+#define QCIF_WIDTH    176
+#define QCIF_HEIGHT   144
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
@@ -950,10 +959,10 @@ void PStandardColourConverter::ResizeYUV422(const BYTE * src, BYTE * dest) const
   DWORD black   = (DWORD)(BLACK_U<<24) + (BLACK_Y<<16) + (BLACK_U<<8) + BLACK_Y;
   unsigned maxIndex    = dstFrameWidth*dstFrameHeight/2;
 
-  for (unsigned i = 0; i < maxIndex; i++) 
-    *result++ = black;
-
   if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
+    for (unsigned i = 0; i < maxIndex; i++) 
+      *result++ = black;
+
     //dest is bigger than the source. No subsampling.
     //Place the src in the middle of the destination.
     unsigned yOffset = dstFrameHeight - srcFrameHeight;
@@ -1009,6 +1018,64 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV422)
   return TRUE;
 }
 
+
+// copied from OpenMCU
+static void ConvertQCIFToCIF(const void * _src, void * _dst)
+{
+  BYTE * src = (BYTE *)_src;
+  BYTE * dst = (BYTE *)_dst;
+
+  //BYTE * dstEnd = dst + CIF_SIZE;
+  int y, x;
+  BYTE * srcRow;
+
+  // copy Y
+  for (y = 0; y < QCIF_HEIGHT; y++) {
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    src += QCIF_WIDTH;
+  }
+
+  // copy U
+  for (y = 0; y < QCIF_HEIGHT/2; y++) {
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH/2; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH/2; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    src += QCIF_WIDTH/2;
+  }
+
+  // copy V
+  for (y = 0; y < QCIF_HEIGHT/2; y++) {
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH/2; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    srcRow = src;
+    for (x = 0; x < QCIF_WIDTH/2; x++) {
+      dst[0] = dst[1] = *srcRow++;
+      dst += 2;
+    }
+    src += QCIF_WIDTH/2;
+  }
+}
+
+
 // Consider a YUV420P image of 4x4 pixels.
 //
 // A plane of Y values    A B C D
@@ -1041,44 +1108,53 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
 
   npixels = dstFrameWidth * dstFrameHeight;
   if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
-    // dest is bigger than the source. No subsampling.
-    // Place the src in the middle of the destination.
-    unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
-    unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
 
-    d = dest;
-    for (i=0; i < npixels; i++) 
-      *d++ = BLACK_Y;
-    for (i=0; i < npixels/4; i++)
-      *d++ = BLACK_U;
-    for (i=0; i < npixels/4; i++)
-      *d++ = BLACK_V;
+    if (srcFrameWidth  == QCIF_WIDTH && 
+        srcFrameHeight == QCIF_HEIGHT &&
+        dstFrameWidth  == CIF_WIDTH && 
+        dstFrameHeight == CIF_HEIGHT) {
+      ConvertQCIFToCIF(src, dest);
+    } 
+    else {
 
-    // Copy plane Y
-    d = dest + yOffset * dstFrameWidth + xOffset;
-    s = src;
-    for (y = 0; y < srcFrameHeight; y++) {
-      memcpy(d, s, srcFrameWidth);
-      s += srcFrameWidth;
-      d += dstFrameWidth;
+      // dest is bigger than the source. No subsampling.
+      // Place the src in the middle of the destination.
+      unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+      unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+
+      d = dest;
+      for (i=0; i < npixels; i++) 
+        *d++ = BLACK_Y;
+      for (i=0; i < npixels/4; i++)
+        *d++ = BLACK_U;
+      for (i=0; i < npixels/4; i++)
+        *d++ = BLACK_V;
+
+      // Copy plane Y
+      d = dest + yOffset * dstFrameWidth + xOffset;
+      s = src;
+      for (y = 0; y < srcFrameHeight; y++) {
+        memcpy(d, s, srcFrameWidth);
+        s += srcFrameWidth;
+        d += dstFrameWidth;
+      }
+
+      // Copy plane U
+      d = dest + npixels + (yOffset*dstFrameWidth/4) + xOffset/2;
+      for (y = 0; y < srcFrameHeight/2; y++) {
+        memcpy(d, s, srcFrameWidth/2);
+        s += srcFrameWidth/2;
+        d += dstFrameWidth/2;
+      }
+
+      // Copy plane V
+      d = dest + npixels + npixels/4 + (yOffset*dstFrameWidth/4) + xOffset/2;
+      for (y = 0; y < srcFrameHeight/2; y++) {
+        memcpy(d, s, srcFrameWidth/2);
+        s += srcFrameWidth/2;
+        d += dstFrameWidth/2;
+      }
     }
-
-    // Copy plane U
-    d = dest + npixels + (yOffset*dstFrameWidth/4) + xOffset/2;
-    for (y = 0; y < srcFrameHeight/2; y++) {
-      memcpy(d, s, srcFrameWidth/2);
-      s += srcFrameWidth/2;
-      d += dstFrameWidth/2;
-    }
-
-    // Copy plane V
-    d = dest + npixels + npixels/4 + (yOffset*dstFrameWidth/4) + xOffset/2;
-    for (y = 0; y < srcFrameHeight/2; y++) {
-      memcpy(d, s, srcFrameWidth/2);
-      s += srcFrameWidth/2;
-      d += dstFrameWidth/2;
-    }
-
 
   } else {  
     // source is bigger than the destination.
