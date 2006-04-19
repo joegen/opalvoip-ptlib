@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.61  2006/04/19 04:10:27  csoutheren
+ * Fix problem when using converter when frame size not supported
+ *
  * Revision 1.60  2006/03/07 20:53:51  dsandras
  * Added support for JPEG based webcams, thanks to Luc Saillard <luc saillard org>.
  *
@@ -723,7 +726,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   }
 
   if (converter == NULL) {
-    converter = PColourConverter::Create(colourFormat, colourFormat, width, height);
+    converter = PColourConverter::Create(colourFormat, colourFormat, frameWidth, frameHeight);
     if (converter == NULL) {
       PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
       return FALSE;
