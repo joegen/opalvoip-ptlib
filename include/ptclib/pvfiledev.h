@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.6  2006/04/19 04:09:04  csoutheren
+ * Allow frame size conversions
+ *
  * Revision 1.5  2006/03/17 06:54:49  csoutheren
  * Removed unused member variable
  *
@@ -235,6 +238,7 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
    PINDEX   videoFrameSize;
    PINDEX   scanLineWidth;
    PYUVFile file;
+   PBYTEArray frameStore;
 };
 
 PLOAD_FACTORY_DECLARE(PVideoInputDevice,YUVFile)

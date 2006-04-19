@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.7  2006/04/19 04:09:04  csoutheren
+ * Allow frame size conversions
+ *
  * Revision 1.6  2006/03/17 06:55:33  csoutheren
  * Removed unused member variable
  *
@@ -170,10 +173,17 @@ BOOL PVideoInputDevice_YUVFile::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
-  minWidth  = 16;
-  minHeight = 12;
-  maxWidth  = 1024;
-  maxHeight =  768;
+  if (file.GetWidth() != 0 && file.GetHeight() != 0) {
+    minWidth  = maxWidth  = file.GetWidth();
+    minHeight = maxHeight = file.GetHeight();
+  }
+  else
+  {
+    minWidth  = 16;
+    minHeight = 12;
+    maxWidth  = 1024;
+    maxHeight =  768;
+  }
 
   return TRUE;
 }
@@ -241,8 +251,13 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
 {
   grabCount++;
 
+  BYTE * readBuffer = destFrame;
+
+  if (converter != NULL)
+    readBuffer = frameStore.GetPointer(videoFrameSize);
+
   if (file.IsOpen()) {
-    if (!file.ReadFrame(destFrame))
+    if (!file.ReadFrame(readBuffer))
       file.Close();
   }
 
@@ -253,7 +268,7 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
         return FALSE;
 
       case Channel_PlayAndRepeat:
-        if (!file.Open() || !file.ReadFrame(destFrame))
+        if (!file.Open() || !file.ReadFrame(readBuffer))
           return FALSE;
         break;
 
@@ -261,18 +276,20 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
         break;
 
       case Channel_PlayAndShowBlack:
-        FillRect(destFrame, 0, 0, frameWidth, frameHeight, 0, 0, 0);
+        FillRect(readBuffer, 0, 0, frameWidth, frameHeight, 0, 0, 0);
         break;
     }
   }
 
-  if (converter != NULL) {
-    if (!converter->Convert(destFrame, destFrame, bytesReturned))
+  if (converter == NULL) {
+    if (bytesReturned != NULL)
+      *bytesReturned = videoFrameSize;
+  } else {
+    if (!converter->Convert(readBuffer, destFrame, bytesReturned))
       return FALSE;
+    if (bytesReturned != NULL)
+      *bytesReturned = converter->GetMaxDstFrameBytes();
   }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = videoFrameSize;
 
   return TRUE;
 }
