@@ -24,6 +24,13 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.24.2.3  2006/04/22 13:36:50  dsandras
+ * More backports from HEAD.
+ *
+ * Revision 1.28  2006/04/22 13:35:24  dsandras
+ * Fixed wrong behavior with different priorities when building the priorities
+ * list. Fixes Ekiga bug #339314.
+ *
  * Revision 1.24.2.2  2006/04/12 10:43:37  dsandras
  * More backports from HEAD.
  *
@@ -428,7 +435,8 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetFirst()
     for (i = 1; i < GetSize(); i++) {
       (*this)[i].used = FALSE;
       if ((*this)[i].priority != lastPri) {
-        priList.SetSize(priPos+1);
+        priPos++;
+        priList.SetSize(priPos);
         lastPri = (*this)[i].priority;
         priList[priPos] = lastPri;
       }
