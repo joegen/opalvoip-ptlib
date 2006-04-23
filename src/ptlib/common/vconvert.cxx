@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.52  2006/04/23 20:20:49  dsandras
+ * Added resizing capability for VYUY YUYV formats thanks to Luc Saillard.
+ * Many thanks!
+ *
  * Revision 1.51  2006/04/19 04:09:37  csoutheren
  * Add special case conversion from QCIF to CIF
  *
@@ -327,7 +331,19 @@ class PStandardColourConverter : public PColourConverter
       const BYTE * src,
       BYTE * dest
     ) const;
+    void UYVY422toYUV420PSameSize(
+      const BYTE *uyvy,
+      BYTE *yuv420p
+    ) const;
+    void UYVY422toYUV420PWithResize(
+      const BYTE *uyvy,
+      BYTE *yuv420p
+    ) const;
     void YUY2toYUV420PSameSize(
+      const BYTE *yuy2,
+      BYTE *yuv420p
+    ) const;
+    void YUY2toYUV420PWithResize(
       const BYTE *yuy2,
       BYTE *yuv420p
     ) const;
@@ -864,7 +880,7 @@ PSTANDARD_COLOUR_CONVERTER(BGR32,YUV420P)
  * off:24  Y30 U30 Y31 V30 Y32 U31 Y33 V31
  * length:32 bytes
  *
- * Format YUV420:
+ * Format YUV420P:
  * off: 00  Y00 Y01 Y02 Y03
  * off: 04  Y10 Y11 Y12 Y13
  * off: 08  Y20 Y21 Y22 Y23
@@ -907,6 +923,144 @@ void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yu
   }
 }
 
+/*
+ * Format YUY2 or YUV422(non planar):
+ *
+ * off: 0  Y00 U00 Y01 V00 Y02 U01 Y03 V01
+ * off: 8  Y10 U10 Y11 V10 Y12 U11 Y13 V11
+ * off:16  Y20 U20 Y21 V20 Y22 U21 Y23 V21
+ * off:24  Y30 U30 Y31 V30 Y32 U31 Y33 V31
+ * length:32 bytes
+ *
+ * Format YUV420P:
+ * off: 00  Y00 Y01 Y02 Y03
+ * off: 04  Y10 Y11 Y12 Y13
+ * off: 08  Y20 Y21 Y22 Y23
+ * off: 12  Y30 Y31 Y32 Y33
+ * off: 16  U00 U02 U20 U22
+ * off: 20  V00 V02 V20 V22
+ * 
+ * So, we loose some bit of information when converting YUY2 to YUV420 
+ *
+ * NOTE: This algorithm works only if the width and the height is pair.
+ */
+void PStandardColourConverter::YUY2toYUV420PWithResize(const BYTE *yuy2, BYTE *yuv420p) const
+{
+  const BYTE *s;
+  BYTE *y, *u, *v;
+  unsigned int x, h;  
+  unsigned int npixels = srcFrameWidth * srcFrameHeight;
+
+  s = yuy2;
+  y = yuv420p;
+  u = yuv420p + npixels;
+  v = u + npixels/4;
+
+  if ( (dstFrameWidth * dstFrameHeight) > npixels ) {
+
+     // dest is bigger than the source. No subsampling.
+     // Place the src in the middle of the destination.
+     unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+     unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+     unsigned int bpixels = yOffset * dstFrameWidth;
+
+     /* Top border */
+     memset(y, BLACK_Y, bpixels);	y += bpixels;
+     memset(u, BLACK_U, bpixels/4);	u += bpixels/4;
+     memset(v, BLACK_V, bpixels/4);	v += bpixels/4;
+
+     for (h=0; h<srcFrameHeight; h+=2)
+      {
+        /* Left border */
+        memset(y, BLACK_Y, xOffset);	y += xOffset;
+        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+
+        /* Copy the first line keeping all information */
+        for (x=0; x<srcFrameWidth; x+=2)
+         {
+           *y++ = *s++;
+           *u++ = *s++;
+           *y++ = *s++;
+           *v++ = *s++;
+         }
+        /* Right and Left border */
+        for (x=0; x<xOffset*2; x++)
+          *y++ = BLACK_Y;
+
+        /* Copy the second line discarding u and v information */
+        for (x=0; x<srcFrameWidth; x+=2)
+         {
+           *y++ = *s++;
+           s++;
+           *y++ = *s++;
+           s++;
+         }
+        /* Fill the border with black (right side) */
+        memset(y, BLACK_Y, xOffset);	y += xOffset;
+        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+      }
+     memset(y, BLACK_Y, bpixels);
+     memset(u, BLACK_U, bpixels/4);
+     memset(v, BLACK_V, bpixels/4);
+
+
+  } else {
+
+     // source is bigger than the destination
+     // We are doing linear interpolation to find value.
+#define FIX_FLOAT       12
+     unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
+     unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
+     unsigned int fy, fx;
+
+     for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
+      {
+	/* Copy the first line with U&V */
+	unsigned int yy = fy>>FIX_FLOAT;
+	unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+	const unsigned char *line1, *line2;
+	unsigned char lastU, lastV;
+
+	line1 = s + (yy*2*srcFrameWidth);
+	line2 = s + (yy2*2*srcFrameWidth);
+	lastU = line1[0];
+	lastV = line1[2];
+	for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
+	 {
+	   unsigned int xx = (fx>>FIX_FLOAT)*2;
+	   *y++ = line1[xx+1];
+	   if ( (xx&2) == 0)
+	    {
+	      *u++ = lastU = (line1[xx+1] + line2[xx+1])/2;
+	      *v++ = lastV = (line1[xx+3] + line2[xx+3])/2;
+	    }
+	   else
+	    {
+	      *u++ = lastU;
+	      *v++ = lastV = (line1[xx+1] + line2[xx+1])/2;
+	    }
+	   xx = ((fx+dx)>>FIX_FLOAT)*2;
+	   *y++ = line1[xx+1];
+	   if ( (xx&2) == 0)
+	     lastU = (line1[xx+1] + line2[xx+1])/2;
+	   else
+	     lastV = (line1[xx+1] + line2[xx+1])/2;
+	 }
+
+	/* Copy the second line without U&V */
+        for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
+         {
+           unsigned int xx = (fx>>FIX_FLOAT)*2;
+           *y++ = line2[xx];
+         }
+      } /* end of for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2) */
+
+   }
+
+}
+
 
 PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
 {
@@ -919,14 +1073,9 @@ PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
   }
 
   if ((srcFrameWidth == dstFrameWidth) || (srcFrameHeight == dstFrameHeight)) {
-
      YUY2toYUV420PSameSize(yuy2, yuv420p);
-
   } else {
-     /* not efficient (convert then resize) */
-     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameWidth*srcFrameHeight*3/2);
-     YUY2toYUV420PSameSize(yuy2, intermed);
-     ResizeYUV420P(intermed, yuv420p);
+     YUY2toYUV420PWithResize(yuy2, yuv420p);
   }
 
   if (bytesReturned != NULL)
@@ -1159,7 +1308,7 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
   } else {  
     // source is bigger than the destination.
     //
-#define FIX_FLOAT	16
+#define FIX_FLOAT	12
     unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
     unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
     unsigned int fy, fx;
@@ -1213,56 +1362,41 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
   return TRUE;
 }
 
-
-
-
-///No resize here.
-//Colour format change only, YUV422 is turned into YUV420P.
-static void Yuv422ToYuv420P(unsigned dstFrameWidth, unsigned dstFrameHeight, 
-                            const BYTE * srcFrame, BYTE * dstFrame)
-{
-  unsigned  a,b;
-  BYTE *u,*v;
-  const BYTE * s =  srcFrame;
-  BYTE * y =  dstFrame;
-
-  u = y + (dstFrameWidth * dstFrameHeight);
-  v = u + (dstFrameWidth * dstFrameHeight / 4);
-
-  for (a = 0; a < dstFrameHeight; a+=2) {
-    for (b = 0; b < dstFrameWidth; b+=2) {
-      *(y++) = *(s++);
-      *(u++) = *(s++);
-      *(y++) = *(s++);
-      *(v++) = *(s++);
-    }
-    for (b = 0; b < dstFrameWidth; b+=2) {
-      *(y++) = *(s++);
-      s++;
-      *(y++) = *(s++);
-      s++;
-    }
-  }
-}
-
-
+/*
+ * Format YUY2 or YUV422(non planar):
+ *
+ * off: 0  Y00 U00 Y01 V00 Y02 U01 Y03 V01
+ * off: 8  Y10 U10 Y11 V10 Y12 U11 Y13 V11
+ * off:16  Y20 U20 Y21 V20 Y22 U21 Y23 V21
+ * off:24  Y30 U30 Y31 V30 Y32 U31 Y33 V31
+ * length:32 bytes
+ *
+ * Format YUV420P:
+ * off: 00  Y00 Y01 Y02 Y03
+ * off: 04  Y10 Y11 Y12 Y13
+ * off: 08  Y20 Y21 Y22 Y23
+ * off: 12  Y30 Y31 Y32 Y33
+ * off: 16  U00 U02 U20 U22
+ * off: 20  V00 V02 V20 V22
+ * 
+ * So, we loose some bit of information when converting YUY2 to YUV420 
+ *
+ */
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 {
-  if (srcFrameBuffer == dstFrameBuffer)
+  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
+    PTRACE(2,"PColCnv\tError in YUV422 to YUV420P converter, All size need to be pair.");
     return FALSE;
+  }
 
   if ((srcFrameWidth==dstFrameWidth) && (srcFrameHeight==dstFrameHeight))
-    Yuv422ToYuv420P(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer);
-  else {
-    //do a resize.  then convert to yuv420p.
-    BYTE * intermed = intermediateFrameStore.GetPointer(dstFrameWidth*dstFrameHeight*2);
-
-    ResizeYUV422(srcFrameBuffer, intermed);
-    Yuv422ToYuv420P(dstFrameWidth, dstFrameHeight, intermed, dstFrameBuffer);
-  }
+    YUY2toYUV420PSameSize(srcFrameBuffer, dstFrameBuffer);
+  else
+    YUY2toYUV420PWithResize(srcFrameBuffer, dstFrameBuffer);
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
+
   return TRUE;
 }
 
@@ -1930,79 +2064,218 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
 }
 
 /*
+ * Format UYVY or UYVY422(non planar) 4x4
+ *
+ * off: 0  U00 Y00 V01 Y00 U02 Y01 V03 Y01
+ * off: 8  U10 Y10 V11 Y10 U12 Y11 V13 Y11
+ * off:16  U20 Y20 V21 Y20 U22 Y21 V23 Y21
+ * off:24  U30 Y30 V31 Y30 U32 Y31 V33 Y31
+ * length:32 bytes
+ *
+ * Format YUV420P:
+ * off: 00  Y00 Y01 Y02 Y03
+ * off: 04  Y10 Y11 Y12 Y13
+ * off: 08  Y20 Y21 Y22 Y23
+ * off: 12  Y30 Y31 Y32 Y33
+ * off: 16  U00 U02 U20 U22
+ * off: 20  V00 V02 V20 V22
+ * 
+ * So, we loose some bit of information when converting UYVY to YUV420 
+ *
+ * NOTE: This algorithm works only if the width and the height is pair.
+ */
+void  PStandardColourConverter::UYVY422toYUV420PSameSize(const BYTE *uyvy, BYTE *yuv420p) const
+{
+  const BYTE *s;
+  BYTE *y, *u, *v;
+  unsigned int x, h;  
+  int npixels = srcFrameWidth * srcFrameHeight;
+
+  s = uyvy;
+  y = yuv420p;
+  u = yuv420p + npixels;
+  v = u + npixels/4;
+
+  for (h=0; h<srcFrameHeight; h+=2) {
+
+     /* Copy the first line keeping all information */
+     for (x=0; x<srcFrameWidth; x+=2) {
+	*u++ = *s++;
+	*y++ = *s++;
+	*v++ = *s++;
+	*y++ = *s++;
+     }
+     /* Copy the second line discarding u and v information */
+     for (x=0; x<srcFrameWidth; x+=2) {
+	s++;
+	*y++ = *s++;
+	s++;
+	*y++ = *s++;
+     }
+  }
+}
+
+
+/*
+ * Format UYVY (or UYVY422) non planar (4x4)
+ *
+ * off: 0  U00 Y00 V01 Y00 U02 Y01 V03 Y01
+ * off: 8  U10 Y10 V11 Y10 U12 Y11 V13 Y11
+ * off:16  U20 Y20 V21 Y20 U22 Y21 V23 Y21
+ * off:24  U30 Y30 V31 Y30 U32 Y31 V33 Y31
+ * length:32 bytes
+ *
+ * Format YUV420P:
+ * off: 00  Y00 Y01 Y02 Y03
+ * off: 04  Y10 Y11 Y12 Y13
+ * off: 08  Y20 Y21 Y22 Y23
+ * off: 12  Y30 Y31 Y32 Y33
+ * off: 16  U00 U02 U20 U22
+ * off: 20  V00 V02 V20 V22
+ * 
+ * So, we loose some bit of information when converting YUY2 to YUV420 
+ *
+ * NOTE: This algorithm works only if the width and the height is pair.
+ */
+void PStandardColourConverter::UYVY422toYUV420PWithResize(const BYTE *uyvy, BYTE *yuv420p) const
+{
+  const BYTE *s;
+  BYTE *y, *u, *v;
+  unsigned int x, h;  
+  unsigned int npixels = srcFrameWidth * srcFrameHeight;
+
+  s = uyvy;
+  y = yuv420p;
+  u = yuv420p + npixels;
+  v = u + npixels/4;
+
+  if ( (dstFrameWidth * dstFrameHeight) > npixels ) {
+
+     // dest is bigger than the source. No subsampling.
+     // Place the src in the middle of the destination.
+     unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+     unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+     unsigned int bpixels = yOffset * dstFrameWidth;
+
+     /* Top border */
+     memset(y, BLACK_Y, bpixels);	y += bpixels;
+     memset(u, BLACK_U, bpixels/4);	u += bpixels/4;
+     memset(v, BLACK_V, bpixels/4);	v += bpixels/4;
+
+     for (h=0; h<srcFrameHeight; h+=2)
+      {
+        /* Left border */
+        memset(y, BLACK_Y, xOffset);	y += xOffset;
+        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+
+        /* Copy the first line keeping all information */
+        for (x=0; x<srcFrameWidth; x+=2)
+         {
+           *u++ = *s++;
+           *y++ = *s++;
+           *v++ = *s++;
+           *y++ = *s++;
+         }
+        /* Right and Left border */
+        for (x=0; x<xOffset*2; x++)
+          *y++ = BLACK_Y;
+
+        /* Copy the second line discarding u and v information */
+        for (x=0; x<srcFrameWidth; x+=2)
+         {
+           s++;
+           *y++ = *s++;
+           s++;
+           *y++ = *s++;
+         }
+        /* Fill the border with black (right side) */
+        memset(y, BLACK_Y, xOffset);	y += xOffset;
+        memset(u, BLACK_U, xOffset/2);	u += xOffset/2;
+        memset(v, BLACK_V, xOffset/2);	v += xOffset/2;
+      }
+     memset(y, BLACK_Y, bpixels);
+     memset(u, BLACK_U, bpixels/4);
+     memset(v, BLACK_V, bpixels/4);
+
+
+  } else {
+
+     // source is bigger than the destination
+     // We are doing linear interpolation to find value.
+#define FIX_FLOAT       12
+     unsigned int dx = (srcFrameWidth<<FIX_FLOAT)/dstFrameWidth;
+     unsigned int dy = (srcFrameHeight<<FIX_FLOAT)/dstFrameHeight;
+     unsigned int fy, fx;
+
+     for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2)
+      {
+	/* Copy the first line with U&V */
+	unsigned int yy = fy>>FIX_FLOAT;
+	unsigned int yy2 = (fy+dy)>>FIX_FLOAT;
+	const unsigned char *line1, *line2;
+	unsigned char lastU, lastV;
+
+	line1 = s + (yy*2*srcFrameWidth);
+	line2 = s + (yy2*2*srcFrameWidth);
+	lastU = line1[0];
+	lastV = line1[2];
+	for (fx=0, x=0; x<dstFrameWidth; x+=2, fx+=dx*2)
+	 {
+	   unsigned int xx = (fx>>FIX_FLOAT)*2;
+	   if ( (xx&2) == 0)
+	    {
+	      *u++ = lastU = (line1[xx+0] + line2[xx+0])/2;
+	      *v++ = lastV = (line1[xx+2] + line2[xx+2])/2;
+	    }
+	   else
+	    {
+	      *u++ = lastU;
+	      *v++ = lastV = (line1[xx+0] + line2[xx+0])/2;
+	    }
+	   *y++ = line1[xx+1];
+	   xx = ((fx+dx)>>FIX_FLOAT)*2;
+	   if ( (xx&2) == 0)
+	     lastU = (line1[xx+0] + line2[xx+0])/2;
+	   else
+	     lastV = (line1[xx+0] + line2[xx+0])/2;
+	   *y++ = line1[xx+1];
+	 }
+
+	/* Copy the second line without U&V */
+        for (fx=0, x=0; x<dstFrameWidth; x++, fx+=dx)
+         {
+           unsigned int xx = (fx>>FIX_FLOAT)*2;
+           *y++ = line2[xx+1];
+         }
+      } /* end of for (fy=0, h=0; h<dstFrameHeight; h+=2, fy+=dy*2) */
+
+   }
+
+}
+
+
+/*
  * The following functions converts video from IEEE 1394 cameras into
  * YUV420P format. The video format of IEEE 1394 cameras can be found
  *  at Section 2.1.3 of
 http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pdf
  * 320x240 and 160x120 resolutions are used.
  *
- *
- * UYVY422 is just a byte permutation of YUV422. I believe this is not
- * due to endian problem
- *
- * These functions should accept arbitrary size of image.
  */
-
-
 PSTANDARD_COLOUR_CONVERTER(UYVY422,YUV420P)
 {
   if (srcFrameBuffer == dstFrameBuffer)
     return FALSE;
 
-  unsigned int row,column;
-  unsigned char *y = dstFrameBuffer;  //Initialise y,u,v here, to stop compiler warnings.
-  unsigned char *u = dstFrameBuffer + dstFrameWidth*dstFrameHeight;
-  unsigned char *v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4);
-  const unsigned char *src = srcFrameBuffer;
+  if ((srcFrameWidth==dstFrameWidth) && (srcFrameHeight==dstFrameHeight))
+    UYVY422toYUV420PSameSize(srcFrameBuffer, dstFrameBuffer);
+  else
+    UYVY422toYUV420PWithResize(srcFrameBuffer, dstFrameBuffer);
 
-  for(row=0; row < PMIN(srcFrameHeight, dstFrameHeight); row+=2) {
-    y = dstFrameBuffer + dstFrameWidth*row;
-    u = dstFrameBuffer + dstFrameWidth*dstFrameHeight + dstFrameWidth*row/4;
-    v = dstFrameBuffer + dstFrameWidth*(dstFrameHeight + dstFrameHeight/4) + dstFrameWidth*row/4;
-    src = srcFrameBuffer + row*srcFrameWidth*2;
-    for(column=0; column < PMIN(srcFrameWidth, dstFrameWidth); column+=2) {
-      *(u++) = (unsigned char)(((int)src[0] + src[srcFrameWidth*2])/2);
-      *(y++) = src[1];
-      *(v++) = (unsigned char)(((int)src[2] + src[2+srcFrameWidth*2])/2);
-      *(y++) = src[3];
-      src += 4;
-    }
-    for(column = PMIN(srcFrameWidth, dstFrameWidth);
-  column < dstFrameWidth; column+=2) {
-      *(u++) = BLACK_U;
-      *(y++) = BLACK_Y;
-      *(v++) = BLACK_V;
-      *(y++) = BLACK_Y;
-    }
-    y = dstFrameBuffer + dstFrameWidth*(row+1);
-    src = srcFrameBuffer + (row+1)*srcFrameWidth*2;
-    for(column=0; column < PMIN(srcFrameWidth,dstFrameWidth); column+=2) {
-      src++;
-      *(y++) = *(src++);
-      src++;
-      *(y++) = *(src++);
-    }
-    for(column = PMIN(srcFrameWidth, dstFrameWidth);
-  column < dstFrameWidth; column+=2) {
-      *(y++) = BLACK_Y;
-      *(y++) = BLACK_Y;
-    }
-  }
-  for(row = PMIN(srcFrameHeight, dstFrameHeight);
-      row < dstFrameHeight; row+=2) {
-    for(column = 0; column < dstFrameWidth; column+=2) {
-      *(u++) = BLACK_U;
-      *(y++) = BLACK_Y;
-      *(v++) = BLACK_V;
-      *(y++) = BLACK_Y;
-    }
-    for(column = 0; column < dstFrameWidth; column+=2) {
-      *(y++) = BLACK_Y;
-      *(y++) = BLACK_Y;
-    }
-  }
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
+
   return TRUE;
 }
 
