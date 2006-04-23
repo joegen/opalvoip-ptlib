@@ -27,6 +27,12 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.9.2.1  2006/04/23 18:19:10  dsandras
+ * Backport from HEAD.
+ *
+ * Revision 1.10  2006/04/23 18:16:59  dsandras
+ * Fixed OSS plugin when there is no resampling.
+ *
  * Revision 1.9  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -722,6 +728,7 @@ BOOL PSoundChannelOSS::Write(const void * buf, PINDEX len)
     while (!ConvertOSError(::write(os_handle, (void *)buf, len))) 
       if (GetErrorCode() != Interrupted)
         return FALSE;
+    lastWriteCount += len;
   }
 
   else {
