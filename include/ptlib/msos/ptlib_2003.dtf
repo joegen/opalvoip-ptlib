@@ -6018,6 +6018,8 @@ EXPORTS
     ?upper_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @15906 NONAME
     ?upper_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @15907 NONAME
     ?upper_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @15908 NONAME
+    ?UYVY422toYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAE@Z @16545 NONAME
+    ?UYVY422toYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAE@Z @16546 NONAME
     ?ValidateDeviceName@PDevicePluginServiceDescriptor@@UBE_NABVPString@@H@Z @16247 NONAME
     ?ValidateDeviceName@PVideoOutputDevice_Window_PluginServiceDescriptor@@UBE_NABVPString@@H@Z @16248 NONAME
     ?ValueSelect@PAbstractSortedList@@IBEHPBUElement@1@ABVPObject@@PAPBU21@@Z @3028 NONAME
@@ -6075,6 +6077,7 @@ EXPORTS
     ?Yield@PThread@@SAXXZ @2602 NONAME
     ?YUV420PtoRGB@PStandardColourConverter@@IBEHPBEPAEPAHIII@Z @16251 NONAME
     ?YUY2toYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAE@Z @16513 NONAME
+    ?YUY2toYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAE@Z @16547 NONAME
     ?Zero@P_fd_set@@QAEXXZ @2604 NONAME
     ?_Buy@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAE_NI@Z @6146 NONAME
     ?_Buy@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@IAE_NI@Z @6147 NONAME
