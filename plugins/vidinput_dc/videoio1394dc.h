@@ -19,6 +19,10 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.3  2006/04/30 21:25:21  dsandras
+ * Fixed resolution detection thanks to Luc Saillard <luc saillard org>.
+ * Thanks a lot!
+ *
  * Revision 1.2  2005/08/09 09:08:10  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -252,6 +256,9 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     PString      desiredColourFormat;
     unsigned     desiredFrameWidth;
     unsigned     desiredFrameHeight;
+    int          supportedFormat;
+#define DC1394_FORMAT_160x120	1
+#define DC1394_FORMAT_320x240	2
 };
 
 #endif
