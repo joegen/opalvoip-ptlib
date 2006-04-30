@@ -26,6 +26,13 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45.2.7  2006/04/30 21:28:38  dsandras
+ * Backport from HEAD.
+ *
+ * Revision 1.53  2006/04/30 21:26:46  dsandras
+ * Fixed green color problem when converting images in some of the color formats
+ * used by the iSight thanks to Luc Saillard <luc saillard org>.
+ *
  * Revision 1.45.2.6  2006/04/23 20:21:47  dsandras
  * Backported fix from HEAD.
  *
@@ -2082,14 +2089,14 @@ void PStandardColourConverter::UYVY422toYUV420PWithResize(const BYTE *uyvy, BYTE
   const BYTE *s;
   BYTE *y, *u, *v;
   unsigned int x, h;  
-  unsigned int npixels = srcFrameWidth * srcFrameHeight;
+  unsigned int npixels = dstFrameWidth * dstFrameHeight;
 
   s = uyvy;
   y = yuv420p;
   u = yuv420p + npixels;
   v = u + npixels/4;
 
-  if ( (dstFrameWidth * dstFrameHeight) > npixels ) {
+  if ( (srcFrameWidth * srcFrameHeight) < npixels ) {
 
      // dest is bigger than the source. No subsampling.
      // Place the src in the middle of the destination.
