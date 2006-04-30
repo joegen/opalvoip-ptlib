@@ -137,6 +137,10 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.9  2006/04/30 21:25:20  dsandras
+ * Fixed resolution detection thanks to Luc Saillard <luc saillard org>.
+ * Thanks a lot!
+ *
  * Revision 1.8  2005/12/01 00:43:45  csoutheren
  * Fixed typo
  *
@@ -386,6 +390,22 @@ BOOL PVideoInputDevice_1394DC::Open(const PString & devName, BOOL startImmediate
     Close();
     return FALSE;
   }
+
+  // Verify the format that the card accept
+  quadlet_t supported_framerates;
+  supportedFormat = 0;
+  if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
+	FORMAT_VGA_NONCOMPRESSED, MODE_320x240_YUV422,
+	&supported_framerates) == DC1394_SUCCESS) {
+     supportedFormat |= DC1394_FORMAT_320x240;
+  }
+
+  if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
+	FORMAT_VGA_NONCOMPRESSED, MODE_160x120_YUV444,
+	&supported_framerates) == DC1394_SUCCESS) {
+     supportedFormat |= DC1394_FORMAT_160x120;
+  }
+  
   PTRACE(3, "Successfully opended\n");
   return TRUE;
 }
@@ -754,7 +774,7 @@ BOOL PVideoInputDevice_1394DC::SetFrameSize(unsigned width, unsigned height)
     colourFormat = "UYV444";
 
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-  
+
   if (IsCapturing()) {
     Stop(); Start();
   }
@@ -762,12 +782,15 @@ BOOL PVideoInputDevice_1394DC::SetFrameSize(unsigned width, unsigned height)
   return TRUE;
 }
 
-
 BOOL PVideoInputDevice_1394DC::SetFrameSizeConverter(unsigned width, unsigned height, BOOL bScaleNotCrop)
 {
-  if (width == CIFWidth && height == CIFHeight)
+  if (width == CIFWidth && height == CIFHeight && (supportedFormat & DC1394_FORMAT_320x240))
     SetFrameSize(320, 240);
-  else if (width == QCIFWidth && height == QCIFHeight)
+  else if (width == QCIFWidth && height == QCIFHeight && (supportedFormat & DC1394_FORMAT_160x120))
+    SetFrameSize(160, 120);
+  else if (width == QCIFWidth && height == QCIFHeight && (supportedFormat & DC1394_FORMAT_320x240))
+    SetFrameSize(320, 240);
+  else if (width == CIFWidth && height == CIFHeight && (supportedFormat & DC1394_FORMAT_160x120))
     SetFrameSize(160, 120);
   else {
     PTRACE(1, width << "x" << height << " is not supported.");
