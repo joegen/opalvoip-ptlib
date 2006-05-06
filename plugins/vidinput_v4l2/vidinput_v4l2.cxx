@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.18  2006/05/06 15:29:38  dsandras
+ * Applied patch from Martin Rubli <martin rubli logitech com> to fix framerate
+ * and computation issues. Thanks a lot!
+ *
  * Revision 1.17  2006/03/12 11:16:19  dsandras
  * Added multi-buffering support to V4L2 thanks to Luc Saillard. Thanks!
  *
@@ -256,7 +260,7 @@ BOOL PVideoInputDevice_V4L2::Open(const PString & devName, BOOL startImmediate)
 
     canSetFrameRate = videoStreamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME;
     if (canSetFrameRate)
-      PVideoDevice::SetFrameRate (10000000 * videoStreamParm.parm.capture.timeperframe.numerator / videoStreamParm.parm.capture.timeperframe.denominator);
+      PVideoDevice::SetFrameRate (videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator);
   }
   
   return TRUE;
@@ -491,6 +495,18 @@ BOOL PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   memset(&videoFormat, 0, sizeof(struct v4l2_format));
   videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
+  // get the frame rate so we can preserve it throughout the S_FMT call
+  struct v4l2_streamparm streamParm;
+  unsigned int fi_n = 0, fi_d = 0;
+  streamParm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (::ioctl(videoFd, VIDIOC_G_PARM, &streamParm) == 0 &&
+        streamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
+    fi_n = streamParm.parm.capture.timeperframe.numerator;
+    fi_d = streamParm.parm.capture.timeperframe.denominator;
+  } else {
+    PTRACE(1,"PVidInDev\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
+  }
+
   // get the colour format
   if (::ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
     PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
@@ -517,6 +533,16 @@ BOOL PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
     return FALSE;
   }
 
+  // reset the frame rate because it may have been overridden by the call to S_FMT
+  if (fi_n == 0 || fi_d == 0 || ::ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
+    PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+  } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
+             streamParm.parm.capture.timeperframe.denominator  != fi_d) {
+    PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+              << "/" << streamParm.parm.capture.timeperframe.denominator
+              << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
+  }
+
   frameBytes = videoFormat.fmt.pix.sizeimage;
 
   PTRACE(6,"PVidInDev\tset colour format \"" << newFormat << "\", fd=" << videoFd);
@@ -536,7 +562,7 @@ BOOL PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
   }
 
   if (canSetFrameRate) {
-    videoStreamParm.parm.capture.timeperframe.numerator = 10000000;
+    videoStreamParm.parm.capture.timeperframe.numerator = 1;
     videoStreamParm.parm.capture.timeperframe.denominator = (rate ? rate : 1);
 
     // set the stream parameters
@@ -771,11 +797,24 @@ BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width, unsigned he
 {
   struct v4l2_format videoFormat;
   videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  struct v4l2_streamparm streamParm;
+  unsigned int fi_n = 0, fi_d = 0;
+  streamParm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   // get the frame size
   if (::ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
     PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
     return FALSE;
+  }
+
+  // get the frame rate so we can preserve it throughout the S_FMT call
+  // Sidenote: V4L2 gives us the frame interval, i.e. 1/fps.
+  if (::ioctl(videoFd, VIDIOC_G_PARM, &streamParm) == 0 &&
+        streamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
+    fi_n = streamParm.parm.capture.timeperframe.numerator;
+    fi_d = streamParm.parm.capture.timeperframe.denominator;
+  } else {
+    PTRACE(1,"PVidInDev\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
   }
 
   videoFormat.fmt.pix.width = width;
@@ -799,6 +838,16 @@ BOOL PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned width, unsigned he
     // allow the device to return actual frame size
     PVideoDevice::SetFrameSize(videoFormat.fmt.pix.width, videoFormat.fmt.pix.height);
     return FALSE;
+  }
+
+  // reset the frame rate because it may have been overridden by the call to S_FMT
+  if (fi_n == 0 || fi_d == 0 || ::ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
+    PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+  } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
+             streamParm.parm.capture.timeperframe.denominator  != fi_d) {
+    PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+              << "/" << streamParm.parm.capture.timeperframe.denominator
+              << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
   }
 
   frameBytes = videoFormat.fmt.pix.sizeimage;
