@@ -278,13 +278,29 @@ fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$STDCXX $CXXFLAGS -Wreorder conftest.cc > /dev/null 2>&1
+$CXX $CXXFLAGS -Wreorder conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
   STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
 else
   AC_MSG_RESULT(no)
 fi
+
+
+dnl add additional information for the debugger to ensure the user can indeed
+dnl debug coredumps and macros.
+
+AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.cc > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  DEBUG_FLAG="-g3 -ggdb -O0"
+else
+  AC_MSG_RESULT(no)
+  DEBUG_FLAG="-g"
+fi
+
 
 # AC_MSG_CHECKING(if linker accepts -Woverloaded-virtual)
 # AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
@@ -2107,6 +2123,7 @@ AC_SUBST(STDCXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
+AC_SUBST(DEBUG_FLAG)
 AC_PROG_INSTALL
 
 AC_CONFIG_FILES(make/ptbuildopts.mak)
