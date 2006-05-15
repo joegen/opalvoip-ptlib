@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.201  2006/05/15 23:11:26  dereksmithies
+# Use -ggdb -O0 -g3 to provide more information to the debugger, and force all
+#  optimisation to be off. Initial tests show: this improves linux debugging.
+#
 # Revision 1.200  2006/01/17 18:57:17  dsandras
 # Applied patch from Brian Lu <brian lu sun com> to fix compilation with SUN
 # studio. Thanks.
@@ -790,7 +794,7 @@ endif # QNX6
 ifeq ($(OSTYPE),Nucleus)
 
 # Nucleus using gcc
-STDCCFLAGS	+= -msoft-float -nostdinc -g
+STDCCFLAGS	+= -msoft-float -nostdinc $(DEBUGFLAGS)
 STDCCFLAGS	+= -D__NUCLEUS_PLUS__ -D__ppc -DWOT_NO_FILESYSTEM -DPLUS \
 		   -D__HAS_NO_FLOAT -D__USE_STL__ \
                    -D__USE_STD__ \
@@ -867,7 +871,7 @@ endif
 # Further configuration
 
 ifndef DEBUG_FLAG
-DEBUG_FLAG	:= -g
+DEBUG_FLAG	:=  -g
 endif
 
 ifndef PTLIB_ALT
