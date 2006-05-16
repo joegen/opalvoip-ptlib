@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.54  2006/05/16 11:10:36  shorne
+ * Removed warning message MSVC 6
+ *
  * Revision 1.53  2006/04/30 21:26:46  dsandras
  * Fixed green color problem when converting images in some of the color formats
  * used by the iSight thanks to Luc Saillard <luc saillard org>.
@@ -240,6 +243,11 @@
 
 #define QCIF_WIDTH    176
 #define QCIF_HEIGHT   144
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4244)
+#endif
+
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
@@ -2520,5 +2528,8 @@ PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
 #endif // P_MACOSX
 #endif // __GNUC__
 
+#ifdef _MSC_VER
+#pragma warning(default : 4244)
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
