@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.27.2.3  2006/05/17 18:41:36  dsandras
+ * Backported fix from HEAD.
+ *
  * Revision 1.27.2.2  2006/03/09 20:30:06  dsandras
  * Backports from HEAD.
  *
@@ -472,8 +475,6 @@ BOOL PSoundChannelALSA::Close()
 
   snd_pcm_close (os_handle);
   os_handle = NULL;
-
-  snd_config_update_free_global ();
 
   return TRUE;
 }
