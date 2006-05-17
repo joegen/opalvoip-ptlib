@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.30  2006/05/17 18:40:55  dsandras
+ * Do not explicitely free the cache as it could create some weird race conditions.
+ *
  * Revision 1.29  2006/03/09 20:28:35  dsandras
  * Added fallback mechanism to find an existing mixer for playing/recording.
  *
@@ -466,8 +469,6 @@ BOOL PSoundChannelALSA::Close()
 
   snd_pcm_close (os_handle);
   os_handle = NULL;
-
-  snd_config_update_free_global ();
 
   return TRUE;
 }
