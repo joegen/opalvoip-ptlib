@@ -68,7 +68,7 @@ enum std_markers {
 #endif
 
 #if DEBUG
-#ifdef LOG2FILE
+#if LOG2FILE
 #define error(fmt, args...) do { \
    FILE *f = fopen("/tmp/jpeg.log", "a"); \
    fprintf(f, fmt, ## args); \
@@ -1720,6 +1720,7 @@ static int parse_DHT(struct jdec_private *priv, const unsigned char *stream)
      length -= 1;
      length -= 16;
      length -= count;
+     stream += count;
   }
   trace("< DHT marker\n");
   return 0;
