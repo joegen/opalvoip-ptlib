@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.40  2006/05/23 00:58:05  csoutheren
+ * Add templates for creating threads
+ *
  * Revision 1.39  2006/01/29 22:35:46  csoutheren
  * Added fix for thread termination problems on SMP machines
  * Thanks to Derek Smithies
@@ -493,6 +496,85 @@ class PThread : public PObject
 #else
 #include "unix/ptlib/thread.h"
 #endif
+};
+
+/** Define some templates to simplify the declaration
+  * of simple PThread descendants with one or two paramaters 
+  */
+
+class PThreadMain : public PThread
+{
+  PCLASSINFO(PThreadMain, PThread);
+  public:
+    PThreadMain(BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    { Resume(); }
+    virtual void Main() = 0;
+};
+
+template <class Arg1Type>
+class PThreadMain1Arg : public PThreadMain
+{
+  PCLASSINFO(PThreadMain1Arg, PThreadMain);
+  public:
+    PThreadMain1Arg(Arg1Type _arg1, BOOL autoDelete = FALSE)
+      : PThreadMain(autoDelete), arg1(_arg1)
+    { Resume(); }
+    virtual void Main();
+
+  protected:
+    Arg1Type arg1;
+};
+
+template <class Arg1Type, class Arg2Type>
+class PThreadMain2Arg : public PThreadMain1Arg<Arg1Type>
+{
+  typedef PThreadMain1Arg<Arg1Type> AncestorClass;
+  PCLASSINFO(PThreadMain2Arg, AncestorClass);
+  public:
+    PThreadMain2Arg(Arg1Type _arg1, Arg2Type _arg2, BOOL autoDelete = FALSE)
+      : AncestorClass(_arg1, autoDelete), arg2(_arg2)
+    { Resume(); }
+    virtual void Main();
+
+  protected:
+    Arg2Type arg2;
+};
+
+template <class ObjType>
+class PThreadObj : public PThreadMain
+{
+  public:
+  PCLASSINFO(PThreadObj, PThreadMain);
+  public:
+    typedef void (ObjType::*ObjTypeFn)(); 
+    PThreadObj(ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
+      : PThreadMain(autoDelete), obj(_obj), fn(_fn)
+    { Resume(); }
+    void Main()
+    { (obj.*fn)(); }
+
+  protected:
+    ObjType obj;
+    ObjTypeFn fn;
+};
+
+template <class ObjType, class Arg1Type>
+class PThreadObj1Arg : public PThreadMain
+{
+  PCLASSINFO(PThreadObj1Arg, PThreadMain);
+  public:
+    typedef void (ObjType::*ObjTypeFn)(int); 
+    PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
+      : PThreadMain(autoDelete), obj(_obj), fn(_fn), arg1(_arg1)
+    { Resume(); }
+    void Main()
+    { (obj.*fn)(arg1); }
+
+  protected:
+    ObjType obj;
+    ObjTypeFn fn;
+    Arg1Type arg1;
 };
 
 #endif // _PTHREAD
