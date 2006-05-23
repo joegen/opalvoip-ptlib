@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.41  2006/05/23 22:11:27  csoutheren
+ * Fixed compilation under gcc
+ *
  * Revision 1.40  2006/05/23 00:58:05  csoutheren
  * Add templates for creating threads
  *
@@ -530,7 +533,7 @@ template <class Arg1Type, class Arg2Type>
 class PThreadMain2Arg : public PThreadMain1Arg<Arg1Type>
 {
   typedef PThreadMain1Arg<Arg1Type> AncestorClass;
-  PCLASSINFO(PThreadMain2Arg, AncestorClass);
+  //PCLASSINFO(PThreadMain2Arg, AncestorClass);
   public:
     PThreadMain2Arg(Arg1Type _arg1, Arg2Type _arg2, BOOL autoDelete = FALSE)
       : AncestorClass(_arg1, autoDelete), arg2(_arg2)
