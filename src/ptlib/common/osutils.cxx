@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.239  2006/05/23 22:28:11  csoutheren
+ * Add timer protection for backwards running clocks
+ *
  * Revision 1.238  2006/05/23 00:57:30  csoutheren
  * Fix race condition in timer startup (maybe)
  *
@@ -1382,7 +1385,7 @@ PTimeInterval PTimerList::Process()
 
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime;
-  if (lastSample == 0)
+  if (lastSample == 0 || lastSample > now)
     sampleTime = 0;
   else {
     sampleTime = now - lastSample;
