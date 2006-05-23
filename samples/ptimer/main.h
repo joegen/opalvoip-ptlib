@@ -1,0 +1,173 @@
+/*
+ * main.h
+ *
+ * PWLib application header file for ptimer
+ *
+ * Copyright (c) 2006 Indranet Technologies Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Indranet Technologies Ltd.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Log: main.h,v $
+ * Revision 1.1  2006/05/23 04:36:49  dereksmithies
+ * Initial release of a test program to examine the operation of PTimer.
+ *
+ *
+ *
+ */
+
+#ifndef _PTimer_MAIN_H
+#define _PTimer_MAIN_H
+
+/**A class that does a PTimer functionality. This class runs once. It
+   is started, and on completion of the delay it toggles a flag. At
+   that point, this timer has finished. */
+class MyTimer : public PTimer
+{
+  PCLASSINFO(MyTimer, PTimer);
+ public:
+  /**constructor */
+  MyTimer();
+
+  /**method used to start everything */
+  void StartRunning(PSyncPoint * _exitFlag, PINDEX delayMs);
+
+  /**Method called when this timer finishes */
+  virtual void OnTimeout();
+
+ protected:
+  /**The flag to mark the end of this timer */
+  PSyncPoint *exitFlag;
+  
+  /**The duration we delay for */
+  PTimeInterval delayPeriod;
+  
+  /**The time at which we started */
+  PTime startTime;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+  
+/**This class is a simple simple thread that just creates, waits a
+   period of time, and exits.It is designed to test the PwLib methods
+   for reporting the status of a thread. This class will be created
+   over and over- millions of times is possible if left long
+   enough. If the pwlib thread status functions are broken, a segfault
+   will result. Past enxperience has found a fault in pwlib with the
+   BusyWait option on, with SMP machines and a delay period of 20ms */
+class DelayThread : public PThread
+{
+  PCLASSINFO(DelayThread, PThread);
+  
+public:
+  DelayThread(PINDEX _delay);
+    
+  DelayThread(PINDEX _delay, BOOL);
+  
+  ~DelayThread();
+
+  void Main();
+
+ protected:
+  PINDEX delay;
+
+  MyTimer localPTimer;
+
+  PSyncPoint endMe;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+/**This thread handles the Users console requests to query the status of 
+   the launcher thread. It provides a means for the user to close down this
+   program - without having to use Ctrl-C*/
+class UserInterfaceThread : public PThread
+{
+  PCLASSINFO(UserInterfaceThread, PThread);
+  
+public:
+  UserInterfaceThread()
+    : PThread(10000, NoAutoDeleteThread)
+    { }
+
+  void Main();
+    
+ protected:
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/**This thread launches multiple instances of the BusyWaitThread. Each
+   thread launched is busy monitored for termination. When the thread
+   terminates, the thread is deleted, and a new one is created. This
+   process repeats until segfault or termination by the user */
+class LauncherThread : public PThread
+{
+  PCLASSINFO(LauncherThread, PThread);
+  
+public:
+  LauncherThread()
+    : PThread(10000, NoAutoDeleteThread)
+    { iteration = 0; keepGoing = TRUE; }
+  
+  void Main();
+    
+  PINDEX GetIteration() { return iteration; }
+
+  virtual void Terminate() { keepGoing = FALSE; }
+
+  PTimeInterval GetElapsedTime() { return PTime() - startTime; }
+
+  PDECLARE_NOTIFIER(PThread, LauncherThread, AutoCreatedMain);
+
+ protected:
+  PINDEX iteration;
+  PTime startTime;
+  BOOL  keepGoing;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+class PTimerTest : public PProcess
+{
+  PCLASSINFO(PTimerTest, PProcess)
+
+  public:
+    PTimerTest();
+    virtual void Main();
+
+    PINDEX Delay()    { return delay; }
+
+    PINDEX Interval() { return interval; }
+
+    static PTimerTest & Current()
+      { return (PTimerTest &)PProcess::Current(); }
+    
+    void TooSoon(PTimeInterval & elapsed);
+
+ protected:
+
+    PINDEX delay;
+
+    BOOL   interval;
+
+};
+
+
+
+#endif  // _PTimer_MAIN_H
+
+
+// End of File ///////////////////////////////////////////////////////////////
