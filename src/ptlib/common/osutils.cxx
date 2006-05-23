@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.238  2006/05/23 00:57:30  csoutheren
+ * Fix race condition in timer startup (maybe)
+ *
  * Revision 1.237  2005/12/04 22:43:30  csoutheren
  * Cleanup patches from Kilian Krause
  *
@@ -1179,7 +1182,7 @@ PTimer::PTimer(const PTimeInterval & time)
 
 void PTimer::Construct()
 {
-  state = Stopped;
+  state = Starting;
 
   timerList = PProcess::Current().GetTimerList();
 
