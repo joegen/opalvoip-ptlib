@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/05/24 02:28:18  dereksmithies
+ * add separate thread to get the timer to start.
+ * Add option to check if the timer has started.
+ * Fix use of the parameters.
+ *
  * Revision 1.1  2006/05/23 04:36:49  dereksmithies
  * Initial release of a test program to examine the operation of PTimer.
  *
@@ -73,10 +78,8 @@ class DelayThread : public PThread
   PCLASSINFO(DelayThread, PThread);
   
 public:
-  DelayThread(PINDEX _delay);
+  DelayThread(PINDEX _delay, BOOL _checkTimer);
     
-  DelayThread(PINDEX _delay, BOOL);
-  
   ~DelayThread();
 
   void Main();
@@ -84,9 +87,29 @@ public:
  protected:
   PINDEX delay;
 
+  BOOL checkTimer;
+
   MyTimer localPTimer;
 
   PSyncPoint endMe;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+/**This class turns the ptimer on from a separate thread to the delay thread.
+   Then, DelayThread checks this ptimer, and waits for it to finish.
+*/
+class TimerOnThread : public PThread
+{
+  PCLASSINFO(TimerOnThread, PThread);
+  
+public:
+  TimerOnThread(PTimer & _timer);
+    
+  void Main();
+
+ protected:
+
+  PTimer timer;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,8 +152,6 @@ public:
 
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 
-  PDECLARE_NOTIFIER(PThread, LauncherThread, AutoCreatedMain);
-
  protected:
   PINDEX iteration;
   PTime startTime;
@@ -148,9 +169,11 @@ class PTimerTest : public PProcess
     PTimerTest();
     virtual void Main();
 
-    PINDEX Delay()    { return delay; }
+    PINDEX Delay()      { return delay; }
 
-    PINDEX Interval() { return interval; }
+    PINDEX Interval()   { return interval; }
+
+    BOOL   CheckTimer() { return checkTimer; }
 
     static PTimerTest & Current()
       { return (PTimerTest &)PProcess::Current(); }
@@ -161,8 +184,9 @@ class PTimerTest : public PProcess
 
     PINDEX delay;
 
-    BOOL   interval;
+    PINDEX interval;
 
+    BOOL   checkTimer;
 };
 
 
