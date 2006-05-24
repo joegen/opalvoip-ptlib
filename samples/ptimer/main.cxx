@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2006/05/24 02:28:18  dereksmithies
+ * add separate thread to get the timer to start.
+ * Add option to check if the timer has started.
+ * Fix use of the parameters.
+ *
  * Revision 1.1  2006/05/23 04:36:49  dereksmithies
  * Initial release of a test program to examine the operation of PTimer.
  *
@@ -57,6 +62,7 @@ void PTimerTest::Main()
 
   args.Parse(
              "h-help."        
+	     "c-check."
              "d-delay:"       
 	     "i-interval:"
 #if PTRACING
@@ -85,6 +91,7 @@ void PTimerTest::Main()
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl         
            << "-h  or --help         print this help" << endl
+	   << "-c  or --check        check the timer is running when it should be running" << endl
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     duration (ms) the timer waits for" << endl
 	   << "-i  or --interval ##  interval (ms) between timer tests" << endl
@@ -96,6 +103,8 @@ void PTimerTest::Main()
            << endl << endl;
     return;
   }
+
+  checkTimer = args.HasOption('c');
 
   delay = 200;
   if (args.HasOption('d'))
@@ -137,12 +146,15 @@ void MyTimer::StartRunning(PSyncPoint * _exitFlag, PINDEX delayMs)
   delayPeriod = PTimeInterval(delayMs);
   startTime = PTime();
 
-  Resume();
+  PThread * startIt = new TimerOnThread(*this);
+  startIt->Resume();
 }
 
 void MyTimer::OnTimeout()
 {
-  PTimeInterval error(1);
+  PTimeInterval error(3); //provide a 3ms error in return time, to avoid
+  //any ounding issue in timers.
+
   PTimeInterval elapsed = error + (PTime() - startTime);
   
   if (elapsed < delayPeriod)
@@ -153,8 +165,8 @@ void MyTimer::OnTimeout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-DelayThread::DelayThread(PINDEX _delay)
-  : PThread(10000, AutoDeleteThread), delay(_delay)
+DelayThread::DelayThread(PINDEX _delay, BOOL _checkTimer)
+  : PThread(10000, AutoDeleteThread), delay(_delay), checkTimer(_checkTimer)
 {
   PTRACE(5, "Constructor for a auto deleted PTimer test thread");
 }    
@@ -171,24 +183,38 @@ void DelayThread::Main()
   PTRACE(5, "DelayThread\t start now");
   localPTimer.StartRunning(&endMe, delay);
 
+  if (checkTimer) {
+    if (!localPTimer.IsRunning())
+      cerr << "PTimer has been detected as finishing too soon" << endl;
+  }
+
   endMe.Wait();
   PTRACE(5, "DelayThread\t all finished");
 }
 
-///////////////////////////////////////////////////////////////////////////
-
-void LauncherThread::AutoCreatedMain(PThread &, INT param)
+/////////////////////////////////////////////////////////////////////////////
+TimerOnThread::TimerOnThread(PTimer & _timer)
+  : PThread(10000, AutoDeleteThread), timer(_timer)
 {
-  PThread::Sleep(param);
+  PTRACE(5, "Constructor for a auto deleted Ptimer On thread.");
+}    
+
+void TimerOnThread::Main()  
+{
+  PTRACE(5, "DelayThread\t start now");
+  timer.Resume();
 }
+
+///////////////////////////////////////////////////////////////////////////
 
 void LauncherThread::Main()
 {
-  PINDEX delay    = PTimerTest::Current().Delay();
-  PINDEX interval = PTimerTest::Current().Interval();
+  PINDEX delay      = PTimerTest::Current().Delay();
+  PINDEX interval   = PTimerTest::Current().Interval();
+  BOOL   checkTimer = PTimerTest::Current().CheckTimer();
 
   while (keepGoing) {
-	PThread * thread = new DelayThread(delay);
+	PThread * thread = new DelayThread(delay, checkTimer);
 	thread->Resume();
 	PThread::Sleep(interval);
 	iteration++;
