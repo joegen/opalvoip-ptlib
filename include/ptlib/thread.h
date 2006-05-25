@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.42  2006/05/25 23:28:27  csoutheren
+ * Fixed compilation under gcc 4.0
+ *
  * Revision 1.41  2006/05/23 22:11:27  csoutheren
  * Fixed compilation under gcc
  *
@@ -511,7 +514,7 @@ class PThreadMain : public PThread
   public:
     PThreadMain(BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
-    { Resume(); }
+    { PThread::Resume(); }
     virtual void Main() = 0;
 };
 
@@ -522,7 +525,7 @@ class PThreadMain1Arg : public PThreadMain
   public:
     PThreadMain1Arg(Arg1Type _arg1, BOOL autoDelete = FALSE)
       : PThreadMain(autoDelete), arg1(_arg1)
-    { Resume(); }
+    { PThread::Resume(); }
     virtual void Main();
 
   protected:
@@ -537,7 +540,7 @@ class PThreadMain2Arg : public PThreadMain1Arg<Arg1Type>
   public:
     PThreadMain2Arg(Arg1Type _arg1, Arg2Type _arg2, BOOL autoDelete = FALSE)
       : AncestorClass(_arg1, autoDelete), arg2(_arg2)
-    { Resume(); }
+    { PThread::Resume(); }
     virtual void Main();
 
   protected:
@@ -553,7 +556,7 @@ class PThreadObj : public PThreadMain
     typedef void (ObjType::*ObjTypeFn)(); 
     PThreadObj(ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThreadMain(autoDelete), obj(_obj), fn(_fn)
-    { Resume(); }
+    { PThread::Resume(); }
     void Main()
     { (obj.*fn)(); }
 
@@ -570,7 +573,7 @@ class PThreadObj1Arg : public PThreadMain
     typedef void (ObjType::*ObjTypeFn)(int); 
     PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThreadMain(autoDelete), obj(_obj), fn(_fn), arg1(_arg1)
-    { Resume(); }
+    { PThread::Resume(); }
     void Main()
     { (obj.*fn)(arg1); }
 
