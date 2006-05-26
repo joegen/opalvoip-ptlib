@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.41 2005/11/30 12:47:41 csoutheren Exp $
+ * $Id: pssl.cxx,v 1.42 2006/05/26 22:05:42 hfriederich Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.42  2006/05/26 22:05:42  hfriederich
+ * Fixing compilation under Mac OS X
+ *
  * Revision 1.41  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -769,9 +772,10 @@ PSSLDiffieHellman::~PSSLDiffieHellman()
     DH_free(dh);
 }
 
-#ifdef __BEOS__
+#if defined(__BEOS__) || defined(__APPLE__)
 // 2/21/04 Yuri Kiryanov - fix for compiler choke on BeOS for usage of
 // SSL function d2i_DHparams_bio below in PSSLDiffieHellman::Load
+// 5/26/06 Hannes Friederich - Mac OS X seems to need that fix too...
 #undef  d2i_DHparams_bio
 #define d2i_DHparams_bio(bp,x) \
  (DH *)ASN1_d2i_bio( \
