@@ -96,7 +96,7 @@ enum std_markers {
 } while(0)
 #endif
 #else
-#ifdef P_SOLARIS 
+#if defined (P_SOLARIS) && !defined (__GNUC__)
 #define error(fmt, args,...) do { return -1; } while(0)
 #define trace(fmt, args,...) do { } while (0)
 #else
