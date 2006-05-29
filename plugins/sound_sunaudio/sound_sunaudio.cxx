@@ -27,6 +27,9 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.2  2006/05/29 18:40:28  dsandras
+ * Applied patch from Brian Lu <brian lu sun com>. Thanks!
+ *
  * Revision 1.1  2006/01/24 20:43:11  dsandras
  * Added Sunaudio support for OpenSolaris thanks to Brian Lu <brian lu sun com>.
  * Thanks a lot for this!
@@ -288,9 +291,6 @@ BOOL PSoundChannelSunAudio::Write(const void * buffer, PINDEX length)
       }
       PTRACE(6, "SunAudio\tWrite interrupted");       
     }
-
-    /* Flush the playing buffer */
-    ret = ::ioctl(os_handle, AUDIO_DRAIN, NULL);
 
     total += bytes;
     if (total != length)
