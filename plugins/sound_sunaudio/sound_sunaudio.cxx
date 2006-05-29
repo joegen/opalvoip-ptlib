@@ -27,6 +27,9 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.1.2.3  2006/05/29 18:43:26  dsandras
+ * Applied patch from Brian Lu <brian lu sun com>. Thanks!
+ *
  * Revision 1.1.2.2  2006/05/28 23:33:03  csoutheren
  * Copied Sun audio driver files to Phobos branch
  *
@@ -291,9 +294,6 @@ BOOL PSoundChannelSunAudio::Write(const void * buffer, PINDEX length)
       }
       PTRACE(6, "SunAudio\tWrite interrupted");       
     }
-
-    /* Flush the playing buffer */
-    ret = ::ioctl(os_handle, AUDIO_DRAIN, NULL);
 
     total += bytes;
     if (total != length)
