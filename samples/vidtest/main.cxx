@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.12  2006/06/06 23:00:13  dereksmithies
+ * Fix erroneous help message.
+ *
  * Revision 1.11  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -154,7 +157,7 @@ void VidTest::Main()
            <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
 #endif
            << endl
-           << " e.g. ./vidtest --videodevice Philips\\ 680\\ webcam --videosize small " << endl << endl;
+           << " e.g. ./vidtest --input-device fake --input-channel 2" << endl << endl;
     return;
   }
 
