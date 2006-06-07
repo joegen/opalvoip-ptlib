@@ -71,6 +71,9 @@
  * we use floating point arithmetic.
  *
  *$Log: jidctflt.cxx,v $
+ *Revision 1.5  2006/06/07 08:13:16  hfriederich
+ *Fixing compiler error on Apple x86 machines
+ *
  *Revision 1.4  2006/03/24 23:39:25  dereksmithies
  *Put cvs commit messages into this file.
  *
@@ -87,7 +90,7 @@
 #define DEQUANTIZE(coef,quantval)  (((FAST_FLOAT) (coef)) * (quantval))
 
 
-#if defined(__GNUC__) && (defined(__i686__) || defined(__x86_64__)) && (!defined(P_64BIT))
+#if defined(__GNUC__) && (defined(__i686__) || defined(__x86_64__)) && (!defined(P_64BIT)) && (!defined(__MACOSX__))
 
 static inline unsigned char descale_and_clamp(int x, int shift)
 {
