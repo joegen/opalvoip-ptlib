@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.15  2006/06/09 04:43:04  dereksmithies
+ * Add patch from Ben Lear to reduce the cpu consumption. Previously, the SDL
+ * display thread was using 100% of the CPU time. Many thanks.
+ *
  * Revision 1.14  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -304,6 +308,8 @@ bool PVideoOutputDevice_SDL::ProcessSDLEvents()
         PTRACE(3, "PSDL\t Resize window to " << event.resize.w << " x " << event.resize.h);
     }
   }
+  // Sleep for 25 milliseconds
+  SDL_Delay(25);
 
   return true;
 }
