@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.15.2.3  2006/06/10 15:57:46  dsandras
+ * Added HINTS for Logitech Quickcam Communicate thanks to Michael Riepe
+ * <michael mr511 de>.
+ *
  * Revision 1.15.2.2  2006/02/06 22:25:05  dsandras
  * Backported changes from HEAD.
  *
@@ -298,6 +302,18 @@ static struct {
       HINT_HAS_PREF_PALETTE,
       VIDEO_PALETTE_YUV420P },
 
+  /** Quickcam Communicate STX (spca5xx driver)
+      Actually, it's not true that it needs VIDEO_PALETTE_YUV420P.
+      But it wouldn't be reasonable to convert the pictures twice.
+   */
+  { "Logitech QuickCam Communicate S",
+    "Logitech Quickcam Communicate STX (spca5xx driver)",
+    NULL,
+    HINT_ALWAYS_WORKS_320_240 |
+    HINT_ALWAYS_WORKS_640_480 |
+    HINT_HAS_PREF_PALETTE,
+    VIDEO_PALETTE_YUV420P },
+  
   /** Quickcam Express (qc-usb driver) */
   { "Logitech [USB Camera|QuickCam USB]",
     "Quickcam Express (qc-usb driver)",
