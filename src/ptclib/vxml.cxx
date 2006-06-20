@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.67  2006/06/20 09:01:51  csoutheren
+ * Applied patch 1353851
+ * VXML unitialized autoDeleteTextToSpeech
+ * Thanks to Frederich
+ *
  * Revision 1.66  2005/12/01 01:05:59  csoutheren
  * Fixed uninitialised variable
  *
@@ -694,6 +699,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   vxmlChannel      = NULL;
   finishWhenEmpty  = TRUE;
   textToSpeech     = NULL;
+  autoDeleteTextToSpeech = FALSE;
 
   SetTextToSpeech(_tts, autoDelete);
 
