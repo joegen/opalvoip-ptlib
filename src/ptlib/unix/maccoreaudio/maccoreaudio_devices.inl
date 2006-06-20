@@ -66,8 +66,8 @@ static PString CADeviceName(AudioDeviceID id)
   theStatus = AudioDeviceGetProperty(id, 0, false,
 				     kAudioDevicePropertyDeviceName,
 				     &theSize, name);
-  if (theStatus != 0 || *name == NULL)
-    return NULL;
+  if (theStatus != 0 || *name == 0)
+    return 0;
 
   return (PString(name));
 }
