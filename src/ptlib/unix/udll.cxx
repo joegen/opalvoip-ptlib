@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.20  2006/06/20 05:36:38  csoutheren
+ * Patch 1471705 rewritten to make threadsafe
+ * Display error from dlopen if available
+ * Thanks to Joerg Pulz
+ *
  * Revision 1.19  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -150,8 +155,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static void *dlsymIntern(void *handle, const char *symbol);
 
 static const char *error(int setget, const char *str, ...);
-
-
 
 /* Set and get the error string for use by dlerror */
 static const char *error(int setget, const char *str, ...)
@@ -344,6 +347,12 @@ static void *dlsym(void *handle, const char *symbol)
 
 #endif // P_MACOSX
 
+static PMutex & GetDLLMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
 #ifndef  P_DYNALINK
 
 #warning "No implementation for dynamic library functions"
@@ -378,11 +387,20 @@ BOOL PDynaLink::Open(const PString & _name)
 
   name = _name;
 
+  {
+    PWaitAndSignal m(GetDLLMutex());
+
+    const char *err = dlerror();
+
 #if defined(P_OPENBSD)
-  dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
+    dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
 #else
-  dllHandle = dlopen((const char *)name, RTLD_NOW);
+    dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
+
+    err = dlerror();
+    PTRACE_IF(1, err != NULL, "DLL\tError loading DLL - " << err);
+  }
 
   return IsLoaded();
 }
