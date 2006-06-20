@@ -1407,7 +1407,7 @@ dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
 dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
 
 AC_ARG_ENABLE(expat,
-       [  --disable-tts           disable Text-ToSpeech support (default disabled)])
+       [  --disable-tts           disable Text-ToSpeech support (default enabled)])
 
 if test "${enable_tts}z" = "z" ; then
   enable_tts=$default_tts
