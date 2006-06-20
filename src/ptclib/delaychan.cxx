@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.6  2006/06/20 12:44:02  csoutheren
+ * Added new constructor for PDelayChannel
+ * Thanks to Frederic Heem
+ *
  * Revision 1.5  2003/02/20 08:43:44  rogerh
  * On Mac OS X, the thread sleep() (which uses select) is not as fine grained
  * as usleep. So use usleep(). Tested by Shawn.
@@ -102,6 +106,23 @@ PDelayChannel::PDelayChannel(Mode m,
   minimumDelay = min;
 }
 
+PDelayChannel::PDelayChannel(PChannel &channel,
+                             Mode m,
+                             unsigned delay,
+                             PINDEX size,
+                             unsigned max,
+                             unsigned min) :
+   mode(m), 
+   frameDelay(delay),
+   frameSize(size),
+   minimumDelay(min)
+{
+  maximumSlip = -PTimeInterval(max);
+  if(Open(channel) == FALSE){
+    PTRACE(1,"PDelayChannel cannot open channel");
+  }
+  PTRACE(5,"Delay delay = " << frameDelay << ", size = " << frameSize);
+}
 
 BOOL PDelayChannel::Read(void * buf, PINDEX count)
 {

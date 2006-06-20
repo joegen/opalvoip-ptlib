@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.7  2006/06/20 12:44:02  csoutheren
+ * Added new constructor for PDelayChannel
+ * Thanks to Frederic Heem
+ *
  * Revision 1.6  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -120,6 +124,22 @@ class PDelayChannel : public PIndirectChannel
       unsigned maximumSlip = 250, ///< Maximum slip time in milliseconds
       unsigned minimumDelay = 10  ///< Minimim delay (usually OS time slice)
     );
+    
+    /** Create a new delay channel with the specified delays and channel. A value of zero
+    for the numBytes parameter indicates that the delay is in frame mode.
+
+    The maximum skip time is the number of milliseconds that the delay
+    may "catch up" by using zero delays. This is caused by the Read() or
+    Write() not being called for a time by external factors.
+     */
+    PDelayChannel(
+        PChannel &channel,          ///< channel to use 
+        Mode mode,                  ///< Mode for delay channel
+        unsigned frameDelay,        ///< Delay time in milliseconds
+        PINDEX frameSize = 0,       ///< Bytes to apply to the delay time.
+        unsigned maximumSlip = 250, ///< Maximum slip time in milliseconds
+        unsigned minimumDelay = 10  ///< Minimim delay (usually OS time slice)
+                 );    
   //@}
 
 
