@@ -43,15 +43,15 @@ class PSoundChannelESD: public PSoundChannel
               unsigned _bitsPerSample);
     BOOL Setup();
     BOOL Close();
-    BOOL IsOpen() const;
+//    BOOL IsOpen() const;
     BOOL Write(const void * buf, PINDEX len);
     BOOL Read(void * buf, PINDEX len);
     BOOL SetFormat(unsigned numChannels,
                    unsigned sampleRate,
                    unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
+//    unsigned GetChannels() const;
+//    unsigned GetSampleRate() const;
+//    unsigned GetSampleSize() const;
     BOOL SetBuffers(PINDEX size, PINDEX count);
     BOOL GetBuffers(PINDEX & size, PINDEX & count);
     BOOL PlaySound(const PSound & sound, BOOL wait);
