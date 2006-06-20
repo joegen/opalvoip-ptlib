@@ -24,6 +24,11 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: vidinput_bsd.cxx,v $
+ * Revision 1.3  2006/06/20 06:08:06  csoutheren
+ * Applied patch 1471691
+ * Fix vidinput_bsd plugin
+ * Thanks to Joerg Pulz
+ *
  * Revision 1.2  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -122,12 +127,11 @@
 #pragma implementation "vidinput_bsd.h"
 
 #include "vidinput_bsd.h"
-#include <sys/mman.h>
 
 PCREATE_VIDINPUT_PLUGIN(BSDCAPTURE);
 
 ///////////////////////////////////////////////////////////////////////////////
-// PVideoInputDevice_BSDCAPTURE
+// PVideoInputBSDCAPTURE
 
 PVideoInputDevice_BSDCAPTURE::PVideoInputDevice_BSDCAPTURE()
 {
@@ -142,6 +146,7 @@ PVideoInputDevice_BSDCAPTURE::~PVideoInputDevice_BSDCAPTURE()
 
 BOOL PVideoInputDevice_BSDCAPTURE::Open(const PString & devName, BOOL startImmediate)
 {
+  if (IsOpen())
   Close();
 
   deviceName = devName;
@@ -235,10 +240,14 @@ PStringList PVideoInputDevice_BSDCAPTURE::GetInputDeviceNames()
 {
   PStringList list;
 
-  list.AppendString("/dev/bktr0");
-  list.AppendString("/dev/bktr1");
-  list.AppendString("/dev/meteor0");
-  list.AppendString("/dev/meteor1");
+  if (PFile::Exists("/dev/bktr0"))
+    list.AppendString("/dev/bktr0");
+  if (PFile::Exists("/dev/bktr1"))
+    list.AppendString("/dev/bktr1");
+  if (PFile::Exists("/dev/meteor0"))
+    list.AppendString("/dev/meteor0");
+  if (PFile::Exists("/dev/meteor1"))
+    list.AppendString("/dev/meteor1");
 
   return list;
 }
