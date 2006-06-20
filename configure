@@ -860,7 +860,7 @@ Optional Features:
   --disable-jabber        disable Jabber support
   --disable-xmlrpc        disable XMLRPC support
   --disable-soap          disable SOAP support
-  --disable-tts           disable Text-ToSpeech support (default disabled)
+  --disable-tts           disable Text-ToSpeech support (default enabled)
   --disable-ipv6          disable IPV6 support
   --disable-qos           disable QOS support
   --disable-sdl           disable SDL support
