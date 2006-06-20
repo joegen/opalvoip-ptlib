@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.21  2006/06/20 13:26:19  csoutheren
+ * Only call dlerror if error occurs
+ *
  * Revision 1.20  2006/06/20 05:36:38  csoutheren
  * Patch 1471705 rewritten to make threadsafe
  * Display error from dlopen if available
@@ -398,8 +401,10 @@ BOOL PDynaLink::Open(const PString & _name)
     dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
 
-    err = dlerror();
-    PTRACE_IF(1, err != NULL, "DLL\tError loading DLL - " << err);
+    if (dllHandle != NULL) {
+      err = dlerror();
+      PTRACE_IF(1, err != NULL, "DLL\tError loading DLL - " << err);
+    }
   }
 
   return IsLoaded();
