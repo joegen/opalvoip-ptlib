@@ -1523,9 +1523,9 @@ else
     AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext -laa)
   fi
 
-  dnl freeBSD SDL check
+  dnl FreeBSD SDL check
   if test "${HAS_SDL:-unset}" = "unset" ; then
-    AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
+    AC_CHECK_HEADER(SDL11/SDL.h, HAS_SDL=1)
     if test "${HAS_SDL:-unset}" != "unset" ; then
       SDLLIB=SDL-1.1
     fi
