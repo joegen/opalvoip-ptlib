@@ -44,6 +44,7 @@ namespace PWLibStupidOSXHacks
       OSStatus error = static_cast<OSStatus>(err);\
       PTRACE(1, "CoreAudio Error " << __func__ << " "  \
            <<  error   << "("  << (char*)&err <<  ")" ); \
+			error = err; \
     }         
    
 ostream& operator<<(ostream &os, AudioStreamBasicDescription &inDesc)

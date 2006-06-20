@@ -12,7 +12,7 @@
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: speex_types.h,v 1.1 2006/01/26 08:05:03 shorne Exp $
+ last mod: $Id: speex_types.h,v 1.2 2006/06/20 09:23:56 csoutheren Exp $
 
  ********************************************************************/
 /**
@@ -21,6 +21,8 @@
 */
 #ifndef _SPEEX_TYPES_H
 #define _SPEEX_TYPES_H
+
+#include "ptbuildopts.h"
 
 #if defined(_WIN32) 
 
@@ -53,14 +55,6 @@
      typedef unsigned __int16 spx_uint16_t;
 #  endif
 
-#elif defined(__MACOS__)
-
-#  include <sys/types.h>
-   typedef SInt16 spx_int16_t;
-   typedef UInt16 spx_uint16_t;
-   typedef SInt32 spx_int32_t;
-   typedef UInt32 spx_uint32_t;
-   typedef SInt64 spx_int64_t;
 
 #elif defined(__MACOSX__) /* MacOS X Framework build */
 
@@ -70,6 +64,15 @@
    typedef int32_t spx_int32_t;
    typedef u_int32_t spx_uint32_t;
    typedef int64_t spx_int64_t;
+
+#elif defined(__MACOS__)
+
+#  include <sys/types.h>
+typedef SInt16 spx_int16_t;
+typedef UInt16 spx_uint16_t;
+typedef SInt32 spx_int32_t;
+typedef UInt32 spx_uint32_t;
+typedef SInt64 spx_int64_t;
 
 #elif defined(__BEOS__)
 
@@ -128,6 +131,15 @@
    typedef unsigned short spx_uint16_t;
    typedef int spx_int32_t;
    typedef unsigned int spx_uint32_t;
+
+#elif defined(P_MACOSX) /* MacOS X Framework build */
+
+#  include <sys/types.h>
+typedef int16_t spx_int16_t;
+typedef u_int16_t spx_uint16_t;
+typedef int32_t spx_int32_t;
+typedef u_int32_t spx_uint32_t;
+typedef int64_t spx_int64_t;
 
 #else
 
