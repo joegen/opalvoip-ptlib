@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.240  2006/06/20 08:13:52  csoutheren
+ * Applied part of patch 1469188
+ * PTrace Rotate Daily
+ * Thanks to Dave Moss
+ *
  * Revision 1.239  2006/05/23 22:28:11  csoutheren
  * Add timer protection for backwards running clocks
  *
@@ -889,9 +894,9 @@ void PTrace::SetStream(ostream * s)
 static void OpenTraceFile()
 {
   PFilePath fn(PTrace_Filename);
-
+ 
   if ((PTraceOptions & PTrace::RotateDaily) != 0)
-    fn = PFilePath(fn.GetDirectory() + (fn.GetTitle() + PTime((PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local).AsString("yyyy_MM_dd") + fn.GetType()));
+      fn = PFilePath(fn.GetDirectory() + (fn.GetTitle() + PTime().AsString("yyyy_MM_dd",(PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local) + fn.GetType()));
 
   PTextFile * traceOutput;
   if (PTraceOptions & PTrace::AppendToFile) {
@@ -922,8 +927,10 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   PTrace_Filename = filename;
   PTraceOptions = options;
 
+  // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
+  // between os_gmtime and os_localtime?
   if (options & RotateDaily)
-    PTrace_lastDayOfYear = PTime((PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local).GetDayOfYear();
+    PTrace_lastDayOfYear = PTime().GetDayOfYear(); 
   else
     PTrace_lastDayOfYear = 0;
 
@@ -1003,14 +1010,15 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   PTraceCurrentLevel = level;
 
   if ((PTrace_Filename != NULL) && (PTraceOptions&RotateDaily) != 0) {
-    int day = PTime((PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local).GetDayOfYear();
+    int day = PTime().GetDayOfYear();
     if (day != PTrace_lastDayOfYear) {
       delete PTraceStream;
       PTraceStream = NULL;
       OpenTraceFile();
+      PTrace_lastDayOfYear = day;
       if (PTraceStream == NULL) {
         PTraceMutex->Signal();
-        return *PTraceStream;
+        return std::clog;
       }
     }
   }
