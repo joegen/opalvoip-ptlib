@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.118  2006/06/20 09:49:16  csoutheren
+ * Applied 1489468
+ * Fix stlport on old gcc/non-gcc compilers
+ * Thanks to Adam Butcher
+ *
  * Revision 1.117  2006/04/10 23:57:27  csoutheren
  * Checked in changes to remove some warnings with gcc effc++ flag
  *
@@ -483,7 +488,7 @@
   #include <stdlibx.h>
 #endif
 
-#if (__GNUC__ < 3)
+#if (__GNUC__ < 3) && !defined(_STLP_IOS_BASE_H)
 typedef long _Ios_Fmtflags;
 #endif
 
