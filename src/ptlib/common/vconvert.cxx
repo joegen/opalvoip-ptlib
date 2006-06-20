@@ -26,6 +26,11 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.55  2006/06/20 05:39:40  csoutheren
+ * Applied patch 1501428
+ * Only shortcut YUV420P inplace resizing if sizes are the same
+ * Thanks to raaf123
+ *
  * Revision 1.54  2006/05/16 11:10:36  shorne
  * Removed warning message MSVC 6
  *
@@ -1363,8 +1368,12 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   
-  if (srcFrameBuffer == dstFrameBuffer)
-    return TRUE;
+  if (srcFrameBuffer == dstFrameBuffer) {
+	if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
+		return TRUE;
+	else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
+		return FALSE;
+  }
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
     memcpy(dstFrameBuffer,srcFrameBuffer,srcFrameWidth*srcFrameHeight*3/2);
