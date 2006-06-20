@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.3  2006/06/20 09:23:56  csoutheren
+# Applied patch 1465192
+# Fix pwlib make files, and config for unix
+#
 # Revision 1.2  2004/09/13 01:14:08  dereksmithies
 # Add two new targets to unix build, dtmftest and threadex
 #
@@ -40,12 +44,18 @@ all ::
 
 include ../make/ptlib.mak
 
-SUBDIRS += ThreadSafe audio find_ip hello_world netif thread threadex dtmftest
+#SUBDIRS += ThreadSafe audio find_ip hello_world netif thread threadex dtmftest
+SUBDIRS += audio find_ip ldaptest netif stunclient threadsafe dtmftest ipv6test md5 strtest thread timing
+
 #SUBDIRS += pxml xmlrpc xmlrpcsrvr   #expat + some are broken
 #SUBDIRS += vxmltest                 # no makefile
 
 # all these targets are just passed to all subdirectories
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
-	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
+	for dir in $(SUBDIRS) ; do \
+	if test -d $$dir ; then \
+          $(MAKE) -C $$dir $@ ; \
+        fi \
+	done
 
 # End of Makefile

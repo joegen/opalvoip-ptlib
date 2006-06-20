@@ -25,6 +25,10 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.2  2006/06/20 09:23:56  csoutheren
+ * Applied patch 1465192
+ * Fix pwlib make files, and config for unix
+ *
  * Revision 1.1  2006/02/26 09:19:17  shorne
  * AEC moved to seperate library
  *
@@ -115,7 +119,7 @@ void PAec::Send(BYTE * buffer, unsigned & length)
   speex_echo_cancel(echoState, ref_buf, echo_buf, e_buf, noise);
   
   /* Suppress the noise */
-  speex_preprocess(preprocessState, (__int16*)e_buf, noise);
+  speex_preprocess(preprocessState, (spx_int16_t*)e_buf, noise);
 
   /* Use the result of the echo cancelation as capture frame */
   memcpy(buffer, e_buf, length);
