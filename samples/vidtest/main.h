@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.4  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.3  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -44,8 +47,8 @@
 #ifndef _Vidtest_MAIN_H
 #define _Vidtest_MAIN_H
 
-
-
+#include <ptlib/pprocess.h>
+#include <ptlib/videoio.h>
 
 class VidTest : public PProcess
 {

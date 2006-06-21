@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.10  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.9  2006/03/25 09:01:44  dereksmithies
  * Add reporting options, and different methods for spawning threads. All stable and reliable.
  *
@@ -63,7 +66,8 @@
 #pragma interface
 #endif
 
-#include  <ptclib/random.h>
+#include <ptlib/pprocess.h>
+#include <ptclib/random.h>
 
 #include <ptlib/safecoll.h>
 

@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.7  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.6  2006/01/20 00:34:09  dereksmithies
  * Add PTRACE statements to the DelayThread Constructors and Destructor.
  *
@@ -54,6 +57,8 @@
 
 #ifndef _Threadex_MAIN_H
 #define _Threadex_MAIN_H
+
+#include <ptlib/pprocess.h>
 
 /**This class is a simple simple thread that just creates, waits a
    period of time, and exits.It is designed to test the PwLib methods

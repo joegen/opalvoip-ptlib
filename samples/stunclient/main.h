@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.1  2003/02/04 03:31:04  robertj
  * Added STUN
  *
@@ -30,8 +33,7 @@
 #ifndef _StunClient_MAIN_H
 #define _StunClient_MAIN_H
 
-
-
+#include <ptlib/pprocess.h>
 
 class StunClient : public PProcess
 {
