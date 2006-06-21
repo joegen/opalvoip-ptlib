@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.77  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.76  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -263,6 +266,7 @@
 #pragma implementation "syncthrd.h"
 
 #include "ptlib.h"
+#include <ptlib/pprocess.h>
 
 #ifdef P_VXWORKS
 #include <sys/times.h>

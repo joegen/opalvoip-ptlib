@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.84  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.83  2005/12/12 00:24:26  dereksmithies
  * Add recursive mutex to Wrapper object, so one can successfully Dump Memory
  * usage Statistics & objects during program operation.
@@ -299,6 +302,7 @@
 #endif // __GNUC__
 
 #include <ptlib.h>
+#include <ptlib/pfactory.h>
 #include <ctype.h>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
@@ -326,9 +330,11 @@ PMutex & PFactoryBase::GetFactoriesMutex()
 
 PFactoryBase::FactoryMap::~FactoryMap()
 {
-  FactoryMap::const_iterator entry;
-  for (entry = begin(); entry != end(); ++entry)
+  FactoryMap::iterator entry;
+  for (entry = begin(); entry != end(); ++entry){
     delete entry->second;
+    entry->second = NULL;
+  }  
 }
 
 void PAssertFunc(const char * file,

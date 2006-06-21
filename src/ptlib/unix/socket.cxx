@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.118  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.117  2006/02/21 13:57:31  csoutheren
  * Second attempt at fixing problem with interfaces having multiple addresses
  *
@@ -345,6 +348,8 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+#include <map>
+#include <ptlib/pstring.h>
 
 #if defined(SIOCGENADDR)
 #define SIO_Get_MAC_Address SIOCGENADDR

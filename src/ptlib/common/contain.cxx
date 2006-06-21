@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.175  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.174  2006/03/19 23:30:09  csoutheren
  * Added patch#1451378
  * Thanks to Borko Jandras
@@ -712,7 +715,14 @@ void PContainer::AssignContents(const PContainer & cont)
   reference->critSec.Enter();
 #endif
 
-  PAssert2(cont.reference != NULL, cont.GetClass(), "Assign of deleted container");
+
+  if(cont.reference == NULL){
+    PAssertAlways("container reference is null");
+    return;
+  } else if(cont.GetClass() == NULL){
+    PAssertAlways("container class is null");
+    return;
+  }
 
   if (reference == cont.reference) {
 #if PCONTAINER_USES_CRITSEC

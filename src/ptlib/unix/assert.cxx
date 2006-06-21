@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.18  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.17  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -86,6 +89,7 @@
 
 #include <ctype.h>
 #include <signal.h>
+#include <ptlib/pprocess.h>
 
 void PAssertFunc(const char * msg)
 

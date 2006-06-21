@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.241  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.240  2006/06/20 08:13:52  csoutheren
  * Applied part of patch 1469188
  * PTrace Rotate Daily
@@ -805,8 +808,11 @@
 
 #include <ptlib.h>
 #include <vector>
+#include <map>
 
 #include <ctype.h>
+#include <ptlib/pfactory.h>
+#include <ptlib/pprocess.h>
 
 #ifdef __MACOSX__
 namespace PWLibStupidOSXHacks {
@@ -1041,8 +1047,8 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
                       << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
-        if (name.GetLength() <= 23)
-          *PTraceStream << setw(23) << name;
+        if (name.GetLength() <= 12)
+          *PTraceStream << setw(12) << name;
         else
           *PTraceStream << name.Left(10) << "..." << name.Right(10);
       }

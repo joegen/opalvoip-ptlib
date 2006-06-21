@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.56  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.55  2006/06/20 05:39:40  csoutheren
  * Applied patch 1501428
  * Only shortcut YUV420P inplace resizing if sizes are the same
@@ -232,6 +235,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/video.h>
 
 #ifdef __GNUC__
 #pragma implementation "vconvert.h"

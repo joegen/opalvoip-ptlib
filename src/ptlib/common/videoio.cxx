@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.62  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.61  2006/04/19 04:10:27  csoutheren
  * Fix problem when using converter when frame size not supported
  *
@@ -264,6 +267,7 @@
 #endif // !_WIN32_WCE 
 
 #include <ptlib.h>
+#include <ptlib/pluginmgr.h>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
