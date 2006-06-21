@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: odbctest.cxx,v $
+ * Revision 1.3  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.2  2005/08/09 09:08:13  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -37,6 +40,7 @@
 
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 
 class ODBCtest : public PProcess
 {

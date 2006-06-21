@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.87  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.86  2006/04/09 07:05:40  rjongbloed
  * Moved output stream operator for PString from sockets code to string code and fixed
  *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
@@ -330,6 +333,8 @@
  * Initial revision
  *
  */
+#ifndef __PSTRING__
+#define __PSTRING__
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -3215,4 +3220,5 @@ class PRegularExpression : public PObject
 
 PString psprintf(const char * cfmt, ...);
 
+#endif // #ifndef __PSTRING__
 // End Of File ///////////////////////////////////////////////////////////////

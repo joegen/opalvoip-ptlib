@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.7  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.6  2006/04/19 04:09:04  csoutheren
  * Allow frame size conversions
  *
@@ -60,7 +63,7 @@
 
 
 #include <ptlib.h>
-
+#include <ptlib/video.h>
 #include <ptlib/vconvert.h>
 #include <ptclib/pvidfile.h>
 

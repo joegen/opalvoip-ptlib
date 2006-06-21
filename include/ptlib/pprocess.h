@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.72  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.71  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -256,8 +259,8 @@
 
 #include <ptlib/mutex.h>
 #include <ptlib/syncpoint.h>
+#include <ptlib/thread.h>
 #include <ptlib/pfactory.h>
-
 
 /**Create a process.
    This macro is used to create the components necessary for a user PWLib
@@ -283,8 +286,10 @@ extern "C" {\
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
     { PProcess::PreInitialise(argc, argv, envp); \
-      static cls instance; \
-      return instance._main(); \
+      cls *pInstance = new cls(); \
+      int terminationValue = pInstance->_main(); \
+      delete pInstance; \
+      return terminationValue; \
     }
 #endif // P_VXWORKS
 
