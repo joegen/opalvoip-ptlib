@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.35  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.34  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -168,6 +171,7 @@
 
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
+#include <ptlib/pluginmgr.h>
 
 #ifdef _MSC_VER
 #ifndef _WIN32_WCE

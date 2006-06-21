@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.17  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.16  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -196,6 +199,7 @@
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
+#include <ptlib/sound.h>
 
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
 #error "sound_win32.cxx must be compiled without precompiled headers"

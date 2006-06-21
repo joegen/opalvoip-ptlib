@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.82  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.81  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -674,7 +677,7 @@ int PServiceProcess::_main(void * arg)
       return 1;
   }
 
-  debugMode = arguments.GetCount() > 0 && strcasecmp(arguments[0], "Debug") == 0;
+  debugMode = arguments.GetCount() > 0 && (strcasecmp(arguments[0], "Debug") == 0 || strcasecmp(arguments[0], "foreground"));
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
   if (!debugMode && arguments.GetCount() > 0) {
