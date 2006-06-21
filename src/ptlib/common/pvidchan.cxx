@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.18  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.17  2006/02/20 06:14:41  csoutheren
  * Return FALSE if video channel read fails
  *
@@ -94,7 +97,7 @@
 #endif
 
 #include <ptlib.h>
-
+#include <ptlib/video.h>
 
 PVideoChannel::PVideoChannel() 
 {

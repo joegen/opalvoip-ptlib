@@ -6,6 +6,9 @@
  * Copyright 2004 Reitek S.p.A.
  *
  * $Log: main.h,v $
+ * Revision 1.4  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.3  2005/08/08 08:15:59  rjongbloed
  * Fixed precompiled header usage
  *
@@ -21,6 +24,7 @@
 #define _XMPPTest_MAIN_H
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/notifier_ext.h>
 #include <ptclib/xmpp_c2s.h>
 #include <ptclib/xmpp_roster.h>

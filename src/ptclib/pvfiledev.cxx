@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.8  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.7  2006/04/19 04:09:04  csoutheren
  * Allow frame size conversions
  *
@@ -63,7 +66,9 @@
 
 #include <ptlib/vconvert.h>
 #include <ptclib/pvfiledev.h>
-
+#include <ptlib/pfactory.h>
+#include <ptlib/pluginmgr.h>
+#include <ptlib/videoio.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile

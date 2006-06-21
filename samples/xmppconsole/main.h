@@ -9,6 +9,9 @@
  *                           2)turned into a console application.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.1  2005/08/04 03:29:12  dereksmithies
  * Initial release of a console application to test XMPP messages between running applications.
  * Thanks to Indranet Technologies ltd for sponsoring the work.
@@ -32,6 +35,7 @@
 #define _XMPPConsole_MAIN_H
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/notifier_ext.h>
 #include <ptclib/xmpp_c2s.h>
 #include <ptclib/xmpp_roster.h>

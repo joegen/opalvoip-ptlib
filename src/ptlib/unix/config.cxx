@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.37  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.36  2004/04/03 23:55:59  csoutheren
  * Added fix for PConfig environment variables under Linux
  *   Thanks to Michal Zygmuntowicz
@@ -102,7 +105,7 @@
 #pragma implementation "config.h"
 
 #include <ptlib.h>
-
+#include <ptlib/pprocess.h>
 
 #include "../common/pconfig.cxx"
 
