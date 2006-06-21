@@ -1,4 +1,6 @@
+
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <string>
 
 ////////////////////////////////////////////////
@@ -195,7 +197,6 @@ class Test5Thread : public PThread
       PThread::Sleep(2000);
 
       cout << "qchannel started" << endl;
-      PINDEX i = 0;
       for (;;) {
         char buffer[29];
         if (!qchan.Read(buffer, sizeof(buffer)))

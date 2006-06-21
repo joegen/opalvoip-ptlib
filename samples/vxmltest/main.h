@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.3  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.2  2004/06/02 08:30:22  csoutheren
  * Tweaks to avoid some problems with reading single bytes from a PCM stream
  *
@@ -16,6 +19,8 @@
 
 #ifndef _Vxmltest_MAIN_H
 #define _Vxmltest_MAIN_H
+
+#include <ptlib/pprocess.h>
 
 class PVXMLSession;
 

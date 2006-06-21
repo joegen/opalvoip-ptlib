@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.7  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.6  2003/01/07 10:04:13  rogerh
  * Revert to 2 seconds per phase
  *
@@ -54,6 +57,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 
 /*
  * Thread #1 displays the number 1 every 10ms.

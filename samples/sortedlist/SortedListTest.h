@@ -1,5 +1,6 @@
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/safecoll.h>
 
 class SortedListTest:public PProcess {
