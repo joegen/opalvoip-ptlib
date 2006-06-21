@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.25  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.24  2004/04/27 04:37:50  rjongbloed
  * Fixed ability to break of a PSocket::Select call under linux when a socket
  *   is closed by another thread.
@@ -104,6 +107,8 @@
  * Changes for HPUX and Sun 4
  *
  */
+#ifndef __PCHANNEL_UNIX__
+#define __PCHANNEL_UNIX__
 
   public:
     enum PXBlockType {
@@ -125,5 +130,7 @@
     PMutex      px_writeMutex;
     PThread   * px_selectThread;
     PMutex      px_selectMutex;
+
+#endif //#ifndef __PCHANNEL_UNIX__ 
 
 // End Of File ////////////////////////////////////////////////////////////////

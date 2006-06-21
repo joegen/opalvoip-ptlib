@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.19  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.18  2006/06/10 15:57:11  dsandras
  * Added HINTS for Logitech Quickcam Communicate thanks to Michael Riepe
  * <michael mr511 de>.
@@ -236,7 +239,7 @@
  */
 
 #pragma implementation "vidinput_v4l.h"
-
+#include <ptlib/pluginmgr.h>
 #include "vidinput_v4l.h"
 #include <sys/utsname.h>
 
