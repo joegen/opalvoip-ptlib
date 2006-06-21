@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.17  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.16  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -90,6 +93,7 @@
 #pragma interface
 #endif
 
+#include <ptlib/pprocess.h>
 
 /**Create a socket channel that uses allows ICMP commands in the Internal
    Protocol.

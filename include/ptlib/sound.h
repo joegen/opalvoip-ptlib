@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.37  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.36  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -166,6 +169,7 @@
 #pragma interface
 #endif
 
+#include <ptlib/plugin.h>
 #include <ptlib/pluginmgr.h>
 
 /** A class representing a sound. A sound is a highly platform dependent

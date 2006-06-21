@@ -1,7 +1,6 @@
 
 #include <ptlib.h>
 #include <ptlib/socket.h>
-#include <ptlib/plugin.h>
 
 //#if !P_USE_INLINES
 //#include <ptlib/contain.inl>

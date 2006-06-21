@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.24  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.23  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -109,6 +112,8 @@
 #pragma interface
 #endif
 
+#include <ptlib/channel.h>
+
 
 /**A channel that uses a operating system pipe between the current process and
    a sub-process. On platforms that support {\it multi-processing}, the
@@ -135,6 +140,10 @@
    multi-processing is supported by the platform. Note that this is different
    to whether {\it multi-threading} is supported.
  */
+ 
+class PChannel;
+
+
 class PPipeChannel : public PChannel
 {
   PCLASSINFO(PPipeChannel, PChannel);
