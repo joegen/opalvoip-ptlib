@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.78  2006/06/21 13:27:03  csoutheren
+ * Fixed link problem with gcc 2.95.3
+ *
  * Revision 1.77  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -261,6 +264,7 @@
 #pragma implementation "thread.h"
 #pragma implementation "semaphor.h"
 #pragma implementation "mutex.h"
+#pragma implementation "critsec.h"
 #pragma implementation "psync.h"
 #pragma implementation "syncpoint.h"
 #pragma implementation "syncthrd.h"
