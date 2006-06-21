@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.81  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.80  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -290,6 +293,8 @@
  */
 
 #include <ptlib.h>
+
+#include <ptlib/pprocess.h>
 
 #include <errno.h>
 #include <fcntl.h>

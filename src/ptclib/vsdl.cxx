@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.16  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.15  2006/06/09 04:43:04  dereksmithies
  * Add patch from Ben Lear to reduce the cpu consumption. Previously, the SDL
  * display thread was using 100% of the CPU time. Many thanks.
@@ -98,6 +101,7 @@
 
 #include <ptlib.h>
 #include <ptlib/vconvert.h>
+#include <ptlib/pluginmgr.h>
 #include <ptclib/vsdl.h>
 
 #define new PNEW

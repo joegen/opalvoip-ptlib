@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.158  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.157  2006/04/09 11:04:00  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -569,6 +572,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 
 #include <process.h>
 #include <ptlib/msos/ptlib/debstrm.h>
