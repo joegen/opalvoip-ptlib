@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.26  2006/06/21 05:19:38  csoutheren
+ * Fixed build with latest PWLib
+ *
  * Revision 1.25  2006/04/10 23:57:25  csoutheren
  * Checked in changes to remove some warnings with gcc effc++ flag
  *
@@ -149,6 +152,7 @@
 //#endif
 
 #include <ptlib.h>
+#include <ptlib/pfactory.h>
 
 class PWAVFile;
 
