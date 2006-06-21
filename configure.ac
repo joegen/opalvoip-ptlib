@@ -988,12 +988,45 @@ if test "$enable_sasl" = "no" ; then
   AC_MSG_NOTICE(SASL disabled)
 else 
 
-dnl Not all Unices have SASL installed as a separate library (Solaris)
-AC_CHECK_LIB(sasl2, sasl_version, HAS_SASL2=1, HAS_SASL2=,$LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
-if test "${HAS_SASL2}x" = "x" ; then
-  dnl Some older Linux boxes have libsasl instead of libsasl2
-  AC_CHECK_LIB(sasl, sasl_client_auth, HAS_SASL=1, HAS_SASL=,$LDFLAGS $LDAP_LIBRARIES -lldap $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
-fi
+  AC_MSG_CHECKING([for sasl_version in -lsasl2])
+  my_LIBS=$LIBS
+  LIBS="$LIBS -lsasl2"			
+  AC_LINK_IFELSE([#ifdef __cplusplus
+ 				  extern "C"
+   				  #endif
+ 				  char sasl_version ();
+ 				  int
+ 				  main ()
+ 				  {
+ 				   sasl_version ();
+   					;
+   				   return 0;
+ 				  }], HAS_SASL2=1, HAS_SASL2= )
+  if test "${HAS_SASL2}x" = "x" ; then
+	  AC_MSG_RESULT(no)
+	  LIBS=$my_LIBS
+	  LIBS="$LIBS -lsasl"
+	  AC_MSG_CHECKING([for sasl_client_auth in sasl])
+      AC_LINK_IFELSE([#ifdef __cplusplus
+                  extern "C"
+                  #endif
+                  char sasl_client_out ();
+                  int
+                  main ()
+                  {
+                   sasl_client_out ();
+                    ;
+                   return 0;
+                  }], HAS_SASL=1, HAS_SASL= )
+	  if test "${HAS_SASL}x" = "x" ; then
+		AC_MSG_RESULT(no)
+	  else
+		AC_MSG_RESULT(yes)	
+	  fi	
+  fi
+  AC_MSG_RESULT(yes)
+
+LIBS=$my_LIBS
 
 dnl we need to track down the correct sasl.h
 AC_MSG_CHECKING([if <sasl.h> works])
@@ -1027,7 +1060,7 @@ elif test "${HAS_SASL}x" != "x" ; then
 else
   HAS_SASL=0
 fi
-
+	
 fi dnl disable_Sasl
 
 AC_SUBST(HAS_SASL)
