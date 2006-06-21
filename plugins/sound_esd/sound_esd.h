@@ -1,5 +1,6 @@
 
 #include <ptlib.h>
+#include <ptlib/sound.h>
 #include <ptlib/socket.h>
 
 //#if !P_USE_INLINES
