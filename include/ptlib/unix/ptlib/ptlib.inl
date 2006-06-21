@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.37  2006/06/21 13:27:03  csoutheren
+ * Fixed link problem with gcc 2.95.3
+ *
  * Revision 1.36  2005/11/14 22:41:53  csoutheren
  * Reverted Wait and Signal to non-const - there is no way we can guarantee that all
  * descendant classes everywhere will be changed over, so we have to keep the
@@ -197,6 +200,9 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 #if defined P_HAS_SEMAPHORES && !defined VX_TASKS
 
 PINLINE PCriticalSection::PCriticalSection()
+{ ::sem_init(&sem, 0, 1); }
+
+PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
 { ::sem_init(&sem, 0, 1); }
 
 PINLINE PCriticalSection::~PCriticalSection()
