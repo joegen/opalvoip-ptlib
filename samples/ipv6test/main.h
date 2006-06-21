@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.1  2004/12/14 06:50:59  csoutheren
  * Initial version
  *
@@ -30,6 +33,8 @@
 
 #ifndef _IPV6Test_MAIN_H
 #define _IPV6Test_MAIN_H
+
+#include <ptlib/pprocess.h>
 
 class IPV6Test : public PProcess
 {

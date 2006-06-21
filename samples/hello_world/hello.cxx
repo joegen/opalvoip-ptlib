@@ -5,6 +5,7 @@
 //
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 
 class Hello : public PProcess
 {

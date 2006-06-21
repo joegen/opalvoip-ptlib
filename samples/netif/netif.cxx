@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: netif.cxx,v $
+ * Revision 1.4  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.3  2002/09/05 11:56:49  rogerh
  * Fix some warnings by using PINDEX
  *
@@ -46,6 +49,7 @@
 
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/sockets.h>
 
 class NetTest : public PProcess

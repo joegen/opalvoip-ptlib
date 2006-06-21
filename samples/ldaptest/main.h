@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.2  2003/03/31 03:35:20  robertj
  * Major addition of LDAP functionality.
  * Added ILS specialisation of LDAP.
@@ -34,6 +37,7 @@
 #ifndef _LDAPTest_MAIN_H
 #define _LDAPTest_MAIN_H
 
+#include <ptlib/pprocess.h>
 
 class PLDAPSession;
 class PILSSession;
