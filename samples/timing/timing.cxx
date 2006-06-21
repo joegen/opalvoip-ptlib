@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: timing.cxx,v $
+ * Revision 1.5  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.4  2005/11/15 22:27:29  dereksmithies
  * Modify output format so it better shows the delay characteristics of PAdaptiveDelay
  *
@@ -39,6 +42,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptclib/delaychan.h>
 
 /*

@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.2  2005/08/18 00:24:50  dereksmithies
  * Tidyup so compiles on linux, tidy up copyright headers, add cvs logging.
  *
@@ -33,10 +36,12 @@
  *
  */
 
-#include <ptlib.h>
 
+
+#include <ptlib.h>
 #include <ptclib/pwavfile.h>
 #include <ptclib/dtmf.h>
+#include <ptlib/pprocess.h>
 
 #define SAMPLES 64000  
 

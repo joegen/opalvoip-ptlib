@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.7  2003/09/26 13:41:32  rjongbloed
  * Added special test to give more indicative error if try to compile without Expat support.
  *
@@ -208,7 +211,7 @@ void XMLRPCApp::Main()
     else {
       for (i = 2; i < args.GetCount(); i++) {
         if (args.HasOption('i'))
-          request.AddParam(args[i].AsInteger());
+          request.AddParam((int)args[i].AsInteger());
         else if (args.HasOption('f'))
           request.AddParam(args[i].AsReal());
         else

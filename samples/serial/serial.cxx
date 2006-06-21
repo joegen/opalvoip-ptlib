@@ -11,6 +11,9 @@
  *
  *
  * $Log: serial.cxx,v $
+ * Revision 1.6  2006/06/21 03:28:43  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.5  2005/11/30 12:47:40  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -32,6 +35,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/serchan.h>
 #include <ptlib/sockets.h>
 

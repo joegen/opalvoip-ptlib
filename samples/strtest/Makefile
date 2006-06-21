@@ -6,4 +6,4 @@ ifndef PWLIBDIR
 PWLIBDIR=$(HOME)/pwlib
 endif
 
-include ~/pwlib/make/ptlib.mak
+include $(PWLIBDIR)/make/ptlib.mak
