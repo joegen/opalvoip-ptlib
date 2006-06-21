@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.7  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.6  2003/10/27 22:12:56  dereksmithies
  * Add more good changes to get Compare method work. Thanks to Gene Small
  *
@@ -29,7 +32,7 @@
 #ifndef _ThreadSafe_MAIN_H
 #define _ThreadSafe_MAIN_H
 
-
+#include <ptlib/pprocess.h>
 #include <ptlib/safecoll.h>
 
 

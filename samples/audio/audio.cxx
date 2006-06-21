@@ -17,6 +17,9 @@
  *                           2)Add headers.
  *
  * $Log: audio.cxx,v $
+ * Revision 1.9  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.8  2006/04/14 08:01:36  dereksmithies
  * Minor tidyup, totally close the sound device, so that there is only 2
  * (and no more than two) available PSoundChannel devices.
@@ -44,6 +47,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include "version.h"
 #include "audio.h"
 #include <ptclib/pwavfile.h>

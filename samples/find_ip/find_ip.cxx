@@ -7,6 +7,7 @@
 //
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptclib/http.h>
 #include <ptclib/html.h>
 
