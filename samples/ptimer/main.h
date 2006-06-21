@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.3  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.2  2006/05/24 02:28:18  dereksmithies
  * add separate thread to get the timer to start.
  * Add option to check if the timer has started.
@@ -36,6 +39,8 @@
 
 #ifndef _PTimer_MAIN_H
 #define _PTimer_MAIN_H
+
+#include <ptlib/pprocess.h>
 
 /**A class that does a PTimer functionality. This class runs once. It
    is started, and on completion of the delay it toggles a flag. At

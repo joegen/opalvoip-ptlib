@@ -5,6 +5,9 @@
  *
  *
  * $Log: audio.h,v $
+ * Revision 1.5  2006/06/21 03:28:42  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.4  2006/04/09 07:08:13  dereksmithies
  * Add reporting functions.
  * Use the selected device to open the sound card for volume levels.
@@ -21,20 +24,12 @@
  * Add copyright header and cvs log statements.
  * Fix startup and closedown segfaults.
  * Add safety mechanism so it can never fill up all computer memory.
- *
- *
- *
- *
- *
- *
- *
- *
  */
  
 #ifndef _AUDIO_MAIN_H
 #define _AUDIO_MAIN_H
 
-
+#include <ptlib/sound.h>
 
 class Audio : public PProcess
 {
