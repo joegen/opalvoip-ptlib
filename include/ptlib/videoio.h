@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.45  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.44  2006/03/17 06:56:22  csoutheren
  * Exposed video fonts to external access
  *
@@ -199,6 +202,9 @@
 #pragma interface
 #endif
 
+#include <ptlib/plugin.h>
+
+class PPluginManager;
 class PColourConverter;
 
 /**This class defines a video device.

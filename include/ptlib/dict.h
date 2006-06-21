@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.36  2006/06/21 03:28:41  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.35  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -146,6 +149,10 @@
  * Initial revision
  *
  */
+
+
+#ifndef __DICT_H__
+#define __DICT_H__
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -1436,5 +1443,7 @@ template <class K> class POrdinalDictionary : public PAbstractDictionary
 
 
 #endif // PHAS_TEMPLATES
+
+#endif // #ifndef __DICT_H__
 
 // End Of File ///////////////////////////////////////////////////////////////
