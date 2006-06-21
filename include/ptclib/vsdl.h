@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.11  2006/06/21 04:20:07  csoutheren
+ * Fixes for VS.net
+ *
  * Revision 1.10  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -103,6 +106,8 @@
 #else
 #include <SDL/SDL.h>
 #endif
+
+#include <ptlib/videoio.h>
 
 #undef main
 
