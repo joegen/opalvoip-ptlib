@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.46  2006/06/21 05:38:58  csoutheren
+ * Fixed plugin compile for latest pwlib
+ *
  * Revision 1.45  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -203,8 +206,8 @@
 #endif
 
 #include <ptlib/plugin.h>
+#include <ptlib/pluginmgr.h>
 
-class PPluginManager;
 class PColourConverter;
 
 /**This class defines a video device.
