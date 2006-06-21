@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.36  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.35  2006/03/17 06:56:22  csoutheren
  * Exposed video fonts to external access
  *
@@ -158,7 +161,8 @@
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
 #error "vfakeio.cxx must be compiled without precompiled headers"
 #endif
-
+#include <ptlib/pluginmgr.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/videoio.h>
 
 #ifdef __MACOSX__

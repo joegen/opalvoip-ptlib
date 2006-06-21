@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.48  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.47  2006/04/10 23:57:27  csoutheren
  * Checked in changes to remove some warnings with gcc effc++ flag
  *
@@ -214,6 +217,7 @@
 #endif
 
 #include <ptlib.h>
+#include <ptlib/pfactory.h>
 #include <ptclib/pwavfile.h>
 
 const char WAVLabelRIFF[4] = { 'R', 'I', 'F', 'F' };

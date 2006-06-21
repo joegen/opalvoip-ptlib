@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.68  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.67  2006/06/20 09:01:51  csoutheren
  * Applied patch 1353851
  * VXML unitialized autoDeleteTextToSpeech
@@ -320,6 +323,9 @@ BOOL PVXMLPlayable::ReadFrame(PVXMLChannel & channel, void * _buf, PINDEX origLe
     if ((repeat == 0) || !Rewind(channel.GetBaseReadChannel()))
       return FALSE;
     PINDEX readLen = channel.GetLastReadCount();
+    if(readLen == 0){
+      return TRUE;
+    }
     len -= readLen;
     buf += readLen;
   }
@@ -701,6 +707,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   textToSpeech     = NULL;
   autoDeleteTextToSpeech = FALSE;
 
+  autoDeleteTextToSpeech = FALSE;
   SetTextToSpeech(_tts, autoDelete);
 
   Initialise();
