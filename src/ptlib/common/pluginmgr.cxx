@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.30  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.29  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -110,6 +113,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 #include <ptlib/pluginmgr.h>
 
 #ifndef __BEOS__

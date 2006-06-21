@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.19  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.18  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -90,7 +93,7 @@
 #include "ptbuildopts.h"
 
 ////////////////////////////////////////////////////////////
-
+#include <ptlib/pfactory.h>
 #include <ptclib/ptts.h>
 
 PINSTANTIATE_FACTORY(PTextToSpeech, PString)

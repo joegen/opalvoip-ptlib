@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.117  2006/06/21 03:28:44  csoutheren
+ * Various cleanups thanks for Frederic Heem
+ *
  * Revision 1.116  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -412,7 +415,7 @@
 #include <ptlib.h>
 
 #define P_DISABLE_FACTORY_INSTANCES
-
+#include <ptlib/pfactory.h>
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
 #include <ptclib/url.h>
