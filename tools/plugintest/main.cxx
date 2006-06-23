@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.9  2006/06/23 04:39:58  dereksmithies
+ * Fixes, to get it to compile following the recent include file upgrade.
+ *
  * Revision 1.8  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -59,8 +62,11 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
+
 #include <ptlib/pluginmgr.h>
 #include <ptlib/sound.h>
+#include <ptlib/video.h>
 #include "main.h"
 
 #include <math.h>
