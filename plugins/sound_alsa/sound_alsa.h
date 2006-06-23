@@ -1,4 +1,5 @@
 #include <ptlib.h>
+#include <ptlib/sound.h>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API 1
 #include <alsa/asoundlib.h>
@@ -42,8 +43,9 @@ class SoundHandleEntry : public PObject {
 #define LOOPBACK_BUFFER_SIZE 5000
 #define BYTESINBUF ((startptr<endptr)?(endptr-startptr):(LOOPBACK_BUFFER_SIZE+endptr-startptr))
 
-class PSoundChannelALSA: public PSoundChannel
-{
+
+
+class PSoundChannelALSA : public PSoundChannel {
  public:
   PSoundChannelALSA();
   void Construct();
