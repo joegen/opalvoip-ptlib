@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.52  2006/06/25 11:20:23  csoutheren
+ * Add detection of ODBC on Windows
+ *
  * Revision 1.51  2006/02/23 00:27:19  csoutheren
  * Fixed incorrectly applied patch
  *
@@ -534,6 +537,7 @@
 #undef P_CONFIG_FILE
 #undef P_SOCKAGG
 #undef P_VIDFILE
+#undef P_ODBC
 
 /////////////////////////////////////////////////
 //

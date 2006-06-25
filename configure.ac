@@ -2121,6 +2121,12 @@ fi
 
 
 dnl ########################################################################
+dnl look for ODBC code
+
+dnl MSWIN_DISPLAY    odbc,ODBC
+dnl MSWIN_CHECK_FILE odbc,sql.h,P_ODBC=1
+
+dnl ########################################################################
 dnl output make directives
 
 dnl resolver needs to be at the end
