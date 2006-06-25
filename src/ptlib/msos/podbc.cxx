@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.cxx,v $
+ * Revision 1.2  2006/06/25 11:20:24  csoutheren
+ * Add detection of ODBC on Windows
+ *
  * Revision 1.1  2006/01/27 06:38:11  shorne
  * Rename ODBC file to lower case
  *
@@ -44,6 +47,9 @@
 */
 
 #include <ptlib.h>
+
+#ifdef P_ODBC
+
 #include <ptlib/msos/ptlib/podbc.h>
 
 #pragma warning(disable:4244)
@@ -1567,3 +1573,4 @@ unsigned int PODBCRecord::ColumnPrecision(PINDEX Column )
 #pragma warning(default:4100)
 #pragma warning(default:4244)
 
+#endif // P_ODBC
