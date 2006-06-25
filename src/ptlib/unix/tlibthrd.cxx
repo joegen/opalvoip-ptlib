@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.153  2006/06/25 21:46:38  dereksmithies
+ * Thanks to Paul Nader for this fix which fixes thread cleanup
+ * issues on SMP machines. Good find.
+ *
  * Revision 1.152  2006/03/01 08:29:33  csoutheren
  * Applied patch #1439578 PTrace / PThread::PX_ThreadEnd deadlock fix
  * Thanks to Hannes Friederich
@@ -1372,8 +1376,9 @@ void PThread::PX_ThreadEnd(void * arg)
   }
   else {
     thread->PX_threadId = 0;
+    PString threadName = thread->threadName;
     process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
   }
 }
 
