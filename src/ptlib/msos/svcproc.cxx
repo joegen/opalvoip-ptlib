@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.83  2006/06/25 11:22:57  csoutheren
+ * Add pragmas to automate linking with VS 2005
+ *
  * Revision 1.82  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -304,6 +307,10 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <io.h>
+
+#pragma comment(lib,"advapi32.lib")
+#pragma comment(lib,"user32.lib")
+#pragma comment(lib,"comdlg32.lib")
 
 #ifdef __USE_STL__
 #include <fstream>
