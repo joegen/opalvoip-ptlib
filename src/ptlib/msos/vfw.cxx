@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.36  2006/06/25 11:22:57  csoutheren
+ * Add pragmas to automate linking with VS 2005
+ *
  * Revision 1.35  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -176,6 +179,7 @@
 #ifdef _MSC_VER
 #ifndef _WIN32_WCE
 #pragma comment(lib, "vfw32.lib")
+#pragma comment(lib, "gdi32.lib")
 #endif
 #endif
 

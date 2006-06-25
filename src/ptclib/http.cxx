@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.118  2006/06/25 11:22:57  csoutheren
+ * Add pragmas to automate linking with VS 2005
+ *
  * Revision 1.117  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -424,6 +427,7 @@
 
 #ifdef WIN32
 #include <shellapi.h>
+#pragma comment(lib,"shell32.lib")
 #endif
 
 
