@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.h,v $
+ * Revision 1.2  2006/06/25 11:20:24  csoutheren
+ * Add detection of ODBC on Windows
+ *
  * Revision 1.1  2006/01/27 06:35:30  shorne
  * added ODBC support
  *
@@ -97,6 +100,9 @@
 #endif // _MSC_VER > 1000
 
 #include <ptlib.h>
+
+#ifdef P_ODBC
+
 #include <tchar.h>
 #include <sql.h> 
 #include <sqlext.h>
@@ -919,4 +925,7 @@ public:
 
 
 };
+
+#endif // P_ODBC
+
 #endif // !defined(PODBC_H)
