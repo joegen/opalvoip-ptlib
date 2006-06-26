@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.17  2006/06/26 05:22:52  shorne
+ * Fixed compile issue
+ *
  * Revision 1.16  2005/04/20 07:02:11  csoutheren
  * Changed handle "," in include paths
  *
@@ -67,6 +70,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
+#include <ptlib/pprocess.h>
 
 
 PDECLARE_CLASS(Symbol, PCaselessString)
