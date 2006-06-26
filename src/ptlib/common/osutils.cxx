@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.242  2006/06/26 10:50:24  shorne
+ * Fixed compile problem on MSVC6
+ *
  * Revision 1.241  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -1024,7 +1027,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       PTrace_lastDayOfYear = day;
       if (PTraceStream == NULL) {
         PTraceMutex->Signal();
-        return std::clog;
+        return *PTraceStream;
       }
     }
   }
