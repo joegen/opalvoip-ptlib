@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.27  2006/06/26 01:02:55  csoutheren
+ * Improved configure.exe to ignore case when matching exclude dirs
+ * Allow exclusion of drive root directories
+ *
  * Revision 1.26  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -125,11 +129,19 @@
 #include <windows.h>
 #include <vector>
 
-#define VERSION "1.4"
+#define VERSION "1.5"
 
 
 using namespace std;
 
+string ToLower(const string & _str)
+{
+  string str = _str;
+  string::iterator r;
+  for(r = str.begin(); r != str.end(); ++r)
+    *r = tolower(*r);
+  return str;
+}
 
 class Feature
 {
@@ -346,9 +358,15 @@ bool Feature::CheckFileInfo::Locate(const string & testDirectory)
 }
 
 
-bool TreeWalk(const string & directory)
+bool TreeWalk(const string & _directory)
 {
+	string directory = ToLower(_directory);
+
   bool foundAll = false;
+
+  list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), directory);
+  if (r != excludeDirList.end())
+	return false;
 
   string wildcard = directory;
   wildcard += "*.*";
@@ -359,6 +377,7 @@ bool TreeWalk(const string & directory)
     do {
       string subdir = directory;
       subdir += fileinfo.cFileName;
+      subdir = ToLower(subdir);
       list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), subdir);
       if (r == excludeDirList.end()) {
         if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
@@ -573,7 +592,7 @@ int main(int argc, char* argv[])
           dir = str.substr(offs);
           offs += str.length();
         }
-        excludeDirList.push_back(dir);
+        excludeDirList.push_back(ToLower(dir));
         cout << "Excluding " << dir << " from feature search" << endl;
       }
     }
