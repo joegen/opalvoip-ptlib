@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.h,v $
+ * Revision 1.3  2006/06/27 04:28:16  shorne
+ * Removed debuging code
+ *
  * Revision 1.2  2006/06/25 11:20:24  csoutheren
  * Add detection of ODBC on Windows
  *
@@ -734,8 +737,7 @@ public:
 
 	  /** OnSQL Error
 	  */
-	  virtual void OnSQLError(PString RetCode, PString RetString) 
-			{  cout << RetCode << " " << RetString << endl; };
+	  virtual void OnSQLError(PString RetCode, PString RetString) {};
 
 
 	  /** Set the Number of Decimal places to
