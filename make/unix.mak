@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.202  2006/06/27 11:52:14  csoutheren
+# Patch 1509205 - Fixes typo in GCC flags under Solaris
+# Thanks to Boris Pavacic
+#
 # Revision 1.201  2006/05/15 23:11:26  dereksmithies
 # Use -ggdb -O0 -g3 to provide more information to the debugger, and force all
 #  optimisation to be off. Initial tests show: this improves linux debugging.
@@ -972,7 +976,7 @@ else
 
 ifneq ($(OSTYPE),Darwin)
   ifeq ($(OSTYPE),solaris)
-    OPTCCFLAGS	+= -xO3 
+    OPTCCFLAGS	+= -O3 
   else
     OPTCCFLAGS	+= -Os 
   endif
