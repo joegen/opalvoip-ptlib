@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.204  2006/06/27 12:03:29  csoutheren
+ * Applied 1494931 - fixed memory leak
+ * Thanks to Frederich Heem
+ *
  * Revision 1.203  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -1145,8 +1149,10 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     localErrNo = getaddrinfo((const char *)name, NULL , &hints, &res);
     mutex.Wait();
 
-    if (localErrNo != NETDB_SUCCESS)
+    if (localErrNo != NETDB_SUCCESS) {
+      freeaddrinfo(res);
       return NULL;
+    }
     host = new PIPCacheData(res, name);
     freeaddrinfo(res);
 #else // P_HAS_IPV6
