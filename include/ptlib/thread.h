@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.43  2006/06/28 11:28:21  csoutheren
+ * Patch 1456858 - increase default thread stack size
+ * Thanks to drosario
+ *
  * Revision 1.42  2006/05/25 23:28:27  csoutheren
  * Fixed compilation under gcc 4.0
  *
@@ -462,7 +466,7 @@ class PThread : public PObject
         ///< Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  ///< Initial priority of thread.
       const PString & threadName = PString::Empty(), ///< The name of the thread (for Debug/Trace)
-      PINDEX stackSize = 10000         ///< Stack size on some platforms
+      PINDEX stackSize = 65536         ///< Stack size on some platforms
     );
   //@}
 
