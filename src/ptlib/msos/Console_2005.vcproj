@@ -1121,7 +1121,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
 				</FileConfiguration>
@@ -1131,7 +1131,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
 				</FileConfiguration>
