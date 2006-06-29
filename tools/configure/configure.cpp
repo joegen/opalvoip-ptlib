@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.28  2006/06/29 02:37:23  csoutheren
+ * Fixed compile problem on VC 2005
+ *
  * Revision 1.27  2006/06/26 01:02:55  csoutheren
  * Improved configure.exe to ignore case when matching exclude dirs
  * Allow exclusion of drive root directories
@@ -568,6 +571,7 @@ int main(int argc, char* argv[])
     }
   }
 
+  int i;
   for (i = 0; i < 2; i++) {
     char * env = NULL;
     switch (i) {
