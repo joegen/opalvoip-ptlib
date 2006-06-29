@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.54  2006/06/29 08:31:59  csoutheren
+ * Fixed problems with loading new OpenSSL
+ * Fixed problems with loadeding pre-packaged Win Expat
+ *
  * Revision 1.53  2006/06/29 02:34:23  csoutheren
  * Add support for other Windows OpenSSL and Expat packages
  *
@@ -301,6 +305,7 @@
 
 #ifdef P_WINSSL_AES
 #define P_SSL_AES 1
+#define P_SSL_USE_CONST 1
 #endif
 
 #if defined(_MSC_VER) && P_SSL
@@ -357,6 +362,12 @@
 #pragma include_alias(<openssl/aes.h>,        <@WINSSL_DIR@/include/openssl/aes.h>)
 #pragma include_alias(<openssl/obj_mac.h>,    <@WINSSL_DIR@/include/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@WINSSL_DIR@/include/openssl/kssl.h>)
+#pragma include_alias(<openssl/ec.h>,         <@WINSSL_DIR@/include/openssl/ec.h>)
+#pragma include_alias(<openssl/ecdsa.h>,      <@WINSSL_DIR@/include/openssl/ecdsa.h>)
+#pragma include_alias(<openssl/ecdh.h>,       <@WINSSL_DIR@/include/openssl/ecdh.h>)
+#pragma include_alias(<openssl/pq_compat.h>,  <@WINSSL_DIR@/include/openssl/pq_compat.h>)
+#pragma include_alias(<openssl/dtls1.h>,      <@WINSSL_DIR@/include/openssl/dtls1.h>)
+#pragma include_alias(<openssl/pqueue.h>,     <@WINSSL_DIR@/include/openssl/pqueue.h>)
 
 #if defined(_MSC_VER) && P_WINSSL_AES
 #pragma include_alias(<openssl/aes.h>,        <@WINSSL_DIR@/include/openssl/aes.h>)
@@ -422,6 +433,12 @@
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
 #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
+#pragma include_alias(<openssl/ec.h>,         <@SSL_DIR@/inc32/openssl/ec.h>)
+#pragma include_alias(<openssl/ecdsa.h>,      <@SSL_DIR@/inc32/openssl/ecdsa.h>)
+#pragma include_alias(<openssl/ecdh.h>,       <@SSL_DIR@/inc32/openssl/ecdh.h>)
+#pragma include_alias(<openssl/pq_compat.h,   <@SSL_DIR@/inc32/openssl/pq_compat.h>)
+#pragma include_alias(<openssl/dtls1.h>,      <@SSL_DIR@/inc32/openssl/dtls1.h>)
+#pragma include_alias(<openssl/pqueue.h>,      <@SSL_DIR@/inc32/openssl/pqueue.h>)
 
 #if defined(_MSC_VER) && P_SSL_AES
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
@@ -455,11 +472,11 @@
 
 #if defined(_MSC_VER) && P_EXPAT
 
-#ifdef WINEXPAT_DIR
+#ifdef P_WINEXPAT
 
 #pragma include_alias(<expat.h>, <@WINEXPAT_DIR@/source/lib/expat.h>)
 
-#define P_EXPAT_LIBRARY "@WINEXPAT_DIR@/libs/expat.lib"
+#define P_EXPAT_LIBRARY "@WINEXPAT_DIR@/libs/libexpat.lib"
 
 #else
 
