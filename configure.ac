@@ -1145,12 +1145,21 @@ dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
-dnl MSWIN_DISPLAY    AES,Open SSL AES
-dnl MSWIN_CHECK_FILE AES,inc32\openssl\aes.h,P_SSL_AES=1
-dnl MSWIN_CHECK_DIR  AES,..\openssl\
-dnl MSWIN_CHECK_DIR  AES,..\external\openssl\
-dnl MSWIN_CHECK_DIR  AES,\openssl\
-dnl MSWIN_CHECK_DIR  AES,c:\openssl\
+dnl MSWIN_DISPLAY    osslAES,Open SSL AES
+dnl MSWIN_CHECK_FILE osslAES,inc32\openssl\aes.h,P_SSL_AES=1
+dnl MSWIN_CHECK_DIR  osslAES,..\openssl\
+dnl MSWIN_CHECK_DIR  osslAES,..\external\openssl\
+dnl MSWIN_CHECK_DIR  osslAES,\openssl\
+dnl MSWIN_CHECK_DIR  osslAES,c:\openssl\
+
+dnl MSWIN_DISPLAY    winssl,Windows Open SSL
+dnl MSWIN_CHECK_FILE winssl,include\openssl\ssl.h,P_WINSSL=1
+dnl MSWIN_DIR_SYMBOL winssl,WINSSL_DIR
+dnl MSWIN_CHECK_DIR  winssl,.\lib\VC\
+
+dnl MSWIN_DISPLAY    wsslAES,Windows Open SSL AES
+dnl MSWIN_CHECK_FILE wsslAES,include\openssl\aes.h,P_WINSSL_AES=1
+dnl MSWIN_CHECK_DIR  wsslAES,.\lib\VC\
 
 AC_ARG_ENABLE(openssl,
        [  --disable-openssl       disable OpenSSL support])
@@ -1288,12 +1297,17 @@ dnl ########################################################################
 dnl look for expat XML parser
 
 dnl MSWIN_DISPLAY    expat,Expat XML
-dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_EXPAT=1
+dnl MSWIN_CHECK_FILE expat,Release\expat.lib,P_EXPAT=1
 dnl MSWIN_DIR_SYMBOL expat,EXPAT_DIR
 dnl MSWIN_CHECK_DIR  expat,..\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
+
+dnl MSWIN_DISPLAY    winexpat,Windows Expat XML
+dnl MSWIN_CHECK_FILE winexpat,libs\libexpat.lib,P_WINEXPAT=1
+dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
+dnl MSWIN_CHECK_DIR  winexpat,source\lib
 
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
