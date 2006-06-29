@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.53  2006/06/29 02:34:23  csoutheren
+ * Add support for other Windows OpenSSL and Expat packages
+ *
  * Revision 1.52  2006/06/25 11:20:23  csoutheren
  * Add detection of ODBC on Windows
  *
@@ -287,10 +290,87 @@
 //
 
 #undef P_SSL 
+#undef P_WINSSL 
 #undef P_SSL_AES
+#undef P_WINSSL_AES
 #undef P_SSL_USE_CONST
 
+#ifdef P_WINSSL
+#define P_SSL 1
+#endif
+
+#ifdef P_WINSSL_AES
+#define P_SSL_AES 1
+#endif
+
 #if defined(_MSC_VER) && P_SSL
+
+#if defined(P_WINSSL)
+
+#pragma include_alias(<openssl/ssl.h>,        <@WINSSL_DIR@/include/openssl/ssl.h>)
+#pragma include_alias(<openssl/safestack.h>,  <@WINSSL_DIR@/include/openssl/safestack.h>)
+#pragma include_alias(<openssl/stack.h>,      <@WINSSL_DIR@/include/openssl/stack.h>)
+#pragma include_alias(<openssl/crypto.h>,     <@WINSSL_DIR@/include/openssl/crypto.h>)
+#pragma include_alias(<openssl/opensslv.h>,   <@WINSSL_DIR@/include/openssl/opensslv.h>)
+#pragma include_alias(<openssl/lhash.h>,      <@WINSSL_DIR@/include/openssl/lhash.h>)
+#pragma include_alias(<openssl/buffer.h>,     <@WINSSL_DIR@/include/openssl/buffer.h>)
+#pragma include_alias(<openssl/bio.h>,        <@WINSSL_DIR@/include/openssl/bio.h>)
+#pragma include_alias(<openssl/pem.h>,        <@WINSSL_DIR@/include/openssl/pem.h>)
+#pragma include_alias(<openssl/evp.h>,        <@WINSSL_DIR@/include/openssl/evp.h>)
+#pragma include_alias(<openssl/md2.h>,        <@WINSSL_DIR@/include/openssl/md2.h>)
+#pragma include_alias(<openssl/opensslconf.h>,<@WINSSL_DIR@/include/openssl/opensslconf.h>)
+#pragma include_alias(<openssl/md5.h>,        <@WINSSL_DIR@/include/openssl/md5.h>)
+#pragma include_alias(<openssl/sha.h>,        <@WINSSL_DIR@/include/openssl/sha.h>)
+#pragma include_alias(<openssl/ripemd.h>,     <@WINSSL_DIR@/include/openssl/ripemd.h>)
+#pragma include_alias(<openssl/des.h>,        <@WINSSL_DIR@/include/openssl/des.h>)
+#pragma include_alias(<openssl/e_os2.h>,      <@WINSSL_DIR@/include/openssl/e_os2.h>)
+#pragma include_alias(<openssl/rc4.h>,        <@WINSSL_DIR@/include/openssl/rc4.h>)
+#pragma include_alias(<openssl/rc2.h>,        <@WINSSL_DIR@/include/openssl/rc2.h>)
+#pragma include_alias(<openssl/rc5.h>,        <@WINSSL_DIR@/include/openssl/rc5.h>)
+#pragma include_alias(<openssl/blowfish.h>,   <@WINSSL_DIR@/include/openssl/blowfish.h>)
+#pragma include_alias(<openssl/cast.h>,       <@WINSSL_DIR@/include/openssl/cast.h>)
+#pragma include_alias(<openssl/idea.h>,       <@WINSSL_DIR@/include/openssl/idea.h>)
+#pragma include_alias(<openssl/mdc2.h>,       <@WINSSL_DIR@/include/openssl/mdc2.h>)
+#pragma include_alias(<openssl/rsa.h>,        <@WINSSL_DIR@/include/openssl/rsa.h>)
+#pragma include_alias(<openssl/bn.h>,         <@WINSSL_DIR@/include/openssl/bn.h>)
+#pragma include_alias(<openssl/dsa.h>,        <@WINSSL_DIR@/include/openssl/dsa.h>)
+#pragma include_alias(<openssl/dh.h>,         <@WINSSL_DIR@/include/openssl/dh.h>)
+#pragma include_alias(<openssl/objects.h>,    <@WINSSL_DIR@/include/openssl/objects.h>)
+#pragma include_alias(<openssl/asn1.h>,       <@WINSSL_DIR@/include/openssl/asn1.h>)
+#pragma include_alias(<openssl/x509.h>,       <@WINSSL_DIR@/include/openssl/x509.h>)
+#pragma include_alias(<openssl/x509_vfy.h>,   <@WINSSL_DIR@/include/openssl/x509_vfy.h>)
+#pragma include_alias(<openssl/pkcs7.h>,      <@WINSSL_DIR@/include/openssl/pkcs7.h>)
+#pragma include_alias(<openssl/pem2.h>,       <@WINSSL_DIR@/include/openssl/pem2.h>)
+#pragma include_alias(<openssl/ssl2.h>,       <@WINSSL_DIR@/include/openssl/ssl2.h>)
+#pragma include_alias(<openssl/ssl3.h>,       <@WINSSL_DIR@/include/openssl/ssl3.h>)
+#pragma include_alias(<openssl/tls1.h>,       <@WINSSL_DIR@/include/openssl/tls1.h>)
+#pragma include_alias(<openssl/ssl23.h>,      <@WINSSL_DIR@/include/openssl/ssl23.h>)
+#pragma include_alias(<openssl/err.h>,        <@WINSSL_DIR@/include/openssl/err.h>)
+#pragma include_alias(<openssl/rand.h>,       <@WINSSL_DIR@/include/openssl/rand.h>)
+#pragma include_alias(<openssl/symhacks.h>,   <@WINSSL_DIR@/include/openssl/symhacks.h>)
+#pragma include_alias(<openssl/comp.h>,       <@WINSSL_DIR@/include/openssl/comp.h>)
+#pragma include_alias(<openssl/ossl_typ.h>,   <@WINSSL_DIR@/include/openssl/ossl_typ.h>)
+#pragma include_alias(<openssl/md4.h>,        <@WINSSL_DIR@/include/openssl/md4.h>)
+#pragma include_alias(<openssl/des_old.h>,    <@WINSSL_DIR@/include/openssl/des_old.h>)
+#pragma include_alias(<openssl/ui_compat.h>,  <@WINSSL_DIR@/include/openssl/ui_compat.h>)
+#pragma include_alias(<openssl/ui.h>,         <@WINSSL_DIR@/include/openssl/ui.h>)
+#pragma include_alias(<openssl/aes.h>,        <@WINSSL_DIR@/include/openssl/aes.h>)
+#pragma include_alias(<openssl/obj_mac.h>,    <@WINSSL_DIR@/include/openssl/obj_mac.h>)
+#pragma include_alias(<openssl/kssl.h>,       <@WINSSL_DIR@/include/openssl/kssl.h>)
+
+#if defined(_MSC_VER) && P_WINSSL_AES
+#pragma include_alias(<openssl/aes.h>,        <@WINSSL_DIR@/include/openssl/aes.h>)
+#endif
+
+#ifdef _DEBUG
+#define P_SSL_LIB1 "@WINSSL_DIR@/lib/VC/libeay32MTd.lib"
+#define P_SSL_LIB2 "@WINSSL_DIR@/lib/VC/ssleay32MTd.lib"
+#else
+#define P_SSL_LIB1 "@WINSSL_DIR@/lib/VC/libeay32MT.lib"
+#define P_SSL_LIB2 "@WINSSL_DIR@/lib/VC/ssleay32MT.lib"
+#endif
+
+#else
 
 #pragma include_alias(<openssl/ssl.h>,        <@SSL_DIR@/inc32/openssl/ssl.h>)
 #pragma include_alias(<openssl/safestack.h>,  <@SSL_DIR@/inc32/openssl/safestack.h>)
@@ -358,6 +438,8 @@
 
 #endif
 
+#endif
+
 
 /////////////////////////////////////////////////
 //
@@ -365,8 +447,21 @@
 //
 
 #undef P_EXPAT 
+#undef P_WINEXPAT 
+
+#ifdef P_WINEXPAT 
+#define P_EXPAT 1
+#endif
 
 #if defined(_MSC_VER) && P_EXPAT
+
+#ifdef WINEXPAT_DIR
+
+#pragma include_alias(<expat.h>, <@WINEXPAT_DIR@/source/lib/expat.h>)
+
+#define P_EXPAT_LIBRARY "@WINEXPAT_DIR@/libs/expat.lib"
+
+#else
 
 #pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
 
@@ -377,6 +472,8 @@
 #endif
 
 #define P_EXPAT_LIBRARY "@EXPAT_DIR@/" P_EXPAT_LIBDIR "/expat.lib"
+
+#endif
 
 #endif
 
