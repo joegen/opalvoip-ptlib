@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.35  2006/06/30 00:56:31  csoutheren
+ * Applied 1494931 - various pwlib bug fixes and enhancement
+ * Thanks to Frederich Heem
+ *
  * Revision 1.34  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -138,9 +142,14 @@
  *
  */
 
+#ifndef _ARRAY_H_
+#define _ARRAY_H_
+
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib/contain.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // The abstract array class
@@ -1446,4 +1455,6 @@ class PBitArray : public PBYTEArray
   //@}
 };
 
+
+#endif
 // End Of File ///////////////////////////////////////////////////////////////
