@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.88  2006/06/30 00:56:31  csoutheren
+ * Applied 1494931 - various pwlib bug fixes and enhancement
+ * Thanks to Frederich Heem
+ *
  * Revision 1.87  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -342,6 +346,7 @@
 
 #include <string>
 #include <vector>
+#include <ptlib/array.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class

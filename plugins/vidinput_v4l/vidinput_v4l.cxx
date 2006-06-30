@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.20  2006/06/30 00:56:31  csoutheren
+ * Applied 1494931 - various pwlib bug fixes and enhancement
+ * Thanks to Frederich Heem
+ *
  * Revision 1.19  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -239,6 +243,8 @@
  */
 
 #pragma implementation "vidinput_v4l.h"
+#include <ptlib.h>
+#include <ptlib/pstring.h>
 #include <ptlib/pluginmgr.h>
 #include "vidinput_v4l.h"
 #include <sys/utsname.h>
