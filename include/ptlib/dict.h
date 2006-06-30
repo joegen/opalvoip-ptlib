@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.37  2006/06/30 00:56:31  csoutheren
+ * Applied 1494931 - various pwlib bug fixes and enhancement
+ * Thanks to Frederich Heem
+ *
  * Revision 1.36  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -158,6 +162,7 @@
 #pragma interface
 #endif
 
+#include <ptlib/array.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDictionary classes
