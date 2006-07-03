@@ -27,6 +27,10 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.1.2.4  2006/07/03 21:13:21  dsandras
+ * Applied patch from Brian Lu <brian lu sun com> to add support for the AUDIODEV
+ * environment variable. Many thanks!
+ *
  * Revision 1.1.2.3  2006/05/29 18:43:26  dsandras
  * Applied patch from Brian Lu <brian lu sun com>. Thanks!
  *
@@ -92,15 +96,18 @@ PStringArray PSoundChannelSunAudio::GetDeviceNames(Directions /*dir*/)
 {
   PStringArray array;
 
-  array[0] = AUDIO_DEVICE;
+  static char* audio_device_name=getenv("AUDIODEV");
 
+  array[0] = audio_device_name? audio_device_name:AUDIO_DEVICE;
   return array;
 }
 
 
 PString PSoundChannelSunAudio::GetDefaultDevice(Directions /*dir*/)
 {
-  return AUDIO_DEVICE;
+  static char* audio_device_name=getenv("AUDIODEV");
+
+  return audio_device_name? audio_device_name:AUDIO_DEVICE;
 }
 
 
