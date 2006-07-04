@@ -1350,19 +1350,19 @@ dnl handle modules dependent on Expat
 
 dnl MSWIN_DISPLAY    vxml,VXML
 dnl MSWIN_DEFINE     vxml,P_VXML
-dnl MSWIN_IF_FEATURE vxml,expat
+dnl MSWIN_IF_FEATURE vxml,expat|winexpat
 
 dnl MSWIN_DISPLAY    jabber,Jabber
 dnl MSWIN_DEFINE     jabber,P_JABBER
-dnl MSWIN_IF_FEATURE jabber,expat
+dnl MSWIN_IF_FEATURE jabber,expat|winexpat
 
 dnl MSWIN_DISPLAY    xmlrpc,XMLRPC
 dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
-dnl MSWIN_IF_FEATURE xmlrpc,expat
+dnl MSWIN_IF_FEATURE xmlrpc,expat|winexpat
 
 dnl MSWIN_DISPLAY    soap,SOAP
 dnl MSWIN_DEFINE     soap,P_SOAP
-dnl MSWIN_IF_FEATURE soap,expat
+dnl MSWIN_IF_FEATURE soap,expat|winexpat
 
 HAS_VXML=
 HAS_JABBER=
