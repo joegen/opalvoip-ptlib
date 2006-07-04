@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.29  2006/07/04 00:40:16  csoutheren
+ * Added capability for multiple feature dependencies
+ *
  * Revision 1.28  2006/06/29 02:37:23  csoutheren
  * Fixed compile problem on VC 2005
  *
@@ -132,7 +135,7 @@
 #include <windows.h>
 #include <vector>
 
-#define VERSION "1.5"
+#define VERSION "1.6"
 
 
 using namespace std;
@@ -453,16 +456,17 @@ BOOL FeatureEnabled(const string & name)
 
 int main(int argc, char* argv[])
 {
+	cout << "PWLib Configure " VERSION " - ";
   ifstream conf("configure.ac", ios::in);
   if (conf.is_open()) {
-    cout << "Opened " << "configure.ac" << endl;
+    cout << "opened configure.ac" << endl;
   } else {
     conf.clear();
     conf.open("configure.in", ios::in);
     if (conf.is_open()) {
-      cout << "Opened " << "configure.in" << endl;
+      cout << "opened " << "configure.in" << endl;
     } else {
-      cerr << "Could not open configure.ac/configure.in" << endl;
+      cerr << "could not open configure.ac/configure.in" << endl;
       return 1;
     }
   }
@@ -646,12 +650,34 @@ int main(int argc, char* argv[])
     list<string>::const_iterator r;
     if (feature->enabled) {
       for (r = feature->ifFeature.begin(); r != feature->ifFeature.end(); ++r) {
-        if (!FeatureEnabled(*r)) {
-          feature->enabled = FALSE;
-          cout << " DISABLED due to absence of feature " << *r;
-          output = TRUE;
-          break;
-        }
+				string str = *r;
+				size_t pos = str.find('|');
+				if (pos == string::npos) {
+					if (!FeatureEnabled(str)) {
+						feature->enabled = FALSE;
+						cout << " DISABLED due to absence of feature " << str;
+						output = TRUE;
+						break;
+					}
+				}
+				else
+				{
+					bool enabled = FALSE;
+					while (str.length() != 0) {
+						string key = str.substr(0, pos);
+						str = str.substr(pos+1);
+						if (FeatureEnabled(key)) {
+							enabled = true;
+							break;
+						}
+						pos = str.find('|');
+					}
+					if (!enabled) {
+						feature->enabled = FALSE;
+						cout << " DISABLED due to absence of any features in list " << *r;
+						output = TRUE;
+					}
+				}
       }
     }
     if (feature->enabled) {
