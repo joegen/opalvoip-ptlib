@@ -2,6 +2,7 @@
 #define SUNAUDIO_H
 
 #include <ptlib.h>
+#include <ptlib/sound.h>
 #include <ptlib/socket.h>
 #include <ptlib/plugin.h>
 
