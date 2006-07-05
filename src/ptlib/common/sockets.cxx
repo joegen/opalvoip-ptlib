@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.205  2006/07/05 03:58:09  csoutheren
+ * Additional implementation of PIPSocketAddressAndPort
+ *
  * Revision 1.204  2006/06/27 12:03:29  csoutheren
  * Applied 1494931 - fixed memory leak
  * Thanks to Frederich Heem
@@ -3214,5 +3217,22 @@ BOOL PICMPSocket::OpenSocket(int)
 {
   return FALSE;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+void PIPSocketAddressAndPort::Parse(char sep, const PString & str, WORD defaultPort)
+{
+	PINDEX pos = str.Find(sep);
+	if (pos != P_MAX_INDEX) {
+		port    = (WORD)str.Mid(pos+1).AsInteger();
+		PIPSocket::GetHostAddress(str.Left(pos), address);
+	}
+	else
+	{
+		port = defaultPort;
+		PIPSocket::GetHostAddress(str, address);
+	}
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
