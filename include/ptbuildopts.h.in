@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.55  2006/07/05 13:51:29  shorne
+ * small typo fixed
+ *
  * Revision 1.54  2006/06/29 08:31:59  csoutheren
  * Fixed problems with loading new OpenSSL
  * Fixed problems with loadeding pre-packaged Win Expat
@@ -436,9 +439,9 @@
 #pragma include_alias(<openssl/ec.h>,         <@SSL_DIR@/inc32/openssl/ec.h>)
 #pragma include_alias(<openssl/ecdsa.h>,      <@SSL_DIR@/inc32/openssl/ecdsa.h>)
 #pragma include_alias(<openssl/ecdh.h>,       <@SSL_DIR@/inc32/openssl/ecdh.h>)
-#pragma include_alias(<openssl/pq_compat.h,   <@SSL_DIR@/inc32/openssl/pq_compat.h>)
+#pragma include_alias(<openssl/pq_compat.h>,  <@SSL_DIR@/inc32/openssl/pq_compat.h>)
 #pragma include_alias(<openssl/dtls1.h>,      <@SSL_DIR@/inc32/openssl/dtls1.h>)
-#pragma include_alias(<openssl/pqueue.h>,      <@SSL_DIR@/inc32/openssl/pqueue.h>)
+#pragma include_alias(<openssl/pqueue.h>,     <@SSL_DIR@/inc32/openssl/pqueue.h>)
 
 #if defined(_MSC_VER) && P_SSL_AES
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
