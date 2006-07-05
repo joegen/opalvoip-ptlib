@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.49  2006/07/05 04:00:25  csoutheren
+ * Ensure Read and Write fail gracefully when file not open
+ *
  * Revision 1.48  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -452,6 +455,9 @@ void PWAVFile::SetAutoconvert()
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Read(void * buf, PINDEX len)
 {
+	if (!IsOpen())
+		return FALSE;
+
   if (autoConverter != NULL)
     return autoConverter->Read(*this, buf, len);
 
@@ -485,6 +491,9 @@ BOOL PWAVFile::FileRead(void * buf, PINDEX len)
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Write(const void * buf, PINDEX len)
 {
+	if (!IsOpen())
+		return FALSE;
+
   // Needs to update header on close.
   header_needs_updating = TRUE;
 
