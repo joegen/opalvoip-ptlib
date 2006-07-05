@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.82  2006/07/05 03:58:09  csoutheren
+ * Additional implementation of PIPSocketAddressAndPort
+ *
  * Revision 1.81  2006/04/09 07:05:40  rjongbloed
  * Moved output stream operator for PString from sockets code to string code and fixed
  *   its implemetation to continue to use PrintOn. Why it was added is unknown, probably
@@ -953,6 +956,14 @@ class PIPSocketAddressAndPort
     PIPSocketAddressAndPort()
       : port(0)
     { }
+
+    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0)
+		{ Parse(':', str, defaultPort); }
+
+    PIPSocketAddressAndPort(char sep, const PString & str, WORD defaultPort = 0)
+		{ Parse(sep, str, defaultPort); }
+
+    void Parse(char sep, const PString & str, WORD defaultPort = 0);
 
     PIPSocket::Address address;
     WORD port;
