@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.30  2006/07/05 13:38:17  shorne
+ * Fix compile error on MSVC6
+ *
  * Revision 1.29  2006/07/04 00:40:16  csoutheren
  * Added capability for multiple feature dependencies
  *
@@ -575,7 +578,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  int i;
+
   for (i = 0; i < 2; i++) {
     char * env = NULL;
     switch (i) {
