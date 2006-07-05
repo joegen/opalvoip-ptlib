@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.44  2006/07/05 03:59:19  csoutheren
+ * Fix PThreadMain2Arg template
+ *
  * Revision 1.43  2006/06/28 11:28:21  csoutheren
  * Patch 1456858 - increase default thread stack size
  * Thanks to drosario
@@ -537,17 +540,17 @@ class PThreadMain1Arg : public PThreadMain
 };
 
 template <class Arg1Type, class Arg2Type>
-class PThreadMain2Arg : public PThreadMain1Arg<Arg1Type>
+class PThreadMain2Arg : public PThreadMain
 {
-  typedef PThreadMain1Arg<Arg1Type> AncestorClass;
-  //PCLASSINFO(PThreadMain2Arg, AncestorClass);
+  PCLASSINFO(PThreadMain2Arg, PThreadMain);
   public:
     PThreadMain2Arg(Arg1Type _arg1, Arg2Type _arg2, BOOL autoDelete = FALSE)
-      : AncestorClass(_arg1, autoDelete), arg2(_arg2)
+      : PThreadMain(autoDelete), arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
     virtual void Main();
 
   protected:
+    Arg1Type arg1;
     Arg2Type arg2;
 };
 
