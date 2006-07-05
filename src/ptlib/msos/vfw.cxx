@@ -25,6 +25,10 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.37  2006/07/05 03:54:57  csoutheren
+ * Applied 1493748 - ParseWindowDeviceName fix, does not correctly parse PARENT=
+ * Thanks to Joseph Carmer
+ *
  * Revision 1.36  2006/06/25 11:22:57  csoutheren
  * Add pragmas to automate linking with VS 2005
  *
@@ -1279,7 +1283,7 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
   HWND hWndParent = NULL;
   pos = deviceName.Find("PARENT=");
   if (pos != P_MAX_INDEX) {
-    hWndParent = (HWND)strtoul(((const char *)deviceName)+pos+5, NULL, 0);
+    hWndParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
     if (!::IsWindow(hWndParent)) {
       PTRACE(2, "VidOut\tIllegal parent window " << hWndParent << " specified.");
       hWndParent = NULL;
