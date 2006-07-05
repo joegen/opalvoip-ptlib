@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.45  2006/07/05 09:14:29  csoutheren
+ * Fixed startup problems with using Resume in PThread descendants
+ *
  * Revision 1.44  2006/07/05 03:59:19  csoutheren
  * Fix PThreadMain2Arg template
  *
@@ -526,12 +529,13 @@ class PThreadMain : public PThread
 };
 
 template <class Arg1Type>
-class PThreadMain1Arg : public PThreadMain
+class PThreadMain1Arg : public PThread
 {
-  PCLASSINFO(PThreadMain1Arg, PThreadMain);
+  PCLASSINFO(PThreadMain1Arg, PThread);
   public:
     PThreadMain1Arg(Arg1Type _arg1, BOOL autoDelete = FALSE)
-      : PThreadMain(autoDelete), arg1(_arg1)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+        arg1(_arg1)
     { PThread::Resume(); }
     virtual void Main();
 
@@ -540,12 +544,13 @@ class PThreadMain1Arg : public PThreadMain
 };
 
 template <class Arg1Type, class Arg2Type>
-class PThreadMain2Arg : public PThreadMain
+class PThreadMain2Arg : public PThread
 {
-  PCLASSINFO(PThreadMain2Arg, PThreadMain);
+  PCLASSINFO(PThreadMain2Arg, PThread);
   public:
     PThreadMain2Arg(Arg1Type _arg1, Arg2Type _arg2, BOOL autoDelete = FALSE)
-      : PThreadMain(autoDelete), arg1(_arg1), arg2(_arg2)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+        arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
     virtual void Main();
 
@@ -555,14 +560,15 @@ class PThreadMain2Arg : public PThreadMain
 };
 
 template <class ObjType>
-class PThreadObj : public PThreadMain
+class PThreadObj : public PThread
 {
   public:
-  PCLASSINFO(PThreadObj, PThreadMain);
+  PCLASSINFO(PThreadObj, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
     PThreadObj(ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
-      : PThreadMain(autoDelete), obj(_obj), fn(_fn)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+        obj(_obj), fn(_fn)
     { PThread::Resume(); }
     void Main()
     { (obj.*fn)(); }
@@ -573,13 +579,14 @@ class PThreadObj : public PThreadMain
 };
 
 template <class ObjType, class Arg1Type>
-class PThreadObj1Arg : public PThreadMain
+class PThreadObj1Arg : public PThread
 {
-  PCLASSINFO(PThreadObj1Arg, PThreadMain);
+  PCLASSINFO(PThreadObj1Arg, PThread);
   public:
     typedef void (ObjType::*ObjTypeFn)(int); 
     PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
-      : PThreadMain(autoDelete), obj(_obj), fn(_fn), arg1(_arg1)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }
     void Main()
     { (obj.*fn)(arg1); }
