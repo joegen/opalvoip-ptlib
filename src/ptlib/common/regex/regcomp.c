@@ -12,6 +12,8 @@
 #include "cclass.h"
 #include "cname.h"
 
+#pragma warning(disable: 4996)
+
 /*
  * parse structure, passed up and down to avoid global variables and
  * other clumsinesses
