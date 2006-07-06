@@ -33,6 +33,12 @@ AC_SUBST(LIBDIR)
 
 dnl ########################################################################
 dnl extract the PWLIB version
+dnl MSWIN_DISPLAY version,Version
+dnl MSWIN_VERSION version,PWLIB_MAJOR=MAJOR_VERSION
+dnl MSWIN_VERSION version,PWLIB_MINOR=MINOR_VERSION
+dnl MSWIN_VERSION version,PWLIB_BUILD=BUILD_NUMBER
+dnl MSWIN_VERSION version,PWLIB_VERSION=VERSION
+
 MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
 MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
 BUILD_NUMBER=`cat ${PWLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
@@ -883,6 +889,7 @@ dnl MSWIN_DISPLAY    resolver,DNS Resolver
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
 dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
+dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
 
 AC_ARG_ENABLE(resolver,
        [  --disable-resolver      disable DNS resolver support])
@@ -1144,6 +1151,7 @@ dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
+dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 
 dnl MSWIN_DISPLAY    osslAES,Open SSL AES
 dnl MSWIN_CHECK_FILE osslAES,inc32\openssl\aes.h,P_SSL_AES=1
@@ -1151,15 +1159,18 @@ dnl MSWIN_CHECK_DIR  osslAES,..\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,..\external\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,c:\openssl\
+dnl MSWIN_CHECK_DIR  osslAES,\libs\openssl\
 
 dnl MSWIN_DISPLAY    winssl,Windows Open SSL
 dnl MSWIN_CHECK_FILE winssl,include\openssl\ssl.h,P_WINSSL=1
 dnl MSWIN_DIR_SYMBOL winssl,WINSSL_DIR
 dnl MSWIN_CHECK_DIR  winssl,.\lib\VC\
+dnl MSWIN_CHECK_DIR  winssl,\libs\openssl\
 
 dnl MSWIN_DISPLAY    wsslAES,Windows Open SSL AES
 dnl MSWIN_CHECK_FILE wsslAES,include\openssl\aes.h,P_WINSSL_AES=1
 dnl MSWIN_CHECK_DIR  wsslAES,.\lib\VC\
+dnl MSWIN_CHECK_DIR  wsslAES,\libs\openssl\
 
 AC_ARG_ENABLE(openssl,
        [  --disable-openssl       disable OpenSSL support])
@@ -1303,11 +1314,13 @@ dnl MSWIN_CHECK_DIR  expat,..\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
+dnl MSWIN_CHECK_DIR  expat,\libs\expat\
 
 dnl MSWIN_DISPLAY    winexpat,Windows Expat XML
 dnl MSWIN_CHECK_FILE winexpat,libs\libexpat.lib,P_WINEXPAT=1
 dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
+dnl MSWIN_CHECK_DIR  winexpat,\libs\expat\
 
 AC_ARG_ENABLE(expat,
        [  --disable-expat         disable XML support])
@@ -1476,7 +1489,8 @@ dnl MSWIN_DISPLAY    ipv6,IPv6 Support
 dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
 dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Platform Sdk for Windows Server 2003 R2\Include
 
 AC_ARG_ENABLE(ipv6,
        [  --disable-ipv6          disable IPV6 support])
@@ -1519,6 +1533,7 @@ dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
 dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
 AC_ARG_ENABLE(qos,
        [  --disable-qos           disable QOS support])
@@ -2139,6 +2154,8 @@ dnl look for ODBC code
 
 dnl MSWIN_DISPLAY    odbc,ODBC
 dnl MSWIN_CHECK_FILE odbc,sql.h,P_ODBC=1
+dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDK\include\
+dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
 dnl ########################################################################
 dnl output make directives
