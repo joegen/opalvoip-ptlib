@@ -9,6 +9,8 @@
 #include "utils.h"
 #include "regerror.ih"
 
+#pragma warning(disable: 4996)
+
 /*
  = #define	REG_OKAY	 0
  = #define	REG_NOMATCH	 1
