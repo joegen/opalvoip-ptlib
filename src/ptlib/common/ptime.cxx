@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.48  2006/07/06 01:20:48  csoutheren
+ * Disable benign warnings on VC 2005
+ *
  * Revision 1.47  2004/06/06 08:50:08  rjongbloed
  * Fixed rounding error in microsoeconds stream output, was not properly cascaded
  *   along other time elements (hour min etc) so as doing rounding properly is
@@ -792,7 +795,7 @@ PTimeInterval PTime::operator-(const PTime & t) const
     usecs -= 1000000;
     secs++;
   }
-  return PTimeInterval(usecs/1000, secs);
+  return PTimeInterval(usecs/1000, (long)secs);
 }
 
 

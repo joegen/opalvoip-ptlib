@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.37  2006/07/06 01:20:48  csoutheren
+ * Disable benign warnings on VC 2005
+ *
  * Revision 1.36  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -2038,7 +2041,7 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
   heights[8] = frameHeight;
 
   grabCount++;
-  colourIndex = time(NULL);//time in seconds since last epoch.
+  colourIndex = (unsigned int)time(NULL);//time in seconds since last epoch.
   // Provides a difference if run on two ohphone sessions.
   colNo = (colourIndex / 10) % 7;   //Every 10 seconds, coloured background blocks move.
 
