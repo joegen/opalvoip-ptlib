@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.18  2006/07/09 09:46:25  csoutheren
+ * Updated to work with VS 2005
+ * Thanks to Martin Brown
+ *
  * Revision 1.17  2006/06/26 05:22:52  shorne
  * Fixed compile issue
  *
@@ -71,7 +75,7 @@
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptlib/pprocess.h>
-
+void unsetenv(const char *);
 
 PDECLARE_CLASS(Symbol, PCaselessString)
   public:
@@ -168,8 +172,8 @@ void MergeSym::Main()
         ext_filename += ".def";
 
       PINDEX previous_def_symbols_size = def_symbols.GetSize();
-
-      for (PINDEX inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
+	  PINDEX inc_index = 0;
+      for (inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
         PString trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
         if (args.HasOption('v'))
           cout << "\nTrying " << trial_filename << " ..." << flush;
@@ -258,6 +262,9 @@ void MergeSym::Main()
 
   if (args.HasOption('v'))
     cout << "Reading library symbols..." << flush;
+
+  unsetenv("VS_UNICODE_OUTPUT");
+
   PINDEX linecount = 0;
   SortedSymbolList lib_symbols;
   PString dumpbin = args.GetOptionString('d', "dumpbin");
@@ -269,19 +276,19 @@ void MergeSym::Main()
   }
 
   PTextFile symfile;
-  if (args.HasOption('s')) {
+ // if (args.HasOption('s')) {
     PFilePath sym_filename = def_filename;
     sym_filename.SetType(".sym");
     if (!symfile.Open(sym_filename, PFile::WriteOnly))
       cerr << "Could not open symbol file " << sym_filename << endl;
-  }
+ // }
 
   while (!pipe.eof()) {
     PString line;
     pipe >> line;
     symfile << line;
 
-    char * namepos = strchr(line, '|');
+    char * namepos = (char *)strchr(line, '|');
     if (namepos != NULL) {
       *namepos = '\0';
       while (*++namepos == ' ');
@@ -299,7 +306,7 @@ void MergeSym::Main()
             unmangled = name;
           else {
             unmangled++;
-            char * endunmangle = strrchr(unmangled, ')');
+            char * endunmangle = (char *)strrchr(unmangled, ')');
             if (endunmangle != NULL)
               *endunmangle = '\0';
           }
@@ -380,7 +387,45 @@ void MergeSym::Main()
       SetTerminationValue(1);
     }
   }
-}
 
-
+} 
 // End MergeSym.cxx
+
+ void  unsetenv(const char *name) 
+ { 
+     char       *envstr; 
+  
+     if (getenv(name) == NULL) 
+         return;                 /* no work */ 
+  
+     /* 
+      * The technique embodied here works if libc follows the Single Unix Spec 
+      * and actually uses the storage passed to putenv() to hold the environ 
+      * entry.  When we clobber the entry in the second step we are ensuring 
+      * that we zap the actual environ member.  However, there are some libc 
+      * implementations (notably recent BSDs) that do not obey SUS but copy the 
+      * presented string.  This method fails on such platforms.  Hopefully all 
+      * such platforms have unsetenv() and thus won't be using this hack. 
+      * 
+      * Note that repeatedly setting and unsetting a var using this code will 
+      * leak memory. 
+      */ 
+  
+     envstr = (char *) malloc(strlen(name) + 2); 
+     if (!envstr)                /* not much we can do if no memory */ 
+         return; 
+  
+     /* Override the existing setting by forcibly defining the var */ 
+     sprintf(envstr, "%s=", name); 
+     _putenv(envstr); 
+  
+     /* Now we can clobber the variable definition this way: */ 
+     strcpy(envstr, "="); 
+  
+     /* 
+      * This last putenv cleans up if we have multiple zero-length names as a 
+      * result of unsetting multiple things. 
+      */ 
+     _putenv(envstr); 
+ }
+
