@@ -70,7 +70,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptlibsd.lib mpr.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="ptlibsd.lib mpr.lib"
 				OutputFile=".\Debug/MergeSym.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptlibs.lib mpr.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="ptlibs.lib mpr.lib"
 				OutputFile=".\Release/MergeSym.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
