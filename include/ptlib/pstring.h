@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.89  2006/07/10 09:15:28  shorne
+ * Corrected PString::Tokenize() documentation Thx. David Corrie
+ *
  * Revision 1.88  2006/06/30 00:56:31  csoutheren
  * Applied 1494931 - various pwlib bug fixes and enhancement
  * Thanks to Frederich Heem
@@ -1619,13 +1622,15 @@ class PString : public PCharArray {
        
        The second form where #onePerSeparator# is FALSE is used
        where consecutive delimiters do not constitute a empty token. In this
-       case the string "  a list  of words  " would be split into 4 substrings;
-       "a", "list", "of" and "words".
+       case the string "  a list  of words  " would be split into 5 substrings;
+       "a", "list", "of", "words" and "".
 
        There is an important distinction when there are delimiters at the
        beginning or end of the source string. In the first case there will be
-       empty strings at the end of the array and in the second the delimiters
-       are ignored.
+       empty strings at the end of the array. In the second case delimeters
+       at the beginning of the source string are ignored and if there are one
+       or more trailing delimeters, they will yeild a single empty string at
+       the end of the array.
 
        @return
        an array of substring for each token in the string.
