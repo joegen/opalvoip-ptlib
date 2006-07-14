@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.32  2006/07/14 15:20:54  csoutheren
+ * Applied 1519950 - configure --extern-dir not working
+ * Thanks to Dinis Rosario
+ *
  * Revision 1.31  2006/07/06 01:10:14  csoutheren
  * Added parsing of version.h to configure
  * PWLib version variables now set in ptbuildopts.h
@@ -174,8 +178,8 @@ class Feature
     string directorySymbol;
     string simpleDefineName;
     string simpleDefineValue;
-		map<string, string> defines;
-		map<string, string> defineValues;
+    map<string, string> defines;
+    map<string, string> defineValues;
 
     struct CheckFileInfo {
       CheckFileInfo() : found(false), defineName("1") { }
@@ -231,7 +235,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   else if (optionName == "VERSION") {
     int equal = optionValue.find('=');
     if (equal != string::npos)
-			defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
+      defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
   }
 
   else if (optionName == "CHECK_FILE") {
@@ -303,14 +307,14 @@ void Feature::Adjust(string & line)
         line += simpleDefineValue;
     }
 
-		map<string,string>::iterator r, s;
-		for (r = defines.begin(); r != defines.end(); ++r) {
-	    if (CompareName(line, r->first)) {
-				s = defineValues.find(r->second);
-				if (s != defineValues.end())
-					line = "#define " + r->first + ' ' + s->second;
-			}
-		}
+    map<string,string>::iterator r, s;
+    for (r = defines.begin(); r != defines.end(); ++r) {
+      if (CompareName(line, r->first)) {
+        s = defineValues.find(r->second);
+        if (s != defineValues.end())
+          line = "#define " + r->first + ' ' + s->second;
+      }
+    }
 
     for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
       if (file->found && CompareName(line, file->defineName)) {
@@ -393,13 +397,13 @@ bool Feature::CheckFileInfo::Locate(const string & testDirectory)
 
 bool TreeWalk(const string & _directory)
 {
-	string directory = ToLower(_directory);
+  string directory = ToLower(_directory);
 
   bool foundAll = false;
 
   list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), directory);
   if (r != excludeDirList.end())
-	return false;
+  return false;
 
   string wildcard = directory;
   wildcard += "*.*";
@@ -483,23 +487,23 @@ BOOL FeatureEnabled(const string & name)
 
 int main(int argc, char* argv[])
 {
-	// open and scan configure.ac
-	cout << "PWLib Configure " VERSION " - ";
-	ifstream conf("configure.ac", ios::in);
-	if (conf.is_open()) {
-		cout << "opened configure.ac" << endl;
-	} else {
-		conf.clear();
-		conf.open("configure.in", ios::in);
-		if (conf.is_open()) {
-			cout << "opened " << "configure.in" << endl;
-		} else {
-			cerr << "could not open configure.ac/configure.in" << endl;
-			return 1;
-		}
-	}
+  // open and scan configure.ac
+  cout << "PWLib Configure " VERSION " - ";
+  ifstream conf("configure.ac", ios::in);
+  if (conf.is_open()) {
+    cout << "opened configure.ac" << endl;
+  } else {
+    conf.clear();
+    conf.open("configure.in", ios::in);
+    if (conf.is_open()) {
+      cout << "opened " << "configure.in" << endl;
+    } else {
+      cerr << "could not open configure.ac/configure.in" << endl;
+      return 1;
+    }
+  }
 
-	// scan for features
+  // scan for features
   list<string> headers;
   vector<Feature>::iterator feature;
 
@@ -542,55 +546,55 @@ int main(int argc, char* argv[])
     }
   }
 
-	// scan version.h if there is a feature called version and if version.h exists
-	for (feature = features.begin(); feature != features.end(); ++feature)
-		if (feature->featureName == "version")
-			break;
-	if (feature != features.end()) {
-		ifstream version("version.h", ios::in);
-		if (version.is_open()) {
-			while (version.good()) {
-				string line;
-				getline(version, line);
-				int pos;
-				int i;
-				for (i = 0; i < (sizeof(VersionTags)/sizeof(VersionTags[0])); ++i) {
-					int tagLen = strlen(VersionTags[i]);
-					if ((pos = line.find(VersionTags[i])) != string::npos) {
-						int space = line.find(' ', pos+tagLen);
-						if (space != string::npos) {
-							while (line[space] == ' ')
-								space++;
-							string version = line.substr(space);
-							while (::iswspace(version[0]))
-								version.erase(0);
-							while (version.length() > 0 && ::iswspace(version[version.length()-1]))
-								version.erase(version.length()-1);
-							feature->defineValues.insert(pair<string,string>(VersionTags[i], version));
-						}
-					}
-				}
-			}
-			string version("\"");
-			map<string,string>::iterator ver;
-			if ((ver = feature->defineValues.find(VersionTags[0])) != feature->defineValues.end())
-				version += ver->second;
-			else
-				version += "0";
-			version += ".";
-			if ((ver = feature->defineValues.find(VersionTags[1])) != feature->defineValues.end())
-				version += ver->second;
-			else
-				version += "0";
-			version += ".";
-			if ((ver = feature->defineValues.find(VersionTags[2])) != feature->defineValues.end())
-				version += ver->second;
-			else
-				version += "0";
-			version += "\"";
-			feature->defineValues.insert(pair<string,string>("VERSION", version));
-		}
-	}
+  // scan version.h if there is a feature called version and if version.h exists
+  for (feature = features.begin(); feature != features.end(); ++feature)
+    if (feature->featureName == "version")
+      break;
+  if (feature != features.end()) {
+    ifstream version("version.h", ios::in);
+    if (version.is_open()) {
+      while (version.good()) {
+        string line;
+        getline(version, line);
+        int pos;
+        int i;
+        for (i = 0; i < (sizeof(VersionTags)/sizeof(VersionTags[0])); ++i) {
+          int tagLen = strlen(VersionTags[i]);
+          if ((pos = line.find(VersionTags[i])) != string::npos) {
+            int space = line.find(' ', pos+tagLen);
+            if (space != string::npos) {
+              while (line[space] == ' ')
+                space++;
+              string version = line.substr(space);
+              while (::iswspace(version[0]))
+                version.erase(0);
+              while (version.length() > 0 && ::iswspace(version[version.length()-1]))
+                version.erase(version.length()-1);
+              feature->defineValues.insert(pair<string,string>(VersionTags[i], version));
+            }
+          }
+        }
+      }
+      string version("\"");
+      map<string,string>::iterator ver;
+      if ((ver = feature->defineValues.find(VersionTags[0])) != feature->defineValues.end())
+        version += ver->second;
+      else
+        version += "0";
+      version += ".";
+      if ((ver = feature->defineValues.find(VersionTags[1])) != feature->defineValues.end())
+        version += ver->second;
+      else
+        version += "0";
+      version += ".";
+      if ((ver = feature->defineValues.find(VersionTags[2])) != feature->defineValues.end())
+        version += ver->second;
+      else
+        version += "0";
+      version += "\"";
+      feature->defineValues.insert(pair<string,string>("VERSION", version));
+    }
+  }
 
   const char EXTERN_DIR[]  = "--extern-dir=";
   const char EXCLUDE_DIR[] = "--exclude-dir=";
@@ -599,7 +603,7 @@ int main(int argc, char* argv[])
   bool searchDisk = true;
   char *externDir = NULL;
   char *externEnv = NULL;
-	int i;
+  int i;
   for (i = 1; i < argc; i++) {
     if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
@@ -637,27 +641,27 @@ int main(int argc, char* argv[])
       return 1;
     }
     else {
-			// parse environment variable if it exists
-			std::vector<std::string> envConfigureList;
-			char * envStr = getenv("PWLIB_CONFIGURE_FEATURES");
-			if (envStr != NULL) {
-				string str(envStr);
-				string::size_type offs = 0;
-				while (offs < str.length()) {
-					string::size_type n = str.find(',', offs);
-					string xable;
-					if (n != string::npos) {
-						xable = str.substr(offs, n-offs);
-						offs = n+1;
-					} else {
-						xable = str.substr(offs);
-						offs += str.length();
-					}
-					envConfigureList.push_back(ToLower(xable));
-				}
-			}
+      // parse environment variable if it exists
+      std::vector<std::string> envConfigureList;
+      char * envStr = getenv("PWLIB_CONFIGURE_FEATURES");
+      if (envStr != NULL) {
+        string str(envStr);
+        string::size_type offs = 0;
+        while (offs < str.length()) {
+          string::size_type n = str.find(',', offs);
+          string xable;
+          if (n != string::npos) {
+            xable = str.substr(offs, n-offs);
+            offs = n+1;
+          } else {
+            xable = str.substr(offs);
+            offs += str.length();
+          }
+          envConfigureList.push_back(ToLower(xable));
+        }
+      }
 
-			// go through features and disable ones that need disabling either from command line or environment
+      // go through features and disable ones that need disabling either from command line or environment
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (stricmp(argv[i], ("--no-"     + feature->featureName).c_str()) == 0 ||
             stricmp(argv[i], ("--disable-"+ feature->featureName).c_str()) == 0) {
@@ -668,15 +672,15 @@ int main(int argc, char* argv[])
           feature->enabled = true;
           break;
         }
-				else if (find(envConfigureList.begin(), envConfigureList.end(), "enable-"+ feature->featureName) != envConfigureList.end()) {
+        else if (find(envConfigureList.begin(), envConfigureList.end(), "enable-"+ feature->featureName) != envConfigureList.end()) {
           feature->enabled = true;
           break;
-				}
-				else if (find(envConfigureList.begin(), envConfigureList.end(), "disable-"+ feature->featureName) != envConfigureList.end() ||
-								 find(envConfigureList.begin(), envConfigureList.end(), "no-"+ feature->featureName) != envConfigureList.end()) {
+        }
+        else if (find(envConfigureList.begin(), envConfigureList.end(), "disable-"+ feature->featureName) != envConfigureList.end() ||
+                 find(envConfigureList.begin(), envConfigureList.end(), "no-"+ feature->featureName) != envConfigureList.end()) {
           feature->enabled = false;
           break;
-				}
+        }
         else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
                !feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
           cerr << feature->displayName << " not found in "
@@ -734,18 +738,19 @@ int main(int argc, char* argv[])
 
   if (searchDisk && !foundAll) {
     // Do search of entire system
-    char drives[100];
+    char drives[1024];
     if (!externDir){
       if (!GetLogicalDriveStrings(sizeof(drives), drives))
         strcpy(drives, "C:\\");
     }
     else {
       strcpy(drives, externDir);
+      drives[strlen(externDir)+1] = '\0';
     }
 
     const char * drive = drives;
     while (*drive != '\0') {
-      if (GetDriveType(drive) == DRIVE_FIXED) {
+      if (externDir || GetDriveType(drive) == DRIVE_FIXED) {
         cout << "Searching " << drive << endl;
         if (TreeWalk(drive))
           break;
@@ -760,34 +765,36 @@ int main(int argc, char* argv[])
     list<string>::const_iterator r;
     if (feature->enabled) {
       for (r = feature->ifFeature.begin(); r != feature->ifFeature.end(); ++r) {
-				string str = *r;
-				size_t pos = str.find('|');
-				if (pos == string::npos) {
-					if (!FeatureEnabled(str)) {
-						feature->enabled = FALSE;
-						cout << " DISABLED due to absence of feature " << str;
-						output = TRUE;
-						break;
-					}
-				}
-				else
-				{
-					bool enabled = FALSE;
-					while (str.length() != 0) {
-						string key = str.substr(0, pos);
-						str = str.substr(pos+1);
-						if (FeatureEnabled(key)) {
-							enabled = true;
-							break;
-						}
-						pos = str.find('|');
-					}
-					if (!enabled) {
-						feature->enabled = FALSE;
-						cout << " DISABLED due to absence of any features in list " << *r;
-						output = TRUE;
-					}
-				}
+        string str = *r;
+        size_t pos = str.find('|');
+        if (pos == string::npos) {
+          if (!FeatureEnabled(str)) {
+            feature->enabled = FALSE;
+            cout << " DISABLED due to absence of feature " << str;
+            output = TRUE;
+            break;
+          }
+        }
+        else
+        {
+          bool enabled = FALSE;
+          while (str.length() != 0) {
+            string key = str.substr(0, pos);
+            if (FeatureEnabled(key)) {
+              enabled = true;
+              break;
+            }
+            if (pos == string::npos)
+              break;
+            str = str.substr(pos+1);
+            pos = str.find('|');
+          }
+          if (!enabled) {
+            feature->enabled = FALSE;
+            cout << " DISABLED due to absence of any features in list " << *r;
+            output = TRUE;
+          }
+        }
       }
     }
     if (feature->enabled) {
