@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.243  2006/07/14 04:55:10  csoutheren
+ * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
+ * Thanks to Paul Nader
+ *
  * Revision 1.242  2006/06/26 10:50:24  shorne
  * Fixed compile problem on MSVC6
  *
@@ -883,6 +887,7 @@ static unsigned PTraceLevelThreshold = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
 unsigned PTraceCurrentLevel;
 static const char * PTrace_Filename = NULL;
+static const char * PTrace_RolloverPattern = "yyyy_MM_dd";
 static int PTrace_lastDayOfYear = 0;
 
 void PTrace::SetStream(ostream * s)
@@ -903,9 +908,20 @@ void PTrace::SetStream(ostream * s)
 static void OpenTraceFile()
 {
   PFilePath fn(PTrace_Filename);
+  PFilePath temp = PTrace_Filename;
+
+  int i;
+  if ((i = temp.Find("%P")) != P_MAX_INDEX)
+  {
+    temp.Replace("%P", PString((unsigned int) PProcess::Current().GetProcessID()));
+    fn = temp;
+  }
  
   if ((PTraceOptions & PTrace::RotateDaily) != 0)
-      fn = PFilePath(fn.GetDirectory() + (fn.GetTitle() + PTime().AsString("yyyy_MM_dd",(PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local) + fn.GetType()));
+  {
+      PTime now;
+      fn = PFilePath(fn.GetDirectory() + fn.GetTitle() + now.AsString((const char *) PTrace_RolloverPattern, ((PTraceOptions&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) + fn.GetType());
+  }
 
   PTextFile * traceOutput;
   if (PTraceOptions & PTrace::AppendToFile) {
@@ -922,7 +938,16 @@ static void OpenTraceFile()
   }
 }
 
-void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
+void PTrace::Initialise(
+    unsigned level,
+    const char * filename,
+    unsigned options
+)
+{
+  Initialise(level, filename, NULL, options);
+}
+
+void PTrace::Initialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
   // If we have a tracing version, then open trace file and set modes
 #if PTRACING
@@ -938,8 +963,13 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 
   // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
   // between os_gmtime and os_localtime?
-  if (options & RotateDaily)
+  if (options & RotateDaily) {
+    if (rolloverPattern != NULL)
+      PTrace_RolloverPattern = rolloverPattern;
+    else
+      PTrace_RolloverPattern = "yyyy_MM_dd";
     PTrace_lastDayOfYear = PTime().GetDayOfYear(); 
+  }
   else
     PTrace_lastDayOfYear = 0;
 
