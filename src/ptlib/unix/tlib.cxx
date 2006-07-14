@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.79  2006/07/14 04:55:10  csoutheren
+ * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
+ * Thanks to Paul Nader
+ *
  * Revision 1.78  2006/06/21 13:27:03  csoutheren
  * Fixed link problem with gcc 2.95.3
  *
@@ -647,7 +651,7 @@ void PXSignalHandler(int sig)
   process.SignalTimerChange();
 #elif defined(P_PTHREADS)
   // Inform house keeping thread we have a signal to be processed
-  BYTE ch;
+  BYTE ch=0;
   write(process.timerChangePipe[1], &ch, 1);
 #endif
   signal(sig, PXSignalHandler);
