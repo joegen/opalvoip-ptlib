@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.119  2006/07/14 00:57:37  csoutheren
+ * Be safe for URLs containing non-ASCII characters
+ *
  * Revision 1.118  2006/06/25 11:22:57  csoutheren
  * Add pragmas to automate linking with VS 2005
  *
@@ -690,13 +693,13 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   queryVars.RemoveAll();
 
   // copy the string so we can take bits off it
-  while (isspace(*cstr))
+  while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
     cstr++;
   PString url = cstr;
 
   // Character set as per RFC2396
   PINDEX pos = 0;
-  while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
+  while ( ((*cstr & 0x80) != 0x00) || isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
     pos++;
 
   PString schemeName;
