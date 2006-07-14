@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.45  2006/07/14 05:46:14  csoutheren
+ * Applied 1470324 - Use _exit instead of exit in PPipeChannel
+ *
  * Revision 1.44  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -324,7 +327,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   else
     execv(subProgram, args);
 
-  exit(2);
+  _exit(2);
   return FALSE;
 #endif // P_VXWORKS || P_RTEMS
 }
