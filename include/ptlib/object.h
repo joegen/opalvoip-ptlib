@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.119  2006/07/14 04:55:09  csoutheren
+ * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
+ * Thanks to Paul Nader
+ *
  * Revision 1.118  2006/06/20 09:49:16  csoutheren
  * Applied 1489468
  * Fix stlport on old gcc/non-gcc compilers
@@ -717,6 +721,23 @@ public:
   static void Initialise(
     unsigned level,
     const char * filename = NULL,
+    unsigned options = Timestamp | Thread | Blocks
+  );
+
+  /**Set the most common trace options.
+     If filename is not NULL then a PTextFile is created and attached the
+     trace output stream. This object is never closed or deleted until the
+     termination of the program.
+
+     If rolloverPatterm is not NULL it is used as the time format patterm
+     appended to filename if the RotateDaily is set. Default: yyyy_MM_dd
+
+     A trace output of the program name version and OS is written as well.
+    */
+  static void Initialise(
+    unsigned level,
+    const char * filename,
+    const char * rolloverPattern,
     unsigned options = Timestamp | Thread | Blocks
   );
 
