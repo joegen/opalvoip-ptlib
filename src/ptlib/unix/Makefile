@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.142  2006/07/18 05:17:24  csoutheren
+# Added shared memory video devices
+# Thanks to Hannes Friederich
+#
 # Revision 1.141  2006/02/20 06:49:45  csoutheren
 # Added video file and video file input device code
 #
@@ -700,6 +704,10 @@ endif
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
+endif
+
+ifdef HAS_SHMVIDEO
+SOURCES	+= shmvideo.cxx 
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
