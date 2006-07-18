@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.22  2006/07/18 05:15:58  csoutheren
+ * Removed pre-emptive call to dlerror as this crashes RedHat 9
+ *
  * Revision 1.21  2006/06/20 13:26:19  csoutheren
  * Only call dlerror if error occurs
  *
@@ -393,7 +396,7 @@ BOOL PDynaLink::Open(const PString & _name)
   {
     PWaitAndSignal m(GetDLLMutex());
 
-    const char *err = dlerror();
+    const char *err; //= dlerror();
 
 #if defined(P_OPENBSD)
     dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
