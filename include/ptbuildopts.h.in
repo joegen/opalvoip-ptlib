@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.56  2006/07/18 05:17:24  csoutheren
+ * Added shared memory video devices
+ * Thanks to Hannes Friederich
+ *
  * Revision 1.55  2006/07/05 13:51:29  shorne
  * small typo fixed
  *
@@ -655,6 +659,7 @@
 #undef P_SOCKAGG
 #undef P_VIDFILE
 #undef P_ODBC
+#undef P_SHMVIDEO
 
 /////////////////////////////////////////////////
 //
