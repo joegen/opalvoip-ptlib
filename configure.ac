@@ -511,6 +511,7 @@ default_ipv6=yes
 default_qos=yes
 default_sockagg=no
 default_vidfile=yes
+default_shmvideo=yes
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -547,6 +548,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_qos=yes
   default_sockagg=no
   default_vidfile=yes
+  default_shmvideo=no
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -582,6 +584,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_qos=no
   default_sockagg=no
   default_vidfile=no
+  default_shmvideo=no
 fi
 
 
@@ -2048,6 +2051,26 @@ else
   AC_DEFINE(P_VIDFILE, 1)
 fi
 AC_SUBST(HAS_VIDFILE)
+
+dnl ########################################################################
+dnl check for enabling shared video support
+
+AC_ARG_ENABLE(shmvideo,
+       [  --enable-shmvideo     enable video file support])
+
+if test "${enable_shmvideo}z" = "z" ; then
+  enable_shmvideo=$default_shmvideo
+fi
+
+HAS_SHMVIDEO=
+if test "$enable_shmvideo" = "no" ; then
+  AC_MSG_NOTICE(Shared memory video support disabled)
+else
+  AC_MSG_NOTICE(Shared memory video support enabled)
+  HAS_SHMVIDEO=1
+  AC_DEFINE(P_SHMVIDEO, 1)
+fi
+AC_SUBST(HAS_SHMVIDEO)
 
 dnl ########################################################################
 dnl check for sound support
