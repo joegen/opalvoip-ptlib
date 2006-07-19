@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.31  2006/07/19 05:37:39  csoutheren
+ * Applied 1523190 - PWLIB - Delayed Application Startup
+ * Thanks to Ben Lear
+ *
  * Revision 1.30  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -122,7 +126,8 @@
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
+//#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
 #  else
 #    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
 #  endif
@@ -132,6 +137,14 @@
 #define DIR_SEP   ";"
 #else
 #define DIR_SEP   ":"
+#endif
+
+#ifndef PDIR_SEPARATOR 
+#ifdef _WIN32
+#define PDIR_SEPARATOR '\\'
+#else
+#define PDIR_SEPARATOR '/'
+#endif
 #endif
 
 #define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
@@ -152,8 +165,15 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & dir)
 PStringArray PPluginManager::GetPluginDirs()
 {
   PString env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
-  if (env == NULL)
-    env = P_DEFAULT_PLUGIN_DIR;
+  if (env == NULL) {
+    // env = P_DEFAULT_PLUGIN_DIR;
+    PString execDir = PProcess::Current().GetFile();
+    PINDEX sepLoc = execDir.FindLast(PDIR_SEPARATOR);
+    if(sepLoc != P_MAX_INDEX){
+	execDir = execDir.Left(sepLoc);
+    }
+    env = execDir + DIR_SEP + P_DEFAULT_PLUGIN_DIR;
+  }
 
   // split into directories on correct seperator
   return env.Tokenise(DIR_SEP, TRUE);
