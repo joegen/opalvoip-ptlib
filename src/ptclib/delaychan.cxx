@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.7  2006/07/19 06:03:35  csoutheren
+ * Add extension PAdaptiveDelay to set maximum and minimum delay times
+ * Thanks to Paolo Amadini
+ *
  * Revision 1.6  2006/06/20 12:44:02  csoutheren
  * Added new constructor for PDelayChannel
  * Thanks to Frederic Heem
@@ -56,7 +60,8 @@
 
 /////////////////////////////////////////////////////////
 
-PAdaptiveDelay::PAdaptiveDelay()
+PAdaptiveDelay::PAdaptiveDelay(unsigned _maximumSlip, unsigned _minimumDelay)
+  : jitterLimit(_maximumSlip), minimumDelay(_minimumDelay)
 {
   firstTime = TRUE;
 }
@@ -81,7 +86,12 @@ BOOL PAdaptiveDelay::Delay(int frameTime)
   PTimeInterval delay = targetTime - PTime();
   int sleep_time = (int)delay.GetMilliSeconds();
 
-  if (sleep_time > 0)
+  // Catch up if we are too late
+  if (sleep_time < -jitterLimit.GetMilliSeconds())
+    targetTime = PTime();
+
+  // Else sleep only if necessary
+  if (sleep_time > minimumDelay.GetMilliSeconds())
 #if defined(P_LINUX) || defined(P_MACOSX)
     usleep(sleep_time * 1000);
 #else
