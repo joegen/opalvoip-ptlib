@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.244  2006/07/19 05:37:39  csoutheren
+ * Applied 1523190 - PWLIB - Delayed Application Startup
+ * Thanks to Ben Lear
+ *
  * Revision 1.243  2006/07/14 04:55:10  csoutheren
  * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
  * Thanks to Paul Nader
@@ -2012,7 +2016,20 @@ PProcess::PProcess(const char * manuf, const char * name,
   if (p_argv != 0 && p_argc > 0) {
     arguments.SetArgs(p_argc-1, p_argv+1);
 
+    
+#ifdef _WIN32
+    // Try to get the real image path for this process
+    GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
+    executableFile.Replace("\\??\\","");
+
+    if(executableFile.IsEmpty()){
+	// Ok something went wrong, just use the default
     executableFile = PString(p_argv[0]);
+    }
+#else
+    executableFile = PString(p_argv[0]);
+#endif
+
     if (!PFile::Exists(executableFile)) {
       PString execFile = executableFile + ".exe";
       if (PFile::Exists(execFile))
