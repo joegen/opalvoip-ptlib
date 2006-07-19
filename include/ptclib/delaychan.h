@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.8  2006/07/19 06:03:34  csoutheren
+ * Add extension PAdaptiveDelay to set maximum and minimum delay times
+ * Thanks to Paolo Amadini
+ *
  * Revision 1.7  2006/06/20 12:44:02  csoutheren
  * Added new constructor for PDelayChannel
  * Thanks to Frederic Heem
@@ -73,13 +77,65 @@ class PAdaptiveDelay : public PObject
   PCLASSINFO(PAdaptiveDelay, PObject);
   
   public:
-    PAdaptiveDelay();
+
+  /**@name Construction */
+  //@{
+    /**Create a new adaptive delay with the specified parameters.
+
+       The maximum slip time can also be set later using SetMaximumSlip.
+      */
+    PAdaptiveDelay(
+      unsigned maximumSlip = 0,   ///< Maximum slip time in milliseconds
+      unsigned minimumDelay = 0   ///< Minimum delay (usually OS time slice)
+    );
+  //@}
+
+  /**@name Operating Parameters */
+  //@{
+
+    /**Set the number of milliseconds that the delay may "catch up" by
+       using zero delays. This is caused by the Delay() function not
+       being called for a time by external factors.
+      */
+    void SetMaximumSlip(PTimeInterval maximumSlip)
+    { jitterLimit = maximumSlip; }
+
+    /**Get the current slip time. */
+    PTimeInterval GetMaximumSlip() const
+    { return jitterLimit; }
+
+  //@}
+
+  /**@name Functionality */
+  //@{
+    /**Wait until the specified number of milliseconds have elapsed from
+       the previous call (on average). The first time the function is called,
+       no delay occurs. If the maximum slip time is set and the caller
+       is "too late", the timer is restarted automatically and no delay
+       occurs.
+
+       If the calculated delay is less than the OS timer resolution
+       specified on costruction, no delay occurs now ("better sooner
+       than later" strategy).
+
+       @return
+       TRUE if we are "too late" of @a time milliseconds (unrelated to
+       the maximum slip time).
+      */
     BOOL Delay(int time);
+
+    /**Invalidate the timer. The timing of this function call is not
+       important, the timer will restart at the next call to Delay().
+      */
     void Restart();
+  //@}
  
   protected:
     BOOL   firstTime;
     PTime  targetTime;
+
+    PTimeInterval  jitterLimit;
+    PTimeInterval  minimumDelay;
 };
 
 
