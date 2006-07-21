@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.8  2006/07/21 01:03:12  csoutheren
+ * Fixed to PAdaptiveDelay
+ * Thanks to Paolo Amadini
+ *
  * Revision 1.7  2006/07/19 06:03:35  csoutheren
  * Add extension PAdaptiveDelay to set maximum and minimum delay times
  * Thanks to Paolo Amadini
@@ -86,8 +90,8 @@ BOOL PAdaptiveDelay::Delay(int frameTime)
   PTimeInterval delay = targetTime - PTime();
   int sleep_time = (int)delay.GetMilliSeconds();
 
-  // Catch up if we are too late
-  if (sleep_time < -jitterLimit.GetMilliSeconds())
+  // Catch up if we are too late and the featue is enabled
+  if (jitterLimit > 0 && sleep_time < -jitterLimit.GetMilliSeconds())
     targetTime = PTime();
 
   // Else sleep only if necessary
