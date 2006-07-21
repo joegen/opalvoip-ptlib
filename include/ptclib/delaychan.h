@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.9  2006/07/21 01:03:12  csoutheren
+ * Fixed to PAdaptiveDelay
+ * Thanks to Paolo Amadini
+ *
  * Revision 1.8  2006/07/19 06:03:34  csoutheren
  * Add extension PAdaptiveDelay to set maximum and minimum delay times
  * Thanks to Paolo Amadini
@@ -92,10 +96,11 @@ class PAdaptiveDelay : public PObject
 
   /**@name Operating Parameters */
   //@{
-
     /**Set the number of milliseconds that the delay may "catch up" by
        using zero delays. This is caused by the Delay() function not
        being called for a time by external factors.
+
+       If @a maximumSlip is 0, this feature is disabled.
       */
     void SetMaximumSlip(PTimeInterval maximumSlip)
     { jitterLimit = maximumSlip; }
@@ -103,7 +108,6 @@ class PAdaptiveDelay : public PObject
     /**Get the current slip time. */
     PTimeInterval GetMaximumSlip() const
     { return jitterLimit; }
-
   //@}
 
   /**@name Functionality */
