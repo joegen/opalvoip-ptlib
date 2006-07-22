@@ -1157,6 +1157,7 @@ dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 
 dnl MSWIN_DISPLAY    osslAES,Open SSL AES
+dnl MSWIN_IF_FEATURE osslAES,openssl
 dnl MSWIN_CHECK_FILE osslAES,inc32\openssl\aes.h,P_SSL_AES=1
 dnl MSWIN_CHECK_DIR  osslAES,..\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,..\external\openssl\
@@ -1165,12 +1166,14 @@ dnl MSWIN_CHECK_DIR  osslAES,c:\openssl\
 dnl MSWIN_CHECK_DIR  osslAES,\libs\openssl\
 
 dnl MSWIN_DISPLAY    winssl,Windows Open SSL
+dnl MSWIN_IF_FEATURE winssl,!openssl
 dnl MSWIN_CHECK_FILE winssl,include\openssl\ssl.h,P_WINSSL=1
 dnl MSWIN_DIR_SYMBOL winssl,WINSSL_DIR
 dnl MSWIN_CHECK_DIR  winssl,.\lib\VC\
 dnl MSWIN_CHECK_DIR  winssl,\libs\openssl\
 
 dnl MSWIN_DISPLAY    wsslAES,Windows Open SSL AES
+dnl MSWIN_IF_FEATURE wsslAES,winssl
 dnl MSWIN_CHECK_FILE wsslAES,include\openssl\aes.h,P_WINSSL_AES=1
 dnl MSWIN_CHECK_DIR  wsslAES,.\lib\VC\
 dnl MSWIN_CHECK_DIR  wsslAES,\libs\openssl\
@@ -1320,6 +1323,7 @@ dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\
 
 dnl MSWIN_DISPLAY    winexpat,Windows Expat XML
+dnl MSWIN_IF_FEATURE winexpat,!expat
 dnl MSWIN_CHECK_FILE winexpat,libs\libexpat.lib,P_WINEXPAT=1
 dnl MSWIN_DIR_SYMBOL winexpat,WINEXPAT_DIR
 dnl MSWIN_CHECK_DIR  winexpat,source\lib
@@ -1492,6 +1496,7 @@ dnl MSWIN_DISPLAY    ipv6,IPv6 Support
 dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
 dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Platform Sdk for Windows Server 2003 R2\Include
 
@@ -1535,6 +1540,7 @@ dnl MSWIN_DISPLAY    qos,QoS Support
 dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
 dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
@@ -2175,8 +2181,9 @@ fi
 dnl ########################################################################
 dnl look for ODBC code
 
-dnl MSWIN_DISPLAY    odbc,ODBC
+dnl MSWIN_DISPLAY    odbc,ODBC support
 dnl MSWIN_CHECK_FILE odbc,sql.h,P_ODBC=1
+dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
