@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.18  2006/07/22 06:27:58  rjongbloed
+ * Added auo-load of Winsock v2 library required by agreggated sockets.
+ *
  * Revision 1.17  2006/03/13 23:34:21  csoutheren
  * Added log message when handle creates aggregator
  *
@@ -95,6 +98,8 @@
 ////////////////////////////////////////////////////////////////
 
 #if _WIN32
+
+#pragma comment(lib, "Ws2_32.lib")
 
 class LocalEvent : public PHandleAggregator::EventBase
 {
