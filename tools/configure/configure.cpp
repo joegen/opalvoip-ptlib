@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.33  2006/07/22 06:20:55  rjongbloed
+ * Changes to configure program so will process dependencies before directory search so
+ *   does not search for features it is not going to use.
+ * Added dependencies so both SSL libs cannot be included or searched for.
+ *
  * Revision 1.32  2006/07/14 15:20:54  csoutheren
  * Applied 1519950 - configure --extern-dir not working
  * Thanks to Dinis Rosario
@@ -148,7 +153,7 @@
 #include <vector>
 #include <map>
 
-#define VERSION "1.7"
+#define VERSION "1.8"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -166,7 +171,16 @@ string ToLower(const string & _str)
 class Feature
 {
   public:
-    Feature() : enabled(true) { }
+    enum States
+    {
+      Enabled,
+      NotFound,
+      Disabled,
+      Blocked,
+      Dependency
+    };
+
+    Feature() : state(Enabled) { }
     Feature(const string & featureName, const string & optionName, const string & optionValue);
 
     void Parse(const string & optionName, const string & optionValue);
@@ -196,9 +210,9 @@ class Feature
     list<string> checkDirectories;
     list<string> ifFeature;
     list<string> ifNotFeature;
-
+    string breaker;
     string directory;
-    bool   enabled;
+    States state;
 };
 
 
@@ -211,7 +225,7 @@ Feature::Feature(const string & featureNameParam,
                  const string & optionName,
                  const string & optionValue)
   : featureName(featureNameParam),
-    enabled(true)
+    state(Enabled)
 {
   Parse(optionName, optionValue);
 }
@@ -267,10 +281,10 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     directorySymbol = '@' + optionValue + '@';
 
   else if (optionName == "CHECK_DIR")
-    checkDirectories.push_back(optionValue);
+    checkDirectories.push_back(ToLower(optionValue));
 
   else if (optionName == "IF_FEATURE") {
-    const char * delimiters = ",";
+    const char * delimiters = "&";
     string::size_type lastPos = optionValue.find_first_not_of(delimiters, 0);
     string::size_type pos = optionValue.find_first_of(delimiters, lastPos);
     while (string::npos != pos || string::npos != lastPos) {
@@ -298,7 +312,7 @@ static bool CompareName(const string & line, const string & name)
 
 void Feature::Adjust(string & line)
 {
-  if (enabled && line.find("#undef") != string::npos) {
+  if (state == Enabled && line.find("#undef") != string::npos) {
     if (!simpleDefineName.empty() && CompareName(line, simpleDefineName)) {
       line = "#define " + simpleDefineName + ' ';
       if (simpleDefineValue.empty())
@@ -334,7 +348,7 @@ void Feature::Adjust(string & line)
 
 bool Feature::Locate(const char * testDir)
 {
-  if (!enabled)
+  if (state != Enabled)
     return true;
 
   if (!directory.empty())
@@ -395,15 +409,25 @@ bool Feature::CheckFileInfo::Locate(const string & testDirectory)
 }
 
 
+bool DirExcluded(const string & dir)
+{
+  for (list<string>::const_iterator iter = excludeDirList.begin(); iter != excludeDirList.end(); ++iter) {
+    size_t pos = dir.find(*iter);
+    if (pos < 3 && dir[pos+iter->length()] == '\\') // Do not include drive letter
+      return true;
+  }
+  return false;
+}
+
+
 bool TreeWalk(const string & _directory)
 {
   string directory = ToLower(_directory);
 
   bool foundAll = false;
 
-  list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), directory);
-  if (r != excludeDirList.end())
-  return false;
+  if (DirExcluded(directory))
+    return false;
 
   string wildcard = directory;
   wildcard += "*.*";
@@ -414,25 +438,22 @@ bool TreeWalk(const string & _directory)
     do {
       string subdir = directory;
       subdir += fileinfo.cFileName;
-      subdir = ToLower(subdir);
-      list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), subdir);
-      if (r == excludeDirList.end()) {
-        if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
-                                         fileinfo.cFileName[0] != '.' &&
-                                         stricmp(fileinfo.cFileName, "RECYCLER") != 0) {
-          subdir += '\\';
+      if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+           fileinfo.cFileName[0] != '.' &&
+           stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
+           !DirExcluded(ToLower(subdir))) {
+        subdir += '\\';
 
-          foundAll = true;
-          vector<Feature>::iterator feature;
-          for (feature = features.begin(); feature != features.end(); feature++) {
-            if (!feature->Locate(subdir.c_str()))
-              foundAll = false;
-          }
-
-          if (foundAll)
-            break;
-          TreeWalk(subdir);
+        foundAll = true;
+        vector<Feature>::iterator feature;
+        for (feature = features.begin(); feature != features.end(); feature++) {
+          if (!feature->Locate(subdir.c_str()))
+            foundAll = false;
         }
+
+        if (foundAll)
+          break;
+        TreeWalk(subdir);
       }
     } while (FindNextFile(hFindFile, &fileinfo));
 
@@ -474,16 +495,52 @@ bool ProcessHeader(const string & headerFilename)
   return !in.bad() && !out.bad();
 }
 
-BOOL FeatureEnabled(const string & name)
+
+bool FeatureEnabled(const string & name)
 {
   vector<Feature>::iterator feature;
   for (feature = features.begin(); feature != features.end(); feature++) {
-    Feature & f = *feature;
-    if (f.featureName == name && f.enabled)
-      return TRUE;
+    if (feature->featureName == name && feature->state == Feature::Enabled)
+      return true;
   }
-  return FALSE;
+  return false;
 }
+
+
+bool AllFeaturesAre(bool state, const list<string> & features, string & breaker)
+{
+  for (list<string>::const_iterator iter = features.begin(); iter != features.end(); ++iter) {
+    size_t pos = iter->find('|');
+    if (pos == string::npos) {
+      if (FeatureEnabled(*iter) != state) {
+        breaker = *iter;
+        return false;
+      }
+    }
+    else
+    {
+      bool anyOfState = false;
+      string str = *iter;
+      while (str.length() != 0) {
+        string key = str.substr(0, pos);
+        if (FeatureEnabled(key) == state) {
+          anyOfState = true;
+          break;
+        }
+        if (pos == string::npos)
+          break;
+        str = str.substr(pos+1);
+        pos = str.find('|');
+      }
+      if (!anyOfState) {
+        breaker = *iter;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -615,7 +672,7 @@ int main(int argc, char* argv[])
     }
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1);
-      excludeDirList.push_back(dir);
+      excludeDirList.push_back(ToLower(dir));
       cout << "Excluding " << dir << " from feature search" << endl;
     }
     else if (stricmp(argv[i], "-v") == 0 || stricmp(argv[i], "--version") == 0) {
@@ -665,20 +722,20 @@ int main(int argc, char* argv[])
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (stricmp(argv[i], ("--no-"     + feature->featureName).c_str()) == 0 ||
             stricmp(argv[i], ("--disable-"+ feature->featureName).c_str()) == 0) {
-          feature->enabled = false;
+          feature->state = Feature::Disabled;
           break;
         }
         else if (stricmp(argv[i], ("--enable-"+ feature->featureName).c_str()) == 0) {
-          feature->enabled = true;
+          feature->state = Feature::Enabled;
           break;
         }
         else if (find(envConfigureList.begin(), envConfigureList.end(), "enable-"+ feature->featureName) != envConfigureList.end()) {
-          feature->enabled = true;
+          feature->state = Feature::Enabled;
           break;
         }
         else if (find(envConfigureList.begin(), envConfigureList.end(), "disable-"+ feature->featureName) != envConfigureList.end() ||
                  find(envConfigureList.begin(), envConfigureList.end(), "no-"+ feature->featureName) != envConfigureList.end()) {
-          feature->enabled = false;
+          feature->state = Feature::Disabled;
           break;
         }
         else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
@@ -714,6 +771,8 @@ int main(int argc, char* argv[])
           dir = str.substr(offs);
           offs += str.length();
         }
+        if (dir[1] == ':')
+          dir.erase(0, 2);
         excludeDirList.push_back(ToLower(dir));
         cout << "Excluding " << dir << " from feature search" << endl;
       }
@@ -722,19 +781,23 @@ int main(int argc, char* argv[])
 
   bool foundAll = true;
   for (feature = features.begin(); feature != features.end(); feature++) {
-    if (feature->enabled && !feature->checkFiles.empty()) {
+    if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
+      feature->state = Feature::Dependency;
+    if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
+      feature->state = Feature::Blocked;
+    if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
       bool foundOne = false;
       list<string>::iterator dir;
       for (dir = feature->checkDirectories.begin(); dir != feature->checkDirectories.end(); dir++) {
-        if (feature->Locate(dir->c_str())) {
+        if (!DirExcluded(*dir) && feature->Locate(dir->c_str())) {
           foundOne = true;
           break;
         }
       }
       if (!foundOne)
         foundAll = false;
+      }
     }
-  }
 
   if (searchDisk && !foundAll) {
     // Do search of entire system
@@ -760,63 +823,45 @@ int main(int argc, char* argv[])
   }
 
   for (feature = features.begin(); feature != features.end(); feature++) {
-    cout << "  " << feature->displayName << ' ';
-    BOOL output = FALSE;
-    list<string>::const_iterator r;
-    if (feature->enabled) {
-      for (r = feature->ifFeature.begin(); r != feature->ifFeature.end(); ++r) {
-        string str = *r;
-        size_t pos = str.find('|');
-        if (pos == string::npos) {
-          if (!FeatureEnabled(str)) {
-            feature->enabled = FALSE;
-            cout << " DISABLED due to absence of feature " << str;
-            output = TRUE;
-            break;
-          }
-        }
-        else
-        {
-          bool enabled = FALSE;
-          while (str.length() != 0) {
-            string key = str.substr(0, pos);
-            if (FeatureEnabled(key)) {
-              enabled = true;
-              break;
-            }
-            if (pos == string::npos)
-              break;
-            str = str.substr(pos+1);
-            pos = str.find('|');
-          }
-          if (!enabled) {
-            feature->enabled = FALSE;
-            cout << " DISABLED due to absence of any features in list " << *r;
-            output = TRUE;
-          }
-        }
-      }
+    if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
+      feature->state = Feature::Dependency;
+    if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
+      feature->state = Feature::Blocked;
+    if (feature->state == Feature::Enabled && !feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
+      feature->state = Feature::NotFound;
+  }
+
+  int longestNameWidth = 0;
+  for (feature = features.begin(); feature != features.end(); feature++) {
+    int length = feature->displayName.length();
+    if (length > longestNameWidth)
+      longestNameWidth = length;
+  }
+
+  cout << "\n\nFeatures:\n";
+  for (feature = features.begin(); feature != features.end(); feature++) {
+    cout << setw(longestNameWidth+3) << feature->displayName << ' ';
+    switch (feature->state)
+    {
+      case Feature::Enabled:
+        cout << "enabled";
+        break;
+
+      case Feature::Disabled :
+        cout << "DISABLED by user";
+        break;
+
+      case Feature::Dependency :
+        cout << "DISABLED due to absence of feature " << feature->breaker;
+        break;
+
+      case Feature::Blocked :
+        cout << "DISABLED due to presence of feature " << feature->breaker;
+        break;
+
+      default :
+        cout << "DISABLED";
     }
-    if (feature->enabled) {
-      for (r = feature->ifNotFeature.begin(); r != feature->ifNotFeature.end(); ++r) {
-        if (FeatureEnabled(*r)) {
-          feature->enabled = FALSE;
-          cout << " DISABLED due to presence of feature " << *r;
-          output = TRUE;
-          break;
-        }
-      }
-     if (!feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
-       feature->enabled = FALSE;
-    }
-    if (output)
-      ;
-    else if (feature->checkFiles.empty() && !feature->simpleDefineValue.empty())
-      cout << "set to " << feature->simpleDefineValue;
-    else if (feature->enabled) 
-      cout << "enabled";
-    else 
-      cout << "DISABLED";
     cout << '\n';
   }
   cout << endl;
