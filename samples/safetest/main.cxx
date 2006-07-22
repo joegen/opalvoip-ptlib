@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.12  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.11  2006/04/09 04:28:13  dereksmithies
  * Make it 64 bit safe.
  *
@@ -73,7 +76,6 @@
 #include "precompile.h"
 #include "main.h"
 #include "version.h"
-#include <mcheck.h>
 
 PCREATE_PROCESS(SafeTest);
 
@@ -89,7 +91,6 @@ SafeTest::SafeTest()
 
 void SafeTest::Main()
 {
-  mtrace();
   PArgList & args = GetArguments();
 
   args.Parse(
@@ -495,7 +496,7 @@ void UserInterfaceThread::Main()
 
   console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {
-    char ch = console.ReadChar();
+    int ch = console.ReadChar();
 
     switch (tolower(ch)) {
     case 'd' :

@@ -1,5 +1,3 @@
-#include <ptlib.h>
-
 #include "abstract.h"
 
 class MyConcreteClass : public MyAbstractClass

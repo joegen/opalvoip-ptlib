@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: precompile.h,v $
+ * Revision 1.2  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.1  2005/12/22 03:55:52  csoutheren
  * Added initial version of socket aggregation classes
  *
@@ -36,6 +39,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
 
 
 // End of File ///////////////////////////////////////////////////////////////

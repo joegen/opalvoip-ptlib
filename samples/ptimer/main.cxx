@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.2  2006/05/24 02:28:18  dereksmithies
  * add separate thread to get the timer to start.
  * Add option to check if the timer has started.
@@ -248,7 +251,7 @@ void UserInterfaceThread::Main()
 
   console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {
-    char ch = console.ReadChar();
+    int ch = console.ReadChar();
 
     switch (tolower(ch)) {
     case 'd' :
