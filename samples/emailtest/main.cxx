@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.2  2006/06/20 09:23:56  csoutheren
  * Applied patch 1465192
  * Fix pwlib make files, and config for unix
@@ -66,82 +69,13 @@ void Emailtest::Main()
 
 #if PTRACING
              "o-output:"             "-no-output."
- 
-  if (args.HasOption('h')) {
-    cout << "usage: " <<  (const char *)GetName()
-         << endl
-         << "     -server        : mail server" << endl
-         << "     -to      : to address" << endl
-         << "     -from   : from address " << endl
-         << "     -re   : subject " << endl
-         << "     -attachment   : list of attachments " << endl
-         << "     -h        : get help on usage " << endl
-         << "     -v        : report program version " << endl
-#if PTRACING
-         << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
-         << "  -o --output  : File for trace output, default is stderr" << endl
-#endif
-         << endl;
-    return;
-  }
-
-
-
-
              "t-trace."              "-no-trace."
 #endif
- 
-  if (args.HasOption('h')) {
-    cout << "usage: " <<  (const char *)GetName()
-         << endl
- if (args.HasOption('v')) {
-    cout << endl
-         << "Product Name: " <<  (const char *)GetName() << endl
-         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
-         << "System      : " <<  (const char *)GetOSName() << '-'
-         <<  (const char *)GetOSHardware() << ' '
-         <<  (const char *)GetOSVersion() << endl
-         << endl;
-    return;
-  }
-  
-         << "     -server        : mail server" << endl
-         << "     -to      : to address" << endl
-         << "     -from   : from address " << endl
-         << "     -re   : subject " << endl
-         << "     -attachment   : list of attachments " << endl
-         << "     -h        : get help on usage " << endl
-         << "     -v        : report program version " << endl
-#if PTRACING
-         << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
-         << "  -o --output  : File for trace output, default is stderr" << endl
-#endif
-         << endl;
-    return;
-  }
-
-
-
-
   );
-
  
   if (args.HasOption('h')) {
     cout << "usage: " <<  (const char *)GetName()
          << endl
- if (args.HasOption('v')) {
-    cout << endl
-         << "Product Name: " <<  (const char *)GetName() << endl
-         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
-         << "System      : " <<  (const char *)GetOSName() << '-'
-         <<  (const char *)GetOSHardware() << ' '
-         <<  (const char *)GetOSVersion() << endl
-         << endl;
-    return;
-  }
-  
          << "     -server        : mail server" << endl
          << "     -to      : to address" << endl
          << "     -from   : from address " << endl
@@ -157,8 +91,18 @@ void Emailtest::Main()
     return;
   }
 
-
-
+ if (args.HasOption('v')) {
+    cout << endl
+         << "Product Name: " <<  (const char *)GetName() << endl
+         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
+         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
+         << "System      : " <<  (const char *)GetOSName() << '-'
+         <<  (const char *)GetOSHardware() << ' '
+         <<  (const char *)GetOSVersion() << endl
+         << endl;
+    return;
+  }
+  
 
 #if PTRACING
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -166,18 +110,6 @@ void Emailtest::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
- if (args.HasOption('v')) {
-    cout << endl
-         << "Product Name: " <<  (const char *)GetName() << endl
-         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(TRUE) << endl
-         << "System      : " <<  (const char *)GetOSName() << '-'
-         <<  (const char *)GetOSHardware() << ' '
-         <<  (const char *)GetOSVersion() << endl
-         << endl;
-    return;
-  }
-  
   PRFC822Channel email(PRFC822Channel::Sending);
 
   PString to = args.GetOptionString("to");
