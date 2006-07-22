@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.3  2006/06/21 03:28:43  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -36,11 +39,10 @@
  *
  */
 
-
-
 #include <ptlib.h>
 #include <ptclib/pwavfile.h>
 #include <ptclib/dtmf.h>
+#include <ptlib/sound.h>
 #include <ptlib/pprocess.h>
 
 #define SAMPLES 64000  
