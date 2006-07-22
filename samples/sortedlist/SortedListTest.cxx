@@ -110,7 +110,7 @@ void DoSomeThing2::Main() {
     for (i = 0; i < remove; i++) {
       PINDEX index = rand.Generate() % list.GetSize();
       coutMutex.Wait();
-      PSafePtr<PSafeString> str = list.GetWithLock(index, PSafeReference);
+      PSafePtr<PSafeString> str = list.GetAt(index, PSafeReference);
       cout << GetThreadName() << ": Removing element " << *str << " at index position " << index << endl;
       coutMutex.Signal();
       list.Remove(&(*str));

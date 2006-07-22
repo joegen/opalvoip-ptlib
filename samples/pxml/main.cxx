@@ -8,6 +8,9 @@
  * Copyright 2002 David Iodice.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.2  2005/11/30 12:47:40  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -74,7 +77,7 @@ void PxmlTest::Main()
 
   PString ch = LEThdr + SetNumHdr + "23" + SetNumTrl + LETtrl;
 
-  PXML xml(ch,PXML::Indent |PXML::NewLineAfterElement+PXML::NoIgnoreWhiteSpace);
+  PXML xml(ch,PXMLParser::Indent |PXMLParser::NewLineAfterElement+PXMLParser::NoIgnoreWhiteSpace);
   PStringStream s;
   s << xml;
 
@@ -122,7 +125,7 @@ void PxmlTest::Main()
   // is XML and you don't need that parsed yet :-)
   //===
   PStringStream ss;
-  xml.GetElement(0)->PrintOn(ss, -1, 0);
+  xml.GetElement(0)->Output(ss, -1, 0);
 
   PString EXCERPT("<s:Body>" + SetNumHdr + "23" + SetNumTrl + "</s:Body>");
   PAssert((EXCERPT == ss),"XML subset data not as expected");

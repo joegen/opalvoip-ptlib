@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.13  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.12  2006/03/29 23:28:52  dereksmithies
  * Fix use of null pointer.
  *
@@ -285,7 +288,7 @@ void UserInterfaceThread::Main()
 
   console.SetReadTimeout(P_MAX_INDEX);
   for (;;) {
-    char ch = console.ReadChar();
+    int ch = console.ReadChar();
 
     switch (tolower(ch)) {
     case 'd' :

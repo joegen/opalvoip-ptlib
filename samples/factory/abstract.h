@@ -2,6 +2,7 @@
 #define _ABSTRACT_H
 
 #include <ptlib.h>
+#include <ptlib/pluginmgr.h>
 
 class MyAbstractClass 
 {

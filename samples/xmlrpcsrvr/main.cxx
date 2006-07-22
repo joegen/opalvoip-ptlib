@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2006/07/22 07:27:26  rjongbloed
+ * Fixed various compilation issues
+ *
  * Revision 1.4  2003/09/26 13:41:32  rjongbloed
  * Added special test to give more indicative error if try to compile without Expat support.
  *
@@ -82,7 +85,7 @@ void Xmlrpcsrvr::OnControl()
 
 PString Xmlrpcsrvr::GetPageGraphic()
 {
-  return Xmlrpcsrvr::GetPageGraphic();
+  return PHTTPServiceProcess::GetPageGraphic();
 }
 
 
