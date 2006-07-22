@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.42 2006/05/26 22:05:42 hfriederich Exp $
+ * $Id: pssl.cxx,v 1.43 2006/07/22 06:26:38 rjongbloed Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.43  2006/07/22 06:26:38  rjongbloed
+ * Fixed compatibility with SSL v0.9.8b distribution.
+ *
  * Revision 1.42  2006/05/26 22:05:42  hfriederich
  * Fixing compilation under Mac OS X
  *
@@ -226,6 +229,12 @@ extern "C" {
 #pragma comment(lib, P_SSL_LIB1)
 #pragma comment(lib, P_SSL_LIB2)
 
+#endif
+
+
+// Try topick the API version from a random #define in header
+#ifdef SSL_F_CLIENT_FINISHED
+#define P_SSL_USE_CONST 1
 #endif
 
 
