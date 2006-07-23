@@ -2,9 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="xmpptest"
-	ProjectGUID="{D2A0F886-B231-4CD6-A959-3FB1626C1662}"
-	RootNamespace="xmpptest"
+	Name="xmlrpcsrvr"
+	ProjectGUID="{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,64 +12,54 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Release|Win32"
+			Name="Debug|Win32"
 			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\msw&quot;;&quot;$(WXDIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
+				Optimization="0"
+				PreprocessorDefinitions="_DEBUG;PTRACING"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="main.h"
-				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
-				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				PrecompiledHeaderThrough="ptlib.h"
+				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
+				WarningLevel="4"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26_core.lib wxbase26.lib comctl32.lib imm32.lib rpcrt4.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
-				ProgramDatabaseFile=".\Release/xmpptest.pdb"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/xmpptest.tlb"
+				TypeLibraryName=".\Debug/xmlrpcsrvr.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCPreBuildEventTool"
-				Description="Checking for wxWidgets"
-				CommandLine="if exist &quot;%WXDIR%&quot; exit 0
-echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!
-exit 1
-"/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1040"/>
+				PreprocessorDefinitions="_DEBUG,_AFXDLL"
+				Culture="3081"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -83,65 +72,54 @@ exit 1
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
+			Name="Release|Win32"
 			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\mswd&quot;;&quot;$(WXDIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="NDEBUG;PTRACING"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="main.h"
-				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
-				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				PrecompiledHeaderThrough="ptlib.h"
+				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
+				WarningLevel="4"
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26d_core.lib wxbase26d.lib comctl32.lib imm32.lib rpcrt4.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
-				GenerateDebugInformation="TRUE"
-				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/xmpptest.tlb"
+				TypeLibraryName=".\Release/xmlrpcsrvr.tlb"
 				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCPreBuildEventTool"
-				Description="Checking for wxWidgets"
-				CommandLine="if exist &quot;%WXDIR%&quot; exit 0
-echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!
-exit 1
-"/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1040"/>
+				PreprocessorDefinitions="NDEBUG,_AFXDLL"
+				Culture="3081"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -164,14 +142,7 @@ exit 1
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="ConnectDialog.cxx">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
+				RelativePath="custom.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
@@ -179,49 +150,46 @@ exit 1
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="main.cxx">
 				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
+						BasicRuntimeChecks="3"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="MainFrame.cxx">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="precompile.cxx">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
@@ -230,31 +198,52 @@ exit 1
 						PreprocessorDefinitions=""
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="1"
-						BrowseInformation="1"/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="ConnectDialog.h">
+				RelativePath="custom.h">
 			</File>
 			<File
 				RelativePath="main.h">
 			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="MainFrame.h">
+				RelativePath="xmlrpcsrvr.ico">
 			</File>
 		</Filter>
+		<File
+			RelativePath="messages.mc">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Building event log resources."
+					CommandLine="mc -h &quot;$(IntDir)&quot; -r &quot;$(IntDir)&quot; &quot;$(InputPath)&quot;
+echo 1 ICON $(InputDir)$(TargetName).ico &gt;&gt; &quot;$(IntDir)/$(InputName).rc&quot;
+echo RCINCLUDE $(InputDir)custom.cxx &gt;&gt; &quot;$(IntDir)/$(InputName).rc&quot;
+rc &quot;-i$(IntDir)&quot; &quot;-fo$(IntDir)/$(InputName).res&quot; &quot;$(IntDir)/$(InputName).rc&quot;
+"
+					Outputs="$(IntDir)\$(InputName).h;$(IntDir)\$(InputName).rc;$(IntDir)\MSG00001.bin;$(IntDir)\$(InputName).res"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Building event log resources."
+					CommandLine="mc -h &quot;$(IntDir)&quot; -r &quot;$(IntDir)&quot; &quot;$(InputPath)&quot;
+echo 1 ICON $(InputDir)$(TargetName).ico &gt;&gt; &quot;$(IntDir)/$(InputName).rc&quot;
+echo RCINCLUDE $(InputDir)custom.cxx &gt;&gt; &quot;$(IntDir)/$(InputName).rc&quot;
+rc &quot;-i$(IntDir)&quot; &quot;-fo$(IntDir)/$(InputName).res&quot; &quot;$(IntDir)/$(InputName).rc&quot;
+"
+					Outputs="$(IntDir)\$(InputName).h;$(IntDir)\$(InputName).rc;$(IntDir)\MSG00001.bin;$(IntDir)\$(InputName).res"/>
+			</FileConfiguration>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
