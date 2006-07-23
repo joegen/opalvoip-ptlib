@@ -73,7 +73,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib ptlibd.lib wsock32.lib mpr.lib"
 				OutputFile=".\Debug/stunclient.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -168,7 +167,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlib.lib wsock32.lib mpr.lib"
 				OutputFile=".\Release/stunclient.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
