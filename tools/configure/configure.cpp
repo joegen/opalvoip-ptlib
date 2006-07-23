@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.35  2006/07/23 05:13:25  rjongbloed
+ * Disabled some code till get a chance to amke it work! Back to doing full disk searches all the time.
+ *
  * Revision 1.34  2006/07/23 04:44:18  rjongbloed
  * Fixed directory comparison to be more accurate, using Win32 API call to get absolute path.
  *
@@ -791,10 +794,12 @@ int main(int argc, char* argv[])
 
   bool foundAll = true;
   for (feature = features.begin(); feature != features.end(); feature++) {
+#if 0 // Does not work yet
     if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
       feature->state = Feature::Dependency;
     if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
       feature->state = Feature::Blocked;
+#endif
     if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
       bool foundOne = false;
       list<string>::iterator dir;
