@@ -8,6 +8,10 @@
  * Copyright 2004 Reitek S.p.A.
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2006/07/23 03:39:49  dereksmithies
+ * Modify main.cxx so it compiles under linux.
+ * Add Makefile so it can be compiled under linux.
+ *
  * Revision 1.2  2004/05/09 07:23:49  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -52,10 +56,25 @@ void ConnectDialog::SetRememberPwd(bool b)
 { if (m_RememberPwd) m_RememberPwd->SetValue(b); }
 
 XMPP::JID ConnectDialog::GetJID() const
-{ return m_JID != NULL ?  XMPP::JID(PString((const char *)m_JID->GetValue())) : PString::Empty(); }
+{ 
+    PString answer;
+    
+    if (m_JID != NULL)
+	answer = XMPP::JID(PString((const char *)m_JID->GetValue()));
+    
+    return answer;
+}
+/** Was return m_JID != NULL ?  XMPP::JID(PString((const char *)m_JID->GetValue())) : PString::Empty(); } */
 
 PString ConnectDialog::GetPwd() const
-{ return m_Pwd != NULL ? (const char *)m_Pwd->GetValue() : PString::Empty(); }
+{ 
+    PString answer;
+
+    if (m_Pwd != NULL)
+	answer = (const char *)m_Pwd->GetValue();
+    
+    return answer;
+}
 
 bool ConnectDialog::GetRememberPwd() const
 { return m_RememberPwd != NULL ? m_RememberPwd->GetValue() : false; }
