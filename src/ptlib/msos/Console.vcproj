@@ -123,6 +123,54 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90">
 			<File
+				RelativePath="..\..\ptclib\asnber.cxx">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\asner.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\asnper.cxx">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\asnxer.cxx">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="assert.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -185,6 +233,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\cypher.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\delaychan.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\dtmf.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\enum.cxx">
+			</File>
+			<File
 				RelativePath="ethsock.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -203,6 +263,15 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\ftp.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\ftpclnt.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\ftpsrvr.cxx">
 			</File>
 			<File
 				RelativePath="..\common\getdate.y">
@@ -247,6 +316,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\html.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\http.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\httpclnt.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\httpform.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\httpsrvr.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\httpsvc.cxx">
+			</File>
+			<File
 				RelativePath="icmp.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -267,6 +354,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\inetmail.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\inetprot.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\ipacl.cxx">
+			</File>
+			<File
 				RelativePath="mail.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -285,6 +381,12 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\memfile.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\modem.cxx">
 			</File>
 			<File
 				RelativePath="..\common\notifier_ext.cxx">
@@ -330,6 +432,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pasn.cxx">
+			</File>
+			<File
 				RelativePath="..\Common\pchannel.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -370,6 +475,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pdns.cxx">
+			</File>
+			<File
 				RelativePath="..\common\pethsock.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -388,6 +496,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pils.cxx">
 			</File>
 			<File
 				RelativePath="pipe.cxx">
@@ -430,6 +541,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pldap.cxx">
+			</File>
+			<File
 				RelativePath="..\common\pluginmgr.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -450,7 +564,25 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pnat.cxx">
+			</File>
+			<File
 				RelativePath=".\podbc.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\psasl.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\psnmp.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\psoap.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pssl.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pstun.cxx">
 			</File>
 			<File
 				RelativePath="..\common\ptime.cxx">
@@ -493,6 +625,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\ptts.cxx">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pvfiledev.cxx">
+			</File>
+			<File
 				RelativePath="..\common\pvidchan.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -513,6 +663,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pvidfile.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pwavfile.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pxml.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pxmlrpc.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\pxmlrpcs.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\qchannel.cxx">
+			</File>
+			<File
 				RelativePath="..\common\qos.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -531,6 +699,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\random.cxx">
 			</File>
 			<File
 				RelativePath="remconn.cxx">
@@ -613,6 +784,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\shttpsvc.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\snmpclnt.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\snmpserv.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\sockagg.cxx">
+			</File>
+			<File
 				RelativePath="..\common\sockets.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -631,6 +814,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\socks.cxx">
 			</File>
 			<File
 				RelativePath="..\common\sound.cxx">
@@ -693,6 +879,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\telnet.cxx">
 			</File>
 			<File
 				RelativePath="..\common\vconvert.cxx">
@@ -779,6 +968,12 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\vsdl.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\vxml.cxx">
+			</File>
+			<File
 				RelativePath="win32.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -858,6 +1053,18 @@
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp_c2s.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp_muc.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp_roster.cxx">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -897,6 +1104,7 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 						CommandLine="cd ..\..\..
 configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 "
+						AdditionalDependencies="..\..\..\configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
 			</File>
@@ -908,6 +1116,18 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Array.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\asnber.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\asner.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\asnper.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\asnxer.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Channel.h">
@@ -922,10 +1142,22 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\include\ptlib\critsec.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\cypher.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\delaychan.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Dict.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\dtmf.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Dynalink.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\enum.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Ethsock.h">
@@ -937,10 +1169,34 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\filepath.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\ftp.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\html.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\http.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\httpform.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\httpsvc.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Icmpsock.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Indchan.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\inetmail.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\inetprot.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\ipacl.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Ipdsock.h">
@@ -958,6 +1214,15 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\Mail.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\memfile.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\mime.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\modem.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\mutex.h">
 				</File>
 				<File
@@ -970,13 +1235,25 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\object.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\pasn.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Pdirect.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pdns.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\pfactory.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\pils.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Pipechan.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pldap.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\plugin.h">
@@ -988,13 +1265,55 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\pprocess.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\psasl.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\psnmp.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\psoap.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pssl.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Pstring.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pstun.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\psync.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Ptime.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\ptts.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pvfiledev.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pvidfile.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pwavfile.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pxml.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pxmlrpc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pxmlrpcs.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\qchannel.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\random.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Remconn.h">
@@ -1012,10 +1331,19 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\Sfile.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\shttpsvc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\sockagg.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\socket.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\sockets.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\socks.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Sound.h">
@@ -1036,6 +1364,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\Tcpsock.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\telnet.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Textfile.h">
 				</File>
 				<File
@@ -1051,10 +1382,31 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 					RelativePath="..\..\..\Include\PtLib\Udpsock.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\url.h">
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptlib\vconvert.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\videoio.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\vsdl.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\vxml.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\xmpp.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\xmpp_c2s.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\xmpp_muc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\xmpp_roster.h">
 				</File>
 			</Filter>
 			<Filter
@@ -1283,6 +1635,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</FileConfiguration>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\..\configure.ac">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

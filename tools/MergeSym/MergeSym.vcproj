@@ -136,6 +136,9 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E61B4DFB-0CAB-46DD-BB02-1AFFD61DB7F5}"
+			Name="Console"/>
 	</References>
 	<Files>
 		<File
