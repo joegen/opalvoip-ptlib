@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
+			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -28,10 +28,8 @@
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="precompile.h"
-				PrecompiledHeaderFile=".\Debug/ipv6test.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
+				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"/>
@@ -39,13 +37,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib ptlibsd.lib wsock32.lib mpr.lib vfw32.lib"
-				OutputFile=".\Debug/ipv6test.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/ipv6test.pdb"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
@@ -79,8 +76,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
+			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -96,22 +93,19 @@
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="precompile.h"
-				PrecompiledHeaderFile=".\Release/ipv6test.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
+				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlib.lib wsock32.lib mpr.lib"
-				OutputFile=".\Release/ipv6test.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\lib"
-				ProgramDatabaseFile=".\Release/ipv6test.pdb"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
@@ -145,6 +139,9 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
+			Name="PTLib"/>
 	</References>
 	<Files>
 		<Filter
@@ -201,10 +198,6 @@
 			<File
 				RelativePath="version.h">
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
 	</Files>
 	<Globals>
