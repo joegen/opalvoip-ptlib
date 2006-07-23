@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="aggtest"
-	ProjectGUID="{1779E875-9536-4153-B107-C53ED20C8DCC}"
+	ProjectGUID="{0BF651AA-894B-49F3-9B60-24BFFBFC004C}"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
