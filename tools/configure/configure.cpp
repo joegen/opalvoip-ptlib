@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.34  2006/07/23 04:44:18  rjongbloed
+ * Fixed directory comparison to be more accurate, using Win32 API call to get absolute path.
+ *
  * Revision 1.33  2006/07/22 06:20:55  rjongbloed
  * Changes to configure program so will process dependencies before directory search so
  *   does not search for features it is not going to use.
@@ -168,6 +171,18 @@ string ToLower(const string & _str)
   return str;
 }
 
+string GetFullPathNameString(const string & path)
+{
+  string fullPath;
+  DWORD len = ::GetFullPathName(path.c_str(), 0, NULL, NULL);
+  if (len > 1) {
+    fullPath.resize(len-1);
+    ::GetFullPathName(path.c_str(), len, &fullPath[0], NULL);
+  }
+  return ToLower(fullPath);
+}
+
+
 class Feature
 {
   public:
@@ -281,7 +296,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     directorySymbol = '@' + optionValue + '@';
 
   else if (optionName == "CHECK_DIR")
-    checkDirectories.push_back(ToLower(optionValue));
+    checkDirectories.push_back(GetFullPathNameString(optionValue));
 
   else if (optionName == "IF_FEATURE") {
     const char * delimiters = "&";
@@ -420,10 +435,8 @@ bool DirExcluded(const string & dir)
 }
 
 
-bool TreeWalk(const string & _directory)
+bool TreeWalk(const string & directory)
 {
-  string directory = ToLower(_directory);
-
   bool foundAll = false;
 
   if (DirExcluded(directory))
@@ -436,12 +449,11 @@ bool TreeWalk(const string & _directory)
   HANDLE hFindFile = FindFirstFile(wildcard.c_str(), &fileinfo);
   if (hFindFile != INVALID_HANDLE_VALUE) {
     do {
-      string subdir = directory;
-      subdir += fileinfo.cFileName;
+      string subdir = GetFullPathNameString(directory + fileinfo.cFileName);
       if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
            fileinfo.cFileName[0] != '.' &&
            stricmp(fileinfo.cFileName, "RECYCLER") != 0 &&
-           !DirExcluded(ToLower(subdir))) {
+           !DirExcluded(subdir)) {
         subdir += '\\';
 
         foundAll = true;
@@ -672,8 +684,8 @@ int main(int argc, char* argv[])
     }
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1);
-      excludeDirList.push_back(ToLower(dir));
-      cout << "Excluding " << dir << " from feature search" << endl;
+      excludeDirList.push_back(GetFullPathNameString(dir));
+      cout << "Excluding \"" << excludeDirList.back() << "\" from feature search" << endl;
     }
     else if (stricmp(argv[i], "-v") == 0 || stricmp(argv[i], "--version") == 0) {
       cout << "configure version " VERSION "\n";
@@ -771,10 +783,8 @@ int main(int argc, char* argv[])
           dir = str.substr(offs);
           offs += str.length();
         }
-        if (dir[1] == ':')
-          dir.erase(0, 2);
-        excludeDirList.push_back(ToLower(dir));
-        cout << "Excluding " << dir << " from feature search" << endl;
+        excludeDirList.push_back(GetFullPathNameString(dir));
+        cout << "Excluding \"" << excludeDirList.back() << "\" from feature search" << endl;
       }
     }
   }
@@ -796,8 +806,8 @@ int main(int argc, char* argv[])
       }
       if (!foundOne)
         foundAll = false;
-      }
     }
+  }
 
   if (searchDisk && !foundAll) {
     // Do search of entire system
