@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="PTLib"
-	ProjectGUID="{0A6A5647-DC2C-4D35-997D-0E53AE3930D8}"
+	ProjectGUID="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
 	RootNamespace="PTLib"
 	>
 	<Platforms>
