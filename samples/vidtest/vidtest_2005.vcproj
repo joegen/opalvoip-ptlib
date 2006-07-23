@@ -75,7 +75,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlib.lib wsock32.lib mpr.lib"
 				OutputFile=".\Release/vidtest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -170,7 +169,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib ptlibd.lib wsock32.lib mpr.lib vfw32.lib"
 				OutputFile=".\Debug/vidtest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

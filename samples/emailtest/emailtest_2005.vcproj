@@ -76,7 +76,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlibs.lib wsock32.lib mpr.lib"
 				OutputFile=".\Release/emailtest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -172,7 +171,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib wsock32.lib mpr.lib"
 				OutputFile=".\Debug/emailtest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
