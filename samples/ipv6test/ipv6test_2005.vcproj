@@ -74,7 +74,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclibd.lib ptlibsd.lib wsock32.lib mpr.lib vfw32.lib"
 				OutputFile=".\Debug/ipv6test.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -171,7 +170,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptclib.lib ptlib.lib wsock32.lib mpr.lib"
 				OutputFile=".\Release/ipv6test.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
