@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.36  2006/07/23 21:49:17  shorne
+ * Fix for exclude directories not being excluded
+ *
  * Revision 1.35  2006/07/23 05:13:25  rjongbloed
  * Disabled some code till get a chance to amke it work! Back to doing full disk searches all the time.
  *
@@ -429,11 +432,9 @@ bool Feature::CheckFileInfo::Locate(const string & testDirectory)
 
 bool DirExcluded(const string & dir)
 {
-  for (list<string>::const_iterator iter = excludeDirList.begin(); iter != excludeDirList.end(); ++iter) {
-    size_t pos = dir.find(*iter);
-    if (pos < 3 && dir[pos+iter->length()] == '\\') // Do not include drive letter
-      return true;
-  }
+ if (find(excludeDirList.begin(), excludeDirList.end(), dir)!= excludeDirList.end())
+	 return true;
+  
   return false;
 }
 
