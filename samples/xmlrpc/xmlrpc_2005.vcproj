@@ -76,7 +76,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptclibd.lib ptlibsd.lib wsock32.lib mpr.lib"
 				OutputFile=".\Debug/xmlrpc.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -173,7 +172,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptclib.lib ptlibs.lib wsock32.lib mpr.lib"
 				OutputFile=".\Release/xmlrpc.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
