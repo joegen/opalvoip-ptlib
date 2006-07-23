@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.43 2006/07/22 06:26:38 rjongbloed Exp $
+ * $Id: pssl.cxx,v 1.44 2006/07/23 04:16:14 csoutheren Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.44  2006/07/23 04:16:14  csoutheren
+ * Changed to use different define for API version detect, and only on Windows
+ *
  * Revision 1.43  2006/07/22 06:26:38  rjongbloed
  * Fixed compatibility with SSL v0.9.8b distribution.
  *
@@ -232,9 +235,11 @@ extern "C" {
 #endif
 
 
-// Try topick the API version from a random #define in header
-#ifdef SSL_F_CLIENT_FINISHED
+// On Windows, use a define from the header to guess the API type
+#ifdef _WIN32
+#ifdef SSL_OP_NO_QUERY_MTU
 #define P_SSL_USE_CONST 1
+#endif
 #endif
 
 
