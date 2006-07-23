@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="Console"
-	ProjectGUID="{9913F247-3768-4F0A-815D-BA9EBDF3F3BB}"
+	ProjectGUID="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
 	>
 	<Platforms>
 		<Platform
