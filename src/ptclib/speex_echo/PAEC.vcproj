@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\..\..\lib\Debug"
-			IntermediateDirectory=".\..\..\..\lib"
+			OutputDirectory=".\..\..\..\lib"
+			IntermediateDirectory=".\..\..\..\lib\Debug"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -60,8 +60,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\..\..\..\lib\Release"
-			IntermediateDirectory=".\..\..\..\lib"
+			OutputDirectory=".\..\..\..\lib"
+			IntermediateDirectory=".\..\..\..\lib\Release"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
