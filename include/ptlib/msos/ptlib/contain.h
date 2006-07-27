@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.58  2006/07/27 10:30:49  rjongbloed
+ * Changed _CRT_SECURE_NO_DEPRECATE definition to be compatible with wxWidgets, avoiding warning
+ *
  * Revision 1.57  2006/04/09 11:44:21  csoutheren
  * And then refix VS.net 2003
  *
@@ -245,7 +248,7 @@ and from the pre-processor options for this project"
 #endif
 
 #if _MSC_VER>=1400
-#define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_SECURE_NO_DEPRECATE 1
 #endif
 
 #endif
