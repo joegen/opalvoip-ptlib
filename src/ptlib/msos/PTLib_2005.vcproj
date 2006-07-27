@@ -308,7 +308,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\..\..\include\ptlib\msos\ptlib_2003.dtf"
+			RelativePath="..\..\..\include\ptlib\msos\ptlib_2005.dtf"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -334,7 +334,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\..\..\include\ptlib\msos\ptlibd_2003.dtf"
+			RelativePath="..\..\..\include\ptlib\msos\ptlibd_2005.dtf"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
