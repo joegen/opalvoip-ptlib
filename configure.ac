@@ -891,6 +891,7 @@ dnl but needs resolv.h included which defines res_search as __res_search
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
 dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
+dnl MSWIN_CHECK_DIR  resolver,\program files\microsoft visual studio 8\vc\platformsdk\
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
 
@@ -1495,8 +1496,9 @@ dnl look for IPV6 functions
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
 dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
 dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
-dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Platform Sdk for Windows Server 2003 R2\Include
 
@@ -1539,8 +1541,9 @@ dnl look for QoS functions
 dnl MSWIN_DISPLAY    qos,QoS Support
 dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
 dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
-dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
@@ -2183,6 +2186,7 @@ dnl look for ODBC code
 
 dnl MSWIN_DISPLAY    odbc,ODBC support
 dnl MSWIN_CHECK_FILE odbc,sql.h,P_ODBC=1
+dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
