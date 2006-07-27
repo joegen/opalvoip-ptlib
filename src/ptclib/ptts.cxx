@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.20  2006/07/27 09:48:24  rjongbloed
+ * Fixed DevStudio 2005 compiler compatibility
+ *
  * Revision 1.19  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -300,7 +303,7 @@ BOOL PTextToSpeech_SAPI::Speak(const PString & otext, TextType hint)
   };
 
   // quick hack to calculate length of Unicode string
-  unsigned short * uStr = new unsigned short[text.GetLength()+1];
+  WCHAR * uStr = new WCHAR[text.GetLength()+1];
 
   USES_CONVERSION;
   wcscpy(uStr, T2W((const char *)text));
