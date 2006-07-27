@@ -2,9 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="xmpptest"
-	ProjectGUID="{D2A0F886-B231-4CD6-A959-3FB1626C1662}"
-	RootNamespace="xmpptest"
+	Name="threadex"
+	ProjectGUID="{89F7154A-47E5-47FE-88E3-E5E8EC516752}"
 	>
 	<Platforms>
 		<Platform
@@ -15,7 +14,7 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release|Win32"
+			Name="Debug|Win32"
 			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
@@ -26,8 +25,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Checking for wxWidgets"
-				CommandLine="if exist &quot;%WXDIR%&quot; exit 0&#x0D;&#x0A;echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!&#x0D;&#x0A;exit 1&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -40,48 +37,46 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/xmpptest.tlb"
+				TypeLibraryName=".\Debug/threadex.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\msw&quot;;&quot;$(WXDIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				Optimization="0"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="main.h"
+				PrecompiledHeaderThrough="precompile.h"
 				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1040"
+				PreprocessorDefinitions="_DEBUG,_AFXDLL"
+				Culture="3081"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26_core.lib wxbase26.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -110,7 +105,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
+			Name="Release|Win32"
 			OutputDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			IntermediateDirectory="../bin/$(ProjectName)/$(ConfigurationName)"
 			ConfigurationType="1"
@@ -121,8 +116,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Checking for wxWidgets"
-				CommandLine="if exist &quot;%WXDIR%&quot; exit 0&#x0D;&#x0A;echo $(TargetName) : error : Must have a WXDIR variable set to use wxWidgets!&#x0D;&#x0A;exit 1&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -135,49 +128,46 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/xmpptest.tlb"
+				TypeLibraryName=".\Release/threadex.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(WXDIR)\lib\vc_lib\mswd&quot;;&quot;$(WXDIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="main.h"
+				PrecompiledHeaderThrough="precompile.h"
 				ProgramDataBaseFileName="$(OutDir)/$(TargetName).pdb"
-				BrowseInformation="1"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1040"
+				PreprocessorDefinitions="NDEBUG,_AFXDLL"
+				Culture="3081"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26d_core.lib wxbase26d.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -218,42 +208,9 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="ConnectDialog.cxx"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="main.cxx"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
@@ -261,13 +218,8 @@
 						Optimization="0"
 						PreprocessorDefinitions=""
 						BasicRuntimeChecks="3"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="MainFrame.cxx"
-				>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
@@ -275,17 +227,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -293,16 +234,6 @@
 				RelativePath="precompile.cxx"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
@@ -311,7 +242,16 @@
 						PreprocessorDefinitions=""
 						BasicRuntimeChecks="3"
 						UsePrecompiledHeader="1"
-						BrowseInformation="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -321,31 +261,18 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="ConnectDialog.h"
-				>
-			</File>
-			<File
 				RelativePath="main.h"
 				>
 			</File>
 			<File
-				RelativePath="MainFrame.h"
+				RelativePath="precompile.h"
+				>
+			</File>
+			<File
+				RelativePath="version.h"
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-			>
-		</Filter>
-		<File
-			RelativePath="draft-ietf-xmpp-core-22.txt"
-			>
-		</File>
-		<File
-			RelativePath="draft-ietf-xmpp-im-21.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
