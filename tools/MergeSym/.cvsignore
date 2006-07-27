@@ -1,4 +1,4 @@
-Debug
-Release
-*.plg *.opt *.ncb *.Tags.WW
+Debug debug
+Release release
+*.plg *.opt *.ncb *.Tags.WW *.vcproj.*.user
 MergeSym.dep
