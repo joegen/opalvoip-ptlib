@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="Console"
 	ProjectGUID="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+	RootNamespace="Console"
 	>
 	<Platforms>
 		<Platform
@@ -1405,7 +1406,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						CommandLine="cd $(SolutionDir)&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
 				</FileConfiguration>
@@ -1415,7 +1417,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
-						CommandLine="cd ..\..\..&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						CommandLine="cd $(SolutionDir)&#x0D;&#x0A;configure --exclude-env=VSNET2005_PWLIB_CONFIGURE_EXCLUDE_DIRS&#x0D;&#x0A;"
+						AdditionalDependencies="$(SolutionDir)/configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"
 					/>
 				</FileConfiguration>
@@ -2110,6 +2113,10 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\..\configure.ac"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
