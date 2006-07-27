@@ -61,7 +61,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
@@ -137,9 +136,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(TargetName).pdb"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -174,7 +173,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
-			RelativePathToProject=".\src\ptlib\msos\PTLib_2005.vproj"
+			RelativePathToProject=".\src\ptlib\msos\PTLib_2005.vcproj"
 		/>
 	</References>
 	<Files>
