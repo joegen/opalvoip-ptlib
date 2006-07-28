@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="Console"
+	Name="PTLib Static"
 	ProjectGUID="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
-	RootNamespace="Console"
+	RootNamespace="PTLib Static"
 	>
 	<Platforms>
 		<Platform
