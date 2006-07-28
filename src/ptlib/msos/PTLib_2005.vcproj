@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="PTLib"
+	Name="PTLib DLL"
 	ProjectGUID="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
-	RootNamespace="PTLib"
+	RootNamespace="PTLib DLL"
 	>
 	<Platforms>
 		<Platform
