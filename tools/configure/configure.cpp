@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.37  2006/07/31 06:53:39  csoutheren
+ * Fixed problem with excluding directories
+ *
  * Revision 1.36  2006/07/23 21:49:17  shorne
  * Fix for exclude directories not being excluded
  *
@@ -162,7 +165,7 @@
 #include <vector>
 #include <map>
 
-#define VERSION "1.8"
+#define VERSION "1.9"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -429,12 +432,36 @@ bool Feature::CheckFileInfo::Locate(const string & testDirectory)
   return found;
 }
 
+string ExcludeDir(const string & _dir)
+{
+  if (_dir.length() == 0)
+    return _dir;
+
+  string dir(GetFullPathNameString(_dir));
+
+  if (dir[dir.length()-1] != '\\')
+    dir += '\\';
+
+  excludeDirList.push_back(dir);
+  
+  return dir;
+}
+
 
 bool DirExcluded(const string & dir)
 {
- if (find(excludeDirList.begin(), excludeDirList.end(), dir)!= excludeDirList.end())
-	 return true;
-  
+  if (dir.length() == 0)
+    return false;
+
+  list<string>::const_iterator r;
+
+  for (r = excludeDirList.begin(); r != excludeDirList.end(); ++r) {
+    string excludeDir = *r;
+    string dirPrefix(dir.substr(0, excludeDir.length()));
+    if (dirPrefix == excludeDir)
+      return true;
+  }
+
   return false;
 }
 
@@ -688,8 +715,7 @@ int main(int argc, char* argv[])
     }
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1);
-      excludeDirList.push_back(GetFullPathNameString(dir));
-      cout << "Excluding \"" << excludeDirList.back() << "\" from feature search" << endl;
+      cout << "Excluding \"" << ExcludeDir(dir) << "\" from feature search" << endl;
     }
     else if (stricmp(argv[i], "-v") == 0 || stricmp(argv[i], "--version") == 0) {
       cout << "configure version " VERSION "\n";
@@ -787,8 +813,7 @@ int main(int argc, char* argv[])
           dir = str.substr(offs);
           offs += str.length();
         }
-        excludeDirList.push_back(GetFullPathNameString(dir));
-        cout << "Excluding \"" << excludeDirList.back() << "\" from feature search" << endl;
+        cout << "Excluding \"" << ExcludeDir(dir) << "\" from feature search" << endl;
       }
     }
   }
