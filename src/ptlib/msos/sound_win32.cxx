@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.18  2006/07/31 12:08:28  rjongbloed
+ * Fixed problem with WAV file asynchronous play back
+ *
  * Revision 1.17  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -1222,8 +1225,9 @@ BOOL PSoundChannelWin32::PlayFile(const PFilePath & filename, BOOL wait)
       bufferMutex.Signal();
       // No free buffers, so wait for one
       if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
+        osError = ::GetLastError();
         SetFormat(numChannels, sampleRate, bitsPerSample);
-        return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
+        return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
       }
       bufferMutex.Wait();
     }
@@ -1248,12 +1252,15 @@ BOOL PSoundChannelWin32::PlayFile(const PFilePath & filename, BOOL wait)
 
   bufferMutex.Signal();
 
-  if (dataSize == 0 && wait)
-    WaitForPlayCompletion();
-
-  SetFormat(numChannels, sampleRate, bitsPerSample);
-  if (osError != MMSYSERR_NOERROR)
+  if (osError != MMSYSERR_NOERROR) {
+    SetFormat(numChannels, sampleRate, bitsPerSample);
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
+  }
+
+  if (dataSize == 0 && wait) {
+    WaitForPlayCompletion();
+    SetFormat(numChannels, sampleRate, bitsPerSample);
+  }
 
   return TRUE;
 }
