@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.18  2006/08/07 06:41:16  csoutheren
+ * Add PCriticalSection::Clone
+ *
  * Revision 1.17  2006/03/20 00:24:56  csoutheren
  * Applied patch #1446482
  * Thanks to Adam Butcher
@@ -137,6 +140,11 @@ class PCriticalSection : public PSync
     void Signal();
     inline void Leave()
     { Signal(); }
+
+    /** Create a new PCriticalSection
+      */
+    PObject * Clone() const
+    { return new PCriticalSection(); }
 
   //@}
 
