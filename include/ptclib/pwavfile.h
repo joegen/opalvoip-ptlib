@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.27  2006/08/08 08:14:59  rjongbloed
+ * Fixed GCC warnings on packed structures that do not need packing.
+ *
  * Revision 1.26  2006/06/21 05:19:38  csoutheren
  * Fixed build with latest PWLib
  *
@@ -167,19 +170,19 @@ namespace PWAV {
 
 struct ChunkHeader
 {
-  char    tag[4] P_PACKED;
+  char    tag[4];
   PInt32l len    P_PACKED;
 };
 
 struct RIFFChunkHeader 
 {
-  ChunkHeader hdr    P_PACKED;
-  char        tag[4] P_PACKED;
+  ChunkHeader hdr;
+  char        tag[4];
 };
 
 struct FMTChunk
 {
-  ChunkHeader hdr          P_PACKED;  ///< chunk header
+  ChunkHeader hdr;                    ///< chunk header (already packed)
   PUInt16l format          P_PACKED;  ///< Format 
   PUInt16l numChannels     P_PACKED;  ///< Channels 0x01 = mono, 0x02 = stereo
   PUInt32l sampleRate      P_PACKED;  ///< Sample Rate in Hz
