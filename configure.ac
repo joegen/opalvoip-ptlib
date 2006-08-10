@@ -1674,14 +1674,21 @@ AC_SUBST(HAS_VIDEO_CAPTURE)
 dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
+
 AC_ARG_ENABLE(shm_video,
-		[  --enable-shm-video      enable shared memory video devices],
+		[  --enable-shmvideo       enable shared memory video devices],
 		shm_video=$enableval)
+
+if test "${enable_shmvideo}z" = "z" ; then
+  shm_video=$default_shmvideo
+fi
 
 USE_SHM_VIDEO_DEVICES=
 if test "$shm_video" = "yes" ; then
   USE_SHM_VIDEO_DEVICES=1
   AC_MSG_NOTICE(Shared memory video devices enabled)
+else
+  AC_MSG_NOTICE(Shared memory video devices disabled)
 fi
 AC_SUBST(USE_SHM_VIDEO_DEVICES)
 
@@ -2060,26 +2067,6 @@ else
   AC_DEFINE(P_VIDFILE, 1)
 fi
 AC_SUBST(HAS_VIDFILE)
-
-dnl ########################################################################
-dnl check for enabling shared video support
-
-AC_ARG_ENABLE(shmvideo,
-       [  --enable-shmvideo     enable video file support])
-
-if test "${enable_shmvideo}z" = "z" ; then
-  enable_shmvideo=$default_shmvideo
-fi
-
-HAS_SHMVIDEO=
-if test "$enable_shmvideo" = "no" ; then
-  AC_MSG_NOTICE(Shared memory video support disabled)
-else
-  AC_MSG_NOTICE(Shared memory video support enabled)
-  HAS_SHMVIDEO=1
-  AC_DEFINE(P_SHMVIDEO, 1)
-fi
-AC_SUBST(HAS_SHMVIDEO)
 
 dnl ########################################################################
 dnl check for sound support
