@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_SHMVIDEO HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -870,7 +870,7 @@ Optional Features:
   --enable-bsdvideo       enable BSD video support
   --enable-avc            enable IEEE1394/AVC video support
   --enable-dc             enable IEEE1394/DC video support
-  --enable-shm-video      enable shared memory video devices
+  --enable-shmvideo       enable shared memory video devices
   --disable-asn           disable ASN decoding/encoding support
   --disable-stun          disable STUN protocol support
   --disable-pipechan      disable pipechannel support
@@ -888,7 +888,6 @@ Optional Features:
   --disable-configfile    disable config file support
   --enable-sockagg       enable socket aggregation (experimental)
   --enable-vidfile       enable video file support
-  --enable-shmvideo     enable video file support
   --disable-audio         disable audio support
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
@@ -8405,17 +8404,25 @@ fi
 
 
 
+
 # Check whether --enable-shm_video or --disable-shm_video was given.
 if test "${enable_shm_video+set}" = set; then
   enableval="$enable_shm_video"
   shm_video=$enableval
 fi;
 
+if test "${enable_shmvideo}z" = "z" ; then
+  shm_video=$default_shmvideo
+fi
+
 USE_SHM_VIDEO_DEVICES=
 if test "$shm_video" = "yes" ; then
   USE_SHM_VIDEO_DEVICES=1
   { echo "$as_me:$LINENO: Shared memory video devices enabled" >&5
 echo "$as_me: Shared memory video devices enabled" >&6;}
+else
+  { echo "$as_me:$LINENO: Shared memory video devices disabled" >&5
+echo "$as_me: Shared memory video devices disabled" >&6;}
 fi
 
 
@@ -8843,32 +8850,6 @@ echo "$as_me: Video file support enabled" >&6;}
   HAS_VIDFILE=1
   cat >>confdefs.h <<\_ACEOF
 #define P_VIDFILE 1
-_ACEOF
-
-fi
-
-
-
-# Check whether --enable-shmvideo or --disable-shmvideo was given.
-if test "${enable_shmvideo+set}" = set; then
-  enableval="$enable_shmvideo"
-
-fi;
-
-if test "${enable_shmvideo}z" = "z" ; then
-  enable_shmvideo=$default_shmvideo
-fi
-
-HAS_SHMVIDEO=
-if test "$enable_shmvideo" = "no" ; then
-  { echo "$as_me:$LINENO: Shared memory video support disabled" >&5
-echo "$as_me: Shared memory video support disabled" >&6;}
-else
-  { echo "$as_me:$LINENO: Shared memory video support enabled" >&5
-echo "$as_me: Shared memory video support enabled" >&6;}
-  HAS_SHMVIDEO=1
-  cat >>confdefs.h <<\_ACEOF
-#define P_SHMVIDEO 1
 _ACEOF
 
 fi
@@ -10183,7 +10164,6 @@ s,@HAS_HTTPSVC@,$HAS_HTTPSVC,;t t
 s,@HAS_CONFIG_FILE@,$HAS_CONFIG_FILE,;t t
 s,@HAS_SOCKAGG@,$HAS_SOCKAGG,;t t
 s,@HAS_VIDFILE@,$HAS_VIDFILE,;t t
-s,@HAS_SHMVIDEO@,$HAS_SHMVIDEO,;t t
 s,@HAS_AUDIO@,$HAS_AUDIO,;t t
 s,@HAS_OSS@,$HAS_OSS,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
