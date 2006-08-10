@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.69  2006/08/10 03:53:19  csoutheren
+ * Apply 1532388 - Fix PVXML log message
+ * Thanks to Stanislav Brabec
+ *
  * Revision 1.68  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -1091,9 +1095,9 @@ void PVXMLSession::ProcessUserInput()
       return;
     ch = userInputQueue.front();
     userInputQueue.pop();
+    PTRACE(3, "VXML\tHandling user input " << ch);
   }
 
-  PTRACE(3, "VXML\tHandling user input " << ch);
 
   // recording
   if (recording) {
