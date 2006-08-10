@@ -1955,6 +1955,7 @@ LIBDIR=${libdir}
 
 
 
+
 MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
 MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
 BUILD_NUMBER=`cat ${PWLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
@@ -7952,7 +7953,7 @@ if test "${ac_cv_lib_SDL_SDL_CreateYUVOverlay+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lSDL -L${X11LIBDIR} -lpthread -lX11 -lXext -laa $LIBS"
+LIBS="-lSDL -L${X11LIBDIR} -lpthread -lX11 -lXext $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
