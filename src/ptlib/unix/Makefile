@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.143  2006/08/10 03:53:20  csoutheren
+# Apply 1532388 - Fix PVXML log message
+# Thanks to Stanislav Brabec
+#
 # Revision 1.142  2006/07/18 05:17:24  csoutheren
 # Added shared memory video devices
 # Thanks to Hannes Friederich
@@ -704,10 +708,6 @@ endif
 ifdef HAS_VIDFILE
 SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 	   $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
-endif
-
-ifdef HAS_SHMVIDEO
-SOURCES	+= shmvideo.cxx 
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
