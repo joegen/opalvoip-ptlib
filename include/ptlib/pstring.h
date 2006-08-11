@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.90  2006/08/11 04:44:48  csoutheren
+ * Add operator to convert PString to std::string
+ *
  * Revision 1.89  2006/07/10 09:15:28  shorne
  * Corrected PString::Tokenize() documentation Thx. David Corrie
  *
@@ -1857,6 +1860,11 @@ class PString : public PCharArray {
        pointer to character buffer.
      */
     operator const unsigned char *() const;
+
+    /** Cast the PString to a std::string
+      */
+    operator std::string () const
+    { return std::string(theArray); }
 
   //@}
 
