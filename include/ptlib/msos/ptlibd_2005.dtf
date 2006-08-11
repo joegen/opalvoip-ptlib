@@ -9767,6 +9767,7 @@ EXPORTS
     ?Clone@PBYTEArray@@UBEPAVPObject@@XZ @9765 NONAME
     ?Clone@PCaselessString@@UBEPAVPObject@@XZ @9766 NONAME
     ?Clone@PCharArray@@UBEPAVPObject@@XZ @9767 NONAME
+    ?Clone@PCriticalSection@@UBEPAVPObject@@XZ @15853 NONAME
     ?Clone@PHTTPMultiSimpAuth@@UBEPAVPObject@@XZ @9768 NONAME
     ?Clone@PHTTPSimpleAuth@@UBEPAVPObject@@XZ @9769 NONAME
     ?Clone@PIPCacheKey@@UBEPAVPObject@@XZ @9770 NONAME
