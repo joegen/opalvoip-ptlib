@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.24  2006/08/11 04:45:36  csoutheren
+ * Explicitly specify the default key type for PFactory
+ *
  * Revision 1.23  2006/02/20 06:16:38  csoutheren
  * Extended factory macros
  *
@@ -171,6 +174,10 @@
  *
  */
 
+// this define the default class to be used for keys into PFactories
+typedef PString PDefaultPFactoryKey;
+
+
 /** Base class for generic factories.
     This classes reason for existance and the FactoryMap contained within it
     is to resolve issues with static global construction order and Windows DLL
@@ -207,7 +214,7 @@ class PFactoryBase
 
 /** Template class for generic factories of an abstract class.
   */
-template <class _Abstract_T, typename _Key_T = PString>
+template <class _Abstract_T, typename _Key_T = PDefaultPFactoryKey>
 class PFactory : PFactoryBase
 {
   public:
