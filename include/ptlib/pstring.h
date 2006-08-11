@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.91  2006/08/11 08:18:57  csoutheren
+ * Add PCaselessString constructor for std::string
+ *
  * Revision 1.90  2006/08/11 04:44:48  csoutheren
  * Add operator to convert PString to std::string
  *
@@ -1936,6 +1939,13 @@ class PCaselessString : public PString
       const PString & str  ///< String to initialise the caseless string from.
     );
 
+
+    /**Create a caseless string from a std::string
+     */
+    PCaselessString(
+      const std::string & str  ///< String to initialise the caseless string from.
+      ) : PString(str)
+    { }
 
     /**Assign the string to the current object. The current instance then
        becomes another reference to the same string in the #str#
