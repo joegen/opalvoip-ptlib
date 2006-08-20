@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.23  2006/08/20 00:32:00  csoutheren
+ * Fixed error reporting on DLL load error
+ *
  * Revision 1.22  2006/07/18 05:15:58  csoutheren
  * Removed pre-emptive call to dlerror as this crashes RedHat 9
  *
@@ -404,7 +407,7 @@ BOOL PDynaLink::Open(const PString & _name)
     dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
 
-    if (dllHandle != NULL) {
+    if (dllHandle == NULL) {
       err = dlerror();
       PTRACE_IF(1, err != NULL, "DLL\tError loading DLL - " << err);
     }
