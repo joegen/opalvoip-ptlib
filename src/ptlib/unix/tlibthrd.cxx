@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.154  2006/08/27 23:55:09  csoutheren
+ * Applied 1545081 - Preventing a lock when writing to timerChangePipe
+ * Thanks to Drazen Dimoti
+ *
  * Revision 1.153  2006/06/25 21:46:38  dereksmithies
  * Thanks to Paul Nader for this fix which fixes thread cleanup
  * issues on SMP machines. Good find.
@@ -654,8 +658,10 @@ void PHouseKeepingThread::Main()
     P_fd_set read_fds = fd;
     P_timeval tval = delay;
     if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
-      BYTE ch;
-      ::read(fd, &ch, 1);
+       BYTE ch[PIPE_BUF];
+       while (1) {
+         if (::read(fd, &ch, PIPE_BUF) <= 0) break;
+       }
     }
 
     process.PXCheckSignals();
@@ -690,6 +696,23 @@ void PProcess::Construct()
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
   ::pipe(timerChangePipe);
+
+  int value;
+  int oldflags = ::fcntl(timerChangePipe[0], F_GETFL, 0);
+
+  if (value != 0)
+    oldflags |= O_NONBLOCK;
+  else
+    oldflags &= ~O_NONBLOCK;
+  ::fcntl(timerChangePipe[0], F_SETFL, oldflags);
+
+  oldflags = ::fcntl(timerChangePipe[1], F_GETFL, 0);
+  if (value != 0)
+    oldflags |= O_NONBLOCK;
+  else
+    oldflags &= ~O_NONBLOCK;
+  ::fcntl(timerChangePipe[1], F_SETFL, oldflags);
+
 #else
   maxHandles = 500; // arbitrary value
   socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
