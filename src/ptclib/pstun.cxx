@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.21  2006/08/29 18:41:20  dsandras
+ * Check validity of STUN messages.
+ *
  * Revision 1.20  2005/12/05 21:58:36  dsandras
  * Fixed bug when looking if the cache is still valid.
  *
@@ -188,6 +191,7 @@ struct PSTUNAttribute
     ERROR_CODE = 0x0009,
     UNKNOWN_ATTRIBUTES = 0x000a,
     REFLECTED_FROM = 0x000b,
+    MaxValidCode
   };
   
   PUInt16b type;
@@ -322,7 +326,29 @@ public:
 
   const PSTUNMessageHeader * operator->() const { return (PSTUNMessageHeader *)theArray; }
   
-  PSTUNAttribute * GetFirstAttribute() { return (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); }
+  PSTUNAttribute * GetFirstAttribute() { 
+
+    int length = ((PSTUNMessageHeader *)theArray)->msgLength;
+    if (theArray == NULL || length < (int) sizeof(PSTUNMessageHeader))
+      return NULL;
+
+    PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
+    PSTUNAttribute * ptr = attr;
+
+    if (attr->length > GetSize() || attr->type >= PSTUNAttribute::MaxValidCode)
+      return NULL;
+
+    while (ptr && (BYTE*) ptr < (BYTE*)(theArray+GetSize()) && length >= (int) ptr->length+4) {
+
+      length -= ptr->length + 4;
+      ptr = ptr->GetNext();
+    }
+
+    if (length != 0)
+      return NULL;
+
+    return attr; 
+  }
 
   bool Validate()
   {
