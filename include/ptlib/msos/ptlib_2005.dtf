@@ -679,6 +679,7 @@ EXPORTS
     ??0?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @677 NONAME
     ??0?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @678 NONAME
     ??0?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @679 NONAME
+    ??0?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @15499 NONAME
     ??0?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @680 NONAME
     ??0?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @681 NONAME
     ??0?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @682 NONAME
@@ -687,9 +688,8 @@ EXPORTS
     ??0?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @685 NONAME
     ??0?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @686 NONAME
     ??0?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @687 NONAME
-    ??0?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @15465 NONAME
     ??0?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @688 NONAME
-    ??0?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @15466 NONAME
+    ??0?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @15500 NONAME
     ??0?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @689 NONAME
     ??0?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @690 NONAME
     ??0?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@QAE@ABVPString@@_N@Z @691 NONAME
@@ -1750,6 +1750,7 @@ EXPORTS
     ??0PURLLegacyScheme_ftp@@QAE@XZ @1746 NONAME
     ??0PURLLegacyScheme_gopher@@QAE@XZ @1747 NONAME
     ??0PURLLegacyScheme_h323@@QAE@XZ @1748 NONAME
+    ??0PURLLegacyScheme_h323s@@QAE@XZ @15501 NONAME
     ??0PURLLegacyScheme_http@@QAE@XZ @1749 NONAME
     ??0PURLLegacyScheme_https@@QAE@XZ @1750 NONAME
     ??0PURLLegacyScheme_mailto@@QAE@XZ @1751 NONAME
@@ -1758,9 +1759,8 @@ EXPORTS
     ??0PURLLegacyScheme_prospero@@QAE@XZ @1754 NONAME
     ??0PURLLegacyScheme_rtsp@@QAE@XZ @1755 NONAME
     ??0PURLLegacyScheme_rtspu@@QAE@XZ @1756 NONAME
-    ??0PURLLegacyScheme_sh323@@QAE@XZ @15467 NONAME
     ??0PURLLegacyScheme_sip@@QAE@XZ @1757 NONAME
-    ??0PURLLegacyScheme_ssip@@QAE@XZ @15468 NONAME
+    ??0PURLLegacyScheme_sips@@QAE@XZ @15502 NONAME
     ??0PURLLegacyScheme_tel@@QAE@XZ @1758 NONAME
     ??0PURLLegacyScheme_telnet@@QAE@XZ @1759 NONAME
     ??0PURLLegacyScheme_wais@@QAE@XZ @1760 NONAME
@@ -2195,6 +2195,7 @@ EXPORTS
     ??1?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2189 NONAME
     ??1?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2190 NONAME
     ??1?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2191 NONAME
+    ??1?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @15503 NONAME
     ??1?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2192 NONAME
     ??1?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2193 NONAME
     ??1?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2194 NONAME
@@ -2203,9 +2204,8 @@ EXPORTS
     ??1?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2197 NONAME
     ??1?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2198 NONAME
     ??1?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2199 NONAME
-    ??1?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @15469 NONAME
     ??1?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2200 NONAME
-    ??1?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @15470 NONAME
+    ??1?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @15504 NONAME
     ??1?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2201 NONAME
     ??1?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2202 NONAME
     ??1?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@UAE@XZ @2203 NONAME
@@ -2667,6 +2667,7 @@ EXPORTS
     ??1PURLLegacyScheme_ftp@@UAE@XZ @2659 NONAME
     ??1PURLLegacyScheme_gopher@@UAE@XZ @2660 NONAME
     ??1PURLLegacyScheme_h323@@UAE@XZ @2661 NONAME
+    ??1PURLLegacyScheme_h323s@@UAE@XZ @15505 NONAME
     ??1PURLLegacyScheme_http@@UAE@XZ @2662 NONAME
     ??1PURLLegacyScheme_https@@UAE@XZ @2663 NONAME
     ??1PURLLegacyScheme_mailto@@UAE@XZ @2664 NONAME
@@ -2675,9 +2676,8 @@ EXPORTS
     ??1PURLLegacyScheme_prospero@@UAE@XZ @2667 NONAME
     ??1PURLLegacyScheme_rtsp@@UAE@XZ @2668 NONAME
     ??1PURLLegacyScheme_rtspu@@UAE@XZ @2669 NONAME
-    ??1PURLLegacyScheme_sh323@@UAE@XZ @15471 NONAME
     ??1PURLLegacyScheme_sip@@UAE@XZ @2670 NONAME
-    ??1PURLLegacyScheme_ssip@@UAE@XZ @15472 NONAME
+    ??1PURLLegacyScheme_sips@@UAE@XZ @15506 NONAME
     ??1PURLLegacyScheme_tel@@UAE@XZ @2671 NONAME
     ??1PURLLegacyScheme_telnet@@UAE@XZ @2672 NONAME
     ??1PURLLegacyScheme_wais@@UAE@XZ @2673 NONAME
@@ -3703,6 +3703,7 @@ EXPORTS
     ??_7?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3693 NONAME
     ??_7?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3694 NONAME
     ??_7?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3695 NONAME
+    ??_7?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15507 NONAME
     ??_7?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3696 NONAME
     ??_7?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3697 NONAME
     ??_7?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3698 NONAME
@@ -3711,9 +3712,8 @@ EXPORTS
     ??_7?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3701 NONAME
     ??_7?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3702 NONAME
     ??_7?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3703 NONAME
-    ??_7?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15473 NONAME
     ??_7?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3704 NONAME
-    ??_7?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15474 NONAME
+    ??_7?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15508 NONAME
     ??_7?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3705 NONAME
     ??_7?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3706 NONAME
     ??_7?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @3707 NONAME
@@ -4198,6 +4198,7 @@ EXPORTS
     ??_7PURLLegacyScheme_ftp@@6B@ @4186 NONAME
     ??_7PURLLegacyScheme_gopher@@6B@ @4187 NONAME
     ??_7PURLLegacyScheme_h323@@6B@ @4188 NONAME
+    ??_7PURLLegacyScheme_h323s@@6B@ @15509 NONAME
     ??_7PURLLegacyScheme_http@@6B@ @4189 NONAME
     ??_7PURLLegacyScheme_https@@6B@ @4190 NONAME
     ??_7PURLLegacyScheme_mailto@@6B@ @4191 NONAME
@@ -4206,9 +4207,8 @@ EXPORTS
     ??_7PURLLegacyScheme_prospero@@6B@ @4194 NONAME
     ??_7PURLLegacyScheme_rtsp@@6B@ @4195 NONAME
     ??_7PURLLegacyScheme_rtspu@@6B@ @4196 NONAME
-    ??_7PURLLegacyScheme_sh323@@6B@ @15475 NONAME
     ??_7PURLLegacyScheme_sip@@6B@ @4197 NONAME
-    ??_7PURLLegacyScheme_ssip@@6B@ @15476 NONAME
+    ??_7PURLLegacyScheme_sips@@6B@ @15510 NONAME
     ??_7PURLLegacyScheme_tel@@6B@ @4198 NONAME
     ??_7PURLLegacyScheme_telnet@@6B@ @4199 NONAME
     ??_7PURLLegacyScheme_wais@@6B@ @4200 NONAME
@@ -4762,6 +4762,7 @@ EXPORTS
     ??_R0?AV?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4748 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4749 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4750 NONAME
+    ??_R0?AV?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @15511 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4751 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4752 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4753 NONAME
@@ -4770,9 +4771,8 @@ EXPORTS
     ??_R0?AV?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4756 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4757 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4758 NONAME
-    ??_R0?AV?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @15477 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4759 NONAME
-    ??_R0?AV?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @15478 NONAME
+    ??_R0?AV?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @15512 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4760 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4761 NONAME
     ??_R0?AV?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@@8 @4762 NONAME
@@ -5179,6 +5179,7 @@ EXPORTS
     ??_R0?AVPURLLegacyScheme_ftp@@@8 @5163 NONAME
     ??_R0?AVPURLLegacyScheme_gopher@@@8 @5164 NONAME
     ??_R0?AVPURLLegacyScheme_h323@@@8 @5165 NONAME
+    ??_R0?AVPURLLegacyScheme_h323s@@@8 @15513 NONAME
     ??_R0?AVPURLLegacyScheme_http@@@8 @5166 NONAME
     ??_R0?AVPURLLegacyScheme_https@@@8 @5167 NONAME
     ??_R0?AVPURLLegacyScheme_mailto@@@8 @5168 NONAME
@@ -5187,9 +5188,8 @@ EXPORTS
     ??_R0?AVPURLLegacyScheme_prospero@@@8 @5171 NONAME
     ??_R0?AVPURLLegacyScheme_rtsp@@@8 @5172 NONAME
     ??_R0?AVPURLLegacyScheme_rtspu@@@8 @5173 NONAME
-    ??_R0?AVPURLLegacyScheme_sh323@@@8 @15479 NONAME
     ??_R0?AVPURLLegacyScheme_sip@@@8 @5174 NONAME
-    ??_R0?AVPURLLegacyScheme_ssip@@@8 @15480 NONAME
+    ??_R0?AVPURLLegacyScheme_sips@@@8 @15514 NONAME
     ??_R0?AVPURLLegacyScheme_tel@@@8 @5175 NONAME
     ??_R0?AVPURLLegacyScheme_telnet@@@8 @5176 NONAME
     ??_R0?AVPURLLegacyScheme_wais@@@8 @5177 NONAME
@@ -5505,6 +5505,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5487 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5488 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5489 NONAME
+    ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15515 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5490 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5491 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5492 NONAME
@@ -5513,9 +5514,8 @@ EXPORTS
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5495 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5496 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5497 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15481 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5498 NONAME
-    ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15482 NONAME
+    ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15516 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5499 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5500 NONAME
     ??_R1A@?0A@EA@?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@8 @5501 NONAME
@@ -5948,6 +5948,7 @@ EXPORTS
     ??_R1A@?0A@EA@PURLLegacyScheme_ftp@@8 @5928 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_gopher@@8 @5929 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_h323@@8 @5930 NONAME
+    ??_R1A@?0A@EA@PURLLegacyScheme_h323s@@8 @15517 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_http@@8 @5931 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_https@@8 @5932 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_mailto@@8 @5933 NONAME
@@ -5956,9 +5957,8 @@ EXPORTS
     ??_R1A@?0A@EA@PURLLegacyScheme_prospero@@8 @5936 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_rtsp@@8 @5937 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_rtspu@@8 @5938 NONAME
-    ??_R1A@?0A@EA@PURLLegacyScheme_sh323@@8 @15483 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_sip@@8 @5939 NONAME
-    ??_R1A@?0A@EA@PURLLegacyScheme_ssip@@8 @15484 NONAME
+    ??_R1A@?0A@EA@PURLLegacyScheme_sips@@8 @15518 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_tel@@8 @5940 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_telnet@@8 @5941 NONAME
     ??_R1A@?0A@EA@PURLLegacyScheme_wais@@8 @5942 NONAME
@@ -6299,6 +6299,7 @@ EXPORTS
     ??_R2?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6277 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6278 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6279 NONAME
+    ??_R2?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15519 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6280 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6281 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6282 NONAME
@@ -6307,9 +6308,8 @@ EXPORTS
     ??_R2?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6285 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6286 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6287 NONAME
-    ??_R2?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15485 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6288 NONAME
-    ??_R2?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15486 NONAME
+    ??_R2?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15520 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6289 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6290 NONAME
     ??_R2?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@8 @6291 NONAME
@@ -6742,6 +6742,7 @@ EXPORTS
     ??_R2PURLLegacyScheme_ftp@@8 @6718 NONAME
     ??_R2PURLLegacyScheme_gopher@@8 @6719 NONAME
     ??_R2PURLLegacyScheme_h323@@8 @6720 NONAME
+    ??_R2PURLLegacyScheme_h323s@@8 @15521 NONAME
     ??_R2PURLLegacyScheme_http@@8 @6721 NONAME
     ??_R2PURLLegacyScheme_https@@8 @6722 NONAME
     ??_R2PURLLegacyScheme_mailto@@8 @6723 NONAME
@@ -6750,9 +6751,8 @@ EXPORTS
     ??_R2PURLLegacyScheme_prospero@@8 @6726 NONAME
     ??_R2PURLLegacyScheme_rtsp@@8 @6727 NONAME
     ??_R2PURLLegacyScheme_rtspu@@8 @6728 NONAME
-    ??_R2PURLLegacyScheme_sh323@@8 @15487 NONAME
     ??_R2PURLLegacyScheme_sip@@8 @6729 NONAME
-    ??_R2PURLLegacyScheme_ssip@@8 @15488 NONAME
+    ??_R2PURLLegacyScheme_sips@@8 @15522 NONAME
     ??_R2PURLLegacyScheme_tel@@8 @6730 NONAME
     ??_R2PURLLegacyScheme_telnet@@8 @6731 NONAME
     ??_R2PURLLegacyScheme_wais@@8 @6732 NONAME
@@ -7060,6 +7060,7 @@ EXPORTS
     ??_R3?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7034 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7035 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7036 NONAME
+    ??_R3?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15523 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7037 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7038 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7039 NONAME
@@ -7068,9 +7069,8 @@ EXPORTS
     ??_R3?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7042 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7043 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7044 NONAME
-    ??_R3?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15489 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7045 NONAME
-    ??_R3?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15490 NONAME
+    ??_R3?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@8 @15524 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7046 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7047 NONAME
     ??_R3?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@8 @7048 NONAME
@@ -7503,6 +7503,7 @@ EXPORTS
     ??_R3PURLLegacyScheme_ftp@@8 @7475 NONAME
     ??_R3PURLLegacyScheme_gopher@@8 @7476 NONAME
     ??_R3PURLLegacyScheme_h323@@8 @7477 NONAME
+    ??_R3PURLLegacyScheme_h323s@@8 @15525 NONAME
     ??_R3PURLLegacyScheme_http@@8 @7478 NONAME
     ??_R3PURLLegacyScheme_https@@8 @7479 NONAME
     ??_R3PURLLegacyScheme_mailto@@8 @7480 NONAME
@@ -7511,9 +7512,8 @@ EXPORTS
     ??_R3PURLLegacyScheme_prospero@@8 @7483 NONAME
     ??_R3PURLLegacyScheme_rtsp@@8 @7484 NONAME
     ??_R3PURLLegacyScheme_rtspu@@8 @7485 NONAME
-    ??_R3PURLLegacyScheme_sh323@@8 @15491 NONAME
     ??_R3PURLLegacyScheme_sip@@8 @7486 NONAME
-    ??_R3PURLLegacyScheme_ssip@@8 @15492 NONAME
+    ??_R3PURLLegacyScheme_sips@@8 @15526 NONAME
     ??_R3PURLLegacyScheme_tel@@8 @7487 NONAME
     ??_R3PURLLegacyScheme_telnet@@8 @7488 NONAME
     ??_R3PURLLegacyScheme_wais@@8 @7489 NONAME
@@ -7816,6 +7816,7 @@ EXPORTS
     ??_R4?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7786 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7787 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7788 NONAME
+    ??_R4?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15527 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7789 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7790 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7791 NONAME
@@ -7824,9 +7825,8 @@ EXPORTS
     ??_R4?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7794 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7795 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7796 NONAME
-    ??_R4?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15493 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7797 NONAME
-    ??_R4?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15494 NONAME
+    ??_R4?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @15528 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7798 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7799 NONAME
     ??_R4?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@6B@ @7800 NONAME
@@ -8311,6 +8311,7 @@ EXPORTS
     ??_R4PURLLegacyScheme_ftp@@6B@ @8279 NONAME
     ??_R4PURLLegacyScheme_gopher@@6B@ @8280 NONAME
     ??_R4PURLLegacyScheme_h323@@6B@ @8281 NONAME
+    ??_R4PURLLegacyScheme_h323s@@6B@ @15529 NONAME
     ??_R4PURLLegacyScheme_http@@6B@ @8282 NONAME
     ??_R4PURLLegacyScheme_https@@6B@ @8283 NONAME
     ??_R4PURLLegacyScheme_mailto@@6B@ @8284 NONAME
@@ -8319,9 +8320,8 @@ EXPORTS
     ??_R4PURLLegacyScheme_prospero@@6B@ @8287 NONAME
     ??_R4PURLLegacyScheme_rtsp@@6B@ @8288 NONAME
     ??_R4PURLLegacyScheme_rtspu@@6B@ @8289 NONAME
-    ??_R4PURLLegacyScheme_sh323@@6B@ @15495 NONAME
     ??_R4PURLLegacyScheme_sip@@6B@ @8290 NONAME
-    ??_R4PURLLegacyScheme_ssip@@6B@ @15496 NONAME
+    ??_R4PURLLegacyScheme_sips@@6B@ @15530 NONAME
     ??_R4PURLLegacyScheme_tel@@6B@ @8291 NONAME
     ??_R4PURLLegacyScheme_telnet@@6B@ @8292 NONAME
     ??_R4PURLLegacyScheme_wais@@6B@ @8293 NONAME
@@ -10219,6 +10219,7 @@ EXPORTS
     ?Create@?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10184 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10185 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10186 NONAME
+    ?Create@?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @15531 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10187 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10188 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10189 NONAME
@@ -10227,9 +10228,8 @@ EXPORTS
     ?Create@?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10192 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10193 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10194 NONAME
-    ?Create@?$Worker@VPURLLegacyScheme_sh323@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @15497 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10195 NONAME
-    ?Create@?$Worker@VPURLLegacyScheme_ssip@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @15498 NONAME
+    ?Create@?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @15532 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_tel@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10196 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10197 NONAME
     ?Create@?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@VPString@@@@MBEPAVPURLScheme@@ABVPString@@@Z @10198 NONAME
