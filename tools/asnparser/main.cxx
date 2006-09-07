@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.55  2006/09/07 04:01:21  csoutheren
+ * Fixed compilation with latest include files
+ *
  * Revision 1.54  2005/06/07 06:25:53  csoutheren
  * Applied patch 1199897 to increase speed of ASN parser debugging output
  * Thanks to Dmitriy <ddv@abinet.com>
@@ -184,6 +187,8 @@
  */
 
 #include <ptlib.h>
+
+#include <ptlib/pprocess.h>
 
 #include "main.h"
 #include "asn_grammar.h"
