@@ -27,6 +27,10 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.1.2.5  2006/09/17 16:04:00  dsandras
+ * Fixed possible crash on hangup with "Media patch thread not terminated"
+ * message thanks to Brian Lu <brian lu sun com>.
+ *
  * Revision 1.1.2.4  2006/07/03 21:13:21  dsandras
  * Applied patch from Brian Lu <brian lu sun com> to add support for the AUDIODEV
  * environment variable. Many thanks!
@@ -295,7 +299,7 @@ BOOL PSoundChannelSunAudio::Write(const void * buffer, PINDEX length)
     PINDEX bytes = 0;
 
     while (!ConvertOSError(bytes = ::write(os_handle, (void *)(((unsigned char *)buffer) + total), length-total))) {
-      if (GetErrorCode() != Interrupted) {
+      if ((GetErrorCode() != Interrupted) || ( os_handle < 0)) {
         PTRACE(6, "SunAudio\tWirte failed");
         return FALSE;         
       }
@@ -393,7 +397,7 @@ BOOL PSoundChannelSunAudio::Read(void * buffer, PINDEX length)
     PINDEX bytes = 0;
 
     while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned char *)buffer) + total), length-total))) {
-      if (GetErrorCode() != Interrupted) {
+      if ((GetErrorCode() != Interrupted) || (os_handle < 0)) {
         PTRACE(6, "SunAudio\tRead failed");
         return FALSE;
       }
