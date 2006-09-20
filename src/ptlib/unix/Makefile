@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.144  2006/09/20 23:26:22  csoutheren
+# Added guid.cxx to the Makefile
+#
 # Revision 1.143  2006/08/10 03:53:20  csoutheren
 # Apply 1532388 - Fix PVXML log message
 # Thanks to Stanislav Brabec
@@ -721,6 +724,7 @@ SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
+	$(COMPONENT_SRC_DIR)/guid.cxx \
 	$(GETDATE_SOURCE) \
 	uicmp.cxx \
 	socket.cxx \
