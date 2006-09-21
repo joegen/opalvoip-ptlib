@@ -1190,6 +1190,11 @@ EXPORTS
     ??0PFTPClient@@QAE@XZ @17548 NONAME
     ??0PFTPServer@@QAE@ABVPString@@@Z @17549 NONAME
     ??0PFTPServer@@QAE@XZ @17550 NONAME
+    ??0PGloballyUniqueID@@QAE@ABV0@@Z @26002 NONAME
+    ??0PGloballyUniqueID@@QAE@ABVPASN_OctetString@@@Z @26003 NONAME
+    ??0PGloballyUniqueID@@QAE@ABVPString@@@Z @26004 NONAME
+    ??0PGloballyUniqueID@@QAE@PBD@Z @26005 NONAME
+    ??0PGloballyUniqueID@@QAE@XZ @26006 NONAME
     ??0PHandleAggregator@@QAE@I@Z @17551 NONAME
     ??0PHashTable@@IAE@HPBV0@@Z @178 NONAME
     ??0PHashTable@@QAE@ABV0@@Z @179 NONAME
@@ -2341,6 +2346,7 @@ EXPORTS
     ??1PFTP@@UAE@XZ @18225 NONAME
     ??1PFTPClient@@UAE@XZ @18226 NONAME
     ??1PFTPServer@@UAE@XZ @18227 NONAME
+    ??1PGloballyUniqueID@@UAE@XZ @26007 NONAME
     ??1PHandleAggregator@@UAE@XZ @18228 NONAME
     ??1PHashTable@@UAE@XZ @495 NONAME
     ??1PHostByAddr@@UAE@XZ @496 NONAME
@@ -3216,6 +3222,7 @@ EXPORTS
     ??BPASN_Choice@@QBEABVPASN_VisibleString@@XZ @18699 NONAME
     ??BPASN_Enumeration@@QBEIXZ @18700 NONAME
     ??BPASN_Integer@@QBEIXZ @18701 NONAME
+    ??BPASN_OctetString@@QBEABVPBYTEArray@@XZ @26008 NONAME
     ??BPASN_OctetString@@QBEPBEXZ @18702 NONAME
     ??BPAtomicInteger@@QBEJXZ @5842 NONAME
     ??BPInt32l@@QBEJXZ @18703 NONAME
@@ -3841,6 +3848,7 @@ EXPORTS
     ??_7PFTPClient@@6BPObject@@@ @19028 NONAME
     ??_7PFTPServer@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @19029 NONAME
     ??_7PFTPServer@@6BPObject@@@ @19030 NONAME
+    ??_7PGloballyUniqueID@@6B@ @26009 NONAME
     ??_7PHandleAggregator@@6B@ @19031 NONAME
     ??_7PHashTable@@6B@ @1194 NONAME
     ??_7PHostByAddr@@6B@ @1195 NONAME
@@ -4894,6 +4902,7 @@ EXPORTS
     ??_R0?AVPFTP@@@8 @19691 NONAME
     ??_R0?AVPFTPClient@@@8 @19692 NONAME
     ??_R0?AVPFTPServer@@@8 @19693 NONAME
+    ??_R0?AVPGloballyUniqueID@@@8 @26010 NONAME
     ??_R0?AVPHandleAggregator@@@8 @19694 NONAME
     ??_R0?AVPHashTable@@@8 @4090 NONAME
     ??_R0?AVPHostByAddr@@@8 @4091 NONAME
@@ -5652,6 +5661,7 @@ EXPORTS
     ??_R1A@?0A@A@PFTP@@8 @20139 NONAME
     ??_R1A@?0A@A@PFTPClient@@8 @20140 NONAME
     ??_R1A@?0A@A@PFTPServer@@8 @20141 NONAME
+    ??_R1A@?0A@A@PGloballyUniqueID@@8 @26011 NONAME
     ??_R1A@?0A@A@PHandleAggregator@@8 @20142 NONAME
     ??_R1A@?0A@A@PHashTable@@8 @4316 NONAME
     ??_R1A@?0A@A@PHostByAddr@@8 @4317 NONAME
@@ -6415,6 +6425,7 @@ EXPORTS
     ??_R2PFTP@@8 @20610 NONAME
     ??_R2PFTPClient@@8 @20611 NONAME
     ??_R2PFTPServer@@8 @20612 NONAME
+    ??_R2PGloballyUniqueID@@8 @26012 NONAME
     ??_R2PHandleAggregator@@8 @20613 NONAME
     ??_R2PHashTable@@8 @4532 NONAME
     ??_R2PHostByAddr@@8 @4533 NONAME
@@ -7167,6 +7178,7 @@ EXPORTS
     ??_R3PFTP@@8 @21078 NONAME
     ??_R3PFTPClient@@8 @21079 NONAME
     ??_R3PFTPServer@@8 @21080 NONAME
+    ??_R3PGloballyUniqueID@@8 @26013 NONAME
     ??_R3PHandleAggregator@@8 @21081 NONAME
     ??_R3PHashTable@@8 @4741 NONAME
     ??_R3PHostByAddr@@8 @4742 NONAME
@@ -7928,6 +7940,7 @@ EXPORTS
     ??_R4PFTPClient@@6BPObject@@@ @21551 NONAME
     ??_R4PFTPServer@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @21552 NONAME
     ??_R4PFTPServer@@6BPObject@@@ @21553 NONAME
+    ??_R4PGloballyUniqueID@@6B@ @26014 NONAME
     ??_R4PHandleAggregator@@6B@ @21554 NONAME
     ??_R4PHashTable@@6B@ @4954 NONAME
     ??_R4PHostByAddr@@6B@ @4955 NONAME
@@ -8632,6 +8645,7 @@ EXPORTS
     ?AsString@Field@PODBC@@QAE?AVPString@@XZ @16717 NONAME
     ?AsString@PASN_ObjectId@@QBE?AVPString@@XZ @21997 NONAME
     ?AsString@PASN_OctetString@@QBE?AVPString@@XZ @21998 NONAME
+    ?AsString@PGloballyUniqueID@@QBE?AVPString@@XZ @26015 NONAME
     ?AsString@PIpAccessControlEntry@@QBE?AVPString@@XZ @21999 NONAME
     ?AsString@PSOAPMessage@@QAE?AVPString@@XZ @22000 NONAME
     ?AsString@PSSLCertificate@@QBE?AVPString@@XZ @22001 NONAME
@@ -8987,6 +9001,7 @@ EXPORTS
     ?Class@PFTP@@SAPBDXZ @22218 NONAME
     ?Class@PFTPClient@@SAPBDXZ @22219 NONAME
     ?Class@PFTPServer@@SAPBDXZ @22220 NONAME
+    ?Class@PGloballyUniqueID@@SAPBDXZ @26016 NONAME
     ?Class@PHandleAggregator@@SAPBDXZ @22221 NONAME
     ?Class@PHashTable@@SAPBDXZ @1552 NONAME
     ?Class@PHTML@@SAPBDXZ @22222 NONAME
@@ -9347,6 +9362,7 @@ EXPORTS
     ?Clone@PCaselessString@@UBEPAVPObject@@XZ @1658 NONAME
     ?Clone@PCharArray@@UBEPAVPObject@@XZ @1659 NONAME
     ?Clone@PCriticalSection@@UBEPAVPObject@@XZ @25933 NONAME
+    ?Clone@PGloballyUniqueID@@UBEPAVPObject@@XZ @26017 NONAME
     ?Clone@PHTTPMultiSimpAuth@@UBEPAVPObject@@XZ @22443 NONAME
     ?Clone@PHTTPSimpleAuth@@UBEPAVPObject@@XZ @22444 NONAME
     ?Clone@PIPCacheKey@@UBEPAVPObject@@XZ @1660 NONAME
@@ -9657,6 +9673,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PFTP@@UBE?AW4Comparison@PObject@@ABV3@@Z @22599 NONAME
     ?CompareObjectMemoryDirect@PFTPClient@@UBE?AW4Comparison@PObject@@ABV3@@Z @22600 NONAME
     ?CompareObjectMemoryDirect@PFTPServer@@UBE?AW4Comparison@PObject@@ABV3@@Z @22601 NONAME
+    ?CompareObjectMemoryDirect@PGloballyUniqueID@@UBE?AW4Comparison@PObject@@ABV3@@Z @26018 NONAME
     ?CompareObjectMemoryDirect@PHandleAggregator@@UBE?AW4Comparison@PObject@@ABV3@@Z @22602 NONAME
     ?CompareObjectMemoryDirect@PHashTable@@UBE?AW4Comparison@PObject@@ABV3@@Z @1782 NONAME
     ?CompareObjectMemoryDirect@PHTML@@UBE?AW4Comparison@PObject@@ABV3@@Z @22603 NONAME
@@ -11048,6 +11065,7 @@ EXPORTS
     ?GetClass@PFTP@@UBEPBDI@Z @23390 NONAME
     ?GetClass@PFTPClient@@UBEPBDI@Z @23391 NONAME
     ?GetClass@PFTPServer@@UBEPBDI@Z @23392 NONAME
+    ?GetClass@PGloballyUniqueID@@UBEPBDI@Z @26019 NONAME
     ?GetClass@PHandleAggregator@@UBEPBDI@Z @23393 NONAME
     ?GetClass@PHashTable@@UBEPBDI@Z @5440 NONAME
     ?GetClass@PHTML@@UBEPBDI@Z @23394 NONAME
@@ -11638,6 +11656,7 @@ EXPORTS
     ?GetLongData@PODBCRecord@@QAE?AVPString@@H@Z @16785 NONAME
     ?GetLoopback6@Address@PIPSocket@@SAABV12@XZ @3889 NONAME
     ?GetLoopback@Address@PIPSocket@@SAABV12@XZ @2351 NONAME
+    ?GetMACAddress@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @26020 NONAME
     ?GetMacroKeyword@PHTTPServiceProcess@@QBEABVPString@@XZ @23713 NONAME
     ?GetMajorVersion@PHTTPConnectionInfo@@QBEHXZ @23714 NONAME
     ?GetManufacturer@PProcess@@UBEABVPString@@XZ @2352 NONAME
@@ -12176,6 +12195,7 @@ EXPORTS
     ?HasAttribute@PXMLSettings@@QBEHABVPCaselessString@@ABVPString@@@Z @23995 NONAME
     ?HasBeenProcessed@IQ@XMPP@@QBEHXZ @23996 NONAME
     ?HashFunction@PChannel@@UBEHXZ @2564 NONAME
+    ?HashFunction@PGloballyUniqueID@@UBEHXZ @26021 NONAME
     ?HashFunction@PIPCacheKey@@UBEHXZ @2565 NONAME
     ?HashFunction@PObject@@UBEHXZ @2566 NONAME
     ?HashFunction@POrdinalKey@@UBEHXZ @2567 NONAME
@@ -12460,6 +12480,7 @@ EXPORTS
     ?InternalIsDescendant@PFTP@@UBEHPBD@Z @24146 NONAME
     ?InternalIsDescendant@PFTPClient@@UBEHPBD@Z @24147 NONAME
     ?InternalIsDescendant@PFTPServer@@UBEHPBD@Z @24148 NONAME
+    ?InternalIsDescendant@PGloballyUniqueID@@UBEHPBD@Z @26022 NONAME
     ?InternalIsDescendant@PHandleAggregator@@UBEHPBD@Z @24149 NONAME
     ?InternalIsDescendant@PHashTable@@UBEHPBD@Z @5303 NONAME
     ?InternalIsDescendant@PHTML@@UBEHPBD@Z @24150 NONAME
@@ -12760,6 +12781,7 @@ EXPORTS
     ?IsModifiedSince@PHTTPResource@@UAEHABVPTime@@@Z @24333 NONAME
     ?IsNoIndentElement@PXML@@UBEHABVPString@@@Z @24334 NONAME
     ?IsNoIndentElement@PXMLBase@@UBEHABVPString@@@Z @24335 NONAME
+    ?IsNULL@PGloballyUniqueID@@QBEHXZ @26023 NONAME
     ?IsNULL@PSmartPointer@@QBEHXZ @2887 NONAME
     ?ISO8601ToPTime@PXMLRPC@@SAHABVPString@@AAVPTime@@H@Z @24336 NONAME
     ?IsOK@PCapStatus@@QAEHXZ @2888 NONAME
@@ -13598,6 +13620,7 @@ EXPORTS
     ?PrintOn@PBYTEArray@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @5769 NONAME
     ?PrintOn@PCharArray@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @5770 NONAME
     ?PrintOn@PCollection@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @5771 NONAME
+    ?PrintOn@PGloballyUniqueID@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @26024 NONAME
     ?PrintOn@PIntCondMutex@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @5772 NONAME
     ?PrintOn@PIpAccessControlEntry@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24885 NONAME
     ?PrintOn@PLDAPAttr_c@RTPerson@PILSSession@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24886 NONAME
@@ -13793,6 +13816,7 @@ EXPORTS
     ?ReadFrom@PArgList@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @5790 NONAME
     ?ReadFrom@PBYTEArray@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @5791 NONAME
     ?ReadFrom@PCharArray@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @5792 NONAME
+    ?ReadFrom@PGloballyUniqueID@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @26025 NONAME
     ?ReadFrom@PIpAccessControlEntry@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @25012 NONAME
     ?ReadFrom@PIPDatagramSocket@@UAEHPAXHAAVAddress@PIPSocket@@AAG@Z @3148 NONAME
     ?ReadFrom@PIPXSocket@@UAEHPAXHAAVAddress@1@AAG@Z @3149 NONAME
