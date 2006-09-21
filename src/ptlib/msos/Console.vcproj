@@ -316,6 +316,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\guid.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\html.cxx">
 			</File>
 			<File
@@ -1170,6 +1173,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\ftp.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\guid.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\html.h">
