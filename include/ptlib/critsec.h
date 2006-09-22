@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.19  2006/09/22 00:32:21  csoutheren
+ * Forced PAtomicInteger::operator= to be private in all compile paths
+ *
  * Revision 1.18  2006/08/07 06:41:16  csoutheren
  * Add PCriticalSection::Clone
  *
@@ -250,11 +253,11 @@ class PAtomicInteger
       inline int operator--()            { PWaitAndSignal m(critSec); value--; return value;}
       inline operator int () const       { return value; }
       inline void SetValue(int v)        { value = v; }
-   private:
-      PAtomicInteger & operator=(const PAtomicInteger & ref) { value = (int)ref; return *this; }
     protected:
       int value;
 #endif
+    private:
+      PAtomicInteger & operator=(const PAtomicInteger & ref) { value = (int)ref; return *this; }
 };
 
 #endif
