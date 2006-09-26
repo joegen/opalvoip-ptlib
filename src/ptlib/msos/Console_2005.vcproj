@@ -1188,6 +1188,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\guid.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\html.cxx"
 					>
 				</File>
