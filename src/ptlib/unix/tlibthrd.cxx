@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.155  2006/09/28 00:27:01  csoutheren
+ * Removed uninitialised variable
+ *
  * Revision 1.154  2006/08/27 23:55:09  csoutheren
  * Applied 1545081 - Preventing a lock when writing to timerChangePipe
  * Thanks to Drazen Dimoti
@@ -697,20 +700,12 @@ void PProcess::Construct()
 
   ::pipe(timerChangePipe);
 
-  int value;
   int oldflags = ::fcntl(timerChangePipe[0], F_GETFL, 0);
-
-  if (value != 0)
-    oldflags |= O_NONBLOCK;
-  else
-    oldflags &= ~O_NONBLOCK;
+  oldflags |= O_NONBLOCK;
   ::fcntl(timerChangePipe[0], F_SETFL, oldflags);
-
+ 
   oldflags = ::fcntl(timerChangePipe[1], F_GETFL, 0);
-  if (value != 0)
-    oldflags |= O_NONBLOCK;
-  else
-    oldflags &= ~O_NONBLOCK;
+  oldflags |= O_NONBLOCK;
   ::fcntl(timerChangePipe[1], F_SETFL, oldflags);
 
 #else
