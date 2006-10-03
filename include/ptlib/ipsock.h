@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.83  2006/10/03 06:29:38  csoutheren
+ * Add PIPSocketAndPort::AsString
+ *
  * Revision 1.82  2006/07/05 03:58:09  csoutheren
  * Additional implementation of PIPSocketAddressAndPort
  *
@@ -964,6 +967,9 @@ class PIPSocketAddressAndPort
 		{ Parse(sep, str, defaultPort); }
 
     void Parse(char sep, const PString & str, WORD defaultPort = 0);
+
+    PString AsString() const
+    { return address.AsString() + ':' + PString(PString::Unsigned, port); }
 
     PIPSocket::Address address;
     WORD port;
