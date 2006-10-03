@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.74  2006/10/03 06:28:26  csoutheren
+ * Ensure ios bits are reset when a PChannel is closed
+ *
  * Revision 1.73  2006/01/31 03:38:27  csoutheren
  * Refixed fix for compiler warning
  *
@@ -394,6 +397,7 @@ int PSocket::os_close()
 {
   int err = closesocket(os_handle);
   os_handle = -1;
+  clear();
   return err;
 }
 
