@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.46  2006/10/03 06:30:31  csoutheren
+ * Fix error in PThreadObj templates
+ *
  * Revision 1.45  2006/07/05 09:14:29  csoutheren
  * Fixed startup problems with using Resume in PThread descendants
  *
@@ -574,7 +577,7 @@ class PThreadObj : public PThread
     { (obj.*fn)(); }
 
   protected:
-    ObjType obj;
+    ObjType & obj;
     ObjTypeFn fn;
 };
 
@@ -592,7 +595,7 @@ class PThreadObj1Arg : public PThread
     { (obj.*fn)(arg1); }
 
   protected:
-    ObjType obj;
+    ObjType & obj;
     ObjTypeFn fn;
     Arg1Type arg1;
 };
