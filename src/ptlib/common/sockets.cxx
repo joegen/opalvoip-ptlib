@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.206  2006/10/05 05:43:32  csoutheren
+ * Fix uninitialised variable
+ *
  * Revision 1.205  2006/07/05 03:58:09  csoutheren
  * Additional implementation of PIPSocketAddressAndPort
  *
@@ -1145,7 +1148,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     mutex.Signal();
 
 #if P_HAS_IPV6
-    struct addrinfo *res;
+    struct addrinfo *res = NULL;
     struct addrinfo hints = { AI_CANONNAME, PF_UNSPEC };
     hints.ai_family = defaultIpAddressFamily;
 
@@ -2377,7 +2380,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
 #if P_HAS_IPV6
 
-  struct addrinfo *res;
+  struct addrinfo *res = NULL;
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
   
   version = 0;
