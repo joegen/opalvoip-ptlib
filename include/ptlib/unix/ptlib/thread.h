@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.39  2006/10/06 04:49:00  csoutheren
+ * Fixed problem using PThread::Current in the destructor of autodelete threads
+ *
  * Revision 1.38  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -183,6 +186,7 @@
     pthread_mutex_t PX_suspendMutex;
     int             PX_suspendCount;
     BOOL            PX_firstTimeStart;
+    BOOL            ending;
 
 #ifndef P_HAS_SEMAPHORES
     PSemaphore    * PX_waitingSemaphore;
