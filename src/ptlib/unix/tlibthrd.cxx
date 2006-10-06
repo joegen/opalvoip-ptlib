@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.156  2006/10/06 04:49:01  csoutheren
+ * Fixed problem using PThread::Current in the destructor of autodelete threads
+ *
  * Revision 1.155  2006/09/28 00:27:01  csoutheren
  * Removed uninitialised variable
  *
@@ -813,6 +816,8 @@ void PThread::InitialiseProcessThread()
   PX_firstTimeStart = FALSE;
 
   traceBlockIndentLevel = 0;
+
+  ending = FALSE;
 }
 
 
@@ -848,6 +853,7 @@ PThread::PThread(PINDEX stackSize,
   PX_firstTimeStart = TRUE;
 
   traceBlockIndentLevel = 0;
+  ending = FALSE;
 
   PTRACE(5, "PWLib\tCreated thread " << this << ' ' << threadName);
 }
@@ -855,7 +861,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (PX_threadId != 0 && PX_threadId != pthread_self())
+  if (!ending && (PX_threadId != pthread_self()))
     Terminate();
 
   PAssertPTHREAD(::close, (unblockPipe[0]));
@@ -1295,7 +1301,7 @@ void PThread::Terminate()
 BOOL PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
-  return (id == 0) || !PPThreadKill(id, 0);
+  return ending || !PPThreadKill(id, 0);
 }
 
 
@@ -1369,7 +1375,8 @@ void PThread::PX_ThreadEnd(void * arg)
 
   PThread * thread = (PThread *)arg;
   pthread_t id = thread->GetThreadId();
-  if (id == 0) {
+
+  if (thread->ending) {
     // Don't know why, but pthreads under Linux at least can call this function
     // multiple times! Probably a bug, but we have to allow for it.
     process.threadMutex.Signal();
@@ -1377,27 +1384,26 @@ void PThread::PX_ThreadEnd(void * arg)
     return;
   }  
 
- // remove this thread from the active thread list
-  process.activeThreads.SetAt((unsigned)id, NULL);
+  PString threadName = thread->threadName;
 
   // delete the thread if required, note this is done this way to avoid
-  // a race condition, the thread ID cannot be zeroed before the if!
-  if (thread->autoDelete) {
-    thread->PX_threadId = 0;  // Prevent terminating terminated thread
+  // a race condition, the ending flag cannot be zeroed before the if!
+  if (!thread->autoDelete) 
     process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
+  else {
+    thread->ending = TRUE;
+    process.threadMutex.Signal();
 
     /* It is now safe to delete this thread. Note that this thread
        is deleted after the process.threadMutex.Signal(), which means
        PWaitAndSignal(process.threadMutex) could not be used */
     delete thread;
   }
-  else {
-    thread->PX_threadId = 0;
-    PString threadName = thread->threadName;
-    process.threadMutex.Signal();
-    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
-  }
+
+  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
+
+  // remove this thread from the active thread list
+  process.activeThreads.SetAt((unsigned)id, NULL);
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
