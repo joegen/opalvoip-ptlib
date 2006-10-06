@@ -28,6 +28,10 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.27.2.4  2006/10/06 11:57:46  dsandras
+ * Increases storedPeriods to 3 as suggested by Stelian Pop (Ekiga bug #358338)
+ * to fix bad output sound on some soundcards.
+ *
  * Revision 1.27.2.3  2006/05/17 18:41:36  dsandras
  * Backported fix from HEAD.
  *
@@ -158,7 +162,7 @@ PSoundChannelALSA::PSoundChannelALSA (const PString &device,
 void PSoundChannelALSA::Construct()
 {
   frameBytes = 480;
-  storedPeriods = 2;
+  storedPeriods = 3;
   storedSize = storedPeriods * frameBytes;
 
   card_nr = 0;
