@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.158  2006/10/09 02:03:17  csoutheren
+ * Another fix for thread problem
+ *
  * Revision 1.157  2006/10/09 01:34:20  csoutheren
  * Fixed usage of deleted pointer
  *
@@ -864,6 +867,11 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt(PX_threadId, NULL);
+  process.threadMutex.Signal();
+
   if (!ending && (PX_threadId != pthread_self()))
     Terminate();
 
@@ -1404,9 +1412,6 @@ void PThread::PX_ThreadEnd(void * arg)
   }
 
   PTRACE(5, "PWLib\tEnded thread " << (void *)thread << ' ' << threadName);
-
-  // remove this thread from the active thread list
-  process.activeThreads.SetAt((unsigned)id, NULL);
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
