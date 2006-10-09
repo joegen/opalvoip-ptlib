@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.157  2006/10/09 01:34:20  csoutheren
+ * Fixed usage of deleted pointer
+ *
  * Revision 1.156  2006/10/06 04:49:01  csoutheren
  * Fixed problem using PThread::Current in the destructor of autodelete threads
  *
@@ -1400,7 +1403,7 @@ void PThread::PX_ThreadEnd(void * arg)
     delete thread;
   }
 
-  PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
+  PTRACE(5, "PWLib\tEnded thread " << (void *)thread << ' ' << threadName);
 
   // remove this thread from the active thread list
   process.activeThreads.SetAt((unsigned)id, NULL);
