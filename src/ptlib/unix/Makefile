@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.145  2006/10/10 07:16:55  csoutheren
+# Tweaked default build options to suite more common configurations
+#
 # Revision 1.144  2006/09/20 23:26:22  csoutheren
 # Added guid.cxx to the Makefile
 #
@@ -601,8 +604,6 @@ ifdef HAS_VXML
 SOURCES	+= $(COMPONENT_SRC_DIR)/vxml.cxx 
 endif
 
-endif # HAS_EXPAT
-
 ifdef HAS_SASL2
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp.cxx \
@@ -610,6 +611,8 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp_muc.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_roster.cxx
 endif
+endif # HAS_EXPAT
+
 
 ifdef HAS_RESOLVER
 SOURCES += \
