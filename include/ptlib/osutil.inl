@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.92  2006/10/10 07:16:55  csoutheren
+ * Tweaked default build options to suite more common configurations
+ *
  * Revision 1.91  2005/11/04 06:34:20  csoutheren
  * Added new class PSync as abstract base class for all mutex/sempahore classes
  * Changed PCriticalSection to use Wait/Signal rather than Enter/Leave
@@ -322,7 +325,7 @@
  *
  */
 
-
+#include "ptbuildopts.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
