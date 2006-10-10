@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.159  2006/10/10 07:56:20  csoutheren
+ * Fixed problem when destroying process thread
+ *
  * Revision 1.158  2006/10/09 02:03:17  csoutheren
  * Another fix for thread problem
  *
@@ -868,9 +871,11 @@ PThread::PThread(PINDEX stackSize,
 PThread::~PThread()
 {
   PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
-  process.activeThreads.SetAt(PX_threadId, NULL);
-  process.threadMutex.Signal();
+  if (this != &process) {
+    process.threadMutex.Wait();
+    process.activeThreads.SetAt(PX_threadId, NULL);
+    process.threadMutex.Signal();
+  }
 
   if (!ending && (PX_threadId != pthread_self()))
     Terminate();
@@ -887,7 +892,7 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  if (this != &PProcess::Current())
+  if (this != &process)
     PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
 }
 
