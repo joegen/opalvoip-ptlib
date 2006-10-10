@@ -515,11 +515,11 @@ default_shmvideo=yes
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
-  default_openldap=yes
+  default_openldap=no
   default_openssl=yes
   default_expat=no
   default_sdl=yes
-  default_sasl=yes
+  default_sasl=no
   default_plugins=yes
   default_tts=yes
   default_asn=yes
@@ -541,7 +541,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
-  default_configfile=no
+  default_configfile=yes
   default_alsa=yes
   default_oss=yes
   default_ipv6=yes
@@ -2050,6 +2050,10 @@ dnl check for enabling video file support
 
 dnl MSWIN_DISPLAY    vidfile,Video file support
 dnl MSWIN_DEFINE     vidfile,P_VIDFILE
+
+if test "$HAS_VIDEO" \!= "1" ; then
+  default_vidfile=no
+fi
 
 AC_ARG_ENABLE(vidfile,
        [  --enable-vidfile       enable video file support])
