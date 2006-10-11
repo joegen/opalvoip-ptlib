@@ -24,6 +24,10 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.29  2006/10/11 01:27:40  csoutheren
+ * Applied 1565717 - Fix DNS SRV query for multiple results
+ * Thanks to Simon Zwahlen
+ *
  * Revision 1.28  2006/04/22 13:35:24  dsandras
  * Fixed wrong behavior with different priorities when building the priorities
  * list. Fixes Ekiga bug #339314.
@@ -488,9 +492,9 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
     }
 
     // pick a random item at this priority
-    PINDEX j = firstPos + ((count == 0) ? 0 : (PRandom::Number() % count) );
+    PINDEX j = (count <= 1) ? 0 : (PRandom::Number() % count);
     count = 0;
-    for (i = 0; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
+    for (i = firstPos; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
       if (!(*this)[i].used) {
         if (count == j) {
           (*this)[i].used = TRUE;
