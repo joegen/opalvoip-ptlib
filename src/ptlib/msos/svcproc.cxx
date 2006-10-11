@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.84  2006/10/11 01:04:59  csoutheren
+ * Applied path 1549187 - Fixed problem with PServiceProcess under Windows
+ * Thanks to Borko Jandras
+ *
  * Revision 1.83  2006/06/25 11:22:57  csoutheren
  * Add pragmas to automate linking with VS 2005
  *
@@ -1312,7 +1316,7 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 
   CloseHandle(startedEvent);
   CloseHandle(terminationEvent);
-  ReportStatus(SERVICE_STOPPED, 0);
+  ReportStatus(SERVICE_STOPPED, terminationValue);
 }
 
 
@@ -1331,18 +1335,21 @@ void PServiceProcess::ThreadEntry()
   activeThreadMutex.Signal();
 
   SetTerminationValue(1);
-  if (OnStart()) {
+  BOOL ok = OnStart();
 
-    if (!debugMode)
-      SetEvent(startedEvent);
+  // signal the above function to stop reporting the "start pending" status
+  // and start waiting for the termination event
+  if (!debugMode)
+    SetEvent(startedEvent);
+
+  // if the OnStart handler reported success, enter the main loop
+  if (ok) {
     ReportStatus(SERVICE_RUNNING);
     SetTerminationValue(0);
-
     Main();
-
-    ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 30000);
   }
 
+  ReportStatus(SERVICE_STOP_PENDING, terminationValue, 1, 30000);
   SetEvent(terminationEvent);
 }
 
@@ -1719,7 +1726,30 @@ BOOL NT_ServiceManager::Start(PServiceProcess * svc)
 
   BOOL ok = ::StartService(schService, 0, NULL);
   error = ::GetLastError();
-  return ok;
+
+  if (!ok)
+    return FALSE;
+
+  SERVICE_STATUS serviceStatus;
+
+  // query the service status
+  if (!QueryServiceStatus(schService, &serviceStatus))
+    return FALSE;
+
+  // if pending periodicaly re-query the status
+  while (serviceStatus.dwCurrentState == SERVICE_START_PENDING) {
+    DWORD waitTime = PMIN(serviceStatus.dwWaitHint / 10, 10000);
+	Sleep(waitTime);
+
+	if (! QueryServiceStatus(schService, &serviceStatus)) break;
+  }
+
+  if (serviceStatus.dwCurrentState == SERVICE_RUNNING) {
+    return TRUE;
+  } else {
+    error = serviceStatus.dwWin32ExitCode;
+    return FALSE;
+  }
 }
 
 
