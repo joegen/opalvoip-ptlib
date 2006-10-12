@@ -27,6 +27,9 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.1.2.6  2006/10/12 18:21:21  dsandras
+ * Fixed initialization of SUN Audio plugin. (#361646, Brian Lu <brian lu sun com>)
+ *
  * Revision 1.1.2.5  2006/09/17 16:04:00  dsandras
  * Fixed possible crash on hangup with "Media patch thread not terminated"
  * message thanks to Brian Lu <brian lu sun com>.
@@ -190,8 +193,6 @@ BOOL PSoundChannelSunAudio::SetFormat(unsigned numChannels,
     mNumChannels = audio_info.play.channels = numChannels;
     mBitsPerSample = audio_info.play.precision = bitsPerSample;
     audio_info.play.encoding = AUDIO_ENCODING_LINEAR; 
-    audio_info.play.port &= AUDIO_HEADPHONE;
-    audio_info.play.port &= (~AUDIO_SPEAKER);	// No speaker output
 
   } else {				
     // set parameters for recording sound
@@ -199,8 +200,6 @@ BOOL PSoundChannelSunAudio::SetFormat(unsigned numChannels,
     audio_info.record.channels = mNumChannels = numChannels;
     audio_info.record.precision = mBitsPerSample = bitsPerSample;
     audio_info.record.encoding = AUDIO_ENCODING_LINEAR;
-    audio_info.record.port &= AUDIO_MICROPHONE;
-    audio_info.record.port &= (~AUDIO_LINE_IN);
   }
 
   // The actual setting of the parameters
