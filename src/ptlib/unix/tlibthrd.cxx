@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.160  2006/10/12 18:50:24  hfriederich
+ * Fix compilation for some compilers
+ *
  * Revision 1.159  2006/10/10 07:56:20  csoutheren
  * Fixed problem when destroying process thread
  *
@@ -873,7 +876,7 @@ PThread::~PThread()
   PProcess & process = PProcess::Current();
   if (this != &process) {
     process.threadMutex.Wait();
-    process.activeThreads.SetAt(PX_threadId, NULL);
+    process.activeThreads.SetAt((unsigned)PX_threadId, NULL);
     process.threadMutex.Signal();
   }
 
