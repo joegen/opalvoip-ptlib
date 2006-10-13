@@ -1095,7 +1095,7 @@
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%
 "
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
@@ -1105,7 +1105,7 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTIONS%
 "
 						AdditionalDependencies="..\..\..\configure.ac"
 						Outputs="$(InputDir)ptbuildopts.h"/>
