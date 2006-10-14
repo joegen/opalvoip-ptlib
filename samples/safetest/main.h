@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.11  2006/10/14 22:55:50  dereksmithies
+ * Remove garbage thread creation/deletion. use pwlib method instead.
+ * Add a poor mechanism to wait for all threads to end.
+ *
  * Revision 1.10  2006/06/21 03:28:43  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -377,9 +381,6 @@ class SafeTest : public PProcess
       PSafetyMode mode = PSafeReadWrite
     ) { return delayThreadsActive.FindWithLock(token, mode); }
 
-    /**The method which does the garbage collection (i.e. removes old
-       dead DelayThread instances)*/
-    void CollectGarbage();
 
     /**Return a random number, of size 0 .. (delay/4), for use in
        making the delay threads random in duration. */
@@ -407,23 +408,9 @@ class SafeTest : public PProcess
         virtual void DeleteObject(PObject * object) const;
     } delayThreadsActive;
 
-    /**Create the Garbage collector thread */
-    void MakeGarbageCollector();
-
- /**The thread which runs to look for DelayThread s to delete */
-    PThread    *garbageCollector;
- 
     /**The flag to say when we exit */
     BOOL exitNow;
      
-#ifdef DOC_PLUS_PLUS
-    /**This contains the 1 second delay loop, and calls to
-       CollectGarbage */
-    virtual void GarbageMain(PThread &, INT);
-#else
-    PDECLARE_NOTIFIER(PThread, SafeTest, GarbageMain);
-#endif
-
     /**The delay each thread has to wait for */
     PINDEX delay;
 

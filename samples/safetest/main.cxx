@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.13  2006/10/14 22:55:50  dereksmithies
+ * Remove garbage thread creation/deletion. use pwlib method instead.
+ * Add a poor mechanism to wait for all threads to end.
+ *
  * Revision 1.12  2006/07/22 07:27:26  rjongbloed
  * Fixed various compilation issues
  *
@@ -172,25 +176,16 @@ void SafeTest::Main()
   activeCount = PMIN(100, PMAX(1, activeCount));
   cout << "There will be " << activeCount << " threads in operation" << endl;
 
-  MakeGarbageCollector();
+  delayThreadsActive.SetAutoDeleteObjects();
 
   UserInterfaceThread ui(*this);
   ui.Resume();
   ui.WaitForTermination();
 
   exitNow = TRUE;
-  garbageCollector->WaitForTermination();
-  delete garbageCollector;
-  garbageCollector = NULL;
-}
 
-
-void SafeTest::MakeGarbageCollector()
-{
-  garbageCollector = PThread::Create(PCREATE_NOTIFIER(GarbageMain), 30000,
-                                     PThread::NoAutoDeleteThread,
-                                     PThread::NormalPriority,
-                                     "DelayThread Purger");
+  cerr << "in preexit delay, let all threads die" << endl;
+  PThread::Sleep(delay * 2);
 }
 
 void SafeTest::OnReleased(DelayThread & delayThread)
@@ -228,24 +223,6 @@ void SafeTest::DelayThreadsDict::DeleteObject(PObject * object) const
     PTRACE(3, "Delete DelayThread " << *delayThread);
     delete delayThread;
   }
-}
-
-void SafeTest::GarbageMain(PThread &, INT)
-{
-  while(!exitNow) {
-    PThread::Sleep(40);
-    CollectGarbage();
-  }
-
-  while(delayThreadsActive.GetSize() > 0) {
-    PThread::Sleep(40);
-    CollectGarbage();
-  }
-}
-
-void SafeTest::CollectGarbage()
-{
-  delayThreadsActive.DeleteObjectsToBeRemoved();
 }
 
 BOOL SafeTest::UseOnThreadEnd()
