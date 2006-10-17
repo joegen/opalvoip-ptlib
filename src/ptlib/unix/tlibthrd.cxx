@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.161  2006/10/17 04:09:12  csoutheren
+ * Fix problem with thread termination
+ *
  * Revision 1.160  2006/10/12 18:50:24  hfriederich
  * Fix compilation for some compilers
  *
@@ -873,15 +876,15 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
+  if (!ending && (PX_threadId != pthread_self()))
+    Terminate();
+
   PProcess & process = PProcess::Current();
   if (this != &process) {
     process.threadMutex.Wait();
     process.activeThreads.SetAt((unsigned)PX_threadId, NULL);
     process.threadMutex.Signal();
   }
-
-  if (!ending && (PX_threadId != pthread_self()))
-    Terminate();
 
   PAssertPTHREAD(::close, (unblockPipe[0]));
   PAssertPTHREAD(::close, (unblockPipe[1]));
