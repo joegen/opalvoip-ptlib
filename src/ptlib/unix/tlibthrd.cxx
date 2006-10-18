@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.162  2006/10/18 03:58:11  csoutheren
+ * Another fix for PThread problem
+ *
  * Revision 1.161  2006/10/17 04:09:12  csoutheren
  * Fix problem with thread termination
  *
@@ -879,13 +882,6 @@ PThread::~PThread()
   if (!ending && (PX_threadId != pthread_self()))
     Terminate();
 
-  PProcess & process = PProcess::Current();
-  if (this != &process) {
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt((unsigned)PX_threadId, NULL);
-    process.threadMutex.Signal();
-  }
-
   PAssertPTHREAD(::close, (unblockPipe[0]));
   PAssertPTHREAD(::close, (unblockPipe[1]));
 
@@ -898,8 +894,13 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  if (this != &process)
+  PProcess & process = PProcess::Current();
+  if (this != &process) {
+    process.threadMutex.Wait();
+    process.activeThreads.SetAt((unsigned)PX_threadId, NULL);
+    process.threadMutex.Signal();
     PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
+  }
 }
 
 
@@ -1281,6 +1282,7 @@ PThread * PThread::Current()
 
 void PThread::Terminate()
 {
+  // do not rerminate the PProcess thread
   if (PX_origStackSize <= 0)
     return;
 
