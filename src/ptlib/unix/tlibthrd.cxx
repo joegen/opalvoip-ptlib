@@ -27,26 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
- * Revision 1.162  2006/10/18 03:58:11  csoutheren
- * Another fix for PThread problem
- *
- * Revision 1.161  2006/10/17 04:09:12  csoutheren
- * Fix problem with thread termination
- *
- * Revision 1.160  2006/10/12 18:50:24  hfriederich
- * Fix compilation for some compilers
- *
- * Revision 1.159  2006/10/10 07:56:20  csoutheren
- * Fixed problem when destroying process thread
- *
- * Revision 1.158  2006/10/09 02:03:17  csoutheren
- * Another fix for thread problem
- *
- * Revision 1.157  2006/10/09 01:34:20  csoutheren
- * Fixed usage of deleted pointer
- *
- * Revision 1.156  2006/10/06 04:49:01  csoutheren
- * Fixed problem using PThread::Current in the destructor of autodelete threads
+ * Revision 1.163  2006/10/18 23:53:25  csoutheren
+ * Reverted to revision 1.155 to remove recent changes that are causing crashes
+ * A new fix will be needed for the destructor problem :(
  *
  * Revision 1.155  2006/09/28 00:27:01  csoutheren
  * Removed uninitialised variable
@@ -834,8 +817,6 @@ void PThread::InitialiseProcessThread()
   PX_firstTimeStart = FALSE;
 
   traceBlockIndentLevel = 0;
-
-  ending = FALSE;
 }
 
 
@@ -871,7 +852,6 @@ PThread::PThread(PINDEX stackSize,
   PX_firstTimeStart = TRUE;
 
   traceBlockIndentLevel = 0;
-  ending = FALSE;
 
   PTRACE(5, "PWLib\tCreated thread " << this << ' ' << threadName);
 }
@@ -879,7 +859,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (!ending && (PX_threadId != pthread_self()))
+  if (PX_threadId != 0 && PX_threadId != pthread_self())
     Terminate();
 
   PAssertPTHREAD(::close, (unblockPipe[0]));
@@ -894,13 +874,8 @@ PThread::~PThread()
   pthread_mutex_unlock(&PX_suspendMutex);
   pthread_mutex_destroy(&PX_suspendMutex);
 
-  PProcess & process = PProcess::Current();
-  if (this != &process) {
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt((unsigned)PX_threadId, NULL);
-    process.threadMutex.Signal();
+  if (this != &PProcess::Current())
     PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
-  }
 }
 
 
@@ -1282,7 +1257,6 @@ PThread * PThread::Current()
 
 void PThread::Terminate()
 {
-  // do not rerminate the PProcess thread
   if (PX_origStackSize <= 0)
     return;
 
@@ -1325,7 +1299,7 @@ void PThread::Terminate()
 BOOL PThread::IsTerminated() const
 {
   pthread_t id = PX_threadId;
-  return ending || !PPThreadKill(id, 0);
+  return (id == 0) || !PPThreadKill(id, 0);
 }
 
 
@@ -1399,8 +1373,7 @@ void PThread::PX_ThreadEnd(void * arg)
 
   PThread * thread = (PThread *)arg;
   pthread_t id = thread->GetThreadId();
-
-  if (thread->ending) {
+  if (id == 0) {
     // Don't know why, but pthreads under Linux at least can call this function
     // multiple times! Probably a bug, but we have to allow for it.
     process.threadMutex.Signal();
@@ -1408,23 +1381,27 @@ void PThread::PX_ThreadEnd(void * arg)
     return;
   }  
 
-  PString threadName = thread->threadName;
+ // remove this thread from the active thread list
+  process.activeThreads.SetAt((unsigned)id, NULL);
 
   // delete the thread if required, note this is done this way to avoid
-  // a race condition, the ending flag cannot be zeroed before the if!
-  if (!thread->autoDelete) 
+  // a race condition, the thread ID cannot be zeroed before the if!
+  if (thread->autoDelete) {
+    thread->PX_threadId = 0;  // Prevent terminating terminated thread
     process.threadMutex.Signal();
-  else {
-    thread->ending = TRUE;
-    process.threadMutex.Signal();
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << thread->threadName);
 
     /* It is now safe to delete this thread. Note that this thread
        is deleted after the process.threadMutex.Signal(), which means
        PWaitAndSignal(process.threadMutex) could not be used */
     delete thread;
   }
-
-  PTRACE(5, "PWLib\tEnded thread " << (void *)thread << ' ' << threadName);
+  else {
+    thread->PX_threadId = 0;
+    PString threadName = thread->threadName;
+    process.threadMutex.Signal();
+    PTRACE(5, "PWLib\tEnded thread " << thread << ' ' << threadName);
+  }
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
