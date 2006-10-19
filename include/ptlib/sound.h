@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.38  2006/10/19 12:05:32  rjongbloed
+ * Added missing Close() function apss thru on PSoundChannel wrapper class.
+ *
  * Revision 1.37  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -486,6 +489,13 @@ class PSoundChannel : public PChannel
      */
     virtual BOOL IsOpen() const
       { return (baseChannel == NULL) ? FALSE : baseChannel->PChannel::IsOpen(); }
+
+    /** Close the channel, shutting down the link to the data source.
+
+       @return TRUE if the channel successfully closed.
+     */
+    virtual BOOL Close()
+      { return (baseChannel == NULL) ? -1 : baseChannel->Close(); }
 
     /**Get the OS specific handle for the PSoundChannel.
 
