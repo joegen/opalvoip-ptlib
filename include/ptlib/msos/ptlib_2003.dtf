@@ -9412,6 +9412,7 @@ EXPORTS
     ?Close@PSerialChannel@@UAEHXZ @1001 NONAME
     ?Close@PSMTPClient@@UAEHXZ @22141 NONAME
     ?Close@PSocket@@UAEHXZ @1002 NONAME
+    ?Close@PSoundChannel@@UAEHXZ @25696 NONAME
     ?Close@PSoundChannelWin32@@UAEHXZ @2704 NONAME
     ?Close@PSSLChannel@@UAEHXZ @22142 NONAME
     ?Close@PTextToSpeech_Festival@@UAEHXZ @22143 NONAME
