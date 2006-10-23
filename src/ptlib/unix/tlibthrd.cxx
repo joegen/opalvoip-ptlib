@@ -27,16 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
- * Revision 1.163  2006/10/18 23:53:25  csoutheren
- * Reverted to revision 1.155 to remove recent changes that are causing crashes
- * A new fix will be needed for the destructor problem :(
- *
- * Revision 1.155  2006/09/28 00:27:01  csoutheren
- * Removed uninitialised variable
- *
- * Revision 1.154  2006/08/27 23:55:09  csoutheren
- * Applied 1545081 - Preventing a lock when writing to timerChangePipe
- * Thanks to Drazen Dimoti
+ * Revision 1.164  2006/10/23 01:15:16  csoutheren
+ * Revert to revision 1.153 to fix crash problem with SIP connections
  *
  * Revision 1.153  2006/06/25 21:46:38  dereksmithies
  * Thanks to Paul Nader for this fix which fixes thread cleanup
@@ -665,10 +657,8 @@ void PHouseKeepingThread::Main()
     P_fd_set read_fds = fd;
     P_timeval tval = delay;
     if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
-       BYTE ch[PIPE_BUF];
-       while (1) {
-         if (::read(fd, &ch, PIPE_BUF) <= 0) break;
-       }
+      BYTE ch;
+      ::read(fd, &ch, 1);
     }
 
     process.PXCheckSignals();
@@ -703,15 +693,6 @@ void PProcess::Construct()
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
   ::pipe(timerChangePipe);
-
-  int oldflags = ::fcntl(timerChangePipe[0], F_GETFL, 0);
-  oldflags |= O_NONBLOCK;
-  ::fcntl(timerChangePipe[0], F_SETFL, oldflags);
- 
-  oldflags = ::fcntl(timerChangePipe[1], F_GETFL, 0);
-  oldflags |= O_NONBLOCK;
-  ::fcntl(timerChangePipe[1], F_SETFL, oldflags);
-
 #else
   maxHandles = 500; // arbitrary value
   socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
