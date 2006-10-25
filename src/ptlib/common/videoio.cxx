@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.63  2006/10/25 11:04:38  shorne
+ * fix for devices having same name for different drivers.
+ *
  * Revision 1.62  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -1225,12 +1228,12 @@ PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName, P
 }
 
 
-PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & deviceName, PPluginManager * pluginMgr)
+PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
 
-  return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass);
+  return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass,0,driverName);
 }
 
 
@@ -1239,11 +1242,7 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
                                                           BOOL startImmediate,
                                                           PPluginManager * pluginMgr)
 {
-  PVideoInputDevice * device;
-  if (driverName.IsEmpty() || driverName == "*")
-    device = CreateDeviceByName(deviceName, pluginMgr);
-  else
-    device = CreateDevice(driverName, pluginMgr);
+  PVideoInputDevice * device = CreateDeviceByName(deviceName,driverName, pluginMgr);
 
   if (device != NULL && device->Open(deviceName, startImmediate))
     return device;
