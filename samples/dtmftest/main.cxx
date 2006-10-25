@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2006/10/25 08:18:21  rjongbloed
+ * Major upgrade of tone generation subsystem.
+ *
  * Revision 1.5  2005/11/30 12:47:40  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -51,6 +54,7 @@ PCREATE_PROCESS(DtmfTest);
 
 #include  <ptclib/dtmf.h>
 #include  <ptclib/random.h>
+#include  <ptlib/sound.h>
 
 
 
@@ -62,12 +66,16 @@ DtmfTest::DtmfTest()
 
 void DtmfTest::Main()
 {
+  PINDEX i;
+
   PArgList & args = GetArguments();
 
   args.Parse(
              "h-help."               "-no-help."
-             "s-samples:"            "-no-numsamples."
+             "d-duration:"
              "n-noise:"              "-no-noise."
+             "s-sound:"              "-no-sound."
+             "T-tone."               "-no-tone."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -92,82 +100,109 @@ void DtmfTest::Main()
   }
 
   if (args.HasOption('h')) {
-    PError << "Available options are: " << endl         
-           << endl
-           <<    "Generates 16 dtmf symbols, of length sample size with noise level\n"
-           <<    " and then decodes them. \n"
-           <<    " Simulation is done at 8000Hz, or 8khz, 16 bit integers.\n"
-           <<    "A report on the success (or not) is reported\n"
-           << endl
-           <<    "-h or --help          : print this help message.\n"
-           <<    "-s or --samples #     : number of samples to use (ms).\n"
-           <<    "-n or --noise   #     : Peak noise level (0..10000)\n"
+    PError << "Generates tones with optional noise level and then decodes them.\n"
+              "Simulation is done at 8000Hz, or 8khz, 16 bit integers.\n"
+              "\n"
+              "dtmftest [options] arg1 [ arg2 ... ]\n"
+              "Available options are:\n"
+              "\n"
+              "  -h or --help          : print this help message.\n"
+              "  -d or --duration #    : duration milliseconds.\n"
+              "  -n or --noise #       : Peak noise level (0..10000)\n"
+              "  -s or --sound #       : Output to sound device (use * for default)\n"
+              "  -T or --tone          : Parameters are tone descriptors rather than DTMF\n"
 #if PTRACING
-           <<    "-o or --output file   : file name for output of log messages\n"       
-           <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
+              "  -o or --output file   : file name for output of log messages\n"       
+              "  -t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
 #endif
-           <<    "-v or --version       : report version information\n"
-           << endl
-           << " e.g. ./dtmftest -s 60 -n 100    \n"
-           << "                to generate 60ms long samples, with a signal noise ratio of 100\n"
+              "  -v or --version       : report version information\n"
+              "\n"
+           << " e.g. ./dtmftest -d 60 -n 100 1234\n"
+           << "                to generate 60ms long DTMF tones for 1234, with a signal noise factor of 100\n"
            << endl << endl;
     return;
   }
-  
-  
-  PINDEX samples;
-  if (args.HasOption('s'))
-    samples = args.GetOptionString('s').AsInteger();
+
+
+  unsigned milliseconds;
+  if (args.HasOption('d')) {
+    milliseconds = args.GetOptionString('s').AsUnsigned();
+    if (milliseconds < 10) {
+      cerr << "Invalid duration specified!\n";
+      return;
+    }
+  }
   else
-    samples = 80;
+    milliseconds = 100;
+  cout << "Sample section  is " << milliseconds << " ms long.\n";
 
-  PINDEX noise;
-  if (args.HasOption('n'))
-    noise = args.GetOptionString('n').AsInteger();
-  else
-    noise = 0;
 
-  samples = PMAX(PMIN(200 * 1000, samples), 10);
-  noise   = PMAX(PMIN(10000, noise), 0);
+  PShortArray noiseSignal(milliseconds * 8);
+  if (args.HasOption('n')) {
+    unsigned noise = args.GetOptionString('n').AsUnsigned();
+    if (noise < 10 || noise > 10000) {
+      cerr << "Invalid noise level specified!\n";
+      return;
+    }
+    cout << "Peak noise magnitude is " << noise << '\n';
+    for (i = 0; i < noiseSignal.GetSize(); i++)
+      noiseSignal[i] = (short)(PRandom::Number() % noise/2 - noise/2); 
+  }
 
-  cout << "Sample section  is " << samples << " ms long." << endl;
-  cout << "Peak noise magnitude is " << noise << endl;
 
-  PINDEX i;
-  PDTMFDecoder decoder;
-  PBYTEArray   noiseSignal(samples * 8 * 2);
+  PString tonesToPlay;
+  for (i = 0; i < args.GetCount(); i++) {
+    if (args.HasOption('T')) {
+      if (!tonesToPlay.IsEmpty())
+        tonesToPlay += '/';
+      tonesToPlay += args[i];
+    }
+    else
+      tonesToPlay += args[i];
+  }
+  if (tonesToPlay.IsEmpty())
+    tonesToPlay = "0123456789ABCD*#";
 
-  if (noise > 0) 
-    for (i = 0; i < noiseSignal.GetSize(); i+=2) {
-      PINDEX noiseValue = (WORD) PRandom::Number() % noise; 
-      noiseSignal[i] = (BYTE)(noiseValue & 0xff);
-      noiseSignal[i+1] = (BYTE)(noiseValue >> 8);
+
+  if (args.HasOption('s')) {
+    PSoundChannel speaker;
+    if (!speaker.Open(args.GetOptionString('s'), PSoundChannel::Player)) {
+      cerr << "Could not open sound card!\n";
+      return;
     }
 
-  PBYTEArray   result(samples * 8 * 2);
+    PTones toneData;
+    if (!toneData.Generate(tonesToPlay))
+      cerr << "Error parsing tone descriptor \"" << tonesToPlay << "\"\n";
+    else if (!speaker.Write(toneData.GetPointer(), toneData.GetSize()*2))
+      cerr << "Could not write tone data to sound card!\n";
+    else {
+      speaker.WaitForPlayCompletion();
+      speaker.Abort();
+    }
+    return;
+  }
+
+  PShortArray result(milliseconds * 8);
+  PDTMFDecoder decoder;
 
   int nCorrect = 0;
-  for (i = 0; i < 16; i++) {
+  for (const char * pDTMF = tonesToPlay; *pDTMF != '\0'; pDTMF++) {
     PDTMFEncoder encoder;
-    PString symbol = encoder.DtmfChar(i);
-    encoder.AddTone(symbol, samples);
+    encoder.AddTone(*pDTMF, milliseconds);
 
-    for (PINDEX j = 0; j < encoder.GetSize(); j+=2) {
-      int  signal = ((int)encoder[j]) + ((int)encoder[j + 1] << 8);
-      signal       += noiseSignal[j] + (noiseSignal[j + 1] << 8);
-      result[j]     = (BYTE)(signal & 0xff);
-      result[j + 1] = (BYTE)(signal >> 8);
-    }
+    for (i = 0; i < result.GetSize(); i++)
+      result[i] = encoder[i] + noiseSignal[i];
 
     PTime startTime;
-    PString tones = decoder.Decode(result.GetPointer(), result.GetSize() );
+    PString detectedTones = decoder.Decode(result.GetPointer(), result.GetSize());
     PTimeInterval elapsed = PTime() - startTime;
 
-    if (tones.IsEmpty())
-      tones = " ";
-    cout << "Test : " << symbol << " ---> " << tones << "    ";
+    if (detectedTones.IsEmpty())
+      detectedTones = " ";
+    cout << "Test : " << *pDTMF << " ---> " << detectedTones << "    ";
 
-    if (symbol == tones) {
+    if (detectedTones[0] == *pDTMF) {
       cout << "Good";
       nCorrect++;
     } else {
