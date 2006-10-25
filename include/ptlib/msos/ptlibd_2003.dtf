@@ -1173,6 +1173,7 @@ EXPORTS
     ??0PDirectory@@QAE@XZ @164 NONAME
     ??0PDSNConnection@@QAE@XZ @16605 NONAME
     ??0PDTMFDecoder@@QAE@XZ @17546 NONAME
+    ??0PDTMFEncoder@@QAE@PBDI@Z @26027 NONAME
     ??0PDynaLink@@QAE@ABVPString@@@Z @165 NONAME
     ??0PDynaLink@@QAE@XZ @166 NONAME
     ??0PEthSocket@@QAE@HHH@Z @167 NONAME
@@ -1653,6 +1654,8 @@ EXPORTS
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @331 NONAME
     ??0PTimer@@QAE@JHHHH@Z @332 NONAME
     ??0PTimerList@@QAE@XZ @333 NONAME
+    ??0PTones@@QAE@ABVPString@@I@Z @26028 NONAME
+    ??0PTones@@QAE@I@Z @26029 NONAME
     ??0PUDPSocket@@QAE@ABVPString@@0@Z @334 NONAME
     ??0PUDPSocket@@QAE@ABVPString@@G@Z @336 NONAME
     ??0PUDPSocket@@QAE@ABVPString@@PAVPQoS@@@Z @3531 NONAME
@@ -2337,6 +2340,7 @@ EXPORTS
     ??1PDirectory@@UAE@XZ @488 NONAME
     ??1PDSNConnection@@UAE@XZ @16627 NONAME
     ??1PDTMFDecoder@@UAE@XZ @18224 NONAME
+    ??1PDTMFEncoder@@UAE@XZ @26030 NONAME
     ??1PDynaLink@@UAE@XZ @489 NONAME
     ??1PEthSocket@@UAE@XZ @490 NONAME
     ??1PFactoryBase@@UAE@XZ @6823 NONAME
@@ -2592,6 +2596,7 @@ EXPORTS
     ??1PTimeInterval@@UAE@XZ @555 NONAME
     ??1PTimer@@UAE@XZ @556 NONAME
     ??1PTimerList@@UAE@XZ @557 NONAME
+    ??1PTones@@UAE@XZ @26031 NONAME
     ??1PUDPSocket@@UAE@XZ @558 NONAME
     ??1PURL@@UAE@XZ @18394 NONAME
     ??1PURLLegacyScheme@@UAE@XZ @18395 NONAME
@@ -3834,6 +3839,7 @@ EXPORTS
     ??_7PDirectory@@6B@ @1185 NONAME
     ??_7PDSNConnection@@6B@ @16647 NONAME
     ??_7PDTMFDecoder@@6B@ @19024 NONAME
+    ??_7PDTMFEncoder@@6B@ @26032 NONAME
     ??_7PDynaLink@@6B@ @1186 NONAME
     ??_7PEthSocket@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5585 NONAME
     ??_7PEthSocket@@6BPObject@@@ @1188 NONAME
@@ -4129,6 +4135,7 @@ EXPORTS
     ??_7PTimeInterval@@6B@ @1266 NONAME
     ??_7PTimer@@6B@ @1267 NONAME
     ??_7PTimerList@@6B@ @1268 NONAME
+    ??_7PTones@@6B@ @26033 NONAME
     ??_7PUDPSocket@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5603 NONAME
     ??_7PUDPSocket@@6BPObject@@@ @1270 NONAME
     ??_7PURL@@6B@ @19221 NONAME
@@ -4893,6 +4900,7 @@ EXPORTS
     ??_R0?AVPDirectory@@@8 @4084 NONAME
     ??_R0?AVPDSNConnection@@@8 @16659 NONAME
     ??_R0?AVPDTMFDecoder@@@8 @19690 NONAME
+    ??_R0?AVPDTMFEncoder@@@8 @26034 NONAME
     ??_R0?AVPDynaLink@@@8 @4085 NONAME
     ??_R0?AVPEthSocket@@@8 @4086 NONAME
     ??_R0?AVPFactoryBase@@@8 @6868 NONAME
@@ -5112,6 +5120,7 @@ EXPORTS
     ??_R0?AVPTimeInterval@@@8 @4151 NONAME
     ??_R0?AVPTimer@@@8 @4152 NONAME
     ??_R0?AVPTimerList@@@8 @4153 NONAME
+    ??_R0?AVPTones@@@8 @26035 NONAME
     ??_R0?AVPUDPSocket@@@8 @4154 NONAME
     ??_R0?AVPURL@@@8 @19828 NONAME
     ??_R0?AVPURLLegacyScheme@@@8 @19829 NONAME
@@ -5652,6 +5661,7 @@ EXPORTS
     ??_R1A@?0A@A@PDirectory@@8 @4310 NONAME
     ??_R1A@?0A@A@PDSNConnection@@8 @16671 NONAME
     ??_R1A@?0A@A@PDTMFDecoder@@8 @20138 NONAME
+    ??_R1A@?0A@A@PDTMFEncoder@@8 @26036 NONAME
     ??_R1A@?0A@A@PDynaLink@@8 @4311 NONAME
     ??_R1A@?0A@A@PEthSocket@@8 @4312 NONAME
     ??_R1A@?0A@A@PFactoryBase@@8 @6876 NONAME
@@ -5897,6 +5907,7 @@ EXPORTS
     ??_R1A@?0A@A@PTimeInterval@@8 @4377 NONAME
     ??_R1A@?0A@A@PTimer@@8 @4378 NONAME
     ??_R1A@?0A@A@PTimerList@@8 @4379 NONAME
+    ??_R1A@?0A@A@PTones@@8 @26037 NONAME
     ??_R1A@?0A@A@PUDPSocket@@8 @4380 NONAME
     ??_R1A@?0A@A@PURL@@8 @20303 NONAME
     ??_R1A@?0A@A@PURLLegacyScheme@@8 @20304 NONAME
@@ -6416,6 +6427,7 @@ EXPORTS
     ??_R2PDirectory@@8 @4526 NONAME
     ??_R2PDSNConnection@@8 @16683 NONAME
     ??_R2PDTMFDecoder@@8 @20609 NONAME
+    ??_R2PDTMFEncoder@@8 @26038 NONAME
     ??_R2PDynaLink@@8 @4527 NONAME
     ??_R2PEthSocket@@8 @4528 NONAME
     ??_R2PFactoryBase@@8 @6882 NONAME
@@ -6661,6 +6673,7 @@ EXPORTS
     ??_R2PTimeInterval@@8 @4593 NONAME
     ??_R2PTimer@@8 @4594 NONAME
     ??_R2PTimerList@@8 @4595 NONAME
+    ??_R2PTones@@8 @26039 NONAME
     ??_R2PUDPSocket@@8 @4596 NONAME
     ??_R2PURL@@8 @20774 NONAME
     ??_R2PURLLegacyScheme@@8 @20775 NONAME
@@ -7169,6 +7182,7 @@ EXPORTS
     ??_R3PDirectory@@8 @4735 NONAME
     ??_R3PDSNConnection@@8 @16695 NONAME
     ??_R3PDTMFDecoder@@8 @21077 NONAME
+    ??_R3PDTMFEncoder@@8 @26040 NONAME
     ??_R3PDynaLink@@8 @4736 NONAME
     ??_R3PEthSocket@@8 @4737 NONAME
     ??_R3PFactoryBase@@8 @6888 NONAME
@@ -7414,6 +7428,7 @@ EXPORTS
     ??_R3PTimeInterval@@8 @4802 NONAME
     ??_R3PTimer@@8 @4803 NONAME
     ??_R3PTimerList@@8 @4804 NONAME
+    ??_R3PTones@@8 @26041 NONAME
     ??_R3PUDPSocket@@8 @4805 NONAME
     ??_R3PURL@@8 @21242 NONAME
     ??_R3PURLLegacyScheme@@8 @21243 NONAME
@@ -7926,6 +7941,7 @@ EXPORTS
     ??_R4PDirectory@@6B@ @4946 NONAME
     ??_R4PDSNConnection@@6B@ @16707 NONAME
     ??_R4PDTMFDecoder@@6B@ @21547 NONAME
+    ??_R4PDTMFEncoder@@6B@ @26042 NONAME
     ??_R4PDynaLink@@6B@ @4947 NONAME
     ??_R4PEthSocket@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5697 NONAME
     ??_R4PEthSocket@@6BPObject@@@ @4949 NONAME
@@ -8221,6 +8237,7 @@ EXPORTS
     ??_R4PTimeInterval@@6B@ @5031 NONAME
     ??_R4PTimer@@6B@ @5032 NONAME
     ??_R4PTimerList@@6B@ @5033 NONAME
+    ??_R4PTones@@6B@ @26043 NONAME
     ??_R4PUDPSocket@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5715 NONAME
     ??_R4PUDPSocket@@6BPObject@@@ @5035 NONAME
     ??_R4PURL@@6B@ @21744 NONAME
@@ -8539,13 +8556,14 @@ EXPORTS
     ?AddPerson@PILSSession@@QAEHABVRTPerson@1@@Z @21938 NONAME
     ?AddRegisteredText@PHTTPServiceProcess@@UAEXAAVPHTML@@@Z @21939 NONAME
     ?AddResource@PHTTPSpace@@QAEHPAVPHTTPResource@@W4AddOptions@1@@Z @21940 NONAME
+    ?AddSample@PTones@@IAEXHI@Z @26044 NONAME
     ?AddSectionField@PHTTPConfig@@QAEPAVPHTTPField@@PAV2@PBD1@Z @21941 NONAME
     ?AddStruct@PXMLRPCBlock@@QAEXABVPStringToString@@@Z @21942 NONAME
     ?AddStruct@PXMLRPCBlock@@QAEXABVPStringToString@@ABVPString@@@Z @21943 NONAME
     ?AddSubObject@PXMLElement@@QAEPAVPXMLObject@@PAV2@H@Z @21944 NONAME
-    ?AddTone@PDTMFEncoder@@QAEXABVPString@@I@Z @21945 NONAME
     ?AddTone@PDTMFEncoder@@QAEXDI@Z @21946 NONAME
     ?AddTone@PDTMFEncoder@@QAEXNNI@Z @21947 NONAME
+    ?AddTone@PDTMFEncoder@@QAEXPBDI@Z @26045 NONAME
     ?AddUnregisteredText@PHTTPServiceProcess@@UAEXAAVPHTML@@@Z @21948 NONAME
     ?AddUser@PHTTPMultiSimpAuth@@QAEXABVPString@@0@Z @21949 NONAME
     ?AddValue@BinaryModAttrib@PLDAPSession@@QAEXABVPBYTEArray@@@Z @21950 NONAME
@@ -8773,6 +8791,7 @@ EXPORTS
     ?ByteEncode@PASN_Stream@@QAEXI@Z @22073 NONAME
     ?BytesPerSec@?DC@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBKB @22074 NONAME
     ?BytesPerSec@?DL@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBKB @22075 NONAME
+    ?CalcSamples@PTones@@IAEIIII@Z @26046 NONAME
     ?CalculateFrameBytes@PVideoDevice@@SAIIIABVPString@@@Z @1485 NONAME
     ?CalculateSignature@PServiceHTML@@QAE?AVPString@@XZ @22076 NONAME
     ?CalculateSignature@PServiceHTML@@SA?AVPString@@ABV2@@Z @22077 NONAME
@@ -8993,6 +9012,7 @@ EXPORTS
     ?Class@PDirectory@@SAPBDXZ @1545 NONAME
     ?Class@PDSNConnection@@SAPBDXZ @16721 NONAME
     ?Class@PDTMFDecoder@@SAPBDXZ @22217 NONAME
+    ?Class@PDTMFEncoder@@SAPBDXZ @26047 NONAME
     ?Class@PDynaLink@@SAPBDXZ @1546 NONAME
     ?Class@PEthSocket@@SAPBDXZ @1547 NONAME
     ?Class@PFile@@SAPBDXZ @1549 NONAME
@@ -9158,6 +9178,7 @@ EXPORTS
     ?Class@PTimeInterval@@SAPBDXZ @1605 NONAME
     ?Class@PTimer@@SAPBDXZ @1606 NONAME
     ?Class@PTimerList@@SAPBDXZ @1607 NONAME
+    ?Class@PTones@@SAPBDXZ @26048 NONAME
     ?Class@PUDPSocket@@SAPBDXZ @1608 NONAME
     ?Class@PURL@@SAPBDXZ @22312 NONAME
     ?Class@PURLScheme@@SAPBDXZ @22313 NONAME
@@ -9666,6 +9687,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PDirectory@@UBE?AW4Comparison@PObject@@ABV3@@Z @1775 NONAME
     ?CompareObjectMemoryDirect@PDSNConnection@@UBE?AW4Comparison@PObject@@ABV3@@Z @16743 NONAME
     ?CompareObjectMemoryDirect@PDTMFDecoder@@UBE?AW4Comparison@PObject@@ABV3@@Z @22598 NONAME
+    ?CompareObjectMemoryDirect@PDTMFEncoder@@UBE?AW4Comparison@PObject@@ABV3@@Z @26049 NONAME
     ?CompareObjectMemoryDirect@PDynaLink@@UBE?AW4Comparison@PObject@@ABV3@@Z @1776 NONAME
     ?CompareObjectMemoryDirect@PEthSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1777 NONAME
     ?CompareObjectMemoryDirect@PFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @1779 NONAME
@@ -9831,6 +9853,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PTimeInterval@@UBE?AW4Comparison@PObject@@ABV3@@Z @1835 NONAME
     ?CompareObjectMemoryDirect@PTimer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1836 NONAME
     ?CompareObjectMemoryDirect@PTimerList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1837 NONAME
+    ?CompareObjectMemoryDirect@PTones@@UBE?AW4Comparison@PObject@@ABV3@@Z @26050 NONAME
     ?CompareObjectMemoryDirect@PUDPSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @1838 NONAME
     ?CompareObjectMemoryDirect@PURL@@UBE?AW4Comparison@PObject@@ABV3@@Z @22693 NONAME
     ?CompareObjectMemoryDirect@PURLScheme@@UBE?AW4Comparison@PObject@@ABV3@@Z @22694 NONAME
@@ -10388,7 +10411,7 @@ EXPORTS
     ?Decode@PCypher@@QAEHABVPString@@AAV2@@Z @22990 NONAME
     ?Decode@PCypher@@QAEHABVPString@@AAVPBYTEArray@@@Z @22991 NONAME
     ?Decode@PCypher@@QAEHABVPString@@PAXH@Z @22992 NONAME
-    ?Decode@PDTMFDecoder@@QAE?AVPString@@PBXH@Z @22993 NONAME
+    ?Decode@PDTMFDecoder@@QAE?AVPString@@PBFH@Z @26051 NONAME
     ?DecodeASNInteger@PASNObject@@SAHABVPBYTEArray@@AAHAAJW4ASNType@1@@Z @22994 NONAME
     ?DecodeASNLength@PASNObject@@SAHABVPBYTEArray@@AAHAAG@Z @22995 NONAME
     ?DecodeASNUnsigned@PASNObject@@SAHABVPBYTEArray@@AAHAAKW4ASNType@1@@Z @22996 NONAME
@@ -10816,6 +10839,8 @@ EXPORTS
     ?g7231VXMLChannelFactory@@3V?$Worker@VPVXMLChannelG7231@@@?$PFactory@VPVXMLChannel@@VPString@@@@A @23256 NONAME
     ?g729VXMLChannelFactory@@3V?$Worker@VPVXMLChannelG729@@@?$PFactory@VPVXMLChannel@@VPString@@@@A @23257 NONAME
     ?Generate@PRandom@@QAEIXZ @23258 NONAME
+    ?Generate@PTones@@QAE_NABVPString@@@Z @26052 NONAME
+    ?Generate@PTones@@QAE_NDIIII@Z @26053 NONAME
     ?GenerateHeader@PWAVFile@@IAEHXZ @23259 NONAME
     ?GenerateID@Stanza@XMPP@@SA?AVPString@@XZ @23260 NONAME
     ?GenerateKey@PTEACypher@@SAXAAUKey@1@@Z @23261 NONAME
@@ -11058,6 +11083,7 @@ EXPORTS
     ?GetClass@PDirectory@@UBEPBDI@Z @5434 NONAME
     ?GetClass@PDSNConnection@@UBEPBDI@Z @16780 NONAME
     ?GetClass@PDTMFDecoder@@UBEPBDI@Z @23389 NONAME
+    ?GetClass@PDTMFEncoder@@UBEPBDI@Z @26054 NONAME
     ?GetClass@PDynaLink@@UBEPBDI@Z @5435 NONAME
     ?GetClass@PEthSocket@@UBEPBDI@Z @5436 NONAME
     ?GetClass@PFile@@UBEPBDI@Z @5437 NONAME
@@ -11223,6 +11249,7 @@ EXPORTS
     ?GetClass@PTimeInterval@@UBEPBDI@Z @5495 NONAME
     ?GetClass@PTimer@@UBEPBDI@Z @5496 NONAME
     ?GetClass@PTimerList@@UBEPBDI@Z @5497 NONAME
+    ?GetClass@PTones@@UBEPBDI@Z @26055 NONAME
     ?GetClass@PUDPSocket@@UBEPBDI@Z @5498 NONAME
     ?GetClass@PURL@@UBEPBDI@Z @23484 NONAME
     ?GetClass@PURLScheme@@UBEPBDI@Z @23485 NONAME
@@ -11694,7 +11721,6 @@ EXPORTS
     ?GetMonth@PTime@@QBE?AW4Months@1@XZ @2369 NONAME
     ?GetMonthName@PTime@@SA?AVPString@@W4Months@1@W4NameType@1@@Z @2370 NONAME
     ?GetMultipartFormInfo@PHTTPConnectionInfo@@QBEABV?$PArray@VPMultipartFormInfo@@@@XZ @23727 NONAME
-    ?GetMutex@PDTMFEncoder@@KAAAVPCriticalSection@@XZ @23728 NONAME
     ?GetMutex@PWin32SnmpLibrary@@SAAAVPCriticalSection@@XZ @16593 NONAME
     ?GetMutex@PXML@@QAEAAVPCriticalSection@@XZ @23729 NONAME
     ?GetName@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @16523 NONAME
@@ -11972,6 +11998,7 @@ EXPORTS
     ?GetSize@PASN_OctetString@@QBEHXZ @23855 NONAME
     ?GetSize@PBitArray@@UBEHXZ @2493 NONAME
     ?GetSize@PContainer@@UBEHXZ @2494 NONAME
+    ?GetSize@PDTMFEncoder@@UBEHXZ @26056 NONAME
     ?GetSize@PHTTPCompositeField@@UBEHXZ @23856 NONAME
     ?GetSize@PHTTPFieldArray@@UBEHXZ @23857 NONAME
     ?GetSize@PNotifierList@@QBEHXZ @23858 NONAME
@@ -12473,6 +12500,7 @@ EXPORTS
     ?InternalIsDescendant@PDirectory@@UBEHPBD@Z @5297 NONAME
     ?InternalIsDescendant@PDSNConnection@@UBEHPBD@Z @16790 NONAME
     ?InternalIsDescendant@PDTMFDecoder@@UBEHPBD@Z @24145 NONAME
+    ?InternalIsDescendant@PDTMFEncoder@@UBEHPBD@Z @26057 NONAME
     ?InternalIsDescendant@PDynaLink@@UBEHPBD@Z @5298 NONAME
     ?InternalIsDescendant@PEthSocket@@UBEHPBD@Z @5299 NONAME
     ?InternalIsDescendant@PFile@@UBEHPBD@Z @5300 NONAME
@@ -12638,6 +12666,7 @@ EXPORTS
     ?InternalIsDescendant@PTimeInterval@@UBEHPBD@Z @5358 NONAME
     ?InternalIsDescendant@PTimer@@UBEHPBD@Z @5359 NONAME
     ?InternalIsDescendant@PTimerList@@UBEHPBD@Z @5360 NONAME
+    ?InternalIsDescendant@PTones@@UBEHPBD@Z @26058 NONAME
     ?InternalIsDescendant@PUDPSocket@@UBEHPBD@Z @5361 NONAME
     ?InternalIsDescendant@PURL@@UBEHPBD@Z @24240 NONAME
     ?InternalIsDescendant@PURLScheme@@UBEHPBD@Z @24241 NONAME
@@ -12869,6 +12898,7 @@ EXPORTS
     ?IsValid@PWAVFile@@QBEHXZ @24370 NONAME
     ?IsValid@SecurityID@@QBEHXZ @2922 NONAME
     ?ItemChangedHandlers@Roster@XMPP@@UAEAAVPNotifierList@@XZ @24371 NONAME
+    ?Juxtapose@PTones@@IAE_NIIII@Z @26059 NONAME
     ?KeepAliveTag@PHTTP@@2QBDB @24372 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @16213 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @16214 NONAME
@@ -13003,7 +13033,6 @@ EXPORTS
     ?MakeRequest@PXMLRPC@@QAEHABVPString@@@Z @24457 NONAME
     ?MakeRequest@PXMLRPC@@QAEHABVPString@@AAVPXMLRPCBlock@@@Z @24458 NONAME
     ?MakeRequest@PXMLRPC@@QAEHABVPString@@ABVPXMLRPCStructBase@@AAV3@@Z @24459 NONAME
-    ?MakeSineTable@PDTMFEncoder@@KAXXZ @24460 NONAME
     ?MakeUnique@PAbstractArray@@UAEHXZ @2950 NONAME
     ?MakeUnique@PAbstractList@@UAEHXZ @2951 NONAME
     ?MakeUnique@PAbstractSet@@UAEHXZ @2952 NONAME
@@ -13081,6 +13110,7 @@ EXPORTS
     ?Modify@PNotifyIconData@@QAEXXZ @2963 NONAME
     ?ModifyPerson@PILSSession@@QAEHABVRTPerson@1@@Z @24502 NONAME
     ?ModifyQoSSpec@PUDPSocket@@UAEHPAVPQoS@@@Z @3573 NONAME
+    ?Modulate@PTones@@IAE_NIIII@Z @26060 NONAME
     ?monetary@?$_Locbase@H@std@@2HB @5748 NONAME
     ?Move@PFile@@SAHABVPFilePath@@0H@Z @2964 NONAME
     ?Move@PNotifierList@@QAEXAAV1@@Z @5989 NONAME
@@ -13702,6 +13732,7 @@ EXPORTS
     ?PTextToSpeech_PString_loader@PWLibFactoryLoader@@3HA @24949 NONAME
     ?PTimeToISO8601@PXMLRPC@@SA?AVPString@@ABVPTime@@@Z @24950 NONAME
     ?PTraceCurrentLevel@@3IA @6648 NONAME
+    ?PureTone@PTones@@IAE_NIII@Z @26061 NONAME
     ?PURLScheme_PString_loader@PWLibFactoryLoader@@3HA @24951 NONAME
     ?push@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEXABD@Z @24952 NONAME
     ?push_back@?$deque@DV?$allocator@D@std@@@std@@QAEXABD@Z @24953 NONAME
@@ -14547,8 +14578,7 @@ EXPORTS
     ?Signal@PSyncPointAck@@UAEXXZ @3411 NONAME
     ?Signal@PTimedMutex@@UAEXXZ @16596 NONAME
     ?SignalTimerChange@PProcess@@QAEXXZ @3412 NONAME
-    ?sine@PDTMFEncoder@@KANI@Z @25428 NONAME
-    ?sinetab@PDTMFEncoder@@1PANA @25429 NONAME
+    ?Silence@PTones@@IAE_NI@Z @26062 NONAME
     ?SingleBitDecode@PPER_Stream@@QAEHXZ @25430 NONAME
     ?SingleBitEncode@PPER_Stream@@QAEXH@Z @25431 NONAME
     ?size@?$deque@DV?$allocator@D@std@@@std@@QBEIXZ @25432 NONAME
