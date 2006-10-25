@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.47  2006/10/25 11:04:38  shorne
+ * fix for devices having same name for different drivers.
+ *
  * Revision 1.46  2006/06/21 05:38:58  csoutheren
  * Fixed plugin compile for latest pwlib
  *
@@ -888,6 +891,7 @@ class PVideoInputDevice : public PVideoDevice
      */
     static PVideoInputDevice *CreateDeviceByName(
       const PString & deviceName,         ///< Name of device
+	  const PString & driverName = PString::Empty(),  ///< Name of driver (if any)
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
