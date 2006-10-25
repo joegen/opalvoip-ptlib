@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.8  2006/10/25 08:18:20  rjongbloed
+ * Major upgrade of tone generation subsystem.
+ *
  * Revision 1.7  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -53,7 +56,7 @@ class PDTMFDecoder : public PObject
 
   public:
     PDTMFDecoder();
-    PString Decode(const void *buf, PINDEX bytes);
+    PString Decode(const short * sampleData, PINDEX numSamples);
 
   protected:
     // key lookup table (initialised once)
@@ -67,14 +70,123 @@ class PDTMFDecoder : public PObject
     int nn, so, ia;
 };
 
+
+/** This class can be used to generate PCM data for tones (such as telephone
+    calling tones and DTMF) at a sample rate of 8khz.
+
+    The class contains a  master volume which is applied as well as the
+    individual tone volumes. Thus a master volume ot 50% and a tone voluem
+    of 50%  would result in a net volume of 25%.
+
+    Tones may be described via a list of descriptor strings based on an
+    ITU-T "semi-standard", one used within various standard documents but not
+    a standard in itself. This format was enhanced to allow for multiple
+    tones and volume indications.
+
+    The basic format is:
+
+          [volume % ] frequency ':' cadence [ '/' ... ]
+
+      where frequency is one of
+          frequency         single frequency tone
+          freq1 '+' freq2   two frequency juxtaposed (simple mixing)
+          freq1 'x' freq2   first frequency modulated by second frequency
+          freq1 '-' freq2   Alternate frequencies, generated tone is freq1
+                            used for compatibility with tone filters
+      and cadence is
+          mintime
+          ontime '-' offtime [ '-' ontime '-' offtime [ ... ] ]
+
+      and volume is a percentage of full volume
+
+      examples:
+          300:0.25              300Hz for minimum 250ms
+          1100:0.4-0.4          1100Hz with cadence 400ms on, 400ms off
+          900-1300:1.5          900Hz for 1.5 seconds
+          350+440:1             350Hz superimposed with 440Hz (US dial tone) for 1 second
+          425x15:0.4-0.2-0.4-2  425Hz modulated with 15Hz (Aus ring back tone)
+                                with cadence 400ms on, 200ms off, 400ms on, 2s off
+          425:0.4-0.1/50%425:0.4-0.1   425Hz with cadence 400ms on, 100ms off,
+                                       400ms on, 100ms off, where second tone is
+                                       reduced in volume by 50%
+
+      A database of tones for all contries in the worls is available at:
+          http://www.3amsystems.com/wireline/tone-search.htm
+
+  */
+class PTones : public PShortArray
+{
+  PCLASSINFO(PTones, PShortArray)
+
+  public:
+    enum {
+        MaxVolume = 100,
+        SampleRate = 8000,
+        MaxFrequency = (SampleRate/4),
+        MinFrequency = 30,
+        MinModulation = 5,
+        SineScale = 1000
+    };
+
+    /** Create an empty tone buffer. Tones added will use the specified
+        master volume.
+      */
+    PTones(
+        unsigned masterVolume = MaxVolume ///< Percentage volume
+    );
+
+    /** Create a filled tone buffer using the specified descriptor.
+      */
+    PTones(
+      const PString & descriptor,    ///< Descriptor string for tone(s). See class notes.
+      unsigned masterVolume = MaxVolume ///< Percentage volume
+    );
+
+    /** Generate a tone using the specified descriptor.
+        See class general notes for format of the descriptor string.
+      */
+    bool Generate(
+      const PString & descriptor    ///< Descriptor string for tone(s). See class notes.
+    );
+
+    /** Generate a tone using the specified values.
+        The operation parameter may be '+', 'x', '-' or ' ' for summing, modulation,
+        pure tone or silence resepctively.
+        The tones duration is always rounded up to the nearest even multiple of the
+        tone cycle to assure correct zero crossing when tones change.
+      */
+    bool Generate(
+      char operation,
+      unsigned frequency1,        ///< Primary frequency for tone
+      unsigned frequency2,        ///< Secondary frequency for summing or modulation
+      unsigned milliseconds,      ///< Duration of tone
+      unsigned volume = MaxVolume ///< Percentage volume
+    );
+
+  protected:
+    bool Juxtapose(unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume);
+    bool Modulate (unsigned frequency, unsigned modulate, unsigned milliseconds, unsigned volume);
+    bool PureTone (unsigned frequency, unsigned milliseconds, unsigned volume);
+    bool Silence  (unsigned milliseconds);
+
+    unsigned CalcSamples(unsigned milliseconds, unsigned frequency1, unsigned frequency2 = 0);
+
+    void AddSample(int sample, unsigned volume);
+
+    unsigned masterVolume;
+    char     lastOperation;
+    unsigned lastFrequency1, lastFrequency2;
+    int      angle1, angle2;
+};
+
+
 /**
-  * this class can be used to generate PCM data for tones (such as DTMF) 
+  * this class can be used to generate PCM data for DTMF tones
   * at a sample rate of 8khz
   */
-
-class PDTMFEncoder : public PBYTEArray
+class PDTMFEncoder : public PTones
 {
-  PCLASSINFO(PDTMFEncoder, PBYTEArray)
+  PCLASSINFO(PDTMFEncoder, PTones)
 
   public:
     enum { DefaultToneLen = 100 };
@@ -82,37 +194,36 @@ class PDTMFEncoder : public PBYTEArray
     /**
       * Create PCM data for the specified DTMF sequence 
       */
-    inline PDTMFEncoder(
+    PDTMFEncoder(
         const char * dtmf = NULL,      ///< character string to encode
-        unsigned len = DefaultToneLen  ///< length of each DTMF tone in milliseconds
-    )
-    { if (dtmf != NULL) AddTone(dtmf, len); }
+        unsigned milliseconds = DefaultToneLen  ///< length of each DTMF tone in milliseconds
+    );
 
+
+    /**
+      * Add the PCM data for the specified tone sequence to the buffer
+      */
+    void AddTone(
+        const char * str,              ///< string to encode
+        unsigned milliseconds = DefaultToneLen  ///< length of DTMF tone in milliseconds
+    );
 
     /**
       * Add the PCM data for the specified tone to the buffer
       */
     void AddTone(
         char ch,                       ///< character to encode
-        unsigned len = DefaultToneLen  ///< length of DTMF tone in milliseconds
-    );
-
-    /**
-      * Add the PCM data for the specified tone sequence to the buffer
-      */
-    void AddTone(
-        const PString & str,           ///< string to encode
-        unsigned len = DefaultToneLen  ///< length of DTMF tone in milliseconds
+        unsigned milliseconds = DefaultToneLen  ///< length of DTMF tone in milliseconds
     );
 
     /**
       * Add the PCM data for the specified dual-frequency tone to the buffer
-      * freq2 can be zero, which will generate a single frequency tone
+      * frequency2 can be zero, which will generate a single frequency tone
       */
     void AddTone(
-        double freq1,                  // primary frequency
-        double freq2 = 0,              // secondary frequency, or 0 if no secondary frequency
-        unsigned len = DefaultToneLen  // length of DTMF tone in milliseconds
+        double frequency1,                  // primary frequency
+        double frequency2 = 0,              // secondary frequency, or 0 if no secondary frequency
+        unsigned milliseconds = DefaultToneLen  // length of DTMF tone in milliseconds
     );
 
     /**
@@ -121,8 +232,7 @@ class PDTMFEncoder : public PBYTEArray
       */
     void GenerateRingBackTone()
     {
-      AddTone(440, 480, 2000);
-      AddTone(0,   0,   4000);
+      Generate("440+480:2-4");
     }
 
     /**
@@ -131,7 +241,7 @@ class PDTMFEncoder : public PBYTEArray
       */
     void GenerateDialTone()
     {
-      AddTone(350, 440, 1000);
+      Generate("350+440:1");
     }
 
     /**
@@ -140,8 +250,7 @@ class PDTMFEncoder : public PBYTEArray
       */
     void GenerateBusyTone()
     {
-      AddTone(480, 620, 500);
-      AddTone(0,   0,   500);
+      Generate("480+620:0.5-0.5");
     }
 
     /**
@@ -155,13 +264,10 @@ class PDTMFEncoder : public PBYTEArray
         PINDEX i    ///< index of tone
     );
 
-  protected:
-    static PMutex & GetMutex();
-    static BOOL sineTabInit;
-    static void MakeSineTable();
-    static inline double sine(unsigned int ptr)
-    { return sinetab[ptr >> (32-11)]; }
-    static double sinetab[1 << 11];
+    // Backward compatibility, old system expected PBYTEArray, so implement
+    // the most popular functions as for BYTE type.
+    operator const BYTE *() const { return (const BYTE *)theArray; }
+    PINDEX GetSize() const { return PTones::GetSize()*2; }
 };
 
 #endif /* _DTMF_H */
