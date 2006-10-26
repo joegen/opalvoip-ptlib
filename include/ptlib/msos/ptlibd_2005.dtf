@@ -10708,7 +10708,7 @@ EXPORTS
     ?CreateDateAndTime@PXMLRPCBlock@@SAPAVPXMLElement@@ABVPTime@@@Z @10630 NONAME
     ?CreateDevice@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10631 NONAME
     ?CreateDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10632 NONAME
-    ?CreateDeviceByName@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10633 NONAME
+    ?CreateDeviceByName@PVideoInputDevice@@SAPAV1@ABVPString@@0PAVPPluginManager@@@Z @16045 NONAME
     ?CreateDeviceByName@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10634 NONAME
     ?CreateEndTag@PXML@@SA?AVPString@@ABV2@@Z @10635 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPSoundChannel@@@@UAEXABVPString@@@Z @10636 NONAME
@@ -10765,7 +10765,7 @@ EXPORTS
     ?CreateOpenedDevice@PVideoInputDevice@@SAPAV1@ABVPString@@0HPAVPPluginManager@@@Z @10687 NONAME
     ?CreateOpenedDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@0HPAVPPluginManager@@@Z @10688 NONAME
     ?CreatePluginsDevice@PPluginManager@@QBEPAVPObject@@ABVPString@@0H@Z @10689 NONAME
-    ?CreatePluginsDeviceByName@PPluginManager@@QBEPAVPObject@@ABVPString@@0H@Z @10690 NONAME
+    ?CreatePluginsDeviceByName@PPluginManager@@QBEPAVPObject@@ABVPString@@0H0@Z @16046 NONAME
     ?CreateRedirectMessage@PSecureHTTPServiceProcess@@UAE?AVPString@@ABV2@@Z @10691 NONAME
     ?CreateRequest@PHTTPDirectory@@UAEPAVPHTTPRequest@@ABVPURL@@ABVPMIMEInfo@@ABV?$PArray@VPMultipartFormInfo@@@@AAVPHTTPServer@@@Z @10692 NONAME
     ?CreateRequest@PHTTPFile@@UAEPAVPHTTPRequest@@ABVPURL@@ABVPMIMEInfo@@ABV?$PArray@VPMultipartFormInfo@@@@AAVPHTTPServer@@@Z @10693 NONAME
