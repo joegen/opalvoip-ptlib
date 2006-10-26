@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.19  2006/10/26 01:17:59  shorne
+ * fix for devices having same name for different drivers.
+ *
  * Revision 1.18  2006/01/21 13:43:05  dsandras
  * Allow the plugin manager to look for plugins in symlinked directories.
  *
@@ -126,7 +129,7 @@ class PPluginManager : public PObject
     PStringList GetPluginsProviding(const PString & serviceType) const;
     PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
     PObject * CreatePluginsDevice(const PString & serviceName, const PString & serviceType, int userData = 0) const;
-    PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0) const;
+    PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0, const PString & serviceName = PString::Empty()) const;
     PStringList GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
 
     // function to register a service (used by the plugins themselves)
