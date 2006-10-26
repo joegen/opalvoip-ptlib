@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.33  2006/10/26 01:17:59  shorne
+ * fix for devices having same name for different drivers.
+ *
  * Revision 1.32  2006/09/11 08:45:32  csoutheren
  * Simplify search path for plugins
  *
@@ -287,15 +290,23 @@ PObject * PPluginManager::CreatePluginsDevice(const PString & serviceName,
 
 PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
                                                     const PString & serviceType,
-                                                    int userData) const
+                                                    int userData,
+													const PString & serviceName
+													) const
 {
   // If have tab character, then have explicit driver name in device
   PINDEX tab = deviceName.Find(PDevicePluginServiceDescriptor::SeparatorChar);
   if (tab != P_MAX_INDEX)
     return CreatePluginsDevice(deviceName.Left(tab), serviceType, userData);
 
-  // Otherwise search for the correct driver
   PWaitAndSignal m(serviceListMutex);
+
+  // If we know the service name of the device we want to create.
+  if (!serviceName) {
+	  PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+      if (desc->ValidateDeviceName(deviceName, userData))
+        return desc->CreateInstance(userData);
+  }
 
   for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
     const PPluginService & service = serviceList[i];
