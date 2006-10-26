@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.34  2006/10/26 04:26:52  rjongbloed
+ * Fixed white space
+ *
  * Revision 1.33  2006/10/26 01:17:59  shorne
  * fix for devices having same name for different drivers.
  *
@@ -291,8 +294,7 @@ PObject * PPluginManager::CreatePluginsDevice(const PString & serviceName,
 PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
                                                     const PString & serviceType,
                                                     int userData,
-													const PString & serviceName
-													) const
+                                                    const PString & serviceName) const
 {
   // If have tab character, then have explicit driver name in device
   PINDEX tab = deviceName.Find(PDevicePluginServiceDescriptor::SeparatorChar);
