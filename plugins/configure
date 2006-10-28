@@ -4036,7 +4036,7 @@ fi
 
   echo "$as_me:$LINENO: checking for V4L2 video support" >&5
 echo $ECHO_N "checking for V4L2 video support... $ECHO_C" >&6
-  if test "${V4LHDR}z" != "z"; then
+  if test "${V4L2HDR}z" != "z"; then
     HAS_V4L2=1
 
     echo "$as_me:$LINENO: result: yes" >&5
