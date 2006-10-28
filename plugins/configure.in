@@ -153,7 +153,7 @@ if test "${enable_v4l2}z" = "yesz" ; then
 #endif
 ])
   AC_MSG_CHECKING(for V4L2 video support)
-  if test "${V4LHDR2}z" != "z"; then
+  if test "${V4L2HDR}z" != "z"; then
     AC_SUBST(HAS_V4L2, 1)
     AC_MSG_RESULT(yes)
   else
