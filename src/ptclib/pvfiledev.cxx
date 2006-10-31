@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.9  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.8  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -63,6 +66,10 @@
 #include <ptlib.h>
 
 #if P_VIDFILE
+
+namespace PWLibStupidHacks {
+  int loadVideoFileStuff;
+};
 
 #include <ptlib/vconvert.h>
 #include <ptclib/pvfiledev.h>
@@ -290,6 +297,7 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
     if (bytesReturned != NULL)
       *bytesReturned = videoFrameSize;
   } else {
+    converter->SetSrcFrameSize(frameWidth, frameHeight);
     if (!converter->Convert(readBuffer, destFrame, bytesReturned))
       return FALSE;
     if (bytesReturned != NULL)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.245  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.244  2006/07/19 05:37:39  csoutheren
  * Applied 1523190 - PWLIB - Delayed Application Startup
  * Thanks to Ben Lear
@@ -832,6 +835,13 @@ namespace PWLibStupidOSXHacks {
   extern int loadFakeVideoStuff;
 };
 #endif
+
+#if P_VIDFILE
+namespace PWLibStupidHacks {
+  extern int loadVideoFileStuff;
+};
+#endif
+
 
 class PSimpleThread : public PThread
 {
@@ -2047,6 +2057,10 @@ PProcess::PProcess(const char * manuf, const char * name,
   InitialiseProcessThread();
 
   Construct();
+
+#if P_VIDFILE
+  PWLibStupidHacks::loadVideoFileStuff = 1;
+#endif
   
 #ifdef __MACOSX__
   
