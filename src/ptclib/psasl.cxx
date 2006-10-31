@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.cxx,v $
+ * Revision 1.6  2006/10/31 05:16:26  csoutheren
+ * Remove warning in opt mode on gcc
+ *
  * Revision 1.5  2004/05/09 07:23:50  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -245,7 +248,8 @@ BOOL PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     if (m_ConnState)
         End();
 
-    int result = sasl_client_new(m_Service, fqdn, 0, 0, (const sasl_callback_t *)m_CallBacks, 0, (sasl_conn_t **)&m_ConnState);
+    sasl_conn_t * s = (sasl_conn_t *)m_ConnState;
+    int result = sasl_client_new(m_Service, fqdn, 0, 0, (const sasl_callback_t *)m_CallBacks, 0, &s);
 
     if (result != SASL_OK)
         return FALSE;
@@ -348,7 +352,8 @@ BOOL PSASLClient::End()
 {
     if (m_ConnState)
     {
-        sasl_dispose((sasl_conn_t **)&m_ConnState);
+        sasl_conn_t * s = (sasl_conn_t *)m_ConnState;
+        sasl_dispose(&s);
         m_ConnState = 0;
         return TRUE;
     }
