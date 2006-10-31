@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.64  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.63  2006/10/25 11:04:38  shorne
  * fix for devices having same name for different drivers.
  *
@@ -341,9 +344,13 @@ PVideoDevice::~PVideoDevice()
 
 BOOL PVideoDevice::OpenFull(const OpenArgs & args, BOOL startImmediate)
 {
-  if (args.deviceName[0] == '#') {
+  PString dev = args.deviceName;
+  if (!args.filename.IsEmpty())
+    dev = args.filename;
+
+  if (dev[0] == '#') {
     PStringArray devices = GetDeviceNames();
-    PINDEX id = args.deviceName.Mid(1).AsUnsigned();
+    PINDEX id = dev.Mid(1).AsUnsigned();
     if (id == 0 || id > devices.GetSize())
       return FALSE;
 
@@ -351,7 +358,7 @@ BOOL PVideoDevice::OpenFull(const OpenArgs & args, BOOL startImmediate)
       return FALSE;
   }
   else {
-    if (!Open(args.deviceName, FALSE))
+    if (!Open(dev, FALSE))
       return FALSE;
   }
 

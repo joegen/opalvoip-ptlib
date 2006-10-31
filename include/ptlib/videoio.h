@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.48  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.47  2006/10/25 11:04:38  shorne
  * fix for devices having same name for different drivers.
  *
@@ -308,6 +311,7 @@ class PVideoDevice : public PObject
           hue(-1)
         { }
       PString     deviceName;
+      PString     filename;
       VideoFormat videoFormat;
       int         channelNumber;
       PString     colourFormat;
