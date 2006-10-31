@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.h,v $
+ * Revision 1.4  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.3  2006/02/24 04:51:26  csoutheren
  * Fixed problem with using CIF from video files
  * Added support for video files in y4m format
@@ -88,6 +91,9 @@ class PVideoFile : public PFile
 
     virtual BOOL WriteFrame(const void * frame) = 0;
     virtual BOOL ReadFrame(void * frame) = 0;
+
+    BOOL ExtractSizeHint(PFilePath & fn);
+    static BOOL ExtractSizeHint(PFilePath & fn, PINDEX & width, PINDEX & height);
 
   protected:
     PINDEX yuvWidth, yuvHeight, yuvSize;

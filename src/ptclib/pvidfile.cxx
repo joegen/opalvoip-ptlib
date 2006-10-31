@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.4  2006/10/31 04:10:40  csoutheren
+ * Make sure PVidFileDev class is loaded, and make it work with OPAL
+ *
  * Revision 1.3  2006/02/24 04:51:26  csoutheren
  * Fixed problem with using CIF from video files
  * Added support for video files in y4m format
@@ -48,6 +51,8 @@
 #if P_VIDFILE
 
 #include <ptclib/pvidfile.h>
+#include <ptlib/videoio.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +92,57 @@ void PVideoFile::SetHeight(PINDEX v)
   yuvSize = yuvWidth * yuvHeight * 3 / 2;
 }
 
+BOOL PVideoFile::ExtractSizeHint(PFilePath & fn, PINDEX & width, PINDEX & height)
+{
+  PString str(fn.GetType());
+  PINDEX pos = str.Find('{');
+  if (pos == P_MAX_INDEX)
+    return TRUE;
+
+  PString newType(str.Left(pos));
+  fn.SetType(newType);
+  str = str.Mid(pos+1);
+
+  pos = str.Find('}');
+  if (pos != P_MAX_INDEX)
+    str = str.Left(pos);
+
+  BOOL ret = TRUE;
+
+  if (str *= "cif16") {
+    width  = PVideoDevice::CIF16Width;
+    height = PVideoDevice::CIF16Height;
+  }
+  else if (str *= "cif4") {
+    width  = PVideoDevice::CIF4Width;
+    height = PVideoDevice::CIF4Height;
+  }
+  else if (str *= "cif") {
+    width  = PVideoDevice::CIFWidth;
+    height = PVideoDevice::CIFHeight;
+  }
+  else if (str *= "qcif") {
+    width  = PVideoDevice::QCIFWidth;
+    height = PVideoDevice::QCIFHeight;
+  }
+  else if (str *= "sqcif") {
+    width  = PVideoDevice::SQCIFWidth;
+    height = PVideoDevice::SQCIFHeight;
+  }
+  else 
+    ret = FALSE;
+
+  return ret;
+}
+
+BOOL PVideoFile::ExtractSizeHint(PFilePath & fn)
+{
+  BOOL stat = ExtractSizeHint(fn, yuvWidth, yuvHeight);
+  if (stat && (yuvHeight != 0) && (yuvWidth != 0))
+    yuvSize = yuvWidth * yuvHeight * 3 / 2;
+  return stat;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PYUVFile::PYUVFile()
@@ -120,9 +176,10 @@ void PYUVFile::Construct()
   y4mMode = FALSE;
 }
 
-
 BOOL PYUVFile::Open(OpenMode mode, int opts)
 {
+  ExtractSizeHint(path);
+
   if (!(PFile::Open(mode, opts)))
     return FALSE;
 
