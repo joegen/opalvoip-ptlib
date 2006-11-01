@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.7  2006/11/01 17:59:31  dsandras
+ * Applied patch from Brian Lu <brian lu sun com> to fix V4L2 on OpenSolaris.
+ *
  * Revision 1.11.4.6  2006/05/06 15:30:40  dsandras
  * Backport from HEAD.
  *
@@ -197,7 +200,11 @@ PVideoInputDevice_V4L2::~PVideoInputDevice_V4L2()
 
 static struct {
   const char * colourFormat;
+#ifdef SOLARIS
+  uint32_t code;
+#else
   __u32 code;
+#endif
 } colourFormatTab[] = {
     { "Grey", V4L2_PIX_FMT_GREY },   //Entries in this table correspond
     { "RGB32", V4L2_PIX_FMT_RGB32 }, //(line by line) to those in the 
@@ -403,7 +410,11 @@ BOOL PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
   }
 
   struct {
+#ifdef SOLARIS
+    uint32_t code;
+#else
     __u32 code;
+#endif
     const char * name;
   } static const fmt[3] = { {V4L2_STD_PAL, "PAL"},
       {V4L2_STD_NTSC, "NTSC"},
@@ -701,7 +712,11 @@ void PVideoInputDevice_V4L2::ClearMapping()
     if (::ioctl(videoFd, VIDIOC_QUERYBUF, &buf) < 0)
       break;
 
+#ifdef SOLARIS
+    ::munmap((char*)videoBuffer[buf.index], buf.length);
+#else
     ::munmap(videoBuffer[buf.index], buf.length);
+#endif
   }
 
   isMapped = FALSE;
@@ -785,7 +800,7 @@ BOOL PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytesRetu
 
   do
     bytesRead = ::read(videoFd, buffer, frameBytes);
-  while (bytesRead < 0 && errno == EINTR);
+  while (bytesRead < 0 && errno == EINTR && IsOpen());
 
   if (bytesRead < 0) {
     
@@ -930,7 +945,11 @@ int PVideoInputDevice_V4L2::GetHue()
  */
 BOOL PVideoInputDevice_V4L2::SetControlCommon(unsigned int control, int newValue)
 {
+#ifdef __sun
+ PTRACE(1,"PVidInDev\t" << __FILE__ << ":" << __LINE__  << "() videoFd=" << videoFd);
+#else
   PTRACE(1,"PVidInDev\t" << __FUNCTION__  << "() videoFd=" << videoFd);
+#endif
   if (!IsOpen())
     return FALSE;
 
@@ -1092,7 +1111,11 @@ V4L2Names::Update()
   }
   if (inputDeviceNames.GetSize() == 0) {
     POrdinalToString vid;
+#ifdef SOLARIS
+    vid.SetAt(0,"/dev/video");
+#else
     ReadDeviceDirectory("/dev/", vid);
+#endif
 
     for (PINDEX i = 0; i < vid.GetSize(); i++) {
       PINDEX cardnum = vid.GetKeyAt(i);
