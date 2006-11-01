@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.10  2006/11/01 00:46:01  csoutheren
+ * Fix problem in video output file device
+ *
  * Revision 1.9  2006/10/31 04:10:40  csoutheren
  * Make sure PVidFileDev class is loaded, and make it work with OPAL
  *
@@ -391,7 +394,7 @@ BOOL PVideoOutputDevice_YUVFile::Close()
 BOOL PVideoOutputDevice_YUVFile::Start()
 {
   file.SetHeight(frameHeight);
-  file.SetHeight(frameWidth);
+  file.SetWidth(frameWidth);
   return TRUE;
 }
 
@@ -409,6 +412,7 @@ BOOL PVideoOutputDevice_YUVFile::IsOpen()
 PStringList PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
 {
   PStringList list;
+  list.AppendString("yuvfile");
   return list;
 }
 
