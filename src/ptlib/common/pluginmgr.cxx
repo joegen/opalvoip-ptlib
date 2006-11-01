@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.35  2006/11/01 21:30:31  dsandras
+ * Added current working directory in the path to search for plugins.
+ *
  * Revision 1.34  2006/10/26 04:26:52  rjongbloed
  * Fixed white space
  *
@@ -135,9 +138,9 @@
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  ifdef  _WIN32
-#    define P_DEFAULT_PLUGIN_DIR "C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\PWLIB_PLUGINS"
 #  else
-#    define P_DEFAULT_PLUGIN_DIR "/usr/lib/pwlib"
+#    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/pwlib"
 #  endif
 #endif
 
