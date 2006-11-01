@@ -24,6 +24,9 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.7  2006/11/01 17:55:37  dsandras
+ * Applied patch from Brian Lu <brian lu sun com> to fix V4L2 on OpenSolaris.
+ *
  * Revision 1.6  2006/03/12 11:16:19  dsandras
  * Added multi-buffering support to V4L2 thanks to Luc Saillard. Thanks!
  *
@@ -69,7 +72,11 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#ifdef SOLARIS
+#include <videodev2.h>
+#else
 #include <linux/videodev.h>
+#endif
 
 #ifndef V4L2_PIX_FMT_SBGGR8
 #define V4L2_PIX_FMT_SBGGR8  v4l2_fourcc('B','A','8','1') /*  8  BGBG.. GRGR.. */
