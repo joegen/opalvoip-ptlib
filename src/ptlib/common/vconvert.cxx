@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.57  2006/11/01 17:47:10  dsandras
+ * Added patch from Brian Lu <brian lu sun com> to fix compilation on
+ * OpenSolaris.
+ *
  * Revision 1.56  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -243,7 +247,7 @@
 
 #include <ptlib/vconvert.h>
 
-#ifdef __GNUC__
+#if  defined(__GNUC__) || defined(__sun) 
 #include "tinyjpeg.h"
 #endif
 
@@ -372,7 +376,7 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     );
-#ifdef __GNUC__
+#if defined (__GNUC__) || defined (__sun)
     bool MJPEGtoXXX(
       const BYTE *mjpeg,
 	    BYTE *output_data,
@@ -2363,7 +2367,7 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
   return TRUE;
 }
 
-#ifdef __GNUC__
+#if  defined (__GNUC__) || defined (__sun)
 #ifndef P_MACOSX
 /*
  * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
