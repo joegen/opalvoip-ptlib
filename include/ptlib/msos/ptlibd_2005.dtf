@@ -11191,6 +11191,8 @@ EXPORTS
     ?Extra@?DC@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4PAPBEA @11113 NONAME
     ?ExtractSignature@PServiceHTML@@QAE?AVPString@@AAV2@@Z @11114 NONAME
     ?ExtractSignature@PServiceHTML@@SA?AVPString@@ABV2@AAV2@PBD@Z @11115 NONAME
+    ?ExtractSizeHint@PVideoFile@@QAEHAAVPFilePath@@@Z @16047 NONAME
+    ?ExtractSizeHint@PVideoFile@@SAHAAVPFilePath@@AAH1@Z @16048 NONAME
     ?factory@?1???0PPlugin_PSoundChannel_WindowsMultimedia_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @11116 NONAME
     ?factory@?1???0PPlugin_PVideoInputDevice_FakeVideo_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @11117 NONAME
     ?factory@?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @11118 NONAME
@@ -13413,6 +13415,7 @@ EXPORTS
     ?LoadURL@PVXMLSession@@UAEHABVPURL@@@Z @13323 NONAME
     ?LoadURL@PXML@@QAEHABVPURL@@@Z @13324 NONAME
     ?LoadURL@PXML@@QAEHABVPURL@@ABVPTimeInterval@@H@Z @13325 NONAME
+    ?loadVideoFileStuff@PWLibStupidHacks@@3HA @16049 NONAME
     ?loadVideoStuff@PWLibStupidWindowsHacks@@3HA @13326 NONAME
     ?LoadVXML@PVXMLSession@@UAEHABVPString@@@Z @13327 NONAME
     ?LocateName@PHTTPCompositeField@@UBEPBVPHTTPField@@ABVPString@@@Z @13328 NONAME
