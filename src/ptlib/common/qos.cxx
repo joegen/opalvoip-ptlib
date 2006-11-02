@@ -18,6 +18,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.cxx,v $
+ * Revision 1.3  2006/11/02 03:05:19  csoutheren
+ * Fixed incorrect comparison of QoS value
+ * Thanks to Nick Hoath
+ *
  * Revision 1.2  2003/10/27 04:06:13  csoutheren
  * Added code to allow compilation of new QoS code on Unix
  *
@@ -80,7 +84,7 @@ void PQoS::SetAvgBytesPerSec(DWORD avgBytesPerSec)
 
 void PQoS::SetDSCP(int DSCPvalue)
 {
-    if (DSCPvalue < 63)
+    if (DSCPvalue <= 63)
         dscp = DSCPvalue;
 }
 
