@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.16  2006/11/11 15:23:37  hfriederich
+ * Use correct GetSize() to avoid allocation problems
+ *
  * Revision 1.15  2006/10/25 08:18:22  rjongbloed
  * Major upgrade of tone generation subsystem.
  *
@@ -488,7 +491,7 @@ unsigned PTones::CalcSamples(unsigned ms, unsigned f1, unsigned f2)
 void PTones::AddSample(int sample, unsigned volume)
 {
   // Sample added is value from -1000 to 1000, rescale to short range -32767 to +32767
-  PINDEX length = GetSize();
+  PINDEX length = PTones::GetSize();
   SetSize(length + 1);
   sample *= volume;
   sample *= masterVolume;
