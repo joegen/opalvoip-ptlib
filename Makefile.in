@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.30  2006/11/20 07:17:06  csoutheren
+# Fix Makefile to work when plugins not available
+#
 # Revision 1.29  2005/04/06 10:10:54  dsandras
 # Fixed install target with DESTDIR thanks to Stefan Bruens.
 #
@@ -233,7 +236,7 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # all these targets are just passed to all subdirectories
 $(subst tagbuild,,$(STANDARD_TARGETS)) ::
-	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
+	set -e; $(foreach dir,$(SUBDIRS),if test -e $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 update:
 	cvs update
