@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.25  2006/11/20 03:18:39  csoutheren
+ * Using std::string instead of PString avoids problems with key comparisons. Not sure why.....
+ *
  * Revision 1.24  2006/08/11 04:45:36  csoutheren
  * Explicitly specify the default key type for PFactory
  *
@@ -175,7 +178,8 @@
  */
 
 // this define the default class to be used for keys into PFactories
-typedef PString PDefaultPFactoryKey;
+//typedef PString PDefaultPFactoryKey;
+typedef std::string PDefaultPFactoryKey;
 
 
 /** Base class for generic factories.
