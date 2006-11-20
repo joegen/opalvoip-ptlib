@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockagg.cxx,v $
+ * Revision 1.19  2006/11/20 03:17:24  csoutheren
+ * Fixed incorrect check time on trace message
+ *
  * Revision 1.18  2006/07/22 06:27:58  rjongbloed
  * Added auo-load of Winsock v2 library required by agreggated sockets.
  *
@@ -513,7 +516,7 @@ void PHandleAggregator::WorkerThreadBase::Main()
                 handle->beingProcessed = FALSE;
     
                 unsigned duration = (unsigned)(PTime() - start).GetMilliSeconds();
-                PTRACE_IF(4, duration > 5, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
+                PTRACE_IF(4, duration > 50, "SockAgg\tWarning - aggregator read routine was of extended duration = " << duration << " msecs");
               }
 
               // check for socket close
