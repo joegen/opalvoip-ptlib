@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.177  2006/11/23 04:13:52  csoutheren
+ * Fix problem in PString::Trim
+ * Thanks to Guilhem Tardy
+ *
  * Revision 1.176  2006/07/14 05:36:53  csoutheren
  * Fixed 1518375 - PString::RightTrim does not work
  *
@@ -2255,7 +2259,7 @@ PString PString::Trim() const
 
   const char * rpos = theArray+GetLength()-1;
 	if (!isspace(*rpos & 0xff)) {
-		if (lpos == 0)
+		if (lpos == theArray)
 			return *this;
 		else
 			return PString(lpos);
