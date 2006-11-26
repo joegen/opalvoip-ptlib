@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.246  2006/11/26 08:02:13  rjongbloed
+ * Added ability to send trace output to debugger output window with
+ *   a psudeo-filename DEBUGSTREAM.
+ *
  * Revision 1.245  2006/10/31 04:10:40  csoutheren
  * Make sure PVidFileDev class is loaded, and make it work with OPAL
  *
@@ -828,6 +832,10 @@
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
 
+#ifdef _WIN32
+#include <ptlib/msos/ptlib/debstrm.h>
+#endif
+
 #ifdef __MACOSX__
 namespace PWLibStupidOSXHacks {
   extern int loadShmVideoStuff;
@@ -991,7 +999,13 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 #if PMEMORY_CHECK
     ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
 #endif
-    OpenTraceFile();
+
+#ifdef _WIN32
+    if (strcasecmp(filename, "DEBUGSTREAM") == 0)
+      PTrace::SetStream(new PDebugStream);
+    else
+#endif
+      OpenTraceFile();
   }
 
   PTraceLevelThreshold = level;
