@@ -150,12 +150,35 @@ if test "${enable_v4l2}z" = "yesz" ; then
   else
     VIDEODEV="linux/videodev2.h"
   fi
-  AC_CHECK_HEADER($VIDEODEV, [V4L2HDR=1], [], 
-[
-#ifdef __linux__
-#include <linux/types.h>
-#endif
-])
+  AC_CHECK_HEADER($VIDEODEV, 
+                  [V4L2HDR=1],
+                  [
+		    # We can't use AC_CHECK_HEADER again because
+                    # the value is cached, perhaps we have another
+                    # method to do this more cleanly ?
+		    AC_MSG_CHECKING([for $VIDEODEV with sys/types.h])
+		    AC_TRY_COMPILE([
+					#ifdef __linux__
+					#include <sys/types.h>
+					#include <linux/types.h>
+					#endif
+				    ],
+				    [
+				        return 0;
+				    ],
+				    [
+				        V4L2HDR=1
+				        AC_MSG_RESULT(yes)
+				    ],
+                                    [
+				        AC_MSG_RESULT(no)
+                                    ])
+                  ], 
+		[
+		#ifdef __linux__
+		#include <linux/types.h>
+		#endif
+		])
   AC_MSG_CHECKING(for V4L2 video support)
   if test "${V4L2HDR}z" != "z"; then
     AC_SUBST(HAS_V4L2, 1)
