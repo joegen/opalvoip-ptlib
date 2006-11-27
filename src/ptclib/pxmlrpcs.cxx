@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.7  2006/11/27 11:37:25  csoutheren
+ * Applied 1595552 - Fix for XMLRPC server
+ * Thanks to Dave Parr
+ *
  * Revision 1.6  2003/02/19 01:51:18  robertj
  * Change to make it easier to set a fault from the server function handler.
  *
@@ -130,8 +134,8 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
   PXMLRPCBlock request;
   BOOL ok = request.Load(body);
 
-  // if cannot parse XML, set return 
-  if (!ok) { 
+  // if cannot parse XML, set return
+  if (!ok) {
     reply = FormatFault(PXMLRPC::CannotParseRequestXML, "XML error:" + request.GetErrorString());
     return;
   }
@@ -162,7 +166,7 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
   OnXMLRPCRequest(method, request, reply);
 }
 
-void PXMLRPCServerResource::OnXMLRPCRequest(const PString & methodName, 
+void PXMLRPCServerResource::OnXMLRPCRequest(const PString & methodName,
                                             PXMLRPCBlock & request,
                                             PString & reply)
 {
@@ -172,6 +176,7 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & methodName,
   PINDEX pos = methodList.GetValuesIndex(methodName);
   if (pos == P_MAX_INDEX) {
     reply = FormatFault(PXMLRPC::UnknownMethod, "unknown method " + methodName);
+    methodMutex.Signal();
     return;
   }
   PXMLRPCServerMethod * methodInfo = (PXMLRPCServerMethod *)methodList.GetAt(pos);
