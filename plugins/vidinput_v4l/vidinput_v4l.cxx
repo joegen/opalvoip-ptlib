@@ -25,6 +25,11 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.21  2006/11/28 21:06:12  dsandras
+ * Added a few missing mutexes in order to prevent collection
+ * corruption when the update is called from different threads.
+ * Hopefully fixes Ekiga report #376078.
+ *
  * Revision 1.20  2006/06/30 00:56:31  csoutheren
  * Applied 1494931 - various pwlib bug fixes and enhancement
  * Thanks to Frederich Heem
@@ -421,6 +426,7 @@ V4LNames::Update()
   PString      entry;
   PStringList  devlist;
   
+  PWaitAndSignal m(mutex);
   inputDeviceNames.RemoveAll (); // flush the previous run
   if (procvideo.Exists()) {
     if (procvideo.Open(PFileInfo::RegularFile)) {
@@ -529,7 +535,6 @@ PString V4LNames::GetUserFriendly(PString devName)
 {
   PWaitAndSignal m(mutex);
 
-  
   PString result= deviceKey(devName);
   if (result.IsEmpty())
     return devName;
@@ -550,6 +555,8 @@ PString V4LNames::GetDeviceName(PString userName)
 
 void V4LNames::AddUserDeviceName(PString userName, PString devName)
 {
+  PWaitAndSignal m(mutex);
+
   if (userName != devName) { // must be a real userName!
     userKey.SetAt(userName, devName);
     deviceKey.SetAt(devName, userName);
@@ -592,7 +599,6 @@ PStringList V4LNames::GetInputDeviceNames()
   PStringList result;
   for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++) {
     result += GetUserFriendly (inputDeviceNames[i]);
-    //result += inputDeviceNames[i];
   }
 
   return result;
