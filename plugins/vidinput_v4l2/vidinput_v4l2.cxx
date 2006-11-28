@@ -31,6 +31,11 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.20  2006/11/28 21:06:12  dsandras
+ * Added a few missing mutexes in order to prevent collection
+ * corruption when the update is called from different threads.
+ * Hopefully fixes Ekiga report #376078.
+ *
  * Revision 1.19  2006/11/01 17:55:37  dsandras
  * Applied patch from Brian Lu <brian lu sun com> to fix V4L2 on OpenSolaris.
  *
@@ -1057,6 +1062,7 @@ V4L2Names::Update()
     kernelVersion=KUNKNOWN;
     procvideo=0;
   }
+  PWaitAndSignal m(mutex);
   inputDeviceNames.RemoveAll (); // flush the previous run
   if (procvideo) {
     PTRACE(2,"PV4L2Plugin\tdetected device metadata at "<<*procvideo);
