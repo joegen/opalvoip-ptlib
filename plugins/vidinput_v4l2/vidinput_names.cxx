@@ -26,6 +26,11 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_names.cxx,v $
+ * Revision 1.5  2006/11/28 21:06:12  dsandras
+ * Added a few missing mutexes in order to prevent collection
+ * corruption when the update is called from different threads.
+ * Hopefully fixes Ekiga report #376078.
+ *
  * Revision 1.4  2006/01/07 16:09:58  dsandras
  * Removed name duplication for now.
  *
@@ -127,6 +132,8 @@ PString V4LXNames::GetDeviceName(PString userName)
 
 void V4LXNames::AddUserDeviceName(PString userName, PString devName)
 {
+  PWaitAndSignal m(mutex);
+
   if (userName != devName) { // must be a real userName!
     userKey.SetAt(userName, devName);
     deviceKey.SetAt(devName, userName);
