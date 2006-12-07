@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.58  2006/12/07 21:32:41  dominance
+ * make sure can fit the jpeg image into the buffer for MJPEG and JPEG cams.
+ * Thanks goes to Luc Saillard for this patch.
+ *
  * Revision 1.57  2006/11/01 17:47:10  dsandras
  * Added patch from Brian Lu <brian lu sun com> to fix compilation on
  * OpenSolaris.
@@ -2514,7 +2518,8 @@ bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
 
   } else {
      /* Very not efficient */
-     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameBytes);
+     unsigned int frameBytes = srcFrameWidth * srcFrameHeight * 3 / 2;
+     BYTE *intermed = intermediateFrameStore.GetPointer(frameBytes);
      MJPEGtoYUV420PSameSize(mjpeg, intermed);
      ResizeYUV420P(intermed, yuv420p);
   }
