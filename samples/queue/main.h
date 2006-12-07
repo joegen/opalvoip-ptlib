@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2006/12/07 20:49:39  dereksmithies
+ * Add doxygen comments to this program.
+ * Add doxygen configure file.
+ *
  * Revision 1.1  2006/12/07 08:46:17  dereksmithies
  * Initial cut of code to test the operation of PQueueChannel class.
  *
@@ -42,8 +46,11 @@ class QueueProcess : public PProcess
   PCLASSINFO(QueueProcess, PProcess)
 
   public:
+  /**Constructor, which initalises version number, application name etc*/
     QueueProcess();
 
+  /**Execution starts here, where the command line is processed. In here, the
+     child threads (for generating and consuming data) are launched. */
     void Main();
 
   protected:
