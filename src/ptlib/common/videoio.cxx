@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.65  2006/12/07 21:33:24  dominance
+ * make sure we support also webcams that do *only* do 640x480 properly.
+ * Thanks goes to Luc Saillard for this patch.
+ *
  * Revision 1.64  2006/10/31 04:10:40  csoutheren
  * Make sure PVidFileDev class is loaded, and make it work with OPAL
  *
@@ -693,34 +697,45 @@ static struct {
     { 704, 576,    640, 480 },
     { 640, 480,    704, 576 },
     { 640, 480,    352, 288 },
+
     { 352, 288,    704, 576 },
     { 352, 288,    640, 480 },
     { 352, 288,    352, 240 },
     { 352, 288,    320, 240 },
     { 352, 288,    176, 144 },
-    { 352, 240,    352, 288 },
-    { 352, 240,    320, 240 },
     { 352, 288,   1024, 576 }, /* High resolution need to be set at the end */
     { 352, 288,   1280, 960 },
+
+    { 352, 240,    352, 288 },
+    { 352, 240,    320, 240 },
+    { 352, 240,    640, 480 },
+
     { 320, 240,    352, 288 },
     { 320, 240,    352, 240 },
+    { 320, 240,    640, 480 },
+
     { 176, 144,    352, 288 },
     { 176, 144,    352, 240 },
     { 176, 144,    320, 240 },
     { 176, 144,    176, 120 },
     { 176, 144,    160, 120 },
+    { 176, 144,    640, 480 },
+    { 176, 144,   1024, 576 },
+    { 176, 144,   1280, 960 }, /* High resolution need to be set at the end */
+
     { 176, 120,    352, 288 },
     { 176, 120,    352, 240 },
     { 176, 120,    320, 240 },
     { 176, 120,    176, 144 },
     { 176, 120,    160, 120 },
-    { 176, 144,   1024, 576 }, 
-    { 176, 144,   1280, 960 }, /* High resolution need to be set at the end */
+    { 176, 120,    640, 480 },
+
     { 160, 120,    352, 288 },
     { 160, 120,    352, 240 },
     { 160, 120,    320, 240 },
     { 160, 120,    176, 144 },
     { 160, 120,    176, 120 },
+    { 160, 120,    640, 480 },
 };
 
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
