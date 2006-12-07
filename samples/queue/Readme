@@ -36,4 +36,15 @@ application,
 
  \code -o  \endcode logfile  set the name of the log file.
 
+\section typical Sample command line
+
+With the command line
+\code queue -i 1000 -ttt -o log.txt \endcode
+
+\li the write process puts (every 20ms) 320 bytes on the queue
+\li the read process pulls (every 30ms) 480 bytes from the queue
+
+and this repeats 1000 times. A log file is written to disk describing when
+each read and write happens.
+
 */
