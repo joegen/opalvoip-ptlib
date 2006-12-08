@@ -1,9 +1,0 @@
-#!/bin/sh
-
-tmp=gcc.$$
-
-$* > $tmp 2>&1
-status=$?
-$PWLIBDIR/make/gcc_filter.awk < $tmp
-rm $tmp
-exit $status
