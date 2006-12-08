@@ -1,2 +1,0 @@
-GUILIB	= -L$(PWLIB_GUIDIR)/lib -lqt
-STDCCFLAGS := $(STDCCFLAGS) -I$(PWLIB_GUIDIR)/include 
