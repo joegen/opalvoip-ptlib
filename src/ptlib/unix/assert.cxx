@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.19  2006/12/08 05:02:24  csoutheren
+ * Apply 1602184 - assert can also throw exception
+ * Thanks to Frederic Heem
+ *
  * Revision 1.18  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -85,6 +89,8 @@
  *
  */
 
+#include <stdexcept>
+
 #include <ptlib.h>
 
 #include <ctype.h>
@@ -115,6 +121,12 @@ void PAssertFunc(const char * msg)
   if (&trace != &PError)
     PError << msg << endl;
 
+  //Throw a runtime exception if the environment variable PWLIB_ASSERT_EXCEPTION is set
+  char * env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  if (env != NULL){
+    throw std::runtime_error(msg);
+  }
+  
 #ifndef P_VXWORKS
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
@@ -124,7 +136,7 @@ void PAssertFunc(const char * msg)
   }
 
   for(;;) {
-    PError << "\n<A>bort, <C>ore dump, <I>gnore"
+    PError << "\n<A>bort, <C>ore dump, <I>gnore <T>hrow exception"
 #ifdef _DEBUG
            << ", <D>ebug"
 #endif
@@ -137,6 +149,13 @@ void PAssertFunc(const char * msg)
         PError << "\nAborting.\n";
         _exit(1);
 
+        break;
+      case 't' :
+      case 'T' :
+        PError << "\nThrowing exception\n";
+        throw std::runtime_error(msg);
+        break;
+        
 #ifdef _DEBUG
       case 'd' :
       case 'D' :
