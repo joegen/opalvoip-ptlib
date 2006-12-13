@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2006/12/13 04:56:03  csoutheren
+ * Applied 1613270 - fixed for dtmfEncoder
+ * Thanks to Frederic Heem
+ *
  * Revision 1.6  2006/10/25 08:18:21  rjongbloed
  * Major upgrade of tone generation subsystem.
  *
@@ -126,7 +130,7 @@ void DtmfTest::Main()
 
   unsigned milliseconds;
   if (args.HasOption('d')) {
-    milliseconds = args.GetOptionString('s').AsUnsigned();
+    milliseconds = args.GetOptionString('d').AsUnsigned();
     if (milliseconds < 10) {
       cerr << "Invalid duration specified!\n";
       return;
@@ -188,8 +192,12 @@ void DtmfTest::Main()
 
   int nCorrect = 0;
   for (const char * pDTMF = tonesToPlay; *pDTMF != '\0'; pDTMF++) {
+#if 0
     PDTMFEncoder encoder;
     encoder.AddTone(*pDTMF, milliseconds);
+#else
+    PDTMFEncoder encoder(*pDTMF, milliseconds);
+#endif
 
     for (i = 0; i < result.GetSize(); i++)
       result[i] = encoder[i] + noiseSignal[i];
