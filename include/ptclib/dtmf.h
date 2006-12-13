@@ -12,6 +12,10 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.9  2006/12/13 04:56:03  csoutheren
+ * Applied 1613270 - fixed for dtmfEncoder
+ * Thanks to Frederic Heem
+ *
  * Revision 1.8  2006/10/25 08:18:20  rjongbloed
  * Major upgrade of tone generation subsystem.
  *
@@ -199,6 +203,13 @@ class PDTMFEncoder : public PTones
         unsigned milliseconds = DefaultToneLen  ///< length of each DTMF tone in milliseconds
     );
 
+    /**
+      * Create PCM data for the specified dtmf key
+      */
+    PDTMFEncoder(
+        char key,      ///< character string to encode
+        unsigned milliseconds = DefaultToneLen  ///< length of each DTMF tone in milliseconds
+    );    
 
     /**
       * Add the PCM data for the specified tone sequence to the buffer
@@ -263,11 +274,7 @@ class PDTMFEncoder : public PTones
     char DtmfChar(
         PINDEX i    ///< index of tone
     );
-
-    // Backward compatibility, old system expected PBYTEArray, so implement
-    // the most popular functions as for BYTE type.
-    operator const BYTE *() const { return (const BYTE *)theArray; }
-    PINDEX GetSize() const { return PTones::GetSize()*2; }
+    // Overiding GetSize() screws up the SetSize()
 };
 
 #endif /* _DTMF_H */
