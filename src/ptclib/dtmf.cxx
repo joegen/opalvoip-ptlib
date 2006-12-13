@@ -12,6 +12,10 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.17  2006/12/13 04:56:03  csoutheren
+ * Applied 1613270 - fixed for dtmfEncoder
+ * Thanks to Frederic Heem
+ *
  * Revision 1.16  2006/11/11 15:23:37  hfriederich
  * Use correct GetSize() to avoid allocation problems
  *
@@ -256,8 +260,15 @@ static int sine(int angle)
 
 ////////////////////////////////////////////////////////////////////////
 
-PTones::PTones(unsigned volume)
-  : masterVolume(volume)
+    
+PTones::PTones(unsigned volume): 
+  PShortArray(),
+  masterVolume(volume),
+  lastOperation(0),
+  lastFrequency1(0),
+  lastFrequency2(0),
+  angle1(0),
+  angle2(0)
 {
 }
 
@@ -379,7 +390,9 @@ bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned millis
       frequency2 < MinFrequency || frequency2 > MaxFrequency)
     return false;
 
-  unsigned samples = CalcSamples(milliseconds, frequency1, frequency2);
+  // TODO this gived 8000 samples for 100 ms !!!
+  //unsigned samples = CalcSamples(milliseconds, frequency1, frequency2);
+  unsigned samples = milliseconds * SampleRate / 1000;
   while (samples-- > 0) {
     int a1 = sine(angle1);
     int a2 = sine(angle2);
@@ -491,7 +504,7 @@ unsigned PTones::CalcSamples(unsigned ms, unsigned f1, unsigned f2)
 void PTones::AddSample(int sample, unsigned volume)
 {
   // Sample added is value from -1000 to 1000, rescale to short range -32767 to +32767
-  PINDEX length = PTones::GetSize();
+  PINDEX length = GetSize();
   SetSize(length + 1);
   sample *= volume;
   sample *= masterVolume;
@@ -502,11 +515,17 @@ void PTones::AddSample(int sample, unsigned volume)
 
 ////////////////////////////////////////////////////////////////////////
 
-PDTMFEncoder::PDTMFEncoder(const char * dtmf, unsigned milliseconds)
+PDTMFEncoder::PDTMFEncoder(const char * dtmf, unsigned milliseconds) :
+   PTones() 
 {
     AddTone(dtmf, milliseconds);
 }
 
+PDTMFEncoder::PDTMFEncoder(char digit, unsigned milliseconds) :
+   PTones() 
+{
+  AddTone(digit, milliseconds);
+}
 
 void PDTMFEncoder::AddTone(const char * str, unsigned milliseconds)
 {
@@ -560,8 +579,11 @@ void PDTMFEncoder::AddTone(char digit, unsigned milliseconds)
 
 void PDTMFEncoder::AddTone(double f1, double f2, unsigned milliseconds)
 {
-  if (f1 > 0 && f1 < MaxFrequency && f2 > 0 && f2 < MaxFrequency)
+  if (f1 > 0 && f1 < MaxFrequency && f2 > 0 && f2 < MaxFrequency){
     Generate('+', (unsigned)f1, (unsigned)f2, milliseconds);
+  } else {
+    PAssertAlways(PInvalidParameter);
+  }  
 }
 
 
