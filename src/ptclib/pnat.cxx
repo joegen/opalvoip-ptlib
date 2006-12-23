@@ -4,7 +4,6 @@
  *
  * NAT Strategy support for Portable Windows Library.
  *
- * Virteos is a Trade Mark of ISVO (Asia) Pte Ltd.
  *
  * Copyright (c) 2004 ISVO (Asia) Pte Ltd. All Rights Reserved.
  *
@@ -28,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.cxx,v $
+ * Revision 1.4  2006/12/23 15:08:11  shorne
+ * Now Factory loaded for ease of addition of new NAT Methods
+ *
  * Revision 1.3  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -42,6 +44,16 @@
 
 #include <ptlib.h>
 #include <ptclib/pnat.h>
+
+namespace PWLibStupidWindowsHacks {
+  int loadNatStuff;
+};
+
+static const char PNatMethodBaseClass[] = "PNatMethod";
+template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const PString & method) const
+{
+   return PNatMethod::Create(method);
+}
 
 PNatStrategy::PNatStrategy()
 {
@@ -70,6 +82,22 @@ PNatMethod * PNatStrategy::GetMethod()
   return NULL;
 }
 
+BOOL PNatStrategy::RemoveMethod(const PString & meth)
+{
+  for (PINDEX i=0; i < natlist.GetSize(); i++) {
+       PNatMethod * m = (PNatMethod *)natlist.GetAt(i);
+	   if (m != NULL) {
+	     PStringList methname = m->GetNatMethodName();
+	     if (methname[0] == meth) {
+            natlist.RemoveAt(i);
+            return TRUE;
+	     }
+	   }
+  }
+
+  return FALSE;
+}
+
 void PNatStrategy::SetPortRanges(
       WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
 {
@@ -81,6 +109,36 @@ void PNatStrategy::SetPortRanges(
 }
 
 
+PNatMethod * PNatStrategy::LoadNatMethod(const PString & name)
+{
+  NatFactory::KeyList_T keyList = NatFactory::GetKeyList();
+  NatFactory::KeyList_T::const_iterator r;
+
+   PNatMethod * dev = NULL;
+   for (r = keyList.begin(); r != keyList.end(); ++r) {
+     PString capName = *r;
+     if (name == capName) {
+       dev = NatFactory::CreateInstance(*r);
+	   AddMethod(dev);
+     }
+   }
+	
+  return dev;
+}
+
+PStringList PNatStrategy::GetRegisteredList()
+{
+  NatFactory::KeyList_T keyList = NatFactory::GetKeyList();
+  NatFactory::KeyList_T::const_iterator r;
+  PStringList methods;
+
+   for (r = keyList.begin(); r != keyList.end(); ++r) {
+        methods.AppendString(*r);
+   }
+
+   return methods;
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 PNatMethod::PNatMethod()
@@ -91,6 +149,14 @@ PNatMethod::PNatMethod()
 PNatMethod::~PNatMethod()
 {
 
+}
+
+PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
 }
 
 void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
