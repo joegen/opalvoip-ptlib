@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.13  2006/12/23 15:08:00  shorne
+ * Now Factory loaded for ease of addition of new NAT Methods
+ *
  * Revision 1.12  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -113,6 +116,8 @@ class PSTUNClient : public PNatMethod
       DefaultPort = 3478
     };
 
+	PSTUNClient();
+
     PSTUNClient(
       const PString & server,
       WORD portBase = 0,
@@ -128,6 +133,17 @@ class PSTUNClient : public PNatMethod
       WORD portPairBase = 0,
       WORD portPairMax = 0
     );
+
+
+    void Initialise(const PString & server,
+                     WORD portBase = 0, 
+					 WORD portMax = 0,
+                     WORD portPairBase = 0, 
+					 WORD portPairMax = 0);
+
+	/**Get the NAT Method Name
+	 */
+	static PStringList GetNatMethodName() { return PStringList("STUN"); }
 
 
     /**Get the current STUN server address and port being used.
@@ -307,6 +323,10 @@ class PSTUNClient : public PNatMethod
 
 
 inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PSTUNClient::GetNatTypeString(type); }
+
+/// Factory loader
+typedef PSTUNClient PNatMethod_STUN;
+PWLIB_STATIC_LOAD_PLUGIN(STUN, PNatMethod);
 
 
 #endif // _PSTUN_H

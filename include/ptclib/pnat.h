@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.6  2006/12/23 15:08:00  shorne
+ * Now Factory loaded for ease of addition of new NAT Methods
+ *
  * Revision 1.5  2006/02/26 09:29:10  shorne
  * Added GetMethodName and GetList functions
  *
@@ -51,6 +54,9 @@
 #ifndef P_NATMETHOD
 #define P_NATMETHOD
 
+#include <ptlib/plugin.h>
+#include <ptlib/pluginmgr.h>
+
 /** PNatMethod
     Base Network Address Traversal Method class
     All NAT Traversal Methods are derived off this class. 
@@ -74,6 +80,13 @@ public:
   */
   ~PNatMethod();
   //@}
+
+
+  /** Factory Create
+    */
+    static PNatMethod * Create(const PString & name,        ///< Feature Name Expression
+					    PPluginManager * pluginMgr = NULL   ///< Plugin Manager
+                         );
 
   /**@name General Functions */
   //@{
@@ -122,7 +135,7 @@ public:
 
    /** Get the Method String Name
    */
-   virtual PString GetNatMethodName() { return PString(); };
+   static PStringList GetNatMethodName() { return PStringList(); };
 
   //@}
 
@@ -180,6 +193,12 @@ public :
   */
   PNatMethod * GetMethod();
 
+
+  /** RemoveMethod
+    This function removes a NAT method from the NATlist matching the supplied method name
+   */
+  BOOL RemoveMethod(const PString & meth);
+
     /**Set the port ranges to be used on local machine.
        Note that the ports used on the NAT router may not be the same unless
        some form of port forwarding is present.
@@ -197,14 +216,36 @@ public :
       WORD portPairMax = 0    /// Socket pair port number max
     );
 
-    /** Get NAT Method List
+    /** Get Loaded NAT Method List
      */
     PNatList GetNATList() {  return natlist; };
+
+	PNatMethod * LoadNatMethod(const PString & name);
+
+    PStringList GetRegisteredList();
 
   //@}
 
 private:
   PNatList natlist;
 };
+
+////////////////////////////////////////////////////////
+//
+// declare macros and structures needed for NAT plugins
+//
+
+typedef PFactory<PNatMethod> NatFactory;
+
+template <class className> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
+{
+  public:
+    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
+};
+
+#define PCREATE_NAT_PLUGIN(name) \
+  static PNatMethodServiceDescriptor<PNatMethod_##name##> PNatMethod_##name##_descriptor; \
+  PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor)
 
 #endif
