@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.22  2006/12/23 15:08:11  shorne
+ * Now Factory loaded for ease of addition of new NAT Methods
+ *
  * Revision 1.21  2006/08/29 18:41:20  dsandras
  * Check validity of STUN messages.
  *
@@ -95,11 +98,17 @@
 #pragma implementation "pstun.h"
 #endif
 
+#define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
 #include <ptclib/pstun.h>
 #include <ptclib/random.h>
 
+#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
+#error "pstun.cxx must be compiled without precompiled headers"
+#endif
+
+PCREATE_NAT_PLUGIN(STUN);
 
 // Sample server is at larry.gloo.net
 
@@ -109,6 +118,18 @@
 
 
 ///////////////////////////////////////////////////////////////////////
+
+PSTUNClient::PSTUNClient()
+  : serverAddress(0),
+    serverPort(DefaultPort),
+    replyTimeout(DEFAULT_REPLY_TIMEOUT),
+    pollRetries(DEFAULT_POLL_RETRIES),
+    numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING),
+    natType(UnknownNat),
+    cachedExternalAddress(0),
+    timeAddressObtained(0)
+{
+}
 
 PSTUNClient::PSTUNClient(const PString & server,
                          WORD portBase, WORD portMax,
@@ -139,6 +160,14 @@ PSTUNClient::PSTUNClient(const PIPSocket::Address & address, WORD port,
     cachedExternalAddress(0),
     timeAddressObtained(0)
 {
+  SetPortRanges(portBase, portMax, portPairBase, portPairMax);
+}
+
+void PSTUNClient::Initialise(const PString & server,
+                         WORD portBase, WORD portMax,
+                         WORD portPairBase, WORD portPairMax)
+{
+  SetServer(server);
   SetPortRanges(portBase, portMax, portPairBase, portPairMax);
 }
 
