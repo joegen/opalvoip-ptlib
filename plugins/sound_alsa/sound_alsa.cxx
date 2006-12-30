@@ -28,6 +28,10 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.32  2006/12/30 22:19:55  dsandras
+ * Fixed possible ALSA crash because of the use of a NULL pointer if
+ * a detected device can not be opened for some reason. (Ekiga report #328753).
+ *
  * Revision 1.31  2006/10/06 11:45:42  dsandras
  * Increases storedPeriods to 3 as suggested by Stelian Pop (Ekiga bug #358338)
  * to fix bad output sound on some soundcards.
@@ -133,6 +137,7 @@ PCREATE_SOUND_PLUGIN(ALSA, PSoundChannelALSA)
 
 static PStringToOrdinal playback_devices;
 static PStringToOrdinal capture_devices;
+PMutex dictionaryMutex;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -181,6 +186,8 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
 
   char *name = NULL;
   char card_id [32];
+
+  PWaitAndSignal m(dictionaryMutex);
 
   if (dir == Recorder) {
 
@@ -231,9 +238,9 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
           free (name);
         }
       }
+      snd_ctl_close(handle);
     }
 
-    snd_ctl_close(handle);
     snd_card_next (&card);
   }
 }
@@ -274,10 +281,10 @@ PString PSoundChannelALSA::GetDefaultDevice(Directions dir)
 
 
 BOOL PSoundChannelALSA::Open (const PString & _device,
-                                   Directions _dir,
-                                     unsigned _numChannels,
-                                     unsigned _sampleRate,
-                                     unsigned _bitsPerSample)
+                              Directions _dir,
+                              unsigned _numChannels,
+                              unsigned _sampleRate,
+                              unsigned _bitsPerSample)
 {
   PString real_device_name;
   POrdinalKey *i = NULL;
@@ -292,6 +299,8 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
   isInitialised = FALSE;
 
   os_handle = NULL;
+
+  PWaitAndSignal m(device_mutex);
 
   if (_dir == Recorder)
     stream = SND_PCM_STREAM_CAPTURE;
