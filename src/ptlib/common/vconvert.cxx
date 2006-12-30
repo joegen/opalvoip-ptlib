@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45.2.9  2006/12/30 21:48:54  dsandras
+ * Backported patch from HEAD that fixes Ekiga bug #333311.
+ *
  * Revision 1.45.2.8  2006/11/01 17:48:13  dsandras
  * Added patch from Brian Lu <brian lu sun com> to fix compilation on
  * OpenSolaris.
@@ -2436,7 +2439,8 @@ bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
 
   } else {
      /* Very not efficient */
-     BYTE *intermed = intermediateFrameStore.GetPointer(srcFrameBytes);
+     unsigned int bytes = srcFrameWidth * srcFrameHeight * 3 / 2;
+     BYTE *intermed = intermediateFrameStore.GetPointer(bytes);
      MJPEGtoYUV420PSameSize(mjpeg, intermed);
      ResizeYUV420P(intermed, yuv420p);
   }
