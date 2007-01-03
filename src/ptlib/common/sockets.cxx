@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.197.2.3  2007/01/03 22:37:37  dsandras
+ * Backports from HEAD.
+ *
  * Revision 1.197.2.2  2006/02/13 07:11:23  csoutheren
  * Backported fix from CVS head
  *
@@ -904,9 +907,10 @@ class PHostByName : PHostByName_private
   friend void PIPSocket::ClearNameCache();
 };
 
-
+PMutex creationMutex;
 static PHostByName & pHostByName()
 {
+  PWaitAndSignal m(creationMutex);
   static PHostByName t;
   return t;
 }
@@ -944,6 +948,7 @@ class PHostByAddr : PHostByAddr_private
 
 static PHostByAddr & pHostByAddr()
 {
+  PWaitAndSignal m(creationMutex);
   static PHostByAddr t;
   return t;
 }

@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.9  2007/01/03 22:37:37  dsandras
+ * Backports from HEAD.
+ *
  * Revision 1.11.4.8  2006/11/28 21:07:03  dsandras
  * Added a few missing mutexes in order to prevent collection
  * corruption when the update is called from different threads.
@@ -170,9 +173,11 @@ protected:
 };
 
 
+PMutex creationMutex;
 static 
 V4L2Names & GetNames()
 {
+  PWaitAndSignal m(creationMutex);
   static V4L2Names names;
   names.Update();
   return names;
