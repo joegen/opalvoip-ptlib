@@ -31,6 +31,9 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.21  2007/01/03 22:35:50  dsandras
+ * Fixed possible race condition while detecting available devices. (#376078, #328753).
+ *
  * Revision 1.20  2006/11/28 21:06:12  dsandras
  * Added a few missing mutexes in order to prevent collection
  * corruption when the update is called from different threads.
@@ -156,9 +159,11 @@ protected:
 };
 
 
+PMutex creationMutex;
 static 
 V4L2Names & GetNames()
 {
+  PWaitAndSignal m(creationMutex);
   static V4L2Names names;
   names.Update();
   return names;

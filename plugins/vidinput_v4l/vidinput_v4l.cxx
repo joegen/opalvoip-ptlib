@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.22  2007/01/03 22:35:50  dsandras
+ * Fixed possible race condition while detecting available devices. (#376078, #328753).
+ *
  * Revision 1.21  2006/11/28 21:06:12  dsandras
  * Added a few missing mutexes in order to prevent collection
  * corruption when the update is called from different threads.
@@ -604,9 +607,11 @@ PStringList V4LNames::GetInputDeviceNames()
   return result;
 }
 
+PMutex creationMutex;
 static 
 V4LNames & GetNames()
 {
+  PWaitAndSignal m(creationMutex);
   static V4LNames names;
   names.Update();
   return names;
