@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.15.2.5  2007/01/03 22:37:37  dsandras
+ * Backports from HEAD.
+ *
  * Revision 1.15.2.4  2006/11/28 21:07:03  dsandras
  * Added a few missing mutexes in order to prevent collection
  * corruption when the update is called from different threads.
@@ -601,9 +604,11 @@ PStringList V4LNames::GetInputDeviceNames()
   return result;
 }
 
+PMutex creationMutex;
 static 
 V4LNames & GetNames()
 {
+  PWaitAndSignal m(creationMutex);
   static V4LNames names;
   names.Update();
   return names;

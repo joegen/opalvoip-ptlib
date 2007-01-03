@@ -26,6 +26,9 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_names.cxx,v $
+ * Revision 1.4.4.2  2007/01/03 22:37:37  dsandras
+ * Backports from HEAD.
+ *
  * Revision 1.4.4.1  2006/11/28 21:07:03  dsandras
  * Added a few missing mutexes in order to prevent collection
  * corruption when the update is called from different threads.
@@ -77,6 +80,8 @@ void  V4LXNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
 
 void V4LXNames::PopulateDictionary()
 {
+  PWaitAndSignal m(mutex);
+
   PINDEX i, j;
   PStringToString tempList;
 
