@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.207  2007/01/03 22:28:48  dsandras
+ * Fixed possible race condition in PHostByName and PHostByAddr. Thanks Robert!
+ * Hopefully fixing Ekiga report #364480.
+ *
  * Revision 1.206  2006/10/05 05:43:32  csoutheren
  * Fix uninitialised variable
  *
@@ -916,9 +920,10 @@ class PHostByName : PHostByName_private
   friend void PIPSocket::ClearNameCache();
 };
 
-
+PMutex creationMutex;
 static PHostByName & pHostByName()
 {
+  PWaitAndSignal m(creationMutex);
   static PHostByName t;
   return t;
 }
@@ -956,6 +961,7 @@ class PHostByAddr : PHostByAddr_private
 
 static PHostByAddr & pHostByAddr()
 {
+  PWaitAndSignal m(creationMutex);
   static PHostByAddr t;
   return t;
 }
