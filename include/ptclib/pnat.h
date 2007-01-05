@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.7  2007/01/05 04:09:05  dereksmithies
+ * Get it to compile on linux correctly.
+ * Previous code failed, with message about pasting STUN and > together.
+ *
  * Revision 1.6  2006/12/23 15:08:00  shorne
  * Now Factory loaded for ease of addition of new NAT Methods
  *
@@ -245,7 +249,7 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 };
 
 #define PCREATE_NAT_PLUGIN(name) \
-  static PNatMethodServiceDescriptor<PNatMethod_##name##> PNatMethod_##name##_descriptor; \
+  static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
   PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor)
 
 #endif
