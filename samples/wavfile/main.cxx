@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2007/01/12 22:34:22  rjongbloed
+ * Fixed compile error in tone sample app
+ *
  * Revision 1.4  2006/07/22 07:27:26  rjongbloed
  * Fixed various compilation issues
  *
@@ -80,8 +83,8 @@ void WAVFileTest::Main()
 
     PDTMFEncoder toneData;
     toneData.GenerateDialTone();
-    PINDEX len = toneData.GetSize();
-    file.Write((const BYTE *)toneData, len);
+    PINDEX len = toneData.GetSize()*sizeof(short);
+    file.Write((const short *)toneData, len);
 
     file.Close();
   }
