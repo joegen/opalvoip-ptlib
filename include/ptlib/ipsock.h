@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.84  2007/01/30 02:26:21  csoutheren
+ * Fix minor problem with PIPSocketAddressAndPort
+ *
  * Revision 1.83  2006/10/03 06:29:38  csoutheren
  * Add PIPSocketAndPort::AsString
  *
@@ -957,20 +960,23 @@ class PIPSocketAddressAndPort
 {
   public:
     PIPSocketAddressAndPort()
-      : port(0)
+      : port(0), sep(':')
     { }
 
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0)
-		{ Parse(':', str, defaultPort); }
+      : sep(':')
+    { Parse(sep, str, defaultPort); }
 
-    PIPSocketAddressAndPort(char sep, const PString & str, WORD defaultPort = 0)
+    PIPSocketAddressAndPort(char _sep, const PString & str, WORD defaultPort = 0)
+      : sep(_sep)
 		{ Parse(sep, str, defaultPort); }
 
     void Parse(char sep, const PString & str, WORD defaultPort = 0);
 
     PString AsString() const
-    { return address.AsString() + ':' + PString(PString::Unsigned, port); }
+    { return address.AsString() + sep + PString(PString::Unsigned, port); }
 
+    char sep;
     PIPSocket::Address address;
     WORD port;
 };
