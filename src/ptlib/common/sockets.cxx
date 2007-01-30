@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.208  2007/01/30 02:26:22  csoutheren
+ * Fix minor problem with PIPSocketAddressAndPort
+ *
  * Revision 1.207  2007/01/03 22:28:48  dsandras
  * Fixed possible race condition in PHostByName and PHostByAddr. Thanks Robert!
  * Hopefully fixing Ekiga report #364480.
@@ -3229,8 +3232,9 @@ BOOL PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void PIPSocketAddressAndPort::Parse(char sep, const PString & str, WORD defaultPort)
+void PIPSocketAddressAndPort::Parse(char _sep, const PString & str, WORD defaultPort)
 {
+  sep = _sep;
 	PINDEX pos = str.Find(sep);
 	if (pos != P_MAX_INDEX) {
 		port    = (WORD)str.Mid(pos+1).AsInteger();
