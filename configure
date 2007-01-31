@@ -892,7 +892,7 @@ Optional Features:
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
-  --enable-exceptions     enable C++ exceptions
+  ---exceptions     enable C++ exceptions
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -9378,10 +9378,13 @@ if test "${enable_exceptions+set}" = set; then
 
 fi;
 
-if test "${enable_exceptions}z" = "yesz" ; then
+if test "${enable_exceptions}z" != "yesz" ; then
+  { echo "$as_me:$LINENO: C++ exceptions disabled" >&5
+echo "$as_me: C++ exceptions disabled" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+else
   { echo "$as_me:$LINENO: C++ exceptions enabled" >&5
 echo "$as_me: C++ exceptions enabled" >&6;}
-  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
 fi
 
 

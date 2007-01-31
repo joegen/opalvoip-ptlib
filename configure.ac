@@ -2206,11 +2206,13 @@ dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
 AC_ARG_ENABLE(exceptions,
-       [  --enable-exceptions     enable C++ exceptions])
+       [  ---exceptions     enable C++ exceptions])
 
-if test "${enable_exceptions}z" = "yesz" ; then
-  AC_MSG_NOTICE(C++ exceptions enabled)
+if test "${enable_exceptions}z" != "yesz" ; then
+  AC_MSG_NOTICE(C++ exceptions disabled)
   STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+else
+  AC_MSG_NOTICE(C++ exceptions enabled)
 fi
 
 dnl ########################################################################
