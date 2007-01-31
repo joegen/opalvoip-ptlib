@@ -4022,6 +4022,7 @@ default_qos=yes
 default_sockagg=no
 default_vidfile=yes
 default_shmvideo=yes
+default_vxml=yes
 
 if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_resolver=yes
@@ -4059,6 +4060,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_sockagg=no
   default_vidfile=yes
   default_shmvideo=no
+  default_vxml=yes
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -4095,6 +4097,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_sockagg=no
   default_vidfile=no
   default_shmvideo=no
+  default_vxml=no
 fi
 
 
