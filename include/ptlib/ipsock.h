@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.85  2007/01/31 00:44:34  csoutheren
+ * Fix warning on Linux
+ *
  * Revision 1.84  2007/01/30 02:26:21  csoutheren
  * Fix minor problem with PIPSocketAddressAndPort
  *
@@ -976,9 +979,9 @@ class PIPSocketAddressAndPort
     PString AsString() const
     { return address.AsString() + sep + PString(PString::Unsigned, port); }
 
-    char sep;
     PIPSocket::Address address;
     WORD port;
+    char sep;
 };
 
 typedef std::vector<PIPSocketAddressAndPort> PIPSocketAddressAndPortVector;
