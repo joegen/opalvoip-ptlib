@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.70  2007/01/31 06:05:32  csoutheren
+ * Allow disabling of VXML
+ * Ensure VXML compiles when PPipeChannel not enabled
+ *
  * Revision 1.69  2006/08/10 03:53:19  csoutheren
  * Apply 1532388 - Fix PVXML log message
  * Thanks to Stanislav Brabec
@@ -450,6 +454,8 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilenameList> vxmlPlayableFilenameL
 
 ///////////////////////////////////////////////////////////////
 
+#if P_PIPECHAN
+
 PVXMLPlayableCommand::PVXMLPlayableCommand()
 { 
   pipeCmd = NULL; 
@@ -486,6 +492,8 @@ void PVXMLPlayableCommand::OnStop()
 }
 
 PFactory<PVXMLPlayable>::Worker<PVXMLPlayableCommand> vxmlPlayableCommandFactory("Command");
+
+#endif
 
 ///////////////////////////////////////////////////////////////
 
