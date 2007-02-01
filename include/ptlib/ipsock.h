@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.86  2007/02/01 03:18:42  csoutheren
+ * Add extra features to PIPSocketAddressAndPort
+ *
  * Revision 1.85  2007/01/31 00:44:34  csoutheren
  * Fix warning on Linux
  *
@@ -966,6 +969,10 @@ class PIPSocketAddressAndPort
       : port(0), sep(':')
     { }
 
+    PIPSocketAddressAndPort(char _sep)
+      : port(0), sep(_sep)
+    { }
+
     PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0)
       : sep(':')
     { Parse(sep, str, defaultPort); }
@@ -976,8 +983,8 @@ class PIPSocketAddressAndPort
 
     void Parse(char sep, const PString & str, WORD defaultPort = 0);
 
-    PString AsString() const
-    { return address.AsString() + sep + PString(PString::Unsigned, port); }
+    PString AsString(char _sep = 0) const
+    { return address.AsString() + (_sep ? _sep : sep) + PString(PString::Unsigned, port); }
 
     PIPSocket::Address address;
     WORD port;
