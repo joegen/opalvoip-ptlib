@@ -2212,7 +2212,9 @@ if test "${enable_exceptions}z" != "yesz" ; then
   AC_MSG_NOTICE(C++ exceptions disabled)
   STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
 else
+  AC_DEFINE(P_EXCEPTIONS, 1)
   AC_MSG_NOTICE(C++ exceptions enabled)
+  STDCCFLAGS="$STDCCFLAGS -fexceptions"
 fi
 
 dnl ########################################################################
