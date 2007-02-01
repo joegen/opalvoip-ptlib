@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.20  2007/02/01 05:04:20  csoutheren
+ * Allow compilation without C++ exceptions enabled
+ *
  * Revision 1.19  2006/12/08 05:02:24  csoutheren
  * Apply 1602184 - assert can also throw exception
  * Thanks to Frederic Heem
@@ -121,11 +124,13 @@ void PAssertFunc(const char * msg)
   if (&trace != &PError)
     PError << msg << endl;
 
+#if P_EXCEPTIONS
   //Throw a runtime exception if the environment variable PWLIB_ASSERT_EXCEPTION is set
   char * env = ::getenv("PWLIB_ASSERT_EXCEPTION");
   if (env != NULL){
     throw std::runtime_error(msg);
   }
+#endif
   
 #ifndef P_VXWORKS
 
@@ -148,13 +153,15 @@ void PAssertFunc(const char * msg)
       case 'A' :
         PError << "\nAborting.\n";
         _exit(1);
-
         break;
+
+#if P_EXCEPTIONS
       case 't' :
       case 'T' :
         PError << "\nThrowing exception\n";
         throw std::runtime_error(msg);
         break;
+#endif
         
 #ifdef _DEBUG
       case 'd' :

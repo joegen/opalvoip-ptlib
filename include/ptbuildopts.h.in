@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.57  2007/02/01 05:04:20  csoutheren
+ * Allow compilation without C++ exceptions enabled
+ *
  * Revision 1.56  2006/07/18 05:17:24  csoutheren
  * Added shared memory video devices
  * Thanks to Hannes Friederich
@@ -671,6 +674,7 @@
 #undef P_HAS_NAMED_SEMAPHORES
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
+#undef P_EXCEPTIONS
 
 /////////////////////////////////////////////////
 //
