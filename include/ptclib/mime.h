@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.22  2007/02/01 23:56:44  csoutheren
+ * Added extra AddMIME with seperate key and value fields
+ *
  * Revision 1.21  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -237,6 +240,10 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       */
     BOOL AddMIME(
       const PString & line
+    );
+    BOOL AddMIME(
+      const PString & fieldName, 
+      const PString & _fieldValue
     );
 
     /** Get a string for the particular MIME info field with checking for

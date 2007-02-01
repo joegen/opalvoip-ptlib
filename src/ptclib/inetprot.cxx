@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.61  2007/02/01 23:56:44  csoutheren
+ * Added extra AddMIME with seperate key and value fields
+ *
  * Revision 1.60  2005/04/15 10:49:38  dsandras
  * Allow reading on the transport until there is an EOF or it becomes bad. Fixes interoperability problem with QSC.DE which is sending keep-alive messages, leading to a timeout (transport.good() fails, but the stream is still usable).
  *
@@ -781,6 +784,13 @@ BOOL PMIMEInfo::AddMIME(const PString & line)
 
   PCaselessString fieldName  = line.Left(colonPos).Trim();
   PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+
+  return AddMIME(fieldName, fieldValue);
+}
+
+BOOL PMIMEInfo::AddMIME(const PString & fieldName, const PString & _fieldValue)
+{
+  PString fieldValue(_fieldValue);
 
   if (Contains(fieldName))
     fieldValue = (*this)[fieldName] + '\n' + fieldValue;
