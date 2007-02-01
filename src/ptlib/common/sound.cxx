@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.12  2007/02/01 03:16:15  csoutheren
+ * Implement GetName for sound channels
+ *
  * Revision 1.11  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -217,6 +220,15 @@ BOOL PSoundChannel::Open(const PString & device,
 
   return baseChannel->Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
+
+PString PSoundChannel::GetName() const
+{
+  if (baseChannel == NULL)
+    return PString::Empty();
+
+  return baseChannel->GetName();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 

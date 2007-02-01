@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.39  2007/02/01 03:16:15  csoutheren
+ * Implement GetName for sound channels
+ *
  * Revision 1.38  2006/10/19 12:05:32  rjongbloed
  * Added missing Close() function apss thru on PSoundChannel wrapper class.
  *
@@ -791,6 +794,8 @@ class PSoundChannel : public PChannel
     virtual BOOL WaitForAllRecordBuffersFull() 
     { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForAllRecordBuffersFull() ; }
   //@}
+
+    PString GetName() const;
 
   protected:
     PSoundChannel * baseChannel;
