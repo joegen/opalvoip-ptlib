@@ -9383,8 +9383,13 @@ if test "${enable_exceptions}z" != "yesz" ; then
 echo "$as_me: C++ exceptions disabled" >&6;}
   STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
 else
+  cat >>confdefs.h <<\_ACEOF
+#define P_EXCEPTIONS 1
+_ACEOF
+
   { echo "$as_me:$LINENO: C++ exceptions enabled" >&5
 echo "$as_me: C++ exceptions enabled" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -fexceptions"
 fi
 
 
