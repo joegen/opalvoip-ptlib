@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.33  2007/02/04 21:20:46  dsandras
+ * Various improvements to fix sound issues with some soundcards.
+ *
  * Revision 1.32  2006/12/30 22:19:55  dsandras
  * Fixed possible ALSA crash because of the use of a NULL pointer if
  * a detected device can not be opened for some reason. (Ekiga report #328753).
@@ -160,9 +163,17 @@ PSoundChannelALSA::PSoundChannelALSA (const PString &device,
 
 void PSoundChannelALSA::Construct()
 {
-  frameBytes = 480;
-  storedPeriods = 3;
-  storedSize = storedPeriods * frameBytes;
+  enum _snd_pcm_format val = SND_PCM_FORMAT_UNKNOWN;
+
+#if PBYTE_ORDER == PLITTLE_ENDIAN
+  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_LE : SND_PCM_FORMAT_U8;
+#else
+  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
+#endif
+
+  frameBytes = (mNumChannels * (snd_pcm_format_width (val) / 8));
+  storedPeriods = 4;
+  storedSize = frameBytes * 3;
 
   card_nr = 0;
   os_handle = NULL;
@@ -254,18 +265,18 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
   
   if (dir == Recorder) {
     
+    if (capture_devices.GetSize () > 0)
+      devices += "Default";
     for (PINDEX j = 0 ; j < capture_devices.GetSize () ; j++) 
       devices += capture_devices.GetKeyAt (j);
   }
   else {
 
+    if (playback_devices.GetSize () > 0)
+      devices += "Default";
     for (PINDEX j = 0 ; j < playback_devices.GetSize () ; j++) 
       devices += playback_devices.GetKeyAt (j);
   }
-
-
-  if (devices.GetSize () > 0)
-    devices += "Default";
   
   return devices;
 }
@@ -342,17 +353,16 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
     snd_pcm_nonblock (os_handle, 0);
    
   /* save internal parameters */
-
   device = real_device_name;
 
-
+  Setup ();
   PTRACE (1, "ALSA\tDevice " << real_device_name << " Opened");
 
   return TRUE;
 }
 
 
-BOOL PSoundChannelALSA::Setup(int nBytes)
+BOOL PSoundChannelALSA::Setup()
 {
   snd_pcm_hw_params_t *hw_params = NULL;
   PStringStream msg;
@@ -373,7 +383,6 @@ BOOL PSoundChannelALSA::Setup(int nBytes)
     PTRACE(6, "ALSA\tSkipping setup of " << device << " as instance already initialised");
     return TRUE;
   }
-
 
 #if PBYTE_ORDER == PLITTLE_ENDIAN
   val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_LE : SND_PCM_FORMAT_U8;
@@ -440,7 +449,7 @@ BOOL PSoundChannelALSA::Setup(int nBytes)
        For GSM, period time is 20 milliseconds.
        For most other codecs, period time is 30 milliseconds.
   ******/
-  unsigned int period_time = nBytes * 1000 * 1000 / (2 * mSampleRate);
+  unsigned int period_time = period_size * 1000 * 1000 / (2 * mSampleRate);
   unsigned int buffer_time = period_time * storedPeriods;
   PTRACE(3, "Alsa\tBuffer time is " << buffer_time);
   PTRACE(3, "Alsa\tPeriod time is " << period_time);
@@ -474,6 +483,7 @@ BOOL PSoundChannelALSA::Setup(int nBytes)
 
 BOOL PSoundChannelALSA::Close()
 {
+  PStringStream msg;
   PWaitAndSignal m(device_mutex);
 
   /* if the channel isn't open, do nothing */
@@ -482,7 +492,8 @@ BOOL PSoundChannelALSA::Close()
 
   snd_pcm_close (os_handle);
   os_handle = NULL;
-
+  isInitialised = FALSE;
+  
   return TRUE;
 }
 
@@ -496,7 +507,7 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
   lastWriteCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup(len) || !len || !os_handle)
+  if (!isInitialised && !Setup() || !len || !os_handle)
     return FALSE;
 
   do {
@@ -525,7 +536,7 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
           snd_pcm_prepare (os_handle);
       }
 
-      PTRACE (1, "ALSA\tCould not write " << max_try << " " << len << " " << r);
+      PTRACE (1, "ALSA\tCould not write " << max_try << " " << len << " " << snd_strerror(r));
       max_try++;
     }  
   } while (len > 0 && max_try < 5);
@@ -544,7 +555,7 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
   lastReadCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup(len) || !len || !os_handle)
+  if (!isInitialised && !Setup() || !len || !os_handle)
     return FALSE;
 
   memset ((char *) buf, 0, len);
@@ -632,8 +643,9 @@ unsigned PSoundChannelALSA::GetSampleSize() const
 BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 {
   storedPeriods = count;
-
   storedSize = size;
+
+  isInitialised = FALSE;
 
   return TRUE;
 }
@@ -650,11 +662,20 @@ BOOL PSoundChannelALSA::GetBuffers(PINDEX & size, PINDEX & count)
 
 BOOL PSoundChannelALSA::PlaySound(const PSound & sound, BOOL wait)
 {
+  PINDEX pos = 0;
+  PINDEX len = 0;
+  char *buf = (char *) (const BYTE *) sound;
+
   if (!os_handle)
     return SetErrorValues(NotOpen, EBADF);
 
-  if (!Write((const BYTE *)sound, sound.GetSize()))
-    return FALSE;
+  len = sound.GetSize();
+  do {
+
+    if (!Write(&buf [pos], PMIN(320, len - pos)))
+      return FALSE;
+    pos += 320;
+  } while (pos < len);
 
   if (wait)
     return WaitForPlayCompletion();
