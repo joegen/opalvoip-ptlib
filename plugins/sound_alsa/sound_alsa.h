@@ -60,7 +60,7 @@ class PSoundChannelALSA: public PSoundChannel
        unsigned _numChannels,
        unsigned _sampleRate,
        unsigned _bitsPerSample);
-  BOOL Setup(int nBytes = 480);
+  BOOL Setup();
   BOOL Close();
   BOOL Write(const void * buf, PINDEX len);
   BOOL Read(void * buf, PINDEX len);
