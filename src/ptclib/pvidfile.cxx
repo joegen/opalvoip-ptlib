@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.5  2007/02/06 05:03:52  csoutheren
+ * Add factory for video file types
+ *
  * Revision 1.4  2006/10/31 04:10:40  csoutheren
  * Make sure PVidFileDev class is loaded, and make it work with OPAL
  *
@@ -144,6 +147,9 @@ BOOL PVideoFile::ExtractSizeHint(PFilePath & fn)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static PFactory<PVideoFile>::Worker<PYUVFile> yuvFileFactory("yuv");
+static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
 
 PYUVFile::PYUVFile()
   : PVideoFile()
