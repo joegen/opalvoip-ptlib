@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.59  2007/02/10 07:25:18  csoutheren
+ * Set WIN32 to a value to provide compatibility with headers that use this define in expressions
+ *
  * Revision 1.58  2006/07/27 10:30:49  rjongbloed
  * Changed _CRT_SECURE_NO_DEPRECATE definition to be compatible with wxWidgets, avoiding warning
  *
@@ -257,7 +260,7 @@ and from the pre-processor options for this project"
 // Machine & Compiler dependent declarations
 
 #if defined(_WIN32) && !defined(WIN32)
-#define WIN32
+#define WIN32  1
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
