@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.38  2007/02/10 07:21:23  csoutheren
+ * Fixed problem with excluding directories
+ *
  * Revision 1.37  2006/07/31 06:53:39  csoutheren
  * Fixed problem with excluding directories
  *
@@ -165,11 +168,13 @@
 #include <vector>
 #include <map>
 
-#define VERSION "1.9"
+#define VERSION "1.10"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
 using namespace std;
+
+bool DirExcluded(const string & dir);
 
 string ToLower(const string & _str)
 {
@@ -396,6 +401,9 @@ bool Feature::Locate(const char * testDir)
   _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
   directory = buf;
 
+  if (DirExcluded(directory))
+    return false;
+
   cout << "Located " << displayName << " at " << directory << endl;
 
   int pos;
@@ -448,10 +456,14 @@ string ExcludeDir(const string & _dir)
 }
 
 
-bool DirExcluded(const string & dir)
+bool DirExcluded(const string & _dir)
 {
-  if (dir.length() == 0)
+  if (_dir.length() == 0)
     return false;
+
+  string dir(_dir);
+  if (dir[dir.length()-1] != '\\')
+    dir += "\\";
 
   list<string>::const_iterator r;
 
