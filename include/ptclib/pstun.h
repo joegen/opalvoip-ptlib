@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.14  2007/02/11 13:13:18  shorne
+ * Added GetName function
+ *
  * Revision 1.13  2006/12/23 15:08:00  shorne
  * Now Factory loaded for ease of addition of new NAT Methods
  *
@@ -145,6 +148,8 @@ class PSTUNClient : public PNatMethod
 	 */
 	static PStringList GetNatMethodName() { return PStringList("STUN"); }
 
+	virtual PStringList GetName() const
+      { return GetNatMethodName(); }
 
     /**Get the current STUN server address and port being used.
       */
