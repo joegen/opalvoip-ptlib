@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.8  2007/02/11 13:07:37  shorne
+ * Added GetName function
+ *
  * Revision 1.7  2007/01/05 04:09:05  dereksmithies
  * Get it to compile on linux correctly.
  * Previous code failed, with message about pasting STUN and > together.
@@ -140,6 +143,9 @@ public:
    /** Get the Method String Name
    */
    static PStringList GetNatMethodName() { return PStringList(); };
+
+   virtual PStringList GetName() const
+      { return GetNatMethodName(); }
 
   //@}
 
