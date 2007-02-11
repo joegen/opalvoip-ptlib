@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.23  2007/02/11 13:13:07  shorne
+ * Added message when stun server cannot be reached
+ *
  * Revision 1.22  2006/12/23 15:08:11  shorne
  * Now Factory loaded for ease of addition of new NAT Methods
  *
@@ -759,8 +762,10 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   for (i = 0; i < numSocketsForPairing; i++)
   {
     PINDEX idx = stunSocket.Append(new PSTUNUDPSocket);
-    if (!OpenSocket(stunSocket[idx], pairedPortInfo))
+	if (!OpenSocket(stunSocket[idx], pairedPortInfo)) {
+      PTRACE(1, "STUN\tUnable to open socket to server " << serverAddress);
       return false;
+	}
 
     idx = request.Append(new PSTUNMessage(PSTUNMessage::BindingRequest));
     request[idx].AddAttribute(PSTUNChangeRequest(false, false));
