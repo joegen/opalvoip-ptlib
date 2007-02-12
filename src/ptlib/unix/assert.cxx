@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.21  2007/02/12 23:46:34  csoutheren
+ * Applied 1611486 - The environment variable PWLIB_ASSERT_ACTION
+ * Thanks to Vyacheslav Frolov
+ *
  * Revision 1.20  2007/02/01 05:04:20  csoutheren
  * Allow compilation without C++ exceptions enabled
  *
@@ -100,6 +104,53 @@
 #include <signal.h>
 #include <ptlib/pprocess.h>
 
+#ifndef __BEOS__
+#ifndef P_VXWORKS
+
+static BOOL PAssertAction(int c, const char * msg)
+{
+  switch (c) {
+    case 'a' :
+    case 'A' :
+      PError << "\nAborting.\n";
+      _exit(1);
+      break;
+
+#if P_EXCEPTIONS
+    case 't' :
+    case 'T' :
+      PError << "\nThrowing exception\n";
+      throw std::runtime_error(msg);
+      return TRUE;
+#endif
+        
+#ifdef _DEBUG
+    case 'd' :
+    case 'D' :
+      {
+        PString cmd = "gdb " + PProcess::Current().GetFile();
+        cmd.sprintf(" %d", getpid());
+        system((const char *)cmd);
+      }
+      break;
+#endif
+
+    case 'c' :
+    case 'C' :
+      PError << "\nDumping core.\n";
+      kill(getpid(), SIGABRT);
+
+    case 'i' :
+    case 'I' :
+    case EOF :
+      PError << "\nIgnoring.\n";
+      return TRUE;
+  }
+  return FALSE;
+}
+#endif
+#endif
+
 void PAssertFunc(const char * msg)
 
 {
@@ -133,6 +184,11 @@ void PAssertFunc(const char * msg)
 #endif
   
 #ifndef P_VXWORKS
+  char * env = ::getenv("PWLIB_ASSERT_ACTION");
+  if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
+    inAssert = FALSE;
+    return;
+  }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (!isatty(STDIN_FILENO)) {
@@ -141,52 +197,21 @@ void PAssertFunc(const char * msg)
   }
 
   for(;;) {
-    PError << "\n<A>bort, <C>ore dump, <I>gnore <T>hrow exception"
+    PError << "\n<A>bort, <C>ore dump"
+#if P_EXCEPTIONS
+           << ", <I>gnore <T>hrow exception"
+#endif
 #ifdef _DEBUG
            << ", <D>ebug"
 #endif
            << "? " << flush;
+
     int c = getchar();
 
-    switch (c) {
-      case 'a' :
-      case 'A' :
-        PError << "\nAborting.\n";
-        _exit(1);
-        break;
-
-#if P_EXCEPTIONS
-      case 't' :
-      case 'T' :
-        PError << "\nThrowing exception\n";
-        throw std::runtime_error(msg);
-        break;
-#endif
-        
-#ifdef _DEBUG
-      case 'd' :
-      case 'D' :
-        {
-          PString cmd = "gdb " + PProcess::Current().GetFile();
-          cmd.sprintf(" %d", getpid());
-          system((const char *)cmd);
-        }
-        break;
-#endif
-
-      case 'c' :
-      case 'C' :
-        PError << "\nDumping core.\n";
-        kill(getpid(), SIGABRT);
-
-      case 'i' :
-      case 'I' :
-      case EOF :
-        PError << "\nIgnoring.\n";
-        inAssert = FALSE;
-        return;
-    }
-  }
+    if (PAssertAction(c, msg))
+      break;
+   }
+   inAssert = FALSE;
 
 #else // P_VXWORKS
 
