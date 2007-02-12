@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.18  2007/02/12 23:19:55  csoutheren
+ * Applied 1636264 - dynalink.h doc update
+ * Thanks to RM Fleming
+ *
  * Revision 1.17  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -94,7 +98,12 @@
 
 /**A dynamic link library. This allows the loading at run time of code
    modules for use by an application.
- */
+   MacOS X/darwin supports plugins linked as object file image (linked with the -bundle arg to ld) or
+   dynamic libraries (-dynamic).
+   On all Unix platforms the file name should end in ".so". 
+   On Windows the filename should end in ".dll"
+*/
+
 class PDynaLink : public PObject
 {
   PCLASSINFO(PDynaLink, PObject);
