@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.97  2007/02/12 22:52:38  csoutheren
+ * Applied 1650597 - PHTTPServiceThread leaks sockets
+ * Thanks to Dave Parr
+ *
  * Revision 1.96  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -740,7 +744,7 @@ void PHTTPServiceThread::Close()
 
 void PHTTPServiceThread::Main()
 {
-  PTCPSocket * socket = process.AcceptHTTP();
+  socket = process.AcceptHTTP();
   if (socket != NULL) {
     new PHTTPServiceThread(myStackSize, process);
     process.ProcessHTTP(*socket);
