@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.119  2007/02/17 18:57:58  hfriederich
+ * Use similar code in IsLocalHost() as in GetInterfaceTable() to fix
+ * incorrect IsLocalHost() on Mac OS X. Untested on other platforms!
+ *
  * Revision 1.118  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -390,6 +394,16 @@
 #include <be/bone/sys/sockio.h> // for SIOCGI*
 #endif
 
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
+// Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
+#ifndef _SIZEOF_ADDR_IFREQ
+#define _SIZEOF_ADDR_IFREQ(ifr) \
+  ((ifr).ifr_addr.sa_len > sizeof(struct sockaddr) ? \
+  (sizeof(struct ifreq) - sizeof(struct sockaddr) + \
+  (ifr).ifr_addr.sa_len) : sizeof(struct ifreq))
+#endif
+#endif
+
 int PX_NewHandle(const char *, int);
 
 #ifdef P_VXWORKS
@@ -750,40 +764,46 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   }
 #endif
 
-  PUDPSocket sock;
-
   // check IPV4 addresses
-  int ifNum;
-#ifdef SIOCGIFNUM
-  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
-#else
-  ifNum = 100;
-#endif
-
+  PUDPSocket sock;
+  
   PBYTEArray buffer;
   struct ifconf ifConf;
-  ifConf.ifc_len  = ifNum * sizeof(ifreq);
+
+#ifdef SIOCGIFNUM
+  int ifNum;
+  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+  ifConf.ifc_len = ifNum * sizeof(ifreq);
+#else
+  ifConf.ifc_len = 100 * sizeof(ifreq); // That's a LOT of interfaces!
+#endif
+
   ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
   
   if (ioctl(sock.GetHandle(), SIOCGIFCONF, &ifConf) >= 0) {
-#ifndef SIOCGIFNUM
-    ifNum = ifConf.ifc_len / sizeof(ifreq);
-#endif
+    void * ifEndList = (char *)ifConf.ifc_req + ifConf.ifc_len;
+    ifreq * ifName = ifConf.ifc_req;
 
-    int num = 0;
-    for (num = 0; num < ifNum; num++) {
-
-      ifreq * ifName = ifConf.ifc_req + num;
+    while (ifName < ifEndList) {
       struct ifreq ifReq;
-      strcpy(ifReq.ifr_name, ifName->ifr_name);
-
+      memcpy(&ifReq, ifName, sizeof(ifreq));
+      
       if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
-        if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
-          if ((flags & IFF_UP) && (addr *= Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
+        if ((flags & IFF_UP) && ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
+          sockaddr_in * sin = (sockaddr_in *)&ifReq.ifr_addr;
+          PIPSocket::Address address = sin->sin_addr;
+          if (addr *= address)
             return TRUE;
         }
       }
+      
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
+      // move the ifName pointer along to the next ifreq entry
+      ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
+#else
+      ifName++;
+#endif
     }
   }
   
@@ -1917,14 +1937,6 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
       }
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
-// Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
-#ifndef _SIZEOF_ADDR_IFREQ
-#define _SIZEOF_ADDR_IFREQ(ifr) \
-        ((ifr).ifr_addr.sa_len > sizeof(struct sockaddr) ? \
-         (sizeof(struct ifreq) - sizeof(struct sockaddr) + \
-          (ifr).ifr_addr.sa_len) : sizeof(struct ifreq))
-#endif
-
       // move the ifName pointer along to the next ifreq entry
       ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #else
