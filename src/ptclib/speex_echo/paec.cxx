@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.3  2007/02/18 18:39:28  shorne
+ * Added PWaitAndSignal
+ *
  * Revision 1.2  2006/06/20 09:23:56  csoutheren
  * Applied patch 1465192
  * Fix pwlib make files, and config for unix
@@ -88,6 +91,8 @@ if (echoState) {
 
 void PAec::Receive(BYTE * buffer, unsigned & length)
 {
+  PWaitAndSignal m(readwritemute);
+
   /* Write to the soundcard, and write the frame to the PQueueChannel */
   echo_chan->Write(buffer, length);
 }
@@ -95,6 +100,7 @@ void PAec::Receive(BYTE * buffer, unsigned & length)
 
 void PAec::Send(BYTE * buffer, unsigned & length)
 {
+  PWaitAndSignal m(readwritemute);
 
   /* Audio Recording to send */
 // Iniiialise the Echo Canceller
