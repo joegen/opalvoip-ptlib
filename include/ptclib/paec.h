@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez
  *
  * $Log: paec.h,v $
+ * Revision 1.3  2007/02/18 18:39:21  shorne
+ * Added PWaitAndSignal
+ *
  * Revision 1.2  2006/02/26 09:27:49  shorne
  * Renamed AEC class name, moved to seperate library
  *
@@ -77,7 +80,7 @@ public:
   //@}
 
 protected:
-
+  PMutex readwritemute;
   PQueueChannel *echo_chan;
   SpeexEchoState *echoState;
   SpeexPreprocessState *preprocessState;
