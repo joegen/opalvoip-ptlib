@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.22  2007/02/19 22:26:14  dsandras
+ * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
+ * com> (Ekiga report #407820). Thanks !
+ *
  * Revision 1.21  2007/01/03 22:35:50  dsandras
  * Fixed possible race condition while detecting available devices. (#376078, #328753).
  *
@@ -1108,11 +1112,7 @@ V4L2Names::Update()
   }
   if (inputDeviceNames.GetSize() == 0) {
     POrdinalToString vid;
-#ifdef SOLARIS
-    vid.SetAt(0,"/dev/video");
-#else
     ReadDeviceDirectory("/dev/", vid);
-#endif
 
     for (PINDEX i = 0; i < vid.GetSize(); i++) {
       PINDEX cardnum = vid.GetKeyAt(i);
