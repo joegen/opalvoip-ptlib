@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.209  2007/02/19 04:36:35  csoutheren
+ * Fixed parsing in PIPSocketAddressAndPort
+ *
  * Revision 1.208  2007/01/30 02:26:22  csoutheren
  * Fix minor problem with PIPSocketAddressAndPort
  *
@@ -3232,19 +3235,23 @@ BOOL PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void PIPSocketAddressAndPort::Parse(char _sep, const PString & str, WORD defaultPort)
+BOOL PIPSocketAddressAndPort::Parse(const PString & str, WORD defaultPort, char _sep)
 {
   sep = _sep;
 	PINDEX pos = str.Find(sep);
 	if (pos != P_MAX_INDEX) {
 		port    = (WORD)str.Mid(pos+1).AsInteger();
-		PIPSocket::GetHostAddress(str.Left(pos), address);
+		if (!PIPSocket::GetHostAddress(str.Left(pos), address))
+      return FALSE;
 	}
-	else
-	{
+	else if (port == 0)
+    return FALSE;
+  else {
 		port = defaultPort;
-		PIPSocket::GetHostAddress(str, address);
+		if (!PIPSocket::GetHostAddress(str, address))
+      return FALSE;
 	}
+  return TRUE;
 }
 
 
