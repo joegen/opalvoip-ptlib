@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.87  2007/02/19 04:37:19  csoutheren
+ * Fixed parsing in PIPSocketAddressAndPort
+ *
  * Revision 1.86  2007/02/01 03:18:42  csoutheren
  * Add extra features to PIPSocketAddressAndPort
  *
@@ -973,15 +976,11 @@ class PIPSocketAddressAndPort
       : port(0), sep(_sep)
     { }
 
-    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0)
-      : sep(':')
-    { Parse(sep, str, defaultPort); }
-
-    PIPSocketAddressAndPort(char _sep, const PString & str, WORD defaultPort = 0)
+    PIPSocketAddressAndPort(const PString & str, WORD defaultPort = 0, char _sep = ':')
       : sep(_sep)
-		{ Parse(sep, str, defaultPort); }
+    { Parse(str, defaultPort, sep); }
 
-    void Parse(char sep, const PString & str, WORD defaultPort = 0);
+    BOOL Parse(const PString & str, WORD defaultPort = 0, char sep = ':');
 
     PString AsString(char _sep = 0) const
     { return address.AsString() + (_sep ? _sep : sep) + PString(PString::Unsigned, port); }
