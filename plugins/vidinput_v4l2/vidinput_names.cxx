@@ -26,6 +26,10 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_names.cxx,v $
+ * Revision 1.7  2007/02/19 22:26:14  dsandras
+ * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
+ * com> (Ekiga report #407820). Thanks !
+ *
  * Revision 1.6  2007/01/03 22:35:50  dsandras
  * Fixed possible race condition while detecting available devices. (#376078, #328753).
  *
@@ -51,6 +55,19 @@ void  V4LXNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
   if (!devdir.Open())
     return;
 
+#ifdef SOLARIS
+  int devnum = 0;
+  do {
+    PString filename = devdir.GetEntryName();
+    if (!filename.NumCompare("video", 5 , 0)) {
+      PString devname = devdir + filename;
+      struct stat s;
+      if (lstat(devname, &s) == 0) {
+        vid.SetAt(devnum++, devname);
+      }
+    }
+  } while (devdir.Next());
+#else  
   do {
     PString filename = devdir.GetEntryName();
     PString devname = devdir + filename;
@@ -76,6 +93,7 @@ void  V4LXNames::ReadDeviceDirectory(PDirectory devdir, POrdinalToString & vid)
       }
     }
   } while (devdir.Next());
+#endif  
 }
 
 void V4LXNames::PopulateDictionary()
