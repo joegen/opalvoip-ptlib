@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.247  2007/02/19 04:38:46  csoutheren
+ * Fixed problem in Shift when only one arg
+ *
  * Revision 1.246  2006/11/26 08:02:13  rjongbloed
  * Added ability to send trace output to debugger output window with
  *   a psudeo-filename DEBUGSTREAM.
@@ -1833,7 +1836,7 @@ void PArgList::Shift(int sh)
   shift += sh;
   if (shift < 0)
     shift = 0;
-  else if (shift >= (int)parameterIndex.GetSize())
+  else if (shift > (int)parameterIndex.GetSize())
     shift = parameterIndex.GetSize() - 1;
 }
 
