@@ -4460,7 +4460,7 @@ fi
 
 if test "${enable_v4l2}z" = "yesz" ; then
   if test "${OSTYPE}z" = "solaris2.11z"; then
-    VIDEODEV="videodev2.h"
+    VIDEODEV="sys/videodev2.h"
   else
     VIDEODEV="linux/videodev2.h"
   fi
@@ -4533,6 +4533,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 					#ifdef __linux__
 					#include <sys/types.h>
 					#include <linux/types.h>
+                                        #else
+                                        #ifdef __sun
+                                        #include <sys/types.h>
+                                        #include <sys/time.h>
+                                        #endif
 					#endif
 
 int
