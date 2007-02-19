@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.10  2007/02/19 22:28:42  dsandras
+ * Backported patch from HEAD to fix OpenSolaris V4L2 support thanks Elaine
+ * Xiong <elaine xiong sun com>.
+ *
  * Revision 1.11.4.9  2007/01/03 22:37:37  dsandras
  * Backports from HEAD.
  *
@@ -1122,11 +1126,7 @@ V4L2Names::Update()
   }
   if (inputDeviceNames.GetSize() == 0) {
     POrdinalToString vid;
-#ifdef SOLARIS
-    vid.SetAt(0,"/dev/video");
-#else
     ReadDeviceDirectory("/dev/", vid);
-#endif
 
     for (PINDEX i = 0; i < vid.GetSize(); i++) {
       PINDEX cardnum = vid.GetKeyAt(i);

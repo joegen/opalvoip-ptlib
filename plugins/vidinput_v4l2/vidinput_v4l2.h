@@ -24,6 +24,10 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.5.4.3  2007/02/19 22:28:42  dsandras
+ * Backported patch from HEAD to fix OpenSolaris V4L2 support thanks Elaine
+ * Xiong <elaine xiong sun com>.
+ *
  * Revision 1.5.4.2  2006/11/01 17:59:31  dsandras
  * Applied patch from Brian Lu <brian lu sun com> to fix V4L2 on OpenSolaris.
  *
@@ -74,7 +78,7 @@
 #include <ptlib/vconvert.h>
 
 #ifdef SOLARIS
-#include <videodev2.h>
+#include <sys/videodev2.h>
 #else
 #include <linux/videodev.h>
 #endif
