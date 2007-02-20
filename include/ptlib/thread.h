@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.49  2007/02/20 04:37:22  csoutheren
+ * Fix for gcc
+ *
  * Revision 1.48  2007/02/20 04:24:46  csoutheren
  * More rationalisation of PThread templates
  *
@@ -564,12 +567,12 @@ class PThreadMain : public PThread
    PString arg;
    new PThread1Arg<PString>(arg, &GlobalFunction)
  */
-template<class Arg1Type>
+template<typename Arg1Type>
 class PThread1Arg : public PThread
 {
   PCLASSINFO(PThread1Arg, PThread);
   public:
-    typedef void (*FnType)(typename Arg1Type arg1); 
+    typedef void (*FnType)(Arg1Type arg1); 
     PThread1Arg(Arg1Type _arg1, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1)
@@ -593,12 +596,12 @@ class PThread1Arg : public PThread
    PString arg;
    new PThread2Arg<PString, int>(arg, &GlobalFunction)
  */
-template<class Arg1Type, class Arg2Type>
+template<typename Arg1Type, typename Arg2Type>
 class PThread2Arg : public PThread
 {
   PCLASSINFO(PThread2Arg, PThread);
   public:
-    typedef void (*FnType)(typename Arg1Type arg1, typename Arg2Type arg2); 
+    typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
     PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1), arg2(_arg2)
@@ -625,7 +628,7 @@ class PThread2Arg : public PThread
    Example ex;
    new PThreadObj<Example>(ex, &Example::Function)
  */
-template <class ObjType>
+template <typename ObjType>
 class PThreadObj : public PThread
 {
   public:
@@ -666,7 +669,7 @@ class PThreadObj1Arg : public PThread
 {
   PCLASSINFO(PThreadObj1Arg, PThread);
   public:
-    typedef void (ObjType::*ObjTypeFn)(typename Arg1Type); 
+    typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
     PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
 				obj(_obj), fn(_fn), arg1(_arg1)
