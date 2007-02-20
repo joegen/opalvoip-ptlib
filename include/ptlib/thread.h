@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.48  2007/02/20 04:24:46  csoutheren
+ * More rationalisation of PThread templates
+ *
  * Revision 1.47  2007/02/19 04:38:15  csoutheren
  * Rationalised and documented thread creation templates
  *
@@ -579,6 +582,35 @@ class PThread1Arg : public PThread
 
 
 /*
+   This template automates calling a global function with two arguments within it's own thread.
+   It is used as follows:
+
+   void GlobalFunction(PString arg1, int arg2)
+   {
+   }
+
+   ...
+   PString arg;
+   new PThread2Arg<PString, int>(arg, &GlobalFunction)
+ */
+template<class Arg1Type, class Arg2Type>
+class PThread2Arg : public PThread
+{
+  PCLASSINFO(PThread2Arg, PThread);
+  public:
+    typedef void (*FnType)(typename Arg1Type arg1, typename Arg2Type arg2); 
+    PThread2Arg(Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
+        arg1(_arg1), arg2(_arg2)
+    { PThread::Resume(); }
+    virtual void Main()
+    { (*fn)(arg1, arg2); }
+    FnType fn;
+    Arg1Type arg1;
+    Arg2Type arg2;
+};
+
+/*
    This template automates calling a member function with no arguments within it's own thread.
    It is used as follows:
 
@@ -629,12 +661,12 @@ class PThreadObj : public PThread
    PString str;
    new PThreadObj1Arg<Example>(ex, str, &Example::Function)
  */
-template <class ObjType, class Arg1Type>
+template <class ObjType, typename Arg1Type>
 class PThreadObj1Arg : public PThread
 {
   PCLASSINFO(PThreadObj1Arg, PThread);
   public:
-    typedef void (ObjType::*ObjTypeFn)(int); 
+    typedef void (ObjType::*ObjTypeFn)(typename Arg1Type); 
     PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
 				obj(_obj), fn(_fn), arg1(_arg1)
