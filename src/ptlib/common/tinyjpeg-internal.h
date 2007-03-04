@@ -37,6 +37,8 @@
 
 #include <setjmp.h>
 
+#define SANITY_CHECK 1
+
 struct jdec_private;
 
 #define HUFFMAN_HASH_NBITS 9
@@ -44,7 +46,9 @@ struct jdec_private;
 #define HUFFMAN_HASH_MASK  (HUFFMAN_HASH_SIZE-1)
 
 #define HUFFMAN_TABLES	   4
-#define COMPONENTS	   4
+#define COMPONENTS	   3
+#define JPEG_MAX_WIDTH	   2048
+#define JPEG_MAX_HEIGHT	   2048
 
 struct huffman_table
 {
@@ -68,6 +72,9 @@ struct component
   struct huffman_table *DC_table;
   short int previous_DC;	/* Previous DC coefficient */
   short int DCT[64];		/* DCT coef */
+#if SANITY_CHECK
+  unsigned int cid;
+#endif
 };
 
 
@@ -93,6 +100,9 @@ struct jdec_private
   struct huffman_table HTDC[HUFFMAN_TABLES];	/* DC huffman tables   */
   struct huffman_table HTAC[HUFFMAN_TABLES];	/* AC huffman tables   */
   int default_huffman_table_initialized;
+  int restart_interval;
+  int restarts_to_go;				/* MCUs left in this restart interval */
+  int last_rst_marker_seen;			/* Rst marker is incremented each time */
 
   /* Temp space used after the IDCT to store each components */
   uint8_t Y[64*4], Cr[64], Cb[64];
@@ -103,8 +113,8 @@ struct jdec_private
 
 };
 
-#define IDCT jpeg_idct_float
-void jpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride);
+#define IDCT tinyjpeg_idct_float
+void tinyjpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride);
 
 #endif
 

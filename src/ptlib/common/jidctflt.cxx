@@ -120,7 +120,7 @@ static inline unsigned char descale_and_clamp(int x, int shift)
  */
 
 void
-jpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
+tinyjpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
 {
   FAST_FLOAT tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   FAST_FLOAT tmp10, tmp11, tmp12, tmp13;
