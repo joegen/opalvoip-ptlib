@@ -71,6 +71,10 @@
  * we use floating point arithmetic.
  *
  *$Log: jidctflt.cxx,v $
+ *Revision 1.7  2007/03/04 19:34:22  dsandras
+ *Fixed green screen problem with some MJPEG cameras thanks Luc Saillard
+ *<luc saillard org>.
+ *
  *Revision 1.6  2006/06/21 05:28:33  csoutheren
  *Fixed compatibility with gcc < 3
  *
@@ -133,7 +137,7 @@ static inline unsigned char descale_and_clamp(int x, int shift)
  */
 
 void
-jpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
+tinyjpeg_idct_float (struct component *compptr, uint8_t *output_buf, int stride)
 {
   FAST_FLOAT tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
   FAST_FLOAT tmp10, tmp11, tmp12, tmp13;
