@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2007/03/05 21:26:22  dereksmithies
+ * Fix parameters: add short form of parameters. Improve --help output.
+ *
  * Revision 1.3  2006/07/22 07:27:26  rjongbloed
  * Fixed various compilation issues
  *
@@ -55,17 +58,13 @@ void Emailtest::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-             "h.   "
-             "v.    "
-             "h.   "
-             "v.    "
-             "h.   "
-             "v.    "
-             "-server:"
-             "-to:"
-             "-from:"
-             "-re:"
-             "-attachment:"
+             "h-help.   "
+             "v-version.    "
+             "s-server:"
+             "t-to:"
+             "f-from:"
+             "r-re:"
+             "a-attachment:"
 
 #if PTRACING
              "o-output:"             "-no-output."
@@ -76,13 +75,13 @@ void Emailtest::Main()
   if (args.HasOption('h')) {
     cout << "usage: " <<  (const char *)GetName()
          << endl
-         << "     -server        : mail server" << endl
-         << "     -to      : to address" << endl
-         << "     -from   : from address " << endl
-         << "     -re   : subject " << endl
-         << "     -attachment   : list of attachments " << endl
-         << "     -h        : get help on usage " << endl
-         << "     -v        : report program version " << endl
+         << "     -s or --server srv     : set mail server" << endl
+         << "     -t or --to     dst     : set to address" << endl
+         << "     -f or --from   frm     : set from address " << endl
+         << "     -r or --re     sbj     : set subject " << endl
+         << "     -a or --attachment atc : list of attachments " << endl
+         << "     -h or --help           : get help on usage " << endl
+         << "     -v or --version        : report program version " << endl
 #if PTRACING
          << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
          << "  -o --output  : File for trace output, default is stderr" << endl
