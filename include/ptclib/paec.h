@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez
  *
  * $Log: paec.h,v $
+ * Revision 1.4  2007/03/06 00:22:48  shorne
+ * Changed to a buffering type arrangement
+ *
  * Revision 1.3  2007/02/18 18:39:21  shorne
  * Added PWaitAndSignal
  *
@@ -52,6 +55,7 @@
   * prior to sending to the enooder..
   */
 
+PQUEUE(ReceiveTimeQueue, PTimeInterval);
 
 struct SpeexEchoState;
 struct SpeexPreprocessState;
@@ -64,7 +68,7 @@ public:
   //@{
   /**Create a new canceler.
    */
-     PAec();
+     PAec(int _clock = 8000, int _sampletime = 30);
      ~PAec();
   //@}
 
@@ -84,10 +88,18 @@ protected:
   PQueueChannel *echo_chan;
   SpeexEchoState *echoState;
   SpeexPreprocessState *preprocessState;
-  short *ref_buf;
-  short *echo_buf;
-  short *e_buf;
-  float *noise;
+  int clockrate;                      // Frame Rate default 8000hz for narrowband audio
+  int bufferTime;                     // Time between receiving and Transmitting   
+  PTimeInterval minbuffer;            // minbuffer
+  PTimeInterval maxbuffer;            // maxbuffer
+  int sampleTime;                     // Length of each sample
+  ReceiveTimeQueue rectime;           // Queue of timestamps for ensure read/write in sync
+  PTimeInterval lastTimeStamp;        // LastTimeStamp of recieved data
+  BOOL receiveReady;
+  void *ref_buf;
+  void *echo_buf;
+  void *e_buf;
+  void *noise;
 
 };
 
