@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.4  2007/03/06 00:22:00  shorne
+ * Changed to a buffering type arrangement
+ *
  * Revision 1.3  2007/02/18 18:39:28  shorne
  * Added PWaitAndSignal
  *
@@ -52,9 +55,10 @@ extern "C" {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAec::PAec()
+PAec::PAec(int _clock, int _sampletime)
+  : clockrate(_clock), sampleTime(_sampletime)
 {
-  PTRACE(3, "AEC\tcreate AEC");
+
   echoState = NULL;
   preprocessState = NULL;
 
@@ -63,26 +67,45 @@ PAec::PAec()
   ref_buf = NULL;
   noise = NULL;
 
+  receiveReady = FALSE;
+
+  bufferTime = sampleTime*2;  // Indicating it takes sampletime to play and sampletime to record
+  minbuffer.SetInterval(bufferTime - sampleTime);
+  maxbuffer.SetInterval(bufferTime + 2*sampleTime);  // Indicating that 
+  lastTimeStamp = PTimer::Tick();
+
   echo_chan = new PQueueChannel();
   echo_chan->Open(10000);
   echo_chan->SetReadTimeout(10);
   echo_chan->SetWriteTimeout(10);
 
-  PTRACE(3, "AEC\tCanceller created");
+  PTRACE(3, "AEC\tcreated AEC " << clockrate << " hz " << " buffer Size " << bufferTime << " ms." );
 }
 
 
 PAec::~PAec()
 {
+  PWaitAndSignal m(readwritemute);
 
-if (echoState) {
-	speex_echo_state_destroy(echoState);
-	speex_preprocess_state_destroy(preprocessState);
-	free(e_buf);
-	free(echo_buf);
-	free(noise);
-}
- 
+  if (echoState) {
+    speex_echo_state_destroy(echoState);
+    echoState = NULL;
+  }
+  
+  if (preprocessState) {
+    speex_preprocess_state_destroy(preprocessState);
+    preprocessState = NULL;
+  }
+
+  if (ref_buf)
+    free(ref_buf);
+  if (e_buf)
+    free(e_buf);
+  if (echo_buf)
+    free(echo_buf);
+  if (noise)
+    free(noise);
+  
   echo_chan->Close();
   delete(echo_chan);
 
@@ -93,40 +116,87 @@ void PAec::Receive(BYTE * buffer, unsigned & length)
 {
   PWaitAndSignal m(readwritemute);
 
-  /* Write to the soundcard, and write the frame to the PQueueChannel */
-  echo_chan->Write(buffer, length);
-}
+  if (length == 0)
+	  return;
 
+  /* Write to the soundcard, and write the frame to the PQueueChannel */
+  if (echo_chan->Write(buffer, length))
+	  rectime.Enqueue(new PTimeInterval(PTimer::Tick()));
+
+  if (!receiveReady){
+     lastTimeStamp = PTimer::Tick();
+     receiveReady = TRUE;
+  }
+
+}
 
 void PAec::Send(BYTE * buffer, unsigned & length)
 {
   PWaitAndSignal m(readwritemute);
 
-  /* Audio Recording to send */
-// Iniiialise the Echo Canceller
+  // Audio Recording to send 
+// Inialise the Echo Canceller
   if (echoState == NULL) {
-    echoState = speex_echo_state_init(length/sizeof(short), 8*length);
-	echo_buf = (short *) malloc(length);
-	noise = (float *) malloc((length/sizeof(short)+1)*sizeof(float));
-    e_buf = (short *) malloc(length);
-    ref_buf = (short *) malloc(length);
+    echoState = speex_echo_state_init(length/sizeof(short), 32*length);
+	echo_buf = (spx_int16_t *) malloc(length);
+	noise = (spx_int16_t *)malloc((length/sizeof(short)+1)*sizeof(float));
+    e_buf = (spx_int16_t *)malloc(length);
+    ref_buf = (spx_int16_t *)malloc(length);
 
-	int j=1;
-    preprocessState = speex_preprocess_state_init(length/sizeof(short), 8000);
-    speex_preprocess_ctl(preprocessState, SPEEX_PREPROCESS_SET_DENOISE, &j);
-    speex_preprocess_ctl(preprocessState, SPEEX_PREPROCESS_SET_DEREVERB, &j);
+	int k=1;
+    preprocessState = speex_preprocess_state_init(length/sizeof(short), clockrate);
+    speex_preprocess_ctl(preprocessState, SPEEX_PREPROCESS_SET_DENOISE, &k);
+    speex_preprocess_ctl(preprocessState, SPEEX_PREPROCESS_SET_DEREVERB, &k);
   }
-  
-  /* Read from the PQueueChannel a reference echo frame of the size
-   * of the captured frame. */
-  echo_chan->Read(echo_buf, length);
-   
-  /* Cancel the echo in this frame */
-  speex_echo_cancel(echoState, ref_buf, echo_buf, e_buf, noise);
-  
-  /* Suppress the noise */
-  speex_preprocess(preprocessState, (spx_int16_t*)e_buf, noise);
 
-  /* Use the result of the echo cancelation as capture frame */
+  if (!receiveReady)
+	  return;
+
+  memcpy((spx_int16_t*)ref_buf, buffer, length);
+	    
+  // Read from the PQueueChannel a reference echo frame
+  PTimeInterval rec = lastTimeStamp;
+  PTimeInterval diff = PTimer::Tick() - rec;
+
+  if (diff < minbuffer) {
+	  PTRACE(3,"AEC\tBuffer Time too short ignoring " << diff << " ms ");
+	  return;
+  }
+
+  if (diff > maxbuffer) {
+   do { 
+	 PTRACE(3,"AEC\tBuffer Time too large " << diff << " ms  Max:" << maxbuffer << " Ignoring Packet!");
+	 rec = *(rectime.Dequeue());
+	 diff = PTimer::Tick() - rec;
+     if (!echo_chan->Read((short *)echo_buf, length)) {
+        speex_preprocess(preprocessState, (spx_int16_t*)ref_buf, NULL);
+        memcpy(buffer, (spx_int16_t*)ref_buf, length);
+		PTRACE(3,"AEC\tExiting Buffer Read error.");
+	    return;
+     } 
+   } while (diff > maxbuffer);
+  } else {
+     if (!echo_chan->Read((short *)echo_buf, length)) {
+        speex_preprocess(preprocessState, (spx_int16_t*)ref_buf, NULL);
+        memcpy(buffer, (spx_int16_t*)ref_buf, length);
+		PTRACE(3,"AEC\tExiting Buffer Read error.");
+	    return;
+     } 
+	 rec = *(rectime.Dequeue());
+  } 
+
+  PTRACE(3,"AEC\tBuffer Time difference " << diff << " ms "); 
+
+  lastTimeStamp = rec;
+
+  // Cancel the echo in this frame 
+  speex_echo_cancel(echoState, (short *)ref_buf, (short *)echo_buf, (short *)e_buf, (float *)noise);
+
+  // Suppress the noise & reverb
+  speex_preprocess(preprocessState, (spx_int16_t*)e_buf, (float *)noise);
+
+  lastTimeStamp = rec;
+
+  // Use the result of the echo cancelation as capture frame 
   memcpy(buffer, e_buf, length);
 }
