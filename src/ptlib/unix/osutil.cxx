@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.87  2007/03/08 05:35:52  csoutheren
+ * Applied 1666290 - patch for bug thread issue
+ * Thanks to Frederic Heem
+ *
  * Revision 1.86  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -334,13 +338,17 @@ static char *tzname[2] = { "STD", "DST" };
 #define new PNEW
 
 
+static PMutex waterMarkMutex;
+static int lowWaterMark = INT_MAX;
+static int highWaterMark = 0;
+  
 int PX_NewHandle(const char * clsName, int fd)
 {
   if (fd < 0)
     return fd;
 
-  static int lowWaterMark = INT_MAX;
-  static int highWaterMark = 0;
+  PWaitAndSignal m(waterMarkMutex);
+
   if (fd > highWaterMark) {
     highWaterMark = fd;
     lowWaterMark = fd;
