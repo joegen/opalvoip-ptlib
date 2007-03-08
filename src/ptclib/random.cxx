@@ -26,6 +26,10 @@
  * Based on code originally by Bob Jenkins.
  *
  * $Log: random.cxx,v $
+ * Revision 1.6  2007/03/08 04:31:09  csoutheren
+ * Applied 1613299 - add new function to the PRandom class
+ * Thanks to Frederic Heem
+ *
  * Revision 1.5  2003/02/20 23:32:00  robertj
  * More RTEMS support patches, thanks Sebastian Meyer.
  *
@@ -180,5 +184,9 @@ unsigned PRandom::Number()
   return rand;
 }
 
+unsigned int PRandom::Number(unsigned int min, unsigned int max)
+{
+  return ((PRandom::Number() % (max - min + 1)) + min);
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
