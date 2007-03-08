@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.7  2007/03/08 04:31:08  csoutheren
+ * Applied 1613299 - add new function to the PRandom class
+ * Thanks to Frederic Heem
+ *
  * Revision 1.6  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -111,6 +115,9 @@ class PRandom
       */
     static unsigned Number();
 
+    /** Get a random number between min and max
+    */
+    static unsigned int Number(unsigned int min, unsigned int max);
 
   protected:
     enum {
