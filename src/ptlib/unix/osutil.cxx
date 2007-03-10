@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.85.2.1  2007/03/10 16:45:34  dsandras
+ * Backported fix from HEAD.
+ *
  * Revision 1.85  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -329,13 +332,17 @@ static char *tzname[2] = { "STD", "DST" };
 #define new PNEW
 
 
+static PMutex waterMarkMutex;
+static int lowWaterMark = INT_MAX;
+static int highWaterMark = 0;
+
 int PX_NewHandle(const char * clsName, int fd)
 {
   if (fd < 0)
     return fd;
 
-  static int lowWaterMark = INT_MAX;
-  static int highWaterMark = 0;
+  PWaitAndSignal m(waterMarkMutex);
+
   if (fd > highWaterMark) {
     highWaterMark = fd;
     lowWaterMark = fd;
