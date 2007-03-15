@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.5  2007/03/15 21:36:41  shorne
+ * fix for buffer underrun
+ *
  * Revision 1.4  2007/03/06 00:22:00  shorne
  * Changed to a buffering type arrangement
  *
@@ -70,8 +73,8 @@ PAec::PAec(int _clock, int _sampletime)
   receiveReady = FALSE;
 
   bufferTime = sampleTime*2;  // Indicating it takes sampletime to play and sampletime to record
-  minbuffer.SetInterval(bufferTime - sampleTime);
-  maxbuffer.SetInterval(bufferTime + 2*sampleTime);  // Indicating that 
+  minbuffer = bufferTime - sampleTime;
+  maxbuffer = bufferTime + 2*sampleTime;  // Indicating that 
   lastTimeStamp = PTimer::Tick();
 
   echo_chan = new PQueueChannel();
@@ -114,7 +117,7 @@ PAec::~PAec()
 
 void PAec::Receive(BYTE * buffer, unsigned & length)
 {
-  PWaitAndSignal m(readwritemute);
+ // PWaitAndSignal m(readwritemute);
 
   if (length == 0)
 	  return;
@@ -132,16 +135,16 @@ void PAec::Receive(BYTE * buffer, unsigned & length)
 
 void PAec::Send(BYTE * buffer, unsigned & length)
 {
-  PWaitAndSignal m(readwritemute);
+ // PWaitAndSignal m(readwritemute);
 
   // Audio Recording to send 
 // Inialise the Echo Canceller
   if (echoState == NULL) {
     echoState = speex_echo_state_init(length/sizeof(short), 32*length);
 	echo_buf = (spx_int16_t *) malloc(length);
-	noise = (spx_int16_t *)malloc((length/sizeof(short)+1)*sizeof(float));
-    e_buf = (spx_int16_t *)malloc(length);
-    ref_buf = (spx_int16_t *)malloc(length);
+	noise = (spx_int16_t *) malloc((length/sizeof(short)+1)*sizeof(float));
+    e_buf = (spx_int16_t *) malloc(length);
+    ref_buf = (spx_int16_t *) malloc(length);
 
 	int k=1;
     preprocessState = speex_preprocess_state_init(length/sizeof(short), clockrate);
@@ -156,36 +159,45 @@ void PAec::Send(BYTE * buffer, unsigned & length)
 	    
   // Read from the PQueueChannel a reference echo frame
   PTimeInterval rec = lastTimeStamp;
-  PTimeInterval diff = PTimer::Tick() - rec;
+  PInt64 time =  (PTimer::Tick()).GetMilliSeconds();
+  PInt64 diff =  time - rec.GetMilliSeconds();
 
   if (diff < minbuffer) {
-	  PTRACE(3,"AEC\tBuffer Time too short ignoring " << diff << " ms ");
+	  PTRACE(6,"AEC\tBuffer Time too short ignoring " << diff << " ms ");
 	  return;
   }
 
   if (diff > maxbuffer) {
    do { 
-	 PTRACE(3,"AEC\tBuffer Time too large " << diff << " ms  Max:" << maxbuffer << " Ignoring Packet!");
+    if (rectime.GetSize() == 0)
+		return;
+	    
 	 rec = *(rectime.Dequeue());
-	 diff = PTimer::Tick() - rec;
-     if (!echo_chan->Read((short *)echo_buf, length)) {
-        speex_preprocess(preprocessState, (spx_int16_t*)ref_buf, NULL);
-        memcpy(buffer, (spx_int16_t*)ref_buf, length);
-		PTRACE(3,"AEC\tExiting Buffer Read error.");
-	    return;
-     } 
+	 if  (time > rec.GetMilliSeconds()) {
+	   PTRACE(6,"AEC\tBuffer Time too large " << diff << " ms  Max:" << maxbuffer << " Ignoring Packet!");
+	    diff = time - rec.GetMilliSeconds();
+		if (!echo_chan->Read((short *)echo_buf, length)) {
+			speex_preprocess(preprocessState, (spx_int16_t*)ref_buf, NULL);
+			memcpy(buffer, (spx_int16_t*)ref_buf, length);
+			PTRACE(3,"AEC\tExiting Buffer Read error.");
+			return;
+		} 
+	 } else return;
    } while (diff > maxbuffer);
   } else {
      if (!echo_chan->Read((short *)echo_buf, length)) {
         speex_preprocess(preprocessState, (spx_int16_t*)ref_buf, NULL);
         memcpy(buffer, (spx_int16_t*)ref_buf, length);
-		PTRACE(3,"AEC\tExiting Buffer Read error.");
+		PTRACE(6,"AEC\tExiting Buffer Read error.");
 	    return;
      } 
+	 if (rectime.GetSize() == 0)
+		 return;
+	
 	 rec = *(rectime.Dequeue());
   } 
 
-  PTRACE(3,"AEC\tBuffer Time difference " << diff << " ms "); 
+  PTRACE(6,"AEC\tBuffer Time difference " << diff << " ms "); 
 
   lastTimeStamp = rec;
 
