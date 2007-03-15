@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez
  *
  * $Log: paec.h,v $
+ * Revision 1.5  2007/03/15 21:35:21  shorne
+ * fix for buffer underrun
+ *
  * Revision 1.4  2007/03/06 00:22:48  shorne
  * Changed to a buffering type arrangement
  *
@@ -90,8 +93,8 @@ protected:
   SpeexPreprocessState *preprocessState;
   int clockrate;                      // Frame Rate default 8000hz for narrowband audio
   int bufferTime;                     // Time between receiving and Transmitting   
-  PTimeInterval minbuffer;            // minbuffer
-  PTimeInterval maxbuffer;            // maxbuffer
+  PInt64 minbuffer;                   // minbuffer (in milliseconds)
+  PInt64 maxbuffer;                   // maxbuffer (in milliseconds)
   int sampleTime;                     // Length of each sample
   ReceiveTimeQueue rectime;           // Queue of timestamps for ensure read/write in sync
   PTimeInterval lastTimeStamp;        // LastTimeStamp of recieved data
