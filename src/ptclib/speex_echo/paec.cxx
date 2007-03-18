@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.6  2007/03/18 06:23:59  shorne
+ * Added check to ensure AEC buffer is not empty
+ *
  * Revision 1.5  2007/03/15 21:36:41  shorne
  * fix for buffer underrun
  *
@@ -153,6 +156,9 @@ void PAec::Send(BYTE * buffer, unsigned & length)
   }
 
   if (!receiveReady)
+	  return;
+
+  if (echo_chan->GetSize() == 0) 
 	  return;
 
   memcpy((spx_int16_t*)ref_buf, buffer, length);
