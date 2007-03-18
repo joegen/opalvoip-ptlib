@@ -13399,6 +13399,7 @@ EXPORTS
     ?NullEncode@PBER_Stream@@UAEXABVPASN_Null@@@Z @24206 NONAME
     ?NullEncode@PPER_Stream@@UAEXABVPASN_Null@@@Z @24207 NONAME
     ?NullEncode@PXER_Stream@@UAEXABVPASN_Null@@@Z @24208 NONAME
+    ?Number@PRandom@@SAIII@Z @27176 NONAME
     ?Number@PRandom@@SAIXZ @24209 NONAME
     ?NumCompare@PString@@QBE?AW4Comparison@PObject@@ABV1@HH@Z @2104 NONAME
     ?NumCompare@PString@@QBE?AW4Comparison@PObject@@PBDHH@Z @2105 NONAME
