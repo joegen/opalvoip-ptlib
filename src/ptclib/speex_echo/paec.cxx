@@ -25,6 +25,9 @@
  * Contributor(s): Miguel Rodriguez Perez.
  *
  * $Log: paec.cxx,v $
+ * Revision 1.7  2007/03/19 07:06:51  shorne
+ * correctly set the receive timestamp if buffer runs dry
+ *
  * Revision 1.6  2007/03/18 06:23:59  shorne
  * Added check to ensure AEC buffer is not empty
  *
@@ -125,14 +128,16 @@ void PAec::Receive(BYTE * buffer, unsigned & length)
   if (length == 0)
 	  return;
 
+  /* Buffer has run dry adjust the timestamp to now */
+  if (echo_chan->GetSize() == 0) 
+	  lastTimeStamp = PTimer::Tick();
+
   /* Write to the soundcard, and write the frame to the PQueueChannel */
   if (echo_chan->Write(buffer, length))
 	  rectime.Enqueue(new PTimeInterval(PTimer::Tick()));
 
-  if (!receiveReady){
-     lastTimeStamp = PTimer::Tick();
+  if (!receiveReady)
      receiveReady = TRUE;
-  }
 
 }
 
