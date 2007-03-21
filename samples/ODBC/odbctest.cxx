@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: odbctest.cxx,v $
+ * Revision 1.4  2007/03/21 15:32:04  shorne
+ * Added link to podbc.h
+ *
  * Revision 1.3  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -41,6 +44,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
+#include <ptlib/msos/ptlib/podbc.h>
 
 class ODBCtest : public PProcess
 {
