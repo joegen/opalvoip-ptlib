@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.36  2007/03/27 04:33:11  csoutheren
+ * Allow use of #0 as sound device name
+ *
  * Revision 1.35  2006/11/01 21:30:31  dsandras
  * Added current working directory in the path to search for plugins.
  *
@@ -329,6 +332,14 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
 bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, int userData) const
 {
   PStringList devices = GetDeviceNames(userData);
+  if (
+      (deviceName.GetLength() == 2) && 
+      (deviceName[0] == '#') && 
+       isdigit(deviceName[1]) && 
+       ((deviceName[1]-'0') < devices.GetSize())
+      )
+    return true;
+      
   for (PINDEX j = 0; j < devices.GetSize(); j++) {
     if (devices[j] *= deviceName)
       return true;
