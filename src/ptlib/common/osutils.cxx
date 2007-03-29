@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.248  2007/03/29 07:04:09  rjongbloed
+ * Fixed trace log stopping all output if ever get a iostream output error (failbit)
+ *
  * Revision 1.247  2007/02/19 04:38:46  csoutheren
  * Fixed problem in Shift when only one arg
  *
@@ -1074,6 +1077,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     return *PTraceStream;
 
   PTraceMutex->Wait();
+
+  // Before we do new trace, make sure we clear any errors on the stream
+  PTraceStream->clear();
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex
