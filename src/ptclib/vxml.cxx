@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.71  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.70  2007/01/31 06:05:32  csoutheren
  * Allow disabling of VXML
  * Ensure VXML compiles when PPipeChannel not enabled
@@ -644,13 +647,13 @@ BOOL PVXMLCache::Get(const PString & prefix,
   dataFn = CreateFilename(prefix, key, "." + fileType);
   PFilePath typeFn = CreateFilename(prefix, key, "_type.txt");
   if (!PFile::Exists(dataFn) || !PFile::Exists(typeFn)) {
-    PTRACE(4, "Key \"" << key << "\" not found in cache");
+    PTRACE(4, "PVXML\tKey \"" << key << "\" not found in cache");
     return FALSE;
   }
 
   PTextFile typeFile(typeFn, PFile::ReadOnly);
   if (!typeFile.IsOpen()) {
-    PTRACE(4, "Cannot find type for cached key " << key << " in cache");
+    PTRACE(4, "PVXML\tCannot find type for cached key " << key << " in cache");
     PFile::Remove(dataFn);
     return FALSE;
   }
@@ -1079,7 +1082,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
   // submit actions etc. can be performed
   // record and audio and other user interaction commands should be skipped
   if (forceEnd) {
-    PTRACE(1, "Fast forwarding through script because of forceEnd" );
+    PTRACE(1, "PVXML\tFast forwarding through script because of forceEnd" );
     while (currentNode != NULL)
       ExecuteDialog();
   }

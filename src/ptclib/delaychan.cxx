@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.9  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.8  2006/07/21 01:03:12  csoutheren
  * Fixed to PAdaptiveDelay
  * Thanks to Paolo Amadini
@@ -133,9 +136,9 @@ PDelayChannel::PDelayChannel(PChannel &channel,
 {
   maximumSlip = -PTimeInterval(max);
   if(Open(channel) == FALSE){
-    PTRACE(1,"PDelayChannel cannot open channel");
+    PTRACE(1,"Delay\tPDelayChannel cannot open channel");
   }
-  PTRACE(5,"Delay delay = " << frameDelay << ", size = " << frameSize);
+  PTRACE(5,"Delay\tdelay = " << frameDelay << ", size = " << frameSize);
 }
 
 BOOL PDelayChannel::Read(void * buf, PINDEX count)

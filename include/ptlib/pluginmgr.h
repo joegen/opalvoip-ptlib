@@ -8,7 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
- * Revision 1.19  2006/10/26 01:17:59  shorne
+ * Revision 1.20  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
+ * Revision 1.19  2006/10/25 12:51:05  shorne
  * fix for devices having same name for different drivers.
  *
  * Revision 1.18  2006/01/21 13:43:05  dsandras
@@ -88,10 +91,10 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
 {
   PDirectory dir = directory;
   if (!dir.Open()) {
-    PTRACE(4, "Cannot open plugin directory " << dir);
+    PTRACE(4, "PLUGIN\tCannot open plugin directory " << dir);
     return;
   }
-  PTRACE(4, "Enumerating plugin directory " << dir);
+  PTRACE(4, "PLUGIN\tEnumerating plugin directory " << dir);
   do {
     PString entry = dir + dir.GetEntryName();
     PDirectory subdir = entry;
