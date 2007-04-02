@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.17  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.16  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -270,7 +273,7 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
 {
   // initialise the SDL library
   if (::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0 ) {
-    PTRACE(1, "Couldn't initialize SDL: " << ::SDL_GetError());
+    PTRACE(1, "VSDL\tCouldn't initialize SDL: " << ::SDL_GetError());
     return false;
   }
 
@@ -280,13 +283,13 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
 
   screen = ::SDL_SetVideoMode(frameWidth, frameHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
   if (screen == NULL) {
-    PTRACE(1, "Couldn't create SDL screen: " << ::SDL_GetError());
+    PTRACE(1, "VSDL\tCouldn't create SDL screen: " << ::SDL_GetError());
     return false;
   }
 
   overlay = ::SDL_CreateYUVOverlay(frameWidth, frameHeight, SDL_IYUV_OVERLAY, screen);
   if (overlay == NULL) {
-    PTRACE(1, "Couldn't create SDL overlay: " << ::SDL_GetError());
+    PTRACE(1, "VSDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
     return false;
   }
 
@@ -297,7 +300,7 @@ bool PVideoOutputDevice_SDL::InitialiseSDL()
 bool PVideoOutputDevice_SDL::ProcessSDLEvents()
 {
   if (screen == NULL || overlay == NULL) {
-    PTRACE(6, "PSDL\t Screen and/or overlay not open, so dont process events");
+    PTRACE(6, "VSDL\t Screen and/or overlay not open, so dont process events");
     return false;
   }
 
@@ -305,11 +308,11 @@ bool PVideoOutputDevice_SDL::ProcessSDLEvents()
   while (::SDL_PollEvent(&event)) {
     switch (event.type) {
       case SDL_QUIT : //User selected cross
-        PTRACE(3, "PSDL\t user selected cross on window, close window");
+        PTRACE(3, "VSDL\t user selected cross on window, close window");
         return false;
 
       case SDL_VIDEORESIZE :
-        PTRACE(3, "PSDL\t Resize window to " << event.resize.w << " x " << event.resize.h);
+        PTRACE(3, "VSDL\t Resize window to " << event.resize.w << " x " << event.resize.h);
     }
   }
   // Sleep for 25 milliseconds
@@ -325,7 +328,7 @@ void PVideoOutputDevice_SDL::SDLThreadMain(PThread &, INT)
 
   sdlStarted.Signal();
 
-  PTRACE(3, "PSDL\tMain loop is underway, with SDL screen initialised");
+  PTRACE(3, "VSDL\tMain loop is underway, with SDL screen initialised");
 
   while (ProcessSDLEvents()) {
     if (sdlStop.Wait(0))
@@ -369,7 +372,7 @@ void PVideoOutputDevice_SDL::SDLThreadMain(PThread &, INT)
 
   sdlStop.Acknowledge();
 
-  PTRACE(3, "PSDL\tEnd of sdl display loop");
+  PTRACE(3, "VSDL\tEnd of sdl display loop");
 }
 
 
