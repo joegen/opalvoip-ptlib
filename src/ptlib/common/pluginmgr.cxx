@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.37  2007/04/02 05:29:55  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.36  2007/03/27 04:33:11  csoutheren
  * Allow use of #0 as sound device name
  *
@@ -198,13 +201,13 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
 
   PDynaLink *dll = new PDynaLink(fileName);
   if (!dll->IsLoaded()) {
-    PTRACE(4, "Failed to open " << fileName);
+    PTRACE(4, "PLUGIN\tFailed to open " << fileName);
   }
 
   else {
     unsigned (*GetAPIVersion)();
     if (!dll->GetFunction("PWLibPlugin_GetAPIVersion", (PDynaLink::Function &)GetAPIVersion)) {
-      PTRACE(3, fileName << " is not a PWLib plugin");
+      PTRACE(2, "PLUGIN\t" << fileName << " is not a PWLib plugin");
     }
 
     else {
@@ -219,7 +222,7 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
             if (dll->GetFunction("PWLibPlugin_TriggerRegister", (PDynaLink::Function &)triggerRegister)) 
               (*triggerRegister)(this);
             else {
-              PTRACE(3, fileName << " has no registration-trigger function");
+              PTRACE(2, "PLUGIN\t" << fileName << " has no registration-trigger function");
             }
           }
           // fall through to new version
@@ -233,7 +236,7 @@ BOOL PPluginManager::LoadPlugin(const PString & fileName)
           return TRUE;
 
         default:
-          PTRACE(3, fileName << " uses version " << version << " of the PWLIB PLUGIN API, which is not supported");
+          PTRACE(2, "PLUGIN\t" << fileName << " uses version " << version << " of the PWLIB PLUGIN API, which is not supported");
           break;
       }
     }
