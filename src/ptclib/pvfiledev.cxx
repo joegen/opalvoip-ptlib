@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.11  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.10  2006/11/01 00:46:01  csoutheren
  * Fix problem in video output file device
  *
@@ -254,7 +257,7 @@ BOOL PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturn
   previousFrameTime = now;
 
   if (frameTimeError > 0) {
-    PTRACE(6, "YUVFile\t Sleep for " << frameTimeError << " milli seconds");
+    PTRACE(6, "YUVFile\tSleep for " << frameTimeError << " milli seconds");
     PThread::Sleep(frameTimeError);
   }
 
@@ -379,7 +382,7 @@ BOOL PVideoOutputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startI
 {
   deviceName = _deviceName;
   if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create)) {
-    PTRACE(1, "Cannot create file " << deviceName << " as video output device");
+    PTRACE(1, "YUVFile\tCannot create file " << deviceName << " as video output device");
     return FALSE;
   }
 
@@ -429,7 +432,7 @@ BOOL PVideoOutputDevice_YUVFile::SetFrameData(unsigned x, unsigned y,
                                               BOOL /*endFrame*/)
 {
   if (x != 0 || y != 0 || width != frameWidth || height != frameHeight) {
-    PTRACE(1, "YUVFile output device only supports full frame writes");
+    PTRACE(1, "YUVFile\tOutput device only supports full frame writes");
     return FALSE;
   }
 

@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.10  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.9  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -203,7 +206,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
 {
   // must have at least 3 delimiters and two chars of text
   if (regexStr.GetLength() < 5) { 
-    PTRACE(1, "ENUM regex is too short: " << regexStr);
+    PTRACE(1, "ENUM\tregex is too short: " << regexStr);
     return PString::Empty();
   }
 
@@ -233,7 +236,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   PString & str1 = strings[0]; 
   PString & str2 = strings[1]; 
   if (str1.IsEmpty() || str2.IsEmpty()) {
-    PTRACE(1, "ENUM regex does not parse into two string: " << regexStr);
+    PTRACE(1, "ENUM\tregex does not parse into two string: " << regexStr);
     return PString::Empty();
   }
 
@@ -250,14 +253,14 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   if (flags.Find('i') != P_MAX_INDEX)
     regexFlags += PRegularExpression::IgnoreCase;
   if (!regex.Compile(strings[0], regexFlags)) {
-    PTRACE(1, "ENUM regex does not compile : " << regexStr);
+    PTRACE(1, "ENUM\tregex does not compile : " << regexStr);
     return PString();
   }
 
   // apply the regular expression to the original string
   PIntArray starts(10), ends(10);
   if (!regex.Execute(orig, starts, ends)) {
-    PTRACE(1, "ENUM regex does not execute : " << regexStr);
+    PTRACE(1, "ENUM\tregex does not execute : " << regexStr);
     return PString();
   }
 
