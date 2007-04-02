@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.62  2007/04/02 03:34:14  rjongbloed
+ * Prevent premature flushing of log buffer when dumping MIME fields.
+ *
  * Revision 1.61  2007/02/01 23:56:44  csoutheren
  * Added extra AddMIME with seperate key and value fields
  *
@@ -733,7 +736,7 @@ void PMIMEInfo::PrintOn(ostream &strm) const
   }
   if (output_cr)
     strm << '\r';
-  strm << endl;
+  strm << '\n';
 }
 
 
