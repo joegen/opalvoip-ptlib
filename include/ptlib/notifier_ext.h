@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: notifier_ext.h,v $
+ * Revision 1.6  2007/04/02 05:29:54  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.5  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -105,7 +108,7 @@ class PSmartNotifierFunction : public PNotifierFunction
           if (obj) \
             ((notifiee*)obj)->func((notifier &)note, extra); \
           else \
-            PTRACE(2, "Invalid notifiee"); \
+            PTRACE(2, "PWLib\tInvalid notifiee"); \
       } \
   }; \
   friend class func##_PSmartNotifier; \
