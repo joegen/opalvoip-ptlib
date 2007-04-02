@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.159  2007/04/02 05:29:55  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.158  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -1354,7 +1357,7 @@ void PThread::WaitForTermination() const
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if ((this == PThread::Current()) || threadHandle == NULL) {
-    PTRACE(2, "WaitForTermination short circuited");
+    PTRACE(3, "PWLib\tWaitForTermination short circuited");
     return TRUE;
   }
 
@@ -1537,7 +1540,7 @@ void PProcess::HouseKeepingThread::Main()
         // make sure we don't put invalid handles into the list
 #ifndef _WIN32_WCE
         if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
-          PTRACE(2, "Refused to put invalid handle into wait list");
+          PTRACE(2, "PWLib\tRefused to put invalid handle into wait list");
         }
         else
 #endif
