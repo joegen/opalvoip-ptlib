@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.38  2007/04/02 05:29:55  rjongbloed
+ * Tidied some trace logs to assure all have a category (bit before a tab character) set.
+ *
  * Revision 1.37  2006/07/05 03:54:57  csoutheren
  * Applied 1493748 - ParseWindowDeviceName fix, does not correctly parse PARENT=
  * Thanks to Joseph Carmer
@@ -1079,7 +1082,7 @@ BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
     return FALSE;
   }
 
-  PTRACE(6, "Enumerating CAPDRIVERCAPS values:\n"
+  PTRACE(6, "PVidInp\tEnumerating CAPDRIVERCAPS values:\n"
             "  driverCaps.wDeviceIndex           = " << driverCaps.wDeviceIndex        << "\n"
             "  driverCaps.fHasOverlay            = " << driverCaps.fHasOverlay         << "\n"
             "  driverCaps.fHasDlgVideoSource     = " << driverCaps.fHasDlgVideoSource  << "\n"
