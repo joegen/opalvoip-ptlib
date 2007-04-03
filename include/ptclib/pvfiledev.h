@@ -27,6 +27,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.8  2007/04/03 12:09:37  rjongbloed
+ * Fixed various "file video device" issues:
+ *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
+ *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
+ *   Added new statics to create correct video input/output device object
+ *     given a PVideoDevice::OpenArgs structure.
+ *   Fixed begin able to write to YUVFile when YUV420P colour format
+ *     is not actually selected.
+ *   Fixed truncating output video file if overwriting.
+ *
  * Revision 1.7  2006/06/21 03:28:41  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -290,6 +300,15 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
       */
     virtual BOOL IsOpen();
 
+    /**Set the colour format to be used.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetColourFormat(
+      const PString & colourFormat   // New colour format for device.
+    );
+    
     /**Get the maximum frame size in bytes.
 
        Note a particular device may be able to provide variable length
