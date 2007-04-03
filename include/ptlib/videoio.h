@@ -24,6 +24,16 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.49  2007/04/03 12:09:38  rjongbloed
+ * Fixed various "file video device" issues:
+ *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
+ *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
+ *   Added new statics to create correct video input/output device object
+ *     given a PVideoDevice::OpenArgs structure.
+ *   Fixed begin able to write to YUVFile when YUV420P colour format
+ *     is not actually selected.
+ *   Fixed truncating output video file if overwriting.
+ *
  * Revision 1.48  2006/10/31 04:10:40  csoutheren
  * Make sure PVidFileDev class is loaded, and make it work with OPAL
  *
@@ -292,26 +302,11 @@ class PVideoDevice : public PObject
     virtual PStringList GetDeviceNames() const = 0;
 
     struct OpenArgs {
-      OpenArgs()
-        : deviceName("#1"),
-          videoFormat(Auto),
-          channelNumber(0),
-          colourFormat("YUV420P"),
-          convertFormat(TRUE),
-          rate(0),
-          width(CIFWidth),
-          height(CIFHeight),
-          convertSize(TRUE),
-          scaleSize(FALSE),
-          flip(FALSE),
-          brightness(-1),
-          whiteness(-1),
-          contrast(-1),
-          colour(-1),
-          hue(-1)
-        { }
+      OpenArgs();
+
+      PPluginManager * pluginMgr;
+      PString     driverName;
       PString     deviceName;
-      PString     filename;
       VideoFormat videoFormat;
       int         channelNumber;
       PString     colourFormat;
@@ -706,6 +701,13 @@ class PVideoOutputDevice : public PVideoDevice
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
+    /**Create an opened video output device that corresponds to the specified arguments.
+    */
+    static PVideoOutputDevice *CreateOpenedDevice(
+      const OpenArgs & args,              ///< Parameters to set on opened device
+      BOOL startImmediate = TRUE          ///< Immediately start display
+    );
+
     /**Close the device.
       */
     virtual BOOL Close() { return TRUE; }
@@ -895,7 +897,7 @@ class PVideoInputDevice : public PVideoDevice
      */
     static PVideoInputDevice *CreateDeviceByName(
       const PString & deviceName,         ///< Name of device
-	  const PString & driverName = PString::Empty(),  ///< Name of driver (if any)
+      const PString & driverName = PString::Empty(),  ///< Name of driver (if any)
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
@@ -909,6 +911,13 @@ class PVideoInputDevice : public PVideoDevice
       const PString & deviceName,         ///< Name of device
       BOOL startImmediate = TRUE,         ///< Immediately start grabbing
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
+    );
+
+    /**Create an opened video output device that corresponds to the specified arguments.
+    */
+    static PVideoInputDevice *CreateOpenedDevice(
+      const OpenArgs & args,              ///< Parameters to set on opened device
+      BOOL startImmediate = TRUE          ///< Immediately start display
     );
 
     /**Open the device given the device name.
