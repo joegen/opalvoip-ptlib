@@ -24,6 +24,16 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.66  2007/04/03 12:09:38  rjongbloed
+ * Fixed various "file video device" issues:
+ *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
+ *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
+ *   Added new statics to create correct video input/output device object
+ *     given a PVideoDevice::OpenArgs structure.
+ *   Fixed begin able to write to YUVFile when YUV420P colour format
+ *     is not actually selected.
+ *   Fixed truncating output video file if overwriting.
+ *
  * Revision 1.65  2006/12/07 21:33:24  dominance
  * make sure we support also webcams that do *only* do 640x480 properly.
  * Thanks goes to Luc Saillard for this patch.
@@ -346,15 +356,33 @@ PVideoDevice::~PVideoDevice()
 }
 
 
+PVideoDevice::OpenArgs::OpenArgs()
+  : pluginMgr(NULL),
+    deviceName("#1"),
+    videoFormat(Auto),
+    channelNumber(0),
+    colourFormat("YUV420P"),
+    convertFormat(TRUE),
+    rate(0),
+    width(CIFWidth),
+    height(CIFHeight),
+    convertSize(TRUE),
+    scaleSize(FALSE),
+    flip(FALSE),
+    brightness(-1),
+    whiteness(-1),
+    contrast(-1),
+    colour(-1),
+    hue(-1)
+{
+}
+
+
 BOOL PVideoDevice::OpenFull(const OpenArgs & args, BOOL startImmediate)
 {
-  PString dev = args.deviceName;
-  if (!args.filename.IsEmpty())
-    dev = args.filename;
-
-  if (dev[0] == '#') {
+  if (args.deviceName[0] == '#') {
     PStringArray devices = GetDeviceNames();
-    PINDEX id = dev.Mid(1).AsUnsigned();
+    PINDEX id = args.deviceName.Mid(1).AsUnsigned();
     if (id == 0 || id > devices.GetSize())
       return FALSE;
 
@@ -362,7 +390,7 @@ BOOL PVideoDevice::OpenFull(const OpenArgs & args, BOOL startImmediate)
       return FALSE;
   }
   else {
-    if (!Open(dev, FALSE))
+    if (!Open(args.deviceName, FALSE))
       return FALSE;
   }
 
@@ -1264,9 +1292,22 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
                                                           BOOL startImmediate,
                                                           PPluginManager * pluginMgr)
 {
-  PVideoInputDevice * device = CreateDeviceByName(deviceName,driverName, pluginMgr);
+  PVideoInputDevice * device = CreateDeviceByName(deviceName, driverName, pluginMgr);
 
   if (device != NULL && device->Open(deviceName, startImmediate))
+    return device;
+
+  delete device;
+  return NULL;
+}
+
+
+PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
+                                                          BOOL startImmediate)
+{
+  PVideoInputDevice * device = CreateDeviceByName(args.deviceName, args.driverName, args.pluginMgr);
+
+  if (device != NULL && device->OpenFull(args, startImmediate))
     return device;
 
   delete device;
@@ -1338,6 +1379,23 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
     device = CreateDevice(driverName, pluginMgr);
 
   if (device != NULL && device->Open(deviceName, startImmediate))
+    return device;
+
+  delete device;
+  return NULL;
+}
+
+
+PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & args,
+                                                            BOOL startImmediate)
+{
+  PVideoOutputDevice * device;
+  if (args.driverName.IsEmpty() || args.driverName == "*")
+    device = CreateDeviceByName(args.deviceName, args.pluginMgr);
+  else
+    device = CreateDevice(args.driverName, args.pluginMgr);
+
+  if (device != NULL && device->OpenFull(args, startImmediate))
     return device;
 
   delete device;
