@@ -27,6 +27,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.12  2007/04/03 12:09:38  rjongbloed
+ * Fixed various "file video device" issues:
+ *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
+ *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
+ *   Added new statics to create correct video input/output device object
+ *     given a PVideoDevice::OpenArgs structure.
+ *   Fixed begin able to write to YUVFile when YUV420P colour format
+ *     is not actually selected.
+ *   Fixed truncating output video file if overwriting.
+ *
  * Revision 1.11  2007/04/02 05:29:54  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -87,7 +97,18 @@ namespace PWLibStupidHacks {
 // PVideoInputDevice_YUVFile
 
 PINSTANTIATE_FACTORY(PVideoInputDevice, YUVFile)
-PCREATE_VIDINPUT_PLUGIN(YUVFile);
+
+class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
+{
+  public:
+    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoInputDevice_YUVFile; }
+    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_YUVFile::GetInputDeviceNames(); }
+    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return PFile::Access(deviceName, PFile::ReadOnly); }
+} PVideoInputDevice_YUVFile_descriptor;
+
+PCREATE_PLUGIN(YUVFile, PVideoInputDevice, &PVideoInputDevice_YUVFile_descriptor);
+
+
 
 PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
 {
@@ -144,7 +165,7 @@ BOOL PVideoInputDevice_YUVFile::IsCapturing()
 PStringList PVideoInputDevice_YUVFile::GetInputDeviceNames()
 {
   PStringList list;
-  list.AppendString("yuvfile");
+  list.AppendString("*.yuv");
   return list;
 }
 
@@ -371,7 +392,17 @@ void PVideoInputDevice_YUVFile::FillRect(BYTE * frame,
 // PVideoOutputDevice_YUVFile
 
 PINSTANTIATE_FACTORY(PVideoOutputDevice, YUVFile)
-PCREATE_VIDOUTPUT_PLUGIN(YUVFile);
+
+class PVideoOutputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
+{
+  public:
+    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_YUVFile; }
+    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_YUVFile::GetOutputDeviceNames(); }
+    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return PFile::Access(deviceName, PFile::WriteOnly); }
+} PVideoOutputDevice_YUVFile_descriptor;
+
+PCREATE_PLUGIN(YUVFile, PVideoOutputDevice, &PVideoOutputDevice_YUVFile_descriptor);
+
 
 PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
 {
@@ -381,7 +412,7 @@ PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
 BOOL PVideoOutputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startImmediate*/)
 {
   deviceName = _deviceName;
-  if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create)) {
+  if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
     PTRACE(1, "YUVFile\tCannot create file " << deviceName << " as video output device");
     return FALSE;
   }
@@ -415,8 +446,17 @@ BOOL PVideoOutputDevice_YUVFile::IsOpen()
 PStringList PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
 {
   PStringList list;
-  list.AppendString("yuvfile");
+  list.AppendString("*.yuv");
   return list;
+}
+
+
+BOOL PVideoOutputDevice_YUVFile::SetColourFormat(const PString & newFormat)
+{
+  if (!(newFormat *= "YUV420P"))
+    return FALSE;
+
+  return PVideoDevice::SetColourFormat(newFormat);
 }
 
 
@@ -443,7 +483,12 @@ BOOL PVideoOutputDevice_YUVFile::SetFrameData(unsigned x, unsigned y,
   else if (((unsigned)file.GetWidth() != width) || ((unsigned)file.GetHeight() != height))
     return FALSE;
 
-  return file.WriteFrame(data);
+  if (converter == NULL)
+    return file.WriteFrame(data);
+
+  PBYTEArray tempStore;
+  converter->Convert(data, tempStore.GetPointer(GetMaxFrameBytes()));
+  return file.WriteFrame(tempStore);
 }
 
 
