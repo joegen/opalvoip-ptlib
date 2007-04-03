@@ -24,6 +24,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.13  2007/04/03 12:09:38  rjongbloed
+ * Fixed various "file video device" issues:
+ *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
+ *   Added driverName to PVideoDevice::OpenArgs (so can select YUVFile)
+ *   Added new statics to create correct video input/output device object
+ *     given a PVideoDevice::OpenArgs structure.
+ *   Fixed begin able to write to YUVFile when YUV420P colour format
+ *     is not actually selected.
+ *   Fixed truncating output video file if overwriting.
+ *
  * Revision 1.12  2006/06/06 23:00:13  dereksmithies
  * Fix erroneous help message.
  *
@@ -194,8 +204,12 @@ void VidTest::Main()
 
   if (grabber == NULL || !grabber->Open(inputDeviceName, false)) {
     cerr << "Cannot use input device name \"" << inputDeviceName << "\", must be one of:\n";
-    for (i = 0; i < devices.GetSize(); i++)
-      cerr << "  " << devices[i] << '\n';
+    PStringList drivers = PVideoInputDevice::GetDriverNames();
+    for (i = 0; i < drivers.GetSize(); i++) {
+      devices = PVideoInputDevice::GetDriversDeviceNames(drivers[i]);
+      for (PINDEX j = 0; j < devices.GetSize(); j++)
+        cerr << "  " << setw(20) << setiosflags(ios::left) << drivers[i] << devices[j] << '\n';
+    }
     cerr << endl;
     return;
   }
@@ -284,8 +298,12 @@ void VidTest::Main()
 
   if (display == NULL || !display->Open(outputDeviceName, false)) {
     cerr << "Cannot use output device name \"" << outputDeviceName << "\", must be one of:\n";
-    for (i = 0; i < devices.GetSize(); i++)
-      cerr << "  " << devices[i] << '\n';
+    PStringList drivers = PVideoOutputDevice::GetDriverNames();
+    for (i = 0; i < drivers.GetSize(); i++) {
+      devices = PVideoOutputDevice::GetDriversDeviceNames(drivers[i]);
+      for (PINDEX j = 0; j < devices.GetSize(); j++)
+        cerr << "  " << setw(20) << setiosflags(ios::left) << drivers[i] << devices[j] << '\n';
+    }
     cerr << endl;
     return;
   }
