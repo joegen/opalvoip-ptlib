@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.210  2007/04/03 16:04:02  csoutheren
+ * Fixed problem with IPV6 detection causing error on Windows
+ *
  * Revision 1.209  2007/02/19 04:36:35  csoutheren
  * Fixed parsing in PIPSocketAddressAndPort
  *
@@ -782,7 +785,11 @@ BOOL PIPSocket::IsIpAddressFamilyV6Supported()
   if (s < 0)
     return FALSE;
 
+#if _WIN32
+  closesocket(s);
+#else
   _close(s);
+#endif
   return TRUE;
 }
 
