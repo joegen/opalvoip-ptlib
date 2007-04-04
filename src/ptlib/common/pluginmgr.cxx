@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.38  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.37  2007/04/02 05:29:55  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -517,7 +521,7 @@ class PluginLoaderStartup : public PProcessStartup
         if (mgr == NULL) {
           PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
         } else {
-          PTRACE(1, "PLUGIN\tCreated manager for plugins of type " << *r);
+          PTRACE(3, "PLUGIN\tCreated manager for plugins of type " << *r);
           managers.push_back(mgr);
         }
       }
