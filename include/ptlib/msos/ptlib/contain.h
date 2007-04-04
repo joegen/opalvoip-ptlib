@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.60  2007/04/04 06:04:33  ykiryanov
+ * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
+ *
  * Revision 1.59  2007/02/10 07:25:18  csoutheren
  * Set WIN32 to a value to provide compatibility with headers that use this define in expressions
  *
@@ -450,8 +453,7 @@ class RegistryKey
   extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #else
   extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
-  #include <ptlib/wince/time.h>
-
+  #include "ptlib/wm/time.h"
 #endif
 
 // used by various modules to disable the winsock2 include to avoid header file problems
