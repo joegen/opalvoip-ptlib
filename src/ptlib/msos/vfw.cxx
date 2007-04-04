@@ -25,6 +25,10 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.39  2007/04/04 01:51:39  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.38  2007/04/02 05:29:55  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -1277,7 +1281,7 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
 
   PINDEX pos = deviceName.Find("STYLE=");
   if (pos == P_MAX_INDEX) {
-    PTRACE(2, "VidOut\tDevice name must specify STYLE=.");
+    PTRACE(1, "VidOut\tDevice name must specify STYLE=.");
     return false;
   }
 
@@ -1295,12 +1299,12 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
 
   // Have parsed out style & parent, see if legal combination
   if ((dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
-    PTRACE(2, "VidOut\tWindow must be WS_POPUP or WS_CHILD window.");
+    PTRACE(1, "VidOut\tWindow must be WS_POPUP or WS_CHILD window.");
     return false;
   }
 
   if (hWndParent == NULL && (dwStyle&WS_POPUP) == 0) {
-    PTRACE(2, "VidOut\tWindow must be WS_POPUP if parent window not specified.");
+    PTRACE(1, "VidOut\tWindow must be WS_POPUP if parent window not specified.");
     return false;
   }
 
