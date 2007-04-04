@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.18  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.17  2007/04/02 05:29:54  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -312,7 +316,7 @@ bool PVideoOutputDevice_SDL::ProcessSDLEvents()
         return false;
 
       case SDL_VIDEORESIZE :
-        PTRACE(3, "VSDL\t Resize window to " << event.resize.w << " x " << event.resize.h);
+        PTRACE(4, "VSDL\t Resize window to " << event.resize.w << " x " << event.resize.h);
     }
   }
   // Sleep for 25 milliseconds
@@ -328,7 +332,7 @@ void PVideoOutputDevice_SDL::SDLThreadMain(PThread &, INT)
 
   sdlStarted.Signal();
 
-  PTRACE(3, "VSDL\tMain loop is underway, with SDL screen initialised");
+  PTRACE(4, "VSDL\tMain loop is underway, with SDL screen initialised");
 
   while (ProcessSDLEvents()) {
     if (sdlStop.Wait(0))
@@ -372,7 +376,7 @@ void PVideoOutputDevice_SDL::SDLThreadMain(PThread &, INT)
 
   sdlStop.Acknowledge();
 
-  PTRACE(3, "VSDL\tEnd of sdl display loop");
+  PTRACE(4, "VSDL\tEnd of sdl display loop");
 }
 
 
