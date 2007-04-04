@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.250  2007/04/04 03:22:52  rjongbloed
+ * Fixed unix compile issue
+ *
  * Revision 1.249  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -1020,12 +1023,14 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 
   PTraceLevelThreshold = level;
 
+#if PTRACING
   Begin(0, "", 0) << "\tVersion " << process.GetVersion(TRUE)
                   << " by " << process.GetManufacturer()
                   << " on " << process.GetOSClass() << ' ' << process.GetOSName()
                   << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
                   << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
                   << End;
+#endif
 
 #if PMEMORY_CHECK
   if (ignoreAllocations >= 0)
