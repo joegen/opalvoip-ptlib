@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.21  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.20  2006/07/27 09:48:24  rjongbloed
  * Fixed DevStudio 2005 compiler compatibility
  *
@@ -488,7 +492,7 @@ BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
   PWaitAndSignal m(mutex);
 
   if (!IsOpen()) {
-    PTRACE(3, "TTS\tAttempt to speak whilst engine not open");
+    PTRACE(2, "TTS\tAttempt to speak whilst engine not open");
     return FALSE;
   }
 
@@ -507,7 +511,7 @@ BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
     return TRUE;
   }
 
-  PTRACE(3, "TTS\tStream mode not supported for Festival");
+  PTRACE(1, "TTS\tStream mode not supported for Festival");
 
   return FALSE;
 }
@@ -575,15 +579,15 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
   PPipeChannel cmd;
   int code = -1;
   if (!cmd.Open(cmdLine, PPipeChannel::ReadWriteStd)) {
-    PTRACE(2, "TTS\tCannot execute command " << cmd);
+    PTRACE(1, "TTS\tCannot execute command " << cmd);
   } else {
-    PTRACE(2, "TTS\tCreating " << fname << " using " << cmdLine);
+    PTRACE(3, "TTS\tCreating " << fname << " using " << cmdLine);
     cmd.Execute();
     code = cmd.WaitForTermination();
     if (code >= 0) {
-      PTRACE(2, "TTS\tdata generated");
+      PTRACE(4, "TTS\tdata generated");
     } else {
-      PTRACE(2, "TTS\tgeneration failed");
+      PTRACE(1, "TTS\tgeneration failed");
     }
   }
 

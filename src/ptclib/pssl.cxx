@@ -26,8 +26,12 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.44 2006/07/23 04:16:14 csoutheren Exp $
+ * $Id: pssl.cxx,v 1.45 2007/04/04 01:51:38 rjongbloed Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.45  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.44  2006/07/23 04:16:14  csoutheren
  * Changed to use different define for API version detect, and only on Windows
  *
@@ -863,7 +867,7 @@ static int VerifyCallBack(int ok, X509_STORE_CTX * ctx)
   char buf[256];
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
 
-  PTRACE(1, "SSL\tVerify callback depth "
+  PTRACE(3, "SSL\tVerify callback depth "
          << X509_STORE_CTX_get_error_depth(ctx)
          << " : cert name = " << buf);
 
