@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.40  2007/04/04 06:08:33  ykiryanov
+ * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
+ *
  * Revision 1.39  2007/04/04 01:51:39  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -1478,7 +1481,7 @@ BOOL PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height)
     rect.left = 0;
     rect.bottom = frameHeight;
     rect.right = frameWidth;
-    AdjustWindowRect(&rect, GetWindowLong(m_hWnd, GWL_STYLE), FALSE);
+	::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), FALSE, 0L);
     ::SetWindowPos(m_hWnd, NULL, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE|SWP_NOZORDER);
   }
 
@@ -1540,7 +1543,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
 {
+#ifndef _WIN32_WCE
   static const char wndClassName[] = "PVideoOutputDevice_Window";
+#else
+  static LPCWSTR wndClassName = L"PVideoOutputDevice_Window";
+#endif
 
   static bool needRegistration = true;
   if (needRegistration) {
@@ -1549,7 +1556,8 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     WNDCLASS wndClass;
     memset(&wndClass, 0, sizeof(wndClass));
     wndClass.style = CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS;
-    wndClass.lpszClassName = wndClassName;
+	wndClass.lpszClassName = wndClassName;
+	wndClass.lpszClassName = wndClassName;
     wndClass.lpfnWndProc = ::WndProc;
     wndClass.cbWndExtra = sizeof(this);
     PAssertOS(RegisterClass(&wndClass));
@@ -1573,9 +1581,19 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
     if (pos != P_MAX_INDEX)
       y = atoi(&deviceName[pos+2]);
 
-    m_hWnd = CreateWindow(wndClassName, title, dwStyle,
-                          x, y, frameWidth, frameHeight,
+#ifndef _WIN32_WCE
+    m_hWnd = CreateWindow(wndClassName, 
+		title, 
+		dwStyle,
+        x, y, frameWidth, frameHeight,
                           hParent, NULL, GetModuleHandle(NULL), this);
+#else
+    m_hWnd = CreateWindow(wndClassName, 
+		(LPCWSTR) title.AsUCS2(),
+		dwStyle,
+        x, y, frameWidth, frameHeight,
+        hParent, NULL, GetModuleHandle(NULL), this);
+#endif
   }
 
   m_started.Signal();
