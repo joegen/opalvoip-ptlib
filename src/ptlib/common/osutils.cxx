@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.249  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.248  2007/03/29 07:04:09  rjongbloed
  * Fixed trace log stopping all output if ever get a iostream output error (failbit)
  *
@@ -1016,12 +1020,12 @@ void PTrace::Initialise(unsigned level, const char * filename, const char * roll
 
   PTraceLevelThreshold = level;
 
-  PTRACE(1, process.GetName()
-         << "\tVersion " << process.GetVersion(TRUE)
-         << " by " << process.GetManufacturer()
-         << " on " << process.GetOSClass() << ' ' << process.GetOSName()
-         << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
-         << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu"));
+  Begin(0, "", 0) << "\tVersion " << process.GetVersion(TRUE)
+                  << " by " << process.GetManufacturer()
+                  << " on " << process.GetOSClass() << ' ' << process.GetOSName()
+                  << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
+                  << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+                  << End;
 
 #if PMEMORY_CHECK
   if (ignoreAllocations >= 0)

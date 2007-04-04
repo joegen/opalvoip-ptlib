@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.211  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.210  2007/04/03 16:04:02  csoutheren
  * Fixed problem with IPV6 detection causing error on Windows
  *
@@ -3061,7 +3065,7 @@ BOOL PUDPSocket::ApplyQoS()
 #else
     err = errno;
 #endif
-    PTRACE(3,"QOS\tsetsockopt failed with code " << err);
+    PTRACE(1,"QOS\tsetsockopt failed with code " << err);
     return FALSE;
   }
     

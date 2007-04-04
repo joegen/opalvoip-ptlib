@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.25  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.24  2003/04/15 03:00:41  robertj
  * Added array support to XML/RPC
  * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
@@ -857,7 +861,7 @@ BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
 {
   // get the parameter
   if (!ParseScalar(GetParam(idx), type, value)) {
-    PTRACE(3, "XMLRPC\tCannot get scalar parm " << idx);
+    PTRACE(2, "XMLRPC\tCannot get scalar parm " << idx);
     return FALSE;
   }
 
@@ -875,7 +879,7 @@ BOOL PXMLRPCBlock::GetExpectedParam(PINDEX idx, const PString & expectedType, PS
 
   // see if correct type
   if (!expectedType.IsEmpty() && (type != expectedType)) {
-    PTRACE(3, "XMLRPC\tExpected parm " << idx << " to be " << expectedType << ", was " << type);
+    PTRACE(2, "XMLRPC\tExpected parm " << idx << " to be " << expectedType << ", was " << type);
     return FALSE;
   }
 
@@ -897,7 +901,7 @@ BOOL PXMLRPCBlock::GetParam(PINDEX idx, int & val)
   if ((type != "i4") && 
       (type != "int") &&
       (type != "boolean")) {
-    PTRACE(3, "XMLRPC\tExpected parm " << idx << " to be intger compatible, was " << type);
+    PTRACE(2, "XMLRPC\tExpected parm " << idx << " to be intger compatible, was " << type);
     return FALSE;
   }
 
@@ -996,7 +1000,7 @@ BOOL PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & args
   if (response.GetParams(reply))
     return TRUE;
 
-  PTRACE(2, "XMLRPC\tParsing response failed: " << response.GetFaultText());
+  PTRACE(1, "XMLRPC\tParsing response failed: " << response.GetFaultText());
   return FALSE;
 }
 

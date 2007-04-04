@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.72  2007/04/04 01:51:38  rjongbloed
+ * Reviewed and adjusted PTRACE log levels
+ *   Now follows 1=error,2=warn,3=info,4+=debug
+ *
  * Revision 1.71  2007/04/02 05:29:54  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -373,7 +377,7 @@ void PVXMLPlayableFilename::Play(PVXMLChannel & outgoingChannel)
   }
 
   if (chan == NULL)
-    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
+    PTRACE(2, "PVXML\tCannot open file \"" << fn << "\"");
   else {
     PTRACE(3, "PVXML\tPlaying file \"" << fn << "\"");
     outgoingChannel.SetReadChannel(chan, TRUE);
@@ -436,7 +440,7 @@ void PVXMLPlayableFilenameList::OnRepeat(PVXMLChannel & outgoingChannel)
   }
 
   if (chan == NULL)
-    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
+    PTRACE(2, "PVXML\tCannot open file \"" << fn << "\"");
   else {
     PTRACE(3, "PVXML\tPlaying file \"" << fn << "\"");
     outgoingChannel.SetReadChannel(chan, TRUE);
@@ -472,13 +476,13 @@ void PVXMLPlayableCommand::Play(PVXMLChannel & outgoingChannel)
   // execute a command and send the output through the stream
   pipeCmd = new PPipeChannel;
   if (!pipeCmd->Open(arg, PPipeChannel::ReadOnly)) {
-    PTRACE(3, "PVXML\tCannot open command " << arg);
+    PTRACE(2, "PVXML\tCannot open command " << arg);
     delete pipeCmd;
     return;
   }
 
   if (pipeCmd == NULL)
-    PTRACE(3, "PVXML\tCannot open command \"" << arg << "\"");
+    PTRACE(2, "PVXML\tCannot open command \"" << arg << "\"");
   else {
     pipeCmd->Execute();
     PTRACE(3, "PVXML\tPlaying command \"" << arg << "\"");
@@ -576,7 +580,7 @@ void PVXMLRecordableFilename::Record(PVXMLChannel & outgoingChannel)
   }
 
   if (chan == NULL)
-    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
+    PTRACE(2, "PVXML\tCannot open file \"" << fn << "\"");
   else {
     PTRACE(3, "PVXML\tRecording to file \"" << fn << "\"");
     outgoingChannel.SetWriteChannel(chan, TRUE);
@@ -1082,7 +1086,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
   // submit actions etc. can be performed
   // record and audio and other user interaction commands should be skipped
   if (forceEnd) {
-    PTRACE(1, "PVXML\tFast forwarding through script because of forceEnd" );
+    PTRACE(2, "PVXML\tFast forwarding through script because of forceEnd" );
     while (currentNode != NULL)
       ExecuteDialog();
   }
@@ -1801,7 +1805,7 @@ BOOL PVXMLSession::TraverseAudio()
           if (RetreiveResource(url, contentType, fn, useCache)) {
             PWAVFile * wavFile = vxmlChannel->CreateWAVFile(fn);
             if (wavFile == NULL)
-              PTRACE(3, "PVXML\tCannot create audio file " + fn);
+              PTRACE(2, "PVXML\tCannot create audio file " + fn);
             else if (!wavFile->IsOpen())
               delete wavFile;
             else {
@@ -1820,7 +1824,7 @@ BOOL PVXMLSession::TraverseAudio()
     }
 
     else 
-      PTRACE(3, "PVXML\tUnknown audio tag " << element->GetName() << " encountered");
+      PTRACE(2, "PVXML\tUnknown audio tag " << element->GetName() << " encountered");
   }
 
   return TRUE;
@@ -2304,7 +2308,7 @@ BOOL PVXMLSession::TraverseChoice(const PString & grammarResult)
     // Find the form at next parameter
     PString formID = element->GetAttribute( "next" );
 
-    PTRACE(2, "VXMLsess\tFound form id " << formID );
+    PTRACE(3, "VXMLsess\tFound form id " << formID );
 
     if (!formID.IsEmpty()) {
       formID = formID.Right( formID.GetLength() - 1 );
@@ -2497,7 +2501,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
   if (!wav->Open(AdjustWavFilename(fn), 
                  recording ? PFile::WriteOnly : PFile::ReadOnly,
                  PFile::ModeDefault))
-    PTRACE(1, "VXML\tCould not open WAV file " << wav->GetName());
+    PTRACE(2, "VXML\tCould not open WAV file " << wav->GetName());
 
   else if (recording) {
     wav->SetChannels(1);
@@ -2507,17 +2511,17 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
   } 
   
   else if (!wav->IsValid())
-    PTRACE(1, "VXML\tWAV file header invalid for " << wav->GetName());
+    PTRACE(2, "VXML\tWAV file header invalid for " << wav->GetName());
 
   else if (wav->GetSampleRate() != sampleFrequency)
-    PTRACE(1, "VXML\tWAV file has unsupported sample frequency " << wav->GetSampleRate());
+    PTRACE(2, "VXML\tWAV file has unsupported sample frequency " << wav->GetSampleRate());
 
   else if (wav->GetChannels() != 1)
-    PTRACE(1, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
+    PTRACE(2, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
 
   else {
     wav->SetAutoconvert();   /// enable autoconvert
-    PTRACE(4, "VXML\tOpened WAV file " << wav->GetName());
+    PTRACE(3, "VXML\tOpened WAV file " << wav->GetName());
     return wav;
   }
 
@@ -2535,7 +2539,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
 
   // let the recordable do silence detection
   if (recordable != NULL && recordable->OnFrame(IsSilenceFrame(buf, len))) {
-    PTRACE(1, "VXML\tRecording finished due to silence");
+    PTRACE(3, "VXML\tRecording finished due to silence");
     EndRecording();
   }
 
@@ -2601,7 +2605,7 @@ BOOL PVXMLChannel::EndRecording()
     recordable->OnStop();
     delete recordable;
     recordable = NULL;
-    PTRACE(3, "PVXML\tRecording finished");
+    PTRACE(4, "PVXML\tRecording finished");
   }
 
   return TRUE;
@@ -2730,13 +2734,13 @@ BOOL PVXMLChannel::QueuePlayable(const PString & type,
   PTRACE(3, "PVXML\tEnqueueing playable " << type << " with arg " << arg << " for playing");
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
   if (item == NULL) {
-    PTRACE(1, "VXML\tCannot find playable of type " << type);
+    PTRACE(2, "VXML\tCannot find playable of type " << type);
     delete item;
     return FALSE;
   }
 
   if (!item->Open(*this, arg, delay, repeat, autoDelete)) {
-    PTRACE(1, "VXML\tCannot open playable of type " << type << " with arg " << arg);
+    PTRACE(2, "VXML\tCannot open playable of type " << type << " with arg " << arg);
     delete item;
     return FALSE;
   }
@@ -2769,13 +2773,13 @@ BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX dela
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   PVXMLPlayableData * item = dynamic_cast<PVXMLPlayableData *>(PFactory<PVXMLPlayable>::CreateInstance("PCM Data"));
   if (item == NULL) {
-    PTRACE(1, "VXML\tCannot find playable of type 'PCM Data'");
+    PTRACE(2, "VXML\tCannot find playable of type 'PCM Data'");
     delete item;
     return FALSE;
   }
 
   if (!item->Open(*this, "", delay, repeat, TRUE)) {
-    PTRACE(1, "VXML\tCannot open playable of type 'PCM Data'");
+    PTRACE(2, "VXML\tCannot open playable of type 'PCM Data'");
     delete item;
     return FALSE;
   }
