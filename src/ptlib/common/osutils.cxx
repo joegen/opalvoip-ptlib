@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.251  2007/04/04 06:09:05  ykiryanov
+ * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
+ *
  * Revision 1.250  2007/04/04 03:22:52  rjongbloed
  * Fixed unix compile issue
  *
@@ -2059,7 +2062,7 @@ PProcess::PProcess(const char * manuf, const char * name,
     arguments.SetArgs(p_argc-1, p_argv+1);
 
     
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_WIN32_WCE)
     // Try to get the real image path for this process
     GetModuleFileName(GetModuleHandle(NULL), executableFile.GetPointer(1024), 1024);
     executableFile.Replace("\\??\\","");
