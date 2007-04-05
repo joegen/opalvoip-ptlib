@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.50  2007/04/05 01:53:00  rjongbloed
+ * Changed PVideoOutputDevice::CreateDeviceByName() to include driverName parameter so symmetric with PVideoInputDevice.
+ *
  * Revision 1.49  2007/04/03 12:09:38  rjongbloed
  * Fixed various "file video device" issues:
  *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
@@ -686,6 +689,7 @@ class PVideoOutputDevice : public PVideoDevice
      */
     static PVideoOutputDevice *CreateDeviceByName(
       const PString & deviceName,         ///< Name of device
+      const PString & driverName = PString::Empty(),  ///< Name of driver (if any)
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 

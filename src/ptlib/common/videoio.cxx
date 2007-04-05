@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.67  2007/04/05 01:53:00  rjongbloed
+ * Changed PVideoOutputDevice::CreateDeviceByName() to include driverName parameter so symmetric with PVideoInputDevice.
+ *
  * Revision 1.66  2007/04/03 12:09:38  rjongbloed
  * Fixed various "file video device" issues:
  *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
@@ -1358,12 +1361,12 @@ PVideoOutputDevice * PVideoOutputDevice::CreateDevice(const PString & driverName
 }
 
 
-PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & deviceName, PPluginManager * pluginMgr)
+PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
 
-  return (PVideoOutputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoOutputPluginBaseClass);
+  return (PVideoOutputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoOutputPluginBaseClass, 0, driverName);
 }
 
 
@@ -1374,7 +1377,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
 {
   PVideoOutputDevice * device;
   if (driverName.IsEmpty() || driverName == "*")
-    device = CreateDeviceByName(deviceName, pluginMgr);
+    device = CreateDeviceByName(deviceName, driverName, pluginMgr);
   else
     device = CreateDevice(driverName, pluginMgr);
 
@@ -1391,7 +1394,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & arg
 {
   PVideoOutputDevice * device;
   if (args.driverName.IsEmpty() || args.driverName == "*")
-    device = CreateDeviceByName(args.deviceName, args.pluginMgr);
+    device = CreateDeviceByName(args.deviceName, args.driverName, args.pluginMgr);
   else
     device = CreateDevice(args.driverName, args.pluginMgr);
 
