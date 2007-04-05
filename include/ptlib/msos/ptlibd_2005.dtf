@@ -10950,7 +10950,7 @@ EXPORTS
     ?CreateDevice@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10631 NONAME
     ?CreateDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10632 NONAME
     ?CreateDeviceByName@PVideoInputDevice@@SAPAV1@ABVPString@@0PAVPPluginManager@@@Z @16045 NONAME
-    ?CreateDeviceByName@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @10634 NONAME
+    ?CreateDeviceByName@PVideoOutputDevice@@SAPAV1@ABVPString@@0PAVPPluginManager@@@Z @17695 NONAME
     ?CreateEndTag@PXML@@SA?AVPString@@ABV2@@Z @10635 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPSoundChannel@@@@UAEXABVPString@@@Z @10636 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPVideoInputDevice@@@@UAEXABVPString@@@Z @10637 NONAME
