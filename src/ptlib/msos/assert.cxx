@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.42  2007/04/06 21:05:10  ykiryanov
+ * added win ce define
+ *
  * Revision 1.41  2005/11/30 12:47:42  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -279,8 +282,6 @@ PImageDLL::PImageDLL()
 
 void PAssertFunc(const char * msg)
 {
-#ifndef _WIN32_WCE
-
   ostrstream str;
   str << msg;
 
@@ -403,7 +404,7 @@ void PAssertFunc(const char * msg)
 
   if (PProcess::Current().IsServiceProcess()) {
     PSystemLog::Output(PSystemLog::Fatal, pstr);
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
 #endif
@@ -416,11 +417,21 @@ void PAssertFunc(const char * msg)
 #endif
 
   if (PProcess::Current().IsGUIProcess()) {
-    switch (MessageBox(NULL, pstr, "Portable Windows Library",
-                              MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
+    switch (MessageBox(NULL, 
+#if !defined(_WIN32_WCE)
+		pstr, 
+		"Portable Windows Library",
+#else
+		PString(pstr).AsUCS2(), 
+		L"Portable Windows Library",
+#endif // !_WIN32_WCE
+        MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
       case IDABORT :
-        FatalExit(1);  // Never returns
-
+#if !defined(_WIN32_WCE)
+		  FatalExit(1);  // Never returns
+#else
+		  ExitProcess(1);
+#endif // !_WIN32_WCE
       case IDRETRY :
         DebugBreak();
     }
@@ -445,7 +456,7 @@ void PAssertFunc(const char * msg)
 #if defined(_WIN32)
         ReleaseSemaphore(mutex, 1, NULL);
 #endif
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(_WIN32_WCE)
         __asm int 3;
 #endif
 
@@ -459,18 +470,6 @@ void PAssertFunc(const char * msg)
         return;
     }
   }
-
-#else
-
-#ifdef _DEBUG
-    do
-    { 
-      if ( AfxAssertFailedLine(file, line) )
-        AfxDebugBreak(); 
-    } while (0);
-#endif // _DEBUG
-
-#endif // _WIN32_WCE
 }
 
 
