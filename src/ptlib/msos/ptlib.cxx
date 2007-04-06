@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.82  2007/04/06 21:06:03  ykiryanov
+ * Changed directory for wince to wm
+ *
  * Revision 1.81  2006/06/21 04:20:07  csoutheren
  * Fixes for VS.net
  *
@@ -310,7 +313,7 @@
 #endif
 
 #ifdef _WIN32_WCE
-#include <ptlib/wince/time.h>
+#include "ptlib/wm/time.h"
 #endif
 
 ostream & operator<<(ostream & s, PInt64 v)
@@ -874,7 +877,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
     
     info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
     
-    if (FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY==0)
+    if ((FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY)==0)
       info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
     
     if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
