@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.19  2007/04/06 21:06:57  ykiryanov
+ * changed directory name  for wince to wm
+ *
  * Revision 1.18  2006/07/31 12:08:28  rjongbloed
  * Fixed problem with WAV file asynchronous play back
  *
@@ -217,6 +220,8 @@
 #ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
 #endif
+#else
+#include "ptlib/wm/mmsystemx.h"
 #endif
 
 class PSound;
@@ -665,7 +670,11 @@ BOOL PSound::Play(const PString & device)
 
 BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 {
+#ifndef _WIN32_WCE
   return ::PlaySound(file, NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
+#else
+  return ::PlaySound((LPCWSTR) file.AsUCS2(), NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
+#endif
 }
 
 
