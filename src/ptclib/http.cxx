@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.123  2007/04/08 01:53:28  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.122  2006/08/29 01:33:25  csoutheren
  * RFC 3261 specifies use of sips for secure SIP, so change URL parsing back...
  *
@@ -1233,8 +1236,7 @@ BOOL PURL::OpenBrowser(const PString & url)
  #ifndef _WIN32_WCE
    sei.lpFile = url;
  #else
-   USES_CONVERSION;
-   sei.lpFile = A2T(url);
+  sei.lpFile = url.AsUCS2();
  #endif // _WIN32_WCE
 
   if (ShellExecuteEx(&sei) != 0)
@@ -1243,7 +1245,7 @@ BOOL PURL::OpenBrowser(const PString & url)
 #ifndef _WIN32_WCE
   MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
 #else
-  MessageBox(NULL, _T("Unable to open page"), A2T(PProcess::Current().GetName()), MB_APPLMODAL);
+  MessageBox(NULL, _T("Unable to open page"), PProcess::Current().GetName().AsUCS2(), MB_APPLMODAL);
 #endif // _WIN32_WCE
 
 #endif // WIN32
