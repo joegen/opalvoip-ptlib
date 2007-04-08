@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.13  2007/04/08 06:21:06  rjongbloed
+ * Changed YUVFile video driver so if default device name (*.yuv) is used then will
+ *   a) read from the first yuv file in the current directoy
+ *   b) write to the file ./videoXXXX.yuv where XXX is uiique.
+ *
  * Revision 1.12  2007/04/03 12:09:38  rjongbloed
  * Fixed various "file video device" issues:
  *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
@@ -93,6 +98,10 @@ namespace PWLibStupidHacks {
 #include <ptlib/pluginmgr.h>
 #include <ptlib/videoio.h>
 
+
+static const char DefaultYUVFileName[] = "*.yuv";
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile
 
@@ -121,13 +130,23 @@ PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
 
 BOOL PVideoInputDevice_YUVFile::Open(const PString & devName, BOOL /*startImmediate*/)
 {
-  PFilePath fn(devName);
+  PString fileName;
+  if (devName != DefaultYUVFileName)
+    fileName = devName;
+  else {
+    unsigned unique = 0;
+    do {
+      fileName.Empty();
+      fileName.sprintf("video%03u.yuv", ++unique);
+    } while (PFile::Exists(fileName));
+  }
 
-  if (!file.Open(fn, PFile::ReadOnly, PFile::MustExist))
+  if (!file.Open(fileName, PFile::ReadOnly, PFile::MustExist)) {
+    PTRACE(1, "YUVFile\tCannot open file " << fileName << " as video output device");
     return FALSE;
+  }
 
-  deviceName = fn.GetTitle();
-
+  deviceName = file.GetFilePath();
   return TRUE;    
 }
 
@@ -165,7 +184,7 @@ BOOL PVideoInputDevice_YUVFile::IsCapturing()
 PStringList PVideoInputDevice_YUVFile::GetInputDeviceNames()
 {
   PStringList list;
-  list.AppendString("*.yuv");
+  list.AppendString(DefaultYUVFileName);
   return list;
 }
 
@@ -411,12 +430,24 @@ PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
 
 BOOL PVideoOutputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startImmediate*/)
 {
-  deviceName = _deviceName;
+  PString fileName;
+  if (_deviceName != DefaultYUVFileName)
+    fileName = _deviceName;
+  else {
+    PDirectory dir;
+    if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
+      PTRACE(1, "YUVFile\tCannot find a file using " << DefaultYUVFileName << " as video output device");
+      return FALSE;
+    }
+    fileName = dir.GetEntryName();
+  }
+
   if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
-    PTRACE(1, "YUVFile\tCannot create file " << deviceName << " as video output device");
+    PTRACE(1, "YUVFile\tCannot create file " << fileName << " as video output device");
     return FALSE;
   }
 
+  deviceName = file.GetFilePath();
   return TRUE;
 }
 
@@ -446,7 +477,7 @@ BOOL PVideoOutputDevice_YUVFile::IsOpen()
 PStringList PVideoOutputDevice_YUVFile::GetOutputDeviceNames()
 {
   PStringList list;
-  list.AppendString("*.yuv");
+  list.AppendString(DefaultYUVFileName);
   return list;
 }
 
