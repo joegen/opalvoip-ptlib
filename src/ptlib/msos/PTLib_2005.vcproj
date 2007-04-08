@@ -176,12 +176,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptlibsd.lib ws2.lib"
+				AdditionalDependencies="ptlibsd.lib"
 				OutputFile="..\..\..\Lib\wm5\PTLibd.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\..\lib\wm5"
-				IgnoreAllDefaultLibraries="true"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="ws2_32.lib;shell32.lib"
 				ModuleDefinitionFile="..\..\..\Lib\wm5\Debug\PTLibd.def"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -383,12 +384,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptlibs.lib ws2.lib"
+				AdditionalDependencies="ptlibs.lib"
 				OutputFile=".\..\..\..\Lib\wm5\PTLib.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\..\lib\wm5"
-				IgnoreAllDefaultLibraries="true"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="ws2_32.lib;shell32.lib"
 				ModuleDefinitionFile="..\..\..\Lib\wm5\Release\ptlib.def"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -413,6 +415,7 @@
 				Name="VCPostBuildEventTool"
 				Description="Extracting debug symbols"
 				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"
+				ExcludedFromBuild="true"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
@@ -594,7 +597,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\wm5\ptlibs.lib&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul&#x0D;&#x0A;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul&#x0D;&#x0A;"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\wm5\ptlibs.lib"
 					Outputs="$(IntDir)\$(TargetName).def"
 				/>
@@ -638,7 +641,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\wm5\ptlibsd.lib&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul&#x0D;&#x0A;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsd.lib&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul&#x0D;&#x0A;"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\wm5\ptlibsd.lib"
 					Outputs="$(IntDir)\$(TargetName).def"
 				/>

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.83  2007/04/08 01:53:37  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.82  2007/04/06 21:06:03  ykiryanov
  * Changed directory for wince to wm
  *
@@ -313,7 +316,7 @@
 #endif
 
 #ifdef _WIN32_WCE
-#include "ptlib/wm/time.h"
+#include <ptlib/wm/time.h>
 #endif
 
 ostream & operator<<(ostream & s, PInt64 v)

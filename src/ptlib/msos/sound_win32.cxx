@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.20  2007/04/08 01:53:37  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.19  2007/04/06 21:06:57  ykiryanov
  * changed directory name  for wince to wm
  *
@@ -221,7 +224,7 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 #else
-#include "ptlib/wm/mmsystemx.h"
+#include <ptlib/wm/mmsystemx.h>
 #endif
 
 class PSound;
