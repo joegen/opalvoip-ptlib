@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.31  2007/04/08 09:07:33  ykiryanov
+ * Fixed compilation problems on Windows Mobile 5.0 SDK. This file wanted by opal DLL build
+ *
  * Revision 1.30  2007/04/08 01:53:29  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -131,10 +134,6 @@
 #include <ptclib/pdns.h>
 #include <ptclib/url.h>
 #include <ptlib/ipsock.h>
-
-#ifdef _WIN32_WCE
-#undef P_DNS
-#endif
 
 #if P_DNS
 
@@ -385,8 +384,13 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
   if (
       (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
       (dnsRecord->wType == DNS_TYPE_SRV) &&
+#ifndef _WIN32_WCE
       (strlen(dnsRecord->Data.SRV.pNameTarget) > 0) &&
       (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
+#else
+      (wcslen(dnsRecord->Data.SRV.pNameTarget) > 0) &&
+      (wcscmp(dnsRecord->Data.SRV.pNameTarget, L".") != 0)
+#endif
       ) {
     record = new SRVRecord();
     record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
@@ -634,7 +638,11 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
   if (
       (dnsRecord->Flags.S.Section == DnsSectionAnswer) &&
       (dnsRecord->wType == DNS_TYPE_MX) &&
+#ifndef _WIN32_WCE
       (strlen(dnsRecord->Data.MX.pNameExchange) > 0)
+#else
+      (wcslen(dnsRecord->Data.MX.pNameExchange) > 0)
+#endif
      ) {
     record = new MXRecord();
     record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);
