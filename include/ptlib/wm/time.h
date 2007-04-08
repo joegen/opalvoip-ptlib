@@ -1,3 +1,10 @@
+//////////////////////////////////////////////////////
+//
+// VisualStudio 2005 PWLib Port, 
+// (c) 2007 Dinsk.net
+// developer@dinsk.net 
+//
+//////////////////////////////////////////////////////
 //
 // (c) Yuriy Gorvitovskiy
 // for Openh323, www.Openh323.org
@@ -16,7 +23,7 @@
 
 #define _INC_TIME // for wce.h
 
-#include <winbase.h>
+#include <windows.h>
 #include <stdlib.h>
 
 #ifndef _TM_DEFINED
@@ -64,13 +71,16 @@ size_t wcsftime(
 );
 #endif
 
-#ifdef  __cplusplus
-}
+#ifndef  __cplusplus
+time_t	__cdecl FileTimeToTime(const struct _FILETIME FileTime);
+time_t	__cdecl SystemTimeToTime(const struct _SYSTEMTIME* pSystemTime);
+#else
+time_t	FileTimeToTime(const FILETIME FileTime);
+time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
 #endif
 
 #ifdef  __cplusplus
-time_t				FileTimeToTime(const FILETIME & FileTime);
-time_t				SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
+}
 #endif
 
 #endif  /* _INC_TIME */
