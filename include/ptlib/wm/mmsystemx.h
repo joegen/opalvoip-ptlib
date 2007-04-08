@@ -1,3 +1,10 @@
+//////////////////////////////////////////////////////
+//
+// VisualStudio 2005 PWLib Port, 
+// (c) 2007 Dinsk.net
+// developer@dinsk.net 
+//
+//////////////////////////////////////////////////////
 //
 // (c) 2000 Yuri Kiryanov, yuri@kiryanov.com
 // and Yuriy Gorvitovskiy
@@ -8,7 +15,7 @@
 #ifndef __MMSYSTEMX_H__
 #define __MMSYSTEMX_H__
 
-#include "ptlib/wm/stdlibx.h"
+#include <ptlib/wm/stdlibx.h>
 
 //
 // MMSystem extras
