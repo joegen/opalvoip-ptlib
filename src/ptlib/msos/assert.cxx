@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.43  2007/04/08 01:53:37  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.42  2007/04/06 21:05:10  ykiryanov
  * added win ce define
  *
@@ -403,11 +406,13 @@ void PAssertFunc(const char * msg)
   // Must do nothing to str after this or it invalidates pstr
 
   if (PProcess::Current().IsServiceProcess()) {
-    PSystemLog::Output(PSystemLog::Fatal, pstr);
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
+#ifndef _WIN32_WCE
+	PSystemLog::Output(PSystemLog::Fatal, pstr);
+#if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
       __asm int 3;
 #endif
+#endif // !_WIN32_WCE
     return;
   }
 

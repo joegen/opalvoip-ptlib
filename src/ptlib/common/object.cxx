@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.85  2007/04/08 01:53:37  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.84  2006/06/21 03:28:44  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -306,7 +309,7 @@
 #include <ctype.h>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(_WIN32_WCE)
 #include <crtdbg.h>
 #endif
 #elif defined(__NUCLEUS_PLUS__)
