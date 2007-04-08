@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.30  2007/04/08 01:53:29  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.29  2006/10/11 01:27:40  csoutheren
  * Applied 1565717 - Fix DNS SRV query for multiple results
  * Thanks to Simon Zwahlen
@@ -128,6 +131,10 @@
 #include <ptclib/pdns.h>
 #include <ptclib/url.h>
 #include <ptlib/ipsock.h>
+
+#ifdef _WIN32_WCE
+#undef P_DNS
+#endif
 
 #if P_DNS
 
