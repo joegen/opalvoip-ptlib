@@ -1,3 +1,10 @@
+//////////////////////////////////////////////////////
+//
+// VisualStudio 2005 PWLib Port, 
+// (c) 2007 Dinsk.net
+// developer@dinsk.net 
+//
+//////////////////////////////////////////////////////
 //
 // (c) 2000 Yuri Kiryanov, yuri@kiryanov.com
 // and Yuriy Gorvitovskiy
@@ -13,7 +20,8 @@
 #include <stdlib.h>
 #include <winsock.h>
 #include <atlconv.h>
-#include "ptlib/wm/time.h"
+#include <cmnintrin.h>
+#include <ptlib/wm/time.h>
 
 #ifdef __cplusplus
 
@@ -122,19 +130,27 @@ char *			_i64toa (__int64 val,char *buf,int radix);
 char *			_ui64toa (unsigned __int64 val,char *buf,int radix);
 
 #if _WIN32_WCE < 0x502
-#ifndef _X86_
 __int64			_atoi64(const char *nptr);
-#endif
 
-int stricmp( const wchar_t* string1, const char* string2 );
-int stricmp( const char*string1, const char* string2 );
+int stricmp(const char* s1, const char* s2 ); 
+int stricmp(const wchar_t* s1, const char* s2 ); 
 
-int strcasecmp( const wchar_t* string1, const char* string2 );
-int strcasecmp( const char*string1, const char* string2 );
+int strcasecmp(const char* s1, const char* s2 ); 
+int strncasecmp(const char* s1, const char* s2, int n);
 
-int strncasecmp( const wchar_t* string1, const char* string2, int n );
-int strncasecmp( const char*string1, const char* string2, int n );
+int strcasecmp(const wchar_t* s1, const char* s2 ); 
+int strncasecmp(const wchar_t* s1, const char* s2, int n);
 #endif // _WIN32_WCE < 0x502
+
+LONG RegDeleteValue( HKEY hKey, const char* lpValueName );
+
+LONG RegQueryValueEx( HKEY hKey, const char* lpValueName, 
+	LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData );
+
+LONG RegSetValueEx( HKEY hKey, const char* lpValueName, 
+	DWORD Reserved, DWORD dwType, LPBYTE lpData, LPDWORD lpcbData );
+
+LONG RegSetValueEx( HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData );
 
 LONG RegCreateKeyEx( HKEY hKey, const char* lpSub, DWORD dwr, char* lpcls, DWORD dwo, 
 	REGSAM sam, LPSECURITY_ATTRIBUTES lpsa, PHKEY phk, LPDWORD lpdw );
