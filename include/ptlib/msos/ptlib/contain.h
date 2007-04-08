@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.61  2007/04/08 01:53:16  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.60  2007/04/04 06:04:33  ykiryanov
  * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
  *
@@ -410,7 +413,8 @@ istream & operator>>(istream & s, PUInt64 & v);
 //#define _close ::close
 //#define _access ::access
 #endif
-#endif
+
+#endif // !_WIN32_WCE 
 
 class PWin32Overlapped : public OVERLAPPED
 {
@@ -453,7 +457,6 @@ class RegistryKey
   extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #else
   extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
-  #include "ptlib/wm/time.h"
 #endif
 
 // used by various modules to disable the winsock2 include to avoid header file problems
