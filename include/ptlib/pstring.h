@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.92  2007/04/08 01:53:16  ykiryanov
+ * Build to support ptlib dll creation
+ *
  * Revision 1.91  2006/08/11 08:18:57  csoutheren
  * Add PCaselessString constructor for std::string
  *
@@ -1869,6 +1872,12 @@ class PString : public PCharArray {
     operator std::string () const
     { return std::string(theArray); }
 
+	/** Cast the PString to a wide char string
+      */
+#ifdef _WIN32_WCE
+	operator LPCWSTR() const
+    { return AsUCS2(); }
+#endif
   //@}
 
 
