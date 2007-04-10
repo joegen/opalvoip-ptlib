@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.10  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.9  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -476,7 +480,7 @@ BOOL PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
     request.code = PHTTP::InternalServerError;
 
   // Set the correct content-type
-  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/xml");
 
   // Start constructing the response
   PINDEX len = reply.GetLength();
@@ -622,7 +626,7 @@ BOOL PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & respons
   PHTTPClient client;
   PMIMEInfo sendMIME, replyMIME;
   sendMIME.SetAt( "Server", url.GetHostName() );
-  sendMIME.SetAt( PHTTP::ContentTypeTag, "text/xml" );
+  sendMIME.SetAt( PHTTP::ContentTypeTag(), "text/xml" );
   sendMIME.SetAt( "SOAPAction", soapAction );
 
   if(url.GetUserName() != "") {
@@ -639,8 +643,8 @@ BOOL PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & respons
 
   // Find the length of the response
   PINDEX contentLength;
-  if ( replyMIME.Contains( PHTTP::ContentLengthTag ) )
-    contentLength = ( PINDEX ) replyMIME[ PHTTP::ContentLengthTag ].AsUnsigned();
+  if ( replyMIME.Contains( PHTTP::ContentLengthTag() ) )
+    contentLength = ( PINDEX ) replyMIME[ PHTTP::ContentLengthTag() ].AsUnsigned();
   else if ( ok)
     contentLength = P_MAX_INDEX;
   else

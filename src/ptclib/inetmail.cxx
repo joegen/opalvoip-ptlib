@@ -24,6 +24,10 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.31  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.30  2004/05/09 07:23:49  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -1329,20 +1333,20 @@ void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 //////////////////////////////////////////////////////////////////////////////
 // PRFC822Channel
 
-const char PRFC822Channel::MimeVersionTag[] = "MIME-version";
-const char PRFC822Channel::FromTag[] = "From";
-const char PRFC822Channel::ToTag[] = "To";
-const char PRFC822Channel::CCTag[] = "cc";
-const char PRFC822Channel::BCCTag[] = "bcc";
-const char PRFC822Channel::SubjectTag[] = "Subject";
-const char PRFC822Channel::DateTag[] = "Date";
-const char PRFC822Channel::ReturnPathTag[] = "Return-Path";
-const char PRFC822Channel::ReceivedTag[] = "Received";
-const char PRFC822Channel::MessageIDTag[] = "Message-ID";
-const char PRFC822Channel::MailerTag[] = "X-Mailer";
-const char PRFC822Channel::ContentTypeTag[] = "Content-Type";
-const char PRFC822Channel::ContentDispositionTag[] = "Content-Disposition";
-const char PRFC822Channel::ContentTransferEncodingTag[] = "Content-Transfer-Encoding";
+const PString & PRFC822Channel::MimeVersionTag() { static PString s = "MIME-version"; return s; }
+const PString & PRFC822Channel::FromTag() { static PString s = "From"; return s; }
+const PString & PRFC822Channel::ToTag() { static PString s = "To"; return s; }
+const PString & PRFC822Channel::CCTag() { static PString s = "cc"; return s; }
+const PString & PRFC822Channel::BCCTag() { static PString s = "bcc"; return s; }
+const PString & PRFC822Channel::SubjectTag() { static PString s = "Subject"; return s; }
+const PString & PRFC822Channel::DateTag() { static PString s = "Date"; return s; }
+const PString & PRFC822Channel::ReturnPathTag() { static PString s = "Return-Path"; return s; }
+const PString & PRFC822Channel::ReceivedTag() { static PString s = "Received"; return s; }
+const PString & PRFC822Channel::MessageIDTag() { static PString s = "Message-ID"; return s; }
+const PString & PRFC822Channel::MailerTag() { static PString s = "X-Mailer"; return s; }
+const PString & PRFC822Channel::ContentTypeTag() { static PString s = "Content-Type"; return s; }
+const PString & PRFC822Channel::ContentDispositionTag() { static PString s = "Content-Disposition"; return s; }
+const PString & PRFC822Channel::ContentTransferEncodingTag() { static PString s = "Content-Transfer-Encoding"; return s; }
 
 
 
@@ -1374,19 +1378,19 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
   flush();
 
   if (writeHeaders) {
-    if (!headers.Contains(FromTag) || !headers.Contains(ToTag))
+    if (!headers.Contains(FromTag()) || !headers.Contains(ToTag()))
       return FALSE;
 
-    if (!headers.Contains(MimeVersionTag))
-      headers.SetAt(MimeVersionTag, "1.0");
+    if (!headers.Contains(MimeVersionTag()))
+      headers.SetAt(MimeVersionTag(), "1.0");
 
-    if (!headers.Contains(DateTag))
-      headers.SetAt(DateTag, PTime().AsString());
+    if (!headers.Contains(DateTag()))
+      headers.SetAt(DateTag(), PTime().AsString());
 
     if (writePartHeaders)
-      headers.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundaries[0]+'"');
-    else if (!headers.Contains(ContentTypeTag))
-      headers.SetAt(ContentTypeTag, "text/plain");
+      headers.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundaries[0]+'"');
+    else if (!headers.Contains(ContentTypeTag()))
+      headers.SetAt(ContentTypeTag(), "text/plain");
 
     PStringStream hdr;
     hdr << ::setfill('\r') << headers;
@@ -1400,8 +1404,8 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
   }
 
   if (writePartHeaders) {
-    if (!partHeaders.Contains(ContentTypeTag))
-      partHeaders.SetAt(ContentTypeTag, "text/plain");
+    if (!partHeaders.Contains(ContentTypeTag()))
+      partHeaders.SetAt(ContentTypeTag(), "text/plain");
 
     PStringStream hdr;
     hdr << "\n--"  << boundaries[0] << '\n'
@@ -1478,7 +1482,7 @@ BOOL PRFC822Channel::MultipartMessage(const PString & boundary)
   }
 
   if (boundaries.GetSize() > 0) {
-    partHeaders.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundary+'"');
+    partHeaders.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundary+'"');
     flush();
     writePartHeaders = TRUE;
   }
@@ -1513,52 +1517,52 @@ void PRFC822Channel::NextPart(const PString & boundary)
 
 void PRFC822Channel::SetFromAddress(const PString & fromAddress)
 {
-  SetHeaderField(FromTag, fromAddress);
+  SetHeaderField(FromTag(), fromAddress);
 }
 
 
 void PRFC822Channel::SetToAddress(const PString & toAddress)
 {
-  SetHeaderField(ToTag, toAddress);
+  SetHeaderField(ToTag(), toAddress);
 }
 
 
 void PRFC822Channel::SetCC(const PString & ccAddress)
 {
-  SetHeaderField(CCTag, ccAddress);
+  SetHeaderField(CCTag(), ccAddress);
 }
 
 
 void PRFC822Channel::SetBCC(const PString & bccAddress)
 {
-  SetHeaderField(BCCTag, bccAddress);
+  SetHeaderField(BCCTag(), bccAddress);
 }
 
 
 void PRFC822Channel::SetSubject(const PString & subject)
 {
-  SetHeaderField(SubjectTag, subject);
+  SetHeaderField(SubjectTag(), subject);
 }
 
 
 void PRFC822Channel::SetContentType(const PString & contentType)
 {
-  SetHeaderField(ContentTypeTag, contentType);
+  SetHeaderField(ContentTypeTag(), contentType);
 }
 
 
 void PRFC822Channel::SetContentAttachment(const PFilePath & file)
 {
   PString name = file.GetFileName();
-  SetHeaderField(ContentDispositionTag, "attachment; filename=\"" + name + '"');
-  SetHeaderField(ContentTypeTag,
+  SetHeaderField(ContentDispositionTag(), "attachment; filename=\"" + name + '"');
+  SetHeaderField(ContentTypeTag(),
                  PMIMEInfo::GetContentType(file.GetType())+"; name=\"" + name + '"');
 }
 
 
 void PRFC822Channel::SetTransferEncoding(const PString & encoding, BOOL autoTranslate)
 {
-  SetHeaderField(ContentTransferEncodingTag, encoding);
+  SetHeaderField(ContentTransferEncodingTag(), encoding);
   if ((encoding *= "base64") && autoTranslate)
     base64 = new PBase64;
   else {
@@ -1592,10 +1596,10 @@ BOOL PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
   if (!Open(smtp))
     return FALSE;
 
-  if (!headers.Contains(FromTag) || !headers.Contains(ToTag))
+  if (!headers.Contains(FromTag()) || !headers.Contains(ToTag()))
     return FALSE;
 
-  return smtp->BeginMessage(headers[FromTag], headers[ToTag]);
+  return smtp->BeginMessage(headers[FromTag()], headers[ToTag()]);
 }
 
 

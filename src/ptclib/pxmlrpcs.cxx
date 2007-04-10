@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.8  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.7  2006/11/27 11:37:25  csoutheren
  * Applied 1595552 - Fix for XMLRPC server
  * Thanks to Dave Parr
@@ -120,7 +124,7 @@ BOOL PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,
   OnXMLRPCRequest(request.entityBody, reply);
 
   request.code = PHTTP::RequestOK;
-  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/xml");
 
   PINDEX len = reply.GetLength();
   request.server.StartResponse(request.code, request.outMIME, len);

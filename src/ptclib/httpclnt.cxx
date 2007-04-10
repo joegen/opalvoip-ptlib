@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.38  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.37  2004/10/26 18:25:54  ykiryanov
  * Added (const char*) qualifier to url parameter, similar to one below
  *
@@ -320,14 +324,14 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
                                 PMIMEInfo & replyMime,
                                 BOOL persist)
 {
-  if (!outMIME.Contains(DateTag))
-    outMIME.SetAt(DateTag, PTime().AsString());
+  if (!outMIME.Contains(DateTag()))
+    outMIME.SetAt(DateTag(), PTime().AsString());
 
-  if (!userAgentName && !outMIME.Contains(UserAgentTag))
-    outMIME.SetAt(UserAgentTag, userAgentName);
+  if (!userAgentName && !outMIME.Contains(UserAgentTag()))
+    outMIME.SetAt(UserAgentTag(), userAgentName);
 
   if (persist)
-    outMIME.SetAt(ConnectionTag, KeepAliveTag);
+    outMIME.SetAt(ConnectionTag(), KeepAliveTag());
 
   for (PINDEX retry = 0; retry < 3; retry++) {
     if (!AssureConnect(url, outMIME))
@@ -380,8 +384,8 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
 {
   ostream & this_stream = *this;
   PINDEX len = dataBody.GetSize()-1;
-  if (!outMIME.Contains(ContentLengthTag))
-    outMIME.SetInteger(ContentLengthTag, len);
+  if (!outMIME.Contains(ContentLengthTag()))
+    outMIME.SetInteger(ContentLengthTag(), len);
 
   if (cmdName.IsEmpty())
     this_stream << "GET";
@@ -445,11 +449,11 @@ BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 
 BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray & body)
 {
-  PCaselessString encoding = replyMIME(TransferEncodingTag);
+  PCaselessString encoding = replyMIME(TransferEncodingTag());
 
-  if (encoding != ChunkedTag) {
-    if (replyMIME.Contains(ContentLengthTag)) {
-      PINDEX length = replyMIME.GetInteger(ContentLengthTag);
+  if (encoding != ChunkedTag()) {
+    if (replyMIME.Contains(ContentLengthTag())) {
+      PINDEX length = replyMIME.GetInteger(ContentLengthTag());
       body.SetSize(length);
       return ReadBlock(body.GetPointer(), length);
     }
@@ -570,8 +574,8 @@ BOOL PHTTPClient::PostData(const PURL & url,
                            BOOL persist)
 {
   PString dataBody = data;
-  if (!outMIME.Contains(ContentTypeTag)) {
-    outMIME.SetAt(ContentTypeTag, "application/x-www-form-urlencoded");
+  if (!outMIME.Contains(ContentTypeTag())) {
+    outMIME.SetAt(ContentTypeTag(), "application/x-www-form-urlencoded");
     dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
   }
 
