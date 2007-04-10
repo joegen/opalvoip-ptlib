@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.73  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.72  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -545,7 +549,7 @@ void PVXMLPlayableURL::Play(PVXMLChannel & outgoingChannel)
   PHTTPClient * client = new PHTTPClient;
   PMIMEInfo outMIME, replyMIME;
   int code = client->GetDocument(url, outMIME, replyMIME, FALSE);
-  if ((code != 200) || (replyMIME(PHTTP::TransferEncodingTag) *= PHTTP::ChunkedTag))
+  if ((code != 200) || (replyMIME(PHTTP::TransferEncodingTag()) *= PHTTP::ChunkedTag()))
     delete client;
   else {
     outgoingChannel.SetReadChannel(client, TRUE);
@@ -941,7 +945,7 @@ BOOL PVXMLSession::RetreiveResource(const PURL & url,
         // Get the body of the response in a PBYTEArray (might be binary data)
         PBYTEArray incomingData;
         client.ReadContentBody(replyMIME, incomingData);
-        contentType = replyMIME(PHTTPClient::ContentTypeTag);
+        contentType = replyMIME(PHTTPClient::ContentTypeTag());
 
         // write the data in the file
         PFile cacheFile(fn, PFile::WriteOnly);
@@ -2193,8 +2197,8 @@ BOOL PVXMLSession::TraverseSubmit()
     //                            1         2         3        4123
     PString boundary = "--------012345678901234567890123458VXML";
 
-    sendMIME.SetAt( PHTTP::ContentTypeTag, "multipart/form-data; boundary=" + boundary);
-    sendMIME.SetAt( PHTTP::UserAgentTag, "PVXML TraverseSubmit" );
+    sendMIME.SetAt( PHTTP::ContentTypeTag(), "multipart/form-data; boundary=" + boundary);
+    sendMIME.SetAt( PHTTP::UserAgentTag(), "PVXML TraverseSubmit" );
     sendMIME.SetAt( "Accept", "text/html" );
 
     // After this all boundaries have a "--" prepended

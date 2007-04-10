@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.50  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.49  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -646,7 +650,7 @@ BOOL PHTTPServer::ProcessCommand()
       case POST :
         {
           // check for multi-part form POSTs
-          PString postType = (connectInfo.GetMIME())(ContentTypeTag);
+          PString postType = (connectInfo.GetMIME())(ContentTypeTag());
           if (postType.Find("multipart/form-data") == 0)
             connectInfo.DecodeMultipartFormInfo(postType, connectInfo.entityBody);
           else  // if (postType *= "x-www-form-urlencoded)
@@ -868,20 +872,20 @@ BOOL PHTTPServer::StartResponse(StatusCode code,
   BOOL chunked = FALSE;
 
   // If do not have user set content length, decide if we should add one
-  if (!headers.Contains(ContentLengthTag)) {
+  if (!headers.Contains(ContentLengthTag())) {
     if (connectInfo.minorVersion < 1) {
       // v1.0 client, don't put in ContentLength if the bodySize is zero because
       // that can be confused by some browsers as meaning there is no body length.
       if (bodySize > 0)
-        headers.SetAt(ContentLengthTag, bodySize);
+        headers.SetAt(ContentLengthTag(), bodySize);
     }
     else {
       // v1.1 or later, see if will use chunked output
       chunked = bodySize == P_MAX_INDEX;
       if (chunked)
-        headers.SetAt(TransferEncodingTag, ChunkedTag);
+        headers.SetAt(TransferEncodingTag(), ChunkedTag());
       else if (bodySize >= 0 && bodySize < P_MAX_INDEX)
-        headers.SetAt(ContentLengthTag, bodySize);
+        headers.SetAt(ContentLengthTag(), bodySize);
     }
   }
 
@@ -891,7 +895,7 @@ BOOL PHTTPServer::StartResponse(StatusCode code,
   // The following is a work around for a strange bug in Netscape where it
   // locks up when a persistent connection is made and data less than 1k
   // (including MIME headers) is sent. Go figure....
-  if (bodySize < 1024 && connectInfo.GetMIME()(UserAgentTag).Find("Mozilla/2.0") != P_MAX_INDEX)
+  if (bodySize < 1024 && connectInfo.GetMIME()(UserAgentTag()).Find("Mozilla/2.0") != P_MAX_INDEX)
     nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
 #endif
 
@@ -903,21 +907,21 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
                      const PHTTPConnectionInfo & connectInfo)
 {
   PTime now;
-  if (!info.Contains(DateTag))
-    info.SetAt(DateTag, now.AsString(PTime::RFC1123, PTime::GMT));
-  if (!info.Contains(MIMEVersionTag))
-    info.SetAt(MIMEVersionTag, "1.0");
-  if (!info.Contains(ServerTag))
-    info.SetAt(ServerTag, GetServerName());
+  if (!info.Contains(DateTag()))
+    info.SetAt(DateTag(), now.AsString(PTime::RFC1123, PTime::GMT));
+  if (!info.Contains(MIMEVersionTag()))
+    info.SetAt(MIMEVersionTag(), "1.0");
+  if (!info.Contains(ServerTag()))
+    info.SetAt(ServerTag(), GetServerName());
 
   if (connectInfo.IsPersistant()) {
     if (connectInfo.IsProxyConnection()) {
       PTRACE(5, "HTTPServer\tSetting proxy persistant response");
-      info.SetAt(ProxyConnectionTag, KeepAliveTag);
+      info.SetAt(ProxyConnectionTag(), KeepAliveTag());
     }
     else {
       PTRACE(5, "HTTPServer\tSetting direct persistant response");
-      info.SetAt(ConnectionTag, KeepAliveTag);
+      info.SetAt(ConnectionTag(), KeepAliveTag());
     }
   }
 }
@@ -968,7 +972,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
     reply = html;
   }
 
-  headers.SetAt(ContentTypeTag, "text/html");
+  headers.SetAt(ContentTypeTag(), "text/html");
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
   return statusInfo->code == RequestOK;
@@ -1183,17 +1187,17 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   PString str;
 
   // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.Contains(PHTTP::ProxyConnectionTag);
+  isProxyConnection = mimeInfo.Contains(PHTTP::ProxyConnectionTag());
   if (isProxyConnection)
-    str = mimeInfo[PHTTP::ProxyConnectionTag];
-  else if (mimeInfo.Contains(PHTTP::ConnectionTag))
-    str = mimeInfo[PHTTP::ConnectionTag];
+    str = mimeInfo[PHTTP::ProxyConnectionTag()];
+  else if (mimeInfo.Contains(PHTTP::ConnectionTag()))
+    str = mimeInfo[PHTTP::ConnectionTag()];
 
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", \r\n", FALSE);
     for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
-      isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
+      isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag());
   }
 
   // If the protocol is version 1.0 or greater, there is MIME info, and the
@@ -1209,14 +1213,14 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // If the client didn't specify a persistant connection, then use the
   // ContentLength if there is one or read until end of file if there isn't
   if (!isPersistant)
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(),
                                            (commandCode == PHTTP::POST) ? -2 : 0);
   else {
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag(), -1);
     if (entityBodyLength < 0) {
       PTRACE(5, "HTTPServer\tPersistant connection has no content length");
       entityBodyLength = 0;
-      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
+      mimeInfo.SetAt(PHTTP::ContentLengthTag(), "0");
     }
   }
 
@@ -1310,8 +1314,8 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
 {
   // Nede to split songle if into 2 so the Tornado compiler won't end with
   // 'internal compiler error'
-  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag))
-    if (!IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag])))
+  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag()))
+    if (!IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag()])))
       return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
   PHTTPRequest * request = CreateRequest(url,
@@ -1326,13 +1330,13 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
 
     PTime expiryDate;
     if (GetExpirationDate(expiryDate))
-      request->outMIME.SetAt(PHTTP::ExpiresTag,
+      request->outMIME.SetAt(PHTTP::ExpiresTag(),
                               expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
     if (!LoadHeaders(*request)) 
       retVal = server.OnError(request->code, url.AsString(), connectInfo);
     else if (!isGET)
-      retVal = request->outMIME.Contains(PHTTP::ContentLengthTag);
+      retVal = request->outMIME.Contains(PHTTP::ContentLengthTag());
     else {
       hitCount++;
       retVal = OnGETData(server, url, connectInfo, *request);
@@ -1350,8 +1354,8 @@ BOOL PHTTPResource::OnGETData(PHTTPServer & /*server*/,
                              PHTTPRequest & request)
 {
   SendData(request);
-  return request.outMIME.Contains(PHTTP::ContentLengthTag) ||
-         request.outMIME.Contains(PHTTP::TransferEncodingTag);
+  return request.outMIME.Contains(PHTTP::ContentLengthTag()) ||
+         request.outMIME.Contains(PHTTP::TransferEncodingTag());
 }
 
 
@@ -1398,7 +1402,7 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
         << PHTML::Heading(1) << (unsigned)PHTTP::RequestOK << " OK" << PHTML::Heading(1)
         << PHTML::Body();
 
-  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/html");
 
   PINDEX len = msg.GetLength();
   request.server.StartResponse(request.code, request.outMIME, len);
@@ -1427,16 +1431,16 @@ BOOL PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
 
 
   // if this is an authorisation request...
-  if (request.inMIME.Contains(PHTTP::AuthorizationTag) &&
-      authority.Validate(request, request.inMIME[PHTTP::AuthorizationTag]))
+  if (request.inMIME.Contains(PHTTP::AuthorizationTag()) &&
+      authority.Validate(request, request.inMIME[PHTTP::AuthorizationTag()]))
     return TRUE;
 
   // it must be a request for authorisation
   PMIMEInfo headers;
   server.SetDefaultMIMEInfo(headers, connectInfo);
-  headers.SetAt(PHTTP::WWWAuthenticateTag,
+  headers.SetAt(PHTTP::WWWAuthenticateTag(),
                        "Basic realm=\"" + authority.GetRealm(request) + "\"");
-  headers.SetAt(PHTTP::ContentTypeTag, "text/html");
+  headers.SetAt(PHTTP::ContentTypeTag(), "text/html");
 
   const httpStatusCodeStruct * statusInfo =
                                GetStatusCodeStruct(PHTTP::UnAuthorised);
@@ -1514,8 +1518,8 @@ static void WriteChunkedDataToServer(PHTTPServer & server, PCharArray & data)
 
 void PHTTPResource::SendData(PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
-    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag()) && !contentType)
+    request.outMIME.SetAt(PHTTP::ContentTypeTag(), contentType);
 
   PCharArray data;
   if (LoadData(request, data)) {
@@ -1978,7 +1982,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).fakeIndex;
   if (file.IsOpen()) {
-    request.outMIME.SetAt(PHTTP::ContentTypeTag,
+    request.outMIME.SetAt(PHTTP::ContentTypeTag(),
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();
     fakeIndex = PString();
@@ -1986,7 +1990,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   }
 
   // construct a directory listing
-  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/html");
   PHTML reply("Directory of " + request.url.AsString());
   PDirectory dir = realPath;
   if (dir.Open()) {

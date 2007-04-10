@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_roster.cxx,v $
+ * Revision 1.5  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.4  2004/05/09 07:23:50  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -220,8 +224,8 @@ BOOL XMPP::Roster::SetItem(Item * item, BOOL localOnly)
       return FALSE;
   }
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQuery);
-  query->SetAttribute(XMPP::Namespace, "jabber:iq:roster");
+  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
   item->AsXML(query);
 
   XMPP::IQ iq(XMPP::IQ::Set, query);
@@ -242,8 +246,8 @@ BOOL XMPP::Roster::RemoveItem(const PString& jid, BOOL localOnly)
     return TRUE;
   }
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQuery);
-  query->SetAttribute(XMPP::Namespace, "jabber:iq:roster");
+  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
   PXMLElement * _item = item->AsXML(query);
   _item->SetAttribute("subscription", "remove");
 
@@ -300,8 +304,8 @@ void XMPP::Roster::Refresh(BOOL sendPresence)
   if (m_Handler == NULL)
     return;
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQuery);
-  query->SetAttribute(XMPP::Namespace, "jabber:iq:roster");
+  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
   XMPP::IQ iq(XMPP::IQ::Get, query);
 
   m_Handler->Write(iq);
@@ -339,7 +343,7 @@ void XMPP::Roster::OnPresence(XMPP::Presence& msg, INT)
 
 void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 {
-  PXMLElement * query = iq.GetElement(XMPP::IQQuery);
+  PXMLElement * query = iq.GetElement(XMPP::IQQueryTag());
 
   if (PAssertNULL(query) == NULL)
     return;

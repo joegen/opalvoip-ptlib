@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.44  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.43  2005/11/30 12:47:41  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -457,8 +461,8 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
   }
 
   // get the length of the data
-  if (!replyMIME.Contains(PHTTPClient::ContentLengthTag))
-    contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag].AsUnsigned();
+  if (!replyMIME.Contains(PHTTPClient::ContentLengthTag()))
+    contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag()].AsUnsigned();
   else
     contentLength = P_MAX_INDEX;
 
