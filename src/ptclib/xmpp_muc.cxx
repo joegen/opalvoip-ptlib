@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_muc.cxx,v $
+ * Revision 1.3  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.2  2005/08/04 03:19:08  dereksmithies
  * Add xmpp_muc (XMPP multi user conference) to the compile process for unix.
  * Correct compile errors under unix.
@@ -68,8 +72,8 @@ PObject::Comparison XMPP::MUC::User::Compare(const PObject & obj) const
 
 ///////////////////////////////////////////////////////
 
-PString XMPP::MUC::Namespace("http://jabber.org/protocol/muc");
-PString XMPP::MUC::User::Namespace("http://jabber.org/protocol/muc#user");
+const PString & XMPP::MUC::NamespaceTag() { static PString s = "http://jabber.org/protocol/muc"; return s; }
+const PString & XMPP::MUC::User::NamespaceTag() { static PString s = "http://jabber.org/protocol/muc#user"; return s; }
 
 XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PString& nick)
   : m_Handler(handler), m_RoomJID(jid)
@@ -104,7 +108,7 @@ BOOL XMPP::MUC::Room::Enter()
   pre.SetPriority(0);
 
   PXMLElement * x = new PXMLElement(NULL, "x");
-  x->SetAttribute(XMPP::Namespace, XMPP::MUC::Namespace);
+  x->SetAttribute(XMPP::NamespaceTag(), XMPP::MUC::NamespaceTag());
 
   pre.AddElement(x);
 
@@ -196,7 +200,7 @@ void XMPP::MUC::Room::OnPresence(XMPP::Presence& msg, INT)
 
   PXMLElement * x = msg.GetElement("x");
 
-  if (x != NULL && x->GetAttribute(XMPP::Namespace) == XMPP::MUC::User::Namespace) {
+  if (x != NULL && x->GetAttribute(XMPP::NamespaceTag()) == XMPP::MUC::User::NamespaceTag()) {
     PXMLElement * item = x->GetElement("item");
 
     if (item != NULL) {

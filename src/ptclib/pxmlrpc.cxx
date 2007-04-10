@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.26  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.25  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -1027,7 +1031,7 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   PHTTPClient client;
   PMIMEInfo sendMIME, replyMIME;
   sendMIME.SetAt("Server", url.GetHostName());
-  sendMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
+  sendMIME.SetAt(PHTTP::ContentTypeTag(), "text/xml");
 
   PTRACE(5, "XMLRPC\tOutgoing XML/RPC:\n" << url << '\n' << sendMIME << requestXML);
 
