@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.h,v $
+ * Revision 1.6  2007/04/10 05:08:46  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.5  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -64,12 +68,12 @@ namespace XMPP
 {
   /** Various constant strings
    */
-  extern const PString Language;
-  extern const PString Namespace;
-  extern const PString MessageStanza;
-  extern const PString PresenceStanza;
-  extern const PString IQStanza;
-  extern const PString IQQuery;
+  extern const PString & LanguageTag();
+  extern const PString & NamespaceTag();
+  extern const PString & MessageStanzaTag();
+  extern const PString & PresenceStanzaTag();
+  extern const PString & IQStanzaTag();
+  extern const PString & IQQueryTag();
 
   class JID : public PObject
   {
@@ -241,9 +245,9 @@ namespace XMPP
   public:
     /** Various constant strings
     */
-    static const PString ID;
-    static const PString From;
-    static const PString To;
+    static const PString & IDTag();
+    static const PString & FromTag();
+    static const PString & ToTag();
 
     virtual BOOL IsValid() const = 0;
 
@@ -280,10 +284,10 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString Type;
-    static const PString Subject;
-    static const PString Body;
-    static const PString Thread;
+    static const PString & TypeTag();
+    static const PString & SubjectTag();
+    static const PString & BodyTag();
+    static const PString & ThreadTag();
 
     /** Construct a new empty message
     */
@@ -351,10 +355,10 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString Type;
-    static const PString Show;
-    static const PString Status;
-    static const PString Priority;
+    static const PString & TypeTag();
+    static const PString & ShowTag();
+    static const PString & StatusTag();
+    static const PString & PriorityTag();
 
     /** Construct a new empty presence
     */
@@ -406,7 +410,7 @@ namespace XMPP
 
     /** Various constant strings
     */
-    static const PString Type;
+    static const PString & TypeTag();
 
     IQ(IQType type, PXMLElement * body = 0);
     IQ(PXML& pdu);

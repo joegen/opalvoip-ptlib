@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.61  2007/04/10 05:08:46  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.60  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -416,34 +420,34 @@ class PHTTP : public PInternetProtocol
     };
 
     // Common MIME header tags
-    static const char * const AllowTag;
-    static const char * const AuthorizationTag;
-    static const char * const ContentEncodingTag;
-    static const char * const ContentLengthTag;
-    static const char * const ContentTypeTag;
-    static const char * const DateTag;
-    static const char * const ExpiresTag;
-    static const char * const FromTag;
-    static const char * const IfModifiedSinceTag;
-    static const char * const LastModifiedTag;
-    static const char * const LocationTag;
-    static const char * const PragmaTag;
-    static const char * const PragmaNoCacheTag;
-    static const char * const RefererTag;
-    static const char * const ServerTag;
-    static const char * const UserAgentTag;
-    static const char * const WWWAuthenticateTag;
-    static const char * const MIMEVersionTag;
-    static const char * const ConnectionTag;
-    static const char * const KeepAliveTag;
-    static const char * const TransferEncodingTag;
-    static const char * const ChunkedTag;
-    static const char * const ProxyConnectionTag;
-    static const char * const ProxyAuthorizationTag;
-    static const char * const ProxyAuthenticateTag;
-    static const char * const ForwardedTag;
-    static const char * const SetCookieTag;
-    static const char * const CookieTag;
+    static const PString & AllowTag();
+    static const PString & AuthorizationTag();
+    static const PString & ContentEncodingTag();
+    static const PString & ContentLengthTag();
+    static const PString & ContentTypeTag();
+    static const PString & DateTag();
+    static const PString & ExpiresTag();
+    static const PString & FromTag();
+    static const PString & IfModifiedSinceTag();
+    static const PString & LastModifiedTag();
+    static const PString & LocationTag();
+    static const PString & PragmaTag();
+    static const PString & PragmaNoCacheTag();
+    static const PString & RefererTag();
+    static const PString & ServerTag();
+    static const PString & UserAgentTag();
+    static const PString & WWWAuthenticateTag();
+    static const PString & MIMEVersionTag();
+    static const PString & ConnectionTag();
+    static const PString & KeepAliveTag();
+    static const PString & TransferEncodingTag();
+    static const PString & ChunkedTag();
+    static const PString & ProxyConnectionTag();
+    static const PString & ProxyAuthorizationTag();
+    static const PString & ProxyAuthenticateTag();
+    static const PString & ForwardedTag();
+    static const PString & SetCookieTag();
+    static const PString & CookieTag();
 
   protected:
     /** Create a TCP/IP HTTP protocol channel.
