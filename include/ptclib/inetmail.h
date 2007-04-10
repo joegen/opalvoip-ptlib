@@ -25,6 +25,10 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.21  2007/04/10 05:08:46  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.20  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -1045,20 +1049,20 @@ class PRFC822Channel : public PIndirectChannel
     );
 
     // Common MIME header tags
-    static const char MimeVersionTag[];
-    static const char FromTag[];
-    static const char ToTag[];
-    static const char CCTag[];
-    static const char BCCTag[];
-    static const char SubjectTag[];
-    static const char DateTag[];
-    static const char ReturnPathTag[];
-    static const char ReceivedTag[];
-    static const char MessageIDTag[];
-    static const char MailerTag[];
-    static const char ContentTypeTag[];
-    static const char ContentDispositionTag[];
-    static const char ContentTransferEncodingTag[];
+    static const PString & MimeVersionTag();
+    static const PString & FromTag();
+    static const PString & ToTag();
+    static const PString & CCTag();
+    static const PString & BCCTag();
+    static const PString & SubjectTag();
+    static const PString & DateTag();
+    static const PString & ReturnPathTag();
+    static const PString & ReceivedTag();
+    static const PString & MessageIDTag();
+    static const PString & MailerTag();
+    static const PString & ContentTypeTag();
+    static const PString & ContentDispositionTag();
+    static const PString & ContentTransferEncodingTag();
 
     /**Send this message using an SMTP socket.
        This will create a PSMTPClient and connect to the specified host then

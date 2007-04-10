@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_muc.h,v $
+ * Revision 1.4  2007/04/10 05:08:46  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.3  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -55,7 +59,7 @@ namespace XMPP
 {
   namespace MUC
   {
-    extern PString Namespace;
+    extern const PString & NamespaceTag();
 
     class User : public PObject
     {
@@ -64,7 +68,7 @@ namespace XMPP
       User();
       ~User();
 
-      static PString Namespace;
+      static const PString & NamespaceTag();
 
       enum Role {
         None,
