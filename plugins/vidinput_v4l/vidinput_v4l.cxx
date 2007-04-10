@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.23  2007/04/10 21:17:01  dsandras
+ * Added MJPEG support. Added workarounds for broken qspca driver.
+ * Thanks to Luc Saillard (luc@saillard.org).
+ *
  * Revision 1.22  2007/01/03 22:35:50  dsandras
  * Fixed possible race condition while detecting available devices. (#376078, #328753).
  *
@@ -288,14 +292,24 @@ static struct {
   int      pref_palette;        // Preferred palette.
 } driver_hints[] = {
 
-    /**Philips usb web cameras
+    /**Most of usb web cameras from the spca5xx driver
+     */
+    
+  { "^Broken sensor chipset that accept only 640x480$",
+    "Broken sensor chipset that accept only 640x480",
+    NULL,
+    HINT_ALWAYS_WORKS_640_480|
+    HINT_CGWIN_FAILS,
+    0},
+
+     /**Philips usb web cameras
        Native format is 420(P) so use it.
      */
     
   { "^Philips [0-9]+ webcam$",
     "Philips USB webcam",
     NULL,
-    HINT_HAS_PREF_PALETTE,
+    HINT_ALWAYS_WORKS_640_480,
     VIDEO_PALETTE_YUV420P },
   
   /**Brooktree based capture boards.
@@ -388,6 +402,53 @@ static struct {
     0 }
 
 };
+
+/*
+ * This is list of channel names that accept only fixed size resolution
+ * The spca5xx driver store in the channel name, the name of the bridge,
+ * not the sensor, so we use a second list to trim false positive.
+ */
+static const char *bridges_with_640x480_fixed_width[] = {
+   "SPCA505",
+   "SPCA506",
+   "SPCA501",
+   "SPCA504",
+   "SPCA500", /* Only the LogitechClickSmart310 doesn't support the 640x480 */
+   "SPCA504B",
+   "SPCA504C",
+   "SPCA536",
+   "SN9C102", /* SENSOR_PAS106 and SENSOR_TAS5110 doesn't support the 640x480 */
+   "ZC301-2", /* SENSOR_PAS106 doesn't support the 640x480 */
+   "CX11646",
+   "SN9CXXX",
+   "MR97311",
+   "VC0321",
+};
+
+static const char *sensors_with_352x288_fixed_width[] = {
+   "Philips SPC200NC ",	/* Using the SENSOR_PAS106 sensor */
+   "Philips SPC210NC (FB) ",
+   "Philips SPC300NC ",
+   "Creative NX",
+   "Creative Instant P0620",
+   "Creative Instant P0620D",
+   "Sonix sn9c10x + Pas106 sensor",
+   "Genius VideoCAM NB", /* Using the SENSOR_TAS5110 sensor */
+   "Sweex SIF webcam",
+   "Logitech ClickSmart 310", /* Using the SENSOR_HDCS1020 sensor */
+};
+
+#if 0
+/* TODO: We need to do the same hack */
+static const char *bridges_with_352x288_fixed_width[] = {
+   "SPCA508", /* 352x288 */
+   "SPCA561", /* 352x288 */
+   "TV8532", /* 352x288 */
+   "ET61XX51", /* 320x240 */
+   //  "SPCA533", /* 464*480 */
+   //  "PAC207BCA", /* 320x240 only */
+};
+#endif
 
 #define HINT(h) ((driver_hints[hint_index].hints & h) ? TRUE : FALSE)
 #define MAJOR(a) (int)((unsigned short) (a) >> 8)
@@ -634,6 +695,13 @@ PVideoInputDevice_V4L::~PVideoInputDevice_V4L()
 {
     Close();
 }
+
+/* From the spca5xx driver and gspca driver */
+#ifndef VIDEO_PALETTE_RAW_JPEG
+#define VIDEO_PALETTE_RAW_JPEG  20
+#define VIDEO_PALETTE_JPEG 21
+#endif
+
 static struct {
   const char * colourFormat;
   int code;
@@ -650,7 +718,8 @@ static struct {
   { "YUV420", VIDEO_PALETTE_YUV420 },
   { "YUV420P", VIDEO_PALETTE_YUV420P },
   { "YUV410P", VIDEO_PALETTE_YUV410P },
-  { "UYVY422", VIDEO_PALETTE_UYVY }
+  { "UYVY422", VIDEO_PALETTE_UYVY },
+  { "MJPEG", VIDEO_PALETTE_JPEG }
 };
 
 
@@ -723,7 +792,41 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
     }
   }
 
-
+  /*
+   * Some drivers like the spca5xx ou the gspca returns OK for any resolution
+   * between min-max. But the image is crop, and the user doesn't see his face
+   * entirely.
+   * The problem is the drive support more than 200 webcams, and we cannot add
+   * them all to the list of driver_hints[], so we use the sensor description
+   * to enable the hack. The channel name contains the name of the bridge, so
+   * we have only 10 comp to be. But some webcams have a 640x480 bridge, and a
+   * small sensor ...
+   */
+  if (hint_index >= PARRAYSIZE(driver_hints)-1) {
+     struct video_channel channel;
+     memset(&channel, 0, sizeof(struct video_channel));
+     if (::ioctl(videoFd, VIDIOCGCHAN, &channel) == 0) {
+	/* Only check if the called doesn't return an error */
+	for (tbl = 0; tbl < PARRAYSIZE(bridges_with_640x480_fixed_width); tbl ++) {
+	   if (strcmp(bridges_with_640x480_fixed_width[tbl], channel.name) == 0) {
+	      BOOL false_positive = FALSE;
+	      unsigned int idx;
+	      for (idx = 0; idx < PARRAYSIZE(sensors_with_352x288_fixed_width); idx++) {
+		 if (strcmp(sensors_with_352x288_fixed_width[tbl], videoCapability.name) == 0) {
+		    false_positive = TRUE;
+		    break;
+		 }
+	      }
+	      if (false_positive == FALSE) {
+		 PTRACE(1,"PVideoInputDevice_V4L::Open: Found fixed 640x480 sensor");
+		 hint_index = 0;
+		 break;
+	      }
+	   }
+	}
+     }
+  }
+ 
   // Force double-buffering with buggy Quickcam driver.
   if (HINT (HINT_FORCE_DBLBUF)) {
 
