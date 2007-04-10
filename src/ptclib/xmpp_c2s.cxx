@@ -25,6 +25,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.8  2007/04/10 05:08:48  rjongbloed
+ * Fixed issue with use of static C string variables in DLL environment,
+ *   must use functional interface for correct initialisation.
+ *
  * Revision 1.7  2004/05/13 14:51:30  csoutheren
  * Fixed problems when comiling without SSL
  *
@@ -230,8 +234,8 @@ BOOL XMPP::C2S::StreamHandler::Discover(const PString& xmlns, const PString& jid
     return FALSE;
   }
 
-  PXMLElement * query = new PXMLElement(NULL, XMPP::IQQuery);
-  query->SetAttribute(XMPP::Namespace, xmlns);
+  PXMLElement * query = new PXMLElement(NULL, XMPP::IQQueryTag());
+  query->SetAttribute(XMPP::NamespaceTag(), xmlns);
 
   if (!node.IsEmpty())
     query->SetAttribute("node", node);
@@ -614,7 +618,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
     return;
   }
 
-  elem = elem->GetElement(XMPP::IQQuery);
+  elem = elem->GetElement(XMPP::IQQueryTag());
 
   if (elem == NULL) { // Authentication succeded
     SetState(XMPP::C2S::StreamHandler::Established);
@@ -767,7 +771,7 @@ void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
     OnError(pdu);
     Stop();
   }
-  else if (name == XMPP::MessageStanza) {
+  else if (name == XMPP::MessageStanzaTag()) {
     XMPP::Message msg(pdu);
 
     if (msg.IsValid())
@@ -775,7 +779,7 @@ void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
     else
       Stop("bad-format");
   }
-  else if (name == XMPP::PresenceStanza) {
+  else if (name == XMPP::PresenceStanzaTag()) {
     XMPP::Presence pre(pdu);
 
     if (pre.IsValid())
@@ -783,7 +787,7 @@ void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
     else
       Stop("bad-format");
   }
-  else if (name == XMPP::IQStanza) {
+  else if (name == XMPP::IQStanzaTag()) {
     XMPP::IQ iq(pdu);
 
     if (iq.IsValid())
@@ -842,7 +846,7 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
 
   // Let's see if someone is registered to handle this namespace
   PXMLElement * query = (PXMLElement *)pdu.GetRootElement()->GetElement(0);
-  PString xmlns = query != NULL ? query->GetAttribute(XMPP::Namespace) : PString::Empty();
+  PString xmlns = query != NULL ? query->GetAttribute(XMPP::NamespaceTag()) : PString::Empty();
 
   if (!xmlns.IsEmpty() && m_IQNamespaceHandlers.Contains(xmlns))
     m_IQNamespaceHandlers[xmlns].Fire(pdu);
