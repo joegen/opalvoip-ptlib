@@ -8787,7 +8787,7 @@ EXPORTS
     ?allocate@?$allocator@VPIPSocketAddressAndPort@@@std@@QAEPAVPIPSocketAddressAndPort@@I@Z @21973 NONAME
     ?AllowClearCall@PVXMLSession@@IAEXXZ @21974 NONAME
     ?AllowDeleteObjects@PCollection@@QAEXH@Z @1424 NONAME
-    ?AllowTag@PHTTP@@2QBDB @21975 NONAME
+    ?AllowTag@PHTTP@@SAABVPString@@XZ @27536 NONAME
     ?AnyTypeEncode@PPER_Stream@@QAEXPBVPASN_Object@@@Z @21976 NONAME
     ?app@?$_Iosb@H@std@@2W4_Openmode@12@B @5722 NONAME
     ?Append@PAbstractDictionary@@EAEHPAVPObject@@@Z @1425 NONAME
@@ -8886,13 +8886,13 @@ EXPORTS
     ?AttachVideoPlayer@PVideoChannel@@UAEXPAVPVideoOutputDevice@@H@Z @1472 NONAME
     ?AttachVideoReader@PVideoChannel@@UAEXPAVPVideoInputDevice@@H@Z @1473 NONAME
     ?AuthoriseUser@PFTPServer@@UAEHABVPString@@0AAH@Z @22017 NONAME
-    ?AuthorizationTag@PHTTP@@2QBDB @22018 NONAME
+    ?AuthorizationTag@PHTTP@@SAABVPString@@XZ @27537 NONAME
     ?AutoLoadURL@PXML@@QAEHXZ @22019 NONAME
     ?AutoReloadThread@PXML@@UAEXAAVPThread@@H@Z @22020 NONAME
     ?AutoReloadTimeout@PXML@@UAEXAAVPTimer@@H@Z @22021 NONAME
     ?badbit@?$_Iosb@H@std@@2W4_Iostate@12@B @5724 NONAME
     ?basefield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5725 NONAME
-    ?BCCTag@PRFC822Channel@@2QBDB @22022 NONAME
+    ?BCCTag@PRFC822Channel@@SAABVPString@@XZ @27538 NONAME
     ?beg@?$_Iosb@H@std@@2W4_Seekdir@12@B @5726 NONAME
     ?begin@?$deque@DV?$allocator@D@std@@@std@@QAE?AViterator@12@XZ @22023 NONAME
     ?begin@?$vector@PAVPAggregatedHandle@@V?$allocator@PAVPAggregatedHandle@@@std@@@std@@QAE?AViterator@12@XZ @22024 NONAME
@@ -8954,7 +8954,7 @@ EXPORTS
     ?BMPStringEncode@PBER_Stream@@UAEXABVPASN_BMPString@@@Z @22055 NONAME
     ?BMPStringEncode@PPER_Stream@@UAEXABVPASN_BMPString@@@Z @22056 NONAME
     ?BMPStringEncode@PXER_Stream@@UAEXABVPASN_BMPString@@@Z @22057 NONAME
-    ?Body@Message@XMPP@@2VPString@@B @22058 NONAME
+    ?BodyTag@Message@XMPP@@SAABVPString@@XZ @27539 NONAME
     ?boolalpha@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5729 NONAME
     ?BooleanDecode@PBER_Stream@@UAEHAAVPASN_Boolean@@@Z @22059 NONAME
     ?BooleanDecode@PPER_Stream@@UAEHAAVPASN_Boolean@@@Z @22060 NONAME
@@ -9018,7 +9018,7 @@ EXPORTS
     ?capacity@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEIXZ @26763 NONAME
     ?capacity@?$vector@VPIPSocketAddressAndPort@@V?$allocator@VPIPSocketAddressAndPort@@@std@@@std@@QBEIXZ @22102 NONAME
     ?cbNeverDelete@CRegParser@ATL@@1HB @22103 NONAME
-    ?CCTag@PRFC822Channel@@2QBDB @22104 NONAME
+    ?CCTag@PRFC822Channel@@SAABVPString@@XZ @27540 NONAME
     ?Change@PDirectory@@QBEHXZ @1491 NONAME
     ?Change@PDirectory@@SAHABVPString@@@Z @1492 NONAME
     ?ChangeDirectory@PFTPClient@@QAEHABVPString@@@Z @22105 NONAME
@@ -9037,7 +9037,7 @@ EXPORTS
     ?ChoiceEncode@PBER_Stream@@UAEXABVPASN_Choice@@@Z @22117 NONAME
     ?ChoiceEncode@PPER_Stream@@UAEXABVPASN_Choice@@@Z @22118 NONAME
     ?ChoiceEncode@PXER_Stream@@UAEXABVPASN_Choice@@@Z @22119 NONAME
-    ?ChunkedTag@PHTTP@@2QBDB @22120 NONAME
+    ?ChunkedTag@PHTTP@@SAABVPString@@XZ @27541 NONAME
     ?Class@?$PArray@VField@PODBC@@@@SAPBDXZ @16719 NONAME
     ?Class@?$PArray@VPASN_Object@@@@SAPBDXZ @22121 NONAME
     ?Class@?$PArray@VPBYTEArray@@@@SAPBDXZ @22122 NONAME
@@ -10154,7 +10154,7 @@ EXPORTS
     ?Connect@PTelnetSocket@@UAEHABVPString@@@Z @22764 NONAME
     ?Connect@PUDPSocket@@UAEHABVPString@@@Z @1870 NONAME
     ?ConnectDB_mySQL@PODBC@@QAEHVPString@@000HH@Z @16749 NONAME
-    ?ConnectionTag@PHTTP@@2QBDB @22765 NONAME
+    ?ConnectionTag@PHTTP@@SAABVPString@@XZ @27542 NONAME
     ?ConnectSocksServer@PSocksProtocol@@IAEHAAVPTCPSocket@@@Z @22766 NONAME
     ?Connect_DB2@PODBC@@QAEHVPFilePath@@@Z @16750 NONAME
     ?Connect_DBASE@PODBC@@QAEHVPDirectory@@@Z @16751 NONAME
@@ -10227,12 +10227,12 @@ EXPORTS
     ?Contains@?$PStringDictionary@VPString@@@@QBEHABVPString@@@Z @16471 NONAME
     ?Contains@PMIMEInfo@@QBEHABVPString@@@Z @27457 NONAME
     ?Contains@PMIMEInfo@@QBEHPBD@Z @22801 NONAME
-    ?ContentDispositionTag@PRFC822Channel@@2QBDB @22802 NONAME
-    ?ContentEncodingTag@PHTTP@@2QBDB @22803 NONAME
-    ?ContentLengthTag@PHTTP@@2QBDB @22804 NONAME
-    ?ContentTransferEncodingTag@PRFC822Channel@@2QBDB @22805 NONAME
-    ?ContentTypeTag@PHTTP@@2QBDB @22806 NONAME
-    ?ContentTypeTag@PRFC822Channel@@2QBDB @22807 NONAME
+    ?ContentDispositionTag@PRFC822Channel@@SAABVPString@@XZ @27543 NONAME
+    ?ContentEncodingTag@PHTTP@@SAABVPString@@XZ @27544 NONAME
+    ?ContentLengthTag@PHTTP@@SAABVPString@@XZ @27545 NONAME
+    ?ContentTransferEncodingTag@PRFC822Channel@@SAABVPString@@XZ @27546 NONAME
+    ?ContentTypeTag@PHTTP@@SAABVPString@@XZ @27547 NONAME
+    ?ContentTypeTag@PRFC822Channel@@SAABVPString@@XZ @27548 NONAME
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @1882 NONAME
     ?ControlEntry@PServiceProcess@@AAEXK@Z @1883 NONAME
     ?controlledLoadDSCP@PQoS@@2DA @3552 NONAME
@@ -10303,7 +10303,7 @@ EXPORTS
     ?ConvertOSError@PSocket@@MAEHHW4ErrorGroup@PChannel@@@Z @1909 NONAME
     ?ConvertOSError@PSSLChannel@@UAEHHW4ErrorGroup@PChannel@@@Z @22808 NONAME
     ?ConvertTextToFilenameList@PVXMLSession@@QAEHABVPString@@W4TextType@PTextToSpeech@@AAVPStringArray@@H@Z @22809 NONAME
-    ?CookieTag@PHTTP@@2QBDB @22810 NONAME
+    ?CookieTag@PHTTP@@SAABVPString@@XZ @27549 NONAME
     ?Copy@PFile@@QAEHABVPFilePath@@H@Z @1910 NONAME
     ?Copy@PFile@@SAHABVPFilePath@@0H@Z @1911 NONAME
     ?Copy@PLDAPAttr_c@RTPerson@PILSSession@@UAEXABVPLDAPAttributeBase@@@Z @22811 NONAME
@@ -10556,8 +10556,8 @@ EXPORTS
     ?Data@PODBCRecord@@QAEXHAAVField@PODBC@@@Z @16765 NONAME
     ?DataFragment@Field@PODBC@@QAEHAAVPString@@AAHAAJ@Z @16766 NONAME
     ?DataSource@PODBC@@QAEHW4DataSources@1@VConnectData@1@@Z @16767 NONAME
-    ?DateTag@PHTTP@@2QBDB @22947 NONAME
-    ?DateTag@PRFC822Channel@@2QBDB @22948 NONAME
+    ?DateTag@PHTTP@@SAABVPString@@XZ @27550 NONAME
+    ?DateTag@PRFC822Channel@@SAABVPString@@XZ @27551 NONAME
     ?deallocate@?$allocator@D@std@@QAEXPADI@Z @22949 NONAME
     ?deallocate@?$allocator@PAD@std@@QAEXPAPADI@Z @22950 NONAME
     ?deallocate@?$allocator@PAVPAggregatedHandle@@@std@@QAEXPAPAVPAggregatedHandle@@I@Z @22951 NONAME
@@ -10963,7 +10963,7 @@ EXPORTS
     ?ExpandFieldNames@PHTTPCompositeField@@UBEXAAVPString@@HAAH@Z @23197 NONAME
     ?ExpandFieldNames@PHTTPField@@UBEXAAVPString@@HAAH@Z @23198 NONAME
     ?ExpandFieldNames@PHTTPFieldArray@@UBEXAAVPString@@HAAH@Z @23199 NONAME
-    ?ExpiresTag@PHTTP@@2QBDB @23200 NONAME
+    ?ExpiresTag@PHTTP@@SAABVPString@@XZ @27552 NONAME
     ?Extra22@?DC@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBEB @23201 NONAME
     ?Extra44@?DC@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBEB @23202 NONAME
     ?Extra811@?DC@??SpConvertStreamFormatEnum@@YAJW4SPSTREAMFORMAT@@PAU_GUID@@PAPAUtWAVEFORMATEX@@@Z@4QBEB @23203 NONAME
@@ -11050,17 +11050,17 @@ EXPORTS
     ?FormatFault@PXMLRPCServerResource@@UAE?AVPString@@HABV2@@Z @23238 NONAME
     ?FormatId@CSpStreamFormat@@QBEABU_GUID@@XZ @23239 NONAME
     ?ForwardDomain@PSMTPServer@@UAE?AW4ForwardResult@1@AAVPCaselessString@@0@Z @23240 NONAME
-    ?ForwardedTag@PHTTP@@2QBDB @23241 NONAME
+    ?ForwardedTag@PHTTP@@SAABVPString@@XZ @27553 NONAME
     ?FrameComplete@PVideoOutputDevice_Window@@UAEHXZ @16505 NONAME
-    ?From@Stanza@XMPP@@2VPString@@B @23242 NONAME
     ?FromBase64@PXMLRPCVariableBase@@QAEXABVPString@@AAVPAbstractArray@@@Z @23243 NONAME
     ?FromBinary@PLDAPAttributeBase@@UAEXABV?$PArray@VPBYTEArray@@@@@Z @23244 NONAME
     ?FromString@Address@PIPSocket@@QAEHABVPString@@@Z @2035 NONAME
     ?FromString@PLDAPAttributeBase@@UAEXABVPString@@@Z @23245 NONAME
     ?FromString@PXMLRPCArrayObjectsBase@@UAEXHABVPString@@@Z @23246 NONAME
     ?FromString@PXMLRPCVariableBase@@UAEXHABVPString@@@Z @23247 NONAME
-    ?FromTag@PHTTP@@2QBDB @23248 NONAME
-    ?FromTag@PRFC822Channel@@2QBDB @23249 NONAME
+    ?FromTag@PHTTP@@SAABVPString@@XZ @27554 NONAME
+    ?FromTag@PRFC822Channel@@SAABVPString@@XZ @27555 NONAME
+    ?FromTag@Stanza@XMPP@@SAABVPString@@XZ @27556 NONAME
     ?front@?$deque@DV?$allocator@D@std@@@std@@QAEAADXZ @23250 NONAME
     ?front@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEAADXZ @23251 NONAME
     ?FuncTrace@CSpDebug@@QAEHH@Z @23252 NONAME
@@ -12491,8 +12491,8 @@ EXPORTS
     ?Host2Net@PSocket@@SAKK@Z @24003 NONAME
     ?HRFail@CSpDebug@@QAEHH@Z @24004 NONAME
     ?ICMP@@3VPICMPDLL@@A @2577 NONAME
-    ?ID@Stanza@XMPP@@2VPString@@B @24005 NONAME
-    ?IfModifiedSinceTag@PHTTP@@2QBDB @24006 NONAME
+    ?IDTag@Stanza@XMPP@@SAABVPString@@XZ @27557 NONAME
+    ?IfModifiedSinceTag@PHTTP@@SAABVPString@@XZ @27558 NONAME
     ?IllegalArgumentIndex@PArgList@@UBEXH@Z @2578 NONAME
     ?IN6_IS_ADDR_LINKLOCAL@@YAHPBUin6_addr@@@Z @7671 NONAME
     ?IN6_IS_ADDR_LOOPBACK@@YAHPBUin6_addr@@@Z @7672 NONAME
@@ -13002,8 +13002,8 @@ EXPORTS
     ?Invoke@PTextToSpeech_Festival@@IAEHABVPString@@ABVPFilePath@@@Z @24300 NONAME
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @2607 NONAME
     ?IQNamespaceHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@ABVPString@@@Z @24301 NONAME
-    ?IQQuery@XMPP@@3VPString@@B @24302 NONAME
-    ?IQStanza@XMPP@@3VPString@@B @24303 NONAME
+    ?IQQueryTag@XMPP@@YAABVPString@@XZ @27559 NONAME
+    ?IQStanzaTag@XMPP@@YAABVPString@@XZ @27560 NONAME
     ?Is@PHTML@@QBEHW4ElementInSet@1@@Z @24304 NONAME
     ?IsActive@PHTTPAuthority@@UBEHXZ @24305 NONAME
     ?IsActive@PHTTPMultiSimpAuth@@UBEHXZ @24306 NONAME
@@ -13147,7 +13147,7 @@ EXPORTS
     ?IsValid@SecurityID@@QBEHXZ @2922 NONAME
     ?ItemChangedHandlers@Roster@XMPP@@UAEAAVPNotifierList@@XZ @24371 NONAME
     ?Juxtapose@PTones@@IAE_NIIII@Z @26059 NONAME
-    ?KeepAliveTag@PHTTP@@2QBDB @24372 NONAME
+    ?KeepAliveTag@PHTTP@@SAABVPString@@XZ @27561 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @27323 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @16213 NONAME
     ?key_comp@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QBE?AU?$less@VPString@@@2@XZ @16214 NONAME
@@ -13161,8 +13161,8 @@ EXPORTS
     ?KnownExtensionEncodeBER@PASN_Sequence@@QBEXAAVPBER_Stream@@HABVPASN_Object@@@Z @24378 NONAME
     ?KnownExtensionEncodePER@PASN_Sequence@@QBEXAAVPPER_Stream@@HABVPASN_Object@@@Z @24379 NONAME
     ?KnownExtensionEncodeXER@PASN_Sequence@@UBEXAAVPXER_Stream@@HABVPASN_Object@@@Z @24380 NONAME
-    ?Language@XMPP@@3VPString@@B @24381 NONAME
-    ?LastModifiedTag@PHTTP@@2QBDB @24382 NONAME
+    ?LanguageTag@XMPP@@YAABVPString@@XZ @27562 NONAME
+    ?LastModifiedTag@PHTTP@@SAABVPString@@XZ @27563 NONAME
     ?Leave@CSpDebug@@AAEHXZ @24383 NONAME
     ?Leave@Room@MUC@XMPP@@UAEHXZ @24384 NONAME
     ?left@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5746 NONAME
@@ -13236,7 +13236,7 @@ EXPORTS
     ?LoadVXML@PVXMLSession@@UAEHABVPString@@@Z @24431 NONAME
     ?LocateName@PHTTPCompositeField@@UBEPBVPHTTPField@@ABVPString@@@Z @24432 NONAME
     ?LocateName@PHTTPField@@UBEPBV1@ABVPString@@@Z @24433 NONAME
-    ?LocationTag@PHTTP@@2QBDB @24434 NONAME
+    ?LocationTag@PHTTP@@SAABVPString@@XZ @27564 NONAME
     ?Lock@PSafeLockReadOnly@@QAEHXZ @7612 NONAME
     ?Lock@PSafeLockReadWrite@@QAEHXZ @7613 NONAME
     ?LockReadOnly@PSafeObject@@QBEHXZ @2937 NONAME
@@ -13270,7 +13270,7 @@ EXPORTS
     ?lower_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @7448 NONAME
     ?lower_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @7449 NONAME
     ?lower_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @7450 NONAME
-    ?MailerTag@PRFC822Channel@@2QBDB @24449 NONAME
+    ?MailerTag@PRFC822Channel@@SAABVPString@@XZ @27565 NONAME
     ?Main@BaseStreamHandler@XMPP@@UAEXXZ @24450 NONAME
     ?Main@HouseKeepingThread@PProcess@@UAEXXZ @2944 NONAME
     ?Main@PHTTPServiceThread@@UAEXXZ @24451 NONAME
@@ -13354,13 +13354,13 @@ EXPORTS
     ?MAX_TYPE@CRegParser@ATL@@1HB @24491 NONAME
     ?MAX_VALUE@CRegParser@ATL@@1HB @24492 NONAME
     ?MemFree@PWin32AsnAny@@QAEXXZ @2960 NONAME
-    ?MessageIDTag@PRFC822Channel@@2QBDB @24493 NONAME
+    ?MessageIDTag@PRFC822Channel@@SAABVPString@@XZ @27566 NONAME
     ?messages@?$_Locbase@H@std@@2HB @5747 NONAME
     ?MessageSenderHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@ABVJID@3@@Z @24494 NONAME
-    ?MessageStanza@XMPP@@3VPString@@B @24495 NONAME
+    ?MessageStanzaTag@XMPP@@YAABVPString@@XZ @27567 NONAME
     ?Mid@PString@@QBE?AV1@HH@Z @2961 NONAME
-    ?MIMEVersionTag@PHTTP@@2QBDB @24496 NONAME
-    ?MimeVersionTag@PRFC822Channel@@2QBDB @24497 NONAME
+    ?MIMEVersionTag@PHTTP@@SAABVPString@@XZ @27568 NONAME
+    ?MimeVersionTag@PRFC822Channel@@SAABVPString@@XZ @27569 NONAME
     ?MissingArgument@PArgList@@UBEXABVPString@@@Z @2962 NONAME
     ?Modify@PLDAPSession@@QAEHABVPString@@ABV?$PList@VModAttrib@PLDAPSession@@@@@Z @24498 NONAME
     ?Modify@PLDAPSession@@QAEHABVPString@@ABVPLDAPStructBase@@@Z @24499 NONAME
@@ -13380,9 +13380,9 @@ EXPORTS
     ?MultipartMessage@PRFC822Channel@@QAEHABVPString@@@Z @24506 NONAME
     ?m_bInitFailed@CAtlBaseModule@ATL@@2_NA @24507 NONAME
     ?m_libid@CAtlModule@ATL@@2U_GUID@@A @24508 NONAME
-    ?Namespace@MUC@XMPP@@3VPString@@A @24509 NONAME
-    ?Namespace@User@MUC@XMPP@@2VPString@@A @24510 NONAME
-    ?Namespace@XMPP@@3VPString@@B @24511 NONAME
+    ?NamespaceTag@MUC@XMPP@@YAABVPString@@XZ @27570 NONAME
+    ?NamespaceTag@User@MUC@XMPP@@SAABVPString@@XZ @27571 NONAME
+    ?NamespaceTag@XMPP@@YAABVPString@@XZ @27572 NONAME
     ?Navigate@Row@PODBC@@QAEHH@Z @16801 NONAME
     ?NeedLongDataLen@PODBC@@QAEHXZ @16802 NONAME
     ?Net2Host@PSocket@@SAGG@Z @2966 NONAME
@@ -13846,8 +13846,8 @@ EXPORTS
     ?PPlugin_PVideoOutputDevice_SDL_Registration_Instance@@3VPPlugin_PVideoOutputDevice_SDL_Registration@@A @24843 NONAME
     ?PPlugin_PVideoOutputDevice_Window_Registration_Instance@@3VPPlugin_PVideoOutputDevice_Window_Registration@@A @16544 NONAME
     ?PPlugin_PVideoOutputDevice_YUVFile_Registration_Instance@@3VPPlugin_PVideoOutputDevice_YUVFile_Registration@@A @24844 NONAME
-    ?PragmaNoCacheTag@PHTTP@@2QBDB @24845 NONAME
-    ?PragmaTag@PHTTP@@2QBDB @24846 NONAME
+    ?PragmaNoCacheTag@PHTTP@@SAABVPString@@XZ @27573 NONAME
+    ?PragmaTag@PHTTP@@SAABVPString@@XZ @27574 NONAME
     ?PreambleDecode@PASN_Sequence@@QAEHAAVPASN_Stream@@@Z @24847 NONAME
     ?PreambleDecodeBER@PASN_Sequence@@QAEHAAVPBER_Stream@@@Z @24848 NONAME
     ?PreambleDecodePER@PASN_Sequence@@QAEHAAVPPER_Stream@@@Z @24849 NONAME
@@ -13863,7 +13863,7 @@ EXPORTS
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEOUT__@@AAH@Z @3060 NONAME
     ?PrepareCommon@PWaveBuffer@@AAEXH@Z @3061 NONAME
     ?PresenceHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@XZ @24855 NONAME
-    ?PresenceStanza@XMPP@@3VPString@@B @24856 NONAME
+    ?PresenceStanzaTag@XMPP@@YAABVPString@@XZ @27575 NONAME
     ?PreShutdown@PProcess@@SAXXZ @6647 NONAME
     ?Previous@PSafePtrBase@@IAEXXZ @3062 NONAME
     ?PrintElementOn@?$PBaseArray@D@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @5754 NONAME
@@ -13959,7 +13959,7 @@ EXPORTS
     ?PrintOn@PXMLRPCStructBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24920 NONAME
     ?PrintOn@SRVRecord@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24921 NONAME
     ?PrintOn@SRVRecordList@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24922 NONAME
-    ?Priority@Presence@XMPP@@2VPString@@B @24923 NONAME
+    ?PriorityTag@Presence@XMPP@@SAABVPString@@XZ @27576 NONAME
     ?Process@PMessageDigest@@UAEXABVPBYTEArray@@@Z @24924 NONAME
     ?Process@PMessageDigest@@UAEXABVPString@@@Z @24925 NONAME
     ?Process@PMessageDigest@@UAEXPBD@Z @24926 NONAME
@@ -13984,9 +13984,9 @@ EXPORTS
     ?ProcessNode@PVXMLSession@@IAEXXZ @24942 NONAME
     ?ProcessSDLEvents@PVideoOutputDevice_SDL@@IAE_NXZ @24943 NONAME
     ?ProcessUserInput@PVXMLSession@@IAEXXZ @24944 NONAME
-    ?ProxyAuthenticateTag@PHTTP@@2QBDB @24945 NONAME
-    ?ProxyAuthorizationTag@PHTTP@@2QBDB @24946 NONAME
-    ?ProxyConnectionTag@PHTTP@@2QBDB @24947 NONAME
+    ?ProxyAuthenticateTag@PHTTP@@SAABVPString@@XZ @27577 NONAME
+    ?ProxyAuthorizationTag@PHTTP@@SAABVPString@@XZ @27578 NONAME
+    ?ProxyConnectionTag@PHTTP@@SAABVPString@@XZ @27579 NONAME
     ?PSetErrorStream@@YAXPAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @5780 NONAME
     ?PSpDebug@@YAPAVCSpDebug@@XZ @24948 NONAME
     ?psprintf@@YA?AVPString@@PBDZZ @3093 NONAME
@@ -14173,7 +14173,7 @@ EXPORTS
     ?RealEncode@PXER_Stream@@UAEXABVPASN_Real@@@Z @25052 NONAME
     ?Recalculate@PURL@@IAEXXZ @25053 NONAME
     ?ReceiveCommandString@PChannel@@IAEHHABVPString@@AAHH@Z @3167 NONAME
-    ?ReceivedTag@PRFC822Channel@@2QBDB @25054 NONAME
+    ?ReceivedTag@PRFC822Channel@@SAABVPString@@XZ @27580 NONAME
     ?ReceiveSocksResponse@PSocks4Socket@@MAEHAAVPTCPSocket@@AAVAddress@PIPSocket@@AAG@Z @25055 NONAME
     ?ReceiveSocksResponse@PSocksProtocol@@MAEHAAVPTCPSocket@@AAVAddress@PIPSocket@@AAG@Z @25056 NONAME
     ?Record@PVXMLRecordableFilename@@UAEXAAVPVXMLChannel@@@Z @25057 NONAME
@@ -14185,7 +14185,7 @@ EXPORTS
     ?RecordSound@PSoundChannelWin32@@UAEHAAVPSound@@@Z @3738 NONAME
     ?Redraw@PVideoChannel@@UAEHPBX@Z @3170 NONAME
     ?refCount@PTextToSpeech_SAPI@@1PAHA @25059 NONAME
-    ?RefererTag@PHTTP@@2QBDB @25060 NONAME
+    ?RefererTag@PHTTP@@SAABVPString@@XZ @27581 NONAME
     ?refMutex@PTextToSpeech_SAPI@@1VPCriticalSection@@A @25061 NONAME
     ?Refresh@Roster@XMPP@@UAEXH@Z @25062 NONAME
     ?Register@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@SAXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@1@@Z @26948 NONAME
@@ -14302,7 +14302,7 @@ EXPORTS
     ?Resume@PTimer@@QAEXXZ @3214 NONAME
     ?Resume@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @3215 NONAME
     ?RetreiveResource@PVXMLSession@@UAEHABVPURL@@AAVPString@@AAVPFilePath@@H@Z @25109 NONAME
-    ?ReturnPathTag@PRFC822Channel@@2QBDB @25110 NONAME
+    ?ReturnPathTag@PRFC822Channel@@SAABVPString@@XZ @27582 NONAME
     ?Rewind@PVXMLPlayable@@UAEHPAVPChannel@@@Z @25111 NONAME
     ?Rewind@PVXMLPlayableData@@UAEHPAVPChannel@@@Z @25112 NONAME
     ?Rewind@PVXMLPlayableFilename@@UAEHPAVPChannel@@@Z @25113 NONAME
@@ -14413,7 +14413,7 @@ EXPORTS
     ?SequenceUnknownEncode@PPER_Stream@@UAEXABVPASN_Sequence@@@Z @25177 NONAME
     ?SequenceUnknownEncode@PXER_Stream@@UAEXABVPASN_Sequence@@@Z @25178 NONAME
     ?ServerReset@PSMTPServer@@QAEXXZ @25179 NONAME
-    ?ServerTag@PHTTP@@2QBDB @25180 NONAME
+    ?ServerTag@PHTTP@@SAABVPString@@XZ @27583 NONAME
     ?SessionEstablishedHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@XZ @25181 NONAME
     ?SessionReleasedHandlers@StreamHandler@C2S@XMPP@@QAEAAVPNotifierList@@XZ @25182 NONAME
     ?Set@LocalEvent@@UAEXXZ @25183 NONAME
@@ -14529,7 +14529,7 @@ EXPORTS
     ?SetContentAttachment@PRFC822Channel@@QAEXABVPFilePath@@@Z @25241 NONAME
     ?SetContentType@PRFC822Channel@@QAEXABVPString@@@Z @25242 NONAME
     ?SetContrast@PVideoDevice@@UAEHI@Z @3294 NONAME
-    ?SetCookieTag@PHTTP@@2QBDB @25243 NONAME
+    ?SetCookieTag@PHTTP@@SAABVPString@@XZ @27584 NONAME
     ?SetCurrent@PAbstractList@@IBEHH@Z @3295 NONAME
     ?SetCurrentElement@PXER_Stream@@QAEPAVPXMLElement@@PAV2@@Z @25244 NONAME
     ?SetData@PASN_BitString@@QAEXIABVPBYTEArray@@@Z @25245 NONAME
@@ -14830,10 +14830,10 @@ EXPORTS
     ?SetXMLTree@PXMLParser@@QAEPAVPXMLElement@@PAV2@@Z @25423 NONAME
     ?Shift@PArgList@@QAEXH@Z @3402 NONAME
     ?ShouldIgnoreSignatures@PHTTPServiceProcess@@QBEHXZ @25424 NONAME
-    ?Show@Presence@XMPP@@2VPString@@B @25425 NONAME
     ?showbase@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5810 NONAME
     ?showpoint@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5811 NONAME
     ?showpos@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5812 NONAME
+    ?ShowTag@Presence@XMPP@@SAABVPString@@XZ @27585 NONAME
     ?Shutdown@PChannel@@UAEHW4ShutdownValue@1@@Z @3403 NONAME
     ?Shutdown@PIndirectChannel@@UAEHW4ShutdownValue@PChannel@@@Z @3404 NONAME
     ?Shutdown@PSocket@@UAEHW4ShutdownValue@PChannel@@@Z @3405 NONAME
@@ -14930,7 +14930,7 @@ EXPORTS
     ?StaticMainEntry@PServiceProcess@@CGXKPAPAD@Z @3428 NONAME
     ?StaticThreadEntry@PServiceProcess@@CAXPAX@Z @3429 NONAME
     ?StaticWndProc@PServiceProcess@@CGJPAUHWND__@@IIJ@Z @3430 NONAME
-    ?Status@Presence@XMPP@@2VPString@@B @25475 NONAME
+    ?StatusTag@Presence@XMPP@@SAABVPString@@XZ @27586 NONAME
     ?Stop@BaseStreamHandler@XMPP@@UAEHABVPString@@@Z @25476 NONAME
     ?Stop@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @3431 NONAME
     ?Stop@PTimer@@QAEXXZ @3433 NONAME
@@ -14950,8 +14950,8 @@ EXPORTS
     ?str@strstreambuf@std@@QAEPADXZ @5815 NONAME
     ?stringToFaultCode@@YAHAAVPString@@@Z @25482 NONAME
     ?StringToTime@PVXMLSession@@KA?AVPTimeInterval@@ABVPString@@@Z @25483 NONAME
-    ?Subject@Message@XMPP@@2VPString@@B @25484 NONAME
-    ?SubjectTag@PRFC822Channel@@2QBDB @25485 NONAME
+    ?SubjectTag@Message@XMPP@@SAABVPString@@XZ @27587 NONAME
+    ?SubjectTag@PRFC822Channel@@SAABVPString@@XZ @27588 NONAME
     ?SubstituteEquivalSequence@PHTTPServiceProcess@@UAEHAAVPHTTPRequest@@ABVPString@@AAV3@@Z @25486 NONAME
     ?Successor@Info@PAbstractSortedList@@QBEPAUElement@2@PBU32@@Z @7668 NONAME
     ?SupportQoS@PUDPSocket@@SAHABVAddress@PIPSocket@@@Z @16561 NONAME
@@ -14971,12 +14971,11 @@ EXPORTS
     ?TestAllFormats@PVideoInputDevice_FakeVideo@@UAEHXZ @3862 NONAME
     ?TestAllFormats@PVideoInputDevice_VideoForWindows@@UAEHXZ @3755 NONAME
     ?TestAllFormats@PVideoInputDevice_YUVFile@@UAEHXZ @25490 NONAME
-    ?Thread@Message@XMPP@@2VPString@@B @25491 NONAME
     ?ThreadEntry@PServiceProcess@@AAEXXZ @3447 NONAME
+    ?ThreadTag@Message@XMPP@@SAABVPString@@XZ @27589 NONAME
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @3448 NONAME
     ?time@?$_Locbase@H@std@@2HB @5816 NONAME
     ?TimeFormat@PODBCRecord@@2W40PTime@@A @16828 NONAME
-    ?To@Stanza@XMPP@@2VPString@@B @25492 NONAME
     ?ToBase64@PXMLRPCVariableBase@@QBE?AVPString@@AAVPAbstractArray@@@Z @25493 NONAME
     ?ToBinary@PLDAPAttributeBase@@UBE?AVPBYTEArray@@XZ @25494 NONAME
     ?ToCharArray@PStringArray@@QBEPAPADPAVPCharArray@@@Z @3449 NONAME
@@ -14991,9 +14990,10 @@ EXPORTS
     ?ToString@PLDAPAttributeBase@@UBE?AVPString@@XZ @25497 NONAME
     ?ToString@PXMLRPCArrayObjectsBase@@UBE?AVPString@@H@Z @25498 NONAME
     ?ToString@PXMLRPCVariableBase@@UBE?AVPString@@H@Z @25499 NONAME
-    ?ToTag@PRFC822Channel@@2QBDB @25500 NONAME
+    ?ToTag@PRFC822Channel@@SAABVPString@@XZ @27590 NONAME
+    ?ToTag@Stanza@XMPP@@SAABVPString@@XZ @27591 NONAME
     ?ToUpper@PString@@QBE?AV1@XZ @3456 NONAME
-    ?TransferEncodingTag@PHTTP@@2QBDB @25501 NONAME
+    ?TransferEncodingTag@PHTTP@@SAABVPString@@XZ @27592 NONAME
     ?TransferHandle@PSocksSocket@@IAEHAAV1@@Z @25502 NONAME
     ?Transform@PMessageDigest5@@AAEXPBE@Z @25503 NONAME
     ?Translate@PServiceMacro@@UBE?AVPString@@AAVPHTTPRequest@@ABV2@1@Z @25504 NONAME
@@ -15053,9 +15053,9 @@ EXPORTS
     ?Trigger@WorkerThread@@UAEXXZ @25558 NONAME
     ?Trim@PString@@QBE?AV1@XZ @3457 NONAME
     ?trunc@?$_Iosb@H@std@@2W4_Openmode@12@B @5817 NONAME
-    ?Type@IQ@XMPP@@2VPString@@B @25559 NONAME
-    ?Type@Message@XMPP@@2VPString@@B @25560 NONAME
-    ?Type@Presence@XMPP@@2VPString@@B @25561 NONAME
+    ?TypeTag@IQ@XMPP@@SAABVPString@@XZ @27593 NONAME
+    ?TypeTag@Message@XMPP@@SAABVPString@@XZ @27594 NONAME
+    ?TypeTag@Presence@XMPP@@SAABVPString@@XZ @27595 NONAME
     ?underflow@Buffer@PDebugStream@@UAEHXZ @3458 NONAME
     ?underflow@Buffer@PStringStream@@UAEHXZ @3459 NONAME
     ?underflow@Buffer@PSystemLog@@UAEHXZ @3460 NONAME
@@ -15101,7 +15101,7 @@ EXPORTS
     ?UseCertificate@PSSLContext@@QAEHABVPSSLCertificate@@@Z @25579 NONAME
     ?UseDiffieHellman@PSSLContext@@QAEHABVPSSLDiffieHellman@@@Z @25580 NONAME
     ?UsePrivateKey@PSSLContext@@QAEHABVPSSLPrivateKey@@@Z @25581 NONAME
-    ?UserAgentTag@PHTTP@@2QBDB @25582 NONAME
+    ?UserAgentTag@PHTTP@@SAABVPString@@XZ @27596 NONAME
     ?UYVY422toYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAE@Z @16861 NONAME
     ?UYVY422toYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAE@Z @16862 NONAME
     ?Validate@PHTTPMultiSimpAuth@@UBEHABVPHTTPRequest@@ABVPString@@@Z @25583 NONAME
@@ -15254,7 +15254,7 @@ EXPORTS
     ?WriteTo@PIPXSocket@@UAEHPBXHABVAddress@1@G@Z @3508 NONAME
     ?WriteTo@PSocksUDPSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @25675 NONAME
     ?WriteTrap@PSNMP@@SAXAAVPChannel@@W4TrapType@1@ABVPString@@2HKABVPSNMPVarBindingList@@ABVAddress@PIPSocket@@@Z @25676 NONAME
-    ?WWWAuthenticateTag@PHTTP@@2QBDB @25677 NONAME
+    ?WWWAuthenticateTag@PHTTP@@SAABVPString@@XZ @27597 NONAME
     ?XmlDecl@PXMLParser@@UAEXPBD0H@Z @25678 NONAME
     ?Yield@PThread@@SAXXZ @3509 NONAME
     ?YUV420PtoRGB@PStandardColourConverter@@IBEHPBEPAEPAHIII@Z @16567 NONAME
