@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="Hello World Static"
-	ProjectGUID="{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
+	Name="Hello World DLL"
+	ProjectGUID="{3B071642-5CE4-4B49-AFE8-8D475DF14F49}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -22,7 +22,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="NDEBUG;PTRACING;OPAL_STATIC_LINK"
+				PreprocessorDefinitions="NDEBUG;PTRACING"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;PTRACING;OPAL_STATIC_LINK"
+				PreprocessorDefinitions="_DEBUG;PTRACING"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -136,8 +136,8 @@
 	</Configurations>
 	<References>
 		<ProjectReference
-			ReferencedProjectIdentifier="{E61B4DFB-0CAB-46DD-BB02-1AFFD61DB7F5}"
-			Name="PTLib Static"/>
+			ReferencedProjectIdentifier="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
+			Name="PTLib"/>
 	</References>
 	<Files>
 		<File
