@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.52  2007/04/13 23:15:19  shorne
+ * added backward compatible SetFrameSizeConverter
+ *
  * Revision 1.51  2007/04/13 07:13:13  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -555,6 +558,18 @@ class PVideoDevice : public PVideoFrameInfo
       unsigned height, ///< New height of frame
       ResizeMode resizeMode = eMaxResizeMode ///< Mode to use if resizing is required.
     );
+
+    /**Set the frame size to be used, trying converters if available.
+       Function used for Backward compatibility only.
+       If the device does not support the size, a set of alternate resolutions
+       are attempted.  A converter is setup if possible.
+    */
+    virtual BOOL SetFrameSizeConverter(
+      unsigned width,                   ///< New width of frame
+      unsigned height,                  ///< New height of frame
+	  BOOL  /*bScaleNotCrop*/           ///< Not used.
+	  )  { return SetFrameSizeConverter(width,height,eScale); }
+
 
     /**Set the frame size to be used.
 
