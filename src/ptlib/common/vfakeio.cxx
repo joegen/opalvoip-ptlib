@@ -24,6 +24,16 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.38  2007/04/13 07:13:14  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.37  2006/07/06 01:20:48  csoutheren
  * Disable benign warnings on VC 2005
  *
@@ -167,6 +177,7 @@
 #include <ptlib/pluginmgr.h>
 #include <ptlib/pprocess.h>
 #include <ptlib/videoio.h>
+#include <ptclib/delaychan.h>
 
 #ifdef __MACOSX__
 namespace PWLibStupidOSXHacks {
@@ -1601,6 +1612,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
    PINDEX   videoFrameSize;
    PINDEX   scanLineWidth;
    PINDEX   bytesPerPixel; // 2==YUV420P, 3=RGB24, 4=RGB32
+   PAdaptiveDelay m_Pacing;
 
    PString textLine[PVideoFont::MAX_L_HEIGHT];
 };
@@ -1749,18 +1761,7 @@ PINDEX PVideoInputDevice_FakeVideo::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice_FakeVideo::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
-  frameTimeError += msBetweenFrames;
-
-  PTime now;
-  PTimeInterval delay = now - previousFrameTime;
-  frameTimeError -= (int)delay.GetMilliSeconds();
-  previousFrameTime = now;
-
-  if (frameTimeError > 0) {
-    PTRACE(6, "FakeVideo\t Sleep for " << frameTimeError << " milli seconds");
-    PThread::Sleep(frameTimeError);
-  }
-
+  m_Pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 

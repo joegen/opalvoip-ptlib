@@ -27,6 +27,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.6  2007/04/13 07:13:14  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.5  2007/02/06 05:03:52  csoutheren
  * Add factory for video file types
  *
@@ -60,218 +70,174 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 PVideoFile::PVideoFile()
+  : unknownFrameSize(TRUE)
+  , frameBytes(CalculateFrameBytes())
+  , headerOffset(0)
 {
-  yuvSize = yuvWidth = yuvHeight = 0;
 }
 
-PVideoFile::PVideoFile(PINDEX width,
-                       PINDEX height,
-                     OpenMode mode,
-                          int opts)
-  : PFile(mode, opts), yuvWidth(width), yuvHeight(height)
-{
-  yuvSize = yuvWidth * yuvHeight * 3 / 2;
-}
 
-PVideoFile::PVideoFile(PINDEX width, 
-                       PINDEX height, 
-            const PFilePath & name,
-                     OpenMode mode,
-                          int opts)
-  : PFile(name, mode, opts), yuvWidth(width), yuvHeight(height)
-{
-  yuvSize = yuvWidth * yuvHeight * 3 / 2;
-}
-
-void PVideoFile::SetWidth(PINDEX v)    
+BOOL PVideoFile::SetFrameSize(unsigned width, unsigned height)   
 { 
-  yuvWidth = v; 
-  yuvSize = yuvWidth * yuvHeight * 3 / 2;
+  if (!PVideoFrameInfo::SetFrameSize(width, height))
+    return FALSE;
+
+  unknownFrameSize = FALSE;
+  frameBytes = CalculateFrameBytes();
+  return frameBytes > 0;
 }
 
-void PVideoFile::SetHeight(PINDEX v)   
-{ 
-  yuvHeight = v; 
-  yuvSize = yuvWidth * yuvHeight * 3 / 2;
-}
 
-BOOL PVideoFile::ExtractSizeHint(PFilePath & fn, PINDEX & width, PINDEX & height)
+BOOL PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
-  PString str(fn.GetType());
-  PINDEX pos = str.Find('{');
-  if (pos == P_MAX_INDEX)
+  if (unknownFrameSize)
+    ExtractHints(name, *this);
+  return file.Open(name, mode, opts);
+}
+
+
+BOOL PVideoFile::WriteFrame(const void * frame)
+{
+  return file.Write(frame, frameBytes);
+}
+
+
+BOOL PVideoFile::ReadFrame(void * frame)
+{
+  if (file.Read(frame, frameBytes) && file.GetLastReadCount() == frameBytes)
     return TRUE;
 
-  PString newType(str.Left(pos));
-  fn.SetType(newType);
-  str = str.Mid(pos+1);
-
-  pos = str.Find('}');
-  if (pos != P_MAX_INDEX)
-    str = str.Left(pos);
-
-  BOOL ret = TRUE;
-
-  if (str *= "cif16") {
-    width  = PVideoDevice::CIF16Width;
-    height = PVideoDevice::CIF16Height;
-  }
-  else if (str *= "cif4") {
-    width  = PVideoDevice::CIF4Width;
-    height = PVideoDevice::CIF4Height;
-  }
-  else if (str *= "cif") {
-    width  = PVideoDevice::CIFWidth;
-    height = PVideoDevice::CIFHeight;
-  }
-  else if (str *= "qcif") {
-    width  = PVideoDevice::QCIFWidth;
-    height = PVideoDevice::QCIFHeight;
-  }
-  else if (str *= "sqcif") {
-    width  = PVideoDevice::SQCIFWidth;
-    height = PVideoDevice::SQCIFHeight;
-  }
-  else 
-    ret = FALSE;
-
-  return ret;
+  PTRACE(4, "YUVFILE\tError reading file " << file.GetErrorText(file.GetErrorCode(PFile::LastReadError)));
+  return FALSE;
 }
 
-BOOL PVideoFile::ExtractSizeHint(PFilePath & fn)
+
+off_t PVideoFile::GetLength() const
 {
-  BOOL stat = ExtractSizeHint(fn, yuvWidth, yuvHeight);
-  if (stat && (yuvHeight != 0) && (yuvWidth != 0))
-    yuvSize = yuvWidth * yuvHeight * 3 / 2;
-  return stat;
+  off_t len = file.GetLength();
+  return len < headerOffset ? 0 : ((len - headerOffset)/frameBytes);
 }
+
+
+BOOL PVideoFile::SetLength(off_t len)
+{
+  return file.SetLength(len*frameBytes + headerOffset);
+}
+
+
+off_t PVideoFile::GetPosition() const
+{
+  off_t pos = file.GetPosition();
+  return pos < headerOffset ? 0 : ((pos - headerOffset)/frameBytes);
+}
+
+
+BOOL PVideoFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
+{
+  pos *= frameBytes;
+  if (origin == PFile::Start)
+    pos += headerOffset;
+
+  return file.SetPosition(pos, origin);
+}
+
+
+BOOL PVideoFile::ExtractHints(const PFilePath & fn, PVideoFrameInfo & info)
+{
+  static PRegularExpression  qcif  ("{qcif}|_qcif[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif  ("{cif}|_cif[^a-z0-9]",                  PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression sqcif  ("{sqcif}|_sqcif[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif4 ("{cif4}|_cif4[^a-z0-9]",                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   cif16("{cif16}|_cif16[^a-z0-9]",              PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression   XbyY ("{[0-9]+x[0-9]+}|_[0-9]+x[0-9]+[^a-z]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression fps    ("_[0-9]+fps[^a-z]",                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
+  PCaselessString str = fn;
+  BOOL foundHint = FALSE;
+  PINDEX pos;
+
+  if (str.FindRegEx(qcif) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(QCIFWidth, QCIFHeight);
+  else if (str.FindRegEx(cif) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(CIFWidth, CIFHeight);
+  else if (str.FindRegEx(sqcif) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(SQCIFWidth, SQCIFHeight);
+  else if (str.FindRegEx(cif4) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(CIF4Width, CIF4Height);
+  else if (str.FindRegEx(cif16) != P_MAX_INDEX)
+    foundHint = info.SetFrameSize(CIF16Width, CIF16Height);
+  else if ((pos = str.FindRegEx(XbyY)) != P_MAX_INDEX) {
+    unsigned width, height;
+    if (sscanf(str.Mid(pos+1), "%ux%u", &width, &height) == 2)
+      foundHint = info.SetFrameSize(width, height);
+  }
+
+  if ((pos = str.FindRegEx(fps)) != P_MAX_INDEX) {
+    unsigned rate = str.Mid(pos+1).AsUnsigned();
+    foundHint = info.SetFrameRate(rate);
+  }
+
+  return foundHint;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINSTANTIATE_FACTORY(PVideoFile, PDefaultPFactoryKey)
 static PFactory<PVideoFile>::Worker<PYUVFile> yuvFileFactory("yuv");
 static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
 
+
 PYUVFile::PYUVFile()
-  : PVideoFile()
+  : y4mMode(FALSE)
 {
-  Construct();
 }
 
-PYUVFile::PYUVFile(PINDEX width,
-                   PINDEX height,
-                 OpenMode mode,
-                      int opts)
-  : PVideoFile(width, height, mode, opts)
-{
-  Construct();
-}
 
-PYUVFile::PYUVFile(PINDEX width, 
-                   PINDEX height, 
-        const PFilePath & name,
-                 OpenMode mode,
-                      int opts)
-  : PVideoFile(width, height, name, mode, opts)
+BOOL PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, int opts)
 {
-  Construct();
-}
-
-void PYUVFile::Construct()
-{
-  offset = 0;
-  y4mMode = FALSE;
-}
-
-BOOL PYUVFile::Open(OpenMode mode, int opts)
-{
-  ExtractSizeHint(path);
-
-  if (!(PFile::Open(mode, opts)))
+  if (!PVideoFile::Open(name, mode, opts))
     return FALSE;
 
-  y4mMode = GetFilePath().GetType() *= ".y4m";
-
-  if (offset != 0)
-    PFile::SetPosition(offset);
+  y4mMode = name.GetType() *= ".y4m";
 
   if (y4mMode) {
     int ch;
     do {
-      if ((ch = PFile::ReadChar()) < 0)
+      if ((ch = file.ReadChar()) < 0)
         return FALSE;
     }
-    while (ch != 0x0a);
+    while (ch != '\n');
+    headerOffset = file.GetPosition();
   }
 
   return TRUE;
 }
 
 
-BOOL PYUVFile::Open(const PFilePath & name, OpenMode mode, int opts)
-{
-  if (IsOpen())
-    Close();
-  SetFilePath(name);
-  return Open(mode, opts);
-}
-
 BOOL PYUVFile::WriteFrame(const void * frame)
 {
-  return PFile::Write(frame, yuvSize);
+  if (y4mMode)
+    file.WriteChar('\n');
+
+  return file.Write(frame, frameBytes);
 }
+
 
 BOOL PYUVFile::ReadFrame(void * frame)
 {
   if (y4mMode) {
     int ch;
     do {
-      if ((ch = PFile::ReadChar()) < 0)
+      if ((ch = file.ReadChar()) < 0)
         return FALSE;
     }
-    while (ch != 0x0a);
+    while (ch != '\n');
   }
 
-  if (!PFile::Read(frame, yuvSize)) {
-    PTRACE(4, "YUVFILE\tError reading file " << GetErrorText(GetErrorCode(LastReadError)));
-    return FALSE;
-  }
-
-  if (GetLastReadCount() != yuvSize)
-    return FALSE;
-
-  return TRUE;
+  return PVideoFile::ReadFrame(frame);
 }
 
-off_t PYUVFile::GetLength() const
-{
-  return PFile::GetLength() - offset;
-}
-  
-BOOL PYUVFile::SetLength(off_t len)
-{
-  return PFile::SetLength(len + offset);
-}
-
-BOOL PYUVFile::SetPosition(off_t pos, FilePositionOrigin origin)
-{
-  switch (origin) {
-    case PFile::Start:
-      return PFile::SetPosition(pos + offset, origin);
-
-    case PFile::Current:
-      return PFile::SetPosition(pos, origin);
-
-    case PFile::End:
-      return PFile::SetPosition(offset, origin);
-  }
-
-  return FALSE;
-}
-
-off_t PYUVFile::GetPosition() const
-{
-  return PFile::GetPosition() - offset;
-}
 
 #endif  // P_VIDFILE
 
