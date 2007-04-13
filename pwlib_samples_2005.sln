@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World", "samples\hello_world\hello_2005.vcproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2005.vcproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Static", "src\ptlib\msos\Console_2005.vcproj", "{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
 EndProject
@@ -55,6 +55,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "threadex", "samples\threadex\threadex_2005.vcproj", "{89F7154A-47E5-47FE-88E3-E5E8EC516752}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmlrpcsrvr", "samples\xmlrpcsrvr\xmlrpcsrvr_2005.vcproj", "{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\hello_world\helloDLL_2005.vcproj", "{86680AA2-ACF3-4247-AF25-8E3D80855868}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -171,6 +173,10 @@ Global
 		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Debug|Win32.Build.0 = Debug|Win32
 		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Release|Win32.ActiveCfg = Release|Win32
 		{9F59C0C0-B7C0-4FFA-8AA6-AE41A135A1F3}.Release|Win32.Build.0 = Release|Win32
+		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Debug|Win32.ActiveCfg = Debug|Win32
+		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Debug|Win32.Build.0 = Debug|Win32
+		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|Win32.ActiveCfg = Release|Win32
+		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
