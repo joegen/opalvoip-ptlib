@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.h,v $
+ * Revision 1.1  2007/04/13 18:17:57  shorne
+ * added ODBC support for linux thx Michal Z
+ *
  * Revision 1.3  2006/06/27 04:28:16  shorne
  * Removed debuging code
  *
@@ -106,19 +109,25 @@
 
 #ifdef P_ODBC
 
-#include <tchar.h>
 #include <sql.h> 
 #include <sqlext.h>
 #include <odbcinst.h>
 
-#pragma comment(lib,"odbc32.lib")
-#pragma comment(lib,"odbcCP32.lib")
-
+#ifdef _MSC_VER
+ #include <tchar.h>
+ #pragma comment(lib,"odbc32.lib")
+ #pragma comment(lib,"odbcCP32.lib")
+#else
+ typedef const char *LPCTSTR;
+ typedef void *LPVOID;
+ typedef long LONG;
+ typedef long long _int64;
+ #define _T(x) x
+#endif // _MSC_VER
 
 // Max SQL String Data Length
 #define MAX_DATA_LEN 1024
 
-//--
 /** PODBC Statement Class 
 	This class is use to parse store queries and Fetch data
 	It is not designed to process the actual data only access it.

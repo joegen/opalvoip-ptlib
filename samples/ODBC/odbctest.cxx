@@ -26,6 +26,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: odbctest.cxx,v $
+ * Revision 1.5  2007/04/13 18:17:57  shorne
+ * added ODBC support for linux thx Michal Z
+ *
  * Revision 1.4  2007/03/21 15:32:04  shorne
  * Added link to podbc.h
  *
@@ -44,7 +47,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
-#include <ptlib/msos/ptlib/podbc.h>
+#include <ptclib/podbc.h>
 
 class ODBCtest : public PProcess
 {
