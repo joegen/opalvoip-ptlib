@@ -2290,20 +2290,6 @@
 				<File
 					RelativePath="..\..\ptclib\pdns.cxx"
 					>
-					<FileConfiguration
-						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\ptclib\pils.cxx"
@@ -2383,6 +2369,10 @@
 				</File>
 				<File
 					RelativePath="..\..\ptclib\pwavfile.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ptclib\pwavfiledev.cxx"
 					>
 				</File>
 				<File
@@ -3112,6 +3102,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pwavfile.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pwavfiledev.h"
 					>
 				</File>
 				<File
