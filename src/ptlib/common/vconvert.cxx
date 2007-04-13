@@ -26,6 +26,16 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.59  2007/04/13 07:13:14  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.58  2006/12/07 21:32:41  dominance
  * make sure can fit the jpeg image into the buffer for MJPEG and JPEG cams.
  * Thanks goes to Luc Saillard for this patch.
@@ -255,11 +265,6 @@
 #include "tinyjpeg.h"
 #endif
 
-#define CIF_WIDTH     352
-#define CIF_HEIGHT    288
-
-#define QCIF_WIDTH    176
-#define QCIF_HEIGHT   144
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4244)
@@ -287,10 +292,9 @@ class PStandardColourConverter : public PColourConverter
 
   protected:
     PStandardColourConverter(
-      const PString & srcFmt,
-      const PString & dstFmt,
-      unsigned w, unsigned h
-    ) : PColourConverter(srcFmt, dstFmt, w, h) { }
+      const PVideoFrameInfo & src,
+      const PVideoFrameInfo & dst
+    ) : PColourConverter(src, dst) { }
 
     BOOL SBGGR8toYUV420P(
      const BYTE * srgb,
@@ -424,55 +428,94 @@ PColourConverterRegistration::PColourConverterRegistration(const PString & srcCo
 }
 
 
-PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
-                                            const PString & destColourFormat,
-                                            unsigned width,
-                                            unsigned height)
+PColourConverter * PColourConverter::Create(const PVideoFrameInfo & src,
+                                            const PVideoFrameInfo & dst)
 {
-  PString converterName = srcColourFormat + '\t' + destColourFormat;
+  PString converterName = src.GetColourFormat() + '\t' + dst.GetColourFormat();
 
   PColourConverterRegistration * find = RegisteredColourConvertersListHead;
   while (find != NULL) {
     if (*find == converterName) {
-      return find->Create(width, height);
+      return find->Create(src, dst);
     }
     find = find->link;
   }
 
-  PTRACE(2,"PColCnv\tCreate error. Did not find " << srcColourFormat << "->" << destColourFormat);
+  PTRACE(2,"PColCnv\tCreate error. Did not find " << src.GetColourFormat() << "->" << dst.GetColourFormat());
   return NULL;
 }
 
 
-PColourConverter::PColourConverter(const PString & src,
-                                   const PString & dst,
-                                   unsigned width,
-                                   unsigned height)
-  : srcColourFormat(src),
-    dstColourFormat(dst)
-{
-  PTRACE(6,"PColCnv\tPColourConverter constructed: " << src << "->" << dst << ' ' << width << 'x'<< height);
+PColourConverter::PColourConverter(const PVideoFrameInfo & src,
+                                   const PVideoFrameInfo & dst)
+  : srcColourFormat(src.GetColourFormat())
+  , dstColourFormat(dst.GetColourFormat())
+  , resizeMode(dst.GetResizeMode())
+  , verticalFlip(FALSE)
 #ifndef P_MACOSX
-  jdec = NULL;
+  , jdec(NULL)
 #endif
-
-  verticalFlip = FALSE;
-  SetFrameSize(width,height);
+{
+  src.GetFrameSize(srcFrameWidth, srcFrameHeight);
+  srcFrameBytes = src.CalculateFrameBytes();
+  dst.GetFrameSize(dstFrameWidth, dstFrameHeight);
+  dstFrameBytes = dst.CalculateFrameBytes();
+  PTRACE(6,"PColCnv\tPColourConverter constructed: " << srcColourFormat << ' ' << srcFrameWidth << 'x'<< srcFrameHeight
+                                           << " -> " << dstColourFormat << ' ' << dstFrameWidth << 'x'<< dstFrameHeight);
 }
 
 
 BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   BOOL ok1 = SetSrcFrameSize(width, height);
-  BOOL ok2 = SetDstFrameSize(width, height, FALSE);
+  BOOL ok2 = SetDstFrameSize(width, height);
   PTRACE(2,"PColCnv\tSetFrameSize: " << width << 'x' << height
          << (ok1 && ok2 ? " OK" : " Failed"));
   return ok1 && ok2;
 }
 
 
+BOOL PColourConverter::SetSrcFrameInfo(const PVideoFrameInfo & info)
+{
+  if (info.GetColourFormat() != GetSrcColourFormat())
+    return FALSE;
+
+  unsigned w, h;
+  return info.GetFrameSize(w, h) && SetSrcFrameSize(w, h);
+}
+
+
+BOOL PColourConverter::SetDstFrameInfo(const PVideoFrameInfo & info)
+{
+  if (info.GetColourFormat() != GetDstColourFormat())
+    return FALSE;
+
+  SetResizeMode(info.GetResizeMode());
+
+  unsigned w, h;
+  return info.GetFrameSize(w, h) && SetDstFrameSize(w, h);
+}
+
+
+void PColourConverter::GetSrcFrameInfo(PVideoFrameInfo & info)
+{
+  info.SetColourFormat(GetSrcColourFormat());
+  info.SetFrameSize(srcFrameWidth, srcFrameHeight);
+}
+
+
+void PColourConverter::GetDstFrameInfo(PVideoFrameInfo & info)
+{
+  info.SetColourFormat(GetDstColourFormat());
+  info.SetFrameSize(dstFrameWidth, dstFrameHeight);
+}
+
+
 BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
 {
+  if (srcFrameWidth == width && srcFrameHeight == height)
+    return TRUE;
+
   srcFrameWidth = width;
   srcFrameHeight = height;
   srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
@@ -485,11 +528,10 @@ BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height, BOOL bScale)
+BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height)
 {
   dstFrameWidth  = width;
   dstFrameHeight = height;
-  scaleNotCrop   = bScale;
 
   dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
 
@@ -551,10 +593,10 @@ PSynonymColourRegistration::PSynonymColourRegistration(const char * srcFmt,
 }
 
 
-PColourConverter * PSynonymColourRegistration::Create(unsigned w, unsigned h) const
+PColourConverter * PSynonymColourRegistration::Create(const PVideoFrameInfo & src,
+                                                      const PVideoFrameInfo & dst) const
 {
-  PINDEX tab = Find('\t');
-  return new PSynonymColour(Left(tab), Mid(tab+1), w, h);
+  return new PSynonymColour(src, dst);
 }
 
 BOOL PSynonymColour::Convert(const BYTE *srcFrameBuffer,
@@ -1208,48 +1250,48 @@ static void ConvertQCIFToCIF(const void * _src, void * _dst)
   BYTE * srcRow;
 
   // copy Y
-  for (y = 0; y < QCIF_HEIGHT; y++) {
+  for (y = 0; y < PVideoFrameInfo::QCIFHeight; y++) {
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
-    src += QCIF_WIDTH;
+    src += PVideoFrameInfo::QCIFWidth;
   }
 
   // copy U
-  for (y = 0; y < QCIF_HEIGHT/2; y++) {
+  for (y = 0; y < PVideoFrameInfo::QCIFHeight/2; y++) {
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH/2; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth/2; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH/2; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth/2; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
-    src += QCIF_WIDTH/2;
+    src += PVideoFrameInfo::QCIFWidth/2;
   }
 
   // copy V
-  for (y = 0; y < QCIF_HEIGHT/2; y++) {
+  for (y = 0; y < PVideoFrameInfo::QCIFHeight/2; y++) {
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH/2; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth/2; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
     srcRow = src;
-    for (x = 0; x < QCIF_WIDTH/2; x++) {
+    for (x = 0; x < PVideoFrameInfo::QCIFWidth/2; x++) {
       dst[0] = dst[1] = *srcRow++;
       dst += 2;
     }
-    src += QCIF_WIDTH/2;
+    src += PVideoFrameInfo::QCIFWidth/2;
   }
 }
 
@@ -1287,10 +1329,10 @@ void PStandardColourConverter::ResizeYUV420P(const BYTE * src, BYTE * dest) cons
   npixels = dstFrameWidth * dstFrameHeight;
   if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
 
-    if (srcFrameWidth  == QCIF_WIDTH && 
-        srcFrameHeight == QCIF_HEIGHT &&
-        dstFrameWidth  == CIF_WIDTH && 
-        dstFrameHeight == CIF_HEIGHT) {
+    if (srcFrameWidth  == PVideoFrameInfo::QCIFWidth && 
+        srcFrameHeight == PVideoFrameInfo::QCIFHeight &&
+        dstFrameWidth  == PVideoFrameInfo::CIFWidth && 
+        dstFrameHeight == PVideoFrameInfo::CIFHeight) {
       ConvertQCIFToCIF(src, dest);
     } 
     else {
@@ -1381,18 +1423,27 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
     *bytesReturned = dstFrameBytes;
   
   if (srcFrameBuffer == dstFrameBuffer) {
-	if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
-		return TRUE;
-	else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
-		return FALSE;
+    if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
+      return TRUE;
+    if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
+      return FALSE;
   }
 
-  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) {
     memcpy(dstFrameBuffer,srcFrameBuffer,srcFrameWidth*srcFrameHeight*3/2);
-  else
-    ResizeYUV420P(srcFrameBuffer, dstFrameBuffer);
+    return TRUE;
+  }
 
-  return TRUE;
+  switch (resizeMode) {
+    case PVideoFrameInfo::eScale :
+      ResizeYUV420P(srcFrameBuffer, dstFrameBuffer);
+      return TRUE;
+
+    case PVideoFrameInfo::eCropTopLeft :
+      break;
+  }
+
+  return FALSE;
 }
 
 /*
