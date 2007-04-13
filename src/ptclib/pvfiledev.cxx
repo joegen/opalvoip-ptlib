@@ -27,6 +27,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.cxx,v $
+ * Revision 1.14  2007/04/13 07:13:14  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.13  2007/04/08 06:21:06  rjongbloed
  * Changed YUVFile video driver so if default device name (*.yuv) is used then will
  *   a) read from the first yuv file in the current directoy
@@ -88,10 +98,6 @@
 
 #if P_VIDFILE
 
-namespace PWLibStupidHacks {
-  int loadVideoFileStuff;
-};
-
 #include <ptlib/vconvert.h>
 #include <ptclib/pvfiledev.h>
 #include <ptlib/pfactory.h>
@@ -105,14 +111,21 @@ static const char DefaultYUVFileName[] = "*.yuv";
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_YUVFile
 
-PINSTANTIATE_FACTORY(PVideoInputDevice, YUVFile)
-
 class PVideoInputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoInputDevice_YUVFile; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_YUVFile::GetInputDeviceNames(); }
-    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return PFile::Access(deviceName, PFile::ReadOnly); }
+    virtual PObject * CreateInstance(int /*userData*/) const
+    {
+        return new PVideoInputDevice_YUVFile;
+    }
+    virtual PStringList GetDeviceNames(int /*userData*/) const
+    {
+        return PVideoInputDevice_YUVFile::GetInputDeviceNames();
+    }
+    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    {
+        return (deviceName.Right(4) *= ".yuv") && PFile::Access(deviceName, PFile::ReadOnly);
+    }
 } PVideoInputDevice_YUVFile_descriptor;
 
 PCREATE_PLUGIN(YUVFile, PVideoInputDevice, &PVideoInputDevice_YUVFile_descriptor);
@@ -121,6 +134,8 @@ PCREATE_PLUGIN(YUVFile, PVideoInputDevice, &PVideoInputDevice_YUVFile_descriptor
 
 PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
 {
+  file = NULL;
+
   SetColourFormat("YUV420P");
   channelNumber = 0; 
   grabCount = 0;
@@ -128,38 +143,66 @@ PVideoInputDevice_YUVFile::PVideoInputDevice_YUVFile()
 }
 
 
-BOOL PVideoInputDevice_YUVFile::Open(const PString & devName, BOOL /*startImmediate*/)
+PVideoInputDevice_YUVFile::~PVideoInputDevice_YUVFile()
 {
-  PString fileName;
-  if (devName != DefaultYUVFileName)
-    fileName = devName;
+  Close();
+}
+
+
+BOOL PVideoInputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startImmediate*/)
+{
+  Close();
+
+  PFilePath fileName;
+  if (_deviceName != DefaultYUVFileName)
+    fileName = _deviceName;
   else {
-    unsigned unique = 0;
-    do {
-      fileName.Empty();
-      fileName.sprintf("video%03u.yuv", ++unique);
-    } while (PFile::Exists(fileName));
+    PDirectory dir;
+    if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
+      do {
+        if (dir.GetEntryName().Right(4) == (DefaultYUVFileName+1)) {
+          fileName = dir.GetEntryName();
+          break;
+        }
+      } while (dir.Next());
+    }
+    if (fileName.IsEmpty()) {
+      PTRACE(1, "YUVFile\tCannot find any file using " << dir << DefaultYUVFileName << " as video input device");
+      return FALSE;
+    }
   }
 
-  if (!file.Open(fileName, PFile::ReadOnly, PFile::MustExist)) {
-    PTRACE(1, "YUVFile\tCannot open file " << fileName << " as video output device");
+  file = PFactory<PVideoFile>::CreateInstance("yuv");
+  if (file == NULL || !file->Open(fileName, PFile::ReadOnly, PFile::MustExist)) {
+    PTRACE(1, "YUVFile\tCannot open file " << fileName << " as video input device");
     return FALSE;
   }
 
-  deviceName = file.GetFilePath();
+  if (!file->IsUnknownFrameSize()) {
+    unsigned width, height;
+    file->GetFrameSize(width, height);
+    SetFrameSize(width, height);
+  }
+
+  deviceName = file->GetFilePath();
   return TRUE;    
 }
 
 
 BOOL PVideoInputDevice_YUVFile::IsOpen() 
 {
-  return file.IsOpen();
+  return file != NULL && file->IsOpen();
 }
 
 
 BOOL PVideoInputDevice_YUVFile::Close()
 {
-  return file.Close();
+  BOOL ok = file != NULL && file->Close();
+
+  delete file;
+  file = NULL;
+
+  return ok;
 }
 
 
@@ -217,12 +260,11 @@ BOOL PVideoInputDevice_YUVFile::SetColourFormat(const PString & newFormat)
 
 BOOL PVideoInputDevice_YUVFile::SetFrameRate(unsigned rate)
 {
-  if (rate < 1)
-    rate = 1;
-  else if (rate > 50)
-    rate = 50;
+  // if the file does not know what frame rate it is, then set it
+  if (file == NULL || (file->IsUnknownFrameSize() && !file->SetFrameRate(rate)))
+    return FALSE;
 
-  return PVideoDevice::SetFrameRate(rate);
+  return PVideoDevice::SetFrameRate(file->GetFrameRate());
 }
 
 
@@ -231,53 +273,24 @@ BOOL PVideoInputDevice_YUVFile::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
-  if (file.GetWidth() != 0 && file.GetHeight() != 0) {
-    minWidth  = maxWidth  = file.GetWidth();
-    minHeight = maxHeight = file.GetHeight();
-  }
-  else
-  {
-    minWidth  = 16;
-    minHeight = 12;
-    maxWidth  = 1024;
-    maxHeight =  768;
-  }
-
+  unsigned width, height;
+  if (file == NULL || !file->GetFrameSize(width, height))
+    return FALSE;
+  minWidth  = maxWidth  = width;
+  minHeight = maxHeight = height;
   return TRUE;
-}
-
-BOOL PVideoInputDevice_YUVFile::SetFrameSizeConverter(
-      unsigned width,        ///< New width of frame
-      unsigned height,       ///< New height of frame
-      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
-)
-{
-  // if the file does not know what size it is, then set it
-  if (file.GetWidth() == 0 && file.GetHeight() == 0) {
-    file.SetWidth(width);
-    file.SetHeight(height);
-  }
-
-  return PVideoInputDevice::SetFrameSizeConverter(width, height, bScaleNotCrop);
 }
 
 BOOL PVideoInputDevice_YUVFile::SetFrameSize(unsigned width, unsigned height)
 {
   // if the file does not know what size it is, then set it
-  if (file.GetWidth() == 0 && file.GetHeight() == 0) {
-    file.SetWidth(width);
-    file.SetHeight(height);
-  }
-
-  if (width != (unsigned)file.GetWidth() || height != (unsigned)file.GetHeight())
+  if (file == NULL || (file->IsUnknownFrameSize() && !file->SetFrameSize(width, height)))
     return FALSE;
 
-  frameWidth = width;
-  frameHeight = height;
+  file->GetFrameSize(frameWidth, frameHeight);
 
   videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-  scanLineWidth = videoFrameSize/frameHeight;
-  return videoFrameSize > 0;
+  return videoFrameSize > 0 && width == frameWidth && height == frameHeight;
 }
 
 
@@ -289,24 +302,16 @@ PINDEX PVideoInputDevice_YUVFile::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice_YUVFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
-  frameTimeError += msBetweenFrames;
-
-  PTime now;
-  PTimeInterval delay = now - previousFrameTime;
-  frameTimeError -= (int)delay.GetMilliSeconds();
-  previousFrameTime = now;
-
-  if (frameTimeError > 0) {
-    PTRACE(6, "YUVFile\tSleep for " << frameTimeError << " milli seconds");
-    PThread::Sleep(frameTimeError);
-  }
-
+  pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
  
 BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
+  if (file == NULL)
+    return FALSE;
+
   grabCount++;
 
   BYTE * readBuffer = destFrame;
@@ -314,19 +319,19 @@ BOOL PVideoInputDevice_YUVFile::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
   if (converter != NULL)
     readBuffer = frameStore.GetPointer(videoFrameSize);
 
-  if (file.IsOpen()) {
-    if (!file.ReadFrame(readBuffer))
-      file.Close();
+  if (file->IsOpen()) {
+    if (!file->ReadFrame(readBuffer))
+      file->Close();
   }
 
-  if (!file.IsOpen()) {
+  if (!file->IsOpen()) {
     switch (channelNumber) {
       case Channel_PlayAndClose:
       default:
         return FALSE;
 
       case Channel_PlayAndRepeat:
-        if (!file.Open() || !file.ReadFrame(readBuffer))
+        if (!file->SetPosition(0) || !file->ReadFrame(readBuffer))
           return FALSE;
         break;
 
@@ -410,14 +415,21 @@ void PVideoInputDevice_YUVFile::FillRect(BYTE * frame,
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice_YUVFile
 
-PINSTANTIATE_FACTORY(PVideoOutputDevice, YUVFile)
-
 class PVideoOutputDevice_YUVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *   CreateInstance(int /*userData*/) const { return new PVideoOutputDevice_YUVFile; }
-    virtual PStringList GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_YUVFile::GetOutputDeviceNames(); }
-    virtual bool        ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return PFile::Access(deviceName, PFile::WriteOnly); }
+    virtual PObject * CreateInstance(int /*userData*/) const
+    {
+        return new PVideoOutputDevice_YUVFile;
+    }
+    virtual PStringList GetDeviceNames(int /*userData*/) const
+    {
+        return PVideoOutputDevice_YUVFile::GetOutputDeviceNames();
+    }
+    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    {
+        return (deviceName.Right(4) *= ".yuv") && PFile::Access(deviceName, PFile::WriteOnly);
+    }
 } PVideoOutputDevice_YUVFile_descriptor;
 
 PCREATE_PLUGIN(YUVFile, PVideoOutputDevice, &PVideoOutputDevice_YUVFile_descriptor);
@@ -425,42 +437,52 @@ PCREATE_PLUGIN(YUVFile, PVideoOutputDevice, &PVideoOutputDevice_YUVFile_descript
 
 PVideoOutputDevice_YUVFile::PVideoOutputDevice_YUVFile()
 {
+  file = NULL;
+}
+
+
+PVideoOutputDevice_YUVFile::~PVideoOutputDevice_YUVFile()
+{
+  Close();
 }
 
 
 BOOL PVideoOutputDevice_YUVFile::Open(const PString & _deviceName, BOOL /*startImmediate*/)
 {
-  PString fileName;
+  PFilePath fileName;
   if (_deviceName != DefaultYUVFileName)
     fileName = _deviceName;
   else {
-    PDirectory dir;
-    if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
-      PTRACE(1, "YUVFile\tCannot find a file using " << DefaultYUVFileName << " as video output device");
-      return FALSE;
-    }
-    fileName = dir.GetEntryName();
+    unsigned unique = 0;
+    do {
+      fileName.Empty();
+      fileName.sprintf("video%03u.yuv", ++unique);
+    } while (PFile::Exists(fileName));
   }
 
-  if (!file.Open(deviceName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
+  file = PFactory<PVideoFile>::CreateInstance("yuv");
+  if (file == NULL || !file->Open(fileName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
     PTRACE(1, "YUVFile\tCannot create file " << fileName << " as video output device");
     return FALSE;
   }
 
-  deviceName = file.GetFilePath();
+  deviceName = file->GetFilePath();
   return TRUE;
 }
 
 BOOL PVideoOutputDevice_YUVFile::Close()
 {
-  return file.Close();
+  BOOL ok = file == NULL || file->Close();
+
+  delete file;
+  file = NULL;
+
+  return ok;
 }
 
 BOOL PVideoOutputDevice_YUVFile::Start()
 {
-  file.SetHeight(frameHeight);
-  file.SetWidth(frameWidth);
-  return TRUE;
+  return file != NULL && file->SetFrameSize(frameHeight, frameWidth);
 }
 
 BOOL PVideoOutputDevice_YUVFile::Stop()
@@ -470,7 +492,7 @@ BOOL PVideoOutputDevice_YUVFile::Stop()
 
 BOOL PVideoOutputDevice_YUVFile::IsOpen()
 {
-  return file.IsOpen();
+  return file != NULL && file->IsOpen();
 }
 
 
@@ -507,27 +529,15 @@ BOOL PVideoOutputDevice_YUVFile::SetFrameData(unsigned x, unsigned y,
     return FALSE;
   }
 
-  if ((file.GetWidth() == 0) && (file.GetHeight() == 0)) {
-    file.SetWidth(width);
-    file.SetHeight(height);
-  }
-  else if (((unsigned)file.GetWidth() != width) || ((unsigned)file.GetHeight() != height))
+  if (file == NULL || (file->IsUnknownFrameSize() && !file->SetFrameSize(width, height)))
     return FALSE;
 
   if (converter == NULL)
-    return file.WriteFrame(data);
+    return file->WriteFrame(data);
 
-  PBYTEArray tempStore;
-  converter->Convert(data, tempStore.GetPointer(GetMaxFrameBytes()));
-  return file.WriteFrame(tempStore);
+  converter->Convert(data, frameStore.GetPointer(GetMaxFrameBytes()));
+  return file->WriteFrame(frameStore);
 }
-
-
-BOOL PVideoOutputDevice_YUVFile::EndFrame()
-{
-  return TRUE;
-}
-
 
 
 #endif // P_VIDFILE
