@@ -25,6 +25,16 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.41  2007/04/13 07:13:14  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.40  2007/04/04 06:08:33  ykiryanov
  * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
  *
@@ -1277,18 +1287,20 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 };
 
 
+#define DEFAULT_STYLE (WS_POPUP|WS_BORDER|WS_SYSMENU|WS_CAPTION)
+#define DEFAULT_TITLE "Video Output"
+
 static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr = NULL, HWND * hWndParentPtr = NULL)
 {
   if (deviceName.Find("MSWIN") != 0)
     return false;
 
   PINDEX pos = deviceName.Find("STYLE=");
-  if (pos == P_MAX_INDEX) {
-    PTRACE(1, "VidOut\tDevice name must specify STYLE=.");
+  DWORD dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
+  if ((dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
+    PTRACE(1, "VidOut\tWindow must be WS_POPUP or WS_CHILD window.");
     return false;
   }
-
-  DWORD dwStyle = strtoul(((const char *)deviceName)+pos+6, NULL, 0);
 
   HWND hWndParent = NULL;
   pos = deviceName.Find("PARENT=");
@@ -1301,11 +1313,6 @@ static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr
   }
 
   // Have parsed out style & parent, see if legal combination
-  if ((dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
-    PTRACE(1, "VidOut\tWindow must be WS_POPUP or WS_CHILD window.");
-    return false;
-  }
-
   if (hWndParent == NULL && (dwStyle&WS_POPUP) == 0) {
     PTRACE(1, "VidOut\tWindow must be WS_POPUP if parent window not specified.");
     return false;
@@ -1364,7 +1371,7 @@ PVideoOutputDevice_Window::~PVideoOutputDevice_Window()
 PStringList PVideoOutputDevice_Window::GetOutputDeviceNames()
 {
   PStringList deviceList;
-  deviceList.AppendString(psprintf("MSWIN STYLE=0x%08X TITLE=\"Video Output\"", WS_POPUP|WS_BORDER|WS_SYSMENU|WS_CAPTION));
+  deviceList.AppendString(psprintf("MSWIN STYLE=0x%08X TITLE=\"%s\"", DEFAULT_STYLE, DEFAULT_TITLE));
   return deviceList;
 }
 
@@ -1566,10 +1573,8 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
   DWORD dwStyle;
   HWND hParent;
   if (ParseWindowDeviceName(deviceName, &dwStyle, &hParent)) {
-    PString title;
     PINDEX pos = deviceName.Find("TITLE=");
-    if (pos != P_MAX_INDEX)
-      title = PString(PString::Literal, &deviceName[pos+6]);
+    PString title = pos == P_MAX_INDEX ? DEFAULT_TITLE : PString(PString::Literal, &deviceName[pos+6]);
 
     int x = CW_USEDEFAULT;
     pos = deviceName.Find("X=");
