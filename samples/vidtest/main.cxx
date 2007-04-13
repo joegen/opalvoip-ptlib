@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.14  2007/04/13 07:14:05  rjongbloed
+ * Added command line parameter to set video frame resizing mode.
+ * Default size and frame rate to what grabbebr is using.
+ *
  * Revision 1.13  2007/04/03 12:09:38  rjongbloed
  * Fixed various "file video device" issues:
  *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
@@ -137,6 +141,7 @@ void VidTest::Main()
              "F-colour-format:"
              "S-frame-size:"
              "R-frame-rate:"
+             "C-crop."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -152,16 +157,17 @@ void VidTest::Main()
   if (args.HasOption('h')) {
     PError << "Available options are: " << endl
            << endl
-           <<    "--help                : print this help message.\n"
-           <<    "--input-driver  drv   : video grabber driver.\n"
-           <<    "--input-device  dev   : video grabber device.\n"
-           <<    "--input-format  fmt   : video grabber format (\"pal\"/\"ntsc\")\n"
-           <<    "--input-channel num   : video grabber channel.\n"
-           <<    "--output-driver drv   : video display driver to use.\n"
-           <<    "--output-device dev   : video display device to use.\n"
-           <<    "--colour-format fmt   : video colour size (\"rgb24\", \"yuv420\", etc)\n"
-           <<    "--frame-size size     : video frame size (\"qcif\", \"cif\", WxH)\n"
-           <<    "--frame-rate size     : video frame rate (frames/second)\n"
+           <<    "--help                 : print this help message.\n"
+           <<    "--input-driver  drv    : video grabber driver.\n"
+           <<    "-I --input-device dev  : video grabber device.\n"
+           <<    "--input-format  fmt    : video grabber format (\"pal\"/\"ntsc\")\n"
+           <<    "--input-channel num    : video grabber channel.\n"
+           <<    "--output-driver drv    : video display driver to use.\n"
+           <<    "-O --output-device dev : video display device to use.\n"
+           <<    "-F --colour-format fmt : video colour size (\"rgb24\", \"yuv420\", etc)\n"
+           <<    "-S --frame-size size   : video frame size (\"qcif\", \"cif\", WxH)\n"
+           <<    "-R --frame-rate size   : video frame rate (frames/second)\n"
+           <<    "-C --crop              : crop rather than scale if resizing\n"
 #if PTRACING
            <<    "-o or --output file   : file name for output of log messages\n"       
            <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
@@ -255,7 +261,7 @@ void VidTest::Main()
   if (args.HasOption("frame-rate"))
     frameRate = args.GetOptionString("frame-rate").AsInteger();
   else
-    frameRate = 15;
+    frameRate = grabber->GetFrameRate();
 
   if (!grabber->SetFrameRate(frameRate)) {
     cerr << "Video input device could not be set to frame rate " << frameRate << endl;
@@ -323,17 +329,17 @@ void VidTest::Main()
     }
   }
   else {
-    width = PVideoDevice::QCIFWidth;
-    height = PVideoDevice::QCIFHeight;
+    grabber->GetFrameSize(width, height);
   }
-  
-  if  (!grabber->SetFrameSizeConverter(width, height, FALSE)) {
+
+  PVideoFrameInfo::ResizeMode resizeMode = args.HasOption("crop") ? PVideoFrameInfo::eCropCentre : PVideoFrameInfo::eScale;
+  if (!grabber->SetFrameSizeConverter(width, height, resizeMode)) {
     cerr << "Video input device could not be set to size " << width << 'x' << height << endl;
     return;
   }
   cout << "Grabber frame size set to " << grabber->GetFrameWidth() << 'x' << grabber->GetFrameHeight() << endl;
 
-  if  (!display->SetFrameSizeConverter(width, height, FALSE)) {
+  if  (!display->SetFrameSizeConverter(width, height, resizeMode)) {
     cerr << "Video output device could not be set to size " << width << 'x' << height << endl;
     return;
   }
@@ -397,9 +403,9 @@ void VidTest::Main()
     unsigned width, height;
     if (ParseSize(cmd, width, height)) {
       pauseGrabAndDisplay.Signal();
-      if  (!grabber->SetFrameSizeConverter(width, height, FALSE))
+      if  (!grabber->SetFrameSizeConverter(width, height))
         cout << "Video input device could not be set to size " << width << 'x' << height << endl;
-      if  (!display->SetFrameSizeConverter(width, height, FALSE))
+      if  (!display->SetFrameSizeConverter(width, height))
         cout << "Video output device could not be set to size " << width << 'x' << height << endl;
       resumeGrabAndDisplay.Signal();
       continue;
