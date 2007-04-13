@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.146  2007/04/13 18:17:57  shorne
+# added ODBC support for linux thx Michal Z
+#
 # Revision 1.145  2006/10/10 07:16:55  csoutheren
 # Tweaked default build options to suite more common configurations
 #
@@ -518,6 +521,9 @@ ifdef HAS_SDL
 SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 endif
 
+ifdef HAS_ODBC
+SOURCES += $(COMPONENT_SRC_DIR)/podbc.cxx
+endif
 
 ## VIDEO DRIVERS
 ## Note this is mostly handled by the plugin system
