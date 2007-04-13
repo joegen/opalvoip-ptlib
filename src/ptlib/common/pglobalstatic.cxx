@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.6  2007/04/13 07:19:24  rjongbloed
+ * Removed separate Win32 solution for "plug in static loading" issue,
+ *   and used the PLOAD_FACTORY() mechanism for everything.
+ * Slight clean up of the PLOAD_FACTORY macro.
+ *
  * Revision 1.5  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -58,50 +63,64 @@
 
 
 //
-// Load static video modules as required 
+// Load static sound modules as required 
 //
-#if defined(P_VIDEO) && ! defined(NO_VIDEO_CAPTURE)
-
-  #include <ptlib/videoio.h>
-
-  PWLIB_STATIC_LOAD_PLUGIN(FakeVideo, PVideoInputDevice);
-  PWLIB_STATIC_LOAD_PLUGIN(NULLOutput, PVideoOutputDevice);
-  PWLIB_STATIC_LOAD_PLUGIN(WindowsMultimedia, PSoundChannel);
+#if defined(P_AUDIO)
 
   #if defined(_WIN32) 
-    PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
-    PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
+    PWLIB_STATIC_LOAD_PLUGIN(WindowsMultimedia, PSoundChannel);
+  #elif defined(__BEOS__)
+    PWLIB_STATIC_LOAD_PLUGIN(BeOS, PSoundChannel);
+  #endif
+
+  #if defined(P_WAVFILE)
+    PWLIB_STATIC_LOAD_PLUGIN(WAVFile, PSoundChannel)
   #endif
 
 #endif
 
 //
-// Load static audio modules as required for Windows
+// Load static video modules as required 
 //
-#if defined(__BEOS__) && defined(P_AUDIO)
-  PWLIB_STATIC_LOAD_PLUGIN(BeOS, PSoundChannel);
+#if defined(P_VIDEO)
+
+  #include <ptlib/videoio.h>
+
+  #if defined(_WIN32) 
+    PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
+    #if ! defined(NO_VIDEO_CAPTURE)
+      PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+    #endif
+  #endif
+
+  PWLIB_STATIC_LOAD_PLUGIN(FakeVideo, PVideoInputDevice);
+  PWLIB_STATIC_LOAD_PLUGIN(NULLOutput, PVideoOutputDevice);
+  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoInputDevice)
+  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoOutputDevice)
+  PLOAD_FACTORY(PVideoFile, PDefaultPFactoryKey)
+
 #endif
 
 //
 // instantiate text to speech factory
 //
 #if defined(P_TTS)
-  PLOAD_FACTORY_DECLARE(PTextToSpeech, PString)
+  PLOAD_FACTORY(PTextToSpeech, PString)
 #endif
 
 //
 // instantiate WAV file factory
 //
 #if defined(P_WAVFILE)
-  PLOAD_FACTORY_DECLARE(PWAVFileConverter, unsigned)
-  PLOAD_FACTORY_DECLARE(PWAVFileFormat,    unsigned)
+  PLOAD_FACTORY(PWAVFileConverter, unsigned)
+  PLOAD_FACTORY(PWAVFileFormat,    unsigned)
 #endif
 
 //
 // instantiate URL factory
 //
 #if defined(P_HTTP)
-  PLOAD_FACTORY_DECLARE(PURLScheme, PString)
+  PLOAD_FACTORY(PURLScheme, PString)
 #endif
 
 
@@ -109,61 +128,8 @@
 //  instantiate startup factory
 //
 #if defined(P_HAS_PLUGINS)
-  PLOAD_FACTORY_DECLARE(PluginLoaderStartup, PString)
-#endif
-
-// Should be enclosed with an #ifdef __WIN32__ or similiar
-// otherwise, linking will fail on MacOSX with ./configure --disable-audio
-namespace PWLibStupidWindowsHacks 
-{
-
-#ifdef P_AUDIO
-extern int loadSoundStuff;
-#endif
-
-#ifdef P_VIDEO
-extern int loadVideoStuff;
-#endif
-
-};
-
-//
-// declare a simple class to execute on startup
-//
-static class PInstantiateMe
-{
-  public:
-    PInstantiateMe();
-} initialiser;
-
-PInstantiateMe::PInstantiateMe()
-{
-
-#ifdef P_AUDIO
-  PWLibStupidWindowsHacks::loadSoundStuff = 1;
-#endif
-
-#ifdef P_VIDEO
-  PWLibStupidWindowsHacks::loadVideoStuff = 1;
-#endif
-
-#if defined(P_TTS)
-  PLOAD_FACTORY(PTextToSpeech, PString)
-#endif
-
-#if defined(P_WAVFILE)
-  PLOAD_FACTORY(PWAVFileConverter, unsigned)
-  PLOAD_FACTORY(PWAVFileFormat,    unsigned)
-#endif
-
-#if defined(P_HTTP)
-  PLOAD_FACTORY(PURLScheme, PString)
-#endif
-
-#if defined(P_HAS_PLUGINS)
   PLOAD_FACTORY(PluginLoaderStartup, PString)
 #endif
 
-}
 
 #endif // _PGLOBALSTATIC_CXX
