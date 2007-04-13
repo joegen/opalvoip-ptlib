@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.40  2007/04/13 07:03:19  rjongbloed
+ * Added WAV file audio device "plug in".
+ *
  * Revision 1.39  2007/02/01 03:16:15  csoutheren
  * Implement GetName for sound channels
  *
@@ -490,31 +493,30 @@ class PSoundChannel : public PChannel
        @return
        TRUE if this instance is open.
      */
-    virtual BOOL IsOpen() const
-      { return (baseChannel == NULL) ? FALSE : baseChannel->PChannel::IsOpen(); }
+    virtual BOOL IsOpen() const;
 
     /** Close the channel, shutting down the link to the data source.
 
        @return TRUE if the channel successfully closed.
      */
-    virtual BOOL Close()
-      { return (baseChannel == NULL) ? -1 : baseChannel->Close(); }
+    virtual BOOL Close();
 
     /**Get the OS specific handle for the PSoundChannel.
 
        @return
        integer value of the handle.
      */
-    virtual int GetHandle() const
-      { return (baseChannel == NULL) ? -1 : baseChannel->PChannel::GetHandle(); }
+    virtual int GetHandle() const;
+
+    /// Get the name of the open channel
+    virtual PString GetName() const;
 
     /**Abort the background playing/recording of the sound channel.
 
        @return
        TRUE if the sound has successfully been aborted.
      */
-    virtual BOOL Abort()
-    { return (baseChannel == NULL) ? FALSE : baseChannel->Abort(); }
+    virtual BOOL Abort();
   //@}
 
   /**@name Channel set up functions */
@@ -532,20 +534,16 @@ class PSoundChannel : public PChannel
       unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
       unsigned sampleRate = 8000,   ///< Samples per second
       unsigned bitsPerSample = 16   ///< Number of bits per sample
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample); }
+    );
 
     /// Get  the number of channels (mono/stereo) in the sound.
-    virtual unsigned GetChannels()   const
-    { return (baseChannel == NULL) ? 0 : baseChannel->GetChannels(); }
+    virtual unsigned GetChannels() const;
 
     /// Get the sample rate in samples per second.
-    virtual unsigned GetSampleRate() const
-    { return (baseChannel == NULL) ? 0 : baseChannel->GetSampleRate(); }
+    virtual unsigned GetSampleRate() const;
 
     /// Get the sample size in bits per sample.
-    virtual unsigned GetSampleSize() const 
-    { return (baseChannel == NULL) ? 0 : baseChannel->GetSampleSize(); }
+    virtual unsigned GetSampleSize() const;
 
     /**Set the internal buffers for the sound channel I/O.
 
@@ -558,8 +556,7 @@ class PSoundChannel : public PChannel
     virtual BOOL SetBuffers(
       PINDEX size,      ///< Size of each buffer
       PINDEX count = 2  ///< Number of buffers
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->SetBuffers(size, count); }
+    );
 
     /**Get the internal buffers for the sound channel I/O. 
 
@@ -569,8 +566,7 @@ class PSoundChannel : public PChannel
     virtual BOOL GetBuffers(
       PINDEX & size,    // Size of each buffer
       PINDEX & count    // Number of buffers
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->GetBuffers(size, count); }
+    );
 
     enum {
       MaxVolume = 100
@@ -584,8 +580,7 @@ class PSoundChannel : public PChannel
     */
     virtual BOOL SetVolume(
       unsigned volume   ///< New volume level
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->SetVolume(volume); }
+    );
 
     /**Get the volume of the play/read process.
        The volume range is 0 == quiet.  100 == LOUD.
@@ -595,8 +590,7 @@ class PSoundChannel : public PChannel
     */
     virtual BOOL GetVolume(
       unsigned & volume   ///< Variable to receive volume level.
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->GetVolume(volume); }
+    );
   //@}
 
   /**@name Play functions */
@@ -613,11 +607,9 @@ class PSoundChannel : public PChannel
        @return
        TRUE if at least len bytes were written to the channel.
      */
-     virtual BOOL Write(const void * buf, PINDEX len)
-      { return (baseChannel == NULL) ? FALSE : baseChannel->Write(buf, len); }
+    virtual BOOL Write(const void * buf, PINDEX len);
 
-    PINDEX GetLastWriteCount() const
-    { return (baseChannel == NULL) ? lastWriteCount : baseChannel->GetLastWriteCount(); }
+    virtual PINDEX GetLastWriteCount() const;
 
     /**Play a sound to the open device. If the #wait# parameter is
        TRUE then the function does not return until the file has been played.
@@ -638,8 +630,7 @@ class PSoundChannel : public PChannel
     virtual BOOL PlaySound(
       const PSound & sound,   ///< Sound to play.
       BOOL wait = TRUE        ///< Flag to play sound synchronously.
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->PlaySound(sound, wait); }
+    );
     /**Play a sound file to the open device. If the #wait#
        parameter is TRUE then the function does not return until the file has
        been played. If FALSE then the sound play is begun asynchronously and
@@ -658,8 +649,7 @@ class PSoundChannel : public PChannel
     virtual BOOL PlayFile(
       const PFilePath & file, ///< Sound file to play.
       BOOL wait = TRUE        ///< Flag to play sound synchronously.
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->PlayFile(file, wait); }
+    );
 
     /**Indicate if the sound play begun with PlayBuffer() or PlayFile() has
        completed.
@@ -667,8 +657,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has completed playing.
      */
-    virtual BOOL HasPlayCompleted()
-    { return (baseChannel == NULL) ? FALSE : baseChannel->HasPlayCompleted(); }
+    virtual BOOL HasPlayCompleted();
 
     /**Block the thread until the sound play begun with PlayBuffer() or
        PlayFile() has completed.
@@ -676,8 +665,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has successfully completed playing.
      */
-    virtual BOOL WaitForPlayCompletion() 
-    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForPlayCompletion(); }
+    virtual BOOL WaitForPlayCompletion();
 
   //@}
 
@@ -698,11 +686,9 @@ class PSoundChannel : public PChannel
     virtual BOOL Read(
       void * buf,   ///< Pointer to a block of memory to receive the read bytes.
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->Read(buf, len); }
+    );
 
-    PINDEX GetLastReadCount() const
-    { return (baseChannel == NULL) ? lastReadCount : baseChannel->GetLastReadCount(); }
+    PINDEX GetLastReadCount() const;
 
     /**Record into the sound object all of the buffer's of sound data. Use the
        SetBuffers() function to determine how long the recording will be made.
@@ -723,8 +709,7 @@ class PSoundChannel : public PChannel
      */
     virtual BOOL RecordSound(
       PSound & sound ///< Sound recorded
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->RecordSound(sound); }
+    );
 
     /**Record into the platform dependent sound file all of the buffer's of
        sound data. Use the SetBuffers() function to determine how long the
@@ -740,8 +725,7 @@ class PSoundChannel : public PChannel
      */
     virtual BOOL RecordFile(
       const PFilePath & file ///< Sound file recorded
-    )
-    { return (baseChannel == NULL) ? FALSE : baseChannel->RecordFile(file); }
+    );
 
     /**Start filling record buffers. The first call to Read() will also
        initiate the recording.
@@ -749,8 +733,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has successfully started recording.
      */
-    virtual BOOL StartRecording()
-    { return (baseChannel == NULL) ? FALSE : baseChannel->StartRecording(); }
+    virtual BOOL StartRecording();
 
     /**Determine if a record buffer has been filled, so that the next Read()
        call will not block. Provided that the amount of data read is less than
@@ -759,8 +742,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    virtual BOOL IsRecordBufferFull() 
-    { return (baseChannel == NULL) ? FALSE : baseChannel->IsRecordBufferFull(); }
+    virtual BOOL IsRecordBufferFull();
 
     /**Determine if all of the record buffer allocated has been filled. There
        is an implicit Abort() of the recording if this occurs and recording is
@@ -770,8 +752,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    virtual BOOL AreAllRecordBuffersFull() 
-    { return (baseChannel == NULL) ? FALSE : baseChannel->AreAllRecordBuffersFull(); }
+    virtual BOOL AreAllRecordBuffersFull();
 
     /**Block the thread until a record buffer has been filled, so that the
        next Read() call will not block. Provided that the amount of data read
@@ -780,8 +761,7 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    virtual BOOL WaitForRecordBufferFull() 
-    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForRecordBufferFull() ; }
+    virtual BOOL WaitForRecordBufferFull();
 
     /**Block the thread until all of the record buffer allocated has been
        filled. There is an implicit Abort() of the recording if this occurs
@@ -791,11 +771,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    virtual BOOL WaitForAllRecordBuffersFull() 
-    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForAllRecordBuffersFull() ; }
+    virtual BOOL WaitForAllRecordBuffersFull();
   //@}
-
-    PString GetName() const;
 
   protected:
     PSoundChannel * baseChannel;
