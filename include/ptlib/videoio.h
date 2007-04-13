@@ -24,6 +24,16 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.51  2007/04/13 07:13:13  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.50  2007/04/05 01:53:00  rjongbloed
  * Changed PVideoOutputDevice::CreateDeviceByName() to include driverName parameter so symmetric with PVideoInputDevice.
  *
@@ -229,6 +239,121 @@
 
 class PColourConverter;
 
+
+class PVideoFrameInfo : public PObject
+{
+  PCLASSINFO(PVideoFrameInfo, PObject);
+
+  public:
+      PVideoFrameInfo();
+
+    enum ResizeMode
+    {
+        eScale,
+        eCropCentre,
+        eCropTopLeft,
+        eMaxResizeMode
+    };
+
+    enum StandardSizes {
+      CIF16Width = 1408, CIF16Height = 1152,
+      CIF4Width  = 704,  CIF4Height  = 576,
+      CIFWidth   = 352,  CIFHeight   = 288,
+      QCIFWidth  = 176,  QCIFHeight  = 144,
+      SQCIFWidth = 144,  SQCIFHeight = 96,
+    };
+
+    /**Set the frame size to be used.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns TRUE.
+    */
+    virtual BOOL SetFrameSize(
+      unsigned width,   ///< New width of frame
+      unsigned height   ///< New height of frame
+    );
+
+    /**Get the frame size being used.
+
+       Default behaviour returns the value of the frameWidth and frameHeight
+       variable and returns TRUE.
+    */
+    virtual BOOL GetFrameSize(
+      unsigned & width,
+      unsigned & height
+    ) const;
+
+    /** Get the width of the frame being used.
+
+        Default behaviour returns the value of the frameWidth variable
+    */
+    virtual unsigned GetFrameWidth() const;
+
+    /** Get the height of the frame being used.
+
+        Default behaviour returns the value of the frameHeight variable
+    */
+    virtual unsigned GetFrameHeight() const;
+
+    /**Set the video frame rate to be used on the device.
+
+       Default behaviour sets the value of the frameRate variable and then
+       returns TRUE.
+    */
+    virtual BOOL SetFrameRate(
+      unsigned rate  ///< Frames  per second
+    );
+
+    /**Get the video frame rate used on the device.
+
+       Default behaviour returns the value of the frameRate variable.
+    */
+    virtual unsigned GetFrameRate() const;
+
+    /**Set the colour format to be used.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns TRUE if not an empty string.
+    */
+    virtual BOOL SetColourFormat(
+      const PString & colourFormat // New colour format for device.
+    );
+
+    /**Get the colour format to be used.
+
+       Default behaviour returns the value of the colourFormat variable.
+    */
+    virtual const PString & GetColourFormat() const;
+
+    /**Set the resize mode to be used.
+    */
+    void SetResizeMode(
+      ResizeMode mode
+    ) { if (resizeMode < eMaxResizeMode) resizeMode = mode; }
+
+    /**Get the resize mode to be used.
+    */
+    ResizeMode GetResizeMode() const { return resizeMode; }
+
+    /** Get the number of bytes of an image, given a particular width, height and colour format.
+      */
+    PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(frameWidth, frameHeight, colourFormat); }
+    static PINDEX CalculateFrameBytes(
+      unsigned width,
+      unsigned height,
+      const PString & colourFormat
+    );
+
+
+  protected:
+    unsigned   frameWidth;
+    unsigned   frameHeight;
+    unsigned   frameRate;
+    PString    colourFormat;
+    ResizeMode resizeMode;
+};
+
+
 /**This class defines a video device.
    This class is used to abstract the few parameters that are common to both\
    input and output devices.
@@ -257,11 +382,9 @@ class PColourConverter;
 http://www.1394ta.org/Download/Technology/Specifications/2000/IIDC_Spec_v1_30.pdf
 
  */
-
-
-class PVideoDevice : public PObject
+class PVideoDevice : public PVideoFrameInfo
 {
-  PCLASSINFO(PVideoDevice, PObject);
+  PCLASSINFO(PVideoDevice, PVideoFrameInfo);
 
   protected:
     /** Create a new video device (input or output).
@@ -280,19 +403,6 @@ class PVideoDevice : public PObject
       SECAM,
       Auto,
       NumVideoFormats
-    };
-
-    enum StandardSizes {
-      CIF16Width = 1408,
-      CIF16Height = 1152,
-      CIF4Width = 704,
-      CIF4Height = 576,
-      CIFWidth = 352,
-      CIFHeight = 288,
-      QCIFWidth = 176,
-      QCIFHeight = 144,
-      SQCIFWidth = 144,
-      SQCIFHeight = 96,
     };
 
     /**Get the device name of the open device.
@@ -318,7 +428,7 @@ class PVideoDevice : public PObject
       unsigned    width;
       unsigned    height;
       bool        convertSize;
-      bool        scaleSize;
+      ResizeMode  resizeMode;
       bool        flip;
       int         brightness;
       int         whiteness;
@@ -410,26 +520,6 @@ class PVideoDevice : public PObject
       const PString & colourFormat // New colour format for device.
     );
 
-    /**Set the colour format to be used.
-       Note that this function does not do any conversion. If it returns TRUE
-       then the video device does the colour format in native mode.
-
-       To utilise an internal converter use the SetColourFormatConverter()
-       function.
-
-       Default behaviour sets the value of the colourFormat variable and then
-       returns TRUE.
-    */
-    virtual BOOL SetColourFormat(
-      const PString & colourFormat // New colour format for device.
-    );
-
-    /**Get the colour format to be used.
-
-       Default behaviour returns the value of the colourFormat variable.
-    */
-    const PString & GetColourFormat() const;
-
     /**Get the video conversion vertical flip state.
        Default action is to return FALSE.
      */
@@ -441,21 +531,6 @@ class PVideoDevice : public PObject
     virtual BOOL SetVFlipState(
       BOOL newVFlipState    ///< New vertical flip state
     );
-
-    /**Set the video frame rate to be used on the device.
-
-       Default behaviour sets the value of the frameRate variable and then
-       returns TRUE.
-    */
-    virtual BOOL SetFrameRate(
-      unsigned rate  ///< Frames  per second
-    );
-
-    /**Get the video frame rate used on the device.
-
-       Default behaviour returns the value of the frameRate variable.
-    */
-    virtual unsigned GetFrameRate() const;
 
     /**Get the minimum & maximum size of a frame on the device.
 
@@ -476,9 +551,9 @@ class PVideoDevice : public PObject
        are attempted.  A converter is setup if possible.
     */
     virtual BOOL SetFrameSizeConverter(
-      unsigned width,        ///< New width of frame
-      unsigned height,       ///< New height of frame
-      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
+      unsigned width,  ///< New width of frame
+      unsigned height, ///< New height of frame
+      ResizeMode resizeMode = eMaxResizeMode ///< Mode to use if resizing is required.
     );
 
     /**Set the frame size to be used.
@@ -502,19 +577,7 @@ class PVideoDevice : public PObject
     virtual BOOL GetFrameSize(
       unsigned & width,
       unsigned & height
-    );
-
-    /** Get the width of the frame being used.
-
-        Default  behaviour returns the value of the frameWidth variable
-    */
-    virtual unsigned GetFrameWidth() const;
-
-    /** Get the height of the frame being used.
-
-        Default  behaviour returns the value of the frameHeight variable
-    */
-    virtual unsigned GetFrameHeight() const;
+    ) const;
 
     /**Get the maximum frame size in bytes.
 
@@ -522,14 +585,6 @@ class PVideoDevice : public PObject
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
     virtual PINDEX GetMaxFrameBytes() = 0;
-
-    /** Get the number of bytes of an image, given a particular width, height and colour format.
-      */
-    static unsigned CalculateFrameBytes( 
-      unsigned width,
-      unsigned height,
-      const PString & colourFormat
-    );
 
     
     /**Get the last error code. This is a platform dependent number.
@@ -622,25 +677,18 @@ class PVideoDevice : public PObject
     int          lastError;
     VideoFormat  videoFormat;
     int          channelNumber;
-    PString      colourFormat;
     // Preferred native colour format from video input device, empty == no preference
     PString      preferredColourFormat;
-    unsigned     frameRate;
-    unsigned     frameWidth;
-    unsigned     frameHeight;
     BOOL         nativeVerticalFlip;
 
     PColourConverter * converter;
- 
+    PBYTEArray         frameStore;
+
     int          frameBrightness; // 16 bit entity, -1 is no value
     int          frameWhiteness;
     int          frameContrast;
     int          frameColour;
     int          frameHue;
-
-    PTime        previousFrameTime; // Time of the last frame.
-    int          msBetweenFrames;   // msBetween subsequent frames. 
-    int          frameTimeError;    // determines  when this frame should happen.
 };
 
 
@@ -803,7 +851,6 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
 
   protected:
     PMutex     mutex;
-    PBYTEArray frameStore;
     PINDEX     bytesPerPixel;
     PINDEX     scanLineWidth;
     bool       swappedRedAndBlue;
