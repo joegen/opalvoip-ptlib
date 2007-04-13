@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="Hello World"
+	Name="Hello World Static"
 	ProjectGUID="{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 	>
 	<Platforms>
@@ -198,8 +198,8 @@
 	</Configurations>
 	<References>
 		<ProjectReference
-			ReferencedProjectIdentifier="{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
-			RelativePathToProject=".\src\ptlib\msos\PTLib_2005.vcproj"
+			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+			RelativePathToProject=".\src\ptlib\msos\Console_2005.vcproj"
 		/>
 	</References>
 	<Files>
