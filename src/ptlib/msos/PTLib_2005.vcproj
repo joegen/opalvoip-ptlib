@@ -249,7 +249,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="NDEBUG;PTRACING"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -430,12 +430,11 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
-			RelativePathToProject=".\src\ptlib\msos\Console_2005.vcproj"
+			RelativePathToProject="..\pwlib\src\ptlib\msos\Console_2005.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{F34BE504-015A-42E6-9342-3800EAD5F561}"
 			UseInBuild="false"
-			RelativePathToProject=".\tools\MergeSym\MergeSym_2005.vcproj"
 		/>
 	</References>
 	<Files>
