@@ -2179,11 +2179,50 @@ dnl ########################################################################
 dnl look for ODBC code
 
 dnl MSWIN_DISPLAY    odbc,ODBC support
-dnl MSWIN_CHECK_FILE odbc,sql.h,P_ODBC=1
+dnl MSWIN_CHECK_FILE odbc,odbcinst.h,P_ODBC=1
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
+
+AC_ARG_ENABLE(odbc,
+        [  --disable-odbc       disable ODBC support])
+ 
+ if test "${enable_odbc}z" = "z" ; then
+   enable_odbc=$default_odbc
+ fi
+ 
+ HAS_ODBC=
+ if test "$enable_odbc" = "no" ; then
+   AC_MSG_NOTICE(ODBC support disabled)
+   AC_DEFINE(P_ODBC, 0)
+ else
+   AC_CHECK_HEADERS(sql.h, HAS_ODBC=1)
+   if test "${HAS_ODBC:-unset}" != "unset" ; then
+     AC_CHECK_LIB(odbc, SQLAllocStmt, HAS_ODBC=1, HAS_ODBC=)
+   else
+     AC_CHECK_FILE(/usr/local/include/sql.h, HAS_ODBC=1)
+     if test "${HAS_ODBC:-unset}" != "unset" ; then
+       ODBCINCLUDEDIR=/usr/local/include
+       ODBCLIBDIR=/usr/local/lib
+     fi
+   fi
+ 
+   if test "${HAS_ODBC:-unset}" != "unset" ; then
+     HAS_ODBC=1
+     AC_DEFINE(P_ODBC, 1, "ODBC found")
+     if test ${ODBCINCLUDEDIR:-unset} != "unset" ; then
+       STDCCFLAGS="$STDCCFLAGS -I${ODBCINCLUDEDIR}"
+     fi
+     if test ${ODBCLIBDIR:-unset} != "unset" ; then
+       LDFLAGS="$LDFLAGS -L${ODBCLIBDIR}"
+     fi
+     ENDLDLIBS="$ENDLDLIBS -lodbc"
+   fi
+ fi
+ AC_SUBST(HAS_ODBC)
+ 
+
 
 dnl ########################################################################
 dnl output make directives
