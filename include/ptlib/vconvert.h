@@ -26,6 +26,16 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.21  2007/04/13 07:13:13  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.20  2006/03/12 11:09:48  dsandras
  * Applied patch from Luc Saillard to fix problems with MJPEG. Thanks!
  *
@@ -116,9 +126,12 @@
 #endif
 #endif
 
+
+#include <ptlib/videoio.h>
+
+
 struct jdec_private;
 
-class PColourConverter;
 
 /**This class registers a colour conversion class.
    There should be one and one only instance of this class for each pair of
@@ -134,12 +147,12 @@ class PColourConverterRegistration : public PCaselessString
       const PString & destColourFormat  ///< Name of destination colour format
     );
 
+  protected:
     virtual PColourConverter * Create(
-      unsigned width,   ///< Width of frame
-      unsigned height   ///< Height of frame
+      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
+      const PVideoFrameInfo & dst  ///< Destination frame info
     ) const = 0;
 
-  protected:
     PColourConverterRegistration * link;
 
   friend class PColourConverter;
@@ -156,10 +169,8 @@ class PColourConverter : public PObject
     /**Create a new converter.
       */
     PColourConverter(
-      const PString & srcColourFormat,  ///< Name of source colour format
-      const PString & dstColourFormat,  ///< Name of destination colour format
-      unsigned width,   ///< Width of frame
-      unsigned height   ///< Height of frame
+      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
+      const PVideoFrameInfo & dst  ///< Destination frame info
     );
 
     /**Get the video conversion vertical flip state
@@ -181,6 +192,42 @@ class PColourConverter : public PObject
       unsigned height   ///< New height of frame
     );
 
+    /**Set the source frame info to be used.
+
+       Default behaviour sets the srcFrameWidth and srcFrameHeight variables and
+       recalculates the frame buffer size in bytes then returns TRUE if the size
+       was calculated correctly.
+
+       Returns FALSE if the colour formats do not agree.
+    */
+    virtual BOOL SetSrcFrameInfo(
+      const PVideoFrameInfo & info   ///< New info for frame
+    );
+
+    /**Set the destination frame info to be used.
+
+       Default behaviour sets the dstFrameWidth and dstFrameHeight variables,
+       and the scale / crop preference. It then recalculates the frame buffer
+       size in bytes then returns TRUE if the size was calculated correctly.
+
+       Returns FALSE if the colour formats do not agree.
+    */
+    virtual BOOL SetDstFrameInfo(
+      const PVideoFrameInfo & info  ///< New info for frame
+    );
+
+    /**Get the source frame info to be used.
+    */
+    virtual void GetSrcFrameInfo(
+      PVideoFrameInfo & info   ///< New info for frame
+    );
+
+    /**Get the destination frame info to be used.
+    */
+    virtual void GetDstFrameInfo(
+      PVideoFrameInfo & info  ///< New info for frame
+    );
+
     /**Set the source frame size to be used.
 
        Default behaviour sets the srcFrameWidth and srcFrameHeight variables and
@@ -199,9 +246,8 @@ class PColourConverter : public PObject
        size in bytes then returns TRUE if the size was calculated correctly.
     */
     virtual BOOL SetDstFrameSize(
-      unsigned width,   ///< New width of target frame
-      unsigned height,  ///< New height of target frame
-      BOOL     bScale   ///< TRUE if scaling is preferred over crop
+      unsigned width,  ///< New width of target frame
+      unsigned height ///< New height of target frame
     );
 
     /**Get the source colour format.
@@ -277,10 +323,8 @@ class PColourConverter : public PObject
        named formats.
       */
     static PColourConverter * Create(
-      const PString & srcColourFormat,  ///< Name of source colour format
-      const PString & dstColourFormat,  ///< Name of destination colour format
-      unsigned width,   ///< Width of frame (used for both src and dst)
-      unsigned height   ///< Height of frame (used for both src and dst)
+      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
+      const PVideoFrameInfo & dst  ///< Destination frame info
     );
 
     /**Get the output frame size.
@@ -297,18 +341,34 @@ class PColourConverter : public PObject
       unsigned & height ///< Height of source frame
     ) const;
 
+    unsigned GetSrcFrameWidth()  const { return srcFrameWidth;  }
+    unsigned GetSrcFrameHeight() const { return srcFrameHeight; }
+    unsigned GetDstFrameWidth()  const { return dstFrameWidth;  }
+    unsigned GetDstFrameHeight() const { return dstFrameHeight; }
+
+    /**Set the resize mode to be used.
+    */
+    void SetResizeMode(
+      PVideoFrameInfo::ResizeMode mode
+    ) { if (mode < PVideoFrameInfo::eMaxResizeMode) resizeMode = mode; }
+
+    /**Get the resize mode to be used.
+    */
+    PVideoFrameInfo::ResizeMode GetResizeMode() const { return resizeMode; }
+
   protected:
     PString  srcColourFormat;
     PString  dstColourFormat;
     unsigned srcFrameWidth;
     unsigned srcFrameHeight;
     unsigned srcFrameBytes;
-    unsigned dstFrameBytes;
 
     // Needed for resizing
     unsigned dstFrameWidth;
     unsigned dstFrameHeight;
-    BOOL     scaleNotCrop;
+    unsigned dstFrameBytes;
+
+    PVideoFrameInfo::ResizeMode resizeMode;
      
     BOOL     verticalFlip;
 
@@ -328,22 +388,21 @@ class PColourConverter : public PObject
    converter. It declares everything needs so only the body of the Convert()
    function need be added.
   */
-#define PCOLOUR_CONVERTER2(cls,ancestor,src,dst) \
+#define PCOLOUR_CONVERTER2(cls,ancestor,srcFmt,dstFmt) \
 class cls : public ancestor { \
   public: \
-  cls(const PString & srcFmt, const PString & dstFmt, unsigned w, unsigned h) \
-    : ancestor(srcFmt, dstFmt, w, h) { } \
+  cls(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) \
+    : ancestor(src, dst) { } \
   virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
   virtual BOOL Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL); \
 }; \
 static class cls##_Registration : public PColourConverterRegistration { \
-  public: \
-  cls##_Registration() \
-    : PColourConverterRegistration(src,dst) { } \
-  virtual PColourConverter * Create(unsigned w, unsigned h) const; \
+  public: cls##_Registration() \
+    : PColourConverterRegistration(srcFmt,dstFmt) { } \
+  protected: virtual PColourConverter * Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const; \
 } p_##cls##_registration_instance; \
-PColourConverter * cls##_Registration::Create(unsigned w, unsigned h) const \
-  { PINDEX tab = Find('\t'); return new cls(Left(tab), Mid(tab+1), w, h); } \
+PColourConverter * cls##_Registration::Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const \
+  { return new cls(src, dst); } \
 BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int __srcFrameBytes, PINDEX * bytesReturned) \
   { srcFrameBytes = __srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
 BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
@@ -366,10 +425,9 @@ BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * byt
 class PSynonymColour : public PColourConverter {
   public:
     PSynonymColour(
-      const PString & srcFmt,
-      const PString & dstFmt,
-      unsigned w, unsigned h
-    ) : PColourConverter(srcFmt, dstFmt, w, h) { }
+      const PVideoFrameInfo & src,
+      const PVideoFrameInfo & dst
+    ) : PColourConverter(src, dst) { }
     virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL);
     virtual BOOL Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL);
 };
@@ -386,7 +444,8 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
       const char * dstFmt
     );
 
-    virtual PColourConverter * Create(unsigned w, unsigned h) const;
+  protected:
+    virtual PColourConverter * Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const;
 };
 
 

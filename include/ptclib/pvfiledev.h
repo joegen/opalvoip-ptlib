@@ -27,6 +27,16 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.9  2007/04/13 07:13:13  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.8  2007/04/03 12:09:37  rjongbloed
  * Fixed various "file video device" issues:
  *   Remove filename from PVideoDevice::OpenArgs (use deviceName)
@@ -76,6 +86,8 @@
 #include <ptlib/video.h>
 #include <ptlib/vconvert.h>
 #include <ptclib/pvidfile.h>
+#include <ptclib/delaychan.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -94,9 +106,13 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
      ChannelCount             = 4
    };
 
-  /** Create a new (fake) video input device.
-   */
+    /** Create a new file based video input device.
+    */
     PVideoInputDevice_YUVFile();
+
+    /** Destroy video input device.
+    */
+    ~PVideoInputDevice_YUVFile();
 
 
     /**Open the device given the device name.
@@ -231,12 +247,6 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
       unsigned height   /// New height of frame
     );
 
-    BOOL SetFrameSizeConverter(
-      unsigned width,        ///< New width of frame
-      unsigned height,       ///< New height of frame
-      BOOL     bScaleNotCrop ///< Scale or crop/pad preference
-    );
-         
     void ClearMapping() { return ; }
 
     /**Try all known video formats & see which ones are accepted by the video driver
@@ -247,14 +257,12 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     void FillRect(BYTE * frame,int xPos, int initialYPos,int rectWidth, int rectHeight,int r, int g,  int b);
    
  protected:
-   unsigned grabCount;
-   PINDEX   videoFrameSize;
-   PINDEX   scanLineWidth;
-   PYUVFile file;
-   PBYTEArray frameStore;
+   unsigned       grabCount;
+   PINDEX         videoFrameSize;
+   PVideoFile   * file;
+   PAdaptiveDelay pacing;
 };
 
-PLOAD_FACTORY_DECLARE(PVideoInputDevice,YUVFile)
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -269,6 +277,10 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
     /** Create a new video output device.
      */
     PVideoOutputDevice_YUVFile();
+
+    /** Destroy video output device.
+     */
+    ~PVideoOutputDevice_YUVFile();
 
     /**Get a list of all of the drivers available.
       */
@@ -327,15 +339,10 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
       BOOL endFrame = TRUE
     );
 
-    /**Indicate frame may be displayed.
-      */
-    virtual BOOL EndFrame();
-
   protected:  
-    PYUVFile file;
+   PVideoFile * file;
 };
 
-PLOAD_FACTORY_DECLARE(PVideoOutputDevice,YUVFile)
 
 #endif // P_VIDFILE
 
