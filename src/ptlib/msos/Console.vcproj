@@ -672,6 +672,9 @@
 				RelativePath="..\..\ptclib\pwavfile.cxx">
 			</File>
 			<File
+				RelativePath="..\..\ptclib\pwavfiledev.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\pxml.cxx">
 			</File>
 			<File
@@ -1305,6 +1308,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pwavfile.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\pwavfiledev.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pxml.h">
