@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.13  2007/04/13 07:03:20  rjongbloed
+ * Added WAV file audio device "plug in".
+ *
  * Revision 1.12  2007/02/01 03:16:15  csoutheren
  * Implement GetName for sound channels
  *
@@ -86,6 +89,8 @@
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
+PINSTANTIATE_FACTORY(PSoundChannel, Win32)
+
 template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PString & type) const
 {
   return PSoundChannel::CreateChannel(type);
@@ -93,10 +98,6 @@ template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(
 
 namespace PWLib {
   PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PSoundChannel> > soundChannelFactoryAdapter("PSoundChannel", TRUE);
-};
-
-namespace PWLibStupidWindowsHacks {
-  int loadSoundStuff;
 };
 
 
@@ -173,11 +174,35 @@ PStringList PSoundChannel::GetDeviceNames(PSoundChannel::Directions dir, PPlugin
 
 PString PSoundChannel::GetDefaultDevice(Directions dir)
 {
+#ifdef _WIN32
+  RegistryKey registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Multimedia\\Sound Mapper",
+                       RegistryKey::ReadOnly);
+
+  PString str;
+
+  if (dir == Player) {
+    if (!registry.QueryValue("ConsoleVoiceComPlayback", str) && !registry.QueryValue("Playback", str)) {
+      WAVEOUTCAPS caps;
+      if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
+        str = caps.szPname;
+    }
+  }
+  else {
+    if (!registry.QueryValue("ConsoleVoiceComRecord", str) && !registry.QueryValue("Record", str)) {
+      WAVEINCAPS caps;
+      if (waveInGetDevCaps(0, &caps, sizeof(caps)) == 0)
+        str = caps.szPname;
+    }
+  }
+
+  return str;
+#else
   PStringList devices = GetDeviceNames(dir);
   if (devices.GetSize() > 0)
     return devices[0];
 
   return PString::Empty();
+#endif
 }
 
 
@@ -227,6 +252,168 @@ PString PSoundChannel::GetName() const
     return PString::Empty();
 
   return baseChannel->GetName();
+}
+
+
+BOOL PSoundChannel::IsOpen() const
+{
+    return baseChannel == NULL || baseChannel->PChannel::IsOpen();
+}
+
+
+BOOL PSoundChannel::Close()
+{
+    return baseChannel == NULL || baseChannel->Close();
+}
+
+
+int PSoundChannel::GetHandle() const
+{
+    return baseChannel == NULL ? -1 : baseChannel->PChannel::GetHandle();
+}
+
+
+BOOL PSoundChannel::Abort()
+{
+    return baseChannel == NULL || baseChannel->Abort();
+}
+
+
+BOOL PSoundChannel::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+{
+    return baseChannel != NULL && baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample);
+}
+
+
+unsigned PSoundChannel::GetChannels() const
+{
+    return baseChannel == NULL ? 0 : baseChannel->GetChannels();
+}
+
+
+unsigned PSoundChannel::GetSampleRate() const
+{
+    return baseChannel == NULL ? 0 : baseChannel->GetSampleRate();
+}
+
+
+unsigned PSoundChannel::GetSampleSize() const 
+{
+    return baseChannel == NULL ? 0 : baseChannel->GetSampleSize();
+}
+
+
+BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+{
+    return baseChannel != NULL && baseChannel->SetBuffers(size, count);
+}
+
+
+BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
+{
+    return baseChannel != NULL && baseChannel->GetBuffers(size, count);
+}
+
+
+BOOL PSoundChannel::SetVolume(unsigned volume)
+{
+    return baseChannel != NULL && baseChannel->SetVolume(volume);
+}
+
+
+BOOL PSoundChannel::GetVolume(unsigned & volume)
+{
+    return baseChannel != NULL && baseChannel->GetVolume(volume);
+}
+
+
+BOOL PSoundChannel::Write(const void * buf, PINDEX len)
+{
+    return baseChannel != NULL && baseChannel->Write(buf, len);
+}
+
+
+PINDEX PSoundChannel::GetLastWriteCount() const
+{
+    return baseChannel == NULL ? lastWriteCount : baseChannel->GetLastWriteCount();
+}
+
+
+BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
+{
+    return baseChannel != NULL && baseChannel->PlaySound(sound, wait);
+}
+
+
+BOOL PSoundChannel::PlayFile(const PFilePath & file, BOOL wait)
+{
+    return baseChannel != NULL && baseChannel->PlayFile(file, wait);
+}
+
+
+BOOL PSoundChannel::HasPlayCompleted()
+{
+    return baseChannel == NULL || baseChannel->HasPlayCompleted();
+}
+
+
+BOOL PSoundChannel::WaitForPlayCompletion() 
+{
+    return baseChannel == NULL || baseChannel->WaitForPlayCompletion();
+}
+
+
+BOOL PSoundChannel::Read(void * buf, PINDEX len)
+{
+    return baseChannel != NULL && baseChannel->Read(buf, len);
+}
+
+
+PINDEX PSoundChannel::GetLastReadCount() const
+{
+    return baseChannel == NULL ? lastReadCount : baseChannel->GetLastReadCount();
+}
+
+
+BOOL PSoundChannel::RecordSound(PSound & sound)
+{
+    return baseChannel != NULL && baseChannel->RecordSound(sound);
+}
+
+
+BOOL PSoundChannel::RecordFile(const PFilePath & file)
+{
+    return baseChannel != NULL && baseChannel->RecordFile(file);
+}
+
+
+BOOL PSoundChannel::StartRecording()
+{
+    return baseChannel == NULL || baseChannel->StartRecording();
+}
+
+
+BOOL PSoundChannel::IsRecordBufferFull() 
+{
+    return baseChannel == NULL || baseChannel->IsRecordBufferFull();
+}
+
+
+BOOL PSoundChannel::AreAllRecordBuffersFull() 
+{
+    return baseChannel == NULL || baseChannel->AreAllRecordBuffersFull();
+}
+
+
+BOOL PSoundChannel::WaitForRecordBufferFull() 
+{
+    return baseChannel == NULL || baseChannel->WaitForRecordBufferFull();
+}
+
+
+BOOL PSoundChannel::WaitForAllRecordBuffersFull() 
+{
+    return baseChannel == NULL || baseChannel->WaitForAllRecordBuffersFull();
 }
 
 
