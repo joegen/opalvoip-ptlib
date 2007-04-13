@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.39  2007/04/13 07:16:55  rjongbloed
+ * Fixed possible crash if plug in fails to load correctly.
+ *
  * Revision 1.38  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -318,16 +321,16 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
 
   // If we know the service name of the device we want to create.
   if (!serviceName) {
-	  PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
-      if (desc->ValidateDeviceName(deviceName, userData))
-        return desc->CreateInstance(userData);
+    PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+    if (desc != NULL && desc->ValidateDeviceName(deviceName, userData))
+      return desc->CreateInstance(userData);
   }
 
   for (PINDEX i = 0; i < serviceList.GetSize(); i++) {
     const PPluginService & service = serviceList[i];
     if (service.serviceType *= serviceType) {
       PDevicePluginServiceDescriptor * descriptor = (PDevicePluginServiceDescriptor *)service.descriptor;
-      if (descriptor->ValidateDeviceName(deviceName, userData))
+      if (PAssertNULL(descriptor) != NULL && descriptor->ValidateDeviceName(deviceName, userData))
         return descriptor->CreateInstance(userData);
     }
   }
