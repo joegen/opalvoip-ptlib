@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.cxx,v $
+ * Revision 1.5  2007/04/13 07:19:23  rjongbloed
+ * Removed separate Win32 solution for "plug in static loading" issue,
+ *   and used the PLOAD_FACTORY() mechanism for everything.
+ * Slight clean up of the PLOAD_FACTORY macro.
+ *
  * Revision 1.4  2006/12/23 15:08:11  shorne
  * Now Factory loaded for ease of addition of new NAT Methods
  *
@@ -45,9 +50,6 @@
 #include <ptlib.h>
 #include <ptclib/pnat.h>
 
-namespace PWLibStupidWindowsHacks {
-  int loadNatStuff;
-};
 
 static const char PNatMethodBaseClass[] = "PNatMethod";
 template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const PString & method) const

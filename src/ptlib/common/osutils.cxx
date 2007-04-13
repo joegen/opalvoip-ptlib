@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.252  2007/04/13 07:19:23  rjongbloed
+ * Removed separate Win32 solution for "plug in static loading" issue,
+ *   and used the PLOAD_FACTORY() mechanism for everything.
+ * Slight clean up of the PLOAD_FACTORY macro.
+ *
  * Revision 1.251  2007/04/04 06:09:05  ykiryanov
  * This is a first cut of Windows Mobile 5.0 PocketPC SDK ARM4I port
  *
@@ -859,13 +864,6 @@ namespace PWLibStupidOSXHacks {
   extern int loadFakeVideoStuff;
 };
 #endif
-
-#if P_VIDFILE
-namespace PWLibStupidHacks {
-  extern int loadVideoFileStuff;
-};
-#endif
-
 
 class PSimpleThread : public PThread
 {
@@ -2093,10 +2091,6 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
-#if P_VIDFILE
-  PWLibStupidHacks::loadVideoFileStuff = 1;
-#endif
-  
 #ifdef __MACOSX__
   
 #ifdef HAS_VIDEO

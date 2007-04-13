@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.26  2007/04/13 07:19:23  rjongbloed
+ * Removed separate Win32 solution for "plug in static loading" issue,
+ *   and used the PLOAD_FACTORY() mechanism for everything.
+ * Slight clean up of the PLOAD_FACTORY macro.
+ *
  * Revision 1.25  2006/11/20 03:18:39  csoutheren
  * Using std::string instead of PString avoids problems with key comparisons. Not sure why.....
  *
@@ -430,17 +435,10 @@ class PFactory : PFactoryBase
 //  this macro is used to initialise the static member variable used to force factories to instantiate
 //
 #define PLOAD_FACTORY(AbstractType, KeyType) \
-  PWLibFactoryLoader::AbstractType##_##KeyType##_loader = 1; \
-
-#define PLOAD_FACTORY_DECLARE(AbstractType, KeyType) \
-namespace PWLibFactoryLoader { \
-extern int AbstractType##_##KeyType##_loader; \
-static class AbstractType##_##KeyType##_loader_Instantiate { \
-public: AbstractType##_##KeyType##_loader_Instantiate() { \
-PLOAD_FACTORY(AbstractType, KeyType); \
-} \
-} AbstractType##_##KeyType##_loader_instance; \
-}; \
+  namespace PWLibFactoryLoader { \
+    extern int AbstractType##_##KeyType##_loader; \
+    static int AbstractType##_##KeyType##_loader_instance = AbstractType##_##KeyType##_loader; \
+  };
 
 
 //
@@ -448,7 +446,7 @@ PLOAD_FACTORY(AbstractType, KeyType); \
 //  in a factory forcing it to load
 //
 #define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
-namespace PWLibFactoryLoader { int AbstractType##_##KeyType##_loader; }
+  namespace PWLibFactoryLoader { int AbstractType##_##KeyType##_loader; }
 
 
 #endif // _PFACTORY_H
