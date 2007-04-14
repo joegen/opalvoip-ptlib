@@ -13,6 +13,16 @@
  * http://www.mozilla.org/MPL/
  *
  * $Log: shmvideo.cxx,v $
+ * Revision 1.2  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.1  2006/07/18 05:17:24  csoutheren
  * Added shared memory video devices
  * Thanks to Hannes Friederich
@@ -377,21 +387,6 @@ PVideoInputDevice_Shm::GetFrameSizeLimits(unsigned & minWidth,
   return TRUE;
 }
 
-void PVideoInputDevice_Shm::WaitFinishPreviousFrame()
-{
-	frameTimeError += msBetweenFrames;
-	
-	PTime now;
-	PTimeInterval delay = now - previousFrameTime;
-	frameTimeError -= (int)delay.GetMilliSeconds();
-	previousFrameTime = now;
-	
-	if (frameTimeError > 0) {
-		PTRACE(6, "SHMVideo\t Sleep for " << frameTimeError << " milli seconds");
-		PThread::Current()->Sleep(frameTimeError);
-	} 
-}
-
 static void RGBtoYUV420PSameSize (const BYTE *, BYTE *, unsigned, BOOL, 
                                   int, int);
 
@@ -453,7 +448,7 @@ BOOL PVideoInputDevice_Shm::GetFrame(PBYTEArray & frame)
 BOOL
 PVideoInputDevice_Shm::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
-  WaitFinishPreviousFrame();
+  m_pacing.Delay(1000/GetFrameRate());
 
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }

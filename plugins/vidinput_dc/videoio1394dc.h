@@ -19,6 +19,16 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.4  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.3  2006/04/30 21:25:21  dsandras
  * Fixed resolution detection thanks to Luc Saillard <luc saillard org>.
  * Thanks a lot!
@@ -222,27 +232,6 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
      */
     BOOL TestAllFormats();
 
-    /**Set the frame size to be used, trying converters if available.
-
-       If the device does not support the size, a set of alternate resolutions
-       are attempted.  A converter is setup if possible.
-    */
-    BOOL SetFrameSizeConverter(
-      unsigned width,        /// New width of frame
-      unsigned height,       /// New height of frame
-      BOOL     bScaleNotCrop /// Scale or crop/pad preference
-    );
-
-    /**Set the colour format to be used, trying converters if available.
-
-       This function will set the colour format on the device to one that
-       is compatible with a registered converter, and install that converter
-       so that the correct format is used.
-    */
-    BOOL SetColourFormatConverter(
-      const PString & colourFormat // New colour format for device.
-    );
-
 
  protected:
     PINDEX frameBytes;
@@ -253,9 +242,6 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     int numCameras;
     dc1394_cameracapture camera;
     int capturing_duration;
-    PString      desiredColourFormat;
-    unsigned     desiredFrameWidth;
-    unsigned     desiredFrameHeight;
     int          supportedFormat;
 #define DC1394_FORMAT_160x120	1
 #define DC1394_FORMAT_320x240	2
