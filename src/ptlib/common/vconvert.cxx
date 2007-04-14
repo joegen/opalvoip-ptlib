@@ -26,6 +26,16 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.60  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.59  2007/04/13 07:13:14  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -1439,11 +1449,12 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
       ResizeYUV420P(srcFrameBuffer, dstFrameBuffer);
       return TRUE;
 
-    case PVideoFrameInfo::eCropTopLeft :
-      break;
-  }
+    //case PVideoFrameInfo::eCropTopLeft :
+    //  break;
 
-  return FALSE;
+    default :
+      return FALSE;
+  }
 }
 
 /*

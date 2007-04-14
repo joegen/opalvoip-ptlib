@@ -137,6 +137,16 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.10  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.9  2006/04/30 21:25:20  dsandras
  * Fixed resolution detection thanks to Luc Saillard <luc saillard org>.
  * Thanks a lot!
@@ -372,9 +382,6 @@ BOOL PVideoInputDevice_1394DC::Open(const PString & devName, BOOL startImmediate
   frameHeight = 240;
   frameWidth = 320;
   colourFormat = "UYVY422";
-  desiredFrameHeight = CIFHeight;
-  desiredFrameWidth = CIFWidth;
-  desiredColourFormat = "YUV420P";
   capturing_duration = 10000; // arbitrary large value suffices
   deviceName = devName;
 
@@ -750,79 +757,39 @@ BOOL PVideoInputDevice_1394DC::TestAllFormats()
   return TRUE;
 }
 
+
 BOOL PVideoInputDevice_1394DC::SetColourFormat(const PString & newFormat)
 {
-  if (newFormat != colourFormat) {
-    return FALSE;
-  }
-  return TRUE;
+  reutrn newFormat == colourFormat;
 }
 
 
 BOOL PVideoInputDevice_1394DC::SetFrameSize(unsigned width, unsigned height)
 {
-  if ((!(width == 320 && height == 240)) &&
-      (!(width == 160 && height == 120)))
+  if (width == 320 && height == 240) {
+    if (!(supportedFormat & DC1394_FORMAT_320x240))
+      return FALSE;
+    colourFormat = "UYVY422";
+  }
+  else if (width == 160 && height == 120) {
+    if (!(supportedFormat & DC1394_FORMAT_160x120))
+      return FALSE;
+    colourFormat = "UYV444";
+  }
+  else
     return FALSE;
 
   frameWidth = width;
   frameHeight = height;
 
-  if (frameWidth == 320 && frameHeight == 240)
-    colourFormat = "UYVY422";
-  else if (frameWidth == 160 && frameHeight == 120)
-    colourFormat = "UYV444";
-
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
   if (IsCapturing()) {
-    Stop(); Start();
+    Stop();
+    Start();
   }
 
   return TRUE;
-}
-
-BOOL PVideoInputDevice_1394DC::SetFrameSizeConverter(unsigned width, unsigned height, BOOL bScaleNotCrop)
-{
-  if (width == CIFWidth && height == CIFHeight && (supportedFormat & DC1394_FORMAT_320x240))
-    SetFrameSize(320, 240);
-  else if (width == QCIFWidth && height == QCIFHeight && (supportedFormat & DC1394_FORMAT_160x120))
-    SetFrameSize(160, 120);
-  else if (width == QCIFWidth && height == QCIFHeight && (supportedFormat & DC1394_FORMAT_320x240))
-    SetFrameSize(320, 240);
-  else if (width == CIFWidth && height == CIFHeight && (supportedFormat & DC1394_FORMAT_160x120))
-    SetFrameSize(160, 120);
-  else {
-    PTRACE(1, width << "x" << height << " is not supported.");
-    return FALSE;
-  }
-
-  if (converter != NULL) 
-    delete converter;
-  
-  desiredFrameWidth = width;
-  desiredFrameHeight = height;
-
-  converter = PColourConverter::Create(colourFormat, desiredColourFormat, width, height);
-  if (converter == NULL) {
-    PTRACE(1, "Failed to make a converter.");
-    return FALSE;
-  }
-  if (converter->SetSrcFrameSize(frameWidth, frameHeight) == FALSE) {
-    PTRACE(1, "Failed to set source frame size of a converter.");
-    return FALSE;
-  }
-  return TRUE;
-}
-
-BOOL PVideoInputDevice_1394DC::SetColourFormatConverter(const PString & colourFmt)
-{
-  if (colourFmt != "YUV420P") {
-    PTRACE(1, colourFmt << " is unsupported.");
-    return FALSE;
-  }
-  desiredColourFormat = colourFmt;
-  return SetFrameSizeConverter(desiredFrameWidth, desiredFrameHeight, FALSE);
 }
 
 

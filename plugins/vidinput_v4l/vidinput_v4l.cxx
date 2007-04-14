@@ -25,6 +25,16 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.24  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.23  2007/04/10 21:17:01  dsandras
  * Added MJPEG support. Added workarounds for broken qspca driver.
  * Thanks to Luc Saillard (luc@saillard.org).
@@ -1099,7 +1109,7 @@ BOOL PVideoInputDevice_V4L::SetColourFormat(const PString & newFormat)
   }
   
   // set the new information
-  return SetFrameSizeConverter(frameWidth, frameHeight, FALSE);
+  return SetFrameSizeConverter(frameWidth, frameHeight);
 }
 
 
@@ -1168,22 +1178,7 @@ PINDEX PVideoInputDevice_V4L::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice_V4L::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
 {
-  if(frameRate>0) {
-    frameTimeError += msBetweenFrames;
-   
-    do {
-      if ( !GetFrameDataNoDelay(buffer, bytesReturned))
-      {
-        return FALSE;  
-      }    
-      PTime now;
-      PTimeInterval delay = now - previousFrameTime;
-      frameTimeError -= (int)delay.GetMilliSeconds();
-      previousFrameTime = now;
-    }  while(frameTimeError > 0) ;
-
-    return TRUE;
-  }  
+  m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
