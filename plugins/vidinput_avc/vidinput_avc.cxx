@@ -121,9 +121,6 @@ BOOL PVideoInputDevice_1394AVC::Open(const PString & devName, BOOL startImmediat
   frameHeight = CIFHeight;
   colourFormat = "RGB24";
   nativeVerticalFlip = true;
-  desiredFrameHeight = CIFHeight;
-  desiredFrameWidth = CIFWidth;
-  desiredColourFormat = "RGB24";
   
   deviceName = devName; // FIXME: looks useless
   
@@ -496,62 +493,23 @@ BOOL PVideoInputDevice_1394AVC::TestAllFormats()
 
 BOOL PVideoInputDevice_1394AVC::SetColourFormat(const PString & newFormat)
 {
-  if (newFormat != colourFormat)
-    return FALSE;
-  
-  return TRUE;
+  return newFormat == colourFormat;
 }
 
 BOOL PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height)
 {
-  // FIXME: shouldn't it return FALSE when asked an unsupported frame size? 
+  if ( ! ( (width == 320 && height == 240) || (width == 160 && height == 120) ) )
+    return FALSE;
+
   frameWidth = width;
   frameHeight = height;
   colourFormat = "RGB24";
   nativeVerticalFlip = true;
-  frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth,
-  frameHeight, colourFormat);
+  frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
 }
 
-BOOL PVideoInputDevice_1394AVC::SetFrameSizeConverter(unsigned width,
-                                                      unsigned height,
-                                                          BOOL bScaleNotCrop)
-{
-
-  SetFrameSize(width, height);
-
-  if (converter != NULL) 
-    delete converter;
-  
-  desiredFrameWidth = width;
-  desiredFrameHeight = height;
-
-  converter = PColourConverter::Create(colourFormat, desiredColourFormat, width, height);
-  if (converter == NULL) {
-    PTRACE(3, "Failed to make a converter.");
-    return FALSE;
-  }
-
-  if (converter->SetSrcFrameSize(width,height) == FALSE) {
-    PTRACE(3, "Failed to set source frame size of a converter.");
-    return FALSE;
-  }
-  
-  if (converter->SetDstFrameSize(desiredFrameWidth, desiredFrameHeight, FALSE) == FALSE) {
-    PTRACE(3, "Failed to set destination frame size (+scaling) of a converter.");
-    return FALSE;
-  }
-  
-  return TRUE;
-}
-
-BOOL PVideoInputDevice_1394AVC::SetColourFormatConverter(const PString &colourFmt)
-{
-  desiredColourFormat = colourFmt;
-  return SetFrameSizeConverter(desiredFrameWidth, desiredFrameHeight, FALSE);
-}
 
 int RawISOHandler (raw1394handle_t handle, int channel, size_t length, u_int32_t * data)
 {

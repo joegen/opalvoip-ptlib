@@ -13,6 +13,16 @@
  * http://www.mozilla.org/MPL/
  *
  * $Log: shmvideo.h,v $
+ * Revision 1.2  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.1  2006/07/18 05:17:24  csoutheren
  * Added shared memory video devices
  * Thanks to Hannes Friederich
@@ -35,7 +45,7 @@
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
-//#include <ptlib/videoio.h>
+#include <ptclib/delaychan.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -108,9 +118,8 @@ class PVideoOutputDevice_Shm : public PVideoOutputDevice
 
   protected:
     BOOL shmInit();
-    
-	PBYTEArray frameStore;
-	PINDEX bytesPerPixel;
+
+    PINDEX bytesPerPixel;
     sem_t *semLock;
     int    shmId;
     key_t  shmKey;
@@ -153,7 +162,6 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 
     virtual BOOL GetFrameDataNoDelay (BYTE *, PINDEX *);
 	
-	virtual void WaitFinishPreviousFrame();
 
     /**Get the minimum & maximum size of a frame on the device.
 
@@ -177,8 +185,10 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
   protected:
     BOOL shmInit();
 
-	PINDEX videoFrameSize;
-	int grabCount;
+    PAdaptiveDelay m_pacing;
+
+    PINDEX videoFrameSize;
+    int grabCount;
     sem_t *semLock;
     int shmId;
     key_t shmKey;

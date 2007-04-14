@@ -5,6 +5,7 @@
 #include <ptlib.h>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
+#include <ptclib/delaychan.h>
 
 #include <linux/videodev.h>
 
@@ -68,6 +69,8 @@ public:
   BOOL NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
+
+  PAdaptiveDelay m_pacing;
 
   int    videoFd;
   struct video_capability videoCapability;

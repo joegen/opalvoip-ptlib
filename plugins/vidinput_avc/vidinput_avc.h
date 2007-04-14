@@ -24,6 +24,16 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.7  2007/04/14 07:08:55  rjongbloed
+ * Major update of video subsystem:
+ *   Abstracted video frame info (width, height etc) into separate class.
+ *   Changed devices, converter and video file to use above.
+ *   Enhanced video file hint detection for frame rate and more
+ *     flexible formats.
+ *   Fixed issue if need to convert both colour format and size, had to do
+ *     colour format first or it didn't convert size.
+ *   Win32 video output device can be selected by "MSWIN" alone.
+ *
  * Revision 1.6  2005/08/09 09:08:09  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -244,27 +254,6 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
      */
     BOOL TestAllFormats();
 
-    /**Set the frame size to be used, trying converters if available.
-
-       If the device does not support the size, a set of alternate resolutions
-       are attempted.  A converter is setup if possible.
-    */
-    BOOL SetFrameSizeConverter(
-      unsigned width,        /// New width of frame
-      unsigned height,       /// New height of frame
-      BOOL     bScaleNotCrop /// Scale or crop/pad preference
-    );
-
-    /**Set the colour format to be used, trying converters if available.
-
-       This function will set the colour format on the device to one that
-       is compatible with a registered converter, and install that converter
-       so that the correct format is used.
-    */
-    BOOL SetColourFormatConverter(
-      const PString & colourFormat // New colour format for device.
-    );
-
 
  protected:
 
@@ -272,10 +261,7 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
     BOOL is_capturing;
     BOOL UseDMA;
     dv_decoder_t * dv_decoder;
-    PString      desiredColourFormat;
     PINDEX frameBytes;
-    unsigned     desiredFrameWidth;
-    unsigned     desiredFrameHeight;
     int port;
 
     BOOL SetupHandle();
