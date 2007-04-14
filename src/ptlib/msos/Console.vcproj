@@ -570,7 +570,7 @@
 				RelativePath="..\..\ptclib\pnat.cxx">
 			</File>
 			<File
-				RelativePath=".\podbc.cxx">
+				RelativePath="..\..\ptclib\podbc.cxx">
 			</File>
 			<File
 				RelativePath="..\..\ptclib\psasl.cxx">
@@ -1271,6 +1271,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 					RelativePath="..\..\..\include\ptlib\pluginmgr.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptclib\podbc.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\pprocess.h">
 				</File>
 				<File
@@ -1477,9 +1480,6 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\pipechan.h">
-				</File>
-				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\podbc.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\pprocess.h">
