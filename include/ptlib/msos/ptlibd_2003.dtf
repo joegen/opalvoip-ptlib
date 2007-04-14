@@ -14640,6 +14640,7 @@ EXPORTS
     ?SetFrameSize@PVideoOutputDeviceRGB@@UAEHII@Z @16556 NONAME
     ?SetFrameSize@PVideoOutputDevice_SDL@@UAEHII@Z @25266 NONAME
     ?SetFrameSize@PVideoOutputDevice_Window@@UAEHII@Z @16557 NONAME
+    ?SetFrameSizeConverter@PVideoDevice@@UAEHIIH@Z @27777 NONAME
     ?SetFrameSizeConverter@PVideoDevice@@UAEHIIW4ResizeMode@PVideoFrameInfo@@@Z @27764 NONAME
     ?SetFrom@Stanza@XMPP@@UAEXABVPString@@@Z @25268 NONAME
     ?SetFromAddress@PRFC822Channel@@QAEXABVPString@@@Z @25269 NONAME
