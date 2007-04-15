@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_AUDIO HAS_OSS HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR USE_GCC SHAREDLIBEXT CXXCPP EGREP FLEX AR BISON HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_CONFIG_FILE HAS_SOCKAGG HAS_VIDFILE HAS_AUDIO HAS_OSS HAS_ALSA HAS_ODBC STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS DEBUG_FLAG INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -892,6 +892,7 @@ Optional Features:
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
+  --disable-odbc       disable ODBC support
   ---exceptions     enable C++ exceptions
 
 Some influential environment variables:
@@ -9358,6 +9359,294 @@ fi
 
 
 
+# Check whether --enable-odbc or --disable-odbc was given.
+if test "${enable_odbc+set}" = set; then
+  enableval="$enable_odbc"
+
+fi;
+
+ if test "${enable_odbc}z" = "z" ; then
+   enable_odbc=$default_odbc
+ fi
+
+ HAS_ODBC=
+ if test "$enable_odbc" = "no" ; then
+   { echo "$as_me:$LINENO: ODBC support disabled" >&5
+echo "$as_me: ODBC support disabled" >&6;}
+   cat >>confdefs.h <<\_ACEOF
+#define P_ODBC 0
+_ACEOF
+
+ else
+
+for ac_header in sql.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_cxx_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_cxx_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_cxx_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+ HAS_ODBC=1
+fi
+
+done
+
+   if test "${HAS_ODBC:-unset}" != "unset" ; then
+     echo "$as_me:$LINENO: checking for SQLAllocStmt in -lodbc" >&5
+echo $ECHO_N "checking for SQLAllocStmt in -lodbc... $ECHO_C" >&6
+if test "${ac_cv_lib_odbc_SQLAllocStmt+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lodbc  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char SQLAllocStmt ();
+int
+main ()
+{
+SQLAllocStmt ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_odbc_SQLAllocStmt=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_odbc_SQLAllocStmt=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_odbc_SQLAllocStmt" >&5
+echo "${ECHO_T}$ac_cv_lib_odbc_SQLAllocStmt" >&6
+if test $ac_cv_lib_odbc_SQLAllocStmt = yes; then
+  HAS_ODBC=1
+else
+  HAS_ODBC=
+fi
+
+   else
+     echo "$as_me:$LINENO: checking for /usr/local/include/sql.h" >&5
+echo $ECHO_N "checking for /usr/local/include/sql.h... $ECHO_C" >&6
+if test "${ac_cv_file__usr_local_include_sql_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "/usr/local/include/sql.h"; then
+  ac_cv_file__usr_local_include_sql_h=yes
+else
+  ac_cv_file__usr_local_include_sql_h=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file__usr_local_include_sql_h" >&5
+echo "${ECHO_T}$ac_cv_file__usr_local_include_sql_h" >&6
+if test $ac_cv_file__usr_local_include_sql_h = yes; then
+  HAS_ODBC=1
+fi
+
+     if test "${HAS_ODBC:-unset}" != "unset" ; then
+       ODBCINCLUDEDIR=/usr/local/include
+       ODBCLIBDIR=/usr/local/lib
+     fi
+   fi
+
+   if test "${HAS_ODBC:-unset}" != "unset" ; then
+     HAS_ODBC=1
+
+cat >>confdefs.h <<\_ACEOF
+#define P_ODBC 1
+_ACEOF
+
+     if test ${ODBCINCLUDEDIR:-unset} != "unset" ; then
+       STDCCFLAGS="$STDCCFLAGS -I${ODBCINCLUDEDIR}"
+     fi
+     if test ${ODBCLIBDIR:-unset} != "unset" ; then
+       LDFLAGS="$LDFLAGS -L${ODBCLIBDIR}"
+     fi
+     ENDLDLIBS="$ENDLDLIBS -lodbc"
+   fi
+ fi
+
+
+
+
 
 if test "${HAS_RESOLVER:-unset}" != "unset" ; then
   if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
@@ -10182,6 +10471,7 @@ s,@HAS_VIDFILE@,$HAS_VIDFILE,;t t
 s,@HAS_AUDIO@,$HAS_AUDIO,;t t
 s,@HAS_OSS@,$HAS_OSS,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
+s,@HAS_ODBC@,$HAS_ODBC,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@STDCXXFLAGS@,$STDCXXFLAGS,;t t
 s,@OPTSTDCCFLAGS@,$OPTSTDCCFLAGS,;t t
