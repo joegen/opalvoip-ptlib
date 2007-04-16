@@ -13861,6 +13861,7 @@ EXPORTS
     ?ParseResponse@PInternetProtocol@@MAEHABVPString@@@Z @13468 NONAME
     ?ParseResponse@PPOP3@@MAEHABVPString@@@Z @13469 NONAME
     ?ParseScalar@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPString@@1@Z @13470 NONAME
+    ?ParseSize@PVideoFrameInfo@@SAHABVPString@@AAI1@Z @17385 NONAME
     ?ParseStruct@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPStringToString@@@Z @13471 NONAME
     ?ParseStruct@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPXMLRPCStructBase@@@Z @13472 NONAME
     ?PAssertFunc@@YAXPBD@Z @13473 NONAME
@@ -14714,6 +14715,7 @@ EXPORTS
     ?SetFrameSize@PVideoOutputDeviceRGB@@UAEHII@Z @14299 NONAME
     ?SetFrameSize@PVideoOutputDevice_SDL@@UAEHII@Z @14300 NONAME
     ?SetFrameSize@PVideoOutputDevice_Window@@UAEHII@Z @14301 NONAME
+    ?SetFrameSizeConverter@PVideoDevice@@UAEHIIH@Z @17384 NONAME
     ?SetFrameSizeConverter@PVideoDevice@@UAEHIIW4ResizeMode@PVideoFrameInfo@@@Z @17377 NONAME
     ?SetFrom@Stanza@XMPP@@UAEXABVPString@@@Z @14304 NONAME
     ?SetFromAddress@PRFC822Channel@@QAEXABVPString@@@Z @14305 NONAME
