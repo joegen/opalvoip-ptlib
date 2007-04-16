@@ -1100,26 +1100,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\podbc.cxx"
-					>
-					<FileConfiguration
-						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="..\common\ptime.cxx"
 					>
 					<FileConfiguration
@@ -2304,6 +2284,26 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\podbc.cxx"
+					>
+					<FileConfiguration
+						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\psasl.cxx"
 					>
 				</File>
@@ -2901,10 +2901,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\podbc.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\pprocess.h"
 					>
 				</File>
@@ -3066,6 +3062,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pldap.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\podbc.h"
 					>
 				</File>
 				<File
