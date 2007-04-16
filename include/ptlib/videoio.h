@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.53  2007/04/16 01:59:48  rjongbloed
+ * Added function to video info class to parse standard size strings
+ *   to width/height, eg "CIF", "QCIF", "VGA" etc
+ *
  * Revision 1.52  2007/04/13 23:15:19  shorne
  * added backward compatible SetFrameSizeConverter
  *
@@ -342,11 +346,18 @@ class PVideoFrameInfo : public PObject
       */
     PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(frameWidth, frameHeight, colourFormat); }
     static PINDEX CalculateFrameBytes(
-      unsigned width,
-      unsigned height,
-      const PString & colourFormat
+      unsigned width,               ///< WIdth of frame
+      unsigned height,              ///< Height of frame
+      const PString & colourFormat  ///< Colour format of frame
     );
 
+    /** Parse the standard size string names ("qcif", "cif" etc)
+      */
+    static BOOL ParseSize(
+      const PString & str,  ///< String to parse
+      unsigned & width,     ///< Resultant width
+      unsigned & height     ///< Resulatant height
+    );
 
   protected:
     unsigned   frameWidth;
