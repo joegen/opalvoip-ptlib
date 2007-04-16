@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.69  2007/04/16 01:59:48  rjongbloed
+ * Added function to video info class to parse standard size strings
+ *   to width/height, eg "CIF", "QCIF", "VGA" etc
+ *
  * Revision 1.68  2007/04/13 07:13:14  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -470,6 +474,57 @@ PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
   return 0;
 }
  
+
+BOOL PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
+{
+  static struct {
+    const char * name;
+    unsigned width;
+    unsigned height;
+  } const sizeTable[] = {
+      { "cif",    PVideoDevice::CIFWidth,   PVideoDevice::CIFHeight   },
+      { "qcif",   PVideoDevice::QCIFWidth,  PVideoDevice::QCIFHeight  },
+      { "sqcif",  PVideoDevice::SQCIFWidth, PVideoDevice::SQCIFHeight },
+      { "cif4",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
+      { "4cif",   PVideoDevice::CIF4Width,  PVideoDevice::CIF4Height  },
+      { "cif16",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
+      { "16cif",  PVideoDevice::CIF16Width, PVideoDevice::CIF16Height },
+
+      { "ccir601",720,                      486                       },
+      { "ntsc",   720,                      480                       },
+      { "pal",    768,                      576                       },
+      { "hdtvp",  1280,                     720                       },
+      { "hd720",  1280,                     720                       },
+      { "hdtvi",  1920,                     1080                      },
+      { "hd1080", 1920,                     1080                      },
+
+      { "cga",    320,                      240                       },
+      { "vga",    640,                      480                       },
+      { "wvga",   854,                      480                       },
+      { "svga",   800,                      600                       },
+      { "xga",    1024,                     768                       },
+      { "sxga",   1280,                     1024                      },
+      { "wsxga",  1440,                     900                       },
+      { "sxga+",  1400,                     1050                      },
+      { "wsxga+", 1680,                     1050                      },
+      { "uxga",   1600,                     1200                      },
+      { "wuxga",  1920,                     1200                      },
+      { "qxga",   2048,                     1536                      },
+      { "wqxga",  2560,                     1600                      },
+      { }
+  };
+
+  for (int i = 0; sizeTable[i].name != NULL; i++) {
+    if (str *= sizeTable[i].name) {
+      width = sizeTable[i].width;
+      height = sizeTable[i].height;
+      return TRUE;
+    }
+  }
+
+  return sscanf(str, "%ux%u", &width, &height) == 2 && width > 0 && height > 0;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice

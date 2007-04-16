@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.15  2007/04/16 01:59:48  rjongbloed
+ * Added function to video info class to parse standard size strings
+ *   to width/height, eg "CIF", "QCIF", "VGA" etc
+ *
  * Revision 1.14  2007/04/13 07:14:05  rjongbloed
  * Added command line parameter to set video frame resizing mode.
  * Default size and frame rate to what grabbebr is using.
@@ -100,30 +104,6 @@ VidTest::VidTest()
 {
   grabber = NULL;
   display = NULL;
-}
-
-
-bool ParseSize(const PString & sizeString, unsigned & width, unsigned & height)
-{
-  if (sizeString *= "qcif") {
-    width = PVideoDevice::QCIFWidth;
-    height = PVideoDevice::QCIFHeight;
-    return true;
-  }
-
-  if (sizeString *= "cif") {
-    width = PVideoDevice::CIFWidth;
-    height = PVideoDevice::CIFHeight;
-    return true;
-  }
-
-  if ((sizeString *= "cif4") || (sizeString *= "4cif")) {
-    width = PVideoDevice::CIF4Width;
-    height = PVideoDevice::CIF4Height;
-    return true;
-  }
-
-  return sscanf(sizeString, "%ix%i", &width, &height) == 2 && width > 0 && height > 0;
 }
 
 
@@ -323,7 +303,7 @@ void VidTest::Main()
   unsigned width, height;
   if (args.HasOption("frame-size")) {
     PString sizeString = args.GetOptionString("frame-size");
-    if (!ParseSize(sizeString, width, height)) {
+    if (!PVideoFrameInfo::ParseSize(sizeString, width, height)) {
       cerr << "Illegal video frame size \"" << sizeString << '"' << endl;
       return;
     }
@@ -401,7 +381,7 @@ void VidTest::Main()
     }
 
     unsigned width, height;
-    if (ParseSize(cmd, width, height)) {
+    if (PVideoFrameInfo::ParseSize(cmd, width, height)) {
       pauseGrabAndDisplay.Signal();
       if  (!grabber->SetFrameSizeConverter(width, height))
         cout << "Video input device could not be set to size " << width << 'x' << height << endl;
