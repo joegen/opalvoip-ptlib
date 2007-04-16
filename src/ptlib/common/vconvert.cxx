@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.61  2007/04/16 01:37:13  rjongbloed
+ * Added simple crop to YUV420P to RGB converter.
+ *
  * Revision 1.60  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -1712,35 +1715,35 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             unsigned blueOffset) const
 {
   if (srcFrameBuffer == dstFrameBuffer)
-    return FALSE;
+    return FALSE; // Cannot do in-place conversion
 
-  BYTE          *dstImageFrame;
-  unsigned int   nbytes    = srcFrameWidth*srcFrameHeight;
-  const BYTE    *yplane    = srcFrameBuffer;               // 1 byte Y (luminance) for each pixel
-  const BYTE    *uplane    = yplane+nbytes;                // 1 byte U for a block of 4 pixels
-  const BYTE    *vplane    = uplane+(nbytes/4);            // 1 byte V for a block of 4 pixels
+  static const unsigned greenOffset = 1;
 
-  unsigned int   pixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
-  unsigned int   originalPixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
+  unsigned height = PMIN(srcFrameHeight, dstFrameHeight)&(UINT_MAX-1); // Must be even
+  unsigned width = PMIN(srcFrameWidth, dstFrameWidth)&(UINT_MAX-1);
 
-  unsigned int   x, y, p;
+  unsigned    yplanesize = srcFrameWidth*srcFrameHeight;
+  const BYTE *yplane     = srcFrameBuffer;        // 1 byte Y (luminance) for each pixel
+  const BYTE *uplane     = yplane+yplanesize;     // 1 byte U for a block of 4 pixels
+  const BYTE *vplane     = uplane+(yplanesize/4); // 1 byte V for a block of 4 pixels
 
-  long     int   yvalue;
-  long     int   l, r, g, b;
+  BYTE * dstScanLine   = dstFrameBuffer;
+
+  unsigned int srcPixpos[4] = { 0, 1, srcFrameWidth, srcFrameWidth + 1 };
+  unsigned int dstPixpos[4] = { 0, rgbIncrement, dstFrameWidth*rgbIncrement, (dstFrameWidth+1)*rgbIncrement };
 
   if (verticalFlip) {
-    dstImageFrame = dstFrameBuffer + ((srcFrameHeight - 2) * srcFrameWidth * rgbIncrement);
-    pixpos[0] = srcFrameWidth;
-    pixpos[1] = srcFrameWidth +1;
-    pixpos[2] = 0;
-    pixpos[3] = 1;
+    dstScanLine += (dstFrameHeight - 2) * dstFrameWidth * rgbIncrement;
+    dstPixpos[0] = dstFrameWidth;
+    dstPixpos[1] = dstFrameWidth +1;
+    dstPixpos[2] = 0;
+    dstPixpos[3] = 1;
   }
-  else
-    dstImageFrame = dstFrameBuffer;
 
-  for (y = 0; y < srcFrameHeight; y += 2)
+  for (unsigned y = 0; y < height; y += 2)
   {
-    for (x = 0; x < srcFrameWidth; x += 2)
+    BYTE * dstPixelGroup = dstScanLine;
+    for (unsigned x = 0; x < width; x += 2)
     {
       // The RGB value without luminance
       long cb = *uplane-128;
@@ -1751,36 +1754,34 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
       // Add luminance to each of the 4 pixels
 
-      for (p = 0; p < 4; p++)
+      for (unsigned p = 0; p < 4; p++)
       {
-        yvalue = *(yplane + originalPixpos[p]);
+        int yvalue = *(yplane + srcPixpos[p]);
 
-        l = yvalue << SCALEBITS;
+        int l = yvalue << SCALEBITS;
 
-        r = (l+rd)>>SCALEBITS;
-        g = (l+gd)>>SCALEBITS;
-        b = (l+bd)>>SCALEBITS;
+        int r = (l+rd)>>SCALEBITS;
+        int g = (l+gd)>>SCALEBITS;
+        int b = (l+bd)>>SCALEBITS;
 
-        BYTE * rgpPtr = dstImageFrame + rgbIncrement*pixpos[p];
-        rgpPtr[redOffset ] = LIMIT(r);
-        rgpPtr[1         ] = LIMIT(g);
-        rgpPtr[blueOffset] = LIMIT(b);
+        BYTE * rgpPtr = dstPixelGroup + dstPixpos[p];
+        rgpPtr[redOffset]   = LIMIT(r);
+        rgpPtr[greenOffset] = LIMIT(g);
+        rgpPtr[blueOffset]  = LIMIT(b);
         if (rgbIncrement == 4)
           rgpPtr[3] = 0;
       }
 
       yplane += 2;
-      dstImageFrame += rgbIncrement*2;
+      dstPixelGroup += rgbIncrement*2;
 
       uplane++;
       vplane++;
     }
  
     yplane += srcFrameWidth;
-    if (verticalFlip)
-      dstImageFrame -= 3*rgbIncrement*srcFrameWidth;
-    else
-      dstImageFrame += rgbIncrement*srcFrameWidth;  
+
+    dstScanLine += (verticalFlip?-2:2)*rgbIncrement*dstFrameWidth;
   }
 
   if (bytesReturned != NULL)
