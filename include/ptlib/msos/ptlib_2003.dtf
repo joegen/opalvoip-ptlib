@@ -13774,6 +13774,7 @@ EXPORTS
     ?ParseResponse@PInternetProtocol@@MAEHABVPString@@@Z @24448 NONAME
     ?ParseResponse@PPOP3@@MAEHABVPString@@@Z @24449 NONAME
     ?ParseScalar@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPString@@1@Z @24450 NONAME
+    ?ParseSize@PVideoFrameInfo@@SAHABVPString@@AAI1@Z @27448 NONAME
     ?ParseStruct@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPStringToString@@@Z @24451 NONAME
     ?ParseStruct@PXMLRPCBlock@@QAEHPAVPXMLElement@@AAVPXMLRPCStructBase@@@Z @24452 NONAME
     ?PAssertFunc@@YAXPBD@Z @2175 NONAME
