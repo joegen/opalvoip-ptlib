@@ -4036,7 +4036,7 @@ if test "${enable_openh323}x" = "yesx" -o "${enable_opal}x" = "yesx" ; then
   default_tts=yes
   default_asn=yes
   default_stun=yes
-  default_pipechan=no
+  default_pipechan=yes
   default_dtmf=yes
   default_wavfile=yes
   default_socks=no
