@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.11  2007/04/17 23:40:54  csoutheren
+ * Add ptbuildopts.h
+ *
  * Revision 1.10  2006/02/10 22:38:03  csoutheren
  * Added ability to do DNS lookups and force IPV4 mode
  *
@@ -67,6 +70,7 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/url.h>
+#include <ptbuildopts.h>
 
 PCREATE_PROCESS(IPV6Test);
 
