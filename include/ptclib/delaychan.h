@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.10  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.9  2006/07/21 01:03:12  csoutheren
  * Fixed to PAdaptiveDelay
  * Thanks to Paolo Amadini
@@ -66,7 +69,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 /** Class for implementing an "adaptive" delay.
     This class will cause the the caller to, on average, delay
