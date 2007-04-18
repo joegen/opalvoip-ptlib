@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.27  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.26  2007/04/13 07:19:23  rjongbloed
  * Removed separate Win32 solution for "plug in static loading" issue,
  *   and used the PLOAD_FACTORY() mechanism for everything.
@@ -122,7 +125,10 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <string>
 #include <map>
 #include <vector>

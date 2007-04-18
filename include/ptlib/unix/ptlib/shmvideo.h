@@ -13,6 +13,9 @@
  * http://www.mozilla.org/MPL/
  *
  * $Log: shmvideo.h,v $
+ * Revision 1.3  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.2  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -44,7 +47,10 @@
 
 #define P_FORCE_STATIC_PLUGIN
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <ptclib/delaychan.h>
 
 #include <sys/types.h>

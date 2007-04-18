@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.96  2007/04/18 23:49:50  csoutheren
+# Add usage of precompiled headers
+#
 # Revision 1.95  2006/01/08 14:49:08  dsandras
 # Several fixes to allow compilation on Open Solaris thanks to Brian Lu <brian.lu _AT_____ sun.com>. Many thanks!
 #
@@ -414,11 +417,15 @@ endif
 # ifdef PROG
 endif
 
-$(PWLIBDIR)/include/ptlib.h.gch: $(PWLIBDIR)/include/ptlib.h
-	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PWLIBDIR)/include/ptlib.h
+	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -x c++ -c $< -o $@
 
-PCH	:= $(PWLIBDIR)/include/ptlib.h.gch
+PCH_FILES =	$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
+
+PCH:		$(PCH_FILES)
+
+CLEAN_FILES  += $(PCH_FILES)
 
 ######################################################################
 #
@@ -459,10 +466,10 @@ help:
 
 ifdef DEBUG
 
-debug :: $(TARGET)
+debug :: PCH $(TARGET) 
 
 opt ::
-	@$(MAKE) DEBUG= opt
+	@$(MAKE) DEBUG= PCH opt
 
 debugclean ::
 	rm -rf $(CLEAN_FILES)
@@ -488,10 +495,10 @@ libs ::
 
 else
 
-debug ::
-	@$(MAKE) DEBUG=1 debug
+debug :: 
+	@$(MAKE) DEBUG=1 PCH debug
 
-opt :: $(TARGET)
+opt :: PCH $(TARGET)
 
 debugclean ::
 	@$(MAKE) DEBUG=1 debugclean

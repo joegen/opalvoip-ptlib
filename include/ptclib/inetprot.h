@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.20  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.19  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -96,7 +99,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 class PSocket;
 class PIPSocket;
