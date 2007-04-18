@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pnat.h,v $
+ * Revision 1.9  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.8  2007/02/11 13:07:37  shorne
  * Added GetName function
  *
@@ -55,7 +58,10 @@
  *
 */
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <ptlib/sockets.h>
 
 #ifndef P_NATMETHOD
