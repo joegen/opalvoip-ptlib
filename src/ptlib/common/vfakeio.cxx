@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.39  2007/04/18 23:49:51  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.38  2007/04/13 07:13:14  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -165,6 +168,7 @@
  *
  *
  */
+
 
 #define P_FORCE_STATIC_PLUGIN
 
