@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.h,v $
+ * Revision 1.7  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.6  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -55,7 +58,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 /**This class is used to allow a block of memory to substitute for a disk file.
  */

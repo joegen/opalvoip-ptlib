@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.47  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.46  2005/11/25 01:01:13  csoutheren
  * Applied patch #1351168
  * PWlib various fixes
@@ -201,7 +204,9 @@ class PXMLElement;
 #undef      P_INCLUDE_XER
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

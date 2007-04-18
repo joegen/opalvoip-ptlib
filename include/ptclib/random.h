@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.8  2007/04/18 23:49:50  csoutheren
+ * Add usage of precompiled headers
+ *
  * Revision 1.7  2007/03/08 04:31:08  csoutheren
  * Applied 1613299 - add new function to the PRandom class
  * Thanks to Frederic Heem
@@ -57,7 +60,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 /**Mersenne Twister random number generator.
    An application would create a static instance of this class, and then use
