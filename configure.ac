@@ -1060,6 +1060,7 @@ else
     AC_DEFINE(P_HAS_SASL_SASL_H)
   else
     AC_MSG_RESULT(no)
+    HAS_SASL2=
   fi
 fi
 

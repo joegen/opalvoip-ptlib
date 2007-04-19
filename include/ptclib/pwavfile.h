@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.28  2007/04/19 04:33:53  csoutheren
+ * Fixed problems with pre-compiled headers
+ *
  * Revision 1.27  2006/08/08 08:14:59  rjongbloed
  * Fixed GCC warnings on packed structures that do not need packing.
  *
@@ -154,7 +157,10 @@
 //#pragma interface
 //#endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <ptlib/pfactory.h>
 
 class PWAVFile;
