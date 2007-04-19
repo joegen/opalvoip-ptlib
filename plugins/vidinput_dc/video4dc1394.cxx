@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.11  2007/04/19 09:44:24  csoutheren
+ * Fix compilation of avc driver
+ *
  * Revision 1.10  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -254,6 +257,7 @@ static int num_captured;
 
 PVideoInputDevice_1394DC::PVideoInputDevice_1394DC()
 {
+  msBetweenFrames = 1000 / frameRate;
   handle = NULL;
   is_capturing = FALSE;
   capturing_duration = 10000; // arbitrary large value suffices
@@ -674,7 +678,12 @@ BOOL PVideoInputDevice_1394DC::SetChannel(int newChannel)
 
 BOOL PVideoInputDevice_1394DC::SetFrameRate(unsigned rate)
 {
-  return PVideoDevice::SetFrameRate(rate);
+  if (!PVideoDevice::SetFrameRate(rate))
+    return FALSE;
+
+  msBetweenFrames = 1000/rate;
+
+  return TRUE;
 }
 
 
@@ -733,7 +742,7 @@ BOOL PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytes
 
 BOOL PVideoInputDevice_1394DC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if(frameRate>0) {
+  if (frameRate > 0) {
     if (msBetweenFrames > capturing_duration)
       PThread::Current()->Sleep(msBetweenFrames - capturing_duration);
     PTime start;
@@ -760,7 +769,7 @@ BOOL PVideoInputDevice_1394DC::TestAllFormats()
 
 BOOL PVideoInputDevice_1394DC::SetColourFormat(const PString & newFormat)
 {
-  reutrn newFormat == colourFormat;
+  return newFormat == colourFormat;
 }
 
 
