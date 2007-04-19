@@ -19,6 +19,9 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.5  2007/04/19 09:44:24  csoutheren
+ * Fix compilation of avc driver
+ *
  * Revision 1.4  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -242,7 +245,8 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     int numCameras;
     dc1394_cameracapture camera;
     int capturing_duration;
-    int          supportedFormat;
+    int supportedFormat;
+    int msBetweenFrames;
 #define DC1394_FORMAT_160x120	1
 #define DC1394_FORMAT_320x240	2
 };
