@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.97  2007/04/19 07:34:13  csoutheren
+# Added option to disable precompiled headers
+#
 # Revision 1.96  2007/04/18 23:49:50  csoutheren
 # Add usage of precompiled headers
 #
@@ -423,7 +426,11 @@ $(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE): $(PWLIBDIR)/include/ptlib.h
 
 PCH_FILES =	$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
 
+ifdef USE_PCH
 PCH:		$(PCH_FILES)
+else
+PCH:		
+endif
 
 CLEAN_FILES  += $(PCH_FILES)
 
