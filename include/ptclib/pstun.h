@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.15  2007/04/19 04:33:53  csoutheren
+ * Fixed problems with pre-compiled headers
+ *
  * Revision 1.14  2007/02/11 13:13:18  shorne
  * Added GetName function
  *
@@ -81,7 +84,10 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <ptclib/pnat.h>
 #include <ptlib/sockets.h>
 

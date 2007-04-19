@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.10  2007/04/19 04:33:53  csoutheren
+ * Fixed problems with pre-compiled headers
+ *
  * Revision 1.9  2006/12/13 04:56:03  csoutheren
  * Applied 1613270 - fixed for dtmfEncoder
  * Thanks to Frederic Heem
@@ -52,7 +55,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 class PDTMFDecoder : public PObject
 {
