@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.h,v $
+ * Revision 1.5  2007/04/19 04:33:53  csoutheren
+ * Fixed problems with pre-compiled headers
+ *
  * Revision 1.4  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -47,7 +50,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 /** Class for implementing a serial queue channel in memory.
     This implements a simple memory based First In First Out queue. Data

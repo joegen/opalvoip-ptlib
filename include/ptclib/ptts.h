@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.8  2007/04/19 04:33:53  csoutheren
+ * Fixed problems with pre-compiled headers
+ *
  * Revision 1.7  2005/01/04 07:44:02  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -56,7 +59,10 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
+
 #include <ptclib/ptts.h>
 
 class PTextToSpeech : public PObject
