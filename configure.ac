@@ -216,8 +216,11 @@ fi
 dnl ########################################################################
 dnl get the gcc version
 
+USE_GCC=
+USE_PCH=
+
 if test x$GXX = xyes ; then
-  USE_GCC=yes
+  USE_GCC=1
   gcc_version=`$CXX -dumpversion`
   AC_MSG_NOTICE(gcc version is $gcc_version);
   GXX_MAJOR=`echo $gcc_version | sed 's/\..*$//'`
@@ -236,11 +239,32 @@ if test x$GXX = xyes ; then
   else
     AC_MSG_RESULT(no)
   fi
+
+  dnl only enable PCH for gcc 4.0 and later
+  AC_MSG_CHECKING(checking if precompiled headers available)
+  if test ${GXX_MAJOR} -lt 4 ; then
+    enablepch=no
+  else
+    enablepch=yes
+    AC_ARG_ENABLE(pch,
+         [  --enable-pch             disable precompiled headers],
+         enablepch=$enableval)
+  fi
+  if test "${enablepch}" = "yes" ; then
+    AC_MSG_RESULT(yes)
+    USE_PCH=1
+  else
+    AC_MSG_RESULT(no)
+  fi
 else
   USE_GCC=no
 fi
-AC_SUBST(USE_GCC)
 
+AC_SUBST(USE_GCC)
+AC_SUBST(USE_PCH)
+
+dnl ########################################################################
+dnl check if precompiled headers available, or disabled
 
 dnl ########################################################################
 dnl set the shared library extension, if not already set
@@ -2033,7 +2057,7 @@ dnl MSWIN_DISPLAY    sockagg,Socket aggregation support
 dnl MSWIN_DEFINE     sockagg,P_SOCKAGG
 
 AC_ARG_ENABLE(sockagg,
-       [  --enable-sockagg       enable socket aggregation (experimental)])
+       [  --enable-sockagg        enable socket aggregation (experimental)])
 
 if test "${enable_sockagg}z" = "z" ; then
   enable_sockagg=$default_sockagg
@@ -2060,7 +2084,7 @@ if test "$HAS_VIDEO" \!= "1" ; then
 fi
 
 AC_ARG_ENABLE(vidfile,
-       [  --enable-vidfile       enable video file support])
+       [  --enable-vidfile        enable video file support])
 
 if test "${enable_vidfile}z" = "z" ; then
   enable_vidfile=$default_vidfile
@@ -2187,7 +2211,7 @@ dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft SDK\include\
 dnl MSWIN_CHECK_DIR  odbc,\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include\
 
 AC_ARG_ENABLE(odbc,
-        [  --disable-odbc       disable ODBC support])
+        [  --disable-odbc          disable ODBC support])
  
  if test "${enable_odbc}z" = "z" ; then
    enable_odbc=$default_odbc
@@ -2246,7 +2270,7 @@ dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
 AC_ARG_ENABLE(exceptions,
-       [  ---exceptions     enable C++ exceptions])
+       [  --exceptions            enable C++ exceptions])
 
 if test "${enable_exceptions}z" != "yesz" ; then
   AC_MSG_NOTICE(C++ exceptions disabled)
