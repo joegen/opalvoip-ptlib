@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvfiledev.h,v $
+ * Revision 1.10  2007/04/20 06:47:02  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.9  2007/04/13 07:13:13  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -79,8 +82,8 @@
 
 #include <ptlib.h>
 
+#if P_VIDEO
 #if P_VIDFILE
-
 
 #include <ptlib.h>
 #include <ptlib/video.h>
@@ -345,6 +348,7 @@ class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
 
 
 #endif // P_VIDFILE
+#endif
 
 #endif // _PVFILEDEV
 
