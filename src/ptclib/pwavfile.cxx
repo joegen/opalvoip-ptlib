@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.51  2007/04/20 07:59:29  csoutheren
+ * Applied 1675658 - various pwavfile.[h|cxx] improvments
+ * Thanks to Drazen Dimoti
+ *
  * Revision 1.50  2007/04/20 07:26:51  csoutheren
  * Applied 1703655 - PWAVFile fixes to stereo recording
  * Thanks to Fabrizio Ammollo
@@ -630,6 +634,20 @@ void PWAVFile::SetSampleSize(unsigned v)
   header_needs_updating = TRUE;
 }
 
+unsigned PWAVFile::GetBytesPerSecond() const
+{
+  if (isValidWAV)
+    return wavFmtChunk.bytesPerSec;
+  else
+    return 0;
+}
+
+void PWAVFile::SetBytesPerSecond(unsigned v)
+{
+  wavFmtChunk.bytesPerSec = (WORD)v;
+  header_needs_updating = TRUE;
+}
+
 off_t PWAVFile::GetHeaderLength() const
 {
   if (isValidWAV)
@@ -906,10 +924,22 @@ BOOL PWAVFile::UpdateHeader()
     return FALSE;
 
   // rewrite the data length field in the data chunk
-  PInt32l dataChunkLen;
-  dataChunkLen = lenData;
+  PInt32l dataChunkLen = lenData;
   PFile::SetPosition(lenHeader - 4);
   if (!WriteAndCheck(*this, &dataChunkLen, sizeof(dataChunkLen)))
+    return FALSE;
+
+  if(formatHandler == NULL){
+    PTRACE(1,"WAV\tGenerateHeader: format handler is null!");
+    return FALSE;
+  }
+  formatHandler->UpdateHeader(wavFmtChunk, extendedHeader);
+
+  PFile::SetPosition(12);
+  if (!WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)))
+    return FALSE;
+
+  if (!WriteAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
     return FALSE;
 
   header_needs_updating = FALSE;
@@ -922,7 +952,7 @@ BOOL PWAVFile::UpdateHeader()
 
 BOOL PWAVFileFormat::Read(PWAVFile & file, void * buf, PINDEX & len)
 { 
-  if (!file.RawRead(buf, len))
+  if (!file.FileRead(buf, len))
     return FALSE;
 
   len = file.GetLastReadCount();
@@ -931,7 +961,7 @@ BOOL PWAVFileFormat::Read(PWAVFile & file, void * buf, PINDEX & len)
 
 BOOL PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
 { 
-  if (!file.RawWrite(buf, len))
+  if (!file.FileWrite(buf, len))
     return FALSE;
 
   len = file.GetLastWriteCount();
@@ -943,11 +973,17 @@ BOOL PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
 class PWAVFileFormatPCM : public PWAVFileFormat
 {
   public:
-    virtual ~PWAVFileFormatPCM() {}
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
-    PString GetDescription() const;
-    unsigned GetFormat() const;
-    PString GetFormatString() const;
+    void UpdateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
+
+    unsigned GetFormat() const
+    { return PWAVFile::fmt_PCM; }
+
+    PString GetDescription() const
+    { return "PCM"; }
+
+    PString GetFormatString() const
+    { return "PCM-16"; }
 
     BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
     BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
@@ -955,21 +991,6 @@ class PWAVFileFormatPCM : public PWAVFileFormat
 
 PWAVFileFormatByIDFactory::Worker<PWAVFileFormatPCM> pcmIDWAVFormat(PWAVFile::fmt_PCM);
 PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatPCM> pcmFormatWAVFormat("PCM-16");
-
-unsigned PWAVFileFormatPCM::GetFormat() const
-{
-  return PWAVFile::fmt_PCM;
-}
-
-PString PWAVFileFormatPCM::GetDescription() const
-{
-  return "PCM";
-}
-
-PString PWAVFileFormatPCM::GetFormatString() const
-{
-  return "PCM-16";
-}
 
 void PWAVFileFormatPCM::CreateHeader(PWAV::FMTChunk & wavFmtChunk, 
                                      PBYTEArray & /*extendedHeader*/)
@@ -981,6 +1002,13 @@ void PWAVFileFormatPCM::CreateHeader(PWAV::FMTChunk & wavFmtChunk,
   wavFmtChunk.bytesPerSample  = 2;
   wavFmtChunk.bitsPerSample   = 16;
   wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+}
+
+void PWAVFileFormatPCM::UpdateHeader(PWAV::FMTChunk & wavFmtChunk, 
+                                     PBYTEArray & /*extendedHeader*/)
+{
+  wavFmtChunk.bytesPerSample  = 2 * wavFmtChunk.numChannels;
+  wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * 2 * wavFmtChunk.numChannels;
 }
 
 BOOL PWAVFileFormatPCM::Read(PWAVFile & file, void * buf, PINDEX & len)
