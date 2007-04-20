@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.88  2007/04/20 07:18:00  csoutheren
+ * Applied 1703620 - Make PFile::Open() create file with unique name as intended
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.87  2007/03/08 05:35:52  csoutheren
  * Applied 1666290 - patch for bug thread issue
  * Thanks to Frederic Heem
@@ -870,7 +874,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
 
   if (path.IsEmpty()) {
     char templateStr[3+6+1];
-    strcpy(templateStr, "PWL");
+    strcpy(templateStr, "PWLXXXXXX");
 #ifndef P_VXWORKS
 #ifdef P_RTEMS
     _reent _reent_data;
@@ -881,7 +885,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
 #endif // P_RTEMS
     if (!ConvertOSError(os_handle))
       return FALSE;
-
+    path = templateStr;
   } else {
 #else
     static int number = 0;
