@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.23  2007/04/20 06:11:22  csoutheren
+ * Add backwards compatible API for PColourConverter
+ *
  * Revision 1.22  2007/04/20 05:40:33  csoutheren
  * Add backwards compatible API for PColourConverter
  *
@@ -334,6 +337,12 @@ class PColourConverter : public PObject
     static PColourConverter * Create(
       const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
       const PVideoFrameInfo & dst  ///< Destination frame info
+    );
+    static PColourConverter * Create(
+      const PString & srcColourFormat,
+      const PString & destColourFormat,
+      unsigned width,
+      unsigned height
     );
 
     /**Get the output frame size.
