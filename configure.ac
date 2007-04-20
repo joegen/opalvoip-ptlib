@@ -1671,9 +1671,9 @@ HAS_VIDEO_CAPTURE=
 if test "$enable_video" = "no" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
 else
+  AC_DEFINE(P_VIDEO, 1)
+  HAS_VIDEO=1
   if test "$enable_plugins" = "yes" ; then
-    AC_DEFINE(P_VIDEO, 1)
-    HAS_VIDEO=1
     HAS_VIDEO_CAPTURE=1
   else
     AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=1)
@@ -1683,9 +1683,6 @@ else
     if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
       AC_MSG_NOTICE(No Video Capture support)
       AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
-    else
-      AC_DEFINE(P_VIDEO, 1)
-      HAS_VIDEO=1
     fi
   fi
   dnl these are needed to pass through to plugin configure
