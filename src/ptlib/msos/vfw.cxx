@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.42  2007/04/20 06:47:48  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.41  2007/04/13 07:13:14  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -191,6 +194,8 @@
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
+
+#if P_VIDEO
 
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
 #error "vfw.cxx must be compiled without precompiled headers"
@@ -1636,6 +1641,9 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
   }
   return DefWindowProc(m_hWnd, uMsg, wParam, lParam);
 }
+
+#endif // P_VIDEO
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
