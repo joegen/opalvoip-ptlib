@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.16  2007/04/20 07:35:55  csoutheren
+ * Applied 1703664 - Safer and better PSafeCollection logs
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.15  2007/04/20 02:31:14  rjongbloed
  * Added ability to share a single mutex amongst multiple PSafeObjects,
  *   this can help with certain deadlock scenarios.
@@ -114,25 +118,29 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 
 BOOL PSafeObject::SafeReference()
 {
-  PWaitAndSignal mutex(safetyMutex);
-
-  if (safelyBeingRemoved)
-    return FALSE;
-
-  safeReferenceCount++;
-  PTRACE(6, "SafeColl\tIncrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PStringStream str;
+  {
+    PWaitAndSignal mutex(safetyMutex);
+    if (safelyBeingRemoved)
+      return FALSE;
+    safeReferenceCount++;
+    str << "SafeColl\tIncrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
+  }
+  PTRACE(6, str);
   return TRUE;
 }
 
 
 void PSafeObject::SafeDereference()
 {
+  PStringStream str;
   safetyMutex.Wait();
   if (PAssert(safeReferenceCount > 0, PLogicError)) {
     safeReferenceCount--;
-    PTRACE(6, "SafeColl\tDecrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+    str << "SafeColl\tDecrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
   }
   safetyMutex.Signal();
+  PTRACE(6, str);
 }
 
 
