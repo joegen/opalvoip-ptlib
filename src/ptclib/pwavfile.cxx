@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.50  2007/04/20 07:26:51  csoutheren
+ * Applied 1703655 - PWAVFile fixes to stereo recording
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.49  2006/07/05 04:00:25  csoutheren
  * Ensure Read and Write fail gracefully when file not open
  *
@@ -590,6 +594,11 @@ unsigned PWAVFile::GetChannels() const
 void PWAVFile::SetChannels(unsigned v) 
 {
   wavFmtChunk.numChannels = (WORD)v;
+  if (wavFmtChunk.numChannels == 1 || wavFmtChunk.numChannels == 2)
+  {
+      wavFmtChunk.bytesPerSample = (wavFmtChunk.bitsPerSample/8) * wavFmtChunk.numChannels;
+      wavFmtChunk.bytesPerSec = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+  }
   header_needs_updating = TRUE;
 }
 
@@ -889,6 +898,11 @@ BOOL PWAVFile::UpdateHeader()
   PInt32l riffChunkLen = (lenHeader - 8) + lenData; // size does not include first 8 bytes
   PFile::SetPosition(4);
   if (!WriteAndCheck(*this, &riffChunkLen, sizeof(riffChunkLen)))
+    return FALSE;
+
+  // rewrite format chunk 
+  PFile::SetPosition(12);
+  if (!WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)))
     return FALSE;
 
   // rewrite the data length field in the data chunk
