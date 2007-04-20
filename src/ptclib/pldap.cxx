@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.21  2007/04/20 07:23:53  csoutheren
+ * Applied 1703646 - Fixed behaviour of PLDAPSession::GetSearchResult
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.20  2006/01/16 19:52:05  dsandras
  * Applied patch from Brian Lu <brian lu sun com> to allow compilation on
  * Solaris using SUN's LDAP. Thanks!!
@@ -711,8 +715,12 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
 
   PINDEX count = ldap_count_values_len(values);
   data.SetSize(count);
-  for (PINDEX i = 0; i < count; i++)
-    data[i] = PBYTEArray((const BYTE *)values[i]->bv_val, values[i]->bv_len);
+  for (PINDEX i = 0; i < count; i++) {
+    PBYTEArray* dataPtr = new PBYTEArray(values[i]->bv_len);
+    data.SetAt(i, dataPtr);
+    
+    memcpy(data[i].GetPointer(), (const BYTE *)values[i]->bv_val, values[i]->bv_len); 
+  }
 
   ldap_value_free_len(values);
   return TRUE;
