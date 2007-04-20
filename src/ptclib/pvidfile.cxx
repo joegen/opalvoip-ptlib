@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pvidfile.cxx,v $
+ * Revision 1.7  2007/04/20 06:47:14  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.6  2007/04/13 07:13:14  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -61,6 +64,7 @@
 
 #include <ptlib.h>
 
+#if P_VIDEO
 #if P_VIDFILE
 
 #include <ptclib/pvidfile.h>
@@ -240,4 +244,4 @@ BOOL PYUVFile::ReadFrame(void * frame)
 
 
 #endif  // P_VIDFILE
-
+#endif
