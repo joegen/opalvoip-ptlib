@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.212  2007/04/20 07:39:52  csoutheren
+ * Applied 1703666 - PIPSocket::Connect change to avoid DNS access
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.211  2007/04/04 01:51:38  rjongbloed
  * Reviewed and adjusted PTRACE log levels
  *   Now follows 1=error,2=warn,3=info,4+=debug
@@ -1972,12 +1976,12 @@ PString PIPSocket::GetPeerHostName()
 
 BOOL PIPSocket::Connect(const PString & host)
 {
-  Address ipnum;
+  Address ipnum(host);
 #if P_HAS_IPV6
-  if (GetHostAddress(host, ipnum))
+  if (ipnum.IsValid() || GetHostAddress(host, ipnum))
     return Connect(GetDefaultIpAny(), 0, ipnum);
 #else
-  if (GetHostAddress(host, ipnum))
+  if (ipnum.IsValid() || GetHostAddress(host, ipnum))
     return Connect(INADDR_ANY, 0, ipnum);
 #endif  
   return FALSE;
