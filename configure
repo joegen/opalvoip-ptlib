@@ -8239,12 +8239,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 else
-  if test "$enable_plugins" = "yes" ; then
-    cat >>confdefs.h <<\_ACEOF
+  cat >>confdefs.h <<\_ACEOF
 #define P_VIDEO 1
 _ACEOF
 
-    HAS_VIDEO=1
+  HAS_VIDEO=1
+  if test "$enable_plugins" = "yes" ; then
     HAS_VIDEO_CAPTURE=1
   else
     if test "${ac_cv_header_linux_videodev_h+set}" = set; then
@@ -8397,12 +8397,6 @@ cat >>confdefs.h <<\_ACEOF
 #define NO_VIDEO_CAPTURE
 _ACEOF
 
-    else
-      cat >>confdefs.h <<\_ACEOF
-#define P_VIDEO 1
-_ACEOF
-
-      HAS_VIDEO=1
     fi
   fi
     # Check whether --enable-v4l or --disable-v4l was given.
