@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.15  2007/04/20 02:31:14  rjongbloed
+ * Added ability to share a single mutex amongst multiple PSafeObjects,
+ *   this can help with certain deadlock scenarios.
+ *
  * Revision 1.14  2004/10/14 23:01:31  csoutheren
  * Fiuxed problem with usage of Sleep
  *
@@ -100,10 +104,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-PSafeObject::PSafeObject()
+PSafeObject::PSafeObject(PSafeObject * indirectLock)
+    : safeReferenceCount(0)
+    , safelyBeingRemoved(FALSE)
+    , safeInUse(indirectLock != NULL ? indirectLock->safeInUse : &safeInUseMutex)
 {
-  safeReferenceCount = 0;
-  safelyBeingRemoved = FALSE;
 }
 
 
@@ -141,14 +146,14 @@ BOOL PSafeObject::LockReadOnly() const
   }
 
   safetyMutex.Signal();
-  safeInUseFlag.StartRead();
+  safeInUse->StartRead();
   return TRUE;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  safeInUseFlag.EndRead();
+  safeInUse->EndRead();
 }
 
 
@@ -162,14 +167,14 @@ BOOL PSafeObject::LockReadWrite()
   }
 
   safetyMutex.Signal();
-  safeInUseFlag.StartWrite();
+  safeInUse->StartWrite();
   return TRUE;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
-  safeInUseFlag.EndWrite();
+  safeInUse->EndWrite();
 }
 
 
