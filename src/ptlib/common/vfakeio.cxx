@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.40  2007/04/20 06:47:48  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.39  2007/04/18 23:49:51  csoutheren
  * Add usage of precompiled headers
  *
@@ -173,6 +176,9 @@
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
+
+#if P_VIDEO
+
 #include <ptlib/vconvert.h>
 
 #if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
@@ -2327,6 +2333,7 @@ BOOL PVideoOutputDevice_NULLOutput::EndFrame()
   return TRUE;
 }
 
+#endif // P_VIDEO
 
 // End Of File ///////////////////////////////////////////////////////////////
 
