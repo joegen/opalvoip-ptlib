@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.29  2007/04/20 07:59:29  csoutheren
+ * Applied 1675658 - various pwavfile.[h|cxx] improvments
+ * Thanks to Drazen Dimoti
+ *
  * Revision 1.28  2007/04/19 04:33:53  csoutheren
  * Fixed problems with pre-compiled headers
  *
@@ -234,6 +238,12 @@ class PWAVFileFormat
     virtual void CreateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader) = 0;
 
     /**
+     *  populate the header with the correct values after initial parameters are set
+     */
+    virtual void UpdateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader)
+    { }
+
+    /**
       * write any extra headers after the FORMAT chunk
       */
     virtual BOOL WriteExtraChunks(PWAVFile & /*file*/)
@@ -303,8 +313,11 @@ class PWAVFile : public PFile
      */
     enum {
       fmt_PCM         = 1,      ///< PCM, 8kHz, 16 bit, mono
+      fmt_MSADPCM     = 2,      ///< MS-ADPCM, 8kHz, mono
       fmt_ALaw        = 6,      ///< A-Law 8kHz
       fmt_uLaw        = 7,      ///< u-Law 8kHz
+      fmt_VOXADPCM    = 0x10,   ///< OKI ADPCM
+      fmt_IMAADPCM    = 0x11,   ///< IMA-ADPCM, 8kHz mono
       fmt_GSM         = 0x31,   ///< GSM
       fmt_G728        = 0x41,   ///< RFC2361
       fmt_G723        = 0x42,   ///< RFC2361
@@ -512,6 +525,11 @@ class PWAVFile : public PFile
     */
     virtual unsigned GetSampleSize() const;
     virtual void SetSampleSize(unsigned v);
+
+    /**Find out how may bytes there are per second
+    */
+    virtual unsigned GetBytesPerSecond() const;
+    virtual void SetBytesPerSecond(unsigned v);
 
     /**Find out the size of WAV header presented in the file.
     */
