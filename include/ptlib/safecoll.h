@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.16  2007/04/20 02:31:14  rjongbloed
+ * Added ability to share a single mutex amongst multiple PSafeObjects,
+ *   this can help with certain deadlock scenarios.
+ *
  * Revision 1.15  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -162,7 +166,9 @@ class PSafeObject : public PObject
   //@{
     /**Create a thread safe object.
      */
-    PSafeObject();
+    PSafeObject(
+        PSafeObject * indirectLock = NULL ///< Other safe object to be locked when this is locked
+    );
   //@}
 
   /**@name Operations */
@@ -279,11 +285,12 @@ class PSafeObject : public PObject
     BOOL SafelyCanBeDeleted() const;
   //@}
 
-  protected:
-    mutable PMutex          safetyMutex;
-            unsigned        safeReferenceCount;
-            BOOL            safelyBeingRemoved;
-    mutable PReadWriteMutex safeInUseFlag;
+  private:
+    mutable PMutex    safetyMutex;
+    unsigned          safeReferenceCount;
+    BOOL              safelyBeingRemoved;
+    PReadWriteMutex   safeInUseMutex;
+    PReadWriteMutex * safeInUse;
 };
 
 
