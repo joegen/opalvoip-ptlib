@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.70  2007/04/20 06:47:48  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.69  2007/04/16 01:59:48  rjongbloed
  * Added function to video info class to parse standard size strings
  *   to width/height, eg "CIF", "QCIF", "VGA" etc
@@ -304,6 +307,9 @@
 #endif // !_WIN32_WCE 
 
 #include <ptlib.h>
+
+#if P_VIDEO
+
 #include <ptlib/pluginmgr.h>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
@@ -1464,5 +1470,6 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & arg
   return NULL;
 }
 
+#endif // P_VIDEO
 
 // End Of File ///////////////////////////////////////////////////////////////
