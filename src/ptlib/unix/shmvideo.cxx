@@ -13,6 +13,9 @@
  * http://www.mozilla.org/MPL/
  *
  * $Log: shmvideo.cxx,v $
+ * Revision 1.3  2007/04/20 06:34:48  csoutheren
+ * Fix compilation on MacOSX
+ *
  * Revision 1.2  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -46,7 +49,6 @@
 #include <ptlib/unix/ptlib/shmvideo.h>
 
 #ifdef __MACOSX__
-
 namespace PWLibStupidOSXHacks {
 	int loadShmVideoStuff;
 };
@@ -67,7 +69,7 @@ PVideoOutputDevice_Shm::shmInit()
   semLock = sem_open(SEM_NAME_OF_OUTPUT_DEVICE,
 		     O_RDWR, S_IRUSR|S_IWUSR, 0);
 
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     shmKey = ftok(ShmKeyFileName(), 0);
     if (shmKey >= 0) {
       shmId = shmget(shmKey, SHMVIDEO_BUFSIZE, 0666);
@@ -198,7 +200,7 @@ PVideoOutputDevice_Shm::Open(const PString & name,
 BOOL
 PVideoOutputDevice_Shm::IsOpen()
 {
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     return TRUE;
   }
   else {
@@ -209,7 +211,7 @@ PVideoOutputDevice_Shm::IsOpen()
 BOOL
 PVideoOutputDevice_Shm::Close()
 {
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     shmdt(shmPtr);
     sem_close(semLock);
     shmPtr = NULL;
@@ -230,7 +232,7 @@ PVideoOutputDevice_Shm::EndFrame()
 {
   long *ptr = (long *)shmPtr;
 
-  if (semLock == SEM_FAILED) {
+  if (semLock == (sem_t *)SEM_FAILED) {
     return FALSE;
   }
 
@@ -269,7 +271,7 @@ PVideoInputDevice_Shm::shmInit()
   semLock = sem_open(SEM_NAME_OF_INPUT_DEVICE,
 		     O_RDWR, S_IRUSR|S_IWUSR, 0);
 
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     shmKey = ftok(ShmKeyFileName(), 100);
     if (shmKey >= 0) {
       shmId = shmget(shmKey, SHMVIDEO_BUFSIZE, 0666);
@@ -336,7 +338,7 @@ PVideoInputDevice_Shm::Open(const PString & name,
 BOOL
 PVideoInputDevice_Shm::IsOpen()
 {
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     return TRUE;
   }
   else {
@@ -347,7 +349,7 @@ PVideoInputDevice_Shm::IsOpen()
 BOOL
 PVideoInputDevice_Shm::Close()
 {
-  if (semLock != SEM_FAILED) {
+  if (semLock != (sem_t *)SEM_FAILED) {
     shmdt(shmPtr);
     sem_close(semLock);
     shmPtr = NULL;
