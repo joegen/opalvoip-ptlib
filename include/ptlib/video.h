@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.19  2007/04/20 06:47:02  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.18  2005/11/30 12:47:38  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -99,6 +102,10 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptbuildopts.h>
+
+#if P_VIDEO
 
 #include <ptlib/videoio.h>
 
@@ -306,7 +313,9 @@ class PVideoChannel : public PChannel
 #endif
 };
 
-#endif
+#endif // P_VIDEO
+
+#endif // _PVIDEO
 
 
 // End Of File ///////////////////////////////////////////////////////////////

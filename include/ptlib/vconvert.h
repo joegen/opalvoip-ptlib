@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.24  2007/04/20 06:47:02  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.23  2007/04/20 06:11:22  csoutheren
  * Add backwards compatible API for PColourConverter
  *
@@ -132,9 +135,11 @@
 #endif
 #endif
 
+#include <ptbuildopts.h>
+
+#if P_VIDEO
 
 #include <ptlib/videoio.h>
-
 
 struct jdec_private;
 
@@ -474,6 +479,9 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
   static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
-#endif
+#endif // P_VIDEO
+
+
+#endif // _PCONVERT
 
 // End of file ///////////////////////////////////////////////////////////////
