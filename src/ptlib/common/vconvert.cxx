@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.62  2007/04/20 05:40:49  csoutheren
+ * Add backwards compatible API for PColourConverter
+ *
  * Revision 1.61  2007/04/16 01:37:13  rjongbloed
  * Added simple crop to YUV420P to RGB converter.
  *
@@ -458,6 +461,36 @@ PColourConverter * PColourConverter::Create(const PVideoFrameInfo & src,
   return NULL;
 }
 
+PColourConverter::PColourConverter(
+      const PString & _srcColourFormat,  ///< Name of source colour format
+      const PString & _dstColourFormat,  ///< Name of destination colour format
+      unsigned width,   ///< Width of frame
+      unsigned height   ///< Height of frame
+)
+  : verticalFlip(FALSE)
+#ifndef P_MACOSX
+  , jdec(NULL)
+#endif
+{
+  PVideoFrameInfo src;
+  src.SetColourFormat(_srcColourFormat);
+  src.SetFrameSize(width, height);
+
+  PVideoFrameInfo dst;
+  dst.SetColourFormat(_dstColourFormat);
+  dst.SetFrameSize(width, height);
+
+  srcColourFormat = src.GetColourFormat();
+  dstColourFormat = dst.GetColourFormat();
+  resizeMode = dst.GetResizeMode();
+
+  src.GetFrameSize(srcFrameWidth, srcFrameHeight);
+  srcFrameBytes = src.CalculateFrameBytes();
+  dst.GetFrameSize(dstFrameWidth, dstFrameHeight);
+  dstFrameBytes = dst.CalculateFrameBytes();
+  PTRACE(6,"PColCnv\tPColourConverter constructed: " << srcColourFormat << ' ' << srcFrameWidth << 'x'<< srcFrameHeight
+                                           << " -> " << dstColourFormat << ' ' << dstFrameWidth << 'x'<< dstFrameHeight);
+}
 
 PColourConverter::PColourConverter(const PVideoFrameInfo & src,
                                    const PVideoFrameInfo & dst)
