@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.63  2007/04/20 06:11:37  csoutheren
+ * Add backwards compatible API for PColourConverter
+ *
  * Revision 1.62  2007/04/20 05:40:49  csoutheren
  * Add backwards compatible API for PColourConverter
  *
@@ -461,6 +464,22 @@ PColourConverter * PColourConverter::Create(const PVideoFrameInfo & src,
   return NULL;
 }
 
+PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
+                                            const PString & destColourFormat,
+                                            unsigned width,
+                                            unsigned height)
+{
+  PVideoFrameInfo src;
+  src.SetColourFormat(srcColourFormat);
+  src.SetFrameSize(width, height);
+
+  PVideoFrameInfo dst;
+  dst.SetColourFormat(destColourFormat);
+
+  return Create(src, dst);
+}
+
+
 PColourConverter::PColourConverter(
       const PString & _srcColourFormat,  ///< Name of source colour format
       const PString & _dstColourFormat,  ///< Name of destination colour format
@@ -478,7 +497,6 @@ PColourConverter::PColourConverter(
 
   PVideoFrameInfo dst;
   dst.SetColourFormat(_dstColourFormat);
-  dst.SetFrameSize(width, height);
 
   srcColourFormat = src.GetColourFormat();
   dstColourFormat = dst.GetColourFormat();
