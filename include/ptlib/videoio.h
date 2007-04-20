@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.55  2007/04/20 06:53:06  csoutheren
+ * Fix problem with precompiled headers
+ *
  * Revision 1.54  2007/04/20 06:47:02  csoutheren
  * Really disable video code when video is turned off
  *
@@ -244,7 +247,9 @@
 #pragma interface
 #endif
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 #if P_VIDEO
 
