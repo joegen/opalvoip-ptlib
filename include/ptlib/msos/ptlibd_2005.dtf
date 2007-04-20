@@ -1708,7 +1708,7 @@ EXPORTS
     ??0PSafeCollection@@QAE@PAVPCollection@@@Z @1618 NONAME
     ??0PSafeLockReadOnly@@QAE@ABVPSafeObject@@@Z @1619 NONAME
     ??0PSafeLockReadWrite@@QAE@ABVPSafeObject@@@Z @1620 NONAME
-    ??0PSafeObject@@QAE@XZ @1621 NONAME
+    ??0PSafeObject@@QAE@PAV0@@Z @18070 NONAME
     ??0PSafePtrBase@@IAE@ABV0@@Z @1622 NONAME
     ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@H@Z @1623 NONAME
     ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @1624 NONAME
