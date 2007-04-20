@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.64  2007/04/20 06:47:48  csoutheren
+ * Really disable video code when video is turned off
+ *
  * Revision 1.63  2007/04/20 06:11:37  csoutheren
  * Add backwards compatible API for PColourConverter
  *
@@ -272,6 +275,9 @@
  */
 
 #include <ptlib.h>
+
+#if P_VIDEO
+
 #include <ptlib/video.h>
 
 #ifdef __GNUC__
@@ -2666,6 +2672,8 @@ PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
 
 #ifdef _MSC_VER
 #pragma warning(default : 4244)
+#endif
+
 #endif
 
 // End Of File ///////////////////////////////////////////////////////////////
