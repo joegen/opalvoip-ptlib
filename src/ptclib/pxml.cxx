@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.45  2007/04/20 07:54:42  csoutheren
+ * Applied 1703672 - PXML::PrintOn() prettier print
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.44  2007/04/10 05:08:48  rjongbloed
  * Fixed issue with use of static C string variables in DLL environment,
  *   must use functional interface for correct initialisation.
@@ -715,15 +719,12 @@ void PXML::PrintOn(ostream & strm) const
       break;
   }
 
-  strm << "?>";
-  if (newLine)
-    strm << endl;
+  strm << "?>" << endl;
 
   if (rootElement != NULL) {
     if (!docType.IsEmpty())
-      strm << "<!DOCTYPE " << docType << '>';
-    if (newLine)
-      strm << endl;
+      strm << "<!DOCTYPE " << docType << '>' << endl;
+
     rootElement->Output(strm, *this, 2);
   }
 }
