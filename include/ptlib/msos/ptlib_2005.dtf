@@ -1289,6 +1289,7 @@ EXPORTS
     ??0PCollection@@IAE@HPBV0@@Z @1215 NONAME
     ??0PCollection@@QAE@ABV0@@Z @1216 NONAME
     ??0PCollection@@QAE@H@Z @1217 NONAME
+    ??0PColourConverter@@QAE@ABVPString@@0II@Z @17387 NONAME
     ??0PColourConverter@@QAE@ABVPVideoFrameInfo@@0@Z @17262 NONAME
     ??0PColourConverterRegistration@@QAE@ABVPString@@0@Z @1219 NONAME
     ??0PCondMutex@@QAE@XZ @1220 NONAME
@@ -10504,6 +10505,7 @@ EXPORTS
     ?Create@?$Worker@VPYUVFile@@@?$PFactory@VPVideoFile@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPVideoFile@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @16960 NONAME
     ?Create@?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MBEPAVPProcessStartup@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @16423 NONAME
     ?Create@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @10214 NONAME
+    ?Create@PColourConverter@@SAPAV1@ABVPString@@0II@Z @17388 NONAME
     ?Create@PColourConverter@@SAPAV1@ABVPVideoFrameInfo@@0@Z @17313 NONAME
     ?Create@PDirectory@@QBEHH@Z @10216 NONAME
     ?Create@PDirectory@@SAHABVPString@@H@Z @10217 NONAME
@@ -11253,6 +11255,7 @@ EXPORTS
     ?GetBuffers@PSoundChannelWin32@@UAEHAAH0@Z @10919 NONAME
     ?GetBuffers@PSoundChannel_WAVFile@@UAEHAAH0@Z @17235 NONAME
     ?GetBusyString@PModem@@QBE?AVPString@@XZ @10920 NONAME
+    ?GetBytesPerSecond@PWAVFile@@UBEIXZ @17389 NONAME
     ?GetChangedRowCount@PODBCStmt@@QAEKXZ @10921 NONAME
     ?GetChannel@PVideoDevice@@UBEHXZ @10922 NONAME
     ?GetChannels@PSound@@QBEIXZ @10923 NONAME
@@ -14606,6 +14609,7 @@ EXPORTS
     ?SetBufferSize@PChannel@@QAEHH@Z @14195 NONAME
     ?SetBufferSize@PChannelStreamBuffer@@IAEHH@Z @14196 NONAME
     ?SetBusyString@PModem@@QAEXABVPString@@@Z @14197 NONAME
+    ?SetBytesPerSecond@PWAVFile@@UAEXI@Z @17390 NONAME
     ?SetCAFile@PSSLContext@@QAEHABVPFilePath@@@Z @14198 NONAME
     ?SetCallingToken@PVXMLTransferOptions@@QAEXABVPString@@@Z @14199 NONAME
     ?SetCAPath@PSSLContext@@QAEHABVPDirectory@@@Z @14200 NONAME
@@ -15217,6 +15221,8 @@ EXPORTS
     ?UnsignedEncode@PPER_Stream@@QAEXHII@Z @14796 NONAME
     ?UntranslateString@PURL@@SA?AVPString@@ABV2@W4TranslationType@1@@Z @14797 NONAME
     ?UpdateHeader@PWAVFile@@IAEHXZ @14798 NONAME
+    ?UpdateHeader@PWAVFileFormat@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @17391 NONAME
+    ?UpdateHeader@PWAVFileFormatPCM@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @17392 NONAME
     ?uppercase@?$_Iosb@H@std@@2W4_Fmtflags@12@B @14799 NONAME
     ?upper_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @17034 NONAME
     ?upper_bound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@ABVPString@@@Z @14800 NONAME
