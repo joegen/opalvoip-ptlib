@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.46  2007/04/23 01:15:24  csoutheren
+ * Removed warnings on Windows
+ *
  * Revision 1.45  2007/04/20 07:54:42  csoutheren
  * Applied 1703672 - PXML::PrintOn() prettier print
  * Thanks to Fabrizio Ammollo
@@ -692,7 +695,7 @@ BOOL PXML::IsNoIndentElement(const PString & elementName) const
 
 void PXML::PrintOn(ostream & strm) const
 {
-  BOOL newLine = (options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0;
+  //BOOL newLine = (options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0;
 
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
