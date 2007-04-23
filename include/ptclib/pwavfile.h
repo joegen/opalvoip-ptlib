@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.30  2007/04/23 01:15:14  csoutheren
+ * Removed warnings on Windows
+ *
  * Revision 1.29  2007/04/20 07:59:29  csoutheren
  * Applied 1675658 - various pwavfile.[h|cxx] improvments
  * Thanks to Drazen Dimoti
@@ -240,7 +243,7 @@ class PWAVFileFormat
     /**
      *  populate the header with the correct values after initial parameters are set
      */
-    virtual void UpdateHeader(PWAV::FMTChunk & header, PBYTEArray & extendedHeader)
+    virtual void UpdateHeader(PWAV::FMTChunk & /*header*/, PBYTEArray & /*extendedHeader*/)
     { }
 
     /**
