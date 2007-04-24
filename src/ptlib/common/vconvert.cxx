@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.65  2007/04/24 08:28:52  csoutheren
+ * Add backwards compatible API
+ *
  * Revision 1.64  2007/04/20 06:47:48  csoutheren
  * Really disable video code when video is turned off
  *
@@ -613,6 +616,22 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height)
   return dstFrameBytes != 0;
 }
 
+BOOL PColourConverter::SetDstFrameSize(
+      unsigned width, 
+      unsigned height,
+      BOOL bScale
+)
+{
+  if (!SetDstFrameSize(width, height))
+    return FALSE;
+
+  if (bScale)
+    SetResizeMode(PVideoFrameInfo::eScale);
+  else
+    SetResizeMode(PVideoFrameInfo::eCropCentre);
+
+  return TRUE;
+}
 
 BOOL PColourConverter::GetSrcFrameSize(unsigned &width, unsigned &height) const
 {
