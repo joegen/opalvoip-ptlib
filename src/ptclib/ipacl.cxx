@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.17  2007/04/24 14:15:35  shorne
+ * Fix for DWORD definition variation with unixODBC
+ *
  * Revision 1.16  2005/01/26 05:37:58  csoutheren
  * Added ability to remove config file support
  *
@@ -155,7 +158,7 @@ void PIpAccessControlEntry::PrintOn(ostream & strm) const
     return;
   }
 
-  if (mask != 0 && mask != 0xffffffff)
+  if (mask != 0 && mask != static_cast<DWORD>(0xffffffff))
     strm << '/' << mask;
 }
 
