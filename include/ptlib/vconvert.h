@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.25  2007/04/24 08:28:52  csoutheren
+ * Add backwards compatible API
+ *
  * Revision 1.24  2007/04/20 06:47:02  csoutheren
  * Really disable video code when video is turned off
  *
@@ -265,6 +268,11 @@ class PColourConverter : public PObject
     virtual BOOL SetDstFrameSize(
       unsigned width,  ///< New width of target frame
       unsigned height ///< New height of target frame
+    );
+    virtual BOOL SetDstFrameSize(
+      unsigned width,  ///< New width of target frame
+      unsigned height, ///< New height of target frame
+      BOOL bScale
     );
 
     /**Get the source colour format.
