@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.cxx,v $
+ * Revision 1.2  2007/04/25 09:21:20  csoutheren
+ * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
+ *
  * Revision 1.1  2007/04/13 18:17:57  shorne
  * added ODBC support for linux thx Michal Z
  *
@@ -54,6 +57,7 @@
 #ifdef P_ODBC
 
 #include <ptclib/podbc.h>
+using namespace PTODBC;
 
 #ifdef _MSC_VER
  #pragma warning(disable:4244)
@@ -1039,7 +1043,7 @@ BOOL PODBCStmt::IsValid()
 }
 
 
-DWORD PODBCStmt::GetChangedRowCount(void)
+PTODBC::DWORD PODBCStmt::GetChangedRowCount(void)
 {
    long nRows=0;
    if(!SQL_OK(SQLRowCount(m_hStmt,&nRows)))
@@ -1457,12 +1461,12 @@ PODBC::FieldTypes PODBCRecord::ColumnType( PINDEX Column )
    return( (PODBC::FieldTypes)nType );
 }
 
-DWORD PODBCRecord::ColumnSize( PINDEX Column )
+PTODBC::DWORD PODBCRecord::ColumnSize( PINDEX Column )
 {
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   DWORD pcbColDef=0;
+   PTODBC::DWORD pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1475,12 +1479,12 @@ DWORD PODBCRecord::ColumnSize( PINDEX Column )
    return pcbColDef;
 }
 
-DWORD PODBCRecord::ColumnScale( PINDEX Column )
+PTODBC::DWORD PODBCRecord::ColumnScale( PINDEX Column )
 {
 //   int nType=SQL_C_DEFAULT;
    SQLTCHAR svColName[ 256 ]=_T("");
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   DWORD pcbColDef=0;
+   PTODBC::DWORD pcbColDef=0;
    SQLDescribeCol( m_hStmt,            // Statement handle
        Column,             // ColumnNumber
        svColName,          // ColumnName
@@ -1497,7 +1501,7 @@ PString PODBCRecord::ColumnName(PINDEX Column) //, PString Name, SHORT NameLen )
 {
 //   int nType=SQL_C_DEFAULT;
    SWORD swCol=0,swType=0,swScale=0,swNull=0;
-   DWORD pcbColDef=0;
+   PTODBC::DWORD pcbColDef=0;
    TCHAR Name[256]=_T("");
    SQLRETURN Ret=
     SQLDescribeCol( m_hStmt,            // Statement handle
@@ -1585,3 +1589,4 @@ unsigned int PODBCRecord::ColumnPrecision(PINDEX Column )
 #endif
 
 #endif // P_ODBC
+
