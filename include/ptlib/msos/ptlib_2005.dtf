@@ -3224,7 +3224,7 @@ EXPORTS
     ??9Address@PEthSocket@@QBE_NPBE@Z @3102 NONAME
     ??9Address@PIPSocket@@QBE_NABV01@@Z @3103 NONAME
     ??9Address@PIPSocket@@QBE_NH@Z @3104 NONAME
-    ??9Address@PIPSocket@@QBE_NI@Z @3105 NONAME
+    ??9Address@PIPSocket@@QBE_NK@Z @17393 NONAME
     ??9const_iterator@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileConverter@@I@@@std@@@4@$0A@@std@@@std@@QBE_NABV012@@Z @3106 NONAME
     ??9const_iterator@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactory@VPWAVFileFormat@@I@@@std@@@4@$0A@@std@@@std@@QBE_NABV012@@Z @3107 NONAME
     ??9const_iterator@?$_Tree@V?$_Tmap_traits@PAXPAVPAggregatedHandle@@U?$less@PAX@std@@V?$allocator@U?$pair@QAXPAVPAggregatedHandle@@@std@@@3@$0A@@std@@@std@@QBE_NABV012@@Z @3108 NONAME
@@ -14682,6 +14682,7 @@ EXPORTS
     ?SetDSCPAlternative@PQoS@@SAXKI@Z @14266 NONAME
     ?SetDstFrameInfo@PColourConverter@@UAEHABVPVideoFrameInfo@@@Z @17372 NONAME
     ?SetDstFrameSize@PColourConverter@@UAEHII@Z @17373 NONAME
+    ?SetDstFrameSize@PColourConverter@@UAEHIIH@Z @17394 NONAME
     ?SetDTR@PSerialChannel@@QAEXH@Z @14268 NONAME
     ?SetENUMServers@PDNS@@YAXABVPStringArray@@@Z @14269 NONAME
     ?SetErrorCodes@PSocksSocket@@MAEXW4Errors@PChannel@@H@Z @14270 NONAME
