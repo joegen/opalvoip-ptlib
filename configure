@@ -2257,7 +2257,7 @@ USE_GCC=
 USE_PCH=
 
 if test x$GXX = xyes ; then
-  USE_GCC=1
+  USE_GCC=yes
   gcc_version=`$CXX -dumpversion`
   { echo "$as_me:$LINENO: gcc version is $gcc_version" >&5
 echo "$as_me: gcc version is $gcc_version" >&6;};
@@ -9395,10 +9395,6 @@ fi;
  if test "$enable_odbc" = "no" ; then
    { echo "$as_me:$LINENO: ODBC support disabled" >&5
 echo "$as_me: ODBC support disabled" >&6;}
-   cat >>confdefs.h <<\_ACEOF
-#define P_ODBC 0
-_ACEOF
-
  else
 
 for ac_header in sql.h
@@ -9663,6 +9659,8 @@ _ACEOF
        LDFLAGS="$LDFLAGS -L${ODBCLIBDIR}"
      fi
      ENDLDLIBS="$ENDLDLIBS -lodbc"
+     { echo "$as_me:$LINENO: ODBC support enabled" >&5
+echo "$as_me: ODBC support enabled" >&6;}
    fi
  fi
 
