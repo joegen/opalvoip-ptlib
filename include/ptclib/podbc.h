@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.h,v $
+ * Revision 1.2  2007/04/25 09:21:20  csoutheren
+ * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
+ *
  * Revision 1.1  2007/04/13 18:17:57  shorne
  * added ODBC support for linux thx Michal Z
  *
@@ -105,9 +108,13 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#ifndef _PTLIB_H
 #include <ptlib.h>
+#endif
 
 #ifdef P_ODBC
+
+namespace PTODBC {
 
 #include <sql.h> 
 #include <sqlext.h>
@@ -134,13 +141,15 @@
 	PODBC::Record is used to Bind/Retrieve/Store Data Elements. .
 */
 
+}; // PTODBC
+
 class PODBC;
 class PODBCRecord;
 class PODBCStmt : public PObject
 {
   PCLASSINFO(PODBCStmt, PObject);
 
-HSTMT m_hStmt;
+PTODBC::HSTMT m_hStmt;
 
 public:
 
@@ -162,7 +171,7 @@ public:
   //@{  
 	  /** Statement Handle Created by the Query Function.
 	  */
-	  operator HSTMT() { return m_hStmt; };
+	  operator PTODBC::HSTMT() { return m_hStmt; };
   //@}
 
 
@@ -176,7 +185,7 @@ public:
 	  /** GetChangedRowCount retreives the number of rows updated/altered by
 			UPDATE/INSERT statements.
 	  */
-	  DWORD GetChangedRowCount(void);
+	  PTODBC::DWORD GetChangedRowCount(void);
 
 	  /** Query function is the Main function to pass SQL statements to retreive/
 			add/Modify database data. It accepts generally acceptable SQL Statements.
@@ -231,7 +240,7 @@ public:
 			If an Error is detected then GetLastError is called
 			to Retrieve the SQL Error Information and Returns FALSE
 	  */
-	  BOOL SQL_OK(SQLRETURN res);
+	  BOOL SQL_OK(PTODBC::SQLRETURN res);
 
 	  /** Get the Last Error 
 			This returns the Error ID & String to PODBC::OnSQLError
@@ -410,12 +419,12 @@ public:
 			   double				sdoub;		/// Double				SQLDOUBLE
 			   unsigned char		sbit;		/// Bit					SQLCHAR
 			   unsigned char *		suchar;		/// Unsigned char		SQLCHAR *
-			   _int64				sbint;		/// Bit Integer			SQLBIGINT
-			   DATE_STRUCT			date;	    /// Date Structure	
-			   TIME_STRUCT			time;		/// Time Structure
-			   TIMESTAMP_STRUCT		timestamp;	/// TimeStamp Structure
-			   SQLGUID				guid;		/// GUID Structure (not Fully Supported)
-			   SQLINTEGER			dataLen;	/// DataLength pointer (StrLen_or_Ind for Col Bind)
+			   PTODBC::_int64				sbint;		/// Bit Integer			SQLBIGINT
+			   PTODBC::DATE_STRUCT			date;	    /// Date Structure	
+			   PTODBC::TIME_STRUCT			time;		/// Time Structure
+			   PTODBC::TIMESTAMP_STRUCT		timestamp;	/// TimeStamp Structure
+			   PTODBC::SQLGUID				guid;		/// GUID Structure (not Fully Supported)
+			   PTODBC::SQLINTEGER			dataLen;	/// DataLength pointer (StrLen_or_Ind for Col Bind)
 		  };
 
 		/** Post the Changes back to the Database
@@ -665,7 +674,7 @@ public:
 			Custom connection strings should call this 
 			to connect Don't ask why its LPCTSTR!
 	  */
-	  virtual BOOL Connect(LPCTSTR svSource);
+	  virtual BOOL Connect(PTODBC::LPCTSTR svSource);
 
 	  /** Connect to IBM DB2 DataSource
 	  */
@@ -763,16 +772,16 @@ public:
 
 	  /** Operator Handle DataBase Connection
 	  */
-	  operator HDBC() { return m_hDBC; };
+	  operator PTODBC::HDBC() { return m_hDBC; };
   //@}
 	  	
 	 PODBC::DataSources  dbase; /// Database Type connected to
 
 protected:
 
-  SQLRETURN       m_nReturn;      // Internal SQL Error code
-  HENV            m_hEnv;         // Handle to environment
-  HDBC            m_hDBC;         // Handle to database connection
+  PTODBC::SQLRETURN       m_nReturn;      // Internal SQL Error code
+  PTODBC::HENV            m_hEnv;         // Handle to environment
+  PTODBC::HDBC            m_hDBC;         // Handle to database connection
 };
 
 /**		
@@ -817,7 +826,7 @@ class PODBCRecord : public PObject
   
   PCLASSINFO(PODBCRecord, PObject);
 
-HSTMT m_hStmt;
+PTODBC::HSTMT m_hStmt;
 
 public:
 
@@ -843,8 +852,13 @@ public:
 			data where the size is indetermined. The Function can be iteratively
 			called until the function returns FALSE.
 	  */
-	  BOOL InternalGetData(USHORT Column, LPVOID pBuffer, 
-		ULONG pBufLen, LONG * dataLen=NULL, int Type=SQL_C_DEFAULT);
+	  BOOL InternalGetData(
+                PTODBC::USHORT Column,
+                PTODBC::LPVOID pBuffer, 
+		PTODBC::ULONG pBufLen,
+                PTODBC::LONG * dataLen=NULL,
+                int Type=SQL_C_DEFAULT
+          );
 
 	  /* Get Long Character Data. Long Data fields cannot be bound
 			and Data must be Got from the RecordSet.
@@ -866,13 +880,16 @@ public:
 
 	  /** Check for and Save Long Data
 	  */
-	  BOOL InternalSaveLongData(SQLRETURN nRet,PODBC::Row & rec);
+	  BOOL InternalSaveLongData(PTODBC::SQLRETURN nRet,PODBC::Row & rec);
 
 	  /** InternalBindColumn for Data input.
 	  */
-	  BOOL InternalBindColumn(USHORT Column,LPVOID pBuffer,
-			ULONG pBufferSize,LONG * pReturnedBufferSize=NULL,
-			USHORT nType=SQL_C_TCHAR);
+	  BOOL InternalBindColumn(
+            PTODBC::USHORT Column,PTODBC::LPVOID pBuffer,
+	    PTODBC::ULONG pBufferSize,
+            PTODBC::LONG * pReturnedBufferSize=NULL,
+	    PTODBC::USHORT nType=SQL_C_TCHAR
+          );
   //@}
 
    /**@name Data Information */
@@ -892,11 +909,11 @@ public:
 
 	  /** Column Size
 	  */
-	  DWORD ColumnSize( PINDEX Column );
+	  PTODBC::DWORD ColumnSize( PINDEX Column );
 
 	  /** Column Scale
 	  */
-	  DWORD ColumnScale( PINDEX Column );
+	  PTODBC::DWORD ColumnScale( PINDEX Column );
 
 	  /** Column Name
 	  */
@@ -937,6 +954,7 @@ public:
 
 };
 
-#endif // P_ODBC
+#endif // PTODBC
 
 #endif // !defined(PODBC_H)
+
