@@ -27,8 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
- * Revision 1.29  2007/04/19 21:39:14  shorne
- * Fix for DWORD definition conflict in unixODBC
+ * Revision 1.30  2007/04/25 09:21:20  csoutheren
+ * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
  *
  * Revision 1.28  2006/03/20 00:24:56  csoutheren
  * Applied patch #1446482
@@ -138,15 +138,7 @@ typedef signed short       PInt16;  // 16 bit
 typedef unsigned short     WORD;
 
 typedef signed int         PInt32;  // 32 bit
-#ifndef P_ODBC  
-  typedef unsigned int       DWORD;
-#else // Conflict with DWORD definition in unixODBC
- #ifdef P_64BIT
-  typedef unsigned int       DWORD;
- #else
-  typedef unsigned long int  DWORD;
- #endif
-#endif
+typedef unsigned int       DWORD;
 
 #ifndef P_NEEDS_INT64
 typedef   signed long long int PInt64;
