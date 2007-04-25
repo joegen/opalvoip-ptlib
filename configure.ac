@@ -220,7 +220,7 @@ USE_GCC=
 USE_PCH=
 
 if test x$GXX = xyes ; then
-  USE_GCC=1
+  USE_GCC=yes
   gcc_version=`$CXX -dumpversion`
   AC_MSG_NOTICE(gcc version is $gcc_version);
   GXX_MAJOR=`echo $gcc_version | sed 's/\..*$//'`
@@ -2217,7 +2217,6 @@ AC_ARG_ENABLE(odbc,
  HAS_ODBC=
  if test "$enable_odbc" = "no" ; then
    AC_MSG_NOTICE(ODBC support disabled)
-   AC_DEFINE(P_ODBC, 0)
  else
    AC_CHECK_HEADERS(sql.h, HAS_ODBC=1)
    if test "${HAS_ODBC:-unset}" != "unset" ; then
@@ -2240,6 +2239,7 @@ AC_ARG_ENABLE(odbc,
        LDFLAGS="$LDFLAGS -L${ODBCLIBDIR}"
      fi
      ENDLDLIBS="$ENDLDLIBS -lodbc"
+     AC_MSG_NOTICE(ODBC support enabled)
    fi
  fi
  AC_SUBST(HAS_ODBC)
