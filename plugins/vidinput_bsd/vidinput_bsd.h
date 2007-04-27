@@ -11,6 +11,7 @@
 #include <ptlib.h>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
+#include <ptclib/delaychan.h>
 
 #if defined(P_FREEBSD)
 #include <sys/param.h>
@@ -126,6 +127,7 @@ public:
   BYTE * videoBuffer;
   PINDEX frameBytes;
   int    mmap_size;
+  PAdaptiveDelay m_pacing;
  
 };
 

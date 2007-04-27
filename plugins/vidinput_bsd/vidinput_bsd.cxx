@@ -24,6 +24,10 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: vidinput_bsd.cxx,v $
+ * Revision 1.4  2007/04/27 17:34:44  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.3  2006/06/20 06:08:06  csoutheren
  * Applied patch 1471691
  * Fix vidinput_bsd plugin
@@ -369,20 +373,7 @@ PINDEX PVideoInputDevice_BSDCAPTURE::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice_BSDCAPTURE::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if(frameRate>0) {
-    frameTimeError += msBetweenFrames;
-
-    do {
-      if ( !GetFrameDataNoDelay(buffer, bytesReturned))
-        return FALSE;
-      PTime now;
-      PTimeInterval delay = now - previousFrameTime;
-      frameTimeError -= (int)delay.GetMilliSeconds();
-      previousFrameTime = now;
-    }  while(frameTimeError > 0) ;
-
-    return TRUE;
-  }
+  m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer,bytesReturned);
 }
 
