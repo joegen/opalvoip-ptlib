@@ -19,6 +19,10 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.6  2007/04/27 17:34:45  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.5  2007/04/19 09:44:24  csoutheren
  * Fix compilation of avc driver
  *
@@ -79,6 +83,7 @@
 
 #include <libraw1394/raw1394.h>
 #include <libdc1394/dc1394_control.h>
+#include <ptclib/delaychan.h>
 
 /** This class defines a video input device that
     generates fictitous image data.
@@ -246,7 +251,7 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     dc1394_cameracapture camera;
     int capturing_duration;
     int supportedFormat;
-    int msBetweenFrames;
+    PAdaptiveDelay m_pacing;
 #define DC1394_FORMAT_160x120	1
 #define DC1394_FORMAT_320x240	2
 };
