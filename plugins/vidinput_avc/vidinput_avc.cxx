@@ -465,19 +465,7 @@ BOOL PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
 
 BOOL PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  int capturing_duration = 10000; // FIXME: what is it for?
-  // notice: funny things happen when it is set too low!
-  
-  if(frameRate>0) {
-    if(msBetweenFrames > capturing_duration)
-      PThread::Current()->Sleep(msBetweenFrames - capturing_duration);
-    PTime start;
-    if(!GetFrameDataNoDelay(buffer, bytesReturned))
-      return FALSE;
-    PTime end;
-    capturing_duration = (int)((end-start).GetMilliSeconds());
-    return TRUE;
-  }
+  m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 

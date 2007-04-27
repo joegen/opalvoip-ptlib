@@ -24,6 +24,10 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.8  2007/04/27 17:34:44  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.7  2007/04/14 07:08:55  rjongbloed
  * Major update of video subsystem:
  *   Abstracted video frame info (width, height etc) into separate class.
@@ -96,6 +100,7 @@
 #if !P_USE_INLINES
 #include <ptlib/contain.inl>
 #endif
+#include <ptclib/delaychan.h>
 
 
 /** This class defines a video input device that
@@ -263,6 +268,7 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
     dv_decoder_t * dv_decoder;
     PINDEX frameBytes;
     int port;
+    PAdaptiveDelay m_pacing;
 
     BOOL SetupHandle();
 };
