@@ -24,6 +24,10 @@
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.h,v $
+ * Revision 1.9  2007/04/27 17:34:45  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.8  2007/02/19 22:26:15  dsandras
  * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
  * com> (Ekiga report #407820). Thanks !
@@ -75,6 +79,7 @@
 #include <ptlib.h>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
+#include <ptclib/delaychan.h>
 
 #ifdef SOLARIS
 #include <sys/videodev2.h>
@@ -172,6 +177,7 @@ public:
   int    videoFd;
   int    frameBytes;
   BOOL   started;
+  PAdaptiveDelay m_pacing;
 };
 
 #endif
