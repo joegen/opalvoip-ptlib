@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.23  2007/04/27 17:34:45  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.22  2007/02/19 22:26:14  dsandras
  * Fixed V4L2 OpenSolaris support thanks to Elaine Xiong <elaine xiong sun
  * com> (Ekiga report #407820). Thanks !
@@ -729,21 +733,7 @@ BOOL PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   PTRACE(1,"PVidInDev\tGetFrameData()");
 
-  if (frameRate>0) {
-    PTimeInterval delay;
-
-    do {
-      if (!GetFrameDataNoDelay(buffer, bytesReturned))
-        return FALSE;
-
-      delay = PTime() - previousFrameTime;
-    } while (delay.GetMilliSeconds() < msBetweenFrames);
-
-    previousFrameTime = PTime();
-
-    return TRUE;
-  }
-
+  m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 

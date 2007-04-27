@@ -137,6 +137,10 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.12  2007/04/27 17:34:45  dsandras
+ * Applied patch from Luc Saillard to fix things after the latest change
+ * which broke all drivers. Thanks Luc <luc saillard org>.
+ *
  * Revision 1.11  2007/04/19 09:44:24  csoutheren
  * Fix compilation of avc driver
  *
@@ -257,7 +261,6 @@ static int num_captured;
 
 PVideoInputDevice_1394DC::PVideoInputDevice_1394DC()
 {
-  msBetweenFrames = 1000 / frameRate;
   handle = NULL;
   is_capturing = FALSE;
   capturing_duration = 10000; // arbitrary large value suffices
@@ -681,8 +684,6 @@ BOOL PVideoInputDevice_1394DC::SetFrameRate(unsigned rate)
   if (!PVideoDevice::SetFrameRate(rate))
     return FALSE;
 
-  msBetweenFrames = 1000/rate;
-
   return TRUE;
 }
 
@@ -742,16 +743,7 @@ BOOL PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytes
 
 BOOL PVideoInputDevice_1394DC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  if (frameRate > 0) {
-    if (msBetweenFrames > capturing_duration)
-      PThread::Current()->Sleep(msBetweenFrames - capturing_duration);
-    PTime start;
-    if ( !GetFrameDataNoDelay(buffer, bytesReturned))
-      return FALSE;
-    PTime end;
-    capturing_duration = (int)((end-start).GetMilliSeconds());
-    return TRUE;
-  }
+  m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer,bytesReturned);
 }
 
