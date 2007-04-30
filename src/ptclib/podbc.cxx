@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.cxx,v $
+ * Revision 1.3  2007/04/30 00:07:38  csoutheren
+ * Fix problems with PODBC on Windows
+ *
  * Revision 1.2  2007/04/25 09:21:20  csoutheren
  * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
  *
@@ -215,7 +218,7 @@ PODBC::~PODBC()
 }
 
 
-BOOL PODBC::Connect(LPCTSTR svSource)
+BOOL PODBC::Connect(PTODBC::LPCTSTR svSource)
 {
    int nConnect = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_hEnv );
    if( nConnect == SQL_SUCCESS || nConnect == SQL_SUCCESS_WITH_INFO ) {
@@ -1187,11 +1190,11 @@ PINDEX PODBCRecord::ColumnCount()
 }
 
 
-BOOL PODBCRecord::InternalBindColumn(USHORT Column,LPVOID pBuffer,
-        ULONG pBufferSize,LONG * pReturnedBufferSize,
-        USHORT nType)
+BOOL PODBCRecord::InternalBindColumn(::USHORT Column,PTODBC::LPVOID pBuffer,
+        PTODBC::ULONG pBufferSize,PTODBC::LONG * pReturnedBufferSize,
+        PTODBC::USHORT nType)
 {
-   LONG pReturnedSize=0;
+   PTODBC::LONG pReturnedSize=0;
 
    SQLRETURN Ret=SQLBindCol(m_hStmt,Column,nType,
                pBuffer,pBufferSize,&pReturnedSize);
@@ -1212,8 +1215,8 @@ PINDEX PODBCRecord::ColumnByName(PString Column)
    return 0;
 }
 
-BOOL PODBCRecord::InternalGetData(USHORT Column, LPVOID pBuffer, 
-    ULONG pBufLen, LONG * dataLen, int Type)
+BOOL PODBCRecord::InternalGetData(PTODBC::USHORT Column, PTODBC::LPVOID pBuffer, 
+    PTODBC::ULONG pBufLen, PTODBC::LONG * dataLen, int Type)
 {
    SQLINTEGER od=0;
    int Err=SQLGetData(m_hStmt,Column,Type,pBuffer,pBufLen,&od);
@@ -1233,7 +1236,7 @@ PString PODBCRecord::GetLongData(PINDEX Column)
    SQLINTEGER len = MAX_DATA_LEN;
    SQLINTEGER cb =0;
 
-    while (InternalGetData((USHORT)Column,sbin.GetPointer(len + 1),len,&cb))
+    while (InternalGetData((PTODBC::USHORT)Column,sbin.GetPointer(len + 1),len,&cb))
 	{
 		if (sbin.Right(1) == '\0')			// Remove Null Char
 			Data = Data + sbin.Left(sbin.GetLength()-1);
