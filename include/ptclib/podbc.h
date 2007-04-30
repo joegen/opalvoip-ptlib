@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: podbc.h,v $
+ * Revision 1.3  2007/04/30 00:07:26  csoutheren
+ * Fix problems with PODBC on Windows
+ *
  * Revision 1.2  2007/04/25 09:21:20  csoutheren
  * Move unixODBC includes to a seperate namespace to avoid namespace conflicts
  *
@@ -124,13 +127,20 @@ namespace PTODBC {
  #include <tchar.h>
  #pragma comment(lib,"odbc32.lib")
  #pragma comment(lib,"odbcCP32.lib")
+ typedef ::LPCTSTR LPCTSTR;
+ typedef ::LPVOID LPVOID;
+ typedef ::DWORD DWORD;
+ typedef ::LONG LONG;
+ typedef ::ULONG ULONG;
+ typedef ::USHORT USHORT;
 #else
  typedef const char *LPCTSTR;
  typedef void *LPVOID;
- typedef long LONG;
  typedef long long _int64;
+ typedef long LONG;
  #define _T(x) x
 #endif // _MSC_VER
+
 
 // Max SQL String Data Length
 #define MAX_DATA_LEN 1024
@@ -419,7 +429,11 @@ public:
 			   double				sdoub;		/// Double				SQLDOUBLE
 			   unsigned char		sbit;		/// Bit					SQLCHAR
 			   unsigned char *		suchar;		/// Unsigned char		SQLCHAR *
-			   PTODBC::_int64				sbint;		/// Bit Integer			SQLBIGINT
+#if _WIN32
+			   _int64				sbint;		/// Bit Integer			SQLBIGINT
+#else
+         PTODBC::_int64				sbint;		/// Bit Integer			SQLBIGINT
+#endif
 			   PTODBC::DATE_STRUCT			date;	    /// Date Structure	
 			   PTODBC::TIME_STRUCT			time;		/// Time Structure
 			   PTODBC::TIMESTAMP_STRUCT		timestamp;	/// TimeStamp Structure
