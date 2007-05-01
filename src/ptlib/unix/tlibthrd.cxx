@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.165  2007/05/01 10:20:44  csoutheren
+ * Applied 1703617 - Prevention of application deadlock caused by too many timers
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.164  2006/10/23 01:15:16  csoutheren
  * Revert to revision 1.153 to fix crash problem with SIP connections
  *
@@ -652,14 +656,7 @@ void PHouseKeepingThread::Main()
   while (!closing) {
     PTimeInterval delay = process.timers.Process();
 
-    int fd = process.timerChangePipe[0];
-
-    P_fd_set read_fds = fd;
-    P_timeval tval = delay;
-    if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
-      BYTE ch;
-      ::read(fd, &ch, 1);
-    }
+    process.breakBlock.Wait(delay);
 
     process.PXCheckSignals();
   }
@@ -678,8 +675,7 @@ void PProcess::SignalTimerChange()
 #endif
   }
 
-  static BYTE ch = 0;
-  write(timerChangePipe[1], &ch, 1);
+  breakBlock.Signal();
 }
 
 
@@ -691,11 +687,8 @@ void PProcess::Construct()
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   maxHandles = rl.rlim_cur;
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
-
-  ::pipe(timerChangePipe);
 #else
   maxHandles = 500; // arbitrary value
-  socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
 #endif
 
   // initialise the housekeeping thread

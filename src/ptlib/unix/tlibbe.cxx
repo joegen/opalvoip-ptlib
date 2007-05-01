@@ -27,6 +27,10 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.34  2007/05/01 10:20:44  csoutheren
+ * Applied 1703617 - Prevention of application deadlock caused by too many timers
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.33  2004/10/26 18:29:41  ykiryanov
  * Added ostream::write and istream::read with 2nd param as streamsize to please
  * New toolchain
@@ -519,8 +523,6 @@ void PProcess::Construct()
   maxHandles = FOPEN_MAX;
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
-  ::pipe(timerChangePipe);
-
   // initialise the housekeeping thread
   housekeepingThread = NULL;
 
@@ -534,14 +536,7 @@ void PHouseKeepingThread::Main()
   while (!closing) {
     PTimeInterval delay = process.timers.Process();
 
-    int fd = process.timerChangePipe[0];
-
-    P_fd_set read_fds = fd;
-    P_timeval tval = delay;
-    if (::select(fd+1, read_fds, NULL, NULL, tval) == 1) {
-      BYTE ch;
-      ::read(fd, &ch, 1);
-    }
+    globalBreakBlock.Wait(delay);
 
     process.PXCheckSignals();
   }    
@@ -554,8 +549,7 @@ void PProcess::SignalTimerChange()
     housekeepingThread = new PHouseKeepingThread;
   }
 
-  BYTE ch;
-  write(timerChangePipe[1], &ch, 1);
+  globalBreakBlock.Signal();
 }
 
 BOOL PProcess::SetMaxHandles(int newMax)
