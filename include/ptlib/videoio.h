@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.56  2007/05/01 21:13:46  dsandras
+ * Added extra variables to store the number of frames received.
+ *
  * Revision 1.55  2007/04/20 06:53:06  csoutheren
  * Fix problem with precompiled headers
  *
@@ -707,7 +710,9 @@ class PVideoDevice : public PVideoFrameInfo
        Returns empty == no preference
      */
     const PString & GetPreferredColourFormat() { return preferredColourFormat; }
-
+    
+    int GetNumberOfFrames () { return numberOfFrames; }
+    
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
 
@@ -727,6 +732,7 @@ class PVideoDevice : public PVideoFrameInfo
     int          frameContrast;
     int          frameColour;
     int          frameHue;
+    int          numberOfFrames;
 };
 
 
