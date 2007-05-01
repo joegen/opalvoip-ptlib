@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.15.2.7  2007/05/01 20:14:48  dsandras
+ * Fixed possible crash when opening V4L devices with 352x288 fixed
+ * width capability thanks Luc Saillard. (Ekiga #434223).
+ *
  * Revision 1.15.2.6  2007/04/10 21:17:56  dsandras
  * Added MJPEG support. Added workarounds for broken qspca driver.
  * Thanks to Luc Saillard (luc saillard org).
@@ -809,7 +813,7 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
 	      BOOL false_positive = FALSE;
 	      unsigned int idx;
 	      for (idx = 0; idx < PARRAYSIZE(sensors_with_352x288_fixed_width); idx++) {
-		 if (strcmp(sensors_with_352x288_fixed_width[tbl], videoCapability.name) == 0) {
+		 if (strcmp(sensors_with_352x288_fixed_width[idx], videoCapability.name) == 0) {
 		    false_positive = TRUE;
 		    break;
 		 }
