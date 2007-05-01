@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2007/05/01 03:15:26  dereksmithies
+ * Add a second test, to test the repeated initialisation of some PTimer instances.
+ *
  * Revision 1.3  2006/07/22 07:27:26  rjongbloed
  * Fixed various compilation issues
  *
@@ -68,10 +71,11 @@ void PTimerTest::Main()
 	     "c-check."
              "d-delay:"       
 	     "i-interval:"
+	     "s-reset."
 #if PTRACING
              "o-output:"      
              "t-trace."       
-#endif
+#endif	     
              "v-version."
   );
 
@@ -98,6 +102,7 @@ void PTimerTest::Main()
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     duration (ms) the timer waits for" << endl
 	   << "-i  or --interval ##  interval (ms) between timer tests" << endl
+	   << "-s  or --second       A second test, which repeatedly resets two internal timers." << endl
 #if PTRACING
            << "o-output              output file name for trace" << endl
            << "t-trace.              trace level to use." << endl
@@ -105,6 +110,11 @@ void PTimerTest::Main()
            << endl
            << endl << endl;
     return;
+  }
+
+  if (args.HasOption('s')) {
+      RunSecondTest();
+      return;
   }
 
   checkTimer = args.HasOption('c');
@@ -131,7 +141,72 @@ void PTimerTest::Main()
   ui.Resume();
   ui.WaitForTermination();
 }
+/////////////////////////////////////////////////////////////////////////////
+void PTimerTest::RunSecondTest()
+{
+    cerr << "Will run the second test, which goes forever (if pwlib works correctly)" << endl
+	 << "or stops, on detecting an error" << endl
+	 << " " << endl
+	 << "This test runs two threads, which continually restart two timer instances " << endl
+	 << " " << endl
+	 <<"---There is no output, until an error is detected. All going well, you will have" << endl
+	 << "to stop this program with Ctrl-C" << endl;
 
+    firstTimer.SetNotifier(PCREATE_NOTIFIER(OnFirstTimerExpired));
+    secondTimer.SetNotifier(PCREATE_NOTIFIER(OnSecondTimerExpired));
+
+    PThread *first = PThread::Create(PCREATE_NOTIFIER(RestartFirstTimerMain), 30000,
+				    PThread::NoAutoDeleteThread,
+				    PThread::NormalPriority);
+
+    PThread *second = PThread::Create(PCREATE_NOTIFIER(RestartSecondTimerMain), 30000,
+				      PThread::NoAutoDeleteThread,
+				      PThread::NormalPriority);
+
+
+    PTime restartActive;
+    PTimeInterval quietPeriod(4000);
+
+    while (TRUE) {
+	if (restartActivity > 0) {
+	    restartActive = PTime();
+	    restartActivity.SetValue(0);
+	}
+	if ((restartActive + quietPeriod) < PTime()) {
+	    cerr << "No activity for four seconds. Timers Locked up. PWlib Error" << endl;
+	    exit(0);
+	}
+	PThread::Sleep(100);
+    }
+}
+
+void PTimerTest::OnFirstTimerExpired(PTimer &, INT)
+{
+    cerr << "The first timer has expired " << endl;
+}
+
+void PTimerTest::OnSecondTimerExpired(PTimer &, INT)
+{
+    cerr << "The second timer has expired " << endl;
+}
+
+void PTimerTest::RestartFirstTimerMain(PThread &, INT)
+{
+    while (TRUE) {
+	firstTimer = PTimeInterval(1900);
+	restartActivity.SetValue(1);
+	PThread::Sleep(400);
+    }
+}
+
+void PTimerTest::RestartSecondTimerMain(PThread &, INT)
+{
+    while (TRUE) {
+	secondTimer = PTimeInterval(2000);
+	restartActivity.SetValue(1);
+	PThread::Sleep(300);
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 MyTimer::MyTimer()
