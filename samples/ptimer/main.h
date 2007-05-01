@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.4  2007/05/01 03:15:26  dereksmithies
+ * Add a second test, to test the repeated initialisation of some PTimer instances.
+ *
  * Revision 1.3  2006/06/21 03:28:42  csoutheren
  * Various cleanups thanks for Frederic Heem
  *
@@ -67,6 +70,8 @@ class MyTimer : public PTimer
   
   /**The time at which we started */
   PTime startTime;
+
+
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -192,6 +197,58 @@ class PTimerTest : public PProcess
     PINDEX interval;
 
     BOOL   checkTimer;
+
+
+    /**Code to run the second test supported by this application. */
+    void RunSecondTest();
+
+  /**First internal timer that we manage */
+  PTimer firstTimer;
+
+  /**Second internal timer that we manage */
+  PTimer secondTimer;
+
+#ifdef DOC_PLUS_PLUS
+  /**A pwlib callback function which is activated when the first timer
+   * fires */
+    void OnFirstTimerExpired(PTimer &, INT);
+
+  /**A pwlib callback function which is activated when the second timer 
+     fires.. */
+    void OnSecondTimerExpired(PTimer &, INT);
+#else
+    PDECLARE_NOTIFIER(PTimer, PTimerTest, OnFirstTimerExpired);
+
+    PDECLARE_NOTIFIER(PTimer, PTimerTest, OnSecondTimerExpired);
+#endif
+
+#ifdef DOC_PLUS_PLUS
+    /**This Thread will continually restart the first timer. If
+       there is a bug in pwlib, it will eventually lock up and do no more. At
+       which point, the monitor thread will fire, and say, nothing is
+       happening. This thread sets the value of an atomic integer every time
+       it runs, to indicate activity.*/
+    virtual void RestartFirstTimerMain(PThread &, INT);
+#else
+    PDECLARE_NOTIFIER(PThread, PTimerTest, RestartFirstTimerMain);
+#endif
+
+#ifdef DOC_PLUS_PLUS
+    /**This Thread will continually restart the second timer. If
+       there is a bug in pwlib, it will eventually lock up and do no more. At
+       which point, the monitor thread will fire, and say, nothing is
+       happening. This thread sets the value of an atomic integer every time
+       it runs, to indicate activity.*/
+    virtual void RestartSecondTimerMain(PThread &, INT);
+#else
+    PDECLARE_NOTIFIER(PThread, PTimerTest, RestartSecondTimerMain);
+#endif
+
+/**The integer that is set, to indicate activity of the RestartTimer thread */
+    PAtomicInteger restartActivity;
+
+    
+
 };
 
 
