@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.32  2007/05/01 10:20:44  csoutheren
+ * Applied 1703617 - Prevention of application deadlock caused by too many timers
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.31  2005/07/21 00:09:08  csoutheren
  * Added workaround for braindead behaviour of pthread_kill
  * Thanks to "martin martin" <acevedoma@hotmail.com>
@@ -179,7 +183,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
     PMutex     threadMutex;
-    int        timerChangePipe[2];
+    PSyncPoint breakBlock;
     class PHouseKeepingThread * housekeepingThread;
 
 #elif defined(VX_TASKS)

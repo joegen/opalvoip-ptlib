@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.80  2007/05/01 10:20:44  csoutheren
+ * Applied 1703617 - Prevention of application deadlock caused by too many timers
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.79  2006/07/14 04:55:10  csoutheren
  * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
  * Thanks to Paul Nader
@@ -651,8 +655,7 @@ void PXSignalHandler(int sig)
   process.SignalTimerChange();
 #elif defined(P_PTHREADS)
   // Inform house keeping thread we have a signal to be processed
-  BYTE ch=0;
-  write(process.timerChangePipe[1], &ch, 1);
+  process.SignalTimerChange();
 #endif
   signal(sig, PXSignalHandler);
 }
