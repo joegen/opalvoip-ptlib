@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.7  2007/05/02 17:44:32  hfriederich
+ * Fix linking if PVideoFile is disabled
+ *
  * Revision 1.6  2007/04/13 07:19:24  rjongbloed
  * Removed separate Win32 solution for "plug in static loading" issue,
  *   and used the PLOAD_FACTORY() mechanism for everything.
@@ -97,7 +100,10 @@
   PWLIB_STATIC_LOAD_PLUGIN(NULLOutput, PVideoOutputDevice);
   PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoInputDevice)
   PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoOutputDevice)
-  PLOAD_FACTORY(PVideoFile, PDefaultPFactoryKey)
+
+  #if P_VIDFILE
+    PLOAD_FACTORY(PVideoFile, PDefaultPFactoryKey)
+  #endif
 
 #endif
 
