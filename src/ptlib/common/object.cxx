@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.86  2007/05/03 14:44:51  vfrolov
+ * Fixed using destructed c-string in PAssertFunc
+ *
  * Revision 1.85  2007/04/08 01:53:37  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -409,7 +412,8 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   str << ends;
   
   #if (__GNUC__ >= 3) && defined (__USE_STL__)
-  const char * s = str.str().c_str();
+  string sstr = str.str();
+  const char * s = sstr.c_str();
   #else
   const char * s = str.str();
   #endif
