@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psync.h,v $
+ * Revision 1.5  2007/05/07 14:05:09  csoutheren
+ * Add PSyncNULL
+ *
  * Revision 1.4  2005/11/25 03:43:47  csoutheren
  * Fixed function argument comments to be compatible with Doxygen
  *
@@ -76,7 +79,13 @@ class PSync : public PObject
      */
     virtual void Signal() = 0;
   //@}
- 
+};
+
+class PSyncNULL : public PSync
+{
+  public:
+    virtual void Wait() { }
+    virtual void Signal() { }
 };
 
 /**This class waits for the semaphore on construction and automatically
