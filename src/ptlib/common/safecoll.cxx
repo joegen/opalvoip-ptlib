@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.17  2007/05/09 12:38:44  csoutheren
+ * Applied 1705751 - Safer and better PSafeCollection logs (2nd patch)
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.16  2007/04/20 07:35:55  csoutheren
  * Applied 1703664 - Safer and better PSafeCollection logs
  * Thanks to Fabrizio Ammollo
@@ -146,42 +150,50 @@ void PSafeObject::SafeDereference()
 
 BOOL PSafeObject::LockReadOnly() const
 {
+  PTRACE(6, "SafeColl\tWaiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
+    PTRACE(6, "SafeColl\tBeing removed while waiting read ("<<(void *)this<<")");
     return FALSE;
   }
 
   safetyMutex.Signal();
   safeInUse->StartRead();
+  PTRACE(6, "SafeColl\tLocked read ("<<(void *)this<<")");
   return TRUE;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
+  PTRACE(6, "SafeColl\tUnlocked read ("<<(void *)this<<")");
   safeInUse->EndRead();
 }
 
 
 BOOL PSafeObject::LockReadWrite()
 {
+  PTRACE(6, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
+    PTRACE(6, "SafeColl\tBeing removed while waiting readWrite ("<<(void *)this<<")");
     return FALSE;
   }
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
+  PTRACE(6, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
   return TRUE;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
+  PTRACE(6, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
   safeInUse->EndWrite();
 }
 
