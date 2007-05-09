@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.52  2007/05/09 12:04:23  csoutheren
+ * Applied 1705775 - PWAVFile::UpdateHeader() redundancy
+ * Thanks to Fabrizio Ammollo
+ *
  * Revision 1.51  2007/04/20 07:59:29  csoutheren
  * Applied 1675658 - various pwavfile.[h|cxx] improvments
  * Thanks to Drazen Dimoti
@@ -916,11 +920,6 @@ BOOL PWAVFile::UpdateHeader()
   PInt32l riffChunkLen = (lenHeader - 8) + lenData; // size does not include first 8 bytes
   PFile::SetPosition(4);
   if (!WriteAndCheck(*this, &riffChunkLen, sizeof(riffChunkLen)))
-    return FALSE;
-
-  // rewrite format chunk 
-  PFile::SetPosition(12);
-  if (!WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)))
     return FALSE;
 
   // rewrite the data length field in the data chunk
