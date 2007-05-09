@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.31  2007/05/09 12:20:15  csoutheren
+ * Applied 1712697 - WAVE form registration number for G.729A
+ * Thanks to Borko Jandras
+ *
  * Revision 1.30  2007/04/23 01:15:14  csoutheren
  * Removed warnings on Windows
  *
@@ -327,7 +331,7 @@ class PWAVFile : public PFile
       fmt_MSG7231     = 0x42,   ///< Microsoft G.723.1
       fmt_G726        = 0x64,   ///< RFC2361
       fmt_G722        = 0x65,   ///< RFC2361
-      fmt_G729        = 0x84,   ///< RFC2361
+      fmt_G729        = 0x83,   ///< RFC2361
       fmt_VivoG7231   = 0x111,  ///< VivoActive G.723.1
 
       // For backward compatibility
