@@ -8,6 +8,9 @@
  * Copyright 2004 Reitek S.p.A.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2007/05/10 00:41:20  rjongbloed
+ * Updated build for wxWidgets 2.8.x
+ *
  * Revision 1.3  2006/07/23 03:39:49  dereksmithies
  * Modify main.cxx so it compiles under linux.
  * Add Makefile so it can be compiled under linux.
@@ -205,7 +208,7 @@ void XMPPFrame::OnRosterChanged(XMPP::Roster&, INT)
         groups.SetAt(key, new POrdinalKey(g_id));
       }
 
-      g_id = (PINDEX)groups[key];
+      g_id = (void *)(PINDEX)groups[key];
       wxTreeItemId i_id = m_RosterTree->AppendItem(g_id, (const char *)item.GetName());
       m_RosterTree->Expand(g_id);
 
