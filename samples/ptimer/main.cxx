@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2007/05/10 00:37:35  rjongbloed
+ * Fixed compiler warnings.
+ *
  * Revision 1.4  2007/05/01 03:15:26  dereksmithies
  * Add a second test, to test the repeated initialisation of some PTimer instances.
  *
@@ -155,28 +158,28 @@ void PTimerTest::RunSecondTest()
     firstTimer.SetNotifier(PCREATE_NOTIFIER(OnFirstTimerExpired));
     secondTimer.SetNotifier(PCREATE_NOTIFIER(OnSecondTimerExpired));
 
-    PThread *first = PThread::Create(PCREATE_NOTIFIER(RestartFirstTimerMain), 30000,
+    PThread::Create(PCREATE_NOTIFIER(RestartFirstTimerMain), 30000,
 				    PThread::NoAutoDeleteThread,
 				    PThread::NormalPriority);
 
-    PThread *second = PThread::Create(PCREATE_NOTIFIER(RestartSecondTimerMain), 30000,
-				      PThread::NoAutoDeleteThread,
-				      PThread::NormalPriority);
+    PThread::Create(PCREATE_NOTIFIER(RestartSecondTimerMain), 30000,
+				    PThread::NoAutoDeleteThread,
+				    PThread::NormalPriority);
 
 
     PTime restartActive;
     PTimeInterval quietPeriod(4000);
 
-    while (TRUE) {
-	if (restartActivity > 0) {
-	    restartActive = PTime();
-	    restartActivity.SetValue(0);
-	}
-	if ((restartActive + quietPeriod) < PTime()) {
-	    cerr << "No activity for four seconds. Timers Locked up. PWlib Error" << endl;
-	    exit(0);
-	}
-	PThread::Sleep(100);
+    for (;;) {
+	    if (restartActivity > 0) {
+	        restartActive = PTime();
+	        restartActivity.SetValue(0);
+	    }
+	    if ((restartActive + quietPeriod) < PTime()) {
+	        cerr << "No activity for four seconds. Timers Locked up. PWlib Error" << endl;
+	        exit(0);
+	    }
+	    PThread::Sleep(100);
     }
 }
 
@@ -192,19 +195,19 @@ void PTimerTest::OnSecondTimerExpired(PTimer &, INT)
 
 void PTimerTest::RestartFirstTimerMain(PThread &, INT)
 {
-    while (TRUE) {
-	firstTimer = PTimeInterval(1900);
-	restartActivity.SetValue(1);
-	PThread::Sleep(400);
+    for (;;) {
+	    firstTimer = PTimeInterval(1900);
+	    restartActivity.SetValue(1);
+	    PThread::Sleep(400);
     }
 }
 
 void PTimerTest::RestartSecondTimerMain(PThread &, INT)
 {
-    while (TRUE) {
-	secondTimer = PTimeInterval(2000);
-	restartActivity.SetValue(1);
-	PThread::Sleep(300);
+    for (;;) {
+	    secondTimer = PTimeInterval(2000);
+	    restartActivity.SetValue(1);
+	    PThread::Sleep(300);
     }
 }
 
