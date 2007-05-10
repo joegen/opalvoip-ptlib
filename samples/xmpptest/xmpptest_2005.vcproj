@@ -76,7 +76,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26_core.lib wxbase26.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
+				AdditionalDependencies="wxmsw$(WXVER)_core.lib wxbase$(WXVER).lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
@@ -171,7 +171,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wxmsw26d_core.lib wxbase26d.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
+				AdditionalDependencies="wxmsw$(WXVER)d_core.lib wxbase$(WXVER)d.lib comctl32.lib imm32.lib rpcrt4.lib wsock32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(WXDIR)\lib\vc_lib"
