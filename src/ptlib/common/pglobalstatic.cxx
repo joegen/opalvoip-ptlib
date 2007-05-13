@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.8  2007/05/13 10:05:18  dsandras
+ * Fixed misplaced #if P_VIDFILE thanks to Matthias Schneider
+ * <ma30002000 yahoo de>. Thanks a lot!
+ *
  * Revision 1.7  2007/05/02 17:44:32  hfriederich
  * Fix linking if PVideoFile is disabled
  *
@@ -98,11 +102,11 @@
 
   PWLIB_STATIC_LOAD_PLUGIN(FakeVideo, PVideoInputDevice);
   PWLIB_STATIC_LOAD_PLUGIN(NULLOutput, PVideoOutputDevice);
-  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoInputDevice)
-  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoOutputDevice)
 
   #if P_VIDFILE
-    PLOAD_FACTORY(PVideoFile, PDefaultPFactoryKey)
+  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoInputDevice)
+  PWLIB_STATIC_LOAD_PLUGIN(YUVFile, PVideoOutputDevice)
+  PLOAD_FACTORY(PVideoFile, PDefaultPFactoryKey)
   #endif
 
 #endif
