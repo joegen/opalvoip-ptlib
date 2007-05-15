@@ -25,6 +25,10 @@
  * Contributor(s): /
  *
  * $Log: sound_directsound.cxx,v $
+ * Revision 1.1.2.1  2007/05/15 21:41:33  dsandras
+ * Added initial code for a DirectSound plugin thanks to Vincent Luba.
+ * Code contributed by NOVACOM (http://www.novacom.be).
+ *
  * Revision 1.1  2007/05/15 21:39:26  dsandras
  * Added initial code for a DirectSound plugin thanks to Vincent Luba.
  * Code contributed by NOVACOM (http://www.novacom.be).
