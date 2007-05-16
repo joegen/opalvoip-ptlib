@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.48  2007/05/16 09:11:44  csoutheren
+ * Fix warnings on gcc 4.2.0
+ *
  * Revision 1.47  2007/04/18 23:49:50  csoutheren
  * Add usage of precompiled headers
  *
@@ -421,7 +424,7 @@ class PASN_Integer : public PASN_ConstrainedObject
 };
 
 struct PASN_Names{
-    char * name;
+    const char * name;
     PINDEX value; 
 };
 
