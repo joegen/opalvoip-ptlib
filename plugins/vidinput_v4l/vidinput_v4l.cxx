@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.26  2007/05/16 09:10:42  csoutheren
+ * Removed warnings with gcc 4.2.0
+ *
  * Revision 1.25  2007/05/01 20:14:23  dsandras
  * Fixed possible crash when opening V4L devices with 352x288 fixed
  * width capability thanks Luc Saillard. (Ekiga #434223).
@@ -297,9 +300,9 @@ PCREATE_VIDINPUT_PLUGIN(V4L);
 #define HINT_FORCE_DBLBUF                   0x0400  /// Force double buffering on quickcam express
 
 static struct {
-  char     *name_regexp;        // String used to match the driver name
-  char     *name;               // String used for ptrace output
-  char     *version;             // Apply the hint if kernel
+  const char     *name_regexp;        // String used to match the driver name
+  const char     *name;               // String used for ptrace output
+  const char     *version;             // Apply the hint if kernel
                                 // version < given version,
                                 // 0 means always apply
   unsigned hints;               // Hint flags
