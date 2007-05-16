@@ -13,6 +13,9 @@
  * http://www.mozilla.org/MPL/
  *
  * $Log: shmvideo.cxx,v $
+ * Revision 1.4  2007/05/16 07:54:21  csoutheren
+ * Fix problems created by gcc 4.2.0
+ *
  * Revision 1.3  2007/04/20 06:34:48  csoutheren
  * Fix compilation on MacOSX
  *
@@ -57,7 +60,7 @@ namespace PWLibStupidOSXHacks {
 
 class PColourConverter;
 
-static char *
+static const char *
 ShmKeyFileName()
 {
   return "/dev/null";
