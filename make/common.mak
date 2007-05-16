@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.99  2007/05/16 09:17:15  csoutheren
+# Removed vestiges of precompiled headers in Makefiles
+#
 # Revision 1.98  2007/05/01 10:18:07  csoutheren
 # Disable precompiled headers because dammit, they don't work
 #
@@ -431,11 +434,12 @@ PCH_FILES =	$(PWLIBDIR)/include/ptlib.h.gch/$(PT_OBJBASE)
 
 #ifdef USE_PCH
 #PCH:		$(PCH_FILES)
+#
+#CLEAN_FILES  += $(PCH_FILES)
 #else
 PCH:		
 #endif
 
-CLEAN_FILES  += $(PCH_FILES)
 
 ######################################################################
 #
