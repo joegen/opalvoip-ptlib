@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.28  2007/05/16 03:34:37  csoutheren
+ * Add support for default expat installation on MacOSX
+ *
  * Revision 1.27  2007/04/18 23:49:50  csoutheren
  * Add usage of precompiled headers
  *
@@ -83,6 +86,10 @@
 #ifndef _PTLIB_H
 #include <ptlib.h>
 #endif
+
+#include <ptbuildopts.h>
+
+#if P_EXPAT
 
 #include <ptclib/http.h>
 
@@ -429,5 +436,7 @@ class PXMLStreamParser : public PXMLParser
     BOOL rootOpen;
     PQueue<PXML> messages;
 };
+
+#endif // P_EXPAT
 
 #endif
