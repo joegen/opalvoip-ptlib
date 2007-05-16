@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.120  2007/05/16 07:54:21  csoutheren
+ * Fix problems created by gcc 4.2.0
+ *
  * Revision 1.119  2006/07/14 04:55:09  csoutheren
  * Applied 1520151 - Adds PID to tracefile + Rolling Date pattern
  * Thanks to Paul Nader
@@ -608,7 +611,7 @@ Note that this evaluates the expression defined by #ptr# twice. To
 prevent incorrect behaviour with this, the macro will assume that the
 #ptr# parameter is an L-Value.
  */
-#define PAssertNULL(p) ((&(p)&&(p)!=NULL)?(p): \
+#define PAssertNULL(p) (((p)!=NULL)?(p): \
                      (PAssertFunc(__FILE__,__LINE__, __CLASS__, PNullPointerReference),(p)))
 
 /** This macro is used to assert immediately.
