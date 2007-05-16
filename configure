@@ -2123,6 +2123,9 @@ case "$target_os" in
 		   OS_TAG="P_MACOSX" ;
 		   OSRELEASE="`uname -r | sed 's/\.//g'`" ;
                    SHAREDLIBEXT="dylib";
+                   if test -e /Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include/expat.h ; then
+                     EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
+                   fi
 		   ;;
 
   beos*)           OSTYPE=beos ;
@@ -7245,6 +7248,34 @@ if test "$enable_expat" = "no" ; then
   { echo "$as_me:$LINENO: Expat disabled" >&5
 echo "$as_me: Expat disabled" >&6;}
 else
+  if test "${EXPATDIR}z" != "z" ; then
+    as_ac_File=`echo "ac_cv_file_${EXPATDIR}/include/expat.h" | $as_tr_sh`
+echo "$as_me:$LINENO: checking for ${EXPATDIR}/include/expat.h" >&5
+echo $ECHO_N "checking for ${EXPATDIR}/include/expat.h... $ECHO_C" >&6
+if eval "test \"\${$as_ac_File+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "${EXPATDIR}/include/expat.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
+if test `eval echo '${'$as_ac_File'}'` = yes; then
+  HAS_EXPAT=1
+fi
+
+    if test "${HAS_EXPAT:-unset}" != "unset" ; then
+      EXPATINCLUDEDIR=${EXPATDIR}/include
+      EXPATLIBDIR=${EXPATDIR}/lib
+    fi
+  else
 
 for ac_header in expat.h
 do
@@ -7395,8 +7426,8 @@ fi
 
 done
 
-  if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    echo "$as_me:$LINENO: checking for XML_ParserCreate in -lexpat" >&5
+    if test "${HAS_EXPAT:-unset}" != "unset" ; then
+      echo "$as_me:$LINENO: checking for XML_ParserCreate in -lexpat" >&5
 echo $ECHO_N "checking for XML_ParserCreate in -lexpat... $ECHO_C" >&6
 if test "${ac_cv_lib_expat_XML_ParserCreate+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -7466,8 +7497,8 @@ else
   HAS_EXPAT=
 fi
 
-  else
-    echo "$as_me:$LINENO: checking for /usr/local/include/expat.h" >&5
+    else
+      echo "$as_me:$LINENO: checking for /usr/local/include/expat.h" >&5
 echo $ECHO_N "checking for /usr/local/include/expat.h... $ECHO_C" >&6
 if test "${ac_cv_file__usr_local_include_expat_h+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -7488,9 +7519,10 @@ if test $ac_cv_file__usr_local_include_expat_h = yes; then
   HAS_EXPAT=1
 fi
 
-    if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      EXPATINCLUDEDIR=/usr/local/include
-      EXPATLIBDIR=/usr/local/lib
+      if test "${HAS_EXPAT:-unset}" != "unset" ; then
+        EXPATINCLUDEDIR=/usr/local/include
+        EXPATLIBDIR=/usr/local/lib
+      fi
     fi
   fi
 
