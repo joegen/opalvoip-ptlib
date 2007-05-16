@@ -106,6 +106,9 @@ case "$target_os" in
 		   OS_TAG="P_MACOSX" ;
 		   OSRELEASE="`uname -r | sed 's/\.//g'`" ;
                    SHAREDLIBEXT="dylib";
+                   if test -e /Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include/expat.h ; then
+                     EXPATDIR=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6
+                   fi
 		   ;;
 
   beos*)           OSTYPE=beos ;
@@ -1369,14 +1372,22 @@ HAS_EXPAT=
 if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(Expat disabled)
 else
-  AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
-  if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
-  else
-    AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
+  if test "${EXPATDIR}z" != "z" ; then
+    AC_CHECK_FILE(${EXPATDIR}/include/expat.h, HAS_EXPAT=1)
     if test "${HAS_EXPAT:-unset}" != "unset" ; then
-      EXPATINCLUDEDIR=/usr/local/include
-      EXPATLIBDIR=/usr/local/lib
+      EXPATINCLUDEDIR=${EXPATDIR}/include
+      EXPATLIBDIR=${EXPATDIR}/lib
+    fi
+  else
+    AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
+    if test "${HAS_EXPAT:-unset}" != "unset" ; then
+      AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
+    else
+      AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
+      if test "${HAS_EXPAT:-unset}" != "unset" ; then
+        EXPATINCLUDEDIR=/usr/local/include
+        EXPATLIBDIR=/usr/local/lib
+      fi
     fi
   fi
 
