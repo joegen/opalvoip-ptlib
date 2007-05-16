@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.57  2007/05/16 07:54:21  csoutheren
+ * Fix problems created by gcc 4.2.0
+ *
  * Revision 1.56  2007/05/01 21:13:46  dsandras
  * Added extra variables to store the number of frames received.
  *
@@ -1104,8 +1107,8 @@ class PVideoFont : public PObject
       MAX_L_HEIGHT = 11
     };
     struct LetterData {
-      char ascii;
-      char *line[MAX_L_HEIGHT];
+      const char ascii;
+      const char *line[MAX_L_HEIGHT];
     };
 
     static LetterData * GetLetterData(char ascii);
