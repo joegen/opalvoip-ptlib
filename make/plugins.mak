@@ -18,5 +18,8 @@ $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	$(PLUGIN_LIBS) \
 	-I. $(LDSOPTS) $< -o $@
 
+OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(notdir $(PLUGIN_SOURCES))))
+
+CLEAN_FILES += $(OBJDIR)/$(PLUGIN_FILENAME)
 
 include ../../make/common.mak
