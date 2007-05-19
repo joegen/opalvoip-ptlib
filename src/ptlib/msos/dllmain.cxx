@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dllmain.cxx,v $
+ * Revision 1.4  2007/05/19 08:54:45  rjongbloed
+ * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
+ *
  * Revision 1.3  2005/09/18 13:01:43  dominance
  * fixed pragma warnings when building with gcc.
  *
@@ -42,7 +45,15 @@
 #pragma warning(disable:4201 4514)
 #endif
 
+#include <ptbuildopts.h>
+
+#ifdef P_DIRECTSOUND
+#define INITGUID
+#include <dsound.h>
+#endif
+
 #include <windows.h>
+
 
 #ifndef _WIN32_WCE
 HINSTANCE PDllInstance;
