@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.58  2007/05/19 08:54:42  rjongbloed
+ * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
+ *
  * Revision 1.57  2007/02/01 05:04:20  csoutheren
  * Allow compilation without C++ exceptions enabled
  *
@@ -649,6 +652,7 @@
 #undef P_POP3SMTP
 #undef P_AUDIO
 #undef P_ALSA
+#undef P_DIRECTSOUND
 #undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
