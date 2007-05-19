@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.41  2007/05/19 09:33:29  rjongbloed
+ * Fixed compiler warnings.
+ *
  * Revision 1.40  2007/04/20 06:47:48  csoutheren
  * Really disable video code when video is turned off
  *
@@ -1426,7 +1429,7 @@ static PVideoFont::LetterData vFakeLetterData[] = {
 };
 
 
-PVideoFont::LetterData * PVideoFont::GetLetterData(char ascii)
+const PVideoFont::LetterData * PVideoFont::GetLetterData(char ascii)
 {
   int q;
   int fontNumLetters = sizeof(vFakeLetterData) / sizeof(vFakeLetterData[0]);
@@ -2167,7 +2170,7 @@ void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
                PProcess::Current().GetOSName() << ":" <<
                PProcess::Current().GetOSHardware();
     PINDEX nChars = message.GetLength();
-    PVideoFont::LetterData *ld;
+    const PVideoFont::LetterData *ld;
 
     for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++)
       textLine[j] = "";
