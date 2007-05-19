@@ -25,6 +25,9 @@
  * Contributor(s): /
  *
  * $Log: sound_directsound.h,v $
+ * Revision 1.2  2007/05/19 08:54:42  rjongbloed
+ * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
+ *
  * Revision 1.1  2007/05/15 21:39:26  dsandras
  * Added initial code for a DirectSound plugin thanks to Vincent Luba.
  * Code contributed by NOVACOM (http://www.novacom.be).
@@ -36,13 +39,16 @@
 #ifndef __DIRECTSOUND_H__
 #define __DIRECTSOUND_H__
 
+
 #include <ptlib.h>
+#include <ptbuildopts.h>
+
+#ifdef P_DIRECTSOUND
+
 #include <ptlib/sound.h>
 
-#include <directx/dsound.h>
-#include <directx/dxerr9.h>
+#include <dsound.h>
 
-//PARRAY(PGUIDArray, GUID);
 
 typedef struct 
 {
@@ -104,7 +110,6 @@ private:
     unsigned mNumChannels;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
-    unsigned mOutburst;
     
     BOOL isInitialised;
     BOOL isOpen;
@@ -133,6 +138,7 @@ private:
     
     BOOL SetFormat ();
 
+    PINDEX mOutburst;
     BOOL mStreaming;
     PINDEX mBufferSize;
     PINDEX mDXBufferSize;
@@ -147,4 +153,7 @@ private:
 
     //static PDirectSoundDevices mDevices;
 };
+
+#endif // P_DIRECTSOUND
+
 #endif  /* __DIRECTSOUND_H__ */
