@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.58  2007/05/19 09:33:29  rjongbloed
+ * Fixed compiler warnings.
+ *
  * Revision 1.57  2007/05/16 07:54:21  csoutheren
  * Fix problems created by gcc 4.2.0
  *
@@ -1107,11 +1110,11 @@ class PVideoFont : public PObject
       MAX_L_HEIGHT = 11
     };
     struct LetterData {
-      const char ascii;
+      char ascii;
       const char *line[MAX_L_HEIGHT];
     };
 
-    static LetterData * GetLetterData(char ascii);
+    static const LetterData * GetLetterData(char ascii);
 };
 
 #endif // P_VIDEO
