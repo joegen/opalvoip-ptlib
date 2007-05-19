@@ -629,6 +629,7 @@ EXPORTS
     ??0?$PSortedList@VSRVRecord@PDNS@@@@QAE@XZ @17176 NONAME
     ??0?$PSortedList@VUser@MUC@XMPP@@@@IAE@HPBV0@@Z @17177 NONAME
     ??0?$PSortedList@VUser@MUC@XMPP@@@@QAE@XZ @17178 NONAME
+    ??0?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@QAE@XZ @27788 NONAME
     ??0?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@QAE@XZ @16234 NONAME
     ??0?$PStringDictionary@VPCaselessString@@@@IAE@HPBV0@@Z @17179 NONAME
     ??0?$PStringDictionary@VPCaselessString@@@@QAE@ABV0@@Z @17180 NONAME
@@ -907,6 +908,8 @@ EXPORTS
     ??0DefinitionList@PHTML@@QAE@PBD@Z @17323 NONAME
     ??0DefinitionTerm@PHTML@@QAE@PBD@Z @17324 NONAME
     ??0DeleteObjectsTimeout_PNotifier@PSafeCollection@@QAE@PAV1@@Z @90 NONAME
+    ??0DirectSoundDevices@@QAE@ABU0@@Z @27789 NONAME
+    ??0DirectSoundDevices@@QAE@XZ @27790 NONAME
     ??0Division@PHTML@@QAE@PBD@Z @17325 NONAME
     ??0Element@PAbstractList@@QAE@PAVPObject@@@Z @91 NONAME
     ??0Element@PHTML@@IAE@PBD0W4ElementInSet@1@1W4OptionalCRLF@01@@Z @17326 NONAME
@@ -1455,6 +1458,7 @@ EXPORTS
     ??0PPluginService@@QAE@ABVPString@@0PAVPPluginServiceDescriptor@@@Z @3605 NONAME
     ??0PPluginServiceDescriptor@@QAE@XZ @16244 NONAME
     ??0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z @27209 NONAME
+    ??0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z @27791 NONAME
     ??0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z @27599 NONAME
     ??0PPlugin_PSoundChannel_WindowsMultimedia_Registration@@QAE@PAVPPluginManager@@@Z @3607 NONAME
     ??0PPlugin_PVideoInputDevice_FakeVideo_Registration@@QAE@PAVPPluginManager@@@Z @3765 NONAME
@@ -1600,6 +1604,8 @@ EXPORTS
     ??0PSound@@QAE@IIIHPBE@Z @249 NONAME
     ??0PSoundChannel@@QAE@ABVPString@@W4Directions@0@III@Z @250 NONAME
     ??0PSoundChannel@@QAE@XZ @251 NONAME
+    ??0PSoundChannelDirectSound@@QAE@ABVPString@@W4Directions@PSoundChannel@@III@Z @27792 NONAME
+    ??0PSoundChannelDirectSound@@QAE@XZ @27793 NONAME
     ??0PSoundChannelWin32@@QAE@ABVPString@@W4Directions@PSoundChannel@@III@Z @3610 NONAME
     ??0PSoundChannelWin32@@QAE@XZ @3611 NONAME
     ??0PSoundChannel_WAVFile@@QAE@ABVPString@@W4Directions@PSoundChannel@@III@Z @27600 NONAME
@@ -2185,6 +2191,7 @@ EXPORTS
     ??1?$PSortedList@VPXMLRPCServerMethod@@@@UAE@XZ @18055 NONAME
     ??1?$PSortedList@VSRVRecord@PDNS@@@@UAE@XZ @18056 NONAME
     ??1?$PSortedList@VUser@MUC@XMPP@@@@UAE@XZ @18057 NONAME
+    ??1?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@UAE@XZ @27794 NONAME
     ??1?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@UAE@XZ @16265 NONAME
     ??1?$PStringDictionary@VPCaselessString@@@@UAE@XZ @18058 NONAME
     ??1?$PStringDictionary@VPOrdinalKey@@@@UAE@XZ @451 NONAME
@@ -2292,6 +2299,7 @@ EXPORTS
     ??1DefinitionList@PHTML@@UAE@XZ @18128 NONAME
     ??1DefinitionTerm@PHTML@@UAE@XZ @18129 NONAME
     ??1DeleteObjectsTimeout_PNotifier@PSafeCollection@@UAE@XZ @460 NONAME
+    ??1DirectSoundDevices@@QAE@XZ @27795 NONAME
     ??1Division@PHTML@@UAE@XZ @18130 NONAME
     ??1Element@PHTML@@UAE@XZ @18131 NONAME
     ??1Emphasis@PHTML@@UAE@XZ @18132 NONAME
@@ -2642,6 +2650,7 @@ EXPORTS
     ??1PSortedStringList@@UAE@XZ @534 NONAME
     ??1PSound@@UAE@XZ @535 NONAME
     ??1PSoundChannel@@UAE@XZ @536 NONAME
+    ??1PSoundChannelDirectSound@@UAE@XZ @27796 NONAME
     ??1PSoundChannelWin32@@UAE@XZ @3620 NONAME
     ??1PSoundChannel_WAVFile@@UAE@XZ @27637 NONAME
     ??1PSoundChannel_WAVFile_PluginServiceDescriptor@@UAE@XZ @27638 NONAME
@@ -3759,6 +3768,7 @@ EXPORTS
     ??_7?$PSortedList@VPXMLRPCServerMethod@@@@6B@ @18871 NONAME
     ??_7?$PSortedList@VSRVRecord@PDNS@@@@6B@ @18872 NONAME
     ??_7?$PSortedList@VUser@MUC@XMPP@@@@6B@ @18873 NONAME
+    ??_7?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@6B@ @27797 NONAME
     ??_7?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@6B@ @16298 NONAME
     ??_7?$PStringDictionary@VPCaselessString@@@@6B@ @18874 NONAME
     ??_7?$PStringDictionary@VPOrdinalKey@@@@6B@ @1148 NONAME
@@ -4217,6 +4227,8 @@ EXPORTS
     ??_7PSound@@6B@ @1239 NONAME
     ??_7PSoundChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5595 NONAME
     ??_7PSoundChannel@@6BPObject@@@ @1241 NONAME
+    ??_7PSoundChannelDirectSound@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @27798 NONAME
+    ??_7PSoundChannelDirectSound@@6BPObject@@@ @27799 NONAME
     ??_7PSoundChannelWin32@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5596 NONAME
     ??_7PSoundChannelWin32@@6BPObject@@@ @3629 NONAME
     ??_7PSoundChannel_WAVFile@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @27640 NONAME
@@ -4579,6 +4591,8 @@ EXPORTS
     ??_8PSocksUDPSocket@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @19397 NONAME
     ??_8PSoundChannel@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @5632 NONAME
     ??_8PSoundChannel@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @5633 NONAME
+    ??_8PSoundChannelDirectSound@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @27800 NONAME
+    ??_8PSoundChannelDirectSound@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @27801 NONAME
     ??_8PSoundChannelWin32@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @5634 NONAME
     ??_8PSoundChannelWin32@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @5635 NONAME
     ??_8PSoundChannel_WAVFile@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @27646 NONAME
@@ -4626,6 +4640,7 @@ EXPORTS
     ??_8Transport@XMPP@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @19424 NONAME
     ??_8Transport@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @19425 NONAME
     ??_B?1???0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z@51 @27250 NONAME
+    ??_B?1???0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z@51 @27802 NONAME
     ??_B?1???0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z@51 @27648 NONAME
     ??_B?1???0PPlugin_PSoundChannel_WindowsMultimedia_Registration@@QAE@PAVPPluginManager@@@Z@51 @7265 NONAME
     ??_B?1???0PPlugin_PVideoInputDevice_FakeVideo_Registration@@QAE@PAVPPluginManager@@@Z@51 @7266 NONAME
@@ -4678,6 +4693,7 @@ EXPORTS
     ??_DPSocksSocket@@QAEXXZ @19455 NONAME
     ??_DPSocksUDPSocket@@QAEXXZ @19456 NONAME
     ??_DPSoundChannel@@QAEXXZ @1393 NONAME
+    ??_DPSoundChannelDirectSound@@QAEXXZ @27803 NONAME
     ??_DPSoundChannelWin32@@QAEXXZ @3633 NONAME
     ??_DPSoundChannel_WAVFile@@QAEXXZ @27649 NONAME
     ??_DPSPXSocket@@QAEXXZ @1394 NONAME
@@ -4829,6 +4845,7 @@ EXPORTS
     ??_R0?AV?$PSortedList@VPXMLRPCServerMethod@@@@@8 @19539 NONAME
     ??_R0?AV?$PSortedList@VSRVRecord@PDNS@@@@@8 @19540 NONAME
     ??_R0?AV?$PSortedList@VUser@MUC@XMPP@@@@@8 @19541 NONAME
+    ??_R0?AV?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@@8 @27804 NONAME
     ??_R0?AV?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@@8 @16326 NONAME
     ??_R0?AV?$PStringDictionary@VPCaselessString@@@@@8 @19542 NONAME
     ??_R0?AV?$PStringDictionary@VPOrdinalKey@@@@@8 @4044 NONAME
@@ -5221,6 +5238,7 @@ EXPORTS
     ??_R0?AVPSortedStringList@@@8 @4129 NONAME
     ??_R0?AVPSound@@@8 @4130 NONAME
     ??_R0?AVPSoundChannel@@@8 @4131 NONAME
+    ??_R0?AVPSoundChannelDirectSound@@@8 @27805 NONAME
     ??_R0?AVPSoundChannelWin32@@@8 @4132 NONAME
     ??_R0?AVPSoundChannel_WAVFile@@@8 @27650 NONAME
     ??_R0?AVPSoundChannel_WAVFile_PluginServiceDescriptor@@@8 @27651 NONAME
@@ -5605,6 +5623,7 @@ EXPORTS
     ??_R1A@?0A@A@?$PSortedList@VPXMLRPCServerMethod@@@@8 @19987 NONAME
     ??_R1A@?0A@A@?$PSortedList@VSRVRecord@PDNS@@@@8 @19988 NONAME
     ??_R1A@?0A@A@?$PSortedList@VUser@MUC@XMPP@@@@8 @19989 NONAME
+    ??_R1A@?0A@A@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@8 @27806 NONAME
     ??_R1A@?0A@A@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @16353 NONAME
     ??_R1A@?0A@A@?$PStringDictionary@VPCaselessString@@@@8 @19990 NONAME
     ??_R1A@?0A@A@?$PStringDictionary@VPOrdinalKey@@@@8 @4273 NONAME
@@ -6020,6 +6039,7 @@ EXPORTS
     ??_R1A@?0A@A@PSortedStringList@@8 @4355 NONAME
     ??_R1A@?0A@A@PSound@@8 @4356 NONAME
     ??_R1A@?0A@A@PSoundChannel@@8 @4357 NONAME
+    ??_R1A@?0A@A@PSoundChannelDirectSound@@8 @27807 NONAME
     ??_R1A@?0A@A@PSoundChannelWin32@@8 @4358 NONAME
     ??_R1A@?0A@A@PSoundChannel_WAVFile@@8 @27653 NONAME
     ??_R1A@?0A@A@PSoundChannel_WAVFile_PluginServiceDescriptor@@8 @27654 NONAME
@@ -6383,6 +6403,7 @@ EXPORTS
     ??_R2?$PSortedList@VPXMLRPCServerMethod@@@@8 @20458 NONAME
     ??_R2?$PSortedList@VSRVRecord@PDNS@@@@8 @20459 NONAME
     ??_R2?$PSortedList@VUser@MUC@XMPP@@@@8 @20460 NONAME
+    ??_R2?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@8 @27808 NONAME
     ??_R2?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @16380 NONAME
     ??_R2?$PStringDictionary@VPCaselessString@@@@8 @20461 NONAME
     ??_R2?$PStringDictionary@VPOrdinalKey@@@@8 @4490 NONAME
@@ -6797,6 +6818,7 @@ EXPORTS
     ??_R2PSortedStringList@@8 @4571 NONAME
     ??_R2PSound@@8 @4572 NONAME
     ??_R2PSoundChannel@@8 @4573 NONAME
+    ??_R2PSoundChannelDirectSound@@8 @27809 NONAME
     ??_R2PSoundChannelWin32@@8 @4574 NONAME
     ??_R2PSoundChannel_WAVFile@@8 @27656 NONAME
     ??_R2PSoundChannel_WAVFile_PluginServiceDescriptor@@8 @27657 NONAME
@@ -7149,6 +7171,7 @@ EXPORTS
     ??_R3?$PSortedList@VPXMLRPCServerMethod@@@@8 @20926 NONAME
     ??_R3?$PSortedList@VSRVRecord@PDNS@@@@8 @20927 NONAME
     ??_R3?$PSortedList@VUser@MUC@XMPP@@@@8 @20928 NONAME
+    ??_R3?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@8 @27810 NONAME
     ??_R3?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @16407 NONAME
     ??_R3?$PStringDictionary@VPCaselessString@@@@8 @20929 NONAME
     ??_R3?$PStringDictionary@VPOrdinalKey@@@@8 @4699 NONAME
@@ -7563,6 +7586,7 @@ EXPORTS
     ??_R3PSortedStringList@@8 @4780 NONAME
     ??_R3PSound@@8 @4781 NONAME
     ??_R3PSoundChannel@@8 @4782 NONAME
+    ??_R3PSoundChannelDirectSound@@8 @27811 NONAME
     ??_R3PSoundChannelWin32@@8 @4783 NONAME
     ??_R3PSoundChannel_WAVFile@@8 @27659 NONAME
     ??_R3PSoundChannel_WAVFile_PluginServiceDescriptor@@8 @27660 NONAME
@@ -7915,6 +7939,7 @@ EXPORTS
     ??_R4?$PSortedList@VPXMLRPCServerMethod@@@@6B@ @21394 NONAME
     ??_R4?$PSortedList@VSRVRecord@PDNS@@@@6B@ @21395 NONAME
     ??_R4?$PSortedList@VUser@MUC@XMPP@@@@6B@ @21396 NONAME
+    ??_R4?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@6B@ @27812 NONAME
     ??_R4?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@6B@ @16434 NONAME
     ??_R4?$PStringDictionary@VPCaselessString@@@@6B@ @21397 NONAME
     ??_R4?$PStringDictionary@VPOrdinalKey@@@@6B@ @4908 NONAME
@@ -8373,6 +8398,8 @@ EXPORTS
     ??_R4PSound@@6B@ @5002 NONAME
     ??_R4PSoundChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5707 NONAME
     ??_R4PSoundChannel@@6BPObject@@@ @5004 NONAME
+    ??_R4PSoundChannelDirectSound@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @27813 NONAME
+    ??_R4PSoundChannelDirectSound@@6BPObject@@@ @27814 NONAME
     ??_R4PSoundChannelWin32@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @5708 NONAME
     ??_R4PSoundChannelWin32@@6BPObject@@@ @5006 NONAME
     ??_R4PSoundChannel_WAVFile@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @27662 NONAME
@@ -8658,6 +8685,7 @@ EXPORTS
     ??_V@YAXPAX@Z @6719 NONAME
     ?Abort@PModem@@QAEXXZ @21867 NONAME
     ?Abort@PSoundChannel@@UAEHXZ @3634 NONAME
+    ?Abort@PSoundChannelDirectSound@@UAEHXZ @27815 NONAME
     ?Abort@PSoundChannelWin32@@UAEHXZ @3635 NONAME
     ?AbortCommandString@PChannel@@QAEXXZ @1408 NONAME
     ?AbstractContains@PHashTable@@IBEHABVPObject@@@Z @1409 NONAME
@@ -8823,6 +8851,7 @@ EXPORTS
     ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@ABUFormatTableEntry@@@Z @16568 NONAME
     ?ApplyQoS@PUDPSocket@@MAEHXZ @3545 NONAME
     ?AreAllRecordBuffersFull@PSoundChannel@@UAEHXZ @3636 NONAME
+    ?AreAllRecordBuffersFull@PSoundChannelDirectSound@@UAEHXZ @27816 NONAME
     ?AreAllRecordBuffersFull@PSoundChannelWin32@@UAEHXZ @3637 NONAME
     ?AreAllRecordBuffersFull@PSoundChannel_WAVFile@@UAEHXZ @27668 NONAME
     ?ArrayDecode@PBER_Stream@@UAEHAAVPASN_Array@@@Z @21986 NONAME
@@ -9644,6 +9673,7 @@ EXPORTS
     ?Close@PSMTPClient@@UAEHXZ @22460 NONAME
     ?Close@PSocket@@UAEHXZ @1696 NONAME
     ?Close@PSoundChannel@@UAEHXZ @26026 NONAME
+    ?Close@PSoundChannelDirectSound@@UAEHXZ @27817 NONAME
     ?Close@PSoundChannelWin32@@UAEHXZ @3644 NONAME
     ?Close@PSoundChannel_WAVFile@@UAEHXZ @27673 NONAME
     ?Close@PSSLChannel@@UAEHXZ @22461 NONAME
@@ -10233,6 +10263,7 @@ EXPORTS
     ?Construct@PProcess@@AAEXXZ @1876 NONAME
     ?Construct@PRemoteConnection@@AAEXXZ @1877 NONAME
     ?Construct@PSerialChannel@@AAEXXZ @1878 NONAME
+    ?Construct@PSoundChannelDirectSound@@QAEXXZ @27818 NONAME
     ?Construct@PSoundChannelWin32@@QAEXXZ @3651 NONAME
     ?Construct@PTelnetSocket@@IAEXXZ @22793 NONAME
     ?Construct@PTimer@@AAEXXZ @1880 NONAME
@@ -10500,6 +10531,7 @@ EXPORTS
     ?CreateInstance@?$PFactory@VPWAVFileFormat@@I@@SAPAVPWAVFileFormat@@ABI@Z @22900 NONAME
     ?CreateInstance@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@SAPAVPWAVFileFormat@@ABVPCaselessString@@@Z @22901 NONAME
     ?CreateInstance@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UBEPAVPObject@@H@Z @27288 NONAME
+    ?CreateInstance@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@UBEPAVPObject@@H@Z @27819 NONAME
     ?CreateInstance@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@UBEPAVPObject@@H@Z @16490 NONAME
     ?CreateInstance@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@UBEPAVPObject@@H@Z @16491 NONAME
     ?CreateInstance@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@UBEPAVPObject@@H@Z @16492 NONAME
@@ -10748,6 +10780,7 @@ EXPORTS
     ?Destruct@PDirectory@@IAEXXZ @7583 NONAME
     ?Detach@?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAEPAUISpObjectTokenCategory@@XZ @23046 NONAME
     ?Detach@Roster@XMPP@@UAEXXZ @23047 NONAME
+    ?DevicesEnumerators@PSoundChannelDirectSound@@SA?AUDirectSoundDevices@@W4Directions@PSoundChannel@@@Z @27820 NONAME
     ?Dial@PModem@@QAEHABVPString@@@Z @23048 NONAME
     ?disableGQoS@PUDPSocket@@1HA @16589 NONAME
     ?DisallowDeleteObjects@PCollection@@QAEXXZ @1982 NONAME
@@ -10759,6 +10792,7 @@ EXPORTS
     ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @1983 NONAME
     ?DoTransfer@PVXMLSession@@UAEHABVPVXMLTransferOptions@@@Z @23053 NONAME
     ?Draw@PVideoOutputDevice_Window@@IAEXPAUHDC__@@@Z @16499 NONAME
+    ?DSoundEnumCallback@@YGHPAU_GUID@@PAD1PAX@Z @27821 NONAME
     ?DtmfChar@PDTMFEncoder@@QAEDH@Z @23054 NONAME
     ?empty@?$deque@DV?$allocator@D@std@@@std@@QBE_NXZ @23055 NONAME
     ?Empty@PString@@SA?AV1@XZ @3967 NONAME
@@ -10996,6 +11030,8 @@ EXPORTS
     ?ExtractSignature@PServiceHTML@@SA?AVPString@@ABV2@AAV2@PBD@Z @23206 NONAME
     ?factory@?1???0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@A @27306 NONAME
     ?factory@?1???0PPlugin_PNatMethod_STUN_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPNatMethod@@VPString@@@@A @27307 NONAME
+    ?factory@?1???0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @27822 NONAME
+    ?factory@?1???0PPlugin_PSoundChannel_DirectSound_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @27823 NONAME
     ?factory@?1???0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @27713 NONAME
     ?factory@?1???0PPlugin_PSoundChannel_WAVFile_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @27714 NONAME
     ?factory@?1???0PPlugin_PSoundChannel_WindowsMultimedia_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @7421 NONAME
@@ -11067,6 +11103,7 @@ EXPORTS
     ?Fire@PNotifierList@@QAEHAAVPObject@@H@Z @5974 NONAME
     ?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5739 NONAME
     ?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5740 NONAME
+    ?FlushBuffer@PSoundChannelDirectSound@@AAEXXZ @27824 NONAME
     ?FlushQueue@PVXMLChannel@@UAEXXZ @23234 NONAME
     ?format@PWAVFile@@SAPAV1@ABVPString@@@Z @23235 NONAME
     ?format@PWAVFile@@SAPAV1@ABVPString@@W4OpenMode@PFile@@H@Z @23236 NONAME
@@ -11169,6 +11206,7 @@ EXPORTS
     ?GetBrightness@PVideoDevice@@UAEHXZ @2072 NONAME
     ?GetBroadcast@Address@PIPSocket@@SAABV12@XZ @2073 NONAME
     ?GetBuffers@PSoundChannel@@UAEHAAH0@Z @3657 NONAME
+    ?GetBuffers@PSoundChannelDirectSound@@UAEHAAH0@Z @27825 NONAME
     ?GetBuffers@PSoundChannelWin32@@UAEHAAH0@Z @3658 NONAME
     ?GetBuffers@PSoundChannel_WAVFile@@UAEHAAH0@Z @27715 NONAME
     ?GetBusyString@PModem@@QBE?AVPString@@XZ @23290 NONAME
@@ -11177,6 +11215,7 @@ EXPORTS
     ?GetChannel@PVideoDevice@@UBEHXZ @2075 NONAME
     ?GetChannels@PSound@@QBEIXZ @2076 NONAME
     ?GetChannels@PSoundChannel@@UBEIXZ @3659 NONAME
+    ?GetChannels@PSoundChannelDirectSound@@UBEIXZ @27826 NONAME
     ?GetChannels@PSoundChannelWin32@@UBEIXZ @3660 NONAME
     ?GetChannels@PSoundChannel_WAVFile@@UBEIXZ @27716 NONAME
     ?GetChannels@PWAVFile@@UBEIXZ @23291 NONAME
@@ -11640,6 +11679,7 @@ EXPORTS
     ?GetDecodedData@PBase64@@QAE?AVPBYTEArray@@XZ @23570 NONAME
     ?GetDecodedData@PBase64@@QAEHPAXH@Z @23571 NONAME
     ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @2230 NONAME
+    ?GetDefaultDevice@PSoundChannelDirectSound@@SA?AVPString@@W4Directions@PSoundChannel@@@Z @27827 NONAME
     ?GetDefaultDevice@PSoundChannelWin32@@SA?AVPString@@W4Directions@PSoundChannel@@@Z @3665 NONAME
     ?GetDefaultDevice@PVideoChannel@@SA?AVPString@@W4Directions@1@@Z @2231 NONAME
     ?GetDefaultIpAddressFamily@PIPSocket@@SAHXZ @2232 NONAME
@@ -11651,13 +11691,16 @@ EXPORTS
     ?GetDescription@PWAVFileFormatG7231_ms@@UBE?AVPString@@XZ @23575 NONAME
     ?GetDescription@PWAVFileFormatG7231_vivo@@UBE?AVPString@@XZ @23576 NONAME
     ?GetDescription@PWAVFileFormatPCM@@UBE?AVPString@@XZ @23577 NONAME
+    ?GetDeviceID@PSoundChannelDirectSound@@AAEHVPString@@PAU_GUID@@@Z @27828 NONAME
     ?GetDeviceID@PSoundChannelWin32@@AAEHABVPString@@W4Directions@PSoundChannel@@AAI@Z @3666 NONAME
     ?GetDeviceNames@?$PNatMethodServiceDescriptor@VPSTUNClient@@@@UBE?AVPStringList@@H@Z @27310 NONAME
+    ?GetDeviceNames@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelDirectSound@@@@UBE?AVPStringList@@H@Z @27829 NONAME
     ?GetDeviceNames@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@UBE?AVPStringList@@H@Z @16508 NONAME
     ?GetDeviceNames@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@UBE?AVPStringList@@H@Z @16509 NONAME
     ?GetDeviceNames@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@UBE?AVPStringList@@H@Z @16510 NONAME
     ?GetDeviceNames@?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@UBE?AVPStringList@@H@Z @16511 NONAME
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringList@@W4Directions@1@PAVPPluginManager@@@Z @16512 NONAME
+    ?GetDeviceNames@PSoundChannelDirectSound@@SA?AVPStringArray@@W4Directions@PSoundChannel@@@Z @27830 NONAME
     ?GetDeviceNames@PSoundChannelWin32@@SA?AVPStringArray@@W4Directions@PSoundChannel@@@Z @3669 NONAME
     ?GetDeviceNames@PSoundChannel_WAVFile@@SA?AVPStringArray@@W4Directions@PSoundChannel@@@Z @27720 NONAME
     ?GetDeviceNames@PSoundChannel_WAVFile_PluginServiceDescriptor@@UBE?AVPStringList@@H@Z @27721 NONAME
@@ -11693,6 +11736,7 @@ EXPORTS
     ?GetDstFrameInfo@PColourConverter@@UAEXAAVPVideoFrameInfo@@@Z @27723 NONAME
     ?GetDstFrameSize@PColourConverter@@QBEHAAI0@Z @2244 NONAME
     ?GetDstFrameWidth@PColourConverter@@QBEIXZ @27724 NONAME
+    ?GetDXBufferFreeSpace@PSoundChannelDirectSound@@AAEKXZ @27831 NONAME
     ?GetElement@PXML@@QBEPAVPXMLElement@@ABVPCaselessString@@H@Z @23589 NONAME
     ?GetElement@PXML@@QBEPAVPXMLElement@@H@Z @23590 NONAME
     ?GetElement@PXMLElement@@QBEPAV1@ABVPCaselessString@@H@Z @23591 NONAME
@@ -12232,11 +12276,13 @@ EXPORTS
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @2478 NONAME
     ?GetSampleRate@PSound@@QBEIXZ @2479 NONAME
     ?GetSampleRate@PSoundChannel@@UBEIXZ @3686 NONAME
+    ?GetSampleRate@PSoundChannelDirectSound@@UBEIXZ @27832 NONAME
     ?GetSampleRate@PSoundChannelWin32@@UBEIXZ @3687 NONAME
     ?GetSampleRate@PSoundChannel_WAVFile@@UBEIXZ @27735 NONAME
     ?GetSampleRate@PWAVFile@@UBEIXZ @23828 NONAME
     ?GetSampleSize@PSound@@QBEIXZ @2481 NONAME
     ?GetSampleSize@PSoundChannel@@UBEIXZ @3688 NONAME
+    ?GetSampleSize@PSoundChannelDirectSound@@UBEIXZ @27833 NONAME
     ?GetSampleSize@PSoundChannelWin32@@UBEIXZ @3689 NONAME
     ?GetSampleSize@PSoundChannel_WAVFile@@UBEIXZ @27736 NONAME
     ?GetSampleSize@PWAVFile@@UBEIXZ @23829 NONAME
@@ -12453,6 +12499,7 @@ EXPORTS
     ?GetVolume@PDirectory@@QBE?AVPCaselessString@@XZ @2541 NONAME
     ?GetVolume@PFilePath@@QBE?AVPCaselessString@@XZ @2542 NONAME
     ?GetVolume@PSoundChannel@@UAEHAAI@Z @3691 NONAME
+    ?GetVolume@PSoundChannelDirectSound@@UAEHAAI@Z @27834 NONAME
     ?GetVolume@PSoundChannelWin32@@UAEHAAI@Z @3692 NONAME
     ?GetVolume@PTextToSpeech_Festival@@UAEIXZ @23970 NONAME
     ?GetVolume@PTextToSpeech_SAPI@@UAEIXZ @23971 NONAME
@@ -12521,6 +12568,7 @@ EXPORTS
     ?HasOption@PArgList@@QBEHPBD@Z @2574 NONAME
     ?HasOptionalField@PASN_Sequence@@QBEHH@Z @23998 NONAME
     ?HasPlayCompleted@PSoundChannel@@UAEHXZ @3696 NONAME
+    ?HasPlayCompleted@PSoundChannelDirectSound@@UAEHXZ @27835 NONAME
     ?HasPlayCompleted@PSoundChannelWin32@@UAEHXZ @3697 NONAME
     ?HasPlayCompleted@PSoundChannel_WAVFile@@UAEHXZ @27740 NONAME
     ?HasSubObjects@PXMLElement@@QBEHXZ @23999 NONAME
@@ -12546,6 +12594,8 @@ EXPORTS
     ?IncludeOptionalField@PASN_Sequence@@QAEXH@Z @24007 NONAME
     ?Init@PSmartNotifieeRegistrar@@QAEXPAX@Z @24008 NONAME
     ?Init@PWin32SnmpLibrary@@AAEHKPAPAXPAUAsnObjectIdentifier@@@Z @6729 NONAME
+    ?InitCaptureBuffer@PSoundChannelDirectSound@@AAEHXZ @27836 NONAME
+    ?InitCaptureDevice@PSoundChannelDirectSound@@AAEHPAU_GUID@@@Z @27837 NONAME
     ?Initialise@PHTTPConnectionInfo@@IAEHAAVPHTTPServer@@AAVPString@@@Z @24009 NONAME
     ?Initialise@PModem@@QAEHXZ @24010 NONAME
     ?Initialise@PSTUNChangeRequest@@QAEXXZ @24011 NONAME
@@ -12561,6 +12611,8 @@ EXPORTS
     ?initialiserMutex@PLDAPStructBase@@1VPCriticalSection@@A @24017 NONAME
     ?initialiserMutex@PXMLRPCStructBase@@1VPCriticalSection@@A @24018 NONAME
     ?InitialiseSDL@PVideoOutputDevice_SDL@@IAE_NXZ @24019 NONAME
+    ?InitPlaybackBuffer@PSoundChannelDirectSound@@AAEHXZ @27838 NONAME
+    ?InitPlaybackDevice@PSoundChannelDirectSound@@AAEHPAU_GUID@@@Z @27839 NONAME
     ?InProgress@PWin32PacketBuffer@@QBEHXZ @2583 NONAME
     ?insert@?$vector@PAVPAggregatedHandle@@V?$allocator@PAVPAggregatedHandle@@@std@@@std@@QAE?AViterator@12@V312@ABQAVPAggregatedHandle@@@Z @24020 NONAME
     ?insert@?$vector@PAVPAggregatorFD@@V?$allocator@PAVPAggregatorFD@@@std@@@std@@QAE?AViterator@12@V312@ABQAVPAggregatorFD@@@Z @24021 NONAME
@@ -13113,6 +13165,7 @@ EXPORTS
     ?IsOpen@PLDAPSession@@QBEHXZ @24337 NONAME
     ?IsOpen@PPipeChannel@@UBEHXZ @2893 NONAME
     ?IsOpen@PSoundChannel@@UBEHXZ @3708 NONAME
+    ?IsOpen@PSoundChannelDirectSound@@UBEHXZ @27840 NONAME
     ?IsOpen@PSoundChannelWin32@@UBEHXZ @3709 NONAME
     ?IsOpen@PSoundChannel_WAVFile@@UBEHXZ @27743 NONAME
     ?IsOpen@PTextToSpeech_Festival@@UAEHXZ @24338 NONAME
@@ -13141,6 +13194,7 @@ EXPORTS
     ?IsPrimitive@PASN_Sequence@@UBEHXZ @24351 NONAME
     ?IsProxyConnection@PHTTPConnectionInfo@@QBEHXZ @24352 NONAME
     ?IsRecordBufferFull@PSoundChannel@@UAEHXZ @3711 NONAME
+    ?IsRecordBufferFull@PSoundChannelDirectSound@@UAEHXZ @27841 NONAME
     ?IsRecordBufferFull@PSoundChannelWin32@@UAEHXZ @3712 NONAME
     ?IsRecordBufferFull@PSoundChannel_WAVFile@@UAEHXZ @27745 NONAME
     ?IsRecording@PVXMLChannel@@QBEHXZ @24353 NONAME
@@ -13690,6 +13744,7 @@ EXPORTS
     ?Open@PSerialChannel@@UAEHAAVPConfig@@@Z @3000 NONAME
     ?Open@PSerialChannel@@UAEHABVPString@@KEW4Parity@1@EW4FlowControl@1@2@Z @3001 NONAME
     ?Open@PSoundChannel@@UAEHABVPString@@W4Directions@1@III@Z @3715 NONAME
+    ?Open@PSoundChannelDirectSound@@UAEHABVPString@@W4Directions@PSoundChannel@@III@Z @27843 NONAME
     ?Open@PSoundChannelWin32@@QAEHABVPString@@W4Directions@PSoundChannel@@ABVPWaveFormat@@@Z @3716 NONAME
     ?Open@PSoundChannelWin32@@UAEHABVPString@@W4Directions@PSoundChannel@@III@Z @3717 NONAME
     ?Open@PSoundChannel_WAVFile@@UAEHABVPString@@W4Directions@PSoundChannel@@III@Z @27747 NONAME
@@ -13824,12 +13879,14 @@ EXPORTS
     ?PlayData@PVXMLSession@@UAEHABVPBYTEArray@@HH@Z @24792 NONAME
     ?PlayFile@PSound@@SAHABVPFilePath@@H@Z @3054 NONAME
     ?PlayFile@PSoundChannel@@UAEHABVPFilePath@@H@Z @3720 NONAME
+    ?PlayFile@PSoundChannelDirectSound@@UAEHABVPFilePath@@H@Z @27844 NONAME
     ?PlayFile@PSoundChannelWin32@@UAEHABVPFilePath@@H@Z @3721 NONAME
     ?PlayFile@PVXMLSession@@UAEHABVPString@@HHH@Z @24793 NONAME
     ?PlayResource@PVXMLSession@@UAEHABVPURL@@HH@Z @24794 NONAME
     ?PlaySilence@PVXMLSession@@UAEHABVPTimeInterval@@@Z @24795 NONAME
     ?PlaySilence@PVXMLSession@@UAEHH@Z @24796 NONAME
     ?PlaySoundA@PSoundChannel@@UAEHABVPSound@@H@Z @3722 NONAME
+    ?PlaySoundA@PSoundChannelDirectSound@@UAEHABVPSound@@H@Z @27845 NONAME
     ?PlaySoundA@PSoundChannelWin32@@UAEHABVPSound@@H@Z @3723 NONAME
     ?PlayText@PVXMLSession@@UAEHABVPString@@W4TextType@PTextToSpeech@@HH@Z @24797 NONAME
     ?PluginLoaderStartup_PString_loader@PWLibFactoryLoader@@3HA @16805 NONAME
@@ -13884,6 +13941,7 @@ EXPORTS
     ?PostNew@PODBCRecord@@QAEHAAVRow@PODBC@@@Z @16810 NONAME
     ?PostUpdate@PODBCRecord@@QAEHAAVRow@PODBC@@@Z @16811 NONAME
     ?PPlugin_PNatMethod_STUN_Registration_Instance@@3VPPlugin_PNatMethod_STUN_Registration@@A @27330 NONAME
+    ?PPlugin_PSoundChannel_DirectSound_Registration_Instance@@3VPPlugin_PSoundChannel_DirectSound_Registration@@A @27846 NONAME
     ?PPlugin_PSoundChannel_WAVFile_Registration_Instance@@3VPPlugin_PSoundChannel_WAVFile_Registration@@A @27749 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_Registration_Instance@@3VPPlugin_PSoundChannel_WindowsMultimedia_Registration@@A @3725 NONAME
     ?PPlugin_PVideoInputDevice_FakeVideo_Registration_Instance@@3VPPlugin_PVideoInputDevice_FakeVideo_Registration@@A @3840 NONAME
@@ -14114,6 +14172,7 @@ EXPORTS
     ?Read@PSerialChannel@@UAEHPAXH@Z @3124 NONAME
     ?Read@PSocket@@UAEHPAXH@Z @3125 NONAME
     ?Read@PSoundChannel@@UAEHPAXH@Z @3126 NONAME
+    ?Read@PSoundChannelDirectSound@@UAEHPAXH@Z @27847 NONAME
     ?Read@PSoundChannelWin32@@UAEHPAXH@Z @3734 NONAME
     ?Read@PSoundChannel_WAVFile@@UAEHPAXH@Z @27754 NONAME
     ?Read@PSSLChannel@@UAEHPAXH@Z @24988 NONAME
@@ -14207,6 +14266,7 @@ EXPORTS
     ?ReadFrom@PTimeInterval@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @5803 NONAME
     ?ReadFrom@PURL@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @25041 NONAME
     ?ReadFrom@PWaveFormat@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @5804 NONAME
+    ?ReadFromDXBuffer@PSoundChannelDirectSound@@AAEHPBXH@Z @27848 NONAME
     ?ReadLine@PInternetProtocol@@UAEHAAVPString@@H@Z @25042 NONAME
     ?ReadLine@PTextFile@@QAEHAAVPString@@@Z @3162 NONAME
     ?ReadPacket@PEthSocket@@QAEHAAVPBYTEArray@@AATAddress@1@1AAGAAHAAPAE@Z @3163 NONAME
@@ -14230,9 +14290,11 @@ EXPORTS
     ?Record@PVXMLRecordableFilename@@UAEXAAVPVXMLChannel@@@Z @25057 NONAME
     ?RecordEnd@PVXMLSession@@UAEXXZ @25058 NONAME
     ?RecordFile@PSoundChannel@@UAEHABVPFilePath@@@Z @3735 NONAME
+    ?RecordFile@PSoundChannelDirectSound@@UAEHABVPFilePath@@@Z @27849 NONAME
     ?RecordFile@PSoundChannelWin32@@UAEHABVPFilePath@@@Z @3736 NONAME
     ?RecordHandler@Table@PODBC@@QAEAAVRow@2@XZ @16815 NONAME
     ?RecordSound@PSoundChannel@@UAEHAAVPSound@@@Z @3737 NONAME
+    ?RecordSound@PSoundChannelDirectSound@@UAEHAAVPSound@@@Z @27850 NONAME
     ?RecordSound@PSoundChannelWin32@@UAEHAAVPSound@@@Z @3738 NONAME
     ?Redraw@PVideoChannel@@UAEHPBX@Z @3170 NONAME
     ?refCount@PTextToSpeech_SAPI@@1PAHA @25059 NONAME
@@ -14530,6 +14592,7 @@ EXPORTS
     ?SetBridge@PVXMLTransferOptions@@QAEXH@Z @25210 NONAME
     ?SetBrightness@PVideoDevice@@UAEHI@Z @3278 NONAME
     ?SetBuffers@PSoundChannel@@UAEHHH@Z @3740 NONAME
+    ?SetBuffers@PSoundChannelDirectSound@@UAEHHH@Z @27851 NONAME
     ?SetBuffers@PSoundChannelWin32@@UAEHHH@Z @3741 NONAME
     ?SetBuffers@PSoundChannel_WAVFile@@UAEHHH@Z @27756 NONAME
     ?SetBufferSize@PChannel@@QAEHH@Z @3280 NONAME
@@ -14621,6 +14684,7 @@ EXPORTS
     ?SetFinalSilence@PVXMLRecordable@@QAEXI@Z @25259 NONAME
     ?SetFormat@PSound@@QAEXIII@Z @3310 NONAME
     ?SetFormat@PSoundChannel@@UAEHIII@Z @3743 NONAME
+    ?SetFormat@PSoundChannelDirectSound@@UAEHIII@Z @27852 NONAME
     ?SetFormat@PSoundChannelWin32@@QAEHABVPWaveFormat@@@Z @3744 NONAME
     ?SetFormat@PSoundChannelWin32@@UAEHIII@Z @3745 NONAME
     ?SetFormat@PSoundChannel_WAVFile@@UAEHIII@Z @27760 NONAME
@@ -14838,6 +14902,7 @@ EXPORTS
     ?SetType@Presence@XMPP@@UAEXABVPString@@@Z @25388 NONAME
     ?SetType@Presence@XMPP@@UAEXW4PresenceType@12@@Z @25389 NONAME
     ?SetType@PSTUNMessage@@QAEXW4MsgType@1@PBE@Z @25390 NONAME
+    ?Setup@PSoundChannelDirectSound@@QAEHXZ @27853 NONAME
     ?SetURLSpace@PHTTPServer@@QAEXABVPHTTPSpace@@@Z @25391 NONAME
     ?SetUser@JID@XMPP@@UAEXABVPString@@@Z @25392 NONAME
     ?SetUserName@PProcess@@QAEHABVPString@@H@Z @3389 NONAME
@@ -14877,6 +14942,7 @@ EXPORTS
     ?SetVoice@PTextToSpeech_Festival@@UAEHABVPString@@@Z @25417 NONAME
     ?SetVoice@PTextToSpeech_SAPI@@UAEHABVPString@@@Z @25418 NONAME
     ?SetVolume@PSoundChannel@@UAEHI@Z @3748 NONAME
+    ?SetVolume@PSoundChannelDirectSound@@UAEHI@Z @27854 NONAME
     ?SetVolume@PSoundChannelWin32@@UAEHI@Z @3749 NONAME
     ?SetVolume@PTextToSpeech_Festival@@UAEHI@Z @25419 NONAME
     ?SetVolume@PTextToSpeech_SAPI@@UAEHI@Z @25420 NONAME
@@ -14976,6 +15042,7 @@ EXPORTS
     ?StartRead@PHTTPSpace@@QBEXXZ @25468 NONAME
     ?StartRead@PReadWriteMutex@@QAEXXZ @3423 NONAME
     ?StartRecording@PSoundChannel@@UAEHXZ @3752 NONAME
+    ?StartRecording@PSoundChannelDirectSound@@UAEHXZ @27855 NONAME
     ?StartRecording@PSoundChannelWin32@@UAEHXZ @3753 NONAME
     ?StartRecording@PSoundChannel_WAVFile@@UAEHXZ @27770 NONAME
     ?StartRecording@PVXMLChannel@@QAEHABVPFilePath@@II@Z @25469 NONAME
@@ -15232,12 +15299,15 @@ EXPORTS
     ?Wait@PSemaphore@@UAEXXZ @3473 NONAME
     ?WaitCondition@PCondMutex@@UAEXXZ @3474 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel@@UAEHXZ @3758 NONAME
+    ?WaitForAllRecordBuffersFull@PSoundChannelDirectSound@@UAEHXZ @27856 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelWin32@@UAEHXZ @3759 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel_WAVFile@@UAEHXZ @27772 NONAME
     ?WaitForPlayCompletion@PSoundChannel@@UAEHXZ @3760 NONAME
+    ?WaitForPlayCompletion@PSoundChannelDirectSound@@UAEHXZ @27857 NONAME
     ?WaitForPlayCompletion@PSoundChannelWin32@@UAEHXZ @3761 NONAME
     ?WaitForPlayCompletion@PSoundChannel_WAVFile@@UAEHXZ @27773 NONAME
     ?WaitForRecordBufferFull@PSoundChannel@@UAEHXZ @3762 NONAME
+    ?WaitForRecordBufferFull@PSoundChannelDirectSound@@UAEHXZ @27858 NONAME
     ?WaitForRecordBufferFull@PSoundChannelWin32@@UAEHXZ @3763 NONAME
     ?WaitForRecordBufferFull@PSoundChannel_WAVFile@@UAEHXZ @27774 NONAME
     ?WaitForTermination@PPipeChannel@@QAEHABVPTimeInterval@@@Z @3479 NONAME
@@ -15272,6 +15342,7 @@ EXPORTS
     ?Write@PSerialChannel@@UAEHPBXH@Z @3492 NONAME
     ?Write@PSocket@@UAEHPBXH@Z @3493 NONAME
     ?Write@PSoundChannel@@UAEHPBXH@Z @3494 NONAME
+    ?Write@PSoundChannelDirectSound@@UAEHPBXH@Z @27859 NONAME
     ?Write@PSoundChannelWin32@@UAEHPBXH@Z @3764 NONAME
     ?Write@PSoundChannel_WAVFile@@UAEHPBXH@Z @27775 NONAME
     ?Write@PSSLChannel@@UAEHPBXH@Z @25644 NONAME
@@ -15321,6 +15392,7 @@ EXPORTS
     ?WriteTo@PIPDatagramSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @3507 NONAME
     ?WriteTo@PIPXSocket@@UAEHPBXHABVAddress@1@G@Z @3508 NONAME
     ?WriteTo@PSocksUDPSocket@@UAEHPBXHABVAddress@PIPSocket@@G@Z @25675 NONAME
+    ?WriteToDXBuffer@PSoundChannelDirectSound@@AAEHPBXH@Z @27860 NONAME
     ?WriteTrap@PSNMP@@SAXAAVPChannel@@W4TrapType@1@ABVPString@@2HKABVPSNMPVarBindingList@@ABVAddress@PIPSocket@@@Z @25676 NONAME
     ?WWWAuthenticateTag@PHTTP@@SAABVPString@@XZ @27597 NONAME
     ?XmlDecl@PXMLParser@@UAEXPBD0H@Z @25678 NONAME
