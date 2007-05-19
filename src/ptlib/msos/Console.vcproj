@@ -845,6 +845,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\sound_directsound.cxx">
+			</File>
+			<File
 				RelativePath="sound_win32.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1501,6 +1504,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\socket.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\sound_directsound.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\spxsock.h">
