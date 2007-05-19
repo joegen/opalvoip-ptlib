@@ -25,6 +25,9 @@
  * Contributor(s): /
  *
  * $Log: sound_directsound.cxx,v $
+ * Revision 1.2  2007/05/19 08:54:45  rjongbloed
+ * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
+ *
  * Revision 1.1  2007/05/15 21:39:26  dsandras
  * Added initial code for a DirectSound plugin thanks to Vincent Luba.
  * Code contributed by NOVACOM (http://www.novacom.be).
@@ -34,10 +37,20 @@
  */
 
 #pragma implementation "sound_directsound.h"
-#include <windows.h>
-#include <math.h>
+
+#include <ptlib.h>
+
+#ifdef P_DIRECTSOUND
 
 #include <ptlib/msos/ptlib/sound_directsound.h>
+
+#include <math.h>
+
+//#include <dxerr9.h>  Doesn't seem to exist for me!
+#define DXGetErrorString9(r) r
+
+
+#pragma comment(lib, "dsound.lib")
 
 
 #define P_FORCE_STATIC_PLUGIN
@@ -46,8 +59,6 @@
 #error "sound_directsound.cxx must be compiled without precompiled headers"
 #endif
 
-#define MIN(a,b)        ( (a) < (b) ? (a) : (b) )
-#define MAX(a,b)        ( (a) > (b) ? (a) : (b) )
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p);   (p)=NULL; } }
 
@@ -169,7 +180,7 @@ PSoundChannelDirectSound::Open (const PString & _device,
  * RETURN :	PString
  */
 PString 
-PSoundChannelDirectSound::GetDefaultDevice (Directions dir)
+PSoundChannelDirectSound::GetDefaultDevice (Directions /*dir*/)
 {
   return PString ("Default");
 }
@@ -244,7 +255,7 @@ PSoundChannelDirectSound::GetDeviceNames (Directions dir)
  * RETURN :
  */
 INT_PTR CALLBACK 
-DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR strDrvName,
+DSoundEnumCallback( GUID* pGUID, LPSTR strDesc, LPSTR /*strDrvName*/,
 				     void* device)
 {
   DirectSoundDevices* devices_array = (DirectSoundDevices *) device;
@@ -398,7 +409,8 @@ PSoundChannelDirectSound::Close()
 DWORD 
 PSoundChannelDirectSound::GetDXBufferFreeSpace ()
 {
-  DWORD dwCursor = 0, freeSpace;
+  DWORD dwCursor = 0;
+  PINDEX freeSpace;
 
   if (mDirection == Player)
       mAudioPlaybackBuffer->GetCurrentPosition (&dwCursor, NULL);
@@ -449,7 +461,7 @@ PSoundChannelDirectSound::Write (const void *buf,
 
       /* Write data from buf to circular buffer */
       written = WriteToDXBuffer (input_buffer, 
-				 MIN (GetDXBufferFreeSpace (), to_write));
+				 PMIN ((PINDEX)GetDXBufferFreeSpace (), to_write));
 
       if (HasPlayCompleted ()) 
 	{
@@ -500,7 +512,7 @@ PSoundChannelDirectSound::Read (void * buf, PINDEX len)
      
       /* Will read from device buffer minimum between the data left to read, and the available space */
       read = ReadFromDXBuffer (output_buffer,
-			       MIN (GetDXBufferFreeSpace (), to_read));
+			       PMIN ((PINDEX)GetDXBufferFreeSpace (), to_read));
       to_read -= read;
       lastReadCount += read;
       output_buffer += read; /* Increment the buffer pointer */
@@ -655,13 +667,12 @@ PSoundChannelDirectSound::SetFormat (unsigned numChannels,
 					  unsigned bitsPerSample)
 {
   PTRACE (4, "PSoundChannelDirectSound (" << ((mDirection == Player) ? "Playback" : "Recording") << ") :: SetFormat");
-  HRESULT hr;
   
   memset (&mWFX, 0, sizeof (mWFX)); 
   mWFX.wFormatTag = WAVE_FORMAT_PCM;
-  mWFX.nChannels = numChannels;
+  mWFX.nChannels = (WORD)numChannels;
   mWFX.nSamplesPerSec = sampleRate;
-  mWFX.wBitsPerSample = bitsPerSample;
+  mWFX.wBitsPerSample = (WORD)bitsPerSample;
   mWFX.nBlockAlign = mWFX.nChannels * (mWFX.wBitsPerSample / 8);
   mWFX.nAvgBytesPerSec = mWFX.nSamplesPerSec * mWFX.nBlockAlign;
   mWFX.cbSize = 0; //ignored
@@ -840,8 +851,8 @@ PSoundChannelDirectSound::InitPlaybackBuffer()
       mDXOffset = 0;
 
       //fill buffer with silence
-      BYTE silence [mDXBufferSize];
-      memset (silence, (mWFX.wBitsPerSample == 8) ? 128 : 0, mDXBufferSize);
+      PBYTEArray silence(mDXBufferSize);
+      memset (silence.GetPointer(), (mWFX.wBitsPerSample == 8) ? 128 : 0, mDXBufferSize);
       WriteToDXBuffer (silence, mDXBufferSize);
 
       mAudioPlaybackBuffer->SetCurrentPosition (0);
@@ -955,7 +966,7 @@ PSoundChannelDirectSound::WaitForPlayCompletion()
  * RETURN :
  */
 BOOL 
-PSoundChannelDirectSound::RecordSound(PSound & sound)
+PSoundChannelDirectSound::RecordSound(PSound & /*sound*/)
 {
   PTRACE (4, "PSoundChannelDirectSound (" << ((mDirection == Player) ? "Playback" : "Recording") << ") :: RecordSound");
   return FALSE;
@@ -968,7 +979,7 @@ PSoundChannelDirectSound::RecordSound(PSound & sound)
  */
 
 BOOL 
-PSoundChannelDirectSound::RecordFile(const PFilePath & filename)
+PSoundChannelDirectSound::RecordFile(const PFilePath & /*filename*/)
 {
   PTRACE (4, "PSoundChannelDirectSound (" << ((mDirection == Player) ? "Playback" : "Recording") << ") :: RecordFile");
   return FALSE;
@@ -1061,7 +1072,7 @@ PSoundChannelDirectSound::SetVolume (unsigned newVal)
   BOOL no_error=TRUE;
   HRESULT hr;
   
-  long volume = (long) (log10(newVal) * 5000.0) - 10000;
+  long volume = (long) (log10((double)newVal) * 5000.0) - 10000;
   switch (mDirection) {
 
   case Player:
@@ -1141,3 +1152,5 @@ PSoundChannelDirectSound::IsOpen () const
   return isOpen;
 }
 
+
+#endif // P_DIRECTSOUND
