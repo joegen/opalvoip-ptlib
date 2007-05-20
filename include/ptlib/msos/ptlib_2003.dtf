@@ -11975,7 +11975,7 @@ EXPORTS
     ?GetLength@PString@@QBEHXZ @5253 NONAME
     ?GetLength@PVideoFile@@UBEJXZ @27401 NONAME
     ?GetLength@SecurityID@@QBEKXZ @5254 NONAME
-    ?GetLetterData@PVideoFont@@SAPAULetterData@1@D@Z @16544 NONAME
+    ?GetLetterData@PVideoFont@@SAPBULetterData@1@D@Z @27531 NONAME
     ?GetLevel@PTrace@@SAIXZ @1566 NONAME
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1567 NONAME
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1568 NONAME
