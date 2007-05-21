@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.213  2007/05/21 06:10:58  csoutheren
+ * Add paramaterless constructor for PIPSocket::InterfaceEntry
+ *
  * Revision 1.212  2007/04/20 07:39:52  csoutheren
  * Applied 1703666 - PIPSocket::Connect change to avoid DNS access
  * Thanks to Fabrizio Ammollo
@@ -2616,6 +2619,10 @@ BOOL PIPSocket::Address::IsRFC1918() const
             &&
             (Byte2() == 168)
           );
+}
+
+PIPSocket::InterfaceEntry::InterfaceEntry()
+{
 }
 
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
