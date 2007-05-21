@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.88  2007/05/21 06:09:25  csoutheren
+ * Add paramaterless constructor for PIPSocket::InterfaceEntry
+ *
  * Revision 1.87  2007/02/19 04:37:19  csoutheren
  * Fixed parsing in PIPSocketAddressAndPort
  *
@@ -854,6 +857,7 @@ class PIPSocket : public PSocket
 
       public:
         /// create an interface entry from a name, IP addr and MAC addr
+        InterfaceEntry();
         InterfaceEntry(
           const PString & _name,
           const Address & _addr,
