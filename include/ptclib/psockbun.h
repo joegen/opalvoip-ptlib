@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.2  2007/05/21 06:35:37  csoutheren
+ * Changed to be descended off PSafeObject
+ *
  * Revision 1.1  2007/05/21 06:06:56  csoutheren
  * Add new socket bundle code to be used to OpalUDPListener
  *
@@ -41,10 +44,11 @@
 #include <ptlib.h>
 #include <ptlib/ipsock.h>
 #include <ptlib/sockets.h>
+#include <ptlib/safecoll.h>
 
-class PInterfaceBundle : public PObject
+class PInterfaceBundle : public PSafeObject
 {
-  PCLASSINFO(PInterfaceBundle, PObject);
+  PCLASSINFO(PInterfaceBundle, PSafeObject);
   public: 
     enum {
       Default_RefreshInterval = 5000
