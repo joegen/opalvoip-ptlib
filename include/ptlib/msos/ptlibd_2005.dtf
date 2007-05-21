@@ -1170,6 +1170,7 @@ EXPORTS
     ??0InputText@PHTML@@QAE@PBDHW4DisableCodes@1@0@Z @1093 NONAME
     ??0InterfaceEntry@PIPSocket@@QAE@ABV01@@Z @1094 NONAME
     ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@100@Z @1095 NONAME
+    ??0InterfaceEntry@PIPSocket@@QAE@XZ @18152 NONAME
     ??0IQ@XMPP@@QAE@AAVPXML@@@Z @1096 NONAME
     ??0IQ@XMPP@@QAE@PAVPXML@@@Z @1097 NONAME
     ??0IQ@XMPP@@QAE@W4IQType@01@PAVPXMLElement@@@Z @1098 NONAME
