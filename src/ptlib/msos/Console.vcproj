@@ -582,6 +582,9 @@
 				RelativePath="..\..\ptclib\psoap.cxx">
 			</File>
 			<File
+				RelativePath="..\..\ptclib\psockbun.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\pssl.cxx">
 			</File>
 			<File
@@ -1287,6 +1290,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS %PWLIB_CONFIGURE_OPTI
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\psoap.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\psockbun.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\pssl.h">
