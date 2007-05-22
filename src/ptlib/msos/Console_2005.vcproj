@@ -2320,6 +2320,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\psockbun.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\pssl.cxx"
 					>
 				</File>
@@ -3086,6 +3090,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\psoap.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\psockbun.h"
 					>
 				</File>
 				<File
