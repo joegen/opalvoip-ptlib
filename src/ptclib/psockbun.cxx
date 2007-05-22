@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.2  2007/05/22 11:50:57  csoutheren
+ * Further implementation of socket bundle
+ *
  * Revision 1.1  2007/05/21 06:07:17  csoutheren
  * Add new socket bundle code to be used to OpalUDPListener
  *
@@ -216,29 +219,35 @@ void PInterfaceBundle::OnRemoveInterface(const InterfaceEntry &)
 
 //////////////////////////////////////////////////
 
-
-PSocketBundle::PSocketBundle(PINDEX _refreshInterval)
-  : PInterfaceBundle(_refreshInterval)
+PSocketBundle::PSocketBundle(PINDEX refreshInterval)
+  : PInterfaceBundle(refreshInterval)
 {
 }
 
-PSocketBundle::~PSocketBundle()
+//////////////////////////////////////////////////
+
+PMultipleSocketBundle::PMultipleSocketBundle(PINDEX _refreshInterval)
+  : PSocketBundle(_refreshInterval)
+{
+}
+
+PMultipleSocketBundle::~PMultipleSocketBundle()
 {
   // delete the sockets
   // TODO
 }
 
-BOOL PSocketBundle::Open(WORD _port)
+BOOL PMultipleSocketBundle::Open(WORD _port)
 {
   if (IsOpen())
     return FALSE;
 
   port = _port;
 
-  return PInterfaceBundle::Open();
+  return PSocketBundle::Open();
 }
 
-void PSocketBundle::OnAddInterface(const InterfaceEntry & entry)
+void PMultipleSocketBundle::OnAddInterface(const InterfaceEntry & entry)
 {
   PUDPSocket * socket = new PUDPSocket(port);
   if (!socket->Listen(entry.GetAddress())) 
@@ -251,7 +260,7 @@ void PSocketBundle::OnAddInterface(const InterfaceEntry & entry)
   }
 }
 
-void PSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
+void PMultipleSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 {
   cout << "Interface removed : " << entry.GetName() << endl;
   SocketInfoMap_T::iterator r = socketInfoMap.find(entry.GetName());
@@ -271,7 +280,7 @@ void PSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 }
 
 
-BOOL PSocketBundle::SendTo(const void * buf, PINDEX len,
+BOOL PMultipleSocketBundle::SendTo(const void * buf, PINDEX len,
                            const PUDPSocket::Address & addr, WORD port,
                            const PString & iface,
                            PINDEX & lastWriteCount)
@@ -294,7 +303,7 @@ BOOL PSocketBundle::SendTo(const void * buf, PINDEX len,
   return TRUE;
 }
 
-BOOL PSocketBundle::ReadFrom(void * buf, PINDEX len,
+BOOL PMultipleSocketBundle::ReadFrom(void * buf, PINDEX len,
                              PIPSocket::Address & addr, WORD & port,
                              PString & iface,
                              PINDEX & lastReadCount)
@@ -336,4 +345,21 @@ BOOL PSocketBundle::ReadFrom(void * buf, PINDEX len,
   return FALSE;
 }
 
+//////////////////////////////////////////////////
 
+PSingleSocketBundle::PSingleSocketBundle(const PString & _theInterface, PINDEX _refreshInterval)
+  : PMultipleSocketBundle(_refreshInterval), theInterface(_theInterface)
+{
+}
+
+void PSingleSocketBundle::OnAddInterface(const InterfaceEntry & entry)
+{
+  if (entry.GetName() == entry)
+    PMultipleSocketBundle::OnAddInterface(entry);
+}
+
+void PSingleSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
+{
+  if (entry.GetName() == entry)
+    PMultipleSocketBundle::OnRemoveInterface(entry);
+}
