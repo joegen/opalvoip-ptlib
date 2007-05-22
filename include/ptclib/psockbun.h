@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.3  2007/05/22 11:50:47  csoutheren
+ * Further implementation of socket bundle
+ *
  * Revision 1.2  2007/05/21 06:35:37  csoutheren
  * Changed to be descended off PSafeObject
  *
@@ -92,6 +95,8 @@ class PSocketBundle : public PInterfaceBundle
 {
   PCLASSINFO(PSocketBundle, PInterfaceBundle)
   public:
+    PSocketBundle(PINDEX refreshInterval = Default_RefreshInterval);
+
     struct SocketInfo {
       SocketInfo()
       { socket = NULL; inUse = FALSE; removed = FALSE; }
@@ -101,12 +106,20 @@ class PSocketBundle : public PInterfaceBundle
       BOOL inUse;
       BOOL removed; 
     };
-
     typedef std::map<std::string, SocketInfo *> SocketInfoMap_T;
     typedef std::vector<SocketInfo *> SocketInfoList_T;
-    PSocketBundle(PINDEX refreshInterval = Default_RefreshInterval);
-    ~PSocketBundle();
-    BOOL Open(WORD port);
+};
+
+//////////////////////////////////////////////////
+
+class PMultipleSocketBundle : public PSocketBundle
+{
+  PCLASSINFO(PMultipleSocketBundle, PSocketBundle)
+  public:
+    PMultipleSocketBundle(PINDEX refreshInterval = Default_RefreshInterval);
+    ~PMultipleSocketBundle();
+
+    BOOL Open(WORD _port);
 
     void OnAddInterface(const InterfaceEntry & entry);
     void OnRemoveInterface(const InterfaceEntry & entry);
@@ -124,6 +137,21 @@ class PSocketBundle : public PInterfaceBundle
     WORD port;
     SocketInfoMap_T socketInfoMap;
     SocketInfoList_T removedSockets;
+};
+
+//////////////////////////////////////////////////
+
+class PSingleSocketBundle : public PMultipleSocketBundle
+{
+  PCLASSINFO(PSingleSocketBundle, PMultipleSocketBundle)
+  public:
+    PSingleSocketBundle(const PString & theInterface, PINDEX refreshInterval = Default_RefreshInterval);
+
+    void OnAddInterface(const InterfaceEntry & entry);
+    void OnRemoveInterface(const InterfaceEntry & entry);
+
+  protected:
+    PString theInterface;
 };
 
 #endif
