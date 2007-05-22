@@ -21,7 +21,7 @@ SockBundleProcess::SockBundleProcess()
 
 void SockBundleProcess::Main()
 {
-  PSocketBundle bundle;
+  PMultipleSocketBundle bundle;
 
   if (!bundle.Open(1720)) {
     cout << "Cannot open socket bundle" << endl;
