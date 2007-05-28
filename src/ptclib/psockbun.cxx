@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.3  2007/05/28 11:26:50  hfriederich
+ * Fix compilation
+ *
  * Revision 1.2  2007/05/22 11:50:57  csoutheren
  * Further implementation of socket bundle
  *
@@ -129,7 +132,7 @@ void PInterfaceBundle::UpdateThreadMain()
 {
   // check for interface changes every 5 seconds
   while (threadRunning) {
-    Sleep(5000);
+    PThread::Sleep(5000);
     RefreshInterfaceList();
   }
 }
