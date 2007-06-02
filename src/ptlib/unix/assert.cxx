@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.22  2007/06/02 12:50:05  dsandras
+ * Removed redundant header.
+ *
  * Revision 1.21  2007/02/12 23:46:34  csoutheren
  * Applied 1611486 - The environment variable PWLIB_ASSERT_ACTION
  * Thanks to Vyacheslav Frolov
@@ -96,7 +99,6 @@
  *
  */
 
-#include <stdexcept>
 
 #include <ptlib.h>
 
