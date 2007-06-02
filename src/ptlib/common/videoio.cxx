@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.71  2007/06/02 14:40:24  dsandras
+ * Fixed source / destination width and height inversion when setting up
+ * the converter, which was breaking things for cameras not supporting
+ * the requested frame sizes. Added more debug output.
+ *
  * Revision 1.70  2007/04/20 06:47:48  csoutheren
  * Really disable video code when video is turned off
  *
@@ -946,14 +951,13 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Resize
   else
   {
     if (CanCaptureVideo())
-      converter->SetSrcFrameSize(width, height);
-    else
       converter->SetDstFrameSize(width, height);
+    else
+      converter->SetSrcFrameSize(width, height);
     converter->SetResizeMode(resizeMode);
   }
 
-  PTRACE(3,"PVidDev\tColour converter used from " << converter->GetSrcFrameWidth() << 'x' << converter->GetSrcFrameHeight()
-                                        << " to " << converter->GetDstFrameWidth() << 'x' << converter->GetDstFrameHeight());
+  PTRACE(3,"PVidDev\tColour converter used from " << converter->GetSrcFrameWidth() << 'x' << converter->GetSrcFrameHeight() << " [" << converter->GetSrcColourFormat() << "]" << " to " << converter->GetDstFrameWidth() << 'x' << converter->GetDstFrameHeight() << " [" << converter->GetDstColourFormat() << "]");
 
   return TRUE;
 }
