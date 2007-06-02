@@ -68,6 +68,7 @@ public:
   BOOL NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
+  BOOL RefreshCapabilities();
 
   int    videoFd;
   struct video_capability videoCapability;
