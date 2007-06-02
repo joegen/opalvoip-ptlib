@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.27  2007/06/02 12:10:27  dsandras
+ * Added patch from Michael Smith <msmith cbnco com> refreshing video
+ * capabilities when appropriate. Thanks!
+ *
  * Revision 1.26  2007/05/16 09:10:42  csoutheren
  * Removed warnings with gcc 4.2.0
  *
@@ -764,8 +768,7 @@ BOOL PVideoInputDevice_V4L::Open(const PString & devName, BOOL startImmediate)
   }
   
   // get the device capabilities
-  if (::ioctl(videoFd, VIDIOCGCAP, &videoCapability) < 0)  {
-    PTRACE(1,"PVideoInputDevice_V4L:: get device capablilities failed : "<< ::strerror(errno));
+  if (!RefreshCapabilities()) {
     ::close (videoFd);
     videoFd = -1;
     return FALSE;
@@ -957,8 +960,11 @@ BOOL PVideoInputDevice_V4L::SetVideoFormat(VideoFormat newFormat)
   channel.norm = fmt[newFormat];
 
   // set the information
-  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) >= 0)
+  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) >= 0) {
+    // format change might affect frame size limits; grab them again
+    RefreshCapabilities();
     return TRUE;
+  }
 
   PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
 
@@ -1008,6 +1014,9 @@ BOOL PVideoInputDevice_V4L::SetChannel(int newChannel)
     return FALSE;
   }
   
+  // it's unlikely that channel change would affect frame size limits,
+  // but grab them again all the same
+  RefreshCapabilities();
   return TRUE;
 }
 
@@ -1046,6 +1055,8 @@ BOOL PVideoInputDevice_V4L::SetVideoChannelFormat (int newNumber, VideoFormat vi
     return FALSE;
   }
 
+  // format change may affect frame size limits
+  RefreshCapabilities();
   return TRUE;
 }
 
@@ -1616,5 +1627,15 @@ BOOL PVideoInputDevice_V4L::TestAllFormats()
 {
   return TRUE;
 }
+
+BOOL PVideoInputDevice_V4L::RefreshCapabilities()
+{
+  if (::ioctl(videoFd, VIDIOCGCAP, &videoCapability) < 0)  {
+    PTRACE(1,"PVideoInputV4lDevice:: get device capablilities failed : "<< ::strerror(errno));
+    return FALSE;
+  }
+  return TRUE;
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////

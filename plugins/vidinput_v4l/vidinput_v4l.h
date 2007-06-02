@@ -69,6 +69,7 @@ public:
   BOOL NormalReadProcess(BYTE*, PINDEX*);
 
   void ClearMapping();
+  BOOL RefreshCapabilities();
 
   PAdaptiveDelay m_pacing;
 
