@@ -31,6 +31,10 @@
  *  Nicola Orru' <nigu@itadinanta.it>
  *
  * $Log: vidinput_v4l2.cxx,v $
+ * Revision 1.11.4.11  2007/06/02 12:21:22  dsandras
+ * Fixed problems with the sa7134 card and with newer kernels thanks to
+ * Michael Smith <msmith cbnco com>. Many thanks !
+ *
  * Revision 1.11.4.10  2007/02/19 22:28:42  dsandras
  * Backported patch from HEAD to fix OpenSolaris V4L2 support thanks Elaine
  * Xiong <elaine xiong sun com>.
@@ -267,6 +271,11 @@ BOOL PVideoInputDevice_V4L2::Open(const PString & devName, BOOL startImmediate)
   PTRACE(6,"PVidInDev\topen, fd=" << videoFd);
   deviceName=name;
 
+  // Don't share the camera device with subprocesses - they could cause
+  // EBUSY errors on VIDIOC_STREAMON if the parent tries to close and reopen
+  // the camera while the child is still running.
+  ::fcntl(videoFd, F_SETFD, FD_CLOEXEC);
+
   // get the device capabilities
   if (::ioctl(videoFd, VIDIOC_QUERYCAP, &videoCapability) < 0) {
     PTRACE(1,"PVidInDev\tQUERYCAP failed : " << ::strerror(errno));
@@ -346,9 +355,11 @@ BOOL PVideoInputDevice_V4L2::Start()
 
     /* Queue all buffers */
     currentvideoBuffer = 0;
+
+    struct v4l2_buffer buf;
+    memset(&buf, 0, sizeof(buf));
     for (unsigned int i=0; i<videoBufferCount; i++) {
 
-       struct v4l2_buffer buf;
        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
        buf.memory = V4L2_MEMORY_MMAP;
        buf.index = i;
@@ -434,23 +445,8 @@ BOOL PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
       {V4L2_STD_NTSC, "NTSC"},
       {V4L2_STD_SECAM, "SECAM"} };
 
-  struct v4l2_standard videoEnumStd;
-  memset(&videoEnumStd, 0, sizeof(struct v4l2_standard));
-  videoEnumStd.index = 0;
-  while (1) {
-    if (::ioctl(videoFd, VIDIOC_ENUMSTD, &videoEnumStd) < 0) {
-      PTRACE(1,"VideoInputDevice\tEnumStd failed : " << ::strerror(errno));    
-      videoEnumStd.id = V4L2_STD_PAL;
-      break; 
-    }
-    if (videoEnumStd.id == fmt[newFormat].code) {
-      break;
-    }
-    videoEnumStd.index++;
-  }
-
   // set the video standard
-  if (::ioctl(videoFd, VIDIOC_S_STD, &videoEnumStd.id) < 0) {
+  if (::ioctl(videoFd, VIDIOC_S_STD, &fmt[newFormat].code) < 0) {
     PTRACE(1,"VideoInputDevice\tS_STD failed : " << ::strerror(errno));
   }
 
@@ -469,7 +465,6 @@ int PVideoInputDevice_V4L2::GetNumChannels()
     videoEnumInput.index = 0;
     while (1) {
       if (::ioctl(videoFd, VIDIOC_ENUMINPUT, &videoEnumInput) < 0) {
-        PTRACE(1,"VideoInputDevice\tEnumInput failed : " << ::strerror(errno));    
         break;
       }
       else
@@ -622,13 +617,28 @@ BOOL PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
                                                 unsigned & maxWidth,
                                                 unsigned & maxHeight) 
 {
-  /* Not used in V4L2 */
   minWidth=0;
   maxWidth=65535;
   minHeight=0;
   maxHeight=65535;
 
-  return FALSE;
+  // Before 2.6.19 there is no official way to enumerate frame sizes
+  // in V4L2, but we can use VIDIOC_TRY_FMT to find the largest supported
+  // size. This is roughly what the kernel V4L1 compatibility layer does.
+
+  struct v4l2_format fmt;
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (::ioctl(videoFd, VIDIOC_G_FMT, &fmt) < 0) {
+    return FALSE;
+  }
+
+  fmt.fmt.pix.width = fmt.fmt.pix.height = 10000;
+  if (::ioctl(videoFd, VIDIOC_TRY_FMT, &fmt) < 0) {
+    return FALSE;
+  }
+  maxWidth = fmt.fmt.pix.width;
+  maxHeight = fmt.fmt.pix.height;
+  return TRUE;
 }
 
 
@@ -741,7 +751,7 @@ void PVideoInputDevice_V4L2::ClearMapping()
 
 BOOL PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  PTRACE(1,"PVidInDev\tGetFrameData()");
+  PTRACE(8,"PVidInDev\tGetFrameData()");
 
   if (frameRate>0) {
     PTimeInterval delay;
@@ -764,7 +774,7 @@ BOOL PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 
 BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
-  PTRACE(1,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
+  PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
 
   if (!started)
     return NormalReadProcess(buffer, bytesReturned);
@@ -776,8 +786,13 @@ BOOL PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesRe
   buf.index = currentvideoBuffer;
 
   if (::ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
-    PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
-    return FALSE;
+    // strace resistance
+    if (errno == EINTR) {
+        if (::ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
+          PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
+          return FALSE;
+        }
+    }
   }
 
   currentvideoBuffer = (currentvideoBuffer+1) % NUM_VIDBUF;
