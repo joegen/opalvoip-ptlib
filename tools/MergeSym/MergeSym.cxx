@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.19  2007/06/04 08:31:31  rjongbloed
+ * Added ability for MergeSym to output new DEF file to different location, not changing the source DEF file.
+ *
  * Revision 1.18  2006/07/09 09:46:25  csoutheren
  * Updated to work with VS 2005
  * Thanks to Martin Brown
@@ -107,7 +110,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 4, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 5, ReleaseCode, 0)
 {
 }
 
@@ -121,21 +124,28 @@ void MergeSym::Main()
   PArgList & args = GetArguments();
   args.Parse("vsd:x:I:");
 
-  PFilePath lib_filename, def_filename;
+  PFilePath lib_filename, def_filename, out_filename;
 
   switch (args.GetCount()) {
-    case 2 :
+    case 3 :
+      out_filename = args[2];
       def_filename = args[1];
+      lib_filename = args[0];
+      break;
+
+    case 2 :
+      def_filename = out_filename = args[1];
       lib_filename = args[0];
       break;
 
     case 1 :
       lib_filename = def_filename = args[0];
       def_filename.SetType(".def");
+      out_filename = def_filename;
       break;
 
     default :
-      PError << "usage: MergeSym [ -v ] [ -s ] [ -d dumpbin ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
+      PError << "usage: MergeSym [ -v ] [ -s ] [ -d dumpbin ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] [ outfile[.def] ] ]";
       SetTerminationValue(1);
       return;
   }
@@ -151,6 +161,9 @@ void MergeSym::Main()
 
   if (def_filename.GetType().IsEmpty())
     def_filename.SetType(".def");
+
+  if (out_filename.GetType().IsEmpty())
+    out_filename.SetType(".def");
 
   SortedSymbolList def_symbols;
 
@@ -277,7 +290,7 @@ void MergeSym::Main()
 
   PTextFile symfile;
  // if (args.HasOption('s')) {
-    PFilePath sym_filename = def_filename;
+    PFilePath sym_filename = out_filename;
     sym_filename.SetType(".sym");
     if (!symfile.Open(sym_filename, PFile::WriteOnly))
       cerr << "Could not open symbol file " << sym_filename << endl;
@@ -346,15 +359,15 @@ void MergeSym::Main()
 
     // If file is read/only, set it to read/write
     PFileInfo info;
-    if (PFile::GetInfo(def_filename, info)) {
+    if (PFile::GetInfo(out_filename, info)) {
       if ((info.permissions&PFileInfo::UserWrite) == 0) {
-        PFile::SetPermissions(def_filename, info.permissions|PFileInfo::UserWrite);
-        cout << "Setting \"" << def_filename << "\" to read/write mode." << flush;
-        PFile::Copy(def_filename, def_filename+".original");
+        PFile::SetPermissions(out_filename, info.permissions|PFileInfo::UserWrite);
+        cout << "Setting \"" << out_filename << "\" to read/write mode." << flush;
+        PFile::Copy(out_filename, out_filename+".original");
       }
     }
 
-    if (def.Open(def_filename, PFile::WriteOnly)) {
+    if (def.Open(out_filename, PFile::WriteOnly)) {
       SortedSymbolList merged_symbols;
       merged_symbols.DisallowDeleteObjects();
 
@@ -383,7 +396,7 @@ void MergeSym::Main()
         cout << merged_symbols.GetSize() << " symbols written." << endl;
     }
     else {
-      PError << "Could not create file " << def_filename << ':' << def.GetErrorText() << endl;
+      PError << "Could not create file " << out_filename << ':' << def.GetErrorText() << endl;
       SetTerminationValue(1);
     }
   }
