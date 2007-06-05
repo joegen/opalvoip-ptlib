@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.20  2007/06/05 00:57:48  rjongbloed
+ * Fixed output of separate DEF file to source file when no symbols change.
+ *
  * Revision 1.19  2007/06/04 08:31:31  rjongbloed
  * Added ability for MergeSym to output new DEF file to different location, not changing the source DEF file.
  *
@@ -353,7 +356,10 @@ void MergeSym::Main()
 
   if (added == 0 && removed == 0)
     cout << "\nNo changes to symbols.\n";
-  else {
+  else
+    cout << "\nSymbols merged: " << added << " added, " << removed << " removed.\n";
+
+  if (added != 0 || removed != 0 || def_filename != out_filename) {
     if (args.HasOption('v'))
       cout << "Writing .DEF file..." << flush;
 
@@ -385,7 +391,6 @@ void MergeSym::Main()
         if (args.HasOption('v') && i%100 == 0)
           cout << '.' << flush;
       }
-      cout << "\nSymbols merged: " << added << " added, " << removed << " removed.\n";
 
       for (i = 0; i < def_file_lines.GetSize(); i++)
         def << def_file_lines[i] << '\n';
