@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.18  2007/06/09 05:43:55  rjongbloed
+ * Added ability for PSafePtr to be used as an garbage collecting pointer when not
+ *   contained within a collection. Last PSafePtr reference to go out of scope deletes
+ *   the object, provided it has never been in a PSafeCollection.
+ *
  * Revision 1.17  2007/05/09 12:38:44  csoutheren
  * Applied 1705751 - Safer and better PSafeCollection logs (2nd patch)
  * Thanks to Fabrizio Ammollo
@@ -135,16 +140,21 @@ BOOL PSafeObject::SafeReference()
 }
 
 
-void PSafeObject::SafeDereference()
+BOOL PSafeObject::SafeDereference()
 {
+  BOOL mayBeDeleted = FALSE;
+
   PStringStream str;
   safetyMutex.Wait();
   if (PAssert(safeReferenceCount > 0, PLogicError)) {
     safeReferenceCount--;
+    mayBeDeleted = safeReferenceCount == 0 && !safelyBeingRemoved;
     str << "SafeColl\tDecrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this;
   }
   safetyMutex.Signal();
   PTRACE(6, str);
+
+  return mayBeDeleted;
 }
 
 
@@ -350,16 +360,16 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
   if (obj == NULL)
     return;
 
+  // Make sure SfeRemove() called before SafeDereference() to avoid race condition
+  if (deleteObjects) {
+    obj->SafeRemove();
+
+    removalMutex.Wait();
+    toBeRemoved.Append(obj);
+    removalMutex.Signal();
+  }
+
   obj->SafeDereference();
-
-  if (!deleteObjects)
-    return;
-
-  obj->SafeRemove();
-
-  removalMutex.Wait();
-  toBeRemoved.Append(obj);
-  removalMutex.Signal();
 }
 
 
@@ -691,8 +701,11 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
       break;
   }
 
-  if (ref == WithDereference)
-    currentObject->SafeDereference();
+  if (ref == WithDereference && currentObject->SafeDereference()) {
+    PTRACE(6, "SafeColl\tDeleting object ("<<(void *)currentObject<<")");
+    delete currentObject;
+    currentObject = NULL;
+  }
 }
 
 
