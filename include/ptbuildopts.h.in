@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.47.2.3  2007/06/09 18:42:19  dsandras
+ * Backported patch from HEAD.
+ *
  * Revision 1.47.2.2  2006/02/23 00:31:03  csoutheren
  * Backport from head
  *
@@ -523,6 +526,7 @@
 #undef P_AUDIO
 #undef P_ALSA
 #undef P_VIDEO
+#undef P_DIRECTSHOW
 #undef NO_VIDEO_CAPTURE
 
 #undef P_VXML
