@@ -136,31 +136,29 @@ class PSmartPointer : public PObject
 };
 
 
-/** This macro is used to declare a smart pointer class members.
-The class #cls# is the smart pointer, descended from the #par# class, to the
-#type# class.
-
-The macro declares in the class the following functions:
-\begin{verbatim}
-      PCLASSINFO(cls, par);
-        Standard class info.
-
-      type * operator->() const;
-        Access to the members of the smart object in the smart pointer.
-
-      type & operator*() const;
-        Access to the value of the smart object in the smart pointer.
-\end{verbatim}
+/** This template class creates a type safe version of PSmartPointer.
 */
-#define PSMART_POINTER_INFO(cls, par, type) \
-  PCLASSINFO(cls, par) \
-  public: \
-    type * operator->() const \
-      { return (type *)PAssertNULL(object); } \
-    type & operator*() const \
-      { return *(type *)PAssertNULL(object); } \
-    operator type*() const \
-      { return (type *)object; }
+template <class T> class PSmartPtr : public PSmartPointer
+{
+  PCLASSINFO(PSmartPtr, PSmartPointer);
+  public:
+    /// Constructor
+    PSmartPtr(T * ptr = NULL)
+      : PSmartPointer(ptr) { }
+
+    /// Access to the members of the smart object in the smart pointer.
+    T * operator->() const
+      { return (T *)PAssertNULL(object); }
+
+    /// Access to the dereferenced smart object in the smart pointer.
+    T & operator*() const
+      { return *(T *)PAssertNULL(object); }
+
+    /// Access to the value of the smart pointer.
+    operator T*() const
+      { return (T *)object; }
+};
+
 
 #endif
 
