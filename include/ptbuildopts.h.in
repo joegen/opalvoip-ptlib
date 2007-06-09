@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.59  2007/06/09 17:25:47  dsandras
+ * Integrated DirectShow support from Luc Saillard <luc saillard org> with
+ * the help of Matthias Schneider <ma30002000 yahoo de>.
+ *
  * Revision 1.58  2007/05/19 08:54:42  rjongbloed
  * Further integration of DirectSound plugin thanks to Vincent Luba.and NOVACOM (http://www.novacom.be).
  *
@@ -653,6 +657,7 @@
 #undef P_AUDIO
 #undef P_ALSA
 #undef P_DIRECTSOUND
+#undef P_DIRECTSHOW
 #undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
