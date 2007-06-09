@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.66  2007/06/09 17:23:28  dsandras
+ * Added UYVY422 resizing method thanks to Luc Saillard <luc saillard org>.
+ * Thanks!
+ *
  * Revision 1.65  2007/04/24 08:28:52  csoutheren
  * Add backwards compatible API
  *
@@ -307,6 +311,7 @@ PSYNONYM_COLOUR_CONVERTER(RGB24,  RGB24);
 PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
 PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
 PSYNONYM_COLOUR_CONVERTER(BGR32,  BGR32);
+PSYNONYM_COLOUR_CONVERTER(UYVY422,UYVY422);
 PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
 PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
@@ -383,6 +388,10 @@ class PStandardColourConverter : public PColourConverter
       PINDEX * bytesReturned,
       unsigned srcIncrement,
       unsigned dstIncrement
+    ) const;
+    void ResizeUYVY422(
+      const BYTE *src_uyvy,
+      BYTE *dst_uyvy
     ) const;
     void ResizeYUV422(
       const BYTE * src,
@@ -2234,6 +2243,120 @@ PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV420P)
 
   return TRUE;
 }
+
+
+/*
+ * Format UYVY or UYVY422(non planar) 4x4
+ *
+ * off: 0  U00 Y00 V01 Y00 U02 Y01 V03 Y01
+ * off: 8  U10 Y10 V11 Y10 U12 Y11 V13 Y11
+ * off:16  U20 Y20 V21 Y20 U22 Y21 V23 Y21
+ * off:24  U30 Y30 V31 Y30 U32 Y31 V33 Y31
+ * length:32 bytes
+ */
+PSTANDARD_COLOUR_CONVERTER(UYVY422, UYVY422)
+{
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  
+  if (srcFrameBuffer == dstFrameBuffer) {
+	if (srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight) 
+		return TRUE;
+	else if(srcFrameWidth < dstFrameWidth || srcFrameHeight < dstFrameHeight)
+		return FALSE;
+  }
+
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+    memcpy(dstFrameBuffer,srcFrameBuffer,srcFrameWidth*srcFrameHeight*2);
+  else
+    ResizeUYVY422(srcFrameBuffer, dstFrameBuffer);
+
+  return TRUE;
+}
+
+/*
+ * Format UYVY (or UYVY422) non planar (4x4)
+ *
+ * off: 0  U00 Y00 V01 Y00 U02 Y01 V03 Y01
+ * off: 8  U10 Y10 V11 Y10 U12 Y11 V13 Y11
+ * off:16  U20 Y20 V21 Y20 U22 Y21 V23 Y21
+ * off:24  U30 Y30 V31 Y30 U32 Y31 V33 Y31
+ * length:32 bytes
+ *
+ * NOTE: This algorithm works only if the width and the height is pair.
+ */
+void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyvy) const
+{
+  const BYTE *s;
+  BYTE *d;
+  unsigned int i, x, h;  
+  unsigned int npixels = dstFrameWidth * dstFrameHeight;
+
+  s = src_uyvy;
+  d = dst_uyvy;
+
+  if ( (srcFrameWidth * srcFrameHeight) < npixels ) {
+
+     // dest is bigger than the source. No subsampling.
+     // Place the src in the middle of the destination.
+     unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
+     unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
+     unsigned int bpixels = yOffset * dstFrameWidth;
+
+     /* Top border */
+     for (h=0; h<yOffset; h++)
+      {
+	for (x=0; x<dstFrameWidth/2; x++)
+	 {
+	   *d++ = BLACK_U;
+	   *d++ = BLACK_Y;
+	   *d++ = BLACK_V;
+	   *d++ = BLACK_Y;
+	 }
+      }
+
+     for (h=0; h<srcFrameHeight; h+=2)
+      {
+        /* Left border */
+       	for (x=0; x<xOffset/2; x++)
+	 {
+	   *d++ = BLACK_U;
+	   *d++ = BLACK_Y;
+	   *d++ = BLACK_V;
+	   *d++ = BLACK_Y;
+	 }
+
+        /* Copy the first line keeping all information */
+	memcpy(d, s, srcFrameWidth*2);
+	d += srcFrameWidth*2;
+        /* Right and Left border */
+       	for (x=0; x<xOffset/2; x++)
+	 {
+	   *d++ = BLACK_U;
+	   *d++ = BLACK_Y;
+	   *d++ = BLACK_V;
+	   *d++ = BLACK_Y;
+	 }
+      }
+     for (h=0; h<yOffset; h++)
+      {
+	for (x=0; x<dstFrameWidth/2; x++)
+	 {
+	   *d++ = BLACK_U;
+	   *d++ = BLACK_Y;
+	   *d++ = BLACK_V;
+	   *d++ = BLACK_Y;
+	 }
+      }
+
+  } else {
+
+     /* FIXME */
+
+   }
+
+}
+
 
 /*
  * Format UYVY or UYVY422(non planar) 4x4
