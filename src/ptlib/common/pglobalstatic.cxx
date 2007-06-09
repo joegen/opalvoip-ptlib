@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.9  2007/06/09 17:25:48  dsandras
+ * Integrated DirectShow support from Luc Saillard <luc saillard org> with
+ * the help of Matthias Schneider <ma30002000 yahoo de>.
+ *
  * Revision 1.8  2007/05/13 10:05:18  dsandras
  * Fixed misplaced #if P_VIDFILE thanks to Matthias Schneider
  * <ma30002000 yahoo de>. Thanks a lot!
@@ -97,6 +101,9 @@
     PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
     #if ! defined(NO_VIDEO_CAPTURE)
       PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+      #if defined(P_DIRECTSHOW) 
+        PWLIB_STATIC_LOAD_PLUGIN(DirectShow, PVideoInputDevice)
+      #endif /*P_DIRECTSHOW*/
     #endif
   #endif
 
