@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.14  2007/06/09 05:34:22  rjongbloed
+ * Fixed legacy PSoundChannel::Open() function so creates the correct plug in device.
+ *
  * Revision 1.13  2007/04/13 07:03:20  rjongbloed
  * Added WAV file audio device "plug in".
  *
@@ -232,18 +235,11 @@ BOOL PSoundChannel::Open(const PString & device,
                          unsigned sampleRate,
                          unsigned bitsPerSample)
 {
-  if (baseChannel == NULL) {
-    PStringArray names = GetDriverNames();
-    if (names.GetSize() == 0)
-      return FALSE;
+  if (baseChannel != NULL)
+    return baseChannel->Open(device, dir, numChannels, sampleRate, bitsPerSample);
 
-    baseChannel = CreateChannel(names[0]);
-  }
-
-  if (baseChannel == NULL)
-    return FALSE;
-
-  return baseChannel->Open(device, dir, numChannels, sampleRate, bitsPerSample);
+  baseChannel = CreateOpenedChannel(PString::Empty(), device, dir, numChannels, sampleRate, bitsPerSample);
+  return baseChannel != NULL;
 }
 
 PString PSoundChannel::GetName() const
