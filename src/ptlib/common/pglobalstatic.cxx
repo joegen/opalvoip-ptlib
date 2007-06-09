@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.5.2.1  2007/06/09 18:42:20  dsandras
+ * Backported patch from HEAD.
+ *
  * Revision 1.5  2005/08/09 09:08:11  rjongbloed
  * Merged new video code from branch back to the trunk.
  *
@@ -70,6 +73,9 @@
 
   #if defined(_WIN32) 
     PWLIB_STATIC_LOAD_PLUGIN(VideoForWindows, PVideoInputDevice);
+    #if defined(P_DIRECTSHOW) 
+      PWLIB_STATIC_LOAD_PLUGIN(DirectShow, PVideoInputDevice)
+    #endif /*P_DIRECTSHOW*/
     PWLIB_STATIC_LOAD_PLUGIN(Window, PVideoOutputDevice);
   #endif
 
