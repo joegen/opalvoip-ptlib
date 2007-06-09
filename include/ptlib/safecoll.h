@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.17  2007/06/09 05:43:55  rjongbloed
+ * Added ability for PSafePtr to be used as an garbage collecting pointer when not
+ *   contained within a collection. Last PSafePtr reference to go out of scope deletes
+ *   the object, provided it has never been in a PSafeCollection.
+ *
  * Revision 1.16  2007/04/20 02:31:14  rjongbloed
  * Added ability to share a single mutex amongst multiple PSafeObjects,
  *   this can help with certain deadlock scenarios.
@@ -199,8 +204,11 @@ class PSafeObject : public PObject
 
        It is recommended that the PSafePtr<> class is used to manage this
        rather than the application calling this function directly.
+
+       @return TRUE if reference count has reached zero and is not being
+               safely deleted elsewhere ie SafeRemove() not called
       */
-    void SafeDereference();
+    BOOL SafeDereference();
 
     /**Lock the object for Read Only access.
        This will lock the object in read only mode. Multiple threads may lock
