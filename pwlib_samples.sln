@@ -115,6 +115,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sockbundle", "samples\sockbundle\sockbundle_2003.vcproj", "{3F866477-F1AA-4EB8-A399-B7971CF49747}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -288,6 +292,12 @@ Global
 		{3B071642-5CE4-4B49-AFE8-8D475DF14F49}.Pseudo-Debug.Build.0 = Debug|Win32
 		{3B071642-5CE4-4B49-AFE8-8D475DF14F49}.Release.ActiveCfg = Release|Win32
 		{3B071642-5CE4-4B49-AFE8-8D475DF14F49}.Release.Build.0 = Release|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Debug.ActiveCfg = Debug|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Debug.Build.0 = Debug|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Pseudo-Debug.ActiveCfg = Debug|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Pseudo-Debug.Build.0 = Debug|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Release.ActiveCfg = Release|Win32
+		{3F866477-F1AA-4EB8-A399-B7971CF49747}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
