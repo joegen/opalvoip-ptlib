@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.67  2007/06/10 06:31:46  rjongbloed
+ * Fixed compiler warnings
+ *
  * Revision 1.66  2007/06/09 17:23:28  dsandras
  * Added UYVY422 resizing method thanks to Luc Saillard <luc saillard org>.
  * Thanks!
@@ -2289,7 +2292,7 @@ void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyv
 {
   const BYTE *s;
   BYTE *d;
-  unsigned int i, x, h;  
+  unsigned int x, h;  
   unsigned int npixels = dstFrameWidth * dstFrameHeight;
 
   s = src_uyvy;
@@ -2301,7 +2304,6 @@ void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyv
      // Place the src in the middle of the destination.
      unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
      unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
-     unsigned int bpixels = yOffset * dstFrameWidth;
 
      /* Top border */
      for (h=0; h<yOffset; h++)
