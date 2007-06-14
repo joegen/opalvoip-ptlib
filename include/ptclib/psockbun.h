@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.5  2007/06/14 00:43:04  csoutheren
+ * Removed warnings on Linux
+ * Fixed Makefiles for new socket bundle code
+ *
  * Revision 1.4  2007/06/10 06:26:50  rjongbloed
  * Major enhancements to the "socket bundling" feature:
  *   singleton thread for monitoring network interfaces
@@ -397,10 +401,10 @@ class PMonitoredSocketChannel : public PChannel
     PString              currentInterface;
     BOOL                 promiscuousReads;
     PIPSocket::Address   remoteAddress;
+    BOOL                 closing;
     WORD                 remotePort;
     PIPSocket::Address   lastReceivedAddress;
     WORD                 lastReceivedPort;
-    BOOL                 closing;
 };
 
 
