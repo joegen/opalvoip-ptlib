@@ -12,6 +12,10 @@ else
   LDSOPTS += -shared
 endif
 
+ifeq ($(MACHTYPE),x86_64)
+  CFLAGS += -fPIC
+endif
+
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) \
