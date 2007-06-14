@@ -165,7 +165,9 @@ if test "${enable_v4l2}z" = "yesz" ; then
                                         #ifdef __sun
                                         #include <sys/types.h>
                                         #include <sys/time.h>
-                                        #endif
+                                        #else
+					#error "not supported"
+					#endif
 					#endif
 				    ],
 				    [
