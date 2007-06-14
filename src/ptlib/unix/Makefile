@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.147  2007/06/14 00:43:04  csoutheren
+# Removed warnings on Linux
+# Fixed Makefiles for new socket bundle code
+#
 # Revision 1.146  2007/04/13 18:17:57  shorne
 # added ODBC support for linux thx Michal Z
 #
@@ -745,6 +749,7 @@ SOURCES	+= \
 	assert.cxx \
         $(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
+	$(COMMON_SRC_DIR)/psockbun.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/ptime.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
