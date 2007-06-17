@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.5  2007/06/17 03:17:52  rjongbloed
+ * Added using empty interface string as "just use predefined fixed interface"
+ *
  * Revision 1.4  2007/06/10 06:26:54  rjongbloed
  * Major enhancements to the "socket bundling" feature:
  *   singleton thread for monitoring network interfaces
@@ -824,7 +827,7 @@ BOOL PSingleMonitoredSocket::WriteTo(const void * buf,
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && theInterface == iface)
+  if (guard.IsLocked() && (iface.IsEmpty() || theInterface == iface))
     return WriteToSocket(buf, len, addr, port, theInfo, lastWriteCount);
 
   return FALSE;
@@ -841,7 +844,7 @@ BOOL PSingleMonitoredSocket::ReadFrom(void * buf,
 {
   PSafeLockReadWrite guard(*this);
 
-  if (!guard.IsLocked() || iface != theInterface)
+  if (!guard.IsLocked() || (iface.IsEmpty() || theInterface == iface))
     return FALSE;
 
   theInfo.socket->SetReadTimeout(timeout);
