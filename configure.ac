@@ -2187,6 +2187,7 @@ dnl look for Direct Sound
 
 dnl MSWIN_DISPLAY    dsound,Direct Sound Support
 dnl MSWIN_CHECK_FILE dsound,dsound.h,P_DIRECTSOUND=1
+dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft DirectX SDK\Include\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio 8\VC\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft Visual Studio .NET 2003\VC7\PlatformSDK\Include\
 dnl MSWIN_CHECK_DIR  dsound,\Program Files\Microsoft SDK\include\
