@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.69  2007/06/18 19:23:40  dsandras
+ * Fixed previous commit.
+ *
  * Revision 1.68  2007/06/18 18:23:01  dsandras
  * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
  * color space conversions using MediaLib.
@@ -1590,7 +1593,6 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
-#endif  
 
   return TRUE;
 }
