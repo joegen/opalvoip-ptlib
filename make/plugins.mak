@@ -13,7 +13,7 @@ else
 endif
 
 ifeq ($(MACHTYPE),x86_64)
-  CFLAGS += -fPIC
+  STDCCFLAGS += -fPIC
 endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
