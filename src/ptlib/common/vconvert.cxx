@@ -26,6 +26,9 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45.2.12  2007/06/18 19:23:27  dsandras
+ * Fixed previous commit.
+ *
  * Revision 1.45.2.11  2007/06/18 18:23:52  dsandras
  * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
  * color space conversions using MediaLib.
@@ -2100,7 +2103,7 @@ void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyv
 {
   const BYTE *s;
   BYTE *d;
-  unsigned int i, x, h;  
+  unsigned int x, h;  
   unsigned int npixels = dstFrameWidth * dstFrameHeight;
 
   s = src_uyvy;
@@ -2112,7 +2115,6 @@ void PStandardColourConverter::ResizeUYVY422(const BYTE *src_uyvy, BYTE *dst_uyv
      // Place the src in the middle of the destination.
      unsigned int yOffset = (dstFrameHeight - srcFrameHeight)/2;
      unsigned int xOffset = (dstFrameWidth - srcFrameWidth)/2;
-     unsigned int bpixels = yOffset * dstFrameWidth;
 
      /* Top border */
      for (h=0; h<yOffset; h++)
