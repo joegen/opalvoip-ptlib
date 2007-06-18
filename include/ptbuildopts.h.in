@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.47.2.4  2007/06/18 18:23:52  dsandras
+ * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
+ * color space conversions using MediaLib.
+ *
  * Revision 1.47.2.3  2007/06/09 18:42:19  dsandras
  * Backported patch from HEAD.
  *
@@ -536,6 +540,8 @@
 #undef P_HTTPSVC
 #undef P_HTTP
 #undef P_CONFIG_FILE
+
+#undef P_MEDIALIB
 
 /////////////////////////////////////////////////
 //

@@ -26,6 +26,10 @@
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.45.2.11  2007/06/18 18:23:52  dsandras
+ * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
+ * color space conversions using MediaLib.
+ *
  * Revision 1.45.2.10  2007/06/09 18:42:20  dsandras
  * Backported patch from HEAD.
  *
@@ -259,6 +263,10 @@
 
 #if  defined(__GNUC__) || defined(__sun) 
 #include "tinyjpeg.h"
+#endif
+
+#ifdef P_MEDIALIB
+#include <mlib.h>
 #endif
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
@@ -1587,6 +1595,27 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   const BYTE    *uplane    = yplane+nbytes;                // 1 byte U for a block of 4 pixels
   const BYTE    *vplane    = uplane+(nbytes/4);            // 1 byte V for a block of 4 pixels
 
+#ifdef P_MEDIALIB
+  const BYTE *y0;
+  const BYTE *y1;
+  const BYTE *cb;
+  const BYTE *cr;
+  unsigned int   x,p;
+
+  for(int i = 0; i < srcFrameHeight; i += 2) {
+    p = i*srcFrameWidth;
+    x = p/4;
+    y0 = yplane + p;
+    y1 = y0 + srcFrameWidth;
+    cb = uplane + x;
+    cr = vplane + x;
+    mlib_VideoColorJFIFYCC2RGB420_Nearest(dstFrameBuffer,
+                                          dstFrameBuffer+3*dstFrameWidth, 
+                                          y0, y1, cb, cr,
+                                          srcFrameWidth);
+    dstFrameBuffer += 6*dstFrameWidth;
+  }
+#else
   unsigned int   pixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
   unsigned int   originalPixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
 
@@ -1652,6 +1681,7 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
+#endif  
 
   return TRUE;
 }
