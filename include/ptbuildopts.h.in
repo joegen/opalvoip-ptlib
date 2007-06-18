@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.60  2007/06/18 18:23:00  dsandras
+ * Added patch from Elaine Xiong <elaine xiong sun com> to optimize
+ * color space conversions using MediaLib.
+ *
  * Revision 1.59  2007/06/09 17:25:47  dsandras
  * Integrated DirectShow support from Luc Saillard <luc saillard org> with
  * the help of Matthias Schneider <ma30002000 yahoo de>.
@@ -535,6 +539,8 @@
 
 #endif
 
+
+#undef P_MEDIALIB
 
 /////////////////////////////////////////////////
 //
