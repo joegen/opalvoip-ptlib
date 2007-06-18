@@ -1012,6 +1012,16 @@ AC_SUBST(HAS_SASL)
 AC_SUBST(HAS_SASL2)
 
 dnl ########################################################################
+dnl check for mediaLib library
+
+HAS_MEDIALIB=no
+AC_CHECK_LIB(mlib, mlib_VideoColorJFIFYCC2RGB420_Nearest, HAS_MEDIALIB=yes, HAS_MEDIALIB=no)
+if test $HAS_MEDIALIB = yes; then
+    AC_DEFINE(P_MEDIALIB)
+    ENDLDLIBS="-lmlib $ENDLDLIBS"
+fi
+
+dnl ########################################################################
 dnl look for OpenLDAP (requires SASL)
 
 dnl MSWIN_DISPLAY    openldap,Open LDAP
