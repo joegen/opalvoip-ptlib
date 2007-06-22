@@ -169,6 +169,7 @@ if test "${enable_v4l2}z" = "yesz" ; then
 					#error "not supported"
 					#endif
 					#endif
+					#include "$VIDEODEV"
 				    ],
 				    [
 				        return 0;
