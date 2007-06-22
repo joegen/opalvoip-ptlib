@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.6  2007/06/22 04:51:40  rjongbloed
+ * Fixed missing mutex release in socket bundle interface monitor thread shut down.
+ *
  * Revision 1.5  2007/06/17 03:17:52  rjongbloed
  * Added using empty interface string as "just use predefined fixed interface"
  *
@@ -136,18 +139,16 @@ void PInterfaceMonitor::Stop()
   // shutdown the update thread
   if (updateThread != NULL) {
     threadRunning.Signal();
+
     mutex.Signal();
     updateThread->WaitForTermination();
     mutex.Wait();
+
     delete updateThread;
     updateThread = NULL;
   }
 
-  // delete the entries in the interface list
-  while (currentInterfaces.GetSize() > 0) {
-    OnRemoveInterface(currentInterfaces[0]);
-    currentInterfaces.RemoveAt(0);
-  }
+  mutex.Signal();
 }
 
 
