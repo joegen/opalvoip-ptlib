@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.6  2007/06/25 05:44:01  rjongbloed
+ * Fixed numerous issues with "bound" managed socket, ie associating
+ *   listeners to a specific named interface.
+ *
  * Revision 1.5  2007/06/14 00:43:04  csoutheren
  * Removed warnings on Linux
  * Fixed Makefiles for new socket bundle code
@@ -284,6 +288,7 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     };
 
     BOOL CreateSocket(SocketInfo & info);
+    BOOL DestroySocket(SocketInfo & info);
 
     BOOL WriteToSocket(
       const void * buf,
@@ -573,9 +578,11 @@ class PSingleMonitoredSocket : public PMonitoredSocketBundle
     /// Call back function for when an interface has been removed from the system
     virtual void OnRemoveInterface(const InterfaceEntry & entry);
 
-    PString    theInterface;
-    bool       interfaceUp;
-    SocketInfo theInfo;
+    BOOL IsInterface(const PString & iface) const;
+
+    PString        theInterface;
+    InterfaceEntry theEntry;
+    SocketInfo     theInfo;
 };
 
 #endif
