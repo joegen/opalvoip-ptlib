@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.50  2007/06/25 20:17:35  csoutheren
+ * Add ability to specify thread name
+ *
  * Revision 1.49  2007/02/20 04:37:22  csoutheren
  * Fix for gcc
  *
@@ -550,6 +553,10 @@ class PThreadMain : public PThread
     PThreadMain(FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn)
     { PThread::Resume(); }
+    PThreadMain(const char * _file, int _line, FnType _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
+        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn)
+    { PThread::Resume(); }
     virtual void Main()
     { (*fn)(); }
     FnType fn;
@@ -575,6 +582,11 @@ class PThread1Arg : public PThread
     typedef void (*FnType)(Arg1Type arg1); 
     PThread1Arg(Arg1Type _arg1, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
+        arg1(_arg1)
+    { PThread::Resume(); }
+    PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
+        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn),
         arg1(_arg1)
     { PThread::Resume(); }
     virtual void Main()
@@ -606,6 +618,11 @@ class PThread2Arg : public PThread
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread), fn(_fn),
         arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
+    PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn),
+        arg1(_arg1), arg2(_arg2)
+    { PThread::Resume(); }
     virtual void Main()
     { (*fn)(arg1, arg2); }
     FnType fn;
@@ -628,6 +645,7 @@ class PThread2Arg : public PThread
    Example ex;
    new PThreadObj<Example>(ex, &Example::Function)
  */
+
 template <typename ObjType>
 class PThreadObj : public PThread
 {
@@ -637,6 +655,11 @@ class PThreadObj : public PThread
     typedef void (ObjType::*ObjTypeFn)(); 
     PThreadObj(ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+        obj(_obj), fn(_fn)
+    { PThread::Resume(); }
+    PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+        psprintf("%s-%s:%i", GetClass(), _file, _line)),
         obj(_obj), fn(_fn)
     { PThread::Resume(); }
     void Main()
@@ -672,6 +695,11 @@ class PThreadObj1Arg : public PThread
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
     PThreadObj1Arg(ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread),
+				obj(_obj), fn(_fn), arg1(_arg1)
+    { PThread::Resume(); }
+    PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
+      : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
+                                psprintf("%s-%s:%i", GetClass(), _file, _line)),
 				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }
     void Main()
