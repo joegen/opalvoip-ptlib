@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.214  2007/06/25 03:46:16  rjongbloed
+ * Added ability to specify an IP address as an interface using the %ifname form, anywhere
+ *   that the "dotted decimal" could be used before. Useful in "demand dial" evironments
+ *   or short lease DHCP where and interfaces IP address may change frequently.
+ *
  * Revision 1.213  2007/05/21 06:10:58  csoutheren
  * Add paramaterless constructor for PIPSocket::InterfaceEntry
  *
@@ -2408,14 +2413,14 @@ bool PIPSocket::Address::operator==(DWORD dw) const
 
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
+  version = 0;
+  memset(&v, 0, sizeof(v));
+
 #if P_HAS_IPV6
 
   struct addrinfo *res = NULL;
   struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
-  
-  version = 0;
-  memset(&v, 0, sizeof(v));
-  
+
   if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
     if (res->ai_family == PF_INET6) {
       // IPv6 addr
@@ -2433,16 +2438,32 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 
 #else //P_HAS_IPV6
 
-  if (::strspn(dotNotation, "0123456789.") < ::strlen(dotNotation))
-    *this = 0;
-  else {
+  DWORD iaddr;
+  if (::strspn(dotNotation, "0123456789.") >= ::strlen(dotNotation) &&
+                    (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
     version = 4;
-    v.four.s_addr = inet_addr((const char *)dotNotation);
-    if (v.four.s_addr == (DWORD)INADDR_NONE)
-      v.four.s_addr = 0;
+    v.four.s_addr = iaddr;
   }
 
 #endif
+
+  else {
+    PINDEX percent = dotNotation.Find('%');
+    if (percent != P_MAX_INDEX) {
+      PString iface = dotNotation.Mid(percent+1);
+      if (!iface.IsEmpty()) {
+        PIPSocket::InterfaceTable interfaceTable;
+        if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+          for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+            if (interfaceTable[i].GetName().NumCompare(iface) == EqualTo) {
+              *this = interfaceTable[i].GetAddress();
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
 
   return *this;
 }
@@ -2622,6 +2643,8 @@ BOOL PIPSocket::Address::IsRFC1918() const
 }
 
 PIPSocket::InterfaceEntry::InterfaceEntry()
+  : ipAddr(GetDefaultIpAny())
+  , netMask(GetDefaultIpAny())
 {
 }
 
@@ -3260,19 +3283,19 @@ BOOL PICMPSocket::OpenSocket(int)
 BOOL PIPSocketAddressAndPort::Parse(const PString & str, WORD defaultPort, char _sep)
 {
   sep = _sep;
-	PINDEX pos = str.Find(sep);
-	if (pos != P_MAX_INDEX) {
-		port    = (WORD)str.Mid(pos+1).AsInteger();
-		if (!PIPSocket::GetHostAddress(str.Left(pos), address))
+  PINDEX pos = str.Find(sep);
+  if (pos != P_MAX_INDEX) {
+    port    = (WORD)str.Mid(pos+1).AsInteger();
+    if (!PIPSocket::GetHostAddress(str.Left(pos), address))
       return FALSE;
-	}
-	else if (port == 0)
+  }
+  else if (port == 0)
     return FALSE;
   else {
-		port = defaultPort;
-		if (!PIPSocket::GetHostAddress(str, address))
+    port = defaultPort;
+    if (!PIPSocket::GetHostAddress(str, address))
       return FALSE;
-	}
+  }
   return TRUE;
 }
 
