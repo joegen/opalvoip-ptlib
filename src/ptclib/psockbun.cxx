@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.7  2007/06/25 05:44:01  rjongbloed
+ * Fixed numerous issues with "bound" managed socket, ie associating
+ *   listeners to a specific named interface.
+ *
  * Revision 1.6  2007/06/22 04:51:40  rjongbloed
  * Fixed missing mutex release in socket bundle interface monitor thread shut down.
  *
@@ -301,8 +305,8 @@ BOOL PInterfaceMonitor::GetInterfaceInfo(const PString & iface, PIPSocket::Inter
 
   for (PINDEX i = 0; i < currentInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = currentInterfaces[i];
-    if ((addr.IsAny()   || addr == entry.GetAddress()) &&
-        (name.IsEmpty() || name == entry.GetName())) {
+    if ((addr.IsAny()   || entry.GetAddress() == addr) &&
+        (name.IsEmpty() || entry.GetName().NumCompare(name) == EqualTo)) {
       info = entry;
       return TRUE;
     }
@@ -388,6 +392,28 @@ BOOL PMonitoredSockets::CreateSocket(SocketInfo & info)
 
   //PTRACE(4, "OpalUDP\tSTUN created socket: " << localAddress << ':' << localPort);
   return TRUE;
+}
+
+
+BOOL PMonitoredSockets::DestroySocket(SocketInfo & info)
+{
+  if (info.socket == NULL)
+    return FALSE;
+
+  BOOL result = info.socket->Close();
+
+  // This is pretty ugly, but needed to make sure multi-threading doesn't crash
+  while (info.usageCount > 0) {
+    UnlockReadWrite();
+    PThread::Sleep(10);
+    if (!LockReadWrite())
+      return FALSE;
+  }
+
+  delete info.socket;
+  info.socket = NULL;
+
+  return result;
 }
 
 
@@ -629,17 +655,7 @@ void PMonitoredSocketBundle::CloseSocket(const SocketInfoMap_T::iterator & iterS
   if (iterSocket == socketInfoMap.end())
     return;
 
-  iterSocket->second.socket->Close();
-
-  // THis is pretty ugle, but needed to make sure multi-threading doesn't crash
-  while (iterSocket->second.usageCount > 0) {
-    UnlockReadWrite();
-    PThread::Sleep(10);
-    if (!LockReadWrite())
-      return;
-  }
-
-  delete iterSocket->second.socket;
+  DestroySocket(iterSocket->second);
   socketInfoMap.erase(iterSocket);
 }
 
@@ -764,30 +780,42 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
 PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & _theInterface, BOOL reuseAddr)
   : PMonitoredSocketBundle(reuseAddr)
   , theInterface(_theInterface)
-  , interfaceUp(false)
 {
-  CreateSocket(theInfo);
 }
 
 
 PSingleMonitoredSocket::~PSingleMonitoredSocket()
 {
-  delete theInfo.socket;
+  DestroySocket(theInfo);
 }
 
 
 PStringArray PSingleMonitoredSocket::GetInterfaces(BOOL /*includeLoopBack*/)
 {
+  PSafeLockReadOnly guard(*this);
+
   PStringList names;
-  if (interfaceUp)
-    names.AppendString(theInterface);
+  if (!theEntry.GetAddress().IsAny())
+    names.AppendString(MakeInterfaceDescription(theEntry));
   return names;
 }
 
 
 BOOL PSingleMonitoredSocket::Open(WORD port)
 {
-  if (!theInfo.socket->Listen(theInterface, 0, port, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive))
+  PSafeLockReadWrite guard(*this);
+
+  if (theEntry.GetAddress().IsAny()) {
+    if (!GetInterfaceInfo(theInterface, theEntry))
+      return FALSE;
+  }
+
+  if (theInfo.socket == NULL) {
+    if (!CreateSocket(theInfo))
+      return FALSE;
+  }
+
+  if (!theInfo.socket->Listen(theEntry.GetAddress(), 0, port, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive))
     return FALSE;
 
   localPort = theInfo.socket->GetPort();
@@ -797,13 +825,17 @@ BOOL PSingleMonitoredSocket::Open(WORD port)
 
 BOOL PSingleMonitoredSocket::IsOpen() const
 {
+  PSafeLockReadOnly guard(*this);
+
   return theInfo.socket != NULL && theInfo.socket->IsOpen();
 }
 
 
 BOOL PSingleMonitoredSocket::Close()
 {
-  return theInfo.socket != NULL && theInfo.socket->Close();
+  PSafeLockReadWrite guard(*this);
+
+  return DestroySocket(theInfo);
 }
 
 
@@ -811,7 +843,7 @@ BOOL PSingleMonitoredSocket::GetAddress(const PString & iface, PIPSocket::Addres
 {
   PSafeLockReadOnly guard(*this);
 
-  if (guard.IsLocked() && (iface.IsEmpty() || theInterface == iface))
+  if (guard.IsLocked() && theInfo.socket != NULL && IsInterface(iface))
     return theInfo.socket->GetLocalAddress(address);
 
   address = PIPSocket::GetDefaultIpAny();
@@ -828,7 +860,7 @@ BOOL PSingleMonitoredSocket::WriteTo(const void * buf,
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && (iface.IsEmpty() || theInterface == iface))
+  if (guard.IsLocked() && theInfo.socket != NULL && IsInterface(iface))
     return WriteToSocket(buf, len, addr, port, theInfo, lastWriteCount);
 
   return FALSE;
@@ -843,26 +875,45 @@ BOOL PSingleMonitoredSocket::ReadFrom(void * buf,
                                       PINDEX & lastReadCount,
                                       const PTimeInterval & timeout)
 {
-  PSafeLockReadWrite guard(*this);
-
-  if (!guard.IsLocked() || (iface.IsEmpty() || theInterface == iface))
+  if (!LockReadWrite())
     return FALSE;
 
-  theInfo.socket->SetReadTimeout(timeout);
-  if (!theInfo.socket->ReadFrom(buf, len, addr, port))
-    return FALSE;
+  BOOL ok = FALSE;
 
-  lastReadCount = theInfo.socket->GetLastReadCount();
-  return TRUE;
+  if (IsInterface(iface)) {
+    theInfo.usageCount++;
+
+    theInfo.socket->SetReadTimeout(timeout);
+
+    UnlockReadWrite();
+    ok = theInfo.socket->ReadFrom(buf, len, addr, port);
+    if (!LockReadWrite())
+      return FALSE;
+
+    lastReadCount = theInfo.socket->GetLastReadCount();
+
+    theInfo.usageCount--;
+  }
+
+  UnlockReadWrite();
+
+  return ok;
 }
 
 
 void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
 {
   // Already locked
-  if (entry.GetName() == theInterface) {
-    interfaceUp = true;
-    theInfo.socket->Listen(entry.GetAddress(), 0, localPort);
+
+  PIPSocket::Address addr;
+  PString name;
+  if (!SplitInterfaceDescription(theInterface, addr, name))
+    return;
+
+  if (entry.GetAddress() == addr && entry.GetName().NumCompare(name) == EqualTo) {
+    theEntry = entry;
+    if (!Open(localPort))
+      theEntry = InterfaceEntry();
   }
 }
 
@@ -870,8 +921,27 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
 void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
 {
   // Already locked
-  if (entry.GetName() == theInterface) {
-    interfaceUp = false;
-    theInfo.socket->Close();
-  }
+
+  if (entry != theEntry)
+    return;
+
+  theEntry = InterfaceEntry();
+  theInfo.socket->Close();
+  delete theInfo.socket;
+  theInfo.socket = NULL;
+}
+
+
+BOOL PSingleMonitoredSocket::IsInterface(const PString & iface) const
+{
+  if (iface.IsEmpty())
+    return TRUE;
+
+  PINDEX percent1 = iface.Find('%');
+  PINDEX percent2 = theInterface.Find('%');
+
+  if (percent1 != P_MAX_INDEX && percent2 != P_MAX_INDEX)
+    return iface.Mid(percent1+1).NumCompare(theInterface.Mid(percent2+1)) == EqualTo;
+
+  return PIPSocket::Address(iface.Left(percent1)) == PIPSocket::Address(theInterface.Left(percent2));
 }
