@@ -27,6 +27,10 @@
  * Contributor(s): brian.lu@sun.com
  *
  * $Log: sound_sunaudio.cxx,v $
+ * Revision 1.1.2.7  2007/06/26 10:58:05  dsandras
+ * Applied patch from Elaine Xion <elaine xiong sun com> to fix
+ * volume settings in the SunAudio plugin. Thanks !
+ *
  * Revision 1.1.2.6  2006/10/12 18:21:21  dsandras
  * Fixed initialization of SUN Audio plugin. (#361646, Brian Lu <brian lu sun com>)
  *
@@ -514,6 +518,8 @@ BOOL PSoundChannelSunAudio::SetVolume(unsigned newVolume)
    if ( newVolume < AUDIO_MIN_GAIN || newVolume > AUDIO_MAX_GAIN )
      return FALSE;
 
+   newVolume = (newVolume * (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN)) / 100;
+
    AUDIO_INITINFO(&audio_info);
    if ( direction == Player )
      audio_info.play.gain = newVolume;
@@ -545,6 +551,8 @@ BOOL  PSoundChannelSunAudio::GetVolume(unsigned & volume)
    }
 
    volume =  ( direction == Player ) ?  audio_info.play.gain : audio_info.record.gain;
+
+   volume = (volume * 100) / (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN);
 
    return TRUE;
 }
