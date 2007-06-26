@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.62  2007/06/26 03:08:29  rjongbloed
+ * Assure some MSVC system symbols are not redefined if already defined.
+ *
  * Revision 1.61  2007/04/08 01:53:16  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -252,11 +255,11 @@ and from the pre-processor options for this project"
 #define PHAS_TEMPLATES
 #endif
 
-#if _MSC_VER>=1300
+#if !defined(__USE_STL__) && (_MSC_VER>=1300)
 #define __USE_STL__ 1
 #endif
 
-#if _MSC_VER>=1400
+#if !defined(_CRT_SECURE_NO_DEPRECATE) && (_MSC_VER>=1400)
 #define _CRT_SECURE_NO_DEPRECATE 1
 #endif
 
