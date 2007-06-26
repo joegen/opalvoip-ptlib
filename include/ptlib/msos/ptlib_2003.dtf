@@ -10962,6 +10962,7 @@ EXPORTS
     ?DestroyContents@PHashTable@@MAEXXZ @1270 NONAME
     ?DestroyContents@PHTTPSpace@@MAEXXZ @22724 NONAME
     ?DestroyContents@Table@PHashTable@@UAEXXZ @1271 NONAME
+    ?DestroySocket@PMonitoredSockets@@IAEHAAUSocketInfo@1@@Z @28020 NONAME
     ?Destruct@PContainer@@IAEXXZ @1272 NONAME
     ?Destruct@PDirectory@@IAEXXZ @7281 NONAME
     ?Detach@?$CComPtrBase@UISpObjectTokenCategory@@@ATL@@QAEPAUISpObjectTokenCategory@@XZ @22725 NONAME
@@ -13368,6 +13369,7 @@ EXPORTS
     ?IsGrabberOpen@PVideoChannel@@UAEHXZ @2027 NONAME
     ?IsGUIProcess@PProcess@@UBEHXZ @2028 NONAME
     ?IsInitialised@PProcess@@SAHXZ @2029 NONAME
+    ?IsInterface@PSingleMonitoredSocket@@IBEHABVPString@@@Z @28021 NONAME
     ?IsIpAddressFamilyV6Supported@PIPSocket@@SAHXZ @2945 NONAME
     ?IsLegalCharacter@PASN_BMPString@@IAEHG@Z @24007 NONAME
     ?IsLoaded@PDynaLink@@UBEHXZ @2030 NONAME
