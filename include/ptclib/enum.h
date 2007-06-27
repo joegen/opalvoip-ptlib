@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.h,v $
+ * Revision 1.6  2007/06/27 15:26:35  shorne
+ * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
+ *
  * Revision 1.5  2005/11/30 12:47:37  csoutheren
  * Removed tabs, reformatted some code, and changed tags for Doxygen
  *
@@ -125,7 +128,58 @@ BOOL ENUMLookup(
 BOOL ENUMLookup(const PString & dn,             ///< DN to lookup
                 const PString & service,        ///< ENUM service to use
                 PString & URL                   ///< resolved URL, if return value is TRUE
-);                                              
+);   
+
+
+//////////////////////////////////////////////////////////////
+/* Uniform Resource Name Resolver Discovery System URN RDS
+   This can be used to Host URI domains on hosting servers.
+    This implementation follows RFC 2915 sect 7.1 Example 2:
+    Example
+	Question: find h323:me@a.com by looking up mydomain.com
+	Query the top most NAPTR record of mydomain.com for h323:me@a.com
+	  IN NAPTR 100   10   ""  ""  ^h323:(.+)@([a-z0-9\-\.]*);*(.*)$/\2.subs.mydomain.com/i 
+	   this converts a.com to a.com.subs.mydomain.com
+	Query H323+D2U NAPTR record for a.com.subs.mydomain.com
+      IN NAPTR 100  50  "s"  "H323+D2U"     ""  _h323ls._udp.host.com
+    Query SRV records for host.com
+	  _h323ls._udp.host.com  	172800  	IN  	SRV  	0  	0  	1719  	gk.host.com
+
+	Answer: find h323:me@a.com by LRQ to gk.host.com:1719
+*/
+
+/**
+  * Set the Default NAPTR server to lookup
+  */
+void SetRDSServers(const PStringArray & servers);
+
+/**
+  * Perform a lookup of the specified url on the NAPTR
+  * server list (set by SetNAPTRServers) that uses the 
+  * specified service. Returns the resultant corresponding 
+  * signalling addresses
+  *
+  * @return TRUE if the url could be resolved, else FALSE
+  */
+
+BOOL RDSLookup(const PURL & url,           ///< URL to lookup
+            const PString & service,       ///< Service to use
+			  PStringList & dn             ///< resolved addresses, if return value is TRUE
+);
+
+/**
+  * Perform a lookup of the specified url on the NAPTR
+  * on the specified server list that uses the specified service
+  * Returns the resultant corresponding signalling addresses
+  *
+  * @return TRUE if the url could be resolved, else FALSE
+  */
+
+BOOL RDSLookup(const PURL & url,            ///< URL to lookup
+            const PString & service,        ///< Service to use
+       const PStringArray & naptrSpaces,    ///< RDS Servers to lookup
+              PStringList & returnStr       ///< resolved addresses, if return value is TRUE
+);
 
 }; // namespace PDNS
 
