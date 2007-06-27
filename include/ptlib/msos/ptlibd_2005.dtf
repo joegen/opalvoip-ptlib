@@ -12665,7 +12665,7 @@ EXPORTS
     ?GetInterfaces@PInterfaceMonitor@@QAE?AVPStringArray@@H@Z @18398 NONAME
     ?GetInterfaces@PInterfaceMonitorClient@@UAE?AVPStringArray@@H@Z @18399 NONAME
     ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@H@Z @18400 NONAME
-    ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@@Z @11978 NONAME
+    ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@H@Z @18565 NONAME
     ?GetInterval@PTimeInterval@@QBEKXZ @11979 NONAME
     ?GetIP@Psockaddr@@QBE?AVAddress@PIPSocket@@XZ @11980 NONAME
     ?GetIP@PSTUNAddressAttribute@@QBE?AVAddress@PIPSocket@@XZ @11981 NONAME
