@@ -1,4 +1,5 @@
-ren ptlibd_2003.dtf ptlibd_2003_old.dtf
+mkdir backup
+move ptlibd_2003.dtf backup\
 copy ..\..\..\lib\debug\ptlibd.def ptlibd_2003.dtf
-ren ptlib_2003.dtf ptlib_2003_old.dtf
+move ptlib_2003.dtf backup\
 copy ..\..\..\lib\release\ptlib.def ptlib_2003.dtf
