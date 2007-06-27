@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.120  2007/06/27 03:15:21  rjongbloed
+ * Added ability to select filtering of down network interfaces.
+ *
  * Revision 1.119  2007/02/17 18:57:58  hfriederich
  * Use similar code in IsLocalHost() as in GetInterfaceTable() to fix
  * incorrect IsLocalHost() on Mac OS X. Untested on other platforms!
@@ -1819,7 +1822,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 // fe800000000000000202e3fffe1ee330 02 40 20 80     eth0
 // 00000000000000000000000000000001 01 80 10 80       lo
 
-BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
+BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list, BOOL includeDown)
 {
 #if P_HAS_IPV6
   // build a table of IPV6 interface addresses
@@ -1880,7 +1883,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 
       if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
-        if (flags & IFF_UP) {
+        if (includeDown || (flags & IFF_UP) != 0) {
           PString name(ifReq.ifr_name);
 
           PString macAddr;
