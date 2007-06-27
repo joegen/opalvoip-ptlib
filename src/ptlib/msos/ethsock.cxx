@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.49  2007/06/27 03:15:21  rjongbloed
+ * Added ability to select filtering of down network interfaces.
+ *
  * Revision 1.48  2006/04/09 11:03:59  csoutheren
  * Remove warnings on VS.net 2005
  *
@@ -2120,7 +2123,7 @@ PString PIPSocket::GetInterface(PIPSocket::Address addr)
   return PString();
 }
 
-BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
+BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
 {
   PWin32SnmpLibrary & snmp = snmp.Current();
 
@@ -2181,9 +2184,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
       name.MakeMinimumSize();
     }
 
-#ifdef _WIN32_WCE // Getting rid of ghost ips
-    if ( !name.IsEmpty() )
-#endif
+    if (!name.IsEmpty() && (includeDown || !(ipAddr.IsAny() || netMask.IsAny())))
       table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
 
     oid[9] = 1;

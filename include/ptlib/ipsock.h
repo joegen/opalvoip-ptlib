@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.89  2007/06/27 03:15:21  rjongbloed
+ * Added ability to select filtering of down network interfaces.
+ *
  * Revision 1.88  2007/05/21 06:09:25  csoutheren
  * Add paramaterless constructor for PIPSocket::InterfaceEntry
  *
@@ -912,7 +915,8 @@ class PIPSocket : public PSocket
        TRUE if the interface table is returned, FALSE if an error occurs.
      */
     static BOOL GetInterfaceTable(
-      InterfaceTable & table      ///< interface table
+      InterfaceTable & table,      ///< interface table
+      BOOL includeDown = FALSE     ///< Include interfaces that are down
     );
 
     /** Get the address of an interface that corresponds to a real network
