@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2007/06/27 15:26:44  shorne
+ * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
+ *
  * Revision 1.7  2006/02/26 11:51:20  csoutheren
  * Extended DNS test program to include URL based SRV lookups
  * Re-arranged SRV lookup code to allow access to internal routine
@@ -57,6 +60,7 @@ void Usage()
   PError << "usage: dnstest -t MX hostname\n"
             "       dnstest -t SRV service            (i.e. _ras._udp._example.com)\n"
             "       dnstest -t SRV service url        (i.e. _sip._udp sip:fred@example.com)\n"
+            "       dnstest -t RDS url service        (i.e. mydomain.com H323+D2U)\n"
             "       dnstest -t NAPTR resource         (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org)\n"
             "       dnstest -t NAPTR resource service (i.e. 2.1.2.1.5.5.5.0.0.8.1.e164.org E2U+SIP)\n"
             "       dnstest -t ENUM service           (i.e. +18005551212 E2U+SIP)\n"
@@ -115,6 +119,16 @@ void LookupSRVURL(const PString & url, const PString & service)
   PStringList addrs;
   if (!PDNS::LookupSRV(url, service, addrs)) {
     cout << "no records returned by SRV lookup of " << url << " with service " << service << endl;
+  } else {
+    cout << setfill('\n') << addrs << setfill(' ');
+  }
+}
+
+void LookupRDSURL(const PString & url, const PString & service)
+{
+  PStringList addrs;
+  if (!PDNS::RDSLookup(url, service, addrs)) {
+    cout << "no records returned by RDS lookup of " << url << " with service " << service << endl;
   } else {
     cout << setfill('\n') << addrs << setfill(' ');
   }
@@ -203,6 +217,9 @@ void DNSTest::Main()
 
     else if ((type *= "SRV") && (args.GetCount() == 2)) 
       LookupSRVURL(args[1], args[0]);
+
+    else if ((type *= "RDS") && (args.GetCount() == 2)) 
+      LookupRDSURL(args[1], args[0]);
 
     else if (type *= "MX")
       GetAndDisplayRecords<PDNS::MXRecordList>(args[0]);
