@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.11  2007/06/27 15:26:52  shorne
+ * added Uniform Resource Name Resolver Discovery System (URN RDS) lookups
+ *
  * Revision 1.10  2007/04/02 05:29:54  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -427,6 +430,203 @@ BOOL PDNS::ENUMLookup(
 
   return FALSE;
 }
+
+////////////////////////////////////////////////////////////////////////
+
+static const char * PWLIB_RDS_PATH = "PWLIB_RDS_PATH";
+
+static PStringArray & GetRDSServers()
+{
+  static const char * defaultDomains[] = {"rds.voxgratia.org"};
+  static PStringArray servers(
+          sizeof(defaultDomains)/sizeof(defaultDomains[0]),
+          defaultDomains
+  );
+  return servers;
+}
+
+static BOOL RewriteDomain(const PString & original, PDNS::NAPTRRecordList & records, PString & returnStr)
+{
+   BOOL result = FALSE;
+
+  // get the first record that matches the service. 
+  PDNS::NAPTRRecord * rec = records.GetFirst();
+
+  do {
+
+    // if no more records that match this service, then fail
+    if (rec == NULL)
+      break;
+
+    // process the flags
+    BOOL handled  = FALSE;
+
+	// General domain rewrites has no flag
+    if (rec->flags.IsEmpty()) {
+        returnStr = ApplyRegex(original, rec->regex);
+		if (returnStr.GetLength() > 0) {
+            result   = TRUE;
+            handled  = TRUE;
+			break;
+		}
+	} else {
+	   break;   // We have other types of records which we don't want.
+	}
+	
+    // if no flags were accepted, then unlock the order on the record and get the next record
+    if (!handled) {
+      records.UnlockOrder();
+      rec = records.GetNext();
+      continue;
+    }
+
+  } while (!result);
+
+  return result;   
+}
+
+static BOOL InternalRDSLookup(const PString & rds, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
+{
+  BOOL result = FALSE;
+
+  // get the first record that matches the service. 
+  PDNS::NAPTRRecord * rec = records.GetFirst(service);
+
+  do {
+
+    // if no more records that match this service, then fail
+    if (rec == NULL)
+      break;
+
+    // process the flags
+    BOOL handled  = FALSE;
+    BOOL terminal = TRUE;
+
+    for (PINDEX f = 0; !handled && f < rec->flags.GetLength(); ++f) {
+      switch (tolower(rec->flags[f])) {
+
+        // do an SRV lookup
+        case 's':
+		  // apply regex and do the lookup
+          returnStr = ApplyRegex(rds, rec->regex);
+          result   = TRUE;
+          terminal = TRUE;
+          handled  = TRUE;
+          break;
+ 
+        case 'a':            // A lookup
+        case 'u':            // U Lookup
+          terminal = TRUE;
+          handled = FALSE;
+          break;
+ 
+        case 'p':           // P specific
+		default:
+          handled = FALSE;
+          break;
+      }
+    }
+
+    // if no flags were accepted, then unlock the order on the record and get the next record
+    if (!handled) {
+      records.UnlockOrder();
+      rec = records.GetNext(service);
+      continue;
+    }
+
+    // if this was a terminal lookup, finish now
+    if (terminal)
+      break;
+
+  } while (!result);
+
+  return result;
+}
+
+
+static PMutex & GetRDSServerMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
+void PDNS::SetRDSServers(const PStringArray & servers)
+{
+     PWaitAndSignal m(GetRDSServerMutex());
+     GetRDSServers() = servers;
+}
+
+BOOL PDNS::RDSLookup(const PURL & url,
+      const PString & service,PStringList & dn)
+{
+  PWaitAndSignal m(GetRDSServerMutex());
+  PStringArray domains;
+  char * env = ::getenv(PWLIB_RDS_PATH);
+  if (env == NULL)
+    domains += GetRDSServers();
+  else
+    domains += PString(env).Tokenise(PATH_SEP);
+
+  return PDNS::RDSLookup(url, service, domains, dn);
+}
+
+BOOL PDNS::RDSLookup(
+        const PURL & url,
+        const PString & service,
+   const PStringArray & naptrSpaces,
+         PStringList & returnStr
+)
+{
+
+  for (PINDEX i = 0; i < naptrSpaces.GetSize(); i++) {
+
+    PDNS::NAPTRRecordList records;
+
+    // do the initial lookup - if no answer then no URN RDS records for that domain
+    if (!PDNS::GetRecords(naptrSpaces[i], records))
+      continue;
+     
+	// Do a universal domain rewrite Ref: RFC 2915 sect 7.1 
+    PString newURL = PString();
+	if (!RewriteDomain(url.AsString(), records, newURL))
+	  continue;
+
+	// Retrieve the NAPTR records associated with that rewritten domain.
+	PDNS::NAPTRRecordList subrecords;
+    if (!PDNS::GetRecords(newURL, subrecords))
+        continue;
+
+	// Retrieve the SRV records for the service 
+    PString srvRecord = PString(); 
+	if (!InternalRDSLookup(url.AsString(),service,subrecords,srvRecord))
+	    continue;
+
+	// Should be in the form "_h323ls._udp.mydomain.com";
+	// Need to find the second "." to retrieve the service record type
+    PINDEX dot = 0;
+	for (PINDEX i = 0;  i < 2; i++) {
+	   dot = srvRecord.Find('.',dot+1);
+	}
+
+	// Rewrite the userName
+	PString finaluser = url.GetScheme() + ":" + url.GetUserName() + "@" + srvRecord.Mid(dot+1); 
+	// Retrieve the service record type
+	PString srvrec = srvRecord.Left(dot+1);
+
+	// Lookup the SRV record for the hosted domain.
+	PStringList retStr;
+	if (!PDNS::LookupSRV(finaluser,srvrec,retStr)) 
+	    continue;
+		
+	if (retStr.GetSize() > 0) {   // We have found records 
+		returnStr = retStr;
+	    return TRUE;
+	}
+  }
+
+  return FALSE;
+}
+
 
 #endif
 
