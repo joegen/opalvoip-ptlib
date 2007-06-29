@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.126  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.125  2007/04/20 07:42:12  csoutheren
  * Applied 1703668 - Make RTSP URLs accept the Query component
  * Thanks to Fabrizio Ammollo
@@ -623,7 +626,7 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
       safeChars += ":@";
   }
   PINDEX pos = (PINDEX)-1;
-  while ((pos += 1+strspn(&xlat[pos+1], safeChars)) < xlat.GetLength())
+  while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX)
     xlat.Splice(psprintf("%%%02X", (BYTE)xlat[pos]), pos, 1);
 
   if (type == QueryTranslation) {

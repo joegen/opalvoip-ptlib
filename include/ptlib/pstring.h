@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.93  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.92  2007/04/08 01:53:16  ykiryanov
  * Build to support ptlib dll creation
  *
@@ -1387,6 +1390,32 @@ class PString : public PCharArray {
        from the set are in the string.
      */
     PINDEX FindOneOf(
+      const char * cset,    ///< C string of characters to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
+    ) const;
+
+    /** Locate the position of character not in the set. */
+    PINDEX FindSpan(
+      const PString & set,  ///< String of characters to search for in string.
+      PINDEX offset = 0     ///< Offset into string to begin search.
+    ) const;
+
+    /**Locate the position of character not in the set.
+       The search will begin at the character offset provided.
+
+       If #offset# is beyond the length of the string, or every character
+       in the string is a member of the set, then the function will always
+       return #P_MAX_INDEX#.
+       
+       The matching will be for identical character or string. If a search
+       ignoring case is required then the string should be converted to a
+       #PCaselessString# before the search is made.
+
+       @return
+       position of character not in the set, or P_MAX_INDEX if all characters
+       from the string are in the set.
+     */
+    PINDEX FindSpan(
       const char * cset,    ///< C string of characters to search for in string.
       PINDEX offset = 0     ///< Offset into string to begin search.
     ) const;

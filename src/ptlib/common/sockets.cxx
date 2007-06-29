@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.215  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.214  2007/06/25 03:46:16  rjongbloed
  * Added ability to specify an IP address as an interface using the %ifname form, anywhere
  *   that the "dotted decimal" could be used before. Useful in "demand dial" evironments
@@ -1592,7 +1595,7 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
   // if the string is a valid integer, then use integer value
   // this avoids stupid problems like operating systems that match service
   // names to substrings (like "2000" to "taskmaster2000")
-  if (strspn(service, "0123456789") == strlen(service))
+  if (service.FindSpan("0123456789") == P_MAX_INDEX)
     return (WORD)service.AsUnsigned();
 
 #if defined( __NUCLEUS_PLUS__ )
@@ -2439,7 +2442,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 #else //P_HAS_IPV6
 
   DWORD iaddr;
-  if (::strspn(dotNotation, "0123456789.") >= ::strlen(dotNotation) &&
+  if (dotNotation.FindSpan("0123456789.") == P_MAX_INDEX &&
                     (iaddr = ::inet_addr((const char *)dotNotation)) != (DWORD)INADDR_NONE) {
     version = 4;
     v.four.s_addr = iaddr;

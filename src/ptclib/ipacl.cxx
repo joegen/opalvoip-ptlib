@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.18  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.17  2007/04/24 14:15:35  shorne
  * Fix for DWORD definition variation with unixODBC
  *
@@ -212,7 +215,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
     return TRUE;
   }
 
-  if (strspn(preSlash, "0123456789.") != (size_t)preSlash.GetLength()) {
+  if (preSlash.FindSpan("0123456789.") != P_MAX_INDEX) {
     // If is not all numbers and dots can't be an IP number so assume hostname
     domain = preSlash;
   }
@@ -254,7 +257,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
   }
 
   PString postSlash = description.Mid(slash+1);
-  if (strspn(postSlash, "0123456789.") != (size_t)postSlash.GetLength()) {
+  if (postSlash.FindSpan("0123456789.") != P_MAX_INDEX) {
     domain = PString();
     address = 0;
     return FALSE;
