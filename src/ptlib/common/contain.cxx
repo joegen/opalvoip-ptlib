@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.178  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.177  2006/11/23 04:13:52  csoutheren
  * Fix problem in PString::Trim
  * Thanks to Guilhem Tardy
@@ -2061,6 +2064,24 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
       if (InternalCompare(offset, *p) == EqualTo)
         return offset;
       p++;
+    }
+    offset++;
+  }
+  return P_MAX_INDEX;
+}
+
+
+PINDEX PString::FindSpan(const char * cset, PINDEX offset) const
+{
+  if (cset == NULL || *cset == '\0' || offset < 0)
+    return P_MAX_INDEX;
+
+  PINDEX len = GetLength();
+  while (offset < len) {
+    const char * p = cset;
+    while (InternalCompare(offset, *p) != EqualTo) {
+      if (*++p == '\0')
+        return offset;
     }
     offset++;
   }

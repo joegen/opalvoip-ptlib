@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.55  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.54  2004/06/01 05:21:38  csoutheren
  * Added conversions between std::string and PString, and vector<PString> and PStringArray
  *
@@ -335,6 +338,9 @@ PINLINE PINDEX PString::FindLast(const PString & str, PINDEX offset) const
 
 PINLINE PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
   { return FindOneOf((const char *)str, offset); }
+
+PINLINE PINDEX PString::FindSpan(const PString & str, PINDEX offset) const
+  { return FindSpan((const char *)str, offset); }
 
 PINLINE void PString::Splice(const PString & str, PINDEX pos, PINDEX len)
   { Splice((const char *)str, pos, len); }

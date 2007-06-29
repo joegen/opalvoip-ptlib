@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.81  2007/06/29 02:47:28  rjongbloed
+ * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
+ *
  * Revision 1.80  2007/05/01 10:20:44  csoutheren
  * Applied 1703617 - Prevention of application deadlock caused by too many timers
  * Thanks to Fabrizio Ammollo
@@ -503,7 +506,7 @@ BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
 
   if (username[0] == '#') {
     PString s = username.Mid(1);
-    if (strspn(s, "1234567890") == strlen(s))
+    if (s.FindSpan("1234567890") == P_MAX_INDEX)
       uid = s.AsInteger();
   }
   else {
@@ -523,7 +526,7 @@ BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
     if (pw != NULL && pw->pw_name != NULL)
       uid = pw->pw_uid;
     else {
-      if (strspn(username, "1234567890") == strlen(username))
+      if (username.FindSpan("1234567890") == P_MAX_INDEX)
        uid = username.AsInteger();
     }
   }
@@ -591,7 +594,7 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
 
   if (groupname[0] == '#') {
     PString s = groupname.Mid(1);
-    if (strspn(s, "1234567890") == strlen(s))
+    if (s.FindSpan("1234567890") == P_MAX_INDEX)
       gid = s.AsInteger();
   }
   else {
@@ -611,7 +614,7 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
     if (gr != NULL && gr->gr_name != NULL)
       gid = gr->gr_gid;
     else {
-      if (strspn(groupname, "1234567890") == strlen(groupname))
+      if (groupname.FindSpan("1234567890") == P_MAX_INDEX)
        gid = groupname.AsInteger();
     }
   }
