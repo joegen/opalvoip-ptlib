@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.8  2007/07/01 15:21:21  dsandras
+ * Fixed potential problems with MJPEG-based cameras thanks Matthias
+ * Schneider <ma30002000 yahoo de>. Thanks a lot!
+ *
  * Revision 1.7  2007/06/25 05:44:01  rjongbloed
  * Fixed numerous issues with "bound" managed socket, ie associating
  *   listeners to a specific named interface.
@@ -390,7 +394,6 @@ BOOL PMonitoredSockets::CreateSocket(SocketInfo & info)
     return FALSE;
   }
 
-  //PTRACE(4, "OpalUDP\tSTUN created socket: " << localAddress << ':' << localPort);
   return TRUE;
 }
 
