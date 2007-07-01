@@ -24,9 +24,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
- * Revision 1.8  2007/07/01 15:21:21  dsandras
- * Fixed potential problems with MJPEG-based cameras thanks Matthias
- * Schneider <ma30002000 yahoo de>. Thanks a lot!
+ * Revision 1.9  2007/07/01 15:23:00  dsandras
+ * Removed accidental log message.
  *
  * Revision 1.7  2007/06/25 05:44:01  rjongbloed
  * Fixed numerous issues with "bound" managed socket, ie associating
