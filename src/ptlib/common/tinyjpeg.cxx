@@ -1690,7 +1690,12 @@ static int parse_SOS(struct jdec_private *priv, const unsigned char *stream)
      priv->component_infos[i].DC_table = &priv->HTDC[table>>4];
   }
   priv->stream = stream+3;
+
+  /* ITU-T T.81 (9/92) chapter E.1.3 clearly states that RSTm is to be set to 0 at the beginning of each scan */
+  priv->last_rst_marker_seen = 0;
+
   trace("< SOS marker\n");
+
   return 0;
 }
 
