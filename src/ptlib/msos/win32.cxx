@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.160  2007/07/03 08:43:31  rjongbloed
+ * Fixed corect reporting of a socket being closed by OS as "NotOpen" aka EBADF.
+ *
  * Revision 1.159  2007/04/02 05:29:55  rjongbloed
  * Tidied some trace logs to assure all have a category (bit before a tab character) set.
  *
@@ -1115,6 +1118,7 @@ BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
     switch (osError) {
       case ERROR_INVALID_HANDLE :
       case WSAEBADF :
+      case WSAENOTSOCK :
         osError = EBADF;
         break;
       case ERROR_INVALID_PARAMETER :
