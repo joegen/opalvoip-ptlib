@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.h,v $
+ * Revision 1.7  2007/07/03 08:55:17  rjongbloed
+ * Fixed various issues with handling interfaces going up, eg not being added
+ *   to currently active ReadFrom().
+ * Added more logging.
+ *
  * Revision 1.6  2007/06/25 05:44:01  rjongbloed
  * Fixed numerous issues with "bound" managed socket, ie associating
  *   listeners to a specific named interface.
@@ -281,10 +286,10 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     struct SocketInfo {
       SocketInfo()
         : socket(NULL)
-        , usageCount(0)
+        , inUse(false)
       { }
       PUDPSocket * socket;
-      unsigned     usageCount;
+      bool         inUse;
     };
 
     BOOL CreateSocket(SocketInfo & info);
@@ -297,6 +302,15 @@ class PMonitoredSockets : public PInterfaceMonitorClient
       WORD port,
       const SocketInfo & info,
       PINDEX & lastWriteCount
+    );
+    BOOL ReadFromSocket(
+      SocketInfo & info,
+      void * buf,
+      PINDEX len,
+      PIPSocket::Address & addr,
+      WORD & port,
+      PINDEX & lastReadCount,
+      const PTimeInterval & timeout
     );
 
     WORD          localPort;
@@ -493,6 +507,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
 
     SocketInfoMap_T socketInfoMap;
     bool            closing;
+    PUDPSocket      interfaceAddedSignal;
 };
 
 
