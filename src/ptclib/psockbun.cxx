@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psockbun.cxx,v $
+ * Revision 1.10  2007/07/03 08:55:18  rjongbloed
+ * Fixed various issues with handling interfaces going up, eg not being added
+ *   to currently active ReadFrom().
+ * Added more logging.
+ *
  * Revision 1.9  2007/07/01 15:23:00  dsandras
  * Removed accidental log message.
  *
@@ -234,10 +239,14 @@ void PInterfaceMonitor::RefreshInterfaceList()
 
 void PInterfaceMonitor::UpdateThreadMain()
 {
+  PTRACE(4, "UDP\tStarted interface monitor thread.");
+
   // check for interface changes periodically
   do {
     RefreshInterfaceList();
   } while (!threadRunning.Wait(refreshInterval));
+
+  PTRACE(4, "UDP\tFinished interface monitor thread.");
 }
 
 
@@ -382,14 +391,13 @@ BOOL PMonitoredSockets::CreateSocket(SocketInfo & info)
 {
   delete info.socket;
 
-  if (stun == NULL)
-  {
+  if (stun == NULL) {
     info.socket = new PUDPSocket(localPort);
     return TRUE;
   }
 
   if (!stun->CreateSocket(info.socket)) {
-    PTRACE(4, "OpalUDP\tSTUN could not create socket!");
+    PTRACE(1, "UDP\tSTUN could not create socket!");
     return FALSE;
   }
 
@@ -405,11 +413,16 @@ BOOL PMonitoredSockets::DestroySocket(SocketInfo & info)
   BOOL result = info.socket->Close();
 
   // This is pretty ugly, but needed to make sure multi-threading doesn't crash
-  while (info.usageCount > 0) {
+  unsigned failSafe = 100; // Approx. two seconds
+  while (info.inUse) {
     UnlockReadWrite();
-    PThread::Sleep(10);
+    PThread::Sleep(20);
     if (!LockReadWrite())
       return FALSE;
+    if (--failSafe == 0) {
+      PTRACE(1, "UDP\tClose of bundled socket " << info.socket << " taking too long.");
+      break;
+    }
   }
 
   delete info.socket;
@@ -429,7 +442,7 @@ BOOL PMonitoredSockets::WriteToSocket(const void * buf,
 #ifndef __BEOS__
   if (addr.IsBroadcast()) {
     if (!info.socket->SetOption(SO_BROADCAST, 1)) {
-      PTRACE(2, "OpalUDP\tError allowing broadcast: " << info.socket->GetErrorText());
+      PTRACE(2, "UDP\tError allowing broadcast: " << info.socket->GetErrorText());
       return FALSE;
     }
   }
@@ -445,6 +458,38 @@ BOOL PMonitoredSockets::WriteToSocket(const void * buf,
 #endif
 
   lastWriteCount = info.socket->GetLastWriteCount();
+  return ok;
+}
+
+
+BOOL PMonitoredSockets::ReadFromSocket(SocketInfo & info,
+                                       void * buf,
+                                       PINDEX len,
+                                       PIPSocket::Address & addr,
+                                       WORD & port,
+                                       PINDEX & lastReadCount,
+                                       const PTimeInterval & timeout)
+{
+  // Assume is already locked
+
+  if (info.inUse) {
+    PTRACE(2, "UDP\tCannot read from multiple threads.");
+    return FALSE;
+  }
+
+  info.inUse = true;
+
+  info.socket->SetReadTimeout(timeout);
+
+  UnlockReadWrite();
+  BOOL ok = info.socket->ReadFrom(buf, len, addr, port);
+  if (!LockReadWrite())
+    return FALSE;
+
+  lastReadCount = info.socket->GetLastReadCount();
+
+  info.inUse = false;
+
   return ok;
 }
 
@@ -705,50 +750,55 @@ BOOL PMonitoredSocketBundle::ReadFrom(void * buf,
     return FALSE;
 
   if (iface.IsEmpty()) {
-    // If interface is empty, then grab the next datagram on any of the interfaces
-    PSocket::SelectList readers;
+    for (;;) {
+      // If interface is empty, then grab the next datagram on any of the interfaces
+      PSocket::SelectList readers;
 
-    for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
-      readers += *iter->second.socket;
-      iter->second.usageCount++;
-    }
-
-    UnlockReadWrite();
-    if (!readers.IsEmpty())
-      ok = PSocket::Select(readers, timeout) == PChannel::NoError;
-    if (!LockReadWrite())
-      return FALSE;
-
-    PUDPSocket * socket = NULL;
-    if (ok) {
-      socket = (PUDPSocket *)&readers[0];
-      ok = socket->ReadFrom(buf, len, addr, port);
-      lastReadCount = socket->GetLastReadCount();
-    }
-
-    for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
-      if (iter->second.socket == socket)
-        iface = iter->first;
-      iter->second.usageCount--;
-    }
-  }
-  else {
-  // if interface is not empty, use that specific interface
-    SocketInfoMap_T::iterator iter = socketInfoMap.find(iface);
-    if (iter != socketInfoMap.end()) {
-      iter->second.usageCount++;
-
-      iter->second.socket->SetReadTimeout(timeout);
+      for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
+        if (iter->second.inUse) {
+          PTRACE(2, "UDP\tCannot read from multiple threads.");
+          UnlockReadWrite();
+          return FALSE;
+        }
+        if (iter->second.socket->IsOpen()) {
+          readers += *iter->second.socket;
+          iter->second.inUse = true;
+        }
+      }
+      readers += interfaceAddedSignal;
 
       UnlockReadWrite();
-      ok = iter->second.socket->ReadFrom(buf, len, addr, port);
+      ok = PSocket::Select(readers, timeout) == PChannel::NoError;
       if (!LockReadWrite())
         return FALSE;
 
-      lastReadCount = iter->second.socket->GetLastReadCount();
+      PUDPSocket * socket = NULL;
+      if (ok) {
+        socket = (PUDPSocket *)&readers[0];
+        ok = socket->ReadFrom(buf, len, addr, port);
+        if (ok)
+          lastReadCount = socket->GetLastReadCount();
+        else if (socket->GetErrorCode(PChannel::LastReadError) == PChannel::NotOpen)
+          socket->Close(); // If interface goes down, socket is not open to OS, but still is to us. Make them agree.
+      }
 
-      iter->second.usageCount--;
+      for (SocketInfoMap_T::iterator iter = socketInfoMap.begin(); iter != socketInfoMap.end(); ++iter) {
+        if (iter->second.socket == socket)
+          iface = iter->first;
+        iter->second.inUse = false;
+      }
+
+      if (interfaceAddedSignal.IsOpen())
+        break;
+
+      interfaceAddedSignal.Listen();
     }
+  }
+  else {
+    // if interface is not empty, use that specific interface
+    SocketInfoMap_T::iterator iter = socketInfoMap.find(iface);
+    if (iter != socketInfoMap.end())
+      ok = ReadFromSocket(iter->second, buf, len, addr, port, lastReadCount, timeout);
   }
 
   UnlockReadWrite();
@@ -764,6 +814,8 @@ void PMonitoredSocketBundle::OnAddInterface(const InterfaceEntry & entry)
     return;
 
   OpenSocket(MakeInterfaceDescription(entry));
+  PTRACE(3, "UDP\tSocket bundle has added interface " << entry);
+  interfaceAddedSignal.Close();
 }
 
 
@@ -774,6 +826,7 @@ void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
     return;
 
   CloseSocket(socketInfoMap.find(MakeInterfaceDescription(entry)));
+  PTRACE(3, "UDP\tSocket bundle has removed interface " << entry);
 }
 
 
@@ -882,20 +935,8 @@ BOOL PSingleMonitoredSocket::ReadFrom(void * buf,
 
   BOOL ok = FALSE;
 
-  if (IsInterface(iface)) {
-    theInfo.usageCount++;
-
-    theInfo.socket->SetReadTimeout(timeout);
-
-    UnlockReadWrite();
-    ok = theInfo.socket->ReadFrom(buf, len, addr, port);
-    if (!LockReadWrite())
-      return FALSE;
-
-    lastReadCount = theInfo.socket->GetLastReadCount();
-
-    theInfo.usageCount--;
-  }
+  if (IsInterface(iface))
+    ok = ReadFromSocket(theInfo, buf, len, addr, port, lastReadCount, timeout);
 
   UnlockReadWrite();
 
@@ -916,6 +957,9 @@ void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
     theEntry = entry;
     if (!Open(localPort))
       theEntry = InterfaceEntry();
+    else {
+      PTRACE(3, "UDP\tBound socket UP on interface " << theEntry);
+    }
   }
 }
 
@@ -927,10 +971,9 @@ void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
   if (entry != theEntry)
     return;
 
+  PTRACE(3, "UDP\tBound socket DOWN on interface " << theEntry);
   theEntry = InterfaceEntry();
-  theInfo.socket->Close();
-  delete theInfo.socket;
-  theInfo.socket = NULL;
+  DestroySocket(theInfo);
 }
 
 
