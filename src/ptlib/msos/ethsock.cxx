@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.50  2007/07/03 08:42:27  rjongbloed
+ * Fixed strange issue where interface list return is sometimes empty if polled
+ *   while an interface  is going up or down.
+ *
  * Revision 1.49  2007/06/27 03:15:21  rjongbloed
  * Added ability to select filtering of down network interfaces.
  *
@@ -2131,7 +2135,6 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
 
   table.RemoveAll();
 
-  /*
   if (!snmp.IsLoaded()) {
     // Error loading the SNMP library, fail safe to using whatever the
     // address of the local host is.
@@ -2140,54 +2143,63 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table, BOOL includeDown)
       return FALSE;
     Address netMask(255,255,255,255);
     table.Append(new InterfaceEntry("FailSafe Interface", ipAddr, netMask, PString::Empty()));
-    table.Append(new InterfaceEntry("localhost", PIPSocket::Address(), netMask, PString::Empty()));
     return TRUE;
   }
-  */
 
-  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
-  PWin32AsnOid oid = baseOid;
-  PWin32AsnAny value;
-  while (snmp.GetNextOid(oid, value)) {
-    if (!(baseOid *= oid))
-      break;
-    if (value.asnType != ASN_IPADDRESS)
-      break;
-
-    Address ipAddr;
-    value.GetIpAddress(ipAddr);
-
-    oid[9] = 3;
-    Address netMask;
-    if (!snmp.GetOid(oid, netMask))
-      break;
-
-    oid[9] = 2;
-    AsnInteger ifIndex = -1;
-    if (!snmp.GetOid(oid, ifIndex))
-      break;
-
-    PString macAddr;
-    PEthSocket::Address ifPhysAddress("");
-    PWin32AsnOid ifOid = "1.3.6.1.2.1.2.2.1.6.0";
-    ifOid[10] = ifIndex;
-    UINT len;
-    if (snmp.GetOid(ifOid, &ifPhysAddress, sizeof(ifPhysAddress), &len) && len > 0)
-      macAddr = ifPhysAddress;
-  
-    PString name = snmp.GetInterfaceName(ipAddr);
-    if (name.IsEmpty()) {
-      PWin32AsnOid nameOid = "1.3.6.1.2.1.2.2.1.2.0";
-      nameOid[10] = ifIndex;
-      if (!snmp.GetOid(nameOid, name))
+  // Sometime this returns no interfaces when one is going up or down
+  // so we need to retry if it fails to find any.
+  for (unsigned retry = 0; retry < 5; retry++) {
+    PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
+    PWin32AsnOid oid = baseOid;
+    PWin32AsnAny value;
+    bool foundOne = false;
+    while (snmp.GetNextOid(oid, value)) {
+      if (!(baseOid *= oid))
         break;
-      name.MakeMinimumSize();
+      if (value.asnType != ASN_IPADDRESS)
+        break;
+
+      Address ipAddr;
+      value.GetIpAddress(ipAddr);
+
+      oid[9] = 3;
+      Address netMask;
+      if (!snmp.GetOid(oid, netMask))
+        break;
+
+      oid[9] = 2;
+      AsnInteger ifIndex = -1;
+      if (!snmp.GetOid(oid, ifIndex))
+        break;
+
+      PString macAddr;
+      PEthSocket::Address ifPhysAddress("");
+      PWin32AsnOid ifOid = "1.3.6.1.2.1.2.2.1.6.0";
+      ifOid[10] = ifIndex;
+      UINT len;
+      if (snmp.GetOid(ifOid, &ifPhysAddress, sizeof(ifPhysAddress), &len) && len > 0)
+        macAddr = ifPhysAddress;
+    
+      PString name = snmp.GetInterfaceName(ipAddr);
+      if (name.IsEmpty()) {
+        PWin32AsnOid nameOid = "1.3.6.1.2.1.2.2.1.2.0";
+        nameOid[10] = ifIndex;
+        if (!snmp.GetOid(nameOid, name))
+          break;
+        name.MakeMinimumSize();
+      }
+
+      if (!name.IsEmpty() && (includeDown || !(ipAddr.IsAny() || netMask.IsAny())))
+        table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
+
+      foundOne = true;
+      oid[9] = 1;
     }
 
-    if (!name.IsEmpty() && (includeDown || !(ipAddr.IsAny() || netMask.IsAny())))
-      table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
+    if (foundOne)
+      return TRUE;
 
-    oid[9] = 1;
+    Sleep(50);
   }
 
   return TRUE;
