@@ -11813,6 +11813,8 @@ EXPORTS
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@AAH1HH@Z @11168 NONAME
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@H@Z @11169 NONAME
     ?FindResourceA@PHTTPSpace@@QAEPAVPHTTPResource@@ABVPURL@@@Z @11170 NONAME
+    ?FindSpan@PString@@QBEHABV1@H@Z @18566 NONAME
+    ?FindSpan@PString@@QBEHPBDH@Z @18567 NONAME
     ?Fire@PNotifierList@@QAEHAAVPObject@@H@Z @11171 NONAME
     ?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B @11172 NONAME
     ?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @11173 NONAME
@@ -14915,6 +14917,8 @@ EXPORTS
     ?RawSSLRead@PSSLChannel@@UAEHPAXAAH@Z @14125 NONAME
     ?RawWrite@PWAVFile@@QAEHPBXH@Z @14126 NONAME
     ?rdbuf@ostrstream@std@@QBEPAVstrstreambuf@2@XZ @14127 NONAME
+    ?RDSLookup@PDNS@@YAHABVPURL@@ABVPString@@AAVPStringList@@@Z @18568 NONAME
+    ?RDSLookup@PDNS@@YAHABVPURL@@ABVPString@@ABVPStringArray@@AAVPStringList@@@Z @18569 NONAME
     ?Read@CSpDebug@@AAEXXZ @14128 NONAME
     ?Read@PBER_Stream@@UAEHAAVPChannel@@@Z @14129 NONAME
     ?Read@PChannel@@UAEHABV?$vector@USlice@PChannel@@V?$allocator@USlice@PChannel@@@std@@@std@@@Z @14130 NONAME
@@ -15032,6 +15036,7 @@ EXPORTS
     ?ReadFrom@PURL@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @14235 NONAME
     ?ReadFrom@PWaveFormat@@UAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@@Z @14236 NONAME
     ?ReadFromDXBuffer@PSoundChannelDirectSound@@AAEHPBXH@Z @18552 NONAME
+    ?ReadFromSocket@PMonitoredSockets@@IAEHAAUSocketInfo@1@PAXHAAVAddress@PIPSocket@@AAGAAHABVPTimeInterval@@@Z @18570 NONAME
     ?ReadLine@PInternetProtocol@@UAEHAAVPString@@H@Z @14237 NONAME
     ?ReadLine@PTextFile@@QAEHAAVPString@@@Z @14238 NONAME
     ?ReadPacket@PEthSocket@@QAEHAAVPBYTEArray@@AATAddress@1@1AAGAAHAAPAE@Z @14239 NONAME
@@ -15582,6 +15587,7 @@ EXPORTS
     ?SetQueryVars@PURL@@QAEXABVPStringToString@@@Z @14763 NONAME
     ?SetRate@PTextToSpeech_Festival@@UAEHI@Z @14764 NONAME
     ?SetRate@PTextToSpeech_SAPI@@UAEHI@Z @14765 NONAME
+    ?SetRDSServers@PDNS@@YAXABVPStringArray@@@Z @18571 NONAME
     ?SetReadChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @14766 NONAME
     ?SetReadLineTimeout@PInternetProtocol@@QAEXABVPTimeInterval@@@Z @14767 NONAME
     ?SetReadTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @14768 NONAME
