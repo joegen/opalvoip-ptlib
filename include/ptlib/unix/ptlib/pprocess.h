@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.33  2007/07/06 02:11:49  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.32  2007/05/01 10:20:44  csoutheren
  * Applied 1703617 - Prevention of application deadlock caused by too many timers
  * Thanks to Fabrizio Ammollo
@@ -145,6 +149,7 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     friend class PServiceProcess;
     friend void PXSignalHandler(int);
     friend class PHouseKeepingThread;
+    friend PString PX_GetThreadName(pthread_t id);
 
     ~PProcess();
 
