@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.121  2007/07/06 02:11:48  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.120  2007/05/16 07:54:21  csoutheren
  * Fix problems created by gcc 4.2.0
  *
@@ -1098,7 +1102,11 @@ class PMemoryHeap {
                               sizeof(size_t) +
                               sizeof(DWORD) +
                               sizeof(WORD) +
-                              sizeof(BYTE))%8
+                              sizeof(BYTE) +
+#ifdef P_LINUX
+                              sizeof(pthread_t)
+#endif
+                              )%8
       };
 
       Header     * prev;
@@ -1109,6 +1117,9 @@ class PMemoryHeap {
       DWORD        request;
       WORD         line;
       BYTE         flags;
+#ifdef P_LINUX
+      pthread_t    thread;
+#endif
       char         guard[NumGuardBytes];
 
       static char GuardBytes[NumGuardBytes];
