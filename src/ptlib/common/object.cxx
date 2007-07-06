@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.87  2007/07/06 02:44:33  csoutheren
+ * Fixed compile on Linux
+ *
  * Revision 1.86  2007/05/03 14:44:51  vfrolov
  * Fixed using destructed c-string in PAssertFunc
  *
@@ -321,6 +324,9 @@
 #include <signal.h>
 #endif
 
+#ifdef P_LINUX
+extern PString PX_GetThreadName(pthread_t);
+#endif
 
 PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
 {
@@ -731,6 +737,9 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   obj->size      = nSize;
   obj->fileName  = file;
   obj->line      = (WORD)line;
+#ifdef P_LINUX
+   obj->thread    = pthread_self();
+#endif
   obj->className = className;
   obj->request   = allocationRequest++;
   obj->flags     = flags;
@@ -1046,6 +1055,10 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
       strm << obj->fileName << '(' << obj->line << ") : ";
 
     strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
+
+#ifdef P_LINUX
+    strm << '"' << PX_GetThreadName(obj->thread) << "\" ";
+#endif
 
     if (obj->className != NULL)
       strm << '"' << obj->className << "\" ";

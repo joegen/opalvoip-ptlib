@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.253  2007/07/06 02:44:33  csoutheren
+ * Fixed compile on Linux
+ *
  * Revision 1.252  2007/04/13 07:19:23  rjongbloed
  * Removed separate Win32 solution for "plug in static loading" issue,
  *   and used the PLOAD_FACTORY() mechanism for everything.
@@ -1998,7 +2001,7 @@ PString PConfigArgs::CharToString(char ch) const
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-static PProcess * PProcessInstance;
+PProcess * PProcessInstance;
 int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
