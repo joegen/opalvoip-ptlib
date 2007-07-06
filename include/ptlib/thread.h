@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.51  2007/07/06 02:11:48  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.50  2007/06/25 20:17:35  csoutheren
  * Add ability to specify thread name
  *
@@ -555,7 +559,7 @@ class PThreadMain : public PThread
     { PThread::Resume(); }
     PThreadMain(const char * _file, int _line, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
-        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn)
+        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn)
     { PThread::Resume(); }
     virtual void Main()
     { (*fn)(); }
@@ -586,7 +590,7 @@ class PThread1Arg : public PThread
     { PThread::Resume(); }
     PThread1Arg(const char * _file, int _line, Arg1Type _arg1, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
-        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn),
+        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1)
     { PThread::Resume(); }
     virtual void Main()
@@ -620,7 +624,7 @@ class PThread2Arg : public PThread
     { PThread::Resume(); }
     PThread2Arg(const char * _file, int _line, Arg1Type _arg1, Arg2Type _arg2, FnType _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-        psprintf("%s-%s:%i", GetClass(), _file, _line)), fn(_fn),
+        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)), fn(_fn),
         arg1(_arg1), arg2(_arg2)
     { PThread::Resume(); }
     virtual void Main()
@@ -659,7 +663,7 @@ class PThreadObj : public PThread
     { PThread::Resume(); }
     PThreadObj(const char * _file, int _line, ObjType & _obj, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-        psprintf("%s-%s:%i", GetClass(), _file, _line)),
+        psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
         obj(_obj), fn(_fn)
     { PThread::Resume(); }
     void Main()
@@ -699,7 +703,7 @@ class PThreadObj1Arg : public PThread
     { PThread::Resume(); }
     PThreadObj1Arg(const char * _file, int _line, ObjType & _obj, Arg1Type _arg1, ObjTypeFn _fn, BOOL autoDelete = FALSE)
       : PThread(10000, autoDelete ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                                psprintf("%s-%s:%i", GetClass(), _file, _line)),
+                                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, _file, _line)),
 				obj(_obj), fn(_fn), arg1(_arg1)
     { PThread::Resume(); }
     void Main()
