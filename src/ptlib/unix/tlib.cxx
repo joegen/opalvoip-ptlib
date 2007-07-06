@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.82  2007/07/06 02:12:14  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.81  2007/06/29 02:47:28  rjongbloed
  * Added PString::FindSpan() function (strspn equivalent) with slightly nicer semantics.
  *
@@ -629,6 +633,18 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
 #endif // P_VXWORKS
 }
 
+extern PProcess * PProcessInstance;;
+
+PString PX_GetThreadName(pthread_t id)
+{
+  if (PProcessInstance != NULL) {
+    PWaitAndSignal m(PProcessInstance->threadMutex);
+    PThread * thread = PProcessInstance->activeThreads.GetAt(id);
+    if (thread != NULL)
+      return thread->GetThreadName();
+  }
+  return psprintf("%08x", id);
+}
 
 void PProcess::PXShowSystemWarning(PINDEX num)
 {
@@ -740,6 +756,33 @@ void PProcess::PXOnSignal(int sig)
 #ifdef SIGNALS_DEBUG
   fprintf(stderr,"\nSYNCSIG<%u>\n",sig);
 #endif
+  if (sig == 28) {
+#if PMEMORY_CHECK
+    BOOL oldIgnore = PMemoryHeap::SetIgnoreAllocations(TRUE);
+    static DWORD allocationIndex = 0;
+#endif
+    PStringStream strm;
+    threadMutex.Wait();
+    PINDEX i;
+    strm << "===============\n";
+    strm << activeThreads.GetSize() << " active threads\n";
+    for (i = 0; i < activeThreads.GetSize(); ++i) {
+      POrdinalKey key = activeThreads.GetKeyAt(i);
+      PThread & thread = activeThreads[key];
+      strm << "  " << thread << "\n";
+    }
+#if PMEMORY_CHECK
+    strm << "---------------\n";
+    PMemoryHeap::DumpObjectsSince(allocationIndex, strm);
+    allocationIndex = PMemoryHeap::GetAllocationRequest();
+#endif
+    strm << "===============\n";
+    threadMutex.Signal();
+    fprintf(stderr, "%s", strm.GetPointer());
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(oldIgnore);
+#endif
+  }
 }
 
 void PProcess::CommonConstruct()

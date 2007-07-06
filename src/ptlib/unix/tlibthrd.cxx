@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.166  2007/07/06 02:12:14  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.165  2007/05/01 10:20:44  csoutheren
  * Applied 1703617 - Prevention of application deadlock caused by too many timers
  * Thanks to Fabrizio Ammollo
@@ -849,7 +853,9 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_suspendMutex);
 
   if (this != &PProcess::Current())
-    PTRACE(5, "PWLib\tDestroyed thread " << this << ' ' << threadName);
+    PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << hex << PX_threadId << ")");
+  else
+    PProcessInstance = NULL;
 }
 
 
@@ -1326,7 +1332,7 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_mutex_unlock(&thread->PX_suspendMutex);
 
   // make sure the cleanup routine is called when the thread exits
-  pthread_cleanup_push(PThread::PX_ThreadEnd, arg);
+  pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
 
   PTRACE(5, "PWLib\tStarted thread " << thread << ' ' << thread->threadName);
 

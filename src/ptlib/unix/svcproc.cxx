@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.90  2007/07/06 02:12:14  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.89  2005/12/15 21:14:34  dsandras
  * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
  *
@@ -984,6 +988,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
 void PServiceProcess::PXOnSignal(int sig)
 {
+  PProcess::PXOnSignal(sig);
   switch (sig) {
     case SIGINT :
     case SIGTERM :
@@ -998,6 +1003,7 @@ void PServiceProcess::PXOnSignal(int sig)
       OnContinue();
       break;
 
+#if 0
     case SIGHUP :
       if (currentLogLevel < PSystemLog::NumLogLevels-1) {
         currentLogLevel = (PSystemLog::Level)(currentLogLevel+1);
@@ -1014,6 +1020,7 @@ void PServiceProcess::PXOnSignal(int sig)
         s << "Log level decreased to " << PLevelName[currentLogLevel+1];
       }
       break;
+#endif
 #endif
   }
 }
