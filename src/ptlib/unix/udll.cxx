@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.24  2007/07/06 02:12:14  csoutheren
+ * Add extra memory leak debugging on Linux
+ * Remove compile warnings
+ *
  * Revision 1.23  2006/08/20 00:32:00  csoutheren
  * Fixed error reporting on DLL load error
  *
@@ -466,7 +470,7 @@ BOOL PDynaLink::GetFunction(const PString & fn, Function & func)
   if (p == NULL)
     return FALSE;
 
-  func = (Function &)p;
+  func = (Function)p;
   return TRUE;
 }
 
