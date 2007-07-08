@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.52  2007/07/08 23:54:53  rjongbloed
+ * Fixed MSVC warnings
+ *
  * Revision 1.51  2007/07/06 02:11:48  csoutheren
  * Add extra memory leak debugging on Linux
  * Remove compile warnings
@@ -533,6 +536,10 @@ class PThread : public PObject
 #endif
 };
 
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+
 /** Define some templates to simplify the declaration
   * of simple PThread descendants with one or two paramaters 
   */
@@ -714,6 +721,10 @@ class PThreadObj1Arg : public PThread
     ObjTypeFn fn;
     Arg1Type arg1;
 };
+
+#ifdef _MSC_VER
+#pragma warning(default:4355)
+#endif
 
 #endif // _PTHREAD
 
