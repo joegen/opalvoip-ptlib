@@ -9,7 +9,9 @@ TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
 ifeq ($(OSTYPE),solaris)
   LDSOPTS += -G
 else
-  LDSOPTS += -shared
+  ifneq ($(OSTYPE),Darwin)
+    LDSOPTS += -shared
+  endif
 endif
 
 ifeq ($(MACHTYPE),x86_64)
