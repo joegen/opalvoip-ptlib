@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.83  2007/07/09 00:13:27  csoutheren
+ * Fix compile on MacOSX
+ *
  * Revision 1.82  2007/07/06 02:12:14  csoutheren
  * Add extra memory leak debugging on Linux
  * Remove compile warnings
@@ -639,9 +642,8 @@ PString PX_GetThreadName(pthread_t id)
 {
   if (PProcessInstance != NULL) {
     PWaitAndSignal m(PProcessInstance->threadMutex);
-    PThread * thread = PProcessInstance->activeThreads.GetAt(id);
-    if (thread != NULL)
-      return thread->GetThreadName();
+    PThread & thread = PProcessInstance->activeThreads[(unsigned)id];
+    return thread.GetThreadName();
   }
   return psprintf("%08x", id);
 }
