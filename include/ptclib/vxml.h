@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.45  2007/07/09 00:10:44  csoutheren
+ * Fix compilation without expat
+ *
  * Revision 1.44  2005/12/15 21:14:33  dsandras
  * Fixed from Alexander Larsson <alexl _AT__ redhat.com> for gcc 4.1 compilation. Thanks!
  *
@@ -205,9 +208,12 @@
 #pragma interface
 #endif
 
-#include <ptlib/pipechan.h>
 
 #include <ptclib/pxml.h>
+
+#if P_EXPAT
+
+#include <ptlib/pipechan.h>
 #include <ptclib/delaychan.h>
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
@@ -843,6 +849,7 @@ class PVXMLTransferResult : public PString
     PString name;
 };
 
+#endif // P_EXPAT
 #endif
 
 
