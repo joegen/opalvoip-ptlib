@@ -18,6 +18,10 @@ ifeq ($(MACHTYPE),x86_64)
   STDCCFLAGS += -fPIC
 endif
 
+ifeq ($(MACHTYPE),hppa)
+  STDCCFLAGS += -fPIC
+endif
+
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	mkdir -p $(OBJDIR)
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) \
