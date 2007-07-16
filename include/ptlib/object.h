@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.122  2007/07/16 05:38:20  csoutheren
+ * Fix compile problem when enabling memory checking on Windows
+ *
  * Revision 1.121  2007/07/06 02:11:48  csoutheren
  * Add extra memory leak debugging on Linux
  * Remove compile warnings
@@ -1102,9 +1105,9 @@ class PMemoryHeap {
                               sizeof(size_t) +
                               sizeof(DWORD) +
                               sizeof(WORD) +
-                              sizeof(BYTE) +
+                              sizeof(BYTE)
 #ifdef P_LINUX
-                              sizeof(pthread_t)
+                              + sizeof(pthread_t)
 #endif
                               )%8
       };
