@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.11  2007/07/19 08:10:18  csoutheren
+ * Add detection of CNG
+ *
  * Revision 1.10  2007/04/19 04:33:53  csoutheren
  * Fixed problems with pre-compiled headers
  *
@@ -68,14 +71,18 @@ class PDTMFDecoder : public PObject
     PString Decode(const short * sampleData, PINDEX numSamples);
 
   protected:
+    enum {
+      NumTones = 9
+    };
+
     // key lookup table (initialised once)
     char key[256];
 
     // frequency table (initialised once)
-    int p1[8];
+    int p1[NumTones];
 
     // variables to be retained on each cycle of the decode function
-    int h[8], k[8], y[8];
+    int h[NumTones], k[NumTones], y[NumTones];
     int nn, so, ia;
 };
 
