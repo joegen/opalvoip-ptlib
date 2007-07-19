@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.167  2007/07/19 08:11:47  csoutheren
+ * Fix problem with hex in log stream
+ *
  * Revision 1.166  2007/07/06 02:12:14  csoutheren
  * Add extra memory leak debugging on Linux
  * Remove compile warnings
@@ -853,7 +856,7 @@ PThread::~PThread()
   pthread_mutex_destroy(&PX_suspendMutex);
 
   if (this != &PProcess::Current())
-    PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << hex << PX_threadId << ")");
+    PTRACE(1, "PWLib\tDestroyed thread " << this << ' ' << threadName << "(id = " << ::hex << PX_threadId << ::dec << ")");
   else
     PProcessInstance = NULL;
 }
