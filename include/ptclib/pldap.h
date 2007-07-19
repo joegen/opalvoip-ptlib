@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.11  2007/07/19 15:05:25  shorne
+ * Added Factory loaded LDAP schemas
+ *
  * Revision 1.10  2006/01/16 19:52:05  dsandras
  * Applied patch from Brian Lu <brian lu sun com> to allow compilation on
  * Solaris using SUN's LDAP. Thanks!!
@@ -71,7 +74,9 @@
 #if P_LDAP
 
 #include <ptlib/sockets.h>
-
+#include <ptlib/pluginmgr.h>
+#include <map>
+#include <list>
 
 struct ldap;
 struct ldapmsg;
@@ -515,6 +520,81 @@ class PLDAPStructBase : public PObject {
     static PLDAPStructBase * initialiserInstance;
 };
 
+///////////////////////////////////////////////////////////////////////////
+
+class PLDAPSchema : public PObject
+{
+   public:
+	   PLDAPSchema();
+
+	   enum AttributeType {
+	     AttibuteUnknown = -1,
+         AttributeString,
+		 AttributeBinary,
+		 AttributeNumeric
+	   };
+
+	   class Attribute
+	   {
+	     public:
+		   Attribute(const PString & name, AttributeType type);
+		   PString       m_name;
+           AttributeType m_type;
+	   };
+
+	   typedef std::list<Attribute> attributeList;
+
+	   static PLDAPSchema * CreateSchema(const PString & schemaname, PPluginManager * pluginMgr = NULL);
+	   static PStringList GetSchemaNames(PPluginManager * pluginMgr = NULL);
+	   static PStringList GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr = NULL);
+
+	   void OnReceivedAttribute(const PString & attribute, const PString & value);
+
+	   void OnSendSchema(PList<PLDAPSession::ModAttrib> & attributes,
+		                 PLDAPSession::ModAttrib::Operation op=PLDAPSession::ModAttrib::Add);
+
+	   void LoadSchema();
+
+	   virtual PStringList SchemaName() { return PStringList(); }
+	   virtual void AttributeList(attributeList & /*attrib*/) {};
+
+
+	   PStringList GetAttributeList();
+	   BOOL Exists(const PString & attribute);
+
+	   BOOL SetAttribute(const PString & attribute, const PString & value);
+	   BOOL SetAttribute(const PString & attribute, const PBYTEArray & value);
+
+	   BOOL GetAttribute(const PString & attribute, PString & value);
+	   BOOL GetAttribute(const PString & attribute, PBYTEArray & value);
+
+       AttributeType GetAttributeType(const PString & attribute);
+
+
+   protected:
+	  typedef std::map<PString,PString> ldapAttributes;
+	  typedef std::map<PString,PBYTEArray> ldapBinAttributes;
+
+
+	  attributeList           attributelist;
+	  ldapAttributes          attributes;
+	  ldapBinAttributes       binattributes;   
+};
+
+
+template <class className> class LDAPPluginServiceDescriptor : public PDevicePluginServiceDescriptor
+{
+  public:
+    virtual PObject *   CreateInstance(int /*userData*/) const { return new className; }
+    virtual PStringList GetDeviceNames(int /*userData*/) const { return className::SchemaName(); } 
+};
+
+#define LDAP_Schema(name)    \
+static LDAPPluginServiceDescriptor<##name##_schema> ##name##_schema_descriptor; \
+PCREATE_PLUGIN(##name##_schema, PLDAPSchema, &##name##_schema_descriptor); \
+PWLIB_STATIC_LOAD_PLUGIN(##name##_schema, PLDAPSchema); \
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 #define PLDAP_STRUCT_BEGIN(name) \
   class name : public PLDAPStructBase { \
