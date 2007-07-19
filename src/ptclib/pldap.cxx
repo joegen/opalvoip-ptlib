@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.22  2007/07/19 15:05:36  shorne
+ * Added Factory loaded LDAP schemas
+ *
  * Revision 1.21  2007/04/20 07:23:53  csoutheren
  * Applied 1703646 - Fixed behaviour of PLDAPSession::GetSearchResult
  * Thanks to Fabrizio Ammollo
@@ -952,6 +955,155 @@ void PLDAPStructBase::EndConstructor()
 {
   initialiserInstance = initialiserStack;
   initialiserMutex.Signal();
+}
+
+///////////////////////////////////////////////////////////////////
+
+static const char PLDAPSchemaPluginBaseClass[] = "PLDAPSchema";
+
+template <> PLDAPSchema * PDevicePluginFactory<PLDAPSchema>::Worker::Create(const PString & type) const
+{
+  return PLDAPSchema::CreateSchema(type);
+}
+
+PLDAPSchema::PLDAPSchema()
+{
+}
+
+PLDAPSchema::Attribute::Attribute(const PString & name, AttributeType type)
+: m_name(name),m_type(type)
+{
+}
+
+void PLDAPSchema::LoadSchema()
+{
+	AttributeList(attributelist); 
+}
+
+PLDAPSchema * PLDAPSchema::CreateSchema(const PString & schemaname, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return (PLDAPSchema *)pluginMgr->CreatePluginsDeviceByName(schemaname, PLDAPSchemaPluginBaseClass);
+}
+
+PStringList PLDAPSchema::GetSchemaNames(PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsProviding(PLDAPSchemaPluginBaseClass);
+}
+
+PStringList PLDAPSchema::GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr)
+{
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsDeviceNames(schema, PLDAPSchemaPluginBaseClass);
+}
+
+void PLDAPSchema::OnReceivedAttribute(const PString & attribute, const PString & value)
+{
+   SetAttribute(attribute,value);
+}
+
+BOOL PLDAPSchema::SetAttribute(const PString & attribute, const PString & value)
+{
+
+	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
+		if ((r->m_name == attribute) &&  (r->m_type != AttributeBinary)) {
+	       attributes.insert(make_pair(attribute,value));
+		   PTRACE(4, "schema\tMatch " << attribute);
+		   return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL PLDAPSchema::SetAttribute(const PString & attribute, const PBYTEArray & value)
+{
+	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
+		if ((r->m_name == attribute) && (r->m_type == AttributeBinary)) {
+	       binattributes.insert(make_pair(attribute,value));
+		   PTRACE(4, "schema\tMatch Binary " << attribute);
+		   return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL PLDAPSchema::GetAttribute(const PString & attribute, PString & value)
+{
+	for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) {
+		if (r->first == attribute) {
+			value = r->second;
+			return TRUE;
+		}
+	}
+	return FALSE; 
+}
+
+BOOL PLDAPSchema::GetAttribute(const PString & attribute, PBYTEArray & value)
+{
+	for (ldapBinAttributes::const_iterator r = binattributes.begin(); r != binattributes.end(); ++r) {
+		if (r->first == attribute) {
+			value = r->second;
+			return TRUE;
+		}
+	}
+	return FALSE; 
+}
+
+PStringList PLDAPSchema::GetAttributeList()
+{
+	PStringList att;
+  	for (std::list<Attribute>::iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
+        att.AppendString(r->m_name);
+	}   
+	return att;
+}
+
+BOOL PLDAPSchema::Exists(const PString & attribute)
+{
+	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
+	  if (r->m_name == attribute) {
+		  if (r->m_type == AttributeString) {
+	          for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) {
+                  if (r->first == attribute)
+			         return TRUE;
+		      }
+		  } else if (r->m_type == AttributeBinary) {
+	          for (ldapBinAttributes::const_iterator r = binattributes.begin(); r != binattributes.end(); ++r) {
+                  if (r->first == attribute)
+			         return TRUE;
+			  }
+		  }
+	  }
+	}
+	return FALSE;
+}
+
+PLDAPSchema::AttributeType PLDAPSchema::GetAttributeType(const PString & attribute)
+{
+	for (std::list<Attribute>::const_iterator r = attributelist.begin(); r != attributelist.end(); ++r) {
+		if (r->m_name == attribute) 
+		   return (AttributeType)r->m_type;
+	}
+	return AttibuteUnknown;
+}
+
+void PLDAPSchema::OnSendSchema(PList<PLDAPSession::ModAttrib> & attrib, PLDAPSession::ModAttrib::Operation op)
+{
+	for (ldapAttributes::const_iterator r = attributes.begin(); r != attributes.end(); ++r) 
+        attrib.Append(new PLDAPSession::StringModAttrib(r->first,r->second,op));
+
+	for (ldapBinAttributes::const_iterator s = binattributes.begin(); s != binattributes.end(); ++s) {
+        attrib.Append(new PLDAPSession::BinaryModAttrib(s->first,s->second,op));
+	}
 }
 
 
