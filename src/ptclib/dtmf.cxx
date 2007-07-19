@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.18  2007/07/19 08:10:32  csoutheren
+ * Add detection of CNG
+ *
  * Revision 1.17  2006/12/13 04:56:03  csoutheren
  * Applied 1613270 - fixed for dtmfEncoder
  * Thanks to Frederic Heem
@@ -86,7 +89,7 @@ PDTMFDecoder::PDTMFDecoder()
 {
   // Initialise the class
   int i,kk;
-  for (kk = 0; kk < 8; kk++) {
+  for (kk = 0; kk < NumTones; kk++) {
     y[kk] = h[kk] = k[kk] = 0;
   }
 
@@ -106,10 +109,11 @@ PDTMFDecoder::PDTMFDecoder()
 
   /* The frequencies we're trying to detect */
   /* These are precalculated to save processing power */
-  /* static int dtmf[8] = {697, 770, 852, 941, 1209, 1336, 1477, 1633}; */
+  /* static int dtmf[9] = {697, 770, 852, 941, 1209, 1336, 1477, 1633, 1100}; */
   /* p1[kk] = (-cos(2 * 3.141592 * dtmf[kk] / 8000.0) * FSC) */
   p1[0] = -3497; p1[1] = -3369; p1[2] = -3212; p1[3] = -3027;
   p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
+  p1[9] = -2660;
 }
 
 
@@ -135,7 +139,7 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples)
 
     /* For each tone */
     s = 0;
-    for(kk = 0; kk < 8; kk++) {
+    for(kk = 0; kk < NumTones; kk++) {
 
       /* Turn the crank */
       c = (P2 * (x - k[kk])) / FSC;
@@ -152,17 +156,29 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples)
         y[kk] += (-n - y[kk]) / 64;
 
       /* Threshold */
-      if (y[kk] > FSC/10 && y[kk] > ia)
-        s |= 1 << kk;
+      if (y[kk] > FSC/10 && y[kk] > ia) {
+        if (kk < 8)
+          s |= 1 << kk;
+        else if (kk == 8)
+          s = 0x100;
+      }
     }
 
     /* Hysteresis and noise supressor */
     if (s != so) {
       nn = 0;
       so = s;
-    } else if (nn++ == 520 && s < 256 && key[s] != '?') {
-      PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
-      keyString += key[s];
+    } else if (nn++ == 520) {
+      if (s < 256) {
+        if (key[s] != '?') {
+          PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
+          keyString += key[s];
+        }
+      }
+      else if (s == 0x100) {
+        PTRACE(3,"DTMF\tDetected CNG in PCM-16 stream");
+        keyString += 'X';
+      }
     }
   }
   return keyString;
