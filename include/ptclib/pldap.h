@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.12  2007/07/20 21:44:03  shorne
+ * Removed virtual on PLDAPSchema::SchemaName
+ *
  * Revision 1.11  2007/07/19 15:05:25  shorne
  * Added Factory loaded LDAP schemas
  *
@@ -555,7 +558,7 @@ class PLDAPSchema : public PObject
 
 	   void LoadSchema();
 
-	   virtual PStringList SchemaName() { return PStringList(); }
+	   PStringList SchemaName() { return PStringList(); }
 	   virtual void AttributeList(attributeList & /*attrib*/) {};
 
 
