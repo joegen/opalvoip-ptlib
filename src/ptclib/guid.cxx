@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: guid.cxx,v $
+ * Revision 1.2  2007/07/20 01:40:23  csoutheren
+ * Ignore spaces in GUID strings
+ *
  * Revision 1.1  2006/09/20 05:03:41  csoutheren
  * Migrated GUID functions to PWLib
  *
@@ -296,6 +299,8 @@ void PGloballyUniqueID::ReadFrom(istream & strm)
         break;
       strm.get(); // Ignore the dash if it was in the right place
     }
+    else if (strm.peek() == ' ') 
+      strm.get(); // Ignore spaces
     else
       break;
   }
